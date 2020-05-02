@@ -29,6 +29,11 @@
 #include "py/runtime.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
+#if CIRCUITPY_VECTORIO
+#include "shared-bindings/vectorio/VectorShape.h"
+#endif
+
+
 void common_hal_displayio_group_construct(displayio_group_t* self, uint32_t max_size, uint32_t scale, mp_int_t x, mp_int_t y) {
     displayio_group_child_t* children = m_new(displayio_group_child_t, max_size);
     displayio_group_construct(self, children, max_size, scale, x, y);
@@ -200,7 +205,14 @@ void common_hal_displayio_group_set_y(displayio_group_t* self, mp_int_t y) {
 }
 
 static mp_obj_t _add_layer(displayio_group_t* self, mp_obj_t layer) {
-    mp_obj_t native_layer = mp_instance_cast_to_native_base(layer, &displayio_group_type);
+    mp_obj_t native_layer;
+#if CIRCUITPY_VECTORIO
+    native_layer = mp_instance_cast_to_native_base(layer, &vectorio_vector_shape_type);
+    if (native_layer != MP_OBJ_NULL) {
+        return native_layer;
+    }
+#endif
+    native_layer = mp_instance_cast_to_native_base(layer, &displayio_group_type);
     if (native_layer == MP_OBJ_NULL) {
         native_layer = mp_instance_cast_to_native_base(layer, &displayio_tilegrid_type);
         if (native_layer == MP_OBJ_NULL) {
@@ -317,6 +329,15 @@ bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorsp
     bool full_coverage = false;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i].native;
+#if CIRCUITPY_VECTORIO
+        if (MP_OBJ_IS_TYPE(layer, &vectorio_vector_shape_type)) {
+            if (vectorio_vector_shape_fill_area(layer, colorspace, area, mask, buffer)) {
+                full_coverage = true;
+                break;
+            }
+        }
+        else
+#endif
         if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
             if (displayio_tilegrid_fill_area(layer, colorspace, area, mask, buffer)) {
                 full_coverage = true;
@@ -336,6 +357,12 @@ void displayio_group_finish_refresh(displayio_group_t *self) {
     self->item_removed = false;
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i].native;
+#if CIRCUITPY_VECTORIO
+        if (MP_OBJ_IS_TYPE(layer, &vectorio_vector_shape_type)) {
+            vectorio_vector_shape_finish_refresh(layer);
+        }
+        else
+#endif
         if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
             displayio_tilegrid_finish_refresh(layer);
         } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
@@ -352,6 +379,12 @@ displayio_area_t* displayio_group_get_refresh_areas(displayio_group_t *self, dis
 
     for (int32_t i = self->size - 1; i >= 0 ; i--) {
         mp_obj_t layer = self->children[i].native;
+#if CIRCUITPY_VECTORIO
+        if (MP_OBJ_IS_TYPE(layer, &vectorio_vector_shape_type)) {
+            tail = vectorio_vector_shape_get_refresh_areas(layer, tail);
+        }
+        else
+#endif
         if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
             tail = displayio_tilegrid_get_refresh_areas(layer, tail);
         } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {
