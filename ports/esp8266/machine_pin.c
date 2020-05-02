@@ -59,6 +59,9 @@ typedef struct _pin_irq_obj_t {
     uint16_t phys_port;
 } pin_irq_obj_t;
 
+STATIC void pin_intr_handler_part1(void *arg);
+STATIC void pin_intr_handler_part2(uint32_t status);
+
 const pyb_pin_obj_t pyb_pin_obj[16 + 1] = {
     {{&pyb_pin_type}, 0, FUNC_GPIO0, PERIPHS_IO_MUX_GPIO0_U},
     {{&pyb_pin_type}, 1, FUNC_GPIO1, PERIPHS_IO_MUX_U0TXD_U},
@@ -88,7 +91,7 @@ STATIC const pin_irq_obj_t pin_irq_obj[16];
 
 void pin_init0(void) {
     ETS_GPIO_INTR_DISABLE();
-    ETS_GPIO_INTR_ATTACH(pin_intr_handler_iram, NULL);
+    ETS_GPIO_INTR_ATTACH(pin_intr_handler_part1, NULL);
     // disable all interrupts
     memset(&MP_STATE_PORT(pin_irq_handler)[0], 0, 16 * sizeof(mp_obj_t));
     for (int p = 0; p < 16; ++p) {
@@ -98,7 +101,13 @@ void pin_init0(void) {
     ETS_GPIO_INTR_ENABLE();
 }
 
-void MP_FASTCODE(pin_intr_handler)(uint32_t status) {
+void MP_FASTCODE(pin_intr_handler_part1)(void *arg) {
+    uint32_t status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
+    GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, status);
+    pin_intr_handler_part2(status);
+}
+
+void MP_FASTCODE(pin_intr_handler_part2)(uint32_t status) {
     status &= 0xffff;
     for (int p = 0; status; ++p, status >>= 1) {
         if (status & 1) {
@@ -478,7 +487,7 @@ STATIC const pin_irq_obj_t pin_irq_obj[16] = {
 STATIC mp_obj_t pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     pin_irq_obj_t *self = self_in;
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    pin_intr_handler(1 << self->phys_port);
+    pin_intr_handler_part2(1 << self->phys_port);
     return mp_const_none;
 }
 
