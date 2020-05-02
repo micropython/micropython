@@ -109,6 +109,7 @@ SECTIONS
         *py/nlr*.o*(.literal* .text*)
         *py/obj*.o*(.literal* .text*)
         *py/opmethods.o*(.literal* .text*)
+        *py/pairheap*.o*(.literal* .text*)
         *py/parse*.o*(.literal* .text*)
         *py/profile*.o*(.literal* .text*)
         *py/qstr.o*(.literal* .text*)
