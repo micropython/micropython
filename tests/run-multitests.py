@@ -230,6 +230,9 @@ def run_test_on_instances(test_file, num_instances, instances):
     injected_globals = ""
     output = [[] for _ in range(num_instances)]
 
+    if cmd_args.trace_output:
+        print("TRACE {}:".format("|".join(str(i) for i in instances)))
+
     # Start all instances running, in order, waiting until they signal they are ready
     for idx in range(num_instances):
         append_code = APPEND_CODE_TEMPLATE.format(injected_globals, idx)
@@ -326,10 +329,6 @@ def run_tests(test_files, instances_truth, instances_test):
         # Run test on test instances
         error, skip, output_test = run_test_on_instances(test_file, num_instances, instances_test)
 
-        if cmd_args.show_output:
-            print("### TEST ###")
-            print(output_test, end="")
-
         if not skip:
             # Check if truth exists in a file, and read it in
             test_file_expected = test_file + ".exp"
@@ -341,7 +340,11 @@ def run_tests(test_files, instances_truth, instances_test):
                 _, _, output_truth = run_test_on_instances(
                     test_file, num_instances, instances_truth
                 )
-            if cmd_args.show_output:
+
+        if cmd_args.show_output:
+            print("### TEST ###")
+            print(output_test, end="")
+            if not skip:
                 print("### TRUTH ###")
                 print(output_truth, end="")
 
