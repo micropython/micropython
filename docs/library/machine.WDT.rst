@@ -22,7 +22,7 @@ Constructors
 
 .. class:: WDT(id=0, timeout=5000)
 
-   Create a WDT object and start it. The timeout must be given in seconds and
+   Create a WDT object and start it. The timeout must be given in milliseconds and
    the minimum value that is accepted is 1 second. Once it is running the timeout
    cannot be changed and the WDT cannot be stopped either.
 
