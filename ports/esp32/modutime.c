@@ -151,6 +151,16 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
+STATIC mp_obj_t time_time_us(void) {
+    struct timeval tv;
+    if (gettimeofday(&tv, NULL) != 0) {
+        mp_raise_OSError(errno);
+    }
+    long long usec = ((long long)tv.tv_sec - EPOCH_DELTA) * 1000000 + (long long)tv.tv_usec;
+    return mp_obj_new_int_from_ll(usec);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(time_time_us_obj, time_time_us);
+
 STATIC mp_obj_t time_tzset(mp_obj_t tz) {
     // tz is something like PST+8PDT,M3.2.0/2,M11.1.0/2
     const char *zone = mp_obj_str_get_str(tz);
@@ -160,14 +170,16 @@ STATIC mp_obj_t time_tzset(mp_obj_t tz) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_tzset_obj, time_tzset);
 
-STATIC mp_obj_t time_settime(const mp_obj_t seconds_in) {
-    struct timeval tv = { mp_obj_get_int(seconds_in) + EPOCH_DELTA, 0 };
+STATIC mp_obj_t time_settime(const mp_obj_t secs_in, const mp_obj_t usecs_in) {
+    mp_int_t secs = mp_obj_get_int(secs_in);
+    mp_int_t usecs = mp_obj_get_int(usecs_in);
+    struct timeval tv = { secs + EPOCH_DELTA, usecs };
     if (settimeofday(&tv, NULL) != 0) {
         mp_raise_OSError(errno);
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(time_settime_obj, time_settime);
+MP_DEFINE_CONST_FUN_OBJ_2(time_settime_obj, time_settime);
 
 STATIC mp_obj_t time_adjtime(const mp_obj_t microseconds_in) {
     // esp-idf is adjtime is broken in that it returns the current adjustment instead of
@@ -203,6 +215,7 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
     { MP_ROM_QSTR(MP_QSTR_tzset), MP_ROM_PTR(&time_tzset_obj) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time_us), MP_ROM_PTR(&time_time_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_settime), MP_ROM_PTR(&time_settime_obj) },
     { MP_ROM_QSTR(MP_QSTR_adjtime), MP_ROM_PTR(&time_adjtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },

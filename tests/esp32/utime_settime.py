@@ -50,7 +50,7 @@ SAMPLE_TIMES = [
 for adj in [1000, 0, -1000, 1000000, -1000000, 2300000, -2800000]:
     print("---", adj)
     time.tzset("GMT+0")
-    time.settime(time.mktime((2020, 4, 1, 10, 23, 45, 0, 0, 0)))
+    time.settime(time.mktime((2020, 4, 1, 10, 23, 45, 0, 0, 0)), 0)
     ptup(time.localtime())
     oadj = time.adjtime(adj)
     print(oadj)
@@ -67,3 +67,9 @@ try:
     print(oadj)
 except ValueError as e:
     print(e)
+
+# verify that settime and time_us handle sub-second precision
+t1 = time.mktime((2020, 4, 1, 10, 23, 45, 0, 0, 0))
+time.settime(t1, 500000)
+td = time.time_us() - t1 * 1000000 - 500000
+print("frac settime", td > 0 and td < 600000)
