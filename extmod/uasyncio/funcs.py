@@ -53,12 +53,13 @@ async def gather(*aws, return_exceptions=False):
 def shield(aw):
     aw = core._promote_to_task(aw)
 
-    async def shielded(t):
+    async def shielded():
         try:
-            return await t
+            return await aw
         finally:
+            nonlocal t
             t.shield = False
 
-    t = core.create_task(shielded(aw))
+    t = core.create_task(shielded())
     t.shield = True
     return t
