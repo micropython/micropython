@@ -165,7 +165,7 @@ STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_
             break;
 
         case ESP_RST_BROWNOUT:
-	case ESP_RST_EXT: // Comment in ESP-IDF: "For ESP32, ESP_RST_EXT is never returned"
+        case ESP_RST_EXT: // Comment in ESP-IDF: "For ESP32, ESP_RST_EXT is never returned"
             return MP_OBJ_NEW_SMALL_INT(MP_HARD_RESET);
             break;
 
