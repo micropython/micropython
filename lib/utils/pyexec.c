@@ -458,7 +458,12 @@ int pyexec_friendly_repl(void) {
     #endif
 
 friendly_repl_reset:
+    #ifdef MICROPY_HW_BOARD_NAME
     mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+    #else
+    mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\r\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
+    #endif
+
     #if MICROPY_PY_BUILTINS_HELP
     mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
     #endif
