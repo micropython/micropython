@@ -63,7 +63,10 @@ int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int ex
     #endif
 
     // By default a SystemExit exception returns a value based on its argument.
-    pyexec_system_exit = 0;
+    #ifndef MICROPY_PYEXEC_SYSTEM_EXIT_DEFAULT
+    #define MICROPY_PYEXEC_SYSTEM_EXIT_DEFAULT (0)
+    #endif
+    pyexec_system_exit = MICROPY_PYEXEC_SYSTEM_EXIT_DEFAULT;
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
