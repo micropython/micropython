@@ -357,4 +357,6 @@ struct _mp_bluetooth_btstack_root_pointers_t;
 #include <sched.h>
 #define MICROPY_UNIX_MACHINE_IDLE sched_yield();
 
+#define MICROPY_PYEXEC_SYSTEM_EXIT_DEFAULT (PYEXEC_FORCED_EXIT)
+
 #endif // MICROPY_UNIX_MINIMAL

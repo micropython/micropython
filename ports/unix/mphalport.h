@@ -32,9 +32,12 @@
 
 void mp_hal_set_interrupt_char(char c);
 
-#define mp_hal_stdio_poll unused // this is not implemented, nor needed
+#define mp_hal_stdio_mode_raw mp_hal_stdio_mode_raw
+#define mp_hal_stdio_mode_orig mp_hal_stdio_mode_orig
 void mp_hal_stdio_mode_raw(void);
 void mp_hal_stdio_mode_orig(void);
+
+#define mp_hal_stdio_poll unused // this is not implemented, nor needed
 
 #if MICROPY_PY_BUILTINS_INPUT && MICROPY_USE_READLINE == 0
 
