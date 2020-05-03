@@ -50,8 +50,9 @@ int pyexec_system_exit = 0;
 STATIC bool repl_display_debugging_info = 0;
 #endif
 
-// parses, compiles and executes the code in the lexer
-// frees the lexer before returning
+// Parses, compiles and executes the code in the lexer.
+// Frees the lexer before returning.
+// Returns 0 for success, non-zero for an error or SystemExit.
 // PYEXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
 // PYEXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
 // PYEXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
@@ -62,7 +63,7 @@ int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int ex
     #endif
 
     // by default a SystemExit exception returns 0
-    pyexec_system_exit = 0;
+    pyexec_system_exit = 1;
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -102,7 +103,7 @@ int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int ex
         mp_hal_set_interrupt_char(-1); // disable interrupt
         mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
         nlr_pop();
-        ret = 1;
+        ret = 0;
         if (exec_flags & PYEXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);
         }
@@ -120,7 +121,7 @@ int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int ex
             ret = pyexec_system_exit;
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            ret = 0;
+            ret = 1;
         }
     }
 
