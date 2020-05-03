@@ -283,8 +283,34 @@ STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
     }
 
     // If not at root add trailing / to make it easy to build paths
+    // and normalize the path
     if (vstr_len(&self->cur_dir) != 1) {
         vstr_add_byte(&self->cur_dir, '/');
+
+        #define CWD_LEN (vstr_len(&self->cur_dir))   
+        size_t to = 1; 
+        size_t from = 1;
+        char *cwd = vstr_str(&self->cur_dir);
+        while (from < CWD_LEN) {
+            for (; cwd[from] == '/' && from < CWD_LEN; from ++) ; // scan for the start
+            if (from > to) { // found excessive slash chars, squeeze them out
+                vstr_cut_out_bytes(&self->cur_dir, to, from - to);
+                from = to;
+            }
+            for (; cwd[from] != '/' && from < CWD_LEN; from++) ; // scan for the next /
+            if ((from - to) == 1 && cwd[to] == '.') { // './', ignore
+                vstr_cut_out_bytes(&self->cur_dir, to, ++from - to);
+                from = to;
+            } else if ((from - to) == 2 && cwd[to] == '.' && cwd[to + 1] == '.') { // '../', skip back
+                if (to > 1) {  // at the tip do not skip back
+                    for (--to; to > 1 && cwd[to - 1] != '/'; to--) ; // skip back
+                }
+                vstr_cut_out_bytes(&self->cur_dir, to, ++from - to);
+                from = to;
+            } else { // normal element, keep it and just move the offset
+                to = ++from;
+            }
+        }
     }
 
     return mp_const_none;
