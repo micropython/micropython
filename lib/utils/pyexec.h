@@ -44,9 +44,13 @@ extern int pyexec_system_exit;
 #define PYEXEC_FLAG_PRINT_EOF               (0x0001)
 #define PYEXEC_FLAG_ALLOW_DEBUGGING         (0x0002)
 #define PYEXEC_FLAG_IS_REPL                 (0x0004)
-#define PYEXEC_FLAG_SOURCE_IS_RAW_CODE      (0x0008)
-#define PYEXEC_FLAG_SOURCE_IS_VSTR          (0x0010)
-#define PYEXEC_FLAG_SOURCE_IS_FILENAME      (0x0020)
+#define PYEXEC_FLAG_COMPILE_ONLY            (0x0008)
+#define PYEXEC_FLAG_SOURCE_IS_RAW_CODE      (0x0010)
+#define PYEXEC_FLAG_SOURCE_IS_VSTR          (0x0020)
+#define PYEXEC_FLAG_SOURCE_IS_FILENAME      (0x0040)
+#if MICROPY_HELPER_LEXER_UNIX
+#define PYEXEC_FLAG_SOURCE_IS_FD            (0x0080)
+#endif
 
 #define PYEXEC_FORCED_EXIT (0x100)
 #define PYEXEC_SWITCH_MODE (0x200)

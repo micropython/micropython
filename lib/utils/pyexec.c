@@ -82,12 +82,30 @@ int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int ex
                 lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
             } else if (exec_flags & PYEXEC_FLAG_SOURCE_IS_FILENAME) {
                 lex = mp_lexer_new_from_file(source);
+            #if MICROPY_HELPER_LEXER_UNIX
+            } else if (exec_flags & PYEXEC_FLAG_SOURCE_IS_FD) {
+                int fd = (int)(intptr_t)source;
+                lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, fd, false);
+            #endif
             } else {
                 lex = (mp_lexer_t *)source;
             }
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
+            #if MICROPY_PY___FILE__
+            if (input_kind == MP_PARSE_FILE_INPUT) {
+                mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+            }
+            #endif
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+            #if defined(MICROPY_UNIX_COVERAGE)
+            // allow to print the parse tree in the coverage build
+            if (mp_verbose_flag >= 3) {
+                printf("----------------\n");
+                mp_parse_node_print(parse_tree.root, 0);
+                printf("----------------\n");
+            }
+            #endif
             module_fun = mp_compile(&parse_tree, source_name, exec_flags & PYEXEC_FLAG_IS_REPL);
             #else
             mp_raise_msg(&mp_type_RuntimeError, "script compilation not supported");
@@ -95,13 +113,16 @@ int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int ex
         }
 
         // execute code
-        mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
-        #if MICROPY_REPL_INFO
-        start = mp_hal_ticks_ms();
-        #endif
-        mp_call_function_0(module_fun);
-        mp_hal_set_interrupt_char(-1); // disable interrupt
-        mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
+        if (!(exec_flags & PYEXEC_FLAG_COMPILE_ONLY)) {
+            mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
+            #if MICROPY_REPL_INFO
+            start = mp_hal_ticks_ms();
+            #endif
+            mp_call_function_0(module_fun);
+            mp_hal_set_interrupt_char(-1); // disable interrupt
+            mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
+        }
+
         nlr_pop();
         ret = 0;
         if (exec_flags & PYEXEC_FLAG_PRINT_EOF) {
