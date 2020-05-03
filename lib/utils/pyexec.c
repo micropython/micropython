@@ -482,6 +482,8 @@ friendly_repl_reset:
     */
 
     for (;;) {
+        mp_hal_stdio_mode_raw();
+
     input_restart:
 
         #if MICROPY_HW_ENABLE_USB
@@ -510,20 +512,23 @@ friendly_repl_reset:
         if (ret == CHAR_CTRL_A) {
             // change to raw REPL
             mp_hal_stdout_tx_str("\r\n");
+            mp_hal_stdio_mode_orig();
             vstr_clear(&line);
             pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
             return 0;
         } else if (ret == CHAR_CTRL_B) {
             // reset friendly REPL
             mp_hal_stdout_tx_str("\r\n");
+            mp_hal_stdio_mode_orig();
             goto friendly_repl_reset;
         } else if (ret == CHAR_CTRL_C) {
             // break
             mp_hal_stdout_tx_str("\r\n");
-            continue;
+            goto input_restart;
         } else if (ret == CHAR_CTRL_D) {
             // exit for a soft reset
             mp_hal_stdout_tx_str("\r\n");
+            mp_hal_stdio_mode_orig();
             vstr_clear(&line);
             return PYEXEC_FORCED_EXIT;
         } else if (ret == CHAR_CTRL_E) {
@@ -552,7 +557,10 @@ friendly_repl_reset:
             }
             parse_input_kind = MP_PARSE_FILE_INPUT;
         } else if (vstr_len(&line) == 0) {
-            continue;
+            if (ret != 0) {
+                mp_hal_stdout_tx_str("\r\n");
+            }
+            goto input_restart;
         } else {
             // got a line with non-zero length, see if it needs continuing
             while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
@@ -568,6 +576,8 @@ friendly_repl_reset:
                 }
             }
         }
+
+        mp_hal_stdio_mode_orig();
 
         ret = pyexec_exec_src(&line, parse_input_kind, PYEXEC_FLAG_ALLOW_DEBUGGING | PYEXEC_FLAG_IS_REPL | PYEXEC_FLAG_SOURCE_IS_VSTR);
         if (ret & PYEXEC_FORCED_EXIT) {
