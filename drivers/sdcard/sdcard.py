@@ -49,6 +49,7 @@ class SDCard:
         for i in range(512):
             self.dummybuf[i] = 0xFF
         self.dummybuf_memoryview = memoryview(self.dummybuf)
+        self.sdclear = b"\xff"*16
 
         # initialise the card
         self.init_card()
@@ -71,8 +72,7 @@ class SDCard:
         self.init_spi(100000)
 
         # clock card at least 100 cycles with cs high
-        for i in range(16):
-            self.spi.write(b"\xff")
+        self.spi.write(self.sdclear)
 
         # CMD0: init card; should return _R1_IDLE_STATE (allow 5 attempts)
         for _ in range(5):
@@ -227,6 +227,8 @@ class SDCard:
         self.spi.write(b"\xff")
 
     def readblocks(self, block_num, buf):
+        # clock card at least 100 cycles with cs high
+        self.spi.write(self.sdclear)
         nblocks = len(buf) // 512
         assert nblocks and not len(buf) % 512, "Buffer length is invalid"
         if nblocks == 1:
@@ -254,6 +256,8 @@ class SDCard:
                 raise OSError(5)  # EIO
 
     def writeblocks(self, block_num, buf):
+        # clock card at least 100 cycles with cs high
+        self.spi.write(self.sdclear)
         nblocks, err = divmod(len(buf), 512)
         assert nblocks and not err, "Buffer length is invalid"
         if nblocks == 1:
