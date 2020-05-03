@@ -23,6 +23,16 @@ write 3
 (32768, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 (32768, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 /
+/testdir
+/
+/testdir/subdir
+/
+/testdir2
+/testdir
+/
+/testdir
+/testdir/subdir
+/
 test <class 'VfsLfs2'>
 (1024, 1024, 30, 28, 28, 0, 0, 0, 0, 255)
 (1024, 1024, 30, 28, 28, 0, 0, 0, 0, 255)
@@ -47,4 +57,14 @@ write 3
 /testdir
 (32768, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 (32768, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+/
+/testdir
+/
+/testdir/subdir
+/
+/testdir2
+/testdir
+/
+/testdir
+/testdir/subdir
 /
