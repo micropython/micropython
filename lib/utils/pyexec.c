@@ -62,8 +62,8 @@ int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int ex
     uint32_t start = 0;
     #endif
 
-    // by default a SystemExit exception returns 0
-    pyexec_system_exit = 1;
+    // By default a SystemExit exception returns a value based on its argument.
+    pyexec_system_exit = 0;
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -115,14 +115,7 @@ int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int ex
         if (exec_flags & PYEXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);
         }
-        // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-            // at the moment, the value of SystemExit is unused
-            ret = pyexec_system_exit;
-        } else {
-            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            ret = 1;
-        }
+        ret = pyexec_handle_uncaught_exception(nlr.ret_val);
     }
 
     #if MICROPY_REPL_INFO
@@ -152,6 +145,27 @@ int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int ex
     }
 
     return ret;
+}
+
+// If exc is SystemExit, return pyexec_system_exit or'd with lower 8 bits of SystemExit value.
+// For all other exceptions, return 1.
+int pyexec_handle_uncaught_exception(mp_obj_base_t *exc) {
+    if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+        // SystemExit was raised, evaluate its argument:
+        // - None is an exit value of 0;
+        // - an int is its value;
+        // - anything else is 1.
+        mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
+        mp_int_t val = 0;
+        if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
+            val = 1;
+        }
+        return pyexec_system_exit | (val & 255);
+    } else {
+        // Report all other exceptions and return 1 to indicate error.
+        mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(exc));
+        return 1;
+    }
 }
 
 #if MICROPY_ENABLE_COMPILER

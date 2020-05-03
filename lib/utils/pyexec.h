@@ -52,6 +52,7 @@ extern int pyexec_system_exit;
 #define PYEXEC_SWITCH_MODE (0x200)
 
 int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int exec_flags);
+int pyexec_handle_uncaught_exception(mp_obj_base_t *exc);
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
 int pyexec_file(const char *filename);
