@@ -129,9 +129,8 @@ pwm_start(void) {
     LOCK_PWM(critical);   // enter critical
 
     // If a toggle is pending, we reset it since we're going to change again
-    mp_uint_t irq_state = mp_hal_quiet_timing_enter();
+    // No irq lock needed
     do_toggle = 0;
-    mp_hal_quiet_timing_exit(irq_state);
 
     struct pwm_single_param *local_single = pwm_single_toggle[pwm_toggle ^ 0x01];
     uint8 *local_channel = &pwm_channel_toggle[pwm_toggle ^ 0x01];
@@ -202,9 +201,7 @@ pwm_start(void) {
         RTC_REG_WRITE(FRC1_LOAD_ADDRESS, local_single[0].h_time);
     } else {
         // request for toggle
-        irq_state = mp_hal_quiet_timing_enter();
         do_toggle = 1;
-        mp_hal_quiet_timing_exit(irq_state);
     }
 
     UNLOCK_PWM(critical);   // leave critical
