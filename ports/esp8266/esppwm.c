@@ -18,7 +18,6 @@
 
 #include "esppwm.h"
 
-#include "py/mphal.h"
 #include "py/mpprint.h"
 #define PWM_DBG(...)
 // #define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
@@ -228,13 +227,14 @@ pwm_set_duty(int16_t duty, uint8 channel) {
         return;
     }
 
-    if (duty < 1) {
-        duty = 0;
-    } else if (duty >= PWM_DEPTH) {
-        duty = PWM_DEPTH;
-    }
     LOCK_PWM(critical);   // enter critical
-    pwm.duty[channel] = duty;
+    if (duty < 1) {
+        pwm.duty[channel] = 0;
+    } else if (duty >= PWM_DEPTH) {
+        pwm.duty[channel] = PWM_DEPTH;
+    } else {
+        pwm.duty[channel] = duty;
+    }
     UNLOCK_PWM(critical);   // leave critical
 }
 
