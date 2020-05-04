@@ -63,7 +63,7 @@ def test(bdev, vfs_class):
     # mkdir, rmdir
     vfs.mkdir("testdir")
     print(list(vfs.ilistdir()))
-    print(list(vfs.ilistdir("testdir")))
+    print(sorted(list(vfs.ilistdir("testdir"))))
     vfs.rmdir("testdir")
     print(list(vfs.ilistdir()))
     vfs.mkdir("testdir")
@@ -91,11 +91,17 @@ def test(bdev, vfs_class):
 
     # rename
     vfs.rename("testbig", "testbig2")
-    print(list(vfs.ilistdir()))
+    print(sorted(list(vfs.ilistdir())))
+    vfs.chdir("testdir")
+    vfs.rename("/testbig2", "testbig2")
+    print(sorted(list(vfs.ilistdir())))
+    vfs.rename("testbig2", "/testbig2")
+    vfs.chdir("/")
+    print(sorted(list(vfs.ilistdir())))
 
     # remove
     vfs.remove("testbig2")
-    print(list(vfs.ilistdir()))
+    print(sorted(list(vfs.ilistdir())))
 
     # getcwd, chdir
     vfs.mkdir("/testdir2")
