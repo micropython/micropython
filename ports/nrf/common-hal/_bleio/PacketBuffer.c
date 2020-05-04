@@ -267,6 +267,10 @@ mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self
     if (packet_length > len) {
         // Packet is longer than requested. Return negative of overrun value.
         ret = len - packet_length;
+        // Discard the packet if it's too large. Don't fill data.
+        while (packet_length--) {
+            (void) ringbuf_get(&self->ringbuf);
+        }
     } else {
         // Read as much as possible, but might be shorter than len.
         ringbuf_get_n(&self->ringbuf, data, packet_length);

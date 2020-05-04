@@ -190,16 +190,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_bu
 //|   .. attribute:: incoming_packet_length
 //|
 //|     Maximum length in bytes of a packet we are reading.
-//|     If the packet is arriving from a remote service via notify or indicate,
-//|     the maximum length is `Connection.max_packet_length`.
-//|     Otherwise it is the ``max_length`` of the :py:class:`~_bleio.Characteristic`.
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_int_t size = common_hal_bleio_packet_buffer_get_incoming_packet_length(self);
     if (size < 0) {
-        mp_raise_ValueError(translate("No connection: size cannot be determined"));
+        mp_raise_ValueError(translate("No connection: length cannot be determined"));
     }
     return MP_OBJ_NEW_SMALL_INT(size);
 }
@@ -215,16 +212,13 @@ const mp_obj_property_t bleio_packet_buffer_incoming_packet_length_obj = {
 //|   .. attribute:: outgoing_packet_length
 //|
 //|     Maximum length in bytes of a packet we are writing.
-//|     If the packet is being sent via notify or indicate,
-//|     the maximum length is `Connection.max_packet_length`.
-//|     Otherwise it is the ``max_length`` of the :py:class:`~_bleio.Characteristic`.
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_int_t size = common_hal_bleio_packet_buffer_get_outgoing_packet_length(self);
     if (size < 0) {
-        mp_raise_ValueError(translate("No connection: size cannot be determined"));
+        mp_raise_ValueError(translate("No connection: length cannot be determined"));
     }
     return MP_OBJ_NEW_SMALL_INT(size);
 }
