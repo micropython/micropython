@@ -72,6 +72,7 @@ INC += -I./st_driver/CMSIS/Device/ST/STM32$(MCU_SERIES)xx/Include
 INC += -I./st_driver/CMSIS/Include
 INC += -I./boards
 INC += -I./boards/$(BOARD)
+INC += -I./hal_conf
 INC += -I./peripherals
 INC += -I./packages
 INC += -I../../lib/mp-readline
@@ -204,7 +205,6 @@ SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
-	tick.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/pins.c \

@@ -35,7 +35,6 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
-#include "tick.h"
 #include "nrfx_uarte.h"
 #include <string.h>
 

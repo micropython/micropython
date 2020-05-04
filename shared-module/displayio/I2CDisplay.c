@@ -38,8 +38,6 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/display_core.h"
 
-#include "tick.h"
-
 void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
     busio_i2c_obj_t* i2c, uint16_t device_address, const mcu_pin_obj_t* reset) {
 

@@ -162,8 +162,8 @@ SRC_C = \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/pins.c \
 	reset.c \
 	supervisor/flexspi_nor_flash_ops.c \
-	supervisor/shared/memory.c \
-	tick.c
+	supervisor/shared/memory.c
+
 
 ifeq ($(CIRCUITPY_NETWORK),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1

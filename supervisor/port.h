@@ -70,4 +70,22 @@ uint32_t *port_heap_get_top(void);
 void port_set_saved_word(uint32_t);
 uint32_t port_get_saved_word(void);
 
+// Get the raw tick count since start up. A tick is 1/1024 of a second, a common low frequency
+// clock rate. If subticks is not NULL then the port will fill in the number of subticks where each
+// tick is 32 subticks (for a resolution of 1/32768 or 30.5ish microseconds.)
+uint64_t port_get_raw_ticks(uint8_t* subticks);
+
+// Enable 1/1024 second tick.
+void port_enable_tick(void);
+
+// Disable 1/1024 second tick.
+void port_disable_tick(void);
+
+// Wake the CPU after the given number of ticks or sooner. Only the last call to this will apply.
+// Only the common sleep routine should use it.
+void port_interrupt_after_ticks(uint32_t ticks);
+
+// Sleep the CPU until an interrupt is received.
+void port_sleep_until_interrupt(void);
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

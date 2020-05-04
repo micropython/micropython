@@ -27,9 +27,8 @@
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "shared-bindings/neopixel_write/__init__.h"
+#include "supervisor/port.h"
 #include "nrf_pwm.h"
-
-#include "tick.h"
 
 // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
 // [[[Begin of the Neopixel NRF52 EasyDMA implementation
@@ -105,8 +104,7 @@ void neopixel_write_reset(void) {
     pixels_pattern_heap_size = 0;
 }
 
-uint64_t next_start_tick_ms = 0;
-uint32_t next_start_tick_us = 1000;
+uint64_t next_start_raw_ticks = 0;
 
 void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // To support both the SoftDevice + Neopixels we use the EasyDMA
@@ -175,8 +173,9 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         }
     }
 
-    // Wait to make sure we don't append onto the last transmission.
-    wait_until(next_start_tick_ms, next_start_tick_us);
+    // Wait to make sure we don't append onto the last transmission. This should only be a tick or
+    // two.
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
 
     // Use the identified device to choose the implementation
     // If a PWM device is available and we have a buffer, use DMA.
@@ -323,11 +322,5 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     }
 
     // Update the next start.
-    current_tick(&next_start_tick_ms, &next_start_tick_us);
-    if (next_start_tick_us < 100) {
-        next_start_tick_ms += 1;
-        next_start_tick_us = 100 - next_start_tick_us;
-    } else {
-        next_start_tick_us -= 100;
-    }
+    next_start_raw_ticks = port_get_raw_ticks(NULL) + 4;
 }

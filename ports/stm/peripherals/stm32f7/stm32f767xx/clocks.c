@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
+#include "stm32f7xx_hal.h"
 
 void stm32_peripherals_clocks_init(void) {
   RCC_ClkInitTypeDef RCC_ClkInitStruct;

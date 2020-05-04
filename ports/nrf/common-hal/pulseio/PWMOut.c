@@ -139,11 +139,15 @@ bool convert_frequency(uint32_t frequency, uint16_t *countertop, nrf_pwm_clk_t *
     return false;
 }
 
+// We store these in an array because we cannot compute them.
+static IRQn_Type pwm_irqs[4] = {PWM0_IRQn, PWM1_IRQn, PWM2_IRQn, PWM3_IRQn};
+
 NRF_PWM_Type *pwmout_allocate(uint16_t countertop, nrf_pwm_clk_t base_clock,
-        bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out) {
+        bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out,
+        IRQn_Type* irq) {
     for (size_t pwm_index = 0; pwm_index < MP_ARRAY_SIZE(pwms); pwm_index++) {
         NRF_PWM_Type *pwm = pwms[pwm_index];
-        bool pwm_already_in_use = pwm->ENABLE & SPIM_ENABLE_ENABLE_Msk;
+        bool pwm_already_in_use = pwm->ENABLE & PWM_ENABLE_ENABLE_Msk;
         if (pwm_already_in_use) {
             if (variable_frequency) {
                 // Variable frequency requires exclusive use of a PWM, so try the next one.
@@ -156,20 +160,30 @@ NRF_PWM_Type *pwmout_allocate(uint16_t countertop, nrf_pwm_clk_t base_clock,
                 for (size_t chan = 0; chan < CHANNELS_PER_PWM; chan++) {
                     if (pwm->PSEL.OUT[chan] == 0xFFFFFFFF) {
                         // Channel is free.
-                        if(channel_out)
+                        if (channel_out) {
                             *channel_out = chan;
-                        if(pwm_already_in_use_out)
+                        }
+                        if (pwm_already_in_use_out) {
                             *pwm_already_in_use_out = pwm_already_in_use;
+                        }
+                        if (irq) {
+                            *irq = pwm_irqs[pwm_index];
+                        }
                         return pwm;
                     }
                 }
             }
         } else {
             // PWM not yet in use, so we can start to use it. Use channel 0.
-            if(channel_out)
+            if (channel_out) {
                 *channel_out = 0;
-            if(pwm_already_in_use_out)
+            }
+            if (pwm_already_in_use_out) {
                 *pwm_already_in_use_out = pwm_already_in_use;
+            }
+            if (irq) {
+                *irq = pwm_irqs[pwm_index];
+            }
             return pwm;
         }
     }
@@ -208,7 +222,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     int8_t channel;
     bool pwm_already_in_use;
     self->pwm = pwmout_allocate(countertop, base_clock, variable_frequency,
-        &channel, &pwm_already_in_use);
+        &channel, &pwm_already_in_use, NULL);
 
     if (self->pwm == NULL) {
         return PWMOUT_ALL_TIMERS_IN_USE;

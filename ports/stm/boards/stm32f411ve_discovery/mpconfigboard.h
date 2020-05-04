@@ -33,3 +33,9 @@
 #define FLASH_PAGE_SIZE             (0x4000)  //16K
 
 #define BOARD_OSC_DIV (8)
+
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
+
+// The schematic has a 32k crystal that isn't fitted. Uncommented the line below if you add it.
+// #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
+// #define LSE_VALUE  ((uint32_t)32000U)

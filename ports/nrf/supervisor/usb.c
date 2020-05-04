@@ -26,7 +26,6 @@
 
 #include "nrfx.h"
 #include "nrfx_power.h"
-#include "tick.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"

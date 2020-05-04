@@ -24,11 +24,12 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/frequencyio/FrequencyIn.h"
+
 #include <stdint.h>
 
 #include "hal/include/hal_gpio.h"
 #include "atmel_start_pins.h"
-#include "supervisor/shared/translate.h"
 
 #include "mpconfigport.h"
 #include "py/runtime.h"
@@ -41,11 +42,11 @@
 #include "samd/pins.h"
 #include "samd/external_interrupts.h"
 
-#include "shared-bindings/frequencyio/FrequencyIn.h"
 #include "peripheral_clk_config.h"
 #include "hpl_gclk_config.h"
 
-#include "tick.h"
+#include "shared-bindings/time/__init__.h"
+#include "supervisor/shared/translate.h"
 
 #ifdef SAMD21
 #include "hpl/gclk/hpl_gclk_base.h"
@@ -88,9 +89,7 @@ void frequencyin_interrupt_handler(uint8_t index) {
 
     if (!ref_tc->COUNT16.INTFLAG.bit.OVF) return; // false trigger
 
-    uint32_t current_us;
-    uint64_t current_ms;
-    current_tick(&current_ms, &current_us);
+    uint64_t current_ns = common_hal_time_monotonic_ns();
 
     for (uint8_t i = 0; i <= (TC_INST_NUM - 1); i++) {
         if (active_frequencyins[i] != NULL) {
@@ -101,14 +100,12 @@ void frequencyin_interrupt_handler(uint8_t index) {
             if ((EIC->INTFLAG.reg & mask) == mask) {
                 // Make sure capture_period has elapsed before we
                 // record a new event count.
-                if (current_ms - self->last_ms >= self->capture_period) {
-                    float new_factor = self->last_us + (1000 - current_us);
+                if ((current_ns - self->last_ns) / 1000000 >= self->capture_period) {
                     // ms difference will not need 64 bits. If we use 64 bits,
                     // double-precision float routines are required, and we don't
                     // want to include them because they're very large.
-                    self->factor = (uint32_t) (current_ms - self->last_ms) + (new_factor / 1000);
-                    self->last_ms = current_ms;
-                    self->last_us = current_us;
+                    self->factor = (uint32_t) (current_ns - self->last_ns) / 1000000.0;
+                    self->last_ns = current_ns;
 
                     #ifdef SAMD51
                     tc->COUNT16.CTRLBSET.bit.CMD = TC_CTRLBSET_CMD_READSYNC_Val;
@@ -278,8 +275,7 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     self->pin = pin->number;
     self->channel = pin->extint_channel;
     self->errored_too_fast = false;
-    self->last_ms = 0;
-    self->last_us = 1000;
+    self->last_ns = 0;
     self->capture_period = capture_period;
     #ifdef SAMD21
     self->TC_IRQ = TC3_IRQn + timer_index;
