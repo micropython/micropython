@@ -35,8 +35,6 @@
 
 #include "supervisor/spi_flash_api.h"
 
-#include "tick.h"
-
 displayio_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80

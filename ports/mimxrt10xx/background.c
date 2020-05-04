@@ -27,7 +27,6 @@
 #include "background.h"
 
 //#include "audio_dma.h"
-#include "tick.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"

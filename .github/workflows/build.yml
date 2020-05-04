@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
     - name: Dump GitHub context
       env:
@@ -127,7 +127,7 @@ jobs:
         path: mpy-cross/mpy-cross
 
   build-arm:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     needs: test
     strategy:
       fail-fast: false
@@ -206,11 +206,13 @@ jobs:
         - "nucleo_h743zi_2"
         - "ohs2020_badge"
         - "openbook_m4"
+        - "openmv_h7"
         - "particle_argon"
         - "particle_boron"
         - "particle_xenon"
         - "pca10056"
         - "pca10059"
+        - "pca10100"
         - "pewpew10"
         - "pewpew_m4"
         - "pirkey_m0"
@@ -230,6 +232,7 @@ jobs:
         - "seeeduino_xiao"
         - "serpente"
         - "shirtty"
+        - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
         - "sparkfun_nrf52840_mini"
@@ -244,7 +247,7 @@ jobs:
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stm32f4_discovery"
-        - "stm32f746g_disco"
+        - "stm32f746g_discovery"
         - "stringcar_m0_express"
         - "teensy40"
         - "teknikio_bluebird"
@@ -303,7 +306,7 @@ jobs:
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
   build-riscv:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     needs: test
     strategy:
       fail-fast: false

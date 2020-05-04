@@ -38,8 +38,7 @@ typedef struct {
     uint8_t channel;
     uint8_t event_channel;
     uint32_t frequency;
-    volatile uint64_t last_ms;
-    volatile uint32_t last_us;
+    volatile uint64_t last_ns;
     float factor;
     uint32_t capture_period;
     uint8_t TC_IRQ;

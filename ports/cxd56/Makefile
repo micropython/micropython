@@ -152,7 +152,6 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 SRC_S = supervisor/cpu.s
 
 SRC_C = \
-	tick.c \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
@@ -184,7 +183,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 # Sources that only hold QSTRs after pre-processing.
-SRC_QSTR_PREPROCESSOR += 
+SRC_QSTR_PREPROCESSOR +=
 
 all: $(BUILD)/firmware.spk
 
@@ -197,7 +196,7 @@ $(FIRMWARE):
 	$(ECHO) "run make flash-bootloader again to flash bootloader."
 	exit 1
 
-$(BUILD)/libmpy.a: $(SPRESENSE_SDK) $(OBJ) 
+$(BUILD)/libmpy.a: $(SPRESENSE_SDK) $(OBJ)
 	$(ECHO) "AR $@"
 	$(Q)$(AR) rcs $(BUILD)/libmpy.a $(OBJ)
 

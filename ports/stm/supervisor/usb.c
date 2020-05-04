@@ -26,7 +26,6 @@
  */
 
 
-#include "tick.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
@@ -118,7 +117,6 @@ void init_usb_hardware(void) {
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
     never_reset_pin_number(0, 8);
     #endif
-
 
     #if CPY_STM32H7
     HAL_PWREx_EnableUSBVoltageDetector();

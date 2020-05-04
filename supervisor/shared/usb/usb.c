@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "tick.h"
 #include "py/objstr.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-module/usb_midi/__init__.h"

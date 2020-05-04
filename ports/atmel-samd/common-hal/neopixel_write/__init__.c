@@ -29,7 +29,7 @@
 
 #include "shared-bindings/neopixel_write/__init__.h"
 
-#include "tick.h"
+#include "supervisor/port.h"
 
 #ifdef SAMD51
 #include "hri/hri_cmcc_d51.h"
@@ -91,8 +91,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
                  "");
 }
 
-uint64_t next_start_tick_ms = 0;
-uint32_t next_start_tick_us = 1000;
+uint64_t next_start_raw_ticks = 0;
 
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // This is adapted directly from the Adafruit NeoPixel library SAMD21G18A code:
@@ -101,9 +100,9 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     uint32_t  pinMask;
     PortGroup* port;
 
-    // This must be called while interrupts are on in case we're waiting for a
-    // future ms tick.
-    wait_until(next_start_tick_ms, next_start_tick_us);
+    // Wait to make sure we don't append onto the last transmission. This should only be a tick or
+    // two.
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
 
     // Turn off interrupts of any kind during timing-sensitive code.
     mp_hal_disable_all_interrupts();
@@ -144,15 +143,8 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
 
     #endif
 
-    // ticks_ms may be out of date at this point because we stopped the
-    // interrupt. We'll risk it anyway.
-    current_tick(&next_start_tick_ms, &next_start_tick_us);
-    if (next_start_tick_us < 100) {
-        next_start_tick_ms += 1;
-        next_start_tick_us = 100 - next_start_tick_us;
-    } else {
-        next_start_tick_us -= 100;
-    }
+    // Update the next start.
+    next_start_raw_ticks = port_get_raw_ticks(NULL) + 4;
 
     // Turn on interrupts after timing-sensitive code.
     mp_hal_enable_all_interrupts();

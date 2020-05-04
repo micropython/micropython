@@ -35,8 +35,6 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
-#include "tick.h"
-
 #define ALL_UARTS 0xFFFF
 
 //arrays use 0 based numbering: UART1 is stored at index 0

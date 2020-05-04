@@ -25,13 +25,16 @@
  */
 
 #include <stdint.h>
+
 #include <sys/boardctl.h>
+#include <sys/time.h>
 
 #include "sched/sched.h"
 
 #include "boards/board.h"
 
 #include "supervisor/port.h"
+#include "supervisor/shared/tick.h"
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogIn.h"
@@ -103,3 +106,41 @@ void port_set_saved_word(uint32_t value) {
 uint32_t port_get_saved_word(void) {
     return _ebss;
 }
+
+volatile bool _tick_enabled;
+void board_timerhook(void)
+{
+    // Do things common to all ports when the tick occurs
+    if (_tick_enabled) {
+        supervisor_tick();
+    }
+}
+
+uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    long computed_subticks = tv.tv_usec * 1024 * 32 / 1000000;
+    if (subticks != NULL) {
+        *subticks = computed_subticks % 32;
+    }
+
+    return tv.tv_sec * 1024 + computed_subticks / 32;
+}
+
+// Enable 1/1024 second tick.
+void port_enable_tick(void) {
+    _tick_enabled = true;
+}
+
+// Disable 1/1024 second tick.
+void port_disable_tick(void) {
+    _tick_enabled = false;
+}
+
+void port_interrupt_after_ticks(uint32_t ticks) {
+}
+
+void port_sleep_until_interrupt(void) {
+    // TODO: Implement sleep.
+}
+

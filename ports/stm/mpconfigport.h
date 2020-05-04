@@ -44,27 +44,6 @@ extern uint8_t _ld_default_stack_size;
 
 #include "py/circuitpy_mpconfig.h"
 
-// The STM32 HAL file is included virtually everywhere:
-#include STM32_HAL_H
-
-// These prevent you from accidentally omitting a python file that links mpconfigport
-// and having a file accept a lack of chip family as an option. 
-#if defined(STM32F4)
-#define CPY_STM32F4 1
-#define CPY_STM32F7 0
-#define CPY_STM32H7 0
-#elif defined(STM32F7)
-#define CPY_STM32F4 0
-#define CPY_STM32F7 1
-#define CPY_STM32H7 0
-#elif defined(STM32H7)
-#define CPY_STM32F4 0
-#define CPY_STM32F7 0
-#define CPY_STM32H7 1
-#else 
-#error undefined processor
-#endif
-
 // Board flags:
 #ifndef BOARD_OVERWRITE_SWD
 #define BOARD_OVERWRITE_SWD (0)

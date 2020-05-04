@@ -41,13 +41,14 @@ typedef struct {
     volatile uint16_t start;
     volatile uint16_t len;
     volatile bool first_edge;
-    volatile uint64_t last_ms;
-    volatile uint16_t last_us;
+    volatile uint32_t last_overflow;
+    volatile uint16_t last_count;
     volatile bool errored_too_fast;
 } pulseio_pulsein_obj_t;
 
 void pulsein_reset(void);
 
 void pulsein_interrupt_handler(uint8_t channel);
+void pulsein_timer_interrupt_handler(uint8_t index);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEIN_H

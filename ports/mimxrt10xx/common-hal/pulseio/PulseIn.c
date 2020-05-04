@@ -38,8 +38,6 @@
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "supervisor/shared/translate.h"
 
-#include "tick.h"
-
 // TODO
 //static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
 //    uint32_t sense_setting;

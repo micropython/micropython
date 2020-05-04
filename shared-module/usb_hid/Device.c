@@ -25,7 +25,7 @@
  */
 
 #include <string.h>
-#include "tick.h"
+
 #include "py/runtime.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "shared-module/usb_hid/Device.h"

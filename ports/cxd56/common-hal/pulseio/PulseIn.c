@@ -25,6 +25,7 @@
  */
 
 #include <arch/board/board.h>
+#include <sys/time.h>
 
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -51,7 +52,9 @@ static int pulsein_set_config(pulseio_pulsein_obj_t *self, bool first_edge) {
 
 static int pulsein_interrupt_handler(int irq, FAR void *context, FAR void *arg) {
     // Grab the current time first.
-    uint32_t current_us = mp_hal_ticks_us();
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t current_us = ((uint64_t) tv.tv_sec) * 1000000 + tv.tv_usec;
 
     pulseio_pulsein_obj_t *self = pulsein_objects[irq - CXD56_IRQ_EXDEVICE_0];
 

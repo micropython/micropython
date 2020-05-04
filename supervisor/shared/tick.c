@@ -26,12 +26,13 @@
 
 #include "supervisor/shared/tick.h"
 
+#include "py/mpstate.h"
 #include "supervisor/linker.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/autoreload.h"
 
-static volatile uint64_t PLACE_IN_DTCM_BSS(ticks_ms);
-static volatile uint32_t PLACE_IN_DTCM_BSS(background_ticks_ms32);
+static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 
 #if CIRCUITPY_GAMEPAD
 #include "shared-module/gamepad/__init__.h"
@@ -44,9 +45,6 @@ static volatile uint32_t PLACE_IN_DTCM_BSS(background_ticks_ms32);
 #include "shared-bindings/microcontroller/__init__.h"
 
 void supervisor_tick(void) {
-
-    ticks_ms ++;
-
 #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
 #endif
@@ -54,7 +52,7 @@ void supervisor_tick(void) {
     autoreload_tick();
 #endif
 #ifdef CIRCUITPY_GAMEPAD_TICKS
-    if (!(ticks_ms & CIRCUITPY_GAMEPAD_TICKS)) {
+    if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
         #if CIRCUITPY_GAMEPAD
         gamepad_tick();
         #endif
@@ -68,29 +66,70 @@ void supervisor_tick(void) {
 uint64_t supervisor_ticks_ms64() {
     uint64_t result;
     common_hal_mcu_disable_interrupts();
-    result = ticks_ms;
+    result = port_get_raw_ticks(NULL);
     common_hal_mcu_enable_interrupts();
+    result = result * 1000 / 1024;
     return result;
 }
 
 uint32_t supervisor_ticks_ms32() {
-    return ticks_ms;
+    return supervisor_ticks_ms64();
 }
 
 extern void run_background_tasks(void);
 
 void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
-    uint32_t now32 = ticks_ms;
-
-    if (now32 == background_ticks_ms32) {
-        return;
-    }
-    background_ticks_ms32 = now32;
-
+    // TODO: Add a global that can be set by anyone to indicate we should run background tasks. That
+    // way we can short circuit the background tasks early. We used to do it based on time but it
+    // breaks cases where we wake up for a short period and then sleep. If we skipped the last
+    // background task or more before sleeping we may end up starving a task like USB.
     run_background_tasks();
 }
 
-void supervisor_fake_tick() {
-    uint32_t now32 = ticks_ms;
-    background_ticks_ms32 = (now32 - 1);
+void mp_hal_delay_ms(mp_uint_t delay) {
+    uint64_t start_tick = port_get_raw_ticks(NULL);
+    // Adjust the delay to ticks vs ms.
+    delay = delay * 1024 / 1000;
+    uint64_t end_tick = start_tick + delay;
+    int64_t remaining = delay;
+    while (remaining > 0) {
+        RUN_BACKGROUND_TASKS;
+        // Check to see if we've been CTRL-Ced by autoreload or the user.
+        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
+           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
+            break;
+        }
+        remaining = end_tick - port_get_raw_ticks(NULL);
+        // We break a bit early so we don't risk setting the alarm before the time when we call
+        // sleep.
+        if (remaining < 1) {
+            break;
+        }
+        port_interrupt_after_ticks(remaining);
+        // Sleep until an interrupt happens.
+        port_sleep_until_interrupt();
+        remaining = end_tick - port_get_raw_ticks(NULL);
+    }
 }
+
+volatile size_t tick_enable_count = 0;
+extern void supervisor_enable_tick(void) {
+    common_hal_mcu_disable_interrupts();
+    if (tick_enable_count == 0) {
+        port_enable_tick();
+    }
+    tick_enable_count++;
+    common_hal_mcu_enable_interrupts();
+}
+
+extern void supervisor_disable_tick(void) {
+    common_hal_mcu_disable_interrupts();
+    if (tick_enable_count > 0) {
+        tick_enable_count--;
+    }
+    if (tick_enable_count == 0) {
+        port_disable_tick();
+    }
+    common_hal_mcu_enable_interrupts();
+}
+

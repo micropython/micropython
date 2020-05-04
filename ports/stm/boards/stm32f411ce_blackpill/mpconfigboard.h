@@ -35,6 +35,9 @@
 #define BOARD_OSC_DIV (25)
 #define BOARD_NO_VBUS_SENSE (1)
 
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
+#define HSE_VALUE       ((uint32_t)25000000U)
+
 // On-board flash
 // #define SPI_FLASH_MOSI_PIN          (&pin_PA07)
 // #define SPI_FLASH_MISO_PIN          (&pin_PA06)
