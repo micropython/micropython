@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-30 09:11-0400\n"
+"POT-Creation-Date: 2020-05-04 15:41-0400\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -1431,6 +1431,10 @@ msgstr "Zbyt wiele magistrali"
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Zbyt wiele wyświetlaczy"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"

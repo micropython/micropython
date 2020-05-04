@@ -42,8 +42,8 @@
 //|
 //| Accumulates a Characteristic's incoming packets in a FIFO buffer and facilitates packet aware
 //| outgoing writes. A packet's size is either the characteristic length or the maximum transmission
-//| unit (MTU), whichever is smaller. The MTU can change so check `packet_size` before creating a
-//| buffer to store data.
+//| unit (MTU) minus overhead, whichever is smaller. The MTU can change so check `incoming_packet_length`
+//| and `outgoing_packet_length` before creating a buffer to store data.
 //|
 //| When we're the server, we ignore all connections besides the first to subscribe to
 //| notifications.
@@ -51,7 +51,7 @@
 //| .. class:: PacketBuffer(characteristic, *, buffer_size)
 //|
 //|   Monitor the given Characteristic. Each time a new value is written to the Characteristic
-//|   add the newly-written bytes to a FIFO buffer.
+//|   add the newly-written packet of bytes to a FIFO buffer.
 //|
 //|   :param Characteristic characteristic: The Characteristic to monitor.
 //|     It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
@@ -125,6 +125,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_
 //|
 //|     This does not block until the data is sent. It only blocks until the data is pending.
 //|
+//|     :return: number of bytes written. May include header bytes when packet is empty.
+//|     :rtype: int
+//|
 // TODO: Add a kwarg `merge=False` to dictate whether subsequent writes are merged into a pending
 // one.
 STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -149,9 +152,21 @@ STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_
         mp_get_buffer_raise(args[ARG_header].u_obj, &header_bufinfo, MP_BUFFER_READ);
     }
 
-    common_hal_bleio_packet_buffer_write(self, data_bufinfo.buf, data_bufinfo.len,
-                                         header_bufinfo.buf, header_bufinfo.len);
-    return mp_const_none;
+    mp_int_t num_bytes_written = common_hal_bleio_packet_buffer_write(
+        self, data_bufinfo.buf, data_bufinfo.len, header_bufinfo.buf, header_bufinfo.len);
+    if (num_bytes_written < 0) {
+        // TODO: Raise an error if not connected. Right now the not-connected error
+        // is unreliable, because common_hal_bleio_packet_buffer_write()
+        // checks for conn_handle being set, but setting that
+        // can be delayed because conn_handle is discovered by spying on
+        // gatts write events, which may not have been sent yet.
+        //
+        // IDEAL:
+        // mp_raise_bleio_ConnectionError(translate("Not connected"));
+        // TEMPORARY:
+        num_bytes_written = 0;
+    }
+    return MP_OBJ_NEW_SMALL_INT(num_bytes_written);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_packet_buffer_write_obj, 1, bleio_packet_buffer_write);
 
@@ -168,37 +183,72 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_bu
 
 //|   .. attribute:: packet_size
 //|
-//|     Maximum size of a packet.
+//|     `packet_size` is the same as `incoming_packet_length`.
+//|     The name `packet_size` is deprecated and
+//|     will be removed in CircuitPython 6.0.0.
+//|
+//|   .. attribute:: incoming_packet_length
+//|
+//|     Maximum length in bytes of a packet we are reading.
 //|     If the packet is arriving from a remote service via notify or indicate,
-//|     the maximum size is `Connection.max_packet_length`.
+//|     the maximum length is `Connection.max_packet_length`.
 //|     Otherwise it is the ``max_length`` of the :py:class:`~_bleio.Characteristic`.
 //|
-STATIC mp_obj_t bleio_packet_buffer_get_packet_size(mp_obj_t self_in) {
+STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t size = common_hal_bleio_packet_buffer_get_packet_size(self);
+    mp_int_t size = common_hal_bleio_packet_buffer_get_incoming_packet_length(self);
     if (size < 0) {
         mp_raise_ValueError(translate("No connection: size cannot be determined"));
     }
     return MP_OBJ_NEW_SMALL_INT(size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_packet_size_obj, bleio_packet_buffer_get_packet_size);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_incoming_packet_length_obj, bleio_packet_buffer_get_incoming_packet_length);
 
-const mp_obj_property_t bleio_packet_buffer_packet_size_obj = {
+const mp_obj_property_t bleio_packet_buffer_incoming_packet_length_obj = {
     .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_packet_buffer_get_packet_size_obj,
+    .proxy = { (mp_obj_t)&bleio_packet_buffer_get_incoming_packet_length_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+//|   .. attribute:: outgoing_packet_length
+//|
+//|     Maximum length in bytes of a packet we are writing.
+//|     If the packet is being sent via notify or indicate,
+//|     the maximum length is `Connection.max_packet_length`.
+//|     Otherwise it is the ``max_length`` of the :py:class:`~_bleio.Characteristic`.
+//|
+STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in) {
+    bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_int_t size = common_hal_bleio_packet_buffer_get_outgoing_packet_length(self);
+    if (size < 0) {
+        mp_raise_ValueError(translate("No connection: size cannot be determined"));
+    }
+    return MP_OBJ_NEW_SMALL_INT(size);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_outgoing_packet_length_obj, bleio_packet_buffer_get_outgoing_packet_length);
+
+const mp_obj_property_t bleio_packet_buffer_outgoing_packet_length_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_packet_buffer_get_outgoing_packet_length_obj,
                (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
 
 STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&bleio_packet_buffer_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),                     MP_ROM_PTR(&bleio_packet_buffer_deinit_obj) },
 
     // Standard stream methods.
-    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),             MP_ROM_PTR(&bleio_packet_buffer_readinto_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_write),                MP_ROM_PTR(&bleio_packet_buffer_write_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_readinto),               MP_ROM_PTR(&bleio_packet_buffer_readinto_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write),                  MP_ROM_PTR(&bleio_packet_buffer_write_obj) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_packet_size), MP_ROM_PTR(&bleio_packet_buffer_packet_size_obj) },
+    // .packet_size is now an alias for .incoming_packet_length
+    // TODO: It will be removed in 6.0.0.
+    { MP_OBJ_NEW_QSTR(MP_QSTR_packet_size),            MP_ROM_PTR(&bleio_packet_buffer_incoming_packet_length_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_incoming_packet_length), MP_ROM_PTR(&bleio_packet_buffer_incoming_packet_length_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_outgoing_packet_length), MP_ROM_PTR(&bleio_packet_buffer_outgoing_packet_length_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(bleio_packet_buffer_locals_dict, bleio_packet_buffer_locals_dict_table);

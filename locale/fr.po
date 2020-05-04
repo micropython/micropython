@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-30 09:11-0400\n"
+"POT-Creation-Date: 2020-05-04 15:41-0400\n"
 "Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
 "Language-Team: fr\n"
 "Language: fr\n"
@@ -1464,6 +1464,10 @@ msgstr "Trop de bus d'affichage"
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Trop d'affichages"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"

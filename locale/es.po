@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-30 09:11-0400\n"
+"POT-Creation-Date: 2020-05-04 15:41-0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en_US\n"
@@ -1443,6 +1443,10 @@ msgstr "Demasiados buses de pantalla"
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Muchos displays"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
