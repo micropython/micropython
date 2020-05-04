@@ -236,10 +236,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(MP_VFS_LFSx(rmdir_obj), MP_VFS_LFSx(rmdir));
 STATIC mp_obj_t MP_VFS_LFSx(rename)(mp_obj_t self_in, mp_obj_t path_old_in, mp_obj_t path_new_in) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(self_in);
     const char *path_old = MP_VFS_LFSx(make_path)(self, path_old_in);
+    const char *path = mp_obj_str_get_str(path_new_in);
     vstr_t path_new;
     vstr_init(&path_new, vstr_len(&self->cur_dir));
-    vstr_add_strn(&path_new, vstr_str(&self->cur_dir), vstr_len(&self->cur_dir));
-    vstr_add_str(&path_new, mp_obj_str_get_str(path_new_in));
+    if (path[0] != '/') {
+        vstr_add_strn(&path_new, vstr_str(&self->cur_dir), vstr_len(&self->cur_dir));
+    }
+    vstr_add_str(&path_new, path);
     int ret = LFSx_API(rename)(&self->lfs, path_old, vstr_null_terminated_str(&path_new));
     vstr_clear(&path_new);
     if (ret < 0) {
