@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-04 17:26-0400\n"
+"POT-Creation-Date: 2020-05-04 19:52-0400\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1090,7 +1090,7 @@ msgid "No available clocks"
 msgstr ""
 
 #: shared-bindings/_bleio/PacketBuffer.c
-msgid "No connection: size cannot be determined"
+msgid "No connection: length cannot be determined"
 msgstr ""
 
 #: shared-bindings/board/__init__.c
