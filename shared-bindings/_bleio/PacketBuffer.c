@@ -239,7 +239,7 @@ STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_write),                  MP_ROM_PTR(&bleio_packet_buffer_write_obj) },
 
     // .packet_size is now an alias for .incoming_packet_length
-    // TODO: It will be removed in 6.0.0.
+    // TODO: Remove in 6.0.0.
     { MP_OBJ_NEW_QSTR(MP_QSTR_packet_size),            MP_ROM_PTR(&bleio_packet_buffer_incoming_packet_length_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_incoming_packet_length), MP_ROM_PTR(&bleio_packet_buffer_incoming_packet_length_obj) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_outgoing_packet_length), MP_ROM_PTR(&bleio_packet_buffer_outgoing_packet_length_obj) },
