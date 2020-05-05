@@ -39,7 +39,7 @@
 STATIC bool reserved_spi[MAX_SPI];
 STATIC bool never_reset_spi[MAX_SPI];
 
-static void config_periph_pin(const mcu_periph_obj_t *periph) {
+STATIC void config_periph_pin(const mcu_periph_obj_t *periph) {
     IOMUXC_SetPinMux(
         periph->pin->mux_reg, periph->mux_mode,
         periph->input_reg, periph->input_idx,
@@ -152,33 +152,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
         }
     }
-
-    // for (uint32_t i = 0; i < sck_count; ++i) {
-    //     if (mcu_spi_sck_list[i].pin != clock)
-    //         continue;
-
-    //     for (uint32_t j = 0; j < miso_count; ++j) {
-    //         if (mcu_spi_miso_list[j].pin != miso)
-    //             continue;
-
-    //         if (mcu_spi_miso_list[j].bank_idx != mcu_spi_sck_list[i].bank_idx)
-    //             continue;
-
-    //         for (uint32_t k = 0; k < mosi_count; ++k) {
-    //             if (mcu_spi_mosi_list[k].pin != mosi)
-    //                 continue;
-
-    //             if (mcu_spi_mosi_list[k].bank_idx != mcu_spi_miso_list[j].bank_idx)
-    //                 continue;
-
-    //             self->clock = &mcu_spi_sck_list[i];
-    //             self->miso_pin = &mcu_spi_miso_list[j];
-    //             self->mosi_pin = &mcu_spi_mosi_list[k];
-
-    //             break;
-    //         }
-    //     }
-    // }
 
     if (self->clock != NULL && (self->mosi != NULL || self->miso != NULL)) {
         self->spi = mcu_spi_banks[self->clock->bank_idx - 1];
