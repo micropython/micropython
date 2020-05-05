@@ -136,6 +136,9 @@ endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/% bitbangio/OneWire.%
 endif
+ifeq ($(CIRCUITPY_COUNTIO),1)
+SRC_PATTERNS += countio/%
+endif
 ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif
@@ -263,6 +266,8 @@ SRC_COMMON_HAL_ALL = \
 	busio/SPI.c \
 	busio/UART.c \
 	busio/__init__.c \
+	countio/Counter.c \
+	countio/__init__.c \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
 	displayio/ParallelBus.c \
