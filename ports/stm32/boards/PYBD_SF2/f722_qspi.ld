@@ -48,6 +48,7 @@ SECTIONS
     .text_ext :
     {
         . = ALIGN(4);
+        *lib/btstack/*(.text* .rodata*)
         *lib/mbedtls/*(.text* .rodata*)
         *lib/mynewt-nimble/*(.text* .rodata*)
         . = ALIGN(512);
