@@ -31,10 +31,9 @@
 //|     from board import *
 //|
 //|     pin_counter = countio.Counter(board.D1)
-//|     
+//|     #reset the count after 100 counts
 //|     while True:
-//|         count = pin_counter.count
-//|         if count == None 10:
+//|         if pin_counter.count == 100:
 //|             pin_counter.reset()
 //|         print(pin_counter.count)
 //|
