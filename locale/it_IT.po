@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-27 18:34-0700\n"
+"POT-Creation-Date: 2020-05-04 19:52-0400\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -1105,6 +1105,10 @@ msgstr "Nessun pin TX"
 msgid "No available clocks"
 msgstr "Nessun orologio a disposizione"
 
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: length cannot be determined"
+msgstr ""
+
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
 msgstr "Nessun bus %q predefinito"
@@ -1462,6 +1466,10 @@ msgstr ""
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Troppi schermi"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"

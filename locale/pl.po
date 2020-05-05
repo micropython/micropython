@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-27 18:34-0700\n"
+"POT-Creation-Date: 2020-05-04 19:52-0400\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -1090,6 +1090,10 @@ msgstr "Brak nóżki TX"
 msgid "No available clocks"
 msgstr "Brak wolnych zegarów"
 
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: length cannot be determined"
+msgstr ""
+
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
 msgstr "Nie ma domyślnej magistrali %q"
@@ -1433,6 +1437,10 @@ msgstr "Zbyt wiele magistrali"
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Zbyt wiele wyświetlaczy"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
