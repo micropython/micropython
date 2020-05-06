@@ -16,8 +16,8 @@ endif
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
-
-CFLAGS = $(INC) -g -Wall -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
+CWARN = -Wall -Wdouble-promotion -Wfloat-conversion
+CFLAGS = $(INC) $(CWARN) -g -std=c99 $(COPT)
 CFLAGS += -mno-string -mno-multiple -mno-vsx -mno-altivec -nostdlib
 CFLAGS += -mlittle-endian -mstrict-align -msoft-float
 CFLAGS += -Os

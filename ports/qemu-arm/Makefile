@@ -40,7 +40,8 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 
-CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -Werror -std=gnu99 $(COPT) \
+CWARN = -Wall -Werror -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
+CFLAGS += $(INC) $(CWARN) -std=gnu99 $(COPT) \
 	 -ffunction-sections -fdata-sections
 
 #Debugging/Optimization

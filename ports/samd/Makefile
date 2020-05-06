@@ -31,7 +31,8 @@ INC += -I$(TOP)/lib/tinyusb/src
 
 CFLAGS_MCU_SAMD21 = -mtune=cortex-m0plus -mcpu=cortex-m0plus -msoft-float
 CFLAGS_MCU_SAMD51 = -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
+CWARN = -Wall -Werror -Wdouble-promotion
+CFLAGS = $(INC) $(CWARN) -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 LDFLAGS = -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)

@@ -256,11 +256,12 @@ endif
 # these flags are common to C and C++ compilation
 CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields \
 	-mlongcalls -nostdlib \
-	-Wall -Werror -Wno-error=unused-function -Wno-error=unused-but-set-variable \
-	-Wno-error=unused-variable -Wno-error=deprecated-declarations \
 	-DESP_PLATFORM
 
-CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H
+CWARN = -Wall -Werror -Wno-error=unused-function -Wno-error=unused-but-set-variable \
+				-Wno-error=unused-variable -Wno-error=deprecated-declarations
+
+CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) $(CWARN) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H
 CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP) $(INC_NEWLIB)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
@@ -271,7 +272,7 @@ CFLAGS += -DMICROPY_ESP_IDF_4=1
 endif
 
 # this is what ESPIDF uses for c++ compilation
-CXXFLAGS = -std=gnu++11 $(CFLAGS_COMMON) $(INC) $(INC_ESPCOMP)
+CXXFLAGS = -std=gnu++11 $(CFLAGS_COMMON) $(CWARN) $(INC) $(INC_ESPCOMP)
 
 LDFLAGS = -nostdlib -Map=$(@:.elf=.map) --cref
 LDFLAGS += --gc-sections -static -EL
@@ -383,7 +384,7 @@ OBJ_MP += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
 # Only enable this for the MicroPython source: ignore warnings from esp-idf.
-$(OBJ_MP): CFLAGS += -Wdouble-promotion -Wfloat-conversion
+$(OBJ_MP): CWARN += -Wdouble-promotion -Wfloat-conversion
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C)

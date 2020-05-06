@@ -30,7 +30,7 @@ CROSS_COMPILE ?= arm-none-eabi-
 endif
 
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
-CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion $(CFLAGS_TEENSY)
+CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant $(CFLAGS_TEENSY)
 
 INC += -I.
 INC += -I$(TOP)
@@ -38,7 +38,8 @@ INC += -I$(TOP)/ports/stm32
 INC += -I$(BUILD)
 INC += -Icore
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
+CWARN = -Wall -Wpointer-arith -Wdouble-promotion
+CFLAGS = $(INC) $(CWARN) -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
 LDFLAGS = -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
