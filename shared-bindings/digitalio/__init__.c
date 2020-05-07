@@ -38,7 +38,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`digitalio` --- Basic digital pin support
+//| """:mod:`digitalio` --- Basic digital pin support
 //| =================================================
 //|
 //| .. module:: digitalio
@@ -86,7 +86,7 @@
 //|       led.value = True
 //|       time.sleep(0.1)
 //|       led.value = False
-//|       time.sleep(0.1)
+//|       time.sleep(0.1)"""
 //|
 
 STATIC const mp_rom_map_elem_t digitalio_module_globals_table[] = {
