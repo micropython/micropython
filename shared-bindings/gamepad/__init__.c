@@ -29,7 +29,7 @@
 #include "shared-bindings/gamepad/GamePad.h"
 #include "shared-bindings/util.h"
 
-//| :mod:`gamepad` --- Button handling
+//| """:mod:`gamepad` --- Button handling
 //| ==================================
 //|
 //| .. module:: gamepad
@@ -39,7 +39,7 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     GamePad
+//|     GamePad"""
 //|
 STATIC const mp_rom_map_elem_t gamepad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gamepad) },

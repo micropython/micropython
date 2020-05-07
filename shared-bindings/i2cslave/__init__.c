@@ -35,7 +35,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`i2cslave` --- Two wire serial protocol slave
+//| """:mod:`i2cslave` --- Two wire serial protocol slave
 //| ==================================================
 //|
 //| .. module:: i2cslave
@@ -101,7 +101,7 @@
 //|
 //|    Raspberry Pi in particular does not support this with its I2C hw block.
 //|    This can be worked around by using the ``i2c-gpio`` bit banging driver.
-//|    Since the RPi firmware uses the hw i2c, it's not possible to emulate a HAT eeprom.
+//|    Since the RPi firmware uses the hw i2c, it's not possible to emulate a HAT eeprom."""
 //|
 
 STATIC const mp_rom_map_elem_t i2cslave_module_globals_table[] = {
