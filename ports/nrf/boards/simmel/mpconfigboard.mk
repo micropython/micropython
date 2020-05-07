@@ -30,4 +30,4 @@ CIRCUITPY_ULAB = 0
 
 # These defines must be overridden before mpconfigboard.h is included, which is
 # why they are passed on the command line.
-CFLAGS += -DSPIM3_BUFFER_SIZE=0 -DSOFTDEVICE_RAM_SIZE='(32*1024)'
+CFLAGS += -DSPIM3_BUFFER_SIZE=0 -DSOFTDEVICE_RAM_SIZE='(32*1024)' -DNRFX_SPIM3_ENABLED=0
