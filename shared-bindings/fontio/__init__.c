@@ -33,7 +33,7 @@
 #include "shared-bindings/fontio/BuiltinFont.h"
 #include "shared-bindings/fontio/Glyph.h"
 
-//| :mod:`fontio` --- Core font related data structures
+//| """:mod:`fontio` --- Core font related data structures
 //| =========================================================================
 //|
 //| .. module:: fontio
@@ -48,7 +48,7 @@
 //|     :maxdepth: 3
 //|
 //|     BuiltinFont
-//|     Glyph
+//|     Glyph"""
 //|
 
 STATIC const mp_rom_map_elem_t fontio_module_globals_table[] = {

@@ -33,7 +33,7 @@
 #include "shared-bindings/frequencyio/__init__.h"
 #include "shared-bindings/frequencyio/FrequencyIn.h"
 
-//| :mod:`frequencyio` --- Support for frequency based protocols
+//| """:mod:`frequencyio` --- Support for frequency based protocols
 //| =============================================================
 //|
 //| .. module:: frequencyio
@@ -73,7 +73,7 @@
 //| :py:data:`~frequencyio.FrequencyIn.capture_period`, and then sleep 0.1 seconds.
 //| CircuitPython will automatically turn off FrequencyIn capture when it resets all
 //| hardware after program completion. Use ``deinit()`` or a ``with`` statement
-//| to do it yourself.
+//| to do it yourself."""
 //|
 
 STATIC const mp_rom_map_elem_t frequencyio_module_globals_table[] = {

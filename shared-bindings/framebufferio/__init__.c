@@ -28,7 +28,7 @@
 #include "shared-bindings/framebufferio/__init__.h"
 #include "shared-bindings/framebufferio/FramebufferDisplay.h"
 
-//| :mod:`framebufferio` --- Native framebuffer display driving
+//| """:mod:`framebufferio` --- Native framebuffer display driving
 //| =========================================================================
 //|
 //| .. module:: framebufferio
@@ -46,7 +46,7 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     FramebufferDisplay
+//|     FramebufferDisplay"""
 //|
 
 #if CIRCUITPY_FRAMEBUFFERIO
