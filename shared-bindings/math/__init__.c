@@ -38,7 +38,7 @@
 #define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
 
 
-//| :mod:`math` --- mathematical functions
+//| """:mod:`math` --- mathematical functions
 //| ========================================================
 //|
 //| .. module:: math
@@ -46,7 +46,7 @@
 //|   :platform: SAMD21/SAMD51
 //|
 //| The `math` module provides some basic mathematical functions for
-//| working with floating-point numbers.
+//| working with floating-point numbers."""
 //|
 
 STATIC NORETURN void math_error(void) {
@@ -86,117 +86,113 @@ STATIC NORETURN void math_error(void) {
   //| Constants
   //| ---------
   //|
-  //| .. data:: e
+  //| e: Any = ...
+  //| """base of the natural logarithm"""
   //|
-  //|    base of the natural logarithm
-  //|
-  //| .. data:: pi
-  //|
-  //|    the ratio of a circle's circumference to its diameter
+  //| pi: Any = ...
+  //| """the ratio of a circle's circumference to its diameter"""
   //|
 
   //| Functions
   //| ---------
   //|
-  //| .. function:: acos(x)
+  //| def acos(x: Any) -> Any:
+  //|     """Return the inverse cosine of ``x``."""
+  //|     ...
   //|
-  //|   Return the inverse cosine of ``x``.
+  //| def asin(x: Any) -> Any:
+  //|     """Return the inverse sine of ``x``."""
+  //|     ...
   //|
-  //| .. function:: asin(x)
+  //| def atan(x: Any) -> Any:
+  //|     """Return the inverse tangent of ``x``."""
+  //|     ...
   //|
-  //|   Return the inverse sine of ``x``.
+  //| def atan2(y: Any, x: Any) -> Any:
+  //|     """Return the principal value of the inverse tangent of ``y/x``."""
+  //|     ...
   //|
-  //| .. function:: atan(x)
+  //| def ceil(x: Any) -> Any:
+  //|     """Return an integer, being ``x`` rounded towards positive infinity."""
+  //|     ...
   //|
-  //|   Return the inverse tangent of ``x``.
+  //| def copysign(x: Any, y: Any) -> Any:
+  //|     """Return ``x`` with the sign of ``y``."""
+  //|     ...
   //|
-  //| .. function:: atan2(y,x)
+  //| def cos(x: Any) -> Any:
+  //|     """Return the cosine of ``x``."""
+  //|     ...
   //|
-  //|   Return the principal value of the inverse tangent of ``y/x``.
+  //| def degrees(x: Any) -> Any:
+  //|     """Return radians ``x`` converted to degrees."""
+  //|     ...
   //|
-  //| .. function:: ceil(x)
+  //| def exp(x: Any) -> Any:
+  //|     """Return the exponential of ``x``."""
+  //|     ...
   //|
-  //|   Return an integer, being ``x`` rounded towards positive infinity.
+  //| def fabs(x: Any) -> Any:
+  //|     """Return the absolute value of ``x``."""
+  //|     ...
   //|
-  //| .. function:: copysign(x,y)
+  //| def floor(x: Any) -> Any:
+  //|     """Return an integer, being ``x`` rounded towards negative infinity."""
+  //|     ...
   //|
-  //|   Return ``x`` with the sign of ``y``.
+  //| def fmod(x: Any, y: Any) -> Any:
+  //|     """Return the remainder of ``x/y``."""
+  //|     ...
   //|
-  //| .. function:: cos(x)
+  //| def frexp(x: Any) -> Any:
+  //|     """Decomposes a floating-point number into its mantissa and exponent.
+  //|     The returned value is the tuple ``(m, e)`` such that ``x == m * 2**e``
+  //|     exactly.  If ``x == 0`` then the function returns ``(0.0, 0)``, otherwise
+  //|     the relation ``0.5 <= abs(m) < 1`` holds."""
+  //|     ...
   //|
-  //|   Return the cosine of ``x``.
+  //| def isfinite(x: Any) -> Any:
+  //|     """Return ``True`` if ``x`` is finite."""
+  //|     ...
   //|
-  //| .. function:: degrees(x)
+  //| def isinf(x: Any) -> Any:
+  //|     """Return ``True`` if ``x`` is infinite."""
+  //|     ...
   //|
-  //|   Return radians ``x`` converted to degrees.
+  //| def isnan(x: Any) -> Any:
+  //|     """Return ``True`` if ``x`` is not-a-number"""
+  //|     ...
   //|
-  //| .. function:: exp(x)
+  //| def ldexp(x: Any, exp: Any) -> Any:
+  //|     """Return ``x * (2**exp)``."""
+  //|     ...
   //|
-  //|   Return the exponential of ``x``.
+  //| def modf(x: Any) -> Any:
+  //|     """Return a tuple of two floats, being the fractional and integral parts of
+  //|     ``x``.  Both return values have the same sign as ``x``."""
+  //|     ...
   //|
-  //| .. function:: fabs(x)
+  //| def pow(x: Any, y: Any) -> Any:
+  //|     """Returns ``x`` to the power of ``y``."""
   //|
-  //|   Return the absolute value of ``x``.
+  //| def radians(x: Any) -> Any:
+  //|     """Return degrees ``x`` converted to radians."""
   //|
-  //| .. function:: floor(x)
+  //| def sin(x: Any) -> Any:
+  //|     """Return the sine of ``x``."""
+  //|     ...
   //|
-  //|   Return an integer, being ``x`` rounded towards negative infinity.
+  //| def sqrt(x: Any) -> Any:
+  //|     """Returns the square root of ``x``."""
+  //|     ...
   //|
-  //| .. function:: fmod(x,y)
+  //| def tan(x: Any) -> Any: ...
+  //|     """Return the tangent of ``x``."""
+  //|     ...
   //|
-  //|   Return the remainder of ``x/y``.
-  //|
-  //| .. function:: frexp(x)
-  //|
-  //|   Decomposes a floating-point number into its mantissa and exponent.
-  //|   The returned value is the tuple ``(m, e)`` such that ``x == m * 2**e``
-  //|   exactly.  If ``x == 0`` then the function returns ``(0.0, 0)``, otherwise
-  //|   the relation ``0.5 <= abs(m) < 1`` holds.
-  //|
-  //| .. function:: isfinite(x)
-  //|
-  //|   Return ``True`` if ``x`` is finite.
-  //|
-  //| .. function:: isinf(x)
-  //|
-  //|   Return ``True`` if ``x`` is infinite.
-  //|
-  //| .. function:: isnan(x)
-  //|
-  //|   Return ``True`` if ``x`` is not-a-number
-  //|
-  //| .. function:: ldexp(x, exp)
-  //|
-  //|   Return ``x * (2**exp)``.
-  //|
-  //| .. function:: modf(x)
-  //|
-  //|   Return a tuple of two floats, being the fractional and integral parts of
-  //|   ``x``.  Both return values have the same sign as ``x``.
-  //|
-  //| .. function:: pow(x, y)
-  //|
-  //|   Returns ``x`` to the power of ``y``.
-  //|
-  //| .. function:: radians(x)
-  //|
-  //|   Return degrees ``x`` converted to radians.
-  //|
-  //| .. function:: sin(x)
-  //|
-  //|   Return the sine of ``x``.
-  //|
-  //| .. function:: sqrt(x)
-  //|
-  //|   Returns the square root of ``x``.
-  //|
-  //| .. function:: tan(x)
-  //|
-  //|   Return the tangent of ``x``.
-  //|
-  //| .. function:: trunc(x)
-  //|
-  //|   Return an integer, being ``x`` rounded towards 0.
+  //| def trunc(x: Any) -> Any:
+  //|     """Return an integer, being ``x`` rounded towards 0."""
+  //|     ...
   //|
  MATH_FUN_1_ERRCOND(sqrt, sqrt, (x < (mp_float_t)0.0))
 
