@@ -132,7 +132,11 @@ def url_open(url):
         ai = usocket.getaddrinfo(host, 443, 0, usocket.SOCK_STREAM)
     except OSError as e:
         fatal("Unable to resolve %s (no Internet?)" % host, e)
-    # print("Address infos:", ai)
+
+    if debug:
+        print("Address infos:", ai)
+    if len(ai) <= 0:
+        fatal("Unable to resolve %s (no Internet?)" % host)
     ai = ai[0]
 
     s = usocket.socket(ai[0], ai[1], ai[2])
