@@ -11,15 +11,15 @@
 
 //| .. currentmodule:: countio
 //|
-//| :class:`Counter` -- Track the count of edge transistions (pulses) on a given pin
+//| :class:`Counter` -- Track the count of falling edge transistions (pulses) on a given pin
 //| ====================================================================================
 //|
-//| Counter will keep track of the number of edge transistions (pulses) on a given pin
+//| Counter will keep track of the number of falling edge transistions (pulses) on a given pin
 //|
 //| .. class:: Counter(pin_a)
 //|
 //|   Create an Counter object associated with the given pin. It tracks the number of 
-//|   pulses relative when the object is contructed.
+//|   falling pulses relative when the object is constructed.
 //|
 //|   :param ~microcontroller.Pin pin_a: Pin to read pulses from.
 //|   
