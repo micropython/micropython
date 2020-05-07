@@ -5,14 +5,15 @@
 # functins pulls them into the build and then iram overflows.
 # In addition to the EDP-IDF function a good number of libc functions were pulled in manually.
 #
-# Running the 'all' target in this makefile generates a fresh list and then compares whether
+# Running the 'port_fun_new' target in this makefile generates a fresh list and then compares whether
 # anything new shows up compared to the existing function list. These must then be added manually as
 # desired.
 
 # Start by pulling in common makefile (used to build firmware and native modules)
-include esp32-common.mk
+#MPY_DYNRUNTIME := 1
+include Makefile
 
-all: $(BUILD)/port_fun_new.inc
+port_fun_new: $(BUILD)/port_fun_new.inc
 	$(Q)if [ ! -s $< ]; then echo "No new functions"; else echo `wc -l <$<`' new functions, see' $<; fi
 
 
