@@ -10,7 +10,6 @@ _IRQ_CENTRAL_DISCONNECT = const(1 << 1)
 _IRQ_GATTS_WRITE = const(1 << 2)
 _IRQ_PERIPHERAL_CONNECT = const(1 << 6)
 _IRQ_PERIPHERAL_DISCONNECT = const(1 << 7)
-_IRQ_GATTC_SERVICE_RESULT = const(1 << 8)
 _IRQ_GATTC_CHARACTERISTIC_RESULT = const(1 << 9)
 _IRQ_GATTC_READ_RESULT = const(1 << 11)
 _IRQ_GATTC_WRITE_STATUS = const(1 << 12)
@@ -50,7 +49,7 @@ def irq(event, data):
     elif event == _IRQ_GATTC_CHARACTERISTIC_RESULT:
         # conn_handle, def_handle, value_handle, properties, uuid = data
         if data[-1] == CHAR_UUID:
-            print("_IRQ_GATTC_SERVICE_RESULT", data[-1])
+            print("_IRQ_GATTC_CHARACTERISTIC_RESULT", data[-1])
             value_handle = data[2]
     elif event == _IRQ_GATTC_READ_RESULT:
         print("_IRQ_GATTC_READ_RESULT", data[-1])
