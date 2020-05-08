@@ -295,6 +295,11 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
         }
 
         switch (mp_obj_str_get_qstr(args[1])) {
+            case MP_QSTR_gap_name: {
+                const uint8_t *buf;
+                size_t len = mp_bluetooth_gap_get_device_name(&buf);
+                return mp_obj_new_bytes(buf, len);
+            }
             case MP_QSTR_mac: {
                 uint8_t addr[6];
                 mp_bluetooth_get_device_addr(addr);
@@ -315,6 +320,13 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
             if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
                 mp_map_elem_t *e = &kwargs->table[i];
                 switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_gap_name: {
+                        mp_buffer_info_t bufinfo;
+                        mp_get_buffer_raise(e->value, &bufinfo, MP_BUFFER_READ);
+                        int ret = mp_bluetooth_gap_set_device_name(bufinfo.buf, bufinfo.len);
+                        bluetooth_handle_errno(ret);
+                        break;
+                    }
                     case MP_QSTR_rxbuf: {
                         // Determine new buffer sizes
                         mp_int_t ringbuf_alloc = mp_obj_get_int(e->value);

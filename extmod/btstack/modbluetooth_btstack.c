@@ -37,9 +37,19 @@
 
 #define DEBUG_EVENT_printf(...) //printf(__VA_ARGS__)
 
+#ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
+#define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY BTSTACK"
+#endif
+
 // How long to wait for a controller to init/deinit.
 // Some controllers can take up to 5-6 seconds in normal operation.
 STATIC const uint32_t BTSTACK_INIT_DEINIT_TIMEOUT_MS = 15000;
+
+// We need to know the attribute handle for the GAP device name (see GAP_DEVICE_NAME_UUID)
+// so it can be put into the gatts_db before registering the services, and accessed
+// efficiently when requesting an attribute in att_read_callback.  Because this is the
+// first characteristic of the first service, it always has a handle value of 3.
+STATIC const uint16_t BTSTACK_GAP_DEVICE_NAME_HANDLE = 3;
 
 volatile int mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
 
@@ -250,6 +260,12 @@ int mp_bluetooth_init(void) {
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = m_new0(mp_bluetooth_btstack_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db);
 
+    // Set the default GAP device name.
+    const char *gap_name = MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME;
+    size_t gap_len = strlen(gap_name);
+    mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, BTSTACK_GAP_DEVICE_NAME_HANDLE, gap_len);
+    mp_bluetooth_gap_set_device_name((const uint8_t *)gap_name, gap_len);
+
     mp_bluetooth_btstack_port_init();
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_STARTING;
 
@@ -344,6 +360,19 @@ void mp_bluetooth_get_device_addr(uint8_t *addr) {
     mp_hal_get_mac(MP_HAL_MAC_BDADDR, addr);
 }
 
+size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf) {
+    uint8_t *value = NULL;
+    size_t value_len = 0;
+    mp_bluetooth_gatts_db_read(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, BTSTACK_GAP_DEVICE_NAME_HANDLE, &value, &value_len);
+    *buf = value;
+    return value_len;
+}
+
+int mp_bluetooth_gap_set_device_name(const uint8_t *buf, size_t len) {
+    mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, BTSTACK_GAP_DEVICE_NAME_HANDLE, buf, len);
+    return 0;
+}
+
 int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
     DEBUG_EVENT_printf("mp_bluetooth_gap_advertise_start\n");
     uint16_t adv_int_min = interval_us / 625;
@@ -396,7 +425,9 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
         att_db_util_init();
 
         att_db_util_add_service_uuid16(GAP_SERVICE_UUID);
-        att_db_util_add_characteristic_uuid16(GAP_DEVICE_NAME_UUID, ATT_PROPERTY_READ, ATT_SECURITY_NONE, ATT_SECURITY_NONE, (uint8_t *)"MPY BTSTACK", 11);
+        uint16_t handle = att_db_util_add_characteristic_uuid16(GAP_DEVICE_NAME_UUID, ATT_PROPERTY_READ | ATT_PROPERTY_DYNAMIC, ATT_SECURITY_NONE, ATT_SECURITY_NONE, NULL, 0);
+        assert(handle == BTSTACK_GAP_DEVICE_NAME_HANDLE);
+        (void)handle;
 
         att_db_util_add_service_uuid16(0x1801);
         att_db_util_add_characteristic_uuid16(0x2a05, ATT_PROPERTY_READ, ATT_SECURITY_NONE, ATT_SECURITY_NONE, NULL, 0);

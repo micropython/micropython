@@ -51,6 +51,10 @@ Configuration
       Note: on some ports, accessing this value requires that the interface is
       active (so that the MAC address can be queried from the controller).
 
+    - ``'gap_name'``: Get/set the GAP device name used by service 0x1800,
+      characteristic 0x2a00.  This can be set at any time and changed multiple
+      times.
+
     - ``'rxbuf'``: Get/set the size in bytes of the internal buffer used to store
       incoming events.  This buffer is global to the entire BLE driver and so
       handles incoming data for all events, including all characteristics.

@@ -40,8 +40,8 @@
 #include "nimble/nimble_port.h"
 #include "services/gap/ble_svc_gap.h"
 
-#ifndef MICROPY_PY_BLUETOOTH_DEFAULT_NAME
-#define MICROPY_PY_BLUETOOTH_DEFAULT_NAME "PYBD"
+#ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
+#define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY NIMBLE"
 #endif
 
 #define DEBUG_EVENT_printf(...) //printf(__VA_ARGS__)
@@ -191,7 +191,7 @@ STATIC void sync_cb(void) {
         assert(rc == 0);
     }
 
-    ble_svc_gap_device_name_set(MICROPY_PY_BLUETOOTH_DEFAULT_NAME);
+    ble_svc_gap_device_name_set(MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME);
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE;
 }
@@ -350,6 +350,22 @@ void mp_bluetooth_get_device_addr(uint8_t *addr) {
     #else
     mp_hal_get_mac(MP_HAL_MAC_BDADDR, addr);
     #endif
+}
+
+size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf) {
+    const char *name = ble_svc_gap_device_name();
+    *buf = (const uint8_t *)name;
+    return strlen(name);
+}
+
+int mp_bluetooth_gap_set_device_name(const uint8_t *buf, size_t len) {
+    char tmp_buf[MYNEWT_VAL(BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH) + 1];
+    if (len + 1 > sizeof(tmp_buf)) {
+        return MP_EINVAL;
+    }
+    memcpy(tmp_buf, buf, len);
+    tmp_buf[len] = '\0';
+    return ble_hs_err_to_errno(ble_svc_gap_device_name_set(tmp_buf));
 }
 
 int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
