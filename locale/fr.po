@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-20 17:57-0500\n"
+"POT-Creation-Date: 2020-05-08 17:15-0500\n"
 "PO-Revision-Date: 2020-03-29 17:02+0000\n"
 "Last-Translator: Weblate Admin <jepler@unpythonic.net>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
@@ -35,8 +35,8 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 "\n"
-"Veuillez signaler un problème avec le contenu de votre lecteur CIRCUITPY à l'"
-"adresse\n"
+"Veuillez signaler un problème avec le contenu de votre lecteur CIRCUITPY à "
+"l'adresse\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
 #: supervisor/shared/safe_mode.c
@@ -1139,6 +1139,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Pas de support matériel pour cette broche"
+
+#: shared-bindings/time/__init__.c
+msgid "No long integer support"
+msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "No more timers available on this pin."
