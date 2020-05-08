@@ -188,6 +188,14 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     tm->tm_yday = mp_obj_get_int(elems[7]);
     // elems[8] tm_isdst is not supported
 }
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+// Function to return a NotImplementedError on platforms that don't
+// support long integers
+STATIC mp_obj_t time_not_implemented(void) {
+    mp_raise_NotImplementedError(translate("No long integer support"));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(time_not_implemented_obj, time_not_implemented);
+#endif
 
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
@@ -306,6 +314,12 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
     { MP_ROM_QSTR(MP_QSTR_monotonic_ns), MP_ROM_PTR(&time_monotonic_ns_obj) },
+    #endif
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_not_implemented_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_not_implemented_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_not_implemented_obj) },
+    { MP_ROM_QSTR(MP_QSTR_monotonic_ns), MP_ROM_PTR(&time_not_implemented_obj) },
     #endif
 };
 
