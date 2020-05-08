@@ -33,7 +33,7 @@
 #include "shared-bindings/_pixelbuf/PixelBuf.h"
 
 
-//| :mod:`_pixelbuf` --- Fast RGB(W) pixel buffer and helpers
+//| """:mod:`_pixelbuf` --- Fast RGB(W) pixel buffer and helpers
 //| ===========================================================
 
 //| .. module:: _pixelbuf
@@ -50,13 +50,13 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     PixelBuf
-
-
-//| .. function:: wheel(n)
+//|     PixelBuf"""
 //|
-//|     C implementation of the common wheel() function found in many examples.
-//|     Returns the colorwheel RGB value as an integer value for n (usable in :py:class:`PixelBuf`, neopixel, and dotstar).
+
+//| def wheel(n: Any) -> Any:
+//|     """C implementation of the common wheel() function found in many examples.
+//|     Returns the colorwheel RGB value as an integer value for n (usable in :py:class:`PixelBuf`, neopixel, and dotstar)."""
+//|     ...
 //|
 
 STATIC mp_obj_t pixelbuf_wheel(mp_obj_t n) {
