@@ -41,6 +41,7 @@
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
+#include "common-hal/busio/SPI.h"
 
 #include "reset.h"
 
@@ -267,7 +268,7 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-    //reset_sercoms();
+    spi_reset();
 
 #if CIRCUITPY_AUDIOIO
     audio_dma_reset();
