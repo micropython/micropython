@@ -1,5 +1,6 @@
 # Test that the esp32's socket module performs DNS resolutions on bind and connect
 import sys
+
 if sys.implementation.name == "micropython" and sys.platform != "esp32":
     print("SKIP")
     raise SystemExit
