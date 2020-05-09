@@ -62,13 +62,12 @@ static bool wait_for_flash_ready(void) {
     if (flash_device->no_ready_bit){
         // For NVM without a ready bit in status register
         return ok;
-    } else {
-        uint8_t read_status_response[1] = {0x00};
-        do {
-            ok = spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
-        } while (ok && (read_status_response[0] & 0x3) != 0);
-        return ok;
     }
+    uint8_t read_status_response[1] = {0x00};
+    do {
+        ok = spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
+    } while (ok && (read_status_response[0] & 0x3) != 0);
+    return ok;
 }
 
 // Turn on the write enable bit so we can program and erase the flash.
@@ -171,10 +170,9 @@ static bool erase_sector(uint32_t sector_address) {
     }
     if (flash_device->no_erase_cmd) {
         return true;
-    } else {
+    }
     spi_flash_sector_command(CMD_SECTOR_ERASE, sector_address);
     return true;
-    }
 }
 
 // Sector is really 24 bits.
