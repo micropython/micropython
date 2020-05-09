@@ -99,7 +99,7 @@ Use `CTRL-D` (i.e. EOF) to exit the shell.
 Learn about command-line options (in particular, how to increase heap size
 which may be needed for larger applications):
 
-    $ ./micropython --help
+    $ ./micropython -h
 
 Run complete testsuite:
 
