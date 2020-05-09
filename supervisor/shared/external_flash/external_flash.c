@@ -131,31 +131,30 @@ static bool page_erased(uint32_t sector_address) {
     if (flash_device->no_erase_cmd){
         // skip this if device doesn't have an erase command.
         return true;
-    } else {
-        uint8_t short_buffer[4];
-        if (read_flash(sector_address, short_buffer, 4)) {
-            for (uint16_t i = 0; i < 4; i++) {
-                if (short_buffer[i] != 0xff) {
-                    return false;
-                }
-            }
-        } else {
-            return false;
-        }
-
-        // Now check the full length.
-        uint8_t full_buffer[FILESYSTEM_BLOCK_SIZE];
-        if (read_flash(sector_address, full_buffer, FILESYSTEM_BLOCK_SIZE)) {
-            for (uint16_t i = 0; i < FILESYSTEM_BLOCK_SIZE; i++) {
-                if (short_buffer[i] != 0xff) {
-                    return false;
-                }
-            }
-        } else {
-            return false;
-        }
-        return true;
     }
+    uint8_t short_buffer[4];
+    if (read_flash(sector_address, short_buffer, 4)) {
+        for (uint16_t i = 0; i < 4; i++) {
+            if (short_buffer[i] != 0xff) {
+                return false;
+            }
+        }
+    } else {
+        return false;
+    }
+
+    // Now check the full length.
+    uint8_t full_buffer[FILESYSTEM_BLOCK_SIZE];
+    if (read_flash(sector_address, full_buffer, FILESYSTEM_BLOCK_SIZE)) {
+        for (uint16_t i = 0; i < FILESYSTEM_BLOCK_SIZE; i++) {
+            if (short_buffer[i] != 0xff) {
+                return false;
+            }
+        }
+    } else {
+        return false;
+    }
+    return true;
 }
 
 // Erases the given sector. Make sure you copied all of the data out of it you
@@ -166,16 +165,15 @@ static bool erase_sector(uint32_t sector_address) {
     if (flash_device->no_erase_cmd){
         // skip this if device doesn't have an erase command.
         return true;
-    } else {
-        if (!wait_for_flash_ready() || !write_enable()) {
-            return false;
-        }
-        if (flash_device->no_erase_cmd) {
-            return true;
-        } else {
-        spi_flash_sector_command(CMD_SECTOR_ERASE, sector_address);
+    }
+    if (!wait_for_flash_ready() || !write_enable()) {
+        return false;
+    }
+    if (flash_device->no_erase_cmd) {
         return true;
-        }
+    } else {
+    spi_flash_sector_command(CMD_SECTOR_ERASE, sector_address);
+    return true;
     }
 }
 
