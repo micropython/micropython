@@ -244,13 +244,14 @@ void supervisor_flash_init(void) {
     do {
         spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
     } while ((read_status_response[0] & 0x1) != 0);
-
-    if (!(flash_device->no_reset_cmd)){
+    if (!flash_device->single_status_byte) {
         // The suspended write/erase bit should be low.
         do {
             spi_flash_read_command(CMD_READ_STATUS2, read_status_response, 1);
         } while ((read_status_response[0] & 0x80) != 0);
-    } else {
+    }
+
+    if (!(flash_device->no_reset_cmd)){
         spi_flash_command(CMD_ENABLE_RESET);
         spi_flash_command(CMD_RESET);
     }
