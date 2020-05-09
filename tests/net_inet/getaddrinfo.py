@@ -15,10 +15,9 @@ def test_non_existant():
 
 def test_bogus():
     try:
-        res = socket.getaddrinfo("..", 80)
+        res = socket.getaddrinfo("hey.!!$$", 80)
         print("getaddrinfo returned", res)
     except OSError as e:
-        # print(e)
         print("getaddrinfo raised")
     except Exception as e:
         print("getaddrinfo raised")  # CPython raises UnicodeError!?
