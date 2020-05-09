@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
- * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,30 +24,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
+#include <stddef.h>
 
-#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/rgbmatrix/RGBMatrix.h"
 
-#include "py/ringbuf.h"
-#include "py/obj.h"
-#include "periph.h"
+#include STM32_HAL_H
 
-#include "fsl_lpuart.h"
+extern void _PM_IRQ_HANDLER(void);
 
-typedef struct {
-    mp_obj_base_t base;
-    LPUART_Type *uart;
-    lpuart_handle_t handle;
-    uint8_t* ringbuf;
-    bool rx_ongoing;
-    uint32_t baudrate;
-    uint8_t character_bits;
-    uint32_t timeout_ms;
-    const mcu_periph_obj_t *rx_pin;
-    const mcu_periph_obj_t *tx_pin;
-    const mcu_periph_obj_t *cts_pin;
-    const mcu_periph_obj_t *rts_pin;
-} busio_uart_obj_t;
+void *common_hal_rgbmatrix_timer_allocate() {
+    // TODO(jepler) properly handle resource allocation including never-reset
+    return TIM6;
+}
 
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
+
+void common_hal_rgbmatrix_timer_enable(void* ptr) {
+    HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
+}
+
+void common_hal_rgbmatrix_timer_disable(void* ptr) {
+    TIM_TypeDef *tim = (TIM_TypeDef*)ptr;
+    tim->DIER &= ~TIM_DIER_UIE;
+    HAL_NVIC_DisableIRQ(TIM6_DAC_IRQn);
+}
+
+void common_hal_rgbmatrix_timer_free(void* ptr) {
+    common_hal_rgbmatrix_timer_disable(ptr);
+    // TODO(jepler) properly handle resource allocation including never-reset
+}

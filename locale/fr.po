@@ -8,14 +8,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-27 18:34-0700\n"
-"PO-Revision-Date: 2019-04-14 20:05+0100\n"
-"Last-Translator: Pierrick Couturier <arofarn@arofarn.info>\n"
-"Language-Team: fr\n"
+"POT-Creation-Date: 2020-05-06 17:47+0800\n"
+"PO-Revision-Date: 2020-05-05 20:24+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
+"circuitpython-master/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: main.c
 msgid ""
@@ -31,12 +34,18 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Veuillez signaler un problème avec le contenu de votre lecteur CIRCUITPY à "
+"l'adresse\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "To exit, please reset the board without "
 msgstr ""
+"\n"
+"Pour repartir, veuillez réinitialiser sans "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -48,7 +57,7 @@ msgstr "  Fichier \"%q\", ligne %d"
 
 #: main.c
 msgid " output:\n"
-msgstr " sortie:\n"
+msgstr " sortie :\n"
 
 #: py/objstr.c
 #, c-format
@@ -75,14 +84,12 @@ msgstr "les indices %q doivent être des entiers, pas %s"
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/Shape.c
-#, fuzzy
 msgid "%q must be >= 1"
-msgstr "%d doit être >=1"
+msgstr "%q doit être >=1"
 
 #: shared-bindings/fontio/BuiltinFont.c
-#, fuzzy
 msgid "%q should be an int"
-msgstr "y doit être un entier (int)"
+msgstr "%q doit être un entier (int)"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -113,7 +120,7 @@ msgid "'%s' expects an FPU register"
 msgstr "'%s' attend un registre FPU"
 
 #: py/emitinlinethumb.c
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' attend une adresse de la forme [a, b]"
 
@@ -144,11 +151,11 @@ msgstr "'%s' l'entier 0x%x ne correspond pas au masque 0x%x"
 
 #: py/runtime.c
 msgid "'%s' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "L'objet '%s' ne peut pas assigner l'attribut '%q'"
 
 #: py/proto.c
 msgid "'%s' object does not support '%q'"
-msgstr ""
+msgstr "L'objet '%s' ne prends pas en charge '%q'"
 
 #: py/obj.c
 #, c-format
@@ -198,7 +205,7 @@ msgstr "'align' nécessite 1 argument"
 
 #: py/compile.c
 msgid "'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'async for' ou 'async with' sans fonction async"
 
 #: py/compile.c
 msgid "'await' outside function"
@@ -440,6 +447,10 @@ msgstr "Le tampon d'octets doit être de 16 octets."
 msgid "Bytes must be between 0 and 255."
 msgstr "Les octets 'bytes' doivent être entre 0 et 255"
 
+#: shared-bindings/aesio/aes.c
+msgid "CBC blocks must be multiples of 16 bytes"
+msgstr ""
+
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr ""
@@ -675,6 +686,10 @@ msgstr "La rotation d'affichage doit se faire par incréments de 90 degrés"
 msgid "Drive mode not used when direction is input."
 msgstr "Le mode Drive n'est pas utilisé quand la direction est 'input'."
 
+#: shared-bindings/aesio/aes.c
+msgid "ECB only operates on 16 bytes at a time"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -686,7 +701,7 @@ msgstr "Canal EXTINT déjà utilisé"
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
 
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -814,6 +829,11 @@ msgstr ""
 #: extmod/machine_i2c.c
 msgid "I2C operation not supported"
 msgstr "opération sur I2C non supportée"
+
+#: shared-bindings/aesio/aes.c
+#, c-format
+msgid "IV must be %d bytes long"
+msgstr ""
 
 #: py/persistentcode.c
 msgid ""
@@ -1000,6 +1020,10 @@ msgstr "Fichier WAVE invalide"
 msgid "Invalid word/bit length"
 msgstr ""
 
+#: shared-bindings/aesio/aes.c
+msgid "Key must be 16, 24, or 32 bytes long"
+msgstr ""
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "La partie gauche de l'argument nommé doit être un identifiant"
@@ -1108,6 +1132,10 @@ msgstr "Pas de broche TX"
 msgid "No available clocks"
 msgstr "Pas d'horloge disponible"
 
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: length cannot be determined"
+msgstr ""
+
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
 msgstr "Pas de bus %q par défaut"
@@ -1128,6 +1156,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Pas de support matériel pour cette broche"
+
+#: shared-bindings/aesio/aes.c
+msgid "No key was specified"
+msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1319,6 +1351,10 @@ msgstr "Objet en lecture seule"
 msgid "Refresh too soon"
 msgstr ""
 
+#: shared-bindings/aesio/aes.c
+msgid "Requested AES mode is unsupported"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Canal droit non supporté"
@@ -1382,6 +1418,10 @@ msgstr "Tranche et valeur de tailles différentes"
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Tranches non supportées"
+
+#: shared-bindings/aesio/aes.c
+msgid "Source and destination buffers must be the same length"
+msgstr ""
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1466,6 +1506,10 @@ msgstr "Trop de bus d'affichage"
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Trop d'affichages"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"

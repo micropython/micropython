@@ -127,6 +127,7 @@ size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *sel
             // self->value is set by evt handler.
             return common_hal_bleio_gattc_read(self->handle, conn_handle, buf, len);
         } else {
+            // conn_handle is ignored for non-system attributes.
             return common_hal_bleio_gatts_read(self->handle, conn_handle, buf, len);
         }
     }
@@ -152,6 +153,7 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
                                          (self->props & CHAR_PROP_WRITE_NO_RESPONSE));
         } else {
             // Always write the value locally even if no connections are active.
+            // conn_handle is ignored for non-system attributes, so we use BLE_CONN_HANDLE_INVALID.
             common_hal_bleio_gatts_write(self->handle, BLE_CONN_HANDLE_INVALID, bufinfo);
             // Check to see if we need to notify or indicate any active connections.
             for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {

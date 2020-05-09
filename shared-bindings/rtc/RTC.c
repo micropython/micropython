@@ -65,7 +65,7 @@ STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, const
 //|         import time
 //|
 //|         r = rtc.RTC()
-//|         r.datetime = rtctime.struct_time((2019, 5, 29, 15, 14, 15, 0, -1, -1))
+//|         r.datetime = time.struct_time((2019, 5, 29, 15, 14, 15, 0, -1, -1))
 //|
 //|
 //|       Once set, the RTC will automatically update this value as time passes. You can read this

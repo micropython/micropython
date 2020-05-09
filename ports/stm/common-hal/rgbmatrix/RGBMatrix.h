@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
- * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,30 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
 
-#include "common-hal/microcontroller/Pin.h"
+void *common_hal_rgbmatrix_timer_allocate(void);
+void common_hal_rgbmatrix_timer_enable(void*);
+void common_hal_rgbmatrix_timer_disable(void*);
+void common_hal_rgbmatrix_timer_free(void*);
 
-#include "py/ringbuf.h"
-#include "py/obj.h"
-#include "periph.h"
-
-#include "fsl_lpuart.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    LPUART_Type *uart;
-    lpuart_handle_t handle;
-    uint8_t* ringbuf;
-    bool rx_ongoing;
-    uint32_t baudrate;
-    uint8_t character_bits;
-    uint32_t timeout_ms;
-    const mcu_periph_obj_t *rx_pin;
-    const mcu_periph_obj_t *tx_pin;
-    const mcu_periph_obj_t *cts_pin;
-    const mcu_periph_obj_t *rts_pin;
-} busio_uart_obj_t;
-
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
+#endif

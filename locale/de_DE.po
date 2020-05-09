@@ -7,15 +7,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-27 18:34-0700\n"
-"PO-Revision-Date: 2018-07-27 11:55-0700\n"
-"Last-Translator: Pascal Deneaux\n"
-"Language-Team: Sebastian Plamauer, Pascal Deneaux\n"
+"POT-Creation-Date: 2020-05-06 17:47+0800\n"
+"PO-Revision-Date: 2020-04-30 17:01+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Language-Team: German <https://later.unpythonic.net/projects/circuitpython/"
+"circuitpython-master/de/>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.1.1\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: main.c
 msgid ""
@@ -31,12 +33,17 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Bitte melden Sie ein Problem mit dem Inhalt Ihres CIRCUITPY-Laufwerks unter\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "To exit, please reset the board without "
 msgstr ""
+"\n"
+"Zum Beenden setzen Sie bitte die Karte ohne "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -142,11 +149,11 @@ msgstr "'%s' Integer 0x%x passt nicht in Maske 0x%x"
 
 #: py/runtime.c
 msgid "'%s' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "Das Objekt '%s' kann das Attribut '%q' nicht zuweisen"
 
 #: py/proto.c
 msgid "'%s' object does not support '%q'"
-msgstr ""
+msgstr "Das Objekt '%s' unterstützt '%q' nicht"
 
 #: py/obj.c
 #, c-format
@@ -196,7 +203,7 @@ msgstr "'align' erfordert genau ein Argument"
 
 #: py/compile.c
 msgid "'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'async for' oder 'async with' außerhalb der asynchronen Funktion"
 
 #: py/compile.c
 msgid "'await' outside function"
@@ -240,7 +247,7 @@ msgstr ""
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
-msgstr ""
+msgstr "0.0 zu einer komplexen Potenz"
 
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
@@ -432,6 +439,10 @@ msgstr "Der Puffer muss 16 Bytes lang sein"
 #: shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Ein Bytes kann nur Werte zwischen 0 und 255 annehmen."
+
+#: shared-bindings/aesio/aes.c
+msgid "CBC blocks must be multiples of 16 bytes"
+msgstr ""
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -664,6 +675,10 @@ msgstr "Die Rotation der Anzeige muss in 90-Grad-Schritten erfolgen"
 msgid "Drive mode not used when direction is input."
 msgstr "Drive mode wird nicht verwendet, wenn die Richtung input ist."
 
+#: shared-bindings/aesio/aes.c
+msgid "ECB only operates on 16 bytes at a time"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -675,7 +690,7 @@ msgstr "EXTINT Kanal ist schon in Benutzung"
 msgid "Error in regex"
 msgstr "Fehler in regex"
 
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -803,6 +818,11 @@ msgstr ""
 #: extmod/machine_i2c.c
 msgid "I2C operation not supported"
 msgstr "I2C-operation nicht unterstützt"
+
+#: shared-bindings/aesio/aes.c
+#, c-format
+msgid "IV must be %d bytes long"
+msgstr ""
 
 #: py/persistentcode.c
 msgid ""
@@ -985,6 +1005,10 @@ msgstr "Ungültige wave Datei"
 msgid "Invalid word/bit length"
 msgstr ""
 
+#: shared-bindings/aesio/aes.c
+msgid "Key must be 16, 24, or 32 bytes long"
+msgstr ""
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "LHS des Schlüsselwortarguments muss eine id sein"
@@ -1094,6 +1118,10 @@ msgstr "Kein TX Pin"
 msgid "No available clocks"
 msgstr "Keine Taktgeber verfügbar"
 
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: length cannot be determined"
+msgstr ""
+
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
 msgstr "Kein Standard %q Bus"
@@ -1114,6 +1142,10 @@ msgstr "Keine Hardwareunterstützung am clk Pin"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Keine Hardwareunterstützung an diesem Pin"
+
+#: shared-bindings/aesio/aes.c
+msgid "No key was specified"
+msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1300,6 +1332,10 @@ msgstr "Schreibgeschützte Objekt"
 msgid "Refresh too soon"
 msgstr "Zu früh neu geladen"
 
+#: shared-bindings/aesio/aes.c
+msgid "Requested AES mode is unsupported"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Rechter Kanal wird nicht unterstützt"
@@ -1362,6 +1398,10 @@ msgstr "Slice und Wert (value) haben unterschiedliche Längen."
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Slices werden nicht unterstützt"
+
+#: shared-bindings/aesio/aes.c
+msgid "Source and destination buffers must be the same length"
+msgstr ""
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1447,6 +1487,10 @@ msgstr ""
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Zu viele displays"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"

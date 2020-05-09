@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
- * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,30 +24,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_AESIO__INIT__H
+#define MICROPY_INCLUDED_SHARED_MODULE_AESIO__INIT__H
 
-#include "common-hal/microcontroller/Pin.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-#include "py/ringbuf.h"
 #include "py/obj.h"
-#include "periph.h"
+#include "py/proto.h"
 
-#include "fsl_lpuart.h"
+#include "shared-module/aesio/aes.h"
+
+// These values were chosen to correspond with the values
+// present in pycrypto.
+enum AES_MODE {
+    AES_MODE_ECB = 1,
+    AES_MODE_CBC = 2,
+    AES_MODE_CTR = 6,
+};
 
 typedef struct {
     mp_obj_base_t base;
-    LPUART_Type *uart;
-    lpuart_handle_t handle;
-    uint8_t* ringbuf;
-    bool rx_ongoing;
-    uint32_t baudrate;
-    uint8_t character_bits;
-    uint32_t timeout_ms;
-    const mcu_periph_obj_t *rx_pin;
-    const mcu_periph_obj_t *tx_pin;
-    const mcu_periph_obj_t *cts_pin;
-    const mcu_periph_obj_t *rts_pin;
-} busio_uart_obj_t;
 
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
+    // The tinyaes context
+    struct AES_ctx ctx;
+
+    // Which AES mode this instance of the object is configured to use
+    enum AES_MODE mode;
+
+    // Counter for running in CTR mode
+    uint32_t counter;
+} aesio_aes_obj_t;
+
+#endif // MICROPY_INCLUDED_SHARED_MODULE_AESIO__INIT__H

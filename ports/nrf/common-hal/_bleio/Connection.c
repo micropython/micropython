@@ -371,6 +371,11 @@ mp_float_t common_hal_bleio_connection_get_connection_interval(bleio_connection_
     return 1.25f * self->conn_params.min_conn_interval;
 }
 
+// Return the current negotiated MTU length, minus overhead.
+mp_int_t common_hal_bleio_connection_get_max_packet_length(bleio_connection_internal_t *self) {
+    return (self->mtu == 0 ? BLE_GATT_ATT_MTU_DEFAULT : self->mtu) - 3;
+}
+
 void common_hal_bleio_connection_set_connection_interval(bleio_connection_internal_t *self, mp_float_t new_interval) {
     self->conn_params_updating = true;
     uint16_t interval = new_interval / 1.25f;
@@ -751,4 +756,17 @@ mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t* interna
     internal->connection_obj = connection;
 
     return MP_OBJ_FROM_PTR(connection);
+}
+
+// Find the connection that uses the given conn_handle. Return NULL if not found.
+bleio_connection_internal_t *bleio_conn_handle_to_connection(uint16_t conn_handle) {
+    bleio_connection_internal_t *connection;
+    for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+        connection = &bleio_connections[i];
+        if (connection->conn_handle == conn_handle) {
+            return connection;
+        }
+    }
+
+    return NULL;
 }
