@@ -212,6 +212,9 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
 
 def run_feature_check(pyb, args, base_path, test_file):
+    if pyb is not None and test_file.startswith("repl_"):
+        # REPL feature tests will not run via pyboard because they require prompt interactivity
+        return b""
     return run_micropython(pyb, args, base_path + "/feature_check/" + test_file, is_special=True)
 
 
