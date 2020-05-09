@@ -50,7 +50,7 @@ inline __attribute__((always_inline))
 static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *out_area) {
     VECTORIO_SHAPE_DEBUG("%p get_screen_area\n", self);
     self->ishape.get_area(self->ishape.shape, out_area);
-    if (self->transpose_xy) {
+    if (self->absolute_transform->transpose_xy) {
         _transpose_area(out_area);
         displayio_area_shift(out_area, self->y, self->x);
     } else {
@@ -76,18 +76,32 @@ void common_hal_vectorio_vector_shape_set_dirty(void *vector_shape) {
 }
 
 
+static displayio_buffer_transform_t null_transform = {
+    .x = 0,
+    .y = 0,
+    .dx = 0,
+    .dy = 0,
+    .scale = 1,
+    .width = 0,
+    .height = 0,
+    .mirror_x = false,
+    .mirror_y = false,
+    .transpose_xy = false
+};
+
+
 void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
         vectorio_ishape_t ishape,
-        mp_obj_t pixel_shader, uint16_t x, uint16_t y, bool transpose_xy) {
+        mp_obj_t pixel_shader, uint16_t x, uint16_t y) {
     VECTORIO_SHAPE_DEBUG("%p vector_shape_construct x:%3d, y:%3d\n", self, x, y);
     self->x = x;
     self->y = y;
     self->pixel_shader = pixel_shader;
     self->ishape = ishape;
-    self->transpose_xy = transpose_xy;
     self->dirty = true;
     _get_screen_area(self, &self->ephemeral_dirty_area);
     self->ephemeral_dirty_area.next = NULL;
+    self->absolute_transform = &null_transform;
 }
 
 
@@ -120,12 +134,6 @@ void common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_in
     }
     self->y = y;
     common_hal_vectorio_vector_shape_set_dirty(self);
-}
-
-
-bool common_hal_vectorio_vector_shape_get_transpose_xy(vectorio_vector_shape_t *self) {
-    VECTORIO_SHAPE_DEBUG("%p get_transpose_xy\n", self);
-    return self->transpose_xy;
 }
 
 
@@ -191,7 +199,7 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
             // Get the target pixel based on the shape's coordinate space
             int16_t pixel_to_get_x;
             int16_t pixel_to_get_y;
-            if (self->transpose_xy) {
+            if (self->absolute_transform->transpose_xy) {
                 pixel_to_get_x = input_pixel.y - self->x;
                 pixel_to_get_y = input_pixel.x - self->y;
             } else {
@@ -279,4 +287,10 @@ displayio_area_t* vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_
     }
     return tail;
 }
+
+void vectorio_vector_shape_update_transform(vectorio_vector_shape_t *self, displayio_buffer_transform_t *group_transform) {
+    self->absolute_transform = group_transform;
+    common_hal_vectorio_vector_shape_set_dirty(self);
+}
+
 

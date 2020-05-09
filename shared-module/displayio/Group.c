@@ -122,6 +122,12 @@ static void _update_child_transforms(displayio_group_t* self) {
     }
     for (size_t i = 0; i < self->size; i++) {
         mp_obj_t layer = self->children[i].native;
+#if CIRCUITPY_VECTORIO
+        if (MP_OBJ_IS_TYPE(layer, &vectorio_vector_shape_type)) {
+            vectorio_vector_shape_update_transform(layer, &self->absolute_transform);
+        }
+        else
+#endif
         if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
             displayio_tilegrid_update_transform(layer, &self->absolute_transform);
         } else if (MP_OBJ_IS_TYPE(layer, &displayio_group_type)) {

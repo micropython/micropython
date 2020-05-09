@@ -32,13 +32,12 @@
 //|   :param int y: Initial y position of the center axis of the shape within the parent.
 //|
 STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_shape, ARG_pixel_shader, ARG_x, ARG_y, ARG_transpose_xy };
+    enum { ARG_shape, ARG_pixel_shader, ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_shape, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_pixel_shader, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_x, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
-        { MP_QSTR_transpose_xy, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -74,7 +73,7 @@ STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t
     vectorio_vector_shape_t *self = m_new_obj(vectorio_vector_shape_t);
     self->base.type = &vectorio_vector_shape_type;
     common_hal_vectorio_vector_shape_construct(self,
-        ishape, pixel_shader, x, y, args[ARG_transpose_xy].u_bool
+        ishape, pixel_shader, x, y
     );
 
     // Wire up event callbacks
@@ -149,23 +148,6 @@ const mp_obj_property_t vectorio_vector_shape_y_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-
-//|   .. attribute:: transpose_xy
-//|
-//|     true if the object is to be flipped.
-//|
-STATIC mp_obj_t vectorio_vector_shape_obj_get_transpose_xy(mp_obj_t self_in) {
-    vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_bool(common_hal_vectorio_vector_shape_get_transpose_xy(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(vectorio_vector_shape_get_transpose_xy_obj, vectorio_vector_shape_obj_get_transpose_xy);
-
-const mp_obj_property_t vectorio_vector_shape_transpose_xy_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_transpose_xy_obj,
-              (mp_obj_t)&mp_const_none_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
 
 //|   .. attribute:: pixel_shader
 //|

@@ -30,7 +30,7 @@ typedef struct {
     mp_obj_t pixel_shader;
     int16_t x;
     int16_t y;
-    bool transpose_xy;
+    displayio_buffer_transform_t *absolute_transform;
     bool dirty;  // True if we need to draw
     // Tracks current shape footprint and expands outward as the shape dirties and changes.
     // This is suboptimal if you move your shape far.  Could add more state to only redraw
