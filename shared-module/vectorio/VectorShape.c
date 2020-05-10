@@ -64,6 +64,13 @@ static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *ou
 }
 
 
+// For use by Group to know where it needs to redraw on layer removal.
+bool vectorio_vector_shape_get_dirty_area(vectorio_vector_shape_t *self, displayio_area_t *out_area) {
+    displayio_area_copy(&self->ephemeral_dirty_area, out_area);
+    return true; // For now just always redraw.
+}
+
+
 // This must be invoked each time a shape changes its position or its shape in any way.
 void common_hal_vectorio_vector_shape_set_dirty(void *vector_shape) {
     vectorio_vector_shape_t *self = vector_shape;

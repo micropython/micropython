@@ -250,6 +250,8 @@ static void _remove_layer(displayio_group_t* self, size_t index) {
     bool rendered_last_frame = false;
 #if CIRCUITPY_VECTORIO
     if (MP_OBJ_IS_TYPE(layer, &vectorio_vector_shape_type)) {
+        bool has_dirty_area = vectorio_vector_shape_get_dirty_area(layer, &layer_area);
+        rendered_last_frame = has_dirty_area;
         vectorio_vector_shape_update_transform(layer, NULL);
     }
     else
