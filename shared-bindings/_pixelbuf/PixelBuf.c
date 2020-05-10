@@ -58,7 +58,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|   When brightness is less than 1.0, a second buffer will be used to store the color values
 //|   before they are adjusted for brightness.
 //|
-//|   When ``P`` (pwm duration) is present as the 4th character of the byteorder
+//|   When ``P`` (pwm duration) is present as the first character of the byteorder
 //|   string, the 4th value in the tuple/list for a pixel is the individual pixel
 //|   brightness (0.0-1.0) and will enable a Dotstar compatible 1st byte in the
 //|   output buffer (``buf``).
@@ -265,7 +265,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_show);
 
-//| .. function:: fill(color)
+//| .. method:: fill(color)
 //|
 //|   Fills the given pixelbuf with the given color.
 //|
