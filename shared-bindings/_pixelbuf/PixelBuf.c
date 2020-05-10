@@ -44,7 +44,7 @@ extern const int32_t colorwheel(float pos);
 
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t* parsed);
 
-//| .. currentmodule:: pixelbuf
+//| .. currentmodule:: _pixelbuf
 //|
 //| :class:`PixelBuf` -- A fast RGB[W] pixel buffer for LED and similar devices
 //| ===========================================================================
@@ -64,7 +64,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|   output buffer (``buf``).
 //|
 //|   :param ~int size: Number of pixelsx
-//|   :param ~str byteorder: Byte order string (such as "BGR" or "PBGR")
+//|   :param ~str byteorder: Byte order string (such as "BGR" or "BGRP")
 //|   :param ~float brightness: Brightness (0 to 1.0, default 1.0)
 //|   :param ~bool auto_write: Whether to automatically write pixels (Default False)
 //|   :param bytes header: Sequence of bytes to always send before pixel values.
