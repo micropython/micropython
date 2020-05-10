@@ -34,8 +34,8 @@ uint32_t common_hal_vectorio_circle_get_pixel(void *obj, int16_t x, int16_t y) {
 
 void common_hal_vectorio_circle_get_area(void *circle, displayio_area_t *out_area) {
     vectorio_circle_t *self = circle;
-    out_area->x1 = -1 * self->radius;
-    out_area->y1 = -1 * self->radius;
+    out_area->x1 = -1 * self->radius - 1;
+    out_area->y1 = -1 * self->radius - 1;
     out_area->x2 = self->radius + 1;
     out_area->y2 = self->radius + 1;
 }

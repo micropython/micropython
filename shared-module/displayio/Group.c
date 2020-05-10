@@ -215,6 +215,7 @@ static mp_obj_t _add_layer(displayio_group_t* self, mp_obj_t layer) {
 #if CIRCUITPY_VECTORIO
     native_layer = mp_instance_cast_to_native_base(layer, &vectorio_vector_shape_type);
     if (native_layer != MP_OBJ_NULL) {
+        vectorio_vector_shape_update_transform(native_layer, &self->absolute_transform);
         return native_layer;
     }
 #endif
@@ -247,6 +248,12 @@ static void _remove_layer(displayio_group_t* self, size_t index) {
     mp_obj_t layer = self->children[index].native;
     displayio_area_t layer_area;
     bool rendered_last_frame = false;
+#if CIRCUITPY_VECTORIO
+    if (MP_OBJ_IS_TYPE(layer, &vectorio_vector_shape_type)) {
+        vectorio_vector_shape_update_transform(layer, NULL);
+    }
+    else
+#endif
     if (MP_OBJ_IS_TYPE(layer, &displayio_tilegrid_type)) {
         displayio_tilegrid_t* tilegrid = layer;
         rendered_last_frame = displayio_tilegrid_get_previous_area(tilegrid, &layer_area);
