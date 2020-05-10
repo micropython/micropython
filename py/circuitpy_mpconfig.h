@@ -355,6 +355,8 @@ extern const struct _mp_obj_module_t framebufferio_module;
 #if CIRCUITPY_VECTORIO
 extern const struct _mp_obj_module_t vectorio_module;
 #define VECTORIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_vectorio), (mp_obj_t)&vectorio_module },
+#else
+#define VECTORIO_MODULE
 #endif
 
 #if CIRCUITPY_FREQUENCYIO
