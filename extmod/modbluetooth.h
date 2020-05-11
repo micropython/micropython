@@ -266,6 +266,9 @@ void mp_bluetooth_gattc_on_characteristic_result(uint16_t conn_handle, uint16_t 
 // Notify modbluetooth that a descriptor was found.
 void mp_bluetooth_gattc_on_descriptor_result(uint16_t conn_handle, uint16_t handle, mp_obj_bluetooth_uuid_t *descriptor_uuid);
 
+// Notify modbluetooth that service, characteristic or descriptor discovery has finished.
+void mp_bluetooth_gattc_on_discover_complete(uint8_t event, uint16_t conn_handle, uint16_t status);
+
 // Notify modbluetooth that a read has completed with data (or notify/indicate data available, use `event` to disambiguate).
 // Note: these functions are to be called in a group protected by MICROPY_PY_BLUETOOTH_ENTER/EXIT.
 // _start returns the number of bytes to submit to the calls to _chunk, followed by a call to _end.

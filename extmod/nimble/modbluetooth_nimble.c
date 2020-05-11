@@ -763,6 +763,8 @@ STATIC int peripheral_discover_service_cb(uint16_t conn_handle, const struct ble
     if (error->status == 0) {
         mp_obj_bluetooth_uuid_t service_uuid = create_mp_uuid(&service->uuid);
         mp_bluetooth_gattc_on_primary_service_result(conn_handle, service->start_handle, service->end_handle, &service_uuid);
+    } else {
+        mp_bluetooth_gattc_on_discover_complete(MP_BLUETOOTH_IRQ_GATTC_SERVICE_DONE, conn_handle, error->status);
     }
     return 0;
 }
@@ -783,6 +785,8 @@ STATIC int ble_gatt_characteristic_cb(uint16_t conn_handle, const struct ble_gat
     if (error->status == 0) {
         mp_obj_bluetooth_uuid_t characteristic_uuid = create_mp_uuid(&characteristic->uuid);
         mp_bluetooth_gattc_on_characteristic_result(conn_handle, characteristic->def_handle, characteristic->val_handle, characteristic->properties, &characteristic_uuid);
+    } else {
+        mp_bluetooth_gattc_on_discover_complete(MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_DONE, conn_handle, error->status);
     }
     return 0;
 }
@@ -803,6 +807,8 @@ STATIC int ble_gatt_descriptor_cb(uint16_t conn_handle, const struct ble_gatt_er
     if (error->status == 0) {
         mp_obj_bluetooth_uuid_t descriptor_uuid = create_mp_uuid(&descriptor->uuid);
         mp_bluetooth_gattc_on_descriptor_result(conn_handle, descriptor->handle, &descriptor_uuid);
+    } else {
+        mp_bluetooth_gattc_on_discover_complete(MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_DONE, conn_handle, error->status);
     }
     return 0;
 }
