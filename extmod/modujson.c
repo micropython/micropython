@@ -94,7 +94,7 @@ STATIC byte ujson_stream_next(ujson_stream_t *s) {
     return s->cur;
 }
 
-STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
+STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
     const mp_stream_p_t *stream_p = mp_get_stream_raise(stream_obj, MP_STREAM_OP_READ);
     ujson_stream_t s = {stream_obj, stream_p->read, 0, 0};
     JSON_DEBUG("got JSON stream\n");
@@ -107,15 +107,6 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     mp_obj_type_t *stack_top_type = NULL;
     mp_obj_t stack_key = MP_OBJ_NULL;
     S_NEXT(s);
-    // Eat _leading_ whitespace.
-    // If we eat trailing whitespace we will block for timeout on streams like UART that
-    //   wait for requested data.  Furthermore, it is an OSError to read(1) and incur
-    //   a timeout on those APIs.
-    // For these reasons, we must only eat _leading_ whitespace.
-    while (unichar_isspace(S_CUR(s))) {
-        JSON_DEBUG("Eating leading whitespace");
-        S_NEXT(s);
-    }
     for (;;) {
         cont:
         if (S_END(s)) {
@@ -277,9 +268,19 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
         }
     }
     success:
-    // It is legal for a stream to have contents before and after JSON.
-    // If this parser has consumed a full successful JSON and its parse
-    //   stack is empty, the parse has succeeded.
+    // It is legal for a stream to have contents after JSON.
+    // E.g., A UART is not closed after receiving an object; in load() we will
+    //   return the first complete JSON object, while in loads() we will retain
+    //   strict adherence to the buffer's complete semantic.
+    if (!return_first_json) {
+        while (unichar_isspace(S_CUR(s))) {
+            S_NEXT(s);
+        }
+        if (!S_END(s)) {
+            // unexpected chars
+            goto fail;
+        }
+    }
     if (stack_top == MP_OBJ_NULL || stack.len != 0) {
         // not exactly 1 object
         goto fail;
@@ -290,6 +291,10 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
     fail:
     mp_raise_ValueError(translate("syntax error in JSON"));
 }
+
+STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
+    return _mod_ujson_load(stream_obj, true);
+}
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_load_obj, mod_ujson_load);
 
 STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
@@ -297,7 +302,7 @@ STATIC mp_obj_t mod_ujson_loads(mp_obj_t obj) {
     const char *buf = mp_obj_str_get_data(obj, &len);
     vstr_t vstr = {len, len, (char*)buf, true};
     mp_obj_stringio_t sio = {{&mp_type_stringio}, &vstr, 0, MP_OBJ_NULL};
-    return mod_ujson_load(MP_OBJ_FROM_PTR(&sio));
+    return _mod_ujson_load(MP_OBJ_FROM_PTR(&sio), false);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ujson_loads_obj, mod_ujson_loads);
 
