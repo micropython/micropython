@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Damien P. George
- * Copyright (c) 2019 Jim Mussared
+ * Copyright (c) 2019-2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -612,7 +612,7 @@ int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
-STATIC void gattc_on_data_available(uint16_t event, uint16_t conn_handle, uint16_t value_handle, const struct os_mbuf *om) {
+STATIC void gattc_on_data_available(uint8_t event, uint16_t conn_handle, uint16_t value_handle, const struct os_mbuf *om) {
     size_t len = OS_MBUF_PKTLEN(om);
     mp_uint_t atomic_state;
     len = mp_bluetooth_gattc_on_data_available_start(event, conn_handle, value_handle, len, &atomic_state);

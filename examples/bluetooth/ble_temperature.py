@@ -11,8 +11,8 @@ from ble_advertising import advertising_payload
 
 from micropython import const
 
-_IRQ_CENTRAL_CONNECT = const(1 << 0)
-_IRQ_CENTRAL_DISCONNECT = const(1 << 1)
+_IRQ_CENTRAL_CONNECT = const(1)
+_IRQ_CENTRAL_DISCONNECT = const(2)
 
 # org.bluetooth.service.environmental_sensing
 _ENV_SENSE_UUID = bluetooth.UUID(0x181A)

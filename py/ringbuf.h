@@ -63,6 +63,13 @@ static inline int ringbuf_get(ringbuf_t *r) {
     return v;
 }
 
+static inline int ringbuf_peek(ringbuf_t *r) {
+    if (r->iget == r->iput) {
+        return -1;
+    }
+    return r->buf[r->iget];
+}
+
 static inline int ringbuf_put(ringbuf_t *r, uint8_t v) {
     uint32_t iput_new = r->iput + 1;
     if (iput_new >= r->size) {
