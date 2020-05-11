@@ -22,7 +22,7 @@ MEMORY
 }
 
 /* produce a link error if there is not this amount of RAM for these sections */
-_minimum_stack_size = 2K;
+_minimum_stack_size = 24K; /*TODO: this can probably be bigger, but how big?*/
 _minimum_heap_size = 16K;
 
 /* brainless copy paste for stack code. Results in ambiguous hard crash */
