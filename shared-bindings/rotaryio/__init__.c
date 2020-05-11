@@ -33,7 +33,7 @@
 #include "shared-bindings/rotaryio/__init__.h"
 #include "shared-bindings/rotaryio/IncrementalEncoder.h"
 
-//| :mod:`rotaryio` --- Support for reading rotation sensors
+//| """:mod:`rotaryio` --- Support for reading rotation sensors
 //| ========================================================
 //|
 //| .. module:: rotaryio
@@ -59,7 +59,7 @@
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
-//| :ref:`lifetime-and-contextmanagers` for more info.
+//| :ref:`lifetime-and-contextmanagers` for more info."""
 //|
 
 STATIC const mp_rom_map_elem_t rotaryio_module_globals_table[] = {

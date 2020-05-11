@@ -31,7 +31,7 @@
 #include "shared-bindings/rtc/RTC.h"
 #include "shared-bindings/time/__init__.h"
 
-//| :mod:`rtc` --- Real Time Clock
+//| """:mod:`rtc` --- Real Time Clock
 //| ========================================================
 //|
 //| .. module:: rtc
@@ -47,7 +47,7 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     RTC
+//|     RTC"""
 //|
 
 void rtc_reset(void) {
@@ -62,22 +62,22 @@ mp_obj_t rtc_get_time_source_time(void) {
     return struct_time_from_tm(&tm);
 }
 
-//| .. function:: set_time_source(rtc)
+//| def set_time_source(rtc: Any) -> Any:
+//|     """Sets the RTC time source used by :func:`time.localtime`.
+//|     The default is :class:`rtc.RTC`, but it's useful to use this to override the
+//|     time source for testing purposes. For example::
 //|
-//|   Sets the RTC time source used by :func:`time.localtime`.
-//|   The default is :class:`rtc.RTC`, but it's useful to use this to override the
-//|   time source for testing purposes. For example::
+//|       import rtc
+//|       import time
 //|
-//|     import rtc
-//|     import time
+//|       class RTC(object):
+//|           @property
+//|           def datetime(self):
+//|               return time.struct_time((2018, 3, 17, 21, 1, 47, 0, 0, 0))
 //|
-//|     class RTC(object):
-//|         @property
-//|         def datetime(self):
-//|             return time.struct_time((2018, 3, 17, 21, 1, 47, 0, 0, 0))
-//|
-//|     r = RTC()
-//|     rtc.set_time_source(r)
+//|       r = RTC()
+//|       rtc.set_time_source(r)"""
+//|     ...
 //|
 STATIC mp_obj_t rtc_set_time_source(mp_obj_t time_source) {
     MP_STATE_VM(rtc_time_source) = time_source;
