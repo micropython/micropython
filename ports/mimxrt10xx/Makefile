@@ -88,6 +88,7 @@ ifeq ($(DEBUG), 1)
   # You may want to enable these flags to make setting breakpoints easier.
   CFLAGS += -fno-inline -fno-ipa-sra
 else
+  CFLAGS += -ggdb
   #CFLAGS += -flto -flto-partition=none
 endif
 

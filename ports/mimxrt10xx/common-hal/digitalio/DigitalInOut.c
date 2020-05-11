@@ -34,7 +34,7 @@
 
 #include "fsl_gpio.h"
 
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "supervisor/shared/translate.h"
 
@@ -74,7 +74,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
 
 void common_hal_digitalio_digitalinout_never_reset(
         digitalio_digitalinout_obj_t *self) {
-    never_reset_pin_number(self->pin->number);
+    never_reset_pin_number(self->pin->port, self->pin->number);
 }
 
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t* self) {
@@ -85,7 +85,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self
     if (common_hal_digitalio_digitalinout_deinited(self)) {
         return;
     }
-    reset_pin_number(self->pin->number);
+    common_hal_reset_pin(self->pin);
     self->pin = NULL;
 }
 
