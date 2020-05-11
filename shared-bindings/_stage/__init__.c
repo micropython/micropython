@@ -34,7 +34,7 @@
 #include "Layer.h"
 #include "Text.h"
 
-//| :mod:`_stage` --- C-level helpers for animation of sprites on a stage
+//| """:mod:`_stage` --- C-level helpers for animation of sprites on a stage
 //| =====================================================================
 //|
 //| .. module:: _stage
@@ -49,11 +49,10 @@
 //|     :maxdepth: 3
 //|
 //|     Layer
-//|     Text
+//|     Text"""
 //|
-//| .. function:: render(x0, y0, x1, y1, layers, buffer, display[, scale[, background]])
-//|
-//|     Render and send to the display a fragment of the screen.
+//| def render(x0: int, y0: int, x1: int, y1: int, layers: list, buffer: bytearray, display: displayio.Display, scale: int, background: int) -> Any:
+//|     """Render and send to the display a fragment of the screen.
 //|
 //|     :param int x0: Left edge of the fragment.
 //|     :param int y0: Top edge of the fragment.
@@ -70,7 +69,8 @@
 //|     valid.
 //|
 //|     This function is intended for internal use in the ``stage`` library
-//|     and all the necessary checks are performed there.
+//|     and all the necessary checks are performed there."""
+//|
 STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     uint16_t x0 = mp_obj_get_int(args[0]);
     uint16_t y0 = mp_obj_get_int(args[1]);
