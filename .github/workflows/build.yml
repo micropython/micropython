@@ -216,6 +216,7 @@ jobs:
         - "pewpew10"
         - "pewpew_m4"
         - "pirkey_m0"
+        - "pitaya_go"
         - "pyb_nano_v2"
         - "pybadge"
         - "pybadge_airlift"
