@@ -63,7 +63,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|   brightness (0.0-1.0) and will enable a Dotstar compatible 1st byte in the
 //|   output buffer (``buf``).
 //|
-//|   :param ~int size: Number of pixelsx
+//|   :param ~int size: Number of pixels
 //|   :param ~str byteorder: Byte order string (such as "BGR" or "BGRP")
 //|   :param ~float brightness: Brightness (0 to 1.0, default 1.0)
 //|   :param ~bool auto_write: Whether to automatically write pixels (Default False)
