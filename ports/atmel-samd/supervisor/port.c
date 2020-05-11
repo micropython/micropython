@@ -174,7 +174,10 @@ static void rtc_init(void) {
     #endif
     NVIC_ClearPendingIRQ(RTC_IRQn);
     NVIC_EnableIRQ(RTC_IRQn);
+#if CIRCUITPY_RTC
     rtc_reset();
+#endif
+
 }
 
 safe_mode_t port_init(void) {
