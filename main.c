@@ -45,6 +45,7 @@
 
 #include "background.h"
 #include "mpconfigboard.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
@@ -160,6 +161,8 @@ void stop_mp(void) {
     MP_STATE_VM(vfs_mount_table) = vfs;
     MP_STATE_VM(vfs_cur) = vfs;
     #endif
+
+    background_callback_reset();
 
     gc_deinit();
 }

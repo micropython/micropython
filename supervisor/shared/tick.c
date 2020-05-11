@@ -29,6 +29,7 @@
 #include "py/mpstate.h"
 #include "supervisor/linker.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/autoreload.h"
 
@@ -86,10 +87,7 @@ uint32_t supervisor_ticks_ms32() {
 extern void run_background_tasks(void);
 
 void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
-    // TODO: Add a global that can be set by anyone to indicate we should run background tasks. That
-    // way we can short circuit the background tasks early. We used to do it based on time but it
-    // breaks cases where we wake up for a short period and then sleep. If we skipped the last
-    // background task or more before sleeping we may end up starving a task like USB.
+    background_callback_run_all();
     run_background_tasks();
 }
 
