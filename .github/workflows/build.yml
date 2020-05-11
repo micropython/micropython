@@ -249,6 +249,7 @@ jobs:
         - "stm32f746g_discovery"
         - "stringcar_m0_express"
         - "teensy40"
+        - "teensy41"
         - "teknikio_bluebird"
         - "thunderpack"
         - "trellis_m4_express"
