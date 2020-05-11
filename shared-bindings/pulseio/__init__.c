@@ -35,7 +35,7 @@
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 
-//| :mod:`pulseio` --- Support for pulse based protocols
+//| """:mod:`pulseio` --- Support for pulse based protocols
 //| =====================================================
 //|
 //| .. module:: pulseio
@@ -73,7 +73,7 @@
 //| :py:data:`~pulseio.PWMOut.duty_cycle`, and then sleep 0.1 seconds.
 //| CircuitPython will automatically turn off the PWM when it resets all
 //| hardware after program completion. Use ``deinit()`` or a ``with`` statement
-//| to do it yourself.
+//| to do it yourself."""
 //|
 
 STATIC const mp_rom_map_elem_t pulseio_module_globals_table[] = {

@@ -33,7 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/ps2io/Ps2.h"
 
-//| :mod:`ps2io` --- Support for PS/2 protocol
+//| """:mod:`ps2io` --- Support for PS/2 protocol
 //| =====================================================
 //|
 //| .. module:: ps2io
@@ -57,7 +57,7 @@
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
-//| :ref:`lifetime-and-contextmanagers` for more info.
+//| :ref:`lifetime-and-contextmanagers` for more info."""
 //|
 
 STATIC const mp_rom_map_elem_t ps2io_module_globals_table[] = {
