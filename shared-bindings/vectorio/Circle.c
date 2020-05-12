@@ -17,6 +17,8 @@
 //|
 //| .. class:: Circle(radius)
 //|
+//|   Circle is positioned on screen by its center point.
+//|
 //|   :param int radius: The radius of the circle in pixels
 //|
 static mp_obj_t vectorio_circle_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -42,7 +44,7 @@ static mp_obj_t vectorio_circle_make_new(const mp_obj_type_t *type, size_t n_arg
 
 //|  .. attribute:: radius
 //|
-//|    Update the radius of the circle
+//|    The radius of the circle in pixels.
 //|
 STATIC mp_obj_t vectorio_circle_obj_get_radius(mp_obj_t self_in) {
     vectorio_circle_t *self = MP_OBJ_TO_PTR(self_in);
