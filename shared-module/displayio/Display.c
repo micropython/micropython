@@ -41,8 +41,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "tick.h"
-
 void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart,
         uint16_t rotation, uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row,
@@ -111,6 +109,8 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     // Always set the backlight type in case we're reusing memory.
     self->backlight_inout.base.type = &mp_type_NoneType;
     if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
+        // Avoid PWM types and functions when the module isn't enabled
+        #if (CIRCUITPY_PULSEIO)
         pwmout_result_t result = common_hal_pulseio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 50000, false);
         if (result != PWMOUT_OK) {
             self->backlight_inout.base.type = &digitalio_digitalinout_type;
@@ -120,6 +120,12 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
             self->backlight_pwm.base.type = &pulseio_pwmout_type;
             common_hal_pulseio_pwmout_never_reset(&self->backlight_pwm);
         }
+        #else
+        // Otherwise default to digital
+        self->backlight_inout.base.type = &digitalio_digitalinout_type;
+        common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
+        common_hal_never_reset_pin(backlight_pin);
+        #endif
     }
     if (!self->auto_brightness && (self->backlight_inout.base.type != &mp_type_NoneType ||
                                    brightness_command != NO_BRIGHTNESS_COMMAND)) {
@@ -164,9 +170,21 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, 
         brightness = 1.0-brightness;
     }
     bool ok = false;
-    if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
+    
+    // Avoid PWM types and functions when the module isn't enabled
+    #if (CIRCUITPY_PULSEIO)
+    bool ispwm = (self->backlight_pwm.base.type == &pulseio_pwmout_type) ? true : false;
+    #else
+    bool ispwm = false;
+    #endif
+
+    if (ispwm) {
+        #if (CIRCUITPY_PULSEIO)
         common_hal_pulseio_pwmout_set_duty_cycle(&self->backlight_pwm, (uint16_t) (0xffff * brightness));
         ok = true;
+        #else
+        ok = false;
+        #endif
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_set_value(&self->backlight_inout, brightness > 0.99);
         ok = true;
@@ -392,12 +410,16 @@ void displayio_display_background(displayio_display_obj_t* self) {
 
 void release_display(displayio_display_obj_t* self) {
     release_display_core(&self->core);
+    #if (CIRCUITPY_PULSEIO)
     if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
         common_hal_pulseio_pwmout_reset_ok(&self->backlight_pwm);
-        common_hal_pulseio_pwmout_deinit(&self->backlight_pwm);
+        common_hal_pulseio_pwmout_deinit(&self->backlight_pwm);  
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);
     }
+    #else
+    common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);
+    #endif
 }
 
 void reset_display(displayio_display_obj_t* self) {

@@ -99,6 +99,9 @@ endif
 ###
 # Select which builtin modules to compile and include.
 
+ifeq ($(CIRCUITPY_AESIO),1)
+SRC_PATTERNS += aesio/%
+endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
 endif
@@ -290,8 +293,7 @@ SRC_COMMON_HAL_ALL = \
 	rtc/RTC.c \
 	rtc/__init__.c \
 	supervisor/Runtime.c \
-	supervisor/__init__.c \
-	time/__init__.c
+	supervisor/__init__.c
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
@@ -309,7 +311,7 @@ $(filter $(SRC_PATTERNS), \
 	fontio/Glyph.c \
 	microcontroller/RunMode.c \
 	math/__init__.c \
-        _eve/__init__.c \
+	_eve/__init__.c \
 )
 
 SRC_BINDINGS_ENUMS += \
@@ -342,6 +344,8 @@ SRC_SHARED_MODULE_ALL = \
 	bitbangio/__init__.c \
 	board/__init__.c \
 	busio/OneWire.c \
+	aesio/__init__.c \
+	aesio/aes.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
@@ -370,13 +374,14 @@ SRC_SHARED_MODULE_ALL = \
 	rgbmatrix/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
+	time/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	_pew/__init__.c \
 	_pew/PewPew.c \
-        _eve/__init__.c
+	_eve/__init__.c
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))

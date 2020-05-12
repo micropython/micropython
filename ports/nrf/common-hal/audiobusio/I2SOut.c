@@ -283,6 +283,9 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     i2s_buffer_fill(self);
 
     NRF_I2S->RXTXD.MAXCNT = self->buffer_length / 4;
+    // Turn on the interrupt to the NVIC but not within the NVIC itself. This will wake the CPU and
+    // keep it awake until it is serviced without triggering an interrupt handler.
+    NRF_I2S->INTENSET = I2S_INTENSET_TXPTRUPD_Msk;
     NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Enabled;
 
     NRF_I2S->TASKS_START = 1;
@@ -305,6 +308,7 @@ bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t* self) {
 void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
     NRF_I2S->TASKS_STOP = 1;
     self->stopping = true;
+    NRF_I2S->INTENCLR = I2S_INTENSET_TXPTRUPD_Msk;
 }
 
 bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
@@ -316,8 +320,9 @@ bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
 }
 
 void i2s_background(void) {
-    if (NRF_I2S->EVENTS_TXPTRUPD) {
+    if (NVIC_GetPendingIRQ(I2S_IRQn) && NRF_I2S->EVENTS_TXPTRUPD) {
         NRF_I2S->EVENTS_TXPTRUPD = 0;
+        NVIC_ClearPendingIRQ(I2S_IRQn);
         if (instance) {
             i2s_buffer_fill(instance);
         } else {
@@ -328,6 +333,7 @@ void i2s_background(void) {
 
 void i2s_reset(void) {
     NRF_I2S->TASKS_STOP = 1;
+    NRF_I2S->INTENCLR = I2S_INTENSET_TXPTRUPD_Msk;
     NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Disabled;
     NRF_I2S->PSEL.MCK = 0xFFFFFFFF;
     NRF_I2S->PSEL.SCK = 0xFFFFFFFF;

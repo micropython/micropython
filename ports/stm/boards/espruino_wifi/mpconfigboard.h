@@ -33,4 +33,5 @@
 #define FLASH_PAGE_SIZE             (0x4000)  //16K
 
 #define BOARD_OSC_DIV (8)
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 #define BOARD_OVERWRITE_SWD (1)

@@ -34,7 +34,7 @@
 #ifdef EXTERNAL_FLASH_DEVICE_COUNT
 #include "supervisor/shared/external_flash/external_flash.h"
 #else
-#include "supervisor/internal_flash.h"
+#include "supervisor/shared/internal_flash.h"
 #endif
 
 void supervisor_flash_init(void);

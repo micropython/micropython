@@ -23,11 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "external_flash.h"
+#include "supervisor/shared/external_flash/external_flash.h"
 
 #include <stdint.h>
 #include <string.h>
 
+#include "supervisor/flash.h"
 #include "supervisor/spi_flash_api.h"
 #include "supervisor/shared/external_flash/common_commands.h"
 #include "extmod/vfs.h"
@@ -217,11 +218,12 @@ void supervisor_flash_init(void) {
     do {
         spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
     } while ((read_status_response[0] & 0x1) != 0);
-    // The suspended write/erase bit should be low.
-    do {
+    if (!flash_device->single_status_byte) {
+      // The suspended write/erase bit should be low.
+      do {
         spi_flash_read_command(CMD_READ_STATUS2, read_status_response, 1);
-    } while ((read_status_response[0] & 0x80) != 0);
-
+      } while ((read_status_response[0] & 0x80) != 0);
+    }
 
     spi_flash_command(CMD_ENABLE_RESET);
     spi_flash_command(CMD_RESET);
@@ -451,7 +453,7 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
     #endif
 }
 
-void supervisor_flash_flush(void) {
+void supervisor_external_flash_flush(void) {
     spi_flash_flush_keep_cache(true);
 }
 

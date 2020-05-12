@@ -35,9 +35,8 @@
 #include "shared-bindings/pulseio/PWMOut.h"
 #include "supervisor/shared/translate.h"
 
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 #include "common-hal/microcontroller/Pin.h"
-#include "tick.h"
 
 // A single timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.
@@ -60,7 +59,7 @@ STATIC void turn_off(pulseio_pulseout_obj_t *pulseout) {
     // Turn off PWM
     HAL_TIM_PWM_Stop(&(pulseout->pwmout->handle), pulseout->pwmout->channel);
     // Make sure pin is low.
-    HAL_GPIO_WritePin(pin_port(pulseout->pwmout->tim->pin->port), 
+    HAL_GPIO_WritePin(pin_port(pulseout->pwmout->tim->pin->port),
                       pin_mask(pulseout->pwmout->tim->pin->number), 0);
 }
 
@@ -196,7 +195,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
         //    mp_raise_RuntimeError(translate("Error: Send Timeout"));
         // }
     }
-    //turn off timer counter. 
+    //turn off timer counter.
     t7_handle.Instance->CR1 &= ~TIM_CR1_CEN;
 }
 

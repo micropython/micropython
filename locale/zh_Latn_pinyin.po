@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-17 18:44-0500\n"
+"POT-Creation-Date: 2020-05-06 17:47+0800\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -290,11 +290,12 @@ msgstr "Cǐ yǐn jiǎo de suǒyǒu jìshí qì zhèngzài shǐyòng"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/nrf/peripherals/nrf/timers.c shared-bindings/pulseio/PWMOut.c
-#: shared-module/_pew/PewPew.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
 msgid "All timers in use"
 msgstr "Suǒyǒu jìshí qì shǐyòng"
 
@@ -436,6 +437,10 @@ msgstr "Zì jié huǎnchōng qū bìxū shì 16 zì jié."
 #: shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Zì jié bìxū jiè yú 0 dào 255 zhī jiān."
+
+#: shared-bindings/aesio/aes.c
+msgid "CBC blocks must be multiples of 16 bytes"
+msgstr ""
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -670,6 +675,10 @@ msgstr "Xiǎnshì xuánzhuǎn bìxū 90 dù jiā xīn"
 msgid "Drive mode not used when direction is input."
 msgstr "Fāngxiàng shūrù shí qūdòng móshì méiyǒu shǐyòng."
 
+#: shared-bindings/aesio/aes.c
+msgid "ECB only operates on 16 bytes at a time"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -681,7 +690,7 @@ msgstr "EXTINT píndào yǐjīng shǐyòng"
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
 
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -807,6 +816,11 @@ msgstr "I2C chūshǐhuà cuòwù"
 #: extmod/machine_i2c.c
 msgid "I2C operation not supported"
 msgstr "I2C cāozuò bù zhīchí"
+
+#: shared-bindings/aesio/aes.c
+#, c-format
+msgid "IV must be %d bytes long"
+msgstr ""
 
 #: py/persistentcode.c
 msgid ""
@@ -989,6 +1003,10 @@ msgstr "Wúxiào de làng làngcháo wénjiàn"
 msgid "Invalid word/bit length"
 msgstr "Wúxiào de zì/wèi chángdù"
 
+#: shared-bindings/aesio/aes.c
+msgid "Key must be 16, 24, or 32 bytes long"
+msgstr ""
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "Guānjiàn zì arg de LHS bìxū shì id"
@@ -1097,6 +1115,10 @@ msgstr "Wèi zhǎodào TX yǐn jiǎo"
 msgid "No available clocks"
 msgstr "Méiyǒu kěyòng de shízhōng"
 
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: length cannot be determined"
+msgstr ""
+
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
 msgstr "wú mòrèn %q zǒngxiàn"
@@ -1117,6 +1139,10 @@ msgstr "Shízhōng yǐn jiǎo wú yìngjiàn zhīchí"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
 msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
+
+#: shared-bindings/aesio/aes.c
+msgid "No key was specified"
+msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1247,6 +1273,10 @@ msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzà
 msgid "Pull not used when direction is output."
 msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
 
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "PulseIn not supported on this chip"
+msgstr ""
+
 #: ports/stm/common-hal/pulseio/PulseOut.c
 msgid "PulseOut not supported on this chip"
 msgstr ""
@@ -1296,6 +1326,10 @@ msgstr "Zhǐ dú duìxiàng"
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "Shuāxīn tài kuàile"
+
+#: shared-bindings/aesio/aes.c
+msgid "Requested AES mode is unsupported"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1359,6 +1393,10 @@ msgstr "Qiēpiàn hé zhí bùtóng chángdù."
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Qiēpiàn bù shòu zhīchí"
+
+#: shared-bindings/aesio/aes.c
+msgid "Source and destination buffers must be the same length"
+msgstr ""
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1449,6 +1487,10 @@ msgstr "Xiǎnshì zǒngxiàn tài duōle"
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
 msgstr "Xiǎnshì tài duō"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2228,6 +2270,10 @@ msgstr "hánshù yùjì zuìduō %d cānshù, huòdé %d"
 msgid "function got multiple values for argument '%q'"
 msgstr "hánshù huòdé cānshù '%q' de duōchóng zhí"
 
+#: extmod/ulab/code/compare.c
+msgid "function is implemented for scalars and ndarrays only"
+msgstr ""
+
 #: py/argcheck.c
 #, c-format
 msgid "function missing %d required positional arguments"
@@ -2718,7 +2764,8 @@ msgstr "Jǐn zhīchí cǎiyàng lǜ = 16000"
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr ""
 

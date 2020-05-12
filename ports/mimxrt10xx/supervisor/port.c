@@ -41,9 +41,9 @@
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
+#include "common-hal/busio/SPI.h"
 
 #include "reset.h"
-#include "tick.h"
 
 #include "tusb.h"
 
@@ -54,6 +54,7 @@
 #include "shared-module/gamepadshift/__init__.h"
 #endif
 #include "shared-module/_pew/PewPew.h"
+#include "supervisor/shared/tick.h"
 
 #include "clocks.h"
 
@@ -244,14 +245,17 @@ __attribute__((used, naked)) void Reset_Handler(void) {
 }
 
 safe_mode_t port_init(void) {
-    clocks_init();
+    CLOCK_SetMode(kCLOCK_ModeRun);
 
-    // Configure millisecond timer initialization.
-    tick_init();
+    clocks_init();
 
 #if CIRCUITPY_RTC
     rtc_init();
 #endif
+
+    // Always enable the SNVS interrupt. The GPC won't wake us up unless at least one interrupt is
+    // enabled. It won't occur very often so it'll be low overhead.
+    NVIC_EnableIRQ(SNVS_HP_WRAPPER_IRQn);
 
     // Reset everything into a known state before board_init.
     reset_port();
@@ -264,7 +268,7 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-    //reset_sercoms();
+    spi_reset();
 
 #if CIRCUITPY_AUDIOIO
     audio_dma_reset();
@@ -332,13 +336,74 @@ uint32_t *port_heap_get_top(void) {
     return &_ld_heap_end;
 }
 
-// Place the word to save just after our BSS section that gets blanked.
+// Place the word into the low power section of the SNVS.
 void port_set_saved_word(uint32_t value) {
     SNVS->LPGPR[1] = value;
 }
 
 uint32_t port_get_saved_word(void) {
     return SNVS->LPGPR[1];
+}
+
+uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    uint64_t ticks = 0;
+    uint64_t next_ticks = 1;
+    while (ticks != next_ticks) {
+        ticks = next_ticks;
+        next_ticks = ((uint64_t) SNVS->HPRTCMR) << 32 | SNVS->HPRTCLR;
+    }
+    if (subticks != NULL) {
+        *subticks = ticks % 32;
+    }
+    return ticks / 32;
+}
+
+void SNVS_HP_WRAPPER_IRQHandler(void) {
+    if ((SNVS->HPSR & SNVS_HPSR_PI_MASK) != 0) {
+        supervisor_tick();
+        SNVS->HPSR = SNVS_HPSR_PI_MASK;
+    }
+    if ((SNVS->HPSR & SNVS_HPSR_HPTA_MASK) != 0) {
+        SNVS->HPSR = SNVS_HPSR_HPTA_MASK;
+    }
+}
+
+// Enable 1/1024 second tick.
+void port_enable_tick(void) {
+    uint32_t hpcr = SNVS->HPCR;
+    hpcr &= ~SNVS_HPCR_PI_FREQ_MASK;
+    SNVS->HPCR = hpcr | SNVS_HPCR_PI_FREQ(5) | SNVS_HPCR_PI_EN_MASK;
+}
+
+// Disable 1/1024 second tick.
+void port_disable_tick(void) {
+    SNVS->HPCR &= ~SNVS_HPCR_PI_EN_MASK;
+}
+
+void port_interrupt_after_ticks(uint32_t ticks) {
+    uint8_t subticks;
+    uint64_t current_ticks = port_get_raw_ticks(&subticks);
+    current_ticks += ticks;
+    SNVS->HPCR &= ~SNVS_HPCR_HPTA_EN_MASK;
+    // Wait for the alarm to be disabled.
+    while ((SNVS->HPCR & SNVS_HPCR_HPTA_EN_MASK) != 0) {}
+    SNVS->HPTAMR = current_ticks >> (32 - 5);
+    SNVS->HPTALR = current_ticks << 5 | subticks;
+    SNVS->HPCR |= SNVS_HPCR_HPTA_EN_MASK;
+}
+
+void port_sleep_until_interrupt(void) {
+    // App note here: https://www.nxp.com/docs/en/application-note/AN12085.pdf
+
+    // Clear the FPU interrupt because it can prevent us from sleeping.
+    if (__get_FPSCR()  & ~(0x9f)) {
+        __set_FPSCR(__get_FPSCR()  & ~(0x9f));
+        (void) __get_FPSCR();
+    }
+    NVIC_ClearPendingIRQ(SNVS_HP_WRAPPER_IRQn);
+    CLOCK_SetMode(kCLOCK_ModeWait);
+    __WFI();
+    CLOCK_SetMode(kCLOCK_ModeRun);
 }
 
 /**
@@ -384,4 +449,3 @@ __attribute__((used)) void HardFault_Handler(void)
         asm("nop;");
     }
 }
-

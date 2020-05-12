@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-17 18:44-0500\n"
+"POT-Creation-Date: 2020-05-06 17:47+0800\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -283,11 +283,12 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/nrf/peripherals/nrf/timers.c shared-bindings/pulseio/PWMOut.c
-#: shared-module/_pew/PewPew.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
 msgid "All timers in use"
 msgstr ""
 
@@ -426,6 +427,10 @@ msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
+msgstr ""
+
+#: shared-bindings/aesio/aes.c
+msgid "CBC blocks must be multiples of 16 bytes"
 msgstr ""
 
 #: py/objtype.c
@@ -659,6 +664,10 @@ msgstr ""
 msgid "Drive mode not used when direction is input."
 msgstr ""
 
+#: shared-bindings/aesio/aes.c
+msgid "ECB only operates on 16 bytes at a time"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -670,7 +679,7 @@ msgstr ""
 msgid "Error in regex"
 msgstr ""
 
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -795,6 +804,11 @@ msgstr ""
 
 #: extmod/machine_i2c.c
 msgid "I2C operation not supported"
+msgstr ""
+
+#: shared-bindings/aesio/aes.c
+#, c-format
+msgid "IV must be %d bytes long"
 msgstr ""
 
 #: py/persistentcode.c
@@ -976,6 +990,10 @@ msgstr ""
 msgid "Invalid word/bit length"
 msgstr ""
 
+#: shared-bindings/aesio/aes.c
+msgid "Key must be 16, 24, or 32 bytes long"
+msgstr ""
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr ""
@@ -1084,6 +1102,10 @@ msgstr ""
 msgid "No available clocks"
 msgstr ""
 
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: length cannot be determined"
+msgstr ""
+
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
 msgstr ""
@@ -1103,6 +1125,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
+msgstr ""
+
+#: shared-bindings/aesio/aes.c
+msgid "No key was specified"
 msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
@@ -1228,6 +1254,10 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr ""
 
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "PulseIn not supported on this chip"
+msgstr ""
+
 #: ports/stm/common-hal/pulseio/PulseOut.c
 msgid "PulseOut not supported on this chip"
 msgstr ""
@@ -1276,6 +1306,10 @@ msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
+msgstr ""
+
+#: shared-bindings/aesio/aes.c
+msgid "Requested AES mode is unsupported"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -1339,6 +1373,10 @@ msgstr ""
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
+msgstr ""
+
+#: shared-bindings/aesio/aes.c
+msgid "Source and destination buffers must be the same length"
 msgstr ""
 
 #: extmod/modure.c
@@ -1422,6 +1460,10 @@ msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
 msgstr ""
 
 #: py/obj.c
@@ -2191,6 +2233,10 @@ msgstr ""
 msgid "function got multiple values for argument '%q'"
 msgstr ""
 
+#: extmod/ulab/code/compare.c
+msgid "function is implemented for scalars and ndarrays only"
+msgstr ""
+
 #: py/argcheck.c
 #, c-format
 msgid "function missing %d required positional arguments"
@@ -2679,7 +2725,8 @@ msgstr ""
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr ""
 

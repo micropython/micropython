@@ -38,7 +38,7 @@ typedef struct {
     uint16_t maxlen;
     uint16_t start;
     uint16_t len;
-    uint32_t last_us;
+    uint64_t last_us;
     bool idle_state;
     bool first_edge;
     bool paused;

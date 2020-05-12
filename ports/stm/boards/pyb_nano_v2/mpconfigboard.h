@@ -33,6 +33,7 @@
 #define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV (8)
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB15)

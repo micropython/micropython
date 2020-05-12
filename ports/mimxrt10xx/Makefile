@@ -93,6 +93,10 @@ endif
 
 CFLAGS += $(INC) -Wall -Wno-cast-align -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
+# TODO: add these when -Werror is applied
+# Disable some warnings, as do most ports. NXP SDK causes undef, tinyusb causes cast-align
+# CFLAGS += -Wno-undef -Wno-cast-align
+
 CFLAGS += \
 	-mthumb \
 	-mapcs \
@@ -162,8 +166,8 @@ SRC_C = \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/pins.c \
 	reset.c \
 	supervisor/flexspi_nor_flash_ops.c \
-	supervisor/shared/memory.c \
-	tick.c
+	supervisor/shared/memory.c
+
 
 ifeq ($(CIRCUITPY_NETWORK),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1

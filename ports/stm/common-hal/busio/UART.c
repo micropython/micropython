@@ -35,8 +35,6 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
-#include "tick.h"
-
 #define ALL_UARTS 0xFFFF
 
 //arrays use 0 based numbering: UART1 is stored at index 0
@@ -211,8 +209,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     // Init buffer for rx and claim pins
     if (self->rx != NULL) {
-        ringbuf_alloc(&self->rbuf, receiver_buffer_size, true);
-        if (!self->rbuf.buf) {
+        if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
             mp_raise_ValueError(translate("UART Buffer allocation error"));
         }
         claim_pin(rx);
@@ -248,9 +245,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     reset_pin_number(self->rx->pin->port,self->rx->pin->number);
     self->tx = NULL;
     self->rx = NULL;
-    gc_free(self->rbuf.buf);
-    self->rbuf.size = 0;
-    self->rbuf.iput = self->rbuf.iget = 0;
+    ringbuf_free(&self->ringbuf);
 }
 
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
@@ -258,11 +253,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         mp_raise_ValueError(translate("No RX pin"));
     }
 
-    size_t rx_bytes = 0;
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for all bytes received or timeout, same as nrf
-    while ( (ringbuf_count(&self->rbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
+    while ( (ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
         RUN_BACKGROUND_TASKS;
         //restart if it failed in the callback
         if (errflag != HAL_OK) {
@@ -276,12 +270,8 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     // Halt reception
     HAL_NVIC_DisableIRQ(self->irq);
-    // copy received data
-    rx_bytes = ringbuf_count(&self->rbuf);
-    rx_bytes = MIN(rx_bytes, len);
-    for (uint16_t i = 0; i < rx_bytes; i++) {
-        data[i] = ringbuf_get(&self->rbuf);
-    }
+    // Copy as much received data as available, up to len bytes.
+    size_t rx_bytes = ringbuf_get_n(&self->ringbuf, data, len);
     HAL_NVIC_EnableIRQ(self->irq);
 
     if (rx_bytes == 0) {
@@ -321,7 +311,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle)
             if ((HAL_UART_GetState(handle) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) {
                 return;
             }
-            ringbuf_put_n(&context->rbuf, &context->rx_char, 1);
+            ringbuf_put_n(&context->ringbuf, &context->rx_char, 1);
             errflag = HAL_UART_Receive_IT(handle, &context->rx_char, 1);
 
             return;
@@ -380,13 +370,13 @@ void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeou
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return ringbuf_count(&self->rbuf);
+    return ringbuf_num_filled(&self->ringbuf);
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
     // Halt reception
     HAL_NVIC_DisableIRQ(self->irq);
-    ringbuf_clear(&self->rbuf);
+    ringbuf_clear(&self->ringbuf);
     HAL_NVIC_EnableIRQ(self->irq);
 }
 

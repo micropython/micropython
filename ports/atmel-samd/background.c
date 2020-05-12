@@ -26,7 +26,6 @@
 #include "background.h"
 
 #include "audio_dma.h"
-#include "tick.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
@@ -34,6 +33,7 @@
 #include "py/runtime.h"
 #include "shared-module/network/__init__.h"
 #include "supervisor/shared/stack.h"
+#include "supervisor/port.h"
 
 #ifdef CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
@@ -92,10 +92,10 @@ void run_background_tasks(void) {
     running_background_tasks = false;
     assert_heap_ok();
 
-    last_finished_tick = supervisor_ticks_ms64();
+    last_finished_tick = port_get_raw_ticks(NULL);
     finish_background_task();
 }
 
 bool background_tasks_ok(void) {
-    return supervisor_ticks_ms64() - last_finished_tick < 1000;
+    return port_get_raw_ticks(NULL) - last_finished_tick < 1024;
 }

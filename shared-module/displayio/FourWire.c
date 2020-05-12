@@ -36,8 +36,6 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/display_core.h"
 
-#include "tick.h"
-
 void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     busio_spi_obj_t* spi, const mcu_pin_obj_t* command,
     const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset, uint32_t baudrate,

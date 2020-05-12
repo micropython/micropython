@@ -47,7 +47,7 @@ typedef struct {
     const mcu_periph_obj_t *tx;
     const mcu_periph_obj_t *rx;
 
-    ringbuf_t rbuf;
+    ringbuf_t ringbuf;
     uint8_t rx_char;
 
     uint32_t baudrate;

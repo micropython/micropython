@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     steps:
     - name: Dump GitHub context
       env:
@@ -94,15 +94,16 @@ jobs:
         path: mpy-cross/mpy-cross.static.exe
 
   mpy-cross-mac:
-    runs-on: macos-latest
+    runs-on: macos-10.15
     steps:
     - name: Dump GitHub context
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
       run: echo "$GITHUB_CONTEXT"
-    - name: Install deps
+    - name: Make gettext programs available
       run: |
-        brew link --force gettext
+        brew install gettext
+        echo "::set-env name=PATH::/usr/local/opt/gettext/bin:$PATH"
     - name: Versions
       run: |
         gcc --version
@@ -126,7 +127,7 @@ jobs:
         path: mpy-cross/mpy-cross
 
   build-arm:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     needs: test
     strategy:
       fail-fast: false
@@ -200,18 +201,22 @@ jobs:
         - "monster_m4sk"
         - "ndgarage_ndbit6"
         - "nfc_copy_cat"
+        - "nucleo_f746zg"
         - "nucleo_f767zi"
         - "nucleo_h743zi_2"
         - "ohs2020_badge"
         - "openbook_m4"
+        - "openmv_h7"
         - "particle_argon"
         - "particle_boron"
         - "particle_xenon"
         - "pca10056"
         - "pca10059"
+        - "pca10100"
         - "pewpew10"
         - "pewpew_m4"
         - "pirkey_m0"
+        - "pitaya_go"
         - "pyb_nano_v2"
         - "pybadge"
         - "pybadge_airlift"
@@ -227,6 +232,7 @@ jobs:
         - "seeeduino_xiao"
         - "serpente"
         - "shirtty"
+        - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
         - "sparkfun_nrf52840_mini"
@@ -241,8 +247,10 @@ jobs:
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stm32f4_discovery"
+        - "stm32f746g_discovery"
         - "stringcar_m0_express"
         - "teensy40"
+        - "teensy41"
         - "teknikio_bluebird"
         - "thunderpack"
         - "trellis_m4_express"
@@ -299,7 +307,7 @@ jobs:
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
   build-riscv:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     needs: test
     strategy:
       fail-fast: false
@@ -323,9 +331,14 @@ jobs:
         gcc --version
         riscv64-unknown-elf-gcc --version
         python3 --version
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
     - name: mpy-cross
       run: make -C mpy-cross -j2
     - name: build

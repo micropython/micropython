@@ -107,6 +107,7 @@ endif
 
 ifeq ($(CIRCUITPY_ULAB),1)
 SRC_MOD += $(addprefix extmod/ulab/code/, \
+compare.c \
 create.c \
 extras.c \
 fft.c \
@@ -257,6 +258,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	repl.o \
 	smallint.o \
 	frozenmod.o \
+	ringbuf.o \
 	)
 
 PY_EXTMOD_O_BASENAME = \

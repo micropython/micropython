@@ -114,7 +114,7 @@ else
 
   # Do a default shrink for small builds.
   ifndef CFLAGS_INLINE_LIMIT
-    ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+    ifeq ($(CIRCUITPY_FULL_BUILD),0)
       CFLAGS_INLINE_LIMIT = 50
     endif
   endif
@@ -125,7 +125,7 @@ else
 
   CFLAGS += -flto -flto-partition=none
 
-  ifeq ($(CIRCUITPY_SMALL_BUILD),1)
+  ifeq ($(CIRCUITPY_FULL_BUILD),0)
     CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
   endif
 
@@ -194,7 +194,6 @@ SRC_ASF := \
 	hpl/gclk/hpl_gclk.c \
 	hpl/nvmctrl/hpl_nvmctrl.c \
 	hpl/pm/hpl_pm.c \
-	hpl/rtc/hpl_rtc.c \
 	hpl/sercom/hpl_sercom.c \
 	hpl/systick/hpl_systick.c \
 	hal/utils/src/utils_list.c \
@@ -258,7 +257,6 @@ SRC_C = \
 	peripherals/samd/timers.c \
 	reset.c \
 	supervisor/shared/memory.c \
-	tick.c \
 	timer_handler.c \
 
 
@@ -305,7 +303,6 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 # because a few modules have files both in common-hal/ and shared-modules/.
 # Doing a $(sort ...) removes duplicates as part of sorting.
 SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
-
 
 SRC_S = supervisor/$(CHIP_FAMILY)_cpu.s
 

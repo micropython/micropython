@@ -116,7 +116,6 @@ SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
-	tick.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	lib/libc/string0.c \

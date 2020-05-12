@@ -34,5 +34,7 @@
 
 #define BOARD_OSC_DIV (8)
 
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
+
 #define DEFAULT_I2C_BUS_SCL (&pin_PB10)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB09)

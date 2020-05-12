@@ -179,17 +179,10 @@ typedef long mp_off_t;
 // board-specific definitions, which control and may override definitions below.
 #include "mpconfigboard.h"
 
-// CIRCUITPY_FULL_BUILD is defined in a *.mk file.
-
-// Remove some lesser-used functionality to make small builds fit.
+// Turning off FULL_BUILD removes some functionality to reduce flash size on tiny SAMD21s
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
-//TODO: replace this with a rework of the FULL_BUILD system
-#if !defined(MICROPY_CPYTHON_COMPAT)
-	#define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
-#endif
-#if !defined(MICROPY_COMP_FSTRING_LITERAL)
+#define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
 #define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
-#endif
 #define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_COMPLEX           (CIRCUITPY_FULL_BUILD)
@@ -223,12 +216,19 @@ typedef long mp_off_t;
 #define MP_SSIZE_MAX (0x7fffffff)
 #endif
 
-#if INTERNAL_FLASH_FILESYSTEM == 0 && QSPI_FLASH_FILESYSTEM == 0 && SPI_FLASH_FILESYSTEM == 0 && !CIRCUITPY_MINIMAL_BUILD
+#if INTERNAL_FLASH_FILESYSTEM == 0 && QSPI_FLASH_FILESYSTEM == 0 && SPI_FLASH_FILESYSTEM == 0 && !DISABLE_FILESYSTEM
 #error No *_FLASH_FILESYSTEM set!
 #endif
 
 // These CIRCUITPY_xxx values should all be defined in the *.mk files as being on or off.
 // So if any are not defined in *.mk, they'll throw an error here.
+
+#if CIRCUITPY_AESIO
+extern const struct _mp_obj_module_t aesio_module;
+#define AESIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_aesio), (mp_obj_t)&aesio_module },
+#else
+#define AESIO_MODULE
+#endif
 
 #if CIRCUITPY_ANALOGIO
 #define ANALOGIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module },
@@ -626,6 +626,7 @@ extern const struct _mp_obj_module_t ustack_module;
 // Some of these definitions will be blank depending on what is turned on and off.
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
+    AESIO_MODULE \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \

@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Mark Olsson <mark@markolsson.se>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +68,13 @@
 #define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08004000
 #endif
 
+/* Note this applies to STM32F769xG only, STM32F746xE has 512KB */
+#ifdef STM32F746xx
+#define STM32_FLASH_SIZE 0x100000 //1MB
+#define INTERNAL_FLASH_FILESYSTEM_SIZE 0x18000 //96KiB
+#define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08008000
+#endif
+
 #ifdef STM32F767xx
 #define STM32_FLASH_SIZE 0x200000 //2MB
 #define INTERNAL_FLASH_FILESYSTEM_SIZE 0x18000 //96KiB
@@ -75,7 +83,7 @@
 
 #ifdef STM32H743xx
 #define STM32_FLASH_SIZE 0x200000 //2MB
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0x20000 //128KiB
+#define INTERNAL_FLASH_FILESYSTEM_SIZE 0x60000 //384KiB
 #define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08020000
 #endif
 
