@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-06 17:47+0800\n"
+"POT-Creation-Date: 2020-05-11 21:38-0500\n"
 "PO-Revision-Date: 2020-04-30 17:01+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: German <https://later.unpythonic.net/projects/circuitpython/"
@@ -799,7 +799,8 @@ msgstr "Gruppe schon benutzt"
 msgid "Group full"
 msgstr "Gruppe voll"
 
-#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Hardware busy, try alternative pins"
 msgstr ""
 
@@ -1055,7 +1056,7 @@ msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 "Die Startverzögerung des Mikrofons muss im Bereich von 0,0 bis 1,0 liegen"
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr ""
 
@@ -1063,7 +1064,7 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr "Muss eine %q Unterklasse sein."
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
@@ -1094,11 +1095,11 @@ msgstr "Kein DAC im Chip vorhanden"
 msgid "No DMA channel found"
 msgstr "Kein DMA Kanal gefunden"
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr ""
 
@@ -1145,6 +1146,10 @@ msgstr "Keine Hardwareunterstützung an diesem Pin"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
+msgstr ""
+
+#: shared-bindings/time/__init__.c
+msgid "No long integer support"
 msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
