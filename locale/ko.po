@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-06 17:47+0800\n"
+"POT-Creation-Date: 2020-05-11 21:38-0500\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -790,7 +790,8 @@ msgstr ""
 msgid "Group full"
 msgstr ""
 
-#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Hardware busy, try alternative pins"
 msgstr ""
 
@@ -1043,7 +1044,7 @@ msgstr ""
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr ""
 
@@ -1051,7 +1052,7 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
@@ -1082,11 +1083,11 @@ msgstr ""
 msgid "No DMA channel found"
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr ""
 
@@ -1133,6 +1134,10 @@ msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
+msgstr ""
+
+#: shared-bindings/time/__init__.c
+msgid "No long integer support"
 msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c

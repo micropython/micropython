@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-06 17:47+0800\n"
+"POT-Creation-Date: 2020-05-11 21:38-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -797,7 +797,8 @@ msgstr "Jítuán yǐjīng shǐyòngguò"
 msgid "Group full"
 msgstr "Fēnzǔ yǐ mǎn"
 
-#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Hardware busy, try alternative pins"
 msgstr "Yìngjiàn máng, qǐng chángshì qítā zhēnjiǎo"
 
@@ -1052,7 +1053,7 @@ msgstr "MicroPython zhìmìng cuòwù."
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi"
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Quēshǎo MISO huò MOSI yǐn jiǎo"
 
@@ -1060,7 +1061,7 @@ msgstr "Quēshǎo MISO huò MOSI yǐn jiǎo"
 msgid "Must be a %q subclass."
 msgstr "Bìxū shì %q zi lèi."
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "Bìxū tígōng MISO huò MOSI yǐn jiǎo"
 
@@ -1091,11 +1092,11 @@ msgstr "Méiyǒu DAC zài xīnpiàn shàng de"
 msgid "No DMA channel found"
 msgstr "Wèi zhǎodào DMA píndào"
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr "Méiyǒu MISO yǐn jiǎo"
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr "Méiyǒu MOSI yǐn jiǎo"
 
@@ -1142,6 +1143,10 @@ msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
+msgstr ""
+
+#: shared-bindings/time/__init__.c
+msgid "No long integer support"
 msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
