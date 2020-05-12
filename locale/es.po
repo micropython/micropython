@@ -1141,6 +1141,10 @@ msgstr "Sin soporte de hardware en pin"
 msgid "No key was specified"
 msgstr ""
 
+#: shared-bindings/time/__init__.c
+msgid "No long integer support"
+msgstr ""
+
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "No more timers available on this pin."
 msgstr ""
