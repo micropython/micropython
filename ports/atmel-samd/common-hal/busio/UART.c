@@ -45,6 +45,9 @@
 
 #include "samd/sercom.h"
 
+#define UART_DEBUG(...) (void)0
+// #define UART_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+
 // Do-nothing callback needed so that usart_async code will enable rx interrupts.
 // See comment below re usart_async_register_callback()
 static void usart_async_rxc_callback(const struct usart_async_descriptor *const descr) {

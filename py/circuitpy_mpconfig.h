@@ -223,6 +223,13 @@ typedef long mp_off_t;
 // These CIRCUITPY_xxx values should all be defined in the *.mk files as being on or off.
 // So if any are not defined in *.mk, they'll throw an error here.
 
+#if CIRCUITPY_AESIO
+extern const struct _mp_obj_module_t aesio_module;
+#define AESIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_aesio), (mp_obj_t)&aesio_module },
+#else
+#define AESIO_MODULE
+#endif
+
 #if CIRCUITPY_ANALOGIO
 #define ANALOGIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module },
 extern const struct _mp_obj_module_t analogio_module;
@@ -626,6 +633,7 @@ extern const struct _mp_obj_module_t ustack_module;
 // Some of these definitions will be blank depending on what is turned on and off.
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
+    AESIO_MODULE \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \

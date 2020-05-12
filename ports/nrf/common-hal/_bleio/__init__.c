@@ -118,8 +118,8 @@ void common_hal_bleio_check_connected(uint16_t conn_handle) {
 
 // GATTS read of a Characteristic or Descriptor.
 size_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle, uint8_t* buf, size_t len) {
-    // conn_handle might be BLE_CONN_HANDLE_INVALID if we're not connected, but that's OK, because
-    // we can still read and write the local value.
+    // conn_handle is ignored unless this is a system attribute.
+    // If we're not connected, that's OK, because we can still read and write the local value.
 
     ble_gatts_value_t gatts_value = {
         .p_value = buf,
@@ -132,8 +132,8 @@ size_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle, uint8_
 }
 
 void common_hal_bleio_gatts_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo) {
-    // conn_handle might be BLE_CONN_HANDLE_INVALID if we're not connected, but that's OK, because
-    // we can still read and write the local value.
+    // conn_handle is ignored unless this is a system attribute.
+    // If we're not connected, that's OK, because we can still read and write the local value.
 
     ble_gatts_value_t gatts_value = {
         .p_value = bufinfo->buf,
