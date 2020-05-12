@@ -35,7 +35,7 @@
 
 #include "shared-module/network/__init__.h"
 
-//| :mod:`wiznet` --- Support for WizNet hardware
+//| """:mod:`wiznet` --- Support for WizNet hardware
 //| =============================================
 //|
 //| .. module:: wiznet
@@ -49,7 +49,7 @@
 //| .. toctree::
 //|   :maxdepth: 3
 //|
-//|   wiznet5k
+//|   wiznet5k"""
 //|
 
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;

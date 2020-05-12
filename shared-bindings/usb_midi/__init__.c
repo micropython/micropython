@@ -35,7 +35,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`usb_midi` --- MIDI over USB
+//| """:mod:`usb_midi` --- MIDI over USB
 //| =================================================
 //|
 //| .. module:: usb_midi
@@ -49,7 +49,7 @@
 //|     :maxdepth: 3
 //|
 //|     PortIn
-//|     PortOut
+//|     PortOut"""
 //|
 //|
 mp_map_elem_t usb_midi_module_globals_table[] = {
