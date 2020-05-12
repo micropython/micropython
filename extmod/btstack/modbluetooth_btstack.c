@@ -677,12 +677,27 @@ int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, 
     return btstack_error_to_errno(gap_connect(btstack_addr, addr_type));
 }
 
-int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle) {
+int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle, const mp_obj_bluetooth_uuid_t *uuid) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_discover_primary_services\n");
-    return btstack_error_to_errno(gatt_client_discover_primary_services(&btstack_packet_handler_discover_services, conn_handle));
+    uint8_t err;
+    if (uuid) {
+        if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
+            err = gatt_client_discover_primary_services_by_uuid16(&btstack_packet_handler_discover_services, conn_handle, get_uuid16(uuid));
+        } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
+            uint8_t buffer[16];
+            reverse_128(uuid->data, buffer);
+            err = gatt_client_discover_primary_services_by_uuid128(&btstack_packet_handler_discover_services, conn_handle, buffer);
+        } else {
+            DEBUG_EVENT_printf("  --> unknown UUID size\n");
+            return MP_EINVAL;
+        }
+    } else {
+        err = gatt_client_discover_primary_services(&btstack_packet_handler_discover_services, conn_handle);
+    }
+    return btstack_error_to_errno(err);
 }
 
-int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle) {
+int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, const mp_obj_bluetooth_uuid_t *uuid) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_discover_characteristics\n");
     gatt_client_service_t service = {
         // Only start/end handles needed for gatt_client_discover_characteristics_for_service.
@@ -691,7 +706,22 @@ int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t s
         .uuid16 = 0,
         .uuid128 = {0},
     };
-    return btstack_error_to_errno(gatt_client_discover_characteristics_for_service(&btstack_packet_handler_discover_characteristics, conn_handle, &service));
+    uint8_t err;
+    if (uuid) {
+        if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
+            err = gatt_client_discover_characteristics_for_service_by_uuid16(&btstack_packet_handler_discover_characteristics, conn_handle, &service, get_uuid16(uuid));
+        } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
+            uint8_t buffer[16];
+            reverse_128(uuid->data, buffer);
+            err = gatt_client_discover_characteristics_for_service_by_uuid128(&btstack_packet_handler_discover_characteristics, conn_handle, &service, buffer);
+        } else {
+            DEBUG_EVENT_printf("  --> unknown UUID size\n");
+            return MP_EINVAL;
+        }
+    } else {
+        err = gatt_client_discover_characteristics_for_service(&btstack_packet_handler_discover_characteristics, conn_handle, &service);
+    }
+    return btstack_error_to_errno(err);
 }
 
 int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle) {
