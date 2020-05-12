@@ -35,7 +35,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`touchio` --- Touch related IO
+//| """:mod:`touchio` --- Touch related IO
 //| =================================================
 //|
 //| .. module:: touchio
@@ -66,7 +66,7 @@
 //|   print(touch_pin.value)
 //|
 //| This example will initialize the the device, and print the
-//| :py:data:`~touchio.TouchIn.value`.
+//| :py:data:`~touchio.TouchIn.value`."""
 //|
 
 STATIC const mp_rom_map_elem_t touchio_module_globals_table[] = {
