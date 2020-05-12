@@ -5,6 +5,7 @@
 #include "shared-bindings/vectorio/VectorShape.h"
 
 #include "py/runtime.h"
+#include "shared-bindings/time/__init__.h"
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/Palette.h"
 
@@ -15,6 +16,10 @@
 // Lifecycle actions.
 #define VECTORIO_SHAPE_DEBUG(...) (void)0
 // #define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+
+
+// Used in both logging and ifdefs, for extra variables
+// #define VECTORIO_PERF(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
 
 // Really verbose.
@@ -167,6 +172,10 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
     //   To make it relative to the VectorShape position, we must shift it.
     // Pixels are drawn on the screen_area (shifted) coordinate space, while pixels are _determined_ from
     //   the shape_area (unshifted) space.
+#ifdef VECTORIO_PERF
+    uint64_t start = common_hal_time_monotonic_ns();
+    uint64_t pixel_time = 0;
+#endif
     displayio_area_t overlap;
     VECTORIO_SHAPE_DEBUG("%p fill_area dirty:%d fill: {(%5d,%5d), (%5d,%5d)} dirty: {(%5d,%5d), (%5d,%5d)}",
         self, self->dirty,
@@ -186,7 +195,8 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
     uint32_t linestride_px = displayio_area_width(area);
     uint32_t line_dirty_offset_px = (overlap.y1 - area->y1) * linestride_px;
     uint32_t column_dirty_offset_px = overlap.x1 - area->x1;
-    VECTORIO_SHAPE_DEBUG(", linestride:%3d line_offset:%3d col_offset:%3d depth:%2d ppb:%2d\n", linestride_px, line_dirty_offset_px, column_dirty_offset_px, colorspace->depth, pixels_per_byte);
+    VECTORIO_SHAPE_DEBUG(", linestride:%3d line_offset:%3d col_offset:%3d depth:%2d ppb:%2d shape:%s",
+        linestride_px, line_dirty_offset_px, column_dirty_offset_px, colorspace->depth, pixels_per_byte, mp_obj_get_type_str(self->ishape.shape));
 
     displayio_input_pixel_t input_pixel;
     displayio_output_pixel_t output_pixel;
@@ -217,7 +227,14 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                 pixel_to_get_y = (input_pixel.y - self->absolute_transform->dy * self->y) / self->absolute_transform->dy;
             }
             VECTORIO_SHAPE_PIXEL_DEBUG(" get_pixel %p (%3d, %3d) -> ( %3d, %3d )", self->ishape.shape, input_pixel.x, input_pixel.y, pixel_to_get_x, pixel_to_get_y);
+#ifdef VECTORIO_PERF
+            uint64_t pre_pixel = common_hal_time_monotonic_ns();
+#endif
             input_pixel.pixel = self->ishape.get_pixel(self->ishape.shape, pixel_to_get_x, pixel_to_get_y);
+#ifdef VECTORIO_PERF
+            uint64_t post_pixel = common_hal_time_monotonic_ns();
+            pixel_time += post_pixel - pre_pixel;
+#endif
             VECTORIO_SHAPE_PIXEL_DEBUG(" -> %d", input_pixel.pixel);
 
             output_pixel.opaque = true;
@@ -259,6 +276,19 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
         }
         mask_start_px += linestride_px - column_dirty_offset_px;
     }
+#ifdef VECTORIO_PERF
+    uint64_t end = common_hal_time_monotonic_ns();
+    uint32_t pixels = (overlap.x2 - overlap.x1) * (overlap.y2 - overlap.y1);
+    VECTORIO_PERF("draw %16s -> shape:{%4dpx, %4.1fms,%9.1fpps fill}  shape_pixels:{%6.1fus total, %4.1fus/px}\n",
+        mp_obj_get_type_str(self->ishape.shape),
+        (overlap.x2 - overlap.x1) * (overlap.y2 - overlap.y1),
+        (double)((end - start) / 1000000.0),
+        (double)(max(1, pixels * (1000000000.0 / (end - start)))),
+        (double)(pixel_time / 1000.0),
+        (double)(pixel_time / 1000.0 / pixels)
+    );
+#endif
+    VECTORIO_SHAPE_DEBUG(" -> pixels:%4d\n");
     return full_coverage;
 }
 
