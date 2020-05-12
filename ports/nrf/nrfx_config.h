@@ -41,11 +41,13 @@
 #define NRFX_SPIM1_ENABLED 1
 #endif
 #define NRFX_SPIM2_ENABLED 1
+#ifndef NRFX_SPIM3_ENABLED
 #if defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
     #define NRFX_SPIM_EXTENDED_ENABLED 1
     #define NRFX_SPIM3_ENABLED 1
 #elif CIRCUITPY_NRF_NUM_I2C == 2
     #define NRFX_SPIM3_ENABLED 0
+#endif
 #endif
 
 
