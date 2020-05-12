@@ -28,7 +28,8 @@ uint32_t common_hal_vectorio_circle_get_pixel(void *obj, int16_t x, int16_t y) {
     if (x+y <= radius) return 1;
     if (x > radius) return 0;
     if (y > radius) return 0;
-    return (int32_t)x*x + (int32_t)y*y <= (int32_t)radius*radius;
+    const bool pythagorasSmallerThanRadius = (int32_t)x*x + (int32_t)y*y <= (int32_t)radius*radius;
+    return pythagorasSmallerThanRadius ? 1 : 0;
 }
 
 
