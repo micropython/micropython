@@ -688,21 +688,27 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gatts_set_buffer_obj, 3
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
-STATIC mp_obj_t bluetooth_ble_gattc_discover_services(mp_obj_t self_in, mp_obj_t conn_handle_in) {
-    (void)self_in;
-    mp_int_t conn_handle = mp_obj_get_int(conn_handle_in);
-    return bluetooth_handle_errno(mp_bluetooth_gattc_discover_primary_services(conn_handle));
+STATIC mp_obj_t bluetooth_ble_gattc_discover_services(size_t n_args, const mp_obj_t *args) {
+    mp_int_t conn_handle = mp_obj_get_int(args[1]);
+    mp_obj_bluetooth_uuid_t *uuid = NULL;
+    if (n_args == 3) {
+        uuid = MP_OBJ_TO_PTR(args[2]);
+    }
+    return bluetooth_handle_errno(mp_bluetooth_gattc_discover_primary_services(conn_handle, uuid));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gattc_discover_services_obj, bluetooth_ble_gattc_discover_services);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_discover_services_obj, 2, 3, bluetooth_ble_gattc_discover_services);
 
 STATIC mp_obj_t bluetooth_ble_gattc_discover_characteristics(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
     mp_int_t start_handle = mp_obj_get_int(args[2]);
     mp_int_t end_handle = mp_obj_get_int(args[3]);
-    return bluetooth_handle_errno(mp_bluetooth_gattc_discover_characteristics(conn_handle, start_handle, end_handle));
+    mp_obj_bluetooth_uuid_t *uuid = NULL;
+    if (n_args == 3) {
+        uuid = MP_OBJ_TO_PTR(args[4]);
+    }
+    return bluetooth_handle_errno(mp_bluetooth_gattc_discover_characteristics(conn_handle, start_handle, end_handle, uuid));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_discover_characteristics_obj, 4, 4, bluetooth_ble_gattc_discover_characteristics);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_discover_characteristics_obj, 4, 5, bluetooth_ble_gattc_discover_characteristics);
 
 STATIC mp_obj_t bluetooth_ble_gattc_discover_descriptors(size_t n_args, const mp_obj_t *args) {
     (void)n_args;

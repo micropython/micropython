@@ -74,19 +74,19 @@ STATIC int ble_hs_err_to_errno(int err) {
 }
 
 // Note: modbluetooth UUIDs store their data in LE.
-STATIC ble_uuid_t *create_nimble_uuid(const mp_obj_bluetooth_uuid_t *uuid) {
+STATIC ble_uuid_t *create_nimble_uuid(const mp_obj_bluetooth_uuid_t *uuid, ble_uuid_any_t *storage) {
     if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
-        ble_uuid16_t *result = m_new(ble_uuid16_t, 1);
+        ble_uuid16_t *result = storage ? &storage->u16 : m_new(ble_uuid16_t, 1);
         result->u.type = BLE_UUID_TYPE_16;
         result->value = (uuid->data[1] << 8) | uuid->data[0];
         return (ble_uuid_t *)result;
     } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_32) {
-        ble_uuid32_t *result = m_new(ble_uuid32_t, 1);
+        ble_uuid32_t *result = storage ? &storage->u32 : m_new(ble_uuid32_t, 1);
         result->u.type = BLE_UUID_TYPE_32;
         result->value = (uuid->data[1] << 24) | (uuid->data[1] << 16) | (uuid->data[1] << 8) | uuid->data[0];
         return (ble_uuid_t *)result;
     } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
-        ble_uuid128_t *result = m_new(ble_uuid128_t, 1);
+        ble_uuid128_t *result = storage ? &storage->u128 : m_new(ble_uuid128_t, 1);
         result->u.type = BLE_UUID_TYPE_128;
         memcpy(result->value, uuid->data, 16);
         return (ble_uuid_t *)result;
@@ -498,7 +498,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
 
     struct ble_gatt_chr_def *characteristics = m_new(struct ble_gatt_chr_def, num_characteristics + 1);
     for (size_t i = 0; i < num_characteristics; ++i) {
-        characteristics[i].uuid = create_nimble_uuid(characteristic_uuids[i]);
+        characteristics[i].uuid = create_nimble_uuid(characteristic_uuids[i], NULL);
         characteristics[i].access_cb = characteristic_access_cb;
         characteristics[i].arg = NULL;
         characteristics[i].flags = characteristic_flags[i];
@@ -512,7 +512,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
             struct ble_gatt_dsc_def *descriptors = m_new(struct ble_gatt_dsc_def, num_descriptors[i] + 1);
 
             for (size_t j = 0; j < num_descriptors[i]; ++j) {
-                descriptors[j].uuid = create_nimble_uuid(descriptor_uuids[descriptor_index]);
+                descriptors[j].uuid = create_nimble_uuid(descriptor_uuids[descriptor_index], NULL);
                 descriptors[j].access_cb = characteristic_access_cb;
                 descriptors[j].att_flags = descriptor_flags[descriptor_index];
                 descriptors[j].min_key_size = 0;
@@ -530,7 +530,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
 
     struct ble_gatt_svc_def *service = m_new(struct ble_gatt_svc_def, 2);
     service[0].type = BLE_GATT_SVC_TYPE_PRIMARY;
-    service[0].uuid = create_nimble_uuid(service_uuid);
+    service[0].uuid = create_nimble_uuid(service_uuid, NULL);
     service[0].includes = NULL;
     service[0].characteristics = characteristics;
     service[1].type = 0; // no more services
@@ -769,11 +769,18 @@ STATIC int peripheral_discover_service_cb(uint16_t conn_handle, const struct ble
     return 0;
 }
 
-int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle) {
+int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle, const mp_obj_bluetooth_uuid_t *uuid) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
-    int err = ble_gattc_disc_all_svcs(conn_handle, &peripheral_discover_service_cb, NULL);
+    int err;
+    if (uuid) {
+        ble_uuid_any_t nimble_uuid;
+        create_nimble_uuid(uuid, &nimble_uuid);
+        err = ble_gattc_disc_svc_by_uuid(conn_handle, &nimble_uuid.u, &peripheral_discover_service_cb, NULL);
+    } else {
+        err = ble_gattc_disc_all_svcs(conn_handle, &peripheral_discover_service_cb, NULL);
+    }
     return ble_hs_err_to_errno(err);
 }
 
@@ -791,11 +798,18 @@ STATIC int ble_gatt_characteristic_cb(uint16_t conn_handle, const struct ble_gat
     return 0;
 }
 
-int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle) {
+int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, const mp_obj_bluetooth_uuid_t *uuid) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
-    int err = ble_gattc_disc_all_chrs(conn_handle, start_handle, end_handle, &ble_gatt_characteristic_cb, NULL);
+    int err;
+    if (uuid) {
+        ble_uuid_any_t nimble_uuid;
+        create_nimble_uuid(uuid, &nimble_uuid);
+        err = ble_gattc_disc_chrs_by_uuid(conn_handle, start_handle, end_handle, &nimble_uuid.u, &ble_gatt_characteristic_cb, NULL);
+    } else {
+        err = ble_gattc_disc_all_chrs(conn_handle, start_handle, end_handle, &ble_gatt_characteristic_cb, NULL);
+    }
     return ble_hs_err_to_errno(err);
 }
 

@@ -127,6 +127,12 @@ void *nimble_realloc(void *ptr, size_t size) {
     return ptr2;
 }
 
+// No-op implementation (only used by NimBLE logging).
+int nimble_sprintf(char *str, const char *fmt, ...) {
+    str[0] = 0;
+    return 0;
+}
+
 /******************************************************************************/
 // EVENTQ
 
