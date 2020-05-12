@@ -35,7 +35,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`terminalio` --- Displays text in a TileGrid
+//| """:mod:`terminalio` --- Displays text in a TileGrid
 //| =================================================
 //|
 //| .. module:: terminalio
@@ -49,7 +49,7 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     Terminal
+//|     Terminal"""
 //|
 //|
 STATIC const mp_rom_map_elem_t  terminalio_module_globals_table[] = {

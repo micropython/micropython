@@ -36,7 +36,7 @@
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/supervisor/Runtime.h"
 
-//| :mod:`supervisor` --- Supervisor settings
+//| """:mod:`supervisor` --- Supervisor settings
 //| =================================================
 //|
 //| .. module:: supervisor
@@ -50,19 +50,18 @@
 //| .. toctree::
 //|     :maxdepth: 3
 //|
-//|     Runtime
+//|     Runtime"""
 //|
 
-//| .. attribute:: runtime
-//|
-//|   Runtime information, such as `runtime.serial_connected`
-//|   (USB serial connection status).
-//|   This object is the sole instance of `supervisor.Runtime`.
+//| runtime: Any = ...
+//| """Runtime information, such as `runtime.serial_connected`
+//| (USB serial connection status).
+//| This object is the sole instance of `supervisor.Runtime`."""
 //|
 
-//| .. method:: enable_autoreload()
-//|
-//|   Enable autoreload based on USB file write activity.
+//| def enable_autoreload(self, ) -> Any:
+//|     """Enable autoreload based on USB file write activity."""
+//|     ...
 //|
 STATIC mp_obj_t supervisor_enable_autoreload(void) {
     autoreload_enable();
@@ -70,10 +69,10 @@ STATIC mp_obj_t supervisor_enable_autoreload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_enable_autoreload_obj, supervisor_enable_autoreload);
 
-//| .. method:: disable_autoreload()
-//|
-//|   Disable autoreload based on USB file write activity until
-//|   `enable_autoreload` is called.
+//| def disable_autoreload(self, ) -> Any:
+//|     """Disable autoreload based on USB file write activity until
+//|     `enable_autoreload` is called."""
+//|     ...
 //|
 STATIC mp_obj_t supervisor_disable_autoreload(void) {
     autoreload_disable();
@@ -81,10 +80,10 @@ STATIC mp_obj_t supervisor_disable_autoreload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_autoreload_obj, supervisor_disable_autoreload);
 
-//| .. method:: set_rgb_status_brightness()
-//|
-//|   Set brightness of status neopixel from 0-255
-//|   `set_rgb_status_brightness` is called.
+//| def set_rgb_status_brightness(self, ) -> Any:
+//|     """Set brightness of status neopixel from 0-255
+//|     `set_rgb_status_brightness` is called."""
+//|     ...
 //|
 STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl){
       // This must be int. If cast to uint8_t first, will never raise a ValueError.
@@ -97,9 +96,9 @@ STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl){
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_set_rgb_status_brightness);
 
-//| .. method:: reload()
-//|
-//|   Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL).
+//| def reload(self, ) -> Any:
+//|     """Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL)."""
+//|     ...
 //|
 STATIC mp_obj_t supervisor_reload(void) {
     reload_requested = true;
@@ -108,9 +107,9 @@ STATIC mp_obj_t supervisor_reload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
 
-//| .. method:: set_next_stack_limit(size)
-//|
-//|   Set the size of the stack for the next vm run. If its too large, the default will be used.
+//| def set_next_stack_limit(self, size: Any) -> Any:
+//|     """Set the size of the stack for the next vm run. If its too large, the default will be used."""
+//|     ...
 //|
 STATIC mp_obj_t supervisor_set_next_stack_limit(mp_obj_t size_obj) {
     mp_int_t size = mp_obj_get_int(size_obj);
