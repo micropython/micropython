@@ -169,6 +169,22 @@ char *strcpy(char *dest, const char *src) {
     return dest;
 }
 
+// added for littlevgl
+char *strncpy(char * dest, const char * src, size_t n){
+    if (n != 0) {
+	char *d = dest;
+	const char *s = src;
+	do {
+	  	if ((*d++ = *s++) == '\0') {
+				while (--n != 0)
+					*d++ = '\0';
+				break;
+			}
+		} while (--n != 0);
+	}
+	return (dest);
+}
+
 // needed because gcc optimises strcpy + strcat to this
 char *stpcpy(char *dest, const char *src) {
     while (*src) {

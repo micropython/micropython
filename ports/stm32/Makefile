@@ -459,6 +459,19 @@ DRIVERS_SRC_C += drivers/cyw43/cywbt.c
 endif
 endif
 
+ifeq ($(MICROPY_PY_LVGL),1)
+CFLAGS += -DMICROPY_PY_LVGL
+SRC_LIB += $(shell find $(LVGL_BINDING_DIR)/driver/stm32/$(BOARD)/*.c)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f7))
+SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_ltdc.c \
+	hal_ltdc_ex.c \
+	hal_dma2d.c \
+	)
+LIBS += /lib/arm-none-eabi/newlib/thumb/v7e-m/fpv4-sp/hard/libc.a
+endif
+endif
+
 OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))

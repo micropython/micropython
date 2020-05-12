@@ -887,3 +887,17 @@ void I2C4_ER_IRQHandler(void) {
 #endif // defined(MICROPY_HW_I2C4_SCL)
 
 #endif // MICROPY_PY_PYB_LEGACY
+
+#if defined(HAL_DMA2D_MODULE_ENABLED)
+extern DMA2D_HandleTypeDef *hdma2d;
+void DMA2D_IRQHandler(void) {
+    HAL_DMA2D_IRQHandler(hdma2d);
+}
+#endif
+
+#if defined(HAL_LTDC_MODULE_ENABLED)
+extern LTDC_HandleTypeDef *hltdc;
+void LTDC_IRQHandler(void) {
+    HAL_LTDC_IRQHandler(hltdc);
+}
+#endif

@@ -173,7 +173,7 @@
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK          (1)
 #endif
-#define MICROPY_PY_LVGL                     (1)
+//#define MICROPY_PY_LVGL             (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
