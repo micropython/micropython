@@ -85,8 +85,8 @@ STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t
     if (MP_OBJ_IS_TYPE(shape, &vectorio_polygon_type)) {
         common_hal_vectorio_polygon_set_on_dirty(self->ishape.shape, on_dirty);
     } else if (MP_OBJ_IS_TYPE(shape, &vectorio_rectangle_type)) {
-		common_hal_vectorio_circle_set_on_dirty(self->ishape.shape, on_dirty);
     } else if (MP_OBJ_IS_TYPE(shape, &vectorio_circle_type)) {
+        common_hal_vectorio_circle_set_on_dirty(self->ishape.shape, on_dirty);
     } else {
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_shape);
     }
