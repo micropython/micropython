@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
- * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,24 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_RGBMATRIX_RGBMATRIX_H
 
-#include "common-hal/microcontroller/Pin.h"
-#include "fsl_common.h"
-#include "periph.h"
-#include "py/obj.h"
+void *common_hal_rgbmatrix_timer_allocate(void);
+void common_hal_rgbmatrix_timer_enable(void*);
+void common_hal_rgbmatrix_timer_disable(void*);
+void common_hal_rgbmatrix_timer_free(void*);
 
-typedef struct {
-    mp_obj_base_t base;
-    LPSPI_Type *spi;
-    bool has_lock;
-    uint32_t baudrate;
-    const mcu_periph_obj_t *clock;
-    const mcu_periph_obj_t *mosi;
-    const mcu_periph_obj_t *miso;
-} busio_spi_obj_t;
-
-void spi_reset(void);
-
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H
+#endif
