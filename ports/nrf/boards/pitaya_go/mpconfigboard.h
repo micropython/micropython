@@ -3,7 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 Yihui Xiong
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +25,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_COMMON_COMMANDS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_COMMON_COMMANDS_H
 
-#define CMD_READ_JEDEC_ID 0x9f
-#define CMD_READ_DATA 0x03
-#define CMD_FAST_READ_DATA 0x0B
-#define CMD_SECTOR_ERASE 0x20
-// #define CMD_SECTOR_ERASE CMD_READ_JEDEC_ID
-#define CMD_DISABLE_WRITE 0x04
-#define CMD_ENABLE_WRITE 0x06
-#define CMD_PAGE_PROGRAM 0x02
-// #define CMD_PAGE_PROGRAM CMD_READ_JEDEC_ID
-#define CMD_READ_STATUS 0x05
-#define CMD_READ_STATUS2 0x35
-#define CMD_WRITE_STATUS_BYTE1 0x01
-#define CMD_WRITE_STATUS_BYTE2 0x31
-#define CMD_DUAL_READ 0x3b
-#define CMD_QUAD_READ 0x6b
-#define CMD_ENABLE_RESET 0x66
-#define CMD_RESET 0x99
-#define CMD_WAKE 0xab
+#include "nrfx/hal/nrf_gpio.h"
 
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_COMMON_COMMANDS_H
+#define MAKERDIARYPITAYAGO
+
+#define MICROPY_HW_BOARD_NAME       "Makerdiary Pitaya Go"
+#define MICROPY_HW_MCU_NAME         "nRF52840"
+
+#define MICROPY_QSPI_DATA0          NRF_GPIO_PIN_MAP(1, 6)
+#define MICROPY_QSPI_DATA1          NRF_GPIO_PIN_MAP(1, 1)
+#define MICROPY_QSPI_DATA2          NRF_GPIO_PIN_MAP(1, 5)
+#define MICROPY_QSPI_DATA3          NRF_GPIO_PIN_MAP(1, 2)
+#define MICROPY_QSPI_SCK            NRF_GPIO_PIN_MAP(1, 4)
+#define MICROPY_QSPI_CS             NRF_GPIO_PIN_MAP(1, 3)
+
+#define BOARD_HAS_CRYSTAL           1

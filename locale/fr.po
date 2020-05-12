@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-09 16:44-0700\n"
+"POT-Creation-Date: 2020-05-12 12:24-0700\n"
 "PO-Revision-Date: 2020-05-05 20:24+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
@@ -1169,6 +1169,10 @@ msgstr "Pas de support matériel pour cette broche"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
+msgstr ""
+
+#: shared-bindings/time/__init__.c
+msgid "No long integer support"
 msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c

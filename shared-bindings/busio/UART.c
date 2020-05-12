@@ -39,6 +39,9 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
+#define STREAM_DEBUG(...) (void)0
+// #define STREAM_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+
 
 //| .. currentmodule:: busio
 //|
@@ -219,6 +222,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+    STREAM_DEBUG("busio_uart_read stream %d\n", size);
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     byte *buf = buf_in;
