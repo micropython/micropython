@@ -33,6 +33,7 @@
 #include "shared-bindings/gamepad/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/shared/tick.h"
 
 
 //| .. currentmodule:: gamepad
@@ -105,9 +106,11 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
     gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
     if (!gamepad_singleton ||
         !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(gamepad_singleton), &gamepad_type)) {
-        gamepad_singleton = m_new_obj(gamepad_obj_t);
+        gamepad_singleton = m_new_ll_obj(gamepad_obj_t);
         gamepad_singleton->base.type = &gamepad_type;
-        gamepad_singleton = gc_make_long_lived(gamepad_singleton);
+        if (!MP_STATE_VM(gamepad_singleton)) {
+            supervisor_enable_tick();
+        }
         MP_STATE_VM(gamepad_singleton) = gamepad_singleton;
     }
     common_hal_gamepad_gamepad_init(gamepad_singleton, args, n_args);
