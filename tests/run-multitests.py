@@ -289,7 +289,7 @@ def run_test_on_instances(test_file, num_instances, instances):
                     continue
                 num_output += 1
                 last_read_time[idx] = time.time()
-                if out is not None:
+                if out is not None and not any(m in out for m in IGNORE_OUTPUT_MATCHES):
                     trace_instance_output(idx, out)
                     output[idx].append(out)
                 if err is not None:

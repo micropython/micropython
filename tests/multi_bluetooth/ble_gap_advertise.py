@@ -3,8 +3,8 @@
 from micropython import const
 import time, machine, bluetooth
 
-_IRQ_SCAN_RESULT = const(1 << 4)
-_IRQ_SCAN_COMPLETE = const(1 << 5)
+_IRQ_SCAN_RESULT = const(5)
+_IRQ_SCAN_DONE = const(6)
 
 ADV_TIME_S = 3
 
@@ -43,7 +43,7 @@ def instance1():
                 else:
                     if adv_data != data[4]:
                         adv_data = b"MISMATCH"
-        elif ev == _IRQ_SCAN_COMPLETE:
+        elif ev == _IRQ_SCAN_DONE:
             finished = True
 
     ble.config(rxbuf=2000)
