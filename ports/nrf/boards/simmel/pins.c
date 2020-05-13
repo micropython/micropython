@@ -1,7 +1,7 @@
 #include "shared-bindings/board/__init__.h"
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_SPI_CSN), MP_ROM_PTR(&pin_P0_06) },
+    { MP_ROM_QSTR(MP_QSTR_SPI_CSN), MP_ROM_PTR(&pin_P1_06) },
     { MP_ROM_QSTR(MP_QSTR_SPI_MISO), MP_ROM_PTR(&pin_P1_04) },
     { MP_ROM_QSTR(MP_QSTR_SPI_MOSI), MP_ROM_PTR(&pin_P0_09) },
     { MP_ROM_QSTR(MP_QSTR_SPI_SCK), MP_ROM_PTR(&pin_P0_10) },
