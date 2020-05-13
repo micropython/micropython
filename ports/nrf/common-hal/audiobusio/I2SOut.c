@@ -159,7 +159,7 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
 
     // Find the last frame of real audio data and replicate its samples until
     // you have 32 bits worth, which is the fundamental unit of nRF I2S DMA
-    if(buffer != buffer_start) {
+    if (buffer != buffer_start) {
         if (self->bytes_per_sample == 1 && self->channel_count == 1) {
             // For 8-bit mono, 4 copies of the final sample are required
             self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
