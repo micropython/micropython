@@ -321,6 +321,13 @@ extern const struct _mp_obj_module_t busio_module;
 #define BUSIO_MODULE
 #endif
 
+#if CIRCUITPY_COUNTIO
+extern const struct _mp_obj_module_t countio_module;
+#define COUNTIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_countio), (mp_obj_t)&countio_module },
+#else
+#define COUNTIO_MODULE
+#endif
+
 #if CIRCUITPY_DIGITALIO
 extern const struct _mp_obj_module_t digitalio_module;
 #define DIGITALIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module },
@@ -645,6 +652,7 @@ extern const struct _mp_obj_module_t ustack_module;
     BLEIO_MODULE \
     BOARD_MODULE \
     BUSIO_MODULE \
+    COUNTIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \
       FONTIO_MODULE \
