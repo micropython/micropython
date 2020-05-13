@@ -8,21 +8,9 @@
 #include "shared-bindings/countio/__init__.h"
 #include "shared-bindings/countio/Counter.h"
 
-//| :mod:`countio` --- Support for edge counting
-//| ========================================================
-//|
-//| .. module:: countio
-//|   :synopsis: Support for edge counting
-//|   :platform: SAMD
+//| """Support for edge counting
 //|
 //| The `countio` module contains logic to read and count edge transistions
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Counter
 //|
 
 //| .. warning:: This module is not available in some SAMD21 (aka M0) builds. See the
@@ -32,7 +20,7 @@
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
-//| :ref:`lifetime-and-contextmanagers` for more info.
+//| :ref:`lifetime-and-contextmanagers` for more info."""
 //|
 
 STATIC const mp_rom_map_elem_t countio_module_globals_table[] = {

@@ -346,13 +346,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_o
 //| class Parity:
 //|     """Enum-like class to define the parity used to verify correct data transfer."""
 //|
-//|     def __init__(self, ):
-//|         ODD: Any = ...
-//|         """Total number of ones should be odd."""
+//|     ODD: Any = ...
+//|     """Total number of ones should be odd."""
 //|
-//|         EVEN: Any = ...
-//|         """Total number of ones should be even."""
-//|         ...
+//|     EVEN: Any = ...
+//|     """Total number of ones should be even."""
 //|
 const mp_obj_type_t busio_uart_parity_type;
 
