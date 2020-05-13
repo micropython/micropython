@@ -81,11 +81,20 @@ msgstr "index %q hors gamme"
 msgid "%q indices must be integers, not %s"
 msgstr "les indices %q doivent être des entiers, pas %s"
 
+#: shared-bindings/vectorio/Polygon.c
+msgid "%q list must be a list"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c
+#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
+#: shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q doit être >=1"
+
+#: shared-bindings/vectorio/Polygon.c
+msgid "%q must be a tuple of length 2"
+msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -2068,6 +2077,10 @@ msgstr "argument de chr() hors de la gamme range(0x11000)"
 msgid "chr() arg not in range(256)"
 msgstr "argument de chr() hors de la gamme range(256)"
 
+#: shared-module/vectorio/Circle.c
+msgid "circle can only be registered in one parent"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "le tampon de couleur doit faire 3 octets (RVB) ou 4 (RVB + pad byte)"
@@ -2175,6 +2188,10 @@ msgstr "division par zéro"
 #: py/objdeque.c
 msgid "empty"
 msgstr "vide"
+
+#: shared-bindings/vectorio/Polygon.c
+msgid "empty %q list"
+msgstr ""
 
 #: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
@@ -2879,10 +2896,14 @@ msgstr "coordonnées de pixel hors limites"
 msgid "pixel value requires too many bits"
 msgstr "la valeur du pixel requiet trop de bits"
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 "pixel_shader doit être un objet displayio.Palette ou displayio.ColorConverter"
+
+#: shared-module/vectorio/Polygon.c
+msgid "polygon can only be registered in one parent"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -3207,7 +3228,8 @@ msgstr "'{' sans correspondance dans le format"
 msgid "unreadable attribute"
 msgstr "attribut illisible"
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/Polygon.c
+#: shared-bindings/vectorio/VectorShape.c
 #, fuzzy
 msgid "unsupported %q type"
 msgstr "type de %q non supporté"

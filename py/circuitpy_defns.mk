@@ -148,6 +148,9 @@ endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/% terminalio/% fontio/%
 endif
+ifeq ($(CIRCUITPY_VECTORIO),1)
+SRC_PATTERNS += vectorio/%
+endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
 endif
@@ -363,6 +366,11 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/Shape.c \
 	displayio/TileGrid.c \
 	displayio/__init__.c \
+    vectorio/Circle.c \
+    vectorio/Rectangle.c \
+    vectorio/Polygon.c \
+    vectorio/VectorShape.c \
+    vectorio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \

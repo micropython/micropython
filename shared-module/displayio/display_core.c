@@ -40,6 +40,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#define DISPLAYIO_CORE_DEBUG(...) (void)0
+// #define DISPLAYIO_CORE_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+
 void displayio_display_core_construct(displayio_display_core_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart, uint16_t rotation,
         uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word) {
@@ -298,6 +301,7 @@ void displayio_display_core_start_refresh(displayio_display_core_t* self) {
 
 void displayio_display_core_finish_refresh(displayio_display_core_t* self) {
     if (self->current_group != NULL) {
+        DISPLAYIO_CORE_DEBUG("displayiocore group_finish_refresh\n");
         displayio_group_finish_refresh(self->current_group);
     }
     self->full_refresh = false;

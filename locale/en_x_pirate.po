@@ -77,10 +77,19 @@ msgstr ""
 msgid "%q indices must be integers, not %s"
 msgstr ""
 
+#: shared-bindings/vectorio/Polygon.c
+msgid "%q list must be a list"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c
+#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
+#: shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
+msgstr ""
+
+#: shared-bindings/vectorio/Polygon.c
+msgid "%q must be a tuple of length 2"
 msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
@@ -2007,6 +2016,10 @@ msgstr ""
 msgid "chr() arg not in range(256)"
 msgstr ""
 
+#: shared-module/vectorio/Circle.c
+msgid "circle can only be registered in one parent"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
@@ -2107,6 +2120,10 @@ msgstr ""
 
 #: py/objdeque.c
 msgid "empty"
+msgstr ""
+
+#: shared-bindings/vectorio/Polygon.c
+msgid "empty %q list"
 msgstr ""
 
 #: extmod/moduheapq.c extmod/modutimeq.c
@@ -2798,8 +2815,12 @@ msgstr ""
 msgid "pixel value requires too many bits"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+msgstr ""
+
+#: shared-module/vectorio/Polygon.c
+msgid "polygon can only be registered in one parent"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -3120,7 +3141,8 @@ msgstr ""
 msgid "unreadable attribute"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/Polygon.c
+#: shared-bindings/vectorio/VectorShape.c
 msgid "unsupported %q type"
 msgstr ""
 

@@ -359,6 +359,13 @@ extern const struct _mp_obj_module_t framebufferio_module;
 #define FRAMEBUFFERIO_MODULE
 #endif
 
+#if CIRCUITPY_VECTORIO
+extern const struct _mp_obj_module_t vectorio_module;
+#define VECTORIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_vectorio), (mp_obj_t)&vectorio_module },
+#else
+#define VECTORIO_MODULE
+#endif
+
 #if CIRCUITPY_FREQUENCYIO
 extern const struct _mp_obj_module_t frequencyio_module;
 #define FREQUENCYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_frequencyio), (mp_obj_t)&frequencyio_module },
@@ -650,6 +657,7 @@ extern const struct _mp_obj_module_t ustack_module;
     DISPLAYIO_MODULE \
       FONTIO_MODULE \
       TERMINALIO_MODULE \
+      VECTORIO_MODULE \
     ERRNO_MODULE \
     FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
