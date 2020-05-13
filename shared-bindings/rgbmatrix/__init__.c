@@ -31,16 +31,7 @@
 
 #include "shared-bindings/rgbmatrix/RGBMatrix.h"
 
-//| """:mod:`rgbmatrix` --- Low-level routines for bitbanged LED matrices
-//| =====================================================================
-//|
-//| .. module:: rgbmatrix
-//|   :synopsis: Low-level routines for bitbanged LED matrices
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     RGBMatrix"""
+//| """Low-level routines for bitbanged LED matrices"""
 //|
 
 STATIC const mp_rom_map_elem_t rgbmatrix_module_globals_table[] = {

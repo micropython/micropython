@@ -47,10 +47,7 @@
 #include "shared-module/wiznet/wiznet5k.h"
 
 //| class WIZNET5K:
-//|     """.. currentmodule:: wiznet
-//|
-//|     :class:`WIZNET5K` -- wrapper for Wiznet 5500 Ethernet interface
-//|     ==============================================================="""
+//|     """Wrapper for Wiznet 5500 Ethernet interface"""
 //|
 //|     def __init__(self, spi: busio.SPI, cs: microcontroller.Pin, rst: microcontroller.Pin, dhcp: bool = True):
 //|         """Create a new WIZNET5500 interface using the specified pins

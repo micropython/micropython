@@ -38,10 +38,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class I2C:
-//|     """.. currentmodule:: bitbangio
-//|
-//|     :class:`I2C` --- Two wire serial protocol
-//|     ------------------------------------------"""
+//|     """Two wire serial protocol"""
 //|
 //|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, *, frequency: int = 400000, timeout: int):
 //|         """I2C is a two-wire protocol for communicating between devices.  At the

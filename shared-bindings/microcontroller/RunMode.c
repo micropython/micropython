@@ -27,10 +27,7 @@
 #include "shared-bindings/microcontroller/RunMode.h"
 
 //| class RunMode:
-//|     """.. currentmodule:: microcontroller
-//|
-//|     :class:`RunMode` -- run state of the microcontroller
-//|     ============================================================="""
+//|     """run state of the microcontroller"""
 //|
 //|     def __init__(self, ):
 //|         """Enum-like class to define the run mode of the microcontroller and

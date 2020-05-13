@@ -37,10 +37,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class Ps2:
-//|     """.. currentmodule:: ps2io
-//|
-//|     :class:`Ps2` -- Communicate with a PS/2 keyboard or mouse
-//|     =========================================================
+//|     """Communicate with a PS/2 keyboard or mouse
 //|
 //|     Ps2 implements the PS/2 keyboard/mouse serial protocol, used in
 //|     legacy devices. It is similar to UART but there are only two

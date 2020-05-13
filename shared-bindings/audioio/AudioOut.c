@@ -37,12 +37,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class AudioOut:
-//|     """.. currentmodule:: audioio
-//|
-//|     :class:`AudioOut` -- Output an analog audio signal
-//|     ========================================================
-//|
-//|     AudioOut can be used to output an analog audio signal on a given pin."""
+//|     """Output an analog audio signal"""
 //|
 //|     def __init__(self, left_channel: microcontroller.Pin, *, right_channel: microcontroller.Pin = None, quiescent_value: int = 0x8000):
 //|         """Create a AudioOut object associated with the given pin(s). This allows you to

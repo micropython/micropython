@@ -35,12 +35,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class Shape:
-//|     """.. currentmodule:: displayio
-//|
-//|     :class:`Shape` -- Represents a shape by defining its bounds on each row
-//|     ==========================================================================
-//|
-//|     Represents any shape made by defining boundaries that may be mirrored."""
+//|     """Represents a shape made by defining boundaries that may be mirrored."""
 //|
 //|     def __init__(self, width: int, height: int, *, mirror_x: bool = False, mirror_y: bool = False):
 //|         """Create a Shape object with the given fixed size. Each pixel is one bit and is stored by the

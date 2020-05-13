@@ -42,10 +42,7 @@
 
 
 //| class SPI:
-//|     """.. currentmodule:: busio
-//|
-//|     `SPI` -- a 3-4 wire serial protocol
-//|     -----------------------------------------------
+//|     """A 3-4 wire serial protocol
 //|
 //|     SPI is a serial protocol that has exclusive pins for data in and out of the
 //|     master.  It is typically faster than :py:class:`~busio.I2C` because a
@@ -147,7 +144,7 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
 //|     def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> Any:
 //|         """Configures the SPI bus. The SPI object must be locked.
 //|
-//|        :param int baudrate: the desired clock rate in Hertz. The actual clock rate may be higher or lower
+//|         :param int baudrate: the desired clock rate in Hertz. The actual clock rate may be higher or lower
 //|           due to the granularity of available clock settings.
 //|           Check the `frequency` attribute for the actual clock rate.
 //|         :param int polarity: the base state of the clock line (0 or 1)

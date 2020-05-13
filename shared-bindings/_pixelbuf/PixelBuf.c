@@ -45,12 +45,7 @@ extern const int32_t colorwheel(float pos);
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t* parsed);
 
 //| class PixelBuf:
-//|     """.. currentmodule:: _pixelbuf
-//|
-//|     :class:`PixelBuf` -- A fast RGB[W] pixel buffer for LED and similar devices
-//|     ===========================================================================
-//|
-//|     :class:`~_pixelbuf.PixelBuf` implements an RGB[W] bytearray abstraction."""
+//|     """A fast RGB[W] pixel buffer for LED and similar devices."""
 //|
 //|     def __init__(self, size: int, *, byteorder: str = "BGR", brightness: float = 0, auto_write: bool = False, header: bytes = b"", trailer: bytes = b""):
 //|         """Create a PixelBuf object of the specified size, byteorder, and bits per pixel.

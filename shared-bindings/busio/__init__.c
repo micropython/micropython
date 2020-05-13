@@ -38,12 +38,7 @@
 
 #include "py/runtime.h"
 
-//| """:mod:`busio` --- Hardware accelerated behavior
-//| =================================================
-//|
-//| .. module:: busio
-//|   :synopsis: Hardware accelerated behavior
-//|   :platform: SAMD21
+//| """Hardware accelerated external bus access
 //|
 //| The `busio` module contains classes to support a variety of serial
 //| protocols.
@@ -53,16 +48,6 @@
 //| hardware support is available on a subset of pins but not those provided,
 //| then a RuntimeError will be raised. Use the `bitbangio` module to explicitly
 //| bitbang a serial protocol on any general purpose pins.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     I2C
-//|     OneWire
-//|     SPI
-//|     UART
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either

@@ -41,10 +41,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class FramebufferDisplay:
-//|     """.. currentmodule:: framebufferio
-//|
-//|     :class:`FramebufferDisplay` -- Manage updating a display with framebuffer in RAM
-//|     ================================================================================
+//|     """Manage updating a display with framebuffer in RAM
 //|
 //|     This initializes a display and connects it into CircuitPython. Unlike other
 //|     objects in CircuitPython, Display objects live until `displayio.release_displays()`

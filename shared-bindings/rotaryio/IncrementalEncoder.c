@@ -35,12 +35,7 @@
 #include "shared-bindings/util.h"
 
 //| class IncrementalEncoder:
-//|     """.. currentmodule:: rotaryio
-//|
-//|     :class:`IncrementalEncoder` -- Track the relative position of an incremental encoder
-//|     ====================================================================================
-//|
-//|     IncrementalEncoder determines the relative rotational position based on two series of pulses."""
+//|     """IncrementalEncoder determines the relative rotational position based on two series of pulses."""
 //|
 //|     def __init__(self, pin_a: microcontroller.Pin, pin_b: microcontroller.Pin):
 //|         """Create an IncrementalEncoder object associated with the given pins. It tracks the positional

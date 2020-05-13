@@ -42,27 +42,13 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-//| """:mod:`microcontroller` --- Pin references and cpu functionality
-//| ================================================================
-//|
-//| .. module:: microcontroller
-//|   :synopsis: Pin references and core functionality
-//|   :platform: SAMD21, ESP8266
+//| """Pin references and cpu functionality
 //|
 //| The `microcontroller` module defines the pins from the perspective of the
-//| microcontroller. See `board` for board-specific pin mappings.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Pin
-//|     Processor
-//|     RunMode"""
+//| microcontroller. See `board` for board-specific pin mappings."""
 //|
 
-//| cpu: Any = ... 
+//| cpu: Processor = ...
 //| """CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
 //| (clock frequency).
 //| This object is the sole instance of `microcontroller.Processor`."""

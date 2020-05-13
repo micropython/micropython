@@ -37,10 +37,7 @@
 #include "shared-bindings/util.h"
 
 //| class AnalogIn:
-//|     """.. currentmodule:: analogio
-//|
-//|     :class:`AnalogIn` -- read analog voltage
-//|     ============================================
+//|     """Read analog voltage levels
 //|
 //|     Usage::
 //|

@@ -35,12 +35,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class PewPew:
-//|     """.. currentmodule:: _pew
-//|
-//|     :class:`PewPew` -- LED matrix and button driver
-//|     ===============================================
-//|
-//|     This is an internal module to be used by the ``pew.py`` library from
+//|     """This is an internal module to be used by the ``pew.py`` library from
 //|     https://github.com/pewpew-game/pew-pewpew-standalone-10.x to handle the
 //|     LED matrix display and buttons on the ``pewpew10`` board.
 //|

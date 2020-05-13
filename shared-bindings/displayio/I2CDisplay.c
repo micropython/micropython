@@ -39,12 +39,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class I2CDisplay:
-//|     """.. currentmodule:: displayio
-//|
-//|     :class:`I2CDisplay` -- Manage updating a display over I2C
-//|     ==========================================================================
-//|
-//|     Manage updating a display over I2C in the background while Python code runs.
+//|     """Manage updating a display over I2C in the background while Python code runs.
 //|     It doesn't handle display initialization."""
 //|
 //|     def __init__(self, i2c_bus: busio.I2C, *, device_address: int, reset: microcontroller.Pin = None):

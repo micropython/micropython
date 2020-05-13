@@ -35,12 +35,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class MP3:
-//|     """.. currentmodule:: audiomp3
-//|
-//|     :class:`MP3Decoder` -- Load a mp3 file for audio playback
-//|     =========================================================
-//|
-//|     An object that decodes MP3 files for playback on an audio device."""
+//|     """Load a mp3 file for audio playback"""
 //|
 //|     def __init__(self, file: typing.BinaryIO, buffer: bytearray):
 //|

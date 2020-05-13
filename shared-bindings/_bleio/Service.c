@@ -33,12 +33,7 @@
 #include "shared-bindings/_bleio/UUID.h"
 
 //| class Service:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`Service` -- BLE GATT Service
-//|     =========================================================
-//|
-//|     Stores information about a BLE service and its characteristics."""
+//|     """Stores information about a BLE service and its characteristics."""
 //|
 //|     def __init__(self, uuid: UUID, *, secondary: bool = False):
 //|         """Create a new Service identified by the specified UUID. It can be accessed by all

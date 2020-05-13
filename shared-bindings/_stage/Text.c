@@ -31,13 +31,10 @@
 #include "supervisor/shared/translate.h"
 
 //| class Text:
-//|     """.. currentmodule:: _stage
-//|
-//|     :class:`Text` -- Keep information about a single text of text
-//|     =============================================================="""
+//|     """Keep information about a single grid of text"""
 //|
 //|     def __init__(self, width: int, height: int, font: bytearray, palette: bytearray, chars: bytearray):
-//|         """Keep internal information about a text of text
+//|         """Keep internal information about a grid of text
 //|         in a format suitable for fast rendering
 //|         with the ``render()`` function.
 //|

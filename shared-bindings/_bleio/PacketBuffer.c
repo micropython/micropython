@@ -36,12 +36,7 @@
 #include "shared-bindings/util.h"
 
 //| class PacketBuffer:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`PacketBuffer` -- Packet-oriented characteristic usage.
-//|     =====================================================================
-//|
-//|     Accumulates a Characteristic's incoming packets in a FIFO buffer and facilitates packet aware
+//|     """Accumulates a Characteristic's incoming packets in a FIFO buffer and facilitates packet aware
 //|     outgoing writes. A packet's size is either the characteristic length or the maximum transmission
 //|     unit (MTU) minus overhead, whichever is smaller. The MTU can change so check `incoming_packet_length`
 //|     and `outgoing_packet_length` before creating a buffer to store data.
@@ -60,7 +55,7 @@
 //|           It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
 //|           in a remote Service that a Central has connected to.
 //|         :param int buffer_size: Size of ring buffer (in packets of the Characteristic's maximum
-//|           length) that stores incoming packets coming from the peer.
+//|           length) that stores incoming packets coming from the peer."""
 //|         ...
 //|
 STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -126,11 +121,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_
 //|         """Writes all bytes from data into the same outgoing packet. The bytes from header are included
 //|         before data when the pending packet is currently empty.
 //|
-//|         This does not block until the data is sent. It only blocks until the data is pending."""
-//|         ...
+//|         This does not block until the data is sent. It only blocks until the data is pending.
 //|
-//|     :return: number of bytes written. May include header bytes when packet is empty.
-//|     :rtype: int
+//|         :return: number of bytes written. May include header bytes when packet is empty.
+//|         :rtype: int"""
+//|         ...
 //|
 // TODO: Add a kwarg `merge=False` to dictate whether subsequent writes are merged into a pending
 // one.
@@ -174,7 +169,7 @@ STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_packet_buffer_write_obj, 1, bleio_packet_buffer_write);
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Disable permanently."""
 //|         ...
 STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
@@ -184,7 +179,7 @@ STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_buffer_deinit);
 
-//|     packet_size: Any = ...
+//|     packet_size: int = ...
 //|     """`packet_size` is the same as `incoming_packet_length`.
 //|     The name `packet_size` is deprecated and
 //|     will be removed in CircuitPython 6.0.0."""
@@ -210,9 +205,8 @@ const mp_obj_property_t bleio_packet_buffer_incoming_packet_length_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: outgoing_packet_length
-//|
-//|     Maximum length in bytes of a packet we are writing.
+//|     outgoing_packet_length: int = ...
+//|     """Maximum length in bytes of a packet we are writing."""
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);

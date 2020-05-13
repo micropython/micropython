@@ -33,23 +33,8 @@
 #include "shared-bindings/frequencyio/__init__.h"
 #include "shared-bindings/frequencyio/FrequencyIn.h"
 
-//| """:mod:`frequencyio` --- Support for frequency based protocols
-//| =============================================================
+//| """Support for frequency based protocols
 //|
-//| .. module:: frequencyio
-//|   :synopsis: Support for frequency based protocols
-//|   :platform: SAMD51
-//|
-//| The `frequencyio` module contains classes to provide access to basic frequency IO.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     FrequencyIn
-//|
-
 //| .. warning:: This module is not available in SAMD21 builds. See the
 //|   :ref:`module-support-matrix` for more info.
 //|

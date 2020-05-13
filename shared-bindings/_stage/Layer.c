@@ -31,10 +31,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class Layer:
-//|     """.. currentmodule:: _stage
-//|
-//|     :class:`Layer` -- Keep information about a single layer of graphics
-//|     ==================================================================="""
+//|     """Keep information about a single layer of graphics"""
 //|
 //|     def __init__(self, width: int, height: int, graphic: bytearray, palette: bytearray, grid: bytearray):
 //|         """Keep internal information about a layer of graphics (either a

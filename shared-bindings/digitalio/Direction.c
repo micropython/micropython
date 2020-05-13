@@ -39,10 +39,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
 //| class Direction:
-//|     """.. currentmodule:: digitalio
-//|
-//|     :class:`Direction` -- defines the direction of a digital pin
-//|     ============================================================="""
+//|     """Defines the direction of a digital pin"""
 //|
 //|     def __init__(self, ):
 //|         """Enum-like class to define which direction the digital values are

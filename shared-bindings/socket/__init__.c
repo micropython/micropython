@@ -37,12 +37,7 @@
 
 #include "shared-module/network/__init__.h"
 
-//| """:mod:`socket` --- TCP, UDP and RAW socket support
-//| =================================================
-//|
-//| .. module:: socket
-//|   :synopsis: TCP, UDP and RAW sockets
-//|   :platform: SAMD21, SAMD51
+//| """TCP, UDP and RAW socket support
 //|
 //| Create TCP, UDP and RAW sockets for communicating over the Internet."""
 //|
@@ -50,7 +45,6 @@
 STATIC const mp_obj_type_t socket_type;
 
 //| class socket:
-//|     """.. currentmodule:: socket"""
 //|
 //|     def __init__(self, family: int, type: int, proto: int):
 //|         """Create a new socket

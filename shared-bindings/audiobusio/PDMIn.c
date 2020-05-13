@@ -37,12 +37,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class PDMIn:
-//|     """.. currentmodule:: audiobusio
-//|
-//|     :class:`PDMIn` -- Record an input PDM audio stream
-//|     ========================================================
-//|
-//|     PDMIn can be used to record an input audio signal on a given set of pins."""
+//|     """Record an input PDM audio stream"""
 //|
 //|     def __init__(self, clock_pin: microcontroller.Pin, data_pin: microcontroller.Pin, *, sample_rate: int = 16000, bit_depth: int = 8, mono: bool = True, oversample: int = 64, startup_delay: float = 0.11):
 //|         """Create a PDMIn object associated with the given pins. This allows you to

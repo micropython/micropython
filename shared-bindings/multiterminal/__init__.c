@@ -30,12 +30,7 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-//| """:mod:`multiterminal` --- Manage additional terminal sources
-//| ===========================================================
-//|
-//| .. module:: multiterminal
-//|   :synopsis: Manage additional terminal sources
-//|   :platform: ESP8266
+//| """Manage additional terminal sources
 //|
 //| The `multiterminal` module allows you to configure an additional serial
 //| terminal source. Incoming characters are accepted from both the internal

@@ -36,12 +36,7 @@
 #include "shared-module/_bleio/ScanEntry.h"
 
 //| class ScanEntry:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`ScanEntry` -- BLE scan data
-//|     =========================================================
-//|
-//|     Encapsulates information about a device that was received during scanning. It can be
+//|     """Encapsulates information about a device that was received during scanning. It can be
 //|     advertisement or scan response data. This object may only be created by a `_bleio.ScanResults`:
 //|     it has no user-visible constructor."""
 //|
@@ -68,7 +63,7 @@ STATIC mp_obj_t bleio_scanentry_matches(mp_uint_t n_args, const mp_obj_t *pos_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    
+
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_prefixes].u_obj, &bufinfo, MP_BUFFER_READ);
     return mp_obj_new_bool(common_hal_bleio_scanentry_matches(self, bufinfo.buf, bufinfo.len, args[ARG_all].u_bool));

@@ -33,12 +33,7 @@
 #include "shared-bindings/_bleio/ScanResults.h"
 
 //| class ScanResults:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`ScanResults` -- An Iterator over BLE scanning results
-//|     ===============================================================
-//|
-//|     Iterates over advertising data received while scanning. This object is always created
+//|     """Iterates over advertising data received while scanning. This object is always created
 //|     by a `_bleio.Adapter`: it has no user-visible constructor."""
 //|
 STATIC mp_obj_t scanresults_iternext(mp_obj_t self_in) {

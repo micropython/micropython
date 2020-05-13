@@ -30,12 +30,8 @@
 #include "shared-bindings/_bleio/UUID.h"
 
 //| class Attribute:
-//|     """.. currentmodule:: _bleio
+//|     """Definitions associated with all BLE attributes: characteristics, descriptors, etc.
 //|
-//|     :class:`Attribute` -- BLE Attribute
-//|     =========================================================
-//|
-//|     Definitions associated with all BLE attributes: characteristics, descriptors, etc.
 //|     :py:class:`~_bleio.Attribute` is, notionally, a superclass of
 //|     :py:class:`~Characteristic` and :py:class:`~Descriptor`,
 //|     but is not defined as a Python superclass of those classes."""

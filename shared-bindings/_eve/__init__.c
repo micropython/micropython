@@ -34,28 +34,10 @@
 #include "shared-module/_eve/__init__.h"
 #include "shared-bindings/_eve/__init__.h"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//| """:mod:`_eve` --- low-level BridgeTek EVE bindings
-//| ================================================
-//|
-//| .. module:: _eve
-//|   :synopsis: low-level BridgeTek EVE bindings
-//|   :platform: SAMD21/SAMD51
+//| """Low-level BridgeTek EVE bindings
 //|
 //| The `_eve` module provides a class _EVE which
-//| contains methods for constructing EVE command 
+//| contains methods for constructing EVE command
 //| buffers and appending basic graphics commands."""
 //|
 

@@ -42,12 +42,7 @@ STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 }
 
 //| class CharacteristicBuffer:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`CharacteristicBuffer` -- BLE Service incoming values buffer.
-//|     =====================================================================
-//|
-//|     Accumulates a Characteristic's incoming values in a FIFO buffer."""
+//|     """Accumulates a Characteristic's incoming values in a FIFO buffer."""
 //|
 //|     def __init__(self, characteristic: Characteristic, *, timeout: int = 1, buffer_size: int = 64):
 //|

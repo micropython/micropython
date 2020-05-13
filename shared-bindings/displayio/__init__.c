@@ -43,33 +43,10 @@
 #include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
-//| """:mod:`displayio` --- Native display driving
-//| =========================================================================
-//|
-//| .. module:: displayio
-//|   :synopsis: Native helpers for driving displays
-//|   :platform: SAMD21, SAMD51, nRF52
+//| """Native helpers for driving displays
 //|
 //| The `displayio` module contains classes to manage display output
-//| including synchronizing with refresh rates and partial updating.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Bitmap
-//|     ColorConverter
-//|     Display
-//|     EPaperDisplay
-//|     FourWire
-//|     Group
-//|     I2CDisplay
-//|     OnDiskBitmap
-//|     Palette
-//|     ParallelBus
-//|     Shape
-//|     TileGrid"""
+//| including synchronizing with refresh rates and partial updating."""
 //|
 
 

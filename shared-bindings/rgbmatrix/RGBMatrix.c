@@ -39,10 +39,7 @@
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 
 //| class RGBMatrix:
-//|     """.. currentmodule:: rgbmatrix
-//|
-//|     :class:`RGBMatrix` --  Driver for HUB75-style RGB LED matrices
-//|     ================================================================
+//|     """Displays an in-memory framebuffer to a HUB75-style RGB LED matrix."""
 //|
 
 extern Protomatter_core *_PM_protoPtr;
@@ -134,9 +131,6 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-
-//|     :class:`~rgbmatrix.RGBMatrix` displays an in-memory framebuffer to an LED matrix."""
-//|
 //|     def __init__(self, *, width: Any, bit_depth: Any, rgb_pins: Any, addr_pins: Any, clock_pin: Any, latch_pin: Any, output_enable_pin: Any, doublebuffer: Any = True, framebuffer: Any = None, height: Any = 0):
 //|         """Create a RGBMatrix object with the given attributes.  The height of
 //|         the display is determined by the number of rgb and address pins:
@@ -297,7 +291,7 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def refresh(self, ) -> Any: ...
+//|     def refresh(self) -> Any: ...
 //|     """Transmits the color data in the buffer to the pixels so that
 //|     they are shown."""
 //|
@@ -309,7 +303,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_refresh_obj, rgbmatrix_rgbmatrix_refresh);
 
-//|     width: Any = ...
+//|     width: int = ...
 //|     """The width of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
@@ -325,7 +319,7 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: Any = ...
+//|     height: int = ...
 //|     """The height of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {

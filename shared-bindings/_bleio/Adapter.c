@@ -48,10 +48,7 @@
 #define WINDOW_DEFAULT (0.1f)
 
 //| class Adapter:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`Adapter` --- BLE adapter
-//|     ----------------------------------------------------
+//|     """BLE adapter
 //|
 //|     The Adapter manages the discovery and connection to other nearby Bluetooth Low Energy devices.
 //|     This part of the Bluetooth Low Energy Specification is known as Generic Access Profile (GAP).

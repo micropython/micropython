@@ -40,10 +40,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class SPI:
-//|     """.. currentmodule:: bitbangio
-//|
-//|     :class:`SPI` -- a 3-4 wire serial protocol
-//|     -----------------------------------------------
+//|     """A 3-4 wire serial protocol
 //|
 //|     SPI is a serial protocol that has exclusive pins for data in and out of the
 //|     master.  It is typically faster than :py:class:`~bitbangio.I2C` because a

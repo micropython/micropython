@@ -31,14 +31,8 @@
 #include "shared-bindings/nvm/ByteArray.h"
 #include "supervisor/shared/translate.h"
 
-
-
-
 //| class ByteArray:
-//|     """.. currentmodule:: nvm
-//|
-//|     :class:`ByteArray` -- Presents a stretch of non-volatile memory as a bytearray.
-//|     ================================================================================
+//|     """Presents a stretch of non-volatile memory as a bytearray.
 //|
 //|     Non-volatile memory is available as a byte array that persists over reloads
 //|     and power cycles. Each assignment causes an erase and write cycle so its recommended to assign

@@ -38,12 +38,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class ParallelBus:
-//|     """.. currentmodule:: displayio
-//|
-//|     :class:`ParallelBus` -- Manage updating a display over 8-bit parallel bus
-//|     ==============================================================================
-//|
-//|     Manage updating a display over 8-bit parallel bus in the background while Python code runs. This
+//|     """Manage updating a display over 8-bit parallel bus in the background while Python code runs. This
 //|     protocol may be refered to as 8080-I Series Parallel Interface in datasheets. It doesn't handle
 //|     display initialization."""
 //|

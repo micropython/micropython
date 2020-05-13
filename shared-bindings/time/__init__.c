@@ -36,12 +36,7 @@
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| """:mod:`time` --- time and timing related functions
-//| ========================================================
-//|
-//| .. module:: time
-//|   :synopsis: time and timing related functions
-//|   :platform: SAMD21
+//| """time and timing related functions
 //|
 //| The `time` module is a strict subset of the CPython `cpython:time` module. So, code
 //| written in MicroPython will work in CPython but not necessarily the other

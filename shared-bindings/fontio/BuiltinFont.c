@@ -37,12 +37,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class BuiltinFont:
-//|     """.. currentmodule:: fontio
-//|
-//|     :class:`BuiltinFont` -- A font built into CircuitPython
-//|     =========================================================================================
-//|
-//|     A font built into CircuitPython."""
+//|     """A font built into CircuitPython"""
 //|
 //|     def __init__(self, ):
 //|         """Creation not supported. Available fonts are defined when CircuitPython is built. See the

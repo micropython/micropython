@@ -36,10 +36,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class FrequencyIn:
-//|     """.. currentmodule:: frequencyio
-//|
-//|     :class:`FrequencyIn` -- Read a frequency signal
-//|     ========================================================
+//|     """Read a frequency signal
 //|
 //|     FrequencyIn is used to measure the frequency, in hertz, of a digital signal
 //|     on an incoming pin. Accuracy has shown to be within 10%, if not better. It

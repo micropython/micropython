@@ -43,10 +43,7 @@
 // #define STREAM_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
 //| class UART:
-//|     """.. currentmodule:: busio
-//|
-//|     :class:`UART` -- a bidirectional serial protocol
-//|     ================================================="""
+//|     """A bidirectional serial protocol"""
 //|     def __init__(self, tx: microcontroller.Pin, rx: microcontroller.Pin, *, baudrate: int = 9600, bits: int = 8, parity: Parity = None, stop: int = 1, timeout: float = 1, receiver_buffer_size: int = 64):
 //|         """A common bidirectional serial protocol that uses an an agreed upon speed
 //|         rather than a shared clock line.

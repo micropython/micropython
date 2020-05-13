@@ -34,24 +34,11 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 
-//| """:mod:`analogio` --- Analog hardware support
-//| =================================================
-//|
-//| .. module:: analogio
-//|   :synopsis: Analog hardware support
-//|   :platform: SAMD21, ESP8266
+//| """Analog hardware support
 //|
 //| The `analogio` module contains classes to provide access to analog IO
 //| typically implemented with digital-to-analog (DAC) and analog-to-digital
 //| (ADC) converters.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     AnalogIn
-//|     AnalogOut
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either

@@ -34,12 +34,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class Pin:
-//|     """.. currentmodule:: microcontroller
-//|
-//|     :class:`Pin` --- Pin reference
-//|     ------------------------------------------
-//|
-//|     Identifies an IO pin on the microcontroller."""
+//|     """Identifies an IO pin on the microcontroller."""
 //|
 //|     def __init__(self, ):
 //|         """Identifies an IO pin on the microcontroller. They are fixed by the

@@ -41,10 +41,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class TileGrid:
-//|     """.. currentmodule:: displayio
-//|
-//|     :class:`TileGrid` -- A grid of tiles sourced out of one bitmap
-//|     ==========================================================================
+//|     """A grid of tiles sourced out of one bitmap
 //|
 //|     Position a grid of tiles sourced from a bitmap and pixel_shader combination. Multiple grids
 //|     can share bitmaps and pixel shaders.

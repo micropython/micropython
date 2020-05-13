@@ -39,12 +39,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class FourWire:
-//|     """.. currentmodule:: displayio
-//|
-//|     :class:`FourWire` -- Manage updating a display over SPI four wire protocol
-//|     ==========================================================================
-//|
-//|     Manage updating a display over SPI four wire protocol in the background while Python code runs.
+//|     """Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //|     It doesn't handle display initialization."""
 //|
 //|     def __init__(self, spi_bus: busio.SPI, *, command: microcontroller.Pin, chip_select: microcontroller.Pin, reset: microcontroller.Pin = None, baudrate: int = 24000000, polarity: int = 0, phase: int = 0):

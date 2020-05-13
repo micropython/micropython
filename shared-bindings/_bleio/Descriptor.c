@@ -34,12 +34,8 @@
 #include "shared-bindings/_bleio/UUID.h"
 
 //| class Descriptor:
-//|     """.. currentmodule:: _bleio
+//|     """Stores information about a BLE descriptor.
 //|
-//|     :class:`Descriptor` -- BLE descriptor
-//|     =========================================================
-//|
-//|     Stores information about a BLE descriptor.
 //|     Descriptors are attached to BLE characteristics and provide contextual
 //|     information about the characteristic."""
 //|

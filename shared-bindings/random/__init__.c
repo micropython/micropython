@@ -33,12 +33,7 @@
 #include "shared-bindings/random/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| """:mod:`random` --- pseudo-random numbers and choices
-//| ========================================================
-//|
-//| .. module:: random
-//|   :synopsis: pseudo-random numbers and choices
-//|   :platform: SAMD21, ESP8266
+//| """pseudo-random numbers and choices
 //|
 //| The `random` module is a strict subset of the CPython `cpython:random`
 //| module. So, code written in CircuitPython will work in CPython but not

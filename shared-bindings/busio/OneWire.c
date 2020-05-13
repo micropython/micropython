@@ -35,10 +35,7 @@
 #include "shared-bindings/util.h"
 
 //| class OneWire:
-//|     """.. currentmodule:: busio
-//|
-//|     :class:`OneWire` -- Lowest-level of the Maxim OneWire protocol
-//|     ================================================================="""
+//|     """Lowest-level of the Maxim OneWire protocol"""
 //|
 //|     def __init__(self, pin: microcontroller.Pin):
 //|         """(formerly Dallas Semi) OneWire protocol.

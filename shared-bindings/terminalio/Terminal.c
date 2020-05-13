@@ -38,10 +38,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class Terminal:
-//|     """.. currentmodule:: terminalio
-//|
-//|     :class:`Terminal` -- display a character stream with a TileGrid
-//|     ================================================================"""
+//|     """Display a character stream with a TileGrid"""
 //|
 //|     def __init__(self, tilegrid: Any, font: Any):
 //|         """Terminal manages tile indices and cursor position based on VT100 commands. The font should be

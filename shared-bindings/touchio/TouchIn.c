@@ -39,10 +39,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class TouchIn:
-//|     """.. currentmodule:: touchio
-//|
-//|     :class:`TouchIn` -- Read the state of a capacitive touch sensor
-//|     ===================================================================
+//|     """Read the state of a capacitive touch sensor
 //|
 //|     Usage::
 //|

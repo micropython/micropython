@@ -37,12 +37,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class AnalogOut:
-//|     """.. currentmodule:: analogio
-//|
-//|     :class:`AnalogOut` -- output analog voltage
-//|     ============================================
-//|
-//|     The AnalogOut is used to output analog values (a specific voltage).
+//|     """Output analog values (a specific voltage).
 //|
 //|     Example usage::
 //|

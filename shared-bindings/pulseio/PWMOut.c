@@ -36,12 +36,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class PWMOut:
-//|     """.. currentmodule:: pulseio
-//|
-//|     :class:`PWMOut` -- Output a Pulse Width Modulated signal
-//|     ========================================================
-//|
-//|     PWMOut can be used to output a PWM signal on a given pin."""
+//|     """Output a Pulse Width Modulated signal on a given pin."""
 //|
 //|     def __init__(self, pin: microcontroller.Pin, *, duty_cycle: int = 0, frequency: int = 500, variable_frequency: bool = False):
 //|         """Create a PWM object associated with the given pin. This allows you to

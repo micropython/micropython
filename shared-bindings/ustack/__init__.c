@@ -34,15 +34,11 @@
 
 
 
-//| """:mod:`ustack` --- Stack information and analysis
-//| ========================================================
-//|
-//| .. module:: ustack
-//|   :synopsis: stack information functions"""
+//| """Stack information and analysis"""
 //|
 
 #if MICROPY_MAX_STACK_USAGE
-//| def max_stack_usage() -> Any:
+//| def max_stack_usage() -> int:
 //|     """Return the maximum excursion of the stack so far."""
 //|     ...
 //|
@@ -53,7 +49,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(max_stack_usage_obj, max_stack_usage);
 
 #endif // MICROPY_MAX_STACK_USAGE
 
-//| def stack_size() -> Any:
+//| def stack_size() -> int:
 //|     """Return the size of the entire stack.
 //|     Same as in micropython.mem_info(), but returns a value instead
 //|     of just printing it."""

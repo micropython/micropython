@@ -37,12 +37,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class ColorConverter:
-//|     """.. currentmodule:: displayio
-//|
-//|     :class:`ColorConverter` -- Converts one color format to another
-//|     =========================================================================================
-//|
-//|     Converts one color format to another."""
+//|     """Converts one color format to another."""
 //|
 //|     def __init__(self, *, dither: bool = False):
 //|         """Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565

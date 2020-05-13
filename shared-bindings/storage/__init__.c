@@ -35,12 +35,7 @@
 #include "shared-bindings/storage/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| """:mod:`storage` --- storage management
-//| ========================================================
-//|
-//| .. module:: storage
-//|   :synopsis: storage management
-//|   :platform: SAMD21, SAMD51
+//| """Storage management
 //|
 //| The `storage` provides storage management functionality such as mounting and
 //| unmounting which is typically handled by the operating system hosting Python.

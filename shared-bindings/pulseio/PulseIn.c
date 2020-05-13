@@ -36,15 +36,9 @@
 #include "supervisor/shared/translate.h"
 
 //| class PulseIn:
-//|     """.. currentmodule:: pulseio
-//|
-//|     :class:`PulseIn` -- Read a series of pulse durations
-//|     ========================================================
-//|
-//|     PulseIn is used to measure a series of active and idle pulses. This is
-//|     commonly used in infrared receivers and low cost temperature sensors (DHT).
-//|     The pulsed signal consists of timed active and idle periods. Unlike PWM,
-//|     there is no set duration for active and idle pairs."""
+//|     """Measure a series of active and idle pulses. This is commonly used in infrared receivers
+//|        and low cost temperature sensors (DHT). The pulsed signal consists of timed active and
+//|        idle periods. Unlike PWM, there is no set duration for active and idle pairs."""
 //|
 //|     def __init__(self, pin: microcontroller.Pin, maxlen: int = 2, *, idle_state: bool = False):
 //|         """Create a PulseIn object associated with the given pin. The object acts as

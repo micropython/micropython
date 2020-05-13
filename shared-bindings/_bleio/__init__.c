@@ -41,13 +41,7 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-//| """:mod:`_bleio` --- Bluetooth Low Energy (BLE) communication
-//| ================================================================
-//|
-//| .. module:: _bleio
-//|   :synopsis: Bluetooth Low Energy functionality
-//|   :platform: nRF
-//|
+//| """
 //| The `_bleio` module provides necessary low-level functionality for communicating
 //| using Bluetooth Low Energy (BLE). The '_' prefix indicates this module is meant
 //| for internal use by libraries but not by the end user. Its API may change incompatibly
@@ -57,24 +51,6 @@
 //| CircuitPython library instead, which builds on `_bleio`, and
 //| provides higher-level convenience functionality, including predefined beacons, clients,
 //| servers.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Address
-//|     Adapter
-//|     Attribute
-//|     Characteristic
-//|     CharacteristicBuffer
-//|     Connection
-//|     Descriptor
-//|     PacketBuffer
-//|     ScanEntry
-//|     ScanResults
-//|     Service
-//|     UUID
 //|
 //| .. attribute:: adapter
 //|

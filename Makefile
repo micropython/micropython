@@ -69,7 +69,7 @@ clean:
 	rm -rf $(BUILDDIR)/*
 	rm -rf $(STUBDIR) $(DISTDIR) *.egg-info
 
-html:
+html: stubs
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -213,8 +213,10 @@ check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
 	$(PYTHON) tools/check_translations.py $^
 
 stubs:
+	mkdir -p circuitpython-stubs
 	python tools/extract_pyi.py shared-bindings/ $(STUBDIR)
-	#python setup.py sdist
+	python tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
+	python setup.py sdist
 
 update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."

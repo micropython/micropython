@@ -35,12 +35,7 @@
 #include "py/runtime.h"
 
 //| class Processor:
-//|     """.. currentmodule:: microcontroller
-//|
-//|     :class:`Processor` --- Microcontroller CPU information and control
-//|     ------------------------------------------------------------------
-//|
-//|     Get information about the microcontroller CPU and control it.
+//|     """Microcontroller CPU information and control
 //|
 //|     Usage::
 //|
@@ -55,8 +50,8 @@
 //|         ...
 //|
 
-//|     frequency: Any = ...
-//|     """The CPU operating frequency as an `int`, in Hertz. (read-only)"""
+//|     frequency: int = ...
+//|     """The CPU operating frequency in Hertz. (read-only)"""
 //|
 STATIC mp_obj_t mcu_processor_get_frequency(mp_obj_t self) {
     return mp_obj_new_int_from_uint(common_hal_mcu_processor_get_frequency());

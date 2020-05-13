@@ -38,10 +38,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class MixerVoice:
-//|     """.. currentmodule:: audiomixer
-//|
-//|     :class:`MixerVoice` -- Voice objects used with Mixer
-//|     =====================================================
+//|     """Voice objects used with Mixer
 //|
 //|     Used to access and control samples with `audiomixer.Mixer`."""
 //|

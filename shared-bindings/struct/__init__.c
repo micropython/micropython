@@ -38,12 +38,7 @@
 #include "shared-module/struct/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| """:mod:`struct` --- manipulation of c-style data
-//| ========================================================
-//|
-//| .. module:: struct
-//|   :synopsis: byte data control
-//|   :platform: SAMD21
+//| """Manipulation of c-style data
 //|
 //| This module implements a subset of the corresponding CPython module,
 //| as described below. For more information, refer to the original CPython
@@ -56,7 +51,7 @@
 //|
 
 
-//| def calcsize(fmt: Any) -> Any:
+//| def calcsize(fmt: str) -> int:
 //|     """Return the number of bytes needed to store the given fmt."""
 //|     ...
 //|

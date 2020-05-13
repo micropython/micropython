@@ -36,10 +36,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class PortOut:
-//|     """.. currentmodule:: usb_midi
-//|
-//|     :class:`PortOut` -- sends midi messages to a computer over USB
-//|     =============================================================="""
+//|     """Sends midi messages to a computer over USB"""
 //|
 //|     def __init__(self, ):
 //|         """You cannot create an instance of `usb_midi.PortOut`.

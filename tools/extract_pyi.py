@@ -22,7 +22,7 @@ for module in modules:
     pyi_lines = []
     classes = os.listdir(module_path)
     classes = [x for x in sorted(classes) if x.endswith(".c")]
-    if classes[-1] == "__init__.c":
+    if classes and classes[-1] == "__init__.c":
         classes.insert(0, classes.pop())
     for class_file in classes:
         class_path = os.path.join(module_path, class_file)
@@ -37,6 +37,13 @@ for module in modules:
                         continue
                     pyi_lines.append(line)
 
+    raw_stubs = [x for x in sorted(classes) if x.endswith(".pyi")]
+    if raw_stubs and raw_stubs[-1] == "__init__.pyi":
+        raw_stubs.insert(0, raw_stubs.pop())
+    for raw_stub in raw_stubs:
+        raw_stub_path = os.path.join(module_path, raw_stub)
+        with open(raw_stub_path, "r") as f:
+            pyi_lines.extend(f.readlines())
     stub_filename = os.path.join(stub_directory, module + ".pyi")
     print(stub_filename)
     stub_contents = "".join(pyi_lines)
@@ -54,3 +61,6 @@ for module in modules:
     print()
 
 print(f"{ok} ok out of {total}")
+
+if ok != total:
+    sys.exit(total - ok)

@@ -35,23 +35,9 @@
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 
-//| """:mod:`pulseio` --- Support for pulse based protocols
-//| =====================================================
-//|
-//| .. module:: pulseio
-//|   :synopsis: Support for pulse based protocols
-//|   :platform: SAMD21, ESP8266
+//| """Support for pulse based protocols
 //|
 //| The `pulseio` module contains classes to provide access to basic pulse IO.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     PulseIn
-//|     PulseOut
-//|     PWMOut
 //|
 
 //| All classes change hardware state and should be deinitialized when they

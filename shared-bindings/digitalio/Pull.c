@@ -27,10 +27,7 @@
 #include "shared-bindings/digitalio/Pull.h"
 
 //| class Pull:
-//|     """.. currentmodule:: digitalio
-//|
-//|     :class:`Pull` -- defines the pull of a digital input pin
-//|     ============================================================="""
+//|     """Defines the pull of a digital input pin"""
 //|
 //|     def __init__(self, ):
 //|         """Enum-like class to define the pull value, if any, used while reading

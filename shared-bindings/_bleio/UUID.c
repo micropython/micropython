@@ -34,12 +34,7 @@
 #include "shared-bindings/_bleio/UUID.h"
 
 //| class UUID:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`UUID` -- BLE UUID
-//|     =========================================================
-//|
-//|     A 16-bit or 128-bit UUID. Can be used for services, characteristics, descriptors and more."""
+//|     """A 16-bit or 128-bit UUID. Can be used for services, characteristics, descriptors and more."""
 //|
 //|     def __init__(self, value: Any):
 //|         """Create a new UUID or UUID object encapsulating the uuid value.
@@ -207,7 +202,7 @@ STATIC mp_obj_t bleio_uuid_pack_into(mp_uint_t n_args, const mp_obj_t *pos_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    
+
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
 

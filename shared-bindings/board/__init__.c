@@ -29,11 +29,7 @@
 
 #include "shared-bindings/board/__init__.h"
 
-//| """:mod:`board` --- Board specific pin names
-//| ========================================================
-//|
-//| .. module:: board
-//|   :synopsis: Board specific pin names
+//| """Board specific pin names
 //|
 //| Common container for board base pin names. These will vary from board to
 //| board so don't expect portability when using this module.

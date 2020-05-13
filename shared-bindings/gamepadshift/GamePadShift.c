@@ -33,10 +33,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class GamePadShift:
-//|     """.. currentmodule:: gamepadshift
-//|
-//|     :class:`GamePadShift` -- Scan buttons for presses through a shift register
-//|     ==========================================================================="""
+//|     """Scan buttons for presses through a shift register"""
 //|
 //|     def __init__(self, clock: Any, data: Any, latch: Any):
 //|         """Initializes button scanning routines.

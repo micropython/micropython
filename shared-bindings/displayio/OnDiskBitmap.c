@@ -34,12 +34,7 @@
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 
 //| class OnDiskBitmap:
-//|     """.. currentmodule:: displayio
-//|
-//|     :class:`OnDiskBitmap` -- Loads pixels straight from disk
-//|     ==========================================================================
-//|
-//|     Loads values straight from disk. This minimizes memory use but can lead to
+//|     """Loads values straight from disk. This minimizes memory use but can lead to
 //|     much slower pixel load times. These load times may result in frame tearing where only part of
 //|     the image is visible.
 //|

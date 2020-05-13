@@ -27,10 +27,7 @@
 #include "shared-bindings/digitalio/DriveMode.h"
 
 //| class DriveMode:
-//|     """.. currentmodule:: digitalio
-//|
-//|     :class:`DriveMode` -- defines the drive mode of a digital pin
-//|     ============================================================="""
+//|     """Defines the drive mode of a digital pin"""
 //|
 //|     def __init__(self, ):
 //|         """Enum-like class to define the drive mode used when outputting

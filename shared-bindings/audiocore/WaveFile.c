@@ -34,10 +34,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class WaveFile:
-//|     """.. currentmodule:: audiocore
-//|
-//|     :class:`WaveFile` -- Load a wave file for audio playback
-//|     ========================================================
+//|     """Load a wave file for audio playback
 //|
 //|     A .wav file prepped for audio playback. Only mono and stereo files are supported. Samples must
 //|     be 8 bit unsigned or 16 bit signed. If a buffer is provided, it will be used instead of allocating

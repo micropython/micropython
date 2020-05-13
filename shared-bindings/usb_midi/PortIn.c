@@ -36,12 +36,9 @@
 #include "supervisor/shared/translate.h"
 
 //| class PortIn:
-//|     """.. currentmodule:: usb_midi
+//|     """Receives midi commands over USB"""
 //|
-//|     :class:`PortIn` -- receives midi commands over USB
-//|     ==================================================="""
-//|
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """You cannot create an instance of `usb_midi.PortIn`.
 //|
 //|         PortIn objects are constructed for every corresponding entry in the USB

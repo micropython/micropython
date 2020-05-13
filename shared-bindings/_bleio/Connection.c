@@ -43,12 +43,7 @@
 #include "shared-bindings/_bleio/Service.h"
 
 //| class Connection:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`Connection` -- A BLE connection
-//|     =========================================================
-//|
-//|     A BLE connection to another device. Used to discover and interact with services on the other
+//|     """A BLE connection to another device. Used to discover and interact with services on the other
 //|     device.
 //|
 //|     Usage::
@@ -211,15 +206,14 @@ STATIC mp_obj_t bleio_connection_get_connection_interval(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_connection_interval_obj, bleio_connection_get_connection_interval);
 
-//|   .. attribute:: max_packet_length
-//|
-//|     The maximum number of data bytes that can be sent in a single transmission,
+//|     attribute: Any = ...
+//|     """The maximum number of data bytes that can be sent in a single transmission,
 //|     not including overhead bytes.
 //|
 //|     This is the maximum number of bytes that can be sent in a notification,
 //|     which must be sent in a single packet.
 //|     But for a regular characteristic read or write, may be sent in multiple packets,
-//|     so this limit does not apply.
+//|     so this limit does not apply."""
 //|
 STATIC mp_obj_t bleio_connection_get_max_packet_length(mp_obj_t self_in) {
     bleio_connection_obj_t *self = MP_OBJ_TO_PTR(self_in);

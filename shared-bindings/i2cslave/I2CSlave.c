@@ -50,10 +50,7 @@ STATIC mp_obj_t mp_obj_new_i2cslave_i2c_slave_request(i2cslave_i2c_slave_obj_t *
 }
 
 //| class I2CSlave:
-//|     """.. currentmodule:: i2cslave
-//|
-//|     :class:`I2CSlave` --- Two wire serial protocol slave
-//|     ----------------------------------------------------"""
+//|     """Two wire serial protocol slave"""
 //|
 //|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, addresses: tuple, smbus: bool = False):
 //|         """I2C is a two-wire protocol for communicating between devices.
@@ -229,17 +226,15 @@ const mp_obj_type_t i2cslave_i2c_slave_type = {
 };
 
 //| class I2CSlaveRequest:
-//|     """:class:`I2CSlaveRequest` --- I2C Slave Request
-//|     ----------------------------------------------"""
 //|
 //|     def __init__(self, slave: i2cslave.I2CSlave, address: int, is_read: bool, is_restart: bool):
 //|         """I2C transfer request from a master.
 //|         This cannot be instantiated directly, but is returned by :py:meth:`I2CSlave.request`.
 //|
-//|         :param ~i2cslave.I2CSlave slave: The I2C Slave receiving this request
-//|         :param int address: I2C address
-//|         :param bool is_read: I2C Master read request
-//|         :param bool is_restart: Repeated Start Condition"""
+//|         :param slave: The I2C Slave receiving this request
+//|         :param address: I2C address
+//|         :param is_read: I2C Master read request
+//|         :param is_restart: Repeated Start Condition"""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 4, 4, false);
@@ -264,7 +259,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_obj___exit__(size_t n_args, const mp_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cslave_i2c_slave_request___exit___obj, 4, 4, i2cslave_i2c_slave_request_obj___exit__);
 
-//|     address: Any = ...
+//|     address: int = ...
 //|     """The I2C address of the request."""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_get_address(mp_obj_t self_in) {
@@ -274,7 +269,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_get_address(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_PROP_GET(i2cslave_i2c_slave_request_address_obj, i2cslave_i2c_slave_request_get_address);
 
-//|     is_read: Any = ...
+//|     is_read: bool = ...
 //|     """The I2C master is reading from the device."""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_get_is_read(mp_obj_t self_in) {
@@ -284,7 +279,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_get_is_read(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_PROP_GET(i2cslave_i2c_slave_request_is_read_obj, i2cslave_i2c_slave_request_get_is_read);
 
-//|     is_restart: Any = ...
+//|     is_restart: bool = ...
 //|     """Is Repeated Start Condition."""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_get_is_restart(mp_obj_t self_in) {
@@ -294,14 +289,13 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_get_is_restart(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_PROP_GET(i2cslave_i2c_slave_request_is_restart_obj, i2cslave_i2c_slave_request_get_is_restart);
 
-//|     def read(self, n: int = -1, ack: bool = True) -> Any:
+//|     def read(self, n: int = -1, ack: bool = True) -> bytearray:
 //|         """Read data.
 //|         If ack=False, the caller is responsible for calling :py:meth:`I2CSlaveRequest.ack`.
 //|
-//|         :param int n: Number of bytes to read (negative means all)
-//|         :param bool ack: Whether or not to send an ACK after the n'th byte
-//|         :return: Bytes read
-//|         :rtype: bytearray"""
+//|         :param n: Number of bytes to read (negative means all)
+//|         :param ack: Whether or not to send an ACK after the n'th byte
+//|         :return: Bytes read"""
 //|         ...
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -355,10 +349,10 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_read(size_t n_args, const mp_obj_t *p
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(i2cslave_i2c_slave_request_read_obj, 1, i2cslave_i2c_slave_request_read);
 
-//|     def write(self, buffer: bytearray) -> Any:
+//|     def write(self, buffer: bytearray) -> int:
 //|         """Write the data contained in buffer.
 //|
-//|         :param bytearray buffer: Write out the data in this buffer
+//|         :param buffer: Write out the data in this buffer
 //|         :return: Number of bytes written"""
 //|         ...
 //|
@@ -393,7 +387,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(i2cslave_i2c_slave_request_write_obj, i2cslave_
 //|         """Acknowledge or Not Acknowledge last byte received.
 //|         Use together with :py:meth:`I2CSlaveRequest.read` ack=False.
 //|
-//|         :param bool ack: Whether to send an ACK or NACK"""
+//|         :param ack: Whether to send an ACK or NACK"""
 //|         ...
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_ack(uint n_args, const mp_obj_t *args) {

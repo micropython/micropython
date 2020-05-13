@@ -37,12 +37,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class Bitmap:
-//|     """.. currentmodule:: displayio
-//|
-//|     :class:`Bitmap` -- Stores values in a 2D array
-//|     ==========================================================================
-//|
-//|     Stores values of a certain size in a 2D array"""
+//|     """Stores values of a certain size in a 2D array"""
 //|
 //|     def __init__(self, width: int, height: int, value_count: int):
 //|         """Create a Bitmap object with the given fixed size. Each pixel stores a value that is used to

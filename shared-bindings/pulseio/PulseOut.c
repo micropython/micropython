@@ -37,14 +37,9 @@
 #include "supervisor/shared/translate.h"
 
 //| class PulseOut:
-//|     """.. currentmodule:: pulseio
-//|
-//|     :class:`PulseOut` -- Output a pulse train
-//|     ========================================================
-//|
-//|     PulseOut is used to pulse PWM "carrier" output on and off. This is commonly
-//|     used in infrared remotes. The pulsed signal consists of timed on and off
-//|     periods. Unlike PWM, there is no set duration for on and off pairs."""
+//|     """Pulse PWM "carrier" output on and off. This is commonly used in infrared remotes. The
+//|        pulsed signal consists of timed on and off periods. Unlike PWM, there is no set duration
+//|        for on and off pairs."""
 //|
 //|     def __init__(self, carrier: pulseio.PWMOut):
 //|         """Create a PulseOut object associated with the given PWMout object.
@@ -115,7 +110,7 @@ STATIC mp_obj_t pulseio_pulseout_obj___exit__(size_t n_args, const mp_obj_t *arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulseout___exit___obj, 4, 4, pulseio_pulseout_obj___exit__);
 
-//|     def send(self, pulses: array.array) -> Any: 
+//|     def send(self, pulses: array.array) -> Any:
 //|         """Pulse alternating on and off durations in microseconds starting with on.
 //|         ``pulses`` must be an `array.array` with data type 'H' for unsigned
 //|         halfword (two bytes).

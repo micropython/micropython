@@ -31,11 +31,7 @@
 
 #include "shared-bindings/uheap/__init__.h"
 
-//| """:mod:`uheap` --- Heap size analysis
-//| ================================================================
-//|
-//| .. module:: uheap
-//|   :synopsis: Heap size analysis"""
+//| """Heap size analysis"""
 //|
 
 //| def info(object: Any) -> Any:

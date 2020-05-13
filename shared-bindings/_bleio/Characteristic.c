@@ -34,13 +34,8 @@
 #include "shared-bindings/_bleio/UUID.h"
 
 //| class Characteristic:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`Characteristic` -- BLE service characteristic
-//|     =========================================================
-//|
-//|     Stores information about a BLE service characteristic and allows reading
-//|     and writing of the characteristic's value."""
+//|     """Stores information about a BLE service characteristic and allows reading
+//|        and writing of the characteristic's value."""
 //|
 //|     def __init__(self, ):
 //|         """There is no regular constructor for a Characteristic. A new local Characteristic can be created

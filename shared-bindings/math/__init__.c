@@ -38,12 +38,7 @@
 #define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
 
 
-//| """:mod:`math` --- mathematical functions
-//| ========================================================
-//|
-//| .. module:: math
-//|   :synopsis: mathematical functions
-//|   :platform: SAMD21/SAMD51
+//| """mathematical functions
 //|
 //| The `math` module provides some basic mathematical functions for
 //| working with floating-point numbers."""

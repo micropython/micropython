@@ -36,12 +36,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class I2SOut:
-//|     """.. currentmodule:: audiobusio
-//|
-//|     :class:`I2SOut` -- Output an I2S audio signal
-//|     ========================================================
-//|
-//|     I2S is used to output an audio signal on an I2S bus."""
+//|     """Output an I2S audio signal"""
 //|
 //|     def __init__(self, bit_clock: microcontroller.Pin, word_select: microcontroller.Pin, data: microcontroller.Pin, *, left_justified: bool):
 //|         """Create a I2SOut object associated with the given pins.

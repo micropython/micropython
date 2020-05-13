@@ -35,10 +35,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class GamePad:
-//|     """.. currentmodule:: gamepad
-//|
-//|     :class:`GamePad` -- Scan buttons for presses
-//|     ============================================
+//|     """Scan buttons for presses
 //|
 //|     Usage::
 //|
@@ -90,7 +87,7 @@
 //|         on delays.
 //|
 //|         They button presses are accumulated, until the ``get_pressed`` method
-//|         is called, at which point the button state is cleared, and the new 
+//|         is called, at which point the button state is cleared, and the new
 //|         button presses start to be recorded."""
 //|         ...
 //|

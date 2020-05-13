@@ -44,10 +44,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class DigitalInOut:
-//|     """.. currentmodule:: digitalio
-//|
-//|     :class:`DigitalInOut` -- digital input and output
-//|     =========================================================
+//|     """Digital input and output
 //|
 //|     A DigitalInOut is used to digitally control I/O pins. For analog control of
 //|     a pin, see the :py:class:`analogio.AnalogIn` and

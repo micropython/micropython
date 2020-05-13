@@ -34,22 +34,10 @@
 #include "Layer.h"
 #include "Text.h"
 
-//| """:mod:`_stage` --- C-level helpers for animation of sprites on a stage
-//| =====================================================================
-//|
-//| .. module:: _stage
-//|   :synopsis: C-level helpers for animation of sprites on a stage
-//|   :platform: SAMD21
+//| """C-level helpers for animation of sprites on a stage
 //|
 //| The `_stage` module contains native code to speed-up the ```stage`` Library
-//| <https://github.com/python-ugame/circuitpython-stage>`_.
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Layer
-//|     Text"""
+//| <https://github.com/python-ugame/circuitpython-stage>`_."""
 //|
 //| def render(x0: int, y0: int, x1: int, y1: int, layers: list, buffer: bytearray, display: displayio.Display, scale: int, background: int) -> Any:
 //|     """Render and send to the display a fragment of the screen.

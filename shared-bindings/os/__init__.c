@@ -37,12 +37,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/os/__init__.h"
 
-//| """:mod:`os` --- functions that an OS normally provides
-//| ========================================================
-//|
-//| .. module:: os
-//|   :synopsis: functions that an OS normally provides
-//|   :platform: SAMD21
+//| """functions that an OS normally provides
 //|
 //| The `os` module is a strict subset of the CPython `cpython:os` module. So,
 //| code written in CircuitPython will work in CPython but not necessarily the

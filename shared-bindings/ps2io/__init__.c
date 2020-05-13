@@ -33,21 +33,9 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/ps2io/Ps2.h"
 
-//| """:mod:`ps2io` --- Support for PS/2 protocol
-//| =====================================================
-//|
-//| .. module:: ps2io
-//|   :synopsis: Support for PS/2 based devices 
-//|   :platform: SAMD21
+//| """Support for PS/2 protocol
 //|
 //| The `ps2io` module contains classes to provide PS/2 communication.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Ps2
 //|
 
 //| .. warning:: This module is not available in some SAMD21 builds. See the

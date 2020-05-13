@@ -35,10 +35,7 @@
 #include "shared-bindings/util.h"
 
 //| class OneWire:
-//|     """.. currentmodule:: bitbangio
-//|
-//|     :class:`OneWire` -- Lowest-level of the Maxim OneWire protocol
-//|     ===============================================================
+//|     """Lowest-level of the Maxim OneWire protocol
 //|
 //|     :class:`~bitbangio.OneWire` implements the timing-sensitive foundation of
 //|     the Maxim (formerly Dallas Semi) OneWire protocol.

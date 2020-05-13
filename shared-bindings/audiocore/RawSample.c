@@ -35,19 +35,8 @@
 #include "shared-bindings/audiocore/RawSample.h"
 #include "supervisor/shared/translate.h"
 
-
-
-
-
-
-
 //| class RawSample:
-//|     """.. currentmodule:: audiocore
-//|
-//|     :class:`RawSample` -- A raw audio sample buffer
-//|     ========================================================
-//|
-//|     An in-memory sound sample"""
+//|     """A raw audio sample buffer in memory"""
 //|
 //|     def __init__(self, buffer: array.array, *, channel_count: int = 1, sample_rate: int = 8000):
 //|         """Create a RawSample based on the given buffer of signed values. If channel_count is more than

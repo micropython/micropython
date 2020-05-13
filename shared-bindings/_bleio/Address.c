@@ -35,12 +35,7 @@
 #include "shared-module/_bleio/Address.h"
 
 //| class Address:
-//|     """.. currentmodule:: _bleio
-//|
-//|     :class:`Address` -- BLE address
-//|     =========================================================
-//|
-//|     Encapsulates the address of a BLE device."""
+//|     """Encapsulates the address of a BLE device."""
 //|
 
 //|     def __init__(self, address: buf, address_type: Any):
@@ -97,7 +92,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 //|       >>> _bleio.adapter.address
 //|       <Address c8:1d:f5:ed:a8:35>
 //|       >>> _bleio.adapter.address.address_bytes
-//|       b'5\xa8\xed\xf5\x1d\xc8'"""
+//|       b'5\\xa8\\xed\\xf5\\x1d\\xc8'"""
 //|
 STATIC mp_obj_t bleio_address_get_address_bytes(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);

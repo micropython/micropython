@@ -28,10 +28,7 @@
 #include "shared-bindings/usb_hid/Device.h"
 
 //| class Device:
-//|     """.. currentmodule:: usb_hid
-//|
-//|     :class:`Device` -- HID Device
-//|     ============================================
+//|     """HID Device
 //|
 //|     Usage::
 //|

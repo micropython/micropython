@@ -37,12 +37,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class PWMAudioOut:
-//|     """.. currentmodule:: audiopwmio
-//|
-//|     :class:`PWMAudioOut` -- Output an analog audio signal
-//|     ========================================================
-//|
-//|     AudioOut can be used to output an analog audio signal on a given pin."""
+//|     """Output an analog audio signal by varying the PWM duty cycle."""
 //|
 //|     def __init__(self, left_channel: microcontroller.Pin, *, right_channel: microcontroller.Pin = None, quiescent_value: int = 0x8000):
 //|         """Create a PWMAudioOut object associated with the given pin(s). This allows you to
