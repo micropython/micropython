@@ -8,27 +8,8 @@
 #include "shared-bindings/vectorio/Rectangle.h"
 #include "shared-bindings/vectorio/VectorShape.h"
 
-//| :mod:`vectorio` --- Lightweight 2d shapes for displays
-//| =========================================================================
+//| """Lightweight 2d shapes for displays"""
 //|
-//| .. module:: vectorio
-//|   :synopsis: Adds vector graphics to displayio
-//|   :platform: SAMD21, SAMD51, nRF52
-//|
-//| The `vectorio` module contains classes to construct shapes
-//| by describing their points rather than providing them in bitmaps.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Circle
-//|     Polygon
-//|     Rectangle
-//|     VectorShape
-//|
-
 
 STATIC const mp_rom_map_elem_t vectorio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_vectorio) },

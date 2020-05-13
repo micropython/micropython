@@ -7,16 +7,12 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-
-//| .. currentmodule:: vectorio
+//| class Rectangle:
+//|     def __init__(self, width: int, height: int):
+//|         """Represents a rectangle by defining its bounds
 //|
-//| :class:`Rectangle` -- Represents a rectangle by defining its bounds
-//| ==========================================================================
-//|
-//| .. class:: Rectangle(width, height)
-//|
-//|   :param int width: The number of pixels wide
-//|   :param int height: The number of pixels high
+//|            :param width: The number of pixels wide
+//|            :param height: The number of pixels high"""
 //|
 static mp_obj_t vectorio_rectangle_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_width, ARG_height };

@@ -19,17 +19,15 @@
 #include "supervisor/shared/translate.h"
 
 
-//| .. currentmodule:: vectorio
+//| class VectorShape:
+//|     def __init__(self, shape: vectorio.Polygon, pixel_shader: displayio.Palette, x: int=0, y: int=0):
+//|         """Binds a vector shape to a location and pixel color
 //|
-//| :class:`VectorShape` -- Binds a vector shape to a location and pixel color
-//| ==========================================================================
-//|
-//| .. class:: VectorShape( shape, pixel_shader, x=0, y=0)
-//|
-//|   :param vectorio.Polygon shape: The shape to draw.
-//|   :param displayio.Palette pixel_shader: The pixel shader that produces colors from values
-//|   :param int x: Initial x position of the center axis of the shape within the parent.
-//|   :param int y: Initial y position of the center axis of the shape within the parent.
+//|            :param shape: The shape to draw.
+//|            :param pixel_shader: The pixel shader that produces colors from values
+//|            :param x: Initial x position of the center axis of the shape within the parent.
+//|            :param y: Initial y position of the center axis of the shape within the parent."""
+//|         ...
 //|
 STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_shape, ARG_pixel_shader, ARG_x, ARG_y };
@@ -95,9 +93,8 @@ STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t
 }
 
 
-//|   .. attribute:: x
-//|
-//|     X position of the center point of the shape in the parent.
+//|     x: int = ...
+//|     """X position of the center point of the shape in the parent."""
 //|
 STATIC mp_obj_t vectorio_vector_shape_obj_get_x(mp_obj_t self_in) {
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(self_in);
@@ -122,9 +119,8 @@ const mp_obj_property_t vectorio_vector_shape_x_obj = {
 };
 
 
-//|   .. attribute:: y
-//|
-//|     Y position of the center point of the shape in the parent.
+//|     y: int = ...
+//|     """Y position of the center point of the shape in the parent."""
 //|
 STATIC mp_obj_t vectorio_vector_shape_obj_get_y(mp_obj_t self_in) {
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(self_in);
@@ -149,9 +145,8 @@ const mp_obj_property_t vectorio_vector_shape_y_obj = {
 };
 
 
-//|   .. attribute:: pixel_shader
-//|
-//|     The pixel shader of the shape.
+//|     pixel_shader: displayio.Palette = ...
+//|     """The pixel shader of the shape."""
 //|
 STATIC mp_obj_t vectorio_vector_shape_obj_get_pixel_shader(mp_obj_t self_in) {
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(self_in);
