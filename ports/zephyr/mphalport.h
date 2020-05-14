@@ -21,7 +21,7 @@ static inline void mp_hal_delay_us(mp_uint_t delay) {
 }
 
 static inline void mp_hal_delay_ms(mp_uint_t delay) {
-    k_sleep(delay);
+    k_msleep(delay);
 }
 
 #define mp_hal_delay_us_fast(us)   (mp_hal_delay_us(us))
