@@ -135,7 +135,7 @@ typedef struct _mp_fun_table_t {
     mp_int_t (*small_int_floor_divide)(mp_int_t num, mp_int_t denom);
     mp_int_t (*small_int_modulo)(mp_int_t dividend, mp_int_t divisor);
     bool (*yield_from)(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value);
-    void *setjmp;
+    void *setjmp_;
     // Additional entries for dynamic runtime, starts at index 50
     void *(*memset_)(void *s, int c, size_t n);
     void *(*memmove_)(void *dest, const void *src, size_t n);
