@@ -124,7 +124,7 @@ void machine_init(void) {
         if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
         } else if (state & RCC_SR_PORRSTF
-                   #if !defined(STM32F0)
+                   #if !defined(STM32F0) && !defined(STM32F412Zx)
                    || state & RCC_SR_BORRSTF
                    #endif
                    ) {
