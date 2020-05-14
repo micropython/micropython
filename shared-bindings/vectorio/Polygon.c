@@ -15,6 +15,7 @@
 // #define VECTORIO_POLYGON_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
 
+//| from typing import List, Tuple
 //|
 //| class Polygon:
 //|     def __init__(self, points: List[ Tuple[ x, y ], ... ] ):

@@ -42,13 +42,9 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
         if (tuple_len != 2) {
             mp_raise_ValueError_varg(translate("%q must be a tuple of length 2"), MP_QSTR_point);
         }
-        if (!mp_obj_get_int_maybe(tuple_items[0], &self->points_list[2*i])) {
-            self->len = 0;
-            gc_free( self->points_list );
-            self->points_list = NULL;
-            mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
-        }
-        if (!mp_obj_get_int_maybe(tuple_items[1], &self->points_list[2*i + 1])) {
+        if (   !mp_obj_get_int_maybe(tuple_items[ 0 ], &self->points_list[2*i    ])
+            || !mp_obj_get_int_maybe(tuple_items[ 1 ], &self->points_list[2*i + 1])
+        ) {
             self->len = 0;
             gc_free( self->points_list );
             self->points_list = NULL;
