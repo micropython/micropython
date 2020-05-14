@@ -47,34 +47,40 @@ for module in modules:
 
     # Validate that the module is a parseable stub.
     total += 1
+    missing_parameter_type = 0
+    total_1 = 0
+    missing_return_type = 0
+    total_2 = 0
+    missing_attribute_type = 0
+    total_3 = 0
     try:
         tree = astroid.parse(stub_contents)
-        #print(tree.repr_tree())
         for i in tree.body:
             for j in i.body:
                 if isinstance(j, astroid.scoped_nodes.FunctionDef):
-                    argdict = j.args.__dict__
-                    a = argdict.pop('lineno')
-                    a = argdict.pop('col_offset')
-                    a = argdict.pop('parent')
-                    print(argdict)
+                    if None in j.args.__dict__['annotations']:
+                        missing_parameter_type += 1
+                    total_1 += 1
                     if j.returns:
-                        returndict = j.returns.__dict__
-                        a = returndict.pop('lineno')
-                        a = returndict.pop('col_offset')
-                        a = returndict.pop('parent')
-                        print(returndict)
-                    print('\n')
-                    #print(tree.body[0].body[0])
-                else:
-                    print(type(j))
+                        if 'Any' in j.returns.__dict__.values():
+                            missing_return_type += 1 
+                        total_2 += 1
+                elif isinstance(j, astroid.node_classes.AnnAssign):
+                    if 'Any' == j.__dict__['annotation'].__dict__['name']:
+                        missing_attribute_type += 1
+                    total_3 += 1
+
+
         ok += 1
     except astroid.exceptions.AstroidSyntaxError as e:
         e = e.__cause__
         traceback.print_exception(type(e), e, e.__traceback__)
     print()
 
-print(f"{ok} ok out of {total}")
+print(f"{missing_parameter_type} of {total_1} are missing the parameter type")
+print(f"{missing_return_type} of {total_2} are missing the return type")
+print(f"{missing_attribute_type} of {total_3} are missing the attribute type")
+
 
 if ok != total:
     sys.exit(total - ok)
