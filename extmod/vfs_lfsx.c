@@ -31,6 +31,7 @@
 #include "py/stream.h"
 #include "py/binary.h"
 #include "py/objarray.h"
+#include "py/objstr.h"
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 
@@ -440,6 +441,8 @@ STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(locals_dict), MP_VFS_LFSx(locals_dict_ta
 STATIC mp_import_stat_t MP_VFS_LFSx(import_stat)(void *self_in, const char *path) {
     MP_OBJ_VFS_LFSx *self = self_in;
     struct LFSx_API (info) info;
+    mp_obj_str_t path_obj = { { &mp_type_str }, 0, 0, (const byte *)path };
+    path = MP_VFS_LFSx(make_path)(self, &path_obj);
     int ret = LFSx_API(stat)(&self->lfs, path, &info);
     if (ret == 0) {
         if (info.type == LFSx_MACRO(_TYPE_REG)) {
