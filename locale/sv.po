@@ -3,25 +3,28 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2020-05-14 12:23+0000\n"
+"Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
+"\n"
+"Koden har kört klart. Väntar på omladdning.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -38,11 +41,11 @@ msgstr ""
 
 #: py/obj.c
 msgid "  File \"%q\""
-msgstr ""
+msgstr "  Filen \"%q\""
 
 #: py/obj.c
 msgid "  File \"%q\", line %d"
-msgstr ""
+msgstr "  Fil \"%q\", rad %d"
 
 #: main.c
 msgid " output:\n"
@@ -51,7 +54,7 @@ msgstr ""
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr ""
+msgstr "%%c kräver int eller char"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -60,42 +63,43 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
-msgstr ""
+msgstr "%q används redan"
 
 #: py/obj.c
 msgid "%q index out of range"
-msgstr ""
+msgstr "Index %q ligger utanför intervallet"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
-msgstr ""
+msgstr "Indexet %q måste vara ett heltal, inte %s"
 
 #: shared-bindings/vectorio/Polygon.c
+#, fuzzy
 msgid "%q list must be a list"
-msgstr ""
+msgstr "%q-listan måste vara en lista"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
 #: shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
-msgstr ""
+msgstr "%q måste vara >= 1"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
-msgstr ""
+msgstr "%q måste vara en tuple av längd 2"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
-msgstr ""
+msgstr "%q ska vara en int"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr ""
+msgstr "%q() kräver %d positionsargument men %d gavs"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
-msgstr ""
+msgstr "'%q' argument krävs"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -105,17 +109,17 @@ msgstr ""
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
-msgstr ""
+msgstr "'%s' förväntar sig ett register"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr ""
+msgstr "'%s' förväntar sig ett specialregister"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an FPU register"
-msgstr ""
+msgstr "'%s' förväntar sig ett FPU-register"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -125,35 +129,35 @@ msgstr ""
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
-msgstr ""
+msgstr "'%s' förväntar sig ett heltal"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr ""
+msgstr "'%s' förväntar sig högst r%d"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s' förväntar sig {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d is not within range %d..%d"
-msgstr ""
+msgstr "'%s' heltal %d ligger inte inom intervallet %d..%d"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr ""
+msgstr "'%s' heltal 0x%x får inte plats i mask 0x%x"
 
 #: py/runtime.c
 msgid "'%s' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "Objektet '%s' kan inte tilldela attributet '%q'"
 
 #: py/proto.c
 msgid "'%s' object does not support '%q'"
-msgstr ""
+msgstr "Objektet '%s' har inte stöd för '%q'"
 
 #: py/obj.c
 #, c-format
@@ -167,17 +171,17 @@ msgstr ""
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
-msgstr ""
+msgstr "Objektet '%s' har inget attribut '%q'"
 
 #: py/runtime.c
 #, c-format
 msgid "'%s' object is not an iterator"
-msgstr ""
+msgstr "Objektet '%s' är inte en iterator"
 
 #: py/objtype.c py/runtime.c
 #, c-format
 msgid "'%s' object is not callable"
-msgstr ""
+msgstr "Objektet '%s' kan inte anropas"
 
 #: py/runtime.c
 #, c-format
