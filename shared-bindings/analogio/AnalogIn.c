@@ -70,9 +70,9 @@ STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//| def deinit(self, ) -> Any:
-//|     """Turn off the AnalogIn and release the pin for other use."""
-//|     ...
+//|     def deinit(self, ) -> Any:
+//|         """Turn off the AnalogIn and release the pin for other use."""
+//|         ...
 //|
 STATIC mp_obj_t analogio_analogin_deinit(mp_obj_t self_in) {
    analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
