@@ -99,11 +99,12 @@ void mp_hal_delay_us(mp_uint_t us) {
     }
     register uint32_t delay __ASM("r0") = us;
     __ASM volatile (
-        #ifdef NRF51
-        ".syntax unified\n"
-        #endif
         "1:\n"
+        #ifdef NRF51
+        " SUB %0, %0, #1\n"
+        #else
         " SUBS %0, %0, #1\n"
+        #endif
         " NOP\n"
         " NOP\n"
         " NOP\n"
