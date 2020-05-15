@@ -37,7 +37,8 @@
 #define mp_hal_pin_od_high_dht mp_hal_pin_od_high
 #endif
 
-STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
+// dht_version should be 22 for DHT22 and 11 for DHT11
+STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in, mp_obj_t dht_version) {
     mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(pin_in);
     mp_hal_pin_open_drain(pin);
 
@@ -52,7 +53,15 @@ STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
     mp_hal_pin_od_high_dht(pin);
     mp_hal_delay_ms(250);
     mp_hal_pin_od_low(pin);
-    mp_hal_delay_ms(18);
+
+    // we have to use non-interruptable delay here, because otherwise
+    // on high system load, we get DHT timeout errors: see Issue #5848
+    // DHT22 needs only 1-3 milliseconds low, DHT11 needs 18 milliseconds low
+    if(mp_obj_get_int(dht_version) == 22){
+        mp_hal_delay_us_fast(3000);
+    }else{
+        mp_hal_delay_us_fast(18000);
+    }
 
     mp_uint_t irq_state = mp_hal_quiet_timing_enter();
 
@@ -91,4 +100,4 @@ timeout:
     mp_hal_quiet_timing_exit(irq_state);
     mp_raise_OSError(MP_ETIMEDOUT);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(dht_readinto_obj, dht_readinto);
+MP_DEFINE_CONST_FUN_OBJ_3(dht_readinto_obj, dht_readinto);

@@ -14,12 +14,16 @@ class DHTBase:
 
     def measure(self):
         buf = self.buf
-        dht_readinto(self.pin, buf)
+        dht_readinto(self.pin, buf, self.dht_version)
         if (buf[0] + buf[1] + buf[2] + buf[3]) & 0xFF != buf[4]:
             raise Exception("checksum error")
 
 
 class DHT11(DHTBase):
+    def __init__(self, pin):
+        DHTBase.__init__(self, pin)
+        self.dht_version = 11
+
     def humidity(self):
         return self.buf[0]
 
@@ -28,6 +32,10 @@ class DHT11(DHTBase):
 
 
 class DHT22(DHTBase):
+    def __init__(self, pin):
+        DHTBase.__init__(self, pin)
+        self.dht_version = 22
+
     def humidity(self):
         return (self.buf[0] << 8 | self.buf[1]) * 0.1
 
