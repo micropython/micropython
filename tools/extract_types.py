@@ -56,6 +56,7 @@ for module in modules:
     try:
         tree = astroid.parse(stub_contents)
         for i in tree.body:
+            print(i.__dict__['name'])
             for j in i.body:
                 if isinstance(j, astroid.scoped_nodes.FunctionDef):
                     if None in j.args.__dict__['annotations']:
@@ -72,6 +73,7 @@ for module in modules:
                         missing_attribute_type += 1
                         print(f"attribute on line {j.__dict__['lineno']}")
                     total_3 += 1
+            print('\n')
 
 
         ok += 1
