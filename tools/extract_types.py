@@ -60,14 +60,17 @@ for module in modules:
                 if isinstance(j, astroid.scoped_nodes.FunctionDef):
                     if None in j.args.__dict__['annotations']:
                         missing_parameter_type += 1
+                        print(f"Parameter: {j.__dict__['name']} on line {j.__dict__['lineno']}")
                     total_1 += 1
                     if j.returns:
                         if 'Any' in j.returns.__dict__.values():
-                            missing_return_type += 1 
+                            print(f"Return: {j.__dict__['name']} on line {j.__dict__['lineno']}")
+                            missing_return_type += 1
                         total_2 += 1
                 elif isinstance(j, astroid.node_classes.AnnAssign):
                     if 'Any' == j.__dict__['annotation'].__dict__['name']:
                         missing_attribute_type += 1
+                        print(f"attribute on line {j.__dict__['lineno']}")
                     total_3 += 1
 
 
