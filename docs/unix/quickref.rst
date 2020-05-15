@@ -3,6 +3,20 @@
 Quick reference for the UNIX and Windows ports
 ==============================================
 
+
+Installation
+------------
+
+MicroPython does not publish builds for MacOs, Unix, and Windows. If you need
+latest versions, you should build from source as outlined in the wiki page: 
+`Getting Started <https://github.com/micropython/micropython/wiki/Getting-Started>`_.
+Here some common ways to install unofficial builds:
+
+* MacOs: ``brew install micropython`` from https://formulae.brew.sh/formula/micropython
+* Unix: ``apt get micropython`` (or your favorite variant of apt, apt-get). MicroPython may already be in your distrbution.
+* Windows: Unknown at this time.
+
+
 Command line options
 --------------------
 

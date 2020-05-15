@@ -14,12 +14,12 @@ packages:
 
 1. Python modules and packages are turned into distribution package
    archives, and published at the Python Package Index (PyPI).
-2. `upip` package manager can be used to install a distribution package
-   on a `MicroPython port` with networking capabilities (for example,
-   on the Unix port).
+2. `upip` package manager is used to install a distribution package
+   on a `MicroPython port` with networking capabilities. You can run upip
+   on your microcontroller or your Unix port.
 3. For ports without networking capabilities, an "installation image"
-   can be prepared on the Unix port, and transferred to a device by
-   suitable means.
+   can be prepared on the Unix port. You can :ref:`cross install <cross-installing>`
+   to your development environment then transfer the code to your device. 
 4. For low-memory ports, the installation image can be frozen as the
    bytecode into MicroPython executable, thus minimizing the memory
    storage overheads.
@@ -119,6 +119,7 @@ commands which corresponds to the example above are::
 
 [TODO: Describe installation path.]
 
+.. _cross_installing:
 
 Cross-installing packages
 -------------------------
@@ -138,6 +139,8 @@ would need to transfer contents of this directory (without the
 ``install_dir/`` prefix) to the device, at the suitable location, where
 it can be found by the Python ``import`` statement (see discussion of
 the `upip` installation path above).
+
+See Also: :ref:`How to install the `MicroPython Unix port` <unix_quickref>`
 
 
 Cross-installing packages with freezing
