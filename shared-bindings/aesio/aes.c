@@ -103,9 +103,10 @@ STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
 STATIC mp_obj_t aesio_aes_rekey(size_t n_args, const mp_obj_t *pos_args) {
   aesio_aes_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-  size_t key_length = 0;
-  const uint8_t *key =
-      (const uint8_t *)mp_obj_str_get_data(pos_args[1], &key_length);
+  mp_buffer_info_t bufinfo;
+  mp_get_buffer_raise(pos_args[1], &bufinfo, MP_BUFFER_READ);
+  const uint8_t *key = bufinfo.buf;
+  size_t key_length = bufinfo.len;
   if (key == NULL) {
     mp_raise_ValueError(translate("No key was specified"));
   }
@@ -115,8 +116,9 @@ STATIC mp_obj_t aesio_aes_rekey(size_t n_args, const mp_obj_t *pos_args) {
 
   const uint8_t *iv = NULL;
   if (n_args > 2) {
-    size_t iv_length = 0;
-    iv = (const uint8_t *)mp_obj_str_get_data(pos_args[2], &iv_length);
+    mp_get_buffer_raise(pos_args[2], &bufinfo, MP_BUFFER_READ);
+    size_t iv_length = bufinfo.len;
+    iv = (const uint8_t *)bufinfo.buf;
     if (iv_length != AES_BLOCKLEN) {
       mp_raise_TypeError_varg(translate("IV must be %d bytes long"),
                               AES_BLOCKLEN);
@@ -246,11 +248,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(aesio_aes_set_mode_obj, aesio_aes_set_mode);
 
 const mp_obj_property_t aesio_aes_mode_obj = {
     .base.type = &mp_type_property,
-    .proxy = {
-      (mp_obj_t)&aesio_aes_get_mode_obj,
-      (mp_obj_t)&aesio_aes_set_mode_obj,
-      (mp_obj_t)&mp_const_none_obj
-    },
+    .proxy = {(mp_obj_t)&aesio_aes_get_mode_obj,
+              (mp_obj_t)&aesio_aes_set_mode_obj, (mp_obj_t)&mp_const_none_obj},
 };
 
 STATIC const mp_rom_map_elem_t aesio_locals_dict_table[] = {
