@@ -318,6 +318,10 @@ void reset_cpu(void) {
     reset();
 }
 
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
+}
+
 extern uint32_t _ld_heap_start, _ld_heap_end, _ld_stack_top, _ld_stack_bottom;
 uint32_t *port_stack_get_limit(void) {
     return &_ld_heap_start;

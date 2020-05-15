@@ -176,7 +176,7 @@ safe_mode_t port_init(void) {
     uint32_t tickstart = HAL_GetTick();
 
     // H7/F7 untested with LSE, so autofail them until above move is done
-    #if (CPY_STM32F4) 
+    #if (CPY_STM32F4)
     bool lse_setupsuccess = true;
     #else
     bool lse_setupsuccess = false;
@@ -279,6 +279,10 @@ uint32_t *port_heap_get_bottom(void) {
 
 uint32_t *port_heap_get_top(void) {
     return &_ld_heap_end;
+}
+
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
 }
 
 uint32_t *port_stack_get_limit(void) {
