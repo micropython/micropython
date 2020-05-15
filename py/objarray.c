@@ -63,6 +63,10 @@ STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_bu
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
 STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in);
 STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+#if MICROPY_CPYTHON_COMPAT
+STATIC mp_obj_t array_decode(size_t n_args, const mp_obj_t *args);
+#endif
+
 
 /******************************************************************************/
 // array
@@ -546,10 +550,30 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
     return 0;
 }
 
+
+#if MICROPY_CPYTHON_COMPAT
+// Directly lifted from objstr.c
+STATIC mp_obj_t array_decode(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t new_args[2];
+    if (n_args == 1) {
+        new_args[0] = args[0];
+        new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
+        args = new_args;
+        n_args++;
+    }
+    return mp_obj_str_make_new(&mp_type_str, n_args, args, NULL);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(array_decode_obj, 1, 3, array_decode);
+#endif
+
+
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
+#if MICROPY_CPYTHON_COMPAT
+    { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&array_decode_obj) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
