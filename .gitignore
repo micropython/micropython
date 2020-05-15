@@ -52,7 +52,7 @@ _build
 # Generated rst files
 ######################
 genrst/
-autoapi/
+/autoapi/
 
 # ctags and similar
 ###################

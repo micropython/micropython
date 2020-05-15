@@ -71,11 +71,12 @@ extensions.append('autoapi.extension')
 
 autoapi_type = 'python'
 # Uncomment this if debugging autoapi
-# autoapi_keep_files = True
-autoapi_dirs = ['circuitpython-stubs']
+autoapi_keep_files = True
+autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circuitpython-stubs')]
 autoapi_add_toctree_entry = False
 autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members', 'show-module-summary']
 autoapi_template_dir = 'docs/autoapi/templates'
+autoapi_python_use_implicit_namespaces = True
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
