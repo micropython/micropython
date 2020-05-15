@@ -53,12 +53,29 @@ for module in modules:
     # Validate that the module is a parseable stub.
     total += 1
     try:
-        astroid.parse(stub_contents)
+        tree = astroid.parse(stub_contents)
+        for i in tree.body:
+            print(i.__dict__['name'])
+            for j in i.body:
+                if isinstance(j, astroid.scoped_nodes.FunctionDef):
+                    a = ''
+                    if None in j.args.__dict__['annotations']:
+                        a += f"Missing parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}\n"
+                    if j.returns:
+                        if 'Any' in j.returns.__dict__.values():
+                            a += f"Missing return type: {j.__dict__['name']} on line {j.__dict__['lineno']}"
+                    if a:
+                        raise TypeError(a)
+                elif isinstance(j, astroid.node_classes.AnnAssign):
+                    if 'Any' == j.__dict__['annotation'].__dict__['name']:
+                        raise TypeError(f"missing attribute type on line {j.__dict__['lineno']}")
+
         ok += 1
     except astroid.exceptions.AstroidSyntaxError as e:
         e = e.__cause__
         traceback.print_exception(type(e), e, e.__traceback__)
-    print()
+    except TypeError as err:
+        print(err)
 
 print(f"{ok} ok out of {total}")
 
