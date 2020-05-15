@@ -9,45 +9,41 @@
 #include "shared-bindings/countio/Counter.h"
 #include "shared-bindings/util.h"
 
-//| .. currentmodule:: countio
+//| class Counter:
+//|     """Counter will keep track of the number of falling edge transistions (pulses) on a
+//|        given pin"""
 //|
-//| :class:`Counter` -- Track the count of falling edge transistions (pulses) on a given pin
-//| ========================================================================================
+//|     def __init__(self, pin_a):
+//|         """Create a Counter object associated with the given pin. It tracks the number of
+//|            falling pulses relative when the object is constructed.
 //|
-//| Counter will keep track of the number of falling edge transistions (pulses) on a given pin
+//|            :param ~microcontroller.Pin pin_a: Pin to read pulses from.
 //|
-//| .. class:: Counter(pin_a)
 //|
-//|   Create a Counter object associated with the given pin. It tracks the number of 
-//|   falling pulses relative when the object is constructed.
+//|            For example::
 //|
-//|   :param ~microcontroller.Pin pin_a: Pin to read pulses from.
-//|   
+//|                import countio
+//|                import time
+//|                from board import *
 //|
-//|   For example::
-//|
-//|     import countio
-//|     import time
-//|     from board import *
-//|
-//|     pin_counter = countio.Counter(board.D1)
-//|     #reset the count after 100 counts
-//|     while True:
-//|         if pin_counter.count == 100:
-//|             pin_counter.reset()
-//|         print(pin_counter.count)
+//|                pin_counter = countio.Counter(board.D1)
+//|                #reset the count after 100 counts
+//|                while True:
+//|                    if pin_counter.count == 100:
+//|                        pin_counter.reset()
+//|                    print(pin_counter.count)"""
 //|
 STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pin_a };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin_a, MP_ARG_REQUIRED | MP_ARG_OBJ }
-        
+
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t* pin_a = validate_obj_is_free_pin(args[ARG_pin_a].u_obj);
-    
+
 
     countio_counter_obj_t *self = m_new_obj(countio_counter_obj_t);
     self->base.type = &countio_counter_type;
@@ -57,9 +53,8 @@ STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitializes the Counter and releases any hardware resources for reuse.
+//|     def deinit(self):
+//|         """Deinitializes the Counter and releases any hardware resources for reuse."""
 //|
 STATIC mp_obj_t countio_counter_deinit(mp_obj_t self_in) {
     countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -74,16 +69,14 @@ STATIC void check_for_deinit(countio_counter_obj_t *self) {
     }
 }
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self):
+//|         """No-op used by Context Managers."""
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self):
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|            :ref:`lifetime-and-contextmanagers` for more info."""
 //|
 STATIC mp_obj_t countio_counter_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -93,10 +86,8 @@ STATIC mp_obj_t countio_counter_obj___exit__(size_t n_args, const mp_obj_t *args
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(countio_counter___exit___obj, 4, 4, countio_counter_obj___exit__);
 
 
-//|   .. attribute:: count
-//|
-//|     The current count in terms of pulses.
-//|
+//|     count: int = ...
+//|     """The current count in terms of pulses."""
 //|
 STATIC mp_obj_t countio_counter_obj_get_count(mp_obj_t self_in) {
     countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -122,6 +113,9 @@ const mp_obj_property_t countio_counter_count_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     def reset(self):
+//|         """Resets the count back to 0."""
+//|
 STATIC mp_obj_t countio_counter_reset(mp_obj_t self_in){
 	countio_counter_obj_t *self = MP_OBJ_TO_PTR(self_in);
 	check_for_deinit(self);
@@ -129,7 +123,7 @@ STATIC mp_obj_t countio_counter_reset(mp_obj_t self_in){
 	common_hal_countio_counter_reset(self);
 	return mp_const_none;
 }
-	
+
 
 MP_DEFINE_CONST_FUN_OBJ_1(countio_counter_reset_obj, countio_counter_reset);
 

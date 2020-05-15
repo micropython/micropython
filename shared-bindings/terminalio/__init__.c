@@ -35,22 +35,10 @@
 
 #include "py/runtime.h"
 
-//| :mod:`terminalio` --- Displays text in a TileGrid
-//| =================================================
-//|
-//| .. module:: terminalio
-//|   :synopsis: Displays text in a TileGrid
+//| """Displays text in a TileGrid
 //|
 //| The `terminalio` module contains classes to display a character stream on a display. The built
-//| in font is available as ``terminalio.FONT``.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Terminal
-//|
+//| in font is available as ``terminalio.FONT``."""
 //|
 STATIC const mp_rom_map_elem_t  terminalio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_terminalio) },

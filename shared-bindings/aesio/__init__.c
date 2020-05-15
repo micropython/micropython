@@ -31,23 +31,10 @@
 
 #include "__init__.h"
 
-//| :mod:`aesio` --- AES encryption routines
-//| ========================================
-//|
-//| .. module:: aesio
-//|   :synopsis: Embedded implementation of AES
+//| """AES encryption routines
 //|
 //| The `AES` module contains classes used to implement encryption
-//| and decryption. It aims to be low overhead in terms of memory.
-//|
-//|
-
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     aes
+//| and decryption. It aims to be low overhead in terms of memory."""
 
 
 STATIC const mp_obj_tuple_t mp_aes_key_size_obj = {

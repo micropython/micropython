@@ -38,20 +38,15 @@
 
 #if CIRCUITPY_NETWORK
 
-//| :mod:`network` --- Network Interface Management
-//| ===============================================
-//|
-//| .. module:: network
-//|   :synopsis: Network Interface Management
-//|   :platform: SAMD
+//| """Network Interface Management
 //|
 //| This module provides a registry of configured NICs.
 //| It is used by the 'socket' module to look up a suitable
-//| NIC when a socket is created.
+//| NIC when a socket is created."""
 //|
-//| .. function:: route()
-//|
-//|   Returns a list of all configured NICs.
+//| def route() -> Any:
+//|     """Returns a list of all configured NICs."""
+//|     ...
 //|
 
 STATIC mp_obj_t network_route(void) {

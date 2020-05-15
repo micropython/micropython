@@ -42,21 +42,9 @@
 #include "shared-bindings/audiomixer/Mixer.h"
 #endif
 
-//| :mod:`audioio` --- Support for audio input and output
-//| ======================================================
-//|
-//| .. module:: audioio
-//|   :synopsis: Support for audio input and output
-//|   :platform: SAMD21
+//| """Support for audio output
 //|
 //| The `audioio` module contains classes to provide access to audio IO.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     AudioOut
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
@@ -68,7 +56,7 @@
 //|
 //| For compatibility with CircuitPython 4.x, some builds allow the items in
 //| `audiocore` to be imported from `audioio`.  This will be removed for all
-//| boards in a future build of CircuitPython.
+//| boards in a future build of CircuitPython."""
 //|
 
 STATIC const mp_rom_map_elem_t audioio_module_globals_table[] = {

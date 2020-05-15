@@ -323,7 +323,6 @@ $(filter $(SRC_PATTERNS), \
 )
 
 SRC_BINDINGS_ENUMS += \
-	help.c \
 	util.c
 
 SRC_SHARED_MODULE_ALL = \

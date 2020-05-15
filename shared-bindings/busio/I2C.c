@@ -36,33 +36,32 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: busio
+//| class I2C:
+//|     """Two wire serial protocol"""
 //|
-//| :class:`I2C` --- Two wire serial protocol
-//| ------------------------------------------
+//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, *, frequency: int = 400000, timeout: int = 255):
 //|
-//| .. class:: I2C(scl, sda, *, frequency=400000, timeout=255)
+//|         """I2C is a two-wire protocol for communicating between devices.  At the
+//|         physical level it consists of 2 wires: SCL and SDA, the clock and data
+//|         lines respectively.
 //|
-//|   I2C is a two-wire protocol for communicating between devices.  At the
-//|   physical level it consists of 2 wires: SCL and SDA, the clock and data
-//|   lines respectively.
+//|         .. seealso:: Using this class directly requires careful lock management.
+//|             Instead, use :class:`~adafruit_bus_device.i2c_device.I2CDevice` to
+//|             manage locks.
 //|
-//|   .. seealso:: Using this class directly requires careful lock management.
-//|       Instead, use :class:`~adafruit_bus_device.i2c_device.I2CDevice` to
-//|       manage locks.
+//|         .. seealso:: Using this class to directly read registers requires manual
+//|             bit unpacking. Instead, use an existing driver or make one with
+//|             :ref:`Register <register-module-reference>` data descriptors.
 //|
-//|   .. seealso:: Using this class to directly read registers requires manual
-//|       bit unpacking. Instead, use an existing driver or make one with
-//|       :ref:`Register <register-module-reference>` data descriptors.
+//|         :param ~microcontroller.Pin scl: The clock pin
+//|         :param ~microcontroller.Pin sda: The data pin
+//|         :param int frequency: The clock frequency in Hertz
+//|         :param int timeout: The maximum clock stretching timeut - (used only for bitbangio.I2C; ignored for busio.I2C)
 //|
-//|   :param ~microcontroller.Pin scl: The clock pin
-//|   :param ~microcontroller.Pin sda: The data pin
-//|   :param int frequency: The clock frequency in Hertz
-//|   :param int timeout: The maximum clock stretching timeut - (used only for bitbangio.I2C; ignored for busio.I2C)
-//|
-//|   .. note:: On the nRF52840, only one I2C object may be created,
-//|      except on the Circuit Playground Bluefruit, which allows two,
-//|      one for the onboard accelerometer, and one for offboard use.
+//|         .. note:: On the nRF52840, only one I2C object may be created,
+//|            except on the Circuit Playground Bluefruit, which allows two,
+//|            one for the onboard accelerometer, and one for offboard use."""
+//|         ...
 //|
 STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
@@ -84,9 +83,9 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, con
     return (mp_obj_t)self;
 }
 
-//|   .. method:: deinit()
-//|
-//|     Releases control of the underlying hardware so other classes can use it.
+//|     def deinit(self, ) -> Any:
+//|         """Releases control of the underlying hardware so other classes can use it."""
+//|         ...
 //|
 STATIC mp_obj_t busio_i2c_obj_deinit(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -101,16 +100,16 @@ STATIC void check_for_deinit(busio_i2c_obj_t *self) {
     }
 }
 
-//|   .. method:: __enter__()
-//|
-//|     No-op used in Context Managers.
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used in Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|     Automatically deinitializes the hardware on context exit. See
-//|     :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self, ) -> Any:
+//|         """Automatically deinitializes the hardware on context exit. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t busio_i2c_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -126,13 +125,14 @@ static void check_lock(busio_i2c_obj_t *self) {
     }
 }
 
-//|   .. method:: scan()
+//|     def scan(self, ) -> Any:
 //|
-//|      Scan all I2C addresses between 0x08 and 0x77 inclusive and return a
-//|      list of those that respond.
+//|          """Scan all I2C addresses between 0x08 and 0x77 inclusive and return a
+//|          list of those that respond.
 //|
-//|      :return: List of device ids on the I2C bus
-//|      :rtype: list
+//|          :return: List of device ids on the I2C bus
+//|          :rtype: list"""
+//|          ...
 //|
 STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -150,12 +150,12 @@ STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_scan_obj, busio_i2c_scan);
 
-//|   .. method:: try_lock()
+//|     def try_lock(self, ) -> Any:
+//|         """Attempts to grab the I2C lock. Returns True on success.
 //|
-//|     Attempts to grab the I2C lock. Returns True on success.
-//|
-//|     :return: True when lock has been grabbed
-//|     :rtype: bool
+//|         :return: True when lock has been grabbed
+//|         :rtype: bool"""
+//|         ...
 //|
 STATIC mp_obj_t busio_i2c_obj_try_lock(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -164,9 +164,9 @@ STATIC mp_obj_t busio_i2c_obj_try_lock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_try_lock_obj, busio_i2c_obj_try_lock);
 
-//|   .. method:: unlock()
-//|
-//|     Releases the I2C lock.
+//|     def unlock(self, ) -> Any:
+//|         """Releases the I2C lock."""
+//|         ...
 //|
 STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -176,20 +176,20 @@ STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 
-//|   .. method:: readfrom_into(address, buffer, *, start=0, end=None)
+//|     def readfrom_into(self, address: int, buffer: bytearray, *, start: int = 0, end: int = None) -> Any:
+//|          """Read into ``buffer`` from the slave specified by ``address``.
+//|          The number of bytes read will be the length of ``buffer``.
+//|          At least one byte must be read.
 //|
-//|      Read into ``buffer`` from the slave specified by ``address``.
-//|      The number of bytes read will be the length of ``buffer``.
-//|      At least one byte must be read.
+//|          If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|          as if ``buffer[start:end]``. This will not cause an allocation like
+//|          ``buf[start:end]`` will so it saves memory.
 //|
-//|      If ``start`` or ``end`` is provided, then the buffer will be sliced
-//|      as if ``buffer[start:end]``. This will not cause an allocation like
-//|      ``buf[start:end]`` will so it saves memory.
-//|
-//|      :param int address: 7-bit device address
-//|      :param bytearray buffer: buffer to write into
-//|      :param int start: Index to start writing at
-//|      :param int end: Index to write up to but not include. Defaults to ``len(buffer)``
+//|          :param int address: 7-bit device address
+//|          :param bytearray buffer: buffer to write into
+//|          :param int start: Index to start writing at
+//|          :param int end: Index to write up to but not include. Defaults to ``len(buffer)``"""
+//|          ...
 //|
 // Shared arg parsing for readfrom_into and writeto_then_readfrom.
 STATIC void readfrom(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end) {
@@ -228,26 +228,26 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_into);
 
-//|   .. method:: writeto(address, buffer, *, start=0, end=None, stop=True)
+//|     def writeto(self, address: int, buffer: bytearray, *, start: int = 0, end: int = None, stop: bool = True) -> Any:
+//|          """Write the bytes from ``buffer`` to the slave specified by ``address``.
+//|          Transmits a stop bit when stop is True. Setting stop=False is deprecated and stop will be
+//|          removed in CircuitPython 6.x. Use `writeto_then_readfrom` when needing a write, no stop and
+//|          repeated start before a read.
 //|
-//|      Write the bytes from ``buffer`` to the slave specified by ``address``.
-//|      Transmits a stop bit when stop is True. Setting stop=False is deprecated and stop will be
-//|      removed in CircuitPython 6.x. Use `writeto_then_readfrom` when needing a write, no stop and
-//|      repeated start before a read.
+//|          If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|          as if ``buffer[start:end]``. This will not cause an allocation like
+//|          ``buffer[start:end]`` will so it saves memory.
 //|
-//|      If ``start`` or ``end`` is provided, then the buffer will be sliced
-//|      as if ``buffer[start:end]``. This will not cause an allocation like
-//|      ``buffer[start:end]`` will so it saves memory.
+//|         Writing a buffer or slice of length zero is permitted, as it can be used
+//|          to poll for the existence of a device.
 //|
-//|      Writing a buffer or slice of length zero is permitted, as it can be used
-//|      to poll for the existence of a device.
-//|
-//|      :param int address: 7-bit device address
-//|      :param bytearray buffer: buffer containing the bytes to write
-//|      :param int start: Index to start writing from
-//|      :param int end: Index to read up to but not include. Defaults to ``len(buffer)``
-//|      :param bool stop: If true, output an I2C stop condition after the buffer is written.
-//|                        Deprecated. Will be removed in 6.x and act as stop=True.
+//|          :param int address: 7-bit device address
+//|          :param bytearray buffer: buffer containing the bytes to write
+//|          :param int start: Index to start writing from
+//|          :param int end: Index to read up to but not include. Defaults to ``len(buffer)``
+//|          :param bool stop: If true, output an I2C stop condition after the buffer is written.
+//|                            Deprecated. Will be removed in 6.x and act as stop=True."""
+//|          ...
 //|
 // Shared arg parsing for writeto and writeto_then_readfrom.
 STATIC void writeto(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end, bool stop) {
@@ -287,23 +287,23 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 
-//|   .. method:: writeto_then_readfrom(address, out_buffer, in_buffer, *, out_start=0, out_end=None, in_start=0, in_end=None)
+//|     def writeto_then_readfrom(self, address: int, out_buffer: bytearray, in_buffer: bytearray, *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> Any:
+//|          """Write the bytes from ``out_buffer`` to the slave specified by ``address``, generate no stop
+//|          bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
+//|          ``in_buffer`` can be the same buffer because they are used sequentially.
 //|
-//|      Write the bytes from ``out_buffer`` to the slave specified by ``address``, generate no stop
-//|      bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
-//|      ``in_buffer`` can be the same buffer because they are used sequentially.
+//|         If ``start`` or ``end`` is provided, then the corresponding buffer will be sliced
+//|          as if ``buffer[start:end]``. This will not cause an allocation like ``buf[start:end]``
+//|          will so it saves memory.
 //|
-//|      If ``start`` or ``end`` is provided, then the corresponding buffer will be sliced
-//|      as if ``buffer[start:end]``. This will not cause an allocation like ``buf[start:end]``
-//|      will so it saves memory.
-//|
-//|      :param int address: 7-bit device address
-//|      :param bytearray out_buffer: buffer containing the bytes to write
-//|      :param bytearray in_buffer: buffer to write into
-//|      :param int out_start: Index to start writing from
-//|      :param int out_end: Index to read up to but not include. Defaults to ``len(buffer)``
-//|      :param int in_start: Index to start writing at
-//|      :param int in_end: Index to write up to but not include. Defaults to ``len(buffer)``
+//|          :param int address: 7-bit device address
+//|          :param bytearray out_buffer: buffer containing the bytes to write
+//|          :param bytearray in_buffer: buffer to write into
+//|          :param int out_start: Index to start writing from
+//|          :param int out_end: Index to read up to but not include. Defaults to ``len(buffer)``
+//|          :param int in_start: Index to start writing at
+//|          :param int in_end: Index to write up to but not include. Defaults to ``len(buffer)``"""
+//|          ...
 //|
 STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };

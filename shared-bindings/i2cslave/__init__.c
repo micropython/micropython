@@ -35,21 +35,9 @@
 
 #include "py/runtime.h"
 
-//| :mod:`i2cslave` --- Two wire serial protocol slave
-//| ==================================================
-//|
-//| .. module:: i2cslave
-//|   :synopsis: Two wire serial protocol slave
-//|   :platform: SAMD21, SAMD51
+//| """Two wire serial protocol slave
 //|
 //| The `i2cslave` module contains classes to support a I2C slave.
-//|
-//| Classes
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     I2CSlave
 //|
 //| Example emulating 2 devices::
 //|
@@ -101,7 +89,7 @@
 //|
 //|    Raspberry Pi in particular does not support this with its I2C hw block.
 //|    This can be worked around by using the ``i2c-gpio`` bit banging driver.
-//|    Since the RPi firmware uses the hw i2c, it's not possible to emulate a HAT eeprom.
+//|    Since the RPi firmware uses the hw i2c, it's not possible to emulate a HAT eeprom."""
 //|
 
 STATIC const mp_rom_map_elem_t i2cslave_module_globals_table[] = {

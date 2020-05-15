@@ -33,41 +33,38 @@
 #include "shared-bindings/_bleio/Descriptor.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-//| .. currentmodule:: _bleio
+//| class Descriptor:
+//|     """Stores information about a BLE descriptor.
 //|
-//| :class:`Descriptor` -- BLE descriptor
-//| =========================================================
+//|     Descriptors are attached to BLE characteristics and provide contextual
+//|     information about the characteristic."""
 //|
-//| Stores information about a BLE descriptor.
-//| Descriptors are attached to BLE characteristics and provide contextual
-//| information about the characteristic.
+//|     def __init__(self, ):
+//|         """There is no regular constructor for a Descriptor. A new local Descriptor can be created
+//|         and attached to a Characteristic by calling `add_to_characteristic()`.
+//|         Remote Descriptor objects are created by `Connection.discover_remote_services()`
+//|         as part of remote Characteristics in the remote Services that are discovered.
 //|
-//| .. class:: Descriptor
+//|         .. classmethod:: add_to_characteristic(characteristic, uuid, *, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, initial_value=b'')
 //|
-//|   There is no regular constructor for a Descriptor. A new local Descriptor can be created
-//|   and attached to a Characteristic by calling `add_to_characteristic()`.
-//|   Remote Descriptor objects are created by `Connection.discover_remote_services()`
-//|   as part of remote Characteristics in the remote Services that are discovered.
+//|           Create a new Descriptor object, and add it to this Service.
 //|
-//|   .. classmethod:: add_to_characteristic(characteristic, uuid, *, read_perm=`Attribute.OPEN`, write_perm=`Attribute.OPEN`, max_length=20, fixed_length=False, initial_value=b'')
+//|           :param Characteristic characteristic: The characteristic that will hold this descriptor
+//|           :param UUID uuid: The uuid of the descriptor
+//|           :param int read_perm: Specifies whether the descriptor can be read by a client, and if so, which
+//|              security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
+//|              `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
+//|              `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
+//|           :param int write_perm: Specifies whether the descriptor can be written by a client, and if so, which
+//|              security mode is required. Values allowed are the same as ``read_perm``.
+//|           :param int max_length: Maximum length in bytes of the descriptor value. The maximum allowed is
+//|              is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
+//|              number of data bytes that fit in a single BLE 4.x ATT packet.
+//|           :param bool fixed_length: True if the descriptor value is of fixed length.
+//|           :param buf initial_value: The initial value for this descriptor.
 //|
-//|     Create a new Descriptor object, and add it to this Service.
-//|
-//|     :param Characteristic characteristic: The characteristic that will hold this descriptor
-//|     :param UUID uuid: The uuid of the descriptor
-//|     :param int read_perm: Specifies whether the descriptor can be read by a client, and if so, which
-//|        security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
-//|        `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
-//|        `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
-//|     :param int write_perm: Specifies whether the descriptor can be written by a client, and if so, which
-//|        security mode is required. Values allowed are the same as ``read_perm``.
-//|     :param int max_length: Maximum length in bytes of the descriptor value. The maximum allowed is
-//|        is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
-//|        number of data bytes that fit in a single BLE 4.x ATT packet.
-//|     :param bool fixed_length: True if the descriptor value is of fixed length.
-//|     :param buf initial_value: The initial value for this descriptor.
-//|
-//|     :return: the new Descriptor.
+//|           :return: the new Descriptor."""
+//|         ...
 //|
 STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // class is arg[0], which we can ignore.
@@ -135,9 +132,8 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_descriptor_add_to_characteristic_fun_obj, 3, bleio_descriptor_add_to_characteristic);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_descriptor_add_to_characteristic_obj, MP_ROM_PTR(&bleio_descriptor_add_to_characteristic_fun_obj));
 
-//|   .. attribute:: uuid
-//|
-//|     The descriptor uuid. (read-only)
+//|     uuid: Any = ...
+//|     """The descriptor uuid. (read-only)"""
 //|
 STATIC mp_obj_t bleio_descriptor_get_uuid(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -154,9 +150,8 @@ const mp_obj_property_t bleio_descriptor_uuid_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: characteristic (read-only)
-//|
-//|     The Characteristic this Descriptor is a part of.
+//|     characteristic: Any = ...
+//|     """The Characteristic this Descriptor is a part of."""
 //|
 STATIC mp_obj_t bleio_descriptor_get_characteristic(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -172,9 +167,8 @@ const mp_obj_property_t bleio_descriptor_characteristic_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: value
-//|
-//|     The value of this descriptor.
+//|     value: Any = ...
+//|     """The value of this descriptor."""
 //|
 STATIC mp_obj_t bleio_descriptor_get_value(mp_obj_t self_in) {
     bleio_descriptor_obj_t *self = MP_OBJ_TO_PTR(self_in);

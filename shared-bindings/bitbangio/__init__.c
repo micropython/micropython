@@ -40,12 +40,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`bitbangio` --- Digital protocols implemented by the CPU
-//| =============================================================
-//|
-//| .. module:: bitbangio
-//|   :synopsis: Digital protocols implemented by the CPU
-//|   :platform: SAMD21, ESP8266
+//| """Digital protocols implemented by the CPU
 //|
 //| The `bitbangio` module contains classes to provide digital bus protocol
 //| support regardless of whether the underlying hardware exists to use the
@@ -54,15 +49,6 @@
 //| First try to use `busio` module instead which may utilize peripheral
 //| hardware to implement the protocols. Native implementations will be faster
 //| than bitbanged versions and have more capabilities.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     I2C
-//|     OneWire
-//|     SPI
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
@@ -81,7 +67,7 @@
 //| This example will initialize the the device, run
 //| :py:meth:`~bitbangio.I2C.scan` and then :py:meth:`~bitbangio.I2C.deinit` the
 //| hardware. The last step is optional because CircuitPython automatically
-//| resets hardware after a program finishes.
+//| resets hardware after a program finishes."""
 //|
 
 STATIC const mp_rom_map_elem_t bitbangio_module_globals_table[] = {

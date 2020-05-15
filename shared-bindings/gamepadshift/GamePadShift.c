@@ -33,24 +33,22 @@
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/tick.h"
 
-//| .. currentmodule:: gamepadshift
+//| class GamePadShift:
+//|     """Scan buttons for presses through a shift register"""
 //|
-//| :class:`GamePadShift` -- Scan buttons for presses through a shift register
-//| ===========================================================================
+//|     def __init__(self, clock: Any, data: Any, latch: Any):
+//|         """Initializes button scanning routines.
 //|
-//| .. class:: GamePadShift(clock, data, latch)
+//|         The ``clock``, ``data`` and ``latch`` parameters are ``DigitalInOut``
+//|         objects connected to the shift register controlling the buttons.
 //|
-//|     Initializes button scanning routines.
+//|         They button presses are accumulated, until the ``get_pressed`` method
+//|         is called, at which point the button state is cleared, and the new
+//|         button presses start to be recorded.
 //|
-//|     The ``clock``, ``data`` and ``latch`` parameters are ``DigitalInOut``
-//|     objects connected to the shift register controlling the buttons.
-//|
-//|     They button presses are accumulated, until the ``get_pressed`` method
-//|     is called, at which point the button state is cleared, and the new
-//|     button presses start to be recorded.
-//|
-//|     Only one gamepad (`gamepad.GamePad` or `gamepadshift.GamePadShift`)
-//|     may be used at a time.
+//|         Only one gamepad (`gamepad.GamePad` or `gamepadshift.GamePadShift`)
+//|         may be used at a time."""
+//|         ...
 //|
 STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
         const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -84,15 +82,15 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(gamepad_singleton);
 }
 
-//|     .. method:: get_pressed()
-//|
-//|         Get the status of buttons pressed since the last call and clear it.
+//|     def get_pressed(self, ) -> Any:
+//|         """Get the status of buttons pressed since the last call and clear it.
 //|
 //|         Returns an 8-bit number, with bits that correspond to buttons,
 //|         which have been pressed (or held down) since the last call to this
 //|         function set to 1, and the remaining bits set to 0. Then it clears
 //|         the button state, so that new button presses (or buttons that are
-//|         held down) can be recorded for the next call.
+//|         held down) can be recorded for the next call."""
+//|         ...
 //|
 STATIC mp_obj_t gamepadshift_get_pressed(mp_obj_t self_in) {
     gamepadshift_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
@@ -102,9 +100,9 @@ STATIC mp_obj_t gamepadshift_get_pressed(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepadshift_get_pressed_obj, gamepadshift_get_pressed);
 
-//|     .. method:: deinit()
-//|
-//|         Disable button scanning.
+//|     def deinit(self, ) -> Any:
+//|         """Disable button scanning."""
+//|         ...
 //|
 STATIC mp_obj_t gamepadshift_deinit(mp_obj_t self_in) {
     common_hal_gamepadshift_gamepadshift_deinit(self_in);

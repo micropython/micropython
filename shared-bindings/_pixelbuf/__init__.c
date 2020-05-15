@@ -33,33 +33,22 @@
 #include "shared-bindings/_pixelbuf/PixelBuf.h"
 
 
-//| :mod:`_pixelbuf` --- Fast RGB(W) pixel buffer and helpers
-//| ===========================================================
-
-//| .. module:: _pixelbuf
-//|   :synopsis: A fast RGB(W) pixel buffer library for like NeoPixel and DotStar.
+//| """A fast RGB(W) pixel buffer library for like NeoPixel and DotStar.
 //|
 //| The `_pixelbuf` module provides the :py:class:`PixelBuf` class to accelerate
 //| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel.
 //|
-//| Byteorders are configured with strings, such as "RGB" or "RGBD".
-//| TODO: Pull in docs from pypixelbuf.
+//| Byteorders are configured with strings, such as "RGB" or "RGBD"."""
+// TODO: Pull in docs from pypixelbuf.
 
-//| Libraries
+//| def colorwheel(n: int) -> Any:
+//|     """C implementation of the common wheel() function found in many examples.
+//|     Returns the colorwheel RGB value as an integer value for n (usable in :py:class:`PixelBuf`, neopixel, and dotstar)."""
+//|     ...
 //|
-//| .. toctree::
-//|     :maxdepth: 3
+//| def wheel(n: Any) -> Any:
+//|     """Use of wheel() is deprecated. Please use colorwheel()."""
 //|
-//|     PixelBuf
-
-
-//| .. function:: colorwheel(n)
-//|
-//|     C implementation of the common wheel() function found in many examples.
-//|     Returns the colorwheel RGB value as an integer value for n (usable in :py:class:`PixelBuf`, neopixel, and dotstar).
-//|
-//| .. function:: wheel(n)
-//|     Use of wheel() is deprecated. Please use colorwheel().
 
 STATIC mp_obj_t pixelbuf_colorwheel(mp_obj_t n) {
     return MP_OBJ_NEW_SMALL_INT(colorwheel(MP_OBJ_IS_SMALL_INT(n) ? MP_OBJ_SMALL_INT_VALUE(n) : mp_obj_float_get(n)));

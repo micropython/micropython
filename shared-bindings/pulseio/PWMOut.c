@@ -35,55 +35,51 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: pulseio
+//| class PWMOut:
+//|     """Output a Pulse Width Modulated signal on a given pin."""
 //|
-//| :class:`PWMOut` -- Output a Pulse Width Modulated signal
-//| ========================================================
+//|     def __init__(self, pin: microcontroller.Pin, *, duty_cycle: int = 0, frequency: int = 500, variable_frequency: bool = False):
+//|         """Create a PWM object associated with the given pin. This allows you to
+//|         write PWM signals out on the given pin. Frequency is fixed after init
+//|         unless ``variable_frequency`` is True.
 //|
-//| PWMOut can be used to output a PWM signal on a given pin.
+//|         .. note:: When ``variable_frequency`` is True, further PWM outputs may be
+//|           limited because it may take more internal resources to be flexible. So,
+//|           when outputting both fixed and flexible frequency signals construct the
+//|           fixed outputs first.
 //|
-//| .. class:: PWMOut(pin, *, duty_cycle=0, frequency=500, variable_frequency=False)
+//|         :param ~microcontroller.Pin pin: The pin to output to
+//|         :param int duty_cycle: The fraction of each pulse which is high. 16-bit
+//|         :param int frequency: The target frequency in Hertz (32-bit)
+//|         :param bool variable_frequency: True if the frequency will change over time
 //|
-//|   Create a PWM object associated with the given pin. This allows you to
-//|   write PWM signals out on the given pin. Frequency is fixed after init
-//|   unless ``variable_frequency`` is True.
+//|         Simple LED fade::
 //|
-//|   .. note:: When ``variable_frequency`` is True, further PWM outputs may be
-//|     limited because it may take more internal resources to be flexible. So,
-//|     when outputting both fixed and flexible frequency signals construct the
-//|     fixed outputs first.
+//|           import pulseio
+//|           import board
 //|
-//|   :param ~microcontroller.Pin pin: The pin to output to
-//|   :param int duty_cycle: The fraction of each pulse which is high. 16-bit
-//|   :param int frequency: The target frequency in Hertz (32-bit)
-//|   :param bool variable_frequency: True if the frequency will change over time
+//|           pwm = pulseio.PWMOut(board.D13)     # output on D13
+//|           pwm.duty_cycle = 2 ** 15            # Cycles the pin with 50% duty cycle (half of 2 ** 16) at the default 500hz
 //|
-//|   Simple LED fade::
+//|         PWM at specific frequency (servos and motors)::
 //|
-//|     import pulseio
-//|     import board
+//|           import pulseio
+//|           import board
 //|
-//|     pwm = pulseio.PWMOut(board.D13)     # output on D13
-//|     pwm.duty_cycle = 2 ** 15            # Cycles the pin with 50% duty cycle (half of 2 ** 16) at the default 500hz
+//|           pwm = pulseio.PWMOut(board.D13, frequency=50)
+//|           pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at 50hz
 //|
-//|   PWM at specific frequency (servos and motors)::
+//|         Variable frequency (usually tones)::
 //|
-//|     import pulseio
-//|     import board
+//|           import pulseio
+//|           import board
+//|           import time
 //|
-//|     pwm = pulseio.PWMOut(board.D13, frequency=50)
-//|     pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at 50hz
-//|
-//|   Variable frequency (usually tones)::
-//|
-//|     import pulseio
-//|     import board
-//|     import time
-//|
-//|     pwm = pulseio.PWMOut(board.D13, duty_cycle=2 ** 15, frequency=440, variable_frequency=True)
-//|     time.sleep(0.2)
-//|     pwm.frequency = 880
-//|     time.sleep(0.1)
+//|           pwm = pulseio.PWMOut(board.D13, duty_cycle=2 ** 15, frequency=440, variable_frequency=True)
+//|           time.sleep(0.2)
+//|           pwm.frequency = 880
+//|           time.sleep(0.1)"""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     enum { ARG_pin, ARG_duty_cycle, ARG_frequency, ARG_variable_frequency };
@@ -119,9 +115,9 @@ STATIC mp_obj_t pulseio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitialises the PWMOut and releases any hardware resources for reuse.
+//|     def deinit(self, ) -> Any:
+//|         """Deinitialises the PWMOut and releases any hardware resources for reuse."""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pwmout_deinit(mp_obj_t self_in) {
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -136,16 +132,16 @@ STATIC void check_for_deinit(pulseio_pwmout_obj_t *self) {
     }
 }
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self, ) -> Any:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pwmout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -154,16 +150,16 @@ STATIC mp_obj_t pulseio_pwmout_obj___exit__(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pwmout___exit___obj, 4, 4, pulseio_pwmout_obj___exit__);
 
-//|   .. attribute:: duty_cycle
+//|     duty_cycle: Any = ...
+//|     """16 bit value that dictates how much of one cycle is high (1) versus low
+//|     (0). 0xffff will always be high, 0 will always be low and 0x7fff will
+//|     be half high and then half low.
 //|
-//|      16 bit value that dictates how much of one cycle is high (1) versus low
-//|      (0). 0xffff will always be high, 0 will always be low and 0x7fff will
-//|      be half high and then half low.
+//|     Depending on how PWM is implemented on a specific board, the internal
+//|     representation for duty cycle might have less than 16 bits of resolution.
+//|     Reading this property will return the value from the internal representation,
+//|     so it may differ from the value set."""
 //|
-//|      Depending on how PWM is implemented on a specific board, the internal
-//|      representation for duty cycle might have less than 16 bits of resolution.
-//|      Reading this property will return the value from the internal representation,
-//|      so it may differ from the value set.
 STATIC mp_obj_t pulseio_pwmout_obj_get_duty_cycle(mp_obj_t self_in) {
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -190,16 +186,15 @@ const mp_obj_property_t pulseio_pwmout_duty_cycle_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: frequency
-//|
-//|     32 bit value that dictates the PWM frequency in Hertz (cycles per
+//|     frequency: Any = ...
+//|     """32 bit value that dictates the PWM frequency in Hertz (cycles per
 //|     second). Only writeable when constructed with ``variable_frequency=True``.
 //|
 //|     Depending on how PWM is implemented on a specific board, the internal value
 //|     for the PWM's duty cycle may need to be recalculated when the frequency
 //|     changes. In these cases, the duty cycle is automatically recalculated
 //|     from the original duty cycle value. This should happen without any need
-//|     to manually re-set the duty cycle.
+//|     to manually re-set the duty cycle."""
 //|
 STATIC mp_obj_t pulseio_pwmout_obj_get_frequency(mp_obj_t self_in) {
     pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);

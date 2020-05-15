@@ -36,22 +36,18 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: displayio
+//| class Bitmap:
+//|     """Stores values of a certain size in a 2D array"""
 //|
-//| :class:`Bitmap` -- Stores values in a 2D array
-//| ==========================================================================
+//|     def __init__(self, width: int, height: int, value_count: int):
+//|         """Create a Bitmap object with the given fixed size. Each pixel stores a value that is used to
+//|         index into a corresponding palette. This enables differently colored sprites to share the
+//|         underlying Bitmap. value_count is used to minimize the memory used to store the Bitmap.
 //|
-//| Stores values of a certain size in a 2D array
-//|
-//| .. class:: Bitmap(width, height, value_count)
-//|
-//|   Create a Bitmap object with the given fixed size. Each pixel stores a value that is used to
-//|   index into a corresponding palette. This enables differently colored sprites to share the
-//|   underlying Bitmap. value_count is used to minimize the memory used to store the Bitmap.
-//|
-//|   :param int width: The number of values wide
-//|   :param int height: The number of values high
-//|   :param int value_count: The number of possible pixel values.
+//|         :param int width: The number of values wide
+//|         :param int height: The number of values high
+//|         :param int value_count: The number of possible pixel values."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 3, 3, false);
@@ -77,9 +73,8 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
 
     return MP_OBJ_FROM_PTR(self);
 }
-//|   .. attribute:: width
-//|
-//|      Width of the bitmap. (read only)
+//|     width: Any = ...
+//|     """Width of the bitmap. (read only)"""
 //|
 STATIC mp_obj_t displayio_bitmap_obj_get_width(mp_obj_t self_in) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
@@ -96,9 +91,8 @@ const mp_obj_property_t displayio_bitmap_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: height
-//|
-//|      Height of the bitmap. (read only)
+//|     height: Any = ...
+//|     """Height of the bitmap. (read only)"""
 //|
 STATIC mp_obj_t displayio_bitmap_obj_get_height(mp_obj_t self_in) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
@@ -115,23 +109,23 @@ const mp_obj_property_t displayio_bitmap_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: __getitem__(index)
+//|     def __getitem__(self, index: Any) -> Any:
+//|         """Returns the value at the given index. The index can either be an x,y tuple or an int equal
+//|         to ``y * width + x``.
 //|
-//|     Returns the value at the given index. The index can either be an x,y tuple or an int equal
-//|     to ``y * width + x``.
+//|         This allows you to::
 //|
-//|     This allows you to::
+//|           print(bitmap[0,1])"""
+//|         ...
 //|
-//|       print(bitmap[0,1])
+//|     def __setitem__(self, index: Any, value: Any) -> Any:
+//|         """Sets the value at the given index. The index can either be an x,y tuple or an int equal
+//|         to ``y * width + x``.
 //|
-//|   .. method:: __setitem__(index, value)
+//|         This allows you to::
 //|
-//|     Sets the value at the given index. The index can either be an x,y tuple or an int equal
-//|     to ``y * width + x``.
-//|
-//|     This allows you to::
-//|
-//|       bitmap[0,1] = 3
+//|           bitmap[0,1] = 3"""
+//|         ...
 //|
 STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj) {
     if (value_obj == mp_const_none) {
@@ -178,9 +172,9 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     return mp_const_none;
 }
 
-//|   .. method:: fill(value)
-//|
-//|      Fills the bitmap with the supplied palette index value.
+//|     def fill(self, value: Any) -> Any:
+//|         """Fills the bitmap with the supplied palette index value."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);

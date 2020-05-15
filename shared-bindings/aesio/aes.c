@@ -9,35 +9,31 @@
 
 // Defined at the end of this file
 
-//| .. currentmodule:: aesio
+//| class AES:
+//|     """Encrypt and decrypt AES streams"""
 //|
-//| :class:`aesio` -- Encrypt and decrypt AES streams
-//| =====================================================
+//|     def __init__(self, key, mode=0, iv=None, segment_size=8) -> Any:
+//|         """Create a new AES state with the given key.
 //|
-//| An object that represents an AES stream, including the current state.
+//|            :param bytearray key: A 16-, 24-, or 32-byte key
+//|            :param int mode: AES mode to use.  One of: AES.MODE_ECB, AES.MODE_CBC, or
+//|                             AES.MODE_CTR
+//|            :param bytearray iv: Initialization vector to use for CBC or CTR mode
 //|
-//| .. class:: AES(key, mode=0, iv=None, segment_size=8)
+//|            Additional arguments are supported for legacy reasons.
 //|
-//|   Create a new AES state with the given key.
+//|            Encrypting a string::
 //|
-//|   :param bytearray key: A 16-, 24-, or 32-byte key
-//|   :param int mode: AES mode to use.  One of: AES.MODE_ECB, AES.MODE_CBC, or
-//|                    AES.MODE_CTR
-//|   :param bytearray iv: Initialization vector to use for CBC or CTR mode
+//|              import aesio
+//|              from binascii import hexlify
 //|
-//|   Additional arguments are supported for legacy reasons.
-//|
-//|   Encrypting a string::
-//|
-//|     import aesio
-//|     from binascii import hexlify
-//|
-//|     key = b'Sixteen byte key'
-//|     inp = b'Circuit Python!!' # Note: 16-bytes long
-//|     outp = bytearray(len(inp))
-//|     cipher = aesio.AES(key, aesio.mode.MODE_ECB)
-//|     cipher.encrypt_into(inp, outp)
-//|     hexlify(outp)
+//|              key = b'Sixteen byte key'
+//|              inp = b'Circuit Python!!' # Note: 16-bytes long
+//|              outp = bytearray(len(inp))
+//|              cipher = aesio.AES(key, aesio.mode.MODE_ECB)
+//|              cipher.encrypt_into(inp, outp)
+//|              hexlify(outp)"""
+//|         ...
 //|
 
 STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
@@ -156,12 +152,13 @@ STATIC void validate_length(aesio_aes_obj_t *self, size_t src_length,
   }
 }
 
-//|   .. method:: encrypt_into(src, dest)
+//|     def encrypt_into(src, dest) -> None:
+//|         """Encrypt the buffer from ``src`` into ``dest``.
 //|
-//|      Encrypt the buffer from ``src`` into ``dest``.
-//|      For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
-//|      buffers must be a multiple of 16 bytes, and must be equal length.  For
-//|      CTX mode, there are no restrictions.
+//|            For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
+//|            buffers must be a multiple of 16 bytes, and must be equal length.  For
+//|            CTX mode, there are no restrictions."""
+//|         ...
 //|
 STATIC mp_obj_t aesio_aes_encrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
                                        mp_obj_t dest) {
@@ -186,12 +183,13 @@ STATIC mp_obj_t aesio_aes_encrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(aesio_aes_encrypt_into_obj,
                                  aesio_aes_encrypt_into);
 
-//|   .. method:: decrypt_into(src, dest)
+//|     def decrypt_into(src, dest) -> None:
 //|
-//|      Decrypt the buffer from ``src`` into ``dest``.
-//|      For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
-//|      buffers must be a multiple of 16 bytes, and must be equal length.  For
-//|      CTX mode, there are no restrictions.
+//|         """Decrypt the buffer from ``src`` into ``dest``.
+//|            For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
+//|            buffers must be a multiple of 16 bytes, and must be equal length.  For
+//|            CTX mode, there are no restrictions."""
+//|         ...
 //|
 STATIC mp_obj_t aesio_aes_decrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
                                        mp_obj_t dest) {
