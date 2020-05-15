@@ -73,7 +73,6 @@ autoapi_type = 'python'
 # Uncomment this if debugging autoapi
 autoapi_keep_files = True
 autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circuitpython-stubs')]
-print(autoapi_dirs)
 autoapi_add_toctree_entry = False
 autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members', 'show-module-summary']
 autoapi_template_dir = 'docs/autoapi/templates'

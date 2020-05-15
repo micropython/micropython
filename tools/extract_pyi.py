@@ -7,7 +7,6 @@ top_level = sys.argv[1].strip("/")
 stub_directory = sys.argv[2]
 
 def convert_folder(top_level, stub_directory):
-    print(top_level, stub_directory)
     ok = 0
     total = 0
     filenames = sorted(os.listdir(top_level))
