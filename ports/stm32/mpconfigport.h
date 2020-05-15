@@ -126,7 +126,7 @@
 #endif
 #define MICROPY_PY_UERRNO           (1)
 #ifndef MICROPY_PY_THREAD
-#define MICROPY_PY_THREAD           (0)
+#define MICROPY_PY_THREAD           (1)
 #endif
 
 // extended modules
@@ -175,6 +175,7 @@
 #endif
 //#define MICROPY_PY_LVGL             (1)
 #define MICROPY_PY_LODEPNG          (1)
+#define MICROPY_PY_RK043FN48H       (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
@@ -278,6 +279,12 @@ extern const struct _mp_obj_module_t mp_module_lodepng;
 #define LV_ROOTS
 #endif
 
+#if MICROPY_PY_RK043FN48H
+#define RK043FN48H_ROOTS void* rk043fn48h_fb[2];
+#else
+#define RK043FN48H_ROOTS
+#endif
+
 #if MICROPY_SSL_MBEDTLS
 #define MICROPY_PORT_ROOT_POINTER_MBEDTLS void **mbedtls_memory;
 #else
@@ -294,6 +301,7 @@ struct _mp_bluetooth_nimble_root_pointers_t;
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
     void *mp_lv_user_data; \
+    RK043FN48H_ROOTS \
     const char *readline_hist[8]; \
     \
     mp_obj_t pyb_hid_report_desc; \
