@@ -173,7 +173,7 @@ STATIC mp_obj_t aesio_aes_encrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
 
   mp_buffer_info_t srcbufinfo, destbufinfo;
   mp_get_buffer_raise(src, &srcbufinfo, MP_BUFFER_READ);
-  mp_get_buffer_raise(dest, &destbufinfo, MP_BUFFER_READ);
+  mp_get_buffer_raise(dest, &destbufinfo, MP_BUFFER_WRITE);
   validate_length(aes, srcbufinfo.len, destbufinfo.len);
 
   memcpy(destbufinfo.buf, srcbufinfo.buf, srcbufinfo.len);
@@ -203,7 +203,7 @@ STATIC mp_obj_t aesio_aes_decrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
 
   mp_buffer_info_t srcbufinfo, destbufinfo;
   mp_get_buffer_raise(src, &srcbufinfo, MP_BUFFER_READ);
-  mp_get_buffer_raise(dest, &destbufinfo, MP_BUFFER_READ);
+  mp_get_buffer_raise(dest, &destbufinfo, MP_BUFFER_WRITE);
   validate_length(aes, srcbufinfo.len, destbufinfo.len);
 
   memcpy(destbufinfo.buf, srcbufinfo.buf, srcbufinfo.len);
