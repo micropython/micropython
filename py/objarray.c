@@ -551,7 +551,7 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
 }
 
 
-#if MICROPY_CPYTHON_COMPAT
+#if MICROPY_CPYTHON_COMPAT && MICROPY_PY_BUILTINS_BYTEARRAY
 // Directly lifted from objstr.c
 STATIC mp_obj_t array_decode(size_t n_args, const mp_obj_t *args) {
     mp_obj_t new_args[2];
@@ -567,8 +567,17 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(array_decode_obj, 1, 3, array_decode);
 #endif
 
 
-#if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
+#if MICROPY_PY_ARRAY
 STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
+    { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
+#endif
+
+#if MICROPY_PY_BUILTINS_BYTEARRAY
+STATIC const mp_rom_map_elem_t bytearray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
 #if MICROPY_CPYTHON_COMPAT
@@ -576,8 +585,9 @@ STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
 #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(bytearray_locals_dict, bytearray_locals_dict_table);
 #endif
+
 
 #if MICROPY_PY_ARRAY
 const mp_obj_type_t mp_type_array = {
@@ -605,7 +615,7 @@ const mp_obj_type_t mp_type_bytearray = {
     .binary_op = array_binary_op,
     .subscr = array_subscr,
     .buffer_p = { .get_buffer = array_get_buffer },
-    .locals_dict = (mp_obj_dict_t*)&array_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&bytearray_locals_dict,
 };
 #endif
 
