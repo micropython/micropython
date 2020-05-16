@@ -82,7 +82,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_deinit_obj, digitalio_digitalinout_obj_deinit);
 
-//|     def __enter__(self, ) -> self:
+//|     def __enter__(self, ) -> DigitalInOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
