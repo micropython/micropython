@@ -162,7 +162,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_input(size_t n_args, const mp_o
     check_for_deinit(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
+
 
     digitalio_pull_t pull = PULL_NONE;
     if (args[ARG_pull].u_rom_obj == &digitalio_pull_up_obj) {
@@ -296,7 +296,7 @@ const mp_obj_property_t digitalio_digitalio_drive_mode_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     pull: Optional[Pull] ...
+//|     pull: Optional[Pull] = ...
 //|     """The pin pull direction. One of:
 //|
 //|     - `digitalio.Pull.UP`
