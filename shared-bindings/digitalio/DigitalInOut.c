@@ -71,7 +71,7 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Turn off the DigitalInOut and release the pin for other use."""
 //|         ...
 //|
@@ -82,13 +82,13 @@ STATIC mp_obj_t digitalio_digitalinout_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_deinit_obj, digitalio_digitalinout_obj_deinit);
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self, ) -> self:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self, ) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -106,12 +106,13 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
     }
 }
 
-//|     def switch_to_output(self, value: bool = False, drive_mode: digitalio.DriveMode = digitalio.DriveMode.PUSH_PULL) -> Any:
+//|     def switch_to_output(self, value: bool = False, drive_mode: digitalio.DriveMode = digitalio.DriveMode.PUSH_PULL) -> None:
 //|           """Set the drive mode and value and then switch to writing out digital
 //|           values.
 //|
 //|           :param bool value: default value to set upon switching
-//|           :param ~digitalio.DriveMode drive_mode: drive mode for the output"""
+//|           :param ~digitalio.DriveMode drive_mode: drive mode for the output
+//|           """
 //|           ...
 //|
 STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -135,7 +136,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_output_obj, 1, digitalio_digitalinout_switch_to_output);
 
-//|     def switch_to_input(self, pull: Pull = None) -> Any:
+//|     def switch_to_input(self, pull: Pull = None) -> None:
 //|         """Set the pull and then switch to read in digital values.
 //|
 //|         :param Pull pull: pull configuration for the input
@@ -161,6 +162,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_input(size_t n_args, const mp_o
     check_for_deinit(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    
 
     digitalio_pull_t pull = PULL_NONE;
     if (args[ARG_pull].u_rom_obj == &digitalio_pull_up_obj) {
@@ -174,7 +176,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_input(size_t n_args, const mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_input_obj, 1, digitalio_digitalinout_switch_to_input);
 
-//|     direction: Any = ...
+//|     direction: Direction = ...
 //|     """The direction of the pin.
 //|
 //|     Setting this will use the defaults from the corresponding
@@ -220,7 +222,7 @@ const mp_obj_property_t digitalio_digitalio_direction_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     value: Any = ...
+//|     value: Bool = ...
 //|     """The digital logic level of the pin."""
 //|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_value(mp_obj_t self_in) {
@@ -250,7 +252,7 @@ const mp_obj_property_t digitalio_digitalinout_value_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     drive_mode: Any = ...
+//|     drive_mode: DriveMode = ...
 //|     """The pin drive mode. One of:
 //|
 //|     - `digitalio.DriveMode.PUSH_PULL`
@@ -294,7 +296,7 @@ const mp_obj_property_t digitalio_digitalio_drive_mode_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     pull: Any = ...
+//|     pull: Optional[Pull] ...
 //|     """The pin pull direction. One of:
 //|
 //|     - `digitalio.Pull.UP`
