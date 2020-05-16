@@ -78,3 +78,15 @@ deploy: off
 
 nuget:
   disable_publish_on_pr: true
+
+# Note this relies on after_test building the mingw version,
+# which will replace the .exe files built by msvc.
+artifacts:
+  - path: ports/windows/build/Release*/micropython.exe
+    name: micropython-msvc
+  - path: mpy-cross/build/Release*/mpy-cross.exe
+    name: mpy-cross-msvc
+  - path: ports/windows/micropython.exe
+    name: micropython-mingw
+  - path: mpy-cross/mpy-cross.exe
+    name: mpy-cross-mingw
