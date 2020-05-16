@@ -201,7 +201,7 @@ static int mp_parse_decimal_exact(const char **str_in, const char *top, bool all
     mpz_init_zero(&dec);
 
     int ret = 0;
-    int nfrac = 0;
+    int exp_extra = 0;
     int exp_val = 0;
     int exp_sign = 1;
     parse_dec_in_t in = PARSE_DEC_IN_INTG;
@@ -218,11 +218,20 @@ static int mp_parse_decimal_exact(const char **str_in, const char *top, bool all
                     exp_val = 10 * exp_val + dig;
                 }
             } else {
-                mpz_set_from_int(&mpz_tmp2, dig);
-                mpz_mul_inpl(&dec, &dec, &mpz_tmp1);
-                mpz_add_inpl(&dec, &dec, &mpz_tmp2);
-                if (in == PARSE_DEC_IN_FRAC) {
-                    nfrac += 1;
+                if (mpz_max_num_bits(&dec) < 52 + MPZ_DIG_SIZE) {
+                    // Can possibly represent more digits so accumulate them
+                    mpz_set_from_int(&mpz_tmp2, dig);
+                    mpz_mul_inpl(&dec, &dec, &mpz_tmp1);
+                    mpz_add_inpl(&dec, &dec, &mpz_tmp2);
+                    if (in == PARSE_DEC_IN_FRAC) {
+                        --exp_extra;
+                    }
+                } else {
+                    // Can't represent more digits of precision so ignore the digit and
+                    // just adjust the exponent
+                    if (in == PARSE_DEC_IN_INTG) {
+                        ++exp_extra;
+                    }
                 }
             }
         } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
@@ -262,14 +271,14 @@ static int mp_parse_decimal_exact(const char **str_in, const char *top, bool all
     }
 
     exp_val *= exp_sign;
-    exp_val -= nfrac;
+    exp_val += exp_extra;
 
     // Catch very large exponents, because 5**abs(exp_val) would be impossible to compute
     // TODO make this threshold precise, based on size of dec
-    if (exp_val < -500) {
+    if (exp_val < -400) {
         *float_out = 0.0;
         goto cleanup;
-    } else if (exp_val > 500) {
+    } else if (exp_val > 400) {
         *float_out = (mp_float_t)INFINITY;
         goto cleanup;
     }
@@ -299,10 +308,13 @@ static int mp_parse_decimal_exact(const char **str_in, const char *top, bool all
     // TODO make this much more efficient, not using 2 loops!
     mpz_set_from_int(&mpz_tmp1, 1);
     mpz_shl_inpl(&mpz_tmp1, &mpz_tmp1, 54);
+    #if 0
+    // Only needed if we want to use the mpz bits to create the FP bits
     while (mpz_cmp(&dec, &mpz_tmp1) < 0) {
         exp_val -= 1;
         mpz_shl_inpl(&dec, &dec, 1);
     }
+    #endif
     mpz_shl_inpl(&mpz_tmp1, &mpz_tmp1, 1);
     while (mpz_cmp(&dec, &mpz_tmp1) > 0) {
         exp_val += 1;
