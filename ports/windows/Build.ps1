@@ -56,11 +56,20 @@ function Invoke-MingwBuild {
     Write-Verbose "mpy-cross: $crossMakeOpts"
     Write-Verbose "micropython: $upyMakeOpts"
     Set-Location "$upyDir"
+    # Treat passing BINDIR as trigger for the install target.
+    $crossTargets = "all"
+    if ($crossMakeOpts -match "BINDIR=") {
+        $crossTargets += " install"
+    }
+    $upyTargets = "all"
+    if ($upyMakeOpts -match "BINDIR=") {
+        $upyTargets += " install"
+    }
     # Clear LIB because when we get invoked from an environment which has it already, as is the case when
     # the msvc build tools are configured, it might include bogus content like parentheses in paths.
-    & $bash -l -c "LIB='' make -B -C mpy-cross $crossMakeOpts"
+    & $bash -l -c "LIB='' make -B -C mpy-cross $crossMakeOpts $crossTargets"
     Test-LastExitCode "make"
-    & $bash -l -c "LIB='' make -B -C ports/windows MICROPY_MPYCROSS=../../mpy-cross/mpy-cross.exe $upyMakeOpts"
+    & $bash -l -c "LIB='' make -B -C ports/windows MICROPY_MPYCROSS=../../mpy-cross/mpy-cross.exe $upyMakeOpts $upyTargets"
     Test-LastExitCode "make"
 }
 

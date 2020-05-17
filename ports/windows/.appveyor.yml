@@ -37,8 +37,19 @@ build_script:
     ) |
         ForEach-Object {
             $makeOpts = "-j4 V=1 PYTHON=$($env:MICROPY_CPYTHON3)"
-            $mpycrossMakeOpts = $makeOpts
-            $upyMakeOpts = "$makeOpts VARIANT=$($_.variant)"
+            # Use distinct BINDIR so we can pick up artifacts without each build overwriting the output of the previous one.
+            $mpycrossMakeOpts = "$makeOpts BINDIR=build/$($_.platform)"
+            $upyMakeOpts = "$makeOpts VARIANT=$($_.variant) BINDIR=build-$($_.variant)/$($_.platform)"
             Invoke-MingwBuild $uPydir $_.platform $msys2Bash $mpycrossMakeOpts $upyMakeOpts
             Invoke-MingwTests $uPydir $_.platform $msys2Bash $upyMakeOpts
         }
+
+artifacts:
+  - path: mpy-cross/build/Releasex64/mpy-cross.exe
+    name: mpy-cross-msvc
+  - path: mpy-cross/build/MINGW64/mpy-cross.exe
+    name: mpy-cross-mingw
+  - path: ports/windows/build-standard/Releasex64/micropython.exe
+    name: micropython-msvc
+  - path: ports/windows/build-standard/MINGW64/micropython.exe
+    name: micropython-mingw
