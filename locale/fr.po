@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:42+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -896,7 +896,7 @@ msgstr "Broche invalide pour '%q'"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
-msgstr ""
+msgstr "Valeur d'unité ADC non valide"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, fuzzy
@@ -905,11 +905,11 @@ msgstr "Fichier BMP invalide"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
-msgstr ""
+msgstr "Broche DAC non valide fournie"
 
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
-msgstr ""
+msgstr "Sélection de broches I2C non valide"
 
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c
 #: ports/cxd56/common-hal/pulseio/PWMOut.c
@@ -919,11 +919,11 @@ msgstr "Fréquence de PWM invalide"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
-msgstr ""
+msgstr "Sélection de broches SPI non valide"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
-msgstr ""
+msgstr "Sélection de broches UART non valide"
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
@@ -940,7 +940,7 @@ msgstr "Longueur de tampon invalide"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Invalid byteorder string"
-msgstr ""
+msgstr "Chaîne d'octets non valide"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
@@ -965,11 +965,11 @@ msgstr "Taille de bloc de formatage invalide"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Invalid frequency supplied"
-msgstr ""
+msgstr "Fréquence invalide fournie"
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
-msgstr ""
+msgstr "Accès mémoire invalide."
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -1005,7 +1005,7 @@ msgstr "Broches invalides"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Invalid pins for PWMOut"
-msgstr ""
+msgstr "Broches non valides pour PWMOut"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1014,7 +1014,7 @@ msgstr "Polarité invalide"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Invalid properties"
-msgstr ""
+msgstr "Propriétés non valides"
 
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
