@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 17:36+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -3303,15 +3303,15 @@ msgstr "'value_count' doit être > 0"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr ""
+msgstr "la fenêtre doit être <= intervalle"
 
 #: extmod/ulab/code/linalg.c
 msgid "wrong argument type"
-msgstr ""
+msgstr "type d'argument incorrect"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong index type"
-msgstr ""
+msgstr "type d'index incorrect"
 
 #: py/objstr.c
 msgid "wrong number of arguments"
@@ -3323,7 +3323,7 @@ msgstr "mauvais nombre de valeurs à dégrouper"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
-msgstr ""
+msgstr "type d'opérande incorrect"
 
 #: shared-module/displayio/Shape.c
 #, fuzzy
