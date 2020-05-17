@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:40+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -521,7 +521,7 @@ msgstr "Impossible d'affecter une valeur quand la direction est 'input'."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Cannot specify RTS or CTS in RS485 mode"
-msgstr ""
+msgstr "Impossible de spécifier RTS ou CTS en mode RS485"
 
 #: py/objslice.c
 msgid "Cannot subclass slice"
@@ -537,7 +537,7 @@ msgstr "Impossible d'obtenir la taille du scalaire sans ambigüité"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
-msgstr ""
+msgstr "Impossible de faire varier la fréquence sur une minuterie déjà utilisée"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -549,13 +549,16 @@ msgstr "Ecriture sur 'CharacteristicBuffer' non fournie"
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython core code crashed hard. Whoops!\n"
-msgstr ""
+msgstr "Le code principal de CircuitPython s'est écrasé durement. Oups!\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "CircuitPython is in safe mode because you pressed the reset button during "
 "boot. Press again to exit safe mode.\n"
 msgstr ""
+"CircuitPython est en mode sans échec car vous avez appuyé sur le bouton de "
+"réinitialisation pendant le démarrage. Appuyez à nouveau pour quitter le "
+"mode sans échec.\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -584,14 +587,16 @@ msgid ""
 "Connection has been disconnected and can no longer be used. Create a new "
 "connection."
 msgstr ""
+"La connexion a été déconnectée et ne peut plus être utilisée. Créez une "
+"nouvelle connexion."
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
-msgstr ""
+msgstr "Fichier .mpy corrompu"
 
 #: py/emitglue.c
 msgid "Corrupt raw code"
-msgstr ""
+msgstr "Code brut corrompu"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -599,35 +604,35 @@ msgstr "L'UART n'a pu être initialisé"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not initialize channel"
-msgstr ""
+msgstr "Impossible d'initialiser la chaîne"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not initialize timer"
-msgstr ""
+msgstr "Impossible d'initialiser la minuterie"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not re-init channel"
-msgstr ""
+msgstr "Impossible de réinitialiser la chaîne"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not re-init timer"
-msgstr ""
+msgstr "Impossible de réinitialiser le minuteur"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not restart PWM"
-msgstr ""
+msgstr "Impossible de redémarrer PWM"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not start PWM"
-msgstr ""
+msgstr "Impossible de démarrer PWM"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Could not start interrupt, RX busy"
-msgstr ""
+msgstr "Impossible de démarrer l'interruption, RX occupé"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
-msgstr ""
+msgstr "Impossible d'allouer le décodeur"
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 #: shared-module/audiomp3/MP3Decoder.c
@@ -636,7 +641,7 @@ msgstr "Impossible d'allouer le 1er tampon"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate input buffer"
-msgstr ""
+msgstr "Impossible d'allouer le tampon d'entrée"
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 #: shared-module/audiomp3/MP3Decoder.c
@@ -645,15 +650,15 @@ msgstr "Impossible d'allouer le 2e tampon"
 
 #: supervisor/shared/safe_mode.c
 msgid "Crash into the HardFault_Handler."
-msgstr ""
+msgstr "Crash dans le HardFault_Handler."
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Channel Init Error"
-msgstr ""
+msgstr "Erreur d'initialisation du canal DAC"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Device Init Error"
-msgstr ""
+msgstr "Erreur d'initialisation du périphérique DAC"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "DAC already in use"
@@ -679,16 +684,16 @@ msgstr "La capacité de destination est plus petite que 'destination_length'."
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
-msgstr ""
+msgstr "Appareil utilisé"
 
 #: ports/cxd56/common-hal/digitalio/DigitalInOut.c
 msgid "DigitalInOut not supported on given pin"
-msgstr ""
+msgstr "DigitalInOut non pris en charge sur la broche donnée"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display must have a 16 bit colorspace."
-msgstr ""
+msgstr "L'affichage doit avoir un espace colorimétrique de 16 bits."
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -702,7 +707,7 @@ msgstr "Le mode Drive n'est pas utilisé quand la direction est 'input'."
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
-msgstr ""
+msgstr "La BCE ne fonctionne que sur 16 octets à la fois"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
@@ -729,7 +734,7 @@ msgstr "Une 'Characteristic' est attendue"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
-msgstr ""
+msgstr "Attendu un service"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -739,7 +744,7 @@ msgstr "Un UUID est attendu"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
-msgstr ""
+msgstr "Attendu une adresse"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -752,11 +757,11 @@ msgstr ""
 
 #: extmod/ulab/code/fft.c
 msgid "FFT is defined for ndarrays only"
-msgstr ""
+msgstr "La FFT est définie pour les ndarrays uniquement"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
-msgstr ""
+msgstr "Échec de l'envoi de la commande."
 
 #: ports/nrf/sd_mutex.c
 #, fuzzy, c-format
@@ -778,15 +783,15 @@ msgstr "Echec de l'allocation de %d octets du tampon RX"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
-msgstr ""
+msgstr "Impossible de se connecter: erreur interne"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
-msgstr ""
+msgstr "Impossible de se connecter: délai d'expiration"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
-msgstr ""
+msgstr "Impossible d'analyser le fichier MP3"
 
 #: ports/nrf/sd_mutex.c
 #, fuzzy, c-format
@@ -795,7 +800,7 @@ msgstr "Impossible de libérer mutex, err 0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
-msgstr ""
+msgstr "Échec de l'écriture du flash interne."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -808,6 +813,7 @@ msgstr "La fréquence capturée est au delà des capacités. Capture en pause."
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
+"La fréquence doit correspondre à PWMOut existant à l'aide de cette minuterie"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
@@ -818,7 +824,7 @@ msgstr "La fonction nécessite un verrou"
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
-msgstr ""
+msgstr "Groupe déjà utilisé"
 
 #: shared-module/displayio/Group.c
 msgid "Group full"
@@ -827,11 +833,11 @@ msgstr "Groupe plein"
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c
 msgid "Hardware busy, try alternative pins"
-msgstr ""
+msgstr "Matériel occupé, essayez d'autres broches"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
-msgstr ""
+msgstr "Matériel utilisé, essayez d'autres broches"
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -839,7 +845,7 @@ msgstr "opération d'E/S sur un fichier fermé"
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
-msgstr ""
+msgstr "Erreur d'initialisation I2C"
 
 #: extmod/machine_i2c.c
 msgid "I2C operation not supported"
@@ -848,7 +854,7 @@ msgstr "opération sur I2C non supportée"
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
-msgstr ""
+msgstr "IV doit être long de% d octets"
 
 #: py/persistentcode.c
 msgid ""
