@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:44+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1026,7 +1026,7 @@ msgstr "'mode_security' non valide"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
-msgstr ""
+msgstr "Voix invalide"
 
 #: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
@@ -1039,11 +1039,11 @@ msgstr "Fichier WAVE invalide"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
-msgstr ""
+msgstr "Longueur de mot / bit non valide"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
-msgstr ""
+msgstr "La clé doit comporter 16, 24 ou 32 octets"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -1051,7 +1051,7 @@ msgstr "La partie gauche de l'argument nommé doit être un identifiant"
 
 #: shared-module/displayio/Group.c
 msgid "Layer already in a group."
-msgstr ""
+msgstr "Couche déjà dans un groupe."
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
@@ -1080,11 +1080,11 @@ msgstr "La valeur max. de x est %d lors d'une opération miroir"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
-msgstr ""
+msgstr "Le saut MicroPython NLR a échoué. Altération probable de la mémoire."
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython fatal error."
-msgstr ""
+msgstr "Erreur fatale MicroPython."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
@@ -1092,11 +1092,11 @@ msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
-msgstr ""
+msgstr "Broche MISO ou MOSI manquante"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
-msgstr ""
+msgstr "Doit être une sous-classe% q."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
