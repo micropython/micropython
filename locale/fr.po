@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -293,13 +293,11 @@ msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr ""
-"%q[%u] décale vers l'intérieur de plus de bits que le nombre de broches"
+msgstr "%q[%u] décale vers l'intérieur de plus de bits que le nombre de broches"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
-"%q[%u] décale vers l'extérieur de plus de bits que le nombre de broches"
+msgstr "%q[%u] décale vers l'extérieur de plus de bits que le nombre de broches"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
