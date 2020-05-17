@@ -29,6 +29,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef _MSC_VER
+#include "py/mpconfig.h" // For inline.
+#endif
+
 typedef struct _ringbuf_t {
     uint8_t *buf;
     uint16_t size;
