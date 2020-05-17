@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:57+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -2284,23 +2284,25 @@ msgstr "argument(s) positionnel(s) supplémentaire(s) donné(s)"
 
 #: py/parse.c
 msgid "f-string expression part cannot include a '#'"
-msgstr ""
+msgstr "La partie d'expression de chaîne f ne peut pas inclure de '#'"
 
 #: py/parse.c
 msgid "f-string expression part cannot include a backslash"
 msgstr ""
+"La partie d'expression de chaîne f ne peut pas inclure de barre oblique "
+"inverse"
 
 #: py/parse.c
 msgid "f-string: empty expression not allowed"
-msgstr ""
+msgstr "f-string: expression vide non autorisée"
 
 #: py/parse.c
 msgid "f-string: expecting '}'"
-msgstr ""
+msgstr "f-string: attend '}'"
 
 #: py/parse.c
 msgid "f-string: single '}' is not allowed"
-msgstr ""
+msgstr "f-string: single '}' n'est pas autorisé"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c
@@ -2313,11 +2315,11 @@ msgstr "le system de fichier doit fournir une méthode 'mount'"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
-msgstr ""
+msgstr "le premier argument doit être un itérable"
 
 #: extmod/ulab/code/vectorise.c
 msgid "first argument must be an ndarray"
-msgstr ""
+msgstr "le premier argument doit être un ndarray"
 
 #: py/objtype.c
 msgid "first argument to super() must be type"
@@ -2329,11 +2331,11 @@ msgstr "le 1er bit doit être le MSB"
 
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
-msgstr ""
+msgstr "l'ordre d'aplatissement doit être «C» ou «F»"
 
 #: extmod/ulab/code/numerical.c
 msgid "flip argument must be an ndarray"
-msgstr ""
+msgstr "l'argument flip doit être un ndarray"
 
 #: py/objint.c
 msgid "float too big"
@@ -2367,6 +2369,7 @@ msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
 msgstr ""
+"la fonction est implémentée pour les scalaires et les ndarrays uniquement"
 
 #: py/argcheck.c
 #, c-format
@@ -2433,7 +2436,7 @@ msgstr "espacement incorrect"
 
 #: extmod/ulab/code/ndarray.c
 msgid "index is out of bounds"
-msgstr ""
+msgstr "l'index est hors limites"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -2449,6 +2452,7 @@ msgstr "les indices doivent être des entiers"
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
+"les indices doivent être des entiers, des tranches ou des listes booléennes"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2456,35 +2460,35 @@ msgstr "l'assembleur doit être une fonction"
 
 #: extmod/ulab/code/create.c
 msgid "input argument must be an integer or a 2-tuple"
-msgstr ""
+msgstr "l'argument d'entrée doit être un entier ou un tuple 2"
 
 #: extmod/ulab/code/fft.c
 msgid "input array length must be power of 2"
-msgstr ""
+msgstr "la longueur du tableau d'entrée doit être une puissance de 2"
 
 #: extmod/ulab/code/poly.c
 msgid "input data must be an iterable"
-msgstr ""
+msgstr "les données d'entrée doivent être un itérable"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is asymmetric"
-msgstr ""
+msgstr "la matrice d'entrée est asymétrique"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is singular"
-msgstr ""
+msgstr "la matrice d'entrée est singulière"
 
 #: extmod/ulab/code/linalg.c
 msgid "input must be square matrix"
-msgstr ""
+msgstr "l'entrée doit être une matrice carrée"
 
 #: extmod/ulab/code/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
-msgstr ""
+msgstr "l'entrée doit être tuple, list, range ou ndarray"
 
 #: extmod/ulab/code/poly.c
 msgid "input vectors must be of equal length"
-msgstr ""
+msgstr "les vecteurs d'entrée doivent être de longueur égale"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -2497,7 +2501,7 @@ msgstr "entier requis"
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
-msgstr ""
+msgstr "l'intervalle doit être dans la plage% s-% s"
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
