@@ -227,6 +227,14 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define MP_SSIZE_MAX                _I32_MAX
 #endif
 
+// VC++ 12.0 fixes
+#if (_MSC_VER <= 1800)
+#define MICROPY_PY_MATH_ATAN2_FIX_INFNAN (1)
+#define MICROPY_PY_MATH_FMOD_FIX_INFNAN (1)
+#ifdef _WIN64
+#define MICROPY_PY_MATH_MODF_FIX_NEGZERO (1)
+#endif
+#endif
 
 // CL specific definitions
 
