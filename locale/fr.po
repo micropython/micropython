@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
-"PO-Revision-Date: 2020-05-17 15:57+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2020-05-17 15:58+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -2501,7 +2501,7 @@ msgstr "entier requis"
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
-msgstr "l'intervalle doit être dans la plage% s-% s"
+msgstr "l'intervalle doit être dans la plage %s-%s"
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
