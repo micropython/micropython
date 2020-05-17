@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:33+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -278,7 +278,7 @@ msgstr "L'adresse doit être longue de %d octets"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
-msgstr ""
+msgstr "Type d'adresse hors plage"
 
 #: ports/nrf/common-hal/busio/I2C.c
 #, fuzzy
@@ -324,7 +324,7 @@ msgstr ""
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
-msgstr ""
+msgstr "'AnalogOut' n'est pas supporté sur la broche indiquée"
 
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
@@ -356,7 +356,7 @@ msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'."
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "At most %d %q may be specified (not %d)"
-msgstr ""
+msgstr "Au plus% d% q peut être spécifié (pas% d)"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
