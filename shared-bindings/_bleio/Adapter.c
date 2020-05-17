@@ -145,17 +145,19 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|         :param buf data: advertising data packet bytes
 //|         :param buf scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
 //|         :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
+//|         :param bool anonymous:  If `True` then this device's MAC address is randomized regularly.
 //|         :param float interval:  advertising interval, in seconds"""
 //|         ...
 //|
 STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_data, ARG_scan_response, ARG_connectable, ARG_interval };
+    enum { ARG_data, ARG_scan_response, ARG_connectable, ARG_anonymous, ARG_interval };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_scan_response, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_connectable, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
+        { MP_QSTR_anonymous, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
@@ -182,11 +184,12 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
     }
 
     bool connectable = args[ARG_connectable].u_bool;
+    bool anonymous = args[ARG_anonymous].u_bool;
     if (data_bufinfo.len > 31 && connectable && scan_response_bufinfo.len > 0) {
         mp_raise_bleio_BluetoothError(translate("Cannot have scan responses for extended, connectable advertisements."));
     }
 
-    common_hal_bleio_adapter_start_advertising(self, connectable, interval,
+    common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, interval,
                                                &data_bufinfo, &scan_response_bufinfo);
 
     return mp_const_none;

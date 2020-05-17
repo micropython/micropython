@@ -594,7 +594,7 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
     }
 }
 
-uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len) {
+uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len) {
     if (self->current_advertising_data != NULL && self->current_advertising_data == self->advertising_data) {
         return NRF_ERROR_BUSY;
     }
@@ -605,7 +605,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         common_hal_bleio_adapter_stop_advertising(self);
     }
 
-
+    uint32_t err_code;
     bool extended = advertising_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX ||
                     scan_response_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX;
 
@@ -626,7 +626,27 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         adv_type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
     }
 
-    uint32_t err_code;
+    if (anonymous) {
+        ble_gap_privacy_params_t privacy = {
+            .privacy_mode = BLE_GAP_PRIVACY_MODE_DEVICE_PRIVACY,
+            .private_addr_type = BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE,
+            .private_addr_cycle_s = 0,
+            .p_device_irk = NULL,
+        };
+        err_code = sd_ble_gap_privacy_set(&privacy);
+    } else {
+        ble_gap_privacy_params_t privacy = {
+            .privacy_mode = BLE_GAP_PRIVACY_MODE_OFF,
+            .private_addr_type = BLE_GAP_ADDR_TYPE_PUBLIC,
+            .private_addr_cycle_s = 0,
+            .p_device_irk = NULL,
+        };
+        err_code = sd_ble_gap_privacy_set(&privacy);
+    }
+    if (err_code != NRF_SUCCESS) {
+        return err_code;
+    }
+
     ble_gap_adv_params_t adv_params = {
         .interval = SEC_TO_UNITS(interval, UNIT_0_625_MS),
         .properties.type = adv_type,
@@ -657,7 +677,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
 }
 
 
-void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
+void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
     if (self->current_advertising_data != NULL && self->current_advertising_data == self->advertising_data) {
         mp_raise_bleio_BluetoothError(translate("Already advertising."));
     }
@@ -681,7 +701,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);
     memcpy(self->scan_response_data, scan_response_data_bufinfo->buf, scan_response_data_bufinfo->len);
 
-    check_nrf_error(_common_hal_bleio_adapter_start_advertising(self, connectable, interval,
+    check_nrf_error(_common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, interval,
                                                                 self->advertising_data,
                                                                 advertising_data_bufinfo->len,
                                                                 self->scan_response_data,
