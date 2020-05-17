@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
-"PO-Revision-Date: 2020-05-17 15:40+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2020-05-17 15:41+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -854,7 +854,7 @@ msgstr "opération sur I2C non supportée"
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
-msgstr "IV doit être long de% d octets"
+msgstr "IV doit être long de %d octets"
 
 #: py/persistentcode.c
 msgid ""
