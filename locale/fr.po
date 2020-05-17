@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:54+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1822,11 +1822,11 @@ msgstr "l'axe doit être -1, 0, None ou 1"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be -1, 0, or 1"
-msgstr ""
+msgstr "l'axe doit être -1, 0 ou 1"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be None, 0, or 1"
-msgstr ""
+msgstr "l'axe doit être Aucun, 0 ou 1"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
