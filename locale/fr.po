@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:59+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -2752,7 +2752,7 @@ msgstr "pas de module '%q'"
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
-msgstr ""
+msgstr "pas de broche de réinitialisation disponible"
 
 #: py/runtime.c
 msgid "no such attribute"
@@ -2760,7 +2760,7 @@ msgstr "pas de tel attribut"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
-msgstr ""
+msgstr "non UUID trouvé dans service_uuids_whitelist"
 
 #: py/compile.c
 msgid "non-default argument follows default argument"
@@ -2794,11 +2794,11 @@ msgstr "pas assez d'arguments pour la chaîne de format"
 
 #: extmod/ulab/code/poly.c
 msgid "number of arguments must be 2, or 3"
-msgstr ""
+msgstr "le nombre d'arguments doit être 2 ou 3"
 
 #: extmod/ulab/code/create.c
 msgid "number of points must be at least 2"
-msgstr ""
+msgstr "le nombre de points doit être d'au moins 2"
 
 #: py/obj.c
 #, c-format
@@ -2857,11 +2857,11 @@ msgstr "adresse hors limites"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
-msgstr ""
+msgstr "seul bit_depth = 16 est pris en charge"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
-msgstr ""
+msgstr "seul sample_rate = 16000 est pris en charge"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2871,15 +2871,15 @@ msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
 #: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
 #: extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
-msgstr ""
+msgstr "les opérandes ne pouvaient pas être diffusés ensemble"
 
 #: extmod/ulab/code/numerical.c
 msgid "operation is not implemented on ndarrays"
-msgstr ""
+msgstr "l'opération n'est pas implémentée sur les ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
-msgstr ""
+msgstr "l'opération n'est pas prise en charge pour un type donné"
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
@@ -2934,7 +2934,7 @@ msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
-msgstr ""
+msgstr "le polygone ne peut être enregistré que dans un parent"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -2969,11 +2969,11 @@ msgstr "dépassement de file"
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
-msgstr ""
+msgstr "les chaînes f brutes ne sont pas implémentées"
 
 #: extmod/ulab/code/fft.c
 msgid "real and imaginary parts must be of equal length"
-msgstr ""
+msgstr "les parties réelles et imaginaires doivent être de longueur égale"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2995,7 +2995,7 @@ msgstr "return attendait '%q' mais a reçu '%q'"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] duplicates another pin assignment"
-msgstr ""
+msgstr "rgb_pins [% d] duplique une autre affectation de broches"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
