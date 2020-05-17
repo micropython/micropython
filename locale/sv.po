@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
-"PO-Revision-Date: 2020-05-17 17:36+0000\n"
-"Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
+"PO-Revision-Date: 2020-05-17 20:56+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
@@ -1187,7 +1187,7 @@ msgstr "Ingen timer tillgänglig"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
-msgstr "Nordic Soft Device failure assertion."
+msgstr "Påståendet om Nordic Soft Device-fel."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
