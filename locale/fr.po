@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 16:00+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -3032,7 +3032,7 @@ msgstr "compilation de script non supportée"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a 2-tuple"
-msgstr ""
+msgstr "la forme doit être un tuple 2"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3048,7 +3048,7 @@ msgstr "'}' seule rencontrée dans une chaîne de format"
 
 #: extmod/ulab/code/linalg.c
 msgid "size is defined for ndarrays only"
-msgstr ""
+msgstr "la taille est définie pour les ndarrays uniquement"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
@@ -3068,7 +3068,7 @@ msgstr "redémarrage logiciel\n"
 
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr ""
+msgstr "l'argument de tri doit être un ndarray"
 
 #: py/objstr.c
 msgid "start/end indices"
