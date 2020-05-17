@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:45+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1109,15 +1109,15 @@ msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
 
 #: py/parse.c
 msgid "Name too long"
-msgstr ""
+msgstr "Nom trop long"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Negative step not supported"
-msgstr ""
+msgstr "Étape négative non prise en charge"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
-msgstr ""
+msgstr "Pas de CCCD pour cette caractéristique"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
@@ -1131,11 +1131,11 @@ msgstr "Aucun canal DMA trouvé"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
-msgstr ""
+msgstr "Pas de broche MISO"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
-msgstr ""
+msgstr "Pas de broche MOSI"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
@@ -1155,7 +1155,7 @@ msgstr "Pas d'horloge disponible"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
-msgstr ""
+msgstr "Pas de connexion: la longueur ne peut pas être déterminée"
 
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
@@ -1171,7 +1171,7 @@ msgstr "Pas de source matérielle d'aléa disponible"
 
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 msgid "No hardware support on clk pin"
-msgstr ""
+msgstr "Pas de support matériel sur la broche clk"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -1180,19 +1180,19 @@ msgstr "Pas de support matériel pour cette broche"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
-msgstr ""
+msgstr "Aucune clé n'a été spécifiée"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
-msgstr ""
+msgstr "Pas de support entier long"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "No more timers available on this pin."
-msgstr ""
+msgstr "Plus de minuteurs disponibles sur cette broche."
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
-msgstr ""
+msgstr "Pas de pulldown sur la broche; 1Mohm recommandé"
 
 #: py/moduerrno.c
 msgid "No space left on device"
@@ -1204,11 +1204,11 @@ msgstr "Fichier/dossier introuvable"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
-msgstr ""
+msgstr "Pas de minuterie disponible"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
-msgstr ""
+msgstr "Affirmation de défaillance du Nordic Soft Device."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1251,6 +1251,8 @@ msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
 msgstr ""
+"Prise en charge uniquement des monochromes, 4 bpp ou 8 bpp indexés et 16 bpp "
+"ou plus:% d bpp fournis"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
