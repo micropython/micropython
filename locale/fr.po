@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:49+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1316,11 +1316,11 @@ msgstr "Ainsi que tout autre module présent sur le système de fichiers\n"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
-msgstr ""
+msgstr "Pop à partir d'un tampon Ps2 vide"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
-msgstr ""
+msgstr "Le tampon de préfixe doit être sur le tas"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -1332,23 +1332,23 @@ msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
 
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "PulseIn not supported on this chip"
-msgstr ""
+msgstr "PulseIn non pris en charge sur cette puce"
 
 #: ports/stm/common-hal/pulseio/PulseOut.c
 msgid "PulseOut not supported on this chip"
-msgstr ""
+msgstr "PulseOut non pris en charge sur cette puce"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
-msgstr ""
+msgstr "Erreur RNG DeInit"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG Init Error"
-msgstr ""
+msgstr "Erreur d'initialisation RNG"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
-msgstr ""
+msgstr "Inversion RS485 spécifiée lorsqu'elle n'est pas en mode RS485"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/rtc/RTC.c
@@ -1362,11 +1362,11 @@ msgstr "RTC non supportée sur cette carte"
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
-msgstr ""
+msgstr "RTS / CTS / RS485 Pas encore pris en charge sur cet appareil"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
-msgstr ""
+msgstr "Erreur de génération de nombres aléatoires"
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1383,11 +1383,11 @@ msgstr "Objet en lecture seule"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
-msgstr ""
+msgstr "Rafraîchissez trop tôt"
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
-msgstr ""
+msgstr "Le mode AES demandé n'est pas pris en charge"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1411,11 +1411,11 @@ msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
-msgstr ""
+msgstr "Erreur d'initialisation SPI"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
-msgstr ""
+msgstr "Erreur de réinitialisation SPI"
 
 #: shared-bindings/audiomixer/Mixer.c
 #, fuzzy
@@ -1429,15 +1429,15 @@ msgstr "Taux d'échantillonage trop élevé. Doit être inf. à %d"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
-msgstr ""
+msgstr "Scan déjà en cours. Arrêtez avec stop_scan."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected CTS pin not valid"
-msgstr ""
+msgstr "Broche CTS sélectionnée non valide"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected RTS pin not valid"
-msgstr ""
+msgstr "Broche RTS sélectionnée non valide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1455,7 +1455,7 @@ msgstr "Tranches non supportées"
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
-msgstr ""
+msgstr "Les tampons source et de destination doivent être de la même longueur"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1471,23 +1471,27 @@ msgstr "Il manque une méthode readinto() ou write() au flux."
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
-msgstr ""
+msgstr "Fournissez au moins une broche UART"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
-msgstr ""
+msgstr "Temporisation de lecture dépassée"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Please increase the stack size if you know how, or if not:"
 msgstr ""
+"Le tas CircuitPython a été corrompu car la pile était trop petite.\n"
+"Veuillez augmenter la taille de la pile si vous savez comment, ou sinon:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode.\n"
 msgstr ""
+"Le module `microcontrôleur` a été utilisé pour démarrer en mode sans échec. "
+"Appuyez sur reset pour quitter le mode sans échec.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1495,6 +1499,10 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
+"La puissance du microcontrôleur a baissé. Assurez-vous que votre "
+"alimentation\n"
+"assez de puissance pour tout le circuit et appuyez sur reset (après avoir "
+"éjecté CIRCUITPY).\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -1519,11 +1527,11 @@ msgstr "La hauteur de la tuile doit diviser exactement la hauteur de l'image"
 
 #: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
-msgstr ""
+msgstr "Index des tuiles hors limites"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile value out of bounds"
-msgstr ""
+msgstr "Valeur de tuile hors limites"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -1544,6 +1552,7 @@ msgstr "Trop d'affichages"
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than outgoing_packet_length"
 msgstr ""
+"Le nombre total de données à écrire est supérieur à outgoing_packet_length"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -1555,23 +1564,23 @@ msgstr "Argument de type tuple ou struct_time nécessaire"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Buffer allocation error"
-msgstr ""
+msgstr "Erreur d'allocation de tampon UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART De-init error"
-msgstr ""
+msgstr "Erreur de désactivation UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Init Error"
-msgstr ""
+msgstr "Erreur d'initialisation UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
-msgstr ""
+msgstr "Erreur de réinitialisation UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
-msgstr ""
+msgstr "Erreur d'écriture UART"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
@@ -1583,7 +1592,7 @@ msgstr "Erreur USB"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
-msgstr ""
+msgstr "La valeur entière UUID doit être 0-0xffff"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
@@ -1604,7 +1613,7 @@ msgstr "Impossible d'allouer des tampons pour une conversion signée"
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
-msgstr ""
+msgstr "Impossible de trouver l'affichage I2C à% x"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
