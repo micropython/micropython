@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
-"PO-Revision-Date: 2020-05-17 15:24+0000\n"
+"PO-Revision-Date: 2020-05-17 17:36+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -2040,7 +2040,7 @@ msgstr "kan inte omforma matris (inkompatibel indata-/utdataform)"
 
 #: py/emitnative.c
 msgid "casting"
-msgstr "casting"
+msgstr "casting inte implementerad"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
@@ -2667,601 +2667,604 @@ msgstr "behöver mer än %d värden för att packa upp"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
-msgstr ""
+msgstr "negativ exponent utan stöd för flyttal"
 
 #: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
-msgstr ""
+msgstr "negativt skiftantal"
 
 #: py/vm.c
 msgid "no active exception to reraise"
-msgstr ""
+msgstr "ingen aktiv exception för reraise"
 
 #: shared-bindings/socket/__init__.c shared-module/network/__init__.c
 msgid "no available NIC"
-msgstr ""
+msgstr "ingen tillgänglig NIC"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
-msgstr ""
+msgstr "ingen bindning för ickelokal hittad"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
-msgstr ""
+msgstr "ingen modul med namnet '%q'"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
-msgstr ""
+msgstr "ingen reset-pinne tillgänglig"
 
 #: py/runtime.c
 msgid "no such attribute"
-msgstr ""
+msgstr "inget sådant attribut"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
-msgstr ""
+msgstr "icke-UUID hittades i service_uuids_whitelist"
 
 #: py/compile.c
 msgid "non-default argument follows default argument"
-msgstr ""
+msgstr "icke-standard argument följer standard argument"
 
 #: extmod/modubinascii.c
 msgid "non-hex digit found"
-msgstr ""
+msgstr "icke-hexnummer hittade"
 
 #: py/compile.c
 msgid "non-keyword arg after */**"
-msgstr ""
+msgstr "icke nyckelord arg efter * / **"
 
 #: py/compile.c
 msgid "non-keyword arg after keyword arg"
-msgstr ""
+msgstr "icke nyckelord arg efter nyckelord arg"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
-msgstr ""
+msgstr "inte en 128-bitars UUID"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
-msgstr ""
+msgstr "inte alla argument omvandlade under strängformatering"
 
 #: py/objstr.c
 msgid "not enough arguments for format string"
-msgstr ""
+msgstr "inte tillräckligt med argument för formatsträng"
 
 #: extmod/ulab/code/poly.c
 msgid "number of arguments must be 2, or 3"
-msgstr ""
+msgstr "antal argument måste vara 2 eller 3"
 
 #: extmod/ulab/code/create.c
 msgid "number of points must be at least 2"
-msgstr ""
+msgstr "antal punkter måste vara minst 2"
 
 #: py/obj.c
 #, c-format
 msgid "object '%s' is not a tuple or list"
-msgstr ""
+msgstr "objektet '%s' är inte en tupel eller lista"
 
 #: py/obj.c
 msgid "object does not support item assignment"
-msgstr ""
+msgstr "Objektet stöder inte tilldelning"
 
 #: py/obj.c
 msgid "object does not support item deletion"
-msgstr ""
+msgstr "objektet stöder inte borttagning"
 
 #: py/obj.c
 msgid "object has no len"
-msgstr ""
+msgstr "objektet har inte len"
 
 #: py/obj.c
 msgid "object is not subscriptable"
-msgstr ""
+msgstr "Objektet är inte indexbart"
 
 #: py/runtime.c
 msgid "object not an iterator"
-msgstr ""
+msgstr "objektet är inte en iterator"
 
 #: py/objtype.c py/runtime.c
 msgid "object not callable"
-msgstr ""
+msgstr "objektet är inte anropbart"
 
 #: py/sequence.c shared-bindings/displayio/Group.c
 msgid "object not in sequence"
-msgstr ""
+msgstr "objektet är inte i sekvens"
 
 #: py/runtime.c
 msgid "object not iterable"
-msgstr ""
+msgstr "objektet är inte iterable"
 
 #: py/obj.c
 #, c-format
 msgid "object of type '%s' has no len()"
-msgstr ""
+msgstr "objekt av typen '%s' har ingen len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
-msgstr ""
+msgstr "objekt med buffertprotokoll krävs"
 
 #: extmod/modubinascii.c
 msgid "odd-length string"
-msgstr ""
+msgstr "sträng har udda längd"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
-msgstr ""
+msgstr "offset utanför gränserna"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
-msgstr ""
+msgstr "bara bit_depth=16 stöds"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
-msgstr ""
+msgstr "enbart sample_rate=16000 stöds"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
-msgstr ""
+msgstr "endast segment med steg=1 (aka Ingen) stöds"
 
 #: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
 #: extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
-msgstr ""
+msgstr "operander kan inte sändas tillsammans"
 
 #: extmod/ulab/code/numerical.c
 msgid "operation is not implemented on ndarrays"
-msgstr ""
+msgstr "åtgärden är inte implementerad för ndarray:er"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
-msgstr ""
+msgstr "åtgärden stöds inte för given typ"
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
-msgstr ""
+msgstr "ord förväntar sig ett tecken"
 
 #: py/modbuiltins.c
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
-msgstr ""
+msgstr "ord() förväntade sig ett tecken, men en sträng med längden %d hittades"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
-msgstr ""
+msgstr "Konvertering av long int till machine word överskred maxvärde"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
-msgstr ""
+msgstr "palette måste vara 32 bytes lång"
 
 #: shared-bindings/displayio/Palette.c
 msgid "palette_index should be an int"
-msgstr ""
+msgstr "palette_index ska vara en int"
 
 #: py/compile.c
 msgid "parameter annotation must be an identifier"
-msgstr ""
+msgstr "parametern annotation måste vara en identifierare"
 
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
-msgstr ""
+msgstr "parametrarna måste registreras i följd a2-a5"
 
 #: py/emitinlinethumb.c
 msgid "parameters must be registers in sequence r0 to r3"
-msgstr ""
+msgstr "parametrarna måste registreras i följd r0-r3"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
-msgstr ""
+msgstr "pixelkoordinater utanför gränserna"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel value requires too many bits"
-msgstr ""
+msgstr "pixelvärdet kräver för många bitar"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
+"pixel_shader måste vara displayio.Palette eller displayio.ColorConverter"
 
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
-msgstr ""
+msgstr "polygon kan endast registreras i en förälder"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
-msgstr ""
+msgstr "pop från en tom PulseIn"
 
 #: py/objset.c
 msgid "pop from an empty set"
-msgstr ""
+msgstr "pop från en tom uppsättning"
 
 #: py/objlist.c
 msgid "pop from empty list"
-msgstr ""
+msgstr "pop från tom lista"
 
 #: py/objdict.c
 msgid "popitem(): dictionary is empty"
-msgstr ""
+msgstr "popitem(): ordlistan är tom"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
-msgstr ""
+msgstr "pow() 3: e argument kan inte vara 0"
 
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
-msgstr ""
+msgstr "pow() med 3 argument kräver heltal"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
-msgstr ""
+msgstr "köstorlek överskreds"
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
-msgstr ""
+msgstr "råa f-strängar inte implementerade"
 
 #: extmod/ulab/code/fft.c
 msgid "real and imaginary parts must be of equal length"
-msgstr ""
+msgstr "verkliga och imaginära delar måste ha samma längd"
 
 #: py/builtinimport.c
 msgid "relative import"
-msgstr ""
+msgstr "relativ import"
 
 #: py/obj.c
 #, c-format
 msgid "requested length %d but object has length %d"
-msgstr ""
+msgstr "begärd längd %d men objektet har längden %d"
 
 #: py/compile.c
 msgid "return annotation must be an identifier"
-msgstr ""
+msgstr "retur-annotation måste vara en identifierare"
 
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
-msgstr ""
+msgstr "retur förväntade '%q' men fick '%q'"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] duplicates another pin assignment"
-msgstr ""
+msgstr "rgb_pins[%d] duplicerar en annan pinntilldelning"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] is not on the same port as clock"
-msgstr ""
+msgstr "rgb_pins[%d] är inte på samma port som en klocka"
 
 #: extmod/ulab/code/ndarray.c
 msgid "right hand side must be an ndarray, or a scalar"
-msgstr ""
+msgstr "höger sida måste vara en ndarray, eller en scalar"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
-msgstr ""
+msgstr "rsplit(None,n)"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
+"sample_source buffert måste vara en bytearray eller matris av typ 'h', 'H', "
+"'b' eller 'B'"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
-msgstr ""
+msgstr "samplingsfrekvens utanför räckvidden"
 
 #: py/modmicropython.c
 msgid "schedule stack full"
-msgstr ""
+msgstr "schemastack full"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
-msgstr ""
+msgstr "skriptkompilering stöds inte"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a 2-tuple"
-msgstr ""
+msgstr "shape måste vara en 2-tupel"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
-msgstr ""
+msgstr "tecknet tillåts inte i strängformatspecificerare"
 
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
-msgstr ""
+msgstr "tecken tillåts inte med heltalsformatspecificeraren 'c'"
 
 #: py/objstr.c
 msgid "single '}' encountered in format string"
-msgstr ""
+msgstr "Enkelt '}' påträffades i formatsträngen"
 
 #: extmod/ulab/code/linalg.c
 msgid "size is defined for ndarrays only"
-msgstr ""
+msgstr "storlek är enbart definierad ndarrays"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
-msgstr ""
+msgstr "värdet för sleep måste vara positivt"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
-msgstr ""
+msgstr "segmentsteg får inte vara noll"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
-msgstr ""
+msgstr "värdet för konvertering till small int överskreds"
 
 #: main.c
 msgid "soft reboot\n"
-msgstr ""
+msgstr "mjuk omstart\n"
 
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr ""
+msgstr "argumentet sort måste vara en ndarray"
 
 #: py/objstr.c
 msgid "start/end indices"
-msgstr ""
+msgstr "start-/slutindex"
 
 #: shared-bindings/displayio/Shape.c
 msgid "start_x should be an int"
-msgstr ""
+msgstr "start_x ska vara en int"
 
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
-msgstr ""
+msgstr "step måste vara icke-noll"
 
 #: shared-bindings/busio/UART.c
 msgid "stop must be 1 or 2"
-msgstr ""
+msgstr "stop måste vara 1 eller 2"
 
 #: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
-msgstr ""
+msgstr "stop kan inte nås från start"
 
 #: py/stream.c
 msgid "stream operation not supported"
-msgstr ""
+msgstr "stream-åtgärd stöds inte"
 
 #: py/objstrunicode.c
 msgid "string index out of range"
-msgstr ""
+msgstr "strängindex utanför intervallet"
 
 #: py/objstrunicode.c
 #, c-format
 msgid "string indices must be integers, not %s"
-msgstr ""
+msgstr "strängindex måste vara heltal, inte %s"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
-msgstr ""
+msgstr "sträng stöds inte; använd bytes eller bytearray"
 
 #: extmod/moductypes.c
 msgid "struct: cannot index"
-msgstr ""
+msgstr "struct: kan inte indexera"
 
 #: extmod/moductypes.c
 msgid "struct: index out of range"
-msgstr ""
+msgstr "struct: index utanför intervallet"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
-msgstr ""
+msgstr "struct: inga fält"
 
 #: py/objstr.c
 msgid "substring not found"
-msgstr ""
+msgstr "det gick inte att hitta delsträng"
 
 #: py/compile.c
 msgid "super() can't find self"
-msgstr ""
+msgstr "super() kan inte hitta self"
 
 #: extmod/modujson.c
 msgid "syntax error in JSON"
-msgstr ""
+msgstr "syntaxfel i JSON"
 
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
-msgstr ""
+msgstr "syntaxfel i uctypes deskriptor"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
-msgstr ""
+msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
-msgstr ""
+msgstr "time.struct_time() kräver en 9-sekvens"
 
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
-msgstr ""
+msgstr "timeout måste vara 0.0-100.0 sekunder"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
-msgstr ""
+msgstr "timeout måste vara >= 0.0"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
-msgstr ""
+msgstr "timestamp utom räckvidd för plattformens \"time_t\""
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
-msgstr ""
+msgstr "för många argument för det givna formatet"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
-msgstr ""
+msgstr "för många index"
 
 #: py/runtime.c
 #, c-format
 msgid "too many values to unpack (expected %d)"
-msgstr ""
+msgstr "för många värden att packa upp (förväntat %d)"
 
 #: extmod/ulab/code/linalg.c py/objstr.c
 msgid "tuple index out of range"
-msgstr ""
+msgstr "tupelindex utanför intervallet"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
-msgstr ""
+msgstr "tupel/lista har fel längd"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "tuple/list required on RHS"
-msgstr ""
+msgstr "tupel/lista krävs för RHS"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
-msgstr ""
+msgstr "tx och rx kan inte båda vara None"
 
 #: py/objtype.c
 msgid "type '%q' is not an acceptable base type"
-msgstr ""
+msgstr "typ '%q' är inte en acceptabel bastyp"
 
 #: py/objtype.c
 msgid "type is not an acceptable base type"
-msgstr ""
+msgstr "typ är inte en acceptabel bastyp"
 
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
-msgstr ""
+msgstr "typobjektet '%q' har inget attribut '%q'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
-msgstr ""
+msgstr "typen tar 1 eller 3 argument"
 
 #: py/objint_longlong.c
 msgid "ulonglong too large"
-msgstr ""
+msgstr "ulonglong för stor"
 
 #: py/emitnative.c
 msgid "unary op %q not implemented"
-msgstr ""
+msgstr "binär op %q är inte implementerad"
 
 #: py/parse.c
 msgid "unexpected indent"
-msgstr ""
+msgstr "oväntat indrag"
 
 #: py/bc.c
 msgid "unexpected keyword argument"
-msgstr ""
+msgstr "oväntat nyckelordsargument"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "unexpected keyword argument '%q'"
-msgstr ""
+msgstr "oväntat nyckelordsargument '%q'"
 
 #: py/lexer.c
 msgid "unicode name escapes"
-msgstr ""
+msgstr "unicode name escapes"
 
 #: py/parse.c
 msgid "unindent does not match any outer indentation level"
-msgstr ""
+msgstr "indentering inte matchar någon yttre indenteringsnivå"
 
 #: py/objstr.c
 #, c-format
 msgid "unknown conversion specifier %c"
-msgstr ""
+msgstr "okänd konverteringsspecificerare %c"
 
 #: py/objstr.c
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
-msgstr ""
+msgstr "okänt format '%c' för objekt av typ '%s'"
 
 #: py/compile.c
 msgid "unknown type"
-msgstr ""
+msgstr "okänd typ"
 
 #: py/emitnative.c
 msgid "unknown type '%q'"
-msgstr ""
+msgstr "okänd typ '%q'"
 
 #: py/objstr.c
 msgid "unmatched '{' in format"
-msgstr ""
+msgstr "omatchad '{' i format"
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
-msgstr ""
+msgstr "attribut kan inte läsas"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/Polygon.c
 #: shared-bindings/vectorio/VectorShape.c
 msgid "unsupported %q type"
-msgstr ""
+msgstr "typ %q stöds inte"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr ""
+msgstr "Thumb-instruktion '%s' med %d argument stöd inte"
 
 #: py/emitinlinextensa.c
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
-msgstr ""
+msgstr "Xtensa-instruktion '%s' med %d argument stöds inte"
 
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
-msgstr ""
+msgstr "Formattecknet '%c' (0x%x) stöds inte vid index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%s'"
-msgstr ""
+msgstr "typ som inte stöds för %q: '%s'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
-msgstr ""
+msgstr "typ stöds inte för operatören"
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
-msgstr ""
+msgstr "typ som inte stöds för %q: '%s', '%s'"
 
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
-msgstr ""
+msgstr "värdet måste passa i %d byte(s)"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
-msgstr ""
+msgstr "value_count måste vara > 0"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr ""
+msgstr "window måste vara <= interval"
 
 #: extmod/ulab/code/linalg.c
 msgid "wrong argument type"
-msgstr ""
+msgstr "fel typ av argument"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong index type"
-msgstr ""
+msgstr "fel indextyp"
 
 #: py/objstr.c
 msgid "wrong number of arguments"
-msgstr ""
+msgstr "fel antal argument"
 
 #: py/runtime.c
 msgid "wrong number of values to unpack"
-msgstr ""
+msgstr "fel antal värden för att packa upp"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
-msgstr ""
+msgstr "fel operandtyp"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
-msgstr ""
+msgstr "x-värde utanför intervall"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
-msgstr ""
+msgstr "y ska vara en int"
 
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
-msgstr ""
+msgstr "y-värde utanför intervall"
 
 #: py/objrange.c
 msgid "zero step"
-msgstr ""
+msgstr "noll steg"
