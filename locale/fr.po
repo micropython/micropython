@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:55+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1898,7 +1898,7 @@ msgstr "bytecode non implémenté"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
-msgstr ""
+msgstr "byteorder n'est pas une chaîne"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -2085,7 +2085,7 @@ msgstr "ne peut pas réaliser un import relatif"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array (incompatible input/output shape)"
-msgstr ""
+msgstr "ne peut pas remodeler le tableau (forme d'entrée / sortie incompatible)"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2105,7 +2105,7 @@ msgstr "argument de chr() hors de la gamme range(256)"
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
-msgstr ""
+msgstr "le cercle ne peut être enregistré que dans un seul parent"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -2114,6 +2114,7 @@ msgstr "le tampon de couleur doit faire 3 octets (RVB) ou 4 (RVB + pad byte)"
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer, tuple, list, or int"
 msgstr ""
+"le tampon de couleur doit être un tampon, un tuple, une liste ou un entier"
 
 #: shared-bindings/displayio/Palette.c
 #, fuzzy
@@ -2153,27 +2154,27 @@ msgstr "conversion en objet"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must be linear arrays"
-msgstr ""
+msgstr "les arguments convolve doivent être des tableaux linéaires"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must be ndarrays"
-msgstr ""
+msgstr "les arguments convolve doivent être des ndarrays"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must not be empty"
-msgstr ""
+msgstr "les arguments convolve ne doivent pas être vides"
 
 #: extmod/ulab/code/ndarray.c
 msgid "could not broadast input array from shape"
-msgstr ""
+msgstr "n'a pas pu diffuser le tableau d'entrée à partir de la forme"
 
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
-msgstr ""
+msgstr "n'a pas pu inverser la matrice Vandermonde"
 
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
-msgstr ""
+msgstr "ddof doit être inférieur à la longueur de l'ensemble de données"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
@@ -2204,7 +2205,7 @@ msgstr "la séquence de mise à jour de dict a une mauvaise longueur"
 
 #: extmod/ulab/code/numerical.c
 msgid "diff argument must be an ndarray"
-msgstr ""
+msgstr "l'argument diff doit être un ndarray"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -2217,7 +2218,7 @@ msgstr "vide"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "empty %q list"
-msgstr ""
+msgstr "liste% q vide"
 
 #: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
