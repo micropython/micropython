@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:53+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1708,7 +1708,7 @@ msgstr ""
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
-msgstr ""
+msgstr "La lecture de la tension a expiré"
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
@@ -1731,11 +1731,11 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
-msgstr ""
+msgstr "Écritures non prises en charge sur la caractéristique"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr ""
+msgstr "Vous êtes en mode sans échec: quelque chose d'imprévu s'est produit.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
