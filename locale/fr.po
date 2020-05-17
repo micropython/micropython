@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:53+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1777,7 +1777,7 @@ msgstr "adresses vides"
 
 #: extmod/ulab/code/vectorise.c
 msgid "arctan2 is implemented for scalars and ndarrays only"
-msgstr ""
+msgstr "arctan2 est implémenté uniquement pour les scalaires et les ndarrays"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -1785,7 +1785,7 @@ msgstr "l'argument est une séquence vide"
 
 #: extmod/ulab/code/numerical.c
 msgid "argsort argument must be an ndarray"
-msgstr ""
+msgstr "L'argument argsort doit être un ndarray"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -1802,7 +1802,7 @@ msgstr "l'argument devrait être un(e) '%q', pas '%q'"
 
 #: extmod/ulab/code/linalg.c
 msgid "arguments must be ndarrays"
-msgstr ""
+msgstr "les arguments doivent être des ndarrays"
 
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -1810,7 +1810,7 @@ msgstr "tableau/octets requis à droite"
 
 #: extmod/ulab/code/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
-msgstr ""
+msgstr "tenter d'obtenir argmin / argmax d'une séquence vide"
 
 #: py/objstr.c
 msgid "attributes not supported yet"
@@ -1818,7 +1818,7 @@ msgstr "attribut pas encore supporté"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be -1, 0, None, or 1"
-msgstr ""
+msgstr "l'axe doit être -1, 0, Aucun ou 1"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be -1, 0, or 1"
