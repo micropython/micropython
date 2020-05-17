@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:53+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1735,7 +1735,7 @@ msgstr "Écritures non prises en charge sur la caractéristique"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr "Vous êtes en mode sans échec: quelque chose d'imprévu s'est produit.\n"
+msgstr "Vous êtes en mode sans échec: quelque chose d'imprévu s'est passé.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
