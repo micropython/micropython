@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 16:01+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -3164,7 +3164,7 @@ msgstr "trop d'arguments fournis avec ce format"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
-msgstr ""
+msgstr "trop d'indices"
 
 #: py/runtime.c
 #, c-format
@@ -3295,7 +3295,7 @@ msgstr "type non supporté pour %q: '%s', '%s'"
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
-msgstr ""
+msgstr "la valeur doit tenir dans% d octet (s)"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
