@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:58+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -2673,7 +2673,7 @@ msgstr "module introuvable"
 
 #: extmod/ulab/code/poly.c
 msgid "more degrees of freedom than data points"
-msgstr ""
+msgstr "plus de degrés de liberté que de points de données"
 
 #: py/compile.c
 msgid "multiple *x in assignment"
@@ -2701,7 +2701,7 @@ msgstr "doit utiliser un argument nommé pour une fonction key"
 
 #: extmod/ulab/code/numerical.c
 msgid "n must be between 0, and 9"
-msgstr ""
+msgstr "n doit être compris entre 0 et 9"
 
 #: py/runtime.c
 msgid "name '%q' is not defined"
@@ -2717,7 +2717,7 @@ msgstr "nom réutilisé comme argument"
 
 #: py/emitnative.c
 msgid "native yield"
-msgstr ""
+msgstr "rendement natif"
 
 #: py/runtime.c
 #, c-format
