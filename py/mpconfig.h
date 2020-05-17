@@ -1189,6 +1189,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS (1)
 #endif
 
+// Whether to provide custom "sys.implementation" object
+#ifndef MICROPY_PY_SYS_IMPLEMENTATION_CUSTOM
+#define MICROPY_PY_SYS_IMPLEMENTATION_CUSTOM (0)
+#endif
+
 // Whether to provide "sys.maxsize" constant
 #ifndef MICROPY_PY_SYS_MAXSIZE
 #define MICROPY_PY_SYS_MAXSIZE (0)

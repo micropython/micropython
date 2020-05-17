@@ -60,6 +60,14 @@ STATIC const MP_DEFINE_STR_OBJ(version_obj, "3.4.0");
 // TODO: CPython is now at 5-element array, but save 2 els so far...
 STATIC const mp_obj_tuple_t mp_sys_version_info_obj = {{&mp_type_tuple}, 3, {I(3), I(4), I(0)}};
 
+// NOTE: derivatives/forks of MicroPython should provide a custom sys.implementation
+// object so that users can easily identify the vendor. At a minium, the code
+// below should be copied and replace MP_QSTR_micropython with the name of the
+// derivitive, e.g. MP_QSTR_circuitpython. Vendors may also add custom attributes
+// with a leading underscore. See https://docs.python.org/3/library/sys.html#sys.implementation.
+#if MICROPY_PY_SYS_IMPLEMENTATION_CUSTOM
+extern mp_obj_t mp_sys_implementation_obj;
+#else
 // sys.implementation object
 // this holds the MicroPython version
 STATIC const mp_obj_tuple_t mp_sys_implementation_version_info_obj = {
@@ -100,6 +108,8 @@ STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
     }
 };
 #endif
+
+#endif // MICROPY_PY_SYS_IMPLEMENTATION_CUSTOM
 
 #undef I
 
