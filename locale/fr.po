@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 15:58+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -2652,7 +2652,7 @@ msgstr "la matrice n'est pas définie positive"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr "max_length doit être 0-% d lorsque fixed_length est% s"
+msgstr "max_length doit être 0-%d lorsque fixed_length est %s"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
