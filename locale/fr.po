@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
 "PO-Revision-Date: 2020-05-17 16:01+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -3147,7 +3147,7 @@ msgstr "time.struct_time() prend une séquence de longueur 9"
 
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
-msgstr "le délai doit être compris entre 0,0 et 100,0 secondes"
+msgstr "le délai doit être compris entre 0.0 et 100.0 secondes"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #, fuzzy
