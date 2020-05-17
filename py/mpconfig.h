@@ -1128,6 +1128,21 @@ typedef double mp_float_t;
 #define MICROPY_PY_MATH_ISCLOSE (0)
 #endif
 
+// Whether to provide fix for atan2 Inf handling.
+#ifndef MICROPY_PY_MATH_ATAN2_FIX_INFNAN
+#define MICROPY_PY_MATH_ATAN2_FIX_INFNAN (0)
+#endif
+
+// Whether to provide fix for fmod Inf handling.
+#ifndef MICROPY_PY_MATH_FMOD_FIX_INFNAN
+#define MICROPY_PY_MATH_FMOD_FIX_INFNAN (0)
+#endif
+
+// Whether to provide fix for modf negative zero handling.
+#ifndef MICROPY_PY_MATH_MODF_FIX_NEGZERO
+#define MICROPY_PY_MATH_MODF_FIX_NEGZERO (0)
+#endif
+
 // Whether to provide "cmath" module
 #ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH (0)
