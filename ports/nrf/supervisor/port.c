@@ -120,6 +120,10 @@ safe_mode_t port_init(void) {
     // Configure millisecond timer initialization.
     tick_init();
 
+#if CIRCUITPY_RTC
+    common_hal_rtc_init();
+#endif
+
 #if CIRCUITPY_ANALOGIO
     analogin_init();
 #endif
@@ -177,8 +181,13 @@ void reset_cpu(void) {
     NVIC_SystemReset();
 }
 
+// The uninitialized data section is placed directly after BSS, under the theory
+// that Circuit Python has a lot more .data and .bss than the bootloader.  As a
+// result, this section is less likely to be tampered with by the bootloader.
+extern uint32_t _euninitialized;
+
 uint32_t *port_heap_get_bottom(void) {
-    return port_stack_get_limit();
+    return &_euninitialized;
 }
 
 uint32_t *port_heap_get_top(void) {
@@ -186,21 +195,21 @@ uint32_t *port_heap_get_top(void) {
 }
 
 uint32_t *port_stack_get_limit(void) {
-    return &_ebss;
+    return &_euninitialized;
 }
 
 uint32_t *port_stack_get_top(void) {
     return &_estack;
 }
 
-extern uint32_t _ebss;
-// Place the word to save just after our BSS section that gets blanked.
+// Place the word in the uninitialized section so it won't get overwritten.
+__attribute__((section(".uninitialized"))) uint32_t _saved_word;
 void port_set_saved_word(uint32_t value) {
-    _ebss = value;
+    _saved_word = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return _ebss;
+    return _saved_word;
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
