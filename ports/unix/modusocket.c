@@ -252,6 +252,26 @@ STATIC mp_obj_t socket_recv(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_obj, 2, 3, socket_recv);
 
+STATIC mp_obj_t socket_recv_into(size_t n_args, const mp_obj_t *args) {
+    mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
+    int flags = 0;
+    if (n_args > 2) {
+        mp_int_t sz = mp_obj_get_int(args[2]);
+        if (sz > 0 && (mp_uint_t)sz < bufinfo.len) {
+            bufinfo.len = sz;
+        }
+        if (n_args > 3) {
+            flags = MP_OBJ_SMALL_INT_VALUE(args[3]);
+        }
+    }
+    ssize_t out_sz;
+    MP_HAL_RETRY_SYSCALL(out_sz, recv(self->fd, bufinfo.buf, bufinfo.len, flags), mp_raise_OSError(err));
+    return MP_OBJ_NEW_SMALL_INT(out_sz);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_into_obj, 2, 4, socket_recv_into);
+
 STATIC mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
     int sz = MP_OBJ_SMALL_INT_VALUE(args[1]);
@@ -465,6 +485,7 @@ STATIC const mp_rom_map_elem_t usocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socket_listen_obj) },
     { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socket_accept_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recv_into), MP_ROM_PTR(&socket_recv_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_recvfrom), MP_ROM_PTR(&socket_recvfrom_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
