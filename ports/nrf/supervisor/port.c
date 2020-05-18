@@ -120,6 +120,10 @@ safe_mode_t port_init(void) {
     // Configure millisecond timer initialization.
     tick_init();
 
+#if CIRCUITPY_RTC
+    common_hal_rtc_init();
+#endif
+
 #if CIRCUITPY_ANALOGIO
     analogin_init();
 #endif
