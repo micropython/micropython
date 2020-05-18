@@ -64,18 +64,16 @@ for module in modules:
                     if j.returns:
                         if 'Any' in j.returns.__dict__.values():
                             a += f"Missing return type: {j.__dict__['name']} on line {j.__dict__['lineno']}"
-                    if a:
-                        raise TypeError(a)
                 elif isinstance(j, astroid.node_classes.AnnAssign):
                     if 'Any' == j.__dict__['annotation'].__dict__['name']:
-                        raise TypeError(f"missing attribute type on line {j.__dict__['lineno']}")
+                        a = f"missing attribute type on line {j.__dict__['lineno']}"
+                if a:
+                    print(a)
 
         ok += 1
     except astroid.exceptions.AstroidSyntaxError as e:
         e = e.__cause__
         traceback.print_exception(type(e), e, e.__traceback__)
-    except TypeError as err:
-        print(err)
 
 print(f"{ok} ok out of {total}")
 
