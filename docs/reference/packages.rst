@@ -18,8 +18,8 @@ packages:
    on a `MicroPython port` with networking capabilities. You can run upip
    on your microcontroller or your Unix port.
 3. For ports without networking capabilities, an "installation image"
-   can be prepared on the Unix port. You can :ref:`cross install <cross-installing>`
-   to your development environment then transfer the code to your device. 
+   can be prepared on the Unix port. You can also install packages to your development
+   environment (a Unic\MacOs\Winows Port) then transfer the code to your device. see: `Cross-installing packages`_
 4. For low-memory ports, the installation image can be frozen as the
    bytecode into MicroPython executable, thus minimizing the memory
    storage overheads.
@@ -118,8 +118,6 @@ commands which corresponds to the example above are::
     micropython -m upip install micropython-pystone_lowmem
 
 [TODO: Describe installation path.]
-
-.. _cross_installing:
 
 Cross-installing packages
 -------------------------
