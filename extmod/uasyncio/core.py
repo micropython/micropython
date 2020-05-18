@@ -68,8 +68,14 @@ def sleep(t):
 
 class IOQueue:
     def __init__(self):
+        import usocket as socket
+
         self.poller = select.poll()
         self.map = {}  # maps id(stream) to [task_waiting_read, task_waiting_write, stream]
+        self.pipe_rd, self.pipe_wr = socket.socketpair()
+        self.pipe_rd.setblocking(False)
+        self.poller.register(self.pipe_rd, select.POLLIN)
+        self.buf = bytearray(16)
 
     def _enqueue(self, s, idx):
         if id(s) not in self.map:
@@ -109,8 +115,14 @@ class IOQueue:
             else:
                 break
 
+    def notify_threadsafe(self):
+        self.pipe_wr.send(b"\x00")
+
     def wait_io_event(self, dt):
         for s, ev in self.poller.ipoll(dt):
+            if s is self.pipe_rd:
+                s.recv_into(self.buf)
+                continue
             sm = self.map[id(s)]
             # print('poll', s, sm, ev)
             if ev & ~select.POLLOUT and sm[0] is not None:
@@ -160,9 +172,6 @@ def run_until_complete(main_task=None):
             if t:
                 # A task waiting on _task_queue; "ph_key" is time to schedule task at
                 dt = max(0, ticks_diff(t.ph_key, ticks()))
-            elif not _io_queue.map:
-                # No tasks can be woken so finished running
-                return
             # print('(poll {})'.format(dt), len(_io_queue.map))
             _io_queue.wait_io_event(dt)
 
