@@ -177,8 +177,13 @@ void reset_cpu(void) {
     NVIC_SystemReset();
 }
 
+// The uninitialized data section is placed directly after BSS, under the theory
+// that Circuit Python has a lot more .data and .bss than the bootloader.  As a
+// result, this section is less likely to be tampered with by the bootloader.
+extern uint32_t _euninitialized;
+
 uint32_t *port_heap_get_bottom(void) {
-    return port_stack_get_limit();
+    return &_euninitialized;
 }
 
 uint32_t *port_heap_get_top(void) {
@@ -186,14 +191,13 @@ uint32_t *port_heap_get_top(void) {
 }
 
 uint32_t *port_stack_get_limit(void) {
-    return &_ebss;
+    return &_euninitialized;
 }
 
 uint32_t *port_stack_get_top(void) {
     return &_estack;
 }
 
-extern uint32_t _ebss;
 // Place the word to save just after our BSS section that gets blanked.
 void port_set_saved_word(uint32_t value) {
     _ebss = value;
