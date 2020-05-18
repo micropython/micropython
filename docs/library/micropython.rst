@@ -113,6 +113,14 @@ Functions
    incoming stream of characters that is usually used for the REPL, in case
    that stream is used for other purposes.
 
+.. function:: scheduler_lock()
+
+   Lock the scheduler.  May be nested.
+
+.. function:: scheduler_unlock()
+
+   Unlock the scheduler.  May be nested.
+
 .. function:: schedule(func, arg)
 
    Schedule the function *func* to be executed "very soon".  The function
