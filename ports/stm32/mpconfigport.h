@@ -198,6 +198,7 @@
 #endif
 #ifndef MICROPY_PY_USOCKET
 #define MICROPY_PY_USOCKET          (1)
+#define MICROPY_PY_USOCKET_SOCKETPAIR (1)
 #endif
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK          (1)

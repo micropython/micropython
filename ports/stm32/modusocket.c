@@ -445,10 +445,15 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_usocket_getaddrinfo_obj, mod_usocket_getaddrinfo);
 
+MP_DECLARE_CONST_FUN_OBJ_0(mod_socket_socketpair_obj);
+
 STATIC const mp_rom_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
 
     { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&socket_type) },
+    #if MICROPY_PY_USOCKET_SOCKETPAIR
+    { MP_ROM_QSTR(MP_QSTR_socketpair), MP_ROM_PTR(&mod_socket_socketpair_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&mod_usocket_getaddrinfo_obj) },
 
     // class constants
