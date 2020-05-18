@@ -58,7 +58,7 @@ STATIC void config_periph_pin(const mcu_periph_obj_t *periph) {
             | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
-#define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_GetDiv(kCLOCK_LpspiDiv)))
+#define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_GetDiv(kCLOCK_LpspiDiv) + 1))
 
 void spi_reset(void) {
     for (int i = 0; i < MAX_SPI; i++) {
