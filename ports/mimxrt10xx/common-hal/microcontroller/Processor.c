@@ -37,11 +37,13 @@ float common_hal_mcu_processor_get_temperature(void) {
     tempmon_config_t config;
     TEMPMON_GetDefaultConfig(&config);
 
+    OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));
     TEMPMON_Init(TEMPMON, &config);
     TEMPMON_StartMeasure(TEMPMON);
 
     const float temp = TEMPMON_GetCurrentTemperature(TEMPMON);
     TEMPMON_Deinit(TEMPMON);
+    OCOTP_Deinit(OCOTP);
 
     return temp;
 }

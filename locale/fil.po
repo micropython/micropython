@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-12 14:37+1000\n"
+"POT-Creation-Date: 2020-05-18 13:32-0700\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -82,7 +82,7 @@ msgstr ""
 msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
 
-#: shared-bindings/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr ""
 
@@ -1277,6 +1277,10 @@ msgstr ""
 msgid "Plus any modules on the filesystem\n"
 msgstr "Kasama ang kung ano pang modules na sa filesystem\n"
 
+#: shared-module/vectorio/Polygon.c
+msgid "Polygon needs at least 3 points"
+msgstr ""
+
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
 msgstr ""
@@ -2156,10 +2160,6 @@ msgstr "dibisyon ng zero"
 #: py/objdeque.c
 msgid "empty"
 msgstr "walang laman"
-
-#: shared-bindings/vectorio/Polygon.c
-msgid "empty %q list"
-msgstr ""
 
 #: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
@@ -3188,8 +3188,8 @@ msgstr "hindi tugma ang '{' sa format"
 msgid "unreadable attribute"
 msgstr "hindi mabasa ang attribute"
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/Polygon.c
-#: shared-bindings/vectorio/VectorShape.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
+#: shared-module/vectorio/Polygon.c
 msgid "unsupported %q type"
 msgstr "Hindi supportadong tipo ng %q"
 

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-12 14:37+1000\n"
-"PO-Revision-Date: 2020-04-30 17:01+0000\n"
+"POT-Creation-Date: 2020-05-18 13:32-0700\n"
+"PO-Revision-Date: 2020-05-18 02:48+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: German <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/de/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.2\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: main.c
 msgid ""
@@ -81,7 +81,7 @@ msgstr "%q Indizes müssen ganze Zahlen sein, nicht %s"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
-msgstr ""
+msgstr "%q Liste muss eine Liste sein"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -90,9 +90,9 @@ msgstr ""
 msgid "%q must be >= 1"
 msgstr "%q muss >= 1 sein"
 
-#: shared-bindings/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
-msgstr ""
+msgstr "%q muss ein Tupel der Länge 2 sein"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -1279,6 +1279,10 @@ msgstr ""
 msgid "Plus any modules on the filesystem\n"
 msgstr "und alle Module im Dateisystem \n"
 
+#: shared-module/vectorio/Polygon.c
+msgid "Polygon needs at least 3 points"
+msgstr ""
+
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
 msgstr ""
@@ -2148,10 +2152,6 @@ msgstr "Division durch Null"
 #: py/objdeque.c
 msgid "empty"
 msgstr "leer"
-
-#: shared-bindings/vectorio/Polygon.c
-msgid "empty %q list"
-msgstr ""
 
 #: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
@@ -3184,8 +3184,8 @@ msgstr ""
 msgid "unreadable attribute"
 msgstr "nicht lesbares Attribut"
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/Polygon.c
-#: shared-bindings/vectorio/VectorShape.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
+#: shared-module/vectorio/Polygon.c
 msgid "unsupported %q type"
 msgstr "Nicht unterstützter %q-Typ"
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-12 14:37+1000\n"
+"POT-Creation-Date: 2020-05-18 13:32-0700\n"
 "PO-Revision-Date: 2018-07-27 11:55-0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -81,7 +81,7 @@ msgstr ""
 msgid "%q must be >= 1"
 msgstr ""
 
-#: shared-bindings/vectorio/Polygon.c
+#: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr ""
 
@@ -1257,6 +1257,10 @@ msgstr ""
 msgid "Plus any modules on the filesystem\n"
 msgstr ""
 
+#: shared-module/vectorio/Polygon.c
+msgid "Polygon needs at least 3 points"
+msgstr ""
+
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
 msgstr ""
@@ -2111,10 +2115,6 @@ msgstr ""
 
 #: py/objdeque.c
 msgid "empty"
-msgstr ""
-
-#: shared-bindings/vectorio/Polygon.c
-msgid "empty %q list"
 msgstr ""
 
 #: extmod/moduheapq.c extmod/modutimeq.c
@@ -3132,8 +3132,8 @@ msgstr ""
 msgid "unreadable attribute"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/Polygon.c
-#: shared-bindings/vectorio/VectorShape.c
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
+#: shared-module/vectorio/Polygon.c
 msgid "unsupported %q type"
 msgstr ""
 

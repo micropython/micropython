@@ -8,8 +8,9 @@
 
 typedef struct {
     mp_obj_base_t base;
-    // A micropython List[ x, y, ... ]
-    mp_obj_t points_list;
+    // An int array[ x, y, ... ]
+    int *points_list;
+    size_t len;
     vectorio_event_t on_dirty;
 } vectorio_polygon_t;
 

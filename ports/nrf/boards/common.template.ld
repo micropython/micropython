@@ -103,7 +103,7 @@ SECTIONS
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
     } >RAM
 
-    /* Uninitialized data section */
+    /* Zero-initialized data section */
     .bss :
     {
         . = ALIGN(4);
@@ -114,6 +114,19 @@ SECTIONS
 
         . = ALIGN(4);
         _ebss = .;         /* define a global symbol at bss end; used by startup code and GC */
+    } >RAM
+
+    /* Uninitialized data section
+    Data placed into this section will remain unchanged across reboots. */
+    .uninitialized (NOLOAD) :
+    {
+        . = ALIGN(4);
+        _suninitialized = .; /* define a global symbol at uninitialized start; currently unused */
+        *(.uninitialized)
+        *(.uninitialized*)
+
+        . = ALIGN(4);
+        _euninitialized = .; /* define a global symbol at uninitialized end; currently unused */
     } >RAM
 
     /* this is to define the start of the heap, and make sure we have a minimum size */
