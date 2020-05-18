@@ -4,6 +4,7 @@
 # This file contains the core TaskQueue based on a pairing heap, and the core Task class.
 # They can optionally be replaced by C implementations.
 
+import micropython
 from . import core
 
 
@@ -152,6 +153,7 @@ class Task:
         # Can't cancel self (not supported yet).
         if self is core.cur_task:
             raise RuntimeError("can't cancel self")
+        micropython.scheduler_lock()
         # If Task waits on another task then forward the cancel to the one it's waiting on.
         while isinstance(self.data, Task):
             self = self.data
@@ -165,4 +167,5 @@ class Task:
             core._task_queue.remove(self)
             core._task_queue.push_head(self)
         self.data = core.CancelledError
+        micropython.scheduler_unlock()
         return True
