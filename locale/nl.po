@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-12 14:37+1000\n"
-"PO-Revision-Date: 2020-05-18 22:06+0000\n"
+"PO-Revision-Date: 2020-05-18 22:17+0000\n"
 "Last-Translator: Dustin Watts <dustin_watts@yahoo.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -199,19 +199,19 @@ msgstr "'%s' object is niet onderschrijfbaar"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr "'=' alignment not allowed in string format specifier"
+msgstr "'=' uitlijning niet toegestaan in string format specifier"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
-msgstr ""
+msgstr "'S' and 'O' zijn niet ondersteunde format types"
 
 #: py/compile.c
 msgid "'align' requires 1 argument"
-msgstr ""
+msgstr "'align' vereist 1 argument"
 
 #: py/compile.c
 msgid "'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'async for' of 'async with' buiten async functie"
 
 #: py/compile.c
 msgid "'await' outside function"
