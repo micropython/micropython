@@ -155,6 +155,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd
 #endif
 
 #if MICROPY_ENABLE_SCHEDULER
+STATIC mp_obj_t mp_micropython_scheduler_lock(void) {
+    mp_sched_lock();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_scheduler_lock_obj, mp_micropython_scheduler_lock);
+
+STATIC mp_obj_t mp_micropython_scheduler_unlock(void) {
+    mp_sched_unlock();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_scheduler_unlock_obj, mp_micropython_scheduler_unlock);
+
 STATIC mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
     if (!mp_sched_schedule(function, arg)) {
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("schedule queue full"));
@@ -199,6 +211,8 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_kbd_intr), MP_ROM_PTR(&mp_micropython_kbd_intr_obj) },
     #endif
     #if MICROPY_ENABLE_SCHEDULER
+    { MP_ROM_QSTR(MP_QSTR_scheduler_lock), MP_ROM_PTR(&mp_micropython_scheduler_lock_obj) },
+    { MP_ROM_QSTR(MP_QSTR_scheduler_unlock), MP_ROM_PTR(&mp_micropython_scheduler_unlock_obj) },
     { MP_ROM_QSTR(MP_QSTR_schedule), MP_ROM_PTR(&mp_micropython_schedule_obj) },
     #endif
 };
