@@ -27,6 +27,7 @@
 #include "py/mpstate.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-module/gamepadshift/GamePadShift.h"
+#include "supervisor/shared/tick.h"
 
 void common_hal_gamepadshift_gamepadshift_init(gamepadshift_obj_t *gamepadshift,
                                                 digitalio_digitalinout_obj_t *clock_pin,
@@ -46,4 +47,5 @@ void common_hal_gamepadshift_gamepadshift_init(gamepadshift_obj_t *gamepadshift,
 
 void common_hal_gamepadshift_gamepadshift_deinit(gamepadshift_obj_t *gamepadshift) {
     MP_STATE_VM(gamepad_singleton) = NULL;
+    supervisor_disable_tick();
 }

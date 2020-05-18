@@ -67,6 +67,7 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -rf autoapi
 	rm -rf $(STUBDIR) $(DISTDIR) *.egg-info
 
 html: stubs
@@ -213,10 +214,10 @@ check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
 	$(PYTHON) tools/check_translations.py $^
 
 stubs:
-	mkdir -p circuitpython-stubs
-	python tools/extract_pyi.py shared-bindings/ $(STUBDIR)
-	python tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
-	python setup.py sdist
+	@mkdir -p circuitpython-stubs
+	@$(PYTHON) tools/extract_pyi.py shared-bindings/ $(STUBDIR)
+	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
+	@$(PYTHON) setup.py -q sdist
 
 update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
