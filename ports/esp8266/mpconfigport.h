@@ -75,6 +75,7 @@
 #define MICROPY_PY_UZLIB            (1)
 #define MICROPY_PY_LWIP             (1)
 #define MICROPY_PY_LWIP_SOCK_RAW    (1)
+#define MICROPY_PY_USOCKET_SOCKETPAIR (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE    (1)
