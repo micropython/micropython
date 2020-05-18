@@ -1733,10 +1733,15 @@ MP_DEFINE_CONST_FUN_OBJ_0(lwip_print_pcbs_obj, lwip_print_pcbs);
 
 #if MICROPY_PY_LWIP
 
+MP_DECLARE_CONST_FUN_OBJ_0(mod_socket_socketpair_obj);
+
 STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_lwip) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&mod_lwip_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_callback), MP_ROM_PTR(&mod_lwip_callback_obj) },
+    #if MICROPY_PY_USOCKET_SOCKETPAIR
+    { MP_ROM_QSTR(MP_QSTR_socketpair), MP_ROM_PTR(&mod_socket_socketpair_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&lwip_getaddrinfo_obj) },
     { MP_ROM_QSTR(MP_QSTR_print_pcbs), MP_ROM_PTR(&lwip_print_pcbs_obj) },
     // objects
