@@ -198,13 +198,14 @@ uint32_t *port_stack_get_top(void) {
     return &_estack;
 }
 
-// Place the word to save just after our BSS section that gets blanked.
+// Place the word in the uninitialized section so it won't get overwritten.
+__attribute__((section(".uninitialized"))) uint32_t _saved_word;
 void port_set_saved_word(uint32_t value) {
-    _ebss = value;
+    _saved_word = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return _ebss;
+    return _saved_word;
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
