@@ -493,6 +493,17 @@ const mp_obj_type_t mp_type_socket = {
     .locals_dict = (mp_obj_dict_t *)&usocket_locals_dict,
 };
 
+STATIC mp_obj_t mod_socket_socketpair(void) {
+    MP_THREAD_GIL_EXIT();
+    int fds[2];
+    int r = socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+    MP_THREAD_GIL_ENTER();
+    RAISE_ERRNO(r, errno);
+    mp_obj_t tuple[2] = { MP_OBJ_FROM_PTR(socket_new(fds[0])), MP_OBJ_FROM_PTR(socket_new(fds[1])) };
+    return mp_obj_new_tuple(2, tuple);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_socket_socketpair_obj, mod_socket_socketpair);
+
 #define BINADDR_MAX_LEN sizeof(struct in6_addr)
 STATIC mp_obj_t mod_socket_inet_pton(mp_obj_t family_in, mp_obj_t addr_in) {
     int family = mp_obj_get_int(family_in);
@@ -638,6 +649,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_socket_sockaddr_obj, mod_socket_sockaddr);
 STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
     { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_type_socket) },
+    { MP_ROM_QSTR(MP_QSTR_socketpair), MP_ROM_PTR(&mod_socket_socketpair_obj) },
     { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&mod_socket_getaddrinfo_obj) },
     { MP_ROM_QSTR(MP_QSTR_inet_pton), MP_ROM_PTR(&mod_socket_inet_pton_obj) },
     { MP_ROM_QSTR(MP_QSTR_inet_ntop), MP_ROM_PTR(&mod_socket_inet_ntop_obj) },
