@@ -380,26 +380,47 @@ static inline mp_uint_t disable_irq(void) {
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
-        if (pyb_thread_enabled) { \
-            MP_THREAD_GIL_EXIT(); \
-            pyb_thread_yield(); \
-            MP_THREAD_GIL_ENTER(); \
-        } else { \
-            __WFI(); \
-        } \
     } while (0);
+
+#define MICROPY_EVENT_WAIT_ATOMIC \
+    do { \
+        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION(); \
+        if (!mp_sched_any_pending()) { \
+            if (pyb_thread_enabled) { \
+                MICROPY_END_ATOMIC_SECTION(atomic_state); \
+                MP_THREAD_GIL_EXIT(); \
+                pyb_thread_yield(); \
+                MP_THREAD_GIL_ENTER(); \
+            } else { \
+                __WFI(); \
+                MICROPY_END_ATOMIC_SECTION(atomic_state); \
+            } \
+        } else { \
+            MICROPY_END_ATOMIC_SECTION(atomic_state); \
+        } \
+    } while (0)
 
 #define MICROPY_THREAD_YIELD() pyb_thread_yield()
 #else
-#define MICROPY_EVENT_POLL_HOOK \
+
+#define MICROPY_EVENT_WAIT_ATOMIC \
     do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        __WFI(); \
-    } while (0);
+        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION(); \
+        if (!mp_sched_any_pending()) { \
+            __WFI(); \
+        } \
+        MICROPY_END_ATOMIC_SECTION(atomic_state); \
+    } while (0)
 
 #define MICROPY_THREAD_YIELD()
 #endif
+
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        MICROPY_EVENT_WAIT_ATOMIC; \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+    } while (0);
 
 // The LwIP interface must run at a raised IRQ priority
 #define MICROPY_PY_LWIP_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
