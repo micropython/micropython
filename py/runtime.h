@@ -71,8 +71,11 @@ void mp_handle_pending_tail(mp_uint_t atomic_state);
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
+#define mp_sched_any_pending() (MP_STATE_VM(sched_state) == MP_SCHED_PENDING)
 #define mp_sched_num_pending() (MP_STATE_VM(sched_len))
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
+#else
+#define mp_sched_any_pending() (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL)
 #endif
 
 // extra printing method specifically for mp_obj_t's which are integral type
