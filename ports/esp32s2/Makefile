@@ -91,6 +91,7 @@ CFLAGS += -DHAVE_CONFIG_H \
           -DUNITY_INCLUDE_CONFIG_H -DWITH_POSIX
 
 # Make our canary value match FreeRTOS's
+# This define is in FreeRTOS as tskSTACK_FILL_BYTE 0xa5U which we expand out to a full word.
 CFLAGS += -DSTACK_CANARY_VALUE=0xa5a5a5a5
 
 #Debugging/Optimization
