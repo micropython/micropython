@@ -35,22 +35,7 @@
 
 #include "py/runtime.h"
 
-//| :mod:`usb_midi` --- MIDI over USB
-//| =================================================
-//|
-//| .. module:: usb_midi
-//|   :synopsis: MIDI over USB
-//|
-//| The `usb_midi` module contains classes to transmit and receive MIDI messages over USB
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     PortIn
-//|     PortOut
-//|
+//| """Classes to transmit and receive MIDI messages over USB"""
 //|
 mp_map_elem_t usb_midi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usb_midi) },

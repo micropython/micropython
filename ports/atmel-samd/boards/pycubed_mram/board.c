@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,38 @@
  * THE SOFTWARE.
  */
 
-//| :func:`help` - Built-in method to provide helpful information
-//| ==============================================================
-//|
-//| .. function:: help(object=None)
-//|
-//|   Prints a help method about the given object. When ``object`` is none,
-//|   prints general port information.
-//|
+
+#include <string.h>
+
+#include "boards/board.h"
+#include "py/mpconfig.h"
+#include "shared-bindings/nvm/ByteArray.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "hal/include/hal_gpio.h"
+#include "shared-bindings/pulseio/PWMOut.h"
+
+nvm_bytearray_obj_t bootcnt = {
+    .base = {
+        .type = &nvm_bytearray_type
+            },
+    .len = ( uint32_t) 8192,
+    .start_address = (uint8_t*) (0x00080000 - 8192)
+    };
+
+
+void board_init(void) {
+    pulseio_pwmout_obj_t pwm;
+    common_hal_pulseio_pwmout_construct(&pwm, &pin_PA23, 4096, 2, false);
+    common_hal_pulseio_pwmout_never_reset(&pwm);
+}
+
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+    uint8_t value_out = 0;
+    common_hal_nvm_bytearray_get_bytes(&bootcnt,0,1,&value_out);
+    ++value_out;
+    common_hal_nvm_bytearray_set_bytes(&bootcnt,0,&value_out,1);
+}

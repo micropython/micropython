@@ -55,7 +55,6 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'rstjinja',
-    'c2rst',
     'recommonmark',
 ]
 
@@ -66,9 +65,18 @@ templates_path = ['templates']
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',
-    '.c': ''
 }
 
+extensions.append('autoapi.extension')
+
+autoapi_type = 'python'
+# Uncomment this if debugging autoapi
+autoapi_keep_files = True
+autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circuitpython-stubs')]
+autoapi_add_toctree_entry = False
+autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members', 'show-module-summary']
+autoapi_template_dir = 'docs/autoapi/templates'
+autoapi_python_use_implicit_namespaces = True
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -78,7 +86,7 @@ source_suffix = {
 
 # General information about the project.
 project = 'Adafruit CircuitPython'
-copyright = '2014-2018, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
+copyright = '2014-2020, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
 
 # These are overwritten on ReadTheDocs.
 # The version info for the project you're documenting, acts as replacement for
@@ -105,6 +113,7 @@ exclude_patterns = ["**/build*",
                     ".git",
                     ".venv",
                     ".direnv",
+                    "docs/autoapi",
                     "docs/README.md",
                     "drivers",
                     "examples",

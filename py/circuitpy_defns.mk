@@ -139,11 +139,17 @@ endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/% bitbangio/OneWire.%
 endif
+ifeq ($(CIRCUITPY_COUNTIO),1)
+SRC_PATTERNS += countio/%
+endif
 ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/% terminalio/% fontio/%
+endif
+ifeq ($(CIRCUITPY_VECTORIO),1)
+SRC_PATTERNS += vectorio/%
 endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
@@ -266,6 +272,8 @@ SRC_COMMON_HAL_ALL = \
 	busio/SPI.c \
 	busio/UART.c \
 	busio/__init__.c \
+	countio/Counter.c \
+	countio/__init__.c \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
 	displayio/ParallelBus.c \
@@ -315,7 +323,6 @@ $(filter $(SRC_PATTERNS), \
 )
 
 SRC_BINDINGS_ENUMS += \
-	help.c \
 	util.c
 
 SRC_SHARED_MODULE_ALL = \
@@ -358,6 +365,11 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/Shape.c \
 	displayio/TileGrid.c \
 	displayio/__init__.c \
+    vectorio/Circle.c \
+    vectorio/Rectangle.c \
+    vectorio/Polygon.c \
+    vectorio/VectorShape.c \
+    vectorio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \

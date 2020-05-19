@@ -21,4 +21,4 @@ Port Specific modules
 ---------------------
 
 .. toctree::
-    bindings/samd/__init__
+    ../../autoapi/samd/index

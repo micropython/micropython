@@ -30,34 +30,29 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-//| :mod:`multiterminal` --- Manage additional terminal sources
-//| ===========================================================
-//|
-//| .. module:: multiterminal
-//|   :synopsis: Manage additional terminal sources
-//|   :platform: ESP8266
+//| """Manage additional terminal sources
 //|
 //| The `multiterminal` module allows you to configure an additional serial
 //| terminal source. Incoming characters are accepted from both the internal
-//| serial connection and the optional secondary connection.
+//| serial connection and the optional secondary connection."""
 //|
 
-//|   .. function:: get_secondary_terminal()
-//|
-//|     Returns the current secondary terminal.
+//| def get_secondary_terminal() -> Any:
+//|     """Returns the current secondary terminal."""
+//|     ...
 //|
 STATIC mp_obj_t multiterminal_obj_get_secondary_terminal() {
     return common_hal_multiterminal_get_secondary_terminal();
 }
 MP_DEFINE_CONST_FUN_OBJ_0(multiterminal_get_secondary_terminal_obj, multiterminal_obj_get_secondary_terminal);
 
-//|   .. function:: set_secondary_terminal(stream)
-//|
-//|     Read additional input from the given stream and write out back to it.
+//| def set_secondary_terminal(stream: stream) -> Any:
+//|     """Read additional input from the given stream and write out back to it.
 //|     This doesn't replace the core stream (usually UART or native USB) but is
 //|     mixed in instead.
 //|
-//|     :param stream stream: secondary stream
+//|     :param stream stream: secondary stream"""
+//|     ...
 //|
 STATIC mp_obj_t multiterminal_obj_set_secondary_terminal(mp_obj_t secondary_terminal) {
     mp_obj_t write_m[3];
@@ -73,9 +68,9 @@ STATIC mp_obj_t multiterminal_obj_set_secondary_terminal(mp_obj_t secondary_term
 }
 MP_DEFINE_CONST_FUN_OBJ_1(multiterminal_set_secondary_terminal_obj, multiterminal_obj_set_secondary_terminal);
 
-//|   .. function:: clear_secondary_terminal()
-//|
-//|     Clears the secondary terminal.
+//| def clear_secondary_terminal() -> Any:
+//|     """Clears the secondary terminal."""
+//|     ...
 //|
 STATIC mp_obj_t multiterminal_obj_clear_secondary_terminal() {
     common_hal_multiterminal_clear_secondary_terminal();
@@ -83,11 +78,11 @@ STATIC mp_obj_t multiterminal_obj_clear_secondary_terminal() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(multiterminal_clear_secondary_terminal_obj, multiterminal_obj_clear_secondary_terminal);
 
-//|   .. function:: schedule_secondary_terminal_read(socket)
-//|
-//|     In cases where the underlying OS is doing task scheduling, this notifies
+//| def schedule_secondary_terminal_read(socket: Any) -> Any:
+//|     """In cases where the underlying OS is doing task scheduling, this notifies
 //|     the OS when more data is available on the socket to read. This is useful
-//|     as a callback for lwip sockets.
+//|     as a callback for lwip sockets."""
+//|     ...
 //|
 // TODO(tannewt): This is a funny API. Replace it with a direct call into the OS
 // by the lwip object.

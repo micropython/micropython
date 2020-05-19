@@ -37,27 +37,22 @@
 
 #include "shared-module/network/__init__.h"
 
-//| :mod:`socket` --- TCP, UDP and RAW socket support
-//| =================================================
+//| """TCP, UDP and RAW socket support
 //|
-//| .. module:: socket
-//|   :synopsis: TCP, UDP and RAW sockets
-//|   :platform: SAMD21, SAMD51
-//|
-//| Create TCP, UDP and RAW sockets for communicating over the Internet.
+//| Create TCP, UDP and RAW sockets for communicating over the Internet."""
 //|
 
 STATIC const mp_obj_type_t socket_type;
 
-//| .. currentmodule:: socket
+//| class socket:
 //|
-//| .. class:: socket(family, type, proto)
+//|     def __init__(self, family: int, type: int, proto: int):
+//|         """Create a new socket
 //|
-//|   Create a new socket
-//|
-//|   :param ~int family: AF_INET or AF_INET6
-//|   :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
-//|   :param ~int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)
+//|         :param ~int family: AF_INET or AF_INET6
+//|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
+//|         :param ~int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)"""
+//|         ...
 //|
 
 STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -98,11 +93,11 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
     }
 }
 
-//| .. method:: bind(address)
+//|     def bind(self, address: tuple) -> Any:
+//|         """Bind a socket to an address
 //|
-//|   Bind a socket to an address
-//|
-//|   :param ~tuple address: tuple of (remote_address, remote_port)
+//|         :param ~tuple address: tuple of (remote_address, remote_port)"""
+//|         ...
 //|
 
 STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
@@ -125,11 +120,11 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
-//| .. method:: listen(backlog)
+//|     def listen(self, backlog: int) -> Any:
+//|         """Set socket to listen for incoming connections
 //|
-//|   Set socket to listen for incoming connections
-//|
-//|   :param ~int backlog: length of backlog queue for waiting connetions
+//|         :param ~int backlog: length of backlog queue for waiting connetions"""
+//|         ...
 //|
 
 STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
@@ -150,11 +145,10 @@ STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
 
-//| .. method:: accept()
-//|
-//|   Accept a connection on a listening socket of type SOCK_STREAM,
-//|   creating a new socket of type SOCK_STREAM.
-//|   Returns a tuple of (new_socket, remote_address)
+//|     def accept(self, ) -> Any:
+//|         """Accept a connection on a listening socket of type SOCK_STREAM,
+//|         creating a new socket of type SOCK_STREAM.
+//|         Returns a tuple of (new_socket, remote_address)"""
 //|
 
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
@@ -188,11 +182,11 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_accept_obj, socket_accept);
 
-//| .. method:: connect(address)
+//|     def connect(self, address: tuple) -> Any:
+//|         """Connect a socket to a remote address
 //|
-//|   Connect a socket to a remote address
-//|
-//|   :param ~tuple address: tuple of (remote_address, remote_port)
+//|         :param ~tuple address: tuple of (remote_address, remote_port)"""
+//|         ...
 //|
 
 STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
@@ -215,12 +209,12 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
-//| .. method:: send(bytes)
+//|     def send(self, bytes: bytes) -> Any:
+//|         """Send some bytes to the connected remote address.
+//|         Suits sockets of type SOCK_STREAM
 //|
-//|   Send some bytes to the connected remote address.
-//|   Suits sockets of type SOCK_STREAM
-//|
-//|   :param ~bytes bytes: some bytes to send
+//|         :param ~bytes bytes: some bytes to send"""
+//|         ...
 //|
 
 STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
@@ -252,19 +246,20 @@ STATIC mp_int_t _socket_recv_into(mod_network_socket_obj_t *sock, byte *buf, mp_
 }
 
 
-//| .. method:: recv_into(buffer[, bufsize])
+//|     def recv_into(self, buffer: bytearray, bufsize: int) -> Any:
+//|         """Reads some bytes from the connected remote address, writing
+//|         into the provided buffer. If bufsize <= len(buffer) is given,
+//|         a maximum of bufsize bytes will be read into the buffer. If no
+//|         valid value is given for bufsize, the default is the length of
+//|         the given buffer.
 //|
-//|   Reads some bytes from the connected remote address, writing
-//|   into the provided buffer. If bufsize <= len(buffer) is given,
-//|   a maximum of bufsize bytes will be read into the buffer. If no
-//|   valid value is given for bufsize, the default is the length of
-//|   the given buffer.
+//|         Suits sockets of type SOCK_STREAM
+//|         Returns an int of number of bytes read.
 //|
-//|   Suits sockets of type SOCK_STREAM
-//|   Returns an int of number of bytes read.
+//|         :param bytearray buffer: buffer to receive into
+//|         :param int bufsize: optionally, a maximum number of bytes to read."""
+//|         ...
 //|
-//|   :param bytearray buffer: buffer to receive into
-//|   :param int bufsize: optionally, a maximum number of bytes to read.
 
 STATIC mp_obj_t socket_recv_into(size_t n_args, const mp_obj_t *args) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -287,13 +282,14 @@ STATIC mp_obj_t socket_recv_into(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_recv_into_obj, 2, 3, socket_recv_into);
 
-//| .. method:: recv(bufsize)
+//|     def recv(self, bufsize: int) -> Any:
+//|         """Reads some bytes from the connected remote address.
+//|         Suits sockets of type SOCK_STREAM
+//|         Returns a bytes() of length <= bufsize
 //|
-//|   Reads some bytes from the connected remote address.
-//|   Suits sockets of type SOCK_STREAM
-//|   Returns a bytes() of length <= bufsize
+//|         :param ~int bufsize: maximum number of bytes to receive"""
+//|         ...
 //|
-//|   :param ~int bufsize: maximum number of bytes to receive
 
 STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -313,13 +309,13 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
-//| .. method:: sendto(bytes, address)
+//|     def sendto(self, bytes: bytes, address: tuple) -> Any:
+//|         """Send some bytes to a specific address.
+//|         Suits sockets of type SOCK_DGRAM
 //|
-//|   Send some bytes to a specific address.
-//|   Suits sockets of type SOCK_DGRAM
-//|
-//|   :param ~bytes bytes: some bytes to send
-//|   :param ~tuple address: tuple of (remote_address, remote_port)
+//|         :param ~bytes bytes: some bytes to send
+//|         :param ~tuple address: tuple of (remote_address, remote_port)"""
+//|         ...
 //|
 
 STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_in) {
@@ -347,16 +343,16 @@ STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(socket_sendto_obj, socket_sendto);
 
-//| .. method:: recvfrom(bufsize)
+//|     def recvfrom(self, bufsize: int) -> Any:
+//|         """Reads some bytes from the connected remote address.
+//|         Suits sockets of type SOCK_STREAM
 //|
-//|   Reads some bytes from the connected remote address.
-//|   Suits sockets of type SOCK_STREAM
+//|         Returns a tuple containing
+//|         * a bytes() of length <= bufsize
+//|         * a remote_address, which is a tuple of ip address and port number
 //|
-//|   Returns a tuple containing
-//|   * a bytes() of length <= bufsize
-//|   * a remote_address, which is a tuple of ip address and port number
-//|
-//|   :param ~int bufsize: maximum number of bytes to receive
+//|         :param ~int bufsize: maximum number of bytes to receive"""
+//|         ...
 //|
 
 STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
@@ -386,9 +382,9 @@ STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recvfrom_obj, socket_recvfrom);
 
-//| .. method:: setsockopt(level, optname, value)
-//|
-//|   Sets socket options
+//|     def setsockopt(self, level: Any, optname: Any, value: Any) -> Any:
+//|         """Sets socket options"""
+//|         ...
 //|
 
 STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
@@ -420,11 +416,11 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);
 
-//| .. method:: settimeout(value)
+//|     def settimeout(self, value: int) -> Any:
+//|         """Set the timeout value for this socket.
 //|
-//|   Set the timeout value for this socket.
-//|
-//|   :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely.
+//|         :param ~int value: timeout in seconds.  0 means non-blocking.  None means block indefinitely."""
+//|         ...
 //|
 
 STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
@@ -451,11 +447,11 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_settimeout_obj, socket_settimeout);
 
-//| .. method:: setblocking(flag)
+//|     def setblocking(self, flag: bool) -> Any:
+//|         """Set the blocking behaviour of this socket.
 //|
-//|   Set the blocking behaviour of this socket.
-//|
-//|   :param ~bool flag: False means non-blocking, True means block indefinitely.
+//|         :param ~bool flag: False means non-blocking, True means block indefinitely."""
+//|         ...
 //|
 
 // method socket.setblocking(flag)
@@ -513,13 +509,13 @@ STATIC const mp_obj_type_t socket_type = {
     .locals_dict = (mp_obj_dict_t*)&socket_locals_dict,
 };
 
-//| .. function:: getaddrinfo(host, port)
+//| def getaddrinfo(host: Any, port: Any) -> Any:
+//|     """Gets the address information for a hostname and port
 //|
-//|   Gets the address information for a hostname and port
-//|
-//|   Returns the appropriate family, socket type, socket protocol and
-//|   address information to call socket.socket() and socket.connect() with,
-//|   as a tuple.
+//|     Returns the appropriate family, socket type, socket protocol and
+//|     address information to call socket.socket() and socket.connect() with,
+//|     as a tuple."""
+//|     ...
 //|
 
 STATIC mp_obj_t socket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {

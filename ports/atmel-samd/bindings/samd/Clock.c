@@ -30,18 +30,12 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-//| .. currentmodule:: samd
+//| import typing
+//| class Clock:
+//|     """Identifies a clock on the microcontroller.
 //|
-//| :class:`Clock` --- Clock reference
-//| ------------------------------------------
-//|
-//| Identifies a clock on the microcontroller.
-//|
-//| .. class:: Clock
-//|
-//|    Identifies a clock on the microcontroller. They are fixed by the
-//|    hardware so they cannot be constructed on demand. Instead, use
-//|    `samd.clock` to reference the desired clock.
+//|        They are fixed by the hardware so they cannot be constructed on demand. Instead, use
+//|        ``samd.clock`` to reference the desired clock."""
 //|
 
 STATIC void samd_clock_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -50,9 +44,8 @@ STATIC void samd_clock_print(const mp_print_t *print, mp_obj_t self_in, mp_print
     mp_printf(print, "%q.%q.%q", MP_QSTR_samd, MP_QSTR_clock, self->name);
 }
 
-//|     .. attribute:: enabled
-//|
-//|       Is the clock enabled? (read-only)
+//|     enabled: bool = ...
+//|     """Is the clock enabled? (read-only)"""
 //|
 STATIC mp_obj_t samd_clock_get_enabled(mp_obj_t self_in) {
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -69,9 +62,8 @@ const mp_obj_property_t samd_clock_enabled_obj = {
     },
 };
 
-//|     .. attribute:: parent
-//|
-//|       Clock parent. (read-only)
+//|     parent: typing.Union(Clock | None) = ...
+//|     """Clock parent. (read-only)"""
 //|
 STATIC mp_obj_t samd_clock_get_parent(mp_obj_t self_in) {
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -98,9 +90,8 @@ const mp_obj_property_t samd_clock_parent_obj = {
     },
 };
 
-//|     .. attribute:: frequency
-//|
-//|       Clock frequency. (read-only)
+//|     frequency: int = ...
+//|     """Clock frequency in Herz. (read-only)"""
 //|
 STATIC mp_obj_t samd_clock_get_frequency(mp_obj_t self_in) {
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -117,9 +108,8 @@ const mp_obj_property_t samd_clock_frequency_obj = {
     },
 };
 
-//|     .. attribute:: calibration
-//|
-//|       Clock calibration. Not all clocks can be calibrated.
+//|     calibration: int = ...
+//|     """Clock calibration. Not all clocks can be calibrated."""
 //|
 STATIC mp_obj_t samd_clock_get_calibration(mp_obj_t self_in) {
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);

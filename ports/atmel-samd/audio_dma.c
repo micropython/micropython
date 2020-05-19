@@ -31,6 +31,7 @@
 
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
+#include "supervisor/shared/tick.h"
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
@@ -60,6 +61,7 @@ void audio_dma_free_channel(uint8_t channel) {
     assert(audio_dma_allocated[channel]);
     audio_dma_disable_channel(channel);
     audio_dma_allocated[channel] = false;
+    supervisor_disable_tick();
 }
 
 void audio_dma_disable_channel(uint8_t channel) {
@@ -71,6 +73,7 @@ void audio_dma_disable_channel(uint8_t channel) {
 void audio_dma_enable_channel(uint8_t channel) {
     if (channel >= AUDIO_DMA_CHANNEL_COUNT)
         return;
+    supervisor_enable_tick();
     dma_enable_channel(channel);
 }
 
@@ -318,6 +321,9 @@ void audio_dma_reset(void) {
     for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
         audio_dma_state[i] = NULL;
         audio_dma_pending[i] = false;
+        if (audio_dma_allocated[i]) {
+            supervisor_disable_tick();
+        }
         audio_dma_allocated[i] = false;
         audio_dma_disable_channel(i);
         dma_descriptor(i)->BTCTRL.bit.VALID = false;

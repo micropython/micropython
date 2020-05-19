@@ -14,6 +14,7 @@
 ############
 dist/
 *.egg-info
+.eggs
 
 # Logs and Databases
 ######################
@@ -51,6 +52,7 @@ _build
 # Generated rst files
 ######################
 genrst/
+/autoapi/
 
 # ctags and similar
 ###################

@@ -35,29 +35,28 @@
 #include "shared-bindings/_bleio/UUID.h"
 #include "shared-bindings/util.h"
 
-//| .. currentmodule:: _bleio
+//| class PacketBuffer:
+//|     """Accumulates a Characteristic's incoming packets in a FIFO buffer and facilitates packet aware
+//|     outgoing writes. A packet's size is either the characteristic length or the maximum transmission
+//|     unit (MTU) minus overhead, whichever is smaller. The MTU can change so check `incoming_packet_length`
+//|     and `outgoing_packet_length` before creating a buffer to store data.
 //|
-//| :class:`PacketBuffer` -- Packet-oriented characteristic usage.
-//| =====================================================================
+//|     When we're the server, we ignore all connections besides the first to subscribe to
+//|     notifications."""
 //|
-//| Accumulates a Characteristic's incoming packets in a FIFO buffer and facilitates packet aware
-//| outgoing writes. A packet's size is either the characteristic length or the maximum transmission
-//| unit (MTU) minus overhead, whichever is smaller. The MTU can change so check `incoming_packet_length`
-//| and `outgoing_packet_length` before creating a buffer to store data.
+//|     def __init__(self, characteristic: Characteristic, *, buffer_size: int):
+//|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
+//|         add the newly-written bytes to a FIFO buffer.
 //|
-//| When we're the server, we ignore all connections besides the first to subscribe to
-//| notifications.
+//|         Monitor the given Characteristic. Each time a new value is written to the Characteristic
+//|         add the newly-written packet of bytes to a FIFO buffer.
 //|
-//| .. class:: PacketBuffer(characteristic, *, buffer_size)
-//|
-//|   Monitor the given Characteristic. Each time a new value is written to the Characteristic
-//|   add the newly-written packet of bytes to a FIFO buffer.
-//|
-//|   :param Characteristic characteristic: The Characteristic to monitor.
-//|     It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
-//|     in a remote Service that a Central has connected to.
-//|   :param int buffer_size: Size of ring buffer (in packets of the Characteristic's maximum
-//|     length) that stores incoming packets coming from the peer.
+//|         :param Characteristic characteristic: The Characteristic to monitor.
+//|           It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
+//|           in a remote Service that a Central has connected to.
+//|         :param int buffer_size: Size of ring buffer (in packets of the Characteristic's maximum
+//|           length) that stores incoming packets coming from the peer."""
+//|         ...
 //|
 STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_characteristic, ARG_buffer_size };
@@ -94,13 +93,13 @@ STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
     }
 }
 
-//|   .. method:: readinto(buf)
+//|     def readinto(self, buf: Any) -> Any:
+//|         """Reads a single BLE packet into the ``buf``. Raises an exception if the next packet is longer
+//|         than the given buffer. Use `packet_size` to read the maximum length of a single packet.
 //|
-//|     Reads a single BLE packet into the ``buf``. Raises an exception if the next packet is longer
-//|     than the given buffer. Use `packet_size` to read the maximum length of a single packet.
-//|
-//|     :return: number of bytes read and stored into ``buf``
-//|     :rtype: int
+//|         :return: number of bytes read and stored into ``buf``
+//|         :rtype: int"""
+//|         ...
 //|
 STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_obj) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -118,15 +117,15 @@ STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_o
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_buffer_readinto);
 
-//|   .. method:: write(data, *, header=None)
+//|     def write(self, data: Any, *, header: Any = None) -> Any:
+//|         """Writes all bytes from data into the same outgoing packet. The bytes from header are included
+//|         before data when the pending packet is currently empty.
 //|
-//|     Writes all bytes from data into the same outgoing packet. The bytes from header are included
-//|     before data when the pending packet is currently empty.
+//|         This does not block until the data is sent. It only blocks until the data is pending.
 //|
-//|     This does not block until the data is sent. It only blocks until the data is pending.
-//|
-//|     :return: number of bytes written. May include header bytes when packet is empty.
-//|     :rtype: int
+//|         :return: number of bytes written. May include header bytes when packet is empty.
+//|         :rtype: int"""
+//|         ...
 //|
 // TODO: Add a kwarg `merge=False` to dictate whether subsequent writes are merged into a pending
 // one.
@@ -170,10 +169,9 @@ STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_packet_buffer_write_obj, 1, bleio_packet_buffer_write);
 
-//|   .. method:: deinit()
-//|
-//|     Disable permanently.
-//|
+//|     def deinit(self) -> Any:
+//|         """Disable permanently."""
+//|         ...
 STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_bleio_packet_buffer_deinit(self);
@@ -181,15 +179,13 @@ STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_buffer_deinit);
 
-//|   .. attribute:: packet_size
-//|
-//|     `packet_size` is the same as `incoming_packet_length`.
+//|     packet_size: int = ...
+//|     """`packet_size` is the same as `incoming_packet_length`.
 //|     The name `packet_size` is deprecated and
-//|     will be removed in CircuitPython 6.0.0.
+//|     will be removed in CircuitPython 6.0.0."""
 //|
-//|   .. attribute:: incoming_packet_length
-//|
-//|     Maximum length in bytes of a packet we are reading.
+//|     incoming_packet_length: Any = ...
+//|     """Maximum length in bytes of a packet we are reading."""
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -209,9 +205,8 @@ const mp_obj_property_t bleio_packet_buffer_incoming_packet_length_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: outgoing_packet_length
-//|
-//|     Maximum length in bytes of a packet we are writing.
+//|     outgoing_packet_length: int = ...
+//|     """Maximum length in bytes of a packet we are writing."""
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in) {
     bleio_packet_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);

@@ -33,18 +33,14 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: microcontroller
+//| class Pin:
+//|     """Identifies an IO pin on the microcontroller."""
 //|
-//| :class:`Pin` --- Pin reference
-//| ------------------------------------------
-//|
-//| Identifies an IO pin on the microcontroller.
-//|
-//| .. class:: Pin()
-//|
-//|    Identifies an IO pin on the microcontroller. They are fixed by the
-//|    hardware so they cannot be constructed on demand. Instead, use
-//|    `board` or `microcontroller.pin` to reference the desired pin.
+//|     def __init__(self, ):
+//|         """Identifies an IO pin on the microcontroller. They are fixed by the
+//|         hardware so they cannot be constructed on demand. Instead, use
+//|         `board` or `microcontroller.pin` to reference the desired pin."""
+//|         ...
 //|
 
 static void get_pin_name(const mcu_pin_obj_t *self, qstr* package, qstr* module, qstr* name) {

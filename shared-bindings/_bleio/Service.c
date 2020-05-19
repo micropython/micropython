@@ -32,25 +32,21 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-//| .. currentmodule:: _bleio
+//| class Service:
+//|     """Stores information about a BLE service and its characteristics."""
 //|
-//| :class:`Service` -- BLE GATT Service
-//| =========================================================
+//|     def __init__(self, uuid: UUID, *, secondary: bool = False):
+//|         """Create a new Service identified by the specified UUID. It can be accessed by all
+//|         connections. This is known as a Service server. Client Service objects are created via
+//|         `Connection.discover_remote_services`.
 //|
-//| Stores information about a BLE service and its characteristics.
+//|         To mark the Service as secondary, pass `True` as :py:data:`secondary`.
 //|
-//| .. class:: Service(uuid, *, secondary=False)
+//|         :param UUID uuid: The uuid of the service
+//|         :param bool secondary: If the service is a secondary one
 //|
-//|   Create a new Service identified by the specified UUID. It can be accessed by all
-//|   connections. This is known as a Service server. Client Service objects are created via
-//|   `Connection.discover_remote_services`.
-//|
-//|   To mark the Service as secondary, pass `True` as :py:data:`secondary`.
-//|
-//|   :param UUID uuid: The uuid of the service
-//|   :param bool secondary: If the service is a secondary one
-//
-//|   :return: the new Service
+//|         :return: the new Service"""
+//|         ...
 //|
 STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_uuid, ARG_secondary };
@@ -77,10 +73,9 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(service);
 }
 
-//|   .. attribute:: characteristics
-//|
-//|     A tuple of :py:class:`Characteristic` designating the characteristics that are offered by
-//|     this service. (read-only)
+//|     characteristics: Any = ...
+//|     """A tuple of :py:class:`Characteristic` designating the characteristics that are offered by
+//|     this service. (read-only)"""
 //|
 STATIC mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -97,9 +92,8 @@ const mp_obj_property_t bleio_service_characteristics_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: remote
-//|
-//|     True if this is a service provided by a remote device. (read-only)
+//|     remote: Any = ...
+//|     """True if this is a service provided by a remote device. (read-only)"""
 //|
 STATIC mp_obj_t bleio_service_get_remote(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -115,9 +109,8 @@ const mp_obj_property_t bleio_service_remote_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: secondary
-//|
-//|     True if this is a secondary service. (read-only)
+//|     secondary: Any = ...
+//|     """True if this is a secondary service. (read-only)"""
 //|
 STATIC mp_obj_t bleio_service_get_secondary(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -133,11 +126,10 @@ const mp_obj_property_t bleio_service_secondary_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: uuid
+//|     uuid: Any = ...
+//|     """The UUID of this service. (read-only)
 //|
-//|     The UUID of this service. (read-only)
-//|
-//|     Will be ``None`` if the 128-bit UUID for this service is not known.
+//|     Will be ``None`` if the 128-bit UUID for this service is not known."""
 //|
 STATIC mp_obj_t bleio_service_get_uuid(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
