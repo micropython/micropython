@@ -7,6 +7,11 @@ consider to contribute.
 Building on Debian/Ubuntu Linux system
 ---------------------------------------
 
+Install SDL mingw port from sdl.org:
+https://www.libsdl.org/release/SDL2-devel-2.0.12-mingw.tar.gz
+
+Install mingw gcc toolchain and build:
+
     sudo apt-get install gcc-mingw-w64
     make CROSS_COMPILE=i686-w64-mingw32-
 

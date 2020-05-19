@@ -43,10 +43,11 @@
 #define MICROPY_ENABLE_FINALISER    (1)
 #define MICROPY_ENABLE_PYSTACK      (1)
 #define MICROPY_STACK_CHECK         (1)
-#define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
-#define MICROPY_MEM_STATS           (1)
+#define MICROPY_MALLOC_USES_ALLOCATED_SIZE (0)
+#define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTER       (&mp_stderr_print)
 #define MICROPY_DEBUG_PRINTERS      (1)
+#define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)
@@ -109,6 +110,7 @@
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_UBINASCII_CRC32  (1)
 #define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
@@ -118,6 +120,9 @@
 #define MICROPY_ERROR_PRINTER       (&mp_stderr_print)
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
+//use large block for GC to increase speed of allocate, but consume more memory
+#define MICROPY_BYTES_PER_GC_BLOCK (64 * BYTES_PER_WORD)
+
 
 extern const struct _mp_print_t mp_stderr_print;
 
@@ -132,6 +137,37 @@ extern const struct _mp_print_t mp_stderr_print;
 
 #define MICROPY_PORT_INIT_FUNC      init()
 #define MICROPY_PORT_DEINIT_FUNC    deinit()
+
+//LVGL binding relative
+#define MICROPY_PY_LVGL             (1)
+#define MICROPY_PY_LVGL_SDL         (1)
+#define MICROPY_PY_LVGL_LODEPNG     (1)
+
+extern const struct _mp_obj_module_t mp_module_machine;
+extern const struct _mp_obj_module_t mp_module_os;
+extern const struct _mp_obj_module_t mp_module_uos_vfs;
+extern const struct _mp_obj_module_t mp_module_lvgl;
+extern const struct _mp_obj_module_t mp_module_lvindev;
+extern const struct _mp_obj_module_t mp_module_SDL;
+extern const struct _mp_obj_module_t mp_module_lodepng;
+
+#if MICROPY_PY_LVGL
+#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
+#define MICROPY_PY_LVGL_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },
+    #if MICROPY_PY_LVGL_SDL
+    #define MICROPY_PY_LVGL_SDL_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_SDL), (mp_obj_t)&mp_module_SDL },
+    #else
+    #define MICROPY_PY_LVGL_SDL_DEF
+    #endif
+    #if MICROPY_PY_LVGL_LODEPNG
+    #define MICROPY_PY_LVGL_LODEPNG_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lodepng), (mp_obj_t)&mp_module_lodepng },
+    #else
+    #define MICROPY_PY_LVGL_LODEPNG_DEF
+    #endif
+#else
+    #define LV_ROOTS
+    #define MICROPY_PY_LVGL_DEF
+#endif
 
 // type definitions for the specific machine
 
@@ -178,13 +214,19 @@ void mp_hal_dupterm_tx_strn(const char *str, size_t len);
 
 extern const struct _mp_obj_module_t mp_module_os;
 extern const struct _mp_obj_module_t mp_module_time;
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) }, \
     { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
+    MICROPY_PY_LVGL_DEF \
+    MICROPY_PY_LVGL_SDL_DEF \
+    MICROPY_PY_LVGL_LODEPNG_DEF
 
 #if MICROPY_USE_READLINE == 1
 #define MICROPY_PORT_ROOT_POINTERS \
+    LV_ROOTS \
+    void *mp_lv_user_data; \
     char *readline_hist[50];
 #endif
 
