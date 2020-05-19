@@ -112,18 +112,21 @@ Event Handling
                 conn_handle, start_handle, end_handle, uuid = data
             elif event == _IRQ_GATTC_SERVICE_DONE:
                 # Called once service discovery is complete.
+                # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, status = data
             elif event == _IRQ_GATTC_CHARACTERISTIC_RESULT:
                 # Called for each characteristic found by gattc_discover_services().
                 conn_handle, def_handle, value_handle, properties, uuid = data
             elif event == _IRQ_GATTC_CHARACTERISTIC_DONE:
                 # Called once service discovery is complete.
+                # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, status = data
             elif event == _IRQ_GATTC_DESCRIPTOR_RESULT:
                 # Called for each descriptor found by gattc_discover_descriptors().
                 conn_handle, dsc_handle, uuid = data
             elif event == _IRQ_GATTC_DESCRIPTOR_DONE:
                 # Called once service discovery is complete.
+                # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, status = data
             elif event == _IRQ_GATTC_READ_RESULT:
                 # A gattc_read() has completed.
@@ -131,10 +134,12 @@ Event Handling
             elif event == _IRQ_GATTC_READ_DONE:
                 # A gattc_read() has completed.
                 # Note: The value_handle will be zero on btstack (but present on NimBLE).
+                # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
             elif event == _IRQ_GATTC_WRITE_DONE:
                 # A gattc_write() has completed.
                 # Note: The value_handle will be zero on btstack (but present on NimBLE).
+                # Note: Status will be zero on success, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
             elif event == _IRQ_GATTC_NOTIFY:
                 # A peripheral has sent a notify request.
