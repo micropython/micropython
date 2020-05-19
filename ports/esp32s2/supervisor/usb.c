@@ -59,7 +59,7 @@ void usb_device_task(void* param)
         tud_task();
         tud_cdc_write_flush();
     }
-    vTaskDelay(10);
+    vTaskDelay(1);
   }
 }
 
