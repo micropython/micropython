@@ -34,21 +34,19 @@ bool neopixel_in_use;
 
 #define GPIO_PORT_COUNT (IOMUXC_SW_PAD_CTL_PAD_COUNT / 32 + 1)
 
-// GPIO ports are 32 pins wide
-STATIC uint32_t claimed_pins[GPIO_PORT_COUNT]; //remove?
-STATIC uint32_t never_reset_pins[GPIO_PORT_COUNT];
+STATIC bool claimed_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
+STATIC bool never_reset_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 
 // There are two numbering systems used here:
 // IOMUXC index, used for iterating through pins and accessing reset information, 
 // and GPIO port and number, used to store claimed and reset tagging. The two number 
 // systems are not related and one cannot determine the other without a pin object
 void reset_all_pins(void) {
-    for (uint8_t i = 0; i < GPIO_PORT_COUNT; i++) {
+    for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
         claimed_pins[i] = never_reset_pins[i];
     }
     for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
-        if(!(never_reset_pins[((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->port] 
-            & (1 << ((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->number))) {
+        if(!never_reset_pins[i]) {
             IOMUXC->SW_MUX_CTL_PAD[i] = ((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->mux_reset;
             IOMUXC->SW_PAD_CTL_PAD[i] = ((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->pad_reset;
         }
@@ -59,15 +57,11 @@ void reset_all_pins(void) {
     #endif
 }
 
-void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
-    never_reset_pins[pin_port] |= 1 << pin_number;
-}
-
 // Since i.MX pins need extra register and reset information to reset properly, 
 // resetting pins by number alone has been removed. 
 void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
-    never_reset_pins[pin->port] &= ~(1 << pin->number);
-    claimed_pins[pin->port] &= ~(1 << pin->number);
+    never_reset_pins[pin->mux_idx] = false;
+    claimed_pins[pin->mux_idx] = false;
     *(uint32_t*)pin->mux_reg = pin->mux_reset;
     *(uint32_t*)pin->cfg_reg = pin->pad_reset;
 
@@ -81,17 +75,7 @@ void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
-    never_reset_pin_number(pin->port, pin->number);
-}
-
-void claim_pin(const mcu_pin_obj_t* pin) {
-    claimed_pins[pin->port] |= 1 << pin->number;
-
-    #ifdef MICROPY_HW_NEOPIXEL
-    if (pin == MICROPY_HW_NEOPIXEL) {
-        neopixel_in_use = true;
-    }
-    #endif
+    never_reset_pins[pin->mux_idx] = true;
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
@@ -101,22 +85,27 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     }
     #endif
 
-    return !(claimed_pins[pin->port] & 1<<pin->number);
+    return !claimed_pins[pin->mux_idx];
 }
 
 uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t* pin) {
     return pin->mux_idx; // returns IOMUXC to align with pin table
-    // Note: IOMUXC "numbers" do not align cleanly with GPIO values
 }
 
 void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
-    claim_pin(pin);
+    claimed_pins[pin->mux_idx] = true;
+
+    #ifdef MICROPY_HW_NEOPIXEL
+    if (pin == MICROPY_HW_NEOPIXEL) {
+        neopixel_in_use = true;
+    }
+    #endif
+}
+
+void claim_pin(const mcu_pin_obj_t* pin) {
+    common_hal_mcu_pin_claim(pin);
 }
 
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
     common_hal_reset_pin((mcu_pin_obj_t*)(mcu_pin_globals.map.table[pin_no].value));
 }
-
-// TODO: replace use of GPIO pointers in pin struct with this system?
-// GPIO_TypeDef * pin_port(uint8_t pin_port) {}
-// uint16_t pin_mask(uint8_t pin_number) {}

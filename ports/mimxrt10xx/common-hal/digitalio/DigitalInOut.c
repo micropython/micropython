@@ -74,7 +74,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
 
 void common_hal_digitalio_digitalinout_never_reset(
         digitalio_digitalinout_obj_t *self) {
-    never_reset_pin_number(self->pin->port, self->pin->number);
+    common_hal_never_reset_pin(self->pin);
 }
 
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t* self) {

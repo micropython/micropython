@@ -48,8 +48,7 @@ extern const mp_obj_type_t mcu_pin_type;
 typedef struct {
     mp_obj_base_t base;
     GPIO_Type *gpio;
-    uint8_t port:3; //0 start index
-    uint8_t number:5;
+    uint8_t number;
     uint16_t mux_idx;
     uint32_t mux_reg;
     uint32_t cfg_reg;
@@ -59,11 +58,10 @@ typedef struct {
     uint32_t pad_reset;
 } mcu_pin_obj_t;
 
-#define PIN(p_gpio, p_port, p_number, p_enum, p_adc, p_adc_channel, p_mux_reset, p_pad_reset) \
+#define PIN(p_gpio, p_number, p_enum, p_adc, p_adc_channel, p_mux_reset, p_pad_reset) \
 { \
     { &mcu_pin_type }, \
     .gpio = p_gpio, \
-    .port = p_port, \
     .number = p_number, \
     .mux_idx = kIOMUXC_SW_MUX_CTL_PAD_ ## p_enum, \
     .mux_reg = (uint32_t)&(IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_ ## p_enum]), \
