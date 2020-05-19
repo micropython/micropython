@@ -600,14 +600,13 @@ STATIC bool advertising_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 
     switch (ble_evt->header.evt_id) {
         case BLE_GAP_EVT_ADV_SET_TERMINATED:
-            mp_printf(&mp_plat_print, "Advertising set terminated - %d advertising events were completed - reason: %d\n", ble_evt->evt.gap_evt.params.adv_set_terminated.num_completed_adv_events, ble_evt->evt.gap_evt.params.adv_set_terminated.reason);
             common_hal_bleio_adapter_stop_advertising(self);
             ble_drv_remove_event_handler(advertising_on_ble_evt, self_in);
             break;
 
         default:
             // For debugging.
-            mp_printf(&mp_plat_print, "Unhandled Advertising etvent: 0x%04x\n", ble_evt->header.evt_id);
+            // mp_printf(&mp_plat_print, "Unhandled advertising event: 0x%04x\n", ble_evt->header.evt_id);
             return false;
             break;
     }
@@ -722,7 +721,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     if (!timeout) {
         if (anonymous) {
             // The Nordic macro is in units of 10ms. Convert to seconds.
-            uint32_t adv_timeout_max_secs = BLE_GAP_ADV_TIMEOUT_LIMITED_MAX / 100;
+            uint32_t adv_timeout_max_secs = UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS);
             uint32_t rotate_timeout_max_secs = BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S;
             timeout = MIN(adv_timeout_max_secs, rotate_timeout_max_secs);
         }
@@ -732,7 +731,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     } else {
         if (SEC_TO_UNITS(timeout, UNIT_10_MS) > BLE_GAP_ADV_TIMEOUT_LIMITED_MAX) {
             mp_raise_bleio_BluetoothError(translate("Timeout is too long: Maximum timeout length is %d seconds"),
-                                        BLE_GAP_ADV_TIMEOUT_LIMITED_MAX / 100);
+                                        UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS));
         }
     }
 
