@@ -24,7 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/rgb_led_status.h"
 
@@ -47,12 +47,10 @@ void reset_all_pins(void) {
         claimed_pins[i] = never_reset_pins[i];
     }
     for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
-        // mp_printf(&mp_plat_print, "CTL MUX i=%d:%x\n",i,IOMUXC->SW_MUX_CTL_PAD[i]);
-        // mp_printf(&mp_plat_print, "CTL PAD i=%d:%x\n",i,IOMUXC->SW_PAD_CTL_PAD[i]);
-        if(!(never_reset_pins[mcu_pin_list[i].port] & (1 << mcu_pin_list[i].number))) {
-            // mp_printf(&mp_plat_print, "SUCCESS\n");
-            IOMUXC->SW_MUX_CTL_PAD[i] = mcu_pin_list[i].mux_reset;
-            IOMUXC->SW_PAD_CTL_PAD[i] = mcu_pin_list[i].pad_reset;
+        if(!(never_reset_pins[((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->port] 
+            & (1 << ((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->number))) {
+            IOMUXC->SW_MUX_CTL_PAD[i] = ((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->mux_reset;
+            IOMUXC->SW_PAD_CTL_PAD[i] = ((mcu_pin_obj_t*)(mcu_pin_globals.map.table[i].value))->pad_reset;
         }
     }
 
@@ -116,7 +114,7 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
 }
 
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
-    common_hal_reset_pin(&mcu_pin_list[pin_no]);
+    common_hal_reset_pin((mcu_pin_obj_t*)(mcu_pin_globals.map.table[pin_no].value));
 }
 
 // TODO: replace use of GPIO pointers in pin struct with this system?

@@ -82,17 +82,15 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  CFLAGS += -ggdb
   # You may want to disable -flto if it interferes with debugging.
   # CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
   CFLAGS += -fno-inline -fno-ipa-sra
 else
-  CFLAGS += -ggdb
   #CFLAGS += -flto -flto-partition=none
 endif
 
-CFLAGS += $(INC) -Wall -Wno-cast-align -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -ggdb -Wall -Wno-cast-align -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
 # TODO: add these when -Werror is applied
 # Disable some warnings, as do most ports. NXP SDK causes undef, tinyusb causes cast-align
