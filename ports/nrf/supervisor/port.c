@@ -194,6 +194,10 @@ uint32_t *port_heap_get_top(void) {
     return port_stack_get_top();
 }
 
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
+}
+
 uint32_t *port_stack_get_limit(void) {
     return &_euninitialized;
 }

@@ -91,6 +91,10 @@ void reset_to_bootloader(void) {
 void reset_cpu(void) {
 }
 
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
+}
+
 uint32_t *port_heap_get_bottom(void) {
     return port_stack_get_limit();
 }

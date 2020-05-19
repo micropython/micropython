@@ -29,6 +29,7 @@
 
 #include "py/mpconfig.h"
 
+#include "supervisor/memory.h"
 #include "supervisor/shared/safe_mode.h"
 
 // Provided by the linker;
@@ -59,6 +60,8 @@ uint32_t *port_stack_get_limit(void);
 
 // Get stack top address
 uint32_t *port_stack_get_top(void);
+
+supervisor_allocation* port_fixed_stack(void);
 
 // Get heap bottom address
 uint32_t *port_heap_get_bottom(void);

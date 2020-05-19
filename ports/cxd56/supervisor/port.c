@@ -76,6 +76,10 @@ void reset_port(void) {
 void reset_to_bootloader(void) {
 }
 
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
+}
+
 uint32_t *port_stack_get_limit(void) {
     struct tcb_s *rtcb = this_task();
 

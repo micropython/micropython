@@ -140,3 +140,6 @@
 [submodule "frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center"]
 	path = frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center
 	url = https://github.com/adafruit/Adafruit_CircuitPython_BLE_Apple_Notification_Center
+[submodule "ports/esp32s2/esp-idf"]
+	path = ports/esp32s2/esp-idf
+	url = https://github.com/tannewt/esp-idf.git
