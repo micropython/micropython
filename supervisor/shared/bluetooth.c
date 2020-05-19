@@ -74,6 +74,7 @@ void supervisor_bluetooth_start_advertising(void) {
     // TODO: switch to Adafruit short UUID for the advertisement and add manufacturing data to distinguish ourselves from arduino.
     _common_hal_bleio_adapter_start_advertising(&common_hal_bleio_adapter_obj,
                                                    true,
+                                                   false, 0,
                                                    1.0,
                                                    circuitpython_advertising_data,
                                                    sizeof(circuitpython_advertising_data),

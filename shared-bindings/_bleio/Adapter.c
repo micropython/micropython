@@ -135,27 +135,34 @@ const mp_obj_property_t bleio_adapter_name_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     def start_advertising(self, data: buf, *, scan_response: buf = None, connectable: bool = True, interval: float = 0.1) -> Any:
+//|     def start_advertising(self, data: buf, *, scan_response: buf = None, connectable: bool = True, anonymous: bool = False, timeout: int = 0, interval: float = 0.1) -> Any:
 //|         """Starts advertising until `stop_advertising` is called or if connectable, another device
 //|         connects to us.
 //|
 //|         .. warning: If data is longer than 31 bytes, then this will automatically advertise as an
 //|            extended advertisement that older BLE 4.x clients won't be able to scan for.
 //|
+//|         .. note: If you set ``anonymous=True``, then a timeout must be specified. If no timeout is
+//|            specified, then the maximum allowed timeout will be selected automatically.
+//|
 //|         :param buf data: advertising data packet bytes
 //|         :param buf scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
 //|         :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
+//|         :param bool anonymous:  If `True` then this device's MAC address is randomized before advertising.
+//|         :param int timeout:  If set, we will only advertise for this many seconds.
 //|         :param float interval:  advertising interval, in seconds"""
 //|         ...
 //|
 STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_data, ARG_scan_response, ARG_connectable, ARG_interval };
+    enum { ARG_data, ARG_scan_response, ARG_connectable, ARG_anonymous, ARG_timeout, ARG_interval };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_scan_response, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_connectable, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
+        { MP_QSTR_anonymous, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
@@ -182,11 +189,13 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
     }
 
     bool connectable = args[ARG_connectable].u_bool;
+    bool anonymous = args[ARG_anonymous].u_bool;
+    uint32_t timeout = args[ARG_timeout].u_int;
     if (data_bufinfo.len > 31 && connectable && scan_response_bufinfo.len > 0) {
         mp_raise_bleio_BluetoothError(translate("Cannot have scan responses for extended, connectable advertisements."));
     }
 
-    common_hal_bleio_adapter_start_advertising(self, connectable, interval,
+    common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
                                                &data_bufinfo, &scan_response_bufinfo);
 
     return mp_const_none;
@@ -292,6 +301,22 @@ STATIC mp_obj_t bleio_adapter_stop_scan(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_scan_obj, bleio_adapter_stop_scan);
 
+//|     advertising: Any = ...
+//|     """True when the adapter is currently advertising. (read-only)"""
+//|
+STATIC mp_obj_t bleio_adapter_get_advertising(mp_obj_t self) {
+    return mp_obj_new_bool(common_hal_bleio_adapter_get_advertising(self));
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_advertising_obj, bleio_adapter_get_advertising);
+
+const mp_obj_property_t bleio_adapter_advertising_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&bleio_adapter_get_advertising_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
 //|     connected: Any = ...
 //|     """True when the adapter is connected to another device regardless of who initiated the
 //|     connection. (read-only)"""
@@ -375,6 +400,7 @@ STATIC const mp_rom_map_elem_t bleio_adapter_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_start_advertising), MP_ROM_PTR(&bleio_adapter_start_advertising_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_advertising),  MP_ROM_PTR(&bleio_adapter_stop_advertising_obj) },
+    { MP_ROM_QSTR(MP_QSTR_advertising),   MP_ROM_PTR(&bleio_adapter_advertising_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_start_scan), MP_ROM_PTR(&bleio_adapter_start_scan_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_scan),  MP_ROM_PTR(&bleio_adapter_stop_scan_obj) },
