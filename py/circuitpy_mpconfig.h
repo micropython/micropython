@@ -623,6 +623,7 @@ extern const struct _mp_obj_module_t ustack_module;
 #else
 #define ULAB_MODULE
 #endif
+
 #if MICROPY_PY_URE
 #define RE_MODULE { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
 #else

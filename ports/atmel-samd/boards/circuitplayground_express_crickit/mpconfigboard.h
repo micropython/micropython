@@ -32,8 +32,6 @@
 // Increase stack size slightly due to CPX library import nesting
 #define CIRCUITPY_DEFAULT_STACK_SIZE  (4760) // divisible by 8
 
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS (0)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PB03)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB02)
 
