@@ -138,7 +138,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
                                     args[ARG_baudrate].u_int, bits, parity, stop, timeout,
-                                    args[ARG_receiver_buffer_size].u_int);
+                                    args[ARG_receiver_buffer_size].u_int, NULL, false);
     return (mp_obj_t)self;
 }
 

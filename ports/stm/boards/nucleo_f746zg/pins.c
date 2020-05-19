@@ -58,8 +58,9 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 { MP_ROM_QSTR(MP_QSTR_USB_ID), MP_ROM_PTR(&pin_PA10) },
 { MP_ROM_QSTR(MP_QSTR_USB_DM), MP_ROM_PTR(&pin_PA11) },
 { MP_ROM_QSTR(MP_QSTR_USB_DP), MP_ROM_PTR(&pin_PA12) },
-{ MP_ROM_QSTR(MP_QSTR_VCP_TX), MP_ROM_PTR(&pin_PD08) },
-{ MP_ROM_QSTR(MP_QSTR_VCP_RX), MP_ROM_PTR(&pin_PD09) },
+// As we use these for the debug_console, we won't enable them here.
+// { MP_ROM_QSTR(MP_QSTR_VCP_TX), MP_ROM_PTR(&pin_PD08) },
+// { MP_ROM_QSTR(MP_QSTR_VCP_RX), MP_ROM_PTR(&pin_PD09) },
 { MP_ROM_QSTR(MP_QSTR_UART2_TX), MP_ROM_PTR(&pin_PD05) },
 { MP_ROM_QSTR(MP_QSTR_UART2_RX), MP_ROM_PTR(&pin_PD06) },
 { MP_ROM_QSTR(MP_QSTR_UART2_RTS), MP_ROM_PTR(&pin_PD04) },
