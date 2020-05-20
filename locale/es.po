@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-19 15:01+0800\n"
+"POT-Creation-Date: 2020-05-20 13:28-0400\n"
 "PO-Revision-Date: 2020-05-17 20:56+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: \n"
@@ -374,6 +374,10 @@ msgstr "Bit clock y word select deben compartir una unidad de reloj"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "Bits depth debe ser múltiplo de 8."
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -1432,7 +1436,7 @@ msgstr "El tamaño de la pila debe ser de al menos 256"
 msgid "Stream missing readinto() or write() method."
 msgstr "A Stream le falta el método readinto() o write()."
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr ""
 
@@ -1534,6 +1538,10 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "UART peripheral is already in use"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
@@ -3104,8 +3112,7 @@ msgstr "tupla/lista tiene una longitud incorrecta"
 msgid "tuple/list required on RHS"
 msgstr "tuple/lista se require en RHS"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "Ambos tx y rx no pueden ser None"

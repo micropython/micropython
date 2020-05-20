@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-19 15:01+0800\n"
+"POT-Creation-Date: 2020-05-20 13:28-0400\n"
 "PO-Revision-Date: 2020-05-17 20:56+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
@@ -385,6 +385,10 @@ msgstr "'bit clock' et 'word select' doivent partager une horloge"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "La profondeur de bit doit être un multiple de 8."
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -1458,7 +1462,7 @@ msgstr "La pile doit être au moins de 256"
 msgid "Stream missing readinto() or write() method."
 msgstr "Il manque une méthode readinto() ou write() au flux."
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Fournissez au moins une broche UART"
 
@@ -1571,6 +1575,10 @@ msgstr "Erreur d'initialisation UART"
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
 msgstr "Erreur de réinitialisation UART"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "UART peripheral is already in use"
+msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -3157,8 +3165,7 @@ msgstr "tuple/liste a une mauvaise longueur"
 msgid "tuple/list required on RHS"
 msgstr "tuple ou liste requis en partie droite"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx et rx ne peuvent être 'None' tous les deux"
