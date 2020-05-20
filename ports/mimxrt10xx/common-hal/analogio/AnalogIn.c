@@ -26,6 +26,7 @@
  */
 
 #include "common-hal/analogio/AnalogIn.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include <string.h>
 
@@ -65,7 +66,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
     if (common_hal_analogio_analogin_deinited(self)) {
         return;
     }
-    reset_pin_number(self->pin->number);
+    common_hal_reset_pin(self->pin);
     self->pin = NULL;
 }
 
