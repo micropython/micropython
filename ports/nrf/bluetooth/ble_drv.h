@@ -41,6 +41,7 @@
 
 #define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
 #define SEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000000) / (RESOLUTION))
+#define UNITS_TO_SEC(TIME, RESOLUTION) (((TIME) * (RESOLUTION)) / 1000000)
 // 0.625 msecs (625 usecs)
 #define ADV_INTERVAL_UNIT_FLOAT_SECS (0.000625)
 // Microseconds is the base unit. The macros above know that.

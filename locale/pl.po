@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-20 08:55-0700\n"
+"POT-Creation-Date: 2020-05-20 10:48-0700\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -1481,6 +1481,11 @@ msgstr ""
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "Szerokość bitmapy musi być wielokrotnością szerokości kafelka"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+#, c-format
+msgid "Timeout is too long: Maximum timeout length is %d seconds"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."

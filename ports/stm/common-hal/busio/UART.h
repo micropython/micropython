@@ -52,6 +52,8 @@ typedef struct {
 
     uint32_t baudrate;
     uint32_t timeout_ms;
+
+    bool sigint_enabled;
 } busio_uart_obj_t;
 
 void uart_reset(void);

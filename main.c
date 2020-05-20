@@ -436,6 +436,9 @@ int __attribute__((used)) main(void) {
     // displays init after filesystem, since they could share the flash SPI
     board_init();
 
+    // Start the debug serial
+    serial_early_init();
+
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
     reset_board();

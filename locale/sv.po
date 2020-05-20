@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-20 08:55-0700\n"
+"POT-Creation-Date: 2020-05-20 10:48-0700\n"
 "PO-Revision-Date: 2020-05-17 20:56+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1515,6 +1515,11 @@ msgstr "Tile-värde utanför intervall"
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "Tile-bredd måste vara jämnt delbar med bredd på bitmap"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+#, c-format
+msgid "Timeout is too long: Maximum timeout length is %d seconds"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
