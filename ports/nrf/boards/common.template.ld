@@ -70,7 +70,6 @@ SECTIONS
         _etext = .;        /* define a global symbol at end of code */
     } >FLASH_FIRMWARE
 
-    /*
     .ARM.extab :
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
@@ -82,7 +81,6 @@ SECTIONS
         *(.ARM.exidx*)
         __exidx_end = .;
     } >FLASH_FIRMWARE
-    */
 
     /* used by the startup to initialize data */
     _sidata = .;
