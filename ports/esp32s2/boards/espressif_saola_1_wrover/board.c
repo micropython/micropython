@@ -28,6 +28,13 @@
 #include "mpconfigboard.h"
 
 void board_init(void) {
+    // USB
+    never_reset_pin(&pin_GPIO19);
+    never_reset_pin(&pin_GPIO20);
+
+    // Debug UART
+    never_reset_pin(&pin_GPIO43);
+    never_reset_pin(&pin_GPIO44);
 }
 
 bool board_requests_safe_mode(void) {

@@ -29,18 +29,51 @@
 
 #include "py/mphal.h"
 
-// Mark pin as free and return it to a quiescent state.
-void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
+#include "esp-idf/components/driver/include/driver/gpio.h"
+#include "esp-idf/components/soc/include/hal/gpio_hal.h"
+
+STATIC uint32_t never_reset_pins[2];
+STATIC uint32_t in_use[2];
+
+void never_reset_pin_number(gpio_num_t pin_number) {
+    never_reset_pins[pin_number / 32] |= 1 << pin_number % 32;
 }
 
+void never_reset_pin(const mcu_pin_obj_t* pin) {
+    never_reset_pin_number(pin->number);
+}
+
+// Mark pin as free and return it to a quiescent state.
+void reset_pin_number(gpio_num_t pin_number) {
+    never_reset_pins[pin_number / 32] &= ~(1 << pin_number % 32);
+    in_use[pin_number / 32] &= ~(1 << pin_number % 32);
+}
+
+void reset_all_pins(void) {
+    for (uint8_t i = 0; i < GPIO_PIN_COUNT; i++) {
+        uint32_t iomux_address = GPIO_PIN_MUX_REG[i];
+        if (iomux_address == 0 ||
+            (never_reset_pins[i / 32] & (1 << i % 32)) != 0) {
+            continue;
+        }
+        gpio_set_direction(i, GPIO_MODE_DEF_INPUT);
+        gpio_pullup_dis(i);
+        gpio_pulldown_dis(i);
+    }
+    in_use[0] = 0;
+    in_use[1] = 0;
+}
 
 void claim_pin(const mcu_pin_obj_t* pin) {
+    in_use[pin->number / 32] |= (1 << pin->number % 32);
 }
 
-bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
-    return true;
+bool pin_number_is_free(gpio_num_t pin_number) {
+    uint8_t offset = pin_number / 32;
+    uint8_t mask = 1 << pin_number % 32;
+    return (never_reset_pins[offset] & mask) == 0 && (in_use[offset] & mask) == 0;
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
-    return pin_number_is_free(0, pin->number);
+    return pin_number_is_free(pin->number);
 }
