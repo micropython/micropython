@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-18 13:32-0700\n"
+"POT-Creation-Date: 2020-05-20 08:55-0700\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1256,6 +1256,10 @@ msgstr "Walang pahintulot"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Ang pin ay walang kakayahan sa ADC"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
