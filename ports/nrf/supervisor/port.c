@@ -161,6 +161,10 @@ void reset_port(void) {
     pulsein_reset();
 #endif
 
+#if CIRCUITPY_RTC
+    rtc_reset();
+#endif
+
     timers_reset();
 
 #if CIRCUITPY_BLEIO
