@@ -39,24 +39,31 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/safe_mode.h"
 
+#include "freertos/FreeRTOS.h"
+
 void common_hal_mcu_delay_us(uint32_t delay) {
 
 }
 
 volatile uint32_t nesting_count = 0;
+static portMUX_TYPE cp_mutex = portMUX_INITIALIZER_UNLOCKED;
 
 void common_hal_mcu_disable_interrupts(void) {
+    if (nesting_count == 0) {
+        portENTER_CRITICAL(&cp_mutex);
+    }
     nesting_count++;
 }
 
 void common_hal_mcu_enable_interrupts(void) {
     if (nesting_count == 0) {
-
+        // Maybe log here because it's very bad.
     }
     nesting_count--;
     if (nesting_count > 0) {
         return;
     }
+    portEXIT_CRITICAL(&cp_mutex);
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
