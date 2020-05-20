@@ -630,6 +630,13 @@ extern const struct _mp_obj_module_t ustack_module;
 #define RE_MODULE
 #endif
 
+#if CIRCUITPY_WDT
+extern const struct _mp_obj_module_t wdt_module;
+#define WDT_MODULE             { MP_ROM_QSTR(MP_QSTR_wdt), MP_ROM_PTR(&wdt_module) },
+#else
+#define WDT_MODULE
+#endif
+
 // Define certain native modules with weak links so they can be replaced with Python
 // implementations. This list may grow over time.
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
@@ -700,6 +707,7 @@ extern const struct _mp_obj_module_t ustack_module;
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
+    WDT_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.

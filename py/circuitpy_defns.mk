@@ -241,6 +241,9 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
+ifeq ($(CIRCUITPY_WDT),1)
+SRC_PATTERNS += wdt/%
+endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
@@ -301,7 +304,9 @@ SRC_COMMON_HAL_ALL = \
 	rtc/RTC.c \
 	rtc/__init__.c \
 	supervisor/Runtime.c \
-	supervisor/__init__.c
+	supervisor/__init__.c \
+	wdt/__init__.c \
+	wdt/WDT.c \
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
