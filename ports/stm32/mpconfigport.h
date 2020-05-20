@@ -377,12 +377,6 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 #if MICROPY_PY_THREAD
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-    } while (0);
-
 #define MICROPY_EVENT_WAIT_ATOMIC \
     do { \
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION(); \
