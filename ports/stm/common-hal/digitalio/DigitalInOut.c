@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-// The HAL is sparse on obtaining register information, so we use the LLs here. 
+// The HAL is sparse on obtaining register information, so we use the LLs here.
 #if (CPY_STM32H7)
 #include "stm32h7xx_ll_gpio.h"
 #elif (CPY_STM32F7)
@@ -85,12 +85,13 @@ void common_hal_digitalio_digitalinout_switch_to_input(
     common_hal_digitalio_digitalinout_set_pull(self, pull);
 }
 
-void common_hal_digitalio_digitalinout_switch_to_output(
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t *self, bool value,
         digitalio_drive_mode_t drive_mode) {
 
     common_hal_digitalio_digitalinout_set_drive_mode(self, drive_mode);
     common_hal_digitalio_digitalinout_set_value(self, value);
+    return DIGITALINOUT_OK;
 }
 
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
@@ -112,7 +113,7 @@ bool common_hal_digitalio_digitalinout_get_value(
         : LL_GPIO_IsOutputPinSet(pin_port(self->pin->port), pin_mask(self->pin->number));
 }
 
-void common_hal_digitalio_digitalinout_set_drive_mode(
+digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
         digitalio_digitalinout_obj_t *self,
         digitalio_drive_mode_t drive_mode) {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -122,6 +123,7 @@ void common_hal_digitalio_digitalinout_set_drive_mode(
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     HAL_GPIO_Init(pin_port(self->pin->port), &GPIO_InitStruct);
+    return DIGITALINOUT_OK;
 }
 
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
