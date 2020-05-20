@@ -203,8 +203,7 @@ int mp_hal_stdin_rx_chr(void) {
         read_ok = ReadFile(std_in, buf, 1, &num_read, NULL);
         if (!read_ok || !num_read) {
             continue;
-        }
-        else {
+        } else {
             return inchar;
         }
     }
