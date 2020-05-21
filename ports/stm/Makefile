@@ -154,43 +154,43 @@ CFLAGS += \
 	-DCFG_TUD_MIDI_TX_BUFSIZE=128
 
 SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
+	hal.c \
 	hal_adc.c \
 	hal_adc_ex.c \
+	hal_cortex.c \
 	hal_dac.c \
 	hal_dac_ex.c \
+	hal_dma.c \
+	hal_dma_ex.c \
+	hal_exti.c \
+	hal_flash.c \
+	hal_flash_ex.c \
+	hal_gpio.c \
 	hal_i2c.c \
 	hal_i2c_ex.c \
+	hal_pwr.c \
+	hal_pwr_ex.c \
 	hal_qspi.c \
+	hal_rcc.c \
+	hal_rcc_ex.c \
 	hal_rng.c \
 	hal_rtc.c \
 	hal_rtc_ex.c \
+	hal_sd.c \
 	hal_spi.c \
 	hal_tim.c \
 	hal_tim_ex.c \
 	hal_uart.c \
 	hal_usart.c \
-	hal_rcc.c \
-	hal_rcc_ex.c \
-	hal_flash.c \
-	hal_flash_ex.c \
-	hal_gpio.c \
-	hal_dma_ex.c \
-	hal_dma.c \
-	hal_pwr.c \
-	hal_pwr_ex.c \
-	hal_cortex.c \
-	hal.c \
-	hal_exti.c \
-	hal_sd.c \
-	ll_gpio.c \
 	ll_adc.c \
-	ll_i2c.c \
 	ll_dma.c \
+	ll_exti.c \
+	ll_gpio.c \
+	ll_i2c.c \
+	ll_rcc.c \
 	ll_sdmmc.c \
 	ll_usart.c \
-	ll_rcc.c \
 	ll_utils.c \
-	ll_exti.c \
 )
 
 # Need this to avoid UART linker problems. TODO: rewrite to use registered callbacks.
