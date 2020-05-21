@@ -311,7 +311,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             }
             mp_obj_tuple_t* t = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
             for (uint i = 0; i < len; i++) {
-                t->items[i] = common_hal__pixelbuf_pixelbuf_get_pixel(self_in, i * slice.step);
+                t->items[i] = common_hal__pixelbuf_pixelbuf_get_pixel(self_in, i * slice.step + slice.start);
             }
             return MP_OBJ_FROM_PTR(t);
         } else { // Set

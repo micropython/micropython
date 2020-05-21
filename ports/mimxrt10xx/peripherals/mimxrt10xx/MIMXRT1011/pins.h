@@ -74,4 +74,6 @@ extern const mcu_pin_obj_t pin_GPIO_AD_12;
 extern const mcu_pin_obj_t pin_GPIO_AD_13;
 extern const mcu_pin_obj_t pin_GPIO_AD_14;
 
+extern const mcu_pin_obj_t mcu_pin_list[IOMUXC_SW_PAD_CTL_PAD_COUNT];
+
 #endif // MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_MIMXRT1011_PINS_H
