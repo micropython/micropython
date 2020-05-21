@@ -27,36 +27,40 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include "shared-bindings/wdt/__init__.h"
-#include "shared-bindings/wdt/WDT.h"
+#include "shared-bindings/watchdog/__init__.h"
+// #include "shared-bindings/wdt/WDT.h"
 
 //| """Watchdog Timer
 //|
-//| The `wdt` module provides support for a Watchdog Timer. This timer will reset the device
+//| The `watchdog` module provides support for a Watchdog Timer. This timer will reset the device
 //| if it hasn't been fed after a specified amount of time. This is useful to ensure the board
-//| has not crashed or locked up. You can enable thw watchdog timer using :class:`wdt.WDT`.
-//| Note that the watchdog timer cannot be disabled once it has been enabled.
+//| has not crashed or locked up. You can enable the watchdog timer using :class:`wdt.WDT`.
+//| Note that on some platforms the watchdog timer cannot be disabled once it has been enabled.
 //|
-//| The WDT is used to restart the system when the application crashes and ends
+//| The WatchDogTimer is used to restart the system when the application crashes and ends
 //| up into a non recoverable state. Once started it cannot be stopped or
 //| reconfigured in any way. After enabling, the application must "feed" the
 //| watchdog periodically to prevent it from expiring and resetting the system.
 //|
+//| Note that this module can't be imported and used directly. The sole
+//| instance of :class:`WatchDogTimer` is available at
+//| :attr:`microcontroller.watchdog`."""
+//|
 //| Example usage::
 //|
-//|     from machine import WDT
-//|     wdt = WDT(timeout=2000)  # enable it with a timeout of 2s
+//|     from microcontroller.watchdog import WatchDogTimer
+//|     wdt = WatchDogTimer(timeout=2.5)  # enable it with a timeout of 2.5 seconds
 //|     wdt.feed()"""
 //|
 
-STATIC const mp_rom_map_elem_t wdt_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_wdt) },
-    { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&wdt_wdt_type) },
-};
+// STATIC const mp_rom_map_elem_t wdt_module_globals_table[] = {
+//     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_wdt) },
+//     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&wdt_wdt_type) },
+// };
 
-STATIC MP_DEFINE_CONST_DICT(wdt_module_globals, wdt_module_globals_table);
+// STATIC MP_DEFINE_CONST_DICT(wdt_module_globals, wdt_module_globals_table);
 
-const mp_obj_module_t wdt_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&wdt_module_globals,
-};
+// const mp_obj_module_t wdt_module = {
+//     .base = { &mp_type_module },
+//     .globals = (mp_obj_dict_t*)&wdt_module_globals,
+// };

@@ -106,7 +106,6 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
 };
 
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
-
 // The singleton nvm.ByteArray object.
 const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
@@ -114,6 +113,16 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     },
     .start_address = (uint8_t*) CIRCUITPY_INTERNAL_NVM_START_ADDR,
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
+};
+#endif
+
+#if CIRCUITPY_WATCHDOG
+// The singleton nvm.WatchDogTimer object.
+const watchdog_obj_t common_hal_mcu_watchdog_obj = {
+    .base = {
+        .type = &watchdog_type,
+    },
+    .watchdogtimer = (mp_obj_t)&mp_const_none_obj,
 };
 #endif
 

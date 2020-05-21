@@ -241,8 +241,8 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
-ifeq ($(CIRCUITPY_WDT),1)
-SRC_PATTERNS += wdt/%
+ifeq ($(CIRCUITPY_WATCHDOG),1)
+SRC_PATTERNS += watchdog/%
 endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
@@ -305,8 +305,8 @@ SRC_COMMON_HAL_ALL = \
 	rtc/__init__.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
-	wdt/__init__.c \
-	wdt/WDT.c \
+	watchdog/__init__.c \
+	watchdog/WatchDogTimer.c \
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 

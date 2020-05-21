@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Noralf Trønnes
+ * Copyright (c) 2019 Nick Moore for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WDT_WDT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WDT_WDT_H
+#include "py/obj.h"
+#include "common-hal/watchdog/__init__.h"
+#include "common-hal/watchdog/WatchDogTimer.h"
 
-#include <stdint.h>
-#include <stdbool.h>
+STATIC const mp_rom_map_elem_t watchdog_locals_dict_table[] = {
+    {MP_ROM_QSTR(MP_QSTR_WatchDogTimer), MP_ROM_PTR(&watchdog_watchdogtimer_type) },
+};
+STATIC MP_DEFINE_CONST_DICT(watchdog_locals_dict, watchdog_locals_dict_table);
 
-extern void common_hal_wdt_init(uint32_t duration, bool pause_during_sleep);
-extern void common_hal_wdt_feed(void);
-extern void common_hal_wdt_disable(void);
+const mp_obj_type_t watchdog_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_watchdog,
+    // .make_new = watchdog_watchdogtimer_make_new,
+    .locals_dict = (mp_obj_dict_t*)&watchdog_locals_dict,
+};
 
-extern const mp_obj_type_t wdt_wdt_type;
-
-typedef struct _wdt_wdt_obj_t {
-    mp_obj_base_t base;
-    uint32_t timeout;
-    bool sleep;
-} wdt_wdt_obj_t;
-
-extern const wdt_wdt_obj_t wdt_wdt_obj;
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_WDT_WDT_H

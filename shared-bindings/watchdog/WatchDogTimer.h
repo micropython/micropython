@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Noralf Trønnes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WDT___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WDT___INIT___H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGTIMER_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGTIMER_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <py/obj.h>
+
+// extern void common_hal_wdt_init(uint32_t duration, bool pause_during_sleep);
+// extern void common_hal_wdt_feed(void);
+// extern void common_hal_wdt_disable(void);
 
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_WDT___INIT___H
+// typedef struct _wdt_wdt_obj_t {
+//     mp_obj_base_t base;
+//     uint32_t timeout;
+//     bool sleep;
+// } wdt_wdt_obj_t;
+
+extern const mp_obj_type_t watchdog_watchdogtimer_type;
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGTIMER_H
