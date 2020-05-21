@@ -70,6 +70,8 @@ def convert_folder(top_level, stub_directory):
     except astroid.exceptions.AstroidSyntaxError as e:
         e = e.__cause__
         traceback.print_exception(type(e), e, e.__traceback__)
+    except KeyError:
+        print("Function does not have a key: Name")
     print()
     return ok, total
 
