@@ -32,8 +32,9 @@
 
 typedef struct _watchdog_watchdogtimer_obj_t {
     mp_obj_base_t base;
-    uint32_t timeout;
+    mp_float_t timeout;
     bool sleep;
+    bool hardware;
 } watchdog_watchdogtimer_obj_t;
 
 #endif  // MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
