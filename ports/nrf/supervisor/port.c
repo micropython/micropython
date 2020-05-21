@@ -161,6 +161,10 @@ void reset_port(void) {
     pulsein_reset();
 #endif
 
+#if CIRCUITPY_RTC
+    rtc_reset();
+#endif
+
     timers_reset();
 
 #if CIRCUITPY_BLEIO
@@ -192,6 +196,10 @@ uint32_t *port_heap_get_bottom(void) {
 
 uint32_t *port_heap_get_top(void) {
     return port_stack_get_top();
+}
+
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
 }
 
 uint32_t *port_stack_get_limit(void) {

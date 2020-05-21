@@ -73,7 +73,6 @@ jobs:
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
-
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
     - uses: actions/upload-artifact@v1.0.0
@@ -137,6 +136,7 @@ jobs:
         board:
         - "8086_commander"
         - "TG-Watch02A"
+        - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
@@ -348,6 +348,89 @@ jobs:
       run: python3 -u build_release_files.py
       working-directory: tools
       env:
+        BOARDS: ${{ matrix.board }}
+    - uses: actions/upload-artifact@v1.0.0
+      with:
+        name: ${{ matrix.board }}
+        path: bin/${{ matrix.board }}
+    - name: Upload to S3
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+  build-xtensa:
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+        - "espressif_saola_1_wroom"
+        - "espressif_saola_1_wrover"
+
+    steps:
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+        fetch-depth: 0
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - run: git submodule sync
+    - run: git submodule foreach git remote -v
+    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
+    - name: CircuitPython version
+      run: git describe --dirty --tags
+    - uses: actions/cache@v1
+      name: Fetch IDF tool cache
+      id: idf-cache
+      with:
+        path: ${{ github.workspace }}/.idf_tools
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}
+    - name: Install IDF tools
+      if: steps.idf-cache.outputs.cache-hit != 'true'
+      run: |
+        $IDF_PATH/tools/idf_tools.py --non-interactive install required
+        $IDF_PATH/tools/idf_tools.py --non-interactive install cmake
+        $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
+        rm -rf $IDF_TOOLS_PATH/dist
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
+    - name: Install CircuitPython deps
+      run: |
+        source $IDF_PATH/export.sh
+        pip install requests sh click setuptools awscli
+        sudo apt-get install -y gettext ninja-build
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
+    - name: Versions
+      run: |
+        source $IDF_PATH/export.sh
+        gcc --version
+        xtensa-esp32s2-elf-gcc --version
+        python3 --version
+        ninja --version
+        cmake --version
+      shell: bash
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
+    - name: mpy-cross
+      run: make -C mpy-cross -j2
+    - name: build
+      run: |
+        source $IDF_PATH/export.sh
+        python3 -u build_release_files.py
+      working-directory: tools
+      shell: bash
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
         BOARDS: ${{ matrix.board }}
     - uses: actions/upload-artifact@v1.0.0
       with:

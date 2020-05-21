@@ -52,7 +52,9 @@
 #define CFG_TUSB_DEBUG              0
 
 /*------------- RTOS -------------*/
+#ifndef CFG_TUSB_OS
 #define CFG_TUSB_OS                 OPT_OS_NONE
+#endif
 //#define CFG_TUD_TASK_QUEUE_SZ     16
 //#define CFG_TUD_TASK_PRIO         0
 //#define CFG_TUD_TASK_STACK_SZ     150

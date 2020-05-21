@@ -18,6 +18,7 @@ import sys
 import os
 
 import recommonmark
+import subprocess
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -67,6 +68,7 @@ source_suffix = {
     '.md': 'markdown',
 }
 
+subprocess.check_output(["make", "stubs"])
 extensions.append('autoapi.extension')
 
 autoapi_type = 'python'
@@ -136,6 +138,8 @@ exclude_patterns = ["**/build*",
                     "ports/atmel-samd/tools",
                     "ports/cxd56/mkspk",
                     "ports/cxd56/spresense-exported-sdk",
+                    "ports/esp32s2/esp-idf",
+                    "ports/esp32s2/peripherals",
                     "ports/litex/hw",
                     "ports/minimal",
                     "ports/mimxrt10xx/peripherals",
