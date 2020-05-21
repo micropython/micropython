@@ -28,7 +28,6 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/watchdog/__init__.h"
-// #include "shared-bindings/wdt/WDT.h"
 
 //| """Watchdog Timer
 //|
@@ -44,7 +43,7 @@
 //|
 //| Note that this module can't be imported and used directly. The sole
 //| instance of :class:`WatchDogTimer` is available at
-//| :attr:`microcontroller.watchdog`."""
+//| :attr:`microcontroller.watchdog`.
 //|
 //| Example usage::
 //|
@@ -52,15 +51,3 @@
 //|     wdt = WatchDogTimer(timeout=2.5)  # enable it with a timeout of 2.5 seconds
 //|     wdt.feed()"""
 //|
-
-// STATIC const mp_rom_map_elem_t wdt_module_globals_table[] = {
-//     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_wdt) },
-//     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&wdt_wdt_type) },
-// };
-
-// STATIC MP_DEFINE_CONST_DICT(wdt_module_globals, wdt_module_globals_table);
-
-// const mp_obj_module_t wdt_module = {
-//     .base = { &mp_type_module },
-//     .globals = (mp_obj_dict_t*)&wdt_module_globals,
-// };
