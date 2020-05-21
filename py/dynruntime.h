@@ -178,6 +178,7 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
 
 #define MP_DYNRUNTIME_INIT_ENTRY \
     mp_obj_t old_globals = mp_fun_table.swap_globals(self->globals); \
+    mp_fun_table.store_global(MP_QSTR___init__, MP_OBJ_FROM_PTR(self)); \
     mp_raw_code_t rc; \
     rc.kind = MP_CODE_NATIVE_VIPER; \
     rc.scope_flags = 0; \
