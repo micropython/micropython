@@ -47,23 +47,6 @@ STATIC uint8_t timer_refcount = 0;
 #define WATCHDOG_RELOAD_COUNT 2
 STATIC nrfx_timer_t *timer = NULL;
 
-const mp_obj_type_t mp_type_WatchDogTimeout = {
-    { &mp_type_type },
-    .name = MP_QSTR_WatchDogTimeout,
-    .make_new = mp_obj_exception_make_new,
-    .attr = mp_obj_exception_attr,
-    .parent = &mp_type_Exception,
-};
-
-static mp_obj_exception_t mp_watchdog_timeout_exception = {
-    .base.type = &mp_type_WatchDogTimeout,
-    .traceback_alloc = 0,
-    .traceback_len = 0,
-    .traceback_data = NULL,
-    .args = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj,
-};
-
-
 STATIC void watchdogtimer_hardware_init(mp_float_t duration, bool pause_during_sleep) {
     unsigned int channel;
     nrf_wdt_behaviour_t behaviour = NRF_WDT_BEHAVIOUR_RUN_SLEEP_HALT;
@@ -93,6 +76,10 @@ STATIC void watchdogtimer_hardware_feed(void) {
     }
 }
 
+NORETURN void mp_raise_WatchDogTimeout(void) {
+    nlr_raise(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_watchdog_exception)));
+}
+
 STATIC void watchdogtimer_event_handler(nrf_timer_event_t event_type, void *p_context) {
     (void)p_context;
     if (event_type != NRF_TIMER_EVENT_COMPARE0) {
@@ -102,8 +89,7 @@ STATIC void watchdogtimer_event_handler(nrf_timer_event_t event_type, void *p_co
 
     // If the timer hits without being cleared, pause the timer and raise an exception.
     nrfx_timer_pause(timer);
-    mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&mp_watchdog_timeout_exception));
-    MP_STATE_VM(mp_pending_exception) = &mp_watchdog_timeout_exception;
+    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_watchdog_exception));
 #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
@@ -139,6 +125,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_make_new(const mp_obj_type_t *type, size_
         {MP_QSTR_hardware, MP_ARG_BOOL, {.u_bool = false}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_watchdog_exception)));
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
                      allowed_args, args);

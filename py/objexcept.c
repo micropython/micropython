@@ -256,6 +256,9 @@ const mp_obj_type_t mp_type_BaseException = {
 MP_DEFINE_EXCEPTION(SystemExit, BaseException)
 MP_DEFINE_EXCEPTION(KeyboardInterrupt, BaseException)
 MP_DEFINE_EXCEPTION(ReloadException, BaseException)
+#if CIRCUITPY_WATCHDOG
+MP_DEFINE_EXCEPTION(WatchDogTimeout, BaseException)
+#endif
 MP_DEFINE_EXCEPTION(GeneratorExit, BaseException)
 MP_DEFINE_EXCEPTION(Exception, BaseException)
   #if MICROPY_PY_ASYNC_AWAIT
