@@ -39,7 +39,7 @@
 
 #include "fsl_lpuart.h"
 
-//arrays use 0 based numbering: UART is stored at index 0
+//arrays use 0 based numbering: UART1 is stored at index 0
 #define MAX_UART 8
 STATIC bool reserved_uart[MAX_UART];
 
@@ -85,10 +85,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->character_bits = bits;
     self->timeout_ms = timeout * 1000;
 
-    bool is_onedirection = false;
-    if (!rx != !tx) {
-        is_onedirection = true;
-    }
+    // We are transmitting one direction if one pin is NULL and the other isn't.
+    bool is_onedirection = (rx != NULL) != (tx != NULL);
     bool uart_taken = false;
 
     const uint32_t rx_count = MP_ARRAY_SIZE(mcu_uart_rx_list);
@@ -145,7 +143,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (uart_taken) {
-        mp_raise_RuntimeError(translate("UART peripheral is already in use"));
+        mp_raise_RuntimeError(translate("Hardware in use, try alternative pins"));
     }
 
     if(self->rx == NULL && self->tx == NULL) {
