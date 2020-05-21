@@ -15,11 +15,10 @@ packages:
 1. Python modules and packages are turned into distribution package
    archives, and published at the Python Package Index (PyPI).
 2. `upip` package manager is used to install a distribution package
-   on a `MicroPython port` with networking capabilities. You can run upip
-   on your microcontroller or your Unix port.
+   on a `MicroPython port` with networking capabilities.
 3. For ports without networking capabilities, an "installation image"
-   can be prepared on the Unix port. You can also install packages to your development
-   environment (a Unic\MacOs\Winows Port) then transfer the code to your device. see: `Cross-installing packages`_
+   is prepared on the Unix\Mac\Windows Port (the dev environment) then copied
+   to your device. see: `Cross-installing packages`_
 4. For low-memory ports, the installation image can be frozen as the
    bytecode into MicroPython executable, thus minimizing the memory
    storage overheads.
@@ -118,6 +117,7 @@ commands which corresponds to the example above are::
     micropython -m upip install micropython-pystone_lowmem
 
 [TODO: Describe installation path.]
+
 
 Cross-installing packages
 -------------------------
