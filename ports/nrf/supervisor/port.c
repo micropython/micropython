@@ -273,8 +273,10 @@ void port_sleep_until_interrupt(void) {
         // available, even though the actual handler won't fire until
         // we re-enable interrupts.
         common_hal_mcu_disable_interrupts();
-        if (!tud_task_event_ready())
+        if (!tud_task_event_ready()) {
+            __DSB();
             __WFI();
+        }
         common_hal_mcu_enable_interrupts();
     }
 }
