@@ -13,7 +13,7 @@ latest versions, you should build from source as outlined in the wiki page:
 Here some common ways to install unofficial builds:
 
 * MacOs: ``brew install micropython`` from https://formulae.brew.sh/formula/micropython
-* Unix: ``apt get micropython`` (or your favorite variant of apt, apt-get). MicroPython may already be in your distrbution.
+* Unix: ``apt get micropython``
 * Windows: Unknown at this time.
 
 
