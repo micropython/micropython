@@ -70,18 +70,6 @@ SECTIONS
         _etext = .;        /* define a global symbol at end of code */
     } >FLASH_FIRMWARE
 
-    .ARM.extab :
-    {
-        *(.ARM.extab* .gnu.linkonce.armextab.*)
-    } >FLASH_FIRMWARE
-
-    .ARM :
-    {
-        __exidx_start = .;
-        *(.ARM.exidx*)
-        __exidx_end = .;
-    } >FLASH_FIRMWARE
-
     /* used by the startup to initialize data */
     _sidata = .;
 
@@ -144,6 +132,14 @@ SECTIONS
         . = . + ${CIRCUITPY_DEFAULT_STACK_SIZE};
         . = ALIGN(4);
     } >RAM
+
+    /* Remove exception unwinding information, since Circuit Python
+       does not support this GCC feature. */
+    /DISCARD/ :
+    {
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+        *(.ARM.exidx*)
+    }
 
     /* Remove information from the standard libraries */
     /*
