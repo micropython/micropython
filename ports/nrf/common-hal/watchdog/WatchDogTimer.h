@@ -38,4 +38,6 @@ typedef struct _watchdog_watchdogtimer_obj_t {
     watchdog_watchdogmode_t mode;
 } watchdog_watchdogtimer_obj_t;
 
+void watchdog_reset(void);
+
 #endif  // MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H

@@ -34,6 +34,7 @@
 
 #include "common-hal/watchdog/WatchDogTimer.h"
 
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/watchdog/__init__.h"
 #include "shared-bindings/watchdog/WatchDogTimer.h"
 
@@ -57,7 +58,7 @@ const mp_obj_type_t mp_type_WatchDogTimeout = {
     .parent = &mp_type_Exception,
 };
 
-static mp_obj_exception_t mp_watchdog_timeout_exception = {
+mp_obj_exception_t mp_watchdog_timeout_exception = {
     .base.type = &mp_type_WatchDogTimeout,
     .traceback_alloc = 0,
     .traceback_len = 0,
@@ -66,7 +67,7 @@ static mp_obj_exception_t mp_watchdog_timeout_exception = {
 };
 
 STATIC void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void *p_context) {
-    (void)p_context;
+    watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(p_context);
     if (event_type != NRF_TIMER_EVENT_COMPARE0) {
         // Spurious event.
         return;
@@ -74,6 +75,7 @@ STATIC void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void
 
     // If the timer hits without being cleared, pause the timer and raise an exception.
     nrfx_timer_pause(timer);
+    self->mode = WATCHDOGMODE_NONE;
     mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&mp_watchdog_timeout_exception));
     MP_STATE_VM(mp_pending_exception) = &mp_watchdog_timeout_exception;
 #if MICROPY_ENABLE_SCHEDULER
@@ -89,105 +91,6 @@ STATIC void watchdogtimer_watchdog_event_handler(void) {
     reset_cpu();
 }
 
-void watchdog_watchdogtimer_reset(void) {
-    if (timer != NULL) {
-        nrf_peripherals_free_timer(timer);
-    }
-    timer = NULL;
-    timer_refcount = 0;
-}
-
-<<<<<<< HEAD
-=======
-//| class WDT:
-//|     """Watchdog Timer"""
-//|
-//|     def __init__(self, ):
-//|         """This class represents the system's Watchdog Timer. It is a
-//|         singleton and will always return the same instance.
-//|
-//| """
-//|         ...
-//|
-STATIC mp_obj_t watchdog_watchdogtimer_make_new(const mp_obj_type_t *type, size_t n_args,
-                                 const mp_obj_t *pos_args,
-                                 mp_map_t *kw_args) {
-    enum { ARG_timeout, ARG_sleep, ARG_hardware };
-    static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_timeout, MP_ARG_OBJ | MP_ARG_REQUIRED},
-        {MP_QSTR_sleep, MP_ARG_BOOL, {.u_bool = false}},
-        {MP_QSTR_hardware, MP_ARG_BOOL, {.u_bool = false}},
-    };
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
-                     allowed_args, args);
-    mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
-    bool hardware = args[ARG_hardware].u_bool;
-    bool sleep = args[ARG_sleep].u_bool;
-
-    // If the hardware timer is already running, return that timer.
-    // If the parameters have changed, then ignore them, but print
-    // an error.
-    if (wdt_singleton && hardware) {
-        if ((sleep != wdt_singleton->sleep)
-         || (hardware != wdt_singleton->hardware)
-         || fabsf(timeout - wdt_singleton->timeout) > 0.01f) {
-            // Print a warning indicating things aren't quite right
-            // mp_printf(&mp_stderr_print, translate("warning: hardware timer was already running"));
-        }
-        watchdogtimer_hardware_feed();
-        return wdt_singleton;
-    }
-
-    if (timeout <= 0) {
-        mp_raise_ValueError(translate("watchdog timeout must be greater than 0"));
-    }
-
-    watchdog_watchdogtimer_obj_t *self = m_new_obj(watchdog_watchdogtimer_obj_t);
-    self->base.type = &watchdog_watchdogtimer_type;
-    self->timeout = timeout;
-    self->sleep = sleep;
-    self->hardware = hardware;
-
-    if (hardware) {
-        watchdogtimer_hardware_init(self->timeout, self->sleep);
-        wdt_singleton = self;
-    } else {
-        uint64_t ticks = timeout * 31250ULL;
-        if (ticks > UINT32_MAX) {
-            mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
-        }
-
-        if (timer_refcount == 0) {
-            timer = nrf_peripherals_allocate_timer_or_throw();
-        }
-        timer_refcount++;
-
-        nrfx_timer_config_t timer_config = {
-            .frequency = NRF_TIMER_FREQ_31250Hz,
-            .mode = NRF_TIMER_MODE_TIMER,
-            .bit_width = NRF_TIMER_BIT_WIDTH_32,
-            .interrupt_priority = NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY,
-            .p_context = self,
-        };
-
-        nrfx_timer_init(timer, &timer_config, &watchdogtimer_event_handler);
-
-        // true enables interrupt.
-        nrfx_timer_clear(timer);
-        nrfx_timer_compare(timer, NRF_TIMER_CC_CHANNEL0, ticks, true);
-        nrfx_timer_resume(timer);
-    }
-
-    // Feed the watchdog, in case there's a timer that's already running
-    // and it's only partially finished.
-    mp_obj_t *self_obj = MP_OBJ_FROM_PTR(self);
-    watchdog_watchdogtimer_feed(self_obj);
-    return self_obj;
-}
-
->>>>>>> parent of 561e7e619... add WatchDogTimeout exception
 //|     def feed(self):
 //|         """Feed the watchdog timer. This must be called regularly, otherwise
 //|         the timer will expire."""
@@ -221,6 +124,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
             nrf_peripherals_free_timer(timer);
             timer = NULL;
         }
+        self->mode = WATCHDOGMODE_NONE;
     } else if (self->mode == WATCHDOGMODE_RESET) {
         mp_raise_NotImplementedError(translate("WatchDogTimer cannot be deinitialized once mode is set to RESET"));
     }
@@ -228,6 +132,17 @@ STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_deinit_obj, watchdog_watchdogtimer_deinit);
+
+void watchdog_reset(void) {
+    if (common_hal_mcu_watchdogtimer_obj.mode == WATCHDOGMODE_RAISE) {
+        common_hal_mcu_watchdogtimer_obj.mode = WATCHDOGMODE_NONE;
+        timer_refcount--;
+        if (timer_refcount == 0) {
+            nrf_peripherals_free_timer(timer);
+            timer = NULL;
+        }
+    }
+}
 
 //|     timeout: float = ...
 //|     """The maximum number of seconds that can elapse between calls
@@ -250,7 +165,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_timeout(mp_obj_t self_in, mp_obj_
     if (self->mode == WATCHDOGMODE_RESET) {
         // If the WatchDogTimer is already running in "RESET" mode, raise an error
         // since the mode cannot be changed once started.
-        mp_raise_TypeError(translate("Cannot change the timeout once mode is WatchDogMode.RESET"));
+        mp_raise_TypeError(translate("cannot change the timeout once mode is WatchDogMode.RESET"));
     } else if (self->mode == WATCHDOGMODE_RAISE) {
         // If the WatchDogTimer is already running in "RAISE" mode, reset the timer
         // with the new value.
@@ -322,14 +237,12 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t m
         if (self->mode == WATCHDOGMODE_RESET) {
             mp_raise_ValueError(translate("WatchDogTimer mode cannot be changed once set to WatchDogMode.RESET"));
         }
-        else if (self->mode == WATCHDOGMODE_NONE) {
-            uint64_t ticks = self->timeout * 31250ULL;
-            if (ticks > UINT32_MAX) {
-                mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
-            }
-
+        else if (self->mode == WATCHDOGMODE_NONE || self->mode == WATCHDOGMODE_RAISE) {
             if (timer_refcount == 0) {
                 timer = nrf_peripherals_allocate_timer_or_throw();
+            }
+            if (timer == NULL) {
+                mp_raise_RuntimeError(translate("timer was null"));
             }
             timer_refcount++;
 
@@ -342,6 +255,11 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t m
             };
 
             nrfx_timer_init(timer, &timer_config, &watchdogtimer_timer_event_handler);
+
+            uint64_t ticks = nrfx_timer_ms_to_ticks(timer, self->timeout * 1000);
+            if (ticks > UINT32_MAX) {
+                mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
+            }
 
             // true enables interrupt.
             nrfx_timer_clear(timer);
