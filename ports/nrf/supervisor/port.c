@@ -131,6 +131,21 @@ safe_mode_t port_init(void) {
     analogin_init();
 #endif
 
+    // If the board was reset by the WatchDogTimer, we may
+    // need to boot into safe mode. Reset the RESETREAS bit
+    // for the WatchDogTimer so we don't encounter this the
+    // next time we reboot.
+    if (NRF_POWER->RESETREAS & POWER_RESETREAS_DOG_Msk) {
+        NRF_POWER->RESETREAS = POWER_RESETREAS_DOG_Msk;
+        uint32_t usb_reg = NRF_POWER->USBREGSTATUS;
+
+        // If USB is connected, then the user might be editing `code.py`,
+        // in which case we should reboot into Safe Mode.
+        if (usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk) {
+            return WATCHDOG_RESET;
+        }
+    }
+
     return NO_SAFE_MODE;
 }
 
