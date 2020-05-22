@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-19 15:01+0800\n"
-"PO-Revision-Date: 2020-05-22 07:35+0000\n"
+"PO-Revision-Date: 2020-05-23 16:13+0000\n"
 "Last-Translator: Timon <timon@skerutsch.de>\n"
 "Language-Team: German <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/de/>\n"
@@ -43,7 +43,7 @@ msgid ""
 "To exit, please reset the board without "
 msgstr ""
 "\n"
-"Zum Beenden setzen Sie bitte die Karte ohne "
+"Zum Beenden, resete bitte das Board ohne "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -77,7 +77,7 @@ msgstr "Der Index %q befindet sich außerhalb des Bereiches"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
-msgstr "%q Indizes müssen ganze Zahlen sein, nicht %s"
+msgstr "%q Indizes müssen Integer sein, nicht %s"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -96,7 +96,7 @@ msgstr "%q muss ein Tupel der Länge 2 sein"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
-msgstr "%q sollte ein int sein"
+msgstr "%q sollte ein integer sein"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -167,7 +167,7 @@ msgstr "Das Objekt '%s' unterstützt '%q' nicht"
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr "'%s' Objekt unterstützt keine Zuordnung von Elementen"
+msgstr "'%s' Objekt unterstützt keine Zuweisung von Elementen"
 
 #: py/obj.c
 #, c-format
@@ -186,7 +186,7 @@ msgstr "'%s' Objekt ist kein Iterator"
 #: py/objtype.c py/runtime.c
 #, c-format
 msgid "'%s' object is not callable"
-msgstr "'%s' object ist nicht callable"
+msgstr "'%s' object ist nicht aufrufbar"
 
 #: py/runtime.c
 #, c-format
@@ -403,7 +403,7 @@ msgstr "Die Helligkeit ist nicht einstellbar"
 #: shared-bindings/_bleio/UUID.c
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
-msgstr "Puffer + Offset zu klein% d% d% d"
+msgstr "Buffer + Offset zu klein %d %d %d"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -413,7 +413,7 @@ msgstr "Der Puffergröße ist inkorrekt. Sie sollte %d bytes haben."
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
-msgstr "Der Puffer ist kein Byte-Array"
+msgstr "Der Buffer ist kein Byte-Array."
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -423,7 +423,7 @@ msgstr "Der Puffer ist zu klein"
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein."
+msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -446,7 +446,7 @@ msgstr "Bus pin %d wird schon benutzt"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
-msgstr "Der Puffer muss 16 Bytes lang sein"
+msgstr "Der Puffer muss 16 Bytes lang sein."
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
@@ -497,13 +497,13 @@ msgstr "Aufnahme in eine Datei nicht möglich"
 
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when USB is active."
-msgstr "Kann '/' nicht remounten when USB aktiv ist"
+msgstr "Kann '/' nicht remounten when USB aktiv ist."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr "Reset zum bootloader nicht möglich da bootloader nicht vorhanden"
+msgstr "Reset zum bootloader nicht möglich da bootloader nicht vorhanden."
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -779,7 +779,7 @@ msgstr "Verbindung nicht erfolgreich: timeout"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
-msgstr ""
+msgstr "Parsen der MP3 Datei fehlgeschlagen"
 
 #: ports/nrf/sd_mutex.c
 #, c-format
@@ -803,6 +803,8 @@ msgstr ""
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
+"Die Frequenz muss mit dem vorhandenen PWMOut unter Verwendung dieses Timers "
+"übereinstimmen"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
@@ -826,7 +828,7 @@ msgstr "Hardware beschäftigt, versuchen Sie alternative Pins"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
-msgstr ""
+msgstr "Hardware in benutzung, probiere alternative Pins"
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -843,7 +845,7 @@ msgstr "I2C-operation nicht unterstützt"
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
-msgstr ""
+msgstr "IV muss %d Bytes lang sein"
 
 #: py/persistentcode.c
 msgid ""
@@ -867,7 +869,7 @@ msgstr "Unzureichende Authentifizierung"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
-msgstr ""
+msgstr "Unzureichende Verschlüsselung"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
@@ -876,7 +878,7 @@ msgstr "Interner Definitionsfehler"
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Internal error #%d"
-msgstr ""
+msgstr "Interner Fehler #%d"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -893,7 +895,7 @@ msgstr "Ungültige BMP-Datei"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
-msgstr ""
+msgstr "Ungültiger DAC-Pin angegeben"
 
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
@@ -907,7 +909,7 @@ msgstr "Ungültige PWM Frequenz"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
-msgstr ""
+msgstr "Ungültige SPI-Pin-Auswahl"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
@@ -927,7 +929,7 @@ msgstr "Ungültige Puffergröße"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Invalid byteorder string"
-msgstr ""
+msgstr "Ungültige Byteorder String"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
@@ -939,7 +941,7 @@ msgstr "Ungültige Anzahl von Kanälen"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
-msgstr "Ungültige Richtung"
+msgstr "Ungültige Richtung."
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
@@ -955,7 +957,7 @@ msgstr "Ungültige Frequenz geliefert"
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
-msgstr ""
+msgstr "Ungültiger Speicherzugriff."
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -1004,7 +1006,7 @@ msgstr "Ungültige Eigenschaften"
 
 #: shared-bindings/microcontroller/__init__.c
 msgid "Invalid run mode."
-msgstr "Ungültiger Ausführungsmodus"
+msgstr "Ungültiger Ausführungsmodus."
 
 #: shared-module/_bleio/Attribute.c
 msgid "Invalid security_mode"
@@ -1024,7 +1026,7 @@ msgstr "Ungültige wave Datei"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
-msgstr ""
+msgstr "Ungültige Wort- / Bitlänge"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1052,11 +1054,11 @@ msgstr "Länge darf nicht negativ sein"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
-msgstr "MISO pin Initialisierung fehlgeschlagen"
+msgstr "MISO pin Initialisierung fehlgeschlagen."
 
 #: shared-module/bitbangio/SPI.c
 msgid "MOSI pin init failed."
-msgstr "MOSI pin Initialisierung fehlgeschlagen"
+msgstr "MOSI pin Initialisierung fehlgeschlagen."
 
 #: shared-module/displayio/Shape.c
 #, c-format
@@ -1066,6 +1068,7 @@ msgstr "Maximaler x-Wert beim Spiegeln ist %d"
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
 msgstr ""
+"MicroPython NLR-Sprung fehlgeschlagen. Wahrscheinlich Speicherbeschädigung."
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython fatal error."
@@ -1078,7 +1081,7 @@ msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
-msgstr ""
+msgstr "Fehlender MISO- oder MOSI-Pin"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1091,7 +1094,7 @@ msgstr "Muss MISO- oder MOSI-Pin bereitstellen"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
-msgstr ""
+msgstr "Muss ein Vielfaches von 6 RGB-Pins verwenden, nicht %d"
 
 #: py/parse.c
 msgid "Name too long"
@@ -1099,7 +1102,7 @@ msgstr "Name zu lang"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Negative step not supported"
-msgstr ""
+msgstr "Negativer Schritt wird nicht unterstützt"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -1121,7 +1124,7 @@ msgstr "Kein MISO Pin"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
-msgstr ""
+msgstr "Kein MOSI Pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
@@ -1166,11 +1169,11 @@ msgstr "Keine Hardwareunterstützung an diesem Pin"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
-msgstr ""
+msgstr "Es wurde kein Schlüssel angegeben"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
-msgstr "Keine lange Ganzzahlunterstützung"
+msgstr "Keine langen Integer (long) unterstützt"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1190,7 +1193,7 @@ msgstr "Keine solche Datei/Verzeichnis"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
-msgstr ""
+msgstr "Kein Timer verfügbar"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
@@ -1255,7 +1258,7 @@ msgstr "Die PWM-Frequenz ist nicht schreibbar wenn variable_Frequenz = False."
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
-msgstr ""
+msgstr "ParallelBus wird noch nicht unterstützt"
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1275,7 +1278,7 @@ msgstr "Pin muss Hardware-Interrupts unterstützen"
 
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
-msgstr ""
+msgstr "PIN-Nummer bereits von EXTI reserviert"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1284,7 +1287,7 @@ msgid ""
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
 msgstr ""
-"Pinbelegung verwendet% d Bytes pro Element, was mehr als die idealen% d "
+"Pinbelegung verwendet %d Bytes pro Element, was mehr als die idealen %d "
 "Bytes verbraucht. Wenn dies nicht vermieden werden kann, übergeben Sie "
 "allow_inefficient = True an den Konstruktor"
 
@@ -1294,7 +1297,7 @@ msgstr "und alle Module im Dateisystem \n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
-msgstr ""
+msgstr "Polygone brauchen mindestens 3 Punkte"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
@@ -1302,13 +1305,13 @@ msgstr "Pop aus einem leeren Ps2-Puffer"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
-msgstr ""
+msgstr "Der Präfixbuffer muss sich auf dem Heap befinden"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 msgstr ""
 "Drücke eine Taste um dich mit der REPL zu verbinden. Drücke Strg-D zum neu "
-"laden"
+"laden."
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1320,7 +1323,7 @@ msgstr "PulseIn wird auf diesem Chip nicht unterstützt"
 
 #: ports/stm/common-hal/pulseio/PulseOut.c
 msgid "PulseOut not supported on this chip"
-msgstr ""
+msgstr "PulseOut wird auf diesem Chip nicht unterstützt"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1328,7 +1331,7 @@ msgstr "RNG DeInit-Fehler"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG Init Error"
-msgstr ""
+msgstr "RNG Init Fehler"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1346,7 +1349,7 @@ msgstr "Eine RTC wird auf diesem Board nicht unterstützt"
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
-msgstr ""
+msgstr "RTS / CTS / RS485 Wird von diesem Gerät noch nicht unterstützt"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
@@ -1370,7 +1373,7 @@ msgstr "Zu früh neu geladen"
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
-msgstr ""
+msgstr "Der angeforderte AES-Modus wird nicht unterstützt"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1398,7 +1401,7 @@ msgstr "SPI-Init-Fehler"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
-msgstr ""
+msgstr "SPI-Neuinitialisierungsfehler"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
@@ -1415,7 +1418,7 @@ msgstr "Scannen Sie bereits in Bearbeitung. Stoppen Sie mit stop_scan."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected CTS pin not valid"
-msgstr ""
+msgstr "Ausgewählter CTS-Pin ungültig"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected RTS pin not valid"
@@ -1437,7 +1440,7 @@ msgstr "Slices werden nicht unterstützt"
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
-msgstr ""
+msgstr "Quell- und Zielbuffer müssen gleich lang sein"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1457,7 +1460,7 @@ msgstr "Geben Sie mindestens einen UART-Pin an"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
-msgstr ""
+msgstr "Zeitüberschreitung beim Auslesen der Temperatur"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1481,6 +1484,11 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
+"Die Spannungsversorgung des Mikrocontrollers hat den minimal Wert "
+"unterschritten.\n"
+"Stellen Sie sicher, dass Ihr Netzteil genug Strom bereitstellt für den "
+"gesamten Stromkreis und drücken Sie Reset (nach dem Auswerfen von CIRCUITPY)."
+"\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -1488,7 +1496,7 @@ msgstr "Das bits_per_sample des Samples stimmt nicht mit dem des Mixers überein
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
-msgstr ""
+msgstr "Die Kanalanzahl des Samples stimmt nicht mit der des Mixers überein"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's sample rate does not match the mixer's"
@@ -1497,6 +1505,7 @@ msgstr "Die Abtastrate der Probe stimmt nicht mit der des Mischers überein"
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr ""
+"Die Art des Vorzeichens des Samples stimmt nicht mit dem des Mixers überein"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
@@ -1504,7 +1513,7 @@ msgstr "Die Kachelhöhe muss die Bitmaphöhe genau teilen"
 
 #: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
-msgstr ""
+msgstr "Kachel index außerhalb der Grenzen"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile value out of bounds"
@@ -1512,7 +1521,7 @@ msgstr "Kachelwert außerhalb der Grenzen"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
-msgstr ""
+msgstr "Die Kachelbreite muss die Bitmap-Breite genau teilen"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -1521,11 +1530,11 @@ msgstr "Zeitbeschränkung ist zu groß: Maximale Zeitbeschränkung ist %d Sekund
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
-msgstr "Zu viele Kanäle im sample"
+msgstr "Zu viele Kanäle im sample."
 
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses"
-msgstr ""
+msgstr "Zu viele Display Busse"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -1547,7 +1556,7 @@ msgstr "Tuple- oder struct_time-Argument erforderlich"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Buffer allocation error"
-msgstr ""
+msgstr "UART Buffer reservierungs Fehler"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART De-init error"
@@ -1555,7 +1564,7 @@ msgstr "UART De-Init-Fehler"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Init Error"
-msgstr ""
+msgstr "UART Init Fehler"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
@@ -1563,7 +1572,7 @@ msgstr "UART Re-Init-Fehler"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
-msgstr ""
+msgstr "UART-Schreibfehler"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
@@ -1579,7 +1588,7 @@ msgstr "UUID Integer-Wert muss ein Wert von 0 bis 0xffff sein"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr "UUID Zeichenfolge ist nicht 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
+msgstr "UUID string ist nicht 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
@@ -1623,7 +1632,7 @@ msgstr "Unbekannter Gatt-Fehler: 0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Unknown reason."
-msgstr ""
+msgstr "Unbekannter Grund."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1633,7 +1642,7 @@ msgstr "Unbekannter Sicherheitsfehler: 0x%04x"
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown soft device error: %04x"
-msgstr ""
+msgstr "Unbekannter Soft Device-Fehler: %04x"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
@@ -1668,12 +1677,12 @@ msgstr "Nicht unterstützte Operation"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
-msgstr "Nicht unterstützter Pull-Wert"
+msgstr "Nicht unterstützter Pull-Wert."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
-msgstr ""
+msgstr "Wert Länge != Erforderliche feste Länge"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -1711,7 +1720,7 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
-msgstr ""
+msgstr "Schreiben nicht unterstüzt für die Characteristic"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
@@ -1759,7 +1768,7 @@ msgstr "adresses ist leer"
 
 #: extmod/ulab/code/vectorise.c
 msgid "arctan2 is implemented for scalars and ndarrays only"
-msgstr ""
+msgstr "arctan2 ist nur für Skalare und ndarrays implementiert"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -1784,7 +1793,7 @@ msgstr "Argument sollte '%q' sein, nicht '%q'"
 
 #: extmod/ulab/code/linalg.c
 msgid "arguments must be ndarrays"
-msgstr ""
+msgstr "Argumente müssen ndarrays sein"
 
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -1804,7 +1813,7 @@ msgstr "Die Achse muss -1, 0, Keine oder 1 sein"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be -1, 0, or 1"
-msgstr ""
+msgstr "Die Achse muss -1, 0 oder 1 sein"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be None, 0, or 1"
@@ -1812,7 +1821,7 @@ msgstr "Die Achse muss None, 0 oder 1 sein"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
-msgstr ""
+msgstr "schlechter Kompilierungsmodus"
 
 #: py/objstr.c
 msgid "bad conversion specifier"
@@ -1869,7 +1878,7 @@ msgstr "Buffer müssen gleich lang sein"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
-msgstr ""
+msgstr "Tasten müssen digitalio.DigitalInOut sein"
 
 #: py/vm.c
 msgid "byte code not implemented"
@@ -1877,7 +1886,7 @@ msgstr "Bytecode nicht implementiert"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
-msgstr ""
+msgstr "Byteorder ist kein String"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -1914,6 +1923,8 @@ msgstr "kann nur Bytecode speichern"
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
+"Der bereits untergeordneten Klasse kann keine spezielle Methode hinzugefügt "
+"werden"
 
 #: py/compile.c
 msgid "can't assign to expression"
@@ -2009,6 +2020,8 @@ msgstr "Ich kann den Wurf nicht an den gerade gestarteten Generator hängen"
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
+"Nicht \"None\" Werte können nicht an einen gerade gestarteten Generator "
+"gesendet werden"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -2037,6 +2050,8 @@ msgstr ""
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
+"kann nicht von der manuellen Feldspezifikation zur automatischen "
+"Feldnummerierung wechseln"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -2060,7 +2075,7 @@ msgstr "Array kann nicht umgeformt werden (inkompatible Eingabe- / Ausgabeform)"
 
 #: py/emitnative.c
 msgid "casting"
-msgstr ""
+msgstr "Umwandlung (cast)"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
@@ -2076,7 +2091,7 @@ msgstr "chr() arg ist nicht in range(256)"
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
-msgstr ""
+msgstr "Kreis kann nur in einem Elternteil registriert werden"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -2121,7 +2136,7 @@ msgstr "Umwandlung zu Objekt"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must be linear arrays"
-msgstr ""
+msgstr "Convolve-Argumente müssen lineare Arrays sein"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must be ndarrays"
@@ -2129,7 +2144,7 @@ msgstr "Convolve-Argumente müssen ndarrays sein"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must not be empty"
-msgstr ""
+msgstr "Convolve Argumente dürfen nicht leer sein"
 
 #: extmod/ulab/code/ndarray.c
 msgid "could not broadast input array from shape"
@@ -2137,7 +2152,7 @@ msgstr "Eingabearray konnte nicht aus der Form übertragen werden"
 
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
-msgstr ""
+msgstr "Vandermonde-Matrix konnte nicht invertiert werden"
 
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
@@ -2155,6 +2170,8 @@ msgstr "Die Standart-Ausnahmebehandlung muss als letztes sein"
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
+"Der Zielbuffer muss ein Bytearray oder ein Array vom Typ 'B' für bit_depth = "
+"8 sein"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
@@ -2166,7 +2183,7 @@ msgstr "destination_length muss ein int >= 0 sein"
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
-msgstr ""
+msgstr "Die Wörterbuch-Aktualisierungssequenz hat eine falsche Länge"
 
 #: extmod/ulab/code/numerical.c
 msgid "diff argument must be an ndarray"
@@ -2195,7 +2212,7 @@ msgstr "leere Sequenz"
 
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
-msgstr ""
+msgstr "Ende des Formats wärend der Suche nach einem conversion specifier"
 
 #: shared-bindings/displayio/Shape.c
 msgid "end_x should be an int"
@@ -2244,7 +2261,7 @@ msgstr "Es wurden zusätzliche Argumente ohne Keyword angegeben"
 
 #: py/parse.c
 msgid "f-string expression part cannot include a '#'"
-msgstr ""
+msgstr "f-string expression Teil kann kein '#' beinhalten"
 
 #: py/parse.c
 msgid "f-string expression part cannot include a backslash"
@@ -2252,7 +2269,7 @@ msgstr "Die f-String expression darf keinen Backslash enthalten"
 
 #: py/parse.c
 msgid "f-string: empty expression not allowed"
-msgstr ""
+msgstr "f-string: leere expression nicht erlaubt"
 
 #: py/parse.c
 msgid "f-string: expecting '}'"
@@ -2260,7 +2277,7 @@ msgstr "f-string: erwartet '}'"
 
 #: py/parse.c
 msgid "f-string: single '}' is not allowed"
-msgstr ""
+msgstr "f-string: einzelne '}' nicht erlaubt"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c
@@ -2277,7 +2294,7 @@ msgstr "Das erste Argument muss iterierbar sein"
 
 #: extmod/ulab/code/vectorise.c
 msgid "first argument must be an ndarray"
-msgstr ""
+msgstr "Das erste Argument muss ein Ndarray sein"
 
 #: py/objtype.c
 msgid "first argument to super() must be type"
@@ -2293,7 +2310,7 @@ msgstr "Die Abflachungsreihenfolge muss entweder \"C\" oder \"F\" sein"
 
 #: extmod/ulab/code/numerical.c
 msgid "flip argument must be an ndarray"
-msgstr ""
+msgstr "Das Flip-Argument muss ein Ndarray sein"
 
 #: py/objint.c
 msgid "float too big"
@@ -2326,7 +2343,7 @@ msgstr "Funktion hat mehrere Werte für Argument '%q'"
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
-msgstr ""
+msgstr "Die Funktion ist nur für Skalare und Ndarrays implementiert"
 
 #: py/argcheck.c
 #, c-format
@@ -2405,11 +2422,11 @@ msgstr "index außerhalb der Reichweite"
 
 #: py/obj.c
 msgid "indices must be integers"
-msgstr "Indizes müssen ganze Zahlen sein"
+msgstr "Indizes müssen Integer sein"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
-msgstr ""
+msgstr "Indizes müssen Integer, Slices oder Boolesche Listen sein"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2421,7 +2438,7 @@ msgstr "Das Eingabeargument muss eine Ganzzahl oder ein 2-Tupel sein"
 
 #: extmod/ulab/code/fft.c
 msgid "input array length must be power of 2"
-msgstr ""
+msgstr "Die Länge des Eingabearrays muss eine Potenz von 2 sein"
 
 #: extmod/ulab/code/poly.c
 msgid "input data must be an iterable"
@@ -2429,7 +2446,7 @@ msgstr "Eingabedaten müssen iterierbar sein"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is asymmetric"
-msgstr ""
+msgstr "Eingabematrix ist asymmetrisch"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is singular"
@@ -2437,7 +2454,7 @@ msgstr "Eingabematrix ist singulär"
 
 #: extmod/ulab/code/linalg.c
 msgid "input must be square matrix"
-msgstr ""
+msgstr "Die Eingabe muss eine quadratische Matrix sein"
 
 #: extmod/ulab/code/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
@@ -2445,7 +2462,7 @@ msgstr "Die Eingabe muss Tupel, Liste, Bereich oder Ndarray sein"
 
 #: extmod/ulab/code/poly.c
 msgid "input vectors must be of equal length"
-msgstr ""
+msgstr "Eingabevektoren müssen gleich lang sein"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -2531,7 +2548,7 @@ msgstr "iterables sind nicht gleich lang"
 
 #: extmod/ulab/code/linalg.c
 msgid "iterations did not converge"
-msgstr ""
+msgstr "Iterationen sind nicht konvergiert (converged)"
 
 #: py/objstr.c
 msgid "join expects a list of str/bytes objects consistent with self object"
@@ -2581,7 +2598,7 @@ msgstr "Lokales '%q' verwendet bevor Typ bekannt"
 msgid "local variable referenced before assignment"
 msgstr ""
 "Es wurde versucht auf eine Variable zuzugreifen, die es (noch) nicht gibt. "
-"Variablen immer zuerst Zuweisen!"
+"Variablen immer zuerst Zuweisen"
 
 #: py/objint.c
 msgid "long int not supported in this build"
@@ -2589,7 +2606,7 @@ msgstr "long int wird in diesem Build nicht unterstützt"
 
 #: py/parse.c
 msgid "malformed f-string"
-msgstr ""
+msgstr "fehlformatierter f-string"
 
 #: shared-bindings/_stage/Layer.c
 msgid "map buffer too small"
@@ -2601,7 +2618,7 @@ msgstr "Mathe-Domain-Fehler"
 
 #: extmod/ulab/code/linalg.c
 msgid "matrix dimensions do not match"
-msgstr ""
+msgstr "Matrix Dimensionen stimmen nicht überein"
 
 #: extmod/ulab/code/linalg.c
 msgid "matrix is not positive definite"
@@ -2632,7 +2649,7 @@ msgstr "Modul nicht gefunden"
 
 #: extmod/ulab/code/poly.c
 msgid "more degrees of freedom than data points"
-msgstr ""
+msgstr "mehr Freiheitsgrade als Datenpunkte"
 
 #: py/compile.c
 msgid "multiple *x in assignment"
@@ -2648,7 +2665,7 @@ msgstr "Mehrfache Vererbung nicht unterstützt"
 
 #: py/emitnative.c
 msgid "must raise an object"
-msgstr ""
+msgstr "muss ein Objekt verursachen (raise)"
 
 #: extmod/machine_spi.c
 msgid "must specify all of sck/mosi/miso"
@@ -2676,7 +2693,7 @@ msgstr "Name für Argumente wiederverwendet"
 
 #: py/emitnative.c
 msgid "native yield"
-msgstr ""
+msgstr "native Ausbeute (yield)"
 
 #: py/runtime.c
 #, c-format
@@ -2685,7 +2702,7 @@ msgstr "Zum Entpacken sind mehr als %d Werte erforderlich"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
-msgstr ""
+msgstr "negative Potenz ohne Gleitkomma (float) Unterstützung"
 
 #: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
@@ -2693,7 +2710,7 @@ msgstr "Negative shift Anzahl"
 
 #: py/vm.c
 msgid "no active exception to reraise"
-msgstr ""
+msgstr "Keine aktive Ausnahme zu verusachen (raise)"
 
 #: shared-bindings/socket/__init__.c shared-module/network/__init__.c
 msgid "no available NIC"
@@ -2718,7 +2735,7 @@ msgstr "kein solches Attribut"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
-msgstr ""
+msgstr "non-UUID gefunden in service_uuids_whitelist"
 
 #: py/compile.c
 msgid "non-default argument follows default argument"
@@ -2734,7 +2751,7 @@ msgstr "Nicht-Schlüsselwort arg nach * / **"
 
 #: py/compile.c
 msgid "non-keyword arg after keyword arg"
-msgstr ""
+msgstr "Nicht-Schlüsselwort Argument nach Schlüsselwort Argument"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
@@ -2747,7 +2764,7 @@ msgstr ""
 
 #: py/objstr.c
 msgid "not enough arguments for format string"
-msgstr ""
+msgstr "Nicht genügend Argumente für den Formatierungs-String"
 
 #: extmod/ulab/code/poly.c
 msgid "number of arguments must be 2, or 3"
@@ -2755,7 +2772,7 @@ msgstr "Die Anzahl der Argumente muss 2 oder 3 sein"
 
 #: extmod/ulab/code/create.c
 msgid "number of points must be at least 2"
-msgstr ""
+msgstr "Die Anzahl der Punkte muss mindestens 2 betragen"
 
 #: py/obj.c
 #, c-format
@@ -2823,6 +2840,7 @@ msgstr "nur eine sample_rate=16000 wird unterstützt"
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
+"Es werden nur Slices mit Schritt = 1 (auch bekannt als None) unterstützt"
 
 #: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
 #: extmod/ulab/code/vectorise.c
@@ -2831,7 +2849,7 @@ msgstr "Operanden konnten nicht zusammen gesendet werden"
 
 #: extmod/ulab/code/numerical.c
 msgid "operation is not implemented on ndarrays"
-msgstr ""
+msgstr "Die Operation ist für ndarrays nicht implementiert"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
@@ -2845,7 +2863,7 @@ msgstr "ord erwartet ein Zeichen"
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
 msgstr ""
-"ord() erwartet ein Zeichen aber es wurde eine Zeichenfolge mit Länge %d "
+"ord() erwartet einen Buchstaben(char) aber es wurde ein String mit Länge %d "
 "gefunden"
 
 #: py/objint_mpz.c
@@ -2854,7 +2872,7 @@ msgstr "Überlauf beim konvertieren von long int zu machine word"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
-msgstr ""
+msgstr "Die Palette muss 32 Byte lang sein"
 
 #: shared-bindings/displayio/Palette.c
 msgid "palette_index should be an int"
@@ -2878,7 +2896,7 @@ msgstr "Pixelkoordinaten außerhalb der Grenzen"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel value requires too many bits"
-msgstr ""
+msgstr "Der Pixelwert erfordert zu viele Bits"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
@@ -2913,7 +2931,7 @@ msgstr "pow() drittes Argument darf nicht 0 sein"
 
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
-msgstr ""
+msgstr "pow () mit 3 Argumenten erfordert Integer"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
@@ -2925,7 +2943,7 @@ msgstr "rohe F-Strings sind nicht implementiert"
 
 #: extmod/ulab/code/fft.c
 msgid "real and imaginary parts must be of equal length"
-msgstr ""
+msgstr "Real- und Imaginärteile müssen gleich lang sein"
 
 #: py/builtinimport.c
 msgid "relative import"
@@ -2947,7 +2965,7 @@ msgstr "Rückgabe erwartet '%q', aber '%q' erhalten"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] duplicates another pin assignment"
-msgstr ""
+msgstr "rgb_pins[%d] dupliziert eine andere Pinbelegung"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -2956,7 +2974,7 @@ msgstr "rgb_pins [%d] befindet sich nicht am selben Port wie clock"
 
 #: extmod/ulab/code/ndarray.c
 msgid "right hand side must be an ndarray, or a scalar"
-msgstr ""
+msgstr "Die rechte Seite muss ein Ndarray oder ein Skalar sein"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -2988,7 +3006,7 @@ msgstr "Form muss ein 2-Tupel sein"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
-msgstr ""
+msgstr "Vorzeichen nicht erlaubt in einem String formatierungs specifier"
 
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
@@ -2996,7 +3014,7 @@ msgstr "Vorzeichen mit ganzzahligem Formatbezeichner 'c' nicht erlaubt"
 
 #: py/objstr.c
 msgid "single '}' encountered in format string"
-msgstr ""
+msgstr "einzelne '}' in Formatierungs-String gefunden"
 
 #: extmod/ulab/code/linalg.c
 msgid "size is defined for ndarrays only"
@@ -3004,7 +3022,7 @@ msgstr "Größe ist nur für ndarrays definiert"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
-msgstr ""
+msgstr "Die Schlafdauer darf nicht negativ sein"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
@@ -3020,7 +3038,7 @@ msgstr "weicher reboot\n"
 
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr ""
+msgstr "sortierungs Argument muss ein ndarray sein"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3053,7 +3071,7 @@ msgstr "String index außerhalb des Bereiches"
 #: py/objstrunicode.c
 #, c-format
 msgid "string indices must be integers, not %s"
-msgstr "String indizes müssen Ganzzahlen sein, nicht %s"
+msgstr "String indizes müssen Integer sein, nicht %s"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3094,7 +3112,7 @@ msgstr "threshold muss im Intervall 0-65536 liegen"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
-msgstr ""
+msgstr "time.struct_time() nimmt eine 9-Sequenz an"
 
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
@@ -3106,7 +3124,7 @@ msgstr "timeout muss >= 0.0 sein"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
-msgstr ""
+msgstr "Zeitstempel außerhalb des Bereichs für Plattform time_t"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
@@ -3114,7 +3132,7 @@ msgstr "zu viele Argumente mit dem angegebenen Format"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
-msgstr ""
+msgstr "zu viele Indizes"
 
 #: py/runtime.c
 #, c-format
@@ -3123,7 +3141,7 @@ msgstr "zu viele Werte zum Auspacken (erwartet %d)"
 
 #: extmod/ulab/code/linalg.c py/objstr.c
 msgid "tuple index out of range"
-msgstr ""
+msgstr "Tupelindex außerhalb des Bereichs"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3149,7 +3167,7 @@ msgstr "Typ ist kein akzeptierter Basis-Typ"
 
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
-msgstr ""
+msgstr "Typ vom Objekt '%q' hat kein Attribut '%q'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
@@ -3157,7 +3175,7 @@ msgstr "Typ akzeptiert 1 oder 3 Argumente"
 
 #: py/objint_longlong.c
 msgid "ulonglong too large"
-msgstr ""
+msgstr "ulonglong zu groß"
 
 #: py/emitnative.c
 msgid "unary op %q not implemented"
@@ -3167,7 +3185,7 @@ msgstr "Der unäre Operator %q ist nicht implementiert"
 msgid "unexpected indent"
 msgstr ""
 "unerwarteter Einzug (Einrückung) Bitte Leerzeichen am Zeilenanfang "
-"kontrollieren!"
+"kontrollieren"
 
 #: py/bc.c
 msgid "unexpected keyword argument"
@@ -3185,12 +3203,12 @@ msgstr "Unicode Name ausgebrochen (escaped)"
 msgid "unindent does not match any outer indentation level"
 msgstr ""
 "Einrückung entspricht keiner äußeren Einrückungsebene. Bitte Leerzeichen am "
-"Zeilenanfang kontrollieren!"
+"Zeilenanfang kontrollieren"
 
 #: py/objstr.c
 #, c-format
 msgid "unknown conversion specifier %c"
-msgstr ""
+msgstr "unbekannter Konvertierungs specifier %c"
 
 #: py/objstr.c
 #, c-format
@@ -3207,7 +3225,7 @@ msgstr "unbekannter Typ '%q'"
 
 #: py/objstr.c
 msgid "unmatched '{' in format"
-msgstr ""
+msgstr "'{' ohne passende Zuordnung im Format"
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -3231,7 +3249,7 @@ msgstr "nicht unterstützte Xtensa-Anweisung '%s' mit %d Argumenten"
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
-msgstr ""
+msgstr "nicht unterstütztes Formatzeichen '%c' (0x%x) bei Index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%s'"
@@ -3260,7 +3278,7 @@ msgstr "Fenster muss <= Intervall sein"
 
 #: extmod/ulab/code/linalg.c
 msgid "wrong argument type"
-msgstr ""
+msgstr "falscher Argumenttyp"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong index type"
@@ -3276,7 +3294,7 @@ msgstr "falsche Anzahl zu entpackender Werte"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
-msgstr ""
+msgstr "falscher Operandentyp"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
