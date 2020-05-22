@@ -300,17 +300,20 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
         size_t length = common_hal__pixelbuf_pixelbuf_get_len(self_in);
         mp_seq_get_fast_slice_indexes(length, index_in, &slice);
 
-        if (slice.step < 0) {
-            mp_raise_IndexError(translate("Negative step not supported"));
+        size_t slice_len;
+        if (slice.step > 0) {
+            slice_len = slice.stop - slice.start;
+        }else{
+            slice_len = 1 + slice.start - slice.stop;
+        }
+        if (slice.step > 1 || slice.step < -1) {
+            size_t step = slice.step > 0 ? slice.step : slice.step * -1;
+            slice_len = (slice_len / step) + (slice_len % step ? 1 : 0);
         }
 
         if (value == MP_OBJ_SENTINEL) { // Get
-            size_t len = slice.stop - slice.start;
-            if (slice.step > 1) {
-                len = (len / slice.step) + (len % slice.step ? 1 : 0);
-            }
-            mp_obj_tuple_t* t = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
-            for (uint i = 0; i < len; i++) {
+            mp_obj_tuple_t* t = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice_len, NULL));
+            for (uint i = 0; i < slice_len; i++) {
                 t->items[i] = common_hal__pixelbuf_pixelbuf_get_pixel(self_in, i * slice.step + slice.start);
             }
             return MP_OBJ_FROM_PTR(t);
@@ -321,10 +324,6 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
                 mp_raise_ValueError(translate("tuple/list required on RHS"));
             }
 
-            size_t dst_len = (slice.stop - slice.start);
-            if (slice.step > 1) {
-                dst_len = (dst_len / slice.step) + (dst_len % slice.step ? 1 : 0);
-            }
             mp_obj_t *src_objs;
             size_t num_items;
             if (MP_OBJ_IS_TYPE(value, &mp_type_list)) {
@@ -336,9 +335,9 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
                 num_items = l->len;
                 src_objs = l->items;
             }
-            if (num_items != dst_len) {
+            if (num_items != slice_len) {
                 mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."),
-                                                   dst_len, num_items);
+                                                   slice_len, num_items);
             }
 
             common_hal__pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.stop, slice.step, src_objs);
