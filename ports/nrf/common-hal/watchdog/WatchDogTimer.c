@@ -37,42 +37,17 @@
 #include "shared-bindings/watchdog/__init__.h"
 #include "shared-bindings/watchdog/WatchDogTimer.h"
 
-#include "nrf_wdt.h"
-#include "nrfx_timer.h"
+#include "supervisor/port.h"
+
 #include "nrf/timers.h"
+#include "nrf_wdt.h"
+#include "nrfx_wdt.h"
+#include "nrfx_timer.h"
 
 STATIC uint8_t timer_refcount = 0;
-#define WATCHDOG_RELOAD_COUNT 2
 STATIC nrfx_timer_t *timer = NULL;
-
-STATIC void watchdogtimer_hardware_init(mp_float_t duration, bool pause_during_sleep) {
-    unsigned int channel;
-    nrf_wdt_behaviour_t behaviour = NRF_WDT_BEHAVIOUR_RUN_SLEEP_HALT;
-    if (pause_during_sleep) {
-        behaviour = NRF_WDT_BEHAVIOUR_PAUSE_SLEEP_HALT;
-    }
-
-    nrf_wdt_behaviour_set(NRF_WDT, behaviour);
-
-    uint64_t ticks = duration * 32768ULL;
-    if (ticks > UINT32_MAX) {
-        mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
-    }
-    nrf_wdt_reload_value_set(NRF_WDT, (uint32_t) ticks);
-
-    for (channel = 0; channel < WATCHDOG_RELOAD_COUNT; channel++) {
-        nrf_wdt_reload_request_enable(NRF_WDT, channel);
-    }
-
-    nrf_wdt_task_trigger(NRF_WDT, NRF_WDT_TASK_START);
-}
-
-STATIC void watchdogtimer_hardware_feed(void) {
-    unsigned int channel;
-    for (channel = 0; channel < WATCHDOG_RELOAD_COUNT; channel++) {
-        nrf_wdt_reload_request_set(NRF_WDT, (nrf_wdt_rr_register_t)(NRF_WDT_RR0 + channel));
-    }
-}
+STATIC nrfx_wdt_t wdt = NRFX_WDT_INSTANCE(0);
+STATIC nrfx_wdt_channel_id wdt_channel_id;
 
 NORETURN void mp_raise_WatchDogTimeout(void) {
     nlr_raise(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_watchdog_exception)));
@@ -95,6 +70,12 @@ STATIC void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void
 #endif
 }
 
+// This function is called if the timer expires. The system will reboot in 1/16384 of a second.
+// Issue a reboot ourselves so we can do any cleanup necessary.
+STATIC void watchdogtimer_watchdog_event_handler(void) {
+    reset_cpu();
+}
+
 void watchdog_watchdogtimer_reset(void) {
     if (timer != NULL) {
         nrf_peripherals_free_timer(timer);
@@ -112,7 +93,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->mode == WATCHDOGMODE_RESET) {
-        watchdogtimer_hardware_feed();
+        nrfx_wdt_feed(&wdt);
     } else if (self->mode == WATCHDOGMODE_RAISE) {
         nrfx_timer_clear(timer);
     } else if (self->mode == WATCHDOGMODE_NONE) {
@@ -276,7 +257,29 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t m
                 timer = NULL;
             }
         }
-        watchdogtimer_hardware_init(self->timeout, self->sleep);
+
+        uint64_t ticks = self->timeout * 1000.0f;
+        if (ticks > UINT32_MAX) {
+            mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
+        }
+
+        nrfx_wdt_config_t config = {
+            .reload_value = ticks, // in units of ms
+            .behaviour = NRF_WDT_BEHAVIOUR_RUN_SLEEP,
+            NRFX_WDT_IRQ_CONFIG
+        };
+
+        nrfx_err_t err_code;
+        err_code = nrfx_wdt_init(&wdt, &config, watchdogtimer_watchdog_event_handler);
+        if (err_code != NRFX_SUCCESS) {
+            mp_raise_OSError(1);
+        }
+        err_code = nrfx_wdt_channel_alloc(&wdt, &wdt_channel_id);
+        if (err_code != NRFX_SUCCESS) {
+            mp_raise_OSError(1);
+        }
+        nrfx_wdt_enable(&wdt);
+        nrfx_wdt_feed(&wdt);
         self->mode = WATCHDOGMODE_RESET;
     }
 

@@ -136,6 +136,7 @@ SRC_NRFX = $(addprefix nrfx/,\
 	drivers/src/nrfx_gpiote.c \
 	drivers/src/nrfx_rtc.c \
 	drivers/src/nrfx_nvmc.c \
+	drivers/src/nrfx_wdt.c \
 	)
 
 ifdef EXTERNAL_FLASH_DEVICES
