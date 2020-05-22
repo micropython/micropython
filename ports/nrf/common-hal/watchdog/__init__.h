@@ -27,12 +27,4 @@
 #ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG___INIT___H
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG___INIT___H
 
-#include "py/obj.h"
-#include "shared-bindings/watchdog/__init__.h"
-
-typedef struct _watchdog_obj_t {
-    mp_obj_base_t base;
-    mp_rom_obj_t *watchdogtimer;
-} watchdog_obj_t;
-
 #endif  // MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG___INIT___H

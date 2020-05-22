@@ -49,9 +49,21 @@ STATIC nrfx_timer_t *timer = NULL;
 STATIC nrfx_wdt_t wdt = NRFX_WDT_INSTANCE(0);
 STATIC nrfx_wdt_channel_id wdt_channel_id;
 
-NORETURN void mp_raise_WatchDogTimeout(void) {
-    nlr_raise(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_watchdog_exception)));
-}
+const mp_obj_type_t mp_type_WatchDogTimeout = {
+    { &mp_type_type },
+    .name = MP_QSTR_WatchDogTimeout,
+    .make_new = mp_obj_exception_make_new,
+    .attr = mp_obj_exception_attr,
+    .parent = &mp_type_Exception,
+};
+
+static mp_obj_exception_t mp_watchdog_timeout_exception = {
+    .base.type = &mp_type_WatchDogTimeout,
+    .traceback_alloc = 0,
+    .traceback_len = 0,
+    .traceback_data = NULL,
+    .args = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj,
+};
 
 STATIC void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void *p_context) {
     (void)p_context;
@@ -62,7 +74,8 @@ STATIC void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void
 
     // If the timer hits without being cleared, pause the timer and raise an exception.
     nrfx_timer_pause(timer);
-    MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_watchdog_exception));
+    mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&mp_watchdog_timeout_exception));
+    MP_STATE_VM(mp_pending_exception) = &mp_watchdog_timeout_exception;
 #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
@@ -84,6 +97,97 @@ void watchdog_watchdogtimer_reset(void) {
     timer_refcount = 0;
 }
 
+<<<<<<< HEAD
+=======
+//| class WDT:
+//|     """Watchdog Timer"""
+//|
+//|     def __init__(self, ):
+//|         """This class represents the system's Watchdog Timer. It is a
+//|         singleton and will always return the same instance.
+//|
+//| """
+//|         ...
+//|
+STATIC mp_obj_t watchdog_watchdogtimer_make_new(const mp_obj_type_t *type, size_t n_args,
+                                 const mp_obj_t *pos_args,
+                                 mp_map_t *kw_args) {
+    enum { ARG_timeout, ARG_sleep, ARG_hardware };
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_timeout, MP_ARG_OBJ | MP_ARG_REQUIRED},
+        {MP_QSTR_sleep, MP_ARG_BOOL, {.u_bool = false}},
+        {MP_QSTR_hardware, MP_ARG_BOOL, {.u_bool = false}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
+                     allowed_args, args);
+    mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
+    bool hardware = args[ARG_hardware].u_bool;
+    bool sleep = args[ARG_sleep].u_bool;
+
+    // If the hardware timer is already running, return that timer.
+    // If the parameters have changed, then ignore them, but print
+    // an error.
+    if (wdt_singleton && hardware) {
+        if ((sleep != wdt_singleton->sleep)
+         || (hardware != wdt_singleton->hardware)
+         || fabsf(timeout - wdt_singleton->timeout) > 0.01f) {
+            // Print a warning indicating things aren't quite right
+            // mp_printf(&mp_stderr_print, translate("warning: hardware timer was already running"));
+        }
+        watchdogtimer_hardware_feed();
+        return wdt_singleton;
+    }
+
+    if (timeout <= 0) {
+        mp_raise_ValueError(translate("watchdog timeout must be greater than 0"));
+    }
+
+    watchdog_watchdogtimer_obj_t *self = m_new_obj(watchdog_watchdogtimer_obj_t);
+    self->base.type = &watchdog_watchdogtimer_type;
+    self->timeout = timeout;
+    self->sleep = sleep;
+    self->hardware = hardware;
+
+    if (hardware) {
+        watchdogtimer_hardware_init(self->timeout, self->sleep);
+        wdt_singleton = self;
+    } else {
+        uint64_t ticks = timeout * 31250ULL;
+        if (ticks > UINT32_MAX) {
+            mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
+        }
+
+        if (timer_refcount == 0) {
+            timer = nrf_peripherals_allocate_timer_or_throw();
+        }
+        timer_refcount++;
+
+        nrfx_timer_config_t timer_config = {
+            .frequency = NRF_TIMER_FREQ_31250Hz,
+            .mode = NRF_TIMER_MODE_TIMER,
+            .bit_width = NRF_TIMER_BIT_WIDTH_32,
+            .interrupt_priority = NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY,
+            .p_context = self,
+        };
+
+        nrfx_timer_init(timer, &timer_config, &watchdogtimer_event_handler);
+
+        // true enables interrupt.
+        nrfx_timer_clear(timer);
+        nrfx_timer_compare(timer, NRF_TIMER_CC_CHANNEL0, ticks, true);
+        nrfx_timer_resume(timer);
+    }
+
+    // Feed the watchdog, in case there's a timer that's already running
+    // and it's only partially finished.
+    mp_obj_t *self_obj = MP_OBJ_FROM_PTR(self);
+    watchdog_watchdogtimer_feed(self_obj);
+    return self_obj;
+}
+
+>>>>>>> parent of 561e7e619... add WatchDogTimeout exception
 //|     def feed(self):
 //|         """Feed the watchdog timer. This must be called regularly, otherwise
 //|         the timer will expire."""
