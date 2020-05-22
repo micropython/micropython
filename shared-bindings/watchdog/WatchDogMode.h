@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Noralf Trønnes
+ * Copyright (c) 2020 Sean Cross for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H
 
 #include "py/obj.h"
-#include "shared-bindings/watchdog/WatchDogTimer.h"
-#include "shared-bindings/watchdog/WatchDogMode.h"
 
-typedef struct _watchdog_watchdogtimer_obj_t {
+typedef enum {
+    WATCHDOGMODE_NONE,
+    WATCHDOGMODE_RAISE,
+    WATCHDOGMODE_RESET,
+} watchdog_watchdogmode_t;
+
+const mp_obj_type_t watchdog_watchdogmode_type;
+
+typedef struct {
     mp_obj_base_t base;
-    mp_float_t timeout;
-    bool sleep;
-    watchdog_watchdogmode_t mode;
-} watchdog_watchdogtimer_obj_t;
+} watchdog_watchdogmode_obj_t;
+extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_none_obj;
+extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_raise_obj;
+extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_reset_obj;
 
-#endif  // MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H

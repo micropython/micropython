@@ -117,12 +117,14 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
 #endif
 
 #if CIRCUITPY_WATCHDOG
-// The singleton nvm.WatchDogTimer object.
-const watchdog_obj_t common_hal_mcu_watchdog_obj = {
+// The singleton watchdog.WatchDogTimer object.
+watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
     .base = {
-        .type = &watchdog_type,
+        .type = &watchdog_watchdogtimer_type,
     },
-    .watchdogtimer = (mp_obj_t)&mp_const_none_obj,
+    .timeout = 0.0f,
+    .sleep = false,
+    .mode = WATCHDOGMODE_NONE,
 };
 #endif
 

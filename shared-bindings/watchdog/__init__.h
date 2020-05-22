@@ -27,6 +27,6 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG___INIT___H
 
-extern const mp_obj_type_t watchdog_type;
+extern const mp_obj_module_t watchdog_module;
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG___INIT___H

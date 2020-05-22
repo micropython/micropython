@@ -306,6 +306,7 @@ SRC_COMMON_HAL_ALL = \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/__init__.c \
+	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))

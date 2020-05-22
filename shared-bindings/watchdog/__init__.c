@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/watchdog/__init__.h"
+#include "shared-bindings/watchdog/WatchDogMode.h"
 
 //| """Watchdog Timer
 //|
@@ -47,7 +48,21 @@
 //|
 //| Example usage::
 //|
-//|     from microcontroller.watchdog import WatchDogTimer
-//|     wdt = WatchDogTimer(timeout=2.5)  # enable it with a timeout of 2.5 seconds
-//|     wdt.feed()"""
+//|     from microcontroller import watchdog as w
+//|     from watchdog import WatchDogMode
+//|     w.timeout=2.5 # Set a timeout of 2.5 seconds
+//|     w.mode = WatchDogMode.RAISE
+//|     w.feed()"""
 //|
+
+STATIC const mp_rom_map_elem_t watchdog_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_watchdog) },
+    { MP_ROM_QSTR(MP_QSTR_WatchDogMode),   MP_ROM_PTR(&watchdog_watchdogmode_type) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(watchdog_module_globals, watchdog_module_globals_table);
+
+const mp_obj_module_t watchdog_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&watchdog_module_globals,
+};

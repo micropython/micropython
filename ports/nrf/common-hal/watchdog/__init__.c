@@ -23,20 +23,3 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#include "py/obj.h"
-#include "common-hal/watchdog/__init__.h"
-#include "common-hal/watchdog/WatchDogTimer.h"
-
-STATIC const mp_rom_map_elem_t watchdog_locals_dict_table[] = {
-    {MP_ROM_QSTR(MP_QSTR_WatchDogTimer), MP_ROM_PTR(&watchdog_watchdogtimer_type) },
-};
-STATIC MP_DEFINE_CONST_DICT(watchdog_locals_dict, watchdog_locals_dict_table);
-
-const mp_obj_type_t watchdog_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_watchdog,
-    // .make_new = watchdog_watchdogtimer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&watchdog_locals_dict,
-};
-
