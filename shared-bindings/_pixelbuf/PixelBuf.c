@@ -303,7 +303,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
         size_t slice_len;
         if (slice.step > 0) {
             slice_len = slice.stop - slice.start;
-        }else{
+        } else {
             slice_len = 1 + slice.start - slice.stop;
         }
         if (slice.step > 1 || slice.step < -1) {
