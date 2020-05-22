@@ -94,7 +94,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
 
 void common_hal_mcu_reset(void) {
     filesystem_flush();
-    NVIC_SystemReset();
+    reset_cpu();
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
