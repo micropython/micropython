@@ -44,6 +44,13 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 
 #include "shared-bindings/microcontroller/__init__.h"
 
+#if CIRCUITPY_WATCHDOG
+#include "shared-bindings/watchdog/__init__.h"
+#define WATCHDOG_EXCEPTION_CHECK() (MP_STATE_VM(mp_pending_exception) == &mp_watchdog_timeout_exception)
+#else
+#define WATCHDOG_EXCEPTION_CHECK() 0
+#endif
+
 void supervisor_tick(void) {
 #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
@@ -85,13 +92,6 @@ void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
     // background task or more before sleeping we may end up starving a task like USB.
     run_background_tasks();
 }
-
-#ifdef CIRCUITPY_WATCHDOG
-extern mp_obj_exception_t mp_watchdog_timeout_exception;
-#define WATCHDOG_EXCEPTION_CHECK() (MP_STATE_VM(mp_pending_exception) == &mp_watchdog_timeout_exception)
-#else
-#define WATCHDOG_EXCEPTION_CHECK() 0
-#endif
 
 void mp_hal_delay_ms(mp_uint_t delay) {
     uint64_t start_tick = port_get_raw_ticks(NULL);

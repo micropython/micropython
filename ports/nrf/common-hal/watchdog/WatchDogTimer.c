@@ -50,22 +50,6 @@ STATIC nrfx_timer_t *timer = NULL;
 STATIC nrfx_wdt_t wdt = NRFX_WDT_INSTANCE(0);
 STATIC nrfx_wdt_channel_id wdt_channel_id;
 
-const mp_obj_type_t mp_type_WatchDogTimeout = {
-    { &mp_type_type },
-    .name = MP_QSTR_WatchDogTimeout,
-    .make_new = mp_obj_exception_make_new,
-    .attr = mp_obj_exception_attr,
-    .parent = &mp_type_Exception,
-};
-
-mp_obj_exception_t mp_watchdog_timeout_exception = {
-    .base.type = &mp_type_WatchDogTimeout,
-    .traceback_alloc = 0,
-    .traceback_len = 0,
-    .traceback_data = NULL,
-    .args = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj,
-};
-
 STATIC void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void *p_context) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(p_context);
     if (event_type != NRF_TIMER_EVENT_COMPARE0) {

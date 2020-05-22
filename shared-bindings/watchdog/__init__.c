@@ -55,6 +55,22 @@
 //|     w.feed()"""
 //|
 
+const mp_obj_type_t mp_type_WatchDogTimeout = {
+    { &mp_type_type },
+    .name = MP_QSTR_WatchDogTimeout,
+    .make_new = mp_obj_exception_make_new,
+    .attr = mp_obj_exception_attr,
+    .parent = &mp_type_Exception,
+};
+
+mp_obj_exception_t mp_watchdog_timeout_exception = {
+    .base.type = &mp_type_WatchDogTimeout,
+    .traceback_alloc = 0,
+    .traceback_len = 0,
+    .traceback_data = NULL,
+    .args = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj,
+};
+
 STATIC const mp_rom_map_elem_t watchdog_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_watchdog) },
     { MP_ROM_QSTR(MP_QSTR_WatchDogMode),   MP_ROM_PTR(&watchdog_watchdogmode_type) },
