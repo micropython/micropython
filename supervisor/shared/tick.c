@@ -86,6 +86,13 @@ void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
     run_background_tasks();
 }
 
+#ifdef CIRCUITPY_WATCHDOG
+extern mp_obj_exception_t mp_watchdog_timeout_exception;
+#define WATCHDOG_EXCEPTION_CHECK() (MP_STATE_VM(mp_pending_exception) == &mp_watchdog_timeout_exception)
+#else
+#define WATCHDOG_EXCEPTION_CHECK() 0
+#endif
+
 void mp_hal_delay_ms(mp_uint_t delay) {
     uint64_t start_tick = port_get_raw_ticks(NULL);
     // Adjust the delay to ticks vs ms.
@@ -97,7 +104,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
         // Check to see if we've been CTRL-Ced by autoreload or the user.
         if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
            MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception)) ||
-           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_watchdog_exception))) {
+           WATCHDOG_EXCEPTION_CHECK()) {
             break;
         }
         remaining = end_tick - port_get_raw_ticks(NULL);
