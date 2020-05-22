@@ -50,6 +50,7 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/neopixel_write/__init__.h"
+#include "common-hal/watchdog/WatchDogTimer.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
@@ -187,6 +188,10 @@ void reset_port(void) {
 
 #if CIRCUITPY_BLEIO
     bleio_reset();
+#endif
+
+#if CIRCUITPY_WATCHDOG
+    watchdog_reset();
 #endif
 
     reset_all_pins();
