@@ -78,13 +78,19 @@ const nrfx_rtc_config_t rtc_config = {
     .interrupt_priority = 6
 };
 
-static volatile uint64_t overflowed_ticks = 0;
+#define OVERFLOW_CHECK_PREFIX 0x2cad564f
+#define OVERFLOW_CHECK_SUFFIX 0x11343ef7
+static volatile struct {
+    uint32_t prefix;
+    uint64_t overflowed_ticks;
+    uint32_t suffix;
+} overflow_tracker __attribute__((section(".uninitialized")));
 
 void rtc_handler(nrfx_rtc_int_type_t int_type) {
     if (int_type == NRFX_RTC_INT_OVERFLOW) {
         // Our RTC is 24 bits and we're clocking it at 32.768khz which is 32 (2 ** 5) subticks per
         // tick.
-        overflowed_ticks += (1L<< (24 - 5));
+        overflow_tracker.overflowed_ticks += (1L<< (24 - 5));
     } else if (int_type == NRFX_RTC_INT_TICK && nrfx_rtc_counter_get(&rtc_instance) % 32 == 0) {
         // Do things common to all ports when the tick occurs
         supervisor_tick();
@@ -101,6 +107,17 @@ void tick_init(void) {
     nrfx_rtc_init(&rtc_instance, &rtc_config, rtc_handler);
     nrfx_rtc_enable(&rtc_instance);
     nrfx_rtc_overflow_enable(&rtc_instance, true);
+
+    // If the check prefix and suffix aren't correct, then the structure
+    // in memory isn't correct and the clock will be wildly wrong. Initialize
+    // the prefix and suffix so that we know the value is correct, and reset
+    // the time to 0.
+    if (overflow_tracker.prefix != OVERFLOW_CHECK_PREFIX ||
+        overflow_tracker.suffix != OVERFLOW_CHECK_SUFFIX) {
+        overflow_tracker.prefix = OVERFLOW_CHECK_PREFIX;
+        overflow_tracker.suffix = OVERFLOW_CHECK_SUFFIX;
+        overflow_tracker.overflowed_ticks = 0;
+    }
 }
 
 safe_mode_t port_init(void) {
@@ -205,6 +222,10 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
+    // We're getting ready to reset, so save the counter off.
+    // This counter will get reset to zero during the reboot.
+    uint32_t ticks = nrfx_rtc_counter_get(&rtc_instance);
+    overflow_tracker.overflowed_ticks += ticks;
     NVIC_SystemReset();
 }
 
@@ -248,7 +269,7 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
     if (subticks != NULL) {
         *subticks = (rtc % 32);
     }
-    return overflowed_ticks + rtc / 32;
+    return overflow_tracker.overflowed_ticks + rtc / 32;
 }
 
 // Enable 1/1024 second tick.
