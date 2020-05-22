@@ -66,7 +66,7 @@ STATIC const mpz_dig_t maxsize_dig[] = {
     #endif
 };
 // *FORMAT-ON*
-const mp_obj_int_t mp_maxsize_obj = {
+const mp_obj_int_t mp_sys_maxsize_obj = {
     {&mp_type_int},
     {.fixed_dig = 1, .len = NUM_DIG, .alloc = NUM_DIG, .dig = (mpz_dig_t *)maxsize_dig}
 };
