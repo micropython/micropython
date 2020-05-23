@@ -216,19 +216,11 @@ void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t* self, size_t index, mp_obj_t v
     _pixelbuf_set_pixel_color(self, index, r, g, b, w);
 }
 
-void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, mp_int_t start, mp_int_t stop, mp_int_t step, mp_obj_t* values) {
+void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t* values) {
     pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
-    size_t source_i = 0;
-    if (step > 0) {
-        for (mp_int_t target_i = start; target_i < stop; target_i += step) {
-            _pixelbuf_set_pixel(self, target_i, values[source_i]);
-            source_i++;
-        }
-    } else {
-        for (mp_int_t target_i = start; target_i >= stop; target_i += step) {
-            _pixelbuf_set_pixel(self, target_i, values[source_i]);
-            source_i++;
-        }
+    for (size_t i = 0; i < slice_len; i++) {
+        _pixelbuf_set_pixel(self, start, values[i]);
+        start+=step;
     }
     if (self->auto_write) {
         common_hal__pixelbuf_pixelbuf_show(self_in);

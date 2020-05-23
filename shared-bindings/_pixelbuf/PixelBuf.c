@@ -340,7 +340,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
                                                    slice_len, num_items);
             }
 
-            common_hal__pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.stop, slice.step, src_objs);
+            common_hal__pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, src_objs);
             return mp_const_none;
             #else
             return MP_OBJ_NULL; // op not supported
