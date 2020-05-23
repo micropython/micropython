@@ -225,7 +225,7 @@ void reset_cpu(void) {
     // We're getting ready to reset, so save the counter off.
     // This counter will get reset to zero during the reboot.
     uint32_t ticks = nrfx_rtc_counter_get(&rtc_instance);
-    overflow_tracker.overflowed_ticks += ticks;
+    overflow_tracker.overflowed_ticks += ticks / 32;
     NVIC_SystemReset();
 }
 
