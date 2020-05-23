@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-19 15:01+0800\n"
-"PO-Revision-Date: 2020-05-23 12:25+0000\n"
+"PO-Revision-Date: 2020-05-23 16:13+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -143,7 +143,7 @@ msgstr "'%s' verwacht op zijn meest r%d"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr "'%s' verwacht {r0, r1, ...}"
+msgstr "'%s' verwacht {r0, r1, …}"
 
 #: py/emitinlinextensa.c
 #, c-format
@@ -1836,9 +1836,8 @@ msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample moet 8 of 16 zijn"
 
 #: py/emitinlinethumb.c
-#, fuzzy
 msgid "branch not in range"
-msgstr "branch niet binnen bereik"
+msgstr "pad (branch) niet binnen bereik"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
