@@ -1487,12 +1487,13 @@ msgstr ""
 "Die Spannungsversorgung des Mikrocontrollers hat den minimal Wert "
 "unterschritten.\n"
 "Stellen Sie sicher, dass Ihr Netzteil genug Strom bereitstellt für den "
-"gesamten Stromkreis und drücken Sie Reset (nach dem Auswerfen von CIRCUITPY)."
-"\n"
+"gesamten Stromkreis und drücken Sie Reset (nach dem Auswerfen von "
+"CIRCUITPY).\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
-msgstr "Das bits_per_sample des Samples stimmt nicht mit dem des Mixers überein"
+msgstr ""
+"Das bits_per_sample des Samples stimmt nicht mit dem des Mixers überein"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's channel count does not match the mixer's"
@@ -1526,7 +1527,8 @@ msgstr "Die Kachelbreite muss die Bitmap-Breite genau teilen"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
-msgstr "Zeitbeschränkung ist zu groß: Maximale Zeitbeschränkung ist %d Sekunden"
+msgstr ""
+"Zeitbeschränkung ist zu groß: Maximale Zeitbeschränkung ist %d Sekunden"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1725,8 +1727,8 @@ msgstr "Schreiben nicht unterstüzt für die Characteristic"
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
 msgstr ""
-"Sie befinden sich im abgesicherten Modus: Es ist etwas Unerwartetes passiert."
-"\n"
+"Sie befinden sich im abgesicherten Modus: Es ist etwas Unerwartetes "
+"passiert.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -2071,7 +2073,8 @@ msgstr "kann keinen relativen Import durchführen"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array (incompatible input/output shape)"
-msgstr "Array kann nicht umgeformt werden (inkompatible Eingabe- / Ausgabeform)"
+msgstr ""
+"Array kann nicht umgeformt werden (inkompatible Eingabe- / Ausgabeform)"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2099,7 +2102,8 @@ msgstr "Farbpuffer muss 3 Bytes (RGB) oder 4 Bytes (RGB + pad byte) sein"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer, tuple, list, or int"
-msgstr "Der Farbpuffer muss ein Puffer, ein Tupel, eine Liste oder ein Int sein"
+msgstr ""
+"Der Farbpuffer muss ein Puffer, ein Tupel, eine Liste oder ein Int sein"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
