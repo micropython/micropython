@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-19 15:01+0800\n"
 "PO-Revision-Date: 2020-05-25 13:52+0000\n"
-"Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
+"Last-Translator: Dustin Watts <dustin_watts@yahoo.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
@@ -54,7 +54,7 @@ msgstr "  Bestand \"%q\", regel %d"
 
 #: main.c
 msgid " output:\n"
-msgstr " output\n"
+msgstr " uitvoer:\n"
 
 #: py/objstr.c
 #, c-format
