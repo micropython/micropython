@@ -119,13 +119,6 @@ def support_matrix_by_board():
 
     boards = dict()
     for port in SUPPORTED_PORTS:
-        # each port appears to use its own define for the chipset
-        if port in ["atmel-samd"]:
-            chip_keyword = "CHIP_FAMILY"
-        elif port in ["nrf"]:
-            chip_keyword = "MCU_VARIANT"
-        elif port in ["stm"]:
-            chip_keyword = "MCU_SERIES"
 
         port_dir = "ports/{}/boards".format(port)
         for entry in os.scandir(port_dir):
@@ -134,8 +127,6 @@ def support_matrix_by_board():
             board_modules = []
 
             settings = get_settings_from_makefile(f'ports/{port}', entry.name)
-
-            board_chip = lookup_setting(settings, chip_keyword, 'Unknown Chip')
 
             with open(os.path.join(entry.path, "mpconfigboard.h")) as get_name:
                 board_contents = get_name.read()
