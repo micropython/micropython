@@ -90,7 +90,7 @@ def get_settings_from_makefile(port_dir, board_name):
         in this script, something that has proved error-prone
     """
 
-    status, contents = subprocess.getstatusoutput(f"make -C {port_dir} BOARD={board_name} -qp")
+    status, contents = subprocess.getstatusoutput(f"make -C {port_dir} BOARD={board_name} -qp print-CC")
     # Make signals errors with exit status 2; 0 and 1 are "non-error" statuses
     if status not in (0, 1):
         raise RuntimeError(f'Invoking make exited with {status}')
