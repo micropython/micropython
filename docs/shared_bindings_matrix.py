@@ -28,7 +28,7 @@ import subprocess
 import sys
 
 
-SUPPORTED_PORTS = ["atmel-samd", "nrf", "stm", "mimxrt10xx"]
+SUPPORTED_PORTS = ['atmel-samd', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'stm']
 
 def get_shared_bindings():
     """ Get a list of modules in shared-bindings based on folder names
