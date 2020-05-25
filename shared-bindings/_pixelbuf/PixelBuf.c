@@ -53,18 +53,13 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|         When brightness is less than 1.0, a second buffer will be used to store the color values
 //|         before they are adjusted for brightness.
 //|
-//|         When ``P`` (pwm duration) is present as the 4th character of the byteorder
+//|         When ``P`` (PWM duration) is present as the 4th character of the byteorder
 //|         string, the 4th value in the tuple/list for a pixel is the individual pixel
-//|         brightness (0.0-1.0) and will enable a Dotstar compatible 1st byte in the
-//|         output buffer (``buf``).
-//|
-//|         When ``P`` (pwm duration) is present as the first character of the byteorder
-//|         string, the 4th value in the tuple/list for a pixel is the individual pixel
-//|         brightness (0.0-1.0) and will enable a Dotstar compatible 1st byte in the
-//|         output buffer (``buf``).
+//|         brightness (0.0-1.0) and will enable a Dotstar compatible 1st byte for each 
+//|         pixel.
 //|
 //|         :param ~int size: Number of pixels
-//|         :param ~str byteorder: Byte order string (such as "BGR" or "PBGR")
+//|         :param ~str byteorder: Byte order string (such as "RGB", "RGBW" or "PBGR")
 //|         :param ~float brightness: Brightness (0 to 1.0, default 1.0)
 //|         :param ~bool auto_write: Whether to automatically write pixels (Default False)
 //|         :param bytes header: Sequence of bytes to always send before pixel values.
@@ -276,13 +271,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_f
 
 //|     def __getitem__(self, index: Any) -> Any:
 //|         """Returns the pixel value at the given index as a tuple of (Red, Green, Blue[, White]) values
-//|         between 0 and 255."""
+//|         between 0 and 255.  When in PWM (DotStar) mode, the 4th tuple value is a float of the pixel
+//|         intensity from 0-1.0."""
 //|         ...
 //|
 //|     def __setitem__(self, index: Any, value: Any) -> Any:
-//|         """Sets the pixel value at the given index. Value can either be a tuple of (Red, Green, Blue
-//|         [, White]) values between 0 and 255 or an integer where the red, green and blue values are
-//|         packed into the lower three bytes (0xRRGGBB)."""
+//|         """Sets the pixel value at the given index.  Value can either be a tuple or integer.  Tuples are
+//|         The individual (Red, Green, Blue[, White]) values between 0 and 255.  If given an integer, the
+//|         red, green and blue values are packed into the lower three bytes (0xRRGGBB).
+//|         For RGBW byteorders, if given only RGB values either as an int or as a tuple, the white value
+//|         is used instead when the red, green, and blue values are the same."""
 //|         ...
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
