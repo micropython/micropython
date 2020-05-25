@@ -182,6 +182,7 @@ jobs:
         - "grandcentral_m4_express"
         - "hallowing_m0_express"
         - "hallowing_m4_express"
+        - "hiibot_bluefi"
         - "imxrt1010_evk"
         - "imxrt1020_evk"
         - "imxrt1060_evk"
