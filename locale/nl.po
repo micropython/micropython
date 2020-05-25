@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-19 15:01+0800\n"
-"PO-Revision-Date: 2020-05-19 17:08+0000\n"
+"PO-Revision-Date: 2020-05-25 13:52+0000\n"
 "Last-Translator: Dustin Watts <dustin_watts@yahoo.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -42,7 +42,7 @@ msgid ""
 "To exit, please reset the board without "
 msgstr ""
 "\n"
-"Om te verlatten, herstart de module zonder "
+"Om te verlaten, herstart de module zonder "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -54,7 +54,7 @@ msgstr "  Bestand \"%q\", regel %d"
 
 #: main.c
 msgid " output:\n"
-msgstr " output\n"
+msgstr " uitvoer:\n"
 
 #: py/objstr.c
 #, c-format
@@ -143,7 +143,7 @@ msgstr "'%s' verwacht op zijn meest r%d"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr "'%s' verwacht {r0, r1, ...}"
+msgstr "'%s' verwacht {r0, r1, …}"
 
 #: py/emitinlinextensa.c
 #, c-format
@@ -1291,7 +1291,7 @@ msgstr "En iedere module in het bestandssysteem\n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
-msgstr ""
+msgstr "Polygon heeft op zijn minst 3 punten nodig"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
@@ -1518,7 +1518,7 @@ msgstr "Tile breedte moet exact de bitmap breedte verdelen"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
-msgstr ""
+msgstr "Time-out is te lang. Maximale time-out lengte is %d seconden"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1809,1460 +1809,1471 @@ msgstr "verkeerde compileer modus"
 
 #: py/objstr.c
 msgid "bad conversion specifier"
-msgstr ""
+msgstr "slechte conversie specificatie"
 
 #: py/objstr.c
 msgid "bad format string"
-msgstr ""
+msgstr "string met verkeerde indeling"
 
 #: py/binary.c
 msgid "bad typecode"
-msgstr ""
+msgstr "verkeerde typecode"
 
 #: py/emitnative.c
 msgid "binary op %q not implemented"
-msgstr ""
+msgstr "binaire op %q niet geïmplementeerd"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be 7, 8 or 9"
-msgstr ""
+msgstr "bits moet 7, 8, of 9 zijn"
 
 #: extmod/machine_spi.c
 msgid "bits must be 8"
-msgstr ""
+msgstr "bits moet 8 zijn"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
-msgstr ""
+msgstr "bits_per_sample moet 8 of 16 zijn"
 
 #: py/emitinlinethumb.c
 msgid "branch not in range"
-msgstr ""
+msgstr "pad (branch) niet binnen bereik"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
-msgstr ""
+msgstr "buffer moet een byte-achtig object zijn"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
-msgstr ""
+msgstr "grootte van de buffer moet overeenkomen met het formaat"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
-msgstr ""
+msgstr "buffer slices moeten van gelijke grootte zijn"
 
 #: py/modstruct.c shared-bindings/struct/__init__.c
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
-msgstr ""
+msgstr "buffer te klein"
 
 #: extmod/machine_spi.c
 msgid "buffers must be the same length"
-msgstr ""
+msgstr "buffers moeten dezelfde lengte hebben"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
-msgstr ""
+msgstr "buttons moeten digitalio.DigitalInOut zijn"
 
 #: py/vm.c
 msgid "byte code not implemented"
-msgstr ""
+msgstr "byte code niet geïmplementeerd"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
-msgstr ""
+msgstr "byteorder is geen string"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
-msgstr ""
+msgstr "butes > 8 niet ondersteund"
 
 #: py/objstr.c
 msgid "bytes value out of range"
-msgstr ""
+msgstr "bytes waarde buiten bereik"
 
 #: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is out of range"
-msgstr ""
+msgstr "calibration is buiten bereik"
 
 #: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is read only"
-msgstr ""
+msgstr "calibration is alleen-lezen"
 
 #: ports/atmel-samd/common-hal/rtc/RTC.c
 msgid "calibration value out of range +/-127"
-msgstr ""
+msgstr "calibration waarde buiten bereik +/-127"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
-msgstr ""
+msgstr "kan slechts 4 parameters aan Thumb assembly geven"
 
 #: py/emitinlinextensa.c
 msgid "can only have up to 4 parameters to Xtensa assembly"
-msgstr ""
+msgstr "kan slechts 4 parameters aan Xtensa assembly geven"
 
 #: py/persistentcode.c
 msgid "can only save bytecode"
-msgstr ""
+msgstr "kan alleen byte-code opslaan"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
 msgstr ""
+"kan geen speciale methode aan een al ge-subkwalificeerde klasse toevoegen"
 
 #: py/compile.c
 msgid "can't assign to expression"
-msgstr ""
+msgstr "kan niet toewijzen aan expressie"
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to complex"
-msgstr ""
+msgstr "kan %s niet converteren naar een complex"
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to float"
-msgstr ""
+msgstr "kan %s niet omzetten naar een float"
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to int"
-msgstr ""
+msgstr "kan %s niet omzetten naar een int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
-msgstr ""
+msgstr "kan '%q' object niet omzetten naar %q impliciet"
 
 #: py/objint.c
 msgid "can't convert NaN to int"
-msgstr ""
+msgstr "kan NaN niet omzetten naar int"
 
 #: shared-bindings/i2cslave/I2CSlave.c
 msgid "can't convert address to int"
-msgstr ""
+msgstr "kan adres niet omzetten naar int"
 
 #: py/objint.c
 msgid "can't convert inf to int"
-msgstr ""
+msgstr "kan inf niet omzetten naar int"
 
 #: py/obj.c
 msgid "can't convert to complex"
-msgstr ""
+msgstr "kan niet omzetten naar complex"
 
 #: py/obj.c
 msgid "can't convert to float"
-msgstr ""
+msgstr "kan niet omzetten naar float"
 
 #: py/obj.c
 msgid "can't convert to int"
-msgstr ""
+msgstr "kan niet omzetten naar int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
-msgstr ""
+msgstr "kan niet omzetten naar str impliciet"
 
 #: py/compile.c
 msgid "can't declare nonlocal in outer code"
-msgstr ""
+msgstr "kan geen nonlocal in buitenste code declareren"
 
 #: py/compile.c
 msgid "can't delete expression"
-msgstr ""
+msgstr "kan expressie niet verwijderen"
 
 #: py/emitnative.c
 msgid "can't do binary op between '%q' and '%q'"
-msgstr ""
+msgstr "kan geen een binaire operatie doen tussen '%q' en '%q'"
 
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
-msgstr ""
+msgstr "kan geen afgekapte deling doen van een comlex nummer"
 
 #: py/compile.c
 msgid "can't have multiple **x"
-msgstr ""
+msgstr "kan niet meerdere **x hebben"
 
 #: py/compile.c
 msgid "can't have multiple *x"
-msgstr ""
+msgstr "kan geen meerdere *x hebben"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
-msgstr ""
+msgstr "kan '%q niet impliciet converteren naar 'bool'"
 
 #: py/emitnative.c
 msgid "can't load from '%q'"
-msgstr ""
+msgstr "kan niet laden van '%q'"
 
 #: py/emitnative.c
 msgid "can't load with '%q' index"
-msgstr ""
+msgstr "kan niet met '%q' index laden"
 
 #: py/objgenerator.c
 msgid "can't pend throw to just-started generator"
-msgstr ""
+msgstr "kan throw niet aan net gestartte generator toevoegen"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
-msgstr ""
+msgstr "kan geen niet-'None' waarde naar een net gestartte generator sturen"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
-msgstr ""
+msgstr "kan attribute niet instellen"
 
 #: py/emitnative.c
 msgid "can't store '%q'"
-msgstr ""
+msgstr "kan '%q' niet opslaan"
 
 #: py/emitnative.c
 msgid "can't store to '%q'"
-msgstr ""
+msgstr "kan niet naar '%q' opslaan"
 
 #: py/emitnative.c
 msgid "can't store with '%q' index"
-msgstr ""
+msgstr "kan niet opslaan met '%q' als index"
 
 #: py/objstr.c
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
-msgstr ""
+msgstr "kan niet schakelen tussen automatische en handmatige veld specificatie"
 
 #: py/objstr.c
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
-msgstr ""
+msgstr "kan niet schakelen tussen handmatige en automatische veld specificatie"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
-msgstr ""
+msgstr "kan geen instanties van '%q' creëren"
 
 #: py/objtype.c
 msgid "cannot create instance"
-msgstr ""
+msgstr "kan geen instantie creëren"
 
 #: py/runtime.c
 msgid "cannot import name %q"
-msgstr ""
+msgstr "kan naam %q niet importeren"
 
 #: py/builtinimport.c
 msgid "cannot perform relative import"
-msgstr ""
+msgstr "kan geen relatieve import uitvoeren"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array (incompatible input/output shape)"
-msgstr ""
+msgstr "kan de array niet hervormen (niet verenigbare input/output vorm)"
 
 #: py/emitnative.c
 msgid "casting"
-msgstr ""
+msgstr "casting"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
-msgstr ""
+msgstr "chars buffer te klein"
 
 #: py/modbuiltins.c
 msgid "chr() arg not in range(0x110000)"
-msgstr ""
+msgstr "chr() arg niet binnen bereik (0x110000)"
 
 #: py/modbuiltins.c
 msgid "chr() arg not in range(256)"
-msgstr ""
+msgstr "chr() arg niet binnen bereik (256)"
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
 msgstr ""
+"cirkel kan slechts bij één object van een hoger niveau worden geregistreerd"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr ""
+msgstr "kleurbuffer moet 3 bytes (RGB) of 4 bytes (RGB + pad byte) zijn"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer, tuple, list, or int"
-msgstr ""
+msgstr "kleurbuffer moet een buffer, tuple, list, of int zijn"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
+msgstr "kleurbuffer moet een bytearray of array van type 'b' of 'B' zijn"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
-msgstr ""
+msgstr "kleur moet tussen 0x000000 en 0xffffff liggen"
 
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
-msgstr ""
+msgstr "kleur moet een int zijn"
 
 #: py/objcomplex.c
 msgid "complex division by zero"
-msgstr ""
+msgstr "complexe deling door 0"
 
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
-msgstr ""
+msgstr "complexe waardes niet ondersteund"
 
 #: extmod/moduzlib.c
 msgid "compression header"
-msgstr ""
+msgstr "compressie header"
 
 #: py/parse.c
 msgid "constant must be an integer"
-msgstr ""
+msgstr "constant moet een integer zijn"
 
 #: py/emitnative.c
 msgid "conversion to object"
-msgstr ""
+msgstr "conversie naar object"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must be linear arrays"
-msgstr ""
+msgstr "convolutie argumenten moeten lineaire arrays zijn"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must be ndarrays"
-msgstr ""
+msgstr "convolutie argumenten moeten ndarrays zijn"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must not be empty"
-msgstr ""
+msgstr "convolutie argumenten mogen niet leeg zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "could not broadast input array from shape"
-msgstr ""
+msgstr "kon de invoerarray niet vanuit vorm uitzenden"
 
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
-msgstr ""
+msgstr "kon de Vandermonde matrix niet omkeren"
 
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
-msgstr ""
+msgstr "ddof kleiner dan de lengte van de data set"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
-msgstr ""
+msgstr "decimale getallen zijn niet ondersteund"
 
 #: py/compile.c
 msgid "default 'except' must be last"
-msgstr ""
+msgstr "standaard 'expect' moet laatste zijn"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
+"bestemming buffer moet een bytearray of array van het type 'B' voor "
+"bit_depth = 8"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr ""
+msgstr "bestemming buffer moet een array van het type 'H' voor bit_depth = 16"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination_length must be an int >= 0"
-msgstr ""
+msgstr "destination_lengte moest een int groter dan of gelijk zijn aan 0 zijn"
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
-msgstr ""
+msgstr "dict update sequence heeft de verkeerde lengte"
 
 #: extmod/ulab/code/numerical.c
 msgid "diff argument must be an ndarray"
-msgstr ""
+msgstr "diff argument moet een ndarray zijn"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
-msgstr ""
+msgstr "deling door nul"
 
 #: py/objdeque.c
 msgid "empty"
-msgstr ""
+msgstr "leeg"
 
 #: extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
-msgstr ""
+msgstr "lege heap"
 
 #: py/objstr.c
 msgid "empty separator"
-msgstr ""
+msgstr "lege seperator"
 
 #: shared-bindings/random/__init__.c
 msgid "empty sequence"
-msgstr ""
+msgstr "lege sequentie"
 
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
-msgstr ""
+msgstr "einde van format terwijl zoekend naar conversie-specifier"
 
 #: shared-bindings/displayio/Shape.c
 msgid "end_x should be an int"
-msgstr ""
+msgstr "end_x moet een int zijn"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
-msgstr ""
+msgstr "fout = 0x%08lX"
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
-msgstr ""
+msgstr "uitzonderingen moeten afleiden van BaseException"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
-msgstr ""
+msgstr "verwachtte ':' na format specifier"
 
 #: py/obj.c
 msgid "expected tuple/list"
-msgstr ""
+msgstr "verwachtte een tuple/lijst"
 
 #: py/modthread.c
 msgid "expecting a dict for keyword args"
-msgstr ""
+msgstr "verwacht een dict voor keyword argumenten"
 
 #: py/compile.c
 msgid "expecting an assembler instruction"
-msgstr ""
+msgstr "verwacht een assembler instructie"
 
 #: py/compile.c
 msgid "expecting just a value for set"
-msgstr ""
+msgstr "verwacht alleen een waarde voor set"
 
 #: py/compile.c
 msgid "expecting key:value for dict"
-msgstr ""
+msgstr "verwacht key:waarde for dict"
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
-msgstr ""
+msgstr "extra keyword argumenten gegeven"
 
 #: py/argcheck.c
 msgid "extra positional arguments given"
-msgstr ""
+msgstr "extra positionele argumenten gegeven"
 
 #: py/parse.c
 msgid "f-string expression part cannot include a '#'"
-msgstr ""
+msgstr "f-string expressie deel kan geen '#' bevatten"
 
 #: py/parse.c
 msgid "f-string expression part cannot include a backslash"
-msgstr ""
+msgstr "f-string expressie deel kan geen backslash bevatten"
 
 #: py/parse.c
 msgid "f-string: empty expression not allowed"
-msgstr ""
+msgstr "f-string: lege expressie niet toegestaan"
 
 #: py/parse.c
 msgid "f-string: expecting '}'"
-msgstr ""
+msgstr "f-string: verwacht '}'"
 
 #: py/parse.c
 msgid "f-string: single '}' is not allowed"
-msgstr ""
+msgstr "f-string: enkele '}' is niet toegestaan"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
-msgstr ""
+msgstr "bestand moet een bestand zijn geopend in byte modus"
 
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
-msgstr ""
+msgstr "bestandssysteem moet een mount methode bieden"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
-msgstr ""
+msgstr "eerst argument moet een iterabel zijn"
 
 #: extmod/ulab/code/vectorise.c
 msgid "first argument must be an ndarray"
-msgstr ""
+msgstr "eerst argument moet een ndarray zijn"
 
 #: py/objtype.c
 msgid "first argument to super() must be type"
-msgstr ""
+msgstr "eerste argument voor super() moet een type zijn"
 
 #: extmod/machine_spi.c
 msgid "firstbit must be MSB"
-msgstr ""
+msgstr "het eerste bit moet het MSB zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
-msgstr ""
+msgstr "De afvlakkingsvolgorde moet ofwel \"C\", ofwel \"F\" zijn"
 
 #: extmod/ulab/code/numerical.c
 msgid "flip argument must be an ndarray"
-msgstr ""
+msgstr "flip argumenten moeten een ndarray zijn"
 
 #: py/objint.c
 msgid "float too big"
-msgstr ""
+msgstr "float is te groot"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
-msgstr ""
+msgstr "lettertype moet 2048 bytes lang zijn"
 
 #: py/objstr.c
 msgid "format requires a dict"
-msgstr ""
+msgstr "format vereist een dict"
 
 #: py/objdeque.c
 msgid "full"
-msgstr ""
+msgstr "vol"
 
 #: py/argcheck.c
 msgid "function does not take keyword arguments"
-msgstr ""
+msgstr "functie accepteert geen keyword argumenten"
 
 #: py/argcheck.c
 #, c-format
 msgid "function expected at most %d arguments, got %d"
-msgstr ""
+msgstr "functie verwachtte op zijn meest %d argumenten, maar kreeg %d"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
-msgstr ""
+msgstr "functie kreeg meedere waarden voor argument '%q'"
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
-msgstr ""
+msgstr "funtie is alleen geïmplementeerd voor scalars en ndarrays"
 
 #: py/argcheck.c
 #, c-format
 msgid "function missing %d required positional arguments"
-msgstr ""
+msgstr "functie mist %d vereist positionele argumenten"
 
 #: py/bc.c
 msgid "function missing keyword-only argument"
-msgstr ""
+msgstr "functie mist keyword-only argument"
 
 #: py/bc.c
 msgid "function missing required keyword argument '%q'"
-msgstr ""
+msgstr "functie mist vereist sleutelwoord argument \"%q"
 
 #: py/bc.c
 #, c-format
 msgid "function missing required positional argument #%d"
-msgstr ""
+msgstr "functie mist vereist positie-argument #%d"
 
 #: py/argcheck.c py/bc.c py/objnamedtuple.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
+"functie vraagt %d argumenten zonder keyword maar %d argumenten werden gegeven"
 
 #: shared-bindings/time/__init__.c
 msgid "function takes exactly 9 arguments"
-msgstr ""
+msgstr "functie vraagt precies 9 argumenten"
 
 #: py/objgenerator.c
 msgid "generator already executing"
-msgstr ""
+msgstr "generator wordt al uitgevoerd"
 
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
-msgstr ""
+msgstr "generator negeerde GeneratorExit"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
-msgstr ""
+msgstr "graphic moet 2048 bytes lang zijn"
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
-msgstr ""
+msgstr "heap moet een lijst zijn"
 
 #: py/compile.c
 msgid "identifier redefined as global"
-msgstr ""
+msgstr "identifier is opnieuw gedefinieerd als global"
 
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
-msgstr ""
+msgstr "identifier is opnieuw gedefinieerd als nonlocal"
 
 #: py/objstr.c
 msgid "incomplete format"
-msgstr ""
+msgstr "incompleet formaat"
 
 #: py/objstr.c
 msgid "incomplete format key"
-msgstr ""
+msgstr "incomplete formaatsleutel"
 
 #: extmod/modubinascii.c
 msgid "incorrect padding"
-msgstr ""
+msgstr "vulling (padding) is onjuist"
 
 #: extmod/ulab/code/ndarray.c
 msgid "index is out of bounds"
-msgstr ""
+msgstr "index is buiten bereik"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
-msgstr ""
+msgstr "index is buiten bereik"
 
 #: py/obj.c
 msgid "indices must be integers"
-msgstr ""
+msgstr "indices moeten integers zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
-msgstr ""
+msgstr "indices moeten integers, segmenten (slices) of Boolean lijsten zijn"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
-msgstr ""
+msgstr "inline assembler moet een functie zijn"
 
 #: extmod/ulab/code/create.c
 msgid "input argument must be an integer or a 2-tuple"
-msgstr ""
+msgstr "invoerargument moet een integer of 2-tuple zijn"
 
 #: extmod/ulab/code/fft.c
 msgid "input array length must be power of 2"
-msgstr ""
+msgstr "invoer array lengte moet een macht van 2 zijn"
 
 #: extmod/ulab/code/poly.c
 msgid "input data must be an iterable"
-msgstr ""
+msgstr "invoerdata moet itereerbaar zijn"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is asymmetric"
-msgstr ""
+msgstr "invoermatrix is asymmetrisch"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is singular"
-msgstr ""
+msgstr "invoermatrix is singulier"
 
 #: extmod/ulab/code/linalg.c
 msgid "input must be square matrix"
-msgstr ""
+msgstr "invoer moet een vierkante matrix zijn"
 
 #: extmod/ulab/code/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
-msgstr ""
+msgstr "invoer moet een tuple, lijst, bereik of ndarray zijn"
 
 #: extmod/ulab/code/poly.c
 msgid "input vectors must be of equal length"
-msgstr ""
+msgstr "invoervectors moeten van gelijke lengte zijn"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr ""
+msgstr "int() argument 2 moet >=2 en <= 36 zijn"
 
 #: py/objstr.c
 msgid "integer required"
-msgstr ""
+msgstr "integer vereist"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
-msgstr ""
+msgstr "interval moet binnen bereik %s-%s vallen"
 
 #: extmod/machine_i2c.c
 msgid "invalid I2C peripheral"
-msgstr ""
+msgstr "onjuist I2C randapparaat"
 
 #: extmod/machine_spi.c
 msgid "invalid SPI peripheral"
-msgstr ""
+msgstr "onjuist SPI randapparaat"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
-msgstr ""
+msgstr "ongeldige argumenten"
 
 #: extmod/modussl_axtls.c
 msgid "invalid cert"
-msgstr ""
+msgstr "ongeldig certificaat"
 
 #: extmod/uos_dupterm.c
 msgid "invalid dupterm index"
-msgstr ""
+msgstr "ongeldige dupterm index"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
-msgstr ""
+msgstr "ongeldig formaat"
 
 #: py/objstr.c
 msgid "invalid format specifier"
-msgstr ""
+msgstr "ongeldige formaatspecificatie"
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
-msgstr ""
+msgstr "ongeldige sleutel"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
-msgstr ""
+msgstr "ongeldige micropython decorator"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
-msgstr ""
+msgstr "ongeldige stap"
 
 #: py/compile.c py/parse.c
 msgid "invalid syntax"
-msgstr ""
+msgstr "ongeldige syntax"
 
 #: py/parsenum.c
 msgid "invalid syntax for integer"
-msgstr ""
+msgstr "ongeldige syntax voor integer"
 
 #: py/parsenum.c
 #, c-format
 msgid "invalid syntax for integer with base %d"
-msgstr ""
+msgstr "ongeldige syntax voor integer met grondtal %d"
 
 #: py/parsenum.c
 msgid "invalid syntax for number"
-msgstr ""
+msgstr "ongeldige syntax voor nummer"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
-msgstr ""
+msgstr "issubclass() argument 1 moet een klasse zijn"
 
 #: py/objtype.c
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
-msgstr ""
+msgstr "issubclass() argument 2 moet een klasse of tuple van klassen zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "iterables are not of the same length"
-msgstr ""
+msgstr "itereerbare objecten hebben niet dezelfde lengte"
 
 #: extmod/ulab/code/linalg.c
 msgid "iterations did not converge"
-msgstr ""
+msgstr "itereerbare objecten convergeren niet"
 
 #: py/objstr.c
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
+"join verwacht een lijst van str/byte objecten die consistent zijn met het "
+"self-object"
 
 #: py/argcheck.c
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
+"trefwoord argument(en) zijn niet geïmplementeerd, gebruik normale argumenten"
 
 #: py/bc.c
 msgid "keywords must be strings"
-msgstr ""
+msgstr "trefwoorden moeten van type string zijn"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
-msgstr ""
+msgstr "label '%q' is niet gedefinieerd"
 
 #: py/compile.c
 msgid "label redefined"
-msgstr ""
+msgstr "label opnieuw gedefinieerd"
 
 #: py/stream.c
 msgid "length argument not allowed for this type"
-msgstr ""
+msgstr "voor dit type is length niet toegestaan"
 
 #: shared-bindings/audiomixer/MixerVoice.c
 msgid "level must be between 0 and 1"
-msgstr ""
+msgstr "level moet tussen 0 en 1 liggen"
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
-msgstr ""
+msgstr "lhs en rhs moeten compatibel zijn"
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
-msgstr ""
+msgstr "lokale '%q' is van type '%q' maar bron is '%q'"
 
 #: py/emitnative.c
 msgid "local '%q' used before type known"
-msgstr ""
+msgstr "lokale '%q' gebruikt voordat type bekend is"
 
 #: py/vm.c
 msgid "local variable referenced before assignment"
-msgstr ""
+msgstr "verwijzing naar een (nog) niet toegewezen lokale variabele"
 
 #: py/objint.c
 msgid "long int not supported in this build"
-msgstr ""
+msgstr "long int wordt niet ondersteund in deze build"
 
 #: py/parse.c
 msgid "malformed f-string"
-msgstr ""
+msgstr "onjuist gevormde f-string"
 
 #: shared-bindings/_stage/Layer.c
 msgid "map buffer too small"
-msgstr ""
+msgstr "map buffer te klein"
 
 #: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
-msgstr ""
+msgstr "fout in het wiskundig domein (math domain error)"
 
 #: extmod/ulab/code/linalg.c
 msgid "matrix dimensions do not match"
-msgstr ""
+msgstr "matrix afmetingen komen niet overeen"
 
 #: extmod/ulab/code/linalg.c
 msgid "matrix is not positive definite"
-msgstr ""
+msgstr "matrix is niet positief-definiet"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr ""
+msgstr "max_length moet 0-%d zijn als fixed_length %s is"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
-msgstr ""
+msgstr "maximale recursiediepte overschreden"
 
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
-msgstr ""
+msgstr "geheugentoewijzing mislukt, %u bytes worden toegewezen"
 
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
-msgstr ""
+msgstr "geheugentoewijzing mislukt, heap is vergrendeld"
 
 #: py/builtinimport.c
 msgid "module not found"
-msgstr ""
+msgstr "module niet gevonden"
 
 #: extmod/ulab/code/poly.c
 msgid "more degrees of freedom than data points"
-msgstr ""
+msgstr "meer vrijheidsgraden dan datapunten"
 
 #: py/compile.c
 msgid "multiple *x in assignment"
-msgstr ""
+msgstr "meerdere *x in toewijzing"
 
 #: py/objtype.c
 msgid "multiple bases have instance lay-out conflict"
-msgstr ""
+msgstr "meerdere grondtallen (bases) hebben instance lay-out conflicten"
 
 #: py/objtype.c
 msgid "multiple inheritance not supported"
-msgstr ""
+msgstr "meervoudige overerving niet ondersteund"
 
 #: py/emitnative.c
 msgid "must raise an object"
-msgstr ""
+msgstr "moet een object oproepen (raise)"
 
 #: extmod/machine_spi.c
 msgid "must specify all of sck/mosi/miso"
-msgstr ""
+msgstr "sck/mosi/miso moeten alle gespecificeerd worden"
 
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
-msgstr ""
+msgstr "voor sleutelfunctie moet een trefwoordargument gebruikt worden"
 
 #: extmod/ulab/code/numerical.c
 msgid "n must be between 0, and 9"
-msgstr ""
+msgstr "n moet tussen 0 en 9 liggen"
 
 #: py/runtime.c
 msgid "name '%q' is not defined"
-msgstr ""
+msgstr "naam '%q' is niet gedefinieerd"
 
 #: py/runtime.c
 msgid "name not defined"
-msgstr ""
+msgstr "naam is niet gedefinieerd"
 
 #: py/compile.c
 msgid "name reused for argument"
-msgstr ""
+msgstr "naam hergebruikt voor argument"
 
 #: py/emitnative.c
 msgid "native yield"
-msgstr ""
+msgstr "natuurlijke opbrengst (native yield)"
 
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
-msgstr ""
+msgstr "Om uit te pakken zijn meer dan %d waarden vereist"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
-msgstr ""
+msgstr "negatieve macht terwijl er geen ondersteuning is voor float"
 
 #: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
-msgstr ""
+msgstr "negatieve verschuivingstelling (shift count)"
 
 #: py/vm.c
 msgid "no active exception to reraise"
-msgstr ""
+msgstr "geen actieve uitzondering om opnieuw op te werpen (raise)"
 
 #: shared-bindings/socket/__init__.c shared-module/network/__init__.c
 msgid "no available NIC"
-msgstr ""
+msgstr "geen netwerkadapter (NIC) beschikbaar"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
-msgstr ""
+msgstr "geen binding voor nonlocal gevonden"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
-msgstr ""
+msgstr "geen module met naam '%q'"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
-msgstr ""
+msgstr "geen reset pin beschikbaar"
 
 #: py/runtime.c
 msgid "no such attribute"
-msgstr ""
+msgstr "niet zo'n attribuut"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
-msgstr ""
+msgstr "niet-UUID gevonden in service_uuids_whitelist"
 
 #: py/compile.c
 msgid "non-default argument follows default argument"
-msgstr ""
+msgstr "niet-standaard argument volgt op een standaard argument"
 
 #: extmod/modubinascii.c
 msgid "non-hex digit found"
-msgstr ""
+msgstr "er werd een niet-hexadecimaal cijfer gevonden"
 
 #: py/compile.c
 msgid "non-keyword arg after */**"
-msgstr ""
+msgstr "niet-trefwoord argument na */**"
 
 #: py/compile.c
 msgid "non-keyword arg after keyword arg"
-msgstr ""
+msgstr "niet-trefwoord argument na trefwoord argument"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
-msgstr ""
+msgstr "geen 128-bit UUID"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
-msgstr ""
+msgstr "niet alle argumenten omgezet bij formattering van string"
 
 #: py/objstr.c
 msgid "not enough arguments for format string"
-msgstr ""
+msgstr "niet genoeg argumenten om string te formatteren"
 
 #: extmod/ulab/code/poly.c
 msgid "number of arguments must be 2, or 3"
-msgstr ""
+msgstr "aantal argumenten moet 2 of 3 zijn"
 
 #: extmod/ulab/code/create.c
 msgid "number of points must be at least 2"
-msgstr ""
+msgstr "aantal punten moet minimaal 2 zijn"
 
 #: py/obj.c
 #, c-format
 msgid "object '%s' is not a tuple or list"
-msgstr ""
+msgstr "object '%s' is geen tuple of lijst"
 
 #: py/obj.c
 msgid "object does not support item assignment"
-msgstr ""
+msgstr "object ondersteund toewijzen van elementen niet"
 
 #: py/obj.c
 msgid "object does not support item deletion"
-msgstr ""
+msgstr "object ondersteund verwijderen van elementen niet"
 
 #: py/obj.c
 msgid "object has no len"
-msgstr ""
+msgstr "object heeft geen len"
 
 #: py/obj.c
 msgid "object is not subscriptable"
-msgstr ""
+msgstr "object heeft geen '__getitem__'-methode (not subscriptable)"
 
 #: py/runtime.c
 msgid "object not an iterator"
-msgstr ""
+msgstr "object is geen iterator"
 
 #: py/objtype.c py/runtime.c
 msgid "object not callable"
-msgstr ""
+msgstr "object niet aanroepbaar"
 
 #: py/sequence.c shared-bindings/displayio/Group.c
 msgid "object not in sequence"
-msgstr ""
+msgstr "object niet in volgorde (sequence)"
 
 #: py/runtime.c
 msgid "object not iterable"
-msgstr ""
+msgstr "object niet itereerbaar"
 
 #: py/obj.c
 #, c-format
 msgid "object of type '%s' has no len()"
-msgstr ""
+msgstr "object van type '%s' heeft geen len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
-msgstr ""
+msgstr "object met buffer protocol vereist"
 
 #: extmod/modubinascii.c
 msgid "odd-length string"
-msgstr ""
+msgstr "string met oneven lengte"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
-msgstr ""
+msgstr "offset buiten bereik"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
-msgstr ""
+msgstr "alleen bit_depth=16 wordt ondersteund"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
-msgstr ""
+msgstr "alleen sample_rate=16000 wordt ondersteund"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
-msgstr ""
+msgstr "alleen segmenten met step=1 (ook wel None) worden ondersteund"
 
 #: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
 #: extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
-msgstr ""
+msgstr "operands konden niet samen verzonden worden"
 
 #: extmod/ulab/code/numerical.c
 msgid "operation is not implemented on ndarrays"
-msgstr ""
+msgstr "bewerking is voor ndarrays niet geïmplementeerd"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
-msgstr ""
+msgstr "bewerking wordt niet ondersteund voor dit type"
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
-msgstr ""
+msgstr "ord verwacht een teken (char)"
 
 #: py/modbuiltins.c
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
-msgstr ""
+msgstr "ord() verwacht een teken (char) maar vond een string van lengte %d"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
-msgstr ""
+msgstr "overloop bij converteren van long int naar machine word"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
-msgstr ""
+msgstr "palette moet 32 bytes lang zijn"
 
 #: shared-bindings/displayio/Palette.c
 msgid "palette_index should be an int"
-msgstr ""
+msgstr "palette_index moet een int zijn"
 
 #: py/compile.c
 msgid "parameter annotation must be an identifier"
-msgstr ""
+msgstr "parameter annotatie moet een identifier zijn"
 
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
-msgstr ""
+msgstr "parameters moeten registers zijn in de volgorde a2 tot a5"
 
 #: py/emitinlinethumb.c
 msgid "parameters must be registers in sequence r0 to r3"
-msgstr ""
+msgstr "parameters moeten registers zijn in de volgorde r0 tot r3"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
-msgstr ""
+msgstr "pixel coördinaten buiten bereik"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel value requires too many bits"
-msgstr ""
+msgstr "pixel waarde vereist te veel bits"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
+msgstr "pixel_shader moet displayio.Palette of displayio.ColorConverter zijn"
 
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
 msgstr ""
+"polygoon kan slechts bij één object van een hoger niveau worden geregistreerd"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
-msgstr ""
+msgstr "pop van een lege PulseIn"
 
 #: py/objset.c
 msgid "pop from an empty set"
-msgstr ""
+msgstr "pop van een lege set"
 
 #: py/objlist.c
 msgid "pop from empty list"
-msgstr ""
+msgstr "pop van een lege lijst"
 
 #: py/objdict.c
 msgid "popitem(): dictionary is empty"
-msgstr ""
+msgstr "popitem(): dictionary is leeg"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
-msgstr ""
+msgstr "derde argument van pow() mag geen 0 zijn"
 
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
-msgstr ""
+msgstr "pow() met 3 argumenten vereist integers"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
-msgstr ""
+msgstr "wachtrij overloop"
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
-msgstr ""
+msgstr "ruwe f-strings zijn niet geïmplementeerd"
 
 #: extmod/ulab/code/fft.c
 msgid "real and imaginary parts must be of equal length"
-msgstr ""
+msgstr "reëel en imaginair deel moeten gelijke lengte hebben"
 
 #: py/builtinimport.c
 msgid "relative import"
-msgstr ""
+msgstr "relatieve import"
 
 #: py/obj.c
 #, c-format
 msgid "requested length %d but object has length %d"
-msgstr ""
+msgstr "gevraagde lengte is %d maar object heeft lengte %d"
 
 #: py/compile.c
 msgid "return annotation must be an identifier"
-msgstr ""
+msgstr "return annotatie moet een identifier zijn"
 
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
-msgstr ""
+msgstr "return verwacht '%q' maar ontving '%q'"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] duplicates another pin assignment"
-msgstr ""
+msgstr "rgb_pins[%d] is hetzelfde als een andere pintoewijzing"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] is not on the same port as clock"
-msgstr ""
+msgstr "rgb_pins[%d] bevindt zich niet op dezelfde poort als klok"
 
 #: extmod/ulab/code/ndarray.c
 msgid "right hand side must be an ndarray, or a scalar"
-msgstr ""
+msgstr "de rechterkant moet een ndarray of scalar zijn"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
-msgstr ""
+msgstr "rsplit(None,n)"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
+"sample_source buffer moet een bytearray of array van type 'h', 'H', 'b' of "
+"'B' zijn"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
-msgstr ""
+msgstr "bemonsteringssnelheid buiten bereik"
 
 #: py/modmicropython.c
 msgid "schedule stack full"
-msgstr ""
+msgstr "schedule stack is vol"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
-msgstr ""
+msgstr "scriptcompilatie wordt niet ondersteund"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a 2-tuple"
-msgstr ""
+msgstr "vorm moet een 2-tuple zijn"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
-msgstr ""
+msgstr "teken niet toegestaan in string formaatspecificatie"
 
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
-msgstr ""
+msgstr "teken niet toegestaan bij integer formaatspecificatie 'c'"
 
 #: py/objstr.c
 msgid "single '}' encountered in format string"
-msgstr ""
+msgstr "enkele '}' aangetroffen in formaat tekenreeks (string)"
 
 #: extmod/ulab/code/linalg.c
 msgid "size is defined for ndarrays only"
-msgstr ""
+msgstr "omvang is alleen voor ndarrays gedefinieerd"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
-msgstr ""
+msgstr "de slaapduur mag niet negatief zijn"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
-msgstr ""
+msgstr "segmentstap mag niet nul zijn"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
-msgstr ""
+msgstr "small int overloop"
 
 #: main.c
 msgid "soft reboot\n"
-msgstr ""
+msgstr "zachte herstart\n"
 
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr ""
+msgstr "sorteerargument moet een ndarray zijn"
 
 #: py/objstr.c
 msgid "start/end indices"
-msgstr ""
+msgstr "start/stop indices"
 
 #: shared-bindings/displayio/Shape.c
 msgid "start_x should be an int"
-msgstr ""
+msgstr "start_x moet een int zijn"
 
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
-msgstr ""
+msgstr "step mag geen nul zijn"
 
 #: shared-bindings/busio/UART.c
 msgid "stop must be 1 or 2"
-msgstr ""
+msgstr "stop moet 1 of 2 zijn"
 
 #: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
-msgstr ""
+msgstr "stop is niet bereikbaar vanaf start"
 
 #: py/stream.c
 msgid "stream operation not supported"
-msgstr ""
+msgstr "stream operatie niet ondersteund"
 
 #: py/objstrunicode.c
 msgid "string index out of range"
-msgstr ""
+msgstr "string index buiten bereik"
 
 #: py/objstrunicode.c
 #, c-format
 msgid "string indices must be integers, not %s"
-msgstr ""
+msgstr "string indices moeten integer zijn, niet %s"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
-msgstr ""
+msgstr "string niet ondersteund; gebruik bytes of bytearray"
 
 #: extmod/moductypes.c
 msgid "struct: cannot index"
-msgstr ""
+msgstr "struct: kan niet indexeren"
 
 #: extmod/moductypes.c
 msgid "struct: index out of range"
-msgstr ""
+msgstr "struct: index buiten bereik"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
-msgstr ""
+msgstr "struct: geen velden"
 
 #: py/objstr.c
 msgid "substring not found"
-msgstr ""
+msgstr "deelreeks niet gevonden"
 
 #: py/compile.c
 msgid "super() can't find self"
-msgstr ""
+msgstr "super() kan self niet vinden"
 
 #: extmod/modujson.c
 msgid "syntax error in JSON"
-msgstr ""
+msgstr "syntaxisfout in JSON"
 
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
-msgstr ""
+msgstr "syntaxisfout in uctypes aanduiding"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
-msgstr ""
+msgstr "drempelwaarde moet in het bereik 0-65536 liggen"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
-msgstr ""
+msgstr "time.struct_time() accepteert een 9-rij"
 
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
-msgstr ""
+msgstr "timeout moet tussen 0.0 en 100.0 seconden zijn"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
-msgstr ""
+msgstr "timeout moet groter dan 0.0 zijn"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
-msgstr ""
+msgstr "timestamp buiten bereik voor platform time_t"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
-msgstr ""
+msgstr "te veel argumenten opgegeven bij dit formaat"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
-msgstr ""
+msgstr "te veel indices"
 
 #: py/runtime.c
 #, c-format
 msgid "too many values to unpack (expected %d)"
-msgstr ""
+msgstr "te veel waarden om uit te pakken (%d verwacht)"
 
 #: extmod/ulab/code/linalg.c py/objstr.c
 msgid "tuple index out of range"
-msgstr ""
+msgstr "tuple index buiten bereik"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
-msgstr ""
+msgstr "tuple of lijst heeft onjuiste lengte"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "tuple/list required on RHS"
-msgstr ""
+msgstr "tuple of lijst vereist op RHS"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
-msgstr ""
+msgstr "tx en rx kunnen niet beiden None zijn"
 
 #: py/objtype.c
 msgid "type '%q' is not an acceptable base type"
-msgstr ""
+msgstr "type '%q' is geen aanvaardbaar basistype"
 
 #: py/objtype.c
 msgid "type is not an acceptable base type"
-msgstr ""
+msgstr "type is geen aanvaardbaar basistype"
 
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
-msgstr ""
+msgstr "objecttype '%q' heeft geen attribuut '%q'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
-msgstr ""
+msgstr "type accepteert 1 of 3 argumenten"
 
 #: py/objint_longlong.c
 msgid "ulonglong too large"
-msgstr ""
+msgstr "ulonglong te groot"
 
 #: py/emitnative.c
 msgid "unary op %q not implemented"
-msgstr ""
+msgstr "unair op %q niet geïmplementeerd"
 
 #: py/parse.c
 msgid "unexpected indent"
-msgstr ""
+msgstr "onverwachte inspringing"
 
 #: py/bc.c
 msgid "unexpected keyword argument"
-msgstr ""
+msgstr "onverwacht trefwoordargument"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "unexpected keyword argument '%q'"
-msgstr ""
+msgstr "onverwacht trefwoordargument '%q'"
 
 #: py/lexer.c
 msgid "unicode name escapes"
-msgstr ""
+msgstr "op naam gebaseerde unicode escapes zijn niet geïmplementeerd"
 
 #: py/parse.c
 msgid "unindent does not match any outer indentation level"
-msgstr ""
+msgstr "inspringing komt niet overeen met hoger gelegen inspringingsniveaus"
 
 #: py/objstr.c
 #, c-format
 msgid "unknown conversion specifier %c"
-msgstr ""
+msgstr "onbekende conversiespecificatie %c"
 
 #: py/objstr.c
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
-msgstr ""
+msgstr "onbekende formaatcode '%c' voor object van type '%s'"
 
 #: py/compile.c
 msgid "unknown type"
-msgstr ""
+msgstr "onbekend type"
 
 #: py/emitnative.c
 msgid "unknown type '%q'"
-msgstr ""
+msgstr "onbekend type '%q'"
 
 #: py/objstr.c
 msgid "unmatched '{' in format"
-msgstr ""
+msgstr "'{' zonder overeenkomst in formaat"
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
-msgstr ""
+msgstr "onleesbaar attribuut"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 #: shared-module/vectorio/Polygon.c
 msgid "unsupported %q type"
-msgstr ""
+msgstr "niet ondersteund %q type"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr ""
+msgstr "niet ondersteunde Thumb instructie '%s' met %d argumenten"
 
 #: py/emitinlinextensa.c
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
-msgstr ""
+msgstr "niet ondersteunde Xtensa instructie '%s' met %d argumenten"
 
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
-msgstr ""
+msgstr "niet ondersteund formaatkarakter '%c' (0x%x) op index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%s'"
-msgstr ""
+msgstr "niet ondersteund type voor %q: '%s'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
-msgstr ""
+msgstr "niet ondersteund type voor operator"
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
-msgstr ""
+msgstr "niet ondersteunde types voor %q: '%s', '%s'"
 
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
-msgstr ""
+msgstr "waarde moet in %d byte(s) passen"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
-msgstr ""
+msgstr "value_count moet groter dan 0 zijn"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr ""
+msgstr "window moet <= interval zijn"
 
 #: extmod/ulab/code/linalg.c
 msgid "wrong argument type"
-msgstr ""
+msgstr "onjuist argumenttype"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong index type"
-msgstr ""
+msgstr "onjuist indextype"
 
 #: py/objstr.c
 msgid "wrong number of arguments"
-msgstr ""
+msgstr "onjuist aantal argumenten"
 
 #: py/runtime.c
 msgid "wrong number of values to unpack"
-msgstr ""
+msgstr "verkeerd aantal waarden om uit te pakken"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
-msgstr ""
+msgstr "verkeerd operandtype"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
-msgstr ""
+msgstr "x-waarde buiten bereik"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
-msgstr ""
+msgstr "y moet een int zijn"
 
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
-msgstr ""
+msgstr "y-waarde buiten bereik"
 
 #: py/objrange.c
 msgid "zero step"
-msgstr ""
+msgstr "nul-stap"
