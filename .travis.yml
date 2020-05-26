@@ -64,8 +64,7 @@ jobs:
         # need newer gcc version for Cortex-M7 support
         - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
         - sudo apt-get update -qq || true
-        - sudo apt-get install gcc-arm-embedded
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-arm-embedded libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
@@ -86,9 +85,7 @@ jobs:
       dist: bionic # needed for more recent version of qemu-system-arm with mps2-an385 target
       env: NAME="qemu-arm port build and tests"
       install:
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
-        - sudo apt-get install qemu-system
+        - sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi qemu-system
         - arm-none-eabi-gcc --version
         - qemu-system-arm --version
       script:
@@ -304,9 +301,7 @@ jobs:
     - stage: test
       env: NAME="bare-arm and minimal ports build and size-diff check"
       install:
-        - sudo apt-get install gcc-multilib libffi-dev:i386
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-multilib libffi-dev:i386 gcc-arm-none-eabi libnewlib-arm-none-eabi
         - gcc --version
         - arm-none-eabi-gcc --version
       script:
@@ -332,8 +327,7 @@ jobs:
     - stage: test
       env: NAME="cc3200 port build"
       install:
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
@@ -342,8 +336,7 @@ jobs:
     - stage: test
       env: NAME="samd port build"
       install:
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/samd submodules
         - make ${MAKEOPTS} -C ports/samd
@@ -352,8 +345,7 @@ jobs:
     - stage: test
       env: NAME="teensy port build"
       install:
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/teensy
 
@@ -361,7 +353,6 @@ jobs:
     - stage: test
       env: NAME="powerpc port build"
       install:
-        - sudo apt-get install gcc-powerpc64le-linux-gnu
-        - sudo apt-get install libc6-dev-ppc64el-cross
+        - sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
       script:
         - make ${MAKEOPTS} -C ports/powerpc CROSS_COMPILE=powerpc64le-linux-gnu-
