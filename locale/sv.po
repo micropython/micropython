@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-19 15:01+0800\n"
+"POT-Creation-Date: 2020-05-26 13:09-0700\n"
 "PO-Revision-Date: 2020-05-20 18:32+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1091,10 +1091,6 @@ msgstr "Måste använda ett multipel av 6 rgb-pinnar, inte %d"
 msgid "Name too long"
 msgstr "Name är för långt"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Negative step not supported"
-msgstr "Negativt step stöds inte"
-
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Ingen CCCD för denna karaktäristik"
@@ -1263,6 +1259,10 @@ msgstr "Åtkomst nekad"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Pinnen har inte ADC-funktionalitet"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -3274,6 +3274,9 @@ msgstr "y-värde utanför intervall"
 #: py/objrange.c
 msgid "zero step"
 msgstr "noll steg"
+
+#~ msgid "Negative step not supported"
+#~ msgstr "Negativt step stöds inte"
 
 #~ msgid "empty %q list"
 #~ msgstr "tom %q-lista"

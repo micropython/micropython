@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-19 15:01+0800\n"
+"POT-Creation-Date: 2020-05-26 13:09-0700\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1075,10 +1075,6 @@ msgstr ""
 msgid "Name too long"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Negative step not supported"
-msgstr ""
-
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -1239,6 +1235,10 @@ msgstr ""
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
+msgstr ""
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c

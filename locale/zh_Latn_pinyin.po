@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-19 15:01+0800\n"
+"POT-Creation-Date: 2020-05-26 13:09-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -1084,10 +1084,6 @@ msgstr ""
 msgid "Name too long"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Negative step not supported"
-msgstr "Bù zhīchí fù bù"
-
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Zhège tèzhēng méiyǒu CCCD"
@@ -1255,6 +1251,10 @@ msgstr "Quánxiàn bèi jùjué"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin méiyǒu ADC nénglì"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -3442,6 +3442,9 @@ msgstr "líng bù"
 
 #~ msgid "Must be a Group subclass."
 #~ msgstr "Bìxū shì fēnzǔ zi lèi."
+
+#~ msgid "Negative step not supported"
+#~ msgstr "Bù zhīchí fù bù"
 
 #~ msgid "No default I2C bus"
 #~ msgstr "Méiyǒu mòrèn I2C gōnggòng qìchē"

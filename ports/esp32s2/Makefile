@@ -152,6 +152,7 @@ SRC_C += \
 	mphalport.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
+	modules/$(CIRCUITPY_MODULE).c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \
