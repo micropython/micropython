@@ -6,6 +6,9 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include $(TOP)/py/py.mk
 
+# potato or lpc_serial
+UART ?= potato
+
 ARCH = $(shell uname -m)
 ifneq ("$(ARCH)", "ppc64")
 ifneq ("$(ARCH)", "ppc64le")
@@ -30,9 +33,7 @@ LIBS =
 
 SRC_C = \
 	main.c \
-	uart_core.c \
-	uart_potato.c \
-	uart_lpc_serial.c \
+	uart_$(UART).c \
 	lib/utils/printf.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/pyexec.c \
