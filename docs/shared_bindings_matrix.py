@@ -89,18 +89,27 @@ def get_settings_from_makefile(port_dir, board_name):
         into account, without having to re-encode the logic that sets them
         in this script, something that has proved error-prone
     """
-
-    status, contents = subprocess.getstatusoutput(f"make -C {port_dir} BOARD={board_name} -qp print-CC")
+    contents = subprocess.run(
+            ["make", "-C", port_dir, f"BOARD={board_name}", "-qp", "print-CC"],
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
     # Make signals errors with exit status 2; 0 and 1 are "non-error" statuses
-    if status not in (0, 1):
-        raise RuntimeError(f'Invoking make exited with {status}')
-    if isinstance(contents, bytes):
-        contents = contents.decode('utf-8', errors='replace')
+    if contents.returncode not in (0, 1):
+        error_msg = (
+            f"Invoking '{' '.join(contents.args)}' exited with "
+            f"{contents.returncode}: {contents.stderr}"
+        )
+        raise RuntimeError(error_msg)
+
     settings = {}
-    for line in contents.split('\n'):
+    for line in contents.stdout.split('\n'):
         m = re.match(r'^([A-Z][A-Z0-9_]*) = (.*)$', line)
         if m:
             settings[m.group(1)] = m.group(2)
+
     return settings
 
 def lookup_setting(settings, key, default=''):
