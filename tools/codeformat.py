@@ -168,7 +168,7 @@ def main():
 
     # Format C files with uncrustify.
     if format_c:
-        batch(["uncrustify", "-c", UNCRUSTIFY_CFG, "-lC", "--no-backup"], lang_files(C_EXTS))
+        batch(["uncrustify", "-q", "-c", UNCRUSTIFY_CFG, "-lC", "--no-backup"], lang_files(C_EXTS))
         for file in lang_files(C_EXTS):
             fixup_c(file)
 
