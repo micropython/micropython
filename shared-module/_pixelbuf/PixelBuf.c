@@ -147,18 +147,11 @@ void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t* self, mp_obj_t color, uint8_
         *r = value >> 16 & 0xff;
         *g = (value >> 8) & 0xff;
         *b = value & 0xff;
-        // Int colors can't set white directly so convert to white when all components are equal.
-        if (!byteorder->is_dotstar && byteorder->bpp == 4 && byteorder->has_white && *r == *g && *r == *b) {
-            *w = *r;
-            *r = 0;
-            *g = 0;
-            *b = 0;
-        }
     } else {
         mp_obj_t *items;
         size_t len;
         mp_obj_get_array(color, &len, &items);
-        if (len != byteorder->bpp && !byteorder->is_dotstar) {
+        if (len < 3 || len > 4) {
             mp_raise_ValueError_varg(translate("Expected tuple of length %d, got %d"), byteorder->bpp, len);
         }
 
@@ -171,7 +164,16 @@ void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t* self, mp_obj_t color, uint8_
             } else {
                 *w = mp_obj_get_int_truncated(items[PIXEL_W]);
             }
+            return;
         }
+    }
+    // Int colors can't set white directly so convert to white when all components are equal.
+    // Also handles RGBW values assigned an RGB tuple.
+    if (!byteorder->is_dotstar && byteorder->bpp == 4 && byteorder->has_white && *r == *g && *r == *b) {
+        *w = *r;
+        *r = 0;
+        *g = 0;
+        *b = 0;
     }
 }
 
