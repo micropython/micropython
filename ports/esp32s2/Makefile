@@ -31,6 +31,9 @@ else
   endif
 endif
 
+# If the flash PORT is not given, use the default /dev/tty.SLAB_USBtoUART.
+PORT ?= /dev/tty.SLAB_USBtoUART
+
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
@@ -271,7 +274,7 @@ $(BUILD)/firmware.bin: $(BUILD)/esp-idf/partition_table/partition-table.bin $(BU
 	$(Q)$(PYTHON) ../../tools/join_bins.py $@ 0x1000 $(BUILD)/esp-idf/bootloader/bootloader.bin 0x8000 $(BUILD)/esp-idf/partition_table/partition-table.bin 0x10000 $(BUILD)/circuitpython-firmware.bin
 
 flash: $(BUILD)/firmware.bin
-	esptool.py --chip esp32s2 -p /dev/tty.SLAB_USBtoUART -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+	esptool.py --chip esp32s2 -p $(PORT) -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
 
 include $(TOP)/py/mkrules.mk
 

@@ -51,7 +51,10 @@
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/neopixel_write/__init__.h"
 
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
+
+#include "lib/tinyusb/src/device/usbd.h"
 
 #ifdef CIRCUITPY_AUDIOBUSIO
 #include "common-hal/audiobusio/I2SOut.h"
@@ -264,7 +267,17 @@ void port_sleep_until_interrupt(void) {
         sd_app_evt_wait();
     } else {
         // Call wait for interrupt ourselves if the SD isn't enabled.
-        __WFI();
+        // Note that `wfi` should be called with interrupts disabled,
+        // to ensure that the queue is properly drained.  The `wfi`
+        // instruction will returned as long as an interrupt is
+        // available, even though the actual handler won't fire until
+        // we re-enable interrupts.
+        common_hal_mcu_disable_interrupts();
+        if (!tud_task_event_ready()) {
+            __DSB();
+            __WFI();
+        }
+        common_hal_mcu_enable_interrupts();
     }
 }
 
