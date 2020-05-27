@@ -50,13 +50,10 @@ STATIC uint8_t validate_pin(mp_obj_t obj) {
 }
 
 STATIC void validate_pins(qstr what, uint8_t* pin_nos, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
-    mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq));
-    if (len > max_pins) {
-        mp_raise_ValueError_varg(translate("At most %d %q may be specified (not %d)"), max_pins, what, len);
-    }
-    *count_out = len;
-    for (mp_int_t i=0; i<len; i++) {
-        pin_nos[i] = validate_pin(mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+    mcu_pin_obj_t *pins[max_pins];
+    validate_list_is_free_pins(what, pins, max_pins, seq, count_out);
+    for (mp_int_t i=0; i<*count_out; i++) {
+        pin_nos[i] = common_hal_mcu_pin_number(pins[i]);
     }
 }
 

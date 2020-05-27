@@ -338,7 +338,7 @@ msgstr ""
 msgid "Array values should be single bytes."
 msgstr ""
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
 msgstr ""
 
