@@ -259,7 +259,7 @@ void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return self->tx->pin == NULL;
+    return (self->tx->pin == NULL && self->rx->pin == NULL);
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
@@ -272,10 +272,15 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         }
     }
 
-    reset_pin_number(self->tx->pin->port,self->tx->pin->number);
-    reset_pin_number(self->rx->pin->port,self->rx->pin->number);
-    self->tx = NULL;
-    self->rx = NULL;
+    if (self->tx) {
+        reset_pin_number(self->tx->pin->port,self->tx->pin->number);
+        self->tx = NULL;
+    }
+    if (self->rx) {
+        reset_pin_number(self->rx->pin->port,self->rx->pin->number);
+        self->rx = NULL;
+    }
+    
     ringbuf_free(&self->ringbuf);
 }
 

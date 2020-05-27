@@ -45,10 +45,10 @@ typedef struct {
     uint32_t baudrate;
     uint8_t character_bits;
     uint32_t timeout_ms;
-    const mcu_periph_obj_t *rx_pin;
-    const mcu_periph_obj_t *tx_pin;
-    const mcu_periph_obj_t *cts_pin;
-    const mcu_periph_obj_t *rts_pin;
+    const mcu_periph_obj_t *rx;
+    const mcu_periph_obj_t *tx;
+    const mcu_periph_obj_t *cts;
+    const mcu_periph_obj_t *rts;
 } busio_uart_obj_t;
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H

@@ -91,10 +91,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                         || (mcu_spi_sck_list[i].bank_idx != mcu_spi_miso_list[k].bank_idx)) {
                         continue;
                     }
-                    //keep looking if the SPI is taken, edge case
+                    // if SPI is taken, break (pins never have >1 periph)
                     if (reserved_spi[mcu_spi_sck_list[i].bank_idx - 1]) {
                         spi_taken = true;
-                        continue;
+                        break;
                     }
                     //store pins if not
                     self->clock = &mcu_spi_sck_list[i];
@@ -102,11 +102,11 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                     self->miso = &mcu_spi_miso_list[k];
                     break;
                 }
-                if (self->clock != NULL) {
+                if (self->clock != NULL || spi_taken) {
                     break; // Multi-level break to pick lowest peripheral
                 }
             }
-            if (self->clock != NULL) {
+            if (self->clock != NULL || spi_taken) {
                 break;
             }
         // if just MISO, reduce search
@@ -118,14 +118,13 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 }
                 if (reserved_spi[mcu_spi_sck_list[i].bank_idx - 1]) {
                     spi_taken = true;
-                    continue;
+                    break;
                 }
                 self->clock = &mcu_spi_sck_list[i];
-                self->mosi = NULL;
                 self->miso = &mcu_spi_miso_list[j];
                 break;
             }
-            if (self->clock != NULL) {
+            if (self->clock != NULL || spi_taken) {
                 break;
             }
         // if just MOSI, reduce search
@@ -137,14 +136,13 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 }
                 if (reserved_spi[mcu_spi_sck_list[i].bank_idx - 1]) {
                     spi_taken = true;
-                    continue;
+                    break;
                 }
                 self->clock = &mcu_spi_sck_list[i];
                 self->mosi = &mcu_spi_mosi_list[j];
-                self->miso = NULL;
                 break;
             }
-            if (self->clock != NULL) {
+            if (self->clock != NULL || spi_taken) {
                 break;
             }
         } else {
@@ -159,7 +157,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         if (spi_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
         } else {
-            mp_raise_ValueError(translate("Invalid SPI pin selection"));
+            mp_raise_ValueError(translate("Invalid pins"));
         }
     }
 
