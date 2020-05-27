@@ -98,3 +98,7 @@ enum {
 
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 #endif
+
+#if MICROPY_PY_OS_DUPTERM
+void init_dupterm_stdio();
+#endif

@@ -64,9 +64,12 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
+    #if MICROPY_PY_OS_DUPTERM
+    mp_uos_dupterm_tx_strn(str, len);
+    #else
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
-    mp_uos_dupterm_tx_strn(str, len);
+    #endif
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
@@ -535,6 +538,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
         mp_store_global(QSTR_FROM_STR_STATIC("extra_coverage"), MP_OBJ_FROM_PTR(&extra_coverage_obj));
         mp_store_global(QSTR_FROM_STR_STATIC("extra_cpp_coverage"), MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
     }
+    #endif
+
+    #if MICROPY_PY_OS_DUPTERM
+    init_dupterm_stdio();
     #endif
 
     // Here is some example code to create a class and instance of that class.
