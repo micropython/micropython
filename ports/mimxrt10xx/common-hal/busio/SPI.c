@@ -162,7 +162,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         if (spi_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
         } else {
-            mp_raise_ValueError(translate("Invalid SPI pin selection"));
+            mp_raise_ValueError(translate("Invalid pins"));
         }
     }
 

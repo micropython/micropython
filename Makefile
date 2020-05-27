@@ -210,6 +210,12 @@ locale/circuitpython.pot: all-source
 translate: locale/circuitpython.pot
 	for po in $(shell ls locale/*.po); do msgmerge -U $$po -s --no-fuzzy-matching --add-location=file locale/circuitpython.pot; done
 
+merge-translate:
+	git merge HEAD 1>&2 2> /dev/null; test $$? -eq 128
+	rm locale/*~ || true
+	git checkout --ours -- locale/*
+	make translate
+
 check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
 	$(PYTHON) tools/check_translations.py $^
 

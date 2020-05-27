@@ -147,18 +147,11 @@ void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t* self, mp_obj_t color, uint8_
         *r = value >> 16 & 0xff;
         *g = (value >> 8) & 0xff;
         *b = value & 0xff;
-        // Int colors can't set white directly so convert to white when all components are equal.
-        if (!byteorder->is_dotstar && byteorder->bpp == 4 && byteorder->has_white && *r == *g && *r == *b) {
-            *w = *r;
-            *r = 0;
-            *g = 0;
-            *b = 0;
-        }
     } else {
         mp_obj_t *items;
         size_t len;
         mp_obj_get_array(color, &len, &items);
-        if (len != byteorder->bpp && !byteorder->is_dotstar) {
+        if (len < 3 || len > 4) {
             mp_raise_ValueError_varg(translate("Expected tuple of length %d, got %d"), byteorder->bpp, len);
         }
 
@@ -171,7 +164,16 @@ void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t* self, mp_obj_t color, uint8_
             } else {
                 *w = mp_obj_get_int_truncated(items[PIXEL_W]);
             }
+            return;
         }
+    }
+    // Int colors can't set white directly so convert to white when all components are equal.
+    // Also handles RGBW values assigned an RGB tuple.
+    if (!byteorder->is_dotstar && byteorder->bpp == 4 && byteorder->has_white && *r == *g && *r == *b) {
+        *w = *r;
+        *r = 0;
+        *g = 0;
+        *b = 0;
     }
 }
 
@@ -216,12 +218,11 @@ void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t* self, size_t index, mp_obj_t v
     _pixelbuf_set_pixel_color(self, index, r, g, b, w);
 }
 
-void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, size_t stop, size_t step, mp_obj_t* values) {
+void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t* values) {
     pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
-    size_t source_i = 0;
-    for (size_t target_i = start; target_i < stop; target_i += step) {
-        _pixelbuf_set_pixel(self, target_i, values[source_i]);
-        source_i++;
+    for (size_t i = 0; i < slice_len; i++) {
+        _pixelbuf_set_pixel(self, start, values[i]);
+        start+=step;
     }
     if (self->auto_write) {
         common_hal__pixelbuf_pixelbuf_show(self_in);

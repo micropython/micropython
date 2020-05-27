@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+#include "modules/module.h"
 
-#include "py/mphal.h"
-
-#include "peripherals/pins.h"
-
-void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
-void reset_pin_number(gpio_num_t pin_number);
-void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(gpio_num_t pin_number);
-void never_reset_pin_number(gpio_num_t pin_number);
-void never_reset_pin(const mcu_pin_obj_t* pin);
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+void never_reset_module_internal_pins(void) {
+    // SPI Flash and RAM
+    never_reset_pin(&pin_GPIO26);
+    never_reset_pin(&pin_GPIO27);
+    never_reset_pin(&pin_GPIO28);
+    never_reset_pin(&pin_GPIO29);
+    never_reset_pin(&pin_GPIO30);
+    never_reset_pin(&pin_GPIO31);
+    never_reset_pin(&pin_GPIO32);
+}

@@ -181,7 +181,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                     mux_position = j;
                     // Claim channel.
                     tcc_channels[timer->index] |= (1 << tcc_channel(timer));
-
+                    tcc_refcount[timer->index]++;
                 }
             }
         }

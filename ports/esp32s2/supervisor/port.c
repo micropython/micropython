@@ -29,10 +29,12 @@
 #include <sys/time.h>
 #include "supervisor/port.h"
 #include "boards/board.h"
+#include "modules/module.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "common-hal/microcontroller/Pin.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 
@@ -56,12 +58,14 @@ safe_mode_t port_init(void) {
     if (result != ESP_OK) {
         ESP_EARLY_LOGE(TAG, "Unable to create tick timer.");
     }
+    never_reset_module_internal_pins();
     ESP_EARLY_LOGW(TAG, "port init done");
     return NO_SAFE_MODE;
 }
 
 void reset_port(void) {
 
+    reset_all_pins();
 }
 
 void reset_to_bootloader(void) {
