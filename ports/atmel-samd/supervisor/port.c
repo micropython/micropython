@@ -69,6 +69,7 @@
 #include "samd/events.h"
 #include "samd/external_interrupts.h"
 #include "samd/dma.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "reset.h"
 
@@ -496,7 +497,12 @@ void port_sleep_until_interrupt(void) {
         (void) __get_FPSCR();
     }
     #endif
-    __WFI();
+    common_hal_mcu_disable_interrupts();
+    if (!tud_task_event_ready()) {
+        __DSB();
+        __WFI();
+    }
+    common_hal_mcu_enable_interrupts();
 }
 
 /**

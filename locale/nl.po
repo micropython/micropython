@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-21 11:18-0400\n"
+"POT-Creation-Date: 2020-05-26 13:09-0700\n"
 "PO-Revision-Date: 2020-05-19 17:08+0000\n"
 "Last-Translator: Dustin Watts <dustin_watts@yahoo.com>\n"
 "Language-Team: none\n"
@@ -1095,10 +1095,6 @@ msgstr "Een meervoud van 6 rgb pinnen moet worden gebruikt, niet %d"
 msgid "Name too long"
 msgstr "Naam te lang"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Negative step not supported"
-msgstr "Negatieve stappen niet ondersteund"
-
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Geen CCCD voor deze Characteristic"
@@ -1269,6 +1265,10 @@ msgstr "Toegang geweigerd"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin heeft geen ADC mogelijkheden"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -3269,3 +3269,6 @@ msgstr ""
 #: py/objrange.c
 msgid "zero step"
 msgstr ""
+
+#~ msgid "Negative step not supported"
+#~ msgstr "Negatieve stappen niet ondersteund"

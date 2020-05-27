@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-21 11:18-0400\n"
+"POT-Creation-Date: 2020-05-26 13:09-0700\n"
 "PO-Revision-Date: 2020-05-18 02:48+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: German <https://later.unpythonic.net/projects/circuitpython/"
@@ -1091,10 +1091,6 @@ msgstr ""
 msgid "Name too long"
 msgstr ""
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Negative step not supported"
-msgstr ""
-
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Kein CCCD für diese Charakteristik"
@@ -1262,6 +1258,10 @@ msgstr "Zugang verweigert"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin hat keine ADC Funktionalität"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"

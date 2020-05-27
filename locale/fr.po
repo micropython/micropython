@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-21 11:18-0400\n"
-"PO-Revision-Date: 2020-05-17 20:56+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"POT-Creation-Date: 2020-05-26 13:09-0700\n"
+"PO-Revision-Date: 2020-05-26 19:37+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1106,10 +1106,6 @@ msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
 msgid "Name too long"
 msgstr "Nom trop long"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Negative step not supported"
-msgstr "Étape négative non prise en charge"
-
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Pas de CCCD pour cette caractéristique"
@@ -1282,6 +1278,10 @@ msgstr "Permission refusée"
 msgid "Pin does not have ADC capabilities"
 msgstr "La broche ne peut être utilisée pour l'ADC"
 
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "La broche doit prendre en charge les interruptions matérielles"
@@ -1307,7 +1307,7 @@ msgstr "Ainsi que tout autre module présent sur le système de fichiers\n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
-msgstr ""
+msgstr "Polygone a besoin d’au moins 3 points"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
@@ -1533,7 +1533,7 @@ msgstr "La largeur de la tuile doit diviser exactement la largeur de l'image"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
-msgstr ""
+msgstr "Le délai est trop long : le délai maximal est de %d secondes"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3547,6 +3547,9 @@ msgstr "'step' nul"
 
 #~ msgid "Must be a Group subclass."
 #~ msgstr "Doit être une sous-classe de 'Group'"
+
+#~ msgid "Negative step not supported"
+#~ msgstr "Étape négative non prise en charge"
 
 #~ msgid "No PulseIn support for %q"
 #~ msgstr "Pas de support de PulseIn pour %q"
