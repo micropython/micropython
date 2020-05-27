@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-26 13:09-0700\n"
+"POT-Creation-Date: 2020-05-27 11:55-0400\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -370,6 +370,10 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -805,7 +809,7 @@ msgstr ""
 msgid "Hardware busy, try alternative pins"
 msgstr ""
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr ""
 
@@ -884,11 +888,11 @@ msgstr ""
 msgid "Invalid PWM frequency"
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr ""
 
@@ -964,7 +968,8 @@ msgstr "오른쪽 채널 핀이 잘못되었습니다"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "핀이 유효하지 않습니다"
 
@@ -1418,7 +1423,7 @@ msgstr ""
 msgid "Stream missing readinto() or write() method."
 msgstr ""
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr ""
 
@@ -3066,8 +3071,7 @@ msgstr ""
 msgid "tuple/list required on RHS"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr ""

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-26 13:09-0700\n"
+"POT-Creation-Date: 2020-05-27 11:55-0400\n"
 "PO-Revision-Date: 2020-05-20 18:32+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -377,6 +377,10 @@ msgstr "Bitklocka och ordval måste dela en klockenhet"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "Bitdjupet måste vara multipel av 8."
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -818,7 +822,7 @@ msgstr "Gruppen är full"
 msgid "Hardware busy, try alternative pins"
 msgstr "Hårdvaran är upptagen, prova alternativa pinnar"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Hårdvaran används redan, prova alternativa pinnar"
 
@@ -899,11 +903,11 @@ msgstr "Ogiltigt val av I2C-pinne"
 msgid "Invalid PWM frequency"
 msgstr "Ogiltig PWM-frekvens"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr "Ogiltigt val av SPI-pinne"
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr "Ogiltigt val av UART-pinne"
 
@@ -979,7 +983,8 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Ogiltiga pinnar"
 
@@ -1445,7 +1450,7 @@ msgstr "Stackstorleken måste vara minst 256"
 msgid "Stream missing readinto() or write() method."
 msgstr "Stream saknar readinto() eller write() metod."
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Ange minst en UART-pinne"
 
@@ -3118,8 +3123,7 @@ msgstr "tupel/lista har fel längd"
 msgid "tuple/list required on RHS"
 msgstr "tupel/lista krävs för RHS"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx och rx kan inte båda vara None"
