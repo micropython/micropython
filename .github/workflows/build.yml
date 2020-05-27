@@ -136,6 +136,7 @@ jobs:
         board:
         - "8086_commander"
         - "TG-Watch02A"
+        - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
         - "arduino_mkrzero"
