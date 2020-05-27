@@ -32,11 +32,6 @@
 //|     def __init__(self, ):
 //|         """Enum-like class to define the run mode of the watchdog timer."""
 //|
-//|     NONE: Any = ...
-//|     """Take no action if the watchdog timer expires.
-//|
-//|     :type watchdog.WatchDogMode:"""
-//|
 //|     RAISE: Any = ...
 //|     """Raise an exception when the WatchDogTimer expires.
 //|
@@ -49,10 +44,6 @@
 //|
 const mp_obj_type_t watchdog_watchdogmode_type;
 
-const watchdog_watchdogmode_obj_t watchdog_watchdogmode_none_obj = {
-    { &watchdog_watchdogmode_type },
-};
-
 const watchdog_watchdogmode_obj_t watchdog_watchdogmode_raise_obj = {
     { &watchdog_watchdogmode_type },
 };
@@ -61,8 +52,29 @@ const watchdog_watchdogmode_obj_t watchdog_watchdogmode_reset_obj = {
     { &watchdog_watchdogmode_type },
 };
 
+watchdog_watchdogmode_t watchdog_watchdogmode_obj_to_type(mp_obj_t obj) {
+    if (obj == MP_ROM_PTR(&watchdog_watchdogmode_raise_obj)) {
+        return WATCHDOGMODE_RAISE;
+    } else if (obj == MP_ROM_PTR(&watchdog_watchdogmode_reset_obj)) {
+        return WATCHDOGMODE_RESET;
+    }
+    return WATCHDOGMODE_NONE;
+}
+
+mp_obj_t watchdog_watchdogmode_type_to_obj(watchdog_watchdogmode_t mode) {
+    switch (mode) {
+        case WATCHDOGMODE_RAISE:
+            return (mp_obj_t)MP_ROM_PTR(&watchdog_watchdogmode_raise_obj);
+        case WATCHDOGMODE_RESET:
+            return (mp_obj_t)MP_ROM_PTR(&watchdog_watchdogmode_reset_obj);
+        case WATCHDOGMODE_NONE:
+        default:
+            return (mp_obj_t)MP_ROM_PTR(&mp_const_none_obj);
+    }
+}
+
 STATIC const mp_rom_map_elem_t watchdog_watchdogmode_locals_dict_table[] = {
-    {MP_ROM_QSTR(MP_QSTR_NONE),   MP_ROM_PTR(&watchdog_watchdogmode_none_obj)},
+    {MP_ROM_QSTR(MP_QSTR_NONE),   MP_ROM_PTR(&mp_const_none_obj)},
     {MP_ROM_QSTR(MP_QSTR_RAISE),  MP_ROM_PTR(&watchdog_watchdogmode_raise_obj)},
     {MP_ROM_QSTR(MP_QSTR_RESET),  MP_ROM_PTR(&watchdog_watchdogmode_reset_obj)},
 };

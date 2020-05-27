@@ -69,88 +69,46 @@ STATIC void watchdogtimer_timer_event_handler(nrf_timer_event_t event_type, void
 #endif
 }
 
-// This function is called if the timer expires. The system will reboot in 1/16384 of a second.
-// Issue a reboot ourselves so we can do any cleanup necessary.
+static void timer_free(void) {
+    timer_refcount--;
+    if (timer_refcount == 0) {
+        nrf_peripherals_free_timer(timer);
+        timer = NULL;
+    }
+}
+
+// This function is called if the timer expires. The system will reboot
+// in 1/16384 of a second. Issue a reboot ourselves so we can do any
+// cleanup necessary.
 STATIC void watchdogtimer_watchdog_event_handler(void) {
     reset_cpu();
 }
 
-//|     def feed(self):
-//|         """Feed the watchdog timer. This must be called regularly, otherwise
-//|         the timer will expire."""
-//|         ...
-//|
-STATIC mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
-    watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
+void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
     if (self->mode == WATCHDOGMODE_RESET) {
         nrfx_wdt_feed(&wdt);
     } else if (self->mode == WATCHDOGMODE_RAISE) {
         nrfx_timer_clear(timer);
-    } else if (self->mode == WATCHDOGMODE_NONE) {
-        mp_raise_ValueError(translate("WatchDogTimer is not currently running"));
     }
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watchdogtimer_feed);
 
-//|     def deinit(self):
-//|         """Stop the watchdog timer. This may raise an error if the watchdog
-//|         timer cannot be disabled on this platform."""
-//|         ...
-//|
-STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
-    watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (self->mode == WATCHDOGMODE_RAISE) {
-        timer_refcount--;
-        if (timer_refcount == 0) {
-            nrf_peripherals_free_timer(timer);
-            timer = NULL;
-        }
-        self->mode = WATCHDOGMODE_NONE;
-    } else if (self->mode == WATCHDOGMODE_RESET) {
-        mp_raise_NotImplementedError(translate("WatchDogTimer cannot be deinitialized once mode is set to RESET"));
+void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
+    if (timer) {
+        timer_free();
     }
-
-    return mp_const_none;
+    self->mode = WATCHDOGMODE_NONE;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_deinit_obj, watchdog_watchdogtimer_deinit);
 
 void watchdog_reset(void) {
-    if (common_hal_mcu_watchdogtimer_obj.mode == WATCHDOGMODE_RAISE) {
-        common_hal_mcu_watchdogtimer_obj.mode = WATCHDOGMODE_NONE;
-        timer_refcount--;
-        if (timer_refcount == 0) {
-            nrf_peripherals_free_timer(timer);
-            timer = NULL;
-        }
-    }
+    common_hal_watchdog_deinit(&common_hal_mcu_watchdogtimer_obj);
 }
 
-//|     timeout: float = ...
-//|     """The maximum number of seconds that can elapse between calls
-//|     to feed()"""
-//|
-STATIC mp_obj_t watchdog_watchdogtimer_obj_get_timeout(mp_obj_t self_in) {
-    watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_float(self->timeout);
+mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
+    return self->timeout;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_get_timeout_obj, watchdog_watchdogtimer_obj_get_timeout);
 
-STATIC mp_obj_t watchdog_watchdogtimer_obj_set_timeout(mp_obj_t self_in, mp_obj_t timeout_obj) {
-    watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_float_t timeout = mp_obj_get_float(timeout_obj);
-
-    if (timeout <= 0) {
-        mp_raise_ValueError(translate("watchdog timeout must be greater than 0"));
-    }
-
-    if (self->mode == WATCHDOGMODE_RESET) {
-        // If the WatchDogTimer is already running in "RESET" mode, raise an error
-        // since the mode cannot be changed once started.
-        mp_raise_TypeError(translate("cannot change the timeout once mode is WatchDogMode.RESET"));
-    } else if (self->mode == WATCHDOGMODE_RAISE) {
+void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_float_t timeout) {
+    if (self->mode == WATCHDOGMODE_RAISE) {
         // If the WatchDogTimer is already running in "RAISE" mode, reset the timer
         // with the new value.
         uint64_t ticks = timeout * 31250ULL;
@@ -162,108 +120,42 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_timeout(mp_obj_t self_in, mp_obj_
     }
 
     self->timeout = timeout;
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(watchdog_watchdogtimer_set_timeout_obj, watchdog_watchdogtimer_obj_set_timeout);
 
-const mp_obj_property_t watchdog_watchdogtimer_timeout_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&watchdog_watchdogtimer_get_timeout_obj,
-              (mp_obj_t)&watchdog_watchdogtimer_set_timeout_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
-//|     mode: watchdog.WatchDogMode = ...
-//|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode`.
-//|
-//|     Setting a WatchDogMode activates the WatchDog::
-//|
-//|       import microcontroller
-//|       import watchdog
-//|
-//|       w = microcontroller.watchdog
-//|       w.timeout = 5
-//|       w.mode = watchdog.WatchDogMode.RAISE
-//|
-//|
-//|     Once set, the WatchDogTimer will perform the specified action if the timer expires.
-//|
-STATIC mp_obj_t watchdog_watchdogtimer_obj_get_mode(mp_obj_t self_in) {
-    watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    switch (self->mode) {
-        case WATCHDOGMODE_NONE: default: return (mp_obj_t)MP_ROM_PTR(&watchdog_watchdogmode_none_obj);
-        case WATCHDOGMODE_RAISE: return (mp_obj_t)MP_ROM_PTR(&watchdog_watchdogmode_raise_obj);
-        case WATCHDOGMODE_RESET: return (mp_obj_t)MP_ROM_PTR(&watchdog_watchdogmode_reset_obj);
-    }
+watchdog_watchdogmode_t common_hal_watchdog_get_mode(watchdog_watchdogtimer_obj_t *self) {
+    return self->mode;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_get_mode_obj, watchdog_watchdogtimer_obj_get_mode);
 
-STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t mode_obj) {
-    watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    watchdog_watchdogmode_obj_t *mode = MP_OBJ_TO_PTR(mode_obj);
-    if (mode == MP_ROM_PTR(&watchdog_watchdogmode_none_obj)) {
-        if (self->mode == WATCHDOGMODE_RESET) {
-            mp_raise_TypeError(translate("WatchDogTimer mode cannot be changed once set to WatchDogMode.RESET"));
+void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self, watchdog_watchdogmode_t new_mode) {
+    watchdog_watchdogmode_t current_mode = self->mode;
+
+    if (new_mode == WATCHDOGMODE_RAISE) {
+        if (timer_refcount == 0) {
+            timer = nrf_peripherals_allocate_timer_or_throw();
         }
-        else if (self->mode == WATCHDOGMODE_RAISE) {
-            timer_refcount--;
-            if (timer_refcount == 0) {
-                nrf_peripherals_free_timer(timer);
-                timer = NULL;
-            }
-        }
-        self->mode = WATCHDOGMODE_NONE;
+        timer_refcount++;
 
-    } else if (mode == MP_ROM_PTR(&watchdog_watchdogmode_raise_obj)) {
-        if (self->timeout <= 0) {
-            mp_raise_ValueError(translate("watchdog timeout must be greater than 0"));
-        }
-        if (self->mode == WATCHDOGMODE_RESET) {
-            mp_raise_ValueError(translate("WatchDogTimer mode cannot be changed once set to WatchDogMode.RESET"));
-        }
-        else if (self->mode == WATCHDOGMODE_NONE || self->mode == WATCHDOGMODE_RAISE) {
-            if (timer_refcount == 0) {
-                timer = nrf_peripherals_allocate_timer_or_throw();
-            }
-            if (timer == NULL) {
-                mp_raise_RuntimeError(translate("timer was null"));
-            }
-            timer_refcount++;
+        nrfx_timer_config_t timer_config = {
+            .frequency = NRF_TIMER_FREQ_31250Hz,
+            .mode = NRF_TIMER_MODE_TIMER,
+            .bit_width = NRF_TIMER_BIT_WIDTH_32,
+            .interrupt_priority = NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY,
+            .p_context = self,
+        };
 
-            nrfx_timer_config_t timer_config = {
-                .frequency = NRF_TIMER_FREQ_31250Hz,
-                .mode = NRF_TIMER_MODE_TIMER,
-                .bit_width = NRF_TIMER_BIT_WIDTH_32,
-                .interrupt_priority = NRFX_TIMER_DEFAULT_CONFIG_IRQ_PRIORITY,
-                .p_context = self,
-            };
+        nrfx_timer_init(timer, &timer_config, &watchdogtimer_timer_event_handler);
 
-            nrfx_timer_init(timer, &timer_config, &watchdogtimer_timer_event_handler);
-
-            uint64_t ticks = nrfx_timer_ms_to_ticks(timer, self->timeout * 1000);
-            if (ticks > UINT32_MAX) {
-                mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
-            }
-
-            // true enables interrupt.
-            nrfx_timer_clear(timer);
-            nrfx_timer_compare(timer, NRF_TIMER_CC_CHANNEL0, ticks, true);
-            nrfx_timer_resume(timer);
-        }
-        self->mode = WATCHDOGMODE_RAISE;
-
-    } else if (mode == MP_ROM_PTR(&watchdog_watchdogmode_reset_obj)) {
-        if (self->timeout <= 0) {
-            mp_raise_ValueError(translate("watchdog timeout must be greater than 0"));
-        }
-        if (self->mode == WATCHDOGMODE_RAISE) {
-            timer_refcount--;
-            if (timer_refcount == 0) {
-                nrf_peripherals_free_timer(timer);
-                timer = NULL;
-            }
+        uint64_t ticks = nrfx_timer_ms_to_ticks(timer, self->timeout * 1000);
+        if (ticks > UINT32_MAX) {
+            mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
         }
 
+        // true enables interrupt.
+        nrfx_timer_clear(timer);
+        nrfx_timer_compare(timer, NRF_TIMER_CC_CHANNEL0, ticks, true);
+        nrfx_timer_resume(timer);
+
+    } else if (new_mode == WATCHDOGMODE_RESET) {
         uint64_t ticks = self->timeout * 1000.0f;
         if (ticks > UINT32_MAX) {
             mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
@@ -286,31 +178,12 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t m
         }
         nrfx_wdt_enable(&wdt);
         nrfx_wdt_feed(&wdt);
-        self->mode = WATCHDOGMODE_RESET;
     }
 
-    return mp_const_none;
+    // If we just switched away from RAISE, disable the timmer.
+    if (current_mode == WATCHDOGMODE_RAISE && new_mode != WATCHDOGMODE_RAISE) {
+        timer_free();
+    }
+
+    self->mode = new_mode;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(watchdog_watchdogtimer_set_mode_obj, watchdog_watchdogtimer_obj_set_mode);
-
-const mp_obj_property_t watchdog_watchdogtimer_mode_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&watchdog_watchdogtimer_get_mode_obj,
-              (mp_obj_t)&watchdog_watchdogtimer_set_mode_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
-STATIC const mp_rom_map_elem_t watchdog_watchdogtimer_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&watchdog_watchdogtimer_feed_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&watchdog_watchdogtimer_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_timeout), MP_ROM_PTR(&watchdog_watchdogtimer_timeout_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mode), MP_ROM_PTR(&watchdog_watchdogtimer_mode_obj) },
-};
-STATIC MP_DEFINE_CONST_DICT(watchdog_watchdogtimer_locals_dict, watchdog_watchdogtimer_locals_dict_table);
-
-const mp_obj_type_t watchdog_watchdogtimer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WatchDogTimer,
-    // .make_new = watchdog_watchdogtimer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&watchdog_watchdogtimer_locals_dict,
-};

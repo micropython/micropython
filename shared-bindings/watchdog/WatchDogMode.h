@@ -37,10 +37,12 @@ typedef enum {
 
 const mp_obj_type_t watchdog_watchdogmode_type;
 
+watchdog_watchdogmode_t watchdog_watchdogmode_obj_to_type(mp_obj_t obj);
+mp_obj_t watchdog_watchdogmode_type_to_obj(watchdog_watchdogmode_t mode);
+
 typedef struct {
     mp_obj_base_t base;
 } watchdog_watchdogmode_obj_t;
-extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_none_obj;
 extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_raise_obj;
 extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_reset_obj;
 

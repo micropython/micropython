@@ -123,7 +123,6 @@ watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
         .type = &watchdog_watchdogtimer_type,
     },
     .timeout = 0.0f,
-    .sleep = false,
     .mode = WATCHDOGMODE_NONE,
 };
 #endif
