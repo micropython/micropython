@@ -143,15 +143,15 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (uart_taken) {
-        mp_raise_RuntimeError(translate("Hardware in use, try alternative pins"));
+        mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
     }
 
     if(self->rx == NULL && self->tx == NULL) {
-        mp_raise_RuntimeError(translate("Invalid UART pin selection"));
+        mp_raise_ValueError(translate("Invalid pins"));
     }
 
     if (is_onedirection && ((rts != NULL) || (cts != NULL))) {
-        mp_raise_RuntimeError(translate("Both RX and TX required for flow control"));
+        mp_raise_ValueError(translate("Both RX and TX required for flow control"));
     }
 
     // Filter for sane settings for RS485
