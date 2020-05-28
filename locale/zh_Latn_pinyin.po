@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-27 11:28+0800\n"
+"POT-Creation-Date: 2020-05-27 10:46-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -376,6 +376,10 @@ msgstr "Bǐtè shízhōng hé dānzì xuǎnzé bìxū gòngxiǎng shízhōng dā
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "Bǐtè shēndù bìxū shì 8 bèi yǐshàng."
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -812,7 +816,7 @@ msgstr "Fēnzǔ yǐ mǎn"
 msgid "Hardware busy, try alternative pins"
 msgstr "Yìngjiàn máng, qǐng chángshì qítā zhēnjiǎo"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Shǐyòng de yìngjiàn, qǐng chángshì qítā yǐn jiǎo"
 
@@ -893,11 +897,11 @@ msgstr "Wúxiào de I2C yǐn jiǎo xuǎnzé"
 msgid "Invalid PWM frequency"
 msgstr "Wúxiào de PWM pínlǜ"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr "Wúxiào de SPI yǐn jiǎo xuǎnzé"
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr "Wúxiào de UART yǐn jiǎo xuǎnzé"
 
@@ -973,7 +977,8 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Wúxiào de yǐn jiǎo"
 
@@ -1433,7 +1438,7 @@ msgstr "Duīzhàn dàxiǎo bìxū zhìshǎo 256"
 msgid "Stream missing readinto() or write() method."
 msgstr "Liú quēshǎo readinto() huò write() fāngfǎ."
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Dìngyì zhìshǎo yīgè UART yǐn jiǎo"
 
@@ -3126,8 +3131,7 @@ msgstr "yuán zǔ/lièbiǎo chángdù cuòwù"
 msgid "tuple/list required on RHS"
 msgstr "RHS yāoqiú de yuán zǔ/lièbiǎo"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx hé rx bùnéng dōu shì wú"

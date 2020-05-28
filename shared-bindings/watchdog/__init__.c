@@ -34,17 +34,13 @@
 //|
 //| The `watchdog` module provides support for a Watchdog Timer. This timer will reset the device
 //| if it hasn't been fed after a specified amount of time. This is useful to ensure the board
-//| has not crashed or locked up. You can enable the watchdog timer using :class:`wdt.WDT`.
-//| Note that on some platforms the watchdog timer cannot be disabled once it has been enabled.
+//| has not crashed or locked up. Note that on some platforms the watchdog timer cannot be disabled
+//| once it has been enabled.
 //|
-//| The WatchDogTimer is used to restart the system when the application crashes and ends
+//| The `WatchDogTimer` is used to restart the system when the application crashes and ends
 //| up into a non recoverable state. Once started it cannot be stopped or
 //| reconfigured in any way. After enabling, the application must "feed" the
 //| watchdog periodically to prevent it from expiring and resetting the system.
-//|
-//| Note that this module can't be imported and used directly. The sole
-//| instance of :class:`WatchDogTimer` is available at
-//| :attr:`microcontroller.watchdog`.
 //|
 //| Example usage::
 //|

@@ -40,6 +40,20 @@
 
 #include "supervisor/port.h"
 
+//| class WatchDogTimer:
+//|     """Timer that is used to detect code lock ups and automatically reset the microcontroller
+//|        when one is detected.
+//|
+//|        A lock up is detected when the watchdog hasn't been fed after a given duration. So, make
+//|        sure to call `feed` within the timeout.
+//|     """
+//|
+
+//|     def __init__(self, ):
+//|         """Not currently dynamically supported. Access the sole instance through `microcontroller.watchdog`."""
+//|         ...
+//|
+
 //|     def feed(self):
 //|         """Feed the watchdog timer. This must be called regularly, otherwise
 //|         the timer will expire."""

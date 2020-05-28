@@ -74,14 +74,13 @@ mp_obj_t watchdog_watchdogmode_type_to_obj(watchdog_watchdogmode_t mode) {
 }
 
 STATIC const mp_rom_map_elem_t watchdog_watchdogmode_locals_dict_table[] = {
-    {MP_ROM_QSTR(MP_QSTR_NONE),   MP_ROM_PTR(&mp_const_none_obj)},
     {MP_ROM_QSTR(MP_QSTR_RAISE),  MP_ROM_PTR(&watchdog_watchdogmode_raise_obj)},
     {MP_ROM_QSTR(MP_QSTR_RESET),  MP_ROM_PTR(&watchdog_watchdogmode_reset_obj)},
 };
 STATIC MP_DEFINE_CONST_DICT(watchdog_watchdogmode_locals_dict, watchdog_watchdogmode_locals_dict_table);
 
 STATIC void watchdog_watchdogmode_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    qstr runmode = MP_QSTR_NONE;
+    qstr runmode = MP_QSTR_None;
     if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&watchdog_watchdogmode_raise_obj)) {
         runmode = MP_QSTR_RAISE;
     }

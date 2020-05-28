@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-27 11:28+0800\n"
+"POT-Creation-Date: 2020-05-27 10:46-0700\n"
 "PO-Revision-Date: 2020-05-26 19:37+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
@@ -385,6 +385,10 @@ msgstr "'bit clock' et 'word select' doivent partager une horloge"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "La profondeur de bit doit être un multiple de 8."
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -830,7 +834,7 @@ msgstr "Groupe plein"
 msgid "Hardware busy, try alternative pins"
 msgstr "Matériel occupé, essayez d'autres broches"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Matériel utilisé, essayez d'autres broches"
 
@@ -911,11 +915,11 @@ msgstr "Sélection de broches I2C non valide"
 msgid "Invalid PWM frequency"
 msgstr "Fréquence de PWM invalide"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr "Sélection de broches SPI non valide"
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr "Sélection de broches UART non valide"
 
@@ -991,7 +995,8 @@ msgstr "Broche invalide pour le canal droit"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Broches invalides"
 
@@ -1458,7 +1463,7 @@ msgstr "La pile doit être au moins de 256"
 msgid "Stream missing readinto() or write() method."
 msgstr "Il manque une méthode readinto() ou write() au flux."
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Fournissez au moins une broche UART"
 
@@ -3181,8 +3186,7 @@ msgstr "tuple/liste a une mauvaise longueur"
 msgid "tuple/list required on RHS"
 msgstr "tuple ou liste requis en partie droite"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx et rx ne peuvent être 'None' tous les deux"
