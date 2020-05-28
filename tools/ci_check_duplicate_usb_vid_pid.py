@@ -71,8 +71,8 @@ def configboard_files():
 
 def check_vid_pid(files, whitelist):
     """ Compiles a list of USB VID & PID values for all boards, and checks
-        for duplicates. Raises a `RuntimeError` if duplicates are found, and
-        lists the duplicates.
+        for duplicates. Exits with ``sys.exit()`` (non-zero exit code)
+        if duplicates are found, and lists the duplicates.
     """
 
     duplicates_found = False
