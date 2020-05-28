@@ -58,3 +58,9 @@ OSError
 3 umount
 ['mnt']
 4 umount
+OSError
+/
+5 mount False False
+5 chdir /subdir
+OSError
+/
