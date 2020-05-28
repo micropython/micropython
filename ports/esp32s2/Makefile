@@ -78,6 +78,7 @@ INC += -Iesp-idf/components/freertos/xtensa/include
 INC += -Iesp-idf/components/esp32s2/include
 INC += -Iesp-idf/components/xtensa/esp32s2/include
 INC += -Iesp-idf/components/esp_common/include
+INC += -Iesp-idf/components/esp_ringbuf/include
 INC += -Iesp-idf/components/esp_rom/include
 INC += -Iesp-idf/components/xtensa/include
 INC += -Iesp-idf/components/esp_timer/include

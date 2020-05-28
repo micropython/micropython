@@ -24,21 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_I2C_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_I2C_H
 
-#include "py/mphal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "peripherals/pins.h"
+#include "esp-idf/components/soc/include/hal/i2c_types.h"
+#include "FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "py/obj.h"
 
-void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
-void reset_pin_number(gpio_num_t pin_number);
-void reset_pin(const mcu_pin_obj_t* pin);
-void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(gpio_num_t pin_number);
-void never_reset_pin_number(gpio_num_t pin_number);
-void never_reset_pin(const mcu_pin_obj_t* pin);
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t* scl_pin;
+    const mcu_pin_obj_t* sda_pin;
+    i2c_port_t i2c_num;
+    StaticSemaphore_t semaphore;
+    SemaphoreHandle_t semaphore_handle;
+    bool has_lock;
+} busio_i2c_obj_t;
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+void i2c_reset(void);
+
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_H

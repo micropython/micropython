@@ -24,21 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
 
-#include "py/mphal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "peripherals/pins.h"
+#include "py/obj.h"
 
-void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
-void reset_pin_number(gpio_num_t pin_number);
-void reset_pin(const mcu_pin_obj_t* pin);
-void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(gpio_num_t pin_number);
-void never_reset_pin_number(gpio_num_t pin_number);
-void never_reset_pin(const mcu_pin_obj_t* pin);
+typedef struct {
+    mp_obj_base_t base;
+    bool has_lock;
+    const mcu_pin_obj_t* clock_pin;
+    const mcu_pin_obj_t* MOSI_pin;
+    const mcu_pin_obj_t* MISO_pin;
+} busio_spi_obj_t;
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+void spi_reset(void);
+
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
