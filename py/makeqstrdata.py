@@ -2,6 +2,9 @@
 Process raw qstr file and output qstr data with length, hash and data bytes.
 
 This script works with Python 2.7, 3.3 and 3.4.
+
+For documentation about the format of compressed translated strings, see
+supervisor/shared/translate.h
 """
 
 from __future__ import print_function
