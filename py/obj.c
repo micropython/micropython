@@ -94,17 +94,17 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
             assert(n % 3 == 0);
             // Decompress the format strings
             const compressed_string_t* traceback = translate("Traceback (most recent call last):\n");
-            char decompressed[traceback->length];
+            char decompressed[decompress_length(traceback)];
             decompress(traceback, decompressed);
 #if MICROPY_ENABLE_SOURCE_LINE
             const compressed_string_t* frame = translate("  File \"%q\", line %d");
 #else
             const compressed_string_t* frame = translate("  File \"%q\"");
 #endif
-            char decompressed_frame[frame->length];
+            char decompressed_frame[decompress_length(frame)];
             decompress(frame, decompressed_frame);
             const compressed_string_t* block_fmt = translate(", in %q\n");
-            char decompressed_block[block_fmt->length];
+            char decompressed_block[decompress_length(block_fmt)];
             decompress(block_fmt, decompressed_block);
 
             // Print the traceback
