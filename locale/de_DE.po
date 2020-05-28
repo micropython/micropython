@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-19 15:01+0800\n"
+"POT-Creation-Date: 2020-05-27 20:51-0500\n"
 "PO-Revision-Date: 2020-05-23 16:13+0000\n"
 "Last-Translator: Timon <timon@skerutsch.de>\n"
 "Language-Team: German <https://later.unpythonic.net/projects/circuitpython/"
@@ -380,6 +380,10 @@ msgstr "Bit clock und word select müssen eine clock unit teilen"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "Bit depth muss ein Vielfaches von 8 sein."
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -826,7 +830,7 @@ msgstr "Gruppe voll"
 msgid "Hardware busy, try alternative pins"
 msgstr "Hardware beschäftigt, versuchen Sie alternative Pins"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Hardware in benutzung, probiere alternative Pins"
 
@@ -907,11 +911,11 @@ msgstr "Ungültige I2C-Pinauswahl"
 msgid "Invalid PWM frequency"
 msgstr "Ungültige PWM Frequenz"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr "Ungültige SPI-Pin-Auswahl"
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr "Ungültige UART-Pinauswahl"
 
@@ -987,7 +991,8 @@ msgstr "Ungültiger Pin für rechten Kanal"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Ungültige Pins"
 
@@ -1099,10 +1104,6 @@ msgstr "Muss ein Vielfaches von 6 RGB-Pins verwenden, nicht %d"
 #: py/parse.c
 msgid "Name too long"
 msgstr "Name zu lang"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Negative step not supported"
-msgstr "Negativer Schritt wird nicht unterstützt"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -1271,6 +1272,10 @@ msgstr "Zugang verweigert"
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin hat keine ADC Funktionalität"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1454,7 +1459,7 @@ msgstr "Die Stackgröße sollte mindestens 256 sein"
 msgid "Stream missing readinto() or write() method."
 msgstr "Stream fehlt readinto() oder write() Methode."
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Geben Sie mindestens einen UART-Pin an"
 
@@ -3155,8 +3160,7 @@ msgstr "tupel/list hat falsche Länge"
 msgid "tuple/list required on RHS"
 msgstr "Tupel / Liste auf RHS erforderlich"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx und rx können nicht beide None sein"
@@ -3529,6 +3533,9 @@ msgstr "Nullschritt"
 #~ msgstr ""
 #~ "Mehrere PWM Frequenzen werden nicht unterstützt. PWM wurde bereits auf "
 #~ "%dHz gesetzt."
+
+#~ msgid "Negative step not supported"
+#~ msgstr "Negativer Schritt wird nicht unterstützt"
 
 #~ msgid "No PulseIn support for %q"
 #~ msgstr "Keine PulseIn Unterstützung für %q"
