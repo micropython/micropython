@@ -29,6 +29,11 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 
+#include "esp-idf/components/soc/soc/esp32s2/include/soc/usb_periph.h"
+#include "esp-idf/components/driver/include/driver/periph_ctrl.h"
+#include "esp-idf/components/driver/include/driver/gpio.h"
+#include "esp-idf/components/esp_rom/include/esp32s2/rom/gpio.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -64,16 +69,22 @@ void usb_device_task(void* param)
 }
 
 void init_usb_hardware(void) {
+    periph_module_reset(PERIPH_USB_MODULE);
+    periph_module_enable(PERIPH_USB_MODULE);
     usb_hal_context_t hal = {
         .use_external_phy = false // use built-in PHY
     };
     usb_hal_init(&hal);
 
+    // Initialize the pin drive strength.
+    gpio_set_drive_capability(USBPHY_DM_NUM, GPIO_DRIVE_CAP_3);
+    gpio_set_drive_capability(USBPHY_DP_NUM, GPIO_DRIVE_CAP_3);
+
     (void) xTaskCreateStatic(usb_device_task,
                              "usbd",
                              USBD_STACK_SIZE,
                              NULL,
-                             configMAX_PRIORITIES-1,
+                             5,
                              usb_device_stack,
                              &usb_device_taskdef);
 }

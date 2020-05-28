@@ -94,7 +94,7 @@ endif
 # MCU Series is defined by the HAL package and doesn't need to be specified here
 C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)
 
-CFLAGS += $(INC) -Werror -Wall -std=gnu11 $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT) -nostdlib -nostartfiles
+CFLAGS += $(INC) -Werror -Wall -std=gnu11 -fshort-enums $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT) -nostdlib -nostartfiles
 
 # Undo some warnings.
 # STM32 HAL uses undefined preprocessor variables, shadowed variables, casts that change alignment reqs
@@ -136,7 +136,7 @@ ifndef BOOTLOADER_OFFSET
 	BOOTLOADER_OFFSET := 0x8000000
 endif
 
-LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-T,$(LD_COMMON) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-T,$(LD_FILE) -Wl,-T,$(LD_COMMON) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
 # Use toolchain libm if we're not using our own.
