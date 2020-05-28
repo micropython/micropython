@@ -257,8 +257,8 @@ safe_mode_t port_init(void) {
     // enabled. It won't occur very often so it'll be low overhead.
     NVIC_EnableIRQ(SNVS_HP_WRAPPER_IRQn);
 
-    // Reset everything into a known state before board_init.
-    reset_port();
+    // Note that reset_port CANNOT GO HERE, unlike other ports, since we currently rely on it to 
+    // protect never_reset pins per board.
 
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
