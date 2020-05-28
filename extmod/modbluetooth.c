@@ -835,7 +835,7 @@ STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size
     // put more than bt->irq_data_data_alloc bytes into the ringbuf, because
     // that's what's available here in bt->irq_data_bytes.
     if (bytes_data) {
-        bytes_data->len = ringbuf_get(ringbuf);
+        bytes_data->len = ringbuf_get16(ringbuf);
         for (size_t i = 0; i < bytes_data->len; ++i) {
             // cast away const, this is actually bt->irq_data_bytes.
             ((uint8_t *)bytes_data->data)[i] = ringbuf_get(ringbuf);
@@ -1001,7 +1001,7 @@ void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uin
     MICROPY_PY_BLUETOOTH_ENTER
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     data_len = MIN(o->irq_data_data_alloc, data_len);
-    if (enqueue_irq(o, 1 + 6 + 1 + 1 + 1 + data_len, MP_BLUETOOTH_IRQ_SCAN_RESULT)) {
+    if (enqueue_irq(o, 1 + 6 + 1 + 1 + 2 + data_len, MP_BLUETOOTH_IRQ_SCAN_RESULT)) {
         ringbuf_put(&o->ringbuf, addr_type);
         for (int i = 0; i < 6; ++i) {
             ringbuf_put(&o->ringbuf, addr[i]);
@@ -1010,7 +1010,9 @@ void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uin
         ringbuf_put(&o->ringbuf, adv_type);
         // Note conversion of int8_t rssi to uint8_t. Must un-convert on the way out.
         ringbuf_put(&o->ringbuf, (uint8_t)rssi);
-        ringbuf_put(&o->ringbuf, data_len);
+        // Length field is 16-bit.
+        data_len = MIN(UINT16_MAX, data_len);
+        ringbuf_put16(&o->ringbuf, data_len);
         for (size_t i = 0; i < data_len; ++i) {
             ringbuf_put(&o->ringbuf, data[i]);
         }
@@ -1069,10 +1071,12 @@ size_t mp_bluetooth_gattc_on_data_available_start(uint8_t event, uint16_t conn_h
     *atomic_state_out = atomic_state;
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     data_len = MIN(o->irq_data_data_alloc, data_len);
-    if (enqueue_irq(o, 2 + 2 + 1 + data_len, event)) {
+    if (enqueue_irq(o, 2 + 2 + 2 + data_len, event)) {
         ringbuf_put16(&o->ringbuf, conn_handle);
         ringbuf_put16(&o->ringbuf, value_handle);
-        ringbuf_put(&o->ringbuf, data_len);
+        // Length field is 16-bit.
+        data_len = MIN(UINT16_MAX, data_len);
+        ringbuf_put16(&o->ringbuf, data_len);
         return data_len;
     } else {
         return 0;
