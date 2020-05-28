@@ -152,6 +152,9 @@ void port_sleep_until_interrupt(void) {
     // FreeRTOS delay here maybe.
     // Light sleep shuts down BLE and wifi.
     // esp_light_sleep_start()
+    if (sleep_time_duration == 0) {
+        return;
+    }
     vTaskDelayUntil(&sleep_time_set, sleep_time_duration);
 }
 

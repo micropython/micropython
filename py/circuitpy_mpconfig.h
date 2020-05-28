@@ -121,7 +121,9 @@
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
+#ifndef MICROPY_USE_INTERNAL_PRINTF
 #define MICROPY_USE_INTERNAL_PRINTF      (1)
+#endif
 
 // fatfs configuration used in ffconf.h
 //

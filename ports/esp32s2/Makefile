@@ -110,7 +110,7 @@ endif
 
 CFLAGS += $(INC) -Werror -Wall -mlongcalls -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
-LDFLAGS = $(CFLAGS) -fshort-enums -Wl,-nostdlib  -Wl,-Map=$@.map -Wl,-cref
+LDFLAGS = $(CFLAGS) -Wl,-nostdlib  -Wl,-Map=$@.map -Wl,-cref
 LDFLAGS += -L$(BUILD)/esp-idf/esp-idf/esp32s2 \
            -Tesp32s2_out.ld \
            -L$(BUILD)/esp-idf/esp-idf/esp32s2/ld \
