@@ -39,11 +39,6 @@
 #define fsync _commit
 #endif
 
-typedef struct _mp_obj_vfs_posix_file_t {
-    mp_obj_base_t base;
-    int fd;
-} mp_obj_vfs_posix_file_t;
-
 #ifdef MICROPY_CPYTHON_COMPAT
 STATIC void check_fd_is_open(const mp_obj_vfs_posix_file_t *o) {
     if (o->fd < 0) {
@@ -137,7 +132,13 @@ STATIC mp_uint_t vfs_posix_file_read(mp_obj_t o_in, void *buf, mp_uint_t size, i
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
     check_fd_is_open(o);
     ssize_t r;
-    MP_HAL_RETRY_SYSCALL(r, read(o->fd, buf, size), {
+    int fd = o->fd;
+    #if MICROPY_PY_OS_DUPTERM
+    if (fd <= STDERR_FILENO && o->raw_stdio) {
+        fd = STDIN_FILENO;
+    }
+    #endif
+    MP_HAL_RETRY_SYSCALL(r, read(fd, buf, size), {
         *errcode = err;
         return MP_STREAM_ERROR;
     });
@@ -147,14 +148,19 @@ STATIC mp_uint_t vfs_posix_file_read(mp_obj_t o_in, void *buf, mp_uint_t size, i
 STATIC mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
     check_fd_is_open(o);
+    int fd = o->fd;
     #if MICROPY_PY_OS_DUPTERM
-    if (o->fd <= STDERR_FILENO) {
-        mp_hal_stdout_tx_strn(buf, size);
-        return size;
+    if (fd <= STDERR_FILENO) {
+        if (o->raw_stdio) {
+            fd = STDOUT_FILENO;
+        } else {
+            mp_hal_stdout_tx_strn(buf, size);
+            return size;
+        }
     }
     #endif
     ssize_t r;
-    MP_HAL_RETRY_SYSCALL(r, write(o->fd, buf, size), {
+    MP_HAL_RETRY_SYSCALL(r, write(fd, buf, size), {
         *errcode = err;
         return MP_STREAM_ERROR;
     });
@@ -262,8 +268,9 @@ const mp_obj_type_t mp_type_vfs_posix_textio = {
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
 };
 
-const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_textio}, STDIN_FILENO};
-const mp_obj_vfs_posix_file_t mp_sys_stdout_obj = {{&mp_type_textio}, STDOUT_FILENO};
-const mp_obj_vfs_posix_file_t mp_sys_stderr_obj = {{&mp_type_textio}, STDERR_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_textio}, .fd=STDIN_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_stdout_obj = {{&mp_type_textio}, .fd=STDOUT_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_stderr_obj = {{&mp_type_textio}, .fd=STDERR_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_raw_stdio_obj = {{&mp_type_textio}, .fd=STDIN_FILENO, .raw_stdio=true};
 
 #endif // MICROPY_VFS_POSIX || MICROPY_VFS_POSIX_FILE

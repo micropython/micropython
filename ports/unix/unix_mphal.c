@@ -36,6 +36,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "extmod/misc.h"
+#include "extmod/vfs_posix.h"
 
 #ifndef _WIN32
 #include <signal.h>
@@ -66,6 +67,7 @@ STATIC void sighandler(int signum) {
 }
 #endif
 
+// Implementation for lib/utils/interupt_char.h
 int mp_interrupt_char = -1;
 
 void mp_hal_set_interrupt_char(char c) {
@@ -119,71 +121,8 @@ void mp_hal_stdio_mode_orig(void) {
 #endif
 
 #if MICROPY_PY_OS_DUPTERM
-STATIC mp_uint_t unix_stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    ssize_t ret;
-    MP_HAL_RETRY_SYSCALL(ret, read(STDIN_FILENO, (byte *)buf, size), {});
-    if (ret == 0) {
-        // return EAGAIN error to indicate non-blocking
-        *errcode = MP_EAGAIN;
-        return MP_STREAM_ERROR;
-    }
-    return ret;
-}
-
-STATIC mp_uint_t unix_stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    int ret;
-    MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, (const byte *)buf, size), {});
-    if (ret == 0) {
-        // return EAGAIN error to indicate non-blocking
-        *errcode = MP_EAGAIN;
-        return MP_STREAM_ERROR;
-    }
-    return ret;
-}
-
-STATIC mp_uint_t unix_stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    *errcode = MP_EINVAL;
-    return MP_STREAM_ERROR;
-}
-
-STATIC mp_obj_t unix_stdio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
-
-STATIC const mp_stream_p_t unix_stdio_stream_p = {
-    .read = unix_stdio_read,
-    .write = unix_stdio_write,
-    .ioctl = unix_stdio_ioctl,
-};
-
-STATIC const mp_rom_map_elem_t unix_stdio_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj)},
-    { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj)},
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-};
-STATIC MP_DEFINE_CONST_DICT(unix_stdio_locals_dict, unix_stdio_locals_dict_table);
-
-const mp_obj_type_t unix_stdio_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UNIX_STDIO,
-    .make_new = unix_stdio_make_new,
-    .protocol = &unix_stdio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&unix_stdio_locals_dict,
-};
-
-typedef struct _unix_stdio_obj_t {
-    mp_obj_base_t base;
-} unix_stdio_obj_t;
-
-STATIC const unix_stdio_obj_t unix_stdio_obj = {{&unix_stdio_type}};
-
-STATIC mp_obj_t unix_stdio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    return MP_OBJ_FROM_PTR(&unix_stdio_obj);
-}
-
 void init_dupterm_stdio() {
-    MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_FROM_PTR(&unix_stdio_obj);   
+    MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_FROM_PTR(&mp_sys_raw_stdio_obj);   
 }
 #endif
 
@@ -197,10 +136,12 @@ int mp_hal_stdin_rx_chr(void) {
         c = '\r';
     }
     return c;
-    #else
+    
+    #else // ! MICROPY_PY_OS_DUPTERM
     unsigned char c;
-    ssize_t ret;
-    MP_HAL_RETRY_SYSCALL(ret, read(STDIN_FILENO, &c, 1), {});
+    int errcode = 0;
+    const mp_stream_p_t *stream_p = mp_get_stream(&mp_sys_raw_stdio_obj);
+    mp_uint_t ret = stream_p->read((mp_obj_t)&mp_sys_raw_stdio_obj, &c, 1, &errcode);
     if (ret == 0) {
         c = 4; // EOF, ctrl-D
     } else if (c == '\n') {
@@ -214,8 +155,9 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     #if MICROPY_PY_OS_DUPTERM
     mp_uos_dupterm_tx_strn(str, len);
     #else
-    ssize_t ret;
-    MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
+    int errcode = 0;
+    const mp_stream_p_t *stream_p = mp_get_stream(&mp_sys_raw_stdio_obj);
+    stream_p->write((mp_obj_t)&mp_sys_raw_stdio_obj, str, len, &errcode);
     #endif
 }
 
