@@ -36,6 +36,7 @@
 
 #include "py/runtime.h"
 #include "lib/timeutils/timeutils.h"
+#include "py/smallint.h"
 #include "extmod/utime_mphal.h"
 
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
@@ -89,6 +90,24 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
+extern uint32_t ticks_us_max_value;
+
+STATIC mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
+    // we assume that the arguments come from ticks_xx so are small ints
+    mp_uint_t start = MP_OBJ_SMALL_INT_VALUE(start_in);
+    mp_uint_t end = MP_OBJ_SMALL_INT_VALUE(end_in);
+    // Optimized formula avoiding if conditions. We adjust difference "forward",
+    // wrap it around and adjust back.
+    mp_int_t diff = ((end - start + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
+        - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
+    if (diff < 0) {
+        // just a hack for the limited ticks_us range
+        diff += ticks_us_max_value;
+    }
+    return MP_OBJ_NEW_SMALL_INT(diff);
+}
+MP_DEFINE_CONST_FUN_OBJ_2(utime_ticks_diff_obj, time_ticks_diff);
+
 STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
 
@@ -102,7 +121,7 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&utime_ticks_diff_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
