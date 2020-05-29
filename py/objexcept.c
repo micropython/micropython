@@ -400,7 +400,7 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const com
 
     // Try to allocate memory for the message
     mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
-    size_t o_str_alloc = fmt->length + 1;
+    size_t o_str_alloc = decompress_length(fmt);
     byte *o_str_buf = m_new_maybe(byte, o_str_alloc);
 
     bool used_emg_buf = false;
@@ -433,7 +433,7 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const com
         // We have some memory to format the string
         struct _exc_printer_t exc_pr = {!used_emg_buf, o_str_alloc, 0, o_str_buf};
         mp_print_t print = {&exc_pr, exc_add_strn};
-        char fmt_decompressed[fmt->length];
+        char fmt_decompressed[decompress_length(fmt)];
         decompress(fmt, fmt_decompressed);
         mp_vprintf(&print, fmt_decompressed, ap);
         exc_pr.buf[exc_pr.len] = '\0';

@@ -61,7 +61,7 @@
 //|           length = 8000 // 440
 //|           sine_wave = array.array("h", [0] * length)
 //|           for i in range(length):
-//|               sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15))
+//|               sine_wave[i] = int(math.sin(math.pi * 2 * i / length) * (2 ** 15))
 //|
 //|           dac = audioio.AudioOut(board.SPEAKER)
 //|           sine_wave = audiocore.RawSample(sine_wave)

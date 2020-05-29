@@ -158,7 +158,7 @@ const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
         case ENOSPC: desc = translate("No space left on device"); break;
         case EROFS:  desc = translate("Read-only filesystem"); break;
     }
-    if (desc != NULL && desc->length <= len) {
+    if (desc != NULL && decompress_length(desc) <= len) {
         decompress(desc, buf);
         return buf;
     }
