@@ -218,7 +218,10 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, addr << 1 | 1, true); // | 1 to indicate read
-    i2c_master_read(cmd, data, len, true);
+    if (len > 1) {
+        i2c_master_read(cmd, data, len - 1, 0);
+    }
+    i2c_master_read_byte(cmd, data + len - 1, 1);
     i2c_master_stop(cmd);
     esp_err_t result = i2c_master_cmd_begin(self->i2c_num, cmd, 100 /* wait in ticks */);
     i2c_cmd_link_delete(cmd);
