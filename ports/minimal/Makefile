@@ -49,9 +49,12 @@ SRC_C = \
 	lib/utils/printf.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/pyexec.c \
-	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	$(BUILD)/_frozen_mpy.c \
+
+ifeq ($(CROSS), 1)
+SRC_C += lib/libc/string0.c
+endif
 
 OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
