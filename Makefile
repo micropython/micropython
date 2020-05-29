@@ -213,7 +213,7 @@ translate: locale/circuitpython.pot
 merge-translate:
 	git merge HEAD 1>&2 2> /dev/null; test $$? -eq 128
 	rm locale/*~ || true
-	git checkout --ours -- locale/*
+	git checkout --theirs -- locale/*
 	make translate
 
 check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
