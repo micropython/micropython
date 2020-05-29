@@ -38,6 +38,7 @@ PATHS = [
     "extmod/*.[ch]",
     "extmod/btstack/*.[ch]",
     "extmod/nimble/*.[ch]",
+    "lib/mbedtls_errors/tester.c",
     "lib/netutils/*.[ch]",
     "lib/timeutils/*.[ch]",
     "lib/utils/*.[ch]",
