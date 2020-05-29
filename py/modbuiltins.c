@@ -558,7 +558,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 static inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
     mp_obj_t dest[2];
     // use load_method, raising or not raising exception
-    ((defval == MP_OBJ_NULL) ? mp_load_method : mp_load_method_maybe)(base, attr, dest);
+    if (defval == MP_OBJ_NULL) {
+        mp_load_method(base, attr, dest);
+    } else {
+        mp_load_method_protected(base, attr, dest, false);
+    }
     if (dest[0] == MP_OBJ_NULL) {
         return defval;
     } else if (dest[1] == MP_OBJ_NULL) {
