@@ -472,6 +472,12 @@ endif
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 SRC_MOD += mbedtls/mbedtls_port.c
+ifeq ($(MICROPY_SSL_MBEDTLS_ERRSTR),1)
+CFLAGS_MOD += -DMBEDTLS_ERROR_C=1
+# replace mbedtls' error.c by ours
+SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
+EXTMOD_SRC_C += extmod/mbedtls_errors/mp_mbedtls_errors.c
+endif
 endif
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
