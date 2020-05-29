@@ -96,7 +96,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
             module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
             #else
-            mp_raise_msg(&mp_type_RuntimeError, "script compilation not supported");
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
             #endif
         }
 
