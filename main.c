@@ -185,7 +185,7 @@ bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
     }
     mp_hal_stdout_tx_str(filename);
     const compressed_string_t* compressed = translate(" output:\n");
-    char decompressed[compressed->length];
+    char decompressed[decompress_length(compressed)];
     decompress(compressed, decompressed);
     mp_hal_stdout_tx_str(decompressed);
     pyexec_file(filename, exec_result);
