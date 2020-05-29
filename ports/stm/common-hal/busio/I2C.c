@@ -122,7 +122,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     #if (CPY_STM32H7 || CPY_STM32F7)
     self->handle.Init.Timing = 0x40604E73; //Taken from STCube examples
     #else
-    self->handle.Init.ClockSpeed = 100000;
+    self->handle.Init.ClockSpeed = frequency;
     self->handle.Init.DutyCycle = I2C_DUTYCYCLE_2;
     #endif
 
