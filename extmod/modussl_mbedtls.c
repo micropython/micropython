@@ -45,7 +45,6 @@
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/debug.h"
 #include "mbedtls/error.h"
-#include MBEDTLS_CONFIG_FILE
 
 typedef struct _mp_obj_ssl_socket_t {
     mp_obj_base_t base;

@@ -82,11 +82,10 @@ STATIC const struct ssl_errs ssl_error_tab[] = {
     { SSL_ERROR_NO_CERT_DEFINED, "NO_CERT_DEFINED" },
     { SSL_ERROR_NO_CLIENT_RENOG, "NO_CLIENT_RENOG" },
     { SSL_ERROR_NOT_SUPPORTED, "NOT_SUPPORTED" },
-    { 0, 0 },
 };
 
 STATIC NORETURN void ussl_raise_error(int err) {
-    for (int i = 0; ssl_error_tab[i].errnum != 0; i++) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(ssl_error_tab); i++) {
         if (ssl_error_tab[i].errnum == err) {
             // construct string object
             mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
@@ -159,7 +158,6 @@ STATIC mp_obj_ssl_socket_t *ussl_socket_new(mp_obj_t sock, struct ssl_args *args
             int res = ssl_handshake_status(o->ssl_sock);
 
             if (res != SSL_OK) {
-                ssl_display_error(res);
                 ussl_raise_error(res);
             }
         }

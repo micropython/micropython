@@ -1,4 +1,4 @@
-# test that modtls produces a text error message
+# test that modtls produces a numerical error message when out of heap
 
 try:
     import usocket as socket, ussl as ssl, sys
