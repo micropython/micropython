@@ -109,7 +109,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             // If TX is on, keep looking, else stop
             if (tx != NULL) {
                 for (uint32_t j = 0; j < tx_count; ++j) {
-                    if (mcu_uart_tx_list[j].pin != tx || 
+                    if (mcu_uart_tx_list[j].pin != tx ||
                         mcu_uart_tx_list[j].bank_idx != mcu_uart_rx_list[i].bank_idx) {
                         continue;
                     }
@@ -291,7 +291,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     } else {
         reserved_uart[self->tx->bank_idx - 1] = false;
     }
-    
+
     LPUART_Deinit(self->uart);
     gc_free(self->ringbuf);
 

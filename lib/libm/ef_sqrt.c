@@ -17,7 +17,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -74,12 +74,12 @@ float sqrtf(float x)
 	r = 0x01000000L;		/* r = moving bit from right to left */
 
 	while(r!=0) {
-	    t = s+r; 
-	    if(t<=ix) { 
-		s    = t+r; 
-		ix  -= t; 
-		q   += r; 
-	    } 
+	    t = s+r;
+	    if(t<=ix) {
+		s    = t+r;
+		ix  -= t;
+		q   += r;
+	    }
 	    ix += ix;
 	    r>>=1;
 	}

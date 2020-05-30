@@ -14,4 +14,3 @@ typedef struct {
 } vectorio_circle_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_CIRCLE_H
-

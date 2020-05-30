@@ -7,7 +7,7 @@ def bisect(fun, a, b, *, xtol=2.4e-7, maxiter=100) -> float:
     :param float b: The right side of the interval
     :param float xtol: The tolerance value
     :param float maxiter: The maximum number of iterations to perform
-    
+
     Find a solution (zero) of the function ``f(x)`` on the interval
     (``a``..``b``) using the bisection method.  The result is accurate to within
     ``xtol`` unless more than ``maxiter`` steps are required."""
@@ -46,7 +46,6 @@ def interp(x: ulab.array, xp:ulab.array, fp:ulab.array, *, left=None, right=None
     :param ulab.array fp: The y-coordinates of the data points, same length as xp
     :param left: Value to return for ``x < xp[0]``, default is ``fp[0]``.
     :param right: Value to return for ``x > xp[-1]``, default is ``fp[-1]``.
-    
+
     Returns the one-dimensional piecewise linear interpolant to a function with given discrete data points (xp, fp), evaluated at x."""
     ...
-

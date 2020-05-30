@@ -1,7 +1,7 @@
 
 # Building CircuitPython
 
-Welcome to CircuitPython!  
+Welcome to CircuitPython!
 
 This document is a quick-start guide only.
 
@@ -28,7 +28,7 @@ This project has a bunch of git submodules.  You will need to update them regula
 As part of the build process, mpy-cross is needed to compile .py files into .mpy files.
 To compile (or recompile) mpy-cross:
 
-    make -C mpy-cross 
+    make -C mpy-cross
 
 # Building
 
@@ -68,7 +68,7 @@ A successful run will say something like
 
 # Debugging
 
-The easiest way to debug CircuitPython on hardware is with a JLink device, JLinkGDBServer, and an appropriate GDB.   
+The easiest way to debug CircuitPython on hardware is with a JLink device, JLinkGDBServer, and an appropriate GDB.
 Instructions can be found at https://learn.adafruit.com/debugging-the-samd21-with-gdb
 
 If using JLink, you'll need both the `JLinkGDBServer` and `arm-none-eabi-gdb` running.

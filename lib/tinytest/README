@@ -15,4 +15,3 @@ You can get the latest version using Git, by pulling from
 
 Patches are welcome. Patches that turn this from tinytest to hugetest
 will not be applied.  If you want a huge test framework, use CUnit.
-

@@ -136,7 +136,7 @@ uint32_t common_hal_vectorio_polygon_get_pixel(void *obj, int16_t x, int16_t y) 
         } else if ( y2 <= y && line_side(x1, y1, x2, y2, x, y) < 0 ) {
             // Wind down, point is to the left of the edge vector
             --winding_number;
-            VECTORIO_POLYGON_DEBUG("    wind:%2d winding_number:%2d\n", -1, winding_number); 
+            VECTORIO_POLYGON_DEBUG("    wind:%2d winding_number:%2d\n", -1, winding_number);
         }
 
         x1 = x2;
@@ -144,4 +144,3 @@ uint32_t common_hal_vectorio_polygon_get_pixel(void *obj, int16_t x, int16_t y) 
     }
     return winding_number == 0 ? 0 : 1;
 }
-

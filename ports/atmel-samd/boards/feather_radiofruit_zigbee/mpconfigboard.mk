@@ -18,4 +18,3 @@ CIRCUITPY_AUDIOIO = 0
 
 # Too much flash for Korean translations
 CIRCUITPY_VECTORIO = 0
-

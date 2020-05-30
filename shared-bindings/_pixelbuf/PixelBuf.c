@@ -55,7 +55,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|
 //|         When ``P`` (PWM duration) is present as the 4th character of the byteorder
 //|         string, the 4th value in the tuple/list for a pixel is the individual pixel
-//|         brightness (0.0-1.0) and will enable a Dotstar compatible 1st byte for each 
+//|         brightness (0.0-1.0) and will enable a Dotstar compatible 1st byte for each
 //|         pixel.
 //|
 //|         :param ~int size: Number of pixels

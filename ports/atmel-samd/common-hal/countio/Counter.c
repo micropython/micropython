@@ -25,20 +25,20 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
 
     // These default settings apply when the EIC isn't yet enabled.
     self->eic_channel_a = pin_a->extint_channel;
-    
+
     self->pin_a = pin_a->number;
-    
+
     gpio_set_pin_function(self->pin_a, GPIO_PIN_FUNCTION_A);
     gpio_set_pin_pull_mode(self->pin_a, GPIO_PULL_UP);
 
     set_eic_channel_data(self->eic_channel_a, (void*) self);
 
     self->count = 0;
-    
+
 
     claim_pin(pin_a);
-   
-    
+
+
     set_eic_handler(self->eic_channel_a, EIC_HANDLER_COUNTER);
     turn_on_eic_channel(self->eic_channel_a, EIC_CONFIG_SENSE0_FALL_Val);
 
@@ -77,7 +77,7 @@ void common_hal_countio_counter_reset(countio_counter_obj_t* self){
 
 void counter_interrupt_handler(uint8_t channel) {
     countio_counter_obj_t* self = get_eic_channel_data(channel);
-    
+
     self->count += 1;
-    
+
 }

@@ -15,7 +15,6 @@ MCU_SERIES = F4
 MCU_VARIANT = STM32F401xE
 MCU_PACKAGE = LQFP64
 
-LD_COMMON = boards/common_default.ld 
-LD_FILE = boards/STM32F401xe_boot.ld 
+LD_COMMON = boards/common_default.ld
+LD_FILE = boards/STM32F401xe_boot.ld
 # LD_FILE = boards/STM32F401xe_fs.ld # use for internal flash
-

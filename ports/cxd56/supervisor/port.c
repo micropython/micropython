@@ -146,4 +146,3 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 void port_sleep_until_interrupt(void) {
     // TODO: Implement sleep.
 }
-
