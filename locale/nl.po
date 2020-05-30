@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-27 20:51-0500\n"
-"PO-Revision-Date: 2020-05-25 13:52+0000\n"
-"Last-Translator: Dustin Watts <dustin_watts@yahoo.com>\n"
+"PO-Revision-Date: 2020-05-31 11:41+0000\n"
+"Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
@@ -380,7 +380,7 @@ msgstr "Bit diepte moet een meervoud van 8 zijn."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "RX en TX zijn beide vereist voor stroomregeling"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -1269,7 +1269,7 @@ msgstr "Pin heeft geen ADC mogelijkheden"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
-msgstr ""
+msgstr "Pin kan alleen voor invoer gebruikt worden"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
