@@ -10,7 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-27 20:51-0500\n"
 "PO-Revision-Date: 2020-06-01 13:17+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Last-Translator: David Glaude <david.glaude@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -190,12 +190,12 @@ msgstr "l'objet '%s' n'est pas un itérateur"
 #: py/objtype.c py/runtime.c
 #, c-format
 msgid "'%s' object is not callable"
-msgstr "objet '%s' n'est pas appelable"
+msgstr "l'objet '%s' n'est pas appelable"
 
 #: py/runtime.c
 #, c-format
 msgid "'%s' object is not iterable"
-msgstr "objet '%s' n'est pas itérable"
+msgstr "l'objet '%s' n'est pas itérable"
 
 #: py/obj.c
 #, c-format
