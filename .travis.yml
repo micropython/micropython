@@ -25,7 +25,7 @@ jobs:
     - stage: test
       os: linux
       dist: bionic
-      env: NAME="code formatting"
+      name: "code formatting"
       before_install:
         - sudo apt-add-repository --yes --update ppa:pybricks/ppa
       install:
@@ -41,8 +41,8 @@ jobs:
     - stage: test
       os: osx
       osx_image: xcode11.3
+      name: "unix port build with clang on OSX"
       env:
-        - NAME="unix port build with clang on OSX"
         - PKG_CONFIG_PATH=/usr/local/opt/libffi/lib/pkgconfig
       script:
         - make ${MAKEOPTS} -C mpy-cross
@@ -59,13 +59,12 @@ jobs:
 
     # stm32 port
     - stage: test
-      env: NAME="stm32 port build"
+      name: "stm32 port build"
       install:
         # need newer gcc version for Cortex-M7 support
         - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
         - sudo apt-get update -qq || true
-        - sudo apt-get install gcc-arm-embedded
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-arm-embedded libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
@@ -84,11 +83,9 @@ jobs:
     # qemu-arm port
     - stage: test
       dist: bionic # needed for more recent version of qemu-system-arm with mps2-an385 target
-      env: NAME="qemu-arm port build and tests"
+      name: "qemu-arm port build and tests"
       install:
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
-        - sudo apt-get install qemu-system
+        - sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi qemu-system
         - arm-none-eabi-gcc --version
         - qemu-system-arm --version
       script:
@@ -99,7 +96,7 @@ jobs:
 
     # unix coverage
     - stage: test
-      env: NAME="unix coverage build and tests"
+      name: "unix coverage build and tests"
       install:
         - sudo apt-get install python3-pip
         - sudo pip install cpp-coveralls
@@ -134,7 +131,7 @@ jobs:
 
     # unix coverage 32-bit
     - stage: test
-      env: NAME="unix coverage 32-bit build and tests"
+      name: "unix coverage 32-bit build and tests"
       install:
         - sudo apt-get install gcc-multilib libffi-dev:i386
         - sudo apt-get install python3-pip
@@ -166,7 +163,7 @@ jobs:
 
     # standard unix port
     - stage: test
-      env: NAME="unix port build and tests"
+      name: "unix port build and tests"
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix submodules
@@ -179,7 +176,7 @@ jobs:
 
     # unix nanbox/float (and using Python 2 to check it can run the build scripts)
     - stage: test
-      env: NAME="unix nanbox/float port build and tests"
+      name: "unix nanbox/float port build and tests"
       install:
         - sudo apt-get install gcc-multilib libffi-dev:i386
       script:
@@ -196,7 +193,7 @@ jobs:
 
     # unix stackless/float with clang
     - stage: test
-      env: NAME="unix stackless/float port build and tests with clang"
+      name: "unix stackless/float port build and tests with clang"
       install:
         - sudo apt-get install clang
       script:
@@ -212,7 +209,7 @@ jobs:
 
     # unix with sys.settrace
     - stage: test
-      env: NAME="unix port with sys.settrace build and tests"
+      name: "unix port with sys.settrace build and tests"
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/unix MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_USSL=0 CFLAGS_EXTRA="-DMICROPY_PY_SYS_SETTRACE=1" test || travis_terminate 1
@@ -223,7 +220,7 @@ jobs:
 
     # minimal unix port with tests
     - stage: test
-      env: NAME="minimal unix port build and tests"
+      name: "minimal unix port build and tests"
       script:
         - make ${MAKEOPTS} -C ports/unix VARIANT=minimal
         - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-minimal ./run-tests -e exception_chain -e self_type_check -e subclass_native_init -d basics)
@@ -232,7 +229,7 @@ jobs:
 
     # windows port via mingw
     - stage: test
-      env: NAME="windows port build via mingw"
+      name: "windows port build via mingw"
       install:
         - sudo apt-get install gcc-mingw-w64
       script:
@@ -241,7 +238,7 @@ jobs:
 
     # esp32 w/ESP-IDFv3 port
     - stage: test
-      env: NAME="esp32 ESP-IDFv3 port build"
+      name: "esp32 ESP-IDFv3 port build"
       install:
         - sudo apt-get install python3-pip
         - sudo pip3 install 'pyparsing<2.4'
@@ -258,7 +255,7 @@ jobs:
 
     # esp32 w/ESP-IDFv4 port
     - stage: test
-      env: NAME="esp32 ESP-IDFv4 port build"
+      name: "esp32 ESP-IDFv4 port build"
       install:
         - sudo apt-get install python3-pip
         - sudo pip3 install 'pyparsing<2.4'
@@ -275,7 +272,7 @@ jobs:
 
     # esp8266 port
     - stage: test
-      env: NAME="esp8266 port build"
+      name: "esp8266 port build"
       install:
         - wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
         - zcat xtensa-lx106-elf-standalone.tar.gz | tar x
@@ -289,7 +286,7 @@ jobs:
 
     # nrf port
     - stage: test
-      env: NAME="nrf port build"
+      name: "nrf port build"
       install:
         - sudo apt-get install gcc-arm-none-eabi
         - sudo apt-get install libnewlib-arm-none-eabi
@@ -302,11 +299,9 @@ jobs:
 
     # bare-arm and minimal ports, with size-diff check
     - stage: test
-      env: NAME="bare-arm and minimal ports build and size-diff check"
+      name: "bare-arm and minimal ports build and size-diff check"
       install:
-        - sudo apt-get install gcc-multilib libffi-dev:i386
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-multilib libffi-dev:i386 gcc-arm-none-eabi libnewlib-arm-none-eabi
         - gcc --version
         - arm-none-eabi-gcc --version
       script:
@@ -330,38 +325,35 @@ jobs:
 
     # cc3200 port
     - stage: test
-      env: NAME="cc3200 port build"
+      name: "cc3200 port build"
       install:
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=application BTYPE=release
         - make ${MAKEOPTS} -C ports/cc3200 BTARGET=bootloader  BTYPE=release
 
     # samd port
     - stage: test
-      env: NAME="samd port build"
+      name: "samd port build"
       install:
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/samd submodules
         - make ${MAKEOPTS} -C ports/samd
 
     # teensy port
     - stage: test
-      env: NAME="teensy port build"
+      name: "teensy port build"
       install:
-        - sudo apt-get install gcc-arm-none-eabi
-        - sudo apt-get install libnewlib-arm-none-eabi
+        - sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/teensy
 
     # powerpc port
     - stage: test
-      env: NAME="powerpc port build"
+      name: "powerpc port build"
       install:
-        - sudo apt-get install gcc-powerpc64le-linux-gnu
-        - sudo apt-get install libc6-dev-ppc64el-cross
+        - sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
       script:
-        - make ${MAKEOPTS} -C ports/powerpc CROSS_COMPILE=powerpc64le-linux-gnu-
+        - make ${MAKEOPTS} -C ports/powerpc UART=potato
+        - make ${MAKEOPTS} -C ports/powerpc UART=lpc_serial

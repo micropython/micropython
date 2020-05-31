@@ -6,10 +6,13 @@ QSTR_DEFS = qstrdefsport.h
 # include py core make definitions
 include $(TOP)/py/py.mk
 
+# potato or lpc_serial
+UART ?= potato
+
 ARCH = $(shell uname -m)
 ifneq ("$(ARCH)", "ppc64")
 ifneq ("$(ARCH)", "ppc64le")
-	CROSS_COMPILE ?= powerpc64le-linux-
+	CROSS_COMPILE ?= powerpc64le-linux-gnu-
 endif
 endif
 
@@ -30,9 +33,7 @@ LIBS =
 
 SRC_C = \
 	main.c \
-	uart_core.c \
-	uart_potato.c \
-	uart_lpc_serial.c \
+	uart_$(UART).c \
 	lib/utils/printf.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/pyexec.c \
@@ -52,7 +53,7 @@ $(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 
 $(BUILD)/firmware.elf: $(OBJ) powerpc.lds
 	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf

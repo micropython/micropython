@@ -146,36 +146,30 @@ STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_ma
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_deepsleep_obj, 0,  machine_deepsleep);
 
 STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    switch (rtc_get_reset_reason(0)) {
-        case POWERON_RESET:
+    switch (esp_reset_reason()) {
+        case ESP_RST_POWERON:
+        case ESP_RST_BROWNOUT:
             return MP_OBJ_NEW_SMALL_INT(MP_PWRON_RESET);
             break;
-        case SW_RESET:
-        case SW_CPU_RESET:
-            return MP_OBJ_NEW_SMALL_INT(MP_SOFT_RESET);
-            break;
-        case OWDT_RESET:
-        case TG0WDT_SYS_RESET:
-        case TG1WDT_SYS_RESET:
-        case RTCWDT_SYS_RESET:
-        case RTCWDT_BROWN_OUT_RESET:
-        case RTCWDT_CPU_RESET:
-        case RTCWDT_RTC_RESET:
-        case TGWDT_CPU_RESET:
+
+        case ESP_RST_INT_WDT:
+        case ESP_RST_TASK_WDT:
+        case ESP_RST_WDT:
             return MP_OBJ_NEW_SMALL_INT(MP_WDT_RESET);
             break;
 
-        case DEEPSLEEP_RESET:
+        case ESP_RST_DEEPSLEEP:
             return MP_OBJ_NEW_SMALL_INT(MP_DEEPSLEEP_RESET);
             break;
 
-        case EXT_CPU_RESET:
+        case ESP_RST_SW:
+        case ESP_RST_PANIC:
+        case ESP_RST_EXT: // Comment in ESP-IDF: "For ESP32, ESP_RST_EXT is never returned"
             return MP_OBJ_NEW_SMALL_INT(MP_HARD_RESET);
             break;
 
-        case NO_MEAN:
-        case SDIO_RESET:
-        case INTRUSION_RESET:
+        case ESP_RST_SDIO:
+        case ESP_RST_UNKNOWN:
         default:
             return MP_OBJ_NEW_SMALL_INT(0);
             break;
