@@ -290,3 +290,6 @@ CFLAGS += -DCIRCUITPY_WIFI=$(CIRCUITPY_WIFI)
 # Enabled micropython.native decorator (experimental)
 CIRCUITPY_ENABLE_MPY_NATIVE ?= 0
 CFLAGS += -DCIRCUITPY_ENABLE_MPY_NATIVE=$(CIRCUITPY_ENABLE_MPY_NATIVE)
+
+# async/await language keyword support
+MICROPY_PY_ASYNC_AWAIT ?= $(CIRCUITPY_FULL_BUILD)
