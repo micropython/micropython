@@ -28,3 +28,6 @@ CIRCUITPY_COUNTIO=0
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_SD
+
+MICROPY_PY_ASYNC_AWAIT = 0
+

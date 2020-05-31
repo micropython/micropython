@@ -29,3 +29,5 @@ SUPEROPT_GC = 0
 
 # Override optimization to keep binary small
 OPTIMIZATION_FLAGS = -Os
+MICROPY_PY_ASYNC_AWAIT = 0
+
