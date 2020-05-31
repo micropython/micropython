@@ -8,6 +8,7 @@ MicroPython documentation and references
     genrst/index.rst
     develop/index.rst
     license.rst
+    micropythoninternals/index.rst
     pyboard/quickref.rst
     esp8266/quickref.rst
     esp32/quickref.rst
