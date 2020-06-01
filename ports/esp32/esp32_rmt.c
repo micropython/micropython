@@ -85,11 +85,11 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     config.mem_block_num = 1;
     config.tx_config.loop_en = 0;
 
-    config.tx_config.carrier_en = 0;
+    config.tx_config.carrier_en = true;
     config.tx_config.idle_output_en = 1;
     config.tx_config.idle_level = 0;
-    config.tx_config.carrier_duty_percent = 0;
-    config.tx_config.carrier_freq_hz = 0;
+    config.tx_config.carrier_duty_percent = 50;
+    config.tx_config.carrier_freq_hz = 38000;
     config.tx_config.carrier_level = 1;
 
     config.clk_div = self->clock_div;
