@@ -107,7 +107,7 @@ def tanh():
     """Computes the hyperbolic tangent"""
     ...
 
-def vectorise(f, *, otypes=None):
+def vectorize(f, *, otypes=None):
     """
     :param callable f: The function to wrap
     :param otypes: List of array types that may be returned by the function.  None is intepreted to mean the return value is float.
