@@ -34,7 +34,7 @@
 #define FLASH_PAGE_SIZE             (0x4000)
 
 #define BOARD_OSC_DIV (8)
-#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (0) // TODO: enable this once LSE is fixed for H7/F7
 
 #define DEBUG_UART_TX (&pin_PD08)
 #define DEBUG_UART_RX (&pin_PD09)
