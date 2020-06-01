@@ -106,7 +106,7 @@ $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
 ifeq ($(CIRCUITPY_ULAB),1)
-SRC_MOD += $(wildcard extmod/ulab/code/*.c)
+SRC_MOD += $(patsubst $(TOP)/%,%,$(wildcard $(TOP)/extmod/ulab/code/*.c))
 CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-float-equal -Wno-sign-compare -DCIRCUITPY
 endif
