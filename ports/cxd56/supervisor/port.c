@@ -29,6 +29,8 @@
 #include <sys/boardctl.h>
 #include <sys/time.h>
 
+#include <cxd56_rtc.h>
+
 #include "sched/sched.h"
 
 #include "boards/board.h"
@@ -45,7 +47,8 @@
 safe_mode_t port_init(void) {
     boardctl(BOARDIOC_INIT, 0);
 
-    board_init();
+    // Wait until RTC is available
+    while (g_rtc_enabled == false);
 
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
@@ -121,14 +124,10 @@ void board_timerhook(void)
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    long computed_subticks = tv.tv_usec * 1024 * 32 / 1000000;
-    if (subticks != NULL) {
-        *subticks = computed_subticks % 32;
-    }
+    uint64_t count = cxd56_rtc_count();
+    *subticks = count % 32;
 
-    return tv.tv_sec * 1024 + computed_subticks / 32;
+    return count / 32;
 }
 
 // Enable 1/1024 second tick.
