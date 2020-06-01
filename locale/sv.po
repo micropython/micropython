@@ -3196,7 +3196,7 @@ msgstr "oväntat nyckelordsargument '%q'"
 
 #: py/lexer.c
 msgid "unicode name escapes"
-msgstr "unicode name escapes"
+msgstr "unicode-namn flyr"
 
 #: py/parse.c
 msgid "unindent does not match any outer indentation level"
