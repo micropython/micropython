@@ -408,7 +408,9 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 // LED
 
 #define LED0 MICROPY_HW_LED1
+#ifdef MICROPY_HW_LED2
 #define LED1 MICROPY_HW_LED2
+#endif
 #ifdef MICROPY_HW_LED3
 #define LED2 MICROPY_HW_LED3
 #endif
@@ -431,7 +433,9 @@ static int led0_toggle_count = 0;
 
 MP_WEAK void led_init(void) {
     mp_hal_pin_output(LED0);
+    #ifdef LED1
     mp_hal_pin_output(LED1);
+    #endif
     #ifdef LED2
     mp_hal_pin_output(LED2);
     #endif
@@ -451,7 +455,9 @@ MP_WEAK void led_state(uint32_t led, int val) {
 
 void led_state_all(unsigned int mask) {
     led_state(LED0, mask & 1);
+    #ifdef LED1
     led_state(LED1, mask & 2);
+    #endif
     #ifdef LED2
     led_state(LED2, mask & 4);
     #endif
