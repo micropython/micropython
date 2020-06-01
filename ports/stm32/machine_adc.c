@@ -132,8 +132,10 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #elif defined(STM32H7)
     ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
     ADC3_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
-    #elif defined(STM32L0) || defined(STM32WB)
+    #elif defined(STM32L0)
     ADC1_COMMON->CCR = 0; // ADCPR=PCLK/2
+    #elif defined(STM32WB)
+    ADC1_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos | 0 << ADC_CCR_CKMODE_Pos; // PRESC=1, MODE=ASYNC
     #endif
 
     #if defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
