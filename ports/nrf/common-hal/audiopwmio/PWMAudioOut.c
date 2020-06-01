@@ -36,6 +36,7 @@
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
 
 // TODO: This should be the same size as PWMOut.c:pwms[], but there's no trivial way to accomplish that
@@ -67,6 +68,7 @@ STATIC void activate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if (!active_audio[i]) {
             active_audio[i] = self;
+            supervisor_enable_tick();
             break;
         }
     }
@@ -77,12 +79,16 @@ STATIC void deactivate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if (active_audio[i] == self) {
             active_audio[i] = NULL;
+            supervisor_disable_tick();
         }
     }
 }
 
 void audiopwmout_reset() {
     for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
+        if (active_audio[i]) {
+            supervisor_disable_tick();
+        }
         active_audio[i] = NULL;
     }
 }
