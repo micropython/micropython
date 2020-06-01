@@ -269,18 +269,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 }
 
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_spi_banks); i++) {
-        if (mcu_spi_banks[i] == self->handle.Instance) {
-            never_reset_spi[i] = true;
-            never_reset_pin_number(self->sck->pin->port, self->sck->pin->number);
-            if (self->mosi != NULL) {
-                never_reset_pin_number(self->mosi->pin->port, self->mosi->pin->number);
-            }
-            if (self->miso != NULL) {
-                never_reset_pin_number(self->miso->pin->port, self->miso->pin->number);
-            }
-            break;
-        }
+
+    never_reset_spi[self->sck->periph_index - 1] = true;
+    never_reset_pin_number(self->sck->pin->port, self->sck->pin->number);
+    if (self->mosi != NULL) {
+        never_reset_pin_number(self->mosi->pin->port, self->mosi->pin->number);
+    }
+    if (self->miso != NULL) {
+        never_reset_pin_number(self->miso->pin->port, self->miso->pin->number);
     }
 }
 

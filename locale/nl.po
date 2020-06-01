@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-29 10:15-0700\n"
-"PO-Revision-Date: 2020-05-25 13:52+0000\n"
-"Last-Translator: Dustin Watts <dustin_watts@yahoo.com>\n"
+"POT-Creation-Date: 2020-05-27 20:51-0500\n"
+"PO-Revision-Date: 2020-05-31 11:41+0000\n"
+"Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
@@ -380,7 +380,7 @@ msgstr "Bit diepte moet een meervoud van 8 zijn."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "RX en TX zijn beide vereist voor stroomregeling"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -1269,7 +1269,7 @@ msgstr "Pin heeft geen ADC mogelijkheden"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
-msgstr ""
+msgstr "Pin kan alleen voor invoer gebruikt worden"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1693,26 +1693,6 @@ msgstr "Voltage lees time-out"
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "WAARSCHUWING: De bestandsnaam van de code heeft twee extensies\n"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer is not currently running"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "Watchdog timer expired."
-msgstr ""
 
 #: py/builtinhelp.c
 #, c-format
@@ -3109,10 +3089,6 @@ msgstr "drempelwaarde moet in het bereik 0-65536 liggen"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() accepteert een 9-rij"
 
-#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-msgid "timeout duration exceeded the maximum supported value"
-msgstr ""
-
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "timeout moet tussen 0.0 en 100.0 seconden zijn"
@@ -3265,10 +3241,6 @@ msgstr "waarde moet in %d byte(s) passen"
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
 msgstr "value_count moet groter dan 0 zijn"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"

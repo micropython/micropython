@@ -37,8 +37,8 @@ typedef struct {
     mp_obj_base_t base;
     LPI2C_Type *i2c;
     bool has_lock;
-    const mcu_periph_obj_t *scl_pin;
-    const mcu_periph_obj_t *sda_pin;
+    const mcu_periph_obj_t *scl;
+    const mcu_periph_obj_t *sda;
 } busio_i2c_obj_t;
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_I2C_H

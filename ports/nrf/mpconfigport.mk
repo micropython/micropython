@@ -46,6 +46,9 @@ MCU_SERIES = m4
 MCU_VARIANT = nrf52
 MCU_SUB_VARIANT = nrf52840
 
+# Fits on nrf52840 but space is tight on nrf52833.
+CIRCUITPY_AESIO ?= 1
+
 SD ?= s140
 SOFTDEV_VERSION ?= 6.1.0
 

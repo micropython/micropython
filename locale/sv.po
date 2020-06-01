@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-27 10:46-0700\n"
-"PO-Revision-Date: 2020-05-20 18:32+0000\n"
-"Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
+"POT-Creation-Date: 2020-05-27 20:51-0500\n"
+"PO-Revision-Date: 2020-06-01 13:17+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
@@ -380,7 +380,7 @@ msgstr "Bitdjupet måste vara multipel av 8."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "Både RX och TX krävs för handskakning"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -1267,7 +1267,7 @@ msgstr "Pinnen har inte ADC-funktionalitet"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
-msgstr ""
+msgstr "Pinnen är enbart ingång"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1690,26 +1690,6 @@ msgstr "Avläsning av spänning tog för lång tid"
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "VARNING: Ditt filnamn för kod har två tillägg\n"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer is not currently running"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "Watchdog timer expired."
-msgstr ""
 
 #: py/builtinhelp.c
 #, c-format
@@ -3106,10 +3086,6 @@ msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kräver en 9-sekvens"
 
-#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-msgid "timeout duration exceeded the maximum supported value"
-msgstr ""
-
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "timeout måste vara 0.0-100.0 sekunder"
@@ -3190,7 +3166,7 @@ msgstr "oväntat nyckelordsargument '%q'"
 
 #: py/lexer.c
 msgid "unicode name escapes"
-msgstr "unicode name escapes"
+msgstr "unicode-namn flyr"
 
 #: py/parse.c
 msgid "unindent does not match any outer indentation level"
@@ -3262,10 +3238,6 @@ msgstr "värdet måste passa i %d byte(s)"
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
 msgstr "value_count måste vara > 0"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "watchdog timeout must be greater than 0"
-msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
