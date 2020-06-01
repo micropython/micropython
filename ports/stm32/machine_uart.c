@@ -283,10 +283,16 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
     // flow control
     uint32_t flow = args.flow.u_int;
 
+    // Save attach_to_repl setting because uart_init will disable it.
+    bool attach_to_repl = self->attached_to_repl;
+
     // init UART (if it fails, it's because the port doesn't exist)
     if (!uart_init(self, baudrate, bits, parity, stop, flow)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), self->uart_id);
     }
+
+    // Restore attach_to_repl setting so UART still works if attached to dupterm.
+    uart_attach_to_repl(self, attach_to_repl);
 
     // set timeout
     self->timeout = args.timeout.u_int;
