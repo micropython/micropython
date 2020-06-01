@@ -4,7 +4,7 @@ Implementing a MicroPython Library
 ==================================
 
 This section decribes using a simple walk-through example how to implement a
-new Micropython module that can be installed with ``upip``.
+a new MicroPython module implemented in C.
 
 The Source files Structure
 --------------------------

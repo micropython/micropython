@@ -49,7 +49,7 @@ Open Addressing
 Linear Probing
 ~~~~~~~~~~~~~~
 
-Supporting for C Modules
+Support for C Modules
 ------------------------
 
 Writing Tests
@@ -57,3 +57,20 @@ Writing Tests
 
 Adding a Core Module
 --------------------
+
+The Public API
+--------------
+
+* A reference of runtime.h and obj.h.
+
+The Dynamically Loaded Modules
+------------------------------
+
+* A reference of dynruntime.h.
+
+What really Happens when you run a MicroPython Program
+------------------------------------------------------
+
+For example, what all happens where in the code 
+when you do something like "import foo; foo.bar()".
+Suggested by @tve
