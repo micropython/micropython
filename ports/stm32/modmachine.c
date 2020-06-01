@@ -307,7 +307,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
         mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
@@ -317,8 +317,13 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
             ahb /= 2;
         }
         #endif
+        #if defined(STM32WB)
+        mp_int_t apb1 = ahb;
+        mp_int_t apb2 = ahb;
+        #else
         mp_int_t apb1 = ahb / 4;
         mp_int_t apb2 = ahb / 2;
+        #endif
         if (n_args > 1) {
             ahb = mp_obj_get_int(args[1]);
             if (n_args > 2) {

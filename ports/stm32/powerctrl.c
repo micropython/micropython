@@ -201,7 +201,7 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #endif
 
-#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB)
+#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
@@ -292,6 +292,8 @@ STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
     return calc_apb1_div(wanted_div);
     #endif
 }
+
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
     // Return straightaway if the clocks are already at the desired frequency
@@ -455,7 +457,35 @@ set_clk:
     return 0;
 }
 
+#elif defined(STM32WB)
+
+int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
+    // For now it's not supported to change SYSCLK (only bus dividers).
+    if (sysclk != HAL_RCC_GetSysClockFreq()) {
+        return -MP_EINVAL;
+    }
+
+    // Return straightaway if the clocks are already at the desired frequency.
+    if (ahb == HAL_RCC_GetHCLKFreq()
+        && apb1 == HAL_RCC_GetPCLK1Freq()
+        && apb2 == HAL_RCC_GetPCLK2Freq()) {
+        return 0;
+    }
+
+    // Calculate and configure the bus clock dividers.
+    uint32_t cfgr = RCC->CFGR;
+    cfgr &= ~(7 << RCC_CFGR_PPRE2_Pos | 7 << RCC_CFGR_PPRE1_Pos | 0xf << RCC_CFGR_HPRE_Pos);
+    cfgr |= calc_ahb_div(sysclk / ahb);
+    cfgr |= calc_apb1_div(ahb / apb1);
+    cfgr |= calc_apb2_div(ahb / apb2) << (RCC_CFGR_PPRE2_Pos - RCC_CFGR_PPRE1_Pos);
+    RCC->CFGR = cfgr;
+
+    return 0;
+}
+
 #endif
+
+#endif // !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
 
 void powerctrl_enter_stop_mode(void) {
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
