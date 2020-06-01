@@ -28,3 +28,11 @@ def minimum(x1, x2):
     must be the same size.  If the inputs are both scalars, a number is
     returned"""
     ...
+
+def equal(x1, x2):
+    """Return an array of bool which is true where x1[i] == x2[i] and false elsewhere"""
+    ...
+
+def not_equal(x1, x2):
+    """Return an array of bool which is false where x1[i] == x2[i] and true elsewhere"""
+    ...
