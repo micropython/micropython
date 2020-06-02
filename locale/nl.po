@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-01 08:56-0500\n"
-"PO-Revision-Date: 2020-05-31 11:41+0000\n"
+"PO-Revision-Date: 2020-06-02 17:33+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -1771,7 +1771,7 @@ msgstr "argsort argument moet een ndarray zijn"
 
 #: py/runtime.c
 msgid "argument has wrong type"
-msgstr "argument heeft het verkeerde type"
+msgstr "argument heeft onjuist type"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2140,11 +2140,11 @@ msgstr "kon de Vandermonde matrix niet omkeren"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
-msgstr ""
+msgstr "data moet itereerbaar zijn"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be of equal length"
-msgstr ""
+msgstr "data moet van gelijke lengte zijn"
 
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
@@ -2282,11 +2282,11 @@ msgstr "bestandssysteem moet een mount methode bieden"
 
 #: extmod/ulab/code/vectorise.c
 msgid "first argument must be a callable"
-msgstr ""
+msgstr "eerste argument moet een aanroepbare (callable) zijn"
 
 #: extmod/ulab/code/approx.c
 msgid "first argument must be a function"
-msgstr ""
+msgstr "eerste argument moet een functie zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
@@ -2343,7 +2343,7 @@ msgstr "functie kreeg meedere waarden voor argument '%q'"
 
 #: extmod/ulab/code/approx.c
 msgid "function has the same sign at the ends of interval"
-msgstr ""
+msgstr "functie heeft hetzelfde teken aan beide uiteinden van het interval"
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
@@ -2434,7 +2434,7 @@ msgstr "indices moeten integers, segmenten (slices) of Boolean lijsten zijn"
 
 #: extmod/ulab/code/approx.c
 msgid "initial values must be iterable"
-msgstr ""
+msgstr "oorspronkelijke waarden moeten itereerbaar zijn"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2482,7 +2482,7 @@ msgstr "integer vereist"
 
 #: extmod/ulab/code/approx.c
 msgid "interp is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "interp is gedefinieerd for eendimensionale arrays van gelijke lengte"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3286,7 +3286,7 @@ msgstr "onjuist indextype"
 
 #: extmod/ulab/code/vectorise.c
 msgid "wrong input type"
-msgstr ""
+msgstr "onjuist invoertype"
 
 #: py/objstr.c
 msgid "wrong number of arguments"
@@ -3302,7 +3302,7 @@ msgstr "verkeerd operandtype"
 
 #: extmod/ulab/code/vectorise.c
 msgid "wrong output type"
-msgstr ""
+msgstr "onjuist uitvoer type"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
