@@ -43,9 +43,9 @@ INC += -I$(BUILD)
 CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -Werror -std=gnu99 $(COPT) \
 	 -ffunction-sections -fdata-sections
 
-#Debugging/Optimization
+# Debugging/Optimization
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -DPENDSV_DEBUG
+CFLAGS += -g
 COPT = -O0
 else
 COPT += -Os -DNDEBUG

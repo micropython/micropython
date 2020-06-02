@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "uart.h"
@@ -72,6 +73,14 @@ __attribute__((naked)) void exit(int status) {
     for (;;) {
     }
 }
+
+#ifndef NDEBUG
+void __assert_func(const char *file, int line, const char *func, const char *expr) {
+    (void)func;
+    printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
+    exit(1);
+}
+#endif
 
 // The following are needed for tinytest
 
