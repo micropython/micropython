@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 Sean Cross for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,30 +24,26 @@
  * THE SOFTWARE.
  */
 
-#include "nrfx/hal/nrf_gpio.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H
 
-#define MICROPY_HW_BOARD_NAME       "Simmel"
-#define MICROPY_HW_MCU_NAME         "nRF52833"
+#include "py/obj.h"
 
-#define MICROPY_HW_LED_STATUS          (&pin_P0_06)
+typedef enum {
+    WATCHDOGMODE_NONE,
+    WATCHDOGMODE_RAISE,
+    WATCHDOGMODE_RESET,
+} watchdog_watchdogmode_t;
 
-#if SPI_FLASH_FILESYSTEM
-#define SPI_FLASH_MOSI_PIN &pin_P0_09
-#define SPI_FLASH_MISO_PIN &pin_P1_04
-#define SPI_FLASH_SCK_PIN &pin_P0_10
-#define SPI_FLASH_CS_PIN &pin_P1_06
-#endif
+const mp_obj_type_t watchdog_watchdogmode_type;
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE 0
-#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (76*1024)
+watchdog_watchdogmode_t watchdog_watchdogmode_obj_to_type(mp_obj_t obj);
+mp_obj_t watchdog_watchdogmode_type_to_obj(watchdog_watchdogmode_t mode);
 
-#define BOOTLOADER_SIZE                 (0x4000)  // 12 kiB
-#define CIRCUITPY_BLE_CONFIG_SIZE       (12*1024)
+typedef struct {
+    mp_obj_base_t base;
+} watchdog_watchdogmode_obj_t;
+extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_raise_obj;
+extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_reset_obj;
 
-// Reduce nRF SoftRadio memory usage
-#define BLEIO_VS_UUID_COUNT 10
-#define BLEIO_HVN_TX_QUEUE_SIZE 2
-#define BLEIO_CENTRAL_ROLE_COUNT 2
-#define BLEIO_PERIPH_ROLE_COUNT 2
-#define BLEIO_TOTAL_CONNECTION_COUNT 2
-#define BLEIO_ATTR_TAB_SIZE (BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 2)
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H

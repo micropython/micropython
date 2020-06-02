@@ -94,7 +94,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
 
 void common_hal_mcu_reset(void) {
     filesystem_flush();
-    NVIC_SystemReset();
+    reset_cpu();
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
@@ -106,7 +106,6 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
 };
 
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
-
 // The singleton nvm.ByteArray object.
 const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
@@ -114,6 +113,17 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     },
     .start_address = (uint8_t*) CIRCUITPY_INTERNAL_NVM_START_ADDR,
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
+};
+#endif
+
+#if CIRCUITPY_WATCHDOG
+// The singleton watchdog.WatchDogTimer object.
+watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
+    .base = {
+        .type = &watchdog_watchdogtimer_type,
+    },
+    .timeout = 0.0f,
+    .mode = WATCHDOGMODE_NONE,
 };
 #endif
 
