@@ -276,8 +276,8 @@ size_t mp_bluetooth_gattc_on_data_available_start(uint8_t event, uint16_t conn_h
 void mp_bluetooth_gattc_on_data_available_chunk(const uint8_t *data, size_t data_len);
 void mp_bluetooth_gattc_on_data_available_end(mp_uint_t atomic_state);
 
-// Notify modbluetooth that a write has completed.
-void mp_bluetooth_gattc_on_write_status(uint16_t conn_handle, uint16_t value_handle, uint16_t status);
+// Notify modbluetooth that a read or write operation has completed.
+void mp_bluetooth_gattc_on_read_write_status(uint8_t event, uint16_t conn_handle, uint16_t value_handle, uint16_t status);
 #endif
 
 // For stacks that don't manage attribute value data (currently all of them), helpers

@@ -171,8 +171,6 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
                    irq == MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_DONE ||
                    irq == MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_DONE) {
             mp_bluetooth_gattc_on_discover_complete(irq, conn_handle, status);
-        } else {
-            // Note that query complete is fired for other operations like query value too.
         }
     } else if (event_type == GATT_EVENT_SERVICE_QUERY_RESULT) {
         DEBUG_EVENT_printf("  --> gatt service query result\n");
@@ -260,6 +258,13 @@ STATIC void btstack_packet_handler_discover_descriptors(uint8_t packet_type, uin
     (void)channel;
     (void)size;
     btstack_packet_handler(packet_type, packet, MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_DONE);
+}
+
+// For when the handler is being used for a read query.
+STATIC void btstack_packet_handler_read(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
+    btstack_packet_handler(packet_type, packet, MP_BLUETOOTH_IRQ_GATTC_READ_DONE);
 }
 
 // For when the handler is being used for write-with-response.
@@ -740,7 +745,7 @@ int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start
 
 int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_read\n");
-    return btstack_error_to_errno(gatt_client_read_value_of_characteristic_using_value_handle(&btstack_packet_handler_generic, conn_handle, value_handle));
+    return btstack_error_to_errno(gatt_client_read_value_of_characteristic_using_value_handle(&btstack_packet_handler_read, conn_handle, value_handle));
 }
 
 int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len, unsigned int mode) {

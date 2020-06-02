@@ -161,6 +161,10 @@ class BLETemperatureCentral:
                     self._read_callback(self._value)
                     self._read_callback = None
 
+        elif event == _IRQ_GATTC_READ_DONE:
+            # Read completed.
+            conn_handle, value_handle, status = data
+
         elif event == _IRQ_GATTC_NOTIFY:
             # The ble_temperature.py demo periodically notifies its value.
             conn_handle, value_handle, notify_data = data

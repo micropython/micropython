@@ -898,7 +898,7 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_GATTC_READ_RESULT || event == MP_BLUETOOTH_IRQ_GATTC_NOTIFY || event == MP_BLUETOOTH_IRQ_GATTC_INDICATE) {
             // conn_handle, value_handle, data
             ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, NULL, &o->irq_data_data);
-        } else if (event == MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE) {
+        } else if (event == MP_BLUETOOTH_IRQ_GATTC_READ_DONE || event == MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE) {
             // conn_handle, value_handle, status
             ringbuf_extract(&o->ringbuf, data_tuple, 3, 0, NULL, 0, NULL, NULL);
         #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
@@ -1090,10 +1090,10 @@ void mp_bluetooth_gattc_on_data_available_end(mp_uint_t atomic_state) {
     schedule_ringbuf(atomic_state);
 }
 
-void mp_bluetooth_gattc_on_write_status(uint16_t conn_handle, uint16_t value_handle, uint16_t status) {
+void mp_bluetooth_gattc_on_read_write_status(uint8_t event, uint16_t conn_handle, uint16_t value_handle, uint16_t status) {
     MICROPY_PY_BLUETOOTH_ENTER
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
-    if (enqueue_irq(o, 2 + 2 + 2, MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE)) {
+    if (enqueue_irq(o, 2 + 2 + 2, event)) {
         ringbuf_put16(&o->ringbuf, conn_handle);
         ringbuf_put16(&o->ringbuf, value_handle);
         ringbuf_put16(&o->ringbuf, status);
