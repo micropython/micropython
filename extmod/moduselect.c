@@ -44,6 +44,12 @@
 ///
 /// This module provides the select function.
 
+#define MICROPY_PY_USELECT_NOTIFIER (1)
+
+#if MICROPY_PY_USELECT_NOTIFIER
+STATIC mp_obj_t notifier_new(void);
+#endif
+
 typedef struct _poll_obj_t {
     mp_obj_t obj;
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
@@ -199,6 +205,13 @@ STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     } else {
         flags = MP_STREAM_POLL_RD | MP_STREAM_POLL_WR;
     }
+    #if MICROPY_PY_USELECT_NOTIFIER
+    if (args[1] == mp_const_none) {
+        mp_obj_t s = notifier_new();
+        poll_map_add(&self->poll_map, &s, 1, flags, false);
+        return s;
+    }
+    #endif
     poll_map_add(&self->poll_map, &args[1], 1, flags, false);
     return mp_const_none;
 }
@@ -375,5 +388,69 @@ const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
+
+#if MICROPY_PY_USELECT_NOTIFIER
+
+typedef struct _mp_obj_notifier_t {
+    mp_obj_base_t base;
+    volatile size_t avail;
+} mp_obj_notifier_t;
+
+STATIC mp_uint_t notifier_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    mp_obj_notifier_t *self = MP_OBJ_TO_PTR(self_in);
+    switch (request) {
+        case MP_STREAM_POLL: {
+            uintptr_t flags = arg;
+            mp_uint_t ret = MP_STREAM_POLL_WR & flags;
+            if (self->avail) {
+                ret |= MP_STREAM_POLL_RD & flags;
+            }
+            return ret;
+        }
+        default:
+            *errcode = MP_EINVAL;
+            return MP_STREAM_ERROR;
+    }
+}
+
+STATIC mp_obj_t notifier_set(mp_obj_t self_in) {
+    mp_obj_notifier_t *self = MP_OBJ_TO_PTR(self_in);
+    self->avail = 1;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(notifier_set_obj, notifier_set);
+
+STATIC mp_obj_t notifier_clear(mp_obj_t self_in) {
+    mp_obj_notifier_t *self = MP_OBJ_TO_PTR(self_in);
+    self->avail = 0;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(notifier_clear_obj, notifier_clear);
+
+STATIC const mp_rom_map_elem_t notifier_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_set), MP_ROM_PTR(&notifier_set_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&notifier_clear_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(notifier_locals_dict, notifier_locals_dict_table);
+
+STATIC const mp_stream_p_t notifier_stream_p = {
+    .ioctl = notifier_ioctl,
+};
+
+STATIC const mp_obj_type_t mp_type_notifier = {
+    { &mp_type_type },
+    .name = MP_QSTR_notifier,
+    .protocol = &notifier_stream_p,
+    .locals_dict = (mp_obj_dict_t *)&notifier_locals_dict,
+};
+
+STATIC mp_obj_t notifier_new(void) {
+    mp_obj_notifier_t *self = m_new_obj(mp_obj_notifier_t);
+    self->base.type = &mp_type_notifier;
+    self->avail = 0;
+    return MP_OBJ_FROM_PTR(self);
+}
+
+#endif // MICROPY_PY_USELECT_NOTIFIER
 
 #endif // MICROPY_PY_USELECT
