@@ -29,6 +29,24 @@
 #include "mpconfigboard.h"
 
 void board_init(void) {
+    // FLEX flash
+    common_hal_never_reset_pin(&pin_GPIO_SD_B1_06);
+    common_hal_never_reset_pin(&pin_GPIO_SD_B1_07);
+    common_hal_never_reset_pin(&pin_GPIO_SD_B1_08);
+    common_hal_never_reset_pin(&pin_GPIO_SD_B1_09);
+    common_hal_never_reset_pin(&pin_GPIO_SD_B1_10);
+    common_hal_never_reset_pin(&pin_GPIO_SD_B1_11);
+
+    // FLEX flash 2
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_04);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_06);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_07);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_08);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_09);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_10);
+    common_hal_never_reset_pin(&pin_GPIO_EMC_01);
+    common_hal_never_reset_pin(&pin_GPIO_B0_13);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_11);
 }
 
 bool board_requests_safe_mode(void) {
