@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-01 17:10-0700\n"
-"PO-Revision-Date: 2020-06-02 17:33+0000\n"
+"PO-Revision-Date: 2020-06-02 19:50+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -1699,22 +1699,26 @@ msgstr "WAARSCHUWING: De bestandsnaam van de code heeft twee extensies\n"
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
+"WatchDogTimer kan niet worden gedeïnitialiseerd zodra de modus in ingesteld "
+"op RESET"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer is not currently running"
-msgstr ""
+msgstr "WatchDogTimer is momenteel niet actief"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
+"WatchDogTimer.mode kan niet worden gewijzigd zodra de modus is ingesteld op "
+"WatchDogMode.RESET"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr ""
+msgstr "WatchDogTimer.timeout moet groter dan 0 zijn"
 
 #: supervisor/shared/safe_mode.c
 msgid "Watchdog timer expired."
-msgstr ""
+msgstr "Watchdog-timer verstreken."
 
 #: py/builtinhelp.c
 #, c-format
@@ -3141,7 +3145,7 @@ msgstr "time.struct_time() accepteert een 9-rij"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
-msgstr ""
+msgstr "time-outduur is groter dan de ondersteunde maximale waarde"
 
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
@@ -3298,7 +3302,7 @@ msgstr "value_count moet groter dan 0 zijn"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
-msgstr ""
+msgstr "watchdog time-out moet groter zijn dan 0"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
