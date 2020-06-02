@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 08:56-0500\n"
+"POT-Creation-Date: 2020-06-01 17:10-0700\n"
 "PO-Revision-Date: 2020-05-29 17:42+0000\n"
 "Last-Translator: Thomas Friehoff <thomas.friehoff@googlemail.com>\n"
 "Language-Team: German <https://later.unpythonic.net/projects/circuitpython/"
@@ -1711,6 +1711,26 @@ msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
 "WARNUNG: Der Dateiname deines Programms hat zwei Dateityperweiterungen\n"
 
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer is not currently running"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.timeout must be greater than 0"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Watchdog timer expired."
+msgstr ""
+
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -3153,6 +3173,10 @@ msgstr "threshold muss im Intervall 0-65536 liegen"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() nimmt eine 9-Sequenz an"
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "timeout duration exceeded the maximum supported value"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "Das Zeitlimit muss 0,0-100,0 Sekunden betragen"
@@ -3309,6 +3333,10 @@ msgstr "Wert muss in %d Byte(s) passen"
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
 msgstr "value_count muss größer als 0 sein"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "watchdog timeout must be greater than 0"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"

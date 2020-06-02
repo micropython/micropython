@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-27 20:51-0500\n"
-"PO-Revision-Date: 2020-06-01 13:17+0000\n"
-"Last-Translator: David Glaude <david.glaude@gmail.com>\n"
+"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"PO-Revision-Date: 2020-06-02 19:50+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1713,6 +1713,30 @@ msgstr "La lecture de la tension a expiré"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION : le nom de fichier de votre code a deux extensions\n"
 
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
+msgstr ""
+"WatchDogTimer ne peut pas être désinitialisé une fois que le mode est réglé "
+"sur RESET"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer is not currently running"
+msgstr "WatchDogTimer n'est pas en cours d'exécution"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+msgstr ""
+"WatchDogTimer.mode ne peut pas être changé une fois réglé pour WatchDogMode."
+"RESET"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.timeout must be greater than 0"
+msgstr "WatchDogTimer.timeout doit être supérieur à 0"
+
+#: supervisor/shared/safe_mode.c
+msgid "Watchdog timer expired."
+msgstr ""
+
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -2167,11 +2191,11 @@ msgstr "n'a pas pu inverser la matrice Vandermonde"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
-msgstr ""
+msgstr "les données doivent être les objets iterables"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be of equal length"
-msgstr ""
+msgstr "les données doivent être de longueur égale"
 
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
@@ -2311,11 +2335,11 @@ msgstr "le system de fichier doit fournir une méthode 'mount'"
 
 #: extmod/ulab/code/vectorise.c
 msgid "first argument must be a callable"
-msgstr ""
+msgstr "le premier argument doit être un appelable"
 
 #: extmod/ulab/code/approx.c
 msgid "first argument must be a function"
-msgstr ""
+msgstr "le premier argument doit être une fonction"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
@@ -2372,7 +2396,7 @@ msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
 
 #: extmod/ulab/code/approx.c
 msgid "function has the same sign at the ends of interval"
-msgstr ""
+msgstr "la fonction a le même signe aux extrémités de l’intervalle"
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
@@ -2464,7 +2488,7 @@ msgstr ""
 
 #: extmod/ulab/code/approx.c
 msgid "initial values must be iterable"
-msgstr ""
+msgstr "les valeurs initiales doivent être itérables"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2512,7 +2536,7 @@ msgstr "entier requis"
 
 #: extmod/ulab/code/approx.c
 msgid "interp is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "interp est défini pour les tableaux 1D de longueur égale"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3155,6 +3179,10 @@ msgstr "le seuil doit être dans la gamme 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "timeout duration exceeded the maximum supported value"
+msgstr "le délai d'expiration a dépassé la valeur maximale prise en charge"
+
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "le délai doit être compris entre 0.0 et 100.0 secondes"
@@ -3308,6 +3336,10 @@ msgstr "la valeur doit tenir dans %d octet(s)"
 msgid "value_count must be > 0"
 msgstr "'value_count' doit être > 0"
 
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "watchdog timeout must be greater than 0"
+msgstr "watchdog timeout doit être supérieur à 0"
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr "la fenêtre doit être <= intervalle"
@@ -3322,7 +3354,7 @@ msgstr "type d'index incorrect"
 
 #: extmod/ulab/code/vectorise.c
 msgid "wrong input type"
-msgstr ""
+msgstr "type d'entrée incorrect"
 
 #: py/objstr.c
 msgid "wrong number of arguments"
@@ -3338,7 +3370,7 @@ msgstr "type d'opérande incorrect"
 
 #: extmod/ulab/code/vectorise.c
 msgid "wrong output type"
-msgstr ""
+msgstr "type de sortie incorrect"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
