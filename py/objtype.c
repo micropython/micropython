@@ -286,6 +286,7 @@ static void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
 }
 
 static mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    DEBUG_printf("mp_obj_instance_make_new()\n");
     assert(mp_obj_is_instance_type(self));
 
     // look for __new__ function
@@ -337,6 +338,8 @@ static mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_arg
         o = MP_OBJ_TO_PTR(new_ret);
     }
 
+    // printf("%d mp_obj_instance_make_new %s %d\n", __LINE__, qstr_str(self->name), (int)self->locals_dict->map.used);
+
     // now call Python class __init__ function with all args
     // This method has a chance to call super().__init__() to construct a
     // possible native base class.
@@ -345,6 +348,7 @@ static mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_arg
     lookup.attr = MP_QSTR___init__;
     lookup.slot_offset = 0;
     mp_obj_class_lookup(&lookup, self);
+    // printf("%d mp_obj_instance_make_new %s %d\n", __LINE__, qstr_str(self->name), (int)self->locals_dict->map.used);
     if (init_fn[0] != MP_OBJ_NULL) {
         mp_obj_t init_ret;
         if (n_args == 0 && n_kw == 0) {
@@ -812,6 +816,7 @@ skip_special_accessors:
 }
 
 static void mp_obj_instance_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    DEBUG_printf("mp_obj_instance_attr(%s)\n", qstr_str(attr));
     if (dest[0] == MP_OBJ_NULL) {
         mp_obj_instance_load_attr(self_in, attr, dest);
     } else {
@@ -875,6 +880,7 @@ bool mp_obj_instance_is_callable(mp_obj_t self_in) {
 }
 
 mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    DEBUG_printf("mp_obj_instance_call %d\n", __LINE__);
     mp_obj_t member[2] = {MP_OBJ_NULL, MP_OBJ_NULL};
     mp_obj_t call = mp_obj_instance_get_call(self_in, member);
     if (call == MP_OBJ_NULL) {
@@ -887,6 +893,7 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     }
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (call == MP_OBJ_SENTINEL) {
+        DEBUG_printf("mp_obj_instance_call %d\n", __LINE__);
         return mp_call_function_n_kw(self->subobj[0], n_args, n_kw, args);
     }
 
@@ -1024,6 +1031,7 @@ static void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
 }
 
 static mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    DEBUG_printf("type_make_new\n");
     (void)type_in;
 
     mp_arg_check_num(n_args, n_kw, 1, 3, false);
@@ -1044,6 +1052,7 @@ static mp_obj_t type_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
 }
 
 static mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    DEBUG_printf("type_call\n");
     // instantiate an instance of a class
 
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
@@ -1062,6 +1071,18 @@ static mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
     // return new instance
     return o;
 }
+
+static mp_obj_t type___new__(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    //type_make_new
+    //return args[0];
+    mp_obj_t type = mp_obj_new_type(mp_obj_str_get_qstr(args[1]), args[2], args[3]);
+    ((mp_obj_type_t *)MP_OBJ_TO_PTR(type))->base.type = args[0];
+    return type;
+    //const mp_obj_type_t *native_base;
+    //return MP_OBJ_FROM_PTR(mp_obj_new_instance(MP_OBJ_TO_PTR(args[0]), &native_base));
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(type___new___obj, 4, 4, type___new__);
 
 static void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     assert(mp_obj_is_type(self_in, &mp_type_type));
@@ -1108,6 +1129,11 @@ static void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             return;
         }
         #endif
+        if (attr == MP_QSTR___new__) {
+            DEBUG_printf("access __new__\n");
+            dest[0] = MP_OBJ_FROM_PTR(&type___new___obj);
+            return;
+        }
         struct class_lookup_data lookup = {
             .obj = (mp_obj_instance_t *)self,
             .attr = attr,
@@ -1168,10 +1194,10 @@ MP_DEFINE_CONST_OBJ_TYPE(
 static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
     // Verify input objects have expected type
     if (!mp_obj_is_type(bases_tuple, &mp_type_tuple)) {
-        mp_raise_TypeError(NULL);
+        mp_raise_TypeError(MP_ERROR_TEXT("bases not a tuple"));
     }
     if (!mp_obj_is_dict_or_ordereddict(locals_dict)) {
-        mp_raise_TypeError(NULL);
+        mp_raise_TypeError(MP_ERROR_TEXT("locals not a dict"));
     }
 
     // TODO might need to make a copy of locals_dict; at least that's how CPython does it
@@ -1187,7 +1213,9 @@ static mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
     for (size_t i = 0; i < bases_len; i++) {
         if (!mp_obj_is_type(bases_items[i], &mp_type_type)) {
-            mp_raise_TypeError(NULL);
+            // Somehow we need to loosen this restriction for metaclasses to work....
+            // printf("%d %p\n", (int)i, (void*)mp_obj_get_type(bases_items[i]));
+            mp_raise_TypeError(MP_ERROR_TEXT("bases not a type"));
         }
         mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
         // TODO: Verify with CPy, tested on function type
@@ -1338,7 +1366,7 @@ static mp_obj_t super_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     const mp_obj_type_t *second_arg_type = mp_obj_get_type(args[1]);
     mp_obj_t second_arg_obj = second_arg_type == &mp_type_type ? args[1] : MP_OBJ_FROM_PTR(second_arg_type);
     if (mp_obj_is_subclass(second_arg_obj, args[0]) == mp_const_false) {
-        mp_raise_TypeError(NULL);
+        mp_raise_TypeError(MP_ERROR_TEXT("incorrect subclass"));
     }
 
     mp_obj_super_t *o = m_new_obj(mp_obj_super_t);

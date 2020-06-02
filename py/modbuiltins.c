@@ -46,7 +46,7 @@ extern struct _mp_dummy_t mp_sys_stdout_obj; // type is irrelevant, just need po
 // args[0] is function from class body
 // args[1] is class name
 // args[2:] are base objects
-static mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     assert(2 <= n_args);
 
     // set the new classes __locals__ object
@@ -62,12 +62,17 @@ static mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) 
 
     // get the class type (meta object) from the base objects
     mp_obj_t meta;
+    mp_map_elem_t *key_elem = mp_map_lookup(kwargs, MP_OBJ_NEW_QSTR(MP_QSTR_metaclass), MP_MAP_LOOKUP);
+    if (key_elem != NULL) {
+        meta = key_elem->value;
+    } else {
     if (n_args == 2) {
         // no explicit bases, so use 'type'
         meta = MP_OBJ_FROM_PTR(&mp_type_type);
     } else {
         // use type of first base object
         meta = MP_OBJ_FROM_PTR(mp_obj_get_type(args[2]));
+    }
     }
 
     // TODO do proper metaclass resolution for multiple base objects
@@ -86,7 +91,7 @@ static mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) 
 
     return new_class;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin___build_class___obj, 2, mp_builtin___build_class__);
 
 static mp_obj_t mp_builtin_abs(mp_obj_t o_in) {
     return mp_unary_op(MP_UNARY_OP_ABS, o_in);
