@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-27 20:51-0500\n"
-"PO-Revision-Date: 2020-06-01 13:17+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"POT-Creation-Date: 2020-06-01 08:56-0500\n"
+"PO-Revision-Date: 2020-05-30 02:52+0000\n"
+"Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
@@ -893,7 +893,7 @@ msgstr "Ogiltig BMP-fil"
 msgid "Invalid DAC pin supplied"
 msgstr "Ogiltig DAC-pinne angiven"
 
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
 msgstr "Ogiltigt val av I2C-pinne"
 
@@ -983,7 +983,8 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Ogiltiga pinnar"
@@ -1387,7 +1388,8 @@ msgstr "Kör i säkert läge! Autoladdning är avstängd.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Kör i säkert läge! Sparad kod körs inte.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA eller SCL behöver en pullup"
 
@@ -2133,6 +2135,14 @@ msgstr "Kan inte sända indatamatris från form"
 msgid "could not invert Vandermonde matrix"
 msgstr "kan inte invertera Vandermonde-matris"
 
+#: extmod/ulab/code/approx.c
+msgid "data must be iterable"
+msgstr ""
+
+#: extmod/ulab/code/approx.c
+msgid "data must be of equal length"
+msgstr ""
+
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
 msgstr "ddof måste vara mindre än längden på datauppsättningen"
@@ -2268,6 +2278,14 @@ msgstr "filen måste vara en fil som öppnats i byte-läge"
 msgid "filesystem must provide mount method"
 msgstr "filsystemet måste tillhandahålla mount-metod"
 
+#: extmod/ulab/code/vectorise.c
+msgid "first argument must be a callable"
+msgstr ""
+
+#: extmod/ulab/code/approx.c
+msgid "first argument must be a function"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
 msgstr "första argumentet måste vara en iterable"
@@ -2320,6 +2338,10 @@ msgstr "funktionen förväntar som mest %d argument, fick %d"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "funktionen fick flera värden för argumentet '%q'"
+
+#: extmod/ulab/code/approx.c
+msgid "function has the same sign at the ends of interval"
+msgstr ""
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
@@ -2407,6 +2429,10 @@ msgstr "index måste vara heltal"
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "index måste vara heltal, slices, eller Boolean-listor"
 
+#: extmod/ulab/code/approx.c
+msgid "initial values must be iterable"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler måste vara en funktion"
@@ -2450,6 +2476,10 @@ msgstr "int() arg 2 måste vara >= 2 och <= 36"
 #: py/objstr.c
 msgid "integer required"
 msgstr "heltal krävs"
+
+#: extmod/ulab/code/approx.c
+msgid "interp is defined for 1D arrays of equal length"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3251,6 +3281,10 @@ msgstr "fel typ av argument"
 msgid "wrong index type"
 msgstr "fel indextyp"
 
+#: extmod/ulab/code/vectorise.c
+msgid "wrong input type"
+msgstr ""
+
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "fel antal argument"
@@ -3262,6 +3296,10 @@ msgstr "fel antal värden för att packa upp"
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
 msgstr "fel operandtyp"
+
+#: extmod/ulab/code/vectorise.c
+msgid "wrong output type"
+msgstr ""
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"

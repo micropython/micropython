@@ -905,7 +905,7 @@ msgstr "Fichier BMP invalide"
 msgid "Invalid DAC pin supplied"
 msgstr "Broche DAC non valide fournie"
 
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
 msgstr "Sélection de broches I2C non valide"
 
@@ -995,7 +995,8 @@ msgstr "Broche invalide pour le canal droit"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Broches invalides"
@@ -1400,7 +1401,8 @@ msgstr "Mode sans-échec ! Auto-chargement désactivé.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Mode sans-échec ! Le code sauvegardé n'est pas éxecuté.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
@@ -2163,6 +2165,14 @@ msgstr "n'a pas pu diffuser le tableau d'entrée à partir de la forme"
 msgid "could not invert Vandermonde matrix"
 msgstr "n'a pas pu inverser la matrice Vandermonde"
 
+#: extmod/ulab/code/approx.c
+msgid "data must be iterable"
+msgstr ""
+
+#: extmod/ulab/code/approx.c
+msgid "data must be of equal length"
+msgstr ""
+
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
 msgstr "ddof doit être inférieur à la longueur de l'ensemble de données"
@@ -2299,6 +2309,14 @@ msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 msgid "filesystem must provide mount method"
 msgstr "le system de fichier doit fournir une méthode 'mount'"
 
+#: extmod/ulab/code/vectorise.c
+msgid "first argument must be a callable"
+msgstr ""
+
+#: extmod/ulab/code/approx.c
+msgid "first argument must be a function"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
 msgstr "le premier argument doit être un itérable"
@@ -2351,6 +2369,10 @@ msgstr "la fonction attendait au plus %d arguments, reçu %d"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
+
+#: extmod/ulab/code/approx.c
+msgid "function has the same sign at the ends of interval"
+msgstr ""
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
@@ -2440,6 +2462,10 @@ msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 "les indices doivent être des entiers, des tranches ou des listes booléennes"
 
+#: extmod/ulab/code/approx.c
+msgid "initial values must be iterable"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "l'assembleur doit être une fonction"
@@ -2483,6 +2509,10 @@ msgstr "l'argument 2 de int() doit être >=2 et <=36"
 #: py/objstr.c
 msgid "integer required"
 msgstr "entier requis"
+
+#: extmod/ulab/code/approx.c
+msgid "interp is defined for 1D arrays of equal length"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3290,6 +3320,10 @@ msgstr "type d'argument incorrect"
 msgid "wrong index type"
 msgstr "type d'index incorrect"
 
+#: extmod/ulab/code/vectorise.c
+msgid "wrong input type"
+msgstr ""
+
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "mauvais nombres d'arguments"
@@ -3301,6 +3335,10 @@ msgstr "mauvais nombre de valeurs à dégrouper"
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
 msgstr "type d'opérande incorrect"
+
+#: extmod/ulab/code/vectorise.c
+msgid "wrong output type"
+msgstr ""
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"

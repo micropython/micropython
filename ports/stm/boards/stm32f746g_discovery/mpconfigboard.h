@@ -39,5 +39,7 @@
 #define BOARD_OSC_PLLN (400)
 #define BOARD_OSC_PLLQ (9)
 
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (0) // TODO: enable this once LSE is fixed for H7/F7
+
 #define BOARD_FLASH_LATENCY FLASH_LATENCY_6
 #define BOARD_NO_VBUS_SENSE 1
