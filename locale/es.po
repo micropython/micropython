@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 08:56-0500\n"
+"POT-Creation-Date: 2020-06-01 17:10-0700\n"
 "PO-Revision-Date: 2020-05-17 20:56+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: \n"
@@ -1671,6 +1671,26 @@ msgstr ""
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ADVERTENCIA: El nombre de archivo de tu código tiene dos extensiones\n"
 
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer is not currently running"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.timeout must be greater than 0"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Watchdog timer expired."
+msgstr ""
+
 #: py/builtinhelp.c
 #, c-format
 msgid ""
@@ -3102,6 +3122,10 @@ msgstr "limite debe ser en el rango 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() toma un sequencio 9"
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "timeout duration exceeded the maximum supported value"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
@@ -3253,6 +3277,10 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "watchdog timeout must be greater than 0"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
