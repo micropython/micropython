@@ -50,6 +50,15 @@ extern const mp_obj_type_t mp_type_socket;
 // Flags for poll()
 #define FLAG_ONESHOT (1)
 
+#define MICROPY_PY_USELECT_NOTIFIER (1)
+
+#if MICROPY_PY_USELECT_NOTIFIER
+#include <fcntl.h>
+#include <sys/socket.h>
+
+STATIC mp_obj_t notifier_new(int *fd_rd);
+#endif
+
 /// \class Poll - poll class
 
 typedef struct _mp_obj_poll_t {
@@ -80,14 +89,27 @@ STATIC int get_fd(mp_obj_t fdlike) {
 /// \method register(obj[, eventmask])
 STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
-    bool is_fd = mp_obj_is_int(args[1]);
-    int fd = get_fd(args[1]);
 
     mp_uint_t flags;
     if (n_args == 3) {
         flags = mp_obj_get_int(args[2]);
     } else {
         flags = POLLIN | POLLOUT;
+    }
+
+    mp_obj_t args1 = args[1];
+    bool is_fd;
+    int fd;
+
+    #if MICROPY_PY_USELECT_NOTIFIER
+    if (args1 == mp_const_none) {
+        args1 = notifier_new(&fd);
+        is_fd = false;
+    } else
+    #endif
+    {
+        is_fd = mp_obj_is_int(args1);
+        fd = get_fd(args1);
     }
 
     struct pollfd *free_slot = NULL;
@@ -119,12 +141,18 @@ STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
         if (self->obj_map == NULL) {
             self->obj_map = m_new0(mp_obj_t, self->alloc);
         }
-        self->obj_map[free_slot - self->entries] = args[1];
+        self->obj_map[free_slot - self->entries] = args1;
     }
 
     free_slot->fd = fd;
     free_slot->events = flags;
     free_slot->revents = 0;
+
+    #if MICROPY_PY_USELECT_NOTIFIER
+    if (args[1] == mp_const_none) {
+        return args1;
+    }
+    #endif
     return mp_const_true;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
@@ -347,5 +375,82 @@ const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
+
+#if MICROPY_PY_USELECT_NOTIFIER
+
+typedef struct _mp_obj_notifier_t {
+    mp_obj_base_t base;
+    int fds[2];
+    bool set;
+} mp_obj_notifier_t;
+
+STATIC mp_obj_t notifier_set(mp_obj_t self_in) {
+    mp_obj_notifier_t *self = MP_OBJ_TO_PTR(self_in);
+    // TODO needs to be atomic wrt threads, signals and scheduled callbacks
+    if (!self->set) {
+        uint8_t c = 0;
+        ssize_t out_sz;
+        MP_HAL_RETRY_SYSCALL(out_sz, send(self->fds[1], &c, 1, 0), mp_raise_OSError(err));
+        self->set = out_sz;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(notifier_set_obj, notifier_set);
+
+STATIC mp_obj_t notifier_clear(mp_obj_t self_in) {
+    mp_obj_notifier_t *self = MP_OBJ_TO_PTR(self_in);
+    // TODO needs to be atomic wrt threads, signals and scheduled callbacks
+    self->set = 0;
+    uint8_t buf[16];
+    for (;;) {
+        ssize_t out_sz;
+        MP_HAL_RETRY_SYSCALL(out_sz, recv(self->fds[0], buf, sizeof(buf), 0), {
+            if (err == EAGAIN) {
+                return mp_const_none;
+            }
+            mp_raise_OSError(err);
+        });
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(notifier_clear_obj, notifier_clear);
+
+STATIC const mp_rom_map_elem_t notifier_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_set), MP_ROM_PTR(&notifier_set_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&notifier_clear_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(notifier_locals_dict, notifier_locals_dict_table);
+
+STATIC const mp_obj_type_t mp_type_notifier = {
+    { &mp_type_type },
+    .name = MP_QSTR_notifier,
+    .locals_dict = (mp_obj_dict_t *)&notifier_locals_dict,
+};
+
+STATIC mp_obj_t notifier_new(int *fd_rd) {
+    mp_obj_notifier_t *self = m_new_obj(mp_obj_notifier_t);
+    self->base.type = &mp_type_notifier;
+    MP_THREAD_GIL_EXIT();
+
+    // Create read/write pair of sockets.
+    int r = socketpair(AF_UNIX, SOCK_STREAM, 0, self->fds);
+
+    // Set read fd as non-blocking.
+    if (r == 0) {
+        r = fcntl(self->fds[0], F_GETFL, 0);
+        if (r != -1) {
+            r |= O_NONBLOCK;
+            r = fcntl(self->fds[0], F_SETFL, r);
+        }
+    }
+
+    MP_THREAD_GIL_ENTER();
+    RAISE_ERRNO(r, errno);
+
+    *fd_rd = self->fds[0];
+    return MP_OBJ_FROM_PTR(self);
+}
+
+#endif // MICROPY_PY_USELECT_NOTIFIER
 
 #endif // MICROPY_PY_USELECT_POSIX
