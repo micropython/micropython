@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,40 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#include "stm32f7xx_hal.h"
 
-#define MICROPY_HW_BOARD_NAME       "STM32F411E_DISCO"
-#define MICROPY_HW_MCU_NAME         "STM32F411xE"
+// Chip:                STM32F746
+// Line Type:           Advanced Line
+// Speed:               216MHz (MAX)
 
-#define FLASH_SIZE                  (0x80000) //512K
-#define FLASH_PAGE_SIZE             (0x4000)  //16K
-
-#define HSE_VALUE ((uint32_t)8000000)
-#define BOARD_HSE_SOURCE (RCC_HSE_BYPASS) // ST boards use the STLink clock signal
-#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
-
-// The schematic has a 32k crystal that isn't fitted. Uncommented the line below if you add it.
-// #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
-// #define LSE_VALUE  ((uint32_t)32000U)
+// Defaults:
+#ifndef CPY_CLK_VSCALE
+#define CPY_CLK_VSCALE (PWR_REGULATOR_VOLTAGE_SCALE1)
+#endif
+#ifndef CPY_CLK_PLLN
+#define CPY_CLK_PLLN (432)
+#endif
+#ifndef CPY_CLK_PLLP
+#define CPY_CLK_PLLP (RCC_PLLP_DIV2)
+#endif
+#ifndef CPY_CLK_PLLQ
+#define CPY_CLK_PLLQ (9)
+#endif
+#ifndef CPY_CLK_AHBDIV
+#define CPY_CLK_AHBDIV (RCC_SYSCLK_DIV1)
+#endif
+#ifndef CPY_CLK_APB1DIV
+#define CPY_CLK_APB1DIV (RCC_HCLK_DIV4)
+#endif
+#ifndef CPY_CLK_APB2DIV
+#define CPY_CLK_APB2DIV (RCC_HCLK_DIV2)
+#endif
+#ifndef CPY_CLK_FLASH_LATENCY
+#define CPY_CLK_FLASH_LATENCY (FLASH_LATENCY_7)
+#endif
+#ifndef CPY_CLK_USB_USES_AUDIOPLL
+#define CPY_CLK_USB_USES_AUDIOPLL (0)
+#endif
+#ifndef BOARD_HSE_SOURCE
+#define BOARD_HSE_SOURCE (RCC_HSE_ON)
+#endif

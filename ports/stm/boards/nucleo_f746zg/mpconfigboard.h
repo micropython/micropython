@@ -33,8 +33,10 @@
 #define FLASH_SIZE                  (0x100000)
 #define FLASH_PAGE_SIZE             (0x4000)
 
-#define BOARD_OSC_DIV (8)
-#define BOARD_HAS_LOW_SPEED_CRYSTAL (0) // TODO: enable this once LSE is fixed for H7/F7
+#define HSE_VALUE ((uint32_t)8000000)
+#define LSE_VALUE ((uint32_t)32768)
+#define BOARD_HSE_SOURCE (RCC_HSE_BYPASS) // ST boards use the STLink clock signal
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 
 #define DEBUG_UART_TX (&pin_PD08)
 #define DEBUG_UART_RX (&pin_PD09)

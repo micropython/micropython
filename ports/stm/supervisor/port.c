@@ -169,64 +169,7 @@ safe_mode_t port_init(void) {
     stm32_peripherals_clocks_init();
     stm32_peripherals_gpio_init();
 
-    HAL_PWR_EnableBkUpAccess();
-
-    // TODO: move all of this to clocks.c
-    #if BOARD_HAS_LOW_SPEED_CRYSTAL
-    uint32_t tickstart = HAL_GetTick();
-
-    // H7/F7 untested with LSE, so autofail them until above move is done
-    #if (CPY_STM32F4)
-    bool lse_setupsuccess = true;
-    #else
-    bool lse_setupsuccess = false;
-    #endif
-
-    // Update LSE configuration in Backup Domain control register
-    // Requires to enable write access to Backup Domain of necessary
-    // TODO: should be using the HAL OSC initializer, otherwise we'll need
-    // preprocessor defines for every register to account for F7/H7
-    #if (CPY_STM32F4)
-    if(HAL_IS_BIT_CLR(PWR->CR, PWR_CR_DBP))
-    {
-        // Enable write access to Backup domain
-        SET_BIT(PWR->CR, PWR_CR_DBP);
-        // Wait for Backup domain Write protection disable
-        tickstart = HAL_GetTick();
-        while(HAL_IS_BIT_CLR(PWR->CR, PWR_CR_DBP))
-        {
-            if((HAL_GetTick() - tickstart) > RCC_DBP_TIMEOUT_VALUE)
-            {
-                lse_setupsuccess = false;
-            }
-        }
-    }
-    #endif
-
-    __HAL_RCC_LSE_CONFIG(RCC_LSE_ON);
-    tickstart = HAL_GetTick();
-    while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == RESET) {
-        if((HAL_GetTick() - tickstart ) > LSE_STARTUP_TIMEOUT)
-        {
-            lse_setupsuccess = false;
-            __HAL_RCC_LSE_CONFIG(RCC_LSE_OFF);
-            __HAL_RCC_LSI_ENABLE();
-            rtc_clock_frequency = LSI_VALUE;
-            break;
-        }
-    }
-
-    if (lse_setupsuccess) {
-        __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSE);
-    } else {
-        __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSI);
-    }
-
-    #else
-    __HAL_RCC_LSI_ENABLE();
-    __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSI);
-    #endif
-
+    // RTC oscillator selection is handled in peripherals/<family>/<line>/clocks.c
     __HAL_RCC_RTC_ENABLE();
     _hrtc.Instance = RTC;
     _hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
@@ -237,7 +180,6 @@ safe_mode_t port_init(void) {
     _hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
 
     HAL_RTC_Init(&_hrtc);
-
     HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 
     return NO_SAFE_MODE;
