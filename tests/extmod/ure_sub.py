@@ -60,3 +60,12 @@ try:
     re.sub("(a)", "b\\199999999999999999999999999999999999999", "a")
 except:
     print("invalid group")
+
+# Module function takes str/bytes/re.
+print(re.sub("a", "a", "a"))
+print(re.sub(b".", b"a", b"a"))
+print(re.sub(re.compile("a"), "a", "a"))
+try:
+    re.sub(123, "a", "a")
+except TypeError:
+    print("TypeError")

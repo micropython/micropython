@@ -71,8 +71,8 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     re_type.locals_dict = (void*)&re_locals_dict;
 
     mp_store_global(MP_QSTR_compile, MP_OBJ_FROM_PTR(&mod_re_compile_obj));
-    mp_store_global(MP_QSTR_match, MP_OBJ_FROM_PTR(&mod_re_match_obj));
-    mp_store_global(MP_QSTR_search, MP_OBJ_FROM_PTR(&mod_re_search_obj));
+    mp_store_global(MP_QSTR_match, MP_OBJ_FROM_PTR(&re_match_obj));
+    mp_store_global(MP_QSTR_search, MP_OBJ_FROM_PTR(&re_search_obj));
 
     MP_DYNRUNTIME_INIT_EXIT
 }

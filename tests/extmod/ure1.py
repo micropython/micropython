@@ -125,3 +125,14 @@ print(re.compile(r"[ax\-]").split("foo-bar"))
 print(re.compile(r"[a\-x]").split("foo-bar"))
 print(re.compile(r"[\-ax]").split("foo-bar"))
 print("===")
+
+# Module functions take str/bytes/re.
+for f in (re.match, re.search):
+    print(f(".", "foo").group(0))
+    print(f(b".", b"foo").group(0))
+    print(f(re.compile("."), "foo").group(0))
+    try:
+        f(123, "a")
+    except TypeError:
+        print("TypeError")
+print("===")
