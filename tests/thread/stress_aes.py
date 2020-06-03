@@ -11,7 +11,9 @@
 # aggressive by changing the amount of data to encrypt, the number of loops and
 # the number of threads.
 #
-# MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+# SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+#
+# SPDX-License-Identifier: MIT
 
 ##################################################################
 # discrete arithmetic routines, mostly from a precomputed table

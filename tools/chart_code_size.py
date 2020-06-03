@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 # This script renders a graph of the CircuitPython rom image.
 # It takes the single elf file and uses objdump to get its contents.
 
