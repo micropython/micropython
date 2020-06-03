@@ -504,7 +504,8 @@ msgstr "Kan inte återmontera '/' när USB är aktivt."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr "Det går inte att återställa till bootloader eftersom bootloader saknas."
+msgstr ""
+"Det går inte att återställa till bootloader eftersom bootloader saknas."
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
