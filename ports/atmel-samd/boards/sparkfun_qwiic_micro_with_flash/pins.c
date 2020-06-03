@@ -21,14 +21,14 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA10) },
     { MP_ROM_QSTR(MP_QSTR_D16), MP_ROM_PTR(&pin_PA22) },
     { MP_ROM_QSTR(MP_QSTR_D17), MP_ROM_PTR(&pin_PA23) },
-    
+
     // External SPI
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PA07) },
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PA06) },
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PA05) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
 
-    // UART 
+    // UART
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PA22) },
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PA23) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },

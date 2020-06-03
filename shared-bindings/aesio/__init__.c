@@ -63,4 +63,3 @@ const mp_obj_module_t aesio_module = {
     .base = {&mp_type_module},
     .globals = (mp_obj_dict_t *)&aesio_module_globals,
 };
-

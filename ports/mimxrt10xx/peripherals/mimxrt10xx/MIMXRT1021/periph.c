@@ -160,7 +160,7 @@ const mcu_periph_obj_t mcu_uart_tx_list[16] = {
 
 const mcu_periph_obj_t mcu_uart_rts_list[10] = {
     PERIPH_PIN(1, 2, 0, 0, &pin_GPIO_AD_B0_09),
-   
+
     PERIPH_PIN(2, 2, 0, 0, &pin_GPIO_EMC_21),
     PERIPH_PIN(2, 2, 0, 1, &pin_GPIO_AD_B1_07),
 

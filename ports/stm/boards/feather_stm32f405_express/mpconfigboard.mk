@@ -12,8 +12,7 @@ MCU_SERIES = F4
 MCU_VARIANT = STM32F405xx
 MCU_PACKAGE = LQFP64
 
-LD_COMMON = boards/common_default.ld 
-LD_DEFAULT = boards/STM32F405_default.ld 
+LD_COMMON = boards/common_default.ld
+LD_DEFAULT = boards/STM32F405_default.ld
 LD_BOOT = boards/STM32F405_boot.ld # UF2 boot option
 UF2_OFFSET = 0x8010000
-

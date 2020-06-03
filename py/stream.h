@@ -95,7 +95,7 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj);
 
 // Object is assumed to have a non-NULL stream protocol with valid r/w/ioctl methods
 static inline const mp_stream_p_t *mp_get_stream(mp_const_obj_t self) {
-    return mp_proto_get(MP_QSTR_protocol_stream, self); 
+    return mp_proto_get(MP_QSTR_protocol_stream, self);
 }
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags);

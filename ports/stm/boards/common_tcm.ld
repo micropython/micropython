@@ -133,7 +133,7 @@ SECTIONS
         . += _ld_default_stack_size;
     } > DTCM
     _ld_stack_top = ORIGIN(DTCM) + LENGTH(DTCM);
-    
+
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }

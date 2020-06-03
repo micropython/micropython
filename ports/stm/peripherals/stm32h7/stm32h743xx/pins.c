@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "peripherals/pins.h"
 
-// Todo: some pins do have ADCs, but the module isn't set up yet. 
+// Todo: some pins do have ADCs, but the module isn't set up yet.
 
 const mcu_pin_obj_t pin_PA00 = PIN(0, 0, NO_ADC);
 const mcu_pin_obj_t pin_PA01 = PIN(0, 1, NO_ADC);

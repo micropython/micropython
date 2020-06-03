@@ -53,4 +53,3 @@ void common_hal_vectorio_circle_set_radius(void *obj, int16_t radius) {
         self->on_dirty.event(self->on_dirty.obj);
     }
 }
-

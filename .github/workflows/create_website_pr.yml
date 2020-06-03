@@ -18,7 +18,7 @@ jobs:
         python-version: 3.8
     - name: Install deps
       run: |
-        pip install requests sh click 
+        pip install requests sh click
     - name: Versions
       run: |
         gcc --version

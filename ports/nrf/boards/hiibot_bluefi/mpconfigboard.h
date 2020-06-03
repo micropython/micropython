@@ -62,6 +62,3 @@
 
 #define DEFAULT_UART_BUS_RX	(&pin_P0_28)
 #define DEFAULT_UART_BUS_TX	(&pin_P0_02)
-
-
-

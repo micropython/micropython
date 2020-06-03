@@ -36,4 +36,3 @@ _estack = ORIGIN(DTCM) + LENGTH(DTCM);
 /* RAM extents for the garbage collector */
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
-

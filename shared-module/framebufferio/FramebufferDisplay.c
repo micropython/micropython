@@ -57,7 +57,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         NULL,
         self->framebuffer_protocol->get_width(self->framebuffer),
         self->framebuffer_protocol->get_height(self->framebuffer),
-        ram_width, 
+        ram_width,
         ram_height,
         0,
         0,

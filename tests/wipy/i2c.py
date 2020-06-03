@@ -173,4 +173,3 @@ except Exception:
 # reinitialization must work
 i2c.init(baudrate=400000)
 print(i2c)
-

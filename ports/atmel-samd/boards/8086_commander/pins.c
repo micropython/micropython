@@ -2,7 +2,7 @@
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
-    // Serial 
+    // Serial
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_PA11) }, // RX
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PA11) },
     { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_PA10) }, // TX

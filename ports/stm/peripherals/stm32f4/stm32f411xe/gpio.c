@@ -56,5 +56,3 @@ void stm32_peripherals_gpio_init(void) {
 //LEDs are inverted on F411 DISCO
 void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
 }
-
-

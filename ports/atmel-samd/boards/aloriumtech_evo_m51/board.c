@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-// Updated to support Alorium Technology Evo M51 
+// Updated to support Alorium Technology Evo M51
 // Author: Bryan Craker
 // Date: 2020-05-20
 

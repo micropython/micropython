@@ -37,7 +37,7 @@
 
 #include "shared-module/network/__init__.h"
 
-// mod_network_nic_list needs to be declared in mpconfigport.h 
+// mod_network_nic_list needs to be declared in mpconfigport.h
 
 
 void network_module_init(void) {
@@ -47,7 +47,7 @@ void network_module_init(void) {
 void network_module_deinit(void) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
         mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
-        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic); 
+        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
         if (nic_type->deinit != NULL) nic_type->deinit(nic);
     }
     mp_obj_list_set_len(&MP_STATE_PORT(mod_network_nic_list), 0);
@@ -61,7 +61,7 @@ void network_module_background(void) {
 
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
         mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
-        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic); 
+        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
         if (nic_type->timer_tick != NULL) nic_type->timer_tick(nic);
     }
 }

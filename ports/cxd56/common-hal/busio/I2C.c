@@ -79,7 +79,7 @@ bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
 bool common_hal_busio_i2c_has_lock(busio_i2c_obj_t *self) {
     return self->has_lock;
 }
- 
+
 void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }

@@ -1,5 +1,5 @@
 /*
-    GNU linker script for STM32F401 with bootloader (such as the Meowbit). No internal fs. 
+    GNU linker script for STM32F401 with bootloader (such as the Meowbit). No internal fs.
 */
 
 /* Specify the memory areas */
@@ -23,4 +23,3 @@ _estack = ORIGIN(RAM) + LENGTH(RAM);
 /* RAM extents for the garbage collector */
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
-

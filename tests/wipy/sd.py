@@ -43,4 +43,3 @@ try:
     sd = SD(pins=('GP10', 'GP11'))
 except Exception:
     print("Exception")
-
