@@ -28,12 +28,13 @@
 
 #include "py/obj.h"
 
-#define MP_PIN_READ   (1)
-#define MP_PIN_WRITE  (2)
-#define MP_PIN_INPUT  (3)
-#define MP_PIN_OUTPUT (4)
+// These need to be distinct from any MP_STREAM_xxx ioctl request codes.
+#define MP_PIN_READ   (101)
+#define MP_PIN_WRITE  (102)
+#define MP_PIN_INPUT  (103)
+#define MP_PIN_OUTPUT (104)
 
-// Pin protocol
+// Pin protocol, a subset of the stream protocol.
 typedef struct _mp_pin_p_t {
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
 } mp_pin_p_t;
