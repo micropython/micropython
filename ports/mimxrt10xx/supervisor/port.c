@@ -306,7 +306,9 @@ void reset_port(void) {
 
     //reset_event_system();
 
+    #if !defined (MIMXRT1062_SERIES)
     reset_all_pins();
+    #endif
 }
 
 void reset_to_bootloader(void) {

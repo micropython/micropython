@@ -27,6 +27,7 @@
 
 #include "boards/board.h"
 #include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 void board_init(void) {
     // FLEX flash
