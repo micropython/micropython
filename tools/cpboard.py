@@ -73,8 +73,8 @@ class REPL:
         return self.board.serial
 
     def read(self):
-        if self.serial.inWaiting():
-            data = self.serial.read(self.serial.inWaiting())
+        if self.serial.in_waiting:
+            data = self.serial.read(self.serial.in_waiting)
         else:
             data = b''
         self.session += data
@@ -86,7 +86,7 @@ class REPL:
         while True:
             if data.endswith(ending):
                 break
-            elif self.serial.inWaiting() > 0:
+            elif self.serial.in_waiting > 0:
                 new_data = self.serial.read(1)
                 data += new_data
                 self.session += new_data
@@ -401,7 +401,10 @@ class CPboard:
         delayed = False
         for attempt in range(wait + 1):
             try:
-                self.serial = serial.Serial(self.device, baudrate=self.baudrate, timeout=self.timeout, write_timeout=self.timeout, interCharTimeout=1)
+                self.serial = serial.Serial(self.device, baudrate=self.baudrate,
+                                            timeout=self.timeout,
+                                            inter_byte_timeout=10,
+                                            write_timeout=self.timeout)
                 break
             except (OSError, IOError): # Py2 and Py3 have different errors
                 if wait == 0:
