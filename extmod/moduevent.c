@@ -38,10 +38,20 @@
 // - everything is O(1) (would need a big hash table with selectors to get O(1))
 // - TODO: add poll.notify() for async wake-up
 
+// Hack to detect Zephyr build
+#if defined(K_POLL_EVENT_INITIALIZER)
+#define HAVE_ZEPHYR (1)
+#else
+#define HAVE_ZEPHYR (0)
+#endif
+
 typedef struct _mp_obj_poll_t {
     mp_obj_base_t base;
     void *entry_all;
     volatile void *entry_ready;
+    #if HAVE_ZEPHYR
+    struct k_sem sem;
+    #endif
 } mp_obj_poll_t;
 
 typedef struct _mp_obj_poll_entry_t {
@@ -105,6 +115,9 @@ STATIC void poll_event_callback(void *arg_in, mp_uint_t flags) {
     if (old_flags_ready == 0 && entry->flags_ready) {
         entry->next_ready = entry->poller->entry_ready;
         entry->poller->entry_ready = entry;
+        #if HAVE_ZEPHYR
+        k_sem_give(&entry->poller->sem);
+        #endif
     }
     MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
@@ -232,6 +245,14 @@ STATIC mp_obj_t poll_wait_ms(size_t n_args, const mp_obj_t *args) {
         }
     }
 
+    #if HAVE_ZEPHYR
+
+    if (self->entry_ready == NULL) {
+        k_sem_take(&self->sem, timeout_ms == -1 ? K_FOREVER : timeout_ms);
+    }
+
+    #else
+
     mp_uint_t start_tick = mp_hal_ticks_ms();
     for (;;) {
         if (self->entry_ready != NULL
@@ -240,6 +261,8 @@ STATIC mp_obj_t poll_wait_ms(size_t n_args, const mp_obj_t *args) {
         }
         MICROPY_EVENT_POLL_HOOK
     }
+
+    #endif
 
     return args[0];
 }
@@ -282,6 +305,9 @@ STATIC mp_obj_t mp_uevent_poll(void) {
     self->base.type = &mp_type_poll;
     self->entry_all = NULL;
     self->entry_ready = NULL;
+    #if HAVE_ZEPHYR
+    k_sem_init(&self->sem, 0, 1);
+    #endif
     return MP_OBJ_FROM_PTR(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_uevent_poll_obj, mp_uevent_poll);
