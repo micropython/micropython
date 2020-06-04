@@ -138,12 +138,12 @@ Functions
    If *count* is specified and non-zero then substitution will stop after
    this many substitutions are made.  The *flags* argument is ignored.
 
-   Note: availability of this function depends on `MicroPython port`.
+   Note: availability of this function depends on :term:`MicroPython port`.
 
 .. data:: DEBUG
 
    Flag value, display debug information about compiled expression.
-   (Availability depends on `MicroPython port`.)
+   (Availability depends on :term:`MicroPython port`.)
 
 
 .. _regex:
@@ -184,7 +184,7 @@ to the replacement function in `sub()`.
 
    Return a tuple containing all the substrings of the groups of the match.
 
-   Note: availability of this method depends on `MicroPython port`.
+   Note: availability of this method depends on :term:`MicroPython port`.
 
 .. method:: match.start([index])
             match.end([index])
@@ -193,10 +193,10 @@ to the replacement function in `sub()`.
    substring group that was matched.  *index* defaults to the entire
    group, otherwise it will select a group.
 
-   Note: availability of these methods depends on `MicroPython port`.
+   Note: availability of these methods depends on :term:`MicroPython port`.
 
 .. method:: match.span([index])
 
    Returns the 2-tuple ``(match.start(index), match.end(index))``.
 
-   Note: availability of this method depends on `MicroPython port`.
+   Note: availability of this method depends on :term:`MicroPython port`.

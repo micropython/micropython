@@ -84,9 +84,9 @@ methods to enable over-the-air (OTA) updates.
     Returns a 6-tuple ``(type, subtype, addr, size, label, encrypted)``.
 
 .. method:: Partition.readblocks(block_num, buf)
-.. method:: Partition.readblocks(block_num, buf, offset)
+            Partition.readblocks(block_num, buf, offset)
 .. method:: Partition.writeblocks(block_num, buf)
-.. method:: Partition.writeblocks(block_num, buf, offset)
+            Partition.writeblocks(block_num, buf, offset)
 .. method:: Partition.ioctl(cmd, arg)
 
     These methods implement the simple and :ref:`extended

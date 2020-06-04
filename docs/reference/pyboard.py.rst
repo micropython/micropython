@@ -68,7 +68,7 @@ example::
     $ pyboard.py -c 'print(1+1)'
 
 Similarly, the ``PYBOARD_BAUDRATE`` environment variable can be used
-to set the default for the `--baudrate` option.
+to set the default for the ``--baudrate`` option.
 
 Running a script on the device
 ------------------------------

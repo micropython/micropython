@@ -252,7 +252,7 @@ that the block device supports the extended interface.
     dependent on the specific block device.
 
     .. method:: readblocks(block_num, buf)
-    .. method:: readblocks(block_num, buf, offset)
+                readblocks(block_num, buf, offset)
 
         The first form reads aligned, multiples of blocks.
         Starting at the block given by the index *block_num*, read blocks from
@@ -267,7 +267,7 @@ that the block device supports the extended interface.
         The number of bytes to read is given by the length of *buf*.
 
     .. method:: writeblocks(block_num, buf)
-    .. method:: writeblocks(block_num, buf, offset)
+                writeblocks(block_num, buf, offset)
 
         The first form writes aligned, multiples of blocks, and requires that the
         blocks that are written to be first erased (if necessary) by this method.
