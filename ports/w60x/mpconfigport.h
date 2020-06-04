@@ -281,6 +281,7 @@ extern const struct _mp_obj_module_t w600_module;
         extern void mp_handle_pending(void); \
         mp_handle_pending(); \
         MP_THREAD_GIL_EXIT(); \
+        tls_os_time_delay(1); \
         MP_THREAD_GIL_ENTER(); \
     } while (0);
 #else

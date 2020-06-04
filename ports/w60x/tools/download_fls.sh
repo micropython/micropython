@@ -57,7 +57,8 @@ main()
     fi
 
 #	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo all -ws 115200 -rs at
-	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo all -rs rts
+#	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo all -rs rts
+	./${DLIMG} -c ${SERIAL_NAME} -ds 2M -dl "${BUILD}/${TARGET}.fls" -eo secboot -rs rts
 }
 
 usage()
