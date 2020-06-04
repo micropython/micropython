@@ -311,6 +311,8 @@ typedef struct _lwip_socket_obj_t {
     #define STATE_ACTIVE_UDP 5
     // Negative value is lwIP error
     int8_t state;
+
+    mp_stream_event_t stream_event;
 } lwip_socket_obj_t;
 
 static inline void poll_sockets(void) {
@@ -363,6 +365,12 @@ static inline void exec_user_callback(lwip_socket_obj_t *socket) {
     }
 }
 
+STATIC void handle_stream_event(lwip_socket_obj_t *socket, mp_uint_t flags) {
+    if (socket->stream_event.callback != NULL) {
+        socket->stream_event.callback(socket->stream_event.arg, flags);
+    }
+}
+
 #if MICROPY_PY_LWIP_SOCK_RAW
 // Callback for incoming raw packets.
 #if LWIP_VERSION_MAJOR < 2
@@ -378,6 +386,7 @@ STATIC u8_t _lwip_raw_incoming(void *arg, struct raw_pcb *pcb, struct pbuf *p, c
     } else {
         socket->incoming.pbuf = p;
         memcpy(&socket->peer, addr, sizeof(socket->peer));
+        handle_stream_event(socket, MP_STREAM_EVENT_READ);
     }
     return 1; // we ate the packet
 }
@@ -400,6 +409,7 @@ STATIC void _lwip_udp_incoming(void *arg, struct udp_pcb *upcb, struct pbuf *p, 
         socket->incoming.pbuf = p;
         socket->peer_port = (mp_uint_t)port;
         memcpy(&socket->peer, addr, sizeof(socket->peer));
+        handle_stream_event(socket, MP_STREAM_EVENT_READ);
     }
 }
 
@@ -413,6 +423,8 @@ STATIC void _lwip_tcp_error(void *arg, err_t err) {
     socket->state = err;
     // If we got here, the lwIP stack either has deallocated or will deallocate the pcb.
     socket->pcb.tcp = NULL;
+
+    handle_stream_event(socket, MP_STREAM_EVENT_READ | MP_STREAM_EVENT_WRITE);
 }
 
 // Callback for tcp connection requests. Error code err is unused. (See tcp.h)
@@ -499,6 +511,8 @@ STATIC err_t _lwip_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err) {
         tcp_arg(newpcb, newpcb);
         tcp_err(newpcb, _lwip_tcp_err_unaccepted);
 
+        handle_stream_event(socket, MP_STREAM_EVENT_READ);
+
         return ERR_OK;
     }
 
@@ -515,6 +529,7 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
         DEBUG_printf("_lwip_tcp_recv[%p]: other side closed connection\n", socket);
         socket->state = STATE_PEER_CLOSED;
         exec_user_callback(socket);
+        handle_stream_event(socket, MP_STREAM_EVENT_READ);
         return ERR_OK;
     }
 
@@ -529,7 +544,15 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
     }
 
     exec_user_callback(socket);
+    handle_stream_event(socket, MP_STREAM_EVENT_READ);
 
+    return ERR_OK;
+}
+
+// Callback for when tcp packets have been sent, ie there is more room in the pcb.
+STATIC err_t _lwip_tcp_sent(void *arg, struct tcp_pcb *tcpb, u16_t len) {
+    lwip_socket_obj_t *socket = (lwip_socket_obj_t *)arg;
+    handle_stream_event(socket, MP_STREAM_EVENT_WRITE);
     return ERR_OK;
 }
 
@@ -818,6 +841,7 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
     socket->type = MOD_NETWORK_SOCK_STREAM;
     socket->callback = MP_OBJ_NULL;
     socket->state = STATE_NEW;
+    socket->stream_event.callback = NULL;
 
     if (n_args >= 1) {
         socket->domain = mp_obj_get_int(args[0]);
@@ -1015,9 +1039,11 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     socket2->state = STATE_CONNECTED;
     socket2->recv_offset = 0;
     socket2->callback = MP_OBJ_NULL;
+    socket2->stream_event.callback = NULL;
     tcp_arg(socket2->pcb.tcp, (void *)socket2);
     tcp_err(socket2->pcb.tcp, _lwip_tcp_error);
     tcp_recv(socket2->pcb.tcp, _lwip_tcp_recv);
+    tcp_sent(socket2->pcb.tcp, _lwip_tcp_sent);
 
     tcp_accepted(listener);
 
@@ -1063,6 +1089,7 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
             // Register our receive callback.
             MICROPY_PY_LWIP_ENTER
             tcp_recv(socket->pcb.tcp, _lwip_tcp_recv);
+            tcp_sent(socket->pcb.tcp, _lwip_tcp_sent);
             socket->state = STATE_CONNECTING;
             err = tcp_connect(socket->pcb.tcp, &dest, port, _lwip_tcp_connected);
             if (err != ERR_OK) {
@@ -1534,6 +1561,14 @@ STATIC mp_uint_t lwip_socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         socket->pcb.tcp = NULL;
         socket->state = _ERR_BADF;
         ret = 0;
+
+    } else if (request == MP_STREAM_SET_EVENT) {
+        mp_stream_event_t *stream_event = (mp_stream_event_t *)arg;
+        socket->stream_event = *stream_event;
+        ret = 0;
+        if (socket->pcb.tcp != NULL && tcp_sndbuf(socket->pcb.tcp) > 0) {
+            ret |= MP_STREAM_EVENT_WRITE;
+        }
 
     } else {
         *errcode = MP_EINVAL;
