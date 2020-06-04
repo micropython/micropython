@@ -100,7 +100,7 @@ Functions
    unlocked.
 
    Note: `heap_locked()` is not enabled on most ports by default,
-   requires `MICROPY_PY_MICROPYTHON_HEAP_LOCKED`.
+   requires ``MICROPY_PY_MICROPYTHON_HEAP_LOCKED``.
 
 .. function:: kbd_intr(chr)
 
