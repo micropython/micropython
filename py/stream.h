@@ -44,6 +44,15 @@
 #define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
 #define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
 
+// This is not really stream-based so should be elsewhere
+#define MP_STREAM_SET_EVENT     (11)
+#define MP_STREAM_EVENT_READ    (1)
+#define MP_STREAM_EVENT_WRITE   (2)
+typedef struct _mp_stream_event_t {
+    void (*callback)(void *arg, mp_uint_t flags);
+    void *arg;
+} mp_stream_event_t;
+
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD       (0x0001)
 #define MP_STREAM_POLL_WR       (0x0004)
