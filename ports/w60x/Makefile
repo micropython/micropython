@@ -146,6 +146,7 @@ MPY_SRC_C = main.c \
     hal/fatfs_port.c \
     hal/math_port.c \
     hal/modflash.c \
+    hal/wm_watchdog.c \
     machine/machine_timer.c \
     machine/machine_wdt.c \
     machine/machine_pin.c \

@@ -43,9 +43,15 @@
 #include "mphalport.h"
 
 #define CNT_START_VALUE (0xffffffff)
-static uint32_t timer_ovfl = 0;
+static uint32_t ticks_hi_word = 0;
 static uint32_t ticks_per_us = 40;
 uint32_t ticks_us_max_value;
+
+void WDG_IRQHandler(void *data)
+{
+    tls_reg_write32(HR_WDG_INT_CLR, 0x01);
+    ticks_hi_word++;
+}
 
 void timer_init0() {
 
@@ -55,16 +61,34 @@ void timer_init0() {
 
     tls_reg_write32(HR_WDG_LOAD_VALUE, CNT_START_VALUE);
     tls_reg_write32(HR_WDG_CTRL, 0x1);              /* enable irq */
+ 
+    // tls_watchdog_start_cal_elapsed_time() is called just
+    // for the side effect of setting wdg_jumpclear_flag != 0
+    // Then, the timer is not reset by the idle task
+    tls_watchdog_start_cal_elapsed_time();
+
+    // Registerung ticks_IRQHandler() does not work at the moment. 
+    // But if, the following line would enable it
+    // tls_irq_register_handler(WATCHDOG_INT, ticks_IRQHandler, NULL);
+	tls_irq_enable(WATCHDOG_INT);
+    
     ticks_us_max_value = CNT_START_VALUE / ticks_per_us;
 }
 
 
 uint32_t mp_hal_ticks_ms(void) {
     return tls_os_get_time() * (1000 / HZ);
+    // Code for using the WDG counter fpor ticks_ms. Works & tested.
+    // return ticks_hi_word * (ticks_us_max_value / 1000) +
+    //        (CNT_START_VALUE - tls_reg_read32(HR_WDG_CUR_VALUE)) / (ticks_per_us * 1000);
 }
 
 uint32_t mp_hal_ticks_us(void) {
-    return (CNT_START_VALUE - tls_reg_read32(HR_WDG_CUR_VALUE)) / ticks_per_us;
+    // return (CNT_START_VALUE - tls_reg_read32(HR_WDG_CUR_VALUE)) / ticks_per_us;
+
+    // Once ticks_IRQHandler() is used, use the expression below
+    return ticks_hi_word * ticks_us_max_value + 
+           (CNT_START_VALUE - tls_reg_read32(HR_WDG_CUR_VALUE)) / ticks_per_us;
 }
 
 uint32_t mp_hal_ticks_cpu(void) {
@@ -134,4 +158,3 @@ uint32_t mp_hal_get_cpu_freq(void) {
     tls_sys_clk_get(&sysclk);
     return sysclk.cpuclk;
 }
-
