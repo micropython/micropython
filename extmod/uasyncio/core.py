@@ -129,6 +129,54 @@ class IOQueue:
                 self.poller.modify(s, select.POLLIN)
 
 
+class IOQueue2:
+    def __init__(self):
+        import uevent
+        self.uevent = uevent
+        self.poller = uevent.poll()
+
+    def _enqueue(self, s, idx):
+        #print('enq', s, 1<<idx)
+        def remove(self, task):
+            if self.data[0] is task:
+                idx = 0
+            elif self.data[1] is task:
+                idx = 1
+            elif self.data[2] is task:
+                idx = 2
+            else:
+                return
+            self.data[idx] = None
+            #self.unregister(1 << idx)
+        entry = self.poller.register(s, 1 << idx)
+        if entry.data is None:
+            #print('alloc', s, 1<<idx)
+            entry.data = [None, None, None]
+            entry.remove = remove
+        assert entry.data[idx] == None
+        entry.data[idx] = cur_task
+        # Link task to this IOQueue so it can be removed if needed
+        cur_task.data = entry
+
+    def queue_read(self, s):
+        self._enqueue(s, 0)
+
+    def queue_write(self, s):
+        self._enqueue(s, 1)
+
+    def wait_io_event(self, dt):
+        for entry in self.poller.wait_ms(dt):
+            flags = entry.flags
+            data = entry.data
+            i = 0
+            while flags:
+                if flags & 1 and data[i] is not None:
+                    _task_queue.push_head(data[i])
+                    data[i] = None
+                i += 1
+                flags >>= 1
+
+
 ################################################################################
 # Main run loop
 
@@ -160,9 +208,6 @@ def run_until_complete(main_task=None):
             if t:
                 # A task waiting on _task_queue; "ph_key" is time to schedule task at
                 dt = max(0, ticks_diff(t.ph_key, ticks()))
-            elif not _io_queue.map:
-                # No tasks can be woken so finished running
-                return
             # print('(poll {})'.format(dt), len(_io_queue.map))
             _io_queue.wait_io_event(dt)
 
@@ -269,7 +314,7 @@ def new_event_loop():
     # TaskQueue of Task instances
     _task_queue = TaskQueue()
     # Task queue and poller for stream IO
-    _io_queue = IOQueue()
+    _io_queue = IOQueue2()
     return Loop
 
 
