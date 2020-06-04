@@ -1,8 +1,8 @@
-# Adafruit CircuitPython Chinese Hanyu Pinyin Translation
-# Copyright (C) 2019
-# This file is distributed under the same license as the CircuitPython package.
-# @hexthat#2155, 2019.
+# SPDX-FileCopyrightText: 2019 @hexthat#2155
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
+
 msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"

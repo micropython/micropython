@@ -1,8 +1,10 @@
-# Spanish translation.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# Carlos Diaz <carlos.santiago.diaz@gmail.com>, 2018.
-# Juan Biondi <juanernestobiondi@gmail.com>, 2018.
+# SPDX-FileCopyrightText: 2018 Carlos Diaz <carlos.santiago.diaz@gmail.com>
+# SPDX-FileCopyrightText: 2018 Juan Biondi <juanernestobiondi@gmail.com>
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+#, fuzzy
+
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
