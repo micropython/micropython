@@ -51,6 +51,7 @@
 #include "extmod/vfs.h"
 #endif
 
+#include "modmachine.h"
 #include "modzephyr.h"
 
 #ifdef TEST
@@ -162,6 +163,9 @@ soft_reset:
     }
 
     printf("soft reboot\n");
+
+    machine_pin_deinit();
+
     goto soft_reset;
 
     return 0;

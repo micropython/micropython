@@ -33,11 +33,67 @@
 #include <drivers/gpio.h>
 
 #include "py/runtime.h"
+#include "py/stream.h"
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "modmachine.h"
 
+typedef struct _machine_pin_irq_obj_t {
+    machine_pin_obj_t *pin;
+    struct _machine_pin_irq_obj_t *next;
+    struct gpio_callback gpio_callback;
+    uint32_t timestamp_us;
+    atomic_t event_count;
+    mp_stream_event_t stream_event;
+} machine_pin_irq_obj_t;
+
 const mp_obj_base_t machine_pin_obj_template = {&machine_pin_type};
+
+void machine_pin_deinit(void) {
+    for (machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_list); irq != NULL; irq = irq->next) {
+        machine_pin_obj_t *pin = MP_OBJ_TO_PTR(irq->pin);
+        gpio_pin_interrupt_configure(pin->port, pin->pin, GPIO_INT_DISABLE);
+        gpio_remove_callback(pin->port, &irq->gpio_callback);
+    }
+    MP_STATE_PORT(machine_pin_irq_list) = NULL;
+}
+
+STATIC void gpio_callback_handler(struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
+    machine_pin_irq_obj_t *irq = (void *)((uintptr_t)cb - offsetof(machine_pin_irq_obj_t, gpio_callback));
+    if (atomic_inc(&irq->event_count) == 0) {
+        irq->timestamp_us = mp_hal_ticks_us();
+    }
+    if (irq->stream_event.callback != NULL) {
+        irq->stream_event.callback(irq->stream_event.arg, 1);
+    }
+}
+
+STATIC void machine_pin_init_irq(machine_pin_obj_t *self) {
+    if (self->irq != NULL) {
+        return;
+    }
+
+    machine_pin_irq_obj_t *irq;
+    for (irq = MP_STATE_PORT(machine_pin_irq_list); irq != NULL; irq = irq->next) {
+        machine_pin_obj_t *irq_pin = MP_OBJ_TO_PTR(irq->pin);
+        if (irq_pin->port == self->port && irq_pin->pin == self->pin) {
+            break;
+        }
+    }
+
+    if (irq == NULL) {
+        irq = m_new_obj(machine_pin_irq_obj_t);
+        irq->next = MP_STATE_PORT(machine_pin_irq_list);
+        gpio_init_callback(&irq->gpio_callback, gpio_callback_handler, 0);
+        int ret = gpio_add_callback(self->port, &irq->gpio_callback);
+        if (ret != 0) {
+            mp_raise_OSError(-ret);
+        }
+        MP_STATE_PORT(machine_pin_irq_list) = irq;
+    }
+
+    self->irq = irq;
+}
 
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
@@ -101,6 +157,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     pin->base = machine_pin_obj_template;
     pin->port = wanted_port;
     pin->pin = wanted_pin;
+    pin->irq = NULL;
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
@@ -151,11 +208,53 @@ STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
+STATIC mp_obj_t machine_pin_set_event(mp_obj_t self_in, mp_obj_t mode_in) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t mode = mp_obj_get_int_truncated(mode_in);
+    machine_pin_init_irq(self);
+    self->irq->gpio_callback.pin_mask &= ~BIT(self->pin);
+    int ret;
+    if (mode == 0) {
+        ret = gpio_pin_interrupt_configure(self->port, self->pin, GPIO_INT_DISABLE);
+    } else {
+        ret = gpio_pin_interrupt_configure(self->port, self->pin, mode);
+        self->irq->gpio_callback.pin_mask |= BIT(self->pin);
+    }
+    if (ret != 0) {
+        mp_raise_OSError(-ret);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_pin_set_event_obj, machine_pin_set_event);
+
+STATIC mp_obj_t machine_pin_get_event(mp_obj_t self_in) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->irq == NULL) {
+        mp_raise_OSError(MP_EIO);
+    }
+    unsigned int key = irq_lock();
+    atomic_t event_count = atomic_clear(&self->irq->event_count);
+    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(self->irq->timestamp_us), MP_OBJ_NEW_SMALL_INT(event_count) };
+    irq_unlock(key);
+    return mp_obj_new_tuple(2, args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_get_event_obj, machine_pin_get_event);
+
 STATIC mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_pin_obj_t *self = self_in;
 
     switch (request) {
+        case MP_STREAM_SET_EVENT: {
+            mp_stream_event_t *stream_event = (mp_stream_event_t *)arg;
+            machine_pin_init_irq(self);
+            self->irq->stream_event = *stream_event;
+            mp_uint_t ret = 0;
+            if (atomic_get(&self->irq->event_count) != 0) {
+                ret |= 1;
+            }
+            return ret;
+        }
         case MP_PIN_READ: {
             return gpio_pin_get_raw(self->port, self->pin);
         }
@@ -173,11 +272,16 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_off),     MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&machine_pin_on_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_set_event), MP_ROM_PTR(&machine_pin_set_event_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_event), MP_ROM_PTR(&machine_pin_get_event_obj) },
+
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN),        MP_ROM_INT(GPIO_INPUT) },
     { MP_ROM_QSTR(MP_QSTR_OUT),       MP_ROM_INT(GPIO_OUTPUT) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),   MP_ROM_INT(GPIO_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_INT_EDGE_RISING) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_INT_EDGE_FALLING) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
