@@ -143,19 +143,17 @@ static inline uint32_t pack8(uint32_t val) {
 static void mix_down_one_voice(audiomixer_mixer_obj_t* self,
         audiomixer_mixervoice_obj_t* voice, bool voices_active,
         uint32_t* word_buffer, uint32_t length) {
-    bool voice_done = voice->sample == NULL;
-    while (!voice_done && length != 0) {
+    while (length != 0) {
         if (voice->buffer_length == 0) {
             if (!voice->more_data) {
                 if (voice->loop) {
                     audiosample_reset_buffer(voice->sample, false, 0);
                 } else {
                     voice->sample = NULL;
-                    voice_done = true;
                     break;
                 }
             }
-            if (!voice_done) {
+            if (voice->sample) {
                 // Load another buffer
                 audioio_get_buffer_result_t result = audiosample_get_buffer(voice->sample, false, 0, (uint8_t**) &voice->remaining_buffer, &voice->buffer_length);
                 // Track length in terms of words.
@@ -230,10 +228,8 @@ static void mix_down_one_voice(audiomixer_mixer_obj_t* self,
     }
 
     if (length && !voices_active) {
-        uint32_t sample_value = self->bits_per_sample == 8
-            ?  0x80808080 : 0x80008000;
         for (uint32_t i = 0; i<length; i++) {
-            word_buffer[i] = sample_value;
+            word_buffer[i] = 0;
         }
     }
 }
@@ -269,9 +265,16 @@ audioio_get_buffer_result_t audiomixer_mixer_get_buffer(audiomixer_mixer_obj_t* 
 
         for (int32_t v = 0; v < self->voice_count; v++) {
             audiomixer_mixervoice_obj_t* voice = MP_OBJ_TO_PTR(self->voice[v]);
+            if(voice->sample) {
+                mix_down_one_voice(self, voice, voices_active, word_buffer, length);
+                voices_active = true;
+            }
+        }
 
-            mix_down_one_voice(self, voice, voices_active, word_buffer, length);
-            voices_active = true;
+        if (!voices_active) {
+            for (uint32_t i = 0; i<length; i++) {
+                word_buffer[i] = 0;
+            }
         }
 
         if (!self->samples_signed) {

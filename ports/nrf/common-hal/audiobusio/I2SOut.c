@@ -31,6 +31,7 @@
 #include "common-hal/audiobusio/I2SOut.h"
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-module/audiocore/__init__.h"
+#include "supervisor/shared/tick.h"
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -158,7 +159,7 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
 
     // Find the last frame of real audio data and replicate its samples until
     // you have 32 bits worth, which is the fundamental unit of nRF I2S DMA
-    if(buffer != buffer_start) {
+    if (buffer != buffer_start) {
         if (self->bytes_per_sample == 1 && self->channel_count == 1) {
             // For 8-bit mono, 4 copies of the final sample are required
             self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
@@ -211,6 +212,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     NRF_I2S->CONFIG.ALIGN = I2S_CONFIG_ALIGN_ALIGN_Left;
     NRF_I2S->CONFIG.FORMAT = left_justified ? I2S_CONFIG_FORMAT_FORMAT_Aligned
                                     : I2S_CONFIG_FORMAT_FORMAT_I2S;
+
+    supervisor_enable_tick();
 }
 
 bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {
@@ -230,6 +233,7 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     reset_pin_number(self->data_pin_number);
     self->data_pin_number = 0xff;
     instance = NULL;
+    supervisor_disable_tick();
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
@@ -340,5 +344,8 @@ void i2s_reset(void) {
     NRF_I2S->PSEL.LRCK = 0xFFFFFFFF;
     NRF_I2S->PSEL.SDOUT = 0xFFFFFFFF;
     NRF_I2S->PSEL.SDIN = 0xFFFFFFFF;
+    if (instance) {
+        supervisor_disable_tick();
+    }
     instance = NULL;
 }

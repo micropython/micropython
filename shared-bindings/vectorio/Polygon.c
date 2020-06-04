@@ -92,4 +92,3 @@ const mp_obj_type_t vectorio_polygon_type = {
     .make_new = vectorio_polygon_make_new,
     .locals_dict = (mp_obj_dict_t*)&vectorio_polygon_locals_dict,
 };
-

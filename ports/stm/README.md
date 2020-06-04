@@ -1,6 +1,6 @@
 # Circuitpython on STM32 #
 
-This port brings the ST Microelectronics STM32 series of MCUs to Circuitpython. STM32 chips have a wide range of capability, from <$1 low power STM32F0s to dual-core STM32H7s running at 400+ MHz. Currently, only the F4, F7, and H7 families are supported, powered by the ARM Cortex M4 and M7 processors. 
+This port brings the ST Microelectronics STM32 series of MCUs to Circuitpython. STM32 chips have a wide range of capability, from <$1 low power STM32F0s to dual-core STM32H7s running at 400+ MHz. Currently, only the F4, F7, and H7 families are supported, powered by the ARM Cortex M4 and M7 processors.
 
 Refer to the ST Microelectronics website for more information on features sorted by family and individual chip lines: [st.com/en/microcontrollers-microprocessors/stm32-high-performance-mcus.html](https://www.st.com/en/microcontrollers-microprocessors/stm32-high-performance-mcus.html)
 
@@ -13,10 +13,10 @@ STM32 SoCs vary product-by-product in clock speed, peripheral capability, pin as
 - **packages/** contains package-specific pin bindings (LQFP100, BGA216, etc)
 - **peripherals/** contains peripheral setup files and peripheral mapping information, sorted by family and sub-variant. Most files in this directory can be generated with the python scripts in **tools/**.
 - **st-driver/** submodule for ST HAL and LL files generated via CubeMX. Shared with TinyUSB.
-- **supervisor/** contains port-specific implementations of internal flash, serial and USB, as well as the **port.c** file, which initializes the port at startup. 
-- **tools/** python scripts for generating peripheral and pin mapping files in **peripherals/** and **board/**. 
+- **supervisor/** contains port-specific implementations of internal flash, serial and USB, as well as the **port.c** file, which initializes the port at startup.
+- **tools/** python scripts for generating peripheral and pin mapping files in **peripherals/** and **board/**.
 
-At the root level, refer to **mpconfigboard.h** and **mpconfigport.mk** for port specific settings and a list of enabled modules. 
+At the root level, refer to **mpconfigboard.h** and **mpconfigport.mk** for port specific settings and a list of enabled modules.
 
 ## Build instructions ##
 
@@ -36,9 +36,9 @@ You may also build with certain flags available in the makefile, depending on yo
 
 ## USB connection ##
 
-Connect your development board of choice to the host PC via the USB cable. Note that for most ST development boards such as the Nucleo and Discovery series, you must use a secondary OTG USB connector to access circuitpython, as the primary USB connector will be connected to a built-in ST-Link debugger rather than the chip itself. 
+Connect your development board of choice to the host PC via the USB cable. Note that for most ST development boards such as the Nucleo and Discovery series, you must use a secondary OTG USB connector to access circuitpython, as the primary USB connector will be connected to a built-in ST-Link debugger rather than the chip itself.
 
-In many cases, this ST-Link USB connector will **still need to be connected to power** for the chip to turn on - refer to your specific product manual for details. 
+In many cases, this ST-Link USB connector will **still need to be connected to power** for the chip to turn on - refer to your specific product manual for details.
 
 ## Flash the bootloader ##
 
@@ -52,7 +52,7 @@ Windows users will need to install [stm32cubeprog](https://www.st.com/en/develop
 
 ## Flashing the circuitpython image with DFU-Util ##
 
-Ensure the board is in dfu mode by following the steps in the previous section. Then run: 
+Ensure the board is in dfu mode by following the steps in the previous section. Then run:
 
     $ make BOARD=feather_stm32F405_express flash
 
@@ -62,10 +62,10 @@ Alternatively, you can navigate to the build directory and run the raw `dfu-util
 
 ## Accessing the board ##
 
-Connecting the board to the PC via the USB cable will allow code to be uploaded to the `CIRCUITPY` volume. 
+Connecting the board to the PC via the USB cable will allow code to be uploaded to the `CIRCUITPY` volume.
 
-Circuitpython exposes a CDC virtual serial connection for REPL access and debugging. Connecting to it from OSX will look something like this: 
+Circuitpython exposes a CDC virtual serial connection for REPL access and debugging. Connecting to it from OSX will look something like this:
 
     screen /dev/tty.usbmodem14111201 115200
 
-You may also use a program like [mu](https://codewith.mu/) to assist with REPL access. 
+You may also use a program like [mu](https://codewith.mu/) to assist with REPL access.

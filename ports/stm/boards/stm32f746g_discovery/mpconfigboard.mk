@@ -10,5 +10,5 @@ MCU_SERIES = F7
 MCU_VARIANT = STM32F746xx
 MCU_PACKAGE = TFBGA216
 
-LD_COMMON = boards/common_default.ld 
+LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F746xG_fs.ld

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2014 Coraline Ada Ehmke
+SPDX-FileCopyrightText: 2019 Kattni Rembor for Adafruit Industries
+
+SPDX-License-Identifier: CC-BY-4.0
+-->
 # Adafruit Community Code of Conduct
 
 ## Our Pledge
@@ -43,7 +49,7 @@ Examples of unacceptable behavior by participants include:
 
 The goal of the standards and moderation guidelines outlined here is to build
 and maintain a respectful community. We ask that you don’t just aim to be
-"technically unimpeachable", but rather try to be your best self. 
+"technically unimpeachable", but rather try to be your best self.
 
 We value many things beyond technical expertise, including collaboration and
 supporting others within our community. Providing a positive experience for
@@ -74,9 +80,9 @@ You may report in the following ways:
 In any situation, you may send an email to <support@adafruit.com>.
 
 On the Adafruit Discord, you may send an open message from any channel
-to all Community Moderators by tagging @community moderators. You may 
-also send an open message from any channel, or a direct message to 
-@kattni#1507, @tannewt#4653, @danh#1614, @cater#2442, 
+to all Community Moderators by tagging @community moderators. You may
+also send an open message from any channel, or a direct message to
+@kattni#1507, @tannewt#4653, @danh#1614, @cater#2442,
 @sommersoft#0222, @Mr. Certainly#0472 or @Andon#8175.
 
 Email and direct message reports will be kept confidential.

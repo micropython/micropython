@@ -12,4 +12,3 @@ def muldiv(r0, r1, r2):
     vmov(r0, s31)
 
 print(muldiv(100, 10, 50))
-

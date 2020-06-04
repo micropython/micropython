@@ -170,7 +170,7 @@ bool common_hal_displayio_display_set_brightness(displayio_display_obj_t* self, 
         brightness = 1.0-brightness;
     }
     bool ok = false;
-    
+
     // Avoid PWM types and functions when the module isn't enabled
     #if (CIRCUITPY_PULSEIO)
     bool ispwm = (self->backlight_pwm.base.type == &pulseio_pwmout_type) ? true : false;
@@ -413,7 +413,7 @@ void release_display(displayio_display_obj_t* self) {
     #if (CIRCUITPY_PULSEIO)
     if (self->backlight_pwm.base.type == &pulseio_pwmout_type) {
         common_hal_pulseio_pwmout_reset_ok(&self->backlight_pwm);
-        common_hal_pulseio_pwmout_deinit(&self->backlight_pwm);  
+        common_hal_pulseio_pwmout_deinit(&self->backlight_pwm);
     } else if (self->backlight_inout.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->backlight_inout);
     }

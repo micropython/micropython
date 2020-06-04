@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/busio/UART.h"
 
@@ -73,6 +74,13 @@ void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t st
     }
 }
 
+void uart_reset(void) {
+    for(uint i = 0; i < MP_ARRAY_SIZE(mcu_uart_banks); i++) {
+        reserved_uart[i] = false;
+        LPUART_Deinit(mcu_uart_banks[i]);
+    }
+}
+
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
         const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
@@ -101,7 +109,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             // If TX is on, keep looking, else stop
             if (tx != NULL) {
                 for (uint32_t j = 0; j < tx_count; ++j) {
-                    if (mcu_uart_tx_list[j].pin != tx || 
+                    if (mcu_uart_tx_list[j].pin != tx ||
                         mcu_uart_tx_list[j].bank_idx != mcu_uart_rx_list[i].bank_idx) {
                         continue;
                     }
@@ -278,13 +286,21 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if (common_hal_busio_uart_deinited(self)) {
         return;
     }
+    if (self->rx) {
+        reserved_uart[self->rx->bank_idx - 1] = false;
+    } else {
+        reserved_uart[self->tx->bank_idx - 1] = false;
+    }
 
     LPUART_Deinit(self->uart);
-
     gc_free(self->ringbuf);
 
-//    reset_pin_number(self->rx);
-//    reset_pin_number(self->tx);
+    if (self->rx) {
+        common_hal_reset_pin(self->rx->pin);
+    }
+    if (self->tx) {
+        common_hal_reset_pin(self->tx->pin);
+    }
 
     self->rx = NULL;
     self->tx = NULL;

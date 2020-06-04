@@ -191,7 +191,7 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
     bool full_coverage = displayio_area_equal(area, &overlap);
 
     uint8_t pixels_per_byte = 8 / colorspace->depth;
-    
+
     uint32_t linestride_px = displayio_area_width(area);
     uint32_t line_dirty_offset_px = (overlap.y1 - area->y1) * linestride_px;
     uint32_t column_dirty_offset_px = overlap.x1 - area->x1;
@@ -332,5 +332,3 @@ void vectorio_vector_shape_update_transform(vectorio_vector_shape_t *self, displ
     self->absolute_transform = group_transform == NULL ? &null_transform : group_transform;
     common_hal_vectorio_vector_shape_set_dirty(self);
 }
-
-

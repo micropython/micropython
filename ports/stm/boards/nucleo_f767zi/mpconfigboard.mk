@@ -10,6 +10,5 @@ MCU_SERIES = F7
 MCU_VARIANT = STM32F767xx
 MCU_PACKAGE = LQFP144
 
-LD_COMMON = boards/common_default.ld 
+LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F767_fs.ld
-

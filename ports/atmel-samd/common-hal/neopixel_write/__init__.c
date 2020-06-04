@@ -150,4 +150,3 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     mp_hal_enable_all_interrupts();
 
 }
-

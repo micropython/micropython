@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-27 11:55-0400\n"
+"POT-Creation-Date: 2020-06-01 17:10-0700\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -890,7 +890,7 @@ msgstr "Mali ang BMP file"
 msgid "Invalid DAC pin supplied"
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
 msgstr ""
 
@@ -980,7 +980,8 @@ msgstr "Mali ang pin para sa kanang channel"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Mali ang pins"
@@ -1379,7 +1380,8 @@ msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 
@@ -1676,6 +1678,26 @@ msgstr ""
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer is not currently running"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.timeout must be greater than 0"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Watchdog timer expired."
+msgstr ""
 
 #: py/builtinhelp.c
 #, c-format
@@ -2125,6 +2147,14 @@ msgstr ""
 msgid "could not invert Vandermonde matrix"
 msgstr ""
 
+#: extmod/ulab/code/approx.c
+msgid "data must be iterable"
+msgstr ""
+
+#: extmod/ulab/code/approx.c
+msgid "data must be of equal length"
+msgstr ""
+
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
 msgstr ""
@@ -2262,6 +2292,14 @@ msgstr "file ay dapat buksan sa byte mode"
 msgid "filesystem must provide mount method"
 msgstr "ang filesystem dapat mag bigay ng mount method"
 
+#: extmod/ulab/code/vectorise.c
+msgid "first argument must be a callable"
+msgstr ""
+
+#: extmod/ulab/code/approx.c
+msgid "first argument must be a function"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
 msgstr ""
@@ -2314,6 +2352,10 @@ msgstr "function na inaasahang %d ang argumento, ngunit %d ang nakuha"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "ang function ay nakakuha ng maraming values para sa argument '%q'"
+
+#: extmod/ulab/code/approx.c
+msgid "function has the same sign at the ends of interval"
+msgstr ""
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
@@ -2402,6 +2444,10 @@ msgstr "ang mga indeks ay dapat na integer"
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 
+#: extmod/ulab/code/approx.c
+msgid "initial values must be iterable"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler ay dapat na function"
@@ -2445,6 +2491,10 @@ msgstr "int() arg 2 ay dapat >=2 at <= 36"
 #: py/objstr.c
 msgid "integer required"
 msgstr "kailangan ng int"
+
+#: extmod/ulab/code/approx.c
+msgid "interp is defined for 1D arrays of equal length"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3084,6 +3134,10 @@ msgstr "ang threshold ay dapat sa range 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kumukuha ng 9-sequence"
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "timeout duration exceeded the maximum supported value"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
@@ -3238,6 +3292,10 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "watchdog timeout must be greater than 0"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr ""
@@ -3250,6 +3308,10 @@ msgstr ""
 msgid "wrong index type"
 msgstr ""
 
+#: extmod/ulab/code/vectorise.c
+msgid "wrong input type"
+msgstr ""
+
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "mali ang bilang ng argumento"
@@ -3260,6 +3322,10 @@ msgstr "maling number ng value na i-unpack"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
+msgstr ""
+
+#: extmod/ulab/code/vectorise.c
+msgid "wrong output type"
 msgstr ""
 
 #: shared-module/displayio/Shape.c

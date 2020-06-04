@@ -38,4 +38,3 @@
 #define HSE_VALUE ((uint32_t)8000000)
 #define LSE_VALUE ((uint32_t)32768)
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
-

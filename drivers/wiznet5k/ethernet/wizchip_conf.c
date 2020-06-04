@@ -1,4 +1,4 @@
-//****************************************************************************/ 
+//****************************************************************************/
 //!
 //! \file wizchip_conf.c
 //! \brief WIZCHIP Config Header File.
@@ -17,30 +17,30 @@
 //!
 //! Copyright (c)  2013, WIZnet Co., LTD.
 //! All rights reserved.
-//! 
-//! Redistribution and use in source and binary forms, with or without 
-//! modification, are permitted provided that the following conditions 
-//! are met: 
-//! 
-//!     * Redistributions of source code must retain the above copyright 
-//! notice, this list of conditions and the following disclaimer. 
+//!
+//! Redistribution and use in source and binary forms, with or without
+//! modification, are permitted provided that the following conditions
+//! are met:
+//!
+//!     * Redistributions of source code must retain the above copyright
+//! notice, this list of conditions and the following disclaimer.
 //!     * Redistributions in binary form must reproduce the above copyright
 //! notice, this list of conditions and the following disclaimer in the
-//! documentation and/or other materials provided with the distribution. 
-//!     * Neither the name of the <ORGANIZATION> nor the names of its 
-//! contributors may be used to endorse or promote products derived 
-//! from this software without specific prior written permission. 
-//! 
+//! documentation and/or other materials provided with the distribution.
+//!     * Neither the name of the <ORGANIZATION> nor the names of its
+//! contributors may be used to endorse or promote products derived
+//! from this software without specific prior written permission.
+//!
 //! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+//! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 //! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-//! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-//! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+//! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+//! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+//! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 //! SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-//! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-//! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+//! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+//! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 //! THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************/
@@ -88,7 +88,7 @@ uint8_t wizchip_bus_readbyte(uint32_t AddrSel) { return * ((volatile uint8_t *)(
  * @note This function help not to access wrong address. If you do not describe this function or register any functions,
  * null function is called.
  */
- 
+
 //M20140501 : Explict pointer type casting
 //void 	wizchip_bus_writebyte(uint32_t AddrSel, uint8_t wb)  { *((volatile uint8_t*) AddrSel) = wb; };
 void 	wizchip_bus_writebyte(uint32_t AddrSel, uint8_t wb)  { *((volatile uint8_t*)((ptrdiff_t)AddrSel)) = wb; };
@@ -160,7 +160,7 @@ void reg_wizchip_cs_cbfunc(void(*cs_sel)(void), void(*cs_desel)(void))
 void reg_wizchip_bus_cbfunc(uint8_t(*bus_rb)(uint32_t addr), void (*bus_wb)(uint32_t addr, uint8_t wb))
 {
    while(!(WIZCHIP.if_mode & _WIZCHIP_IO_MODE_BUS_));
-   
+
    if(!bus_rb || !bus_wb)
    {
       WIZCHIP.IF.BUS._read_byte   = wizchip_bus_readbyte;
@@ -176,7 +176,7 @@ void reg_wizchip_bus_cbfunc(uint8_t(*bus_rb)(uint32_t addr), void (*bus_wb)(uint
 void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(const uint8_t *, uint32_t))
 {
    while(!(WIZCHIP.if_mode & _WIZCHIP_IO_MODE_SPI_));
-   
+
    if(!spi_rb || !spi_wb)
    {
       WIZCHIP.IF.SPI._read_bytes   = wizchip_spi_readbytes;
@@ -199,7 +199,7 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
          wizchip_sw_reset();
          break;
       case CW_INIT_WIZCHIP:
-         if(arg != 0) 
+         if(arg != 0)
          {
             ptmp[0] = (uint8_t*)arg;
             ptmp[1] = ptmp[0] + _WIZCHIP_SOCK_NUM_;
@@ -213,7 +213,7 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
          break;
       case CW_SET_INTRMASK:
          wizchip_setinterruptmask(*((intr_kind*)arg));
-         break;         
+         break;
       case CW_GET_INTRMASK:
          *((intr_kind*)arg) = wizchip_getinterruptmask();
          break;
@@ -267,7 +267,7 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
 
 int8_t ctlnetwork(ctlnetwork_type cntype, void* arg)
 {
-   
+
    switch(cntype)
    {
       case CN_SET_NETINFO:
@@ -346,7 +346,7 @@ void wizchip_clrinterrupt(intr_kind intr)
 #if _WIZCHIP_ == 5200
    ir |= (1 << 6);
 #endif
-   
+
 #if _WIZCHIP_ < 5200
    sir &= 0x0F;
 #endif
@@ -357,7 +357,7 @@ void wizchip_clrinterrupt(intr_kind intr)
 #else
    setIR(ir);
    setSIR(sir);
-#endif   
+#endif
 }
 
 intr_kind wizchip_getinterrupt(void)
@@ -371,7 +371,7 @@ intr_kind wizchip_getinterrupt(void)
 #else
    ir  = getIR();
    sir = getSIR();
-#endif         
+#endif
 
 #if _WIZCHIP_ < 5500
    ir &= ~(1<<4); // IK_WOL
@@ -394,7 +394,7 @@ void wizchip_setinterruptmask(intr_kind intr)
 #if _WIZCHIP_ == 5200
    imr &= ~(1 << 6);
 #endif
-   
+
 #if _WIZCHIP_ < 5200
    simr &= 0x0F;
 #endif
@@ -405,7 +405,7 @@ void wizchip_setinterruptmask(intr_kind intr)
 #else
    setIMR(imr);
    setSIMR(simr);
-#endif   
+#endif
 }
 
 intr_kind wizchip_getinterruptmask(void)
@@ -419,7 +419,7 @@ intr_kind wizchip_getinterruptmask(void)
 #else
    imr  = getIMR();
    simr = getSIMR();
-#endif         
+#endif
 
 #if _WIZCHIP_ < 5500
    imr &= ~(1<<4); // IK_WOL
@@ -459,12 +459,12 @@ int8_t wizphy_getphypmode(void)
    #if   _WIZCHIP_ == 5200
       if(getPHYSTATUS() & PHYSTATUS_POWERDOWN)
          tmp = PHY_POWER_DOWN;
-      else          
+      else
          tmp = PHY_POWER_NORM;
    #elif _WIZCHIP_ == 5500
       if(getPHYCFGR() & PHYCFGR_OPMDC_PDOWN)
          tmp = PHY_POWER_DOWN;
-      else 
+      else
          tmp = PHY_POWER_NORM;
    #else
       tmp = -1;
@@ -479,7 +479,7 @@ void wizphy_reset(void)
    uint8_t tmp = getPHYCFGR();
    tmp &= PHYCFGR_RST;
    setPHYCFGR(tmp);
-   tmp = getPHYCFGR(); 
+   tmp = getPHYCFGR();
    tmp |= ~PHYCFGR_RST;
    setPHYCFGR(tmp);
 }
@@ -501,7 +501,7 @@ void wizphy_setphyconf(wiz_PhyConf* phyconf)
             tmp |= PHYCFGR_OPMDC_100F;
          else
             tmp |= PHYCFGR_OPMDC_10F;
-      }   
+      }
       else
       {
          if(phyconf->speed == PHY_SPEED_100)
@@ -522,7 +522,7 @@ void wizphy_getphyconf(wiz_PhyConf* phyconf)
    switch(tmp & PHYCFGR_OPMDC_ALLA)
    {
       case PHYCFGR_OPMDC_ALLA:
-      case PHYCFGR_OPMDC_100FA: 
+      case PHYCFGR_OPMDC_100FA:
          phyconf->mode = PHY_MODE_AUTONEGO;
          break;
       default:
@@ -565,7 +565,7 @@ int8_t wizphy_setphypmode(uint8_t pmode)
    uint8_t tmp = 0;
    tmp = getPHYCFGR();
    if((tmp & PHYCFGR_OPMD)== 0) return -1;
-   tmp &= ~PHYCFGR_OPMDC_ALLA;         
+   tmp &= ~PHYCFGR_OPMDC_ALLA;
    if( pmode == PHY_POWER_DOWN)
       tmp |= PHYCFGR_OPMDC_PDOWN;
    else
@@ -633,11 +633,11 @@ uint8_t *wizchip_getsubn(void) {
 int8_t wizchip_setnetmode(netmode_type netmode)
 {
    uint8_t tmp = 0;
-#if _WIZCHIP_ != 5500   
+#if _WIZCHIP_ != 5500
    if(netmode & ~(NM_WAKEONLAN | NM_PPPOE | NM_PINGBLOCK)) return -1;
 #else
    if(netmode & ~(NM_WAKEONLAN | NM_PPPOE | NM_PINGBLOCK | NM_FORCEARP)) return -1;
-#endif      
+#endif
    tmp = getMR();
    tmp |= (uint8_t)netmode;
    setMR(tmp);

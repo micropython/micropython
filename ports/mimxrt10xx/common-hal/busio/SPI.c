@@ -25,6 +25,8 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/busio/SPI.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
@@ -33,6 +35,8 @@
 #include "fsl_lpspi.h"
 
 #include <stdio.h>
+
+#define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_GetDiv(kCLOCK_LpspiDiv) + 1))
 
 //arrays use 0 based numbering: SPI1 is stored at index 0
 #define MAX_SPI 4
@@ -58,11 +62,12 @@ STATIC void config_periph_pin(const mcu_periph_obj_t *periph) {
             | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
-#define LPSPI_MASTER_CLK_FREQ (CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk) / (CLOCK_GetDiv(kCLOCK_LpspiDiv) + 1))
-
 void spi_reset(void) {
-    for (int i = 0; i < MAX_SPI; i++) {
-        reserved_spi[i] = false;
+    for (uint i = 0; i < MP_ARRAY_SIZE(mcu_spi_banks); i++) {
+        if (!never_reset_spi[i]) {
+            reserved_spi[i] = false;
+            LPSPI_Deinit(mcu_spi_banks[i]);
+        }
     }
 }
 
@@ -82,7 +87,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         //if both MOSI and MISO exist, loop search normally
         if ((mosi != NULL) && (miso != NULL)) {
             for (uint j = 0; j < mosi_count; j++) {
-                if ((mcu_spi_mosi_list[i].pin != mosi) 
+                if ((mcu_spi_mosi_list[i].pin != mosi)
                     || (mcu_spi_sck_list[i].bank_idx != mcu_spi_mosi_list[j].bank_idx)){
                     continue;
                 }
@@ -192,7 +197,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 }
 
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
-    // TODO
+    never_reset_spi[self->clock->bank_idx - 1] = true;
+    common_hal_never_reset_pin(self->clock->pin);
+    if (self->mosi != NULL) {
+        common_hal_never_reset_pin(self->mosi->pin);
+    }
+    if (self->miso != NULL) {
+        common_hal_never_reset_pin(self->miso->pin);
+    }
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
@@ -203,8 +215,20 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     if (common_hal_busio_spi_deinited(self)) {
         return;
     }
+    LPSPI_Deinit(self->spi);
+    reserved_spi[self->clock->bank_idx - 1] = false;
+    never_reset_spi[self->clock->bank_idx - 1] = false;
 
+    common_hal_reset_pin(self->clock->pin);
+    if (self->mosi != NULL) {
+        common_hal_reset_pin(self->mosi->pin);
+    }
+    if (self->miso != NULL) {
+        common_hal_reset_pin(self->miso->pin);
+    }
     self->clock = NULL;
+    self->mosi = NULL;
+    self->miso = NULL;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,

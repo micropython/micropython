@@ -88,4 +88,3 @@ void init_usb_hardware(void) {
                              usb_device_stack,
                              &usb_device_taskdef);
 }
-

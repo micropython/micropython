@@ -474,4 +474,3 @@ tinytest_set_test_skipped_(void)
 	if (cur_test_outcome==OK)
 		cur_test_outcome = SKIP;
 }
-

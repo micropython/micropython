@@ -43,7 +43,7 @@ void gc_collect(void) {
     gc_collect_start();
 
     mp_uint_t sp = get_msp(); // Get stack pointer
-    
+
     // trace the stack, including the registers (since they live on the stack in this function)
     gc_collect_root((void**)sp, ((uint32_t)&_ram_end - sp) / sizeof(uint32_t));
 

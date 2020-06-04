@@ -15,30 +15,30 @@
 //!
 //! Copyright (c)  2013, WIZnet Co., LTD.
 //! All rights reserved.
-//! 
-//! Redistribution and use in source and binary forms, with or without 
-//! modification, are permitted provided that the following conditions 
-//! are met: 
-//! 
-//!     * Redistributions of source code must retain the above copyright 
-//! notice, this list of conditions and the following disclaimer. 
+//!
+//! Redistribution and use in source and binary forms, with or without
+//! modification, are permitted provided that the following conditions
+//! are met:
+//!
+//!     * Redistributions of source code must retain the above copyright
+//! notice, this list of conditions and the following disclaimer.
 //!     * Redistributions in binary form must reproduce the above copyright
 //! notice, this list of conditions and the following disclaimer in the
-//! documentation and/or other materials provided with the distribution. 
-//!     * Neither the name of the <ORGANIZATION> nor the names of its 
-//! contributors may be used to endorse or promote products derived 
-//! from this software without specific prior written permission. 
-//! 
+//! documentation and/or other materials provided with the distribution.
+//!     * Neither the name of the <ORGANIZATION> nor the names of its
+//! contributors may be used to endorse or promote products derived
+//! from this software without specific prior written permission.
+//!
 //! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+//! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 //! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-//! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-//! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+//! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+//! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+//! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 //! SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-//! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-//! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+//! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+//! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 //! THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
@@ -46,7 +46,7 @@
 #define _DHCP_H_
 
 /*
- * @brief 
+ * @brief
  * @details If you want to display debug & processing message, Define _DHCP_DEBUG_
  * @note    If defined, it depends on <stdio.h>
  */
@@ -65,7 +65,7 @@
 
 #define DCHP_HOST_NAME           "WIZnet\0"
 
-/* 
+/*
  * @brief return value of @ref DHCP_run()
  */
 enum
@@ -74,7 +74,7 @@ enum
    DHCP_RUNNING,     ///< Processing DHCP protocol
    DHCP_IP_ASSIGN,   ///< First Occupy IP from DHPC server      (if cbfunc == null, act as default default_ip_assign)
    DHCP_IP_CHANGED,  ///< Change IP address by new IP address from DHCP (if cbfunc == null, act as default default_ip_update)
-   DHCP_IP_LEASED,   ///< Stand by 
+   DHCP_IP_LEASED,   ///< Stand by
    DHCP_STOPPED      ///< Stop processing DHCP protocol
 };
 
@@ -89,12 +89,12 @@ void DHCP_init(uint8_t s, DHCP_INIT_BUFFER_TYPE* buf);
 
 /*
  * @brief DHCP 1s Tick Timer handler
- * @note SHOULD BE register to your system 1s Tick timer handler 
+ * @note SHOULD BE register to your system 1s Tick timer handler
  */
 void DHCP_time_handler(void);
 
-/* 
- * @brief Register call back function 
+/*
+ * @brief Register call back function
  * @param ip_assign   - callback func when IP is assigned from DHCP server first
  * @param ip_update   - callback func when IP is changed
  * @prarm ip_conflict - callback func when the assigned IP is conflict with others.
@@ -112,13 +112,13 @@ void reg_dhcp_cbfunc(void(*ip_assign)(void), void(*ip_update)(void), void(*ip_co
  *            @ref DHCP_STOPPED    \n
  *
  * @note This function is always called by you main task.
- */ 
+ */
 uint8_t DHCP_run(void);
 
 /*
  * @brief Stop DHCP processing
  * @note If you want to restart. call DHCP_init() and DHCP_run()
- */ 
+ */
 void    DHCP_stop(void);
 
 /* Get Network information assigned from DHCP server */

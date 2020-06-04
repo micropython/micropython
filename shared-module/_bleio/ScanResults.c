@@ -56,7 +56,7 @@ mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self) {
     uint8_t type = ringbuf_get(&self->buf);
     bool connectable = (type & (1 << 0)) != 0;
     bool scan_response = (type & (1 << 1)) != 0;
-    uint64_t ticks_ms; 
+    uint64_t ticks_ms;
     ringbuf_get_n(&self->buf, (uint8_t*) &ticks_ms, sizeof(ticks_ms));
     uint8_t rssi = ringbuf_get(&self->buf);
     uint8_t peer_addr[NUM_BLEIO_ADDRESS_BYTES];
@@ -81,7 +81,7 @@ mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self) {
     entry->time_received = ticks_ms;
     entry->connectable = connectable;
     entry->scan_response = scan_response;
-    
+
     return MP_OBJ_FROM_PTR(entry);
 }
 

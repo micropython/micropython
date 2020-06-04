@@ -50,4 +50,3 @@ void stm32_peripherals_gpio_init(void) {
     never_reset_pin_number(7,0); //PH0 OSC_IN
     never_reset_pin_number(7,1); //PH1 OSC_OUT
 }
-

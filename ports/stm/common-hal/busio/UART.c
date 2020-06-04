@@ -280,7 +280,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         reset_pin_number(self->rx->pin->port,self->rx->pin->number);
         self->rx = NULL;
     }
-    
+
     ringbuf_free(&self->ringbuf);
 }
 

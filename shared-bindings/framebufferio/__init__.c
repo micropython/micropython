@@ -48,4 +48,3 @@ const mp_obj_module_t framebufferio_module = {
     .globals = (mp_obj_dict_t*)&framebufferio_module_globals,
 };
 #endif
-
