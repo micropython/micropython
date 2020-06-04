@@ -128,6 +128,12 @@ STATIC bool pyb_extint_hard_irq[EXTI_NUM_VECTORS];
 // The callback arg is a small-int or a ROM Pin object, so no need to scan by GC
 STATIC mp_obj_t pyb_extint_callback_arg[EXTI_NUM_VECTORS];
 
+// Nothing in mp_stream_event_t should need to be scanned by GC.
+#include "py/stream.h"
+STATIC mp_stream_event_t pyb_extint_stream_event[EXTI_NUM_VECTORS];
+STATIC uint32_t pyb_extint_event_count[EXTI_NUM_VECTORS];
+STATIC uint32_t pyb_extint_event_timestamp[EXTI_NUM_VECTORS];
+
 #if !defined(ETH)
 #define ETH_WKUP_IRQn   62  // Some MCUs don't have ETH, but we want a value to put in our table
 #endif
@@ -194,6 +200,50 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
 
     #endif
 };
+
+// This function is intended to be used by the Pin.event() method
+void extint_register_event(const pin_obj_t *pin, uint32_t mode) {
+    uint32_t line = pin->pin;
+
+    // TODO: Check if the ExtInt line is already in use by another Pin/ExtInt
+
+    extint_disable(line);
+
+    pyb_extint_mode[line] = (mode & 0x00010000) ? // GPIO_MODE_IT == 0x00010000
+        EXTI_Mode_Interrupt : EXTI_Mode_Event;
+
+    // Route the GPIO to EXTI
+    #if !defined(STM32WB)
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+    #endif
+    SYSCFG->EXTICR[line >> 2] =
+        (SYSCFG->EXTICR[line >> 2] & ~(0x0f << (4 * (line & 0x03))))
+        | ((uint32_t)(GPIO_GET_INDEX(pin->gpio)) << (4 * (line & 0x03)));
+
+    extint_trigger_mode(line, mode);
+
+    // Configure the NVIC
+    NVIC_SetPriority(IRQn_NONNEG(nvic_irq_channel[line]), IRQ_PRI_EXTINT);
+    HAL_NVIC_EnableIRQ(nvic_irq_channel[line]);
+
+    // Enable the interrupt
+    extint_enable(line);
+}
+
+mp_stream_event_t *extint_get_stream_event(const pin_obj_t *pin) {
+    return &pyb_extint_stream_event[pin->pin];
+}
+
+uint32_t extint_get_event_count(const pin_obj_t *pin, uint32_t *timestamp_us, bool clear) {
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    uint32_t count = pyb_extint_event_count[pin->pin];
+    *timestamp_us = pyb_extint_event_timestamp[pin->pin];
+    if (clear) {
+        pyb_extint_event_count[pin->pin] = 0;
+    }
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+    return count;
+}
 
 // Set override_callback_obj to true if you want to unconditionally set the
 // callback function.
@@ -642,6 +692,15 @@ void Handle_EXTI_Irq(uint32_t line) {
     if (__HAL_GPIO_EXTI_GET_FLAG(1 << line)) {
         __HAL_GPIO_EXTI_CLEAR_FLAG(1 << line);
         if (line < EXTI_NUM_VECTORS) {
+            // Event sub-system.
+            if (pyb_extint_event_count[line] == 0) {
+                pyb_extint_event_timestamp[line] = mp_hal_ticks_us(); // ticks_us is relatively expensive...
+            }
+            ++pyb_extint_event_count[line];
+            if (pyb_extint_stream_event[line].callback != NULL) {
+                pyb_extint_stream_event[line].callback(pyb_extint_stream_event[line].arg, 1);
+            }
+
             mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
             #if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_HOST_WAKE)
             if (pyb_extint_callback_arg[line] == MP_OBJ_FROM_PTR(pyb_pin_WL_HOST_WAKE)) {

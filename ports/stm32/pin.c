@@ -437,6 +437,23 @@ STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
 
+STATIC mp_obj_t pin_set_event(mp_obj_t self_in, mp_obj_t mode_in) {
+    pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t mode = mp_obj_get_int_truncated(mode_in);
+    extint_register_event(self, mode);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(pin_set_event_obj, pin_set_event);
+
+STATIC mp_obj_t pin_get_event(mp_obj_t self_in) {
+    pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t timestamp_us;
+    uint32_t count = extint_get_event_count(self, &timestamp_us, true);
+    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(timestamp_us), MP_OBJ_NEW_SMALL_INT(count) };
+    return mp_obj_new_tuple(2, args);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_get_event_obj, pin_get_event);
+
 /// \method name()
 /// Get the pin name.
 STATIC mp_obj_t pin_name(mp_obj_t self_in) {
@@ -523,6 +540,9 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&pin_irq_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_set_event), MP_ROM_PTR(&pin_set_event_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_event), MP_ROM_PTR(&pin_get_event_obj) },
+
     // Legacy names as used by pyb.Pin
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&pin_on_obj) },
@@ -569,11 +589,23 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
+#include "py/stream.h"
 STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     switch (request) {
+        case MP_STREAM_SET_EVENT: {
+            mp_stream_event_t *stream_event = (mp_stream_event_t *)arg;
+            *extint_get_stream_event(self) = *stream_event;
+            mp_uint_t ret = 0;
+            uint32_t timestamp_us;
+            if (extint_get_event_count(self, &timestamp_us, false) != 0) {
+                ret |= 1;
+            }
+            return ret;
+        }
+
         case MP_PIN_READ: {
             return mp_hal_pin_read(self);
         }

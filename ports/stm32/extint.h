@@ -61,6 +61,10 @@
 
 void extint_init0(void);
 
+void extint_register_event(const pin_obj_t *pin, uint32_t mode);
+struct _mp_stream_event_t *extint_get_stream_event(const pin_obj_t *pin);
+uint32_t extint_get_event_count(const pin_obj_t *pin, uint32_t *timestamp_us, bool clear);
+
 uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj);
 void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj);
 
