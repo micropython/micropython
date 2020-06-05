@@ -107,7 +107,6 @@ def sub_cb(topic, msg):
            state = 1 - state
 
 def wifi_connect():
-    #gc.collect()
     while True:
         try:
             sta_if.active(True)

@@ -11,9 +11,7 @@ def download_and_install_update_if_available():
     
 def boot():
     download_and_install_update_if_available()
-    start()
-
-def start():
+    
     try:
         if bdev:
             uos.mount(bdev, '/')
