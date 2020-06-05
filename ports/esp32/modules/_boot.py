@@ -19,7 +19,7 @@ def start():
             uos.mount(bdev, '/')
     except OSError:
         import inisetup
-        vfs = inisetup.setup()
+        inisetup.setup()
 
     gc.collect()
 
