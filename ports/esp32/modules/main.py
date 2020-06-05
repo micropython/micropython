@@ -40,7 +40,7 @@ client = MQTTClient(CLIENT_ID, SERVER,user=USER, password=PASSWORD, port=PORT)
 client.set_callback(sub_cb)
 
 def download_and_install_update_if_available():
-    ota_updater = OTAUpdater('url-to-your-github-project')
+    ota_updater = OTAUpdater('https://github.com/ilyamordasov/micropython/tree/esp32-bluetooth')
     ota_updater.download_and_install_update_if_available(WIFI_SSID_PASSWORD)
     
 def boot():
