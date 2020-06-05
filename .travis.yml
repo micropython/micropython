@@ -75,8 +75,7 @@ jobs:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
         - git config --local user.email "carlogulliani@gmail.com"
-        - export TRAVIS_TAG="bluetooth-init"
-        - git tag $TRAVIS_TAG
+        - git tag $TRAVIS_BRANCH
       deploy:
         provider: releases
         api_key: $GITHUB_OAUTH_TOKEN
