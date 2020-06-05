@@ -74,6 +74,12 @@ Additional functions
 
     This is a coroutine.
 
+.. function:: wait_for_ms(awaitable, timeout)
+
+    Similar to `wait_for` but *timeout* is an integer in milliseconds.
+
+    This is a coroutine, and a MicroPython extension.
+
 .. function:: gather(\*awaitables, return_exceptions=False)
 
     Run all *awaitables* concurrently.  Any *awaitables* that are not tasks are
