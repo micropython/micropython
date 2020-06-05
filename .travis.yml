@@ -75,7 +75,8 @@ jobs:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
         - git config --local user.email "carlogulliani@gmail.com"
-        - git tag ${TRAVIS_BRANCH}_assets
+        - git tag -d ${TRAVIS_BRANCH}
+        - git tag ${TRAVIS_BRANCH}
       deploy:
         # deploying
         provider: releases
@@ -83,6 +84,5 @@ jobs:
         file: $ZIP
         skip_cleanup: true
         overwrite: true
-        draft: true
         on:
           tags: true
