@@ -82,5 +82,7 @@ jobs:
         api_key: $GITHUB_OAUTH_TOKEN
         file: $ZIP
         skip_cleanup: true
+        overwrite: true
+        draft: true
         on:
           tags: true
