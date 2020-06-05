@@ -48,6 +48,8 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO_EMC_01);
     common_hal_never_reset_pin(&pin_GPIO_B0_13);
     common_hal_never_reset_pin(&pin_GPIO_AD_B0_11);
+    // Data strobe needs protection despite being grounded
+    common_hal_never_reset_pin(&pin_GPIO_SD_B1_05);
 }
 
 bool board_requests_safe_mode(void) {
