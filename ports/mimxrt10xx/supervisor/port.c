@@ -306,7 +306,10 @@ void reset_port(void) {
 
     //reset_event_system();
 
+    // TODO: implement a proper fix for 1060 resets
+    #if !defined (MIMXRT1062_SERIES)
     reset_all_pins();
+    #endif
 }
 
 void reset_to_bootloader(void) {
