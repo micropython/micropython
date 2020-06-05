@@ -128,7 +128,7 @@ class BLETemperatureCentral:
             if conn_handle == self._conn_handle and uuid == _ENV_SENSE_UUID:
                 self._start_handle, self._end_handle = start_handle, end_handle
 
-        elif event == _IRQ_GATTC_SERVICES_DONE:
+        elif event == _IRQ_GATTC_SERVICE_DONE:
             # Service query complete.
             if self._start_handle and self._end_handle:
                 self._ble.gattc_discover_characteristics(
@@ -143,7 +143,7 @@ class BLETemperatureCentral:
             if conn_handle == self._conn_handle and uuid == _TEMP_UUID:
                 self._value_handle = value_handle
 
-        elif event == _IRQ_GATTC_CHARACTERISTICS_DONE:
+        elif event == _IRQ_GATTC_CHARACTERISTIC_DONE:
             # Characteristic query complete.
             if self._value_handle:
                 # We've finished connecting and discovering device, fire the connect callback.
