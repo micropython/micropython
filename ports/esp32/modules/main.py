@@ -11,6 +11,7 @@ import gc
 gc.enable()
 gc.collect()
 from machine import Pin
+import _thread
 
 SERVER = "m24.cloudmqtt.com"
 PORT = 18489
@@ -20,7 +21,7 @@ CLIENT_ID = ubinascii.hexlify(machine.unique_id())
 TOPIC = b"esp32/kettle/#"
 P_TOPIC = b"esp32/callback/kettle/get/temperature"
 
-WIFI_SSID_PASSWORD = 'Smart_box-142','natalia31081980'
+WIFI_SSID_PASSWORD = 'Smart_box-142_g','natalia31081980'
 PING_INTERVAL = 60
 client = None #mqtt client
 sta_if = WLAN(STA_IF)
@@ -34,9 +35,6 @@ temp = 0
 device = g201s.G201S("E5:FB:01:09:F7:B4")
 led = Pin(2, Pin.OUT, value=0)
 state = 0
-
-client = MQTTClient(CLIENT_ID, SERVER,user=USER, password=PASSWORD, port=PORT)
-client.set_callback(sub_cb)
 
 def ping_reset():
     global next_ping_time
@@ -106,6 +104,9 @@ def sub_cb(topic, msg):
            led.value(state)
            state = 1 - state
 
+client = MQTTClient(CLIENT_ID, SERVER,user=USER, password=PASSWORD, port=PORT)
+client.set_callback(sub_cb)
+
 def wifi_connect():
     while True:
         try:
@@ -140,13 +141,16 @@ def mqtt_connect():
 
 wifi_connect()
 
-while True:
-    mqtt_connect() #ensure connection to broker
-    try:
-        check()
-    except Exception as e:
-        print("Error in Mqtt check message: [Exception] %s: %s" % (type(e).__name__, e))
-        print("MQTT disconnected due to network problem")
-        lock = True # reset the flags for restart of connection
-        mqtt_con_flag = False
-    time.sleep_ms(500)
+def mainthread():
+    while True:
+        mqtt_connect() #ensure connection to broker
+        try:
+            check()
+        except Exception as e:
+            print("Error in Mqtt check message: [Exception] %s: %s" % (type(e).__name__, e))
+            print("MQTT disconnected due to network problem")
+            lock = True # reset the flags for restart of connection
+            mqtt_con_flag = False
+        time.sleep_ms(500)
+
+npth = _thread.start_new_thread(mainthread, ())
