@@ -1,12 +1,26 @@
 import gc
 import uos
 from flashbdev import bdev
+from ota_update.main.ota_updater import OTAUpdater
 
-try:
-    if bdev:
-        uos.mount(bdev, '/')
-except OSError:
-    import inisetup
-    vfs = inisetup.setup()
+WIFI_SSID_PASSWORD = 'Smart_box-142','natalia31081980'
 
-gc.collect()
+def download_and_install_update_if_available():
+    ota_updater = OTAUpdater('https://github.com/ilyamordasov/micropython/tree/esp32-bluetooth')
+    ota_updater.download_and_install_update_if_available(WIFI_SSID_PASSWORD)
+    
+def boot():
+    download_and_install_update_if_available()
+    start()
+
+def start():
+    try:
+        if bdev:
+            uos.mount(bdev, '/')
+    except OSError:
+        import inisetup
+        vfs = inisetup.setup()
+
+    gc.collect()
+
+boot()

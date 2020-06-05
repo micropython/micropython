@@ -1,5 +1,4 @@
 import time
-from ota_update.main.ota_updater import OTAUpdater
 from umqtt import MQTTClient
 import ubinascii
 import machine
@@ -38,15 +37,6 @@ state = 0
 
 client = MQTTClient(CLIENT_ID, SERVER,user=USER, password=PASSWORD, port=PORT)
 client.set_callback(sub_cb)
-
-def download_and_install_update_if_available():
-    ota_updater = OTAUpdater('https://github.com/ilyamordasov/micropython/tree/esp32-bluetooth')
-    ota_updater.download_and_install_update_if_available(WIFI_SSID_PASSWORD)
-    
-def boot():
-    download_and_install_update_if_available()
-    wifi_connect()
-    start()
 
 def ping_reset():
     global next_ping_time
@@ -149,16 +139,16 @@ def mqtt_connect():
         gc.collect()
         time.sleep_ms(500) # to brake the loop
 
-def start():
-    while True:
-        mqtt_connect() #ensure connection to broker
-        try:
-            check()
-        except Exception as e:
-            print("Error in Mqtt check message: [Exception] %s: %s" % (type(e).__name__, e))
-            print("MQTT disconnected due to network problem")
-            lock = True # reset the flags for restart of connection
-            mqtt_con_flag = False
-        time.sleep_ms(500)
+wifi_connect()
 
-boot()
+while True:
+    mqtt_connect() #ensure connection to broker
+    try:
+        check()
+    except Exception as e:
+        print("Error in Mqtt check message: [Exception] %s: %s" % (type(e).__name__, e))
+        print("MQTT disconnected due to network problem")
+        lock = True # reset the flags for restart of connection
+        mqtt_con_flag = False
+    time.sleep_ms(500)
+
