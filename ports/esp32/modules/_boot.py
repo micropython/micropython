@@ -1,7 +1,7 @@
 import gc
 import uos
 from flashbdev import bdev
-from ota_update.main.ota_updater import OTAUpdater
+from ota_updater import OTAUpdater
 
 WIFI_SSID_PASSWORD = 'Smart_box-142','natalia31081980'
 
