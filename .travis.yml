@@ -66,7 +66,7 @@ jobs:
         - |
           COMPARE_URL=$(curl -s -X GET https://api.travis-ci.org/repo/ilyamordasov%2Fmicropython/requests -H 'Authorization: token $TRAVIS_API_TOKEN' -H 'Travis-API-Version: 3' -H 'User-Agent: API Explorer' | jq .requests[0].commit.compare_url)
           echo $COMPARE_URL
-          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"[ESP32] Repo \`${TRAVIS_REPO_SLUG}\` *passed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <${COMPARE_URL}|commit> on branch *${TRAVIS_BRANCH}*\n",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"View Release\",\"type\":\"button\",\"url\":\"https://github.com/ilyamordasov/micropython/releases\"}], \"footer\": \"Execution time: *$TIME_EXEC*\"}]}" $SLACK_WEBHOOK_URL
+          curl -X POST -H 'Content-type: application/json' --data "{\"attachments\":[{\"text\":\"[ESP32] Repo \`${TRAVIS_REPO_SLUG}\` *passed* build (<${TRAVIS_BUILD_WEB_URL}|${TRAVIS_BUILD_NUMBER}>) for <${COMPARE_URL}|commit> on branch *${TRAVIS_BRANCH}*\n\",\"color\":\"good\",\"attachment_type\":\"default\",\"actions\":[{\"text\":\"View Release\",\"type\":\"button\",\"url\":\"https://github.com/ilyamordasov/micropython/releases\"}], \"footer\": \"Execution time: *$TIME_EXEC*\"}]}" $SLACK_WEBHOOK_URL
       after_failure:
         - |
           COMPARE_URL=$(curl -s -X GET https://api.travis-ci.org/repo/${TRAVIS_REPO_SLUG}/requests -H 'Authorization: token $TRAVIS_API_TOKEN' -H 'Travis-API-Version: 3' -H 'User-Agent: API Explorer' | jq .requests[0].commit.compare_url)
