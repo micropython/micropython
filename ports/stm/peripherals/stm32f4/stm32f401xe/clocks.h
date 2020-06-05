@@ -37,7 +37,7 @@
 #ifndef CPY_CLK_PLLN
 #define CPY_CLK_PLLN (336)
 #endif
-#ifndef (CPY_CLK_PLLP
+#ifndef CPY_CLK_PLLP
 #define CPY_CLK_PLLP (RCC_PLLP_DIV4)
 #endif
 #ifndef CPY_CLK_PLLQ

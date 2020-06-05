@@ -30,7 +30,7 @@
 // Line Type:           Access Line
 // Speed:               200MHz (MAX)
 
-// Note - uses the I2S PLL for SUSB to enable full 100MHz operation, since USB 
+// Note - uses the I2S PLL for SUSB to enable full 100MHz operation, since USB
 // can't get the right divisors from 100MHz PLL settings.
 
 // Defaults:

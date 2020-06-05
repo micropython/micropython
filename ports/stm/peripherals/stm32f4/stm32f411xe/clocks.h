@@ -32,7 +32,7 @@
 
 // Note - the actual maximum frequency is 100MHz, but this requires divisors
 // which are incompatible with USB, and there is no additional PLL such as on
-// the F412. 
+// the F412.
 
 // Defaults:
 #ifndef CPY_CLK_VSCALE
