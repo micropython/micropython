@@ -36,10 +36,6 @@ def setup():
         with open("boot.py", "w") as w:
             for line in f:
                 w.write(line)
-
-    with open("main.py") as f:
-        with open("main.py", "w") as w:
-            for line in f:
-                w.write(line)        
+              
     
     return vfs
