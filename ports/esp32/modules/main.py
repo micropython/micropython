@@ -1,4 +1,5 @@
 import time
+from ota_update.main.ota_updater import OTAUpdater
 from umqtt import MQTTClient
 import ubinascii
 import machine
@@ -35,6 +36,18 @@ device = g201s.G201S("E5:FB:01:09:F7:B4")
 led = Pin(2, Pin.OUT, value=0)
 state = 0
 
+client = MQTTClient(CLIENT_ID, SERVER,user=USER, password=PASSWORD, port=PORT)
+client.set_callback(sub_cb)
+
+def download_and_install_update_if_available():
+    ota_updater = OTAUpdater('url-to-your-github-project')
+    ota_updater.download_and_install_update_if_available(WIFI_SSID_PASSWORD)
+    
+def boot():
+    download_and_install_update_if_available()
+    wifi_connect()
+    start()
+
 def ping_reset():
     global next_ping_time
     next_ping_time = time.time() + PING_INTERVAL #we use time.time() for interval measuring interval
@@ -46,9 +59,8 @@ def ping():
 
 
 def check():
-    global next_ping_time
-    global mqtt_con_flag
-    global pingresp_rcv_flag
+    global next_ping_time, mqtt_con_flag, pingresp_rcv_flag
+    
     if (time.time() >= next_ping_time): #we use time.time() for interval measuring interval
         if not pingresp_rcv_flag :
             mqtt_con_flag = False #we have not received an PINGRESP so we are disconnected
@@ -63,13 +75,8 @@ def check():
         print("PINGRESP")
 
 def sub_cb(topic, msg):
-   global lock
-   global state
-   global client
-   global sta_if
-   global device
-   global mqtt_send_flag
-   global temp
+   global lock, state, client, sta_if, device, mqtt_send_flag, temp
+
    if not lock :
        lock = True
        print((topic, msg))
@@ -109,9 +116,6 @@ def sub_cb(topic, msg):
            led.value(state)
            state = 1 - state
 
-client = MQTTClient(CLIENT_ID, SERVER,user=USER, password=PASSWORD, port=PORT)
-client.set_callback(sub_cb)
-
 def wifi_connect():
     #gc.collect()
     while True:
@@ -126,12 +130,8 @@ def wifi_connect():
             print("Error in Wlan connect: [Exception] %s: %s" % (type(e).__name__, e))
 
 def mqtt_connect():
-    global next_ping_time
-    global pingresp_rcv_flag
-    global mqtt_con_flag
-    global lock
-    global mqtt_send_flag
-    global temp
+    global next_ping_time, pingresp_rcv_flag, mqtt_con_flag, lock, mqtt_send_flag, temp
+    
     while not mqtt_con_flag:
         try:
             client.connect()
@@ -149,17 +149,16 @@ def mqtt_connect():
         gc.collect()
         time.sleep_ms(500) # to brake the loop
 
-wifi_connect()
-# wdt = machine.WDT(timout_ms=5000)
-# wdt.feed()
+def start():
+    while True:
+        mqtt_connect() #ensure connection to broker
+        try:
+            check()
+        except Exception as e:
+            print("Error in Mqtt check message: [Exception] %s: %s" % (type(e).__name__, e))
+            print("MQTT disconnected due to network problem")
+            lock = True # reset the flags for restart of connection
+            mqtt_con_flag = False
+        time.sleep_ms(500)
 
-while True:
-    mqtt_connect() #ensure connection to broker
-    try:
-        check()
-    except Exception as e:
-        print("Error in Mqtt check message: [Exception] %s: %s" % (type(e).__name__, e))
-        print("MQTT disconnected due to network problem")
-        lock = True # reset the flags for restart of connection
-        mqtt_con_flag = False
-    time.sleep_ms(500)
+boot()
