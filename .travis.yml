@@ -75,7 +75,7 @@ jobs:
         # Set up git user name and tag this commit
         - git config --local user.name "ilyamordasov"
         - git config --local user.email "carlogulliani@gmail.com"
-        - git tag $TRAVIS_BRANCH
+        - git tag ${TRAVIS_BRANCH}_assets
       deploy:
         # deploying
         provider: releases
