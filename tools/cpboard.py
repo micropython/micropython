@@ -127,7 +127,7 @@ class REPL:
         self.write(b"\r" + REPL.CHAR_CTRL_B)  # enter or reset friendly repl
         data = self.read_until(b">>> ")
 
-    def execute(self, code, timeout=10, wait_for_response=False):
+    def execute(self, code, timeout=10, wait_for_response=True):
         self.read()  # Throw away
 
         self.write(REPL.CHAR_CTRL_A)
@@ -136,7 +136,7 @@ class REPL:
         self.write(code)
 
         self.write(REPL.CHAR_CTRL_D)
-        if wait_for_response:
+        if not wait_for_response:
             return b"", b""
         self.read_until(b"OK")
 
@@ -450,7 +450,7 @@ class CPboard:
             self.serial.close()
             self.serial = None
 
-    def exec(self, command, timeout=10, wait_for_response=False):
+    def exec(self, command, timeout=10, wait_for_response=True):
         with self.repl as repl:
             try:
                 output, error = repl.execute(
@@ -483,7 +483,7 @@ class CPboard:
         )
         try:
             self.exec(
-                "import microcontroller;microcontroller.reset()", wait_for_response=True
+                "import microcontroller;microcontroller.reset()", wait_for_response=False
             )
         except OSError:
             pass
