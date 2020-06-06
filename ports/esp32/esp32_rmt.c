@@ -52,6 +52,9 @@ typedef struct _esp32_rmt_obj_t {
     uint8_t channel_id;
     gpio_num_t pin;
     uint8_t clock_div;
+    uint8_t carrier_en;
+    uint8_t carrier_duty_percent;
+    uint8_t carrier_freq_hz;
     mp_uint_t num_items;
     rmt_item32_t *items;
 } esp32_rmt_obj_t;
@@ -61,12 +64,18 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_id,        MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_pin,       MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_clock_div,                   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} }, // 100ns resolution
+        { MP_QSTR_carrier_en,                  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_carrier_duty_percent,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 50} },
+        { MP_QSTR_carrier_freq_hz,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 38000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     mp_uint_t channel_id = args[0].u_int;
     gpio_num_t pin_id = machine_pin_get_id(args[1].u_obj);
     mp_uint_t clock_div = args[2].u_int;
+    mp_uint_t carrier_en = args[3].u_int;
+    mp_uint_t carrier_duty_percent = args[4].u_int;
+    mp_uint_t carrier_freq_hz = args[5].u_int;
 
     if (clock_div < 1 || clock_div > 255) {
         mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
@@ -77,6 +86,9 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     self->channel_id = channel_id;
     self->pin = pin_id;
     self->clock_div = clock_div;
+    self->carrier_en = carrier_en;
+    self->carrier_duty_percent = carrier_duty_percent;
+    self->carrier_freq_hz = carrier_freq_hz;
 
     rmt_config_t config;
     config.rmt_mode = RMT_MODE_TX;
@@ -85,11 +97,11 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     config.mem_block_num = 1;
     config.tx_config.loop_en = 0;
 
-    config.tx_config.carrier_en = true;
+    config.tx_config.carrier_en = self->carrier_en;
     config.tx_config.idle_output_en = 1;
     config.tx_config.idle_level = 0;
-    config.tx_config.carrier_duty_percent = 50;
-    config.tx_config.carrier_freq_hz = 38000;
+    config.tx_config.carrier_duty_percent = self->carrier_duty_percent;
+    config.tx_config.carrier_freq_hz = self->carrier_freq_hz;
     config.tx_config.carrier_level = 1;
 
     config.clk_div = self->clock_div;
