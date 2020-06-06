@@ -205,6 +205,7 @@ jobs:
         - "monster_m4sk"
         - "ndgarage_ndbit6"
         - "nfc_copy_cat"
+        - "nice_nano"
         - "nucleo_f746zg"
         - "nucleo_f767zi"
         - "nucleo_h743zi_2"
