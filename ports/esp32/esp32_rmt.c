@@ -64,7 +64,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_id,        MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_pin,       MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_clock_div,                   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} }, // 100ns resolution
-        { MP_QSTR_carrier_en,                  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_carrier_en,                  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_carrier_duty_percent,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 50} },
         { MP_QSTR_carrier_freq_hz,             MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 38000} },
     };
@@ -73,9 +73,10 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t channel_id = args[0].u_int;
     gpio_num_t pin_id = machine_pin_get_id(args[1].u_obj);
     mp_uint_t clock_div = args[2].u_int;
-    mp_uint_t carrier_en = args[3].u_int;
+    mp_uint_t carrier_en = args[3].u_bool;
     mp_uint_t carrier_duty_percent = args[4].u_int;
     mp_uint_t carrier_freq_hz = args[5].u_int;
+
 
     if (clock_div < 1 || clock_div > 255) {
         mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
@@ -115,7 +116,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 STATIC void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->pin != -1) {
-        mp_printf(print, "RMT(channel=%u, pin=%u, source_freq=%u, clock_div=%u)",
+        mp_printf(print, "RMT(channel=%u, pin=%u, source_freq=%u, clock_div=%u, jonrob)",
             self->channel_id, self->pin, APB_CLK_FREQ, self->clock_div);
     } else {
         mp_printf(print, "RMT()");
