@@ -53,8 +53,8 @@ typedef struct _esp32_rmt_obj_t {
     gpio_num_t pin;
     uint8_t clock_div;
     bool carrier_en;
-    uint8_t carrier_duty_percent;
-    uint8_t carrier_freq_hz;
+    uint16_t carrier_duty_percent;
+    uint32_t carrier_freq_hz;
     mp_uint_t num_items;
     rmt_item32_t *items;
 } esp32_rmt_obj_t;
