@@ -52,7 +52,7 @@ typedef struct _esp32_rmt_obj_t {
     uint8_t channel_id;
     gpio_num_t pin;
     uint8_t clock_div;
-    uint8_t carrier_en;
+    bool carrier_en;
     uint8_t carrier_duty_percent;
     uint8_t carrier_freq_hz;
     mp_uint_t num_items;
