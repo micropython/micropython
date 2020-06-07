@@ -73,7 +73,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t channel_id = args[0].u_int;
     gpio_num_t pin_id = machine_pin_get_id(args[1].u_obj);
     mp_uint_t clock_div = args[2].u_int;
-    mp_uint_t carrier_en = args[3].u_bool;
+    bool carrier_en = args[3].u_bool;
     mp_uint_t carrier_duty_percent = args[4].u_int;
     mp_uint_t carrier_freq_hz = args[5].u_int;
 
