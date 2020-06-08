@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-01 17:10-0700\n"
-"PO-Revision-Date: 2020-06-02 21:42+0000\n"
+"PO-Revision-Date: 2020-06-03 18:59+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -153,7 +153,7 @@ msgstr "'%s' heltal %d ligger inte inom intervallet %d..%d"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr "'%s' heltal 0x%x får inte plats i mask 0x%x"
+msgstr "'%s' heltal 0x%x ryms inte i mask 0x%x"
 
 #: py/runtime.c
 msgid "'%s' object cannot assign attribute '%q'"
@@ -166,12 +166,12 @@ msgstr "Objektet '%s' har inte stöd för '%q'"
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr "Objektet \"%s\" stöder inte tilldelning av objekt"
+msgstr "Objektet '%s' stöder inte tilldelningen"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item deletion"
-msgstr "'%s'-objekt stöder inte borttagning av objekt"
+msgstr "Objektet '%s' stöder inte borttagning av objekt"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
@@ -190,16 +190,16 @@ msgstr "Objektet '%s' kan inte anropas"
 #: py/runtime.c
 #, c-format
 msgid "'%s' object is not iterable"
-msgstr "Objektet '%s' är inte itererbar"
+msgstr "Objektet '%s' är inte itererable"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object is not subscriptable"
-msgstr "Objektet \"%s\" är inte indexbar"
+msgstr "Objektet '%s' är inte indexbar"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr "'='-justering tillåts inte i strängformatspecificerare"
+msgstr "'='-justering tillåts inte i strängformatspecifikation"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
@@ -211,7 +211,7 @@ msgstr "'align' kräver 1 argument"
 
 #: py/compile.c
 msgid "'async for' or 'async with' outside async function"
-msgstr "'async for' eller 'async with' utanför asynk-funktion"
+msgstr "'async for' eller 'async with' utanför async-funktion"
 
 #: py/compile.c
 msgid "'await' outside function"
@@ -264,7 +264,7 @@ msgstr "3-arguments pow() stöds inte"
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
-msgstr "En kanal för hårdvaruavbrotts används redan"
+msgstr "En kanal för hårdvaruavbrott används redan"
 
 #: shared-bindings/_bleio/Address.c
 #, c-format
@@ -285,7 +285,7 @@ msgstr "All SPI-kringutrustning används"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
-msgstr "Alla UART-tillbehör används"
+msgstr "Alla UART-kringutrustning används"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
@@ -316,7 +316,7 @@ msgstr "Annonserar redan."
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
-msgstr "AnalogIn stöds inte på en given pinne"
+msgstr "AnalogIn stöds inte på angiven pinne"
 
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
@@ -326,16 +326,16 @@ msgstr "AnalogOut-funktionalitet stöds inte"
 
 #: shared-bindings/analogio/AnalogOut.c
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr "AnalogOut är bara 16 bitar. Värdet måste vara mindre än 65536."
+msgstr "AnalogOut hanterar bara 16 bitar. Värdet måste vara mindre än 65536."
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut not supported on given pin"
-msgstr "AnalogOut stöds inte på given pinne"
+msgstr "AnalogOut stöds inte på angiven pinne"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
-msgstr "En annan sändning är redan aktiv"
+msgstr "En annan send är redan aktiv"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
@@ -343,7 +343,7 @@ msgstr "Matrisen måste innehålla halfwords (typ \"H\")"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr "Matrisvärden ska vara enstaka byte."
+msgstr "Matrisvärden ska bestå av enstaka bytes."
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "At most %d %q may be specified (not %d)"
@@ -351,7 +351,7 @@ msgstr "Högst %d %q kan anges (inte %d)"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr "Försökte tilldelning av heap när MicroPython VM inte körs."
+msgstr "Försökte tilldela heap när MicroPython VM inte körs."
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -376,7 +376,7 @@ msgstr "Bitklocka och ordval måste dela en klockenhet"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
-msgstr "Bitdjupet måste vara multipel av 8."
+msgstr "Bitdjup måste vara multipel av 8."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -390,16 +390,16 @@ msgstr "Båda pinnarna måste stödja maskinvaruavbrott"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
-msgstr "Ljusstyrkan måste vara 0-1,0"
+msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
-msgstr "Ljusstyrkan måste vara mellan 0 och 255"
+msgstr "Ljusstyrka måste vara mellan 0 och 255"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
-msgstr "Ljusstyrkan kan inte justeras"
+msgstr "Ljusstyrka kan inte justeras"
 
 #: shared-bindings/_bleio/UUID.c
 #, c-format
@@ -437,7 +437,7 @@ msgstr "Bufferten är för stor och kan inte allokeras"
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Buffert för kort med %d bytes"
+msgstr "Buffert år %d bytes för kort"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
@@ -459,7 +459,7 @@ msgstr "CBC-block måste vara multiplar om 16 byte"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr "Anropa super().__init__() innan du använder det nativa objektet."
+msgstr "Anropa super().__init__() innan du använder det ursprungliga objektet."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -505,8 +505,7 @@ msgstr "Kan inte återmontera '/' när USB är aktivt."
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
-"Det går inte att återställa till bootloader eftersom det inte finns någon "
-"bootloader."
+"Det går inte att återställa till bootloader eftersom bootloader saknas."
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
