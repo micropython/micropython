@@ -89,7 +89,7 @@ enum BLE_COMMON_SVCS
  */
 enum BLE_COMMON_EVTS
 {
-  BLE_EVT_USER_MEM_REQUEST = BLE_EVT_BASE + 0,   /**< User Memory request. See @ref ble_evt_user_mem_request_t 
+  BLE_EVT_USER_MEM_REQUEST = BLE_EVT_BASE + 0,   /**< User Memory request. See @ref ble_evt_user_mem_request_t
                                                    \n Reply with @ref sd_ble_user_mem_reply. */
   BLE_EVT_USER_MEM_RELEASE = BLE_EVT_BASE + 1,   /**< User Memory release. See @ref ble_evt_user_mem_release_t */
 };
@@ -389,10 +389,10 @@ typedef union
  *                                  application RAM region (APP_RAM_BASE). On return, this will
  *                                  contain the minimum start address of the application RAM region
  *                                  required by the SoftDevice for this configuration.
- * @warning After this call, the SoftDevice may generate several events. The list of events provided 
- *          below require the application to initiate a SoftDevice API call. The corresponding API call 
- *          is referenced in the event documentation. 
- *          If the application fails to do so, the BLE connection may timeout, or the SoftDevice may stop 
+ * @warning After this call, the SoftDevice may generate several events. The list of events provided
+ *          below require the application to initiate a SoftDevice API call. The corresponding API call
+ *          is referenced in the event documentation.
+ *          If the application fails to do so, the BLE connection may timeout, or the SoftDevice may stop
  *          communicating with the peer device.
  *          - @ref BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST
  *          - @ref BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST
@@ -537,7 +537,7 @@ SVCALL(SD_BLE_UUID_VS_ADD, uint32_t, sd_ble_uuid_vs_add(ble_uuid128_t const *p_v
 
 
 /**@brief Remove a Vendor Specific base UUID.
- * 
+ *
  * @details This call removes a Vendor Specific base UUID that has been added with @ref sd_ble_uuid_vs_add. This function allows
  * the application to reuse memory allocated for Vendor Specific base UUIDs.
  *

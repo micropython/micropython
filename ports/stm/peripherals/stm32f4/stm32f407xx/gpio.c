@@ -48,12 +48,10 @@ void stm32_peripherals_gpio_init(void) {
     // never_reset_pin_number(1,4); //PB4 JTRST
 
     // Port H is not included in GPIO port array
-    // never_reset_pin_number(5,0); //PH0 JTDO   
+    // never_reset_pin_number(5,0); //PH0 JTDO
     // never_reset_pin_number(5,1); //PH1 JTRST
 }
 
 void stm32f4_peripherals_status_led(uint8_t led, uint8_t state) {
 
 }
-
-

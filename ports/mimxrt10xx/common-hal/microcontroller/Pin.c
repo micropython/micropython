@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +41,8 @@ STATIC bool claimed_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 STATIC bool never_reset_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
 
 // There are two numbering systems used here:
-// IOMUXC index, used for iterating through pins and accessing reset information, 
-// and GPIO port and number, used to store claimed and reset tagging. The two number 
+// IOMUXC index, used for iterating through pins and accessing reset information,
+// and GPIO port and number, used to store claimed and reset tagging. The two number
 // systems are not related and one cannot determine the other without a pin object
 void reset_all_pins(void) {
     for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
@@ -63,8 +64,8 @@ void reset_all_pins(void) {
     #endif
 }
 
-// Since i.MX pins need extra register and reset information to reset properly, 
-// resetting pins by number alone has been removed. 
+// Since i.MX pins need extra register and reset information to reset properly,
+// resetting pins by number alone has been removed.
 void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
     never_reset_pins[pin->mux_idx] = false;
     claimed_pins[pin->mux_idx] = false;

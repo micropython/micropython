@@ -321,4 +321,3 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
 
 void supervisor_flash_release_cache(void) {
 }
-

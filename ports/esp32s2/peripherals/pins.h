@@ -33,10 +33,12 @@
 #include <stdint.h>
 
 #include "esp32s2_peripherals_config.h"
+#include "esp-idf/config/sdkconfig.h"
+#include "esp-idf/components/soc/include/hal/gpio_types.h"
 
 typedef struct {
     PIN_PREFIX_FIELDS
-    uint8_t number;
+    gpio_num_t number;
 } mcu_pin_obj_t;
 
 extern const mcu_pin_obj_t pin_GPIO0;

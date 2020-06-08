@@ -35,7 +35,7 @@
 //|
 //| The `nvm` module allows you to store whatever raw bytes you wish in a
 //| reserved section non-volatile memory.
-//| 
+//|
 //| Note that this module can't be imported and used directly. The sole
 //| instance of :class:`ByteArray` is available at
 //| :attr:`microcontroller.nvm`."""

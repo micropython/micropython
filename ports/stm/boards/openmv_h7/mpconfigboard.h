@@ -31,7 +31,5 @@
 
 #define FLASH_PAGE_SIZE             (0x4000)
 
-#define BOARD_OSC_DIV (12)
-#define HSE_VALUE    ((uint32_t)12000000)
+#define HSE_VALUE ((uint32_t)12000000)
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
-

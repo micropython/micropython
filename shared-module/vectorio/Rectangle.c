@@ -32,4 +32,3 @@ uint32_t common_hal_vectorio_rectangle_get_height(void *rectangle) {
     vectorio_rectangle_t *self = rectangle;
     return self->height;
 }
-

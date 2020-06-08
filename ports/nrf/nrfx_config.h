@@ -122,4 +122,11 @@
 // NVM controller
 #define NRFX_NVMC_ENABLED 1
 
+// Watchdog timer
+#define NRFX_WDT_ENABLED 1
+#define NRFX_WDT0_ENABLED 1
+// This IRQ indicates the system will reboot shortly, so give
+// it a high priority.
+#define NRFX_WDT_DEFAULT_CONFIG_IRQ_PRIORITY 2
+
 #endif // NRFX_CONFIG_H__

@@ -6,7 +6,7 @@ def gen():
     except GeneratorExit:
         print('GeneratorExit')
     yield 456
-        
+
 # thrown a class
 g = gen()
 print(next(g))

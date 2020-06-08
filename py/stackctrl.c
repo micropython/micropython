@@ -77,7 +77,7 @@ void mp_stack_set_bottom(void* stack_bottom) {
 //
 // The stack_dummy approach used elsewhere in this file is not safe in
 // all cases. That value may be below the actual top of the stack.
-static void* approx_stack_pointer(void){ 
+static void* approx_stack_pointer(void){
      __asm volatile ("");
     return __builtin_frame_address(0);
 }
@@ -90,7 +90,7 @@ void mp_stack_fill_with_sentinel(void) {
     // Continue until we've hit the bottom of the stack (lowest address,
     // logical "ceiling" of stack).
     char* p = (char *) approx_stack_pointer() - 1;
-    
+
     while(p >= MP_STATE_THREAD(stack_bottom)) {
 	*p-- = MP_MAX_STACK_USAGE_SENTINEL_BYTE;
     }

@@ -44,5 +44,3 @@ void stm32_peripherals_gpio_init(void) {
     never_reset_pin_number(0,13); //PA13 SWDIO
     never_reset_pin_number(0,14); //PA14 SWCLK
 }
-
-

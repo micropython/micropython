@@ -48,7 +48,6 @@ BASE_CFLAGS = \
 	-D__$(CHIP_VARIANT)__ \
 	-ffunction-sections \
 	-fdata-sections \
-	-fshort-enums \
 	-DCIRCUITPY_SOFTWARE_SAFE_MODE=0x0ADABEEF \
 	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
@@ -241,6 +240,9 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
+ifeq ($(CIRCUITPY_WATCHDOG),1)
+SRC_PATTERNS += watchdog/%
+endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
@@ -301,7 +303,10 @@ SRC_COMMON_HAL_ALL = \
 	rtc/RTC.c \
 	rtc/__init__.c \
 	supervisor/Runtime.c \
-	supervisor/__init__.c
+	supervisor/__init__.c \
+	watchdog/__init__.c \
+	watchdog/WatchDogMode.c \
+	watchdog/WatchDogTimer.c \
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 

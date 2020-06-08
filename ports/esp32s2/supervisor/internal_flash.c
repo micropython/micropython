@@ -100,18 +100,20 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
             _cache_lba = sector_offset;
         }
         for (uint8_t b = block_offset; b < blocks_per_sector; b++) {
+            // Stop copying after the last block.
+            if (block >= num_blocks) {
+              break;
+            }
             memcpy(_cache + b * FILESYSTEM_BLOCK_SIZE,
                    src + block * FILESYSTEM_BLOCK_SIZE,
                    FILESYSTEM_BLOCK_SIZE);
             block++;
         }
         result = esp_partition_erase_range(_partition, sector_offset, SECTOR_SIZE);
-        ESP_EARLY_LOGW(TAG, "erase %d", result);
         result = esp_partition_write(_partition,
                                      sector_offset,
                                      _cache,
                                      SECTOR_SIZE);
-        ESP_EARLY_LOGW(TAG, "write %d", result);
     }
 
     return 0; // success
@@ -119,4 +121,3 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
 void supervisor_flash_release_cache(void) {
 }
-

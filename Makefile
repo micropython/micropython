@@ -202,16 +202,37 @@ pseudoxml:
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
 # phony target so we always run
+.PHONY: all-source
 all-source:
 
 locale/circuitpython.pot: all-source
 	find $(TRANSLATE_SOURCES) -iname "*.c" -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
 
+# Historically, `make translate` updated the .pot file and ran msgmerge.
+# However, this was a frequent source of merge conflicts.  Weblate can perform
+# msgmerge, so make translate merely update the translation template file.
+.PHONY: translate
 translate: locale/circuitpython.pot
+
+# Note that normally we rely on weblate to perform msgmerge.  This reduces the
+# chance of a merge conflict between developer changes (that only add and
+# remove source strings) and weblate changes (that only add and remove
+# translated strings from po files).  However, in case this is legitimately
+# needed we preserve a rule to do it.
+.PHONY: msgmerge
+msgmerge:
 	for po in $(shell ls locale/*.po); do msgmerge -U $$po -s --no-fuzzy-matching --add-location=file locale/circuitpython.pot; done
 
-check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
-	$(PYTHON) tools/check_translations.py $^
+merge-translate:
+	git merge HEAD 1>&2 2> /dev/null; test $$? -eq 128
+	rm locale/*~ || true
+	git checkout --theirs -- locale/*
+	make translate
+
+.PHONY: check-translate
+check-translate:
+	find $(TRANSLATE_SOURCES) -iname "*.c" -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot.tmp -p locale
+	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
 
 stubs:
 	@mkdir -p circuitpython-stubs

@@ -206,4 +206,3 @@ int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t* self) {
     int computed_height = (self->rgb_count / 3) << (self->addr_count);
     return computed_height;
 }
-

@@ -40,12 +40,11 @@
 #define FLASH_PAGE_SIZE                    (0x4000)
 #define BOARD_FLASH_SIZE            (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE- 0x2000 - 0xC000)
 
-#define BOARD_OSC_DIV               (24)
+#define HSE_VALUE                   ((uint32_t)24000000U)
 #define BOARD_OVERWRITE_SWD         (1)
 #define BOARD_NO_VBUS_SENSE         (1)
 
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
-#define HSE_VALUE                   ((uint32_t)24000000U)
 
 // Status LEDs
 #define MICROPY_HW_LED_STATUS  (&pin_PA02)

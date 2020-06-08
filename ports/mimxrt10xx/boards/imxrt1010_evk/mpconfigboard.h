@@ -7,6 +7,10 @@
 
 #define BOARD_FLASH_SIZE (16 * 1024 * 1024)
 
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO_AD_06)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO_AD_04)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO_AD_03)
+
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO_02)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO_01)
 

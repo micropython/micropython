@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-19 15:01+0800\n"
-"PO-Revision-Date: 2020-05-17 20:56+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"PO-Revision-Date: 2020-06-02 19:50+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -190,12 +190,12 @@ msgstr "l'objet '%s' n'est pas un itérateur"
 #: py/objtype.c py/runtime.c
 #, c-format
 msgid "'%s' object is not callable"
-msgstr "objet '%s' n'est pas appelable"
+msgstr "l'objet '%s' n'est pas appelable"
 
 #: py/runtime.c
 #, c-format
 msgid "'%s' object is not iterable"
-msgstr "objet '%s' n'est pas itérable"
+msgstr "l'objet '%s' n'est pas itérable"
 
 #: py/obj.c
 #, c-format
@@ -385,6 +385,10 @@ msgstr "'bit clock' et 'word select' doivent partager une horloge"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "La profondeur de bit doit être un multiple de 8."
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr "RX et TX requis pour le contrôle de flux"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -830,7 +834,7 @@ msgstr "Groupe plein"
 msgid "Hardware busy, try alternative pins"
 msgstr "Matériel occupé, essayez d'autres broches"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Matériel utilisé, essayez d'autres broches"
 
@@ -901,7 +905,7 @@ msgstr "Fichier BMP invalide"
 msgid "Invalid DAC pin supplied"
 msgstr "Broche DAC non valide fournie"
 
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
 msgstr "Sélection de broches I2C non valide"
 
@@ -911,11 +915,11 @@ msgstr "Sélection de broches I2C non valide"
 msgid "Invalid PWM frequency"
 msgstr "Fréquence de PWM invalide"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr "Sélection de broches SPI non valide"
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr "Sélection de broches UART non valide"
 
@@ -991,7 +995,9 @@ msgstr "Broche invalide pour le canal droit"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Broches invalides"
 
@@ -1101,10 +1107,6 @@ msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
 #: py/parse.c
 msgid "Name too long"
 msgstr "Nom trop long"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "Negative step not supported"
-msgstr "Étape négative non prise en charge"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -1278,6 +1280,10 @@ msgstr "Permission refusée"
 msgid "Pin does not have ADC capabilities"
 msgstr "La broche ne peut être utilisée pour l'ADC"
 
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr "La broche est entrée uniquement"
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
 msgstr "La broche doit prendre en charge les interruptions matérielles"
@@ -1303,7 +1309,7 @@ msgstr "Ainsi que tout autre module présent sur le système de fichiers\n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
-msgstr ""
+msgstr "Polygone a besoin d’au moins 3 points"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
@@ -1395,7 +1401,8 @@ msgstr "Mode sans-échec ! Auto-chargement désactivé.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Mode sans-échec ! Le code sauvegardé n'est pas éxecuté.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
 
@@ -1458,7 +1465,7 @@ msgstr "La pile doit être au moins de 256"
 msgid "Stream missing readinto() or write() method."
 msgstr "Il manque une méthode readinto() ou write() au flux."
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Fournissez au moins une broche UART"
 
@@ -1529,7 +1536,7 @@ msgstr "La largeur de la tuile doit diviser exactement la largeur de l'image"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
-msgstr ""
+msgstr "Le délai est trop long : le délai maximal est de %d secondes"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1705,6 +1712,30 @@ msgstr "La lecture de la tension a expiré"
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION : le nom de fichier de votre code a deux extensions\n"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
+msgstr ""
+"WatchDogTimer ne peut pas être désinitialisé une fois que le mode est réglé "
+"sur RESET"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer is not currently running"
+msgstr "WatchDogTimer n'est pas en cours d'exécution"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+msgstr ""
+"WatchDogTimer.mode ne peut pas être changé une fois réglé pour WatchDogMode."
+"RESET"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.timeout must be greater than 0"
+msgstr "WatchDogTimer.timeout doit être supérieur à 0"
+
+#: supervisor/shared/safe_mode.c
+msgid "Watchdog timer expired."
+msgstr ""
 
 #: py/builtinhelp.c
 #, c-format
@@ -2158,6 +2189,14 @@ msgstr "n'a pas pu diffuser le tableau d'entrée à partir de la forme"
 msgid "could not invert Vandermonde matrix"
 msgstr "n'a pas pu inverser la matrice Vandermonde"
 
+#: extmod/ulab/code/approx.c
+msgid "data must be iterable"
+msgstr "les données doivent être les objets iterables"
+
+#: extmod/ulab/code/approx.c
+msgid "data must be of equal length"
+msgstr "les données doivent être de longueur égale"
+
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
 msgstr "ddof doit être inférieur à la longueur de l'ensemble de données"
@@ -2294,6 +2333,14 @@ msgstr "le fichier doit être un fichier ouvert en mode 'byte'"
 msgid "filesystem must provide mount method"
 msgstr "le system de fichier doit fournir une méthode 'mount'"
 
+#: extmod/ulab/code/vectorise.c
+msgid "first argument must be a callable"
+msgstr "le premier argument doit être un appelable"
+
+#: extmod/ulab/code/approx.c
+msgid "first argument must be a function"
+msgstr "le premier argument doit être une fonction"
+
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
 msgstr "le premier argument doit être un itérable"
@@ -2346,6 +2393,10 @@ msgstr "la fonction attendait au plus %d arguments, reçu %d"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
+
+#: extmod/ulab/code/approx.c
+msgid "function has the same sign at the ends of interval"
+msgstr "la fonction a le même signe aux extrémités de l’intervalle"
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
@@ -2435,6 +2486,10 @@ msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 "les indices doivent être des entiers, des tranches ou des listes booléennes"
 
+#: extmod/ulab/code/approx.c
+msgid "initial values must be iterable"
+msgstr "les valeurs initiales doivent être itérables"
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "l'assembleur doit être une fonction"
@@ -2478,6 +2533,10 @@ msgstr "l'argument 2 de int() doit être >=2 et <=36"
 #: py/objstr.c
 msgid "integer required"
 msgstr "entier requis"
+
+#: extmod/ulab/code/approx.c
+msgid "interp is defined for 1D arrays of equal length"
+msgstr "interp est défini pour les tableaux 1D de longueur égale"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3120,6 +3179,10 @@ msgstr "le seuil doit être dans la gamme 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "timeout duration exceeded the maximum supported value"
+msgstr "le délai d'expiration a dépassé la valeur maximale prise en charge"
+
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "le délai doit être compris entre 0.0 et 100.0 secondes"
@@ -3157,8 +3220,7 @@ msgstr "tuple/liste a une mauvaise longueur"
 msgid "tuple/list required on RHS"
 msgstr "tuple ou liste requis en partie droite"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx et rx ne peuvent être 'None' tous les deux"
@@ -3274,6 +3336,10 @@ msgstr "la valeur doit tenir dans %d octet(s)"
 msgid "value_count must be > 0"
 msgstr "'value_count' doit être > 0"
 
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "watchdog timeout must be greater than 0"
+msgstr "watchdog timeout doit être supérieur à 0"
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr "la fenêtre doit être <= intervalle"
@@ -3286,6 +3352,10 @@ msgstr "type d'argument incorrect"
 msgid "wrong index type"
 msgstr "type d'index incorrect"
 
+#: extmod/ulab/code/vectorise.c
+msgid "wrong input type"
+msgstr "type d'entrée incorrect"
+
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "mauvais nombres d'arguments"
@@ -3297,6 +3367,10 @@ msgstr "mauvais nombre de valeurs à dégrouper"
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
 msgstr "type d'opérande incorrect"
+
+#: extmod/ulab/code/vectorise.c
+msgid "wrong output type"
+msgstr "type de sortie incorrect"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
@@ -3544,6 +3618,9 @@ msgstr "'step' nul"
 
 #~ msgid "Must be a Group subclass."
 #~ msgstr "Doit être une sous-classe de 'Group'"
+
+#~ msgid "Negative step not supported"
+#~ msgstr "Étape négative non prise en charge"
 
 #~ msgid "No PulseIn support for %q"
 #~ msgstr "Pas de support de PulseIn pour %q"
