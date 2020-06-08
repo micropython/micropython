@@ -39,6 +39,7 @@
 #include "nimble/ble.h"
 #include "nimble/nimble_port.h"
 #include "services/gap/ble_svc_gap.h"
+#include "services/gatt/ble_svc_gatt.h"
 
 #ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY NIMBLE"
@@ -271,8 +272,9 @@ int mp_bluetooth_init(void) {
     nimble_port_init();
     mp_bluetooth_nimble_port_postinit();
 
-    // By default, just register the default gap service.
+    // By default, just register the default gap/gatt service.
     ble_svc_gap_init();
+    ble_svc_gatt_init();
 
     mp_bluetooth_nimble_port_start();
 
@@ -466,8 +468,9 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
     // Reset the gatt characteristic value db.
     mp_bluetooth_gatts_db_reset(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
 
-    // By default, just register the default gap service.
+    // By default, just register the default gap/gatt service.
     ble_svc_gap_init();
+    ble_svc_gatt_init();
 
     if (!append) {
         // Unref any previous service definitions.

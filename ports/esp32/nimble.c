@@ -44,7 +44,6 @@ void mp_bluetooth_nimble_port_preinit(void) {
 }
 
 void mp_bluetooth_nimble_port_postinit(void) {
-    nimble_port_freertos_init(ble_host_task);
 }
 
 void mp_bluetooth_nimble_port_deinit(void) {
@@ -52,6 +51,7 @@ void mp_bluetooth_nimble_port_deinit(void) {
 }
 
 void mp_bluetooth_nimble_port_start(void) {
+    nimble_port_freertos_init(ble_host_task);
 }
 
 #endif
