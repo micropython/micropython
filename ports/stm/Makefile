@@ -207,11 +207,11 @@ SRC_C += \
 	mphalport.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
+	peripherals/stm32$(MCU_SERIES_LOWER)/clocks.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/pins.c \
-	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/clocks.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/gpio.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/periph.c \
-	packages/$(MCU_PACKAGE).c\
+	packages/$(MCU_PACKAGE).c \
 	lib/libc/string0.c \
 	lib/mp-readline/readline.c \
 	lib/oofatfs/ff.c \

@@ -147,9 +147,10 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     __enable_irq();
     main();
 }
-
 #endif //end H7 specific code
 
+// Low power clock variables
+static volatile uint32_t systick_ms;
 static RTC_HandleTypeDef _hrtc;
 
 #if BOARD_HAS_LOW_SPEED_CRYSTAL
@@ -159,7 +160,7 @@ static uint32_t rtc_clock_frequency = LSI_VALUE;
 #endif
 
 safe_mode_t port_init(void) {
-    HAL_Init();
+    HAL_Init(); // Turns on SysTick
     __HAL_RCC_SYSCFG_CLK_ENABLE();
 
     #if (CPY_STM32F4)
@@ -169,64 +170,7 @@ safe_mode_t port_init(void) {
     stm32_peripherals_clocks_init();
     stm32_peripherals_gpio_init();
 
-    HAL_PWR_EnableBkUpAccess();
-
-    // TODO: move all of this to clocks.c
-    #if BOARD_HAS_LOW_SPEED_CRYSTAL
-    uint32_t tickstart = HAL_GetTick();
-
-    // H7/F7 untested with LSE, so autofail them until above move is done
-    #if (CPY_STM32F4)
-    bool lse_setupsuccess = true;
-    #else
-    bool lse_setupsuccess = false;
-    #endif
-
-    // Update LSE configuration in Backup Domain control register
-    // Requires to enable write access to Backup Domain of necessary
-    // TODO: should be using the HAL OSC initializer, otherwise we'll need
-    // preprocessor defines for every register to account for F7/H7
-    #if (CPY_STM32F4)
-    if(HAL_IS_BIT_CLR(PWR->CR, PWR_CR_DBP))
-    {
-        // Enable write access to Backup domain
-        SET_BIT(PWR->CR, PWR_CR_DBP);
-        // Wait for Backup domain Write protection disable
-        tickstart = HAL_GetTick();
-        while(HAL_IS_BIT_CLR(PWR->CR, PWR_CR_DBP))
-        {
-            if((HAL_GetTick() - tickstart) > RCC_DBP_TIMEOUT_VALUE)
-            {
-                lse_setupsuccess = false;
-            }
-        }
-    }
-    #endif
-
-    __HAL_RCC_LSE_CONFIG(RCC_LSE_ON);
-    tickstart = HAL_GetTick();
-    while(__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == RESET) {
-        if((HAL_GetTick() - tickstart ) > LSE_STARTUP_TIMEOUT)
-        {
-            lse_setupsuccess = false;
-            __HAL_RCC_LSE_CONFIG(RCC_LSE_OFF);
-            __HAL_RCC_LSI_ENABLE();
-            rtc_clock_frequency = LSI_VALUE;
-            break;
-        }
-    }
-
-    if (lse_setupsuccess) {
-        __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSE);
-    } else {
-        __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSI);
-    }
-
-    #else
-    __HAL_RCC_LSI_ENABLE();
-    __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSI);
-    #endif
-
+    // RTC oscillator selection is handled in peripherals/<family>/<line>/clocks.c
     __HAL_RCC_RTC_ENABLE();
     _hrtc.Instance = RTC;
     _hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
@@ -237,16 +181,40 @@ safe_mode_t port_init(void) {
     _hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
 
     HAL_RTC_Init(&_hrtc);
-
     HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
+
+    // Turn off SysTick
+    SysTick->CTRL = 0;
 
     return NO_SAFE_MODE;
 }
 
+void HAL_Delay(uint32_t delay_ms) {
+    if (SysTick->CTRL != 0) {
+        // SysTick is on, so use it
+        uint32_t tickstart = systick_ms;
+        while (systick_ms - tickstart < delay_ms) {
+        }
+    } else {
+        mp_hal_delay_ms(delay_ms);
+    }
+}
+
+uint32_t HAL_GetTick() {
+    if (SysTick->CTRL != 0) {
+        return systick_ms;
+    } else {
+        uint8_t subticks;
+        uint32_t result = (uint32_t)port_get_raw_ticks(&subticks);
+        return result;
+    }
+}
+
+
 void SysTick_Handler(void) {
+    systick_ms += 1;
     // Read the CTRL register to clear the SysTick interrupt.
     SysTick->CTRL;
-    HAL_IncTick();
 }
 
 void reset_port(void) {

@@ -35,10 +35,9 @@
 #define AUTORESET_DELAY_MS 500
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000)
 
-#define BOARD_OSC_DIV (12)
+#define HSE_VALUE ((uint32_t)12000000U)
+#define LSE_VALUE ((uint32_t)32000U)
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
-#define HSE_VALUE       ((uint32_t)12000000U)
-#define LSE_VALUE       ((uint32_t)32000U)
 
 #define BOARD_NO_VBUS_SENSE (1)
 #define BOARD_VTOR_DEFER (1) //Leave VTOR relocation to bootloader
