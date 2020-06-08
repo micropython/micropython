@@ -115,6 +115,7 @@ the following libraries.
    ubluetooth.rst
    ucryptolib.rst
    uctypes.rst
+   uevent.rst
 
 
 Port-specific libraries
