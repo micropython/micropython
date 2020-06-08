@@ -150,7 +150,7 @@ used to transmit or receive many other types of digital signals::
     from machine import Pin
 
     r = esp32.RMT(0, pin=Pin(18), clock_div=8)
-    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8, carrier_freq_hz=None, carrier_duty_percent=50)
+    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
 
     # To use carrier frequency
     r = esp32.RMT(0, pin=Pin(18), clock_div=8, carrier_freq_hz=38000)
@@ -194,7 +194,7 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     is an 8-bit clock divider that divides the source clock (80MHz) to the RMT
     channel allowing the resolution to be specified. *carrier_freq_hz* is used to enable the carrier feature
     and specify its frequency, default value is None (not enabled). To enable, specify a 32-bit interger.
-    *carrier_duty_percent* is default to 50. 
+    *carrier_duty_percent* is default to 50.
 
 .. method:: RMT.source_freq()
 
