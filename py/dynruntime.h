@@ -114,7 +114,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_cast_to_native_base(o, t)    (mp_obj_cast_to_native_base_dyn((o), (t)))
 #define mp_obj_get_int(o)                   (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_INT))
 #define mp_obj_get_int_truncated(o)         (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_UINT))
-#define mp_obj_str_get_str(s)               ((void *)mp_fun_table.native_from_obj(s, MP_NATIVE_TYPE_PTR))
+#define mp_obj_str_get_str(s)               (mp_obj_str_get_data_dyn((s), NULL))
 #define mp_obj_str_get_data(o, len)         (mp_obj_str_get_data_dyn((o), (len)))
 #define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer_raise((o), (bufinfo), (fl)))
 #define mp_get_stream_raise(s, flags)       (mp_fun_table.get_stream_raise((s), (flags)))
@@ -149,7 +149,9 @@ static inline mp_obj_t mp_obj_cast_to_native_base_dyn(mp_obj_t self_in, mp_const
 static inline void *mp_obj_str_get_data_dyn(mp_obj_t o, size_t *l) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(o, &bufinfo, MP_BUFFER_READ);
-    *l = bufinfo.len;
+    if (l != NULL) {
+        *l = bufinfo.len;
+    }
     return bufinfo.buf;
 }
 
