@@ -73,14 +73,14 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     gpio_num_t pin_id = machine_pin_get_id(args[1].u_obj);
     mp_uint_t clock_div = args[2].u_int;
 
+    mp_obj_t carrier_en = mp_const_false;
+    mp_uint_t carrier_duty_percent = 0;
+    mp_uint_t carrier_freq_hz = 0;
+
     if (mp_obj_is_type(args[4].u_obj, &mp_type_int)) {  // if a frequency is specified then assume carrier_en
-        mp_obj_t carrier_en = mp_const_true;
-        mp_uint_t carrier_duty_percent = args[3].u_int;
-        mp_uint_t carrier_freq_hz = mp_obj_get_int(args[4].u_obj);
-    } else {
-        mp_obj_t carrier_en = mp_const_false;
-        mp_uint_t carrier_duty_percent = 0;
-        mp_uint_t carrier_freq_hz = 0;
+        carrier_en = mp_const_true;
+        carrier_duty_percent = args[3].u_int;
+        carrier_freq_hz = mp_obj_get_int(args[4].u_obj);
     }
 
     if (clock_div < 1 || clock_div > 255) {
