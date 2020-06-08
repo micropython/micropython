@@ -170,7 +170,7 @@ multiplying the resolution by a 15-bit (0-32,768) number. There are eight
 channels (0-7) and each can have a different clock divider.
 
 To enable the carrier frequency feature of the esp32 hardware, specify the ``carrier_freq_hz`` to someting like 38000,
-a typical IR carrier frequency. (default value is ```None```)
+a typical IR carrier frequency.
 
 So, in the example above, the 80MHz clock is divided by 8. Thus the
 resolution is (1/(80Mhz/8)) 100ns. Since the ``start`` level is 0 and toggles
@@ -193,7 +193,7 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     also required, configures which Pin is bound to the RMT channel. *clock_div*
     is an 8-bit clock divider that divides the source clock (80MHz) to the RMT
     channel allowing the resolution to be specified. *carrier_freq_hz* is used to enable the carrier feature
-    and specify its frequency, default value is None (not enabled). To enable, specify a 32-bit interger.
+    and specify its frequency, default value is ``None`` (not enabled). To enable, specify a 32-bit interger.
     *carrier_duty_percent* is default to 50.
 
 .. method:: RMT.source_freq()
