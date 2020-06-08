@@ -65,7 +65,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_pin,       MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_clock_div,                   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} }, // 100ns resolution
         { MP_QSTR_carrier_duty_percent,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 50} },
-        { MP_QSTR_carrier_freq_hz,             MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_carrier_freq_hz,             MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -77,10 +77,11 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t carrier_duty_percent = 0;
     mp_uint_t carrier_freq_hz = 0;
 
-    if (mp_obj_is_type(args[4], &mp_type_int)) {  // if a frequency is specified then assume carrier_en
+    if (args[4].u_obj != MP_OBJ_NULL) {
+	// if a frequency is specified then assume carrier_en
         carrier_en = mp_const_true;
         carrier_duty_percent = args[3].u_int;
-        carrier_freq_hz = mp_obj_get_int(args[4]);
+        carrier_freq_hz = mp_obj_get_int(args[4].u_obj);
     }
 
     if (clock_div < 1 || clock_div > 255) {
