@@ -245,8 +245,8 @@ STATIC const mp_rom_map_elem_t zephyr_flash_area_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&zephyr_flash_area_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&zephyr_flash_area_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&zephyr_flash_area_ioctl_obj) },
-    #ifdef DT_FLASH_AREA_STORAGE_ID
-    { MP_ROM_QSTR(MP_QSTR_STORAGE), MP_ROM_INT(DT_FLASH_AREA_STORAGE_ID) },
+    #if FLASH_AREA_LABEL_EXISTS(storage)
+    { MP_ROM_QSTR(MP_QSTR_STORAGE), MP_ROM_INT(FLASH_AREA_ID(storage)) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(zephyr_flash_area_locals_dict, zephyr_flash_area_locals_dict_table);
