@@ -14,7 +14,7 @@ include ../../py/mkenv.mk
 include $(VARIANT_DIR)/mpconfigvariant.mk
 
 # use FROZEN_MANIFEST for new projects, others are legacy
-FROZEN_MANIFEST ?= manifest.py
+FROZEN_MANIFEST ?= variants/manifest.py
 FROZEN_DIR =
 FROZEN_MPY_DIR =
 
