@@ -206,7 +206,7 @@ SRC_ASF += \
 
 else ifeq ($(CHIP_FAMILY), samd51)
 SRC_ASF += \
-    hal/src/hal_rand_sync.c \
+	hal/src/hal_rand_sync.c \
 	hpl/core/hpl_core_m4.c \
 	hpl/mclk/hpl_mclk.c \
 	hpl/osc32kctrl/hpl_osc32kctrl.c \
