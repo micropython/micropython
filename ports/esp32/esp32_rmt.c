@@ -78,7 +78,6 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t carrier_freq_hz = 0;
 
     if (args[4].u_obj != MP_OBJ_NULL) {
-	// if a frequency is specified then assume carrier_en
         carrier_en = mp_const_true;
         carrier_duty_percent = args[3].u_int;
         carrier_freq_hz = mp_obj_get_int(args[4].u_obj);
@@ -132,7 +131,7 @@ STATIC void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     } else {
         mp_printf(print, "RMT()");
     }
-}_
+}
 
 STATIC mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {
     // fixme: check for valid channel. Return exception if error occurs.
