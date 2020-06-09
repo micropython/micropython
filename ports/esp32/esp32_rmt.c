@@ -78,7 +78,6 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t carrier_freq_hz = 0;
 
     if (args[4].u_obj != MP_OBJ_NULL) {
-	// if a frequency is specified then assume carrier_en
         carrier_en = mp_const_true;
         carrier_duty_percent = args[3].u_int;
         carrier_freq_hz = mp_obj_get_int(args[4].u_obj);
