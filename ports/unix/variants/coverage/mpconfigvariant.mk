@@ -11,7 +11,7 @@ CFLAGS += \
 
 LDFLAGS += -fprofile-arcs -ftest-coverage
 
-FROZEN_MANIFEST = manifest_coverage.py
+FROZEN_MANIFEST ?= $(VARIANT_DIR)/manifest.py
 
 MICROPY_ROM_TEXT_COMPRESSION = 1
 MICROPY_VFS_FAT = 1
