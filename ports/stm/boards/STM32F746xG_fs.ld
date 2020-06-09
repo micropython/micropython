@@ -26,6 +26,11 @@
  * THE SOFTWARE.
  */
 
+ /* Entry Point */
+ENTRY(Reset_Handler)
+
+_ld_default_stack_size = 24K;
+
 /* Specify the memory areas */
 MEMORY
 {
@@ -33,7 +38,8 @@ MEMORY
     FLASH_ISR (rx)      : ORIGIN = 0x08000000, LENGTH = 32K /* sector 0 */
     FLASH_FS (rx)       : ORIGIN = 0x08008000, LENGTH = 96K /* sectors 1,2,3 are 32K */
     FLASH_FIRMWARE (rx) : ORIGIN = 0x08020000, LENGTH = 896K /* sector 4 is 128K, sectors 5,6,7 are 256K */
-    RAM (xrw)           : ORIGIN = 0x20000000, LENGTH = 320K
+    DTCM (xrw)          : ORIGIN = 0x20000000, LENGTH = 64K
+    RAM (xrw)           : ORIGIN = 0x20010000, LENGTH = 256K    /* AXI SRAM */
     ITCM (xrw)          : ORIGIN = 0x00000000, LENGTH = 16K
 }
 
@@ -44,7 +50,7 @@ _minimum_heap_size = 16K;
 /* Define tho top end of the stack.  The stack is full descending so begins just
    above last byte of RAM.  Note that EABI requires the stack to be 8-byte
    aligned for a call. */
-_estack = ORIGIN(RAM) + LENGTH(RAM);
+_estack = ORIGIN(DTCM) + LENGTH(DTCM);
 
 /* RAM extents for the garbage collector */
 _ram_start = ORIGIN(RAM);

@@ -49,7 +49,7 @@
 #include STM32_HAL_H
 
 //only enable the Reset Handler overwrite for the H7 for now
-#if (CPY_STM32H7)
+#if (CPY_STM32H7) || (CPY_STM32F7)
 
 // Device memories must be accessed in order.
 #define DEVICE 2
@@ -86,7 +86,7 @@ extern uint32_t _ld_itcm_flash_copy;
 extern void main(void);
 extern void SystemInit(void);
 
-// This replaces the Reset_Handler in startup_*.S and SystemInit in system_*.c.
+// This replaces the Reset_Handler in gcc/startup_*.s, calls SystemInit from system_*.c
 __attribute__((used, naked)) void Reset_Handler(void) {
     __disable_irq();
     __set_MSP((uint32_t) &_ld_stack_top);
@@ -105,20 +105,20 @@ __attribute__((used, naked)) void Reset_Handler(void) {
 
     // Mark all the flash the same until instructed otherwise.
     MPU->RBAR = ARM_MPU_RBAR(11, 0x08000000U);
-    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_2MB);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, CPY_FLASH_REGION_SIZE);
 
     // This the ITCM. Set it to read-only because we've loaded everything already and it's easy to
     // accidentally write the wrong value to 0x00000000 (aka NULL).
     MPU->RBAR = ARM_MPU_RBAR(12, 0x00000000U);
-    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_RO, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_64KB);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_RO, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, CPY_ITCM_REGION_SIZE);
 
     // This the DTCM.
     MPU->RBAR = ARM_MPU_RBAR(14, 0x20000000U);
-    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_128KB);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, CPY_DTCM_REGION_SIZE);
 
     // This is AXI SRAM (D1).
-    MPU->RBAR = ARM_MPU_RBAR(15, 0x24000000U);
-    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512KB);
+    MPU->RBAR = ARM_MPU_RBAR(15, CPY_SRAM_START_ADDR);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, CPY_SRAM_SUBMASK, CPY_SRAM_REGION_SIZE);
 
     /* Enable MPU */
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
