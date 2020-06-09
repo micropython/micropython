@@ -119,11 +119,11 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
     struct timeval tv_now;
     gettimeofday(&tv_now, NULL);
     // convert usec back to ticks
-    uint64_t all_subticks = (uint64_t)tv_now.tv_usec / 1024;
+    uint64_t all_subticks = (uint64_t)(tv_now.tv_usec * 2) / 71;
     if (subticks != NULL) {
         *subticks = all_subticks % 32;
     }
-    return (uint64_t)tv_now.tv_sec * 1024L + all_subticks;
+    return (uint64_t)tv_now.tv_sec * 1024L + all_subticks / 32;
 }
 
 // Enable 1/1024 second tick.
