@@ -118,7 +118,8 @@ uint32_t port_get_saved_word(void) {
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
     struct timeval tv_now;
     gettimeofday(&tv_now, NULL);
-    uint64_t all_subticks = (uint64_t)tv_now.tv_usec / 32768;
+    // convert usec back to ticks
+    uint64_t all_subticks = (uint64_t)(tv_now.tv_usec * 2) / 71;
     if (subticks != NULL) {
         *subticks = all_subticks % 32;
     }

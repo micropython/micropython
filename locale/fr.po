@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-01 17:10-0700\n"
-"PO-Revision-Date: 2020-06-02 19:50+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"PO-Revision-Date: 2020-06-05 17:29+0000\n"
+"Last-Translator: aberwag <aberwag@gmail.com>\n"
 "Language-Team: French <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/fr/>\n"
 "Language: fr\n"
@@ -1735,7 +1735,7 @@ msgstr "WatchDogTimer.timeout doit être supérieur à 0"
 
 #: supervisor/shared/safe_mode.c
 msgid "Watchdog timer expired."
-msgstr ""
+msgstr "Le minuteur Watchdog a expiré."
 
 #: py/builtinhelp.c
 #, c-format
