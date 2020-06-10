@@ -48,7 +48,6 @@
 
 #include STM32_HAL_H
 
-//only enable the Reset Handler overwrite for the H7 for now
 #if (CPY_STM32H7) || (CPY_STM32F7)
 
 // Device memories must be accessed in order.
