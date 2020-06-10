@@ -1697,6 +1697,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_JSON (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+#ifndef MICROPY_PY_JSON_ORDERED_DICT
+#define MICROPY_PY_JSON_ORDERED_DICT (0)
+#endif
+
 // Whether to support the "separators" argument to dump, dumps
 #ifndef MICROPY_PY_JSON_SEPARATORS
 #define MICROPY_PY_JSON_SEPARATORS (1)
