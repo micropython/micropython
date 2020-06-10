@@ -587,17 +587,16 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     }
     #if MICROPY_CPYTHON_COMPAT
     if (attr == MP_QSTR___dict__) {
-        // Create a new dict with a copy of the instance's map items.
+        // Returns a read-only dict of the instance members.
+        // If the internal locals is not fixed, a copy will be created.
         // This creates, unlike CPython, a 'read-only' __dict__: modifying
         // it will not result in modifications to the actual instance members.
-        mp_map_t *map = &self->members;
-        mp_obj_t attr_dict = mp_obj_new_dict(map->used);
-        for (size_t i = 0; i < map->alloc; ++i) {
-            if (mp_map_slot_is_filled(map, i)) {
-                mp_obj_dict_store(attr_dict, map->table[i].key, map->table[i].value);
-            }
-        }
-        dest[0] = attr_dict;
+        mp_obj_dict_t dict;
+        dict.map = self->members;
+        dict.base.type = &mp_type_dict;
+        dest[0] = mp_obj_dict_copy(MP_OBJ_FROM_PTR(&dict));
+        mp_obj_dict_t *dest_dict = MP_OBJ_TO_PTR(dest[0]);
+        dest_dict->map.is_fixed = 1;
         return;
     }
     #endif
