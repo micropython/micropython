@@ -275,7 +275,7 @@ $(BUILD)/firmware.bin: $(BUILD)/esp-idf/partition_table/partition-table.bin $(BU
 	$(Q)$(PYTHON) ../../tools/join_bins.py $@ 0x1000 $(BUILD)/esp-idf/bootloader/bootloader.bin 0x8000 $(BUILD)/esp-idf/partition_table/partition-table.bin 0x10000 $(BUILD)/circuitpython-firmware.bin
 
 flash: $(BUILD)/firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
 
 include $(TOP)/py/mkrules.mk
 
