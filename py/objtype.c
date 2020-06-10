@@ -1013,6 +1013,21 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = MP_OBJ_NEW_QSTR(self->name);
             return;
         }
+        #if MICROPY_CPYTHON_COMPAT
+        if (attr == MP_QSTR___dict__) {
+            // Returns a read-only dict of the class attributes.
+            // If the internal locals is not fixed, a copy will be created.
+            mp_obj_dict_t *dict = self->locals_dict;
+            if (dict->map.is_fixed) {
+                dest[0] = MP_OBJ_FROM_PTR(dict);
+            } else {
+                dest[0] = mp_obj_dict_copy(MP_OBJ_FROM_PTR(dict));
+                dict = MP_OBJ_TO_PTR(dest[0]);
+                dict->map.is_fixed = 1;
+            }
+            return;
+        }
+        #endif
         if (attr == MP_QSTR___bases__) {
             if (self == &mp_type_object) {
                 dest[0] = mp_const_empty_tuple;

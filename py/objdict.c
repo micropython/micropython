@@ -227,7 +227,7 @@ STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
-STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
+mp_obj_t mp_obj_dict_copy(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_type(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t other_out = mp_obj_new_dict(self->map.alloc);
@@ -240,7 +240,7 @@ STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
     memcpy(other->map.table, self->map.table, self->map.alloc * sizeof(mp_map_elem_t));
     return other_out;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, mp_obj_dict_copy);
 
 #if MICROPY_PY_BUILTINS_DICT_FROMKEYS
 // this is a classmethod
