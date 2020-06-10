@@ -50,6 +50,10 @@
 #define CPY_CLK_FLASH_LATENCY (FLASH_LATENCY_6)
 #define CPY_CLK_USB_USES_AUDIOPLL (1)
 
+// Obtain I2C timing values for F7 and H7 boards from ST CubeMX
+#define CPY_I2CFAST_TIMINGR     0x00401959
+#define CPY_I2CSTANDARD_TIMINGR 0x00C0EAFF
+
 #define BOARD_HSE_SOURCE (RCC_HSE_BYPASS) // ST boards use the STLink clock signal
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 

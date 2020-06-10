@@ -46,5 +46,9 @@
 #define BOARD_HSE_SOURCE (RCC_HSE_BYPASS) // ST boards use the STLink clock signal
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 
+// Obtain I2C timing values for F7 and H7 boards from ST CubeMX
+#define CPY_I2CFAST_TIMINGR     0x6000030D
+#define CPY_I2CSTANDARD_TIMINGR 0x20404768
+
 #define DEBUG_UART_TX (&pin_PD08)
 #define DEBUG_UART_RX (&pin_PD09)

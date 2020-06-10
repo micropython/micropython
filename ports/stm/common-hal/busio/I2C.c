@@ -120,7 +120,13 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     // Handle the HAL handle differences
     #if (CPY_STM32H7 || CPY_STM32F7)
-    self->handle.Init.Timing = 0x40604E73; //Taken from STCube examples
+    if (frequency == 400000) {
+        self->handle.Init.Timing = CPY_I2CFAST_TIMINGR;
+    } else if (frequency == 100000) {
+        self->handle.Init.Timing = CPY_I2CSTANDARD_TIMINGR;
+    } else {
+        mp_raise_ValueError(translate("MCU supports only I2C Standard and Fast modes"));
+    }
     #else
     self->handle.Init.ClockSpeed = frequency;
     self->handle.Init.DutyCycle = I2C_DUTYCYCLE_2;
