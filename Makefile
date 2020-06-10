@@ -243,3 +243,12 @@ stubs:
 update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
 	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done
+
+one-of-each: all-source
+	make -C ports/atmel-samd BOARD=trinket_m0
+	make -C ports/atmel-samd BOARD=feather_m4_express
+	make -C ports/esp32s2 BOARD=espressif_saola_1_wroom
+	make -C ports/litex BOARD=fomu
+	make -C ports/mimxrt10xx BOARD=feather_mimxrt1011
+	make -C ports/nrf BOARD=feather_nrf52840_express
+	make -C ports/stm BOARD=feather_stm32f405_express
