@@ -2,6 +2,7 @@
 __stack_size__ = 0x6000;
 _estack = __StackTop;
 _sstack = __StackLimit;
+__heap_size__ = 0;  /* Do not use the traditional C heap. */
 
 /* Use second OCRAM bank for GC heap. */
 _gc_heap_start = ORIGIN(m_data2);
