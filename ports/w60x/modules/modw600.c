@@ -38,6 +38,7 @@
 #include "py/mphal.h"
 
 #include "lib/oofatfs/ff.h"
+#include "drivers/dht/dht.h"
 
 extern const char FirmWareVer[];
 extern const char HwVer[];
@@ -146,6 +147,7 @@ STATIC const mp_rom_map_elem_t w600_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_run_ftpserver), MP_ROM_PTR(&w600_run_ftpserver_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_version), MP_ROM_PTR(&w600_get_version_obj) },
 };
 

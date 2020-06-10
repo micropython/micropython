@@ -36,6 +36,7 @@
 
 #include "py/runtime.h"
 #include "lib/timeutils/timeutils.h"
+#include "py/smallint.h"
 #include "extmod/utime_mphal.h"
 
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
