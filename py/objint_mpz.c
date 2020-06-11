@@ -66,7 +66,7 @@ STATIC const mpz_dig_t maxsize_dig[] = {
     #endif
 };
 // *FORMAT-ON*
-const mp_obj_int_t mp_maxsize_obj = {
+const mp_obj_int_t mp_sys_maxsize_obj = {
     {&mp_type_int},
     {.fixed_dig = 1, .len = NUM_DIG, .alloc = NUM_DIG, .dig = (mpz_dig_t *)maxsize_dig}
 };
@@ -237,7 +237,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
                 if (mpz_is_zero(zrhs)) {
                 zero_division_error:
-                    mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
+                    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
                 }
                 mpz_t rem;
                 mpz_init_zero(&rem);
@@ -276,7 +276,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
             case MP_BINARY_OP_INPLACE_RSHIFT: {
                 mp_int_t irhs = mp_obj_int_get_checked(rhs_in);
                 if (irhs < 0) {
-                    mp_raise_ValueError("negative shift count");
+                    mp_raise_ValueError(MP_ERROR_TEXT("negative shift count"));
                 }
                 if (op == MP_BINARY_OP_LSHIFT || op == MP_BINARY_OP_INPLACE_LSHIFT) {
                     mpz_shl_inpl(&res->mpz, zlhs, irhs);
@@ -292,7 +292,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                     #if MICROPY_PY_BUILTINS_FLOAT
                     return mp_obj_float_binary_op(op, mpz_as_float(zlhs), rhs_in);
                     #else
-                    mp_raise_ValueError("negative power with no float support");
+                    mp_raise_ValueError(MP_ERROR_TEXT("negative power with no float support"));
                     #endif
                 }
                 mpz_pow_inpl(&res->mpz, zlhs, zrhs);
@@ -345,10 +345,10 @@ STATIC mpz_t *mp_mpz_for_int(mp_obj_t arg, mpz_t *temp) {
 
 mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
     if (!mp_obj_is_int(base) || !mp_obj_is_int(exponent) || !mp_obj_is_int(modulus)) {
-        mp_raise_TypeError("pow() with 3 arguments requires integers");
+        mp_raise_TypeError(MP_ERROR_TEXT("pow() with 3 arguments requires integers"));
     } else {
         mp_obj_t result = mp_obj_new_int_from_ull(0); // Use the _from_ull version as this forces an mpz int
-        mp_obj_int_t *res_p = (mp_obj_int_t *) MP_OBJ_TO_PTR(result);
+        mp_obj_int_t *res_p = (mp_obj_int_t *)MP_OBJ_TO_PTR(result);
 
         mpz_t l_temp, r_temp, m_temp;
         mpz_t *lhs = mp_mpz_for_int(base,     &l_temp);
@@ -426,7 +426,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
             return value;
         } else {
             // overflow
-            mp_raise_msg(&mp_type_OverflowError, "overflow converting long int to machine word");
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("overflow converting long int to machine word"));
         }
     }
 }
@@ -444,7 +444,7 @@ mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in) {
         }
     }
 
-    mp_raise_msg(&mp_type_OverflowError, "overflow converting long int to machine word");
+    mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("overflow converting long int to machine word"));
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT

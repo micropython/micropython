@@ -1,5 +1,6 @@
 try:
     import jni
+
     System = jni.cls("java/lang/System")
 except:
     print("SKIP")

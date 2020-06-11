@@ -101,8 +101,8 @@ bool ets_post(uint8 prio, os_signal_t sig, os_param_t param) {
         // queue got full
         emu_tasks[id].i_put = -1;
     }
-    //printf("after ets_post: "); dump_task(prio, &emu_tasks[id]);
-    //dump_tasks();
+    // printf("after ets_post: "); dump_task(prio, &emu_tasks[id]);
+    // dump_tasks();
 
     ets_intr_unlock();
 
@@ -142,17 +142,17 @@ bool ets_loop_iter(void) {
     extern uint32_t pend_flag_noise_check;
     uint32_t *sw_wdt = &pend_flag_noise_check - 6;
 
-    //static unsigned cnt;
+    // static unsigned cnt;
     bool progress = false;
     for (volatile struct task_entry *t = emu_tasks; t < &emu_tasks[MP_ARRAY_SIZE(emu_tasks)]; t++) {
         if (!ets_loop_dont_feed_sw_wdt) {
             system_soft_wdt_feed();
         }
         ets_intr_lock();
-        //printf("etc_loop_iter: "); dump_task(t - emu_tasks + FIRST_PRIO, t);
+        // printf("etc_loop_iter: "); dump_task(t - emu_tasks + FIRST_PRIO, t);
         if (t->i_get != t->i_put) {
             progress = true;
-            //printf("#%d Calling task %d(%p) (%x, %x)\n", cnt++,
+            // printf("#%d Calling task %d(%p) (%x, %x)\n", cnt++,
             //    t - emu_tasks + FIRST_PRIO, t->task, t->queue[t->i_get].sig, t->queue[t->i_get].par);
             int idx = t->i_get;
             if (t->i_put == -1) {
@@ -161,15 +161,15 @@ bool ets_loop_iter(void) {
             if (++t->i_get == t->qlen) {
                 t->i_get = 0;
             }
-            //ets_intr_unlock();
+            // ets_intr_unlock();
             uint32_t old_sw_wdt = *sw_wdt;
             t->task(&t->queue[idx]);
             if (ets_loop_dont_feed_sw_wdt) {
                 // Restore previous SW WDT counter, in case task fed/cleared it
                 *sw_wdt = old_sw_wdt;
             }
-            //ets_intr_lock();
-            //printf("Done calling task %d\n", t - emu_tasks + FIRST_PRIO);
+            // ets_intr_lock();
+            // printf("Done calling task %d\n", t - emu_tasks + FIRST_PRIO);
         }
         ets_intr_unlock();
     }
@@ -221,7 +221,7 @@ bool ets_run(void) {
     ets_intr_unlock();
     while (1) {
         if (!ets_loop_iter()) {
-            //printf("idle\n");
+            // printf("idle\n");
             ets_intr_lock();
             if (idle_cb) {
                 idle_cb(idle_arg);
@@ -234,7 +234,7 @@ bool ets_run(void) {
 }
 
 void ets_set_idle_cb(void (*handler)(void *), void *arg) {
-    //printf("ets_set_idle_cb(%p, %p)\n", handler, arg);
+    // printf("ets_set_idle_cb(%p, %p)\n", handler, arg);
     idle_cb = handler;
     idle_arg = arg;
 }

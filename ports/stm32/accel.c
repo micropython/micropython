@@ -110,7 +110,7 @@ STATIC void accel_start(void) {
     }
 
     if (ret != 0) {
-        mp_raise_msg(&mp_type_OSError, "accelerometer not found");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("accelerometer not found"));
     }
 
     // set MMA to active mode
@@ -127,7 +127,7 @@ STATIC void accel_start(void) {
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     if (data[0] != 0x35) {
-        mp_raise_msg(&mp_type_OSError, "accelerometer not found");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("accelerometer not found"));
     }
 
     // set operating mode (default: 8 bits, range +/-8G)

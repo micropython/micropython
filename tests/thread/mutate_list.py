@@ -27,6 +27,7 @@ def th(n, lo, hi):
         global n_finished
         n_finished += 1
 
+
 lock = _thread.allocate_lock()
 n_thread = 4
 n_finished = 0

@@ -117,7 +117,7 @@ typedef struct _mp_obj_uctypes_struct_t {
 } mp_obj_uctypes_struct_t;
 
 STATIC NORETURN void syntax_error(void) {
-    mp_raise_TypeError("syntax error in uctypes descriptor");
+    mp_raise_TypeError(MP_ERROR_TEXT("syntax error in uctypes descriptor"));
 }
 
 STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -226,7 +226,7 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
             // but scalar structure field is lowered into native Python int, so all
             // type info is lost. So, we cannot say if it's scalar type description,
             // or such lowered scalar.
-            mp_raise_TypeError("Cannot unambiguously get sizeof scalar");
+            mp_raise_TypeError(MP_ERROR_TEXT("can't unambiguously get sizeof scalar"));
         }
         syntax_error();
     }
@@ -360,9 +360,9 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
             return mp_obj_new_int_from_ll(((int64_t *)p)[index]);
         #if MICROPY_PY_BUILTINS_FLOAT
         case FLOAT32:
-            return mp_obj_new_float(((float *)p)[index]);
+            return mp_obj_new_float_from_f(((float *)p)[index]);
         case FLOAT64:
-            return mp_obj_new_float(((double *)p)[index]);
+            return mp_obj_new_float_from_d(((double *)p)[index]);
         #endif
         default:
             assert(0);
@@ -373,11 +373,10 @@ STATIC mp_obj_t get_aligned(uint val_type, void *p, mp_int_t index) {
 STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
     #if MICROPY_PY_BUILTINS_FLOAT
     if (val_type == FLOAT32 || val_type == FLOAT64) {
-        mp_float_t v = mp_obj_get_float(val);
         if (val_type == FLOAT32) {
-            ((float *)p)[index] = v;
+            ((float *)p)[index] = mp_obj_get_float_to_f(val);
         } else {
-            ((double *)p)[index] = v;
+            ((double *)p)[index] = mp_obj_get_float_to_d(val);
         }
         return;
     }
@@ -424,7 +423,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         && !mp_obj_is_type(self->desc, &mp_type_ordereddict)
         #endif
         ) {
-        mp_raise_TypeError("struct: no fields");
+        mp_raise_TypeError(MP_ERROR_TEXT("struct: no fields"));
     }
 
     mp_obj_t deref = mp_obj_dict_get(self->desc, MP_OBJ_NEW_QSTR(attr));
@@ -432,7 +431,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
         mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(deref);
         mp_uint_t val_type = GET_TYPE(offset, VAL_TYPE_BITS);
         offset &= VALUE_MASK(VAL_TYPE_BITS);
-//printf("scalar type=%d offset=%x\n", val_type, offset);
+// printf("scalar type=%d offset=%x\n", val_type, offset);
 
         if (val_type <= INT64 || val_type == FLOAT32 || val_type == FLOAT64) {
 //            printf("size=%d\n", GET_SCALAR_SIZE(val_type));
@@ -502,7 +501,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
     mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(sub->items[0]);
     mp_uint_t agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
     offset &= VALUE_MASK(AGG_TYPE_BITS);
-//printf("agg type=%d offset=%x\n", agg_type, offset);
+// printf("agg type=%d offset=%x\n", agg_type, offset);
 
     switch (agg_type) {
         case STRUCT: {
@@ -526,7 +525,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             o->desc = MP_OBJ_FROM_PTR(sub);
             o->addr = self->addr + offset;
             o->flags = self->flags;
-//printf("PTR/ARR base addr=%p\n", o->addr);
+// printf("PTR/ARR base addr=%p\n", o->addr);
             return MP_OBJ_FROM_PTR(o);
         }
     }
@@ -557,7 +556,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
     } else {
         // load / store
         if (!mp_obj_is_type(self->desc, &mp_type_tuple)) {
-            mp_raise_TypeError("struct: cannot index");
+            mp_raise_TypeError(MP_ERROR_TEXT("struct: can't index"));
         }
 
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
@@ -571,7 +570,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             uint val_type = GET_TYPE(arr_sz, VAL_TYPE_BITS);
             arr_sz &= VALUE_MASK(VAL_TYPE_BITS);
             if (index >= arr_sz) {
-                mp_raise_msg(&mp_type_IndexError, "struct: index out of range");
+                mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("struct: index out of range"));
             }
 
             if (t->len == 2) {

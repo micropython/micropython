@@ -81,6 +81,7 @@ void soft_timer_handler(void) {
 }
 
 void soft_timer_insert(soft_timer_entry_t *entry) {
+    mp_pairheap_init_node(soft_timer_lt, &entry->pairheap);
     uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
     MP_STATE_PORT(soft_timer_heap) = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &MP_STATE_PORT(soft_timer_heap)->pairheap, &entry->pairheap);
     if (entry == MP_STATE_PORT(soft_timer_heap)) {

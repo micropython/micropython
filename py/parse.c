@@ -56,7 +56,7 @@
 #define RULE_ARG_OPT_RULE       (0x3000)
 
 // (un)comment to use rule names; for debugging
-//#define USE_RULE_NAME (1)
+// #define USE_RULE_NAME (1)
 
 // *FORMAT-OFF*
 
@@ -348,7 +348,7 @@ bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
     }
 }
 
-int mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes) {
+size_t mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes) {
     if (MP_PARSE_NODE_IS_NULL(*pn)) {
         *nodes = NULL;
         return 0;
@@ -618,8 +618,9 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     mp_obj_t arg0;
     if (rule_id == RULE_expr
         || rule_id == RULE_xor_expr
-        || rule_id == RULE_and_expr) {
-        // folding for binary ops: | ^ &
+        || rule_id == RULE_and_expr
+        || rule_id == RULE_power) {
+        // folding for binary ops: | ^ & **
         mp_parse_node_t pn = peek_result(parser, num_args - 1);
         if (!mp_parse_node_get_int_maybe(pn, &arg0)) {
             return false;
@@ -629,13 +630,19 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
             op = MP_BINARY_OP_OR;
         } else if (rule_id == RULE_xor_expr) {
             op = MP_BINARY_OP_XOR;
-        } else {
+        } else if (rule_id == RULE_and_expr) {
             op = MP_BINARY_OP_AND;
+        } else {
+            op = MP_BINARY_OP_POWER;
         }
         for (ssize_t i = num_args - 2; i >= 0; --i) {
             pn = peek_result(parser, i);
             mp_obj_t arg1;
             if (!mp_parse_node_get_int_maybe(pn, &arg1)) {
+                return false;
+            }
+            if (op == MP_BINARY_OP_POWER && mp_obj_int_sign(arg1) < 0) {
+                // ** can't have negative rhs
                 return false;
             }
             arg0 = mp_binary_op(op, arg0, arg1);
@@ -655,8 +662,8 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 return false;
             }
             mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(peek_result(parser, i));
-            if (tok == MP_TOKEN_OP_AT || tok == MP_TOKEN_OP_SLASH || tok == MP_TOKEN_OP_DBL_STAR) {
-                // Can't fold @ or / or **
+            if (tok == MP_TOKEN_OP_AT || tok == MP_TOKEN_OP_SLASH) {
+                // Can't fold @ or /
                 return false;
             }
             mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
@@ -714,7 +721,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
                 mp_obj_t value;
                 if (!mp_parse_node_get_int_maybe(pn_value, &value)) {
                     mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                        "constant must be an integer");
+                        MP_ERROR_TEXT("constant must be an integer"));
                     mp_obj_exception_add_traceback(exc, parser->lexer->source_name,
                         ((mp_parse_node_struct_t *)pn1)->source_line, MP_QSTRnull);
                     nlr_raise(exc);
@@ -1144,13 +1151,13 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         mp_obj_t exc;
         if (lex->tok_kind == MP_TOKEN_INDENT) {
             exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                "unexpected indent");
+                MP_ERROR_TEXT("unexpected indent"));
         } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
             exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                "unindent doesn't match any outer indent level");
+                MP_ERROR_TEXT("unindent doesn't match any outer indent level"));
         } else {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                "invalid syntax");
+                MP_ERROR_TEXT("invalid syntax"));
         }
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this

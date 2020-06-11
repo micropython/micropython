@@ -40,7 +40,7 @@ INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/hw/bsp/teensy_40
 
 CFLAGS_MCU = -mtune=cortex-m7 -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16
-CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU)
+CFLAGS = $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 -nostdlib -mthumb $(CFLAGS_MCU)
 CFLAGS += -DCPU_$(MCU_SERIES) -DCPU_$(MCU_VARIANT)
 CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
@@ -88,14 +88,19 @@ SRC_TINYUSB_IMX_C += \
 
 SRC_C = \
 	main.c \
+	led.c \
+	pin.c \
 	tusb_port.c \
 	board_init.c \
 	$(BOARD_DIR)/flash_config.c \
+	$(BOARD_DIR)/pins.c \
+	machine_led.c \
 	modutime.c \
 	modmachine.c \
 	mphalport.c \
 	lib/mp-readline/readline.c \
 	lib/libc/string0.c \
+	lib/utils/gchelper_native.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
@@ -107,7 +112,12 @@ SRC_SS = $(MCU_DIR)/gcc/startup_$(MCU_SERIES).S
 SRC_S = lib/utils/gchelper_m3.s \
 
 # List of sources for qstr extraction
-SRC_QSTR += modutime.c modmachine.c
+SRC_QSTR += \
+	machine_led.c \
+	modutime.c \
+	modmachine.c \
+	pin.c \
+	$(BOARD_DIR)/pins.c \
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))

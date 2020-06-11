@@ -8,20 +8,27 @@ except AttributeError:
     print("SKIP")
     raise SystemExit
 
+
 def print_stacktrace(frame, level=0):
-    print("%2d: %s@%s:%s => %s:%d" % (
-        level, "  ",
-        frame.f_globals['__name__'],
-        frame.f_code.co_name,
-        # reduce full path to some pseudo-relative
-        'misc' + ''.join(frame.f_code.co_filename.split('tests/misc')[-1:]),
-        frame.f_lineno,
-    ))
+    print(
+        "%2d: %s@%s:%s => %s:%d"
+        % (
+            level,
+            "  ",
+            frame.f_globals["__name__"],
+            frame.f_code.co_name,
+            # reduce full path to some pseudo-relative
+            "misc" + "".join(frame.f_code.co_filename.split("tests/misc")[-1:]),
+            frame.f_lineno,
+        )
+    )
 
     if frame.f_back:
         print_stacktrace(frame.f_back, level + 1)
 
+
 trace_count = 0
+
 
 def trace_tick_handler(frame, event, arg):
     global trace_count
@@ -29,6 +36,7 @@ def trace_tick_handler(frame, event, arg):
     trace_count += 1
     print_stacktrace(frame)
     return trace_tick_handler
+
 
 def test_loop():
     # for loop
@@ -44,6 +52,7 @@ def test_loop():
         r += i
         i += 1
     print("test_while_loop", i)
+
 
 sys.settrace(trace_tick_handler)
 test_loop()

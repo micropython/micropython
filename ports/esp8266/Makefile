@@ -19,10 +19,11 @@ include ../../py/mkenv.mk
 QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_PY_USSL = 1
 MICROPY_SSL_AXTLS = 1
 AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096
-MICROPY_PY_BTREE ?= 1
 BTREE_DEFS_EXTRA = -DDEFPSIZE=1024 -DMINCACHE=3
 
 FROZEN_MANIFEST ?= boards/manifest.py
@@ -60,7 +61,7 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
 	$(CFLAGS_XTENSA) $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA) -I$(BOARD_DIR)
 
-LD_FILES ?= boards/esp8266.ld
+LD_FILES ?= boards/esp8266_2m.ld
 LDFLAGS = -nostdlib -T $(LD_FILES) -Map=$(@:.elf=.map) --cref
 LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211 $(LDFLAGS_MOD)
 
@@ -92,7 +93,6 @@ SRC_C = \
 	esppwm.c \
 	espneopixel.c \
 	espapa102.c \
-	intr.c \
 	modpyb.c \
 	modmachine.c \
 	machine_pin.c \
@@ -119,6 +119,7 @@ EXTMOD_SRC_C = $(addprefix extmod/,\
         )
 
 LIB_SRC_C = $(addprefix lib/,\
+	embed/__errno.c \
 	libc/string0.c \
 	libm/math.c \
 	libm/fmodf.c \
@@ -138,6 +139,7 @@ LIB_SRC_C = $(addprefix lib/,\
 	libm/asinfacosf.c \
 	libm/atanf.c \
 	libm/atan2f.c \
+	libm/roundf.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \

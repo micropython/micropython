@@ -47,7 +47,6 @@
 #include "FreeRTOS.h"
 #include "portable.h"
 #include "task.h"
-#include "mpexception.h"
 #include "random.h"
 #include "pybadc.h"
 #include "pybi2c.h"
@@ -125,7 +124,7 @@ STATIC mp_obj_t machine_main(mp_obj_t main) {
     if (mp_obj_is_str(main)) {
         MP_STATE_PORT(machine_config_main) = main;
     } else {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
     return mp_const_none;
 }

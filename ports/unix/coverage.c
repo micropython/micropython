@@ -149,6 +149,9 @@ STATIC int pairheap_lt(mp_pairheap_t *a, mp_pairheap_t *b) {
 // ops array contain operations: x>=0 means push(x), x<0 means delete(-x)
 STATIC void pairheap_test(size_t nops, int *ops) {
     mp_pairheap_t node[8];
+    for (size_t i = 0; i < MP_ARRAY_SIZE(node); ++i) {
+        mp_pairheap_init_node(pairheap_lt, &node[i]);
+    }
     mp_pairheap_t *heap = mp_pairheap_new(pairheap_lt);
     printf("create:");
     for (size_t i = 0; i < nops; ++i) {

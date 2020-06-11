@@ -183,8 +183,8 @@ void HAL_FTM_IC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_IC_InitTypeDef *sConf
 }
 
 void HAL_FTM_IC_Start(FTM_HandleTypeDef *hftm, uint32_t channel) {
-    //FTM_TypeDef *FTMx = hftm->Instance;
-    //assert_param(IS_FTM_INSTANCE(FTMx));
+    // FTM_TypeDef *FTMx = hftm->Instance;
+    // assert_param(IS_FTM_INSTANCE(FTMx));
 
     // Nothing else to do
 }

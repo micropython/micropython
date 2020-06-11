@@ -77,7 +77,7 @@ STATIC int timer_find(mp_obj_t id) {
     if (timer_id >= 0 && timer_id < MP_ARRAY_SIZE(machine_timer_obj)) {
         return timer_id;
     }
-    mp_raise_ValueError("Timer doesn't exist");
+    mp_raise_ValueError(MP_ERROR_TEXT("Timer doesn't exist"));
 }
 
 STATIC void timer_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
@@ -114,13 +114,13 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
 
 #if BLUETOOTH_SD
     if (timer_id == 0) {
-        mp_raise_ValueError("Timer reserved by Bluetooth LE stack");
+        mp_raise_ValueError(MP_ERROR_TEXT("Timer reserved by Bluetooth LE stack"));
     }
 #endif
 
 #if MICROPY_PY_MACHINE_SOFT_PWM
     if (timer_id == 1) {
-        mp_raise_ValueError("Timer reserved by ticker driver");
+        mp_raise_ValueError(MP_ERROR_TEXT("Timer reserved by ticker driver"));
     }
 #endif
 
@@ -131,7 +131,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     } else if (args[ARG_callback].u_obj == mp_const_none) {
         machine_timer_callbacks[timer_id] = NULL;
     } else {
-        mp_raise_ValueError("callback must be a function");
+        mp_raise_ValueError(MP_ERROR_TEXT("callback must be a function"));
     }
 
     // Timer peripheral usage:

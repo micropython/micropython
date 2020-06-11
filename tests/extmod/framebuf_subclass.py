@@ -3,8 +3,9 @@
 try:
     import framebuf
 except ImportError:
-    print('SKIP')
+    print("SKIP")
     raise SystemExit
+
 
 class FB(framebuf.FrameBuffer):
     def __init__(self, n):
@@ -13,6 +14,7 @@ class FB(framebuf.FrameBuffer):
 
     def foo(self):
         self.hline(0, 2, self.n, 0x0304)
+
 
 fb = FB(n=3)
 fb.pixel(0, 0, 0x0102)
@@ -31,12 +33,13 @@ print(bytes(fb2))
 class NotAFrameBuf:
     pass
 
+
 try:
     fb.blit(NotAFrameBuf(), 0, 0)
 except TypeError:
-    print('TypeError')
+    print("TypeError")
 
 try:
     fb.blit(None, 0, 0)
 except TypeError:
-    print('TypeError')
+    print("TypeError")

@@ -150,7 +150,7 @@ STATIC item_t keyCodeMap[] = {
     {VK_HOME, "[H"},
     {VK_END, "[F"},
     {VK_DELETE, "[3~"},
-    {0, ""} //sentinel
+    {0, ""} // sentinel
 };
 
 // likewise, but with Ctrl key down
@@ -159,7 +159,7 @@ STATIC item_t ctrlKeyCodeMap[] = {
     {VK_RIGHT, "f"},
     {VK_DELETE, "d"},
     {VK_BACK, "\x7F"},
-    {0, ""} //sentinel
+    {0, ""} // sentinel
 };
 
 STATIC const char *cur_esc_seq = NULL;
@@ -199,8 +199,8 @@ int mp_hal_stdin_rx_chr(void) {
     INPUT_RECORD rec;
     for (;;) {
         MP_THREAD_GIL_EXIT();
-        status = ReadConsoleInput(std_in, &rec, 1, &num_read)
-            MP_THREAD_GIL_ENTER();
+        status = ReadConsoleInput(std_in, &rec, 1, &num_read);
+        MP_THREAD_GIL_ENTER();
         if (!status || !num_read) {
             return CHAR_CTRL_C; // EOF, ctrl-D
         }
@@ -222,7 +222,7 @@ int mp_hal_stdin_rx_chr(void) {
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     MP_THREAD_GIL_EXIT();
-    write(1, str, len);
+    write(STDOUT_FILENO, str, len);
     MP_THREAD_GIL_ENTER();
 }
 

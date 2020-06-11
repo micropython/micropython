@@ -69,7 +69,7 @@ typedef struct {
 extern const pin_named_pin_t pin_board_pins[];
 extern const pin_named_pin_t pin_cpu_pins[];
 
-//extern pin_map_obj_t pin_map_obj;
+// extern pin_map_obj_t pin_map_obj;
 
 typedef struct {
     mp_obj_base_t base;

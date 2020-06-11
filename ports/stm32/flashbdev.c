@@ -53,7 +53,7 @@
 #define FLASH_MEM_SEG2_NUM_BLOCKS (128) // sector 11: 128k
 #endif
 
-#elif defined(STM32F401xE) || defined(STM32F411xE) || defined(STM32F446xx)
+#elif defined(STM32F401xE) || defined(STM32F411xE) || defined(STM32F412Zx) || defined(STM32F446xx)
 
 STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 #define CACHE_MEM_START_ADDR (&flash_cache_mem[0])

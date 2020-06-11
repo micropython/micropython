@@ -31,14 +31,7 @@ int main() {
 
 void gc_collect(void) {
     gc_collect_start();
-
-    // get the registers and the sp
-    uintptr_t regs[10];
-    uintptr_t sp = gc_helper_get_regs_and_sp(regs);
-
-    // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void **)sp, ((uint32_t)MP_STATE_THREAD(stack_top) - (uint32_t)sp) / sizeof(uint32_t));
-
+    gc_helper_collect_regs_and_stack();
     gc_collect_end();
 }
 

@@ -49,7 +49,6 @@
 #include "modwlan.h"
 #include "osi.h"
 #include "debug.h"
-#include "mpexception.h"
 #include "mperror.h"
 #include "sleeprestore.h"
 #include "serverstask.h"

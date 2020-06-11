@@ -44,13 +44,13 @@ const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
 int uart_attached_to_dupterm;
 
 void mp_hal_init(void) {
-    //ets_wdt_disable(); // it's a pain while developing
+    // ets_wdt_disable(); // it's a pain while developing
     mp_hal_rtc_init();
     uart_init(UART_BIT_RATE_115200, UART_BIT_RATE_115200);
     uart_attached_to_dupterm = 0;
 }
 
-void mp_hal_delay_us(uint32_t us) {
+void MP_FASTCODE(mp_hal_delay_us)(uint32_t us) {
     uint32_t start = system_get_time();
     while (system_get_time() - start < us) {
         ets_event_poll();
@@ -128,17 +128,13 @@ void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
     }
 }
 
-uint32_t mp_hal_ticks_ms(void) {
+uint32_t MP_FASTCODE(mp_hal_ticks_ms)(void) {
     // Compute milliseconds from 64-bit microsecond counter
     system_time_update();
     return ((uint64_t)system_time_high_word << 32 | (uint64_t)system_time_low_word) / 1000;
 }
 
-uint32_t mp_hal_ticks_us(void) {
-    return system_get_time();
-}
-
-void mp_hal_delay_ms(uint32_t delay) {
+void MP_FASTCODE(mp_hal_delay_ms)(uint32_t delay) {
     mp_hal_delay_us(delay * 1000);
 }
 
@@ -149,10 +145,11 @@ void ets_event_poll(void) {
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
     printf("assert:%s:%d:%s: %s\n", file, line, func, expr);
-    mp_raise_msg(&mp_type_AssertionError, "C-level assert");
+    mp_raise_msg(&mp_type_AssertionError, MP_ERROR_TEXT("C-level assert"));
 }
 
-void mp_hal_signal_input(void) {
+// May be called by uart0_rx_intr_handler.
+void MP_FASTCODE(mp_hal_signal_input)(void) {
     #if MICROPY_REPL_EVENT_DRIVEN
     system_os_post(UART_TASK_ID, 0, 0);
     #endif
@@ -205,9 +202,4 @@ int ets_esf_free_bufs(int idx) {
         cnt++;
     }
     return cnt;
-}
-
-extern int mp_stream_errno;
-int *__errno() {
-    return &mp_stream_errno;
 }

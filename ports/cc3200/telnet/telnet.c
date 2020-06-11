@@ -35,7 +35,6 @@
 #include "modwlan.h"
 #include "modusocket.h"
 #include "debug.h"
-#include "mpexception.h"
 #include "serverstask.h"
 #include "genhdr/mpversion.h"
 #include "irq.h"

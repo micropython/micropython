@@ -200,7 +200,7 @@ static void uart0_rx_intr_handler(void *para) {
 
 // Waits at most timeout microseconds for at least 1 char to become ready for reading.
 // Returns true if something available, false if not.
-bool uart_rx_wait(uint32_t timeout_us) {
+bool ICACHE_FLASH_ATTR uart_rx_wait(uint32_t timeout_us) {
     uint32_t start = system_get_time();
     for (;;) {
         if (uart_ringbuf.iget != uart_ringbuf.iput) {
@@ -288,7 +288,7 @@ void ICACHE_FLASH_ATTR uart0_set_rxbuf(uint8 *buf, int len) {
 #include "lib/utils/pyexec.h"
 
 #if MICROPY_REPL_EVENT_DRIVEN
-void uart_task_handler(os_event_t *evt) {
+void ICACHE_FLASH_ATTR uart_task_handler(os_event_t *evt) {
     if (pyexec_repl_active) {
         // TODO: Just returning here isn't exactly right.
         // What really should be done is something like

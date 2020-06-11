@@ -64,11 +64,9 @@ long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
-    MP_THREAD_GIL_EXIT();
-    ssize_t dummy = write(STDERR_FILENO, str, len);
-    MP_THREAD_GIL_ENTER();
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
     mp_uos_dupterm_tx_strn(str, len);
-    (void)dummy;
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
@@ -659,7 +657,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
         inspect = true;
     }
     if (ret == NOTHING_EXECUTED || inspect) {
-        if (isatty(0)) {
+        if (isatty(0) || inspect) {
             prompt_read_history();
             ret = do_repl();
             prompt_write_history();
@@ -685,6 +683,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
     }
     #endif
 
+    #if MICROPY_PY_BLUETOOTH
+    void mp_bluetooth_deinit(void);
+    mp_bluetooth_deinit();
+    #endif
+
     #if MICROPY_PY_THREAD
     mp_thread_deinit();
     #endif
@@ -701,7 +704,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     free(heap);
     #endif
 
-    //printf("total bytes = %d\n", m_get_total_bytes_allocated());
+    // printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
 }
 
@@ -717,6 +720,24 @@ uint mp_import_stat(const char *path) {
     }
     return MP_IMPORT_STAT_NO_EXIST;
 }
+
+#if MICROPY_PY_IO
+// Factory function for I/O stream classes, only needed if generic VFS subsystem isn't used.
+// Note: buffering and encoding are currently ignored.
+mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kwargs) {
+    enum { ARG_file, ARG_mode };
+    STATIC const mp_arg_t allowed_args[] = {
+        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_r)} },
+        { MP_QSTR_buffering, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_encoding, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kwargs, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    return mp_vfs_posix_file_open(&mp_type_textio, args[ARG_file].u_obj, args[ARG_mode].u_obj);
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
+#endif
 #endif
 
 void nlr_jump_fail(void *val) {

@@ -25,9 +25,9 @@
 #include "fdlibm.h"
 
 #ifdef __STDC__
-static const float one = 1.0;
+static const float one = 1.0f;
 #else
-static float one = 1.0;
+static float one = 1.0f;
 #endif
 
 #ifdef __STDC__

@@ -111,9 +111,11 @@ static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
 
+uintptr_t cortex_m3_get_sp(void);
+
 void TASK_MicroPython (void *pvParameters) {
     // get the top of the stack to initialize the garbage collector
-    uint32_t sp = gc_helper_get_sp();
+    uint32_t sp = cortex_m3_get_sp();
 
     bool safeboot = false;
     mptask_pre_init();
@@ -283,7 +285,7 @@ STATIC void mptask_pre_init (void) {
     // this one allocates memory for the socket semaphore
     modusocket_pre_init();
 
-    //CRYPTOHASH_Init();
+    // CRYPTOHASH_Init();
 
     #ifndef DEBUG
     OsiTaskHandle svTaskHandle;

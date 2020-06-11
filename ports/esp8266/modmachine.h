@@ -23,8 +23,6 @@ typedef struct _pyb_pin_obj_t {
 const pyb_pin_obj_t pyb_pin_obj[16 + 1];
 
 void pin_init0(void);
-void pin_intr_handler_iram(void *arg);
-void pin_intr_handler(uint32_t);
 
 uint mp_obj_get_pin(mp_obj_t pin_in);
 pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in);

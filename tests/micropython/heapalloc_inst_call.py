@@ -2,21 +2,26 @@
 # doesn't require heap allocation.
 import micropython
 
+
 class Foo0:
     def __call__(self):
         print("__call__")
+
 
 class Foo1:
     def __call__(self, a):
         print("__call__", a)
 
+
 class Foo2:
     def __call__(self, a, b):
         print("__call__", a, b)
 
+
 class Foo3:
     def __call__(self, a, b, c):
         print("__call__", a, b, c)
+
 
 f0 = Foo0()
 f1 = Foo1()

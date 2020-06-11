@@ -30,6 +30,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "lib/utils/pyexec.h"
 
 // This needs to be set before we include the RTOS headers
 #define USE_US_TIMER 1
@@ -49,8 +50,8 @@
 
 #if MICROPY_PY_MACHINE
 
-//#define MACHINE_WAKE_IDLE (0x01)
-//#define MACHINE_WAKE_SLEEP (0x02)
+// #define MACHINE_WAKE_IDLE (0x01)
+// #define MACHINE_WAKE_SLEEP (0x02)
 #define MACHINE_WAKE_DEEPSLEEP (0x04)
 
 extern const mp_obj_type_t esp_wdt_type;
@@ -63,7 +64,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
         if (freq != 80 && freq != 160) {
-            mp_raise_ValueError("frequency can only be either 80Mhz or 160MHz");
+            mp_raise_ValueError(MP_ERROR_TEXT("frequency can only be either 80Mhz or 160MHz"));
         }
         system_update_cpu_freq(freq);
         return mp_const_none;
@@ -76,6 +77,12 @@ STATIC mp_obj_t machine_reset(void) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
+
+STATIC mp_obj_t machine_soft_reset(void) {
+    pyexec_system_exit = PYEXEC_FORCED_EXIT;
+    mp_raise_type(&mp_type_SystemExit);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 STATIC mp_obj_t machine_reset_cause(void) {
     return MP_OBJ_NEW_SMALL_INT(system_get_rst_info()->reason);
@@ -392,6 +399,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_freq_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },

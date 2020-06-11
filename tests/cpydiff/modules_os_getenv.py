@@ -5,6 +5,7 @@ cause: The ``environ`` attribute is not implemented
 workaround: Unknown
 """
 import os
-print(os.getenv('NEW_VARIABLE'))
-os.putenv('NEW_VARIABLE', 'VALUE')
-print(os.getenv('NEW_VARIABLE'))
+
+print(os.getenv("NEW_VARIABLE"))
+os.putenv("NEW_VARIABLE", "VALUE")
+print(os.getenv("NEW_VARIABLE"))

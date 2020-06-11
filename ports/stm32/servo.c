@@ -204,7 +204,7 @@ STATIC mp_obj_t pyb_servo_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // check servo number
     if (!(0 <= servo_id && servo_id < PYB_SERVO_NUM)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "Servo(%d) doesn't exist", servo_id + 1);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Servo(%d) doesn't exist"), servo_id + 1);
     }
 
     // get and init servo object
@@ -262,7 +262,7 @@ STATIC mp_obj_t pyb_servo_calibration(size_t n_args, const mp_obj_t *args) {
     }
 
     // bad number of arguments
-    mp_raise_msg_varg(&mp_type_TypeError, "calibration expecting 1, 4 or 6 arguments, got %d", n_args);
+    mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("calibration expecting 1, 4 or 6 arguments, got %d"), n_args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibration_obj, 1, 6, pyb_servo_calibration);
 
@@ -278,7 +278,7 @@ STATIC mp_obj_t pyb_servo_angle(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 90 / self->pulse_angle_90);
     } else {
         #if MICROPY_PY_BUILTINS_FLOAT
-        self->pulse_dest = self->pulse_centre + self->pulse_angle_90 * mp_obj_get_float(args[1]) / 90.0;
+        self->pulse_dest = self->pulse_centre + (uint16_t)((mp_float_t)self->pulse_angle_90 * mp_obj_get_float(args[1]) / MICROPY_FLOAT_CONST(90.0));
         #else
         self->pulse_dest = self->pulse_centre + self->pulse_angle_90 * mp_obj_get_int(args[1]) / 90;
         #endif
@@ -308,7 +308,7 @@ STATIC mp_obj_t pyb_servo_speed(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_int((self->pulse_cur - self->pulse_centre) * 100 / self->pulse_speed_100);
     } else {
         #if MICROPY_PY_BUILTINS_FLOAT
-        self->pulse_dest = self->pulse_centre + self->pulse_speed_100 * mp_obj_get_float(args[1]) / 100.0;
+        self->pulse_dest = self->pulse_centre + (uint16_t)((mp_float_t)self->pulse_speed_100 * mp_obj_get_float(args[1]) / MICROPY_FLOAT_CONST(100.0));
         #else
         self->pulse_dest = self->pulse_centre + self->pulse_speed_100 * mp_obj_get_int(args[1]) / 100;
         #endif

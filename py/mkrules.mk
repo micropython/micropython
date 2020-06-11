@@ -4,6 +4,22 @@ THIS_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 include $(dir $(THIS_MAKEFILE))mkenv.mk
 endif
 
+# Extra deps that need to happen before object compilation.
+OBJ_EXTRA_ORDER_DEPS =
+
+ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)
+# If compression is enabled, trigger the build of compressed.data.h...
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/compressed.data.h
+# ...and enable the MP_COMPRESSED_ROM_TEXT macro (used by MP_ERROR_TEXT).
+CFLAGS += -DMICROPY_ROM_TEXT_COMPRESSION=1
+endif
+
+# QSTR generation uses the same CFLAGS, with these modifications.
+# Note: := to force evalulation immediately.
+QSTR_GEN_CFLAGS := $(CFLAGS)
+QSTR_GEN_CFLAGS += -DNO_QSTR
+QSTR_GEN_CFLAGS += -I$(BUILD)/tmp
+
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
 # and should not contain any ..'s but rather be relative to the top of the
@@ -46,9 +62,6 @@ vpath %.c . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
-QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR
-QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
-
 vpath %.c . $(TOP) $(USER_C_MODULES)
 
 $(BUILD)/%.pp: %.c
@@ -64,7 +77,7 @@ $(BUILD)/%.pp: %.c
 # the right .o's to get recompiled if the generated.h file changes. Adding
 # an order-only dependency to all of the .o's will cause the generated .h
 # to get built before we try to compile any of them.
-$(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
+$(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h $(OBJ_EXTRA_ORDER_DEPS)
 
 # The logic for qstr regeneration is:
 # - if anything in QSTR_GLOBAL_DEPENDENCIES is newer, then process all source files ($^)
@@ -73,16 +86,26 @@ $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
 # See more information about this process in docs/develop/qstr.rst.
 $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(QSTR_GLOBAL_REQUIREMENTS)
 	$(ECHO) "GEN $@"
-	$(Q)$(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) >$(HEADER_BUILD)/qstr.i.last
+	$(Q)$(CPP) $(QSTR_GEN_CFLAGS) $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) >$(HEADER_BUILD)/qstr.i.last
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split qstr $< $(HEADER_BUILD)/qstr _
 	$(Q)$(TOUCH) $@
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat qstr _ $(HEADER_BUILD)/qstr $@
+
+# Compressed error strings.
+$(HEADER_BUILD)/compressed.split: $(HEADER_BUILD)/qstr.i.last
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split compress $< $(HEADER_BUILD)/compress _
+	$(Q)$(TOUCH) $@
+
+$(HEADER_BUILD)/compressed.collected: $(HEADER_BUILD)/compressed.split
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat compress _ $(HEADER_BUILD)/compress $@
 
 # $(sort $(var)) removes duplicates
 #

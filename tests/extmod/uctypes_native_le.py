@@ -2,6 +2,7 @@
 # Codepaths for packed vs native structures are different. This test only works
 # on little-endian machine (no matter if 32 or 64 bit).
 import sys
+
 try:
     import uctypes
 except ImportError:
@@ -15,20 +16,15 @@ if sys.byteorder != "little":
 
 desc = {
     "s0": uctypes.UINT16 | 0,
-    "sub": (0, {
-        "b0": uctypes.UINT8 | 0,
-        "b1": uctypes.UINT8 | 1,
-    }),
+    "sub": (0, {"b0": uctypes.UINT8 | 0, "b1": uctypes.UINT8 | 1,}),
     "arr": (uctypes.ARRAY | 0, uctypes.UINT8 | 2),
     "arr2": (uctypes.ARRAY | 0, 2, {"b": uctypes.UINT8 | 0}),
     "bitf0": uctypes.BFUINT16 | 0 | 0 << uctypes.BF_POS | 8 << uctypes.BF_LEN,
     "bitf1": uctypes.BFUINT16 | 0 | 8 << uctypes.BF_POS | 8 << uctypes.BF_LEN,
-
-    "bf0": uctypes.BFUINT16 | 0 |  0 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
-    "bf1": uctypes.BFUINT16 | 0 |  4 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
-    "bf2": uctypes.BFUINT16 | 0 |  8 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
+    "bf0": uctypes.BFUINT16 | 0 | 0 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
+    "bf1": uctypes.BFUINT16 | 0 | 4 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
+    "bf2": uctypes.BFUINT16 | 0 | 8 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
     "bf3": uctypes.BFUINT16 | 0 | 12 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
-
     "ptr": (uctypes.PTR | 0, uctypes.UINT8),
     "ptr2": (uctypes.PTR | 0, {"b": uctypes.UINT8 | 0}),
 }
@@ -37,10 +33,10 @@ data = bytearray(b"01")
 
 S = uctypes.struct(uctypes.addressof(data), desc, uctypes.NATIVE)
 
-#print(S)
+# print(S)
 print(hex(S.s0))
 assert hex(S.s0) == "0x3130"
-#print(S.sub.b0)
+# print(S.sub.b0)
 print(S.sub.b0, S.sub.b1)
 assert S.sub.b0, S.sub.b1 == (0x30, 0x31)
 
@@ -81,7 +77,7 @@ assert bytes(data) == b"2Q"
 
 desc2 = {
     "bf8": uctypes.BFUINT8 | 0 | 0 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
-    "bf32": uctypes.BFUINT32 | 0 | 20 << uctypes.BF_POS | 4 << uctypes.BF_LEN
+    "bf32": uctypes.BFUINT32 | 0 | 20 << uctypes.BF_POS | 4 << uctypes.BF_LEN,
 }
 
 data2 = bytearray(b"0123")

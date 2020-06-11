@@ -33,6 +33,7 @@
 #include "lib/utils/gchelper.h"
 #include "lib/utils/pyexec.h"
 #include "tusb.h"
+#include "led.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
@@ -41,6 +42,7 @@ void board_init(void);
 int main(void) {
     board_init();
     tusb_init();
+    led_init();
 
     mp_stack_set_top(&_estack);
     mp_stack_set_limit(&_estack - &_sstack - 1024);
@@ -75,9 +77,7 @@ int main(void) {
 
 void gc_collect(void) {
     gc_collect_start();
-    uintptr_t regs[10];
-    uintptr_t sp = gc_helper_get_regs_and_sp(regs);
-    gc_collect_root((void **)sp, ((uintptr_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+    gc_helper_collect_regs_and_stack();
     gc_collect_end();
 }
 

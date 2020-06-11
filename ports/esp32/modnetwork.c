@@ -60,45 +60,45 @@
 NORETURN void _esp_exceptions(esp_err_t e) {
     switch (e) {
         case ESP_ERR_WIFI_NOT_INIT:
-            mp_raise_msg(&mp_type_OSError, "Wifi Not Initialized");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Initialized"));
         case ESP_ERR_WIFI_NOT_STARTED:
-            mp_raise_msg(&mp_type_OSError, "Wifi Not Started");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Started"));
         case ESP_ERR_WIFI_NOT_STOPPED:
-            mp_raise_msg(&mp_type_OSError, "Wifi Not Stopped");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Stopped"));
         case ESP_ERR_WIFI_IF:
-            mp_raise_msg(&mp_type_OSError, "Wifi Invalid Interface");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Invalid Interface"));
         case ESP_ERR_WIFI_MODE:
-            mp_raise_msg(&mp_type_OSError, "Wifi Invalid Mode");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Invalid Mode"));
         case ESP_ERR_WIFI_STATE:
-            mp_raise_msg(&mp_type_OSError, "Wifi Internal State Error");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Internal State Error"));
         case ESP_ERR_WIFI_CONN:
-            mp_raise_msg(&mp_type_OSError, "Wifi Internal Error");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Internal Error"));
         case ESP_ERR_WIFI_NVS:
-            mp_raise_msg(&mp_type_OSError, "Wifi Internal NVS Error");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Internal NVS Error"));
         case ESP_ERR_WIFI_MAC:
-            mp_raise_msg(&mp_type_OSError, "Wifi Invalid MAC Address");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Invalid MAC Address"));
         case ESP_ERR_WIFI_SSID:
-            mp_raise_msg(&mp_type_OSError, "Wifi SSID Invalid");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi SSID Invalid"));
         case ESP_ERR_WIFI_PASSWORD:
-            mp_raise_msg(&mp_type_OSError, "Wifi Invalid Password");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Invalid Password"));
         case ESP_ERR_WIFI_TIMEOUT:
             mp_raise_OSError(MP_ETIMEDOUT);
         case ESP_ERR_WIFI_WAKE_FAIL:
-            mp_raise_msg(&mp_type_OSError, "Wifi Wakeup Failure");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Wakeup Failure"));
         case ESP_ERR_WIFI_WOULD_BLOCK:
-            mp_raise_msg(&mp_type_OSError, "Wifi Would Block");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Would Block"));
         case ESP_ERR_WIFI_NOT_CONNECT:
-            mp_raise_msg(&mp_type_OSError, "Wifi Not Connected");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Connected"));
         case ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS:
-            mp_raise_msg(&mp_type_OSError, "TCP/IP Invalid Parameters");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("TCP/IP Invalid Parameters"));
         case ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY:
-            mp_raise_msg(&mp_type_OSError, "TCP/IP IF Not Ready");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("TCP/IP IF Not Ready"));
         case ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED:
-            mp_raise_msg(&mp_type_OSError, "TCP/IP DHCP Client Start Failed");
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("TCP/IP DHCP Client Start Failed"));
         case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
             mp_raise_OSError(MP_ENOMEM);
         default:
-            mp_raise_msg_varg( &mp_type_RuntimeError, "Wifi Unknown Error 0x%04x", e);
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("Wifi Unknown Error 0x%04x"), e);
     }
 }
 
@@ -241,7 +241,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event) {
 STATIC void require_if(mp_obj_t wlan_if, int if_no) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(wlan_if);
     if (self->if_id != if_no) {
-        mp_raise_msg(&mp_type_OSError, if_no == WIFI_IF_STA ? "STA required" : "AP required");
+        mp_raise_msg(&mp_type_OSError, if_no == WIFI_IF_STA ? MP_ERROR_TEXT("STA required") : MP_ERROR_TEXT("AP required"));
     }
 }
 
@@ -250,8 +250,8 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     if (!initialized) {
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         ESP_LOGD("modnetwork", "Initializing WiFi");
-        ESP_EXCEPTIONS( esp_wifi_init(&cfg) );
-        ESP_EXCEPTIONS( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+        ESP_EXCEPTIONS(esp_wifi_init(&cfg));
+        ESP_EXCEPTIONS(esp_wifi_set_storage(WIFI_STORAGE_RAM));
         ESP_LOGD("modnetwork", "Initialized");
         initialized = 1;
     }
@@ -262,7 +262,7 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     } else if (idx == WIFI_IF_AP) {
         return MP_OBJ_FROM_PTR(&wlan_ap_obj);
     } else {
-        mp_raise_ValueError("invalid WLAN interface identifier");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid WLAN interface identifier"));
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(get_wlan_obj, 0, 1, get_wlan);
@@ -273,7 +273,7 @@ STATIC mp_obj_t esp_initialize() {
         ESP_LOGD("modnetwork", "Initializing TCP/IP");
         tcpip_adapter_init();
         ESP_LOGD("modnetwork", "Initializing Event Loop");
-        ESP_EXCEPTIONS( esp_event_loop_init(event_handler, NULL) );
+        ESP_EXCEPTIONS(esp_event_loop_init(event_handler, NULL));
         ESP_LOGD("modnetwork", "esp_event_loop_init done");
         initialized = 1;
     }
@@ -353,12 +353,12 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
             wifi_sta_config.sta.bssid_set = 1;
             memcpy(wifi_sta_config.sta.bssid, p, sizeof(wifi_sta_config.sta.bssid));
         }
-        ESP_EXCEPTIONS( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config) );
+        ESP_EXCEPTIONS(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     }
 
     // connect to the WiFi AP
     MP_THREAD_GIL_EXIT();
-    ESP_EXCEPTIONS( esp_wifi_connect() );
+    ESP_EXCEPTIONS(esp_wifi_connect());
     MP_THREAD_GIL_ENTER();
     wifi_sta_connect_requested = true;
 
@@ -368,7 +368,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp_connect_obj, 1, esp_connect);
 
 STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {
     wifi_sta_connect_requested = false;
-    ESP_EXCEPTIONS( esp_wifi_disconnect() );
+    ESP_EXCEPTIONS(esp_wifi_disconnect());
     return mp_const_none;
 }
 
@@ -429,7 +429,7 @@ STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {
             return MP_OBJ_NEW_SMALL_INT(info.rssi);
         }
         default:
-            mp_raise_ValueError("unknown status param");
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
     }
 
     return mp_const_none;
@@ -441,7 +441,7 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     wifi_mode_t mode;
     ESP_EXCEPTIONS(esp_wifi_get_mode(&mode));
     if ((mode & WIFI_MODE_STA) == 0) {
-        mp_raise_msg(&mp_type_OSError, "STA must be active");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
     }
 
     mp_obj_t list = mp_obj_new_list(0, NULL);
@@ -452,9 +452,9 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     MP_THREAD_GIL_ENTER();
     if (status == 0) {
         uint16_t count = 0;
-        ESP_EXCEPTIONS( esp_wifi_scan_get_ap_num(&count) );
+        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_num(&count));
         wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
-        ESP_EXCEPTIONS( esp_wifi_scan_get_ap_records(&count, wifi_ap_records) );
+        ESP_EXCEPTIONS(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
         for (uint16_t i = 0; i < count; i++) {
             mp_obj_tuple_t *t = mp_obj_new_tuple(6, NULL);
             uint8_t *x = memchr(wifi_ap_records[i].ssid, 0, sizeof(wifi_ap_records[i].ssid));
@@ -540,7 +540,7 @@ STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
             // check for the correct string
             const char *mode = mp_obj_str_get_str(args[1]);
             if ((self->if_id != WIFI_IF_STA && self->if_id != ESP_IF_ETH) || strcmp("dhcp", mode)) {
-                mp_raise_ValueError("invalid arguments");
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
             }
             ESP_EXCEPTIONS(tcpip_adapter_dhcpc_start(self->if_id));
         }
@@ -552,7 +552,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj, 1, 2, esp_ifconfig);
 
 STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
-        mp_raise_TypeError("either pos or kw args are allowed");
+        mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
 
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -580,7 +580,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         mp_buffer_info_t bufinfo;
                         mp_get_buffer_raise(kwargs->table[i].value, &bufinfo, MP_BUFFER_READ);
                         if (bufinfo.len != 6) {
-                            mp_raise_ValueError("invalid buffer length");
+                            mp_raise_ValueError(MP_ERROR_TEXT("invalid buffer length"));
                         }
                         ESP_EXCEPTIONS(esp_wifi_set_mac(self->if_id, bufinfo.buf));
                         break;
@@ -647,7 +647,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     // Get config
 
     if (n_args != 2) {
-        mp_raise_TypeError("can query only one param");
+        mp_raise_TypeError(MP_ERROR_TEXT("can query only one param"));
     }
 
     int req_if = -1;
@@ -720,7 +720,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     return val;
 
 unknown:
-    mp_raise_ValueError("unknown config param");
+    mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(esp_config_obj, 1, esp_config);
 
@@ -782,7 +782,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_IN), MP_ROM_INT(ETH_CLOCK_GPIO0_IN) },
     // Disabled at Aug 22nd 2018, reenabled Jan 28th 2019 in ESP-IDF
     // Because we use older SDK, it's currently disabled
-    //{ MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_OUT), MP_ROM_INT(ETH_CLOCK_GPIO0_OUT) },
+    // { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO0_OUT), MP_ROM_INT(ETH_CLOCK_GPIO0_OUT) },
     { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO16_OUT), MP_ROM_INT(ETH_CLOCK_GPIO16_OUT) },
     { MP_ROM_QSTR(MP_QSTR_ETH_CLOCK_GPIO17_OUT), MP_ROM_INT(ETH_CLOCK_GPIO17_OUT) },
     #endif

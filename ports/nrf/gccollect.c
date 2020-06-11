@@ -33,7 +33,7 @@
 
 static inline uintptr_t get_sp(void) {
     uintptr_t result;
-    __asm__ ("mov %0, sp\n" : "=r" (result) );
+    __asm__ ("mov %0, sp\n" : "=r" (result));
     return result;
 }
 

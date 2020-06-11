@@ -1,10 +1,9 @@
 # build a minimal interpreter
-COPT = -Os -DNDEBUG
-
 PROG = micropython-minimal
 
 FROZEN_MANIFEST =
 
+MICROPY_ROM_TEXT_COMPRESSION = 1
 MICROPY_PY_BTREE = 0
 MICROPY_PY_FFI = 0
 MICROPY_PY_SOCKET = 0

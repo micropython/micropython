@@ -27,6 +27,7 @@ CFLAGS += -std=c99
 CFLAGS += -Os
 CFLAGS += -Wall -Werror -DNDEBUG
 CFLAGS += -DNO_QSTR
+CFLAGS += -DMICROPY_ENABLE_DYNRUNTIME
 CFLAGS += -DMP_CONFIGFILE='<$(CONFIG_H)>'
 CFLAGS += -fpic -fno-common
 CFLAGS += -U _FORTIFY_SOURCE # prevent use of __*_chk libc functions

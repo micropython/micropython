@@ -94,7 +94,7 @@ STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     tuple->items[0] = mp_obj_new_str(buf, strlen(buf));
     // We employ the fact that port offset is the same for IPv4 & IPv6
     // not filled in
-    //tuple->items[1] = mp_obj_new_int(ntohs(((struct sockaddr_in*)addr)->sin_port));
+    // tuple->items[1] = mp_obj_new_int(ntohs(((struct sockaddr_in*)addr)->sin_port));
     tuple->items[1] = port;
 
     if (addr->sa_family == AF_INET6) {

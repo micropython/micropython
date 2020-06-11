@@ -117,6 +117,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
 
 #if MICROPY_STREAMS_POSIX_API
+#include <sys/types.h>
 // Functions with POSIX-compatible signatures
 // "stream" is assumed to be a pointer to a concrete object with the stream protocol
 ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len);

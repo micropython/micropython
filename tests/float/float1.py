@@ -1,11 +1,11 @@
 # test basic float capabilities
 
 # literals
-print(.12)
-print(1.)
+print(0.12)
+print(1.0)
 print(1.2)
 print(0e0)
-print(0e+0)
+print(0e0)
 print(0e-0)
 
 # float construction
@@ -68,7 +68,7 @@ print(0.0 == False, 1.0 == True)
 print(False == 0.0, True == 1.0)
 
 # comparison of nan is special
-nan = float('nan')
+nan = float("nan")
 print(nan == 1.2)
 print(nan == nan)
 
@@ -108,7 +108,7 @@ except TypeError:
 try:
     print(1 | 1.0)
 except TypeError:
-    print('TypeError')
+    print("TypeError")
 
 # can't convert list to float
 try:

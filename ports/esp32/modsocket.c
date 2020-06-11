@@ -244,19 +244,24 @@ static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struc
     int res = _socket_getaddrinfo3(host_str, port_str, &hints, resp);
     MP_THREAD_GIL_ENTER();
 
+    // Per docs: instead of raising gaierror getaddrinfo raises negative error number
+    if (res != 0) {
+        mp_raise_OSError(res > 0 ? -res : res);
+    }
+    // Somehow LwIP returns a resolution of 0.0.0.0 for failed lookups, traced it as far back
+    // as netconn_gethostbyname_addrtype returning OK instead of error.
+    if (*resp == NULL ||
+        (strcmp(resp[0]->ai_canonname, "0.0.0.0") == 0 && strcmp(host_str, "0.0.0.0") != 0)) {
+        mp_raise_OSError(-2); // name or service not known
+    }
+
     return res;
 }
 
 STATIC void _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {
     mp_obj_t *elem;
     mp_obj_get_array_fixed_n(addrtuple, 2, &elem);
-    int res = _socket_getaddrinfo2(elem[0], elem[1], resp);
-    if (res != 0) {
-        mp_raise_OSError(res);
-    }
-    if (*resp == NULL) {
-        mp_raise_OSError(-2); // name or service not known
-    }
+    _socket_getaddrinfo2(elem[0], elem[1], resp);
 }
 
 STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -457,7 +462,7 @@ STATIC mp_obj_t socket_settimeout(const mp_obj_t arg0, const mp_obj_t arg1) {
         _socket_settimeout(self, UINT64_MAX);
     } else {
         #if MICROPY_PY_BUILTINS_FLOAT
-        _socket_settimeout(self, mp_obj_get_float(arg1) * 1000L);
+        _socket_settimeout(self, (uint64_t)(mp_obj_get_float(arg1) * MICROPY_FLOAT_CONST(1000.0)));
         #else
         _socket_settimeout(self, mp_obj_get_int(arg1) * 1000);
         #endif
@@ -676,6 +681,9 @@ STATIC mp_uint_t socket_stream_write(mp_obj_t self_in, const void *buf, mp_uint_
 STATIC mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     socket_obj_t *socket = self_in;
     if (request == MP_STREAM_POLL) {
+        if (socket->fd == -1) {
+            return MP_STREAM_POLL_NVAL;
+        }
 
         fd_set rfds;
         FD_ZERO(&rfds);

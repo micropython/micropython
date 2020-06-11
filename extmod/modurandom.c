@@ -46,7 +46,7 @@ STATIC uint32_t yasmarang(void) {
     yasmarang_pad = (yasmarang_pad << 3) + (yasmarang_pad >> 29);
     yasmarang_n = yasmarang_pad | 2;
     yasmarang_d ^= (yasmarang_pad << 31) + (yasmarang_pad >> 1);
-    yasmarang_dat ^= (char) yasmarang_pad ^ (yasmarang_d >> 8) ^ 1;
+    yasmarang_dat ^= (char)yasmarang_pad ^ (yasmarang_d >> 8) ^ 1;
 
     return yasmarang_pad ^ (yasmarang_d << 5) ^ (yasmarang_pad >> 18) ^ (yasmarang_dat << 1);
 }  /* yasmarang */
@@ -224,4 +224,4 @@ const mp_obj_module_t mp_module_urandom = {
 };
 #endif
 
-#endif //MICROPY_PY_URANDOM
+#endif // MICROPY_PY_URANDOM

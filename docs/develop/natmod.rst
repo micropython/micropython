@@ -165,10 +165,10 @@ The file ``Makefile`` contains:
     MPY_DIR = ../../..
 
     # Name of module
-    MOD = features0
+    MOD = factorial
 
     # Source files (.c or .py)
-    SRC = features0.c
+    SRC = factorial.c
 
     # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
     ARCH = x64

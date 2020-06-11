@@ -44,13 +44,15 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
     size_t max = dict->map.alloc;
     mp_map_t *map = &dict->map;
 
-    for (size_t i = *cur; i < max; i++) {
+    size_t i = *cur;
+    for (; i < max; i++) {
         if (mp_map_slot_is_filled(map, i)) {
             *cur = i + 1;
             return &(map->table[i]);
         }
     }
 
+    assert(map->used == 0 || i == max);
     return NULL;
 }
 
@@ -225,7 +227,7 @@ STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
-STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
+mp_obj_t mp_obj_dict_copy(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_type(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t other_out = mp_obj_new_dict(self->map.alloc);
@@ -238,7 +240,7 @@ STATIC mp_obj_t dict_copy(mp_obj_t self_in) {
     memcpy(other->map.table, self->map.table, self->map.alloc * sizeof(mp_map_elem_t));
     return other_out;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, dict_copy);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, mp_obj_dict_copy);
 
 #if MICROPY_PY_BUILTINS_DICT_FROMKEYS
 // this is a classmethod
@@ -321,11 +323,17 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_type(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_ensure_not_fixed(self);
-    size_t cur = 0;
-    mp_map_elem_t *next = dict_iter_next(self, &cur);
-    if (next == NULL) {
-        mp_raise_msg(&mp_type_KeyError, "popitem(): dictionary is empty");
+    if (self->map.used == 0) {
+        mp_raise_msg(&mp_type_KeyError, MP_ERROR_TEXT("popitem(): dictionary is empty"));
     }
+    size_t cur = 0;
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    if (self->map.is_ordered) {
+        cur = self->map.used - 1;
+    }
+    #endif
+    mp_map_elem_t *next = dict_iter_next(self, &cur);
+    assert(next);
     self->map.used--;
     mp_obj_t items[] = {next->key, next->value};
     next->key = MP_OBJ_SENTINEL; // must mark key as sentinel to indicate that it was deleted
@@ -367,7 +375,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
                 if (key == MP_OBJ_STOP_ITERATION
                     || value == MP_OBJ_STOP_ITERATION
                     || stop != MP_OBJ_STOP_ITERATION) {
-                    mp_raise_ValueError("dict update sequence has wrong length");
+                    mp_raise_ValueError(MP_ERROR_TEXT("dict update sequence has wrong length"));
                 } else {
                     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
                 }

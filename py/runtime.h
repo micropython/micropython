@@ -71,9 +71,7 @@ void mp_handle_pending_tail(mp_uint_t atomic_state);
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
-static inline unsigned int mp_sched_num_pending(void) {
-    return MP_STATE_VM(sched_len);
-}
+#define mp_sched_num_pending() (MP_STATE_VM(sched_len))
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 #endif
 
@@ -162,11 +160,11 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
 #define mp_raise_type(exc_type) mp_raise_msg(exc_type, NULL)
-NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg);
-NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...);
-NORETURN void mp_raise_ValueError(const char *msg);
-NORETURN void mp_raise_TypeError(const char *msg);
-NORETURN void mp_raise_NotImplementedError(const char *msg);
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...);
+NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
 NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_raise_recursion_depth(void);
 

@@ -72,7 +72,7 @@ void mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
 
     int chr;
     while ((chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
-        //printf("UART RX: %02x\n", data);
+        // printf("UART RX: %02x\n", data);
         rx_cb(rx_arg, chr);
     }
 

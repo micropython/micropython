@@ -319,7 +319,7 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
         timeout = -1;
     } else {
         #if MICROPY_PY_BUILTINS_FLOAT
-        timeout = 1000 * mp_obj_get_float(timeout_in);
+        timeout = (mp_uint_t)(MICROPY_FLOAT_CONST(1000.0) * mp_obj_get_float(timeout_in));
         #else
         timeout = 1000 * mp_obj_get_int(timeout_in);
         #endif
@@ -432,7 +432,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     }
 
     if (!have_ip) {
-        mp_raise_msg(&mp_type_OSError, "no available NIC");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("no available NIC"));
     }
 
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));

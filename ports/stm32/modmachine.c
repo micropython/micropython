@@ -124,7 +124,7 @@ void machine_init(void) {
         if (state & RCC_SR_IWDGRSTF || state & RCC_SR_WWDGRSTF) {
             reset_cause = PYB_RESET_WDT;
         } else if (state & RCC_SR_PORRSTF
-                   #if !defined(STM32F0)
+                   #if !defined(STM32F0) && !defined(STM32F412Zx)
                    || state & RCC_SR_BORRSTF
                    #endif
                    ) {
@@ -307,18 +307,23 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
-        mp_raise_NotImplementedError("machine.freq set not supported yet");
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
         mp_int_t ahb = sysclk;
-        #if defined (STM32H7)
+        #if defined(STM32H7)
         if (ahb > 200000000) {
             ahb /= 2;
         }
         #endif
+        #if defined(STM32WB)
+        mp_int_t apb1 = ahb;
+        mp_int_t apb2 = ahb;
+        #else
         mp_int_t apb1 = ahb / 4;
         mp_int_t apb2 = ahb / 2;
+        #endif
         if (n_args > 1) {
             ahb = mp_obj_get_int(args[1]);
             if (n_args > 2) {
@@ -330,7 +335,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         }
         int ret = powerctrl_set_sysclk(sysclk, ahb, apb1, apb2);
         if (ret == -MP_EINVAL) {
-            mp_raise_ValueError("invalid freq");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid freq"));
         } else if (ret < 0) {
             void NORETURN __fatal_error(const char *msg);
             __fatal_error("can't change freq");

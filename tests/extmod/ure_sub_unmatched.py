@@ -6,14 +6,14 @@ except ImportError:
     try:
         import re
     except ImportError:
-        print('SKIP')
+        print("SKIP")
         raise SystemExit
 
 try:
     re.sub
 except AttributeError:
-    print('SKIP')
+    print("SKIP")
     raise SystemExit
 
 # first group matches, second optional group doesn't so is replaced with a blank
-print(re.sub(r'(a)(b)?', r'\2-\1', '1a2'))
+print(re.sub(r"(a)(b)?", r"\2-\1", "1a2"))

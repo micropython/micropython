@@ -58,6 +58,15 @@ instance{}()
 multitest.flush()
 """
 
+# The btstack implementation on Unix generates some spurious output that we
+# can't control.
+IGNORE_OUTPUT_MATCHES = (
+    "libusb: error ",  # It tries to open devices that it doesn't have access to (libusb prints unconditionally).
+    "hci_transport_h2_libusb.c",  # Same issue. We enable LOG_ERROR in btstack.
+    "USB Path: ",  # Hardcoded in btstack's libusb transport.
+    "hci_number_completed_packet",  # Warning from btstack.
+)
+
 
 class PyInstance:
     def __init__(self):
@@ -83,20 +92,25 @@ class PyInstance:
 
 
 class PyInstanceSubProcess(PyInstance):
-    def __init__(self, cmd):
-        self.cmd = cmd
+    def __init__(self, argv, env=None):
+        self.argv = argv
+        self.env = {n: v for n, v in (i.split("=") for i in env)} if env else None
         self.popen = None
         self.finished = True
 
     def __str__(self):
-        return self.cmd[0].rsplit("/")[-1]
+        return self.argv[0].rsplit("/")[-1]
 
     def run_script(self, script):
         output = b""
         err = None
         try:
             p = subprocess.run(
-                self.cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, input=script
+                self.argv,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                input=script,
+                env=self.env,
             )
             output = p.stdout
         except subprocess.CalledProcessError as er:
@@ -105,7 +119,11 @@ class PyInstanceSubProcess(PyInstance):
 
     def start_script(self, script):
         self.popen = subprocess.Popen(
-            self.cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            self.argv,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            env=self.env,
         )
         self.popen.stdin.write(script)
         self.popen.stdin.close()
@@ -221,6 +239,9 @@ def run_test_on_instances(test_file, num_instances, instances):
     injected_globals = ""
     output = [[] for _ in range(num_instances)]
 
+    if cmd_args.trace_output:
+        print("TRACE {}:".format("|".join(str(i) for i in instances)))
+
     # Start all instances running, in order, waiting until they signal they are ready
     for idx in range(num_instances):
         append_code = APPEND_CODE_TEMPLATE.format(injected_globals, idx)
@@ -239,7 +260,7 @@ def run_test_on_instances(test_file, num_instances, instances):
                 time.sleep(0.1)
                 continue
             last_read_time = time.time()
-            if out is not None:
+            if out is not None and not any(m in out for m in IGNORE_OUTPUT_MATCHES):
                 trace_instance_output(idx, out)
                 if out.startswith("SET "):
                     injected_globals += out[4:] + "\n"
@@ -277,7 +298,7 @@ def run_test_on_instances(test_file, num_instances, instances):
                     continue
                 num_output += 1
                 last_read_time[idx] = time.time()
-                if out is not None:
+                if out is not None and not any(m in out for m in IGNORE_OUTPUT_MATCHES):
                     trace_instance_output(idx, out)
                     output[idx].append(out)
                 if err is not None:
@@ -303,6 +324,10 @@ def run_test_on_instances(test_file, num_instances, instances):
 
 
 def run_tests(test_files, instances_truth, instances_test):
+    skipped_tests = []
+    passed_tests = []
+    failed_tests = []
+
     for test_file, num_instances in test_files:
         instances_str = "|".join(str(instances_test[i]) for i in range(num_instances))
         print("{} on {}: ".format(test_file, instances_str), end="")
@@ -312,10 +337,6 @@ def run_tests(test_files, instances_truth, instances_test):
 
         # Run test on test instances
         error, skip, output_test = run_test_on_instances(test_file, num_instances, instances_test)
-
-        if cmd_args.show_output:
-            print("### TEST ###")
-            print(output_test, end="")
 
         if not skip:
             # Check if truth exists in a file, and read it in
@@ -328,17 +349,24 @@ def run_tests(test_files, instances_truth, instances_test):
                 _, _, output_truth = run_test_on_instances(
                     test_file, num_instances, instances_truth
                 )
-            if cmd_args.show_output:
+
+        if cmd_args.show_output:
+            print("### TEST ###")
+            print(output_test, end="")
+            if not skip:
                 print("### TRUTH ###")
                 print(output_truth, end="")
 
         # Print result of test
         if skip:
             print("skip")
+            skipped_tests.append(test_file)
         elif output_test == output_truth:
             print("pass")
+            passed_tests.append(test_file)
         else:
             print("FAIL")
+            failed_tests.append(test_file)
             if not cmd_args.show_output:
                 print("### TEST ###")
                 print(output_test, end="")
@@ -347,6 +375,16 @@ def run_tests(test_files, instances_truth, instances_test):
 
         if cmd_args.show_output:
             print()
+
+    print("{} tests performed".format(len(skipped_tests) + len(passed_tests) + len(failed_tests)))
+    print("{} tests passed".format(len(passed_tests)))
+
+    if skipped_tests:
+        print("{} tests skipped: {}".format(len(skipped_tests), " ".join(skipped_tests)))
+    if failed_tests:
+        print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
+
+    return not failed_tests
 
 
 def main():
@@ -365,6 +403,9 @@ def main():
     cmd_parser.add_argument("files", nargs="+", help="input test files")
     cmd_args = cmd_parser.parse_args()
 
+    # clear search path to make sure tests use only builtin modules and those in extmod
+    os.environ["MICROPYPATH"] = os.pathsep + "../extmod"
+
     test_files = prepare_test_file_list(cmd_args.files)
     max_instances = max(t[1] for t in test_files)
 
@@ -372,24 +413,35 @@ def main():
 
     instances_test = []
     for i in cmd_args.instance:
-        if i.startswith("exec:"):
-            instances_test.append(PyInstanceSubProcess([i[len("exec:") :]]))
-        elif i.startswith("pyb:"):
-            instances_test.append(PyInstancePyboard(i[len("pyb:") :]))
+        # Each instance arg is <cmd>,ENV=VAR,ENV=VAR...
+        i = i.split(",")
+        cmd = i[0]
+        env = i[1:]
+        if cmd.startswith("exec:"):
+            instances_test.append(PyInstanceSubProcess([cmd[len("exec:") :]], env))
+        elif cmd == "micropython":
+            instances_test.append(PyInstanceSubProcess([MICROPYTHON], env))
+        elif cmd == "cpython":
+            instances_test.append(PyInstanceSubProcess([CPYTHON3], env))
+        elif cmd.startswith("pyb:"):
+            instances_test.append(PyInstancePyboard(cmd[len("pyb:") :]))
         else:
-            print("unknown instance string: {}".format(i), file=sys.stderr)
+            print("unknown instance string: {}".format(cmd), file=sys.stderr)
             sys.exit(1)
 
     for _ in range(max_instances - len(instances_test)):
         instances_test.append(PyInstanceSubProcess([MICROPYTHON]))
 
     try:
-        run_tests(test_files, instances_truth, instances_test)
+        all_pass = run_tests(test_files, instances_truth, instances_test)
     finally:
         for i in instances_truth:
             i.close()
         for i in instances_test:
             i.close()
+
+    if not all_pass:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

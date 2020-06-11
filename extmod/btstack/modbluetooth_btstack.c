@@ -37,15 +37,36 @@
 
 #define DEBUG_EVENT_printf(...) //printf(__VA_ARGS__)
 
+#ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
+#define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY BTSTACK"
+#endif
+
+// How long to wait for a controller to init/deinit.
+// Some controllers can take up to 5-6 seconds in normal operation.
+STATIC const uint32_t BTSTACK_INIT_DEINIT_TIMEOUT_MS = 15000;
+
+// We need to know the attribute handle for the GAP device name (see GAP_DEVICE_NAME_UUID)
+// so it can be put into the gatts_db before registering the services, and accessed
+// efficiently when requesting an attribute in att_read_callback.  Because this is the
+// first characteristic of the first service, it always has a handle value of 3.
+STATIC const uint16_t BTSTACK_GAP_DEVICE_NAME_HANDLE = 3;
+
 volatile int mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
 
 STATIC btstack_packet_callback_registration_t hci_event_callback_registration;
 
 STATIC int btstack_error_to_errno(int err) {
+    DEBUG_EVENT_printf("  --> btstack error: %d\n", err);
     if (err == ERROR_CODE_SUCCESS) {
         return 0;
-    } else if (err == BTSTACK_ACL_BUFFERS_FULL) {
+    } else if (err == BTSTACK_ACL_BUFFERS_FULL || err == BTSTACK_MEMORY_ALLOC_FAILED) {
         return MP_ENOMEM;
+    } else if (err == GATT_CLIENT_IN_WRONG_STATE) {
+        return MP_EALREADY;
+    } else if (err == GATT_CLIENT_BUSY) {
+        return MP_EBUSY;
+    } else if (err == GATT_CLIENT_NOT_CONNECTED) {
+        return MP_ENOTCONN;
     } else {
         return MP_EINVAL;
     }
@@ -64,8 +85,8 @@ STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(uint16_t uuid16, const uint8_t *uu
     return result;
 }
 
-STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
-    DEBUG_EVENT_printf("btstack_packet_handler(packet_type=%u, channel=%u, packet=%p, size=%u)\n", packet_type, channel, packet, size);
+STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t irq) {
+    DEBUG_EVENT_printf("btstack_packet_handler(packet_type=%u, packet=%p)\n", packet_type, packet);
     if (packet_type != HCI_EVENT_PACKET) {
         return;
     }
@@ -93,7 +114,15 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_
             mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, addr_type, addr);
         }
     } else if (event_type == BTSTACK_EVENT_STATE) {
-        DEBUG_EVENT_printf("  --> btstack event state 0x%02x\n", btstack_event_state_get_state(packet));
+        uint8_t state = btstack_event_state_get_state(packet);
+        DEBUG_EVENT_printf("  --> btstack event state 0x%02x\n", state);
+        if (state == HCI_STATE_WORKING) {
+            // Signal that initialisation has completed.
+            mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
+        } else if (state == HCI_STATE_OFF) {
+            // Signal that de-initialisation has completed.
+            mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
+        }
     } else if (event_type == HCI_EVENT_TRANSPORT_PACKET_SENT) {
         DEBUG_EVENT_printf("  --> hci transport packet set\n");
     } else if (event_type == HCI_EVENT_COMMAND_COMPLETE) {
@@ -115,10 +144,7 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_
         int8_t rssi = gap_event_advertising_report_get_rssi(packet);
         uint8_t length = gap_event_advertising_report_get_data_length(packet);
         const uint8_t *data = gap_event_advertising_report_get_data(packet);
-        // Emit an event for all advertising types except SCAN_RSP.
-        if (adv_event_type < 4) {
-            mp_bluetooth_gap_on_scan_result(address_type, address, adv_event_type, rssi, data, length);
-        }
+        mp_bluetooth_gap_on_scan_result(address_type, address, adv_event_type, rssi, data, length);
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_EVENT_printf("  --> hci disconnect complete\n");
         uint16_t conn_handle = hci_event_disconnection_complete_get_connection_handle(packet);
@@ -136,6 +162,16 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     } else if (event_type == GATT_EVENT_QUERY_COMPLETE) {
         DEBUG_EVENT_printf("  --> gatt query complete\n");
+        uint16_t conn_handle = gatt_event_query_complete_get_handle(packet);
+        uint16_t status = gatt_event_query_complete_get_att_status(packet);
+        if (irq == MP_BLUETOOTH_IRQ_GATTC_READ_DONE || irq == MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE) {
+            // TODO there is no value_handle available to pass here
+            mp_bluetooth_gattc_on_read_write_status(irq, conn_handle, 0, status);
+        } else if (irq == MP_BLUETOOTH_IRQ_GATTC_SERVICE_DONE ||
+                   irq == MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_DONE ||
+                   irq == MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_DONE) {
+            mp_bluetooth_gattc_on_discover_complete(irq, conn_handle, status);
+        }
     } else if (event_type == GATT_EVENT_SERVICE_QUERY_RESULT) {
         DEBUG_EVENT_printf("  --> gatt service query result\n");
         uint16_t conn_handle = gatt_event_service_query_result_get_handle(packet);
@@ -163,59 +199,113 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint16_t channel, uint8_
         uint16_t value_handle = gatt_event_characteristic_value_query_result_get_value_handle(packet);
         uint16_t len = gatt_event_characteristic_value_query_result_get_value_length(packet);
         const uint8_t *data = gatt_event_characteristic_value_query_result_get_value(packet);
-        MICROPY_PY_BLUETOOTH_ENTER
-            len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, value_handle, len);
+        mp_uint_t atomic_state;
+        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, value_handle, len, &atomic_state);
         mp_bluetooth_gattc_on_data_available_chunk(data, len);
-        mp_bluetooth_gattc_on_data_available_end();
-        MICROPY_PY_BLUETOOTH_EXIT
+        mp_bluetooth_gattc_on_data_available_end(atomic_state);
     } else if (event_type == GATT_EVENT_NOTIFICATION) {
         DEBUG_EVENT_printf("  --> gatt notification\n");
         uint16_t conn_handle = gatt_event_notification_get_handle(packet);
         uint16_t value_handle = gatt_event_notification_get_value_handle(packet);
         uint16_t len = gatt_event_notification_get_value_length(packet);
         const uint8_t *data = gatt_event_notification_get_value(packet);
-        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_NOTIFY, conn_handle, value_handle, len);
+        mp_uint_t atomic_state;
+        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_NOTIFY, conn_handle, value_handle, len, &atomic_state);
         mp_bluetooth_gattc_on_data_available_chunk(data, len);
-        mp_bluetooth_gattc_on_data_available_end();
+        mp_bluetooth_gattc_on_data_available_end(atomic_state);
     } else if (event_type == GATT_EVENT_INDICATION) {
         DEBUG_EVENT_printf("  --> gatt indication\n");
         uint16_t conn_handle = gatt_event_indication_get_handle(packet);
         uint16_t value_handle = gatt_event_indication_get_value_handle(packet);
         uint16_t len = gatt_event_indication_get_value_length(packet);
         const uint8_t *data = gatt_event_indication_get_value(packet);
-        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_INDICATE, conn_handle, value_handle, len);
+        mp_uint_t atomic_state;
+        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_INDICATE, conn_handle, value_handle, len, &atomic_state);
         mp_bluetooth_gattc_on_data_available_chunk(data, len);
-        mp_bluetooth_gattc_on_data_available_end();
-    #endif
+        mp_bluetooth_gattc_on_data_available_end(atomic_state);
+    #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     } else {
         DEBUG_EVENT_printf("  --> hci event type: unknown (0x%02x)\n", event_type);
     }
 }
 
-#if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
-STATIC void btstack_packet_handler_write_with_response(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
-    DEBUG_EVENT_printf("btstack_packet_handler_write_with_response(packet_type=%u, channel=%u, packet=%p, size=%u)\n", packet_type, channel, packet, size);
-    if (packet_type != HCI_EVENT_PACKET) {
-        return;
-    }
-
-    uint8_t event_type = hci_event_packet_get_type(packet);
-    if (event_type == GATT_EVENT_QUERY_COMPLETE) {
-        DEBUG_EVENT_printf("  --> gatt query complete\n");
-        uint16_t conn_handle = gatt_event_query_complete_get_handle(packet);
-        uint8_t status = gatt_event_query_complete_get_att_status(packet);
-        // TODO there is no value_handle to pass here
-        mp_bluetooth_gattc_on_write_status(conn_handle, 0, status);
-    }
+// Because the packet handler callbacks don't support an argument, we use a specific
+// handler when we need to provide additional state to the handler (in the "irq" parameter).
+// This is the generic handler for when you don't need extra state.
+STATIC void btstack_packet_handler_generic(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
+    btstack_packet_handler(packet_type, packet, 0);
 }
-#endif
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+// For when the handler is being used for service discovery.
+STATIC void btstack_packet_handler_discover_services(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
+    btstack_packet_handler(packet_type, packet, MP_BLUETOOTH_IRQ_GATTC_SERVICE_DONE);
+}
+
+// For when the handler is being used for characteristic discovery.
+STATIC void btstack_packet_handler_discover_characteristics(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
+    btstack_packet_handler(packet_type, packet, MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_DONE);
+}
+
+// For when the handler is being used for descriptor discovery.
+STATIC void btstack_packet_handler_discover_descriptors(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
+    btstack_packet_handler(packet_type, packet, MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_DONE);
+}
+
+// For when the handler is being used for a read query.
+STATIC void btstack_packet_handler_read(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
+    btstack_packet_handler(packet_type, packet, MP_BLUETOOTH_IRQ_GATTC_READ_DONE);
+}
+
+// For when the handler is being used for write-with-response.
+STATIC void btstack_packet_handler_write_with_response(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
+    btstack_packet_handler(packet_type, packet, MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE);
+}
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+
+STATIC btstack_timer_source_t btstack_init_deinit_timeout;
+
+STATIC void btstack_init_deinit_timeout_handler(btstack_timer_source_t *ds) {
+    (void)ds;
+
+    // Stop waiting for initialisation.
+    // This signals both the loops in mp_bluetooth_init and mp_bluetooth_deinit,
+    // as well as ports that run a polling loop.
+    mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_TIMEOUT;
+}
 
 int mp_bluetooth_init(void) {
     DEBUG_EVENT_printf("mp_bluetooth_init\n");
+
+    if (mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_ACTIVE) {
+        return 0;
+    }
+
+    // Clean up if necessary.
+    mp_bluetooth_deinit();
+
     btstack_memory_init();
 
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = m_new0(mp_bluetooth_btstack_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db);
+
+    // Set the default GAP device name.
+    const char *gap_name = MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME;
+    size_t gap_len = strlen(gap_name);
+    mp_bluetooth_gatts_db_create_entry(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, BTSTACK_GAP_DEVICE_NAME_HANDLE, gap_len);
+    mp_bluetooth_gap_set_device_name((const uint8_t *)gap_name, gap_len);
 
     mp_bluetooth_btstack_port_init();
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_STARTING;
@@ -235,17 +325,37 @@ int mp_bluetooth_init(void) {
     gatt_client_init();
     #endif
 
-    mp_bluetooth_btstack_port_start();
-    mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
-
     // Register for HCI events.
-    memset(&hci_event_callback_registration, 0, sizeof(btstack_packet_callback_registration_t));
-    hci_event_callback_registration.callback = &btstack_packet_handler;
+    hci_event_callback_registration.callback = &btstack_packet_handler_generic;
     hci_add_event_handler(&hci_event_callback_registration);
+
+    // Set a timeout for HCI initialisation.
+    btstack_run_loop_set_timer(&btstack_init_deinit_timeout, BTSTACK_INIT_DEINIT_TIMEOUT_MS);
+    btstack_run_loop_set_timer_handler(&btstack_init_deinit_timeout, btstack_init_deinit_timeout_handler);
+    btstack_run_loop_add_timer(&btstack_init_deinit_timeout);
+
+    // Either the HCI event will set state to ACTIVE, or the timeout will set it to TIMEOUT.
+    mp_bluetooth_btstack_port_start();
+    while (mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_STARTING) {
+        MICROPY_EVENT_POLL_HOOK
+    }
+    btstack_run_loop_remove_timer(&btstack_init_deinit_timeout);
+
+    // Check for timeout.
+    if (mp_bluetooth_btstack_state != MP_BLUETOOTH_BTSTACK_STATE_ACTIVE) {
+        // Required to stop the polling loop.
+        mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
+        // Attempt a shutdown (may not do anything).
+        mp_bluetooth_btstack_port_deinit();
+
+        // Clean up.
+        MP_STATE_PORT(bluetooth_btstack_root_pointers) = NULL;
+        return MP_ETIMEDOUT;
+    }
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     // Enable GATT_EVENT_NOTIFICATION/GATT_EVENT_INDICATION for all connections and handles.
-    gatt_client_listen_for_characteristic_value_updates(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->notification, &btstack_packet_handler, GATT_CLIENT_ANY_CONNECTION, NULL);
+    gatt_client_listen_for_characteristic_value_updates(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->notification, &btstack_packet_handler_generic, GATT_CLIENT_ANY_CONNECTION, NULL);
     #endif
 
     return 0;
@@ -254,18 +364,32 @@ int mp_bluetooth_init(void) {
 void mp_bluetooth_deinit(void) {
     DEBUG_EVENT_printf("mp_bluetooth_deinit\n");
 
+    // Nothing to do if not initialised.
     if (!MP_STATE_PORT(bluetooth_btstack_root_pointers)) {
         return;
     }
+
+    mp_bluetooth_gap_advertise_stop();
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     // Remove our registration for notify/indicate.
     gatt_client_stop_listening_for_characteristic_value_updates(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->notification);
     #endif
 
-    mp_bluetooth_btstack_port_deinit();
-    mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
+    // Set a timer that will forcibly set the state to TIMEOUT, which will stop the loop below.
+    btstack_run_loop_set_timer(&btstack_init_deinit_timeout, BTSTACK_INIT_DEINIT_TIMEOUT_MS);
+    btstack_run_loop_add_timer(&btstack_init_deinit_timeout);
 
+    // This should result in a clean shutdown, which will set the state to OFF.
+    // On Unix this is blocking (it joins on the poll thread), on other ports the loop below will wait unil
+    // either timeout or clean shutdown.
+    mp_bluetooth_btstack_port_deinit();
+    while (mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_ACTIVE) {
+        MICROPY_EVENT_POLL_HOOK
+    }
+    btstack_run_loop_remove_timer(&btstack_init_deinit_timeout);
+
+    mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = NULL;
 }
 
@@ -275,6 +399,19 @@ bool mp_bluetooth_is_active(void) {
 
 void mp_bluetooth_get_device_addr(uint8_t *addr) {
     mp_hal_get_mac(MP_HAL_MAC_BDADDR, addr);
+}
+
+size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf) {
+    uint8_t *value = NULL;
+    size_t value_len = 0;
+    mp_bluetooth_gatts_db_read(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, BTSTACK_GAP_DEVICE_NAME_HANDLE, &value, &value_len);
+    *buf = value;
+    return value_len;
+}
+
+int mp_bluetooth_gap_set_device_name(const uint8_t *buf, size_t len) {
+    mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, BTSTACK_GAP_DEVICE_NAME_HANDLE, buf, len);
+    return 0;
 }
 
 int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
@@ -329,7 +466,9 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
         att_db_util_init();
 
         att_db_util_add_service_uuid16(GAP_SERVICE_UUID);
-        att_db_util_add_characteristic_uuid16(GAP_DEVICE_NAME_UUID, ATT_PROPERTY_READ, ATT_SECURITY_NONE, ATT_SECURITY_NONE, (uint8_t *)"MPY BTSTACK", 11);
+        uint16_t handle = att_db_util_add_characteristic_uuid16(GAP_DEVICE_NAME_UUID, ATT_PROPERTY_READ | ATT_PROPERTY_DYNAMIC, ATT_SECURITY_NONE, ATT_SECURITY_NONE, NULL, 0);
+        assert(handle == BTSTACK_GAP_DEVICE_NAME_HANDLE);
+        (void)handle;
 
         att_db_util_add_service_uuid16(0x1801);
         att_db_util_add_characteristic_uuid16(0x2a05, ATT_PROPERTY_READ, ATT_SECURITY_NONE, ATT_SECURITY_NONE, NULL, 0);
@@ -339,6 +478,7 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
 }
 
 STATIC uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t *buffer, uint16_t buffer_size) {
+    (void)connection_handle;
     DEBUG_EVENT_printf("btstack: att_read_callback (handle: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, offset, buffer, buffer_size);
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, att_handle);
     if (!entry) {
@@ -350,6 +490,8 @@ STATIC uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
 }
 
 STATIC int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size) {
+    (void)offset;
+    (void)transaction_mode;
     DEBUG_EVENT_printf("btstack: att_write_callback (handle: %u, mode: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, transaction_mode, offset, buffer, buffer_size);
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, att_handle);
     if (!entry) {
@@ -420,9 +562,9 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
         ++handle_index;
 
         for (size_t j = 0; j < num_descriptors[i]; ++j) {
-            uint16_t props = descriptor_flags[descriptor_index] | ATT_PROPERTY_DYNAMIC;
-            uint16_t read_permission = ATT_SECURITY_NONE;
-            uint16_t write_permission = ATT_SECURITY_NONE;
+            props = descriptor_flags[descriptor_index] | ATT_PROPERTY_DYNAMIC;
+            read_permission = ATT_SECURITY_NONE;
+            write_permission = ATT_SECURITY_NONE;
 
             if (descriptor_uuids[descriptor_index]->type == MP_BLUETOOTH_UUID_TYPE_16) {
                 handles[handle_index] = att_db_util_add_descriptor_uuid16(get_uuid16(descriptor_uuids[descriptor_index]), props, read_permission, write_permission, NULL, 0);
@@ -495,6 +637,7 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
 STATIC btstack_timer_source_t scan_duration_timeout;
 
 STATIC void hci_initialization_timeout_handler(btstack_timer_source_t *ds) {
+    (void)ds;
     mp_bluetooth_gap_scan_stop();
 }
 
@@ -539,14 +682,28 @@ int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, 
     return btstack_error_to_errno(gap_connect(btstack_addr, addr_type));
 }
 
-int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle) {
+int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle, const mp_obj_bluetooth_uuid_t *uuid) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_discover_primary_services\n");
-    return btstack_error_to_errno(gatt_client_discover_primary_services(&btstack_packet_handler, conn_handle));
+    uint8_t err;
+    if (uuid) {
+        if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
+            err = gatt_client_discover_primary_services_by_uuid16(&btstack_packet_handler_discover_services, conn_handle, get_uuid16(uuid));
+        } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
+            uint8_t buffer[16];
+            reverse_128(uuid->data, buffer);
+            err = gatt_client_discover_primary_services_by_uuid128(&btstack_packet_handler_discover_services, conn_handle, buffer);
+        } else {
+            DEBUG_EVENT_printf("  --> unknown UUID size\n");
+            return MP_EINVAL;
+        }
+    } else {
+        err = gatt_client_discover_primary_services(&btstack_packet_handler_discover_services, conn_handle);
+    }
+    return btstack_error_to_errno(err);
 }
 
-int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle) {
+int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, const mp_obj_bluetooth_uuid_t *uuid) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_discover_characteristics\n");
-
     gatt_client_service_t service = {
         // Only start/end handles needed for gatt_client_discover_characteristics_for_service.
         .start_group_handle = start_handle,
@@ -554,7 +711,22 @@ int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t s
         .uuid16 = 0,
         .uuid128 = {0},
     };
-    return btstack_error_to_errno(gatt_client_discover_characteristics_for_service(&btstack_packet_handler, conn_handle, &service));
+    uint8_t err;
+    if (uuid) {
+        if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
+            err = gatt_client_discover_characteristics_for_service_by_uuid16(&btstack_packet_handler_discover_characteristics, conn_handle, &service, get_uuid16(uuid));
+        } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
+            uint8_t buffer[16];
+            reverse_128(uuid->data, buffer);
+            err = gatt_client_discover_characteristics_for_service_by_uuid128(&btstack_packet_handler_discover_characteristics, conn_handle, &service, buffer);
+        } else {
+            DEBUG_EVENT_printf("  --> unknown UUID size\n");
+            return MP_EINVAL;
+        }
+    } else {
+        err = gatt_client_discover_characteristics_for_service(&btstack_packet_handler_discover_characteristics, conn_handle, &service);
+    }
+    return btstack_error_to_errno(err);
 }
 
 int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle) {
@@ -568,12 +740,12 @@ int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start
         .uuid16 = 0,
         .uuid128 = {0},
     };
-    return btstack_error_to_errno(gatt_client_discover_characteristic_descriptors(&btstack_packet_handler, conn_handle, &characteristic));
+    return btstack_error_to_errno(gatt_client_discover_characteristic_descriptors(&btstack_packet_handler_discover_descriptors, conn_handle, &characteristic));
 }
 
 int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle) {
     DEBUG_EVENT_printf("mp_bluetooth_gattc_read\n");
-    return btstack_error_to_errno(gatt_client_read_value_of_characteristic_using_value_handle(&btstack_packet_handler, conn_handle, value_handle));
+    return btstack_error_to_errno(gatt_client_read_value_of_characteristic_using_value_handle(&btstack_packet_handler_read, conn_handle, value_handle));
 }
 
 int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len, unsigned int mode) {

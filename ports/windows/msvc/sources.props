@@ -18,6 +18,7 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\moduzlib.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\utime_mphal.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\virtpin.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\vfs_posix_file.c" />
   </ItemGroup>
   <ItemGroup>
     <PyCoreInclude Include="$(PyBaseDir)py\*.h" />

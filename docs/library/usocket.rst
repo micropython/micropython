@@ -37,8 +37,8 @@ power) and portable way to work with addresses.
 However, ``socket`` module (note the difference with native MicroPython
 ``usocket`` module described here) provides CPython-compatible way to specify
 addresses using tuples, as described below. Note that depending on a
-`MicroPython port`, ``socket`` module can be builtin or need to be
-installed from `micropython-lib` (as in the case of `MicroPython Unix port`),
+:term:`MicroPython port`, ``socket`` module can be builtin or need to be
+installed from `micropython-lib` (as in the case of :term:`MicroPython Unix port`),
 and some ports still accept only numeric addresses in the tuple format,
 and require to use `getaddrinfo` function to resolve domain names.
 
@@ -61,7 +61,7 @@ Tuple address format for ``socket`` module:
   must be 0. *scopeid* is the interface scope identifier for link-local
   addresses. Note the domain names are not accepted as *ipv6_address*,
   they should be resolved first using `usocket.getaddrinfo()`. Availability
-  of IPv6 support depends on a `MicroPython port`.
+  of IPv6 support depends on a :term:`MicroPython port`.
 
 Functions
 ---------
@@ -81,7 +81,7 @@ Functions
 
 .. function:: getaddrinfo(host, port, af=0, type=0, proto=0, flags=0, /)
 
-   Translate the host/port argument into a sequence of 5-tuples that contain all the 
+   Translate the host/port argument into a sequence of 5-tuples that contain all the
    necessary arguments for creating a socket connected to that service. Arguments
    *af*, *type*, and *proto* (which have the same meaning as for the `socket()` function)
    can be used to filter which kind of addresses are returned. If a parameter is not
@@ -141,7 +141,7 @@ Constants
 .. data:: AF_INET
           AF_INET6
 
-   Address family types. Availability depends on a particular `MicroPython port`.
+   Address family types. Availability depends on a particular :term:`MicroPython port`.
 
 .. data:: SOCK_STREAM
           SOCK_DGRAM
@@ -151,7 +151,7 @@ Constants
 .. data:: IPPROTO_UDP
           IPPROTO_TCP
 
-   IP protocol numbers. Availability depends on a particular `MicroPython port`.
+   IP protocol numbers. Availability depends on a particular :term:`MicroPython port`.
    Note that you don't need to specify these in a call to `usocket.socket()`,
    because `SOCK_STREAM` socket type automatically selects `IPPROTO_TCP`, and
    `SOCK_DGRAM` - `IPPROTO_UDP`. Thus, the only real use of these constants
@@ -160,12 +160,12 @@ Constants
 .. data:: usocket.SOL_*
 
    Socket option levels (an argument to `setsockopt()`). The exact
-   inventory depends on a `MicroPython port`.
+   inventory depends on a :term:`MicroPython port`.
 
 .. data:: usocket.SO_*
 
    Socket options (an argument to `setsockopt()`). The exact
-   inventory depends on a `MicroPython port`.
+   inventory depends on a :term:`MicroPython port`.
 
 Constants specific to WiPy:
 
@@ -185,7 +185,7 @@ Methods
    on the socket object will fail. The remote end will receive EOF indication if
    supported by protocol.
 
-   Sockets are automatically closed when they are garbage-collected, but it is recommended 
+   Sockets are automatically closed when they are garbage-collected, but it is recommended
    to `close()` them explicitly as soon you finished working with them.
 
 .. method:: socket.bind(address)
@@ -259,7 +259,7 @@ Methods
    completed. If zero is given, the socket is put in non-blocking mode. If None is given, the socket
    is put in blocking mode.
 
-   Not every `MicroPython port` supports this method. A more portable and
+   Not every :term:`MicroPython port` supports this method. A more portable and
    generic solution is to use `uselect.poll` object. This allows to wait on
    multiple objects at the same time (and not just on sockets, but on generic
    `stream` objects which support polling). Example::

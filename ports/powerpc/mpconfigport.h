@@ -33,7 +33,7 @@
 // will still be able to execute pre-compiled scripts, compiled with mpy-cross.
 #define MICROPY_ENABLE_COMPILER     (1)
 
-//#define MICROPY_DEBUG_VERBOSE     (1)
+// #define MICROPY_DEBUG_VERBOSE    (1)
 
 #define MICROPY_QSTR_BYTES_IN_HASH  (1)
 #define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool

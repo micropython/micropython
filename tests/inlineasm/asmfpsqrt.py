@@ -1,5 +1,5 @@
 # test vsqrt, vneg
-@micropython.asm_thumb      # r0 = -(int)(sqrt(r0)*r1)
+@micropython.asm_thumb  # r0 = -(int)(sqrt(r0)*r1)
 def sqrt_test(r0, r1):
     vmov(s1, r0)
     vcvt_f32_s32(s1, s1)
@@ -11,5 +11,5 @@ def sqrt_test(r0, r1):
     vcvt_s32_f32(s31, s7)
     vmov(r0, s31)
 
-print(sqrt_test(256, 10))
 
+print(sqrt_test(256, 10))

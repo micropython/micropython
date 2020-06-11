@@ -5,9 +5,9 @@ from ble_advertising import advertising_payload
 
 from micropython import const
 
-_IRQ_CENTRAL_CONNECT = const(1 << 0)
-_IRQ_CENTRAL_DISCONNECT = const(1 << 1)
-_IRQ_GATTS_WRITE = const(1 << 2)
+_IRQ_CENTRAL_CONNECT = const(1)
+_IRQ_CENTRAL_DISCONNECT = const(2)
+_IRQ_GATTS_WRITE = const(3)
 
 _UART_UUID = bluetooth.UUID("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
 _UART_TX = (

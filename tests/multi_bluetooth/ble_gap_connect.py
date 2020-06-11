@@ -5,19 +5,17 @@ import time, machine, bluetooth
 
 TIMEOUT_MS = 4000
 
-_IRQ_CENTRAL_CONNECT = const(1 << 0)
-_IRQ_CENTRAL_DISCONNECT = const(1 << 1)
-_IRQ_PERIPHERAL_CONNECT = const(1 << 6)
-_IRQ_PERIPHERAL_DISCONNECT = const(1 << 7)
+_IRQ_CENTRAL_CONNECT = const(1)
+_IRQ_CENTRAL_DISCONNECT = const(2)
+_IRQ_PERIPHERAL_CONNECT = const(7)
+_IRQ_PERIPHERAL_DISCONNECT = const(8)
 
-last_event = None
-last_data = None
+waiting_event = None
+waiting_data = None
 
 
 def irq(event, data):
-    global last_event, last_data
-    last_event = event
-    last_data = data
+    global waiting_event, waiting_data
     if event == _IRQ_CENTRAL_CONNECT:
         print("_IRQ_CENTRAL_CONNECT")
     elif event == _IRQ_CENTRAL_DISCONNECT:
@@ -27,11 +25,23 @@ def irq(event, data):
     elif event == _IRQ_PERIPHERAL_DISCONNECT:
         print("_IRQ_PERIPHERAL_DISCONNECT")
 
+    if waiting_event is not None:
+        if event == waiting_event:
+            waiting_event = None
+            waiting_data = data
+
 
 def wait_for_event(event, timeout_ms):
+    global waiting_event, waiting_data
+    waiting_event = event
+    waiting_data = None
+
     t0 = time.ticks_ms()
-    while last_event != event and time.ticks_diff(time.ticks_ms(), t0) < timeout_ms:
+    while time.ticks_diff(time.ticks_ms(), t0) < timeout_ms:
+        if waiting_data:
+            return True
         machine.idle()
+    return False
 
 
 # Acting in peripheral role.
@@ -42,20 +52,20 @@ def instance0():
     multitest.next()
     try:
         # Wait for central to connect, then wait for it to disconnect.
-        wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
-        wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)
-        if last_event != _IRQ_CENTRAL_DISCONNECT:
+        if not wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS):
+            return
+        if not wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS):
             return
 
         # Start advertising again.
         ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
 
         # Wait for central to connect, then disconnect it.
-        wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
-        if last_event != _IRQ_CENTRAL_CONNECT:
+        if not wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS):
             return
-        print("gap_disconnect:", ble.gap_disconnect(last_data[0]))
-        wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)
+        print("gap_disconnect:", ble.gap_disconnect(waiting_data[0]))
+        if not wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS):
+            return
     finally:
         ble.active(0)
 
@@ -67,12 +77,10 @@ def instance1():
         # Connect to peripheral and then disconnect.
         print("gap_connect")
         ble.gap_connect(0, BDADDR)
-        wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
-        if last_event != _IRQ_PERIPHERAL_CONNECT:
+        if not wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS):
             return
-        print("gap_disconnect:", ble.gap_disconnect(last_data[0]))
-        wait_for_event(_IRQ_PERIPHERAL_DISCONNECT, TIMEOUT_MS)
-        if last_event != _IRQ_PERIPHERAL_DISCONNECT:
+        print("gap_disconnect:", ble.gap_disconnect(waiting_data[0]))
+        if not wait_for_event(_IRQ_PERIPHERAL_DISCONNECT, TIMEOUT_MS):
             return
 
         # Wait for peripheral to start advertising again.
@@ -81,8 +89,7 @@ def instance1():
         # Connect to peripheral and then let the peripheral disconnect us.
         print("gap_connect")
         ble.gap_connect(0, BDADDR)
-        wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
-        if last_event != _IRQ_PERIPHERAL_CONNECT:
+        if not wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS):
             return
         wait_for_event(_IRQ_PERIPHERAL_DISCONNECT, TIMEOUT_MS)
     finally:

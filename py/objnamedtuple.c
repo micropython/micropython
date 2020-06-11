@@ -48,7 +48,7 @@ STATIC mp_obj_t namedtuple_asdict(mp_obj_t self_in) {
     mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
     const qstr *fields = ((mp_obj_namedtuple_type_t *)self->tuple.base.type)->fields;
     mp_obj_t dict = mp_obj_new_dict(self->tuple.len);
-    //make it an OrderedDict
+    // make it an OrderedDict
     mp_obj_dict_t *dictObj = MP_OBJ_TO_PTR(dict);
     dictObj->base.type = &mp_type_ordereddict;
     dictObj->map.is_ordered = 1;
@@ -87,7 +87,7 @@ STATIC void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else {
         // delete/store attribute
         // provide more detailed error message than we'd get by just returning
-        mp_raise_msg(&mp_type_AttributeError, "can't set attribute");
+        mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("can't set attribute"));
     }
 }
 
@@ -95,17 +95,17 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
     const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t *)type_in;
     size_t num_fields = type->n_fields;
     if (n_args + n_kw != num_fields) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_arg_error_terse_mismatch();
-        } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
-            mp_raise_msg_varg(&mp_type_TypeError,
-                "function takes %d positional arguments but %d were given",
-                num_fields, n_args + n_kw);
-        } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED) {
-            mp_raise_msg_varg(&mp_type_TypeError,
-                "%q() takes %d positional arguments but %d were given",
-                type->base.name, num_fields, n_args + n_kw);
-        }
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        mp_arg_error_terse_mismatch();
+        #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
+        mp_raise_msg_varg(&mp_type_TypeError,
+            MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
+            num_fields, n_args + n_kw);
+        #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+        mp_raise_msg_varg(&mp_type_TypeError,
+            MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
+            type->base.name, num_fields, n_args + n_kw);
+        #endif
     }
 
     // Create a tuple and set the type to this namedtuple
@@ -121,19 +121,19 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
         qstr kw = mp_obj_str_get_qstr(args[i]);
         size_t id = mp_obj_namedtuple_find_field(type, kw);
         if (id == (size_t)-1) {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                mp_arg_error_terse_mismatch();
-            } else {
-                mp_raise_msg_varg(&mp_type_TypeError, "unexpected keyword argument '%q'", kw);
-            }
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            mp_arg_error_terse_mismatch();
+            #else
+            mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("unexpected keyword argument '%q'"), kw);
+            #endif
         }
         if (tuple->items[id] != MP_OBJ_NULL) {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-                mp_arg_error_terse_mismatch();
-            } else {
-                mp_raise_msg_varg(&mp_type_TypeError,
-                    "function got multiple values for argument '%q'", kw);
-            }
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            mp_arg_error_terse_mismatch();
+            #else
+            mp_raise_msg_varg(&mp_type_TypeError,
+                MP_ERROR_TEXT("function got multiple values for argument '%q'"), kw);
+            #endif
         }
         tuple->items[id] = args[i + 1];
     }

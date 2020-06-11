@@ -134,21 +134,46 @@
 #endif
 
 // extended modules
+#ifndef MICROPY_PY_UASYNCIO
+#define MICROPY_PY_UASYNCIO         (1)
+#endif
+#ifndef MICROPY_PY_UCTYPES
 #define MICROPY_PY_UCTYPES          (1)
+#endif
+#ifndef MICROPY_PY_UZLIB
 #define MICROPY_PY_UZLIB            (1)
+#endif
+#ifndef MICROPY_PY_UJSON
 #define MICROPY_PY_UJSON            (1)
+#endif
+#ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE              (1)
+#endif
+#ifndef MICROPY_PY_URE_SUB
 #define MICROPY_PY_URE_SUB          (1)
+#endif
+#ifndef MICROPY_PY_UHEAPQ
 #define MICROPY_PY_UHEAPQ           (1)
+#endif
+#ifndef MICROPY_PY_UHASHLIB
 #define MICROPY_PY_UHASHLIB         (1)
+#endif
 #define MICROPY_PY_UHASHLIB_MD5     (MICROPY_PY_USSL)
 #define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL)
 #define MICROPY_PY_UCRYPTOLIB       (MICROPY_PY_USSL)
+#ifndef MICROPY_PY_UBINASCII
 #define MICROPY_PY_UBINASCII        (1)
+#endif
+#ifndef MICROPY_PY_URANDOM
 #define MICROPY_PY_URANDOM          (1)
+#endif
+#ifndef MICROPY_PY_URANDOM_EXTRA_FUNCS
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
+#endif
 #define MICROPY_PY_USELECT          (1)
+#ifndef MICROPY_PY_UTIMEQ
 #define MICROPY_PY_UTIMEQ           (1)
+#endif
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (1)
@@ -271,7 +296,7 @@ struct _mp_bluetooth_nimble_root_pointers_t;
 
 #if MICROPY_BLUETOOTH_BTSTACK
 struct _mp_bluetooth_btstack_root_pointers_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK void **bluetooth_nimble_memory; struct _mp_bluetooth_btstack_root_pointers_t *bluetooth_btstack_root_pointers;
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK struct _mp_bluetooth_btstack_root_pointers_t *bluetooth_btstack_root_pointers;
 #else
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK
 #endif
@@ -377,9 +402,9 @@ static inline mp_uint_t disable_irq(void) {
 #endif
 
 // The LwIP interface must run at a raised IRQ priority
-#define MICROPY_PY_LWIP_ENTER   uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_LWIP_REENTER irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_LWIP_EXIT    restore_irq_pri(irq_state);
+#define MICROPY_PY_LWIP_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_LWIP_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_LWIP_EXIT    restore_irq_pri(atomic_state);
 
 // Bluetooth calls must run at a raised IRQ priority
 #define MICROPY_PY_BLUETOOTH_ENTER MICROPY_PY_LWIP_ENTER

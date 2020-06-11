@@ -79,7 +79,7 @@ void netutils_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian
         } else if (i > 0 && s < s_top && *s == '.') {
             s++;
         } else {
-            mp_raise_ValueError("invalid arguments");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
         }
     }
 }

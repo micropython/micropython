@@ -31,7 +31,7 @@ UNAME_S := $(shell uname -s)
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx lib/libffi
+GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx lib/libffi
 
 INC +=  -I.
 INC +=  -I$(TOP)
@@ -39,15 +39,23 @@ INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wpointer-arith -Wuninitialized
+CWARN += -Wpointer-arith -Wuninitialized -Wdouble-promotion -Wsign-compare -Wfloat-conversion
 CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
-CFLAGS += -g
-COPT = -O0
+COPT ?= -O0
 else
-COPT = -Os -fdata-sections -ffunction-sections -DNDEBUG
+COPT ?= -Os
+COPT += -fdata-sections -ffunction-sections
+COPT += -DNDEBUG
+endif
+
+# Always enable symbols -- They're occasionally useful, and don't make it into the
+# final .bin/.hex/.dfu so the extra size doesn't matter.
+CFLAGS += -g
+
+ifndef DEBUG
 # _FORTIFY_SOURCE is a feature in gcc/glibc which is intended to provide extra
 # security for detecting buffer overflows. Some distros (Ubuntu at the very least)
 # have it enabled by default.
@@ -124,6 +132,28 @@ CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS_MOD += $(LIBPTHREAD)
 endif
 
+# If the variant enables it and we have libusb, enable BTStack support for USB adaptors.
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+
+HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
+ifeq ($(HAVE_LIBUSB),1)
+
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK=1
+
+MICROPY_BLUETOOTH_BTSTACK ?= 1
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+GIT_SUBMODULES += lib/btstack
+
+include $(TOP)/extmod/btstack/btstack.mk
+endif
+
+endif
+endif
+
 ifeq ($(MICROPY_PY_FFI),1)
 
 ifeq ($(MICROPY_STANDALONE),1)
@@ -160,7 +190,6 @@ SRC_C = \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	file.c \
 	modmachine.c \
 	modos.c \
 	moduos_vfs.c \
@@ -169,20 +198,23 @@ SRC_C = \
 	alloc.c \
 	coverage.c \
 	fatfs_port.c \
+	btstack_usb.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
-LIB_SRC_C = $(addprefix lib/,\
+LIB_SRC_C += $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
 	timeutils/timeutils.c \
+	utils/gchelper_generic.c \
 	)
 
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
+SRC_QSTR += $(SRC_C) $(LIB_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -259,7 +291,8 @@ PREFIX = /usr/local
 BINDIR = $(DESTDIR)$(PREFIX)/bin
 
 install: $(PROG)
-	install -D $(PROG) $(BINDIR)/$(PROG)
+	install -d $(BINDIR)
+	install $(PROG) $(BINDIR)/$(PROG)
 
 uninstall:
 	-rm $(BINDIR)/$(PROG)

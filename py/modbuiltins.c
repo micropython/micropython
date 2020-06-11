@@ -158,7 +158,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         str[3] = (c & 0x3F) | 0x80;
         len = 4;
     } else {
-        mp_raise_ValueError("chr() arg not in range(0x110000)");
+        mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
     }
     return mp_obj_new_str_via_qstr((char *)str, len);
     #else
@@ -167,7 +167,7 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
         uint8_t str[1] = {ord};
         return mp_obj_new_str_via_qstr((char *)str, 1);
     } else {
-        mp_raise_ValueError("chr() arg not in range(256)");
+        mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(256)"));
     }
     #endif
 }
@@ -286,7 +286,7 @@ STATIC mp_obj_t mp_builtin_min_max(size_t n_args, const mp_obj_t *args, mp_map_t
             if (default_elem != NULL) {
                 best_obj = default_elem->value;
             } else {
-                mp_raise_ValueError("arg is an empty sequence");
+                mp_raise_ValueError(MP_ERROR_TEXT("arg is an empty sequence"));
             }
         }
         return best_obj;
@@ -372,12 +372,12 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
         }
     }
 
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-        mp_raise_TypeError("ord expects a character");
-    } else {
-        mp_raise_msg_varg(&mp_type_TypeError,
-            "ord() expected a character, but string of length %d found", (int)len);
-    }
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    mp_raise_TypeError(MP_ERROR_TEXT("ord expects a character"));
+    #else
+    mp_raise_msg_varg(&mp_type_TypeError,
+        MP_ERROR_TEXT("ord() expected a character, but string of length %d found"), (int)len);
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 
@@ -387,7 +387,7 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
             return mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]);
         default:
             #if !MICROPY_PY_BUILTINS_POW3
-            mp_raise_NotImplementedError("3-arg pow() not supported");
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("3-arg pow() not supported"));
             #elif MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_MPZ
             return mp_binary_op(MP_BINARY_OP_MODULO, mp_binary_op(MP_BINARY_OP_POWER, args[0], args[1]), args[2]);
             #else
@@ -509,7 +509,7 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
     mp_float_t val = mp_obj_get_float(o_in);
     if (n_args > 1) {
         mp_int_t num_dig = mp_obj_get_int(args[1]);
-        mp_float_t mult = MICROPY_FLOAT_C_FUN(pow)(10, num_dig);
+        mp_float_t mult = MICROPY_FLOAT_C_FUN(pow)(10, (mp_float_t)num_dig);
         // TODO may lead to overflow
         mp_float_t rounded = MICROPY_FLOAT_C_FUN(nearbyint)(val * mult) / mult;
         return mp_obj_new_float(rounded);
@@ -545,7 +545,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj, 1, 2, mp_builtin_sum);
 
 STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args > 1) {
-        mp_raise_TypeError("must use keyword argument for key function");
+        mp_raise_TypeError(MP_ERROR_TEXT("must use keyword argument for key function"));
     }
     mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);
@@ -558,7 +558,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj, 1, mp_builtin_sorted);
 static inline mp_obj_t mp_load_attr_default(mp_obj_t base, qstr attr, mp_obj_t defval) {
     mp_obj_t dest[2];
     // use load_method, raising or not raising exception
-    ((defval == MP_OBJ_NULL) ? mp_load_method : mp_load_method_maybe)(base, attr, dest);
+    if (defval == MP_OBJ_NULL) {
+        mp_load_method(base, attr, dest);
+    } else {
+        mp_load_method_protected(base, attr, dest, false);
+    }
     if (dest[0] == MP_OBJ_NULL) {
         return defval;
     } else if (dest[1] == MP_OBJ_NULL) {

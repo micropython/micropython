@@ -8,7 +8,6 @@
 # To build a "minimal" configuration, use "make-minimal" wrapper.
 
 BOARD ?= qemu_x86
-CONF_FILE = prj_$(BOARD)_merged.conf
 OUTDIR_PREFIX = $(BOARD)
 
 # Default heap size is 16KB, which is on conservative side, to let
@@ -92,26 +91,23 @@ build/genhdr/qstr.i.last: | $(Z_EXPORTS)
 LIBMICROPYTHON_EXTRA_CMD = -$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
 
 # MicroPython's global clean cleans everything, fast
-CLEAN_EXTRA = outdir libmicropython.a prj_*_merged.conf
+CLEAN_EXTRA = outdir libmicropython.a
 
 # Clean Zephyr things in Zephyr way
 z_clean:
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
-
-# This rule is for prj_$(BOARD)_merged.conf, not $(CONF_FILE), which
-# can be overriden.
-# prj_$(BOARD).conf is optional, that's why it's resolved with $(wildcard)
-# function.
-prj_$(BOARD)_merged.conf: prj_base.conf $(wildcard prj_$(BOARD).conf)
-	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
 
 test:
 	cd $(TOP)/tests && ./run-tests --target minimal --device "execpty:make -C ../ports/zephyr run BOARD=$(BOARD) QEMU_PTY=1"
 
 cmake: outdir/$(BOARD)/Makefile
 
-outdir/$(BOARD)/Makefile: $(CONF_FILE)
-	mkdir -p outdir/$(BOARD) && cmake -DBOARD=$(BOARD) -DCONF_FILE=$(CONF_FILE) -Boutdir/$(BOARD) -H.
+ifneq ($(CONF_FILE),)
+CMAKE_MOD += -DCONF_FILE=$(CONF_FILE)
+endif
+
+outdir/$(BOARD)/Makefile:
+	mkdir -p outdir/$(BOARD) && cmake -DBOARD=$(BOARD) $(CMAKE_MOD) -Boutdir/$(BOARD) -H.
 
 $(Z_EXPORTS): outdir/$(BOARD)/Makefile
 	make --no-print-directory -C outdir/$(BOARD) outputexports CMAKE_COMMAND=: >$@

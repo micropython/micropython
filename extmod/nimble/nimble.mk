@@ -16,7 +16,7 @@ ifeq ($(MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY),0)
 
 NIMBLE_LIB_DIR = lib/mynewt-nimble
 
-SRC_LIB += $(addprefix $(NIMBLE_LIB_DIR)/, \
+LIB_SRC_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 	$(addprefix ext/tinycrypt/src/, \
 		aes_encrypt.c \
 		cmac_mode.c \
@@ -40,7 +40,6 @@ SRC_LIB += $(addprefix $(NIMBLE_LIB_DIR)/, \
 		ble_hs.c \
 		ble_hs_cfg.c \
 		ble_hs_conn.c \
-		ble_hs_dbg.c \
 		ble_hs_flow.c \
 		ble_hs_hci.c \
 		ble_hs_hci_cmd.c \

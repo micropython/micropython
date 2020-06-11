@@ -78,7 +78,6 @@
 #define MICROPY_PY_BUILTINS_PROPERTY        (1)
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS     (1)
 #define MICROPY_PY_BUILTINS_ROUND_INT       (1)
-#define MICROPY_PY_BUILTINS_TIMEOUTERROR    (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS      (1)
 #define MICROPY_PY_BUILTINS_COMPILE         (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE       (1)
@@ -125,6 +124,7 @@
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
 
 // extended modules
+#define MICROPY_PY_UASYNCIO                 (1)
 #define MICROPY_PY_UCTYPES                  (1)
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UJSON                    (1)
@@ -161,7 +161,7 @@
 #define MICROPY_PY_FRAMEBUF                 (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
-#define MICROPY_PY_BLUETOOTH_DEFAULT_NAME   ("ESP32")
+#define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)

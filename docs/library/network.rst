@@ -39,7 +39,7 @@ Common network adapter interface
 ================================
 
 This section describes an (implied) abstract base class for all network
-interface classes implemented by `MicroPython ports <MicroPython port>`
+interface classes implemented by :term:`MicroPython ports <MicroPython port>`
 for different hardware. This means that MicroPython does not actually
 provide ``AbstractNIC`` class, but any actual NIC class, as described
 in the following sections, implements methods as described here.

@@ -191,11 +191,11 @@ STATIC int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_
             socket->u_param.fileno = -1;
             int _errno2;
             if (wiznet5k_socket_socket(socket, &_errno2) != 0) {
-                //printf("(bad resocket %d)\n", _errno2);
+                // printf("(bad resocket %d)\n", _errno2);
             } else if (wiznet5k_socket_bind(socket, NULL, *port, &_errno2) != 0) {
-                //printf("(bad rebind %d)\n", _errno2);
+                // printf("(bad rebind %d)\n", _errno2);
             } else if (wiznet5k_socket_listen(socket, 0, &_errno2) != 0) {
-                //printf("(bad relisten %d)\n", _errno2);
+                // printf("(bad relisten %d)\n", _errno2);
             }
 
             return 0;
@@ -411,7 +411,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
 /// \method regs()
 /// Dump WIZNET5K registers.
 STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
-    //wiznet5k_obj_t *self = self_in;
+    // wiznet5k_obj_t *self = self_in;
     printf("Wiz CREG:");
     for (int i = 0; i < 0x50; ++i) {
         if (i % 16 == 0) {

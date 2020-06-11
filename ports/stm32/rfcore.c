@@ -125,7 +125,7 @@ void ipcc_init(uint32_t irq_pri) {
     __HAL_RCC_IPCC_CLK_ENABLE();
 
     // Enable wanted IRQs
-    IPCC->C1CR = 0;//IPCC_C1CR_RXOIE;
+    IPCC->C1CR = 0; // IPCC_C1CR_RXOIE;
     IPCC->C1MR = 0xffffffff;
     NVIC_SetPriority(IPCC_C1_RX_IRQn, irq_pri);
     HAL_NVIC_EnableIRQ(IPCC_C1_RX_IRQn);
@@ -219,15 +219,15 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
             // Response packet
             // assert(buf[1] == 0x0e);
             kind = "VEND_RESP";
-            //uint16_t cmd = buf[4] | buf[5] << 8;
-            //uint8_t status = buf[6];
+            // uint16_t cmd = buf[4] | buf[5] << 8;
+            // uint8_t status = buf[6];
             break;
         }
         case 0x12: {
             // Event packet
             // assert(buf[1] == 0xff);
             kind = "VEND_EVT";
-            //uint16_t evt = buf[3] | buf[4] << 8;
+            // uint16_t evt = buf[3] | buf[4] << 8;
             break;
         }
         default:

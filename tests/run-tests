@@ -21,6 +21,9 @@ else:
 # mpy-cross is only needed if --via-mpy command-line arg is passed
 MPYCROSS = os.getenv('MICROPY_MPYCROSS', '../mpy-cross/mpy-cross')
 
+# For diff'ing test output
+DIFF = os.getenv('MICROPY_DIFF', 'diff -u')
+
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 
@@ -53,6 +56,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
     special_tests = (
         'micropython/meminfo.py', 'basics/bytes_compare3.py',
         'basics/builtin_help.py', 'thread/thread_exc2.py',
+        'esp32/partition_ota.py',
     )
     had_crash = False
     if pyb is None:
@@ -208,6 +212,9 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
 
 def run_feature_check(pyb, args, base_path, test_file):
+    if pyb is not None and test_file.startswith("repl_"):
+        # REPL feature tests will not run via pyboard because they require prompt interactivity
+        return b""
     return run_micropython(pyb, args, base_path + "/feature_check/" + test_file, is_special=True)
 
 
@@ -413,6 +420,7 @@ def run_tests(pyb, tests, args, base_path="."):
         skip_tests.add('basics/scope_implicit.py') # requires checking for unbound local
         skip_tests.add('basics/try_finally_return2.py') # requires raise_varargs
         skip_tests.add('basics/unboundlocal.py') # requires checking for unbound local
+        skip_tests.add('extmod/uasyncio_lock.py') # requires async with
         skip_tests.add('misc/features.py') # requires raise_varargs
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
@@ -441,7 +449,7 @@ def run_tests(pyb, tests, args, base_path="."):
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
-        is_async = test_name.startswith("async_")
+        is_async = test_name.startswith(("async_", "uasyncio_"))
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
 
@@ -563,7 +571,7 @@ directory with the MicroPython output and the expectations, respectively.
 Options -i and -e can be multiple and processed in the order given. Regex
 "search" (vs "match") operation is used. An action (include/exclude) of
 the last matching regex is used:
-  run-tests -i async - exclude all, then include tests containg "async" anywhere
+  run-tests -i async - exclude all, then include tests containing "async" anywhere
   run-tests -e '/big.+int' - include all, then exclude by regex
   run-tests -e async -i async_foo - include all, exclude async, yet still include async_foo
 ''')
@@ -583,7 +591,28 @@ the last matching regex is used:
     cmd_parser.add_argument('--mpy-cross-flags', default='-mcache-lookup-bc', help='flags to pass to mpy-cross')
     cmd_parser.add_argument('--keep-path', action='store_true', help='do not clear MICROPYPATH when running tests')
     cmd_parser.add_argument('files', nargs='*', help='input test files')
+    cmd_parser.add_argument('--print-failures', action='store_true', help='print the diff of expected vs. actual output for failed tests and exit')
+    cmd_parser.add_argument('--clean-failures', action='store_true', help='delete the .exp and .out files from failed tests and exit')
     args = cmd_parser.parse_args()
+
+    if args.print_failures:
+        os.chdir(os.path.abspath(os.path.dirname(__file__)))
+
+        for exp in glob("*.exp"):
+            testbase = os.path.basename(exp)[:-4]
+            print()
+            print("FAILURE {0}".format(testbase))
+            os.system("{0} {1}.exp {1}.out".format(DIFF, testbase))
+
+        sys.exit(0)
+
+    if args.clean_failures:
+        os.chdir(os.path.abspath(os.path.dirname(__file__)))
+
+        for f in glob("*.exp") + glob("*.out"):
+            os.remove(f)
+
+        sys.exit(0)
 
     LOCAL_TARGETS = ('unix', 'qemu-arm',)
     EXTERNAL_TARGETS = ('pyboard', 'wipy', 'esp8266', 'esp32', 'minimal', 'nrf')
@@ -627,8 +656,8 @@ the last matching regex is used:
         tests = args.files
 
     if not args.keep_path:
-        # clear search path to make sure tests use only builtin modules
-        os.environ['MICROPYPATH'] = ''
+        # clear search path to make sure tests use only builtin modules and those in extmod
+        os.environ['MICROPYPATH'] = os.pathsep + '../extmod'
 
     # Even if we run completely different tests in a different directory,
     # we need to access feature_check's from the same directory as the

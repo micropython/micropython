@@ -196,7 +196,7 @@ int spi_find_index(mp_obj_t id) {
             return 6;
         #endif
         }
-        mp_raise_msg_varg(&mp_type_ValueError, "SPI(%s) doesn't exist", port);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%s) doesn't exist"), port);
     } else {
         // given an integer id
         int spi_id = mp_obj_get_int(id);
@@ -204,7 +204,7 @@ int spi_find_index(mp_obj_t id) {
             && spi_obj[spi_id - 1].spi != NULL) {
             return spi_id;
         }
-        mp_raise_msg_varg(&mp_type_ValueError, "SPI(%d) doesn't exist", spi_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
 }
 
@@ -654,7 +654,7 @@ const spi_t *spi_from_mp_obj(mp_obj_t o) {
         machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
     } else {
-        mp_raise_TypeError("expecting an SPI object");
+        mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
     }
 }
 

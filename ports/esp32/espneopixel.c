@@ -20,18 +20,18 @@ void IRAM_ATTR esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32_t numByte
     mask = 0x80;
     startTime = 0;
 
-    uint32_t fcpu = ets_get_cpu_frequency() * 1000000;
+    uint32_t fcpu = ets_get_cpu_frequency();
 
     if (timing == 1) {
         // 800 KHz
-        time0 = (fcpu * 0.35) / 1000000; // 0.35us
-        time1 = (fcpu * 0.8) / 1000000; // 0.8us
-        period = (fcpu * 1.25) / 1000000; // 1.25us per bit
+        time0 = (fcpu * 350) / 1000; // 0.35us
+        time1 = (fcpu * 800) / 1000; // 0.8us
+        period = (fcpu * 1250) / 1000; // 1.25us per bit
     } else {
         // 400 KHz
-        time0 = (fcpu * 0.5) / 1000000; // 0.35us
-        time1 = (fcpu * 1.2) / 1000000; // 0.8us
-        period = (fcpu * 2.5) / 1000000; // 1.25us per bit
+        time0 = (fcpu * 500) / 1000; // 0.5us
+        time1 = (fcpu * 1200) / 1000; // 1.2us
+        period = (fcpu * 2500) / 1000; // 2.5us per bit
     }
 
     uint32_t irq_state = mp_hal_quiet_timing_enter();
