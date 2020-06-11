@@ -33,6 +33,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "clocks.h"
 
 // Arrays use 0 based numbering: I2C1 is stored at index 0
 #define MAX_I2C 4
@@ -125,7 +126,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     } else if (frequency == 100000) {
         self->handle.Init.Timing = CPY_I2CSTANDARD_TIMINGR;
     } else {
-        mp_raise_ValueError(translate("MCU supports only I2C Standard and Fast modes"));
+        mp_raise_ValueError(translate("Unsupported baudrate"));
     }
     #else
     self->handle.Init.ClockSpeed = frequency;

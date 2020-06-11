@@ -68,3 +68,11 @@
 #ifndef BOARD_HSE_SOURCE
 #define BOARD_HSE_SOURCE (RCC_HSE_ON)
 #endif
+
+// Obtain I2C timing values for F7 and H7 boards from ST CubeMX
+#ifndef CPY_I2CFAST_TIMINGR
+#define CPY_I2CFAST_TIMINGR     0x00B03FDB
+#endif
+#ifndef CPY_I2CSTANDARD_TIMINGR
+#define CPY_I2CSTANDARD_TIMINGR 0x307075B1
+#endif

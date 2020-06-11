@@ -24,4 +24,34 @@
  * THE SOFTWARE.
  */
 
+// F4 Series
+#ifdef STM32F401xE
+#include "stm32f4/stm32f401xe/clocks.h"
+#endif
+#ifdef STM32F411xE
+#include "stm32f4/stm32f411xe/clocks.h"
+#endif
+#ifdef STM32F412Zx
+#include "stm32f4/stm32f412zx/clocks.h"
+#endif
+#ifdef STM32F405xx
+#include "stm32f4/stm32f405xx/clocks.h"
+#endif
+#ifdef STM32F407xx
+#include "stm32f4/stm32f407xx/clocks.h"
+#endif
+
+// F7 Series
+#ifdef STM32F746xx
+#include "stm32f7/stm32f746xx/clocks.h"
+#endif
+#ifdef STM32F767xx
+#include "stm32f7/stm32f767xx/clocks.h"
+#endif
+
+// H7 Series
+#ifdef STM32H743xx
+#include "stm32h7/stm32h743xx/clocks.h"
+#endif
+
 void stm32_peripherals_clocks_init(void);

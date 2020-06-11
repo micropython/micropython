@@ -40,10 +40,6 @@
 #define CPY_SRAM_SUBMASK        0xFC // Mask 512 to 384
 #define CPY_SRAM_START_ADDR     0x20020000
 
-// Obtain I2C timing values for F7 and H7 boards from ST CubeMX
-#define CPY_I2CFAST_TIMINGR     0x6000030D
-#define CPY_I2CSTANDARD_TIMINGR 0x20404768
-
 #define HSE_VALUE ((uint32_t)8000000)
 #define LSE_VALUE ((uint32_t)32768)
 #define BOARD_HSE_SOURCE (RCC_HSE_BYPASS) // ST boards use the STLink clock signal
