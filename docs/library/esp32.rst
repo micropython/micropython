@@ -153,8 +153,8 @@ used to transmit or receive many other types of digital signals::
     r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
 
     # To use carrier frequency
-    r = esp32.RMT(0, pin=Pin(18), clock_div=8, carrier_freq_hz=38000)
-    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8, carrier_freq_hz=38000, carrier_duty_percent=50)
+    r = esp32.RMT(0, pin=Pin(18), clock_div=8, carrier_freq=38000)
+    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8, carrier_freq=38000, carrier_duty_percent=50)
 
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), start=0)  # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
@@ -169,7 +169,7 @@ define the pulses.
 multiplying the resolution by a 15-bit (0-32,768) number. There are eight
 channels (0-7) and each can have a different clock divider.
 
-To enable the carrier frequency feature of the esp32 hardware, specify the ``carrier_freq_hz`` to someting like 38000,
+To enable the carrier frequency feature of the esp32 hardware, specify the ``carrier_freq`` to someting like 38000,
 a typical IR carrier frequency.
 
 So, in the example above, the 80MHz clock is divided by 8. Thus the
@@ -186,14 +186,14 @@ For more details see Espressif's `ESP-IDF RMT documentation.
    *beta feature* and the interface may change in the future.
 
 
-.. class:: RMT(channel, \*, pin=None, clock_div=8, carrier_freq_hz=None, carrier_duty_percent=50)
+.. class:: RMT(channel, \*, pin=None, clock_div=8, carrier_freq=None, carrier_duty_percent=50)
 
     This class provides access to one of the eight RMT channels. *channel* is
     required and identifies which RMT channel (0-7) will be configured. *pin*,
     also required, configures which Pin is bound to the RMT channel. *clock_div*
     is an 8-bit clock divider that divides the source clock (80MHz) to the RMT
-    channel allowing the resolution to be specified. *carrier_freq_hz* is used to enable the carrier feature
-    and specify its frequency, default value is ``None`` (not enabled). To enable, specify a 32-bit interger.
+    channel allowing the resolution to be specified. *carrier_freq* is used to enable the carrier feature
+    and specify its frequency, default value is ``0`` (not enabled). To enable, specify a 32-bit interger.
     *carrier_duty_percent* is default to 50.
 
 .. method:: RMT.source_freq()
