@@ -210,8 +210,8 @@ The remaining port directories not listed above are in the repo to maintain comp
 
 `back to top <#circuitpython>`__
 
-.. |Build Status| image:: https://travis-ci.com/adafruit/circuitpython.svg?branch=master
-   :target: https://travis-ci.org/adafruit/circuitpython
+.. |Build Status| image:: https://github.com/adafruit/circuitpython/workflows/Build%20CI/badge.svg
+   :target: https://github.com/adafruit/circuitpython/actions?query=branch%3Amain
 .. |Doc Status| image:: https://readthedocs.org/projects/circuitpython/badge/?version=latest
    :target: http://circuitpython.readthedocs.io/
 .. |Discord| image:: https://img.shields.io/discord/327254708534116352.svg
