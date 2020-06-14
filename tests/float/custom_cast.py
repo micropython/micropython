@@ -12,7 +12,7 @@ print(complex(Test1()))
 # Test a class that returns the wrong type
 
 class Test2:
-    def _float__(self):
+    def __float__(self):
         return "Not a float"
     def __complex__(self):
         return "Not very complex"

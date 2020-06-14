@@ -94,7 +94,7 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
                 if (dest[0] != MP_OBJ_NULL) {
                     mp_obj_t ret = mp_call_method_n_kw(0, 0, dest);
                     if (!mp_obj_is_type(ret, &mp_type_complex)) {
-		        mp_raise_TypeError(MP_ERROR_TEXT("__complex__ method returned non-complex"));
+                        mp_raise_TypeError(MP_ERROR_TEXT("__complex__ method returned non-complex"));
                     }
                     return ret;
                 }
