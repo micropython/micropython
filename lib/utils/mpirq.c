@@ -31,6 +31,8 @@
 #include "py/gc.h"
 #include "lib/utils/mpirq.h"
 
+#if MICROPY_ENABLE_SCHEDULER
+
 /******************************************************************************
  DECLARE PUBLIC DATA
  ******************************************************************************/
@@ -125,3 +127,5 @@ const mp_obj_type_t mp_irq_type = {
     .call = mp_irq_call,
     .locals_dict = (mp_obj_dict_t *)&mp_irq_locals_dict,
 };
+
+#endif // MICROPY_ENABLE_SCHEDULER
