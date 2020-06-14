@@ -79,6 +79,7 @@ autoapi_add_toctree_entry = False
 autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members', 'show-module-summary']
 autoapi_template_dir = 'docs/autoapi/templates'
 autoapi_python_use_implicit_namespaces = True
+autoapi_root = "shared-bindings"
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
