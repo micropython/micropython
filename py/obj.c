@@ -359,6 +359,10 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
     mp_float_t val;
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
+        arg = mp_unary_op(MP_UNARY_OP_FLOAT, arg);
+        if (mp_obj_get_float_maybe(arg, &val)) {
+            return val;
+        }
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("can't convert to float"));
         #else
@@ -399,6 +403,10 @@ bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) 
 
 void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     if (!mp_obj_get_complex_maybe(arg, real, imag)) {
+        arg = mp_unary_op(MP_UNARY_OP_COMPLEX, arg);
+        if (mp_obj_get_complex_maybe(arg, real, imag)) {
+            return;
+        }
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("can't convert to complex"));
         #else

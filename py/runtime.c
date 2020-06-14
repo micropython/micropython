@@ -231,7 +231,7 @@ void mp_delete_global(qstr qst) {
     mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
-mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
+mp_obj_t mp_unary_op_maybe(mp_unary_op_t op, mp_obj_t arg) {
     DEBUG_OP_printf("unary " UINT_FMT " %q %p\n", op, mp_unary_op_method_name[op], arg);
 
     if (op == MP_UNARY_OP_NOT) {
@@ -277,31 +277,38 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
         return MP_OBJ_NEW_SMALL_INT(h);
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(arg);
+        mp_obj_t result = MP_OBJ_NULL;
         if (type->unary_op != NULL) {
-            mp_obj_t result = type->unary_op(op, arg);
-            if (result != MP_OBJ_NULL) {
-                return result;
-            }
+            result = type->unary_op(op, arg);
         }
-        // With MP_UNARY_OP_INT, mp_unary_op() becomes a fallback for mp_obj_get_int().
-        // In this case provide a more focused error message to not confuse, e.g. chr(1.0)
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        if (op == MP_UNARY_OP_INT) {
-            mp_raise_TypeError(MP_ERROR_TEXT("can't convert to int"));
-        } else {
-            mp_raise_TypeError(MP_ERROR_TEXT("unsupported type for operator"));
-        }
-        #else
-        if (op == MP_UNARY_OP_INT) {
-            mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("can't convert %s to int"), mp_obj_get_type_str(arg));
-        } else {
-            mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("unsupported type for %q: '%s'"),
-                mp_unary_op_method_name[op], mp_obj_get_type_str(arg));
-        }
-        #endif
+        return result;
     }
+}
+
+mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
+    mp_obj_t result = mp_unary_op_maybe(op, arg);
+    if (result != MP_OBJ_NULL) {
+        return result;
+    }
+
+    // With MP_UNARY_OP_INT, mp_unary_op() becomes a fallback for mp_obj_get_int().
+    // In this case provide a more focused error message to not confuse, e.g. chr(1.0)
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+    if (op == MP_UNARY_OP_INT) {
+        mp_raise_TypeError(MP_ERROR_TEXT("can't convert to int"));
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("unsupported type for operator"));
+    }
+    #else
+    if (op == MP_UNARY_OP_INT) {
+        mp_raise_msg_varg(&mp_type_TypeError,
+	    MP_ERROR_TEXT("can't convert %s to int"), mp_obj_get_type_str(arg));
+    } else {
+        mp_raise_msg_varg(&mp_type_TypeError,
+            MP_ERROR_TEXT("unsupported type for %q: '%s'"),
+            mp_unary_op_method_name[op], mp_obj_get_type_str(arg));
+    }
+    #endif
 }
 
 mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
