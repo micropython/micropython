@@ -96,7 +96,6 @@ CircuitPython:
 
 -  Supports native USB on all boards, allowing file editing without special tools.
 -  Supports only SAMD21, SAMD51, nRF52840, CXD56, STM32F4 and i.MX RT ports.
--  Tracks MicroPython's releases (not master).
 -  Floats (aka decimals) are enabled for all builds.
 -  Error messages are translated into 10+ languages.
 -  Does not support concurrency within Python (including interrupts and threading). Some concurrency
