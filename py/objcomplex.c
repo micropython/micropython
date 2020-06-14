@@ -89,6 +89,15 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
                 return args[0];
             } else {
                 // something else, try to cast it to a complex
+                mp_obj_t dest[2];
+                mp_load_method_maybe(args[0], MP_QSTR___complex__, dest);
+                if (dest[0] != MP_OBJ_NULL) {
+                    mp_obj_t ret = mp_call_method_n_kw(0, 0, dest);
+                    if (!mp_obj_is_type(ret, &mp_type_complex)) {
+                        mp_raise_TypeError("__complex__ method returned non-complex");
+                    }
+                    return ret;
+                }
                 return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
             }
 
