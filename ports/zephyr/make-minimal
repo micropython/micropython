@@ -11,6 +11,8 @@
 make \
     CONF_FILE=prj_minimal.conf \
     CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' \
+    MICROPY_VFS_FAT=0 \
+    MICROPY_VFS_LFS2=0 \
     FROZEN_DIR= \
     QEMU_NET=0 \
     "$@"
