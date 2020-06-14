@@ -134,7 +134,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_obj___exit__(size_t n_args, const mp_obj_t *a
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cslave_i2c_slave___exit___obj, 4, 4, i2cslave_i2c_slave_obj___exit__);
 
 //|     def request(self, timeout: float = -1) -> Any:
-//|         """Wait for an I2C request from a master.
+//|         """Wait for an I2C request.
 //|
 //|         :param float timeout: Timeout in seconds. Zero means wait forever, a negative value means check once
 //|         :return: I2C Slave Request or None if timeout=-1 and there's no request
@@ -228,12 +228,12 @@ const mp_obj_type_t i2cslave_i2c_slave_type = {
 //| class I2CSlaveRequest:
 //|
 //|     def __init__(self, slave: i2cslave.I2CSlave, address: int, is_read: bool, is_restart: bool):
-//|         """I2C transfer request from a master.
+//|         """Information about an I2C transfer request
 //|         This cannot be instantiated directly, but is returned by :py:meth:`I2CSlave.request`.
 //|
 //|         :param slave: The I2C Slave receiving this request
 //|         :param address: I2C address
-//|         :param is_read: I2C Master read request
+//|         :param is_read: True if the main device is requesting data
 //|         :param is_restart: Repeated Start Condition"""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -270,7 +270,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_get_address(mp_obj_t self_in) {
 MP_DEFINE_CONST_PROP_GET(i2cslave_i2c_slave_request_address_obj, i2cslave_i2c_slave_request_get_address);
 
 //|     is_read: bool = ...
-//|     """The I2C master is reading from the device."""
+//|     """The I2C main controller is reading from this device."""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_get_is_read(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cslave_i2c_slave_request_type));

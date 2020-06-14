@@ -53,9 +53,9 @@
 //|           if not r:
 //|               # Maybe do some housekeeping
 //|               continue
-//|           with r:  # Closes the transfer if necessary by sending a NACK or feeding the master dummy bytes
+//|           with r:  # Closes the transfer if necessary by sending a NACK or feeding dummy bytes
 //|               if r.address == 0x40:
-//|                   if not r.is_read:  # Master write which is Slave read
+//|                   if not r.is_read:  # Main write which is Selected read
 //|                       b = r.read(1)
 //|                       if not b or b[0] > 15:
 //|                           break
@@ -63,7 +63,7 @@
 //|                       b = r.read(1)
 //|                       if b:
 //|                           regs[index] = b[0]
-//|                   elif r.is_restart:  # Combined transfer: This is the Master read message
+//|                   elif r.is_restart:  # Combined transfer: This is the Main read message
 //|                       n = r.write(bytes([regs[index]]))
 //|                   #else:
 //|                       # A read transfer is not supported in this example
