@@ -3,7 +3,7 @@ Design Guide
 
 This guide covers a variety of development practices for CircuitPython core and library APIs. These
 APIs are both `built-into CircuitPython
-<https://github.com/adafruit/circuitpython/tree/master/shared-bindings>`_ and those that are
+<https://github.com/adafruit/circuitpython/tree/main/shared-bindings>`_ and those that are
 `distributed on GitHub <https://github.com/search?utf8=%E2%9C%93&q=topic%3Acircuitpython&type=>`_
 and in the `Adafruit <https://github.com/adafruit/Adafruit_CircuitPython_Bundle>`_ and `Community
 <https://github.com/adafruit/CircuitPython_Community_Bundle/>`_ bundles. Consistency with these

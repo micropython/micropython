@@ -55,12 +55,12 @@ Contributing
 ------------
 
 See
-`CONTRIBUTING.md <https://github.com/adafruit/circuitpython/blob/master/CONTRIBUTING.md>`__
+`CONTRIBUTING.md <https://github.com/adafruit/circuitpython/blob/main/CONTRIBUTING.md>`__
 for full guidelines but please be aware that by contributing to this
 project you are agreeing to the `Code of
-Conduct <https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md>`__.
+Conduct <https://github.com/adafruit/circuitpython/blob/main/CODE_OF_CONDUCT.md>`__.
 Contributors who follow the `Code of
-Conduct <https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md>`__
+Conduct <https://github.com/adafruit/circuitpython/blob/main/CODE_OF_CONDUCT.md>`__
 are welcome to submit pull requests and they will be promptly reviewed
 by project admins. Please join the
 `Discord <https://adafru.it/discord>`__ too.
