@@ -33,7 +33,24 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "clocks.h"
+
+// I2C timing specs for the H7 and F7
+// Configured for maximum possible clock settings for the family
+#if (CPY_STM32F7)
+#ifndef CPY_I2CFAST_TIMINGR
+#define CPY_I2CFAST_TIMINGR     0x6000030D
+#endif
+#ifndef CPY_I2CSTANDARD_TIMINGR
+#define CPY_I2CSTANDARD_TIMINGR 0x20404768
+#endif
+#elif (CPY_STM32H7)
+#ifndef CPY_I2CFAST_TIMINGR
+#define CPY_I2CFAST_TIMINGR     0x00B03FDB
+#endif
+#ifndef CPY_I2CSTANDARD_TIMINGR
+#define CPY_I2CSTANDARD_TIMINGR 0x307075B1
+#endif
+#endif
 
 // Arrays use 0 based numbering: I2C1 is stored at index 0
 #define MAX_I2C 4
