@@ -394,7 +394,6 @@ def generate_redirects(app):
         app.info("Could not find redirects file at '%s'" % path)
         return
 
-    # TODO(stephenfin): Add support for DirectoryHTMLBuilder
     if not type(app.builder) == builders.StandaloneHTMLBuilder:
         logging.warn("The 'sphinxcontib-redirects' plugin is only supported "
                  "by the 'html' builder. Skipping...")
