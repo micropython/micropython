@@ -66,9 +66,7 @@ bool bleio_scanentry_data_matches(const uint8_t* data, size_t len, const uint8_t
         i += 1;
         size_t j = 0;
         bool prefix_matched = false;
-        mp_printf(&mp_plat_print,"i %d\n", i); // XXX
         while (j < len) {
-            mp_printf(&mp_plat_print,"  j %d\n", j); // XXX
             uint8_t structure_length = data[j];
             j += 1;
             if (structure_length == 0) {
@@ -79,20 +77,17 @@ bool bleio_scanentry_data_matches(const uint8_t* data, size_t len, const uint8_t
                     return true;
                 }
                 prefix_matched = true;
-                mp_printf(&mp_plat_print,"    match\n"); // XXX
                 break;
             }
             j += structure_length;
         }
         // If all (!any), the current prefix must have matched at least one field.
         if (!prefix_matched && !any) {
-            mp_printf(&mp_plat_print,"<prefix not matched\n"); // XXX
             return false;
         }
         i += prefix_length;
     }
     // All prefixes matched some field (if !any), or none did (if any).
-    mp_printf(&mp_plat_print,"<all matched\n"); // XXX
     return !any;
 }
 
