@@ -1,3 +1,5 @@
+.. role:: strike
+
 Design Guide
 ============
 
@@ -45,6 +47,41 @@ Community created libraries should have the repo format ``CircuitPython_<name>``
 not have the ``adafruit_`` module or package prefix.
 
 Both should have the CircuitPython repository topic on GitHub.
+
+Terminology
+-----------
+
+As our Code of Conduct states, we strive to use "welcoming and inclusive
+language." Whether it is in documentation or in code, the words we use matter.
+This means we disfavor language that due to historical and social context can
+make community members and potential community members feel unwelcome.
+
+There are specific terms to avoid except where technical limitations require it.
+While specific cases may call for other terms, consider using these suggested
+terms first:
+
++--------------------+---------------------+
+| Preferred          | Deprecated          |
++====================+=====================+
+| Main (device)      | :strike:`Master`    |
++--------------------+---------------------+
+| Peripheral         | :strike:`Slave`     |
++--------------------+                     +
+| Sensor             |                     |
++--------------------+                     +
+| Secondary (device) |                     |
++--------------------+---------------------+
+| Denylist           | :strike:`Blacklist` |
++--------------------+---------------------+
+| Allowlist          | :strike:`Whitelist` |
++--------------------+---------------------+
+
+Note that "technical limitations" refers e.g., to the situation where an
+upstream library or URL has to contain those substrings in order to work.
+However, when it comes to documentation and the names of parameters and
+properties in CircuitPython, we will use alternate terms even if this breaks
+tradition with past practice.
+
 
 .. _lifetime-and-contextmanagers:
 
