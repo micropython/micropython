@@ -119,8 +119,23 @@ ifndef USB_DEVICES
 USB_DEVICES = "CDC,MSC,AUDIO,HID"
 endif
 
+USB_DEVICES_COMPUTED := CDC,MSC
+ifeq ($(CIRCUITPY_USB_MIDI),1)
+USB_DEVICES_COMPUTED := $(USB_DEVICES_COMPUTED),AUDIO
+endif
+ifeq ($(CIRCUITPY_USB_HID),1)
+USB_DEVICES_COMPUTED := $(USB_DEVICES_COMPUTED),HID
+endif
+USB_DEVICES_COMPUTED := "$(USB_DEVICES_COMPUTED)"
+
 ifndef USB_HID_DEVICES
 USB_HID_DEVICES = "KEYBOARD,MOUSE,CONSUMER,GAMEPAD"
+endif
+
+# During a transitional period, check that the COMPUTED values match.
+# Once they do all match, we can remove all the hard-coded ones.
+ifneq ($(USB_DEVICES),$(USB_DEVICES_COMPUTED))
+$(error Computed USB devices '$(USB_DEVICES_COMPUTED)' different than hard-coded USB devices '$(USB_DEVICES)')
 endif
 
 ifndef USB_MSC_MAX_PACKET_SIZE
