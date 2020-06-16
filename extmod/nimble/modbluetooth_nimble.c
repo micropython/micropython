@@ -587,13 +587,13 @@ int mp_bluetooth_gatts_notify(uint16_t conn_handle, uint16_t value_handle) {
     return ble_hs_err_to_errno(ble_gattc_notify(conn_handle, value_handle));
 }
 
-int mp_bluetooth_gatts_notify_send(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len) {
+int mp_bluetooth_gatts_notify_send(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t value_len) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
-    struct os_mbuf *om = ble_hs_mbuf_from_flat(value, *value_len);
+    struct os_mbuf *om = ble_hs_mbuf_from_flat(value, value_len);
     if (om == NULL) {
-        return -1;
+        return MP_ENOMEM;
     }
     // TODO: check that notify_custom takes ownership of om, if not os_mbuf_free_chain(om).
     return ble_hs_err_to_errno(ble_gattc_notify_custom(conn_handle, value_handle, om));

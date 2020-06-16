@@ -321,8 +321,7 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                     case MP_QSTR_gap_name: {
                         mp_buffer_info_t bufinfo;
                         mp_get_buffer_raise(e->value, &bufinfo, MP_BUFFER_READ);
-                        int ret = mp_bluetooth_gap_set_device_name(bufinfo.buf, bufinfo.len);
-                        bluetooth_handle_errno(ret);
+                        bluetooth_handle_errno(mp_bluetooth_gap_set_device_name(bufinfo.buf, bufinfo.len));
                         break;
                     }
                     case MP_QSTR_rxbuf: {
@@ -663,16 +662,24 @@ STATIC mp_obj_t bluetooth_ble_gatts_notify(size_t n_args, const mp_obj_t *args) 
     if (n_args == 4) {
         mp_buffer_info_t bufinfo = {0};
         mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
-        size_t len = bufinfo.len;
-        int err = mp_bluetooth_gatts_notify_send(conn_handle, value_handle, bufinfo.buf, &len);
+        int err = mp_bluetooth_gatts_notify_send(conn_handle, value_handle, bufinfo.buf, bufinfo.len);
         bluetooth_handle_errno(err);
-        return MP_OBJ_NEW_SMALL_INT(len);
+        return mp_const_none;
     } else {
         int err = mp_bluetooth_gatts_notify(conn_handle, value_handle);
         return bluetooth_handle_errno(err);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gatts_notify_obj, 3, 4, bluetooth_ble_gatts_notify);
+
+STATIC mp_obj_t bluetooth_ble_gatts_indicate(mp_obj_t self_in, mp_obj_t conn_handle_in, mp_obj_t value_handle_in) {
+    mp_int_t conn_handle = mp_obj_get_int(conn_handle_in);
+    mp_int_t value_handle = mp_obj_get_int(value_handle_in);
+
+    int err = mp_bluetooth_gatts_indicate(conn_handle, value_handle);
+    return bluetooth_handle_errno(err);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_gatts_indicate_obj, bluetooth_ble_gatts_indicate);
 
 STATIC mp_obj_t bluetooth_ble_gatts_set_buffer(size_t n_args, const mp_obj_t *args) {
     mp_int_t value_handle = mp_obj_get_int(args[1]);
@@ -765,6 +772,7 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gatts_read), MP_ROM_PTR(&bluetooth_ble_gatts_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_write), MP_ROM_PTR(&bluetooth_ble_gatts_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_notify), MP_ROM_PTR(&bluetooth_ble_gatts_notify_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gatts_indicate), MP_ROM_PTR(&bluetooth_ble_gatts_indicate_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_set_buffer), MP_ROM_PTR(&bluetooth_ble_gatts_set_buffer_obj) },
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     // GATT Client (i.e. central/scanner role)
@@ -1147,47 +1155,58 @@ mp_bluetooth_gatts_db_entry_t *mp_bluetooth_gatts_db_lookup(mp_gatts_db_t db, ui
 }
 
 int mp_bluetooth_gatts_db_read(mp_gatts_db_t db, uint16_t handle, uint8_t **value, size_t *value_len) {
+    MICROPY_PY_BLUETOOTH_ENTER
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(db, handle);
-    if (!entry) {
-        return MP_EINVAL;
+    if (entry) {
+        *value = entry->data;
+        *value_len = entry->data_len;
+        if (entry->append) {
+            entry->data_len = 0;
+        }
     }
-
-    *value = entry->data;
-    *value_len = entry->data_len;
-    if (entry->append) {
-        entry->data_len = 0;
-    }
-
-    return 0;
+    MICROPY_PY_BLUETOOTH_EXIT
+    return entry ? 0 : MP_EINVAL;
 }
 
 int mp_bluetooth_gatts_db_write(mp_gatts_db_t db, uint16_t handle, const uint8_t *value, size_t value_len) {
+    MICROPY_PY_BLUETOOTH_ENTER
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(db, handle);
-    if (!entry) {
-        return MP_EINVAL;
+    if (entry) {
+        if (value_len > entry->data_alloc) {
+            uint8_t *data = m_new_maybe(uint8_t, value_len);
+            if (data) {
+                entry->data = data;
+                entry->data_alloc = value_len;
+            } else {
+                MICROPY_PY_BLUETOOTH_EXIT
+                return MP_ENOMEM;
+            }
+        }
+
+        memcpy(entry->data, value, value_len);
+        entry->data_len = value_len;
     }
-
-    if (value_len > entry->data_alloc) {
-        entry->data = m_new(uint8_t, value_len);
-        entry->data_alloc = value_len;
-    }
-
-    memcpy(entry->data, value, value_len);
-    entry->data_len = value_len;
-
-    return 0;
+    MICROPY_PY_BLUETOOTH_EXIT
+    return entry ? 0 : MP_EINVAL;
 }
 
 int mp_bluetooth_gatts_db_resize(mp_gatts_db_t db, uint16_t handle, size_t len, bool append) {
+    MICROPY_PY_BLUETOOTH_ENTER
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(db, handle);
-    if (!entry) {
-        return MP_EINVAL;
+    if (entry) {
+        uint8_t *data = m_renew_maybe(uint8_t, entry->data, entry->data_alloc, len, true);
+        if (data) {
+            entry->data = data;
+            entry->data_alloc = len;
+            entry->data_len = 0;
+            entry->append = append;
+        } else {
+            MICROPY_PY_BLUETOOTH_EXIT
+            return MP_ENOMEM;
+        }
     }
-    entry->data = m_renew(uint8_t, entry->data, entry->data_alloc, len);
-    entry->data_alloc = len;
-    entry->data_len = 0;
-    entry->append = append;
-    return 0;
+    MICROPY_PY_BLUETOOTH_EXIT
+    return entry ? 0 : MP_EINVAL;
 }
 
 #endif // MICROPY_PY_BLUETOOTH
