@@ -49,7 +49,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     while (len--) {
         char c = *str++;
         while (console_putchar(c) == -1) {
-            k_sleep(1);
+            k_msleep(1);
         }
     }
     #else

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1981,7 +1981,8 @@ STATIC void compile_async_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 #endif
 
 STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    if (MP_PARSE_NODE_IS_NULL(pns->nodes[1])) {
+    mp_parse_node_t pn_rhs = pns->nodes[1];
+    if (MP_PARSE_NODE_IS_NULL(pn_rhs)) {
         if (comp->is_repl && comp->scope_cur->kind == SCOPE_MODULE) {
             // for REPL, evaluate then print the expression
             compile_load_id(comp, MP_QSTR___repl_print__);
@@ -1999,10 +2000,26 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 EMIT(pop_top); // discard last result since this is a statement and leaves nothing on the stack
             }
         }
-    } else if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])) {
-        mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t *)pns->nodes[1];
+    } else if (MP_PARSE_NODE_IS_STRUCT(pn_rhs)) {
+        mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t *)pn_rhs;
         int kind = MP_PARSE_NODE_STRUCT_KIND(pns1);
-        if (kind == PN_expr_stmt_augassign) {
+        if (kind == PN_annassign) {
+            // the annotation is in pns1->nodes[0] and is ignored
+            if (MP_PARSE_NODE_IS_NULL(pns1->nodes[1])) {
+                // an annotation of the form "x: y"
+                // inside a function this declares "x" as a local
+                if (comp->scope_cur->kind == SCOPE_FUNCTION) {
+                    if (MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
+                        qstr lhs = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
+                        scope_find_or_add_id(comp->scope_cur, lhs, ID_INFO_KIND_LOCAL);
+                    }
+                }
+            } else {
+                // an assigned annotation of the form "x: y = z"
+                pn_rhs = pns1->nodes[1];
+                goto plain_assign;
+            }
+        } else if (kind == PN_expr_stmt_augassign) {
             c_assign(comp, pns->nodes[0], ASSIGN_AUG_LOAD); // lhs load for aug assign
             compile_node(comp, pns1->nodes[1]); // rhs
             assert(MP_PARSE_NODE_IS_TOKEN(pns1->nodes[0]));
@@ -2027,10 +2044,10 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         } else {
         plain_assign:
             #if MICROPY_COMP_DOUBLE_TUPLE_ASSIGN
-            if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_testlist_star_expr)
+            if (MP_PARSE_NODE_IS_STRUCT_KIND(pn_rhs, PN_testlist_star_expr)
                 && MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_star_expr)) {
                 mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t *)pns->nodes[0];
-                pns1 = (mp_parse_node_struct_t *)pns->nodes[1];
+                pns1 = (mp_parse_node_struct_t *)pn_rhs;
                 uint32_t n_pns0 = MP_PARSE_NODE_STRUCT_NUM_NODES(pns0);
                 // Can only optimise a tuple-to-tuple assignment when all of the following hold:
                 //  - equal number of items in LHS and RHS tuples
@@ -2070,7 +2087,7 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             }
             #endif
 
-            compile_node(comp, pns->nodes[1]); // rhs
+            compile_node(comp, pn_rhs); // rhs
             c_assign(comp, pns->nodes[0], ASSIGN_STORE); // lhs store
         }
     } else {
@@ -2107,6 +2124,27 @@ STATIC void compile_lambdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // compile the lambda definition
     compile_funcdef_lambdef(comp, this_scope, pns->nodes[0], PN_varargslist);
 }
+
+#if MICROPY_PY_ASSIGN_EXPR
+STATIC void compile_namedexpr_helper(compiler_t *comp, mp_parse_node_t pn_name, mp_parse_node_t pn_expr) {
+    if (!MP_PARSE_NODE_IS_ID(pn_name)) {
+        compile_syntax_error(comp, (mp_parse_node_t)pn_name, MP_ERROR_TEXT("can't assign to expression"));
+    }
+    compile_node(comp, pn_expr);
+    EMIT(dup_top);
+    scope_t *old_scope = comp->scope_cur;
+    if (SCOPE_IS_COMP_LIKE(comp->scope_cur->kind)) {
+        // Use parent's scope for assigned value so it can "escape"
+        comp->scope_cur = comp->scope_cur->parent;
+    }
+    compile_store_id(comp, MP_PARSE_NODE_LEAF_ARG(pn_name));
+    comp->scope_cur = old_scope;
+}
+
+STATIC void compile_namedexpr(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    compile_namedexpr_helper(comp, pns->nodes[0], pns->nodes[1]);
+}
+#endif
 
 STATIC void compile_or_and_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
     bool cond = MP_PARSE_NODE_STRUCT_KIND(pns) == PN_or_test;
@@ -2353,6 +2391,12 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                 star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
                 dblstar_args_node = pns_arg;
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_argument) {
+                #if MICROPY_PY_ASSIGN_EXPR
+                if (MP_PARSE_NODE_IS_STRUCT_KIND(pns_arg->nodes[1], PN_argument_3)) {
+                    compile_namedexpr_helper(comp, pns_arg->nodes[0], ((mp_parse_node_struct_t *)pns_arg->nodes[1])->nodes[0]);
+                    n_positional++;
+                } else
+                #endif
                 if (!MP_PARSE_NODE_IS_STRUCT_KIND(pns_arg->nodes[1], PN_comp_for)) {
                     if (!MP_PARSE_NODE_IS_ID(pns_arg->nodes[0])) {
                         compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("LHS of keyword arg must be an id"));
@@ -3083,7 +3127,7 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
             EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
         }
         EMIT(return_value);
-    } else if (scope->kind == SCOPE_LIST_COMP || scope->kind == SCOPE_DICT_COMP || scope->kind == SCOPE_SET_COMP || scope->kind == SCOPE_GEN_EXPR) {
+    } else if (SCOPE_IS_COMP_LIKE(scope->kind)) {
         // a bit of a hack at the moment
 
         assert(MP_PARSE_NODE_IS_STRUCT(scope->pn));

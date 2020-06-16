@@ -96,6 +96,7 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_KW_WITH,
     MP_TOKEN_KW_YIELD,
 
+    MP_TOKEN_OP_ASSIGN,
     MP_TOKEN_OP_TILDE,
 
     // Order of these 6 matches corresponding mp_binary_op_t operator

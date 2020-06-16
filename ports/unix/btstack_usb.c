@@ -110,7 +110,23 @@ void mp_bluetooth_btstack_port_init(void) {
         btstack_run_loop_embedded_get_instance()->init();
     }
 
-    // TODO: allow setting USB device path via cmdline/env var.
+    // MICROPYBTUSB can be a ':'' or '-' separated port list.
+    char *path = getenv("MICROPYBTUSB");
+    if (path != NULL) {
+        uint8_t usb_path[7] = {0};
+        size_t usb_path_len = 0;
+
+        while (usb_path_len < MP_ARRAY_SIZE(usb_path)) {
+            char *delimiter;
+            usb_path[usb_path_len++] = strtol(path, &delimiter, 16);
+            if (!delimiter || (*delimiter != ':' && *delimiter != '-')) {
+                break;
+            }
+            path = delimiter + 1;
+        }
+
+        hci_transport_usb_set_path(usb_path_len, usb_path);
+    }
 
     // hci_dump_open(NULL, HCI_DUMP_STDOUT);
     hci_init(hci_transport_usb_instance(), NULL);

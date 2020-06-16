@@ -92,20 +92,25 @@ class PyInstance:
 
 
 class PyInstanceSubProcess(PyInstance):
-    def __init__(self, cmd):
-        self.cmd = cmd
+    def __init__(self, argv, env=None):
+        self.argv = argv
+        self.env = {n: v for n, v in (i.split("=") for i in env)} if env else None
         self.popen = None
         self.finished = True
 
     def __str__(self):
-        return self.cmd[0].rsplit("/")[-1]
+        return self.argv[0].rsplit("/")[-1]
 
     def run_script(self, script):
         output = b""
         err = None
         try:
             p = subprocess.run(
-                self.cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, input=script
+                self.argv,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                input=script,
+                env=self.env,
             )
             output = p.stdout
         except subprocess.CalledProcessError as er:
@@ -114,7 +119,11 @@ class PyInstanceSubProcess(PyInstance):
 
     def start_script(self, script):
         self.popen = subprocess.Popen(
-            self.cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            self.argv,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            env=self.env,
         )
         self.popen.stdin.write(script)
         self.popen.stdin.close()
@@ -404,16 +413,20 @@ def main():
 
     instances_test = []
     for i in cmd_args.instance:
-        if i.startswith("exec:"):
-            instances_test.append(PyInstanceSubProcess([i[len("exec:") :]]))
-        elif i == "micropython":
-            instances_test.append(PyInstanceSubProcess([MICROPYTHON]))
-        elif i == "cpython":
-            instances_test.append(PyInstanceSubProcess([CPYTHON3]))
-        elif i.startswith("pyb:"):
-            instances_test.append(PyInstancePyboard(i[len("pyb:") :]))
+        # Each instance arg is <cmd>,ENV=VAR,ENV=VAR...
+        i = i.split(",")
+        cmd = i[0]
+        env = i[1:]
+        if cmd.startswith("exec:"):
+            instances_test.append(PyInstanceSubProcess([cmd[len("exec:") :]], env))
+        elif cmd == "micropython":
+            instances_test.append(PyInstanceSubProcess([MICROPYTHON], env))
+        elif cmd == "cpython":
+            instances_test.append(PyInstanceSubProcess([CPYTHON3], env))
+        elif cmd.startswith("pyb:"):
+            instances_test.append(PyInstancePyboard(cmd[len("pyb:") :]))
         else:
-            print("unknown instance string: {}".format(i), file=sys.stderr)
+            print("unknown instance string: {}".format(cmd), file=sys.stderr)
             sys.exit(1)
 
     for _ in range(max_instances - len(instances_test)):

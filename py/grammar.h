@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,11 @@
 // rules for writing rules:
 // - zero_or_more is implemented using opt_rule around a one_or_more rule
 // - don't put opt_rule in arguments of or rule; instead, wrap the call to this or rule in opt_rule
+
+// Generic sub-rules used by multiple rules below.
+
+DEF_RULE_NC(generic_colon_test, and_ident(2), tok(DEL_COLON), rule(test))
+DEF_RULE_NC(generic_equal_test, and_ident(2), tok(DEL_EQUAL), rule(test))
 
 // # Start symbols for the grammar:
 // #       single_input is a single interactive statement;
@@ -71,19 +76,16 @@ DEF_RULE_NC(funcdefrettype, and_ident(2), tok(DEL_MINUS_MORE), rule(test))
 // note: typedargslist lets through more than is allowed, compiler does further checks
 DEF_RULE_NC(typedargslist, list_with_end, rule(typedargslist_item), tok(DEL_COMMA))
 DEF_RULE_NC(typedargslist_item, or(3), rule(typedargslist_name), rule(typedargslist_star), rule(typedargslist_dbl_star))
-DEF_RULE_NC(typedargslist_name, and_ident(3), tok(NAME), opt_rule(typedargslist_colon), opt_rule(typedargslist_equal))
+DEF_RULE_NC(typedargslist_name, and_ident(3), tok(NAME), opt_rule(generic_colon_test), opt_rule(generic_equal_test))
 DEF_RULE_NC(typedargslist_star, and(2), tok(OP_STAR), opt_rule(tfpdef))
-DEF_RULE_NC(typedargslist_dbl_star, and(3), tok(OP_DBL_STAR), tok(NAME), opt_rule(typedargslist_colon))
-DEF_RULE_NC(typedargslist_colon, and_ident(2), tok(DEL_COLON), rule(test))
-DEF_RULE_NC(typedargslist_equal, and_ident(2), tok(DEL_EQUAL), rule(test))
-DEF_RULE_NC(tfpdef, and(2), tok(NAME), opt_rule(typedargslist_colon))
+DEF_RULE_NC(typedargslist_dbl_star, and(3), tok(OP_DBL_STAR), tok(NAME), opt_rule(generic_colon_test))
+DEF_RULE_NC(tfpdef, and(2), tok(NAME), opt_rule(generic_colon_test))
 // note: varargslist lets through more than is allowed, compiler does further checks
 DEF_RULE_NC(varargslist, list_with_end, rule(varargslist_item), tok(DEL_COMMA))
 DEF_RULE_NC(varargslist_item, or(3), rule(varargslist_name), rule(varargslist_star), rule(varargslist_dbl_star))
-DEF_RULE_NC(varargslist_name, and_ident(2), tok(NAME), opt_rule(varargslist_equal))
+DEF_RULE_NC(varargslist_name, and_ident(2), tok(NAME), opt_rule(generic_equal_test))
 DEF_RULE_NC(varargslist_star, and(2), tok(OP_STAR), opt_rule(vfpdef))
 DEF_RULE_NC(varargslist_dbl_star, and(2), tok(OP_DBL_STAR), tok(NAME))
-DEF_RULE_NC(varargslist_equal, and_ident(2), tok(DEL_EQUAL), rule(test))
 DEF_RULE_NC(vfpdef, and_ident(1), tok(NAME))
 
 // stmt: compound_stmt | simple_stmt
@@ -96,20 +98,22 @@ DEF_RULE_NC(simple_stmt, and_ident(2), rule(simple_stmt_2), tok(NEWLINE))
 DEF_RULE(simple_stmt_2, c(generic_all_nodes), list_with_end, rule(small_stmt), tok(DEL_SEMICOLON))
 
 // small_stmt: expr_stmt | del_stmt | pass_stmt | flow_stmt | import_stmt | global_stmt | nonlocal_stmt | assert_stmt
-// expr_stmt: testlist_star_expr (augassign (yield_expr|testlist) | ('=' (yield_expr|testlist_star_expr))*)
+// expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) | ('=' (yield_expr|testlist_star_expr))*)
 // testlist_star_expr: (test|star_expr) (',' (test|star_expr))* [',']
+// annassign: ':' test ['=' (yield_expr|testlist_star_expr)]
 // augassign: '+=' | '-=' | '*=' | '@=' | '/=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>=' | '**=' | '//='
-// # For normal assignments, additional restrictions enforced by the interpreter
+// # For normal and annotated assignments, additional restrictions enforced by the interpreter
 
 DEF_RULE_NC(small_stmt, or(8), rule(del_stmt), rule(pass_stmt), rule(flow_stmt), rule(import_stmt), rule(global_stmt), rule(nonlocal_stmt), rule(assert_stmt), rule(expr_stmt))
 DEF_RULE(expr_stmt, c(expr_stmt), and(2), rule(testlist_star_expr), opt_rule(expr_stmt_2))
-DEF_RULE_NC(expr_stmt_2, or(2), rule(expr_stmt_augassign), rule(expr_stmt_assign_list))
+DEF_RULE_NC(expr_stmt_2, or(3), rule(annassign), rule(expr_stmt_augassign), rule(expr_stmt_assign_list))
 DEF_RULE_NC(expr_stmt_augassign, and_ident(2), rule(augassign), rule(expr_stmt_6))
 DEF_RULE_NC(expr_stmt_assign_list, one_or_more, rule(expr_stmt_assign))
 DEF_RULE_NC(expr_stmt_assign, and_ident(2), tok(DEL_EQUAL), rule(expr_stmt_6))
 DEF_RULE_NC(expr_stmt_6, or(2), rule(yield_expr), rule(testlist_star_expr))
 DEF_RULE(testlist_star_expr, c(generic_tuple), list_with_end, rule(testlist_star_expr_2), tok(DEL_COMMA))
 DEF_RULE_NC(testlist_star_expr_2, or(2), rule(star_expr), rule(test))
+DEF_RULE_NC(annassign, and(3), tok(DEL_COLON), rule(test), opt_rule(expr_stmt_assign))
 DEF_RULE_NC(augassign, or(13), tok(DEL_PLUS_EQUAL), tok(DEL_MINUS_EQUAL), tok(DEL_STAR_EQUAL), tok(DEL_AT_EQUAL), tok(DEL_SLASH_EQUAL), tok(DEL_PERCENT_EQUAL), tok(DEL_AMPERSAND_EQUAL), tok(DEL_PIPE_EQUAL), tok(DEL_CARET_EQUAL), tok(DEL_DBL_LESS_EQUAL), tok(DEL_DBL_MORE_EQUAL), tok(DEL_DBL_STAR_EQUAL), tok(DEL_DBL_SLASH_EQUAL))
 
 // del_stmt: 'del' exprlist
@@ -184,10 +188,10 @@ DEF_RULE_NC(async_stmt_2, or(3), rule(funcdef), rule(with_stmt), rule(for_stmt))
 #else
 DEF_RULE_NC(compound_stmt, or(8), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated))
 #endif
-DEF_RULE(if_stmt, c(if_stmt), and(6), tok(KW_IF), rule(test), tok(DEL_COLON), rule(suite), opt_rule(if_stmt_elif_list), opt_rule(else_stmt))
+DEF_RULE(if_stmt, c(if_stmt), and(6), tok(KW_IF), rule(namedexpr_test), tok(DEL_COLON), rule(suite), opt_rule(if_stmt_elif_list), opt_rule(else_stmt))
 DEF_RULE_NC(if_stmt_elif_list, one_or_more, rule(if_stmt_elif))
-DEF_RULE_NC(if_stmt_elif, and(4), tok(KW_ELIF), rule(test), tok(DEL_COLON), rule(suite))
-DEF_RULE(while_stmt, c(while_stmt), and(5), tok(KW_WHILE), rule(test), tok(DEL_COLON), rule(suite), opt_rule(else_stmt))
+DEF_RULE_NC(if_stmt_elif, and(4), tok(KW_ELIF), rule(namedexpr_test), tok(DEL_COLON), rule(suite))
+DEF_RULE(while_stmt, c(while_stmt), and(5), tok(KW_WHILE), rule(namedexpr_test), tok(DEL_COLON), rule(suite), opt_rule(else_stmt))
 DEF_RULE(for_stmt, c(for_stmt), and(7), tok(KW_FOR), rule(exprlist), tok(KW_IN), rule(testlist), tok(DEL_COLON), rule(suite), opt_rule(else_stmt))
 DEF_RULE(try_stmt, c(try_stmt), and(4), tok(KW_TRY), tok(DEL_COLON), rule(suite), rule(try_stmt_2))
 DEF_RULE_NC(try_stmt_2, or(2), rule(try_stmt_except_and_more), rule(try_stmt_finally))
@@ -210,6 +214,12 @@ DEF_RULE(suite_block_stmts, c(generic_all_nodes), one_or_more, rule(stmt))
 // lambdef: 'lambda' [varargslist] ':' test
 // lambdef_nocond: 'lambda' [varargslist] ':' test_nocond
 
+#if MICROPY_PY_ASSIGN_EXPR
+DEF_RULE(namedexpr_test, c(namedexpr), and_ident(2), rule(test), opt_rule(namedexpr_test_2))
+DEF_RULE_NC(namedexpr_test_2, and_ident(2), tok(OP_ASSIGN), rule(test))
+#else
+DEF_RULE_NC(namedexpr_test, or(1), rule(test))
+#endif
 DEF_RULE_NC(test, or(2), rule(lambdef), rule(test_if_expr))
 DEF_RULE(test_if_expr, c(test_if_expr), and_ident(2), rule(or_test), opt_rule(test_if_else))
 DEF_RULE_NC(test_if_else, and(4), tok(KW_IF), rule(or_test), tok(KW_ELSE), rule(test))
@@ -276,7 +286,7 @@ DEF_RULE_NC(atom_2b, or(2), rule(yield_expr), rule(testlist_comp))
 DEF_RULE(atom_bracket, c(atom_bracket), and(3), tok(DEL_BRACKET_OPEN), opt_rule(testlist_comp), tok(DEL_BRACKET_CLOSE))
 DEF_RULE(atom_brace, c(atom_brace), and(3), tok(DEL_BRACE_OPEN), opt_rule(dictorsetmaker), tok(DEL_BRACE_CLOSE))
 DEF_RULE_NC(testlist_comp, and_ident(2), rule(testlist_comp_2), opt_rule(testlist_comp_3))
-DEF_RULE_NC(testlist_comp_2, or(2), rule(star_expr), rule(test))
+DEF_RULE_NC(testlist_comp_2, or(2), rule(star_expr), rule(namedexpr_test))
 DEF_RULE_NC(testlist_comp_3, or(2), rule(comp_for), rule(testlist_comp_3b))
 DEF_RULE_NC(testlist_comp_3b, and_ident(2), tok(DEL_COMMA), opt_rule(testlist_comp_3c))
 DEF_RULE_NC(testlist_comp_3c, list_with_end, rule(testlist_comp_2), tok(DEL_COMMA))
@@ -312,8 +322,7 @@ DEF_RULE(testlist, c(generic_tuple), list_with_end, rule(test), tok(DEL_COMMA))
 // TODO dictorsetmaker lets through more than is allowed
 DEF_RULE_NC(dictorsetmaker, and_ident(2), rule(dictorsetmaker_item), opt_rule(dictorsetmaker_tail))
 #if MICROPY_PY_BUILTINS_SET
-DEF_RULE(dictorsetmaker_item, c(dictorsetmaker_item), and_ident(2), rule(test), opt_rule(dictorsetmaker_colon))
-DEF_RULE_NC(dictorsetmaker_colon, and_ident(2), tok(DEL_COLON), rule(test))
+DEF_RULE(dictorsetmaker_item, c(dictorsetmaker_item), and_ident(2), rule(test), opt_rule(generic_colon_test))
 #else
 DEF_RULE(dictorsetmaker_item, c(dictorsetmaker_item), and(3), rule(test), tok(DEL_COLON), rule(test))
 #endif
@@ -342,8 +351,12 @@ DEF_RULE_NC(arglist_dbl_star, and(2), tok(OP_DBL_STAR), rule(test))
 // comp_if: 'if' test_nocond [comp_iter]
 
 DEF_RULE_NC(argument, and_ident(2), rule(test), opt_rule(argument_2))
-DEF_RULE_NC(argument_2, or(2), rule(comp_for), rule(argument_3))
-DEF_RULE_NC(argument_3, and_ident(2), tok(DEL_EQUAL), rule(test))
+#if MICROPY_PY_ASSIGN_EXPR
+DEF_RULE_NC(argument_2, or(3), rule(comp_for), rule(generic_equal_test), rule(argument_3))
+DEF_RULE_NC(argument_3, and(2), tok(OP_ASSIGN), rule(test))
+#else
+DEF_RULE_NC(argument_2, or(2), rule(comp_for), rule(generic_equal_test))
+#endif
 DEF_RULE_NC(comp_iter, or(2), rule(comp_for), rule(comp_if))
 DEF_RULE_NC(comp_for, and_blank(5), tok(KW_FOR), rule(exprlist), tok(KW_IN), rule(or_test), opt_rule(comp_iter))
 DEF_RULE_NC(comp_if, and(3), tok(KW_IF), rule(test_nocond), opt_rule(comp_iter))
