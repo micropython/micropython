@@ -30,6 +30,11 @@
 // - zero_or_more is implemented using opt_rule around a one_or_more rule
 // - don't put opt_rule in arguments of or rule; instead, wrap the call to this or rule in opt_rule
 
+// Generic sub-rules used by multiple rules below.
+
+DEF_RULE_NC(generic_colon_test, and_ident(2), tok(DEL_COLON), rule(test))
+DEF_RULE_NC(generic_equal_test, and_ident(2), tok(DEL_EQUAL), rule(test))
+
 // # Start symbols for the grammar:
 // #       single_input is a single interactive statement;
 // #       file_input is a module or sequence of commands read from an input file;
@@ -71,19 +76,16 @@ DEF_RULE_NC(funcdefrettype, and_ident(2), tok(DEL_MINUS_MORE), rule(test))
 // note: typedargslist lets through more than is allowed, compiler does further checks
 DEF_RULE_NC(typedargslist, list_with_end, rule(typedargslist_item), tok(DEL_COMMA))
 DEF_RULE_NC(typedargslist_item, or(3), rule(typedargslist_name), rule(typedargslist_star), rule(typedargslist_dbl_star))
-DEF_RULE_NC(typedargslist_name, and_ident(3), tok(NAME), opt_rule(typedargslist_colon), opt_rule(typedargslist_equal))
+DEF_RULE_NC(typedargslist_name, and_ident(3), tok(NAME), opt_rule(generic_colon_test), opt_rule(generic_equal_test))
 DEF_RULE_NC(typedargslist_star, and(2), tok(OP_STAR), opt_rule(tfpdef))
-DEF_RULE_NC(typedargslist_dbl_star, and(3), tok(OP_DBL_STAR), tok(NAME), opt_rule(typedargslist_colon))
-DEF_RULE_NC(typedargslist_colon, and_ident(2), tok(DEL_COLON), rule(test))
-DEF_RULE_NC(typedargslist_equal, and_ident(2), tok(DEL_EQUAL), rule(test))
-DEF_RULE_NC(tfpdef, and(2), tok(NAME), opt_rule(typedargslist_colon))
+DEF_RULE_NC(typedargslist_dbl_star, and(3), tok(OP_DBL_STAR), tok(NAME), opt_rule(generic_colon_test))
+DEF_RULE_NC(tfpdef, and(2), tok(NAME), opt_rule(generic_colon_test))
 // note: varargslist lets through more than is allowed, compiler does further checks
 DEF_RULE_NC(varargslist, list_with_end, rule(varargslist_item), tok(DEL_COMMA))
 DEF_RULE_NC(varargslist_item, or(3), rule(varargslist_name), rule(varargslist_star), rule(varargslist_dbl_star))
-DEF_RULE_NC(varargslist_name, and_ident(2), tok(NAME), opt_rule(varargslist_equal))
+DEF_RULE_NC(varargslist_name, and_ident(2), tok(NAME), opt_rule(generic_equal_test))
 DEF_RULE_NC(varargslist_star, and(2), tok(OP_STAR), opt_rule(vfpdef))
 DEF_RULE_NC(varargslist_dbl_star, and(2), tok(OP_DBL_STAR), tok(NAME))
-DEF_RULE_NC(varargslist_equal, and_ident(2), tok(DEL_EQUAL), rule(test))
 DEF_RULE_NC(vfpdef, and_ident(1), tok(NAME))
 
 // stmt: compound_stmt | simple_stmt
@@ -318,8 +320,7 @@ DEF_RULE(testlist, c(generic_tuple), list_with_end, rule(test), tok(DEL_COMMA))
 // TODO dictorsetmaker lets through more than is allowed
 DEF_RULE_NC(dictorsetmaker, and_ident(2), rule(dictorsetmaker_item), opt_rule(dictorsetmaker_tail))
 #if MICROPY_PY_BUILTINS_SET
-DEF_RULE(dictorsetmaker_item, c(dictorsetmaker_item), and_ident(2), rule(test), opt_rule(dictorsetmaker_colon))
-DEF_RULE_NC(dictorsetmaker_colon, and_ident(2), tok(DEL_COLON), rule(test))
+DEF_RULE(dictorsetmaker_item, c(dictorsetmaker_item), and_ident(2), rule(test), opt_rule(generic_colon_test))
 #else
 DEF_RULE(dictorsetmaker_item, c(dictorsetmaker_item), and(3), rule(test), tok(DEL_COLON), rule(test))
 #endif
@@ -349,12 +350,11 @@ DEF_RULE_NC(arglist_dbl_star, and(2), tok(OP_DBL_STAR), rule(test))
 
 DEF_RULE_NC(argument, and_ident(2), rule(test), opt_rule(argument_2))
 #if MICROPY_PY_ASSIGN_EXPR
-DEF_RULE_NC(argument_2, or(3), rule(comp_for), rule(argument_3), rule(argument_4))
-DEF_RULE_NC(argument_4, and(2), tok(OP_ASSIGN), rule(test))
+DEF_RULE_NC(argument_2, or(3), rule(comp_for), rule(generic_equal_test), rule(argument_3))
+DEF_RULE_NC(argument_3, and(2), tok(OP_ASSIGN), rule(test))
 #else
-DEF_RULE_NC(argument_2, or(2), rule(comp_for), rule(argument_3))
+DEF_RULE_NC(argument_2, or(2), rule(comp_for), rule(generic_equal_test))
 #endif
-DEF_RULE_NC(argument_3, and_ident(2), tok(DEL_EQUAL), rule(test))
 DEF_RULE_NC(comp_iter, or(2), rule(comp_for), rule(comp_if))
 DEF_RULE_NC(comp_for, and_blank(5), tok(KW_FOR), rule(exprlist), tok(KW_IN), rule(or_test), opt_rule(comp_iter))
 DEF_RULE_NC(comp_if, and(3), tok(KW_IF), rule(test_nocond), opt_rule(comp_iter))
