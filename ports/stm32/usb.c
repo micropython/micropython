@@ -93,8 +93,29 @@ pyb_usb_storage_medium_t pyb_usb_storage_medium = PYB_USB_STORAGE_MEDIUM_NONE;
 // Units of FIFO size arrays below are 4x 16-bit words = 8 bytes
 // There are 512x 16-bit words it total to use here (when using PCD_SNG_BUF)
 
-// EP0(out), EP0(in), MSC/HID(out), MSC/HID(in), unused, CDC_CMD(in), CDC_DATA(out), CDC_DATA(in)
-STATIC const uint8_t usbd_fifo_size_cdc1[] = {16, 16, 16, 16, 0, 16, 16, 16};
+STATIC const uint8_t usbd_fifo_size_cdc1[USBD_PMA_NUM_FIFO] = {
+    16, 16, 16, 16,         // EP0(out), EP0(in), MSC/HID(out), MSC/HID(in)
+    0, 16, 16, 16,          // unused, CDC_CMD(in), CDC_DATA(out), CDC_DATA(in)
+    0, 0, 0, 0, 0, 0, 0, 0, // 8x unused
+};
+
+#if MICROPY_HW_USB_CDC_NUM >= 2
+STATIC const uint8_t usbd_fifo_size_cdc2[USBD_PMA_NUM_FIFO] = {
+    8, 8, 16, 16,           // EP0(out), EP0(in), MSC/HID(out), MSC/HID(in)
+    0, 8, 12, 12,           // unused, CDC_CMD(in), CDC_DATA(out), CDC_DATA(in)
+    0, 8, 12, 12,           // unused, CDC2_CMD(in), CDC2_DATA(out), CDC2_DATA(in)
+    0, 0, 0, 0,             // 4x unused
+};
+
+// RX; EP0(in), MSC/HID, CDC_CMD, CDC_DATA, CDC2_CMD/HID, CDC2_DATA, HID
+STATIC const uint8_t usbd_fifo_size_cdc2_msc_hid[USBD_PMA_NUM_FIFO] = {
+    8, 8, 16, 16,           // EP0(out), EP0(in), MSC/HID(out), MSC/HID(in)
+    0, 8, 8, 8,             // unused, CDC_CMD(in), CDC_DATA(out), CDC_DATA(in)
+    0, 8, 8, 8,             // unused, CDC2_CMD(in), CDC2_DATA(out), CDC2_DATA(in)
+    8, 8,                   // HID(out), HID(in)
+    0, 0,                   // 2x unused
+};
+#endif
 
 #else
 
