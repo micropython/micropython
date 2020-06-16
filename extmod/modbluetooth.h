@@ -199,7 +199,7 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
 // Notify the central that it should do a read.
 int mp_bluetooth_gatts_notify(uint16_t conn_handle, uint16_t value_handle);
 // Notify the central, including a data payload. (Note: does not set the gatts db value).
-int mp_bluetooth_gatts_notify_send(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len);
+int mp_bluetooth_gatts_notify_send(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t value_len);
 // Indicate the central.
 int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle);
 

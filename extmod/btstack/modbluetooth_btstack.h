@@ -33,6 +33,8 @@
 
 #include "lib/btstack/src/btstack.h"
 
+typedef struct _mp_btstack_pending_op_t mp_btstack_pending_op_t;
+
 typedef struct _mp_bluetooth_btstack_root_pointers_t {
     // This stores both the advertising data and the scan response data, concatenated together.
     uint8_t *adv_data;
@@ -45,6 +47,7 @@ typedef struct _mp_bluetooth_btstack_root_pointers_t {
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     // Registration for notify/indicate events.
     gatt_client_notification_t notification;
+    btstack_linked_list_t pending_ops;
     #endif
 } mp_bluetooth_btstack_root_pointers_t;
 

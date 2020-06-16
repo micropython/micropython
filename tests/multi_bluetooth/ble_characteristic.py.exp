@@ -6,6 +6,9 @@ gatts_write
 gatts_notify
 _IRQ_GATTS_WRITE b'central1'
 gatts_notify
+_IRQ_GATTS_WRITE b'central2'
+gatts_write
+gatts_indicate
 _IRQ_CENTRAL_DISCONNECT
 --- instance1 ---
 gap_connect
@@ -25,6 +28,12 @@ _IRQ_GATTC_WRITE_DONE 0
 _IRQ_GATTC_NOTIFY b'periph2'
 gattc_read
 _IRQ_GATTC_READ_RESULT b'central1'
+_IRQ_GATTC_READ_DONE 0
+gattc_write
+_IRQ_GATTC_WRITE_DONE 0
+_IRQ_GATTC_INDICATE b'periph3'
+gattc_read
+_IRQ_GATTC_READ_RESULT b'periph3'
 _IRQ_GATTC_READ_DONE 0
 gap_disconnect: True
 _IRQ_PERIPHERAL_DISCONNECT
