@@ -78,7 +78,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 }
 
 //|     address_bytes: Any = ...
-//|     """The bytes that make up the device address (read-only).
+//|     r"""The bytes that make up the device address (read-only).
 //|
 //|     Note that the ``bytes`` object returned is in little-endian order:
 //|     The least significant byte is ``address_bytes[0]``. So the address will
