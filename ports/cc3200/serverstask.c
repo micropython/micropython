@@ -68,8 +68,8 @@ static volatile bool sleep_sockets = false;
  ******************************************************************************/
 
 // This is the static memory (TCB and stack) for the servers task
-StaticTask_t svTaskTCB __attribute__ ((section (".rtos_heap")));
-StackType_t svTaskStack[SERVERS_STACK_LEN] __attribute__ ((section (".rtos_heap"))) __attribute__((aligned (8)));
+StaticTask_t svTaskTCB __attribute__ ((section(".rtos_heap")));
+StackType_t svTaskStack[SERVERS_STACK_LEN] __attribute__ ((section(".rtos_heap"))) __attribute__((aligned(8)));
 
 char servers_user[SERVERS_USER_PASS_LEN_MAX + 1];
 char servers_pass[SERVERS_USER_PASS_LEN_MAX + 1];
@@ -77,12 +77,12 @@ char servers_pass[SERVERS_USER_PASS_LEN_MAX + 1];
 /******************************************************************************
  DECLARE PUBLIC FUNCTIONS
  ******************************************************************************/
-void TASK_Servers (void *pvParameters) {
+void TASK_Servers(void *pvParameters) {
 
     bool cycle = false;
 
-    strcpy (servers_user, SERVERS_DEF_USER);
-    strcpy (servers_pass, SERVERS_DEF_PASS);
+    strcpy(servers_user, SERVERS_DEF_USER);
+    strcpy(servers_pass, SERVERS_DEF_PASS);
 
     telnet_init();
     ftp_init();
@@ -143,12 +143,12 @@ void TASK_Servers (void *pvParameters) {
     }
 }
 
-void servers_start (void) {
+void servers_start(void) {
     servers_data.do_enable = true;
     mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS * 3);
 }
 
-void servers_stop (void) {
+void servers_stop(void) {
     servers_data.do_disable = true;
     do {
         mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS);
@@ -156,24 +156,24 @@ void servers_stop (void) {
     mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS * 3);
 }
 
-void servers_reset (void) {
+void servers_reset(void) {
     servers_data.do_reset = true;
 }
 
-void servers_wlan_cycle_power (void) {
+void servers_wlan_cycle_power(void) {
     servers_data.do_wlan_cycle_power = true;
 }
 
-bool servers_are_enabled (void) {
+bool servers_are_enabled(void) {
     return servers_data.enabled;
 }
 
-void server_sleep_sockets (void) {
+void server_sleep_sockets(void) {
     sleep_sockets = true;
     mp_hal_delay_ms(SERVERS_CYCLE_TIME_MS + 1);
 }
 
-void servers_close_socket (int16_t *sd) {
+void servers_close_socket(int16_t *sd) {
     if (*sd > 0) {
         modusocket_socket_delete(*sd);
         sl_Close(*sd);
@@ -181,7 +181,7 @@ void servers_close_socket (int16_t *sd) {
     }
 }
 
-void servers_set_login (char *user, char *pass) {
+void servers_set_login(char *user, char *pass) {
     if (strlen(user) > SERVERS_USER_PASS_LEN_MAX || strlen(pass) > SERVERS_USER_PASS_LEN_MAX) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
@@ -189,7 +189,7 @@ void servers_set_login (char *user, char *pass) {
     memcpy(servers_pass, pass, SERVERS_USER_PASS_LEN_MAX);
 }
 
-void servers_set_timeout (uint32_t timeout) {
+void servers_set_timeout(uint32_t timeout) {
     if (timeout < SERVERS_MIN_TIMEOUT_MS) {
         // timeout is too low
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
@@ -197,7 +197,7 @@ void servers_set_timeout (uint32_t timeout) {
     servers_data.timeout = timeout;
 }
 
-uint32_t servers_get_timeout (void) {
+uint32_t servers_get_timeout(void) {
     return servers_data.timeout;
 }
 

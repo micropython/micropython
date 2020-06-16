@@ -113,7 +113,7 @@ static const char fresh_boot_py[] = "# boot.py -- run on boot-up\r\n"
 
 uintptr_t cortex_m3_get_sp(void);
 
-void TASK_MicroPython (void *pvParameters) {
+void TASK_MicroPython(void *pvParameters) {
     // get the top of the stack to initialize the garbage collector
     uint32_t sp = cortex_m3_get_sp();
 
@@ -262,16 +262,16 @@ soft_reset_exit:
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
-__attribute__ ((section (".boot")))
-STATIC void mptask_pre_init (void) {
+__attribute__ ((section(".boot")))
+STATIC void mptask_pre_init(void) {
     // this one only makes sense after a poweron reset
     pyb_rtc_pre_init();
 
     // Create the simple link spawn task
-    ASSERT (OSI_OK == VStartSimpleLinkSpawnTask(SIMPLELINK_SPAWN_TASK_PRIORITY));
+    ASSERT(OSI_OK == VStartSimpleLinkSpawnTask(SIMPLELINK_SPAWN_TASK_PRIORITY));
 
     // Allocate memory for the flash file system
-    ASSERT ((sflash_vfs_fat = mem_Malloc(sizeof(*sflash_vfs_fat))) != NULL);
+    ASSERT((sflash_vfs_fat = mem_Malloc(sizeof(*sflash_vfs_fat))) != NULL);
 
     // this one allocates memory for the nvic vault
     pyb_sleep_pre_init();
@@ -295,7 +295,7 @@ STATIC void mptask_pre_init (void) {
     ASSERT(svTaskHandle != NULL);
 }
 
-STATIC void mptask_init_sflash_filesystem (void) {
+STATIC void mptask_init_sflash_filesystem(void) {
     FILINFO fno;
 
     // Initialise the local flash filesystem.
@@ -378,16 +378,16 @@ STATIC void mptask_init_sflash_filesystem (void) {
     }
 }
 
-STATIC void mptask_enter_ap_mode (void) {
+STATIC void mptask_enter_ap_mode(void) {
     // append the mac only if it's not the first boot
     bool add_mac = !PRCMGetSpecialBit(PRCM_FIRST_BOOT_BIT);
     // enable simplelink in ap mode (use the MAC address to make the ssid unique)
-    wlan_sl_init (ROLE_AP, MICROPY_PORT_WLAN_AP_SSID, strlen(MICROPY_PORT_WLAN_AP_SSID),
+    wlan_sl_init(ROLE_AP, MICROPY_PORT_WLAN_AP_SSID, strlen(MICROPY_PORT_WLAN_AP_SSID),
         MICROPY_PORT_WLAN_AP_SECURITY, MICROPY_PORT_WLAN_AP_KEY, strlen(MICROPY_PORT_WLAN_AP_KEY),
         MICROPY_PORT_WLAN_AP_CHANNEL, ANTENNA_TYPE_INTERNAL, add_mac);
 }
 
-STATIC void mptask_create_main_py (void) {
+STATIC void mptask_create_main_py(void) {
     // create empty main.py
     FIL fp;
     f_open(&sflash_vfs_fat->fatfs, &fp, "/main.py", FA_WRITE | FA_CREATE_ALWAYS);

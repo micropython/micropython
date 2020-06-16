@@ -104,7 +104,7 @@ STATIC void strn_print_strn(void *data, const char *str, size_t len) {
 // when linkings against it statically.
 // GCC 9 gives a warning about missing attributes so it's excluded until
 // uClibc+GCC9 support is needed.
-int __GI_vsnprintf(char *str, size_t size, const char *fmt, va_list ap) __attribute__((weak, alias ("vsnprintf")));
+int __GI_vsnprintf(char *str, size_t size, const char *fmt, va_list ap) __attribute__((weak, alias("vsnprintf")));
 #endif
 
 int vsnprintf(char *str, size_t size, const char *fmt, va_list ap) {
