@@ -1147,47 +1147,46 @@ mp_bluetooth_gatts_db_entry_t *mp_bluetooth_gatts_db_lookup(mp_gatts_db_t db, ui
 }
 
 int mp_bluetooth_gatts_db_read(mp_gatts_db_t db, uint16_t handle, uint8_t **value, size_t *value_len) {
+    MICROPY_PY_BLUETOOTH_ENTER
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(db, handle);
-    if (!entry) {
-        return MP_EINVAL;
+    if (entry) {
+        *value = entry->data;
+        *value_len = entry->data_len;
+        if (entry->append) {
+            entry->data_len = 0;
+        }
     }
-
-    *value = entry->data;
-    *value_len = entry->data_len;
-    if (entry->append) {
-        entry->data_len = 0;
-    }
-
-    return 0;
+    MICROPY_PY_BLUETOOTH_EXIT
+    return entry ? 0 : MP_EINVAL;
 }
 
 int mp_bluetooth_gatts_db_write(mp_gatts_db_t db, uint16_t handle, const uint8_t *value, size_t value_len) {
+    MICROPY_PY_BLUETOOTH_ENTER
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(db, handle);
-    if (!entry) {
-        return MP_EINVAL;
+    if (entry) {
+        if (value_len > entry->data_alloc) {
+            entry->data = m_new(uint8_t, value_len);
+            entry->data_alloc = value_len;
+        }
+
+        memcpy(entry->data, value, value_len);
+        entry->data_len = value_len;
     }
-
-    if (value_len > entry->data_alloc) {
-        entry->data = m_new(uint8_t, value_len);
-        entry->data_alloc = value_len;
-    }
-
-    memcpy(entry->data, value, value_len);
-    entry->data_len = value_len;
-
-    return 0;
+    MICROPY_PY_BLUETOOTH_EXIT
+    return entry ? 0 : MP_EINVAL;
 }
 
 int mp_bluetooth_gatts_db_resize(mp_gatts_db_t db, uint16_t handle, size_t len, bool append) {
+    MICROPY_PY_BLUETOOTH_ENTER
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(db, handle);
-    if (!entry) {
-        return MP_EINVAL;
+    if (entry) {
+        entry->data = m_renew(uint8_t, entry->data, entry->data_alloc, len);
+        entry->data_alloc = len;
+        entry->data_len = 0;
+        entry->append = append;
     }
-    entry->data = m_renew(uint8_t, entry->data, entry->data_alloc, len);
-    entry->data_alloc = len;
-    entry->data_len = 0;
-    entry->append = append;
-    return 0;
+    MICROPY_PY_BLUETOOTH_EXIT
+    return entry ? 0 : MP_EINVAL;
 }
 
 #endif // MICROPY_PY_BLUETOOTH
