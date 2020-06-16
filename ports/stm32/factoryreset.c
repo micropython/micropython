@@ -34,6 +34,8 @@
 
 #if MICROPY_HW_ENABLE_STORAGE
 
+#if MICROPY_VFS_FAT
+
 static const char fresh_boot_py[] =
     "# boot.py -- run on boot-up\r\n"
     "# can run arbitrary Python, but best to keep it minimal\r\n"
@@ -127,5 +129,14 @@ MP_WEAK int factory_reset_create_filesystem(void) {
 
     return 0; // success
 }
+
+#else
+
+// If FAT is not enabled then it's up to the board to create a fresh filesystem.
+MP_WEAK int factory_reset_create_filesystem(void) {
+    return 0; // success
+}
+
+#endif
 
 #endif // MICROPY_HW_ENABLE_STORAGE
