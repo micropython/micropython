@@ -98,20 +98,22 @@ DEF_RULE_NC(simple_stmt, and_ident(2), rule(simple_stmt_2), tok(NEWLINE))
 DEF_RULE(simple_stmt_2, c(generic_all_nodes), list_with_end, rule(small_stmt), tok(DEL_SEMICOLON))
 
 // small_stmt: expr_stmt | del_stmt | pass_stmt | flow_stmt | import_stmt | global_stmt | nonlocal_stmt | assert_stmt
-// expr_stmt: testlist_star_expr (augassign (yield_expr|testlist) | ('=' (yield_expr|testlist_star_expr))*)
+// expr_stmt: testlist_star_expr (annassign | augassign (yield_expr|testlist) | ('=' (yield_expr|testlist_star_expr))*)
 // testlist_star_expr: (test|star_expr) (',' (test|star_expr))* [',']
+// annassign: ':' test ['=' (yield_expr|testlist_star_expr)]
 // augassign: '+=' | '-=' | '*=' | '@=' | '/=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>=' | '**=' | '//='
-// # For normal assignments, additional restrictions enforced by the interpreter
+// # For normal and annotated assignments, additional restrictions enforced by the interpreter
 
 DEF_RULE_NC(small_stmt, or(8), rule(del_stmt), rule(pass_stmt), rule(flow_stmt), rule(import_stmt), rule(global_stmt), rule(nonlocal_stmt), rule(assert_stmt), rule(expr_stmt))
 DEF_RULE(expr_stmt, c(expr_stmt), and(2), rule(testlist_star_expr), opt_rule(expr_stmt_2))
-DEF_RULE_NC(expr_stmt_2, or(2), rule(expr_stmt_augassign), rule(expr_stmt_assign_list))
+DEF_RULE_NC(expr_stmt_2, or(3), rule(annassign), rule(expr_stmt_augassign), rule(expr_stmt_assign_list))
 DEF_RULE_NC(expr_stmt_augassign, and_ident(2), rule(augassign), rule(expr_stmt_6))
 DEF_RULE_NC(expr_stmt_assign_list, one_or_more, rule(expr_stmt_assign))
 DEF_RULE_NC(expr_stmt_assign, and_ident(2), tok(DEL_EQUAL), rule(expr_stmt_6))
 DEF_RULE_NC(expr_stmt_6, or(2), rule(yield_expr), rule(testlist_star_expr))
 DEF_RULE(testlist_star_expr, c(generic_tuple), list_with_end, rule(testlist_star_expr_2), tok(DEL_COMMA))
 DEF_RULE_NC(testlist_star_expr_2, or(2), rule(star_expr), rule(test))
+DEF_RULE_NC(annassign, and(3), tok(DEL_COLON), rule(test), opt_rule(expr_stmt_assign))
 DEF_RULE_NC(augassign, or(13), tok(DEL_PLUS_EQUAL), tok(DEL_MINUS_EQUAL), tok(DEL_STAR_EQUAL), tok(DEL_AT_EQUAL), tok(DEL_SLASH_EQUAL), tok(DEL_PERCENT_EQUAL), tok(DEL_AMPERSAND_EQUAL), tok(DEL_PIPE_EQUAL), tok(DEL_CARET_EQUAL), tok(DEL_DBL_LESS_EQUAL), tok(DEL_DBL_MORE_EQUAL), tok(DEL_DBL_STAR_EQUAL), tok(DEL_DBL_SLASH_EQUAL))
 
 // del_stmt: 'del' exprlist
