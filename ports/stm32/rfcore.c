@@ -416,8 +416,13 @@ void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env)
         SWAP_UINT8(buf[3], buf[6]);
         SWAP_UINT8(buf[4], buf[5]);
         tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_WRITE_CONFIG), 8, buf); // set BDADDR
-        tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_SET_TX_POWER), 2, (const uint8_t *)"\x00\x06"); // 0 dBm
     }
+}
+
+// "level" is 0x00-0x1f, ranging from -40 dBm to +6 dBm (not linear).
+void rfcore_ble_set_txpower(uint8_t level) {
+    uint8_t buf[2] = { 0x00, level };
+    tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_SET_TX_POWER), 2, buf);
 }
 
 #endif // defined(STM32WB)
