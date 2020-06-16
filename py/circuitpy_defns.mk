@@ -162,6 +162,9 @@ endif
 ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
 SRC_PATTERNS += gamepadshift/%
 endif
+ifeq ($(CIRCUITPY_GNSS),1)
+SRC_PATTERNS += gnss/%
+endif
 ifeq ($(CIRCUITPY_I2CSLAVE),1)
 SRC_PATTERNS += i2cslave/%
 endif
@@ -283,6 +286,10 @@ SRC_COMMON_HAL_ALL = \
 	displayio/ParallelBus.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
+	gnss/__init__.c \
+	gnss/GNSS.c \
+	gnss/PositionFix.c \
+	gnss/SatelliteSystem.c \
 	i2cslave/I2CSlave.c \
 	i2cslave/__init__.c \
 	microcontroller/Pin.c \
