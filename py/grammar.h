@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -184,10 +184,10 @@ DEF_RULE_NC(async_stmt_2, or(3), rule(funcdef), rule(with_stmt), rule(for_stmt))
 #else
 DEF_RULE_NC(compound_stmt, or(8), rule(if_stmt), rule(while_stmt), rule(for_stmt), rule(try_stmt), rule(with_stmt), rule(funcdef), rule(classdef), rule(decorated))
 #endif
-DEF_RULE(if_stmt, c(if_stmt), and(6), tok(KW_IF), rule(test), tok(DEL_COLON), rule(suite), opt_rule(if_stmt_elif_list), opt_rule(else_stmt))
+DEF_RULE(if_stmt, c(if_stmt), and(6), tok(KW_IF), rule(namedexpr_test), tok(DEL_COLON), rule(suite), opt_rule(if_stmt_elif_list), opt_rule(else_stmt))
 DEF_RULE_NC(if_stmt_elif_list, one_or_more, rule(if_stmt_elif))
-DEF_RULE_NC(if_stmt_elif, and(4), tok(KW_ELIF), rule(test), tok(DEL_COLON), rule(suite))
-DEF_RULE(while_stmt, c(while_stmt), and(5), tok(KW_WHILE), rule(test), tok(DEL_COLON), rule(suite), opt_rule(else_stmt))
+DEF_RULE_NC(if_stmt_elif, and(4), tok(KW_ELIF), rule(namedexpr_test), tok(DEL_COLON), rule(suite))
+DEF_RULE(while_stmt, c(while_stmt), and(5), tok(KW_WHILE), rule(namedexpr_test), tok(DEL_COLON), rule(suite), opt_rule(else_stmt))
 DEF_RULE(for_stmt, c(for_stmt), and(7), tok(KW_FOR), rule(exprlist), tok(KW_IN), rule(testlist), tok(DEL_COLON), rule(suite), opt_rule(else_stmt))
 DEF_RULE(try_stmt, c(try_stmt), and(4), tok(KW_TRY), tok(DEL_COLON), rule(suite), rule(try_stmt_2))
 DEF_RULE_NC(try_stmt_2, or(2), rule(try_stmt_except_and_more), rule(try_stmt_finally))
@@ -210,6 +210,12 @@ DEF_RULE(suite_block_stmts, c(generic_all_nodes), one_or_more, rule(stmt))
 // lambdef: 'lambda' [varargslist] ':' test
 // lambdef_nocond: 'lambda' [varargslist] ':' test_nocond
 
+#if MICROPY_PY_ASSIGN_EXPR
+DEF_RULE(namedexpr_test, c(namedexpr), and_ident(2), rule(test), opt_rule(namedexpr_test_2))
+DEF_RULE_NC(namedexpr_test_2, and_ident(2), tok(OP_ASSIGN), rule(test))
+#else
+DEF_RULE_NC(namedexpr_test, or(1), rule(test))
+#endif
 DEF_RULE_NC(test, or(2), rule(lambdef), rule(test_if_expr))
 DEF_RULE(test_if_expr, c(test_if_expr), and_ident(2), rule(or_test), opt_rule(test_if_else))
 DEF_RULE_NC(test_if_else, and(4), tok(KW_IF), rule(or_test), tok(KW_ELSE), rule(test))
@@ -276,7 +282,7 @@ DEF_RULE_NC(atom_2b, or(2), rule(yield_expr), rule(testlist_comp))
 DEF_RULE(atom_bracket, c(atom_bracket), and(3), tok(DEL_BRACKET_OPEN), opt_rule(testlist_comp), tok(DEL_BRACKET_CLOSE))
 DEF_RULE(atom_brace, c(atom_brace), and(3), tok(DEL_BRACE_OPEN), opt_rule(dictorsetmaker), tok(DEL_BRACE_CLOSE))
 DEF_RULE_NC(testlist_comp, and_ident(2), rule(testlist_comp_2), opt_rule(testlist_comp_3))
-DEF_RULE_NC(testlist_comp_2, or(2), rule(star_expr), rule(test))
+DEF_RULE_NC(testlist_comp_2, or(2), rule(star_expr), rule(namedexpr_test))
 DEF_RULE_NC(testlist_comp_3, or(2), rule(comp_for), rule(testlist_comp_3b))
 DEF_RULE_NC(testlist_comp_3b, and_ident(2), tok(DEL_COMMA), opt_rule(testlist_comp_3c))
 DEF_RULE_NC(testlist_comp_3c, list_with_end, rule(testlist_comp_2), tok(DEL_COMMA))
@@ -342,7 +348,12 @@ DEF_RULE_NC(arglist_dbl_star, and(2), tok(OP_DBL_STAR), rule(test))
 // comp_if: 'if' test_nocond [comp_iter]
 
 DEF_RULE_NC(argument, and_ident(2), rule(test), opt_rule(argument_2))
+#if MICROPY_PY_ASSIGN_EXPR
+DEF_RULE_NC(argument_2, or(3), rule(comp_for), rule(argument_3), rule(argument_4))
+DEF_RULE_NC(argument_4, and(2), tok(OP_ASSIGN), rule(test))
+#else
 DEF_RULE_NC(argument_2, or(2), rule(comp_for), rule(argument_3))
+#endif
 DEF_RULE_NC(argument_3, and_ident(2), tok(DEL_EQUAL), rule(test))
 DEF_RULE_NC(comp_iter, or(2), rule(comp_for), rule(comp_if))
 DEF_RULE_NC(comp_for, and_blank(5), tok(KW_FOR), rule(exprlist), tok(KW_IN), rule(or_test), opt_rule(comp_iter))

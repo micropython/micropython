@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -2108,6 +2108,27 @@ STATIC void compile_lambdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_funcdef_lambdef(comp, this_scope, pns->nodes[0], PN_varargslist);
 }
 
+#if MICROPY_PY_ASSIGN_EXPR
+STATIC void compile_namedexpr_helper(compiler_t *comp, mp_parse_node_t pn_name, mp_parse_node_t pn_expr) {
+    if (!MP_PARSE_NODE_IS_ID(pn_name)) {
+        compile_syntax_error(comp, (mp_parse_node_t)pn_name, MP_ERROR_TEXT("can't assign to expression"));
+    }
+    compile_node(comp, pn_expr);
+    EMIT(dup_top);
+    scope_t *old_scope = comp->scope_cur;
+    if (SCOPE_IS_COMP_LIKE(comp->scope_cur->kind)) {
+        // Use parent's scope for assigned value so it can "escape"
+        comp->scope_cur = comp->scope_cur->parent;
+    }
+    compile_store_id(comp, MP_PARSE_NODE_LEAF_ARG(pn_name));
+    comp->scope_cur = old_scope;
+}
+
+STATIC void compile_namedexpr(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    compile_namedexpr_helper(comp, pns->nodes[0], pns->nodes[1]);
+}
+#endif
+
 STATIC void compile_or_and_test(compiler_t *comp, mp_parse_node_struct_t *pns) {
     bool cond = MP_PARSE_NODE_STRUCT_KIND(pns) == PN_or_test;
     uint l_end = comp_next_label(comp);
@@ -2353,6 +2374,12 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                 star_flags |= MP_EMIT_STAR_FLAG_DOUBLE;
                 dblstar_args_node = pns_arg;
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_argument) {
+                #if MICROPY_PY_ASSIGN_EXPR
+                if (MP_PARSE_NODE_IS_STRUCT_KIND(pns_arg->nodes[1], PN_argument_4)) {
+                    compile_namedexpr_helper(comp, pns_arg->nodes[0], ((mp_parse_node_struct_t *)pns_arg->nodes[1])->nodes[0]);
+                    n_positional++;
+                } else
+                #endif
                 if (!MP_PARSE_NODE_IS_STRUCT_KIND(pns_arg->nodes[1], PN_comp_for)) {
                     if (!MP_PARSE_NODE_IS_ID(pns_arg->nodes[0])) {
                         compile_syntax_error(comp, (mp_parse_node_t)pns_arg, MP_ERROR_TEXT("LHS of keyword arg must be an id"));

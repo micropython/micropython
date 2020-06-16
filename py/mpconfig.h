@@ -835,6 +835,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_ASYNC_AWAIT (1)
 #endif
 
+// Support for assignment expressions with := (see PEP 572, Python 3.8+)
+#ifndef MICROPY_PY_ASSIGN_EXPR
+#define MICROPY_PY_ASSIGN_EXPR (1)
+#endif
+
 // Non-standard .pend_throw() method for generators, allowing for
 // Future-like behavior with respect to exception handling: an
 // exception set with .pend_throw() will activate on the next call

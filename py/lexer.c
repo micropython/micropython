@@ -174,7 +174,8 @@ STATIC void indent_pop(mp_lexer_t *lex) {
 // this means if the start of two ops are the same then they are equal til the last char
 
 STATIC const char *const tok_enc =
-    "()[]{},:;~" // singles
+    "()[]{},;~"   // singles
+    ":e="         // : :=
     "<e=c<e="     // < <= << <<=
     ">e=c>e="     // > >= >> >>=
     "*e=c*e="     // * *= ** **=
@@ -194,8 +195,9 @@ STATIC const uint8_t tok_enc_kind[] = {
     MP_TOKEN_DEL_PAREN_OPEN, MP_TOKEN_DEL_PAREN_CLOSE,
     MP_TOKEN_DEL_BRACKET_OPEN, MP_TOKEN_DEL_BRACKET_CLOSE,
     MP_TOKEN_DEL_BRACE_OPEN, MP_TOKEN_DEL_BRACE_CLOSE,
-    MP_TOKEN_DEL_COMMA, MP_TOKEN_DEL_COLON, MP_TOKEN_DEL_SEMICOLON, MP_TOKEN_OP_TILDE,
+    MP_TOKEN_DEL_COMMA, MP_TOKEN_DEL_SEMICOLON, MP_TOKEN_OP_TILDE,
 
+    MP_TOKEN_DEL_COLON, MP_TOKEN_OP_ASSIGN,
     MP_TOKEN_OP_LESS, MP_TOKEN_OP_LESS_EQUAL, MP_TOKEN_OP_DBL_LESS, MP_TOKEN_DEL_DBL_LESS_EQUAL,
     MP_TOKEN_OP_MORE, MP_TOKEN_OP_MORE_EQUAL, MP_TOKEN_OP_DBL_MORE, MP_TOKEN_DEL_DBL_MORE_EQUAL,
     MP_TOKEN_OP_STAR, MP_TOKEN_DEL_STAR_EQUAL, MP_TOKEN_OP_DBL_STAR, MP_TOKEN_DEL_DBL_STAR_EQUAL,
