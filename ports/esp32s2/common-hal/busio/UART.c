@@ -222,10 +222,10 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     }
     uart_driver_delete(self->uart_num);
 
-    reset_pin(self->rx_pin);
-    reset_pin(self->tx_pin);
-    reset_pin(self->rts_pin);
-    reset_pin(self->cts_pin);
+    common_hal_reset_pin(self->rx_pin);
+    common_hal_reset_pin(self->tx_pin);
+    common_hal_reset_pin(self->rts_pin);
+    common_hal_reset_pin(self->cts_pin);
     self->rx_pin = NULL;
     self->tx_pin = NULL;
     self->cts_pin = NULL;

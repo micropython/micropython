@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "common-hal/microcontroller/Pin.h"
+void board_init(void) {
+    // USB
+    never_reset_pin(&pin_GPIO19);
+    never_reset_pin(&pin_GPIO20);
 
-#include "py/obj.h"
+    // Debug UART
+    never_reset_pin(&pin_GPIO43);
+    never_reset_pin(&pin_GPIO44);
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t* clock_pin;
-    const mcu_pin_obj_t* MOSI_pin;
-    const mcu_pin_obj_t* MISO_pin;
-    spi_host_device_t host_id;
-    spi_bus_lock_dev_handle_t lock;
-    spi_hal_context_t hal_context;
-    spi_hal_timing_conf_t timing_conf;
-    uint32_t target_frequency;
-    uint32_t real_frequency;
-    uint8_t polarity;
-    uint8_t phase;
-    uint8_t bits;
-    bool has_lock;
-    bool connected_through_gpio;
-} busio_spi_obj_t;
+    // SPI Flash and RAM
+    never_reset_pin(&pin_GPIO26);
+    never_reset_pin(&pin_GPIO27);
+    never_reset_pin(&pin_GPIO28);
+    never_reset_pin(&pin_GPIO29);
+    never_reset_pin(&pin_GPIO30);
+    never_reset_pin(&pin_GPIO31);
+    never_reset_pin(&pin_GPIO32);
+}
 
-void spi_reset(void);
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+void reset_board(void) {
+
+}

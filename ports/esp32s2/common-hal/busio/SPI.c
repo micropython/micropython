@@ -32,84 +32,141 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "supervisor/shared/rgb_led_status.h"
 
-void spi_reset(void) {
+static bool spi_never_reset[SOC_SPI_PERIPH_NUM];
 
+void spi_reset(void) {
+    for (spi_host_device_t host_id = SPI2_HOST; host_id < SOC_SPI_PERIPH_NUM; host_id++) {
+        if (spi_never_reset[host_id]) {
+            continue;
+        }
+        spi_bus_free(host_id);
+    }
+}
+
+// This is copied in from the ESP-IDF because it is static.
+// Copyright 2015-2019 Espressif Systems (Shanghai) PTE LTD
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+static bool bus_uses_iomux_pins(spi_host_device_t host, const spi_bus_config_t* bus_config)
+{
+    if (bus_config->sclk_io_num>=0 &&
+        bus_config->sclk_io_num != spi_periph_signal[host].spiclk_iomux_pin) return false;
+    if (bus_config->quadwp_io_num>=0 &&
+        bus_config->quadwp_io_num != spi_periph_signal[host].spiwp_iomux_pin) return false;
+    if (bus_config->quadhd_io_num>=0 &&
+        bus_config->quadhd_io_num != spi_periph_signal[host].spihd_iomux_pin) return false;
+    if (bus_config->mosi_io_num >= 0 &&
+        bus_config->mosi_io_num != spi_periph_signal[host].spid_iomux_pin) return false;
+    if (bus_config->miso_io_num>=0 &&
+        bus_config->miso_io_num != spi_periph_signal[host].spiq_iomux_pin) return false;
+
+    return true;
+}
+
+// End copied code.
+
+static bool spi_bus_free(spi_host_device_t host_id) {
+    return spi_bus_get_attr(host_id) == NULL;
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
         const mcu_pin_obj_t * miso) {
-    // uint8_t sercom_index;
-    // uint32_t clock_pinmux = 0;
-    // bool mosi_none = mosi == NULL;
-    // bool miso_none = miso == NULL;
-    // uint32_t mosi_pinmux = 0;
-    // uint32_t miso_pinmux = 0;
-    // uint8_t clock_pad = 0;
-    // uint8_t mosi_pad = 0;
-    // uint8_t miso_pad = 0;
-    // uint8_t dopo = 255;
+    spi_bus_config_t bus_config;
+    bus_config.mosi_io_num = mosi != NULL ? mosi->number : -1;
+    bus_config.miso_io_num = miso != NULL ? miso->number : -1;
+    bus_config.sclk_io_num = clock != NULL ? clock->number : -1;
+    bus_config.quadwp_io_num = -1;
+    bus_config.quadhd_io_num = -1;
+    bus_config.max_transfer_sz = 0; // Uses the default
+    bus_config.flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_SCLK |
+                       mosi != NULL ? SPICOMMON_BUSFLAG_MOSI : 0 |
+                       miso != NULL ? SPICOMMON_BUSFLAG_MISO : 0;
+    bus_config.intr_flags = 0;
 
-    // if (sercom == NULL) {
-    //     mp_raise_ValueError(translate("Invalid pins"));
-    // }
+    // RAM and Flash is often on SPI1 and is unsupported by the IDF so use it as
+    // a flag value.
+    spi_host_device_t host_id = SPI1_HOST;
+    self->connected_through_gpio = true;
+    // Try and save SPI2 for pins that are on the IOMUX
+    if (bus_uses_iomux_pins(SPI2_HOST, &bus_config) && spi_bus_free(SPI2_HOST)) {
+        host_id = SPI2_HOST;
+        self->connected_through_gpio = false;
+    } else if (spi_bus_free(SPI3_HOST)) {
+        host_id = SPI3_HOST;
+    } else if (spi_bus_free(SPI2_HOST)) {
+        host_id = SPI2_HOST;
+    }
+    if (host_id == SPI1_HOST) {
+        mp_raise_ValueError(translate("All SPI peripherals are in use"));
+    }
 
-    // // Set up SPI clocks on SERCOM.
-    // samd_peripherals_sercom_clock_init(sercom, sercom_index);
+    esp_err_t result = spi_bus_initialize(host_id, &bus_config, 0 /* dma channel */);
+    if (result == ESP_ERR_NO_MEM) {
+        mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
+    } else if (result = ESP_INVALID_ARG) {
+        mp_raise_ValueError(translate("Invalid pins"));
+    }
+    spi_bus_lock_dev_config_t config = { .flags = 0 };
+    result = spi_bus_lock_register_dev(spi_bus_get_attr(host_id)->lock,
+                                       spi_bus_lock_dev_config_t *config,
+                                       &self->lock);
+    if (result == ESP_ERR_NO_MEM) {
+        mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
+    }
 
-    #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !CIRCUITPY_BITBANG_APA102
-    // // if we're re-using the dotstar sercom, make sure it is disabled or the init will fail out
-    // hri_sercomspi_clear_CTRLA_ENABLE_bit(sercom);
-    #endif
-    // if (spi_m_sync_init(&self->spi_desc, sercom) != ERR_NONE) {
-    //     mp_raise_OSError(MP_EIO);
-    // }
 
-    // Pads must be set after spi_m_sync_init(), which uses default values from
-    // the prototypical SERCOM.
-    // hri_sercomspi_write_CTRLA_DOPO_bf(sercom, dopo);
-    // hri_sercomspi_write_CTRLA_DIPO_bf(sercom, miso_pad);
+    err = esp_intr_alloc(spicommon_irqsource_for_host(host_id),
+                         bus_config.intr_flags | ESP_INTR_FLAG_INTRDISABLED,
+                         spi_interrupt_handler, self, &self->intr);
+    if (result == ESP_ERR_NO_MEM) {
+        mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
+    }
 
-    // Always start at 250khz which is what SD cards need. They are sensitive to
-    // SPI bus noise before they are put into SPI mode.
-    // uint8_t baud_value = samd_peripherals_spi_baudrate_to_baud_reg_value(250000);
-    // if (spi_m_sync_set_baudrate(&self->spi_desc, baud_value) != ERR_NONE) {
-    //     // spi_m_sync_set_baudrate does not check for validity, just whether the device is
-    //     // busy or not
-    //     mp_raise_OSError(MP_EIO);
-    // }
+    spi_hal_context_t* hal = &self->hal_context;
+    hal->hw = NULL; // Set by spi_hal_init
+    hal->dmadesc_tx = NULL;
+    hal->dmadesc_rx = NULL;
+    hal->dmadesc_n = 0;
 
-    // gpio_set_pin_direction(clock->number, GPIO_DIRECTION_OUT);
-    // gpio_set_pin_pull_mode(clock->number, GPIO_PULL_OFF);
-    // gpio_set_pin_function(clock->number, clock_pinmux);
-    // claim_pin(clock);
-    // self->clock_pin = clock->number;
+    // We don't use native CS.
+    hal->cs_setup = 0;
+    hal->cs_hold = 0;
+    hal->cs_pin_id = -1;
+    hal->timing_conf = &self->timing_conf;
 
-    // if (mosi_none) {
-    //     self->MOSI_pin = NO_PIN;
-    // } else {
-    //     gpio_set_pin_direction(mosi->number, GPIO_DIRECTION_OUT);
-    //     gpio_set_pin_pull_mode(mosi->number, GPIO_PULL_OFF);
-    //     gpio_set_pin_function(mosi->number, mosi_pinmux);
-    //     self->MOSI_pin = mosi->number;
-    //     claim_pin(mosi);
-    // }
+    hal->sio = 1;
+    hal->half_duplex = 0;
+    hal->tx_lsbfirst = 0;
+    hal->rx_lsbfirst = 0;
+    hal->dma_enabled = 0;
+    hal->no_compensate = 1;
+    // Ignore CS bits
 
-    // if (miso_none) {
-    //     self->MISO_pin = NO_PIN;
-    // } else {
-    //     gpio_set_pin_direction(miso->number, GPIO_DIRECTION_IN);
-    //     gpio_set_pin_pull_mode(miso->number, GPIO_PULL_OFF);
-    //     gpio_set_pin_function(miso->number, miso_pinmux);
-    //     self->MISO_pin = miso->number;
-    //     claim_pin(miso);
-    // }
+    // We don't use cmd, addr or dummy bits.
+    hal->cmd = 0;
+    hal->cmd_bits = 0;
+    hal->addr_bits = 0;
+    hal->dummy_bits = 0;
+    hal->addr = 0;
 
-    // spi_m_sync_enable(&self->spi_desc);
+    hal->io_mode = SPI_LL_IO_MODE_NORMAL;
+
+    spi_hal_init(hal, host_id);
 }
 
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
-    // never_reset_sercom(self->spi_desc.dev.prvt);
+    spi_never_reset[self->host_id] = true;
 
     never_reset_pin(self->clock_pin);
     never_reset_pin(self->MOSI_pin);
@@ -124,51 +181,50 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     if (common_hal_busio_spi_deinited(self)) {
         return;
     }
-    // allow_reset_sercom(self->spi_desc.dev.prvt);
+    spi_never_reset[self->host_id] = false;
+    spi_bus_free(self->host_id);
 
-    // spi_m_sync_disable(&self->spi_desc);
-    // spi_m_sync_deinit(&self->spi_desc);
-    reset_pin(self->clock_pin);
-    reset_pin(self->MOSI_pin);
-    reset_pin(self->MISO_pin);
+    common_hal_reset_pin(self->clock_pin);
+    common_hal_reset_pin(self->MOSI_pin);
+    common_hal_reset_pin(self->MISO_pin);
     self->clock_pin = NULL;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
-    // If the settings are already what we want then don't reset them.
-    // if (hri_sercomspi_get_CTRLA_CPHA_bit(hw) == phase &&
-    //     hri_sercomspi_get_CTRLA_CPOL_bit(hw) == polarity &&
-    //     hri_sercomspi_read_CTRLB_CHSIZE_bf(hw) == ((uint32_t)bits - 8) &&
-    //     hri_sercomspi_read_BAUD_BAUD_bf(hw) == baud_reg_value) {
-    //     return true;
-    // }
+    if (baudrate == self->target_frequency &&
+        polarity == self->polarity &&
+        phase == self->phase &&
+        bits == self->bits) {
+        return true;
+    }
+    self->hal_context->mode = polarity << 1 | phase;
+    self->polarity = polarity;
+    self->phase = phase;
+    self->bits = bits;
+    self->target_frequency = baudrate;
+    esp_err_t result =  spi_hal_get_clock_conf(self->hal_context,
+                                               self->target_frequency,
+                                               128 /* duty_cycle */,
+                                               self->connected_through_gpio,
+                                               0 /* input_delay_ns */,
+                                               &self->real_frequency,
+                                               &self->timing_conf);
 
-    // Disable, set values (most or all are enable-protected), and re-enable.
-    // spi_m_sync_disable(&self->spi_desc);
-    // hri_sercomspi_wait_for_sync(hw, SERCOM_SPI_SYNCBUSY_MASK);
-
-    // hri_sercomspi_write_CTRLA_CPHA_bit(hw, phase);
-    // hri_sercomspi_write_CTRLA_CPOL_bit(hw, polarity);
-    // hri_sercomspi_write_CTRLB_CHSIZE_bf(hw, bits - 8);
-    // hri_sercomspi_write_BAUD_BAUD_bf(hw, baud_reg_value);
-    // hri_sercomspi_wait_for_sync(hw, SERCOM_SPI_SYNCBUSY_MASK);
-
-    // spi_m_sync_enable(&self->spi_desc);
-    // hri_sercomspi_wait_for_sync(hw, SERCOM_SPI_SYNCBUSY_MASK);
-
+    spi_hal_setup_device(&self->hal_context);
     return true;
 }
 
 bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
-    bool grabbed_lock = false;
-    // CRITICAL_SECTION_ENTER()
-        if (!self->has_lock) {
-            grabbed_lock = true;
-            self->has_lock = true;
-        }
-    // CRITICAL_SECTION_LEAVE();
-    return grabbed_lock;
+    // If our lock has already been taken then return false because someone else
+    // may already grabbed it in our call stack.
+    if (self->has_lock) {
+        return false;
+    }
+    // Wait to grab the lock from another task.
+    esp_err_t ret = spi_bus_lock_acquire_start(self->lock, portMAX_DELAY);
+    self->has_lock = true;
+    return true;
 }
 
 bool common_hal_busio_spi_has_lock(busio_spi_obj_t *self) {
@@ -176,6 +232,7 @@ bool common_hal_busio_spi_has_lock(busio_spi_obj_t *self) {
 }
 
 void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
+    spi_bus_lock_acquire_end(self->lock);
     self->has_lock = false;
 }
 
@@ -218,32 +275,35 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uin
     if (len == 0) {
         return true;
     }
-    // int32_t status;
-    if (len >= 16) {
-        // status = sercom_dma_transfer(self->spi_desc.dev.prvt, data_out, data_in, len);
+
+    spi_hal_context_t* hal = &self->hal_context;
+    hal->tx_bitlen = len * 8;
+    hal->rx_bitlen = len * 8;
+    hal->send_buffer = data_out;
+    hal->rcv_buffer = data_in;
+
+    spi_hal_setup_trans(hal);
+    spi_hal_prepare_data(hal);
+    spi_hal_user_start(hal);
+    if (len >= 16 && false) {
+        // Set up the interrupt and wait on the lock.
     } else {
-        // struct spi_xfer xfer;
-        // xfer.txbuf = data_out;
-        // xfer.rxbuf = data_in;
-        // xfer.size = len;
-        // status = spi_m_sync_transfer(&self->spi_desc, &xfer);
+        while (!spi_hal_usr_is_done(hal)) {
+            RUN_BACKGROUND_TASKS();
+        }
     }
-    return false; // Status is number of chars read or an error code < 0.
+
+    return false;
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
-    // return samd_peripherals_spi_baud_reg_value_to_baudrate(hri_sercomspi_read_BAUD_reg(self->spi_desc.dev.prvt));
-    return 0;
+    return self->real_frequency;
 }
 
 uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self) {
-    // void * hw = self->spi_desc.dev.prvt;
-    // return hri_sercomspi_get_CTRLA_CPHA_bit(hw);
-    return 0;
+    return self->phase;
 }
 
 uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self) {
-    // void * hw = self->spi_desc.dev.prvt;
-    // return hri_sercomspi_get_CTRLA_CPOL_bit(hw);
-    return 0;
+    return self->polarity;
 }
