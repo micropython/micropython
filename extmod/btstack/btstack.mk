@@ -3,6 +3,7 @@
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
 
 MICROPY_BLUETOOTH_BTSTACK_USB ?= 0
+MICROPY_BLUETOOTH_BTSTACK_ENABLE_CLASSIC ?= 0
 
 BTSTACK_EXTMOD_DIR = extmod/btstack
 
@@ -23,12 +24,17 @@ INC += -I$(BTSTACK_DIR)/src
 INC += -I$(BTSTACK_DIR)/3rd-party/bluedroid/decoder/include
 INC += -I$(BTSTACK_DIR)/3rd-party/bluedroid/encoder/include
 INC += -I$(BTSTACK_DIR)/3rd-party/md5
+INC += -I$(BTSTACK_DIR)/3rd-party/micro-ecc
+INC += -I$(BTSTACK_DIR)/3rd-party/rijndael
 INC += -I$(BTSTACK_DIR)/3rd-party/yxml
 
 SRC_BTSTACK = \
 	$(addprefix lib/btstack/src/, $(SRC_FILES)) \
-	$(addprefix lib/btstack/src/ble/, $(filter-out %_tlv.c, $(SRC_BLE_FILES))) \
-	lib/btstack/platform/embedded/btstack_run_loop_embedded.c
+	$(addprefix lib/btstack/src/ble/, $(SRC_BLE_FILES)) \
+	lib/btstack/platform/embedded/btstack_run_loop_embedded.c \
+	lib/btstack/platform/posix/btstack_tlv_posix.c \
+	lib/btstack/3rd-party/rijndael/rijndael.c \
+	lib/btstack/3rd-party/micro-ecc/uECC.c
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
@@ -66,7 +72,7 @@ endif
 LIB_SRC_C += $(SRC_BTSTACK)
 
 # Suppress some warnings.
-BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter
+BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter -Wno-double-promotion
 ifneq ($(CC),clang)
 BTSTACK_WARNING_CFLAGS += -Wno-format
 endif

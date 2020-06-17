@@ -457,11 +457,11 @@ STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t character
 
     // Lists of characteristic uuids and flags.
     mp_obj_bluetooth_uuid_t **characteristic_uuids = m_new(mp_obj_bluetooth_uuid_t *, len);
-    uint8_t *characteristic_flags = m_new(uint8_t, len);
+    uint16_t *characteristic_flags = m_new(uint16_t, len);
 
     // Flattened list of descriptor uuids and flags. Grows (realloc) as more descriptors are encountered.
     mp_obj_bluetooth_uuid_t **descriptor_uuids = NULL;
-    uint8_t *descriptor_flags = NULL;
+    uint16_t *descriptor_flags = NULL;
     // How many descriptors in the flattened list per characteristic.
     uint8_t *num_descriptors = m_new(uint8_t, len);
 
@@ -502,7 +502,7 @@ STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t character
 
             // Grow the flattened uuids and flags arrays with this many more descriptors.
             descriptor_uuids = m_renew(mp_obj_bluetooth_uuid_t *, descriptor_uuids, descriptor_index, descriptor_index + num_descriptors[characteristic_index]);
-            descriptor_flags = m_renew(uint8_t, descriptor_flags, descriptor_index, descriptor_index + num_descriptors[characteristic_index]);
+            descriptor_flags = m_renew(uint16_t, descriptor_flags, descriptor_index, descriptor_index + num_descriptors[characteristic_index]);
 
             // Also grow the handles array.
             *handles = m_renew(uint16_t, *handles, *num_handles, *num_handles + num_descriptors[characteristic_index]);

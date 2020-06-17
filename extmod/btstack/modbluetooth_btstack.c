@@ -500,6 +500,59 @@ STATIC void btstack_packet_handler_write_with_response(uint8_t packet_type, uint
 }
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
+
+#define FIXED_PASSKEY 12346
+
+static void btstack_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
+    UNUSED(channel);
+    UNUSED(size);
+
+    if (packet_type != HCI_EVENT_PACKET) return;
+
+    switch (hci_event_packet_get_type(packet)) {
+        case SM_EVENT_JUST_WORKS_REQUEST:
+            printf("Just works requested\n");
+            sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
+            break;
+        case SM_EVENT_NUMERIC_COMPARISON_REQUEST:
+            printf("Confirming numeric comparison: %u\n", sm_event_numeric_comparison_request_get_passkey(packet));
+            sm_numeric_comparison_confirm(sm_event_passkey_display_number_get_handle(packet));
+            break;
+        case SM_EVENT_PASSKEY_DISPLAY_NUMBER:
+            printf("Display Passkey: %u\n", sm_event_passkey_display_number_get_passkey(packet));
+            break;
+        case SM_EVENT_PASSKEY_INPUT_NUMBER:
+            printf("Passkey Input requested\n");
+            printf("Sending fixed passkey %u\n", FIXED_PASSKEY);
+            sm_passkey_input(sm_event_passkey_input_number_get_handle(packet), FIXED_PASSKEY);
+            break;
+        case SM_EVENT_PAIRING_COMPLETE:
+            switch (sm_event_pairing_complete_get_status(packet)){
+                case ERROR_CODE_SUCCESS:
+                    printf("Pairing complete, success\n");
+                    break;
+                case ERROR_CODE_CONNECTION_TIMEOUT:
+                    printf("Pairing failed, timeout\n");
+                    break;
+                case ERROR_CODE_REMOTE_USER_TERMINATED_CONNECTION:
+                    printf("Pairing faileed, disconnected\n");
+                    break;
+                case ERROR_CODE_AUTHENTICATION_FAILURE:
+                    printf("Pairing failed, reason = %u\n", sm_event_pairing_complete_get_reason(packet));
+                    break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+STATIC btstack_packet_callback_registration_t sm_event_callback_registration = {
+    .callback = &btstack_sm_packet_handler
+};
+
 STATIC btstack_timer_source_t btstack_init_deinit_timeout;
 
 STATIC void btstack_init_deinit_timeout_handler(btstack_timer_source_t *ds) {
@@ -610,14 +663,16 @@ int mp_bluetooth_init(void) {
 
     l2cap_init();
     le_device_db_init();
-    sm_init();
 
-    // Set blank ER/IR keys to suppress BTstack warning.
+    sm_init();
+    sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+    sm_set_authentication_requirements(SM_AUTHREQ_BONDING);
+
     // TODO handle this correctly.
-    sm_key_t dummy_key;
-    memset(dummy_key, 0, sizeof(dummy_key));
-    sm_set_er(dummy_key);
-    sm_set_ir(dummy_key);
+    sm_key_t dummy_er_key = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+    sm_set_er(dummy_er_key);
+    sm_key_t dummy_ir_key = {0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+    sm_set_ir(dummy_ir_key);
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     gatt_client_init();
@@ -628,6 +683,9 @@ int mp_bluetooth_init(void) {
 
     // Register for ATT server events.
     att_server_register_packet_handler(&btstack_packet_handler_att_server);
+
+    // Register for Security Manager events.
+    sm_add_event_handler(&sm_event_callback_registration);
 
     // Set a timeout for HCI initialisation.
     btstack_run_loop_set_timer(&btstack_init_deinit_timeout, BTSTACK_INIT_DEINIT_TIMEOUT_MS);
@@ -881,7 +939,7 @@ STATIC inline uint16_t get_uuid16(const mp_obj_bluetooth_uuid_t *uuid) {
     return (uuid->data[1] << 8) | uuid->data[0];
 }
 
-int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint8_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint8_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics) {
+int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint16_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint16_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics) {
     DEBUG_printf("mp_bluetooth_gatts_register_service\n");
     // Note: btstack expects BE UUIDs (which it immediately convertes to LE).
     // So we have to convert all our modbluetooth LE UUIDs to BE just for the att_db_util_add_* methods (using get_uuid16 above, and reverse_128 from btstackutil.h).
@@ -905,8 +963,8 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
 
     for (size_t i = 0; i < num_characteristics; ++i) {
         uint16_t props = characteristic_flags[i] | ATT_PROPERTY_DYNAMIC;
-        uint16_t read_permission = ATT_SECURITY_NONE;
-        uint16_t write_permission = ATT_SECURITY_NONE;
+        uint16_t read_permission = (characteristic_flags[i]  & 0x0400) ? ATT_SECURITY_AUTHENTICATED : ATT_SECURITY_NONE;
+        uint16_t write_permission = (characteristic_flags[i] & 0x2000) ? ATT_SECURITY_ENCRYPTED : ATT_SECURITY_NONE;
         if (characteristic_uuids[i]->type == MP_BLUETOOTH_UUID_TYPE_16) {
             handles[handle_index] = att_db_util_add_characteristic_uuid16(get_uuid16(characteristic_uuids[i]), props, read_permission, write_permission, NULL, 0);
         } else if (characteristic_uuids[i]->type == MP_BLUETOOTH_UUID_TYPE_128) {

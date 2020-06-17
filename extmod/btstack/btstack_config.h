@@ -5,7 +5,7 @@
 #define ENABLE_BLE
 #define ENABLE_LE_PERIPHERAL
 #define ENABLE_LE_CENTRAL
-// #define ENABLE_CLASSIC
+#define ENABLE_CLASSIC
 #define ENABLE_LE_DATA_CHANNELS
 // #define ENABLE_LOG_INFO
 // #define ENABLE_LOG_DEBUG
@@ -30,11 +30,17 @@
 #define MAX_NR_AVDTP_STREAM_ENDPOINTS 1
 #define MAX_NR_AVDTP_CONNECTIONS 1
 #define MAX_NR_AVRCP_CONNECTIONS 1
+#define ENABLE_LE_SECURE_CONNECTIONS
+#define ENABLE_SOFTWARE_AES128
+#define ENABLE_MICRO_ECC_FOR_LE_SECURE_CONNECTIONS
+#define ENABLE_LE_DATA_LENGTH_EXTENSION
+#define ENABLE_ATT_DELAYED_RESPONSE
+#define ENABLE_L2CAP_ENHANCED_RETRANSMISSION_MODE
 
 #define MAX_NR_LE_DEVICE_DB_ENTRIES 4
 
-// Link Key DB and LE Device DB using TLV on top of Flash Sector interface
-// #define NVM_NUM_DEVICE_DB_ENTRIES 16
+// Link Key DB and LE Device DB on mpy filesystem
+#define NVM_NUM_DEVICE_DB_ENTRIES 16
 
 // We don't give btstack a malloc, so use a fixed-size ATT DB.
 #define MAX_ATT_DB_SIZE 512
