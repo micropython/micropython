@@ -65,7 +65,7 @@ STATIC pthread_key_t tls_key;
 // The mutex is used for any code in this port that needs to be thread safe.
 // Specifically for thread management, access to the linked list is one example.
 // But also, e.g. scheduler state.
-STATIC pthread_mutex_t thread_mutex = PTHREAD_MUTEX_INITIALIZER;
+STATIC pthread_mutex_t thread_mutex;
 STATIC thread_t *thread;
 
 // this is used to synchronise the signal handler of the thread
@@ -110,6 +110,13 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
 void mp_thread_init(void) {
     pthread_key_create(&tls_key, NULL);
     pthread_setspecific(tls_key, &mp_state_ctx.thread);
+
+    // Needs to be a recursive mutex to emulate the behavior of
+    // BEGIN_ATOMIC_SECTION on bare metal.
+    pthread_mutexattr_t thread_mutex_attr;
+    pthread_mutexattr_init(&thread_mutex_attr);
+    pthread_mutexattr_settype(&thread_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&thread_mutex, &thread_mutex_attr);
 
     // create first entry in linked list of all threads
     thread = malloc(sizeof(thread_t));

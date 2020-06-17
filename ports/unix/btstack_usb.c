@@ -156,7 +156,10 @@ STATIC void *btstack_thread(void *arg) {
     // Or, if a timeout results in it being set to TIMEOUT.
 
     while (mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_STARTING || mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_ACTIVE) {
+        // Pretend like we're running in IRQ context (i.e. other things can't be running at the same time).
+        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         btstack_run_loop_embedded_execute_once();
+        MICROPY_END_ATOMIC_SECTION(atomic_state);
 
         // The USB transport schedules events to the run loop at 1ms intervals,
         // and the implementation currently polls rather than selects.
