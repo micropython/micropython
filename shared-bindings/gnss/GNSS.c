@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 
 //| class GNSS:
-//|     """Get updated positioning information from GNSS
+//|     """Get updated positioning information from Global Navigation Satellite System (GNSS)
 //|
 //|     Usage::
 //|
@@ -155,7 +155,7 @@ STATIC mp_obj_t gnss_obj_update(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_update_obj, gnss_obj_update);
 
 //|     latitude: Any = ...
-//|     """Latitude of current position."""
+//|     """Latitude of current position in degrees (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_latitude(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -172,7 +172,7 @@ const mp_obj_property_t gnss_latitude_obj = {
 };
 
 //|     longitude: Any = ...
-//|     """Longitude of current position."""
+//|     """Longitude of current position in degrees (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_longitude(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -189,7 +189,7 @@ const mp_obj_property_t gnss_longitude_obj = {
 };
 
 //|     altitude: Any = ...
-//|     """Altitude of current position."""
+//|     """Altitude of current position in degrees (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_altitude(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
