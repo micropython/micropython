@@ -36,6 +36,8 @@ import subprocess
 PATHS = [
     # C
     "extmod/*.[ch]",
+    "extmod/btstack/*.[ch]",
+    "extmod/nimble/*.[ch]",
     "lib/netutils/*.[ch]",
     "lib/timeutils/*.[ch]",
     "lib/utils/*.[ch]",

@@ -45,7 +45,7 @@
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY NIMBLE"
 #endif
 
-#define DEBUG_EVENT_printf(...) //printf(__VA_ARGS__)
+#define DEBUG_EVENT_printf(...) // printf(__VA_ARGS__)
 
 #define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
 
