@@ -140,72 +140,6 @@ static void __fatal_error(const char *msg) {
 /******************************************************************************/
 // CLOCK
 
-#if defined(STM32F4) || defined(STM32F7)
-
-#define CONFIG_RCC_CR_1ST (RCC_CR_HSION)
-#define CONFIG_RCC_CR_2ND (RCC_CR_HSEON || RCC_CR_CSSON || RCC_CR_PLLON)
-#define CONFIG_RCC_PLLCFGR (0x24003010)
-
-#elif defined(STM32H7)
-
-#define CONFIG_RCC_CR_1ST (RCC_CR_HSION)
-#define CONFIG_RCC_CR_2ND (RCC_CR_PLL3ON | RCC_CR_PLL2ON | RCC_CR_PLL1ON | RCC_CR_CSSHSEON \
-    | RCC_CR_HSEON | RCC_CR_HSI48ON | RCC_CR_CSIKERON | RCC_CR_CSION)
-#define CONFIG_RCC_PLLCFGR (0x00000000)
-
-#else
-#error Unknown processor
-#endif
-
-void SystemInit(void) {
-    #if defined(STM32H7)
-    // Configure write-once power options, and wait for voltage levels to be ready
-    PWR->CR3 = PWR_CR3_LDOEN;
-    while (!(PWR->CSR1 & PWR_CSR1_ACTVOSRDY)) {
-    }
-    #endif
-
-    // Set HSION bit
-    RCC->CR |= CONFIG_RCC_CR_1ST;
-
-    // Reset CFGR register
-    RCC->CFGR = 0x00000000;
-
-    // Reset HSEON, CSSON and PLLON bits
-    RCC->CR &= ~CONFIG_RCC_CR_2ND;
-
-    // Reset PLLCFGR register
-    RCC->PLLCFGR = CONFIG_RCC_PLLCFGR;
-
-    #if defined(STM32H7)
-    // Reset PLL and clock configuration registers
-    RCC->D1CFGR = 0x00000000;
-    RCC->D2CFGR = 0x00000000;
-    RCC->D3CFGR = 0x00000000;
-    RCC->PLLCKSELR = 0x00000000;
-    RCC->D1CCIPR = 0x00000000;
-    RCC->D2CCIP1R = 0x00000000;
-    RCC->D2CCIP2R = 0x00000000;
-    RCC->D3CCIPR = 0x00000000;
-    #endif
-
-    // Reset HSEBYP bit
-    RCC->CR &= (uint32_t)0xFFFBFFFF;
-
-    // Disable all interrupts
-    #if defined(STM32F4) || defined(STM32F7)
-    RCC->CIR = 0x00000000;
-    #elif defined(STM32H7)
-    RCC->CIER = 0x00000000;
-    #endif
-
-    // Set location of vector table
-    SCB->VTOR = FLASH_BASE;
-
-    // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
-    SCB->CCR |= SCB_CCR_STKALIGN_Msk;
-}
-
 void systick_init(void) {
     // Configure SysTick as 1ms ticker
     SysTick_Config(SystemCoreClock / 1000);
@@ -1311,12 +1245,26 @@ static void do_reset(void) {
     NVIC_SystemReset();
 }
 
-uint32_t SystemCoreClock;
-
 extern PCD_HandleTypeDef pcd_fs_handle;
 extern PCD_HandleTypeDef pcd_hs_handle;
 
 void stm32_main(int initial_r0) {
+    #if defined(STM32H7)
+    // Configure write-once power options, and wait for voltage levels to be ready
+    PWR->CR3 = PWR_CR3_LDOEN;
+    while (!(PWR->CSR1 & PWR_CSR1_ACTVOSRDY)) {
+    }
+
+    // Reset the kernel clock configuration registers for all domains.
+    RCC->D1CCIPR = 0x00000000;
+    RCC->D2CCIP1R = 0x00000000;
+    RCC->D2CCIP2R = 0x00000000;
+    RCC->D3CCIPR = 0x00000000;
+    #endif
+
+    // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
+    SCB->CCR |= SCB_CCR_STKALIGN_Msk;
+
     #if defined(STM32F4)
     #if INSTRUCTION_CACHE_ENABLE
     __HAL_FLASH_INSTRUCTION_CACHE_ENABLE();
@@ -1354,9 +1302,6 @@ void stm32_main(int initial_r0) {
     if ((initial_r0 & 0xffffff00) == 0x70ad0000) {
         goto enter_bootloader;
     }
-
-    // MCU starts up with HSI
-    SystemCoreClock = HSI_VALUE;
 
     int reset_mode = get_reset_mode();
     uint32_t msp = *(volatile uint32_t*)APPLICATION_ADDR;

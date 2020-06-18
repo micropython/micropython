@@ -34,6 +34,7 @@ STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
 STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
+SYSTEM_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/system_stm32$(MCU_SERIES)xx.o
 
 CROSS_COMPILE ?= arm-none-eabi-
 
@@ -109,6 +110,7 @@ SRC_C = \
 
 SRC_O = \
 	$(STARTUP_FILE) \
+	$(SYSTEM_FILE) \
 	ports/stm32/resethandler.o \
 
 $(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
