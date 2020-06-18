@@ -70,10 +70,15 @@ static const flash_layout_t flash_layout[] = {
     { 0x08020000, 0x20000, 3 },
 };
 #else
+// This is for dual-bank mode disabled
 static const flash_layout_t flash_layout[] = {
     { 0x08000000, 0x08000, 4 },
     { 0x08020000, 0x20000, 1 },
+    #if FLASH_SECTOR_TOTAL == 8
     { 0x08040000, 0x40000, 3 },
+    #else
+    { 0x08040000, 0x40000, 7 },
+    #endif
 };
 #endif
 
@@ -138,6 +143,13 @@ static uint32_t get_page(uint32_t addr) {
 }
 
 #endif
+
+bool flash_is_valid_addr(uint32_t addr) {
+    uint8_t last = MP_ARRAY_SIZE(flash_layout) - 1;
+    uint32_t end_of_flash = flash_layout[last].base_address +
+        flash_layout[last].sector_count * flash_layout[last].sector_size;
+    return flash_layout[0].base_address <= addr && addr < end_of_flash;
+}
 
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     if (addr >= flash_layout[0].base_address) {
