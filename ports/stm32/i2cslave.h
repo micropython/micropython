@@ -28,6 +28,11 @@
 
 #include STM32_HAL_H
 
+#if !defined(I2C2_BASE)
+// This MCU doesn't have I2C2_BASE, define it so that the i2c_idx calculation works.
+#define I2C2_BASE (I2C1_BASE + ((I2C3_BASE - I2C1_BASE) / 2))
+#endif
+
 typedef I2C_TypeDef i2c_slave_t;
 
 void i2c_slave_init_helper(i2c_slave_t *i2c, int addr);
@@ -41,6 +46,10 @@ static inline void i2c_slave_init(i2c_slave_t *i2c, int irqn, int irq_pri, int a
     #elif defined(STM32H7)
     RCC->APB1LENR |= 1 << (RCC_APB1LENR_I2C1EN_Pos + i2c_idx);
     volatile uint32_t tmp = RCC->APB1LENR; // Delay after enabling clock
+    (void)tmp;
+    #elif defined(STM32WB)
+    RCC->APB1ENR1 |= 1 << (RCC_APB1ENR1_I2C1EN_Pos + i2c_idx);
+    volatile uint32_t tmp = RCC->APB1ENR1; // Delay after enabling clock
     (void)tmp;
     #endif
 
