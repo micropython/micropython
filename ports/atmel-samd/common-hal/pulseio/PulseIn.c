@@ -79,7 +79,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
     // Grab the current time first.
     uint32_t current_overflow = overflow_count;
     Tc* tc = tc_insts[pulsein_tc_index];
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     tc->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_READSYNC;
     while (tc->COUNT16.SYNCBUSY.bit.COUNT == 1 ||
            tc->COUNT16.CTRLBSET.bit.CMD == TC_CTRLBSET_CMD_READSYNC_Val) {}
@@ -173,7 +173,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
         // We use GCLK0 for SAMD21 which is 48MHz. We prescale it to 3MHz.
         turn_on_clocks(true, index, 0);
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         // We use GCLK5 for SAMD51 because it runs at 2MHz and we can use it for a 1MHz clock,
         // 1us per tick.
         turn_on_clocks(true, index, 5);
@@ -185,7 +185,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
                                 TC_CTRLA_PRESCALER_DIV16 |
                                 TC_CTRLA_WAVEGEN_NFRQ;
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         tc_reset(tc);
         tc_set_enable(tc, false);
         tc->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCALER_DIV2;

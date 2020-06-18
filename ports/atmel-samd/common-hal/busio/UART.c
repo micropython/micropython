@@ -105,7 +105,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 continue;
             }
 #endif
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 	    if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
                 !(tx->sercom[i].pad == 0)) {
                 continue;
