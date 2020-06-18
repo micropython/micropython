@@ -35,6 +35,57 @@
 #include "nrfx_errors.h"
 #include "nrfx_config.h"
 
+#if MICROPY_PY_TIME_USE_RTC_BASE
+#include "nrfx_rtc.h"
+#endif
+
+#if MICROPY_PY_TIME_USE_TICKER_BASE
+#include "ticker.h"
+#endif
+
+
+#if MICROPY_PY_TIME_TICKS
+
+#if MICROPY_PY_TIME_USE_RTC_BASE
+nrfx_rtc_t rtc1 = NRFX_RTC_INSTANCE(1);
+
+// setup rtc1 for msec resolution, introduces about 0.7% error:
+// error = 0.001 / ( 1/32768 * (PRESCALER +1))
+// power consumption ~0.5uA
+void rtc1_init_msec(void) {
+    rtc1.p_reg->PRESCALER = 32;
+    rtc1.p_reg->TASKS_START = 1;
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return (mp_uint_t)rtc1.p_reg->COUNTER;
+}
+#elif MICROPY_PY_TIME_USE_TICKER_BASE
+// setup ticker CCR0 callback in 1msec intervals
+// power consumption of ticker's timer (1MHz) = ~5uA
+volatile uint32_t tick_ms;
+
+int32_t tick_cb(void) {
+    tick_ms += 1;
+    // call me again in 1000 usec
+    return 1000;
+}
+
+void ticker0_init_msec(void) {
+    set_ticker_callback(0, tick_cb, 200);
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return tick_ms;
+}
+
+#endif
+#else
+mp_uint_t mp_hal_ticks_ms(void) {
+    return 0;
+}
+#endif
+
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,

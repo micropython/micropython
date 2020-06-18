@@ -41,12 +41,6 @@ typedef enum
     HAL_TIMEOUT  = 0x03
 } HAL_StatusTypeDef;
 
-static inline uint32_t hal_tick_fake(void) {
-    return 0;
-}
-
-#define mp_hal_ticks_ms hal_tick_fake // TODO: implement. Right now, return 0 always
-
 extern const unsigned char mp_hal_status_to_errno_table[4];
 
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
@@ -70,6 +64,13 @@ const char *nrfx_error_code_lookup(uint32_t err_code);
 #define mp_hal_pin_od_high(p)    mp_hal_pin_high(p)
 #define mp_hal_pin_open_drain(p) nrf_gpio_cfg_input(p->pin, NRF_GPIO_PIN_NOPULL)
 
+#if MICROPY_PY_TIME_USE_RTC_BASE
+void rtc1_init_msec();
+#endif
+
+#if MICROPY_PY_TIME_USE_TICKER_BASE
+void ticker0_init_msec(void);
+#endif
 
 // TODO: empty implementation for now. Used by machine_spi.c:69
 #define mp_hal_delay_us_fast(p)
