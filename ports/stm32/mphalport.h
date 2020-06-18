@@ -4,6 +4,10 @@
 
 extern const unsigned char mp_hal_status_to_errno_table[4];
 
+static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
+    return -mp_hal_status_to_errno_table[status];
+}
+
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
