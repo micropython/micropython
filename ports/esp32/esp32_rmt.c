@@ -110,8 +110,8 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     config.clk_div = self->clock_div;
 
-    check_esp_err(rmt_config(&config));
     check_esp_err(rmt_driver_install(config.channel, 0, 0));
+    check_esp_err(rmt_config(&config));
 
     return MP_OBJ_FROM_PTR(self);
 }
