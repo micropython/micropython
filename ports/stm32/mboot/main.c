@@ -31,6 +31,7 @@
 #include "extmod/crypto-algorithms/sha256.c"
 #include "usbd_core.h"
 #include "storage.h"
+#include "flash.h"
 #include "i2cslave.h"
 #include "mboot.h"
 #include "dfu.h"
@@ -500,115 +501,26 @@ static int usrbtn_state(void) {
 #define MBOOT_SPIFLASH2_LAYOUT ""
 #endif
 
-typedef struct {
-    uint32_t base_address;
-    uint32_t sector_size;
-    uint32_t sector_count;
-} flash_layout_t;
-
-#if defined(STM32F7)
-// FLASH_FLAG_PGSERR (Programming Sequence Error) was renamed to
-// FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
-#define FLASH_FLAG_PGSERR FLASH_FLAG_ERSERR
-#endif
-
 #if defined(STM32F4) \
     || defined(STM32F722xx) \
     || defined(STM32F723xx) \
     || defined(STM32F732xx) \
     || defined(STM32F733xx)
-
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*016Kg,01*064Kg,07*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
-
-static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x04000, 4 },
-    { 0x08010000, 0x10000, 1 },
-    { 0x08020000, 0x20000, 3 },
-    #if defined(FLASH_SECTOR_8)
-    { 0x08080000, 0x20000, 4 },
-    #endif
-    #if defined(FLASH_SECTOR_12)
-    { 0x08100000, 0x04000, 4 },
-    { 0x08110000, 0x10000, 1 },
-    { 0x08120000, 0x20000, 7 },
-    #endif
-};
-
 #elif defined(STM32F765xx) || defined(STM32F767xx) || defined(STM32F769xx)
-
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
-
-// This is for dual-bank mode disabled
-static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x08000, 4 },
-    { 0x08020000, 0x20000, 1 },
-    { 0x08040000, 0x40000, 7 },
-};
-
 #elif defined(STM32H743xx)
-
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/16*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
-
-static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x20000, 16 },
-};
-
 #endif
 
-static inline bool flash_is_valid_addr(uint32_t addr) {
-    uint8_t last = MP_ARRAY_SIZE(flash_layout) - 1;
-    uint32_t end_of_flash = flash_layout[last].base_address +
-        flash_layout[last].sector_count * flash_layout[last].sector_size;
-    return flash_layout[0].base_address <= addr && addr < end_of_flash;
-}
-
-static uint32_t flash_get_sector_index(uint32_t addr, uint32_t *sector_size) {
-    if (addr >= flash_layout[0].base_address) {
-        uint32_t sector_index = 0;
-        for (int i = 0; i < MP_ARRAY_SIZE(flash_layout); ++i) {
-            for (int j = 0; j < flash_layout[i].sector_count; ++j) {
-                uint32_t sector_start_next = flash_layout[i].base_address
-                    + (j + 1) * flash_layout[i].sector_size;
-                if (addr < sector_start_next) {
-                    *sector_size = flash_layout[i].sector_size;
-                    return sector_index;
-                }
-                ++sector_index;
-            }
-        }
-    }
-    return 0;
-}
-
-#if defined(STM32H7)
-// get the bank of a given flash address
-static uint32_t get_bank(uint32_t addr) {
-    if (READ_BIT(FLASH->OPTCR, FLASH_OPTCR_SWAP_BANK) == 0) {
-        // no bank swap
-        if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
-            return FLASH_BANK_1;
-        } else {
-            return FLASH_BANK_2;
-        }
-    } else {
-        // bank swap
-        if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
-            return FLASH_BANK_2;
-        } else {
-            return FLASH_BANK_1;
-        }
-    }
-}
-#endif
-
-static int flash_mass_erase(void) {
+static int mboot_flash_mass_erase(void) {
     // TODO
     return -1;
 }
 
-static int flash_page_erase(uint32_t addr, uint32_t *next_addr) {
+static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     uint32_t sector_size = 0;
-    uint32_t sector = flash_get_sector_index(addr, &sector_size);
+    uint32_t sector = flash_get_sector_info(addr, NULL, &sector_size);
     if (sector == 0) {
         // Don't allow to erase the sector with this bootloader in it
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
@@ -618,30 +530,10 @@ static int flash_page_erase(uint32_t addr, uint32_t *next_addr) {
 
     *next_addr = addr + sector_size;
 
-    HAL_FLASH_Unlock();
-
-    // Clear pending flags (if any)
-    #if defined(STM32H7)
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
-    #else
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR |
-                           FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR);
-    #endif
-
-    // erase the sector(s)
-    FLASH_EraseInitTypeDef EraseInitStruct;
-    EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
-    EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
-    #if defined(STM32H7)
-    EraseInitStruct.Banks = get_bank(addr);
-    #endif
-    EraseInitStruct.Sector = sector;
-    EraseInitStruct.NbSectors = 1;
-
-    uint32_t SectorError = 0;
-    if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
-        // error occurred during sector erase
-        return -1;
+    // Erase the flash page.
+    int ret = flash_erase(addr, sector_size / sizeof(uint32_t));
+    if (ret != 0) {
+        return ret;
     }
 
     // Check the erase set bits to 1, at least for the first 256 bytes
@@ -654,8 +546,9 @@ static int flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     return 0;
 }
 
-static int flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
-    if (addr >= flash_layout[0].base_address && addr < flash_layout[0].base_address + flash_layout[0].sector_size) {
+static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
+    uint32_t sector = flash_get_sector_info(addr, NULL, NULL);
+    if (sector == 0) {
         // Don't allow to write the sector with this bootloader in it
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX;
@@ -664,31 +557,12 @@ static int flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
 
     const uint32_t *src = (const uint32_t*)src8;
     size_t num_word32 = (len + 3) / 4;
-    HAL_FLASH_Unlock();
 
-    #if defined(STM32H7)
-
-    // program the flash 256 bits at a time
-    for (int i = 0; i < num_word32 / 8; ++i) {
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, addr, (uint64_t)(uint32_t)src) != HAL_OK) {
-            return - 1;
-        }
-        addr += 32;
-        src += 8;
+    // Write the data to flash.
+    int ret = flash_write(addr, src, num_word32);
+    if (ret != 0) {
+        return ret;
     }
-
-    #else
-
-    // program the flash word by word
-    for (size_t i = 0; i < num_word32; i++) {
-        if (HAL_FLASH_Program(TYPEPROGRAM_WORD, addr, *src) != HAL_OK) {
-            return -1;
-        }
-        addr += 4;
-        src += 1;
-    }
-
-    #endif
 
     // TODO verify data
 
@@ -700,7 +574,7 @@ static int flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
 
 static int do_mass_erase(void) {
     // TODO
-    return flash_mass_erase();
+    return mboot_flash_mass_erase();
 }
 
 #if defined(MBOOT_SPIFLASH_ADDR) || defined(MBOOT_SPIFLASH2_ADDR)
@@ -735,7 +609,7 @@ int do_page_erase(uint32_t addr, uint32_t *next_addr) {
     } else
     #endif
     {
-        ret = flash_page_erase(addr, next_addr);
+        ret = mboot_flash_page_erase(addr, next_addr);
     }
 
     led0_state((ret == 0) ? LED0_STATE_SLOW_FLASH : LED0_STATE_SLOW_INVERTED_FLASH);
@@ -775,7 +649,7 @@ int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
     } else
     #endif
     if (flash_is_valid_addr(addr)) {
-        ret = flash_write(addr, src8, len);
+        ret = mboot_flash_write(addr, src8, len);
     } else {
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
         dfu_context.error = MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
