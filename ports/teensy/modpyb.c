@@ -36,7 +36,6 @@
 #include "lib/utils/pyexec.h"
 
 #include "gccollect.h"
-#include "irq.h"
 #include "systick.h"
 #include "led.h"
 #include "pin.h"
@@ -53,6 +52,7 @@
 #include "dac.h"
 #include "usb.h"
 #include "portmodules.h"
+#include "modmachine.h"
 
 /// \module pyb - functions related to the pyboard
 ///
@@ -230,6 +230,12 @@ STATIC mp_obj_t pyb_udelay(mp_obj_t usec_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_udelay_obj, pyb_udelay);
 
+STATIC mp_obj_t pyb_wfi(void) {
+    __WFI();
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(pyb_wfi_obj, pyb_wfi);
+
 STATIC mp_obj_t pyb_stop(void) {
     printf("stop not currently implemented\n");
     return mp_const_none;
@@ -285,8 +291,8 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_wfi), MP_ROM_PTR(&pyb_wfi_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&pyb_disable_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_enable_irq), MP_ROM_PTR(&pyb_enable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_irq), MP_ROM_PTR(&machine_enable_irq_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&pyb_stop_obj) },
     { MP_ROM_QSTR(MP_QSTR_standby), MP_ROM_PTR(&pyb_standby_obj) },
