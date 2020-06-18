@@ -1,6 +1,6 @@
 """Test for nrf24l01 module.  Portable between MicroPython targets."""
 
-import sys
+import usys
 import ustruct as struct
 import utime
 from machine import Pin, SPI
@@ -14,14 +14,14 @@ _RX_POLL_DELAY = const(15)
 # master may be a slow device. Value tested with Pyboard, ESP32 and ESP8266.
 _SLAVE_SEND_DELAY = const(10)
 
-if sys.platform == "pyboard":
+if usys.platform == "pyboard":
     cfg = {"spi": 2, "miso": "Y7", "mosi": "Y8", "sck": "Y6", "csn": "Y5", "ce": "Y4"}
-elif sys.platform == "esp8266":  # Hardware SPI
+elif usys.platform == "esp8266":  # Hardware SPI
     cfg = {"spi": 1, "miso": 12, "mosi": 13, "sck": 14, "csn": 4, "ce": 5}
-elif sys.platform == "esp32":  # Software SPI
+elif usys.platform == "esp32":  # Software SPI
     cfg = {"spi": -1, "miso": 32, "mosi": 33, "sck": 25, "csn": 26, "ce": 27}
 else:
-    raise ValueError("Unsupported platform {}".format(sys.platform))
+    raise ValueError("Unsupported platform {}".format(usys.platform))
 
 # Addresses are in little-endian format. They correspond to big-endian
 # 0xf0f0f0f0e1, 0xf0f0f0f0d2

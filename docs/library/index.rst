@@ -77,7 +77,6 @@ it will fallback to loading the built-in ``ujson`` module.
    cmath.rst
    gc.rst
    math.rst
-   sys.rst
    uarray.rst
    uasyncio.rst
    ubinascii.rst
@@ -93,6 +92,7 @@ it will fallback to loading the built-in ``ujson`` module.
    usocket.rst
    ussl.rst
    ustruct.rst
+   usys.rst
    utime.rst
    uzlib.rst
    _thread.rst

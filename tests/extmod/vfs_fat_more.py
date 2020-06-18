@@ -111,10 +111,10 @@ print(uos.listdir())
 print(uos.listdir("sys"))
 
 # test importing a file from a mounted FS
-import sys
+import usys
 
-sys.path.clear()
-sys.path.append("/sys")
+usys.path.clear()
+usys.path.append("/sys")
 with open("sys/test_module.py", "w") as f:
     f.write('print("test_module!")')
 import test_module
