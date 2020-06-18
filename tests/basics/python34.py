@@ -33,9 +33,9 @@ test_syntax("del ()") # can't delete empty tuple (in 3.6 we can)
 
 # from basics/sys1.py
 # uPy prints version 3.4
-import sys
-print(sys.version[:3])
-print(sys.version_info[0], sys.version_info[1])
+import usys
+print(usys.version[:3])
+print(usys.version_info[0], usys.version_info[1])
 
 # from basics/exception1.py
 # in 3.7 no comma is printed if there is only 1 arg (in 3.4-3.6 one is printed)

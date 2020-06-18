@@ -1,6 +1,9 @@
 # test waiting within async with enter/exit functions
 
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 if sys.implementation.name == 'micropython':
     # uPy allows normal generators to be awaitables
     coroutine = lambda f: f

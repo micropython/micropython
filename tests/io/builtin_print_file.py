@@ -1,6 +1,9 @@
 # test builtin print function, using file= argument
 
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 
 try:
     sys.stdout

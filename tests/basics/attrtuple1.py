@@ -1,7 +1,10 @@
 # test attrtuple
 # we can't test this type directly so we use sys.implementation object
 
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 t = sys.implementation
 
 # It can be just a normal tuple on small ports
