@@ -90,6 +90,8 @@ jobs:
         - qemu-system-arm --version
       script:
         - make ${MAKEOPTS} -C mpy-cross
+        - make ${MAKEOPTS} -C ports/qemu-arm CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
+        - make ${MAKEOPTS} -C ports/qemu-arm clean
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
       after_failure:
         - grep --text "FAIL" ports/qemu-arm/build/console.out
