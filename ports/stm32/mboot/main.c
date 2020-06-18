@@ -33,29 +33,36 @@
 #include "storage.h"
 #include "flash.h"
 #include "i2cslave.h"
+#include "irq.h"
 #include "mboot.h"
+#include "powerctrl.h"
 #include "dfu.h"
 
 // Using polling is about 10% faster than not using it (and using IRQ instead)
 // This DFU code with polling runs in about 70% of the time of the ST bootloader
+// With STM32WB MCUs only non-polling/IRQ mode is supported.
+#if defined(STM32WB)
+#define USE_USB_POLLING (0)
+#else
 #define USE_USB_POLLING (1)
+#endif
 
 // Using cache probably won't make it faster because we run at a low frequency, and best
 // to keep the MCU config as minimal as possible.
 #define USE_CACHE (0)
 
 // IRQ priorities (encoded values suitable for NVIC_SetPriority)
-#define IRQ_PRI_SYSTICK (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 0, 0))
+// Most values are defined in irq.h.
 #define IRQ_PRI_I2C (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0))
 
 // Configure PLL to give the desired CPU freq
 #undef MICROPY_HW_FLASH_LATENCY
-#if defined(STM32H7)
-#define CORE_PLL_FREQ (96000000)
-#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_2
-#else
+#if defined(STM32F4) || defined(STM32F7)
 #define CORE_PLL_FREQ (48000000)
 #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
+#elif defined(STM32H7)
+#define CORE_PLL_FREQ (96000000)
+#define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_2
 #endif
 #undef MICROPY_HW_CLK_PLLM
 #undef MICROPY_HW_CLK_PLLN
@@ -93,7 +100,11 @@ uint32_t get_le32(const uint8_t *b) {
 void mp_hal_delay_us(mp_uint_t usec) {
     // use a busy loop for the delay
     // sys freq is always a multiple of 2MHz, so division here won't lose precision
+    #if defined(CORE_PLL_FREQ)
     const uint32_t ucount = CORE_PLL_FREQ / 2000000 * usec / 2;
+    #else
+    const uint32_t ucount = SystemCoreClock / 2000000 * usec / 2;
+    #endif
     for (uint32_t count = 0; ++count <= ucount;) {
     }
 }
@@ -313,6 +324,9 @@ uint32_t HAL_RCC_GetHCLKFreq(void) {
 #elif defined(STM32H7)
 #define AHBxENR AHB4ENR
 #define AHBxENR_GPIOAEN_Pos RCC_AHB4ENR_GPIOAEN_Pos
+#elif defined(STM32WB)
+#define AHBxENR AHB2ENR
+#define AHBxENR_GPIOAEN_Pos RCC_AHB2ENR_GPIOAEN_Pos
 #endif
 
 void mp_hal_pin_config(mp_hal_pin_obj_t port_pin, uint32_t mode, uint32_t pull, uint32_t alt) {
@@ -445,6 +459,8 @@ static int usrbtn_state(void) {
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/04*032Kg,01*128Kg,07*256Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H743xx)
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/16*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#elif defined(STM32WB)
+#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*04Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #endif
 
 static int mboot_flash_mass_erase(void) {
@@ -924,12 +940,19 @@ typedef struct _pyb_usbdd_obj_t {
 #define MBOOT_USB_PID BOOTLOADER_DFU_USB_PID
 #endif
 
+#if !MICROPY_HW_USB_IS_MULTI_OTG
+STATIC const uint8_t usbd_fifo_size[USBD_PMA_NUM_FIFO] = {
+    32, 32, // EP0(out), EP0(in)
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 14x unused
+};
+#else
 static const uint8_t usbd_fifo_size[] = {
     32, 8, 16, 8, 16, 0, 0, // FS: RX, EP0(in), 5x IN endpoints
     #if MICROPY_HW_USB_HS
     116, 8, 64, 4, 64, 0, 0, 0, 0, 0, // HS: RX, EP0(in), 8x IN endpoints
     #endif
 };
+#endif
 
 __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END = {
     USB_LEN_LANGID_STR_DESC,
@@ -1455,6 +1478,15 @@ void I2Cx_EV_IRQHandler(void) {
 #endif
 
 #if !USE_USB_POLLING
+
+#if defined(STM32WB)
+
+void USB_LP_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+
+#else
+
 #if MBOOT_USB_AUTODETECT_PORT || MICROPY_HW_USB_MAIN_DEV == USB_PHY_FS_ID
 void OTG_FS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_fs_handle);
@@ -1466,4 +1498,6 @@ void OTG_HS_IRQHandler(void) {
     HAL_PCD_IRQHandler(&pcd_hs_handle);
 }
 #endif
+#endif
+
 #endif
