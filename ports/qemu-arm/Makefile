@@ -42,6 +42,7 @@ INC += -I$(BUILD)
 
 CFLAGS += $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -Werror -std=gnu99 $(COPT) \
 	 -ffunction-sections -fdata-sections
+CFLAGS += $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
