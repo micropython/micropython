@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x802C
+USB_PID = 0x80B8
 USB_PRODUCT = "LoC BeR M4 base board"
 USB_MANUFACTURER = "Zoomax"
 
