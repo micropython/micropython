@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-01 17:10-0700\n"
-"PO-Revision-Date: 2020-05-29 17:42+0000\n"
-"Last-Translator: Thomas Friehoff <thomas.friehoff@googlemail.com>\n"
+"PO-Revision-Date: 2020-06-16 18:24+0000\n"
+"Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language-Team: German <https://later.unpythonic.net/projects/circuitpython/"
 "circuitpython-master/de/>\n"
 "Language: de_DE\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.1.1-dev\n"
 
 #: main.c
 msgid ""
@@ -1717,7 +1717,7 @@ msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer is not currently running"
-msgstr ""
+msgstr "WatchDogTimer läuft aktuell nicht"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
