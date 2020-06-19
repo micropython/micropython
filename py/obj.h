@@ -431,9 +431,11 @@ static inline bool mp_map_slot_is_filled(const mp_map_t *map, size_t pos) {
 
 void mp_map_init(mp_map_t *map, size_t n);
 void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table);
+void mp_map_init_copy(mp_map_t *map, const mp_map_t *src);
 mp_map_t *mp_map_new(size_t n);
 void mp_map_deinit(mp_map_t *map);
 void mp_map_free(mp_map_t *map);
+size_t mp_map_num_filled_slots(mp_map_t *map);
 mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t lookup_kind);
 void mp_map_clear(mp_map_t *map);
 void mp_map_dump(mp_map_t *map);
