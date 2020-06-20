@@ -29,7 +29,7 @@ import pathlib
 import re
 import sys
 
-DEFAULT_WHITELIST = [
+DEFAULT_IGNORELIST = [
     "circuitplayground_express",
     "circuitplayground_express_crickit",
     "circuitplayground_express_displayio",
@@ -43,15 +43,15 @@ DEFAULT_WHITELIST = [
 
 cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")
 cli_parser.add_argument(
-    "--whitelist",
-    dest="whitelist",
+    "--ignorelist",
+    dest="ignorelist",
     nargs="?",
     action="store",
-    default=DEFAULT_WHITELIST,
+    default=DEFAULT_IGNORELIST,
     help=(
         "Board names to ignore duplicate VID/PID combinations. Pass an empty "
         "string to disable all duplicate ignoring. Defaults are: "
-        f"{', '.join(DEFAULT_WHITELIST)}"
+        f"{', '.join(DEFAULT_IGNORELIST)}"
     )
 )
 
@@ -69,7 +69,7 @@ def configboard_files():
         )
     return working_dir.glob("ports/**/boards/**/mpconfigboard.mk")
 
-def check_vid_pid(files, whitelist):
+def check_vid_pid(files, ignorelist):
     """ Compiles a list of USB VID & PID values for all boards, and checks
         for duplicates. Exits with ``sys.exit()`` (non-zero exit code)
         if duplicates are found, and lists the duplicates.
@@ -90,10 +90,10 @@ def check_vid_pid(files, whitelist):
 
         board_name = board_config.parts[-2]
 
-        board_whitelisted = False
-        if board_name in whitelist:
-            board_whitelisted = True
-            board_name += " (whitelisted)"
+        board_ignorelisted = False
+        if board_name in ignorelist:
+            board_ignorelisted = True
+            board_name += " (ignorelisted)"
 
         if usb_vid and usb_pid:
             id_group = f"{usb_vid.group(1)}:{usb_pid.group(1)}"
@@ -104,7 +104,7 @@ def check_vid_pid(files, whitelist):
                 }
             else:
                 usb_ids[id_group]['boards'].append(board_name)
-                if not board_whitelisted:
+                if not board_ignorelisted:
                     usb_ids[id_group]['duplicate'] = True
                     duplicates_found = True
 
@@ -128,9 +128,9 @@ if __name__ == "__main__":
 
     print("Running USB VID/PID Duplicate Checker...")
     print(
-        f"Ignoring the following boards: {', '.join(arguments.whitelist)}",
+        f"Ignoring the following boards: {', '.join(arguments.ignorelist)}",
         end="\n\n"
     )
 
     board_files = configboard_files()
-    check_vid_pid(board_files, arguments.whitelist)
+    check_vid_pid(board_files, arguments.ignorelist)
