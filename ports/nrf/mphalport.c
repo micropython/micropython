@@ -49,16 +49,35 @@
 #if MICROPY_PY_TIME_USE_RTC_BASE
 nrfx_rtc_t rtc1 = NRFX_RTC_INSTANCE(1);
 
-// setup rtc1 for msec resolution, introduces about 0.7% error:
-// error = 0.001 / ( 1/32768 * (PRESCALER +1))
+volatile mp_uint_t rtc_overflows = 0;
+
+const nrfx_rtc_config_t rtc_config_time_msec = {
+    .prescaler    = 0,
+    .reliable     = 0,
+    .tick_latency = 0,
+    #ifdef NRF51
+    .interrupt_priority = 3,
+    #else
+    .interrupt_priority = 6,
+    #endif
+};
+
+STATIC void rtc_irq_time(nrfx_rtc_int_type_t event) {
+    if (event == NRFX_RTC_INT_OVERFLOW) {
+        rtc_overflows += 1;
+    }
+}
+
+// setup rtc1 for msec resolution 
 // power consumption ~0.5uA
 void rtc1_init_msec(void) {
-    rtc1.p_reg->PRESCALER = 32;
-    rtc1.p_reg->TASKS_START = 1;
+    nrfx_rtc_init(&rtc1, &rtc_config_time_msec, rtc_irq_time);
+    nrfx_rtc_overflow_enable(&rtc1, true);
+    nrfx_rtc_enable(&rtc1);
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
-    return (mp_uint_t)rtc1.p_reg->COUNTER;
+    return (rtc_overflows << 9) * 1000 + ((mp_uint_t)rtc1.p_reg->COUNTER * 125 / 4096);
 }
 #elif MICROPY_PY_TIME_USE_TICKER_BASE
 // setup ticker CCR0 callback in 1msec intervals

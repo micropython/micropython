@@ -179,11 +179,11 @@
 #endif
 
 #ifndef MICROPY_PY_TIME_USE_RTC_BASE
-#define MICROPY_PY_TIME_USE_RTC_BASE (0)
+#define MICROPY_PY_TIME_USE_RTC_BASE (1)
 #endif
 
 #ifndef MICROPY_PY_TIME_USE_TICKER_BASE
-#define MICROPY_PY_TIME_USE_TICKER_BASE (1)
+#define MICROPY_PY_TIME_USE_TICKER_BASE (0)
 #endif
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
@@ -305,11 +305,6 @@ extern const struct _mp_obj_module_t ble_module;
     const struct _pwm_events *pwm_pending_events;
 #else
 #define ROOT_POINTERS_SOFTPWM
-#endif
-
-#ifdef MICROPY_PY_TIME_USE_RTC_BASE
-// configure 24 bit time base for ticks
-#define MICROPY_PY_UTIME_TICKS_PERIOD (1 << 24)
 #endif
 
 #if defined(NRF52840_XXAA)
