@@ -28,7 +28,6 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "py/obj.h"
-#include "py/nlr.h"
 #include "py/mpstate.h"
 
 uint64_t common_hal_time_monotonic(void) {
@@ -45,11 +44,4 @@ uint64_t common_hal_time_monotonic_ns(void) {
 
 void common_hal_time_delay_ms(uint32_t delay) {
     mp_hal_delay_ms(delay);
-    // if the delay was cut short by a CTRL-C then clear the keyboard exception
-    if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)))
-     {
-      // clear exception and generate stacktrace
-       MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-       nlr_raise(mp_obj_new_exception(&mp_type_KeyboardInterrupt));
-     }
 }
