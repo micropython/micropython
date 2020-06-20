@@ -627,7 +627,7 @@ static size_t mbedtls_err_to_str(int err, const struct ssl_errs tab[], int tab_l
         }
     }
 
-    mbedtls_snprintf(buf+MBEDTLS_ERR_PREFIX_LEN, buflen-MBEDTLS_ERR_PREFIX_LEN, "UNKNOWN (%04X)",
+    mbedtls_snprintf(buf+MBEDTLS_ERR_PREFIX_LEN, buflen-MBEDTLS_ERR_PREFIX_LEN, "UNKNOWN (0x%04X)",
             err);
     return strlen(buf);
 }
