@@ -60,7 +60,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
             return false;
         }
     }
-    
+
     // Finish up
     HAL_FLASH_Lock();
     return true;

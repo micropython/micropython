@@ -40,4 +40,3 @@ const void *mp_proto_get_or_throw(uint16_t name, mp_const_obj_t obj);
 #endif
 
 #endif
-

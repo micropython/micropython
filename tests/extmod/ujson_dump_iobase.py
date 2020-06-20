@@ -28,5 +28,5 @@ class S(io.IOBase):
 
 # dump to the user stream
 s = S()
-json.dump([123, {}], s) 
+json.dump([123, {}], s)
 print(s.buf)

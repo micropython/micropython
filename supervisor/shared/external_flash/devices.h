@@ -187,6 +187,24 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Settings for the Gigadevice GD25S512MD 64MiB SPI flash.
+// Datasheet: http://www.gigadevice.com/datasheet/gd25s512md/
+#define GD25S512MD {\
+    .total_size = (1 << 26), /* 64 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xc8, \
+    .memory_type = 0x40, \
+    .capacity = 0x19, \
+    .max_clock_speed_mhz = 104, /* if we need 120 then we can turn on high performance mode */ \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = true, \
+    .single_status_byte = false, \
+}
+
 // Settings for the Cypress (was Spansion) S25FL064L 8MiB SPI flash.
 // Datasheet: http://www.cypress.com/file/316661/download
 #define S25FL064L {\

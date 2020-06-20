@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-05-26 13:09-0700\n"
-"PO-Revision-Date: 2020-05-20 18:32+0000\n"
+"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"PO-Revision-Date: 2020-06-03 18:59+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -33,7 +33,7 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 "\n"
-"Skapa ett ärende med innehållet i din CIRCUITPY på\n"
+"Vänligen skapa ett ärende med innehållet i din CIRCUITPY-enhet på\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
 #: supervisor/shared/safe_mode.c
@@ -42,7 +42,7 @@ msgid ""
 "To exit, please reset the board without "
 msgstr ""
 "\n"
-"För att avsluta, resetta kortet utan "
+"För att avsluta, gör reset på kortet utan "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -108,7 +108,7 @@ msgstr "'%q' argument krävs"
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
-msgstr "'%s' förväntar sig en etikett"
+msgstr "'%s' förväntar sig en label"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -153,7 +153,7 @@ msgstr "'%s' heltal %d ligger inte inom intervallet %d..%d"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-msgstr "'%s' heltal 0x%x får inte plats i mask 0x%x"
+msgstr "'%s' heltal 0x%x ryms inte i mask 0x%x"
 
 #: py/runtime.c
 msgid "'%s' object cannot assign attribute '%q'"
@@ -166,12 +166,12 @@ msgstr "Objektet '%s' har inte stöd för '%q'"
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item assignment"
-msgstr "Objektet \"%s\" stöder inte tilldelning av objekt"
+msgstr "Objektet '%s' stöder inte tilldelningen"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object does not support item deletion"
-msgstr "'%s'-objekt stöder inte borttagning av objekt"
+msgstr "Objektet '%s' stöder inte borttagning av objekt"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
@@ -190,16 +190,16 @@ msgstr "Objektet '%s' kan inte anropas"
 #: py/runtime.c
 #, c-format
 msgid "'%s' object is not iterable"
-msgstr "Objektet '%s' är inte itererbar"
+msgstr "Objektet '%s' är inte itererable"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object is not subscriptable"
-msgstr "Objektet \"%s\" är inte indexbar"
+msgstr "Objektet '%s' är inte indexbar"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr "'='-justering tillåts inte i strängformatspecificerare"
+msgstr "'='-justering tillåts inte i strängformatspecifikation"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
@@ -211,7 +211,7 @@ msgstr "'align' kräver 1 argument"
 
 #: py/compile.c
 msgid "'async for' or 'async with' outside async function"
-msgstr "'async for' eller 'async with' utanför asynk-funktion"
+msgstr "'async for' eller 'async with' utanför async-funktion"
 
 #: py/compile.c
 msgid "'await' outside function"
@@ -264,7 +264,7 @@ msgstr "3-arguments pow() stöds inte"
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
-msgstr "En kanal för hårdvaruavbrotts används redan"
+msgstr "En kanal för hårdvaruavbrott används redan"
 
 #: shared-bindings/_bleio/Address.c
 #, c-format
@@ -285,7 +285,7 @@ msgstr "All SPI-kringutrustning används"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
-msgstr "Alla UART-tillbehör används"
+msgstr "Alla UART-kringutrustning används"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
@@ -316,7 +316,7 @@ msgstr "Annonserar redan."
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
-msgstr "AnalogIn stöds inte på en given pinne"
+msgstr "AnalogIn stöds inte på angiven pinne"
 
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
@@ -326,16 +326,16 @@ msgstr "AnalogOut-funktionalitet stöds inte"
 
 #: shared-bindings/analogio/AnalogOut.c
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr "AnalogOut är bara 16 bitar. Värdet måste vara mindre än 65536."
+msgstr "AnalogOut hanterar bara 16 bitar. Värdet måste vara mindre än 65536."
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut not supported on given pin"
-msgstr "AnalogOut stöds inte på given pinne"
+msgstr "AnalogOut stöds inte på angiven pinne"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
-msgstr "En annan sändning är redan aktiv"
+msgstr "En annan send är redan aktiv"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
@@ -343,7 +343,7 @@ msgstr "Matrisen måste innehålla halfwords (typ \"H\")"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr "Matrisvärden ska vara enstaka byte."
+msgstr "Matrisvärden ska bestå av enstaka bytes."
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "At most %d %q may be specified (not %d)"
@@ -351,7 +351,7 @@ msgstr "Högst %d %q kan anges (inte %d)"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr "Försökte tilldelning av heap när MicroPython VM inte körs."
+msgstr "Försökte tilldela heap när MicroPython VM inte körs."
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -376,7 +376,11 @@ msgstr "Bitklocka och ordval måste dela en klockenhet"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
-msgstr "Bitdjupet måste vara multipel av 8."
+msgstr "Bitdjup måste vara multipel av 8."
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr "Både RX och TX krävs för handskakning"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -386,16 +390,16 @@ msgstr "Båda pinnarna måste stödja maskinvaruavbrott"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
-msgstr "Ljusstyrkan måste vara 0-1,0"
+msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
-msgstr "Ljusstyrkan måste vara mellan 0 och 255"
+msgstr "Ljusstyrka måste vara mellan 0 och 255"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
-msgstr "Ljusstyrkan kan inte justeras"
+msgstr "Ljusstyrka kan inte justeras"
 
 #: shared-bindings/_bleio/UUID.c
 #, c-format
@@ -433,7 +437,7 @@ msgstr "Bufferten är för stor och kan inte allokeras"
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Buffert för kort med %d bytes"
+msgstr "Buffert år %d bytes för kort"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
@@ -455,7 +459,7 @@ msgstr "CBC-block måste vara multiplar om 16 byte"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr "Anropa super().__init__() innan du använder det nativa objektet."
+msgstr "Anropa super().__init__() innan du använder det ursprungliga objektet."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -501,8 +505,7 @@ msgstr "Kan inte återmontera '/' när USB är aktivt."
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
-"Det går inte att återställa till bootloader eftersom det inte finns någon "
-"bootloader."
+"Det går inte att återställa till bootloader eftersom bootloader saknas."
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -818,7 +821,7 @@ msgstr "Gruppen är full"
 msgid "Hardware busy, try alternative pins"
 msgstr "Hårdvaran är upptagen, prova alternativa pinnar"
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Hårdvaran används redan, prova alternativa pinnar"
 
@@ -889,7 +892,7 @@ msgstr "Ogiltig BMP-fil"
 msgid "Invalid DAC pin supplied"
 msgstr "Ogiltig DAC-pinne angiven"
 
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Invalid I2C pin selection"
 msgstr "Ogiltigt val av I2C-pinne"
 
@@ -899,11 +902,11 @@ msgstr "Ogiltigt val av I2C-pinne"
 msgid "Invalid PWM frequency"
 msgstr "Ogiltig PWM-frekvens"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "Invalid SPI pin selection"
 msgstr "Ogiltigt val av SPI-pinne"
 
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "Invalid UART pin selection"
 msgstr "Ogiltigt val av UART-pinne"
 
@@ -979,7 +982,9 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Ogiltiga pinnar"
 
@@ -1262,7 +1267,7 @@ msgstr "Pinnen har inte ADC-funktionalitet"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
-msgstr ""
+msgstr "Pinnen är enbart ingång"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1382,7 +1387,8 @@ msgstr "Kör i säkert läge! Autoladdning är avstängd.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Kör i säkert läge! Sparad kod körs inte.\n"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA eller SCL behöver en pullup"
 
@@ -1445,7 +1451,7 @@ msgstr "Stackstorleken måste vara minst 256"
 msgid "Stream missing readinto() or write() method."
 msgstr "Stream saknar readinto() eller write() metod."
 
-#: ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
 msgstr "Ange minst en UART-pinne"
 
@@ -1685,6 +1691,27 @@ msgstr "Avläsning av spänning tog för lång tid"
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "VARNING: Ditt filnamn för kod har två tillägg\n"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
+msgstr "WatchDogTimer kan inte avinitialiseras när läget är inställt på RESET"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer is not currently running"
+msgstr "WatchDogTimer körs för närvarande inte"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+msgstr ""
+"WatchDogTimer.mode kan inte ändras när den är inställd på WatchDogMode.RESET"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.timeout must be greater than 0"
+msgstr "WatchDogTimer.timeout måste vara större än 0"
+
+#: supervisor/shared/safe_mode.c
+msgid "Watchdog timer expired."
+msgstr "Watchdog-timern har löpt ut."
 
 #: py/builtinhelp.c
 #, c-format
@@ -2128,6 +2155,14 @@ msgstr "Kan inte sända indatamatris från form"
 msgid "could not invert Vandermonde matrix"
 msgstr "kan inte invertera Vandermonde-matris"
 
+#: extmod/ulab/code/approx.c
+msgid "data must be iterable"
+msgstr "data måste vara itererbar"
+
+#: extmod/ulab/code/approx.c
+msgid "data must be of equal length"
+msgstr "data måste vara av samma längd"
+
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
 msgstr "ddof måste vara mindre än längden på datauppsättningen"
@@ -2263,6 +2298,14 @@ msgstr "filen måste vara en fil som öppnats i byte-läge"
 msgid "filesystem must provide mount method"
 msgstr "filsystemet måste tillhandahålla mount-metod"
 
+#: extmod/ulab/code/vectorise.c
+msgid "first argument must be a callable"
+msgstr "första argumentet måste vara en callable"
+
+#: extmod/ulab/code/approx.c
+msgid "first argument must be a function"
+msgstr "första argumentet måste vara en funktion"
+
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
 msgstr "första argumentet måste vara en iterable"
@@ -2315,6 +2358,10 @@ msgstr "funktionen förväntar som mest %d argument, fick %d"
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
 msgstr "funktionen fick flera värden för argumentet '%q'"
+
+#: extmod/ulab/code/approx.c
+msgid "function has the same sign at the ends of interval"
+msgstr "funktionen har samma teckenvärden vid slutet av intervall"
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
@@ -2402,6 +2449,10 @@ msgstr "index måste vara heltal"
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "index måste vara heltal, slices, eller Boolean-listor"
 
+#: extmod/ulab/code/approx.c
+msgid "initial values must be iterable"
+msgstr "initialvärden måste vara iterable"
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler måste vara en funktion"
@@ -2445,6 +2496,10 @@ msgstr "int() arg 2 måste vara >= 2 och <= 36"
 #: py/objstr.c
 msgid "integer required"
 msgstr "heltal krävs"
+
+#: extmod/ulab/code/approx.c
+msgid "interp is defined for 1D arrays of equal length"
+msgstr "interp är definierad för 1D-matriser med samma längd"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3081,6 +3136,10 @@ msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kräver en 9-sekvens"
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "timeout duration exceeded the maximum supported value"
+msgstr "timeout-längd överskred det maximala värde som stöds"
+
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "timeout måste vara 0.0-100.0 sekunder"
@@ -3118,8 +3177,7 @@ msgstr "tupel/lista har fel längd"
 msgid "tuple/list required on RHS"
 msgstr "tupel/lista krävs för RHS"
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
 msgstr "tx och rx kan inte båda vara None"
@@ -3162,7 +3220,7 @@ msgstr "oväntat nyckelordsargument '%q'"
 
 #: py/lexer.c
 msgid "unicode name escapes"
-msgstr "unicode name escapes"
+msgstr "unicode-namn flyr"
 
 #: py/parse.c
 msgid "unindent does not match any outer indentation level"
@@ -3235,6 +3293,10 @@ msgstr "värdet måste passa i %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "value_count måste vara > 0"
 
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "watchdog timeout must be greater than 0"
+msgstr "watchdog timeout måste vara större än 0"
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr "window måste vara <= interval"
@@ -3247,6 +3309,10 @@ msgstr "fel typ av argument"
 msgid "wrong index type"
 msgstr "fel indextyp"
 
+#: extmod/ulab/code/vectorise.c
+msgid "wrong input type"
+msgstr "fel indatatyp"
+
 #: py/objstr.c
 msgid "wrong number of arguments"
 msgstr "fel antal argument"
@@ -3258,6 +3324,10 @@ msgstr "fel antal värden för att packa upp"
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
 msgstr "fel operandtyp"
+
+#: extmod/ulab/code/vectorise.c
+msgid "wrong output type"
+msgstr "fel utdatatyp"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"

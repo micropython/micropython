@@ -53,10 +53,13 @@ extension_by_board = {
 
     # nRF52840 dev kits that may not have UF2 bootloaders,
     "makerdiary_nrf52840_mdk": HEX,
-    "makerdiary_nrf52840_mdk_usb_dongle": HEX,
+    "makerdiary_nrf52840_mdk_usb_dongle": HEX_UF2,
     "pca10056": BIN_UF2,
     "pca10059": BIN_UF2,
-    "electronut_labs_blip": HEX
+    "electronut_labs_blip": HEX,
+
+    # stm32
+    "meowbit_v121": UF2
 }
 
 aliases_by_board = {

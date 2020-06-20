@@ -16,4 +16,3 @@ mp_lexer_t *mp_lexer_new_from_file(const char *filename)
 
     return mp_lexer_new_from_str_len(qstr_from_str(filename), (const char *)data, (mp_uint_t)len, 0);
 }
-

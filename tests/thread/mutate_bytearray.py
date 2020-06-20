@@ -42,4 +42,3 @@ count = [0 for _ in range(256)]
 for b in ba:
     count[b] += 1
 print(count)
-

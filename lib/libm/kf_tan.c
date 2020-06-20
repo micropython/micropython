@@ -17,16 +17,16 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
 
 #include "libm.h"
 #ifdef __STDC__
-static const float 
+static const float
 #else
-static float 
+static float
 #endif
 one   =  1.0000000000e+00, /* 0x3f800000 */
 pio4  =  7.8539812565e-01, /* 0x3f490fda */
@@ -87,7 +87,7 @@ T[] =  {
 	    return (float)(1-((hx>>30)&2))*(v-(float)2.0*(x-(w*w/(w+v)-r)));
 	}
 	if(iy==1) return w;
-	else {		/* if allow error up to 2 ulp, 
+	else {		/* if allow error up to 2 ulp,
 			   simply return -1.0/(x+r) here */
      /*  compute -1.0/(x+r) accurately */
 	    float a,t;

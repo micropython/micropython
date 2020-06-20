@@ -968,11 +968,11 @@
  * |||;
  * SD<-ADVERTISERS [label = "Scannable Advertisement (ADV_SCAN_IND)", textcolor="#000080", linecolor="#000080"];
  * SD->ADVERTISERS [label = "Scan Request (SCAN_REQ)", textcolor="#000080", linecolor="#000080"];
- * SD<-ADVERTISERS [label = "Scan Response (SCAN_RSP)", textcolor="#000080", linecolor="#000080"]; 
+ * SD<-ADVERTISERS [label = "Scan Response (SCAN_RSP)", textcolor="#000080", linecolor="#000080"];
  * APP<<=SD [label = "BLE_GAP_EVT_ADV_REPORT {bdaddr, rssi, data}"];
- * ...; 
- * APP<<=SD [label = "BLE_GAP_EVT_TIMEOUT {BLE_GAP_TIMEOUT_SRC_SCAN}"]; 
- * |||; 
+ * ...;
+ * APP<<=SD [label = "BLE_GAP_EVT_TIMEOUT {BLE_GAP_TIMEOUT_SRC_SCAN}"];
+ * |||;
  * @endmsc
  * @defgroup BLE_GAP_SCAN_MSC_AE Scanning for advertisers performing legacy and extended advertising
  * @msc
@@ -1011,7 +1011,7 @@
  * APP<<=SD [label = "BLE_GAP_EVT_ADV_REPORT {type : {extended_pdu = 1, scannable = 1, scan_response = 1}, data}"];
  * APP=>SD [label = "sd_ble_gap_scan_start(params = NULL, adv_report_buffer)"];
  * APP<<SD [label = "NRF_SUCCESS"];
- * SD<-ADVERTISERS [label = "Legacy Scannable Advertisement (ADV_SCAN_IND) with adv_data ", textcolor="#000080", linecolor="#000080"]; 
+ * SD<-ADVERTISERS [label = "Legacy Scannable Advertisement (ADV_SCAN_IND) with adv_data ", textcolor="#000080", linecolor="#000080"];
  * SD->ADVERTISERS [label = "Legacy Scan Request (SCAN_REQ)", textcolor="#000080", linecolor="#000080"];
  * APP<<=SD [label = "BLE_GAP_EVT_ADV_REPORT {type : {extended_pdu = 0, scannable = 1, scan_response = 0}, adv_data}"];
  * APP=>SD [label = "sd_ble_gap_scan_start(params = NULL, adv_report_buffer)"];
@@ -1030,8 +1030,8 @@
  * --- [label = " Variant #2 Reporting incomplete advertising reports"];
  * |||;
  * APP=>SD [label = "sd_ble_gap_scan_start(params : {extended = 1, report_incomplete_evts = 1}, adv_report_buffer)"];
- * APP<<SD [label = "NRF_SUCCESS"]; 
- * |||; 
+ * APP<<SD [label = "NRF_SUCCESS"];
+ * |||;
  * SD<-ADVERTISERS [label = "Advertisement (ADV_*_IND)", textcolor="#000080", linecolor="#000080"];
  * APP<<=SD [label = "BLE_GAP_EVT_ADV_REPORT {type : status = BLE_GAP_ADV_DATA_STATUS_INCOMPLETE_MORE_DATA, aux_pointer}"];
  * |||;
@@ -1052,7 +1052,7 @@
  * @defgroup BLE_GAP_CENTRAL_CONN_MSC Central Connection Establishment and Termination
  * @{
  * @defgroup BLE_GAP_CENTRAL_CONN_MSC_LEGACY Connecting to legacy advertisers
- 
+
  * @msc
  * hscale = "1.5";
  * APP,SD,PERIPHERAL;
@@ -1114,9 +1114,9 @@
  * SD rbox SD [label = "Connection timeout reached"];
  * |||;
  * APP<<=SD [label = "BLE_GAP_EVT_TIMEOUT {BLE_GAP_TIMEOUT_SRC_CONN}"];
- * @endmsc 
+ * @endmsc
  * @}
- 
+
  *
  * @defgroup BLE_GAP_CENTRAL_CPU_MSC Central Connection Parameter Update
  * @msc
@@ -1868,7 +1868,7 @@
  * APP=>SD [label = "sd_ble_gap_privacy_set(params: {mode: DEVICE_PRIVACY, private_addr_type: RESOLVABLE } "];
  * APP<<SD [label = "NRF_SUCCESS"];
  * |||;
- 
+
  * APP=>SD [label = "sd_ble_gap_device_identities_set(pp_id_keys: {{peer_addr1, peer_irk1}}, pp_local_irks: {local_irk1}) "];
   * APP<<SD [label = "NRF_SUCCESS"];
  * |||;
@@ -3894,4 +3894,3 @@
  * @}
  * @}
  */
-

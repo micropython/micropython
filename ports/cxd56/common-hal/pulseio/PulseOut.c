@@ -63,7 +63,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     if (pulse_fd < 0) {
         pulse_fd = open("/dev/timer0", O_RDONLY);
     }
-    
+
     if (pulse_fd < 0) {
         mp_raise_RuntimeError(translate("All timers in use"));
     }

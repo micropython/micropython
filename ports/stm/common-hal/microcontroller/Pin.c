@@ -46,8 +46,8 @@ bool neopixel_in_use;
     #define GPIO_PORT_COUNT 5
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE};
 #elif defined(LQFP64)
-    #define GPIO_PORT_COUNT 3
-    GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC};
+    #define GPIO_PORT_COUNT 4
+    GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD};
 #elif defined(UFQFPN48)
     #define GPIO_PORT_COUNT 3
     GPIO_TypeDef * ports[GPIO_PORT_COUNT] = {GPIOA, GPIOB, GPIOC};

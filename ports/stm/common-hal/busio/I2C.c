@@ -34,6 +34,24 @@
 #include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 
+// I2C timing specs for the H7 and F7
+// Configured for maximum possible clock settings for the family
+#if (CPY_STM32F7)
+#ifndef CPY_I2CFAST_TIMINGR
+#define CPY_I2CFAST_TIMINGR     0x6000030D
+#endif
+#ifndef CPY_I2CSTANDARD_TIMINGR
+#define CPY_I2CSTANDARD_TIMINGR 0x20404768
+#endif
+#elif (CPY_STM32H7)
+#ifndef CPY_I2CFAST_TIMINGR
+#define CPY_I2CFAST_TIMINGR     0x00B03FDB
+#endif
+#ifndef CPY_I2CSTANDARD_TIMINGR
+#define CPY_I2CSTANDARD_TIMINGR 0x307075B1
+#endif
+#endif
+
 // Arrays use 0 based numbering: I2C1 is stored at index 0
 #define MAX_I2C 4
 
@@ -120,9 +138,15 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 
     // Handle the HAL handle differences
     #if (CPY_STM32H7 || CPY_STM32F7)
-    self->handle.Init.Timing = 0x40604E73; //Taken from STCube examples
+    if (frequency == 400000) {
+        self->handle.Init.Timing = CPY_I2CFAST_TIMINGR;
+    } else if (frequency == 100000) {
+        self->handle.Init.Timing = CPY_I2CSTANDARD_TIMINGR;
+    } else {
+        mp_raise_ValueError(translate("Unsupported baudrate"));
+    }
     #else
-    self->handle.Init.ClockSpeed = 100000;
+    self->handle.Init.ClockSpeed = frequency;
     self->handle.Init.DutyCycle = I2C_DUTYCYCLE_2;
     #endif
 

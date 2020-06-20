@@ -17,5 +17,3 @@ MCU_PACKAGE = LQFP144
 
 LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F412_fs.ld
-
-

@@ -17,7 +17,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  *
@@ -44,7 +44,7 @@
         y = __ieee754_lgammaf_r(x,&(_REENT_SIGNGAM(_REENT)));
         if(_LIB_VERSION == _IEEE_) return y;
         if(!finitef(y)&&finitef(x)) {
-#ifndef HUGE_VAL 
+#ifndef HUGE_VAL
 #define HUGE_VAL inf
 	    double inf = 0.0;
 
@@ -77,11 +77,11 @@
             }
 	    if (exc.err != 0)
 	       errno = exc.err;
-            return (float)exc.retval; 
+            return (float)exc.retval;
         } else
             return y;
 #endif
-}             
+}
 
 #ifdef _DOUBLE_IS_32BITS
 

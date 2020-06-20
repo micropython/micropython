@@ -179,4 +179,3 @@ try:
     wifi.ifconfig(config=())
 except:
     print('Exception')
-

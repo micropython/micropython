@@ -167,6 +167,11 @@ STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     #else
     { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&mp_const_none_obj) },
     #endif
+    #if CIRCUITPY_WATCHDOG
+    { MP_ROM_QSTR(MP_QSTR_watchdog),  MP_ROM_PTR(&common_hal_mcu_watchdogtimer_obj) },
+    #else
+    { MP_ROM_QSTR(MP_QSTR_watchdog),  MP_ROM_PTR(&mp_const_none_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_RunMode),  MP_ROM_PTR(&mcu_runmode_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin),  MP_ROM_PTR(&mcu_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_pin),  MP_ROM_PTR(&mcu_pin_module) },

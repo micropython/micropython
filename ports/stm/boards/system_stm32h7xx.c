@@ -1,6 +1,6 @@
 /*
  * Taken from ST Cube library and modified.  See below for original header.
- * 
+ *
  * Modifications copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

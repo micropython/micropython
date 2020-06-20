@@ -160,6 +160,9 @@ void print_safe_mode_message(safe_mode_t reason) {
             case MEM_MANAGE:
                 serial_write_compressed(translate("Invalid memory access."));
                 break;
+            case WATCHDOG_RESET:
+                serial_write_compressed(translate("Watchdog timer expired."));
+                break;
             default:
                 serial_write_compressed(translate("Unknown reason."));
                 break;

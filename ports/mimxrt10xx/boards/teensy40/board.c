@@ -30,11 +30,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 
 void board_init(void) {
-    // SWD Pins
-    common_hal_never_reset_pin(&pin_GPIO_AD_B0_06);//SWDIO
-    common_hal_never_reset_pin(&pin_GPIO_AD_B0_07);//SWCLK
-    common_hal_never_reset_pin(&pin_GPIO_AD_B0_10);//SWO
-
     // FLEX flash
     common_hal_never_reset_pin(&pin_GPIO_SD_B1_06);
     common_hal_never_reset_pin(&pin_GPIO_SD_B1_07);
@@ -43,9 +38,18 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO_SD_B1_10);
     common_hal_never_reset_pin(&pin_GPIO_SD_B1_11);
 
-    // USB Pins
-    common_hal_never_reset_pin(&pin_GPIO_AD_B0_01);
-    common_hal_never_reset_pin(&pin_GPIO_AD_B0_03);
+    // FLEX flash 2
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_04);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_06);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_07);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_08);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_09);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_10);
+    common_hal_never_reset_pin(&pin_GPIO_EMC_01);
+    common_hal_never_reset_pin(&pin_GPIO_B0_13);
+    common_hal_never_reset_pin(&pin_GPIO_AD_B0_11);
+    // Data strobe needs protection despite being grounded
+    common_hal_never_reset_pin(&pin_GPIO_SD_B1_05);
 }
 
 bool board_requests_safe_mode(void) {

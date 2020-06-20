@@ -44,6 +44,13 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 
 #include "shared-bindings/microcontroller/__init__.h"
 
+#if CIRCUITPY_WATCHDOG
+#include "shared-bindings/watchdog/__init__.h"
+#define WATCHDOG_EXCEPTION_CHECK() (MP_STATE_VM(mp_pending_exception) == &mp_watchdog_timeout_exception)
+#else
+#define WATCHDOG_EXCEPTION_CHECK() 0
+#endif
+
 void supervisor_tick(void) {
 #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
@@ -96,7 +103,8 @@ void mp_hal_delay_ms(mp_uint_t delay) {
         RUN_BACKGROUND_TASKS;
         // Check to see if we've been CTRL-Ced by autoreload or the user.
         if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
-           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
+           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception)) ||
+           WATCHDOG_EXCEPTION_CHECK()) {
             break;
         }
         remaining = end_tick - port_get_raw_ticks(NULL);
@@ -132,4 +140,3 @@ extern void supervisor_disable_tick(void) {
     }
     common_hal_mcu_enable_interrupts();
 }
-

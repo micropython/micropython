@@ -1,4 +1,4 @@
-/* Memory layout for default case. 
+/* Memory layout for default case.
 
     FLASH_ISR       .isr_vector
     FLASH_FIRMWARE  .text
@@ -96,4 +96,3 @@ SECTIONS
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-

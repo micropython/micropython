@@ -85,7 +85,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 //|     def __setitem__(self, index: Any, value: Any) -> Any:
-//|         """Sets the pixel color at the given index. The index should be an integer in the range 0 to color_count-1.
+//|         r"""Sets the pixel color at the given index. The index should be an integer in the range 0 to color_count-1.
 //|
 //|         The value argument represents a color, and can be from 0x000000 to 0xFFFFFF (to represent an RGB value).
 //|         Value can be an int, bytes (3 bytes (RGB) or 4 bytes (RGB + pad byte)), bytearray,

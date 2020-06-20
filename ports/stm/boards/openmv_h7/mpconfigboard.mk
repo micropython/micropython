@@ -10,6 +10,5 @@ MCU_SERIES = H7
 MCU_VARIANT = STM32H743xx
 MCU_PACKAGE = LQFP100_x7
 
-LD_COMMON = boards/common_tcm.ld 
+LD_COMMON = boards/common_tcm.ld
 LD_FILE = boards/STM32H743_fs.ld
-

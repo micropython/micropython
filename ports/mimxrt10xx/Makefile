@@ -90,7 +90,7 @@ else
   #CFLAGS += -flto -flto-partition=none
 endif
 
-CFLAGS += $(INC) -ggdb -Wall -Wno-cast-align -std=gnu11 -nostdlib $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -ggdb -Wall -Wno-cast-align -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
 # TODO: add these when -Werror is applied
 # Disable some warnings, as do most ports. NXP SDK causes undef, tinyusb causes cast-align
@@ -112,7 +112,7 @@ LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH)
 
 LD_SCRIPT_FLAG := -Wl,-T,
 
-LDFLAGS = $(CFLAGS) -nostartfiles -fshort-enums -Wl,-nostdlib $(addprefix $(LD_SCRIPT_FLAG), $(LD_FILES)) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib $(addprefix $(LD_SCRIPT_FLAG), $(LD_FILES)) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc -lnosys -lm
 
 # Use toolchain libm if we're not using our own.

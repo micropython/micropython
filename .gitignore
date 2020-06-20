@@ -53,6 +53,7 @@ _build
 ######################
 genrst/
 /autoapi/
+/shared-bindings/**/*.rst
 
 # ctags and similar
 ###################

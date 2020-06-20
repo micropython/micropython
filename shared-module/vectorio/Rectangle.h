@@ -12,4 +12,3 @@ typedef struct {
 } vectorio_rectangle_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_RECTANGLE_H
-

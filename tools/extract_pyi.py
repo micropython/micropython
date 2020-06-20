@@ -52,7 +52,22 @@ def convert_folder(top_level, stub_directory):
     # Validate that the module is a parseable stub.
     total += 1
     try:
-        astroid.parse(stub_contents)
+        tree = astroid.parse(stub_contents)
+        for i in tree.body:
+            if 'name' in i.__dict__:
+                print(i.__dict__['name'])
+                for j in i.body:
+                    if isinstance(j, astroid.scoped_nodes.FunctionDef):
+                        if None in j.args.__dict__['annotations']:
+                            print(f"Missing parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}\n")
+                        if j.returns:
+                            if 'Any' in j.returns.__dict__.values():
+                                print(f"Missing return type: {j.__dict__['name']} on line {j.__dict__['lineno']}")
+                    elif isinstance(j, astroid.node_classes.AnnAssign):
+                        if 'name' in j.__dict__['annotation'].__dict__:
+                            if j.__dict__['annotation'].__dict__['name'] == 'Any':
+                                print(f"missing attribute type on line {j.__dict__['lineno']}")
+
         ok += 1
     except astroid.exceptions.AstroidSyntaxError as e:
         e = e.__cause__

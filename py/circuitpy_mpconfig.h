@@ -121,7 +121,9 @@
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
+#ifndef MICROPY_USE_INTERNAL_PRINTF
 #define MICROPY_USE_INTERNAL_PRINTF      (1)
+#endif
 
 // fatfs configuration used in ffconf.h
 //
@@ -630,6 +632,14 @@ extern const struct _mp_obj_module_t ustack_module;
 #define RE_MODULE
 #endif
 
+// This is not a top-level module; it's microcontroller.watchdog.
+#if CIRCUITPY_WATCHDOG
+extern const struct _mp_obj_module_t watchdog_module;
+#define WATCHDOG_MODULE { MP_ROM_QSTR(MP_QSTR_watchdog), MP_ROM_PTR(&watchdog_module) },
+#else
+#define WATCHDOG_MODULE
+#endif
+
 // Define certain native modules with weak links so they can be replaced with Python
 // implementations. This list may grow over time.
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
@@ -700,6 +710,7 @@ extern const struct _mp_obj_module_t ustack_module;
     USB_HID_MODULE \
     USB_MIDI_MODULE \
     USTACK_MODULE \
+    WATCHDOG_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.

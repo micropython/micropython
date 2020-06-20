@@ -167,54 +167,55 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getmount), MP_ROM_PTR(&storage_getmount_obj) },
     { MP_ROM_QSTR(MP_QSTR_erase_filesystem), MP_ROM_PTR(&storage_erase_filesystem_obj) },
 
-    //| class VfsFat:
-    //|     def __init__(self, block_device: Any): ...
-    //|         """Create a new VfsFat filesystem around the given block device.
-    //|
-    //|         :param block_device: Block device the the filesystem lives on"""
-    //|
-    //|         label: Any = ...
-    //|         """The filesystem label, up to 11 case-insensitive bytes.  Note that
-    //|         this property can only be set when the device is writable by the
-    //|         microcontroller."""
-    //|
-    //|         def mkfs(self, ) -> Any:
-    //|             """Format the block device, deleting any data that may have been there"""
-    //|             ...
-    //|
-    //|         def open(self, path: Any, mode: Any) -> Any:
-    //|             """Like builtin ``open()``"""
-    //|             ...
-    //|
-    //|         def ilistdir(self, path: Any) -> Any:
-    //|             """Return an iterator whose values describe files and folders within
-    //|             ``path``"""
-    //|             ...
-    //|
-    //|         def mkdir(self, path: Any) -> Any:
-    //|             """Like `os.mkdir`"""
-    //|             ...
-    //|
-    //|         def rmdir(self, path: Any) -> Any:
-    //|         """Like `os.rmdir`"""
-    //|         ...
-    //|
-    //|         def stat(self, path: Any) -> Any:
-    //|             """Like `os.stat`"""
-    //|             ...
-    //|
-    //|        def statvfs(self, path: Any) -> Any:
-    //|            """Like `os.statvfs`"""
-    //|            ...
-    //|
-    //|        def mount(self, readonly: Any, mkfs: Any) -> Any:
-    //|            """Don't call this directly, call `storage.mount`."""
-    //|            ...
-    //|
-    //|        def umount(self, ) -> Any:
-    //|            """Don't call this directly, call `storage.umount`."""
-    //|            ...
-    //|
+//| class VfsFat:
+//|     def __init__(self, block_device: Any):
+//|         """Create a new VfsFat filesystem around the given block device.
+//|
+//|         :param block_device: Block device the the filesystem lives on"""
+//|
+//|         label: Any = ...
+//|         """The filesystem label, up to 11 case-insensitive bytes.  Note that
+//|         this property can only be set when the device is writable by the
+//|         microcontroller."""
+//|         ...
+//|
+//|     def mkfs(self) -> Any:
+//|         """Format the block device, deleting any data that may have been there"""
+//|         ...
+//|
+//|     def open(self, path: Any, mode: Any) -> Any:
+//|         """Like builtin ``open()``"""
+//|         ...
+//|
+//|     def ilistdir(self, path: Any) -> Any:
+//|         """Return an iterator whose values describe files and folders within
+//|         ``path``"""
+//|         ...
+//|
+//|     def mkdir(self, path: Any) -> Any:
+//|         """Like `os.mkdir`"""
+//|         ...
+//|
+//|     def rmdir(self, path: Any) -> Any:
+//|         """Like `os.rmdir`"""
+//|         ...
+//|
+//|     def stat(self, path: Any) -> Any:
+//|         """Like `os.stat`"""
+//|         ...
+//|
+//|     def statvfs(self, path: Any) -> Any:
+//|         """Like `os.statvfs`"""
+//|         ...
+//|
+//|     def mount(self, readonly: Any, mkfs: Any) -> Any:
+//|         """Don't call this directly, call `storage.mount`."""
+//|         ...
+//|
+//|     def umount(self) -> Any:
+//|         """Don't call this directly, call `storage.umount`."""
+//|         ...
+//|
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
 };
 

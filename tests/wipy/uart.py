@@ -1,5 +1,5 @@
 '''
-UART test for the CC3200 based boards. 
+UART test for the CC3200 based boards.
 UART0 and UART1 must be connected together for this test to pass.
 '''
 
@@ -58,7 +58,7 @@ print(uart0.read() == None)
 
 uart0.write(b'123')
 buf = bytearray(3)
-print(uart1.readinto(buf, 1) == 1) 
+print(uart1.readinto(buf, 1) == 1)
 print(buf)
 print(uart1.readinto(buf) == 2)
 print(buf)
@@ -145,7 +145,7 @@ except Exception:
 try:
     UART(2, 9600)
 except Exception:
-    print('Exception')    
+    print('Exception')
 
 for uart_id in uart_id_range:
     uart = UART(uart_id, 1000000)

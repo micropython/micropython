@@ -68,7 +68,6 @@ safe_mode_t port_init(void) {
     irq_setmask(0);
     irq_setie(1);
     tick_init();
-    board_init();
     return NO_SAFE_MODE;
 }
 

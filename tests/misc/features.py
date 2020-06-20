@@ -25,7 +25,7 @@ print(ten())
 a=[]
 for i in range(13):
 	a.append(i)
-print(a[11])	
+print(a[11])
 print(a[-1])
 str="0123456789"
 print(str[1]+str[3])
@@ -73,13 +73,13 @@ while True:
 	try:
 		def gcheck():
 			global a
-			print(a)	
+			print(a)
 		gcheck()
 		class c25():
 			x=25
 		x=c25()
 		print(x.x)
-		raise 
+		raise
 	except:
 		print(26)
 	print(27+zero)

@@ -2,7 +2,7 @@
 //
 //! \file socket.c
 //! \brief SOCKET APIs Implements file.
-//! \details SOCKET APIs like as Berkeley Socket APIs. 
+//! \details SOCKET APIs like as Berkeley Socket APIs.
 //! \version 1.0.3
 //! \date 2013/10/21
 //! \par  Revision history
@@ -10,7 +10,7 @@
 //!       <2014/05/01> V1.0.3. Refer to M20140501
 //!         1. Implicit type casting -> Explicit type casting.
 //!         2. replace 0x01 with PACK_REMAINED in recvfrom()
-//!         3. Validation a destination ip in connect() & sendto(): 
+//!         3. Validation a destination ip in connect() & sendto():
 //!            It occurs a fatal error on converting unint32 address if uint8* addr parameter is not aligned by 4byte address.
 //!            Copy 4 byte addr value into temporary uint32 variable and then compares it.
 //!       <2013/12/20> V1.0.2 Refer to M20131220
@@ -23,30 +23,30 @@
 //!
 //! Copyright (c)  2013, WIZnet Co., LTD.
 //! All rights reserved.
-//! 
-//! Redistribution and use in source and binary forms, with or without 
-//! modification, are permitted provided that the following conditions 
-//! are met: 
-//! 
-//!     * Redistributions of source code must retain the above copyright 
-//! notice, this list of conditions and the following disclaimer. 
+//!
+//! Redistribution and use in source and binary forms, with or without
+//! modification, are permitted provided that the following conditions
+//! are met:
+//!
+//!     * Redistributions of source code must retain the above copyright
+//! notice, this list of conditions and the following disclaimer.
 //!     * Redistributions in binary form must reproduce the above copyright
 //! notice, this list of conditions and the following disclaimer in the
-//! documentation and/or other materials provided with the distribution. 
-//!     * Neither the name of the <ORGANIZATION> nor the names of its 
-//! contributors may be used to endorse or promote products derived 
-//! from this software without specific prior written permission. 
-//! 
+//! documentation and/or other materials provided with the distribution.
+//!     * Neither the name of the <ORGANIZATION> nor the names of its
+//! contributors may be used to endorse or promote products derived
+//! from this software without specific prior written permission.
+//!
 //! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+//! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 //! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-//! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-//! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+//! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+//! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+//! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 //! SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-//! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-//! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+//! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+//! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 //! THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
@@ -123,7 +123,7 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
 #if _WIZCHIP_ == 5200
    if(flag & 0x10) return SOCKERR_SOCKFLAG;
 #endif
-	   
+
 	if(flag != 0)
 	{
    	switch(protocol)
@@ -154,7 +154,7 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
 	   port = sock_any_port++;
 	   if(sock_any_port == 0xFFF0) sock_any_port = SOCK_ANY_PORT_NUM;
 	}
-   setSn_PORT(sn,port);	
+   setSn_PORT(sn,port);
    setSn_CR(sn,Sn_CR_OPEN);
    while(getSn_CR(sn));
    sock_io_mode |= ((flag & SF_IO_NONBLOCK) << sn);
@@ -163,12 +163,12 @@ int8_t WIZCHIP_EXPORT(socket)(uint8_t sn, uint8_t protocol, uint16_t port, uint8
    sock_pack_info[sn] = 0;
    while(getSn_SR(sn) == SOCK_CLOSED);
    return (int8_t)sn;
-}	   
+}
 
 int8_t WIZCHIP_EXPORT(close)(uint8_t sn)
 {
 	CHECK_SOCKNUM();
-	
+
 	setSn_CR(sn,Sn_CR_CLOSE);
    /* wait to process the command... */
 	while( getSn_CR(sn) );
@@ -216,18 +216,18 @@ int8_t WIZCHIP_EXPORT(connect)(uint8_t sn, uint8_t * addr, uint16_t port)
       if (taddr == 0xFFFFFFFF || taddr == 0) return SOCKERR_IPINVALID;
    }
    //
-	
+
 	if(port == 0) return SOCKERR_PORTZERO;
 	setSn_DIPR(sn,addr);
 	setSn_DPORT(sn,port);
-   #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
+   #if _WIZCHIP_ == 5200   // for W5200 ARP errata
     setSUBR(wizchip_getsubn());
    #endif
 	setSn_CR(sn,Sn_CR_CONNECT);
    while(getSn_CR(sn));
    if(sock_io_mode & (1<<sn)) return SOCK_BUSY;
    while(getSn_SR(sn) != SOCK_ESTABLISHED)
-   {   
+   {
         if (getSn_SR(sn) == SOCK_CLOSED) {
             #if _WIZCHIP_ == 5200   // for W5200 ARP errata
             setSUBR((uint8_t*)"\x00\x00\x00\x00");
@@ -237,17 +237,17 @@ int8_t WIZCHIP_EXPORT(connect)(uint8_t sn, uint8_t * addr, uint16_t port)
 		if (getSn_IR(sn) & Sn_IR_TIMEOUT)
 		{
 			setSn_IR(sn, Sn_IR_TIMEOUT);
-         #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
+         #if _WIZCHIP_ == 5200   // for W5200 ARP errata
             setSUBR((uint8_t*)"\x00\x00\x00\x00");
          #endif
          return SOCKERR_TIMEOUT;
 		}
         MICROPY_THREAD_YIELD();
 	}
-   #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
+   #if _WIZCHIP_ == 5200   // for W5200 ARP errata
       setSUBR((uint8_t*)"\x00\x00\x00\x00");
    #endif
-   
+
    return SOCK_OK;
 }
 
@@ -275,7 +275,7 @@ int32_t WIZCHIP_EXPORT(send)(uint8_t sn, uint8_t * buf, uint16_t len)
 {
    uint8_t tmp=0;
    uint16_t freesize=0;
-   
+
    CHECK_SOCKNUM();
    CHECK_SOCKMODE(Sn_MR_TCP);
    CHECK_SOCKDATA();
@@ -295,7 +295,7 @@ int32_t WIZCHIP_EXPORT(send)(uint8_t sn, uint8_t * buf, uint16_t len)
                return SOCKERR_BUSY;
             }
          #endif
-         sock_is_sending &= ~(1<<sn);         
+         sock_is_sending &= ~(1<<sn);
       }
       else if(tmp & Sn_IR_TIMEOUT)
       {
@@ -338,7 +338,7 @@ int32_t WIZCHIP_EXPORT(recv)(uint8_t sn, uint8_t * buf, uint16_t len)
    CHECK_SOCKNUM();
    CHECK_SOCKMODE(Sn_MR_TCP);
    CHECK_SOCKDATA();
-   
+
    recvsize = getSn_RxMAX(sn);
    if(recvsize < len) len = recvsize;
    while(1)
@@ -398,9 +398,9 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t 
    if(port == 0)               return SOCKERR_PORTZERO;
    tmp = getSn_SR(sn);
    if(tmp != SOCK_MACRAW && tmp != SOCK_UDP) return SOCKERR_SOCKSTATUS;
-      
+
    setSn_DIPR(sn,addr);
-   setSn_DPORT(sn,port);      
+   setSn_DPORT(sn,port);
    freesize = getSn_TxMAX(sn);
    if (len > freesize) len = freesize; // check size not to exceed MAX size.
    while(1)
@@ -413,7 +413,7 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t 
    };
 	wiz_send_data(sn, buf, len);
 
-   #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
+   #if _WIZCHIP_ == 5200   // for W5200 ARP errata
       setSUBR(wizchip_getsubn());
    #endif
 
@@ -433,7 +433,7 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t 
       else if(tmp & Sn_IR_TIMEOUT)
       {
          setSn_IR(sn, Sn_IR_TIMEOUT);
-   #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
+   #if _WIZCHIP_ == 5200   // for W5200 ARP errata
       setSUBR((uint8_t*)"\x00\x00\x00\x00");
    #endif
          return SOCKERR_TIMEOUT;
@@ -441,7 +441,7 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t 
       ////////////
       MICROPY_THREAD_YIELD();
    }
-   #if _WIZCHIP_ == 5200   // for W5200 ARP errata 
+   #if _WIZCHIP_ == 5200   // for W5200 ARP errata
       setSUBR((uint8_t*)"\x00\x00\x00\x00");
    #endif
 	return len;
@@ -462,7 +462,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
       case Sn_MR_UDP:
       case Sn_MR_MACRAW:
          break;
-   #if ( _WIZCHIP_ < 5200 )         
+   #if ( _WIZCHIP_ < 5200 )
       case Sn_MR_IPRAW:
       case Sn_MR_PPPoE:
          break;
@@ -519,7 +519,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
     			sock_remained_size[sn] = head[0];
    			sock_remained_size[sn] = (sock_remained_size[sn] <<8) + head[1];
    			sock_remained_size[sn] -= 2; // len includes 2 len bytes
-   			if(sock_remained_size[sn] > 1514) 
+   			if(sock_remained_size[sn] > 1514)
    			{
    			   WIZCHIP_EXPORT(close)(sn);
    			   return SOCKFATAL_PACKLEN;
@@ -582,7 +582,7 @@ int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg)
          else if(tmp == SOCK_IO_BLOCK) sock_io_mode &= ~(1<<sn);
          else return SOCKERR_ARG;
          break;
-      case CS_GET_IOMODE:   
+      case CS_GET_IOMODE:
          //M20140501 : implict type casting -> explict type casting
          //*((uint8_t*)arg) = (sock_io_mode >> sn) & 0x0001;
          *((uint8_t*)arg) = (uint8_t)((sock_io_mode >> sn) & 0x0001);
@@ -591,7 +591,7 @@ int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg)
       case CS_GET_MAXTXBUF:
          *((uint16_t*)arg) = getSn_TxMAX(sn);
          break;
-      case CS_GET_MAXRXBUF:    
+      case CS_GET_MAXRXBUF:
          *((uint16_t*)arg) = getSn_RxMAX(sn);
          break;
       case CS_CLR_INTERRUPT:
@@ -601,11 +601,11 @@ int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg)
       case CS_GET_INTERRUPT:
          *((uint8_t*)arg) = getSn_IR(sn);
          break;
-      case CS_SET_INTMASK:  
+      case CS_SET_INTMASK:
          if( (*(uint8_t*)arg) > SIK_ALL) return SOCKERR_ARG;
          setSn_IMR(sn,*(uint8_t*)arg);
          break;
-      case CS_GET_INTMASK:   
+      case CS_GET_INTMASK:
          *((uint8_t*)arg) = getSn_IMR(sn);
       default:
          return SOCKERR_ARG;
@@ -658,11 +658,11 @@ int8_t  WIZCHIP_EXPORT(setsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
          CHECK_SOCKMODE(Sn_MR_TCP);
          setSn_KPALVTR(sn,*(uint8_t*)arg);
          break;
-   #endif      
-#endif   
+   #endif
+#endif
       default:
          return SOCKERR_ARG;
-   }   
+   }
    return SOCK_OK;
 }
 
@@ -680,20 +680,20 @@ int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg)
       case SO_TOS:
          *(uint8_t*) arg = getSn_TOS(sn);
          break;
-      case SO_MSS:   
+      case SO_MSS:
          *(uint8_t*) arg = getSn_MSSR(sn);
       case SO_DESTIP:
          getSn_DIPR(sn, (uint8_t*)arg);
          break;
-      case SO_DESTPORT:  
+      case SO_DESTPORT:
          *(uint16_t*) arg = getSn_DPORT(sn);
          break;
-   #if _WIZCHIP_ > 5200   
+   #if _WIZCHIP_ > 5200
       case SO_KEEPALIVEAUTO:
          CHECK_SOCKMODE(Sn_MR_TCP);
          *(uint16_t*) arg = getSn_KPALVTR(sn);
          break;
-   #endif      
+   #endif
       case SO_SENDBUF:
          *(uint16_t*) arg = getSn_TX_FSR(sn);
       case SO_RECVBUF:
