@@ -153,7 +153,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
 
         if (type->locals_dict != NULL) {
             // search locals_dict (the set of methods/attributes)
-            assert(type->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
+            assert(mp_obj_is_dict_or_ordereddict(MP_OBJ_FROM_PTR(type->locals_dict))); // MicroPython restriction, for now
             mp_map_t *locals_map = &type->locals_dict->map;
             mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(lookup->attr), MP_MAP_LOOKUP);
             if (elem != NULL) {
@@ -1053,7 +1053,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // delete/store attribute
 
         if (self->locals_dict != NULL) {
-            assert(self->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
+            assert(mp_obj_is_dict_or_ordereddict(MP_OBJ_FROM_PTR(self->locals_dict))); // MicroPython restriction, for now
             mp_map_t *locals_map = &self->locals_dict->map;
             if (locals_map->is_fixed) {
                 // can't apply delete/store to a fixed map
@@ -1103,7 +1103,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     if (!mp_obj_is_type(bases_tuple, &mp_type_tuple)) {
         mp_raise_TypeError(NULL);
     }
-    if (!mp_obj_is_type(locals_dict, &mp_type_dict)) {
+    if (!mp_obj_is_dict_or_ordereddict(locals_dict)) {
         mp_raise_TypeError(NULL);
     }
 
