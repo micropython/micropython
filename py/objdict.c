@@ -33,8 +33,6 @@
 #include "py/objtype.h"
 #include "py/objstr.h"
 
-#define mp_obj_is_dict_type(o) (mp_obj_is_obj(o) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->make_new == dict_make_new)
-
 STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
 // This is a helper function to iterate through a dictionary.  The state of
@@ -90,7 +88,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     }
 }
 
-STATIC mp_obj_t dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_t dict_out = mp_obj_new_dict(0);
     mp_obj_dict_t *dict = MP_OBJ_TO_PTR(dict_out);
     dict->base.type = type;
@@ -217,7 +215,7 @@ STATIC void mp_ensure_not_fixed(const mp_obj_dict_t *dict) {
 }
 
 STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
-    mp_check_self(mp_obj_is_dict_type(self_in));
+    mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_ensure_not_fixed(self);
 
@@ -228,7 +226,7 @@ STATIC mp_obj_t dict_clear(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 
 mp_obj_t mp_obj_dict_copy(mp_obj_t self_in) {
-    mp_check_self(mp_obj_is_dict_type(self_in));
+    mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t other_out = mp_obj_new_dict(self->map.alloc);
     mp_obj_dict_t *other = MP_OBJ_TO_PTR(other_out);
@@ -275,7 +273,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(dict_fromkeys_obj, MP_ROM_PTR(&dict_fromk
 #endif
 
 STATIC mp_obj_t dict_get_helper(size_t n_args, const mp_obj_t *args, mp_map_lookup_kind_t lookup_kind) {
-    mp_check_self(mp_obj_is_dict_type(args[0]));
+    mp_check_self(mp_obj_is_dict_or_ordereddict(args[0]));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
     if (lookup_kind != MP_MAP_LOOKUP) {
         mp_ensure_not_fixed(self);
@@ -320,7 +318,7 @@ STATIC mp_obj_t dict_setdefault(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dict_setdefault_obj, 2, 3, dict_setdefault);
 
 STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
-    mp_check_self(mp_obj_is_dict_type(self_in));
+    mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_ensure_not_fixed(self);
     if (self->map.used == 0) {
@@ -345,7 +343,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_popitem_obj, dict_popitem);
 
 STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
-    mp_check_self(mp_obj_is_dict_type(args[0]));
+    mp_check_self(mp_obj_is_dict_or_ordereddict(args[0]));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_ensure_not_fixed(self);
 
@@ -354,7 +352,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
     if (n_args == 2) {
         // given a positional argument
 
-        if (mp_obj_is_dict_type(args[1])) {
+        if (mp_obj_is_dict_or_ordereddict(args[1])) {
             // update from other dictionary (make sure other is not self)
             if (args[1] != args[0]) {
                 size_t cur = 0;
@@ -512,7 +510,7 @@ STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_t dict, mp_dict_view_kind_t kind) {
 }
 
 STATIC mp_obj_t dict_view(mp_obj_t self_in, mp_dict_view_kind_t kind) {
-    mp_check_self(mp_obj_is_dict_type(self_in));
+    mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     return mp_obj_new_dict_view(self_in, kind);
 }
 
@@ -536,7 +534,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_values_obj, dict_values);
 
 STATIC mp_obj_t dict_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_check_self(mp_obj_is_dict_type(self_in));
+    mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     mp_obj_dict_view_it_t *o = (mp_obj_dict_view_it_t *)iter_buf;
     o->base.type = &dict_view_it_type;
     o->kind = MP_DICT_VIEW_KEYS;
@@ -573,7 +571,7 @@ const mp_obj_type_t mp_type_dict = {
     { &mp_type_type },
     .name = MP_QSTR_dict,
     .print = dict_print,
-    .make_new = dict_make_new,
+    .make_new = mp_obj_dict_make_new,
     .unary_op = dict_unary_op,
     .binary_op = dict_binary_op,
     .subscr = dict_subscr,
@@ -586,7 +584,7 @@ const mp_obj_type_t mp_type_ordereddict = {
     { &mp_type_type },
     .name = MP_QSTR_OrderedDict,
     .print = dict_print,
-    .make_new = dict_make_new,
+    .make_new = mp_obj_dict_make_new,
     .unary_op = dict_unary_op,
     .binary_op = dict_binary_op,
     .subscr = dict_subscr,
@@ -613,7 +611,7 @@ size_t mp_obj_dict_len(mp_obj_t self_in) {
 }
 
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value) {
-    mp_check_self(mp_obj_is_dict_type(self_in));
+    mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_ensure_not_fixed(self);
     mp_map_lookup(&self->map, key, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = value;
