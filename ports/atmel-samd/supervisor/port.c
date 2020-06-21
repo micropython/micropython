@@ -85,7 +85,9 @@
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
-#include "shared-module/_pew/PewPew.h"
+#if CIRCUITPY_PEW
+#include "common-hal/_pew/PewPew.h"
+#endif
 
 extern volatile bool mp_msc_enabled;
 

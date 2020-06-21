@@ -31,7 +31,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
 #include "PewPew.h"
-#include "shared-module/_pew/PewPew.h"
+#include "common-hal/_pew/PewPew.h"
 #include "supervisor/shared/translate.h"
 
 //| class PewPew:

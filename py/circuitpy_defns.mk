@@ -259,6 +259,8 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/PacketBuffer.c \
 	_bleio/Service.c \
 	_bleio/UUID.c \
+	_pew/__init__.c \
+	_pew/PewPew.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -396,8 +398,6 @@ SRC_SHARED_MODULE_ALL = \
 	terminalio/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
-	_pew/__init__.c \
-	_pew/PewPew.c \
 	_eve/__init__.c
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.

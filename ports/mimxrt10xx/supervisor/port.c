@@ -53,7 +53,9 @@
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
+#if CIRCUITPY_PEW
 #include "shared-module/_pew/PewPew.h"
+#endif
 #include "supervisor/shared/tick.h"
 
 #include "clocks.h"
