@@ -64,7 +64,8 @@ msgstr "%%c requiere int o char"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
-msgstr "%d pines de dirección y %d pines rgb indican una altura de %d, no de %d"
+msgstr ""
+"%d pines de dirección y %d pines rgb indican una altura de %d, no de %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
