@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-01 17:10-0700\n"
-"PO-Revision-Date: 2020-05-17 20:56+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"PO-Revision-Date: 2020-06-22 04:41+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: main.c
 msgid ""
@@ -32,12 +32,17 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Reporte un problema con el contenido de su unidad CIRCUITPY en\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "To exit, please reset the board without "
 msgstr ""
+"\n"
+"Para salir, favor reinicie la tarjeta sin "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -59,7 +64,7 @@ msgstr "%%c requiere int o char"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
-msgstr ""
+msgstr "%d pines de dirección y %d pines rgb indican una altura de %d, no de %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -75,7 +80,7 @@ msgstr "%q indices deben ser enteros, no %s"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
-msgstr ""
+msgstr "%q lista debe ser una lista"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -86,7 +91,7 @@ msgstr "%q debe ser >= 1"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
-msgstr ""
+msgstr "%q debe ser una tupla de longitud 2"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -152,11 +157,11 @@ msgstr "'%s' entero 0x%x no cabe en la máscara 0x%x"
 
 #: py/runtime.c
 msgid "'%s' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "El objeto '%s' no puede asignar al atributo '%q'"
 
 #: py/proto.c
 msgid "'%s' object does not support '%q'"
-msgstr ""
+msgstr "El objeto '%s' no admite '%q'"
 
 #: py/obj.c
 #, c-format
@@ -268,7 +273,7 @@ msgstr "La dirección debe ser %d bytes de largo"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
-msgstr ""
+msgstr "Tipo de dirección fuera de rango"
 
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -309,11 +314,11 @@ msgstr "Todos los timers en uso"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
-msgstr ""
+msgstr "Ya se encuentra publicando."
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
-msgstr ""
+msgstr "El pin proporcionado no soporta AnalogIn"
 
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
@@ -344,7 +349,7 @@ msgstr "Valores del array deben ser bytes individuales."
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "At most %d %q may be specified (not %d)"
-msgstr ""
+msgstr "Como máximo %d %q se puede especificar (no %d)"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -377,7 +382,7 @@ msgstr "Bits depth debe ser múltiplo de 8."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "Ambos RX y TX requeridos para control de flujo"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -387,7 +392,7 @@ msgstr "Ambos pines deben soportar interrupciones por hardware"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
-msgstr ""
+msgstr "El brillo debe ser 0-1.0"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
@@ -411,17 +416,17 @@ msgstr "Tamaño de buffer incorrecto. Debe ser de %d bytes."
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
-msgstr ""
+msgstr "Buffer no es un bytearray."
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
-msgstr ""
+msgstr "El buffer es muy pequeño"
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr ""
+msgstr "La longitud del buffer %d es muy grande. Debe ser menor a %d"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -429,7 +434,7 @@ msgstr "Buffer debe ser de longitud 1 como minimo"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Buffer too large and unable to allocate"
-msgstr ""
+msgstr "Buffer demasiado grande e incapaz de asignar"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
@@ -452,11 +457,11 @@ msgstr "Bytes debe estar entre 0 y 255."
 
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
-msgstr ""
+msgstr "Los bloques CBC deben ser múltiplos de 16 bytes"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr ""
+msgstr "Llame a super().__ init __() antes de acceder al objeto nativo."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
