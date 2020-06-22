@@ -61,6 +61,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "py/mphal.h"
 #include "common-hal/microcontroller/Processor.h"
 
 #include "samd/adc.h"
@@ -286,11 +287,15 @@ float common_hal_mcu_processor_get_voltage(void) {
 
 #ifdef SAMD51
     hri_supc_set_VREF_SEL_bf(SUPC, SUPC_VREF_SEL_1V0_Val);
-    // ONDEMAND must be clear, and VREFOE must be set, or else the ADC conversion will not complete.
-    // See https://community.atmel.com/forum/samd51-using-intref-adc-voltage-reference
-    hri_supc_clear_VREF_ONDEMAND_bit(SUPC);
     hri_supc_set_VREF_VREFOE_bit(SUPC);
+
     adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INTREF_Val);
+
+    // On some processor samples, the ADC will hang trying to read the voltage. A simple
+    // delay after setting the SUPC bits seems to fix things. This appears to be due to VREFOE
+    // startup time. There is no synchronization bit to check.
+    // See https://community.atmel.com/forum/samd51-using-intref-adc-voltage-reference
+    mp_hal_delay_ms(1);
 #endif
 
     adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
