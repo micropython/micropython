@@ -18,8 +18,8 @@
 
 #define BOARD_HAS_CRYSTAL 1
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PA22)
-#define DEFAULT_I2C_BUS_SDA (&pin_PA23)
+#define DEFAULT_I2C_BUS_SCL (&pin_PA23)
+#define DEFAULT_I2C_BUS_SDA (&pin_PA22)
 
 #define DEFAULT_SPI_BUS_SCK (&pin_PB13)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PB12)
