@@ -30,6 +30,7 @@
 #include "rtcounter.h"
 #include "nrfx_rtc.h"
 #include "nrf_clock.h"
+#include "py/mperrno.h"
 
 #if MICROPY_PY_MACHINE_RTCOUNTER
 
@@ -156,6 +157,13 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     int rtc_id = rtc_find(args[ARG_id].u_obj);
+
+    #if MICROPY_PY_TIME_TICKS
+    if (rtc_id == 1) {
+        // time module uses RTC1, prevent using it
+        mp_raise_ValueError(MP_ERROR_TEXT("RTC1 reserved by time module"));
+    }
+    #endif
 
     // const and non-const part of the RTC object.
     const machine_rtc_obj_t * self = &machine_rtc_obj[rtc_id];

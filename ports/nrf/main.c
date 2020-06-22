@@ -228,13 +228,7 @@ soft_reset:
     #endif
 
     #if MICROPY_PY_TIME_TICKS
-    #if MICROPY_PY_TIME_USE_RTC_BASE
-    rtc1_init_msec();
-    #endif
-
-    #if MICROPY_PY_TIME_USE_TICKER_BASE
-    ticker0_init_msec();
-    #endif
+    rtc1_init_time_ticks();
     #endif
 
     led_state(1, 0);

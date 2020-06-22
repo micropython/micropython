@@ -35,30 +35,28 @@
 #include "nrfx_errors.h"
 #include "nrfx_config.h"
 
-#if MICROPY_PY_TIME_USE_RTC_BASE
+#if MICROPY_PY_TIME_TICKS
 #include "nrfx_rtc.h"
-#endif
-
-#if MICROPY_PY_TIME_USE_TICKER_BASE
-#include "ticker.h"
 #endif
 
 
 #if MICROPY_PY_TIME_TICKS
+// use RTC1 for time ticks generation
+// with 32kHz tick resolution and overflow
+// handling in irq
 
-#if MICROPY_PY_TIME_USE_RTC_BASE
 nrfx_rtc_t rtc1 = NRFX_RTC_INSTANCE(1);
 
 volatile mp_uint_t rtc_overflows = 0;
 
-const nrfx_rtc_config_t rtc_config_time_msec = {
+const nrfx_rtc_config_t rtc_config_time_ticks = {
     .prescaler    = 0,
     .reliable     = 0,
     .tick_latency = 0,
     #ifdef NRF51
-    .interrupt_priority = 3,
+    .interrupt_priority = 1,
     #else
-    .interrupt_priority = 6,
+    .interrupt_priority = 3,
     #endif
 };
 
@@ -68,37 +66,34 @@ STATIC void rtc_irq_time(nrfx_rtc_int_type_t event) {
     }
 }
 
-// setup rtc1 for msec resolution 
-// power consumption ~0.5uA
-void rtc1_init_msec(void) {
-    nrfx_rtc_init(&rtc1, &rtc_config_time_msec, rtc_irq_time);
+void rtc1_init_time_ticks(void) {
+    nrfx_rtc_init(&rtc1, &rtc_config_time_ticks, rtc_irq_time);
     nrfx_rtc_overflow_enable(&rtc1, true);
     nrfx_rtc_enable(&rtc1);
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
+    // XXX check overflow bit here? (if rtc1.p_reg->EVENTS_OVRFLW ..)
+    // note that COUNTER * 1000 / 32768 would overflow during calculation, so use
+    // the less obvious * 125 / 4096 calculation (overflow secure)
     return (rtc_overflows << 9) * 1000 + ((mp_uint_t)rtc1.p_reg->COUNTER * 125 / 4096);
 }
-#elif MICROPY_PY_TIME_USE_TICKER_BASE
-// setup ticker CCR0 callback in 1msec intervals
-// power consumption of ticker's timer (1MHz) = ~5uA
-volatile uint32_t tick_ms;
 
-int32_t tick_cb(void) {
-    tick_ms += 1;
-    // call me again in 1000 usec
-    return 1000;
+mp_uint_t mp_hal_ticks_us(void) {
+    // make the best out of the 32kHz tick resolution (= 30.57usec / tick)
+    // to scale we could use same approach as above and use COUNTER * 125000 / 4096
+    // but that will overflow for 32bit multiplications.
+    //
+    // Since this function is likely to be called in a poll loop it must
+    // be fast and casting to 64 bits introduces calculation timing within that loop,
+    // causing timing inaccuracy.
+    //
+    // An easier solution is to use COUNTER * 32, but introduces an error
+    // of app. 5%. However lets consider this as a tradeoff since the tick's rate
+    // is also very rough and not really suitable for low value usec timings.
+    return (mp_uint_t)rtc1.p_reg->COUNTER * 32;
 }
 
-void ticker0_init_msec(void) {
-    set_ticker_callback(0, tick_cb, 200);
-}
-
-mp_uint_t mp_hal_ticks_ms(void) {
-    return tick_ms;
-}
-
-#endif
 #else
 mp_uint_t mp_hal_ticks_ms(void) {
     return 0;
