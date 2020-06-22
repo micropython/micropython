@@ -778,6 +778,7 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value);
 mp_float_t mp_obj_get_float(mp_obj_t self_in);
 bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value);
 void mp_obj_get_complex(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
+bool mp_obj_get_complex_maybe(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag);
 #endif
 void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items); // *items may point inside a GC block
 void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items); // *items may point inside a GC block

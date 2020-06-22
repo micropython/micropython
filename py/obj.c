@@ -371,7 +371,7 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 }
 
 #if MICROPY_PY_BUILTINS_COMPLEX
-void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
+bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     if (arg == mp_const_false) {
         *real = 0;
         *imag = 0;
@@ -392,6 +392,13 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (mp_obj_is_type(arg, &mp_type_complex)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
+        return false;
+    }
+    return true;
+}
+
+void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
+    if (!mp_obj_get_complex_maybe(arg, real, imag)) {
         #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("can't convert to complex"));
         #else

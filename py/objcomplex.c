@@ -178,7 +178,10 @@ void mp_obj_complex_get(mp_obj_t self_in, mp_float_t *real, mp_float_t *imag) {
 
 mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_float_t lhs_imag, mp_obj_t rhs_in) {
     mp_float_t rhs_real, rhs_imag;
-    mp_obj_get_complex(rhs_in, &rhs_real, &rhs_imag); // can be any type, this function will convert to float (if possible)
+    if (!mp_obj_get_complex_maybe(rhs_in, &rhs_real, &rhs_imag)) {
+        return MP_OBJ_NULL; // op not supported
+    }
+
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD:

@@ -57,3 +57,9 @@ for f_name, f, test_vals in functions:
             if abs(real) < 1e-6:
                 real = 0.0
             print("complex(%.5g, %.5g)" % (real, ret.imag))
+
+# test invalid type passed to cmath function
+try:
+    log([])
+except TypeError:
+    print("TypeError")
