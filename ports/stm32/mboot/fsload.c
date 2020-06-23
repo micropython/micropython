@@ -204,7 +204,7 @@ static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to
     return 0;
 }
 
-static int fsload_process_fatfs(uint32_t base_addr, uint32_t byte_len, size_t fname_len, const char *fname) {
+static int fsload_process_fatfs(uint32_t base_addr, uint32_t byte_len, const char *fname) {
     fsload_bdev_t bdev = {base_addr, byte_len};
     FATFS fatfs;
     fatfs.drv = &bdev;
@@ -213,34 +213,14 @@ static int fsload_process_fatfs(uint32_t base_addr, uint32_t byte_len, size_t fn
         return -1;
     }
 
-    FF_DIR dp;
-    res = f_opendir(&fatfs, &dp, "/");
-    if (res != FR_OK) {
-        return -1;
-    }
+    // Validate firmware
+    led_state_all(2);
+    int r = fsload_program_file(&fatfs, fname, false);
 
-    // Search for firmware file with correct name
-    int r;
-    for (;;) {
-        FILINFO fno;
-        res = f_readdir(&dp, &fno);
-        char *fn = fno.fname;
-        if (res != FR_OK || fn[0] == 0) {
-            // Finished listing dir, no firmware found
-            r = -1;
-            break;
-        }
-        if (memcmp(fn, fname, fname_len) == 0 && fn[fname_len] == '\0') {
-            // Found firmware
-            led_state_all(2);
-            r = fsload_program_file(&fatfs, fn, false);
-            if (r == 0) {
-                // Firmware is valid, program it
-                led_state_all(4);
-                r = fsload_program_file(&fatfs, fn, true);
-            }
-            break;
-        }
+    if (r == 0) {
+        // Firmware is valid, program it
+        led_state_all(4);
+        r = fsload_program_file(&fatfs, fname, true);
     }
 
     return r;
@@ -252,9 +232,12 @@ int fsload_process(void) {
         return -1;
     }
 
+    // Get mount point id and create null-terminated filename
     uint8_t mount_point = elem[0];
     uint8_t fname_len = elem[-1] - 1;
-    const char *fname = (const char*)&elem[1];
+    char fname[256];
+    memcpy(fname, &elem[1], fname_len);
+    fname[fname_len] = '\0';
 
     elem = ELEM_DATA_START;
     for (;;) {
@@ -267,7 +250,7 @@ int fsload_process(void) {
             uint32_t base_addr = get_le32(&elem[2]);
             uint32_t byte_len = get_le32(&elem[6]);
             if (elem[1] == ELEM_MOUNT_FAT) {
-                int ret = fsload_process_fatfs(base_addr, byte_len, fname_len, fname);
+                int ret = fsload_process_fatfs(base_addr, byte_len, fname);
                 // Flash LEDs based on success/failure of update
                 for (int i = 0; i < 4; ++i) {
                     if (ret == 0) {
