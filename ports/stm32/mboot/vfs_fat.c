@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "mboot.h"
+#include "vfs.h"
 
 #if MBOOT_FSLOAD
 
@@ -38,10 +39,10 @@
 #endif
 
 DRESULT disk_read(void *pdrv, BYTE *buf, DWORD sector, UINT count) {
-    fsload_bdev_t *bdev = pdrv;
+    vfs_fat_context_t *ctx = pdrv;
 
-    if (0 <= sector && sector < bdev->byte_len / 512) {
-        do_read(bdev->base_addr + sector * SECSIZE, count * SECSIZE, buf);
+    if (0 <= sector && sector < ctx->bdev_byte_len / 512) {
+        do_read(ctx->bdev_base_addr + sector * SECSIZE, count * SECSIZE, buf);
         return RES_OK;
     }
 
@@ -49,14 +50,14 @@ DRESULT disk_read(void *pdrv, BYTE *buf, DWORD sector, UINT count) {
 }
 
 DRESULT disk_ioctl(void *pdrv, BYTE cmd, void *buf) {
-    fsload_bdev_t *bdev = pdrv;
+    vfs_fat_context_t *ctx = pdrv;
 
     switch (cmd) {
         case CTRL_SYNC:
             return RES_OK;
 
         case GET_SECTOR_COUNT:
-            *((DWORD*)buf) = bdev->byte_len / SECSIZE;
+            *((DWORD*)buf) = ctx->bdev_byte_len / SECSIZE;
             return RES_OK;
 
         case GET_SECTOR_SIZE:
@@ -76,5 +77,46 @@ DRESULT disk_ioctl(void *pdrv, BYTE cmd, void *buf) {
             return RES_PARERR;
     }
 }
+
+int vfs_fat_mount(vfs_fat_context_t *ctx, uint32_t base_addr, uint32_t byte_len) {
+    ctx->bdev_base_addr = base_addr;
+    ctx->bdev_byte_len = byte_len;
+    ctx->fatfs.drv = ctx;
+    FRESULT res = f_mount(&ctx->fatfs);
+    if (res != FR_OK) {
+        return -1;
+    }
+    return 0;
+}
+
+static int vfs_fat_stream_open(void *stream_in, const char *fname) {
+    vfs_fat_context_t *stream = stream_in;
+    FRESULT res = f_open(&stream->fatfs, &stream->fp, fname, FA_READ);
+    if (res != FR_OK) {
+        return -1;
+    }
+    return 0;
+}
+
+static void vfs_fat_stream_close(void *stream_in) {
+    vfs_fat_context_t *stream = stream_in;
+    f_close(&stream->fp);
+}
+
+static int vfs_fat_stream_read(void *stream_in, uint8_t *buf, size_t len) {
+    vfs_fat_context_t *stream = stream_in;
+    UINT n;
+    FRESULT res = f_read(&stream->fp, buf, len, &n);
+    if (res != FR_OK) {
+        return -1;
+    }
+    return n;
+}
+
+const stream_methods_t vfs_fat_stream_methods = {
+    vfs_fat_stream_open,
+    vfs_fat_stream_close,
+    vfs_fat_stream_read,
+};
 
 #endif // MBOOT_FSLOAD

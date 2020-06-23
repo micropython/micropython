@@ -27,81 +27,18 @@
 #include <string.h>
 
 #include "py/mphal.h"
-#include "lib/oofatfs/ff.h"
-#include "extmod/uzlib/uzlib.h"
 #include "mboot.h"
+#include "vfs.h"
 
 #if MBOOT_FSLOAD
 
-#define DICT_SIZE (1 << 15)
-
-typedef struct _gz_stream_t {
-    FIL fp;
-    TINF_DATA tinf;
-    uint8_t buf[512];
-    uint8_t dict[DICT_SIZE];
-} gz_stream_t;
-
-static gz_stream_t gz_stream SECTION_NOZERO_BSS;
-
-static int gz_stream_read_src(TINF_DATA *tinf) {
-    UINT n;
-    FRESULT res = f_read(&gz_stream.fp, gz_stream.buf, sizeof(gz_stream.buf), &n);
-    if (res != FR_OK) {
-        return -1;
-    }
-    if (n == 0) {
-        return -1;
-    }
-    tinf->source = gz_stream.buf + 1;
-    tinf->source_limit = gz_stream.buf + n;
-    return gz_stream.buf[0];
-}
-
-static int gz_stream_open(FATFS *fatfs, const char *filename) {
-    FRESULT res = f_open(fatfs, &gz_stream.fp, filename, FA_READ);
-    if (res != FR_OK) {
-        return -1;
-    }
-    memset(&gz_stream.tinf, 0, sizeof(gz_stream.tinf));
-    gz_stream.tinf.readSource = gz_stream_read_src;
-
-    int st = uzlib_gzip_parse_header(&gz_stream.tinf);
-    if (st != TINF_OK) {
-        f_close(&gz_stream.fp);
-        return -1;
-    }
-
-    uzlib_uncompress_init(&gz_stream.tinf, gz_stream.dict, DICT_SIZE);
-
-    return 0;
-}
-
-static int gz_stream_read(size_t len, uint8_t *buf) {
-    gz_stream.tinf.dest = buf;
-    gz_stream.tinf.dest_limit = buf + len;
-    int st = uzlib_uncompress_chksum(&gz_stream.tinf);
-    if (st == TINF_DONE) {
-        return 0;
-    }
-    if (st < 0) {
-        return st;
-    }
-    return gz_stream.tinf.dest - buf;
-}
-
-static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to_flash) {
-    int res = gz_stream_open(fatfs, filename);
-    if (res != 0) {
-        return res;
-    }
-
+static int fsload_program_file(bool write_to_flash) {
     // Parse DFU
     uint8_t buf[512];
     size_t file_offset;
 
     // Read file header, <5sBIB
-    res = gz_stream_read(11, buf);
+    int res = gz_stream_read(11, buf);
     if (res != 11) {
         return -1;
     }
@@ -204,26 +141,23 @@ static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to
     return 0;
 }
 
-static int fsload_process_fatfs(uint32_t base_addr, uint32_t byte_len, const char *fname) {
-    fsload_bdev_t bdev = {base_addr, byte_len};
-    FATFS fatfs;
-    fatfs.drv = &bdev;
-    FRESULT res = f_mount(&fatfs);
-    if (res != FR_OK) {
-        return -1;
+static int fsload_validate_and_program_file(void *stream, const stream_methods_t *meth, const char *fname) {
+    // First pass verifies the file, second pass programs it
+    for (unsigned int pass = 0; pass <= 1; ++pass) {
+        led_state_all(pass == 0 ? 2 : 4);
+        int res = meth->open(stream, fname);
+        if (res == 0) {
+            res = gz_stream_init(stream, meth->read);
+            if (res == 0) {
+                res = fsload_program_file(pass == 0 ? false : true);
+            }
+        }
+        meth->close(stream);
+        if (res != 0) {
+            return res;
+        }
     }
-
-    // Validate firmware
-    led_state_all(2);
-    int r = fsload_program_file(&fatfs, fname, false);
-
-    if (r == 0) {
-        // Firmware is valid, program it
-        led_state_all(4);
-        r = fsload_program_file(&fatfs, fname, true);
-    }
-
-    return r;
+    return 0;
 }
 
 int fsload_process(void) {
@@ -250,7 +184,11 @@ int fsload_process(void) {
             uint32_t base_addr = get_le32(&elem[2]);
             uint32_t byte_len = get_le32(&elem[6]);
             if (elem[1] == ELEM_MOUNT_FAT) {
-                int ret = fsload_process_fatfs(base_addr, byte_len, fname);
+                vfs_fat_context_t ctx;
+                int ret = vfs_fat_mount(&ctx, base_addr, byte_len);
+                if (ret == 0) {
+                    ret = fsload_validate_and_program_file(&ctx, &vfs_fat_stream_methods, fname);
+                }
                 // Flash LEDs based on success/failure of update
                 for (int i = 0; i < 4; ++i) {
                     if (ret == 0) {

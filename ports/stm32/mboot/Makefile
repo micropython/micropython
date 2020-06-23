@@ -102,7 +102,8 @@ SRC_C = \
 	main.c \
 	elem.c \
 	fsload.c \
-	diskio.c \
+	gzstream.c \
+	vfs_fat.c \
 	drivers/bus/softspi.c \
 	drivers/bus/softqspi.c \
 	drivers/memory/spiflash.c \
