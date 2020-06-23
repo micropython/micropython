@@ -35,6 +35,14 @@
 #include "py/stackctrl.h"
 #include "shared/runtime/pyexec.h"
 
+#include "io.h"
+#include "microwatt_soc.h"
+#include "uart_std.h"
+
+unsigned long ppc_tb_freq = 512000000;
+
+#define UART_BAUDS 115200
+
 void __stack_chk_fail(void);
 void __stack_chk_fail(void) {
     static bool failed_once;
@@ -60,13 +68,69 @@ static char *stack_top;
 static char heap[32 * 1024];
 #endif
 
-extern void uart_init_ppc(int qemu);
+// Receive single character
+int mp_hal_stdin_rx_chr(void) {
+    return std_uart_rx_chr();
+}
 
-int main(int argc, char **argv) {
+// Send string of given length
+void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+    std_uart_tx_strn(str, len);
+}
+
+static void init_microwatt(void) {
+    uint64_t sys_info;
+    uint64_t proc_freq;
+    uint64_t uart_info = 0;
+    uint64_t uart_freq = 0;
+
+    proc_freq = readq(SYSCON_BASE + SYS_REG_CLKINFO) & SYS_REG_CLKINFO_FREQ_MASK;
+    sys_info = readq(SYSCON_BASE + SYS_REG_INFO);
+
+    if (!(sys_info & SYS_REG_INFO_HAS_ARTB)) {
+        ppc_tb_freq = proc_freq;
+    }
+
+    if (sys_info & SYS_REG_INFO_HAS_LARGE_SYSCON) {
+        uart_info = readq(SYSCON_BASE + SYS_REG_UART0_INFO);
+        uart_freq = uart_info & 0xffffffff;
+    }
+    if (uart_freq == 0) {
+        uart_freq = proc_freq;
+    }
+
+    if (uart_info & SYS_REG_UART_IS_16550) {
+        std_uart_init(UART_BASE, 2, uart_freq, UART_BAUDS);
+    } else {
+        /* PANIC */
+        while (1) {
+            ;
+        }
+    }
+}
+
+static void init_devicetree(const void *devtree) {
+#define QEMU_UART_BASE 0x60300d00103f8
+    /* TODO: Use libfdt to parse the device-tree, in the meantime
+     * we assume POWER9 powernv (as provided by qemu)
+     */
+    std_uart_init(QEMU_UART_BASE, 0, 1843200, UART_BAUDS);
+}
+
+int main(const void *devtree) {
     int stack_dummy;
     stack_top = (char *)&stack_dummy;
 
-    uart_init_ppc(argc);
+    /*
+     * Platform detection. Eventually assume r3 will contain
+     * a device-tree pointer and use libfdt to parse it, in
+     * the meantime, if r3 is 0, assume standalone microwatt
+     */
+    if (devtree == 0) {
+        init_microwatt();
+    } else {
+        init_devicetree(devtree);
+    }
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[1024];

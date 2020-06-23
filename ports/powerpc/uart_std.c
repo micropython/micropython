@@ -31,12 +31,12 @@
 
 #include <unistd.h>
 #include <stdbool.h>
-#include "py/mpconfig.h"
 
-#define PROC_FREQ       50000000
-#define UART_FREQ       115200
+#include "py/mpconfig.h"
+#include "io.h"
+
+
 #define UART_BASE       0xc0002000
-#define LPC_UART_BASE   0x60300d00103f8
 
 /* Taken from skiboot */
 #define REG_RBR         0
@@ -62,58 +62,82 @@
 #define LSR_ERR         0x80  /* Error */
 
 #define LCR_DLAB        0x80  /* DLL access */
+#define LCR_8BIT        0x03
+
+#define MCR_DTR         0x01
+#define MCR_RTS         0x02
+
+#define FCR_EN_FIFO     0x01
+#define FCR_CLR_RCVR    0x02
+#define FCR_CLR_XMIT    0x04
 
 #define IER_RX          0x01
 #define IER_THRE        0x02
 #define IER_ALL         0x0f
 
-static uint64_t lpc_uart_base;
+static uint64_t uart_base;
+static unsigned int uart_rshift;
 
-static void lpc_uart_reg_write(uint64_t offset, uint8_t val) {
-    uint64_t addr;
-
-    addr = lpc_uart_base + offset;
-
-    *(volatile uint8_t *)addr = val;
+static unsigned long std_uart_reg(unsigned int r) {
+    /*
+     * microwatt_soc.h has offsets already set for a stride of 4,
+     * so we use rshift to shift back to a stride of 1 for qemu
+     */
+    return uart_base + (r << uart_rshift);
 }
 
-static uint8_t lpc_uart_reg_read(uint64_t offset) {
-    uint64_t addr;
-    uint8_t val;
-
-    addr = lpc_uart_base + offset;
-
-    val = *(volatile uint8_t *)addr;
-
-    return val;
+static int std_uart_tx_full(void) {
+    return !(readb(std_uart_reg(REG_LSR)) & LSR_THRE);
 }
 
-static int lpc_uart_tx_full(void) {
-    return !(lpc_uart_reg_read(REG_LSR) & LSR_THRE);
+static int std_uart_rx_empty(void) {
+    return !(readb(std_uart_reg(REG_LSR)) & LSR_DR);
 }
 
-static int lpc_uart_rx_empty(void) {
-    return !(lpc_uart_reg_read(REG_LSR) & LSR_DR);
+static char std_uart_read(void) {
+    return readb(std_uart_reg(REG_RBR));
 }
 
-void uart_init_ppc(void) {
-    lpc_uart_base = LPC_UART_BASE;
+static void std_uart_write(char c) {
+    writeb(c, std_uart_reg(REG_THR));
 }
 
-int mp_hal_stdin_rx_chr(void) {
-    while (lpc_uart_rx_empty()) {
+static unsigned long std_uart_divisor(unsigned long uart_freq, unsigned long bauds) {
+    return uart_freq / (bauds * 16);
+}
+
+void std_uart_init(unsigned long base, unsigned int reg_shift,
+    unsigned int freq, unsigned int bauds) {
+    unsigned long div = std_uart_divisor(freq, bauds);
+
+    uart_base = base;
+    uart_rshift = reg_shift;
+
+    writeb(LCR_DLAB,           std_uart_reg(REG_LCR));
+    writeb(div & 0xff,         std_uart_reg(REG_DLL));
+    writeb(div >> 8,           std_uart_reg(REG_DLM));
+    writeb(LCR_8BIT,           std_uart_reg(REG_LCR));
+    writeb(MCR_DTR | MCR_RTS,  std_uart_reg(REG_MCR));
+    writeb(FCR_EN_FIFO |
+        FCR_CLR_RCVR |
+        FCR_CLR_XMIT,       std_uart_reg(REG_FCR));
+}
+
+
+int std_uart_rx_chr(void) {
+    while (std_uart_rx_empty()) {
         ;
     }
-    return lpc_uart_reg_read(REG_THR);
+    return std_uart_read();
 }
 
 
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+void std_uart_tx_strn(const char *str, mp_uint_t len) {
     int i;
     for (i = 0; i < len; i++) {
-        while (lpc_uart_tx_full()) {
+        while (std_uart_tx_full()) {
             ;
         }
-        lpc_uart_reg_write(REG_RBR, str[i]);
+        std_uart_write(str[i]);
     }
 }

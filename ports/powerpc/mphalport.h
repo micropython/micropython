@@ -27,18 +27,19 @@
 #define mftb()  ({unsigned long rval;                                   \
                   __asm__ volatile ("mftb %0" : "=r" (rval)); rval;})
 
-#define TBFREQ 512000000
+extern unsigned long ppc_tb_freq;
 
 static inline mp_uint_t mp_hal_ticks_ms(void) {
     unsigned long tb = mftb();
 
-    return tb * 1000 / TBFREQ;
+    return tb * 1000 / ppc_tb_freq;
 }
+
 
 static inline mp_uint_t mp_hal_ticks_us(void) {
     unsigned long tb = mftb();
 
-    return tb * 1000000 / TBFREQ;
+    return tb * 1000000 / ppc_tb_freq;
 }
 
 static inline void mp_hal_set_interrupt_char(char c) {
