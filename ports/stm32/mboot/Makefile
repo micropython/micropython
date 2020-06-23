@@ -70,6 +70,8 @@ CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DBOARD_$(BOARD)
 CFLAGS += -DAPPLICATION_ADDR=$(TEXT0_ADDR)
 CFLAGS += -DFFCONF_H=\"ports/stm32/mboot/ffconf.h\"
+CFLAGS += -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
+CFLAGS += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
 CFLAGS += -DBUILDING_MBOOT=1
 CFLAGS += -DBOOTLOADER_DFU_USB_VID=$(BOOTLOADER_DFU_USB_VID) -DBOOTLOADER_DFU_USB_PID=$(BOOTLOADER_DFU_USB_PID)
 
@@ -91,6 +93,10 @@ endif
 $(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 LIB_SRC_C = \
 	lib/libc/string0.c \
+	lib/littlefs/lfs1.c \
+	lib/littlefs/lfs1_util.c \
+	lib/littlefs/lfs2.c \
+	lib/littlefs/lfs2_util.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/ffunicode.c \
 	extmod/uzlib/crc32.c \
@@ -104,6 +110,7 @@ SRC_C = \
 	fsload.c \
 	gzstream.c \
 	vfs_fat.c \
+	vfs_lfs.c \
 	drivers/bus/softspi.c \
 	drivers/bus/softqspi.c \
 	drivers/memory/spiflash.c \

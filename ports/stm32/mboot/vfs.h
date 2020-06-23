@@ -26,8 +26,12 @@
 #ifndef MICROPY_INCLUDED_STM32_MBOOT_VFS_H
 #define MICROPY_INCLUDED_STM32_MBOOT_VFS_H
 
-#include "lib/oofatfs/ff.h"
 #include "gzstream.h"
+#include "mboot.h"
+
+#if MBOOT_VFS_FAT
+
+#include "lib/oofatfs/ff.h"
 
 typedef struct _vfs_fat_context_t {
     uint32_t bdev_base_addr;
@@ -39,5 +43,54 @@ typedef struct _vfs_fat_context_t {
 extern const stream_methods_t vfs_fat_stream_methods;
 
 int vfs_fat_mount(vfs_fat_context_t *ctx, uint32_t base_addr, uint32_t byte_len);
+
+#endif
+
+#if MBOOT_VFS_LFS1
+
+#include "lib/littlefs/lfs1.h"
+
+#define LFS_READ_SIZE (32)
+#define LFS_PROG_SIZE (32)
+#define LFS_LOOKAHEAD_SIZE (32)
+
+typedef struct _vfs_lfs1_context_t {
+    uint32_t bdev_base_addr;
+    struct lfs1_config config;
+    lfs1_t lfs;
+    struct lfs1_file_config filecfg;
+    uint8_t filebuf[LFS_PROG_SIZE];
+    lfs1_file_t file;
+} vfs_lfs1_context_t;
+
+extern const stream_methods_t vfs_lfs1_stream_methods;
+
+int vfs_lfs1_mount(vfs_lfs1_context_t *ctx, uint32_t base_addr, uint32_t byte_len);
+
+#endif
+
+#if MBOOT_VFS_LFS2
+
+#include "lib/littlefs/lfs2.h"
+
+#define LFS_READ_SIZE (32)
+#define LFS_PROG_SIZE (32)
+#define LFS_CACHE_SIZE (4 * LFS_READ_SIZE)
+#define LFS_LOOKAHEAD_SIZE (32)
+
+typedef struct _vfs_lfs2_context_t {
+    uint32_t bdev_base_addr;
+    struct lfs2_config config;
+    lfs2_t lfs;
+    struct lfs2_file_config filecfg;
+    uint8_t filebuf[LFS_CACHE_SIZE]; // lfs2 specific
+    lfs2_file_t file;
+} vfs_lfs2_context_t;
+
+extern const stream_methods_t vfs_lfs2_stream_methods;
+
+int vfs_lfs2_mount(vfs_lfs2_context_t *ctx, uint32_t base_addr, uint32_t byte_len);
+
+#endif
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_VFS_H

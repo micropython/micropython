@@ -188,6 +188,7 @@ extern struct _spi_bdev_t spi_bdev2;
 
 #define MBOOT_USB_AUTODETECT_PORT   (1)
 #define MBOOT_FSLOAD                (1)
+#define MBOOT_VFS_FAT               (1)
 
 #define MBOOT_I2C_PERIPH_ID         1
 #define MBOOT_I2C_SCL               (pin_B8)

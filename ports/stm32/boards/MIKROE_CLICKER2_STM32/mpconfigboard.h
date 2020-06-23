@@ -83,3 +83,4 @@
 #define MBOOT_BOOTPIN_PULL          (MP_HAL_PIN_PULL_NONE)
 #define MBOOT_BOOTPIN_ACTIVE        (0)
 #define MBOOT_FSLOAD                (1)
+#define MBOOT_VFS_FAT               (1)

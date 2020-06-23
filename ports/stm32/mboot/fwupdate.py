@@ -1,9 +1,13 @@
 # Update Mboot or MicroPython from a .dfu.gz file on the board's filesystem
-# MIT license; Copyright (c) 2019 Damien P. George
+# MIT license; Copyright (c) 2019-2020 Damien P. George
 
 import struct, time
 import uzlib, machine, stm
 
+# Constants to be used with update_mpy
+VFS_FAT = 1
+VFS_LFS1 = 2
+VFS_LFS2 = 3
 
 FLASH_KEY1 = 0x45670123
 FLASH_KEY2 = 0xCDEF89AB
@@ -152,7 +156,7 @@ def update_mboot(filename):
     print("Programming finished, can now reset or turn off.")
 
 
-def update_mpy(filename, fs_base, fs_len):
+def update_mpy(filename, fs_base, fs_len, fs_type=VFS_FAT):
     # Check firmware is of .dfu.gz type
     try:
         with open(filename, "rb") as f:
@@ -166,11 +170,8 @@ def update_mpy(filename, fs_base, fs_len):
     ELEM_TYPE_END = 1
     ELEM_TYPE_MOUNT = 2
     ELEM_TYPE_FSLOAD = 3
-    ELEM_MOUNT_FAT = 1
     mount_point = 1
-    mount = struct.pack(
-        "<BBBBLL", ELEM_TYPE_MOUNT, 10, mount_point, ELEM_MOUNT_FAT, fs_base, fs_len
-    )
+    mount = struct.pack("<BBBBLL", ELEM_TYPE_MOUNT, 10, mount_point, fs_type, fs_base, fs_len)
     fsup = struct.pack("<BBB", ELEM_TYPE_FSLOAD, 1 + len(filename), mount_point) + bytes(
         filename, "ascii"
     )

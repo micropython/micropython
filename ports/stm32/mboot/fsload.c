@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,10 @@
 #include "vfs.h"
 
 #if MBOOT_FSLOAD
+
+#if !(MBOOT_VFS_FAT || MBOOT_VFS_LFS1 || MBOOT_VFS_LFS2)
+#error Must enable at least one VFS component
+#endif
 
 static int fsload_program_file(bool write_to_flash) {
     // Parse DFU
@@ -183,27 +187,58 @@ int fsload_process(void) {
         if (elem[0] == mount_point) {
             uint32_t base_addr = get_le32(&elem[2]);
             uint32_t byte_len = get_le32(&elem[6]);
+            int ret;
+            union {
+                #if MBOOT_VFS_FAT
+                vfs_fat_context_t fat;
+                #endif
+                #if MBOOT_VFS_LFS1
+                vfs_lfs1_context_t lfs1;
+                #endif
+                #if MBOOT_VFS_LFS2
+                vfs_lfs2_context_t lfs2;
+                #endif
+            } ctx;
+            const stream_methods_t *methods;
+            #if MBOOT_VFS_FAT
             if (elem[1] == ELEM_MOUNT_FAT) {
-                vfs_fat_context_t ctx;
-                int ret = vfs_fat_mount(&ctx, base_addr, byte_len);
-                if (ret == 0) {
-                    ret = fsload_validate_and_program_file(&ctx, &vfs_fat_stream_methods, fname);
-                }
-                // Flash LEDs based on success/failure of update
-                for (int i = 0; i < 4; ++i) {
-                    if (ret == 0) {
-                        led_state_all(7);
-                    } else {
-                        led_state_all(1);
-                    }
-                    mp_hal_delay_ms(100);
-                    led_state_all(0);
-                    mp_hal_delay_ms(100);
-                }
-                return ret;
+                ret = vfs_fat_mount(&ctx.fat, base_addr, byte_len);
+                methods = &vfs_fat_stream_methods;
+            } else
+            #endif
+            #if MBOOT_VFS_LFS1
+            if (elem[1] == ELEM_MOUNT_LFS1) {
+                ret = vfs_lfs1_mount(&ctx.lfs1, base_addr, byte_len);
+                methods = &vfs_lfs1_stream_methods;
+            } else
+            #endif
+            #if MBOOT_VFS_LFS2
+            if (elem[1] == ELEM_MOUNT_LFS2) {
+                ret = vfs_lfs2_mount(&ctx.lfs2, base_addr, byte_len);
+                methods = &vfs_lfs2_stream_methods;
+            } else
+            #endif
+            {
+                // Unknown filesystem type
+                return -1;
             }
-            // Unknown filesystem type
-            return -1;
+
+            if (ret == 0) {
+                ret = fsload_validate_and_program_file(&ctx, methods, fname);
+            }
+
+            // Flash LEDs based on success/failure of update
+            for (int i = 0; i < 4; ++i) {
+                if (ret == 0) {
+                    led_state_all(7);
+                } else {
+                    led_state_all(1);
+                }
+                mp_hal_delay_ms(100);
+                led_state_all(0);
+                mp_hal_delay_ms(100);
+            }
+            return ret;
         }
         elem += elem[-1];
     }

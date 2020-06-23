@@ -30,7 +30,7 @@
 #include "mboot.h"
 #include "vfs.h"
 
-#if MBOOT_FSLOAD
+#if MBOOT_FSLOAD && MBOOT_VFS_FAT
 
 #if FF_MAX_SS == FF_MIN_SS
 #define SECSIZE (FF_MIN_SS)
@@ -119,4 +119,4 @@ const stream_methods_t vfs_fat_stream_methods = {
     vfs_fat_stream_read,
 };
 
-#endif // MBOOT_FSLOAD
+#endif // MBOOT_FSLOAD && MBOOT_VFS_FAT
