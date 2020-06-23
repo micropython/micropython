@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"POT-Creation-Date: 2020-06-25 11:44-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -293,6 +293,7 @@ msgstr "Semua channel event yang disinkronisasi sedang digunakan"
 msgid "All timers for this pin are in use"
 msgstr "Semua timer untuk pin ini sedang digunakan"
 
+#: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -300,7 +301,7 @@ msgstr "Semua timer untuk pin ini sedang digunakan"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
+#: shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr "Semua timer sedang digunakan"
 
@@ -582,6 +583,10 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "Could not initialize GNSS"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Tidak dapat menginisialisasi UART"
@@ -828,10 +833,6 @@ msgstr "operasi I/O pada file tertutup"
 msgid "I2C Init Error"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr "operasi I2C tidak didukung"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -973,7 +974,7 @@ msgstr "Pin untuk channel kanan tidak valid"
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1441,6 +1442,10 @@ msgstr ""
 msgid "Supply at least one UART pin"
 msgstr ""
 
+#: shared-bindings/gnss/GNSS.c
+msgid "System entry must be gnss.SatelliteSystem"
+msgstr ""
+
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
 msgstr ""
@@ -1627,6 +1632,7 @@ msgid ""
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Baudrate tidak didukung"
 
@@ -1743,11 +1749,11 @@ msgstr "abort() dipanggil"
 msgid "address %08x is not aligned to %d bytes"
 msgstr "alamat %08x tidak selaras dengan %d bytes"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr ""
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr ""
 
@@ -1828,10 +1834,6 @@ msgstr ""
 msgid "bits must be 7, 8 or 9"
 msgstr ""
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "bits harus memilki nilai 8"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr ""
@@ -1857,10 +1859,6 @@ msgstr ""
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr ""
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "buffers harus mempunyai panjang yang sama"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1937,7 +1935,7 @@ msgstr ""
 msgid "can't convert NaN to int"
 msgstr ""
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert address to int"
 msgstr ""
 
@@ -2291,10 +2289,6 @@ msgstr ""
 msgid "first argument to super() must be type"
 msgstr ""
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr "bit pertama(firstbit) harus berupa MSB"
-
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
@@ -2479,14 +2473,6 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "perangkat I2C tidak valid"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "perangkat SPI tidak valid"
-
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "argumen-argumen tidak valid"
@@ -2662,10 +2648,6 @@ msgstr ""
 #: py/emitnative.c
 msgid "must raise an object"
 msgstr ""
-
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr "harus menentukan semua pin sck/mosi/miso"
 
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
@@ -3455,6 +3437,9 @@ msgstr ""
 #~ msgid "GPIO16 does not support pull up."
 #~ msgstr "GPIO16 tidak mendukung pull up"
 
+#~ msgid "I2C operation not supported"
+#~ msgstr "operasi I2C tidak didukung"
+
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Bit clock pada pin tidak valid"
 
@@ -3546,8 +3531,14 @@ msgstr ""
 #~ msgid "[addrinfo error %d]"
 #~ msgstr "[addrinfo error %d]"
 
+#~ msgid "bits must be 8"
+#~ msgstr "bits harus memilki nilai 8"
+
 #~ msgid "buffer too long"
 #~ msgstr "buffer terlalu panjang"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "buffers harus mempunyai panjang yang sama"
 
 #~ msgid "can query only one param"
 #~ msgstr "hanya bisa melakukan query satu param"
@@ -3573,6 +3564,9 @@ msgstr ""
 #~ msgid "ffi_prep_closure_loc"
 #~ msgstr "ffi_prep_closure_loc"
 
+#~ msgid "firstbit must be MSB"
+#~ msgstr "bit pertama(firstbit) harus berupa MSB"
+
 #~ msgid "flash location must be below 1MByte"
 #~ msgstr "alokasi flash harus dibawah 1MByte"
 
@@ -3581,6 +3575,12 @@ msgstr ""
 
 #~ msgid "impossible baudrate"
 #~ msgstr "baudrate tidak memungkinkan"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "perangkat I2C tidak valid"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "perangkat SPI tidak valid"
 
 #~ msgid "invalid alarm"
 #~ msgstr "alarm tidak valid"
@@ -3602,6 +3602,9 @@ msgstr ""
 
 #~ msgid "memory allocation failed, allocating %u bytes for native code"
 #~ msgstr "alokasi memori gagal, mengalokasikan %u byte untuk kode native"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "harus menentukan semua pin sck/mosi/miso"
 
 #, fuzzy
 #~ msgid "name must be a string"

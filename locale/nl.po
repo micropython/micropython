@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"POT-Creation-Date: 2020-06-25 11:44-0500\n"
 "PO-Revision-Date: 2020-06-02 19:50+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
@@ -299,6 +299,7 @@ msgstr "Alle sync event kanalen zijn in gebruik"
 msgid "All timers for this pin are in use"
 msgstr "Alle timers voor deze pin zijn in gebruik"
 
+#: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -306,7 +307,7 @@ msgstr "Alle timers voor deze pin zijn in gebruik"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
+#: shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr "Alle timers zijn in gebruik"
 
@@ -588,6 +589,10 @@ msgstr "Corrupt .mpy bestand"
 msgid "Corrupt raw code"
 msgstr "Corrupt raw code"
 
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "Could not initialize GNSS"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Kan UART niet initialiseren"
@@ -835,10 +840,6 @@ msgstr "I/O actie op gesloten bestand"
 msgid "I2C Init Error"
 msgstr "I2C Init Fout"
 
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr "I2C actie niet ondersteund"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -982,7 +983,7 @@ msgstr "Ongeldige pin voor rechter kanaal"
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1459,6 +1460,10 @@ msgstr "Stream mist readinto() of write() methode."
 msgid "Supply at least one UART pin"
 msgstr "Geef op zijn minst 1 UART pin op"
 
+#: shared-bindings/gnss/GNSS.c
+msgid "System entry must be gnss.SatelliteSystem"
+msgstr ""
+
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
 msgstr "Temperatuur lees time-out"
@@ -1655,6 +1660,7 @@ msgstr ""
 "apparaat geweigerd of genegeerd werd."
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Niet-ondersteunde baudsnelheid"
 
@@ -1773,11 +1779,11 @@ msgstr "abort() aangeroepen"
 msgid "address %08x is not aligned to %d bytes"
 msgstr "adres %08x is niet afgestemd op %d bytes"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adres buiten bereik"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "adressen zijn leeg"
 
@@ -1858,10 +1864,6 @@ msgstr "binaire op %q niet geïmplementeerd"
 msgid "bits must be 7, 8 or 9"
 msgstr "bits moet 7, 8, of 9 zijn"
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "bits moet 8 zijn"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample moet 8 of 16 zijn"
@@ -1886,10 +1888,6 @@ msgstr "buffer slices moeten van gelijke grootte zijn"
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "buffer te klein"
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "buffers moeten dezelfde lengte hebben"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1967,7 +1965,7 @@ msgstr "kan '%q' object niet omzetten naar %q impliciet"
 msgid "can't convert NaN to int"
 msgstr "kan NaN niet omzetten naar int"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert address to int"
 msgstr "kan adres niet omzetten naar int"
 
@@ -2324,10 +2322,6 @@ msgstr "eerst argument moet een ndarray zijn"
 msgid "first argument to super() must be type"
 msgstr "eerste argument voor super() moet een type zijn"
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr "het eerste bit moet het MSB zijn"
-
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr "De afvlakkingsvolgorde moet ofwel \"C\", ofwel \"F\" zijn"
@@ -2513,14 +2507,6 @@ msgstr "interp is gedefinieerd for eendimensionale arrays van gelijke lengte"
 msgid "interval must be in range %s-%s"
 msgstr "interval moet binnen bereik %s-%s vallen"
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "onjuist I2C randapparaat"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "onjuist SPI randapparaat"
-
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "ongeldige argumenten"
@@ -2699,10 +2685,6 @@ msgstr "meervoudige overerving niet ondersteund"
 #: py/emitnative.c
 msgid "must raise an object"
 msgstr "moet een object oproepen (raise)"
-
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr "sck/mosi/miso moeten alle gespecificeerd worden"
 
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
@@ -3352,5 +3334,26 @@ msgstr "y-waarde buiten bereik"
 msgid "zero step"
 msgstr "nul-stap"
 
+#~ msgid "I2C operation not supported"
+#~ msgstr "I2C actie niet ondersteund"
+
 #~ msgid "Negative step not supported"
 #~ msgstr "Negatieve stappen niet ondersteund"
+
+#~ msgid "bits must be 8"
+#~ msgstr "bits moet 8 zijn"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "buffers moeten dezelfde lengte hebben"
+
+#~ msgid "firstbit must be MSB"
+#~ msgstr "het eerste bit moet het MSB zijn"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "onjuist I2C randapparaat"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "onjuist SPI randapparaat"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "sck/mosi/miso moeten alle gespecificeerd worden"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"POT-Creation-Date: 2020-06-25 11:44-0500\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -292,6 +292,7 @@ msgstr "Wszystkie kanały zdarzeń synchronizacji w użyciu"
 msgid "All timers for this pin are in use"
 msgstr "Wszystkie timery tej nóżki w użyciu"
 
+#: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -299,7 +300,7 @@ msgstr "Wszystkie timery tej nóżki w użyciu"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
+#: shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr "Wszystkie timery w użyciu"
 
@@ -575,6 +576,10 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "Could not initialize GNSS"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Ustawienie UART nie powiodło się"
@@ -820,10 +825,6 @@ msgstr "Operacja I/O na zamkniętym pliku"
 msgid "I2C Init Error"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr "Operacja I2C nieobsługiwana"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -967,7 +968,7 @@ msgstr "Zła nóżka dla prawego kanału"
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1430,6 +1431,10 @@ msgstr "Strumień nie ma metod readinto() lub write()."
 msgid "Supply at least one UART pin"
 msgstr ""
 
+#: shared-bindings/gnss/GNSS.c
+msgid "System entry must be gnss.SatelliteSystem"
+msgstr ""
+
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
 msgstr ""
@@ -1616,6 +1621,7 @@ msgid ""
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Zła szybkość transmisji"
 
@@ -1728,11 +1734,11 @@ msgstr "Wywołano abort()"
 msgid "address %08x is not aligned to %d bytes"
 msgstr "adres %08x nie jest wyrównany do %d bajtów"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adres poza zakresem"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "adres jest pusty"
 
@@ -1813,10 +1819,6 @@ msgstr "brak dwu-argumentowego operatora %q"
 msgid "bits must be 7, 8 or 9"
 msgstr "bits musi być 7, 8 lub 9"
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "bits musi być 8"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample musi być 8 lub 16"
@@ -1841,10 +1843,6 @@ msgstr "fragmenty bufora muszą mieć tę samą długość"
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "zbyt mały bufor"
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "bufory muszą mieć tę samą długość"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1921,7 +1919,7 @@ msgstr "nie można automatycznie skonwertować '%q' do '%q'"
 msgid "can't convert NaN to int"
 msgstr "nie można skonwertować NaN do int"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert address to int"
 msgstr "nie można skonwertować adresu do int"
 
@@ -2276,10 +2274,6 @@ msgstr ""
 msgid "first argument to super() must be type"
 msgstr "pierwszy argument super() musi być typem"
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr "firstbit musi być MSB"
-
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
@@ -2464,14 +2458,6 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "złe I2C"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "złe SPI"
-
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "złe arguemnty"
@@ -2647,10 +2633,6 @@ msgstr "wielokrotne dziedzicznie niewspierane"
 #: py/emitnative.c
 msgid "must raise an object"
 msgstr "wyjątek musi być obiektem"
-
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr "sck/mosi/miso muszą być podane"
 
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
@@ -3426,6 +3408,9 @@ msgstr "zerowy krok"
 #~ msgid "Flash write failed to start, err 0x%04x"
 #~ msgstr "Nie udało się rozpocząć zapisu do flash, błąd 0x%04x"
 
+#~ msgid "I2C operation not supported"
+#~ msgstr "Operacja I2C nieobsługiwana"
+
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Zła nóżka zegara"
 
@@ -3523,8 +3508,14 @@ msgstr "zerowy krok"
 #~ msgid "bad GATT role"
 #~ msgstr "zła rola GATT"
 
+#~ msgid "bits must be 8"
+#~ msgstr "bits musi być 8"
+
 #~ msgid "buf is too small. need %d bytes"
 #~ msgstr "buf zbyt mały. Wymagane %d bajtów"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "bufory muszą mieć tę samą długość"
 
 #~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
 #~ msgstr "byteorder musi być typu ByteOrder (jest %s)"
@@ -3536,8 +3527,20 @@ msgstr "zerowy krok"
 #~ msgid "color buffer must be a buffer or int"
 #~ msgstr "bufor kolorów musi być typu buffer lub int"
 
+#~ msgid "firstbit must be MSB"
+#~ msgstr "firstbit musi być MSB"
+
 #~ msgid "interval not in range 0.0020 to 10.24"
 #~ msgstr "przedział poza zakresem 0.0020 do 10.24"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "złe I2C"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "złe SPI"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "sck/mosi/miso muszą być podane"
 
 #~ msgid "name must be a string"
 #~ msgstr "nazwa musi być łańcuchem"

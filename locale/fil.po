@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"POT-Creation-Date: 2020-06-25 11:44-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -295,6 +295,7 @@ msgstr "Lahat ng sync event channels ay ginagamit"
 msgid "All timers for this pin are in use"
 msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 
+#: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -302,7 +303,7 @@ msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
+#: shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr "Lahat ng timer ginagamit"
 
@@ -581,6 +582,10 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "Could not initialize GNSS"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
@@ -831,10 +836,6 @@ msgstr "I/O operasyon sa saradong file"
 msgid "I2C Init Error"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr "Hindi supportado ang operasyong I2C"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -978,7 +979,7 @@ msgstr "Mali ang pin para sa kanang channel"
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1448,6 +1449,10 @@ msgstr "Stream kulang ng readinto() o write() method."
 msgid "Supply at least one UART pin"
 msgstr ""
 
+#: shared-bindings/gnss/GNSS.c
+msgid "System entry must be gnss.SatelliteSystem"
+msgstr ""
+
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
 msgstr ""
@@ -1635,6 +1640,7 @@ msgid ""
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Hindi supportadong baudrate"
 
@@ -1753,11 +1759,11 @@ msgstr "abort() tinawag"
 msgid "address %08x is not aligned to %d bytes"
 msgstr "address %08x ay hindi pantay sa %d bytes"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "wala sa sakop ang address"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "walang laman ang address"
 
@@ -1838,10 +1844,6 @@ msgstr "binary op %q hindi implemented"
 msgid "bits must be 7, 8 or 9"
 msgstr "bits ay dapat 7, 8 o 9"
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "bits ay dapat walo (8)"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample ay dapat 8 o 16"
@@ -1867,10 +1869,6 @@ msgstr "aarehas na haba dapat ang buffer slices"
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "masyadong maliit ang buffer"
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "ang buffers ay dapat parehas sa haba"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1948,7 +1946,7 @@ msgstr "hindi maaaring i-convert ang '%q' na bagay sa %q nang walang pahiwatig"
 msgid "can't convert NaN to int"
 msgstr "hindi ma i-convert NaN sa int"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert address to int"
 msgstr "hindi ma i-convert ang address sa INT"
 
@@ -2312,10 +2310,6 @@ msgstr ""
 msgid "first argument to super() must be type"
 msgstr "unang argument ng super() ay dapat type"
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr "firstbit ay dapat MSB"
-
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
@@ -2501,14 +2495,6 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "maling I2C peripheral"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "hindi wastong SPI peripheral"
-
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "mali ang mga argumento"
@@ -2688,10 +2674,6 @@ msgstr "maraming inhertance hindi sinusuportahan"
 #: py/emitnative.c
 msgid "must raise an object"
 msgstr "dapat itaas ang isang object"
-
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
 
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
@@ -3506,6 +3488,9 @@ msgstr "zero step"
 #~ msgid "GPIO16 does not support pull up."
 #~ msgstr "Walang pull down support ang GPI016."
 
+#~ msgid "I2C operation not supported"
+#~ msgstr "Hindi supportado ang operasyong I2C"
+
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Mali ang bit clock pin"
 
@@ -3647,8 +3632,14 @@ msgstr "zero step"
 #~ msgid "[addrinfo error %d]"
 #~ msgstr "[addrinfo error %d]"
 
+#~ msgid "bits must be 8"
+#~ msgstr "bits ay dapat walo (8)"
+
 #~ msgid "buffer too long"
 #~ msgstr "masyadong mahaba ng buffer"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "ang buffers ay dapat parehas sa haba"
 
 #~ msgid "can query only one param"
 #~ msgstr "maaaring i-query lamang ang isang param"
@@ -3680,6 +3671,9 @@ msgstr "zero step"
 #~ msgid "ffi_prep_closure_loc"
 #~ msgstr "ffi_prep_closure_loc"
 
+#~ msgid "firstbit must be MSB"
+#~ msgstr "firstbit ay dapat MSB"
+
 #~ msgid "flash location must be below 1MByte"
 #~ msgstr "dapat na mas mababa sa 1MB ang lokasyon ng flash"
 
@@ -3688,6 +3682,12 @@ msgstr "zero step"
 
 #~ msgid "impossible baudrate"
 #~ msgstr "impossibleng baudrate"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "maling I2C peripheral"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "hindi wastong SPI peripheral"
 
 #~ msgid "invalid alarm"
 #~ msgstr "mali ang alarm"
@@ -3710,6 +3710,9 @@ msgstr "zero step"
 #~ msgid "memory allocation failed, allocating %u bytes for native code"
 #~ msgstr ""
 #~ "nabigo ang paglalaan ng memorya, naglalaan ng %u bytes para sa native code"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
 
 #, fuzzy
 #~ msgid "name must be a string"
