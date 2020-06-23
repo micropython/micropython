@@ -1285,6 +1285,9 @@ void stm32_main(int initial_r0) {
     RCC->D3CCIPR = 0x00000000;
     #endif
 
+    // Make sure IRQ vector table points to flash where this bootloader lives.
+    SCB->VTOR = FLASH_BASE;
+
     // Enable 8-byte stack alignment for IRQ handlers, in accord with EABI
     SCB->CCR |= SCB_CCR_STKALIGN_Msk;
 
