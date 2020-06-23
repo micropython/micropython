@@ -106,7 +106,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
            {
            // clear exception and generate stacktrace
             MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-            nlr_raise(mp_obj_new_exception(&mp_type_KeyboardInterrupt));
+            nlr_raise(&MP_STATE_VM(mp_kbd_exception));
           }
         if( MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception)) ||
            WATCHDOG_EXCEPTION_CHECK()) {
