@@ -29,6 +29,9 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
+#include "esp-idf/components/driver/include/driver/spi_common_internal.h"
+#include "esp-idf/components/soc/include/hal/spi_hal.h"
+#include "esp-idf/components/soc/include/hal/spi_types.h"
 #include "py/obj.h"
 
 typedef struct {
@@ -40,8 +43,9 @@ typedef struct {
     spi_bus_lock_dev_handle_t lock;
     spi_hal_context_t hal_context;
     spi_hal_timing_conf_t timing_conf;
+    intr_handle_t interrupt;
     uint32_t target_frequency;
-    uint32_t real_frequency;
+    int32_t real_frequency;
     uint8_t polarity;
     uint8_t phase;
     uint8_t bits;

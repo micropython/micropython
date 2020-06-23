@@ -75,8 +75,12 @@ static bool bus_uses_iomux_pins(spi_host_device_t host, const spi_bus_config_t* 
 
 // End copied code.
 
-static bool spi_bus_free(spi_host_device_t host_id) {
+static bool _spi_bus_free(spi_host_device_t host_id) {
     return spi_bus_get_attr(host_id) == NULL;
+}
+
+static void spi_interrupt_handler(void *arg) {
+
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
@@ -90,8 +94,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     bus_config.quadhd_io_num = -1;
     bus_config.max_transfer_sz = 0; // Uses the default
     bus_config.flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_SCLK |
-                       mosi != NULL ? SPICOMMON_BUSFLAG_MOSI : 0 |
-                       miso != NULL ? SPICOMMON_BUSFLAG_MISO : 0;
+                       (mosi != NULL ? SPICOMMON_BUSFLAG_MOSI : 0) |
+                       (miso != NULL ? SPICOMMON_BUSFLAG_MISO : 0);
     bus_config.intr_flags = 0;
 
     // RAM and Flash is often on SPI1 and is unsupported by the IDF so use it as
@@ -99,12 +103,12 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     spi_host_device_t host_id = SPI1_HOST;
     self->connected_through_gpio = true;
     // Try and save SPI2 for pins that are on the IOMUX
-    if (bus_uses_iomux_pins(SPI2_HOST, &bus_config) && spi_bus_free(SPI2_HOST)) {
+    if (bus_uses_iomux_pins(SPI2_HOST, &bus_config) && _spi_bus_free(SPI2_HOST)) {
         host_id = SPI2_HOST;
         self->connected_through_gpio = false;
-    } else if (spi_bus_free(SPI3_HOST)) {
+    } else if (_spi_bus_free(SPI3_HOST)) {
         host_id = SPI3_HOST;
-    } else if (spi_bus_free(SPI2_HOST)) {
+    } else if (_spi_bus_free(SPI2_HOST)) {
         host_id = SPI2_HOST;
     }
     if (host_id == SPI1_HOST) {
@@ -114,21 +118,21 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     esp_err_t result = spi_bus_initialize(host_id, &bus_config, 0 /* dma channel */);
     if (result == ESP_ERR_NO_MEM) {
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
-    } else if (result = ESP_INVALID_ARG) {
+    } else if (result == ESP_ERR_INVALID_ARG) {
         mp_raise_ValueError(translate("Invalid pins"));
     }
     spi_bus_lock_dev_config_t config = { .flags = 0 };
     result = spi_bus_lock_register_dev(spi_bus_get_attr(host_id)->lock,
-                                       spi_bus_lock_dev_config_t *config,
+                                       &config,
                                        &self->lock);
     if (result == ESP_ERR_NO_MEM) {
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
     }
 
 
-    err = esp_intr_alloc(spicommon_irqsource_for_host(host_id),
-                         bus_config.intr_flags | ESP_INTR_FLAG_INTRDISABLED,
-                         spi_interrupt_handler, self, &self->intr);
+    result = esp_intr_alloc(spicommon_irqsource_for_host(host_id),
+                            bus_config.intr_flags | ESP_INTR_FLAG_INTRDISABLED,
+                            spi_interrupt_handler, self, &self->interrupt);
     if (result == ESP_ERR_NO_MEM) {
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
     }
@@ -198,18 +202,21 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         bits == self->bits) {
         return true;
     }
-    self->hal_context->mode = polarity << 1 | phase;
+    self->hal_context.mode = polarity << 1 | phase;
     self->polarity = polarity;
     self->phase = phase;
     self->bits = bits;
     self->target_frequency = baudrate;
-    esp_err_t result =  spi_hal_get_clock_conf(self->hal_context,
+    esp_err_t result =  spi_hal_get_clock_conf(&self->hal_context,
                                                self->target_frequency,
                                                128 /* duty_cycle */,
                                                self->connected_through_gpio,
                                                0 /* input_delay_ns */,
                                                &self->real_frequency,
                                                &self->timing_conf);
+    if (result != ESP_OK) {
+        return false;
+    }
 
     spi_hal_setup_device(&self->hal_context);
     return true;
@@ -222,9 +229,9 @@ bool common_hal_busio_spi_try_lock(busio_spi_obj_t *self) {
         return false;
     }
     // Wait to grab the lock from another task.
-    esp_err_t ret = spi_bus_lock_acquire_start(self->lock, portMAX_DELAY);
-    self->has_lock = true;
-    return true;
+    esp_err_t result = spi_bus_lock_acquire_start(self->lock, portMAX_DELAY);
+    self->has_lock = result == ESP_OK;
+    return self->has_lock;
 }
 
 bool common_hal_busio_spi_has_lock(busio_spi_obj_t *self) {
@@ -238,62 +245,37 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         const uint8_t *data, size_t len) {
-    if (len == 0) {
-        return true;
-    }
-    // int32_t status;
-    if (len >= 16) {
-        // status = sercom_dma_write(self->spi_desc.dev.prvt, data, len);
-    } else {
-        // struct io_descriptor *spi_io;
-        // spi_m_sync_get_io_descriptor(&self->spi_desc, &spi_io);
-        // status = spi_io->write(spi_io, data, len);
-    }
-    return false; // Status is number of chars read or an error code < 0.
+    return common_hal_busio_spi_transfer(self, data, NULL, len);
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         uint8_t *data, size_t len, uint8_t write_value) {
-    if (len == 0) {
-        return true;
-    }
-    // int32_t status;
-    if (len >= 16) {
-        // status = sercom_dma_read(self->spi_desc.dev.prvt, data, len, write_value);
-    } else {
-        // self->spi_desc.dev.dummy_byte = write_value;
-
-        // struct io_descriptor *spi_io;
-        // spi_m_sync_get_io_descriptor(&self->spi_desc, &spi_io);
-
-        // status = spi_io->read(spi_io, data, len);
-    }
-    return false; // Status is number of chars read or an error code < 0.
+    return common_hal_busio_spi_transfer(self, NULL, data, len);
 }
 
-bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
     if (len == 0) {
         return true;
     }
 
     spi_hal_context_t* hal = &self->hal_context;
-    hal->tx_bitlen = len * 8;
-    hal->rx_bitlen = len * 8;
-    hal->send_buffer = data_out;
+    hal->tx_bitlen = len * self->bits;
+    hal->rx_bitlen = len * self->bits;
+    hal->send_buffer = (uint8_t*) data_out;
     hal->rcv_buffer = data_in;
 
     spi_hal_setup_trans(hal);
     spi_hal_prepare_data(hal);
     spi_hal_user_start(hal);
-    if (len >= 16 && false) {
+    if (len >= SOC_SPI_MAXIMUM_BUFFER_SIZE && false) {
         // Set up the interrupt and wait on the lock.
     } else {
         while (!spi_hal_usr_is_done(hal)) {
-            RUN_BACKGROUND_TASKS();
+            RUN_BACKGROUND_TASKS;
         }
     }
 
-    return false;
+    return true;
 }
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self) {
