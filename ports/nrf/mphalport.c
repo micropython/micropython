@@ -61,6 +61,7 @@ const nrfx_rtc_config_t rtc_config_time_ticks = {
 };
 
 STATIC void rtc_irq_time(nrfx_rtc_int_type_t event) {
+    // irq handler for overflow
     if (event == NRFX_RTC_INT_OVERFLOW) {
         rtc_overflows += 1;
     }
@@ -73,10 +74,21 @@ void rtc1_init_time_ticks(void) {
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
-    // XXX check overflow bit here? (if rtc1.p_reg->EVENTS_OVRFLW ..)
     // note that COUNTER * 1000 / 32768 would overflow during calculation, so use
     // the less obvious * 125 / 4096 calculation (overflow secure)
-    return (rtc_overflows << 9) * 1000 + ((mp_uint_t)rtc1.p_reg->COUNTER * 125 / 4096);
+    //
+    // also make sure not to call this function within an irq with higher
+    // prio than the RTC's irq. This would introduce the danger of 
+    // preempting the RTC irq and calling mp_hal_ticks_ms() at that time
+    // would return a false result
+    //
+    // also lets guard the function against interrupting from the RTC 
+    // overflow irq while the calculation takes place
+    mp_uint_t ticks;
+    rtc1.p_reg->INTENCLR = RTC_INTENSET_OVRFLW_Msk;
+    ticks = (rtc_overflows << 9) * 1000 + ((mp_uint_t)rtc1.p_reg->COUNTER * 125 / 4096);
+    rtc1.p_reg->INTENSET = RTC_INTENSET_OVRFLW_Msk;
+    return ticks;
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
@@ -85,13 +97,12 @@ mp_uint_t mp_hal_ticks_us(void) {
     // but that will overflow for 32bit multiplications.
     //
     // Since this function is likely to be called in a poll loop it must
-    // be fast and casting to 64 bits introduces calculation timing within that loop,
+    // be fast and casting to 64 bits adds calculation time within that loop,
     // causing timing inaccuracy.
     //
-    // An easier solution is to use COUNTER * 32, but introduces an error
-    // of app. 5%. However lets consider this as a tradeoff since the tick's rate
-    // is also very rough and not really suitable for low value usec timings.
-    return (mp_uint_t)rtc1.p_reg->COUNTER * 32;
+    // An easier solution is to use COUNTER * 214 / 7, introducing a small
+    // error of app. 0.18%.
+    return (mp_uint_t)rtc1.p_reg->COUNTER * 214 / 7;
 }
 
 #else

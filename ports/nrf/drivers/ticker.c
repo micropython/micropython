@@ -102,10 +102,9 @@ static ticker_callback_ptr callbacks[3] = { noop, noop, noop };
 void FastTicker_IRQHandler(void) {
     NRF_TIMER_Type *ticker = FastTicker;
     ticker_callback_ptr *call = callbacks;
-    // CCR0: 1usec resolution for callbacks
     if (ticker->EVENTS_COMPARE[0]) {
         ticker->EVENTS_COMPARE[0] = 0;
-        ticker->CC[0] += call[0]();
+        ticker->CC[0] += call[0]()*MICROSECONDS_PER_TICK;
     }
     if (ticker->EVENTS_COMPARE[1]) {
         ticker->EVENTS_COMPARE[1] = 0;
