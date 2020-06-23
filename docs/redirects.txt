@@ -32,8 +32,8 @@ shared-bindings/pulseio/PWMOut.rst shared-bindings/pulseio/#pulseio.PWMOut
 shared-bindings/pulseio/PulseIn.rst shared-bindings/pulseio/#pulseio.PulseIn
 shared-bindings/pulseio/PulseOut.rst shared-bindings/pulseio/#pulseio.PulseOut
 shared-bindings/time/struct_time.rst shared-bindings/time/#time.struct_time
-shared-bindings/i2cslave/I2CSlave.rst shared-bindings/i2cslave/#i2cslave.I2CSlave
-shared-bindings/i2cslave/I2CSlaveRequest.rst shared-bindings/i2cslave/#i2cslave.I2CSlaveRequest
+shared-bindings/i2cslave/I2CSlave.rst shared-bindings/i2cperipheral/#i2cperipheral.I2CPeripheral
+shared-bindings/i2cslave/I2CSlaveRequest.rst shared-bindings/i2cperipheral/#i2cperipheral.I2CPeripheralRequest
 shared-bindings/nvm/ByteArray.rst shared-bindings/nvm/#nvm.ByteArray
 shared-bindings/busio/I2C.rst shared-bindings/busio/#busio.I2C
 shared-bindings/busio/OneWire.rst shared-bindings/busio/#busio.OneWire

@@ -30,26 +30,26 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-//#include "shared-bindings/i2cslave/__init__.h"
-#include "shared-bindings/i2cslave/I2CSlave.h"
+//#include "shared-bindings/i2cperipheral/__init__.h"
+#include "shared-bindings/i2cperipheral/I2CPeripheral.h"
 
 #include "py/runtime.h"
 
-//| """Two wire serial protocol slave
+//| """Two wire serial protocol peripheral
 //|
-//| The `i2cslave` module contains classes to support a I2C slave.
+//| The `i2cperipheral` module contains classes to support an I2C peripheral.
 //|
-//| Example emulating 2 devices::
+//| Example emulating a peripheral with 2 addresses (read and write)::
 //|
 //|   import board
-//|   from i2cslave import I2CSlave
+//|   from i2cperipheral import I2CPeripheral
 //|
 //|   regs = [0] * 16
 //|   index = 0
 //|
-//|   with I2CSlave(board.SCL, board.SDA, (0x40, 0x41)) as slave:
+//|   with I2CPeripheral(board.SCL, board.SDA, (0x40, 0x41)) as device:
 //|       while True:
-//|           r = slave.request()
+//|           r = device.request()
 //|           if not r:
 //|               # Maybe do some housekeeping
 //|               continue
@@ -67,7 +67,7 @@
 //|                       n = r.write(bytes([regs[index]]))
 //|                   #else:
 //|                       # A read transfer is not supported in this example
-//|                       # If the Master tries, it will get 0xff byte(s) by the ctx manager (r.close())
+//|                       # If the microcontroller tries, it will get 0xff byte(s) by the ctx manager (r.close())
 //|               elif r.address == 0x41:
 //|                   if not r.is_read:
 //|                       b = r.read(1)
@@ -75,7 +75,7 @@
 //|                           # do something
 //|                           pass
 //|
-//| This example sets up an I2C slave that can be accessed from Linux like this::
+//| This example sets up an I2C device that can be accessed from Linux like this::
 //|
 //|   $ i2cget -y 1 0x40 0x01
 //|   0x00
@@ -84,22 +84,23 @@
 //|   0xaa
 //|
 //| .. warning::
-//|    I2CSlave makes use of clock stretching in order to slow down the master.
-//|    Make sure the I2C master supports this.
+//|    I2CPeripheral makes use of clock stretching in order to slow down
+//|    the host.
+//|    Make sure the I2C host supports this.
 //|
 //|    Raspberry Pi in particular does not support this with its I2C hw block.
 //|    This can be worked around by using the ``i2c-gpio`` bit banging driver.
 //|    Since the RPi firmware uses the hw i2c, it's not possible to emulate a HAT eeprom."""
 //|
 
-STATIC const mp_rom_map_elem_t i2cslave_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2cslave) },
-    { MP_ROM_QSTR(MP_QSTR_I2CSlave), MP_ROM_PTR(&i2cslave_i2c_slave_type) },
+STATIC const mp_rom_map_elem_t i2cperipheral_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2cperipheral) },
+    { MP_ROM_QSTR(MP_QSTR_I2CPeripheral), MP_ROM_PTR(&i2cperipheral_i2c_peripheral_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(i2cslave_module_globals, i2cslave_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(i2cperipheral_module_globals, i2cperipheral_module_globals_table);
 
-const mp_obj_module_t i2cslave_module = {
+const mp_obj_module_t i2cperipheral_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&i2cslave_module_globals,
+    .globals = (mp_obj_dict_t*)&i2cperipheral_module_globals,
 };
