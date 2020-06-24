@@ -47,10 +47,8 @@ void run_background_tasks(void) {
         return;
     }
 
-    // Delay for 1 tick so that we don't starve the idle task.
-    // TODO: 1 tick is 10ms which is a long time! Can we delegate to idle for a minimal amount of
-    // time?
-    vTaskDelay(1);
+    // Zero delay in case FreeRTOS wants to switch to something else.
+    vTaskDelay(0);
     running_background_tasks = true;
     filesystem_background();
 

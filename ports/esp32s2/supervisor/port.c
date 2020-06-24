@@ -69,6 +69,9 @@ safe_mode_t port_init(void) {
 void reset_port(void) {
     reset_all_pins();
 
+    // A larger delay so the idle task can run and do any IDF cleanup needed.
+    vTaskDelay(4);
+
 #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
