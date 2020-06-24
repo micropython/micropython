@@ -281,6 +281,9 @@ $(BUILD)/firmware.uf2: $(BUILD)/circuitpython-firmware.bin
 flash: $(BUILD)/firmware.bin
 	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
 
+flash-circuitpython-only: $(BUILD)/circuitpython-firmware.bin
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x10000 $^
+
 include $(TOP)/py/mkrules.mk
 
 # Print out the value of a make variable.

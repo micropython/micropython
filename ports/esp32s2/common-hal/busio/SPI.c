@@ -32,14 +32,35 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "supervisor/shared/rgb_led_status.h"
 
+#include "esp_log.h"
+
+static const char* TAG = "CircuitPython SPI";
+
 static bool spi_never_reset[SOC_SPI_PERIPH_NUM];
+
+// Store one lock handle per device so that we can free it.
+static spi_bus_lock_dev_handle_t lock_dev_handle[SOC_SPI_PERIPH_NUM];
+static intr_handle_t intr_handle[SOC_SPI_PERIPH_NUM];
 
 void spi_reset(void) {
     for (spi_host_device_t host_id = SPI2_HOST; host_id < SOC_SPI_PERIPH_NUM; host_id++) {
         if (spi_never_reset[host_id]) {
             continue;
         }
-        spi_bus_free(host_id);
+        bool in_use = false;
+        if (lock_dev_handle[host_id] != NULL) {
+            spi_bus_lock_unregister_dev(lock_dev_handle[host_id]);
+            lock_dev_handle[host_id] = NULL;
+            in_use = true;
+        }
+        if (intr_handle[host_id] != NULL) {
+            esp_intr_free(intr_handle[host_id]);
+            intr_handle[host_id] = NULL;
+            in_use = true;
+        }
+        if (in_use) {
+            spi_bus_free(host_id);
+        }
     }
 }
 
@@ -75,12 +96,24 @@ static bool bus_uses_iomux_pins(spi_host_device_t host, const spi_bus_config_t* 
 
 // End copied code.
 
-static bool _spi_bus_free(spi_host_device_t host_id) {
+static bool spi_bus_is_free(spi_host_device_t host_id) {
     return spi_bus_get_attr(host_id) == NULL;
 }
 
 static void spi_interrupt_handler(void *arg) {
+    // busio_spi_obj_t *self = arg;
+}
 
+// The interrupt may get invoked by the bus lock.
+static void spi_bus_intr_enable(void *self)
+{
+    esp_intr_enable(((busio_spi_obj_t *)self)->interrupt);
+}
+
+// The interrupt is always disabled by the ISR itself, not exposed
+static void spi_bus_intr_disable(void *self)
+{
+    esp_intr_disable(((busio_spi_obj_t *)self)->interrupt);
 }
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
@@ -103,12 +136,12 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     spi_host_device_t host_id = SPI1_HOST;
     self->connected_through_gpio = true;
     // Try and save SPI2 for pins that are on the IOMUX
-    if (bus_uses_iomux_pins(SPI2_HOST, &bus_config) && _spi_bus_free(SPI2_HOST)) {
+    if (bus_uses_iomux_pins(SPI2_HOST, &bus_config) && spi_bus_is_free(SPI2_HOST)) {
         host_id = SPI2_HOST;
         self->connected_through_gpio = false;
-    } else if (_spi_bus_free(SPI3_HOST)) {
+    } else if (spi_bus_is_free(SPI3_HOST)) {
         host_id = SPI3_HOST;
-    } else if (_spi_bus_free(SPI2_HOST)) {
+    } else if (spi_bus_is_free(SPI2_HOST)) {
         host_id = SPI2_HOST;
     }
     if (host_id == SPI1_HOST) {
@@ -121,21 +154,33 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     } else if (result == ESP_ERR_INVALID_ARG) {
         mp_raise_ValueError(translate("Invalid pins"));
     }
+
+    // After this point, we need to deinit to free IDF memory so fill out self's pins.
+    self->clock_pin = clock;
+    self->MOSI_pin = mosi;
+    self->MISO_pin = miso;
+
     spi_bus_lock_dev_config_t config = { .flags = 0 };
+    // The returned lock is stored in the bus lock but must be freed separately with
+    // spi_bus_lock_unregister_dev.
     result = spi_bus_lock_register_dev(spi_bus_get_attr(host_id)->lock,
                                        &config,
                                        &self->lock);
     if (result == ESP_ERR_NO_MEM) {
+        common_hal_busio_spi_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
     }
-
+    lock_dev_handle[host_id] = self->lock;
 
     result = esp_intr_alloc(spicommon_irqsource_for_host(host_id),
                             bus_config.intr_flags | ESP_INTR_FLAG_INTRDISABLED,
                             spi_interrupt_handler, self, &self->interrupt);
     if (result == ESP_ERR_NO_MEM) {
+        common_hal_busio_spi_deinit(self);
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
     }
+    intr_handle[host_id] = self->interrupt;
+    spi_bus_lock_set_bg_control(spi_bus_get_attr(host_id)->lock, spi_bus_intr_enable, spi_bus_intr_disable, self);
 
     spi_hal_context_t* hal = &self->hal_context;
     hal->hw = NULL; // Set by spi_hal_init
@@ -146,8 +191,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // We don't use native CS.
     hal->cs_setup = 0;
     hal->cs_hold = 0;
-    hal->cs_pin_id = -1;
-    hal->timing_conf = &self->timing_conf;
+    hal->cs_pin_id = 0;
 
     hal->sio = 1;
     hal->half_duplex = 0;
@@ -167,6 +211,13 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     hal->io_mode = SPI_LL_IO_MODE_NORMAL;
 
     spi_hal_init(hal, host_id);
+    // This must be set after spi_hal_init.
+    hal->timing_conf = &self->timing_conf;
+    if (hal->hw == NULL) {
+        ESP_LOGE(TAG, "SPI error %p", hal->hw);
+    }
+
+    common_hal_busio_spi_configure(self, 250000, 0, 0, 8);
 }
 
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
@@ -186,6 +237,14 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
         return;
     }
     spi_never_reset[self->host_id] = false;
+    if (self->lock != NULL) {
+        spi_bus_lock_unregister_dev(self->lock);
+        lock_dev_handle[self->host_id] = NULL;
+    }
+    if (self->interrupt != NULL) {
+        esp_intr_free(self->interrupt);
+        intr_handle[self->host_id] = NULL;
+    }
     spi_bus_free(self->host_id);
 
     common_hal_reset_pin(self->clock_pin);
@@ -218,7 +277,11 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         return false;
     }
 
+    ESP_LOGI(TAG, "configure");
+    ESP_LOGI(TAG, "real frequency %d", self->real_frequency);
+    ESP_LOGI(TAG, "timing_conf %p", self->hal_context.timing_conf);
     spi_hal_setup_device(&self->hal_context);
+    ESP_LOGI(TAG, "setup done");
     return true;
 }
 
