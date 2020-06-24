@@ -26,8 +26,8 @@
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 #include <sys/ioctl.h>
-#include <arch/chip/gnss.h>
 
 #include "py/runtime.h"
 
@@ -104,6 +104,8 @@ void common_hal_gnss_update(gnss_obj_t *self) {
         self->latitude = positiondata.receiver.latitude;
         self->longitude = positiondata.receiver.longitude;
         self->altitude = positiondata.receiver.altitude;
+        memcpy(&self->date, &positiondata.receiver.date, sizeof(struct cxd56_gnss_date_s));
+        memcpy(&self->time, &positiondata.receiver.time, sizeof(struct cxd56_gnss_time_s));
     }
 }
 
@@ -117,6 +119,15 @@ mp_float_t common_hal_gnss_get_longitude(gnss_obj_t *self) {
 
 mp_float_t common_hal_gnss_get_altitude(gnss_obj_t *self) {
     return (mp_float_t) self->altitude;
+}
+
+void common_hal_gnss_get_timestamp(gnss_obj_t *self, timeutils_struct_time_t *tm) {
+    tm->tm_year = self->date.year;
+    tm->tm_mon = self->date.month;
+    tm->tm_mday = self->date.day;
+    tm->tm_hour = self->time.hour;
+    tm->tm_min = self->time.minute;
+    tm->tm_sec = self->time.sec;
 }
 
 gnss_positionfix_t common_hal_gnss_get_fix(gnss_obj_t *self) {

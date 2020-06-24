@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/gnss/GNSS.h"
+#include "shared-bindings/time/__init__.h"
 #include "shared-bindings/util.h"
 
 #include "py/objproperty.h"
@@ -170,6 +171,25 @@ const mp_obj_property_t gnss_altitude_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     timestamp: Any = ...
+//|     """Time when the position data was updated."""
+//|
+STATIC mp_obj_t gnss_obj_get_timestamp(mp_obj_t self_in) {
+    gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    timeutils_struct_time_t tm;
+    common_hal_gnss_get_timestamp(self, &tm);
+    return struct_time_from_tm(&tm);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_timestamp_obj, gnss_obj_get_timestamp);
+
+const mp_obj_property_t gnss_timestamp_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&gnss_get_timestamp_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|     fix: Any = ...
 //|     """Fix mode."""
 //|
@@ -194,6 +214,7 @@ STATIC const mp_rom_map_elem_t gnss_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_latitude), MP_ROM_PTR(&gnss_latitude_obj) },
     { MP_ROM_QSTR(MP_QSTR_longitude), MP_ROM_PTR(&gnss_longitude_obj) },
     { MP_ROM_QSTR(MP_QSTR_altitude), MP_ROM_PTR(&gnss_altitude_obj) },
+    { MP_ROM_QSTR(MP_QSTR_timestamp), MP_ROM_PTR(&gnss_timestamp_obj) },
     { MP_ROM_QSTR(MP_QSTR_fix), MP_ROM_PTR(&gnss_fix_obj) }
 };
 STATIC MP_DEFINE_CONST_DICT(gnss_locals_dict, gnss_locals_dict_table);
