@@ -31,6 +31,7 @@
 #include "driver/i2c.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
 typedef enum {
@@ -217,6 +218,6 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
     never_reset_i2c(self->i2c_num);
 
-    never_reset_pin(self->scl_pin);
-    never_reset_pin(self->sda_pin);
+    common_hal_never_reset_pin(self->scl_pin);
+    common_hal_never_reset_pin(self->sda_pin);
 }

@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 
 #include "boards/board.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/rgb_led_status.h"
 
 #include "esp_log.h"
@@ -101,7 +101,8 @@ static bool spi_bus_is_free(spi_host_device_t host_id) {
 }
 
 static void spi_interrupt_handler(void *arg) {
-    // busio_spi_obj_t *self = arg;
+    busio_spi_obj_t *self = arg;
+    ESP_LOGE(TAG, "SPI interrupt %p", self);
 }
 
 // The interrupt may get invoked by the bus lock.
@@ -148,7 +149,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         mp_raise_ValueError(translate("All SPI peripherals are in use"));
     }
 
-    esp_err_t result = spi_bus_initialize(host_id, &bus_config, 0 /* dma channel */);
+    esp_err_t result = spi_bus_initialize(host_id, &bus_config, host_id /* dma channel */);
     if (result == ESP_ERR_NO_MEM) {
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
     } else if (result == ESP_ERR_INVALID_ARG) {
@@ -183,34 +184,35 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     spi_bus_lock_set_bg_control(spi_bus_get_attr(host_id)->lock, spi_bus_intr_enable, spi_bus_intr_disable, self);
 
     spi_hal_context_t* hal = &self->hal_context;
-    hal->hw = NULL; // Set by spi_hal_init
-    hal->dmadesc_tx = NULL;
-    hal->dmadesc_rx = NULL;
-    hal->dmadesc_n = 0;
+
+    // spi_hal_init clears the given hal context so set everything after.
+    spi_hal_init(hal, host_id);
+    hal->dmadesc_tx = &self->tx_dma;
+    hal->dmadesc_rx = &self->rx_dma;
+    hal->dmadesc_n = 1;
 
     // We don't use native CS.
-    hal->cs_setup = 0;
-    hal->cs_hold = 0;
-    hal->cs_pin_id = 0;
+    // hal->cs_setup = 0;
+    // hal->cs_hold = 0;
+    // hal->cs_pin_id = 0;
 
     hal->sio = 1;
-    hal->half_duplex = 0;
-    hal->tx_lsbfirst = 0;
-    hal->rx_lsbfirst = 0;
-    hal->dma_enabled = 0;
+    // hal->half_duplex = 0;
+    // hal->tx_lsbfirst = 0;
+    // hal->rx_lsbfirst = 0;
+    hal->dma_enabled = 1;
     hal->no_compensate = 1;
     // Ignore CS bits
 
     // We don't use cmd, addr or dummy bits.
-    hal->cmd = 0;
-    hal->cmd_bits = 0;
-    hal->addr_bits = 0;
-    hal->dummy_bits = 0;
-    hal->addr = 0;
+    // hal->cmd = 0;
+    // hal->cmd_bits = 0;
+    // hal->addr_bits = 0;
+    // hal->dummy_bits = 0;
+    // hal->addr = 0;
 
     hal->io_mode = SPI_LL_IO_MODE_NORMAL;
 
-    spi_hal_init(hal, host_id);
     // This must be set after spi_hal_init.
     hal->timing_conf = &self->timing_conf;
     if (hal->hw == NULL) {
@@ -223,9 +225,9 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
     spi_never_reset[self->host_id] = true;
 
-    never_reset_pin(self->clock_pin);
-    never_reset_pin(self->MOSI_pin);
-    never_reset_pin(self->MISO_pin);
+    common_hal_never_reset_pin(self->clock_pin);
+    common_hal_never_reset_pin(self->MOSI_pin);
+    common_hal_never_reset_pin(self->MISO_pin);
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
@@ -322,17 +324,29 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     }
 
     spi_hal_context_t* hal = &self->hal_context;
-    hal->tx_bitlen = len * self->bits;
-    hal->rx_bitlen = len * self->bits;
-    hal->send_buffer = (uint8_t*) data_out;
-    hal->rcv_buffer = data_in;
+    hal->send_buffer = NULL;
+    hal->rcv_buffer = NULL;
+    // This rounds up.
+    size_t dma_count = (len + LLDESC_MAX_NUM_PER_DESC - 1) / LLDESC_MAX_NUM_PER_DESC;
+    for (size_t i = 0; i < dma_count; i++) {
+        size_t offset = LLDESC_MAX_NUM_PER_DESC * i;
+        size_t dma_len = len - offset;
+        if (dma_len > LLDESC_MAX_NUM_PER_DESC) {
+            dma_len = LLDESC_MAX_NUM_PER_DESC;
+        }
+        hal->tx_bitlen = dma_len * self->bits;
+        hal->rx_bitlen = dma_len * self->bits;
+        if (data_out != NULL) {
+            hal->send_buffer = (uint8_t*) data_out + offset;
+        }
+        if (data_in != NULL) {
+            hal->rcv_buffer = data_in + offset;
+        }
 
-    spi_hal_setup_trans(hal);
-    spi_hal_prepare_data(hal);
-    spi_hal_user_start(hal);
-    if (len >= SOC_SPI_MAXIMUM_BUFFER_SIZE && false) {
-        // Set up the interrupt and wait on the lock.
-    } else {
+        spi_hal_setup_trans(hal);
+        spi_hal_prepare_data(hal);
+        spi_hal_user_start(hal);
+        // TODO: Switch to waiting on a lock that is given by an interrupt.
         while (!spi_hal_usr_is_done(hal)) {
             RUN_BACKGROUND_TASKS;
         }

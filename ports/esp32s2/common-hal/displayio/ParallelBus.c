@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +24,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+#include "shared-bindings/displayio/ParallelBus.h"
+
+#include <stdint.h>
 
 #include "common-hal/microcontroller/Pin.h"
+#include "py/runtime.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
-#include "esp-idf/components/driver/include/driver/spi_common_internal.h"
-#include "esp-idf/components/soc/include/hal/spi_hal.h"
-#include "esp-idf/components/soc/include/hal/spi_types.h"
-#include "py/obj.h"
+void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* self,
+    const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command, const mcu_pin_obj_t* chip_select,
+    const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset) {
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t* clock_pin;
-    const mcu_pin_obj_t* MOSI_pin;
-    const mcu_pin_obj_t* MISO_pin;
-    spi_host_device_t host_id;
-    spi_bus_lock_dev_handle_t lock;
-    spi_hal_context_t hal_context;
-    spi_hal_timing_conf_t timing_conf;
-    intr_handle_t interrupt;
-    // IDF allocates these in DMA accessible memory so they may need to move when
-    // we use external RAM for CircuitPython.
-    lldesc_t tx_dma;
-    lldesc_t rx_dma;
-    uint32_t target_frequency;
-    int32_t real_frequency;
-    uint8_t polarity;
-    uint8_t phase;
-    uint8_t bits;
-    bool has_lock;
-    bool connected_through_gpio;
-} busio_spi_obj_t;
+    mp_raise_NotImplementedError(translate("ParallelBus not yet supported"));
+}
 
-void spi_reset(void);
+void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t* self) {
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+}
+
+bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
+	return false;
+}
+
+bool common_hal_displayio_parallelbus_bus_free(mp_obj_t obj) {
+    return false;
+}
+
+bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
+
+    return false;
+}
+
+void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length) {
+
+}
+
+void common_hal_displayio_parallelbus_end_transaction(mp_obj_t obj) {
+
+}

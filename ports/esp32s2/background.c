@@ -54,9 +54,9 @@ void run_background_tasks(void) {
     running_background_tasks = true;
     filesystem_background();
 
-    // #if CIRCUITPY_DISPLAYIO
-    // displayio_background();
-    // #endif
+    #if CIRCUITPY_DISPLAYIO
+    displayio_background();
+    #endif
     running_background_tasks = false;
 
     assert_heap_ok();
