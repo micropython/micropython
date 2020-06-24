@@ -40,24 +40,6 @@ typedef struct {
 
 STATIC gnss_dev_t gnss_dev = {"/dev/gps", -1};
 
-static unsigned long satellitesystem_type_to_bit_fields(gnss_satellitesystem_t system) {
-    switch (system) {
-        case SATELLITESYSTEM_GPS:
-            return CXD56_GNSS_SAT_GPS;
-        case SATELLITESYSTEM_GLONASS:
-            return CXD56_GNSS_SAT_GLONASS;
-        case SATELLITESYSTEM_SBAS:
-            return CXD56_GNSS_SAT_SBAS;
-        case SATELLITESYSTEM_QZSS_L1CA:
-            return CXD56_GNSS_SAT_QZ_L1CA;
-        case SATELLITESYSTEM_QZSS_L1S:
-            return CXD56_GNSS_SAT_QZ_L1S;
-        case SATELLITESYSTEM_NONE:
-        default:
-            return CXD56_GNSS_SAT_NONE;
-    }
-}
-
 static gnss_positionfix_t fix_to_positionfix_type(uint8_t fix) {
     switch (fix) {
         case CXD56_GNSS_PVT_POSFIX_2D:
@@ -70,7 +52,7 @@ static gnss_positionfix_t fix_to_positionfix_type(uint8_t fix) {
     }
 }
 
-void common_hal_gnss_construct(gnss_obj_t *self) {
+void common_hal_gnss_construct(gnss_obj_t *self, unsigned long selection) {
     if (gnss_dev.fd < 0) {
         gnss_dev.fd = open(gnss_dev.devpath, O_RDONLY);
         if (gnss_dev.fd < 0) {
@@ -80,6 +62,23 @@ void common_hal_gnss_construct(gnss_obj_t *self) {
 
     self->satellite_system = 0;
     self->fix = POSITIONFIX_INVALID;
+
+    unsigned long sel = 0;
+
+    if (selection & SATELLITESYSTEM_GPS) {
+        sel |= CXD56_GNSS_SAT_GPS;
+    } else if (selection & SATELLITESYSTEM_GLONASS) {
+        sel |= CXD56_GNSS_SAT_GLONASS;
+    } else if (selection & SATELLITESYSTEM_SBAS) {
+        sel |= CXD56_GNSS_SAT_SBAS;
+    } else if (selection & SATELLITESYSTEM_QZSS_L1CA) {
+        sel |= CXD56_GNSS_SAT_QZ_L1CA;
+    } else if (selection & SATELLITESYSTEM_QZSS_L1S) {
+        sel |= CXD56_GNSS_SAT_QZ_L1S;
+    }
+
+    ioctl(gnss_dev.fd, CXD56_GNSS_IOCTL_SELECT_SATELLITE_SYSTEM, sel);
+    ioctl(gnss_dev.fd, CXD56_GNSS_IOCTL_START, CXD56_GNSS_STMOD_COLD);
 }
 
 void common_hal_gnss_deinit(gnss_obj_t *self) {
@@ -93,33 +92,6 @@ void common_hal_gnss_deinit(gnss_obj_t *self) {
 
 bool common_hal_gnss_deinited(gnss_obj_t *self) {
     return gnss_dev.fd < 0;
-}
-
-void common_hal_gnss_select(gnss_obj_t *self, gnss_satellitesystem_t system) {
-    unsigned long selection = self->satellite_system | satellitesystem_type_to_bit_fields(system);
-
-    ioctl(gnss_dev.fd, CXD56_GNSS_IOCTL_SELECT_SATELLITE_SYSTEM, selection);
-
-    self->satellite_system = selection;
-}
-
-void common_hal_gnss_deselect(gnss_obj_t *self, gnss_satellitesystem_t system) {
-    unsigned long selection = self->satellite_system & ~satellitesystem_type_to_bit_fields(system);
-
-    ioctl(gnss_dev.fd, CXD56_GNSS_IOCTL_SELECT_SATELLITE_SYSTEM, selection);
-
-    self->satellite_system = selection;
-}
-
-void common_hal_gnss_start(gnss_obj_t *self) {
-    if (self->satellite_system == 0) {
-        mp_raise_ValueError(translate("Cannot start without selecting at least one satellite system."));
-    }
-    ioctl(gnss_dev.fd, CXD56_GNSS_IOCTL_START, CXD56_GNSS_STMOD_COLD);
-}
-
-void common_hal_gnss_stop(gnss_obj_t *self) {
-    ioctl(gnss_dev.fd, CXD56_GNSS_IOCTL_STOP, 0);
 }
 
 void common_hal_gnss_update(gnss_obj_t *self) {

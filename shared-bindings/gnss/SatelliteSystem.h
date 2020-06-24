@@ -30,12 +30,12 @@
 #include "py/obj.h"
 
 typedef enum {
-    SATELLITESYSTEM_NONE,
-    SATELLITESYSTEM_GPS,
-    SATELLITESYSTEM_GLONASS,
-    SATELLITESYSTEM_SBAS,
-    SATELLITESYSTEM_QZSS_L1CA,
-    SATELLITESYSTEM_QZSS_L1S,
+    SATELLITESYSTEM_NONE       = 0,
+    SATELLITESYSTEM_GPS        = (1U << 0),
+    SATELLITESYSTEM_GLONASS    = (1U << 1),
+    SATELLITESYSTEM_SBAS       = (1U << 2),
+    SATELLITESYSTEM_QZSS_L1CA  = (1U << 3),
+    SATELLITESYSTEM_QZSS_L1S   = (1U << 4),
 } gnss_satellitesystem_t;
 
 const mp_obj_type_t gnss_satellitesystem_type;

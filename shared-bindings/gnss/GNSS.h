@@ -33,13 +33,9 @@
 
 extern const mp_obj_type_t gnss_type;
 
-void common_hal_gnss_construct(gnss_obj_t *self);
+void common_hal_gnss_construct(gnss_obj_t *self, unsigned long selection);
 void common_hal_gnss_deinit(gnss_obj_t *self);
 bool common_hal_gnss_deinited(gnss_obj_t *self);
-void common_hal_gnss_select(gnss_obj_t *self, gnss_satellitesystem_t system);
-void common_hal_gnss_deselect(gnss_obj_t *self, gnss_satellitesystem_t system);
-void common_hal_gnss_start(gnss_obj_t *self);
-void common_hal_gnss_stop(gnss_obj_t *self);
 void common_hal_gnss_update(gnss_obj_t *self);
 
 mp_float_t common_hal_gnss_get_latitude(gnss_obj_t *self);

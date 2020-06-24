@@ -38,31 +38,54 @@
 //|         import gnss
 //|         import time
 //|
-//|         gps = gnss.GNSS()
-//|         gps.select(gnss.SatelliteSystem.GPS)
-//|         gps.start()
+//|         nav = gnss.GNSS([gnss.SatelliteSystem.GPS, gnss.SatelliteSystem.GLONASS])
 //|         last_print = time.monotonic()
 //|         while True:
-//|             gps.update()
+//|             nav.update()
 //|             current = time.monotonic()
 //|             if current - last_print >= 1.0:
 //|                 last_print = current
-//|                 if gps.fix is gnss.PositionFix.INVALID:
+//|                 if nav.fix is gnss.PositionFix.INVALID:
 //|                     print("Waiting for fix...")
 //|                     continue
-//|                 print("Latitude: {0:.6f} degrees".format(gps.latitude))
-//|                 print("Longitude: {0:.6f} degrees".format(gps.longitude))"""
+//|                 print("Latitude: {0:.6f} degrees".format(nav.latitude))
+//|                 print("Longitude: {0:.6f} degrees".format(nav.longitude))"""
 //|
 
 //|     def __init__(self, ):
-//|         """Turn on the GNSS."""
+//|         """Turn on the GNSS.
+//|
+//|         :param gnss.SatelliteSystem system: satellite system to use"""
 //|         ...
 //|
 STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     gnss_obj_t *self = m_new_obj(gnss_obj_t);
     self->base.type = &gnss_type;
+    enum { ARG_system };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_system, MP_ARG_REQUIRED | MP_ARG_OBJ },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    common_hal_gnss_construct(self);
+    unsigned long selection = 0;
+    if (MP_OBJ_IS_TYPE(args[ARG_system].u_obj, &gnss_satellitesystem_type)) {
+        selection |= gnss_satellitesystem_obj_to_type(args[ARG_system].u_obj);
+    } else if (MP_OBJ_IS_TYPE(args[ARG_system].u_obj, &mp_type_list)) {
+        size_t systems_size = 0;
+        mp_obj_t *systems;
+        mp_obj_list_get(args[ARG_system].u_obj, &systems_size, &systems);
+        for (size_t i = 0; i < systems_size; ++i) {
+            if (!MP_OBJ_IS_TYPE(systems[i], &gnss_satellitesystem_type)) {
+                mp_raise_TypeError(translate("System entry must be gnss.SatelliteSystem"));
+            }
+            selection |= gnss_satellitesystem_obj_to_type(systems[i]);
+        }
+    } else {
+        mp_raise_TypeError(translate("System entry must be gnss.SatelliteSystem"));
+    }
+
+    common_hal_gnss_construct(self, selection);
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -82,64 +105,6 @@ STATIC void check_for_deinit(gnss_obj_t *self) {
         raise_deinited_error();
     }
 }
-
-//|     def select(self, system: gnss.SatelliteSystem) -> Any:
-//|         """Add specified satellite system to selection for positioning.
-//|
-//|         :param gnss.SatelliteSystem system: satellite system to use"""
-//|         ...
-//|
-STATIC mp_obj_t gnss_obj_select(mp_obj_t self_in, mp_obj_t system_obj) {
-    gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    gnss_satellitesystem_t system = gnss_satellitesystem_obj_to_type(system_obj);
-    common_hal_gnss_select(self, system);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(gnss_select_obj, gnss_obj_select);
-
-//|     def deselect(self, system: gnss.SatelliteSystem) -> Any:
-//|         """Remove specified satellite system from selection for positioning.
-//|
-//|         :param gnss.SatelliteSystem system: satellite system to remove"""
-//|         ...
-//|
-STATIC mp_obj_t gnss_obj_deselect(mp_obj_t self_in, mp_obj_t system_obj) {
-    gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    gnss_satellitesystem_t system = gnss_satellitesystem_obj_to_type(system_obj);
-    common_hal_gnss_deselect(self, system);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(gnss_deselect_obj, gnss_obj_deselect);
-
-//|     def start(self, ) -> Any:
-//|         """Start positioning."""
-//|         ...
-//|
-STATIC mp_obj_t gnss_obj_start(mp_obj_t self_in) {
-    gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    common_hal_gnss_start(self);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(gnss_start_obj, gnss_obj_start);
-
-//|     def stop(self, ) -> Any:
-//|         """Stop positioning."""
-//|         ...
-//|
-STATIC mp_obj_t gnss_obj_stop(mp_obj_t self_in) {
-    gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    common_hal_gnss_stop(self);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(gnss_stop_obj, gnss_obj_stop);
 
 //|     def update(self, ) -> Any:
 //|         """Update GNSS positioning information."""
@@ -189,7 +154,7 @@ const mp_obj_property_t gnss_longitude_obj = {
 };
 
 //|     altitude: Any = ...
-//|     """Altitude of current position in degrees (float)."""
+//|     """Altitude of current position in meters (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_altitude(mp_obj_t self_in) {
     gnss_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -224,10 +189,6 @@ const mp_obj_property_t gnss_fix_obj = {
 
 STATIC const mp_rom_map_elem_t gnss_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&gnss_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&gnss_select_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deselect), MP_ROM_PTR(&gnss_deselect_obj) },
-    { MP_ROM_QSTR(MP_QSTR_start), MP_ROM_PTR(&gnss_start_obj) },
-    { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&gnss_stop_obj) },
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&gnss_update_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_latitude), MP_ROM_PTR(&gnss_latitude_obj) },
