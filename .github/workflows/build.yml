@@ -238,6 +238,7 @@ jobs:
         - "pyruler"
         - "robohatmm1_m4"
         - "sam32"
+        - "same54_xplained"
         - "seeeduino_xiao"
         - "serpente"
         - "shirtty"

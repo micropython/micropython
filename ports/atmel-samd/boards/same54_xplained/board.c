@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Michael Schroeder
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,36 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
-#include "common-hal/microcontroller/Pin.h"
+void board_init(void) {
+}
 
-#include "py/obj.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t tc_index;
-    uint8_t pin;
-    uint8_t channel;
-    uint8_t event_channel;
-    uint32_t frequency;
-    volatile uint64_t last_ns;
-    float factor;
-    uint32_t capture_period;
-    uint8_t TC_IRQ;
-    volatile bool errored_too_fast;
-} frequencyio_frequencyin_obj_t;
-
-void frequencyin_interrupt_handler(uint8_t index);
-void frequencyin_emergency_cancel_capture(uint8_t index);
-void frequencyin_reference_tc_init(void);
-void frequencyin_reference_tc_enable(bool enable);
-bool frequencyin_reference_tc_enabled(void);
-#ifdef SAM_D5X_E5X
-void frequencyin_samd51_start_dpll(void);
-void frequencyin_samd51_stop_dpll(void);
-#endif
-
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H
+void reset_board(void) {
+}
