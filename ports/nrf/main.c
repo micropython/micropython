@@ -103,6 +103,9 @@ int main(int argc, char **argv) {
 
 
 soft_reset:
+    #if MICROPY_PY_TIME_TICKS
+    rtc1_init_time_ticks();
+    #endif
 
     led_init();
 
@@ -225,10 +228,6 @@ soft_reset:
     #if MICROPY_PY_MACHINE_SOFT_PWM
     ticker_start();
     pwm_start();
-    #endif
-
-    #if MICROPY_PY_TIME_TICKS
-    rtc1_init_time_ticks();
     #endif
 
     led_state(1, 0);
