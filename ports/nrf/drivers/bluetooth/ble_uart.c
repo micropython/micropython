@@ -31,6 +31,7 @@
 #include "ringbuffer.h"
 #include "mphalport.h"
 #include "lib/utils/interrupt_char.h"
+#include "py/runtime.h"
 
 #if MICROPY_PY_BLE_NUS
 
