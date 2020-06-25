@@ -401,6 +401,13 @@ extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPAD_ROOT_POINTERS
 #endif
 
+#if CIRCUITPY_GNSS
+extern const struct _mp_obj_module_t gnss_module;
+#define GNSS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_gnss), (mp_obj_t)&gnss_module },
+#else
+#define GNSS_MODULE
+#endif
+
 #if CIRCUITPY_I2CSLAVE
 extern const struct _mp_obj_module_t i2cslave_module;
 #define I2CSLAVE_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_i2cslave), (mp_obj_t)&i2cslave_module },
@@ -682,6 +689,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
+    GNSS_MODULE \
     I2CSLAVE_MODULE \
     JSON_MODULE \
     MATH_MODULE \
