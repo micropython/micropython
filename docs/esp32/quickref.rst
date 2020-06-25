@@ -175,6 +175,7 @@ range from 1Hz to 40MHz but there is a tradeoff; as the base frequency
 *increases* the duty resolution *decreases*. See 
 `LED Control <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/ledc.html>`_
 for more details.
+Currently the duty cycle has to be in the range of 0-1023.
 
 Use the ``machine.PWM`` class::
 
