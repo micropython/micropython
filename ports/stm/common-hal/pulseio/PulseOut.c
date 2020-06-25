@@ -81,9 +81,6 @@ STATIC void pulseout_event_handler(void) {
         return; //invalid interrupt
     }
 
-    HAL_GPIO_WritePin(pin_port(2),pin_mask(6), 1);
-    HAL_GPIO_WritePin(pin_port(2),pin_mask(6), 0);
-
     pulse_array_index++;
 
     // No more pulses. Turn off output and don't restart.
