@@ -165,8 +165,8 @@ endif
 ifeq ($(CIRCUITPY_GNSS),1)
 SRC_PATTERNS += gnss/%
 endif
-ifeq ($(CIRCUITPY_I2CSLAVE),1)
-SRC_PATTERNS += i2cslave/%
+ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
+SRC_PATTERNS += i2cperipheral/%
 endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
@@ -290,8 +290,8 @@ SRC_COMMON_HAL_ALL = \
 	gnss/GNSS.c \
 	gnss/PositionFix.c \
 	gnss/SatelliteSystem.c \
-	i2cslave/I2CSlave.c \
-	i2cslave/__init__.c \
+	i2cperipheral/I2CPeripheral.c \
+	i2cperipheral/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	microcontroller/__init__.c \

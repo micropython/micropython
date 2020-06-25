@@ -24,3 +24,7 @@
       overflow: visible !important;
    }
 }
+
+.strike {
+    text-decoration: line-through;
+}

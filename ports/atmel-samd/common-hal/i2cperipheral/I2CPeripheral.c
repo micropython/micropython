@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/i2cslave/I2CSlave.h"
+#include "shared-bindings/i2cperipheral/I2CPeripheral.h"
 #include "common-hal/busio/I2C.h"
 
 #include "lib/utils/interrupt_char.h"
@@ -35,7 +35,7 @@
 #include "hal/include/hal_gpio.h"
 #include "peripherals/samd/sercom.h"
 
-void common_hal_i2cslave_i2c_slave_construct(i2cslave_i2c_slave_obj_t *self,
+void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_peripheral_obj_t *self,
         const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
         uint8_t *addresses, unsigned int num_addresses, bool smbus) {
     uint8_t sercom_index;
@@ -87,19 +87,19 @@ void common_hal_i2cslave_i2c_slave_construct(i2cslave_i2c_slave_obj_t *self,
 
     if (smbus) {
         sercom->I2CS.CTRLA.bit.LOWTOUTEN = 1; // Errata 12003
-        sercom->I2CS.CTRLA.bit.SEXTTOEN = 1; // Slave SCL Low Extend/Cumulative Time-Out 25ms
+        sercom->I2CS.CTRLA.bit.SEXTTOEN = 1; // SCL Low Extend/Cumulative Time-Out 25ms
     }
     sercom->I2CS.CTRLA.bit.SCLSM = 0; // Clock stretch before ack
-    sercom->I2CS.CTRLA.bit.MODE = 0x04; // Slave mode
+    sercom->I2CS.CTRLA.bit.MODE = 0x04; // Device mode
     sercom->I2CS.CTRLA.bit.ENABLE = 1;
 }
 
-bool common_hal_i2cslave_i2c_slave_deinited(i2cslave_i2c_slave_obj_t *self) {
+bool common_hal_i2cperipheral_i2c_peripheral_deinited(i2cperipheral_i2c_peripheral_obj_t *self) {
     return self->sda_pin == NO_PIN;
 }
 
-void common_hal_i2cslave_i2c_slave_deinit(i2cslave_i2c_slave_obj_t *self) {
-    if (common_hal_i2cslave_i2c_slave_deinited(self)) {
+void common_hal_i2cperipheral_i2c_peripheral_deinit(i2cperipheral_i2c_peripheral_obj_t *self) {
+    if (common_hal_i2cperipheral_i2c_peripheral_deinited(self)) {
         return;
     }
 
@@ -111,7 +111,7 @@ void common_hal_i2cslave_i2c_slave_deinit(i2cslave_i2c_slave_obj_t *self) {
     self->scl_pin = NO_PIN;
 }
 
-static int i2c_slave_check_error(i2cslave_i2c_slave_obj_t *self, bool raise) {
+static int i2c_peripheral_check_error(i2cperipheral_i2c_peripheral_obj_t *self, bool raise) {
     if (!self->sercom->I2CS.INTFLAG.bit.ERROR) {
         return 0;
     }
@@ -130,9 +130,9 @@ static int i2c_slave_check_error(i2cslave_i2c_slave_obj_t *self, bool raise) {
     return -err;
 }
 
-int common_hal_i2cslave_i2c_slave_is_addressed(i2cslave_i2c_slave_obj_t *self, uint8_t *address, bool *is_read, bool *is_restart)
+int common_hal_i2cperipheral_i2c_peripheral_is_addressed(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t *address, bool *is_read, bool *is_restart)
 {
-    int err = i2c_slave_check_error(self, false);
+    int err = i2c_peripheral_check_error(self, false);
     if (err) {
         return err;
     }
@@ -149,22 +149,22 @@ int common_hal_i2cslave_i2c_slave_is_addressed(i2cslave_i2c_slave_obj_t *self, u
 
     for (unsigned int i = 0; i < self->num_addresses; i++) {
         if (*address == self->addresses[i]) {
-            common_hal_i2cslave_i2c_slave_ack(self, true);
+            common_hal_i2cperipheral_i2c_peripheral_ack(self, true);
             return 1;
         }
     }
 
     // This should clear AMATCH, but it doesn't...
-    common_hal_i2cslave_i2c_slave_ack(self, false);
+    common_hal_i2cperipheral_i2c_peripheral_ack(self, false);
     return 0;
 }
 
-int common_hal_i2cslave_i2c_slave_read_byte(i2cslave_i2c_slave_obj_t *self, uint8_t *data) {
+int common_hal_i2cperipheral_i2c_peripheral_read_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t *data) {
     for (int t = 0; t < 100 && !self->sercom->I2CS.INTFLAG.reg; t++) {
         mp_hal_delay_us(10);
     }
 
-    i2c_slave_check_error(self, true);
+    i2c_peripheral_check_error(self, true);
 
     if (!self->sercom->I2CS.INTFLAG.bit.DRDY ||
         self->sercom->I2CS.INTFLAG.bit.PREC ||
@@ -176,12 +176,12 @@ int common_hal_i2cslave_i2c_slave_read_byte(i2cslave_i2c_slave_obj_t *self, uint
     return 1;
 }
 
-int common_hal_i2cslave_i2c_slave_write_byte(i2cslave_i2c_slave_obj_t *self, uint8_t data) {
+int common_hal_i2cperipheral_i2c_peripheral_write_byte(i2cperipheral_i2c_peripheral_obj_t *self, uint8_t data) {
     for (int t = 0; !self->sercom->I2CS.INTFLAG.reg && t < 100; t++) {
         mp_hal_delay_us(10);
     }
 
-    i2c_slave_check_error(self, true);
+    i2c_peripheral_check_error(self, true);
 
     if (self->sercom->I2CS.INTFLAG.bit.PREC) {
         return 0;
@@ -203,12 +203,12 @@ int common_hal_i2cslave_i2c_slave_write_byte(i2cslave_i2c_slave_obj_t *self, uin
     return 1;
 }
 
-void common_hal_i2cslave_i2c_slave_ack(i2cslave_i2c_slave_obj_t *self, bool ack) {
+void common_hal_i2cperipheral_i2c_peripheral_ack(i2cperipheral_i2c_peripheral_obj_t *self, bool ack) {
     self->sercom->I2CS.CTRLB.bit.ACKACT = !ack;
     self->sercom->I2CS.CTRLB.bit.CMD = 0x03;
 }
 
-void common_hal_i2cslave_i2c_slave_close(i2cslave_i2c_slave_obj_t *self) {
+void common_hal_i2cperipheral_i2c_peripheral_close(i2cperipheral_i2c_peripheral_obj_t *self) {
     for (int t = 0; !self->sercom->I2CS.INTFLAG.reg && t < 100; t++) {
         mp_hal_delay_us(10);
     }
@@ -218,7 +218,7 @@ void common_hal_i2cslave_i2c_slave_close(i2cslave_i2c_slave_obj_t *self) {
     }
 
     if (!self->sercom->I2CS.STATUS.bit.DIR) {
-        common_hal_i2cslave_i2c_slave_ack(self, false);
+        common_hal_i2cperipheral_i2c_peripheral_ack(self, false);
     } else {
         int i = 0;
         while (self->sercom->I2CS.INTFLAG.reg == SERCOM_I2CS_INTFLAG_DRDY) {
@@ -246,7 +246,7 @@ void common_hal_i2cslave_i2c_slave_close(i2cslave_i2c_slave_obj_t *self) {
 
     if (self->sercom->I2CS.STATUS.bit.CLKHOLD) {
         // Unable to release the clock.
-        // The slave might have to be re-initialized to get unstuck.
+        // The device might have to be re-initialized to get unstuck.
         mp_raise_OSError(MP_EIO);
     }
 }

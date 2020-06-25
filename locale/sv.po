@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"POT-Creation-Date: 2020-06-25 11:44-0500\n"
 "PO-Revision-Date: 2020-06-03 18:59+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -299,6 +299,7 @@ msgstr "Alla händelsekanaler används"
 msgid "All timers for this pin are in use"
 msgstr "Alla timers för denna pinne är i bruk"
 
+#: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -306,7 +307,7 @@ msgstr "Alla timers för denna pinne är i bruk"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
+#: shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr "Alla timers används"
 
@@ -588,6 +589,10 @@ msgstr "Skadad .mpy-fil"
 msgid "Corrupt raw code"
 msgstr "Korrupt rå kod"
 
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "Could not initialize GNSS"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Det gick inte att initiera UART"
@@ -833,10 +838,6 @@ msgstr "I/O-operation på stängd fil"
 msgid "I2C Init Error"
 msgstr "I2C init-fel"
 
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr "I2C-åtgärd stöds inte"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -980,7 +981,7 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1455,6 +1456,10 @@ msgstr "Stream saknar readinto() eller write() metod."
 msgid "Supply at least one UART pin"
 msgstr "Ange minst en UART-pinne"
 
+#: shared-bindings/gnss/GNSS.c
+msgid "System entry must be gnss.SatelliteSystem"
+msgstr ""
+
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
 msgstr "Temperaturavläsning tog för lång tid"
@@ -1651,6 +1656,7 @@ msgstr ""
 "eller ignorerades."
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Baudrate stöd inte"
 
@@ -1766,11 +1772,11 @@ msgstr "abort() anropad"
 msgid "address %08x is not aligned to %d bytes"
 msgstr "adressen %08x är inte justerad till %d byte"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adress utanför gränsen"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "adresserna är tomma"
 
@@ -1851,10 +1857,6 @@ msgstr "binär op %q är inte implementerad"
 msgid "bits must be 7, 8 or 9"
 msgstr "bits måste vara 7, 8 eller 9"
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "bits måste vara 8"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample måste vara 8 eller 16"
@@ -1879,10 +1881,6 @@ msgstr "buffertsegmenten måste vara lika långa"
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "buffert för liten"
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "buffertar måste vara samma längd"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1959,7 +1957,7 @@ msgstr "kan inte konvertera '%q' objekt implicit till %q"
 msgid "can't convert NaN to int"
 msgstr "kan inte konvertera NaN till int"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert address to int"
 msgstr "kan inte konvertera address till int"
 
@@ -2318,10 +2316,6 @@ msgstr "första argumentet måste vara en ndarray"
 msgid "first argument to super() must be type"
 msgstr "första argumentet till super() måste vara typ"
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr "firstbit måste vara MSB"
-
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr "förenklingsordningen måste vara antingen \"C\" eller \"F\""
@@ -2506,14 +2500,6 @@ msgstr "interp är definierad för 1D-matriser med samma längd"
 msgid "interval must be in range %s-%s"
 msgstr "interval måste vara i intervallet %s-%s"
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "ogiltig I2C-kringutrustning"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "ogiltig SPI-kringutrustning"
-
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "ogiltiga argument"
@@ -2692,10 +2678,6 @@ msgstr "multipelt arv stöds inte"
 #: py/emitnative.c
 msgid "must raise an object"
 msgstr "måste ge ett objekt"
-
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr "måste ange alla av sck/mosi/miso"
 
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
@@ -3345,8 +3327,29 @@ msgstr "y-värde utanför intervall"
 msgid "zero step"
 msgstr "noll steg"
 
+#~ msgid "I2C operation not supported"
+#~ msgstr "I2C-åtgärd stöds inte"
+
 #~ msgid "Negative step not supported"
 #~ msgstr "Negativt step stöds inte"
 
+#~ msgid "bits must be 8"
+#~ msgstr "bits måste vara 8"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "buffertar måste vara samma längd"
+
 #~ msgid "empty %q list"
 #~ msgstr "tom %q-lista"
+
+#~ msgid "firstbit must be MSB"
+#~ msgstr "firstbit måste vara MSB"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "ogiltig I2C-kringutrustning"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "ogiltig SPI-kringutrustning"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "måste ange alla av sck/mosi/miso"

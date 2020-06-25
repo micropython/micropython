@@ -408,11 +408,11 @@ extern const struct _mp_obj_module_t gnss_module;
 #define GNSS_MODULE
 #endif
 
-#if CIRCUITPY_I2CSLAVE
-extern const struct _mp_obj_module_t i2cslave_module;
-#define I2CSLAVE_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_i2cslave), (mp_obj_t)&i2cslave_module },
+#if CIRCUITPY_I2CPERIPHERAL
+extern const struct _mp_obj_module_t i2cperipheral_module;
+#define I2CPERIPHERAL_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_i2cperipheral), (mp_obj_t)&i2cperipheral_module },
 #else
-#define I2CSLAVE_MODULE
+#define I2CPERIPHERAL_MODULE
 #endif
 
 #if CIRCUITPY_MATH
@@ -690,7 +690,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
     GNSS_MODULE \
-    I2CSLAVE_MODULE \
+    I2CPERIPHERAL_MODULE \
     JSON_MODULE \
     MATH_MODULE \
     _EVE_MODULE \

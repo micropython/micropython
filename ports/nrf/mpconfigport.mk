@@ -25,8 +25,8 @@ CIRCUITPY_AUDIOPWMIO ?= 1
 
 CIRCUITPY_BLEIO ?= 1
 
-# No I2CSlave implementation
-CIRCUITPY_I2CSLAVE = 0
+# No I2CPeripheral implementation
+CIRCUITPY_I2CPERIPHERAL = 0
 
 CIRCUITPY_RTC ?= 1
 

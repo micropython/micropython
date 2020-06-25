@@ -43,19 +43,29 @@
 //|     """A 3-4 wire serial protocol
 //|
 //|     SPI is a serial protocol that has exclusive pins for data in and out of the
-//|     master.  It is typically faster than :py:class:`~bitbangio.I2C` because a
-//|     separate pin is used to control the active slave rather than a transmitted
+//|     main device.  It is typically faster than :py:class:`~bitbangio.I2C` because a
+//|     separate pin is used to select a device rather than a transmitted
 //|     address. This class only manages three of the four SPI lines: `!clock`,
-//|     `!MOSI`, `!MISO`. Its up to the client to manage the appropriate slave
-//|     select line. (This is common because multiple slaves can share the `!clock`,
-//|     `!MOSI` and `!MISO` lines and therefore the hardware.)"""
+//|     `!MOSI`, `!MISO`. Its up to the client to manage the appropriate
+//|     select line, often abbreviated `!CS` or `!SS`. (This is common because
+//|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
+//|     and therefore the hardware.)"""
 //|
 //|     def __init__(self, clock: microcontroller.Pin, MOSI: microcontroller.Pin = None, MISO: microcontroller.Pin = None):
 //|         """Construct an SPI object on the given pins.
 //|
+//|         .. seealso:: Using this class directly requires careful lock management.
+//|             Instead, use :class:`~adafruit_bus_device.spi_device.SPIDevice` to
+//|             manage locks.
+//|
+//|         .. seealso:: Using this class to directly read registers requires manual
+//|             bit unpacking. Instead, use an existing driver or make one with
+//|             :ref:`Register <register-module-reference>` data descriptors.
+//|
+//|
 //|         :param ~microcontroller.Pin clock: the pin to use for the clock.
-//|         :param ~microcontroller.Pin MOSI: the Master Out Slave In pin.
-//|         :param ~microcontroller.Pin MISO: the Master In Slave Out pin."""
+//|         :param ~microcontroller.Pin MOSI: the Main Out Selected In pin.
+//|         :param ~microcontroller.Pin MISO: the Main In Selected Out pin."""
 //|         ...
 //|
 
