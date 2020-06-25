@@ -320,6 +320,13 @@ extern const struct _mp_obj_module_t ble_module;
     /* micro:bit root pointers */ \
     void *async_data[2]; \
 
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+        __WFI(); \
+    } while (0);
+
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // We need to provide a declaration/definition of alloca()

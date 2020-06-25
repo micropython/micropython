@@ -68,12 +68,20 @@ STATIC void rtc_irq_time(nrfx_rtc_int_type_t event) {
 }
 
 void rtc1_init_time_ticks(void) {
+    // Start the low-frequency clock (if it hasn't been started already)
+    if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
+        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
+    }
     nrfx_rtc_init(&rtc1, &rtc_config_time_ticks, rtc_irq_time);
     nrfx_rtc_overflow_enable(&rtc1, true);
+    // generate a 1msec irq to leave _WFI
+    nrfx_rtc_cc_set(&rtc1, 0, 30, true);  
     nrfx_rtc_enable(&rtc1);
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
+    // calculate (rtc_overflows << 24 + COUNTER) * 1000 / 32768
+    // 
     // note that COUNTER * 1000 / 32768 would overflow during calculation, so use
     // the less obvious * 125 / 4096 calculation (overflow secure)
     //
@@ -84,11 +92,17 @@ mp_uint_t mp_hal_ticks_ms(void) {
     //
     // also lets guard the function against interrupting from the RTC 
     // overflow irq while the calculation takes place
-    mp_uint_t ticks;
-    rtc1.p_reg->INTENCLR = RTC_INTENSET_OVRFLW_Msk;
-    ticks = (rtc_overflows << 9) * 1000 + ((mp_uint_t)rtc1.p_reg->COUNTER * 125 / 4096);
+
+    // see also mp_hal_ticks_us() for a description of the below code
+    rtc1.p_reg->INTENCLR = RTC_INTENCLR_OVRFLW_Msk;
+    uint32_t overflows = rtc_overflows;
+    uint32_t counter = rtc1.p_reg->COUNTER;
+    uint32_t has_overflowed = rtc1.p_reg->EVENTS_OVRFLW;
+    if (has_overflowed && counter < (1 << 23)) {
+        overflows += 1;
+    }
     rtc1.p_reg->INTENSET = RTC_INTENSET_OVRFLW_Msk;
-    return ticks;
+    return (overflows << 9) * 1000 + (counter * 125 / 4096);
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
@@ -99,10 +113,34 @@ mp_uint_t mp_hal_ticks_us(void) {
     // Since this function is likely to be called in a poll loop it must
     // be fast and casting to 64 bits adds calculation time within that loop,
     // causing timing inaccuracy.
-    //
-    // An easier solution is to use COUNTER * 214 / 7, introducing a small
-    // error of app. 0.18%.
-    return (mp_uint_t)rtc1.p_reg->COUNTER * 214 / 7;
+    
+    // state = disable_irq(); // fully disable interrupts
+    rtc1.p_reg->INTENCLR = RTC_INTENCLR_OVRFLW_Msk;
+    uint32_t overflows = rtc_overflows;
+    uint32_t counter = rtc1.p_reg->COUNTER;
+    // note: COUNTER may overflow just after reading it and before reading EVENTS_OVRFLW
+    uint32_t has_overflowed = rtc1.p_reg->EVENTS_OVRFLW;
+    // If has_overflowed is set it could be before or after COUNTER is read. 
+    // If before then an adjustment must be made, if after then no adjustment is necessary.
+    //  
+    // The before case is when COUNTER is very small (because it just overflowed and was set to zero), 
+    // the after case is when COUNTER is very large (because it's just about to overflow 
+    // but we read it right before it overflows). 
+    // 
+    // The extra check for counter is to distinguish these cases. 1<<23 because it's halfway 
+    // between min and max values of COUNTER.
+    if (has_overflowed && counter < (1 << 23)) {
+        overflows += 1;
+    }
+    rtc1.p_reg->INTENSET = RTC_INTENSET_OVRFLW_Msk;
+    // enable_irq(state);
+    // compute: ticks_us = (overflows << 24 + counter) * 1000000 / 32768
+    //    = (overflows << 15 * 15625) + (counter * 15625 / 512)
+    // first compute counter * 15625
+    uint32_t counter_lo = (counter & 0xffff) * 15625;
+    uint32_t counter_hi = (counter >> 16) * 15625;
+    // actual value is counter_hi << 16 + counter_lo    
+    return ((overflows << 15) * 15625) + ((counter_hi << 7) + (counter_lo >> 9));
 }
 
 #else
@@ -146,7 +184,7 @@ int mp_hal_stdin_rx_chr(void) {
         if (MP_STATE_PORT(board_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(board_stdio_uart));
         }
-        __WFI();
+        MICROPY_EVENT_POLL_HOOK
     }
 
     return 0;
@@ -170,85 +208,18 @@ void mp_hal_stdout_tx_str(const char *str) {
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
-    if (us == 0) {
-        return;
-    }
-    register uint32_t delay __ASM("r0") = us;
-    __ASM volatile (
-        "1:\n"
-        #ifdef NRF51
-        " SUB %0, %0, #1\n"
-        #else
-        " SUBS %0, %0, #1\n"
-        #endif
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        #if defined(NRF52) || defined(NRF9160_XXAA)
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        " NOP\n"
-        #endif
-        " BNE 1b\n"
-        : "+r" (delay));
+    uint32_t now;
+    if (us == 0) return;
+    now = mp_hal_ticks_us();
+    while (mp_hal_ticks_us() - now < us) {}
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    for (mp_uint_t i = 0; i < ms; i++)
-    {
-        mp_hal_delay_us(999);
+    uint32_t now;
+    if (ms == 0) return;
+    now =  mp_hal_ticks_ms();
+    while (mp_hal_ticks_ms() - now < ms) {
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 
