@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-01 17:10-0700\n"
-"PO-Revision-Date: 2020-06-22 10:35+0000\n"
+"PO-Revision-Date: 2020-06-24 18:32+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -954,7 +954,7 @@ msgstr "Frecuencia suministrada no válida"
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
-msgstr ""
+msgstr "Acceso a memoria no válido"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -1013,7 +1013,7 @@ msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
-msgstr ""
+msgstr "Voz inválida"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice count"
@@ -1025,11 +1025,11 @@ msgstr "Archivo wave inválido"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
-msgstr ""
+msgstr "Tamaño no válido de palabra/bit"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
-msgstr ""
+msgstr "La llave debe tener 16, 24 o 32 bytes de longitud"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -1162,7 +1162,7 @@ msgstr "Sin soporte de hardware en pin"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
-msgstr ""
+msgstr "No se especificó ninguna llave"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
@@ -1251,7 +1251,7 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
-msgstr ""
+msgstr "ParallelBus no soportado aún"
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1312,11 +1312,11 @@ msgstr "Pull no se usa cuando la dirección es output."
 
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "PulseIn not supported on this chip"
-msgstr ""
+msgstr "PulseIn no es compatible con este chip"
 
 #: ports/stm/common-hal/pulseio/PulseOut.c
 msgid "PulseOut not supported on this chip"
-msgstr ""
+msgstr "PulseOut no es compatible con este chip"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1324,7 +1324,7 @@ msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG Init Error"
-msgstr ""
+msgstr "Error de inicialización de RNG"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1346,7 +1346,7 @@ msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
-msgstr ""
+msgstr "Error de generación de números aleatorios"
 
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1357,17 +1357,16 @@ msgid "Read-only filesystem"
 msgstr "Sistema de archivos de solo-Lectura"
 
 #: shared-module/displayio/Bitmap.c
-#, fuzzy
 msgid "Read-only object"
-msgstr "Solo-lectura"
+msgstr "Objeto de solo-lectura"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
-msgstr ""
+msgstr "Actualizando demasiado pronto"
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
-msgstr ""
+msgstr "El modo AES solicitado no es compatible"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1392,11 +1391,11 @@ msgstr "SDA o SCL necesitan una pull up"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
-msgstr ""
+msgstr "Error de inicio de SPI"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
-msgstr ""
+msgstr "Error de reinicialización de SPI"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
@@ -1409,15 +1408,15 @@ msgstr "Frecuencia de muestreo demasiado alta. Debe ser menor a %d"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
-msgstr ""
+msgstr "Escaneo en progreso. Use stop_scan para detener."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected CTS pin not valid"
-msgstr ""
+msgstr "Pin CTS seleccionado no válido"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected RTS pin not valid"
-msgstr ""
+msgstr "Pin RTS seleccionado no válido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1451,11 +1450,11 @@ msgstr "A Stream le falta el método readinto() o write()."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
-msgstr ""
+msgstr "Suministre al menos un pin UART"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
-msgstr ""
+msgstr "Lectura de temperatura expirada"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1498,11 +1497,11 @@ msgstr "La altura del Tile debe dividir exacto la altura del bitmap"
 
 #: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
-msgstr ""
+msgstr "Índice de mosaico fuera de límites"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile value out of bounds"
-msgstr ""
+msgstr "Valor de mosaico fuera de límites"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
@@ -1512,6 +1511,8 @@ msgstr "Ancho del Tile debe dividir exactamente el ancho de mapa de bits"
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
+"Tiempo de espera demasiado largo: El tiempo máximo de espera es de %d "
+"segundos"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1543,19 +1544,19 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART De-init error"
-msgstr ""
+msgstr "Error de desinicialización de UARL"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Init Error"
-msgstr ""
+msgstr "Error de inicialización de UARL"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
-msgstr ""
+msgstr "Error de reinicialización de UARL"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
-msgstr ""
+msgstr "Error de escritura UART"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
@@ -1567,7 +1568,7 @@ msgstr "Error USB"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
-msgstr ""
+msgstr "El valor entero del UUID debe ser 0-0xffff"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
@@ -1585,7 +1586,7 @@ msgstr "No se pudieron asignar buffers para la conversión con signo"
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
-msgstr ""
+msgstr "No se puede encontrar la pantalla I2C en %x"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1615,17 +1616,17 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Unknown reason."
-msgstr ""
+msgstr "Razón desconocida."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown security error: 0x%04x"
-msgstr ""
+msgstr "Error de seguridad desconocido: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown soft device error: %04x"
-msgstr ""
+msgstr "Error suave desconocido en dispositivo: %04x"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
