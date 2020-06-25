@@ -120,7 +120,7 @@
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_IOBASE        (1)
-#define MICROPY_PY_IO_FILEIO        (MICROPY_VFS_FAT) // because mp_type_fileio/textio point to fatfs impl
+#define MICROPY_PY_IO_FILEIO        (MICROPY_VFS_FAT || MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
@@ -210,9 +210,17 @@
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
 
-// TODO these should be generic, not bound to fatfs
+// TODO these should be generic, not bound to a particular FS implementation
+#if MICROPY_VFS_FAT
 #define mp_type_fileio mp_type_vfs_fat_fileio
 #define mp_type_textio mp_type_vfs_fat_textio
+#elif MICROPY_VFS_LFS1
+#define mp_type_fileio mp_type_vfs_lfs1_fileio
+#define mp_type_textio mp_type_vfs_lfs1_textio
+#elif MICROPY_VFS_LFS2
+#define mp_type_fileio mp_type_vfs_lfs2_fileio
+#define mp_type_textio mp_type_vfs_lfs2_textio
+#endif
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat
