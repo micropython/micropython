@@ -228,7 +228,7 @@ void ble_uart_init0(void) {
 
     ble_uart_peripheral.conn_handle = 0xFFFF;
 
-    char device_name[] = "mpus";
+    static char device_name[] = "mpus";
 
     mp_obj_t service_list = mp_obj_new_list(0, NULL);
     mp_obj_list_append(service_list, MP_OBJ_FROM_PTR(&ble_uart_service));
