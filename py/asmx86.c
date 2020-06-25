@@ -67,6 +67,7 @@
 // #define OPCODE_SHR_RM32_BY_I8    (0xc1) /* /5 */
 // #define OPCODE_SAR_RM32_BY_I8    (0xc1) /* /7 */
 #define OPCODE_SHL_RM32_CL       (0xd3) /* /4 */
+#define OPCODE_SHR_RM32_CL       (0xd3) /* /5 */
 #define OPCODE_SAR_RM32_CL       (0xd3) /* /7 */
 // #define OPCODE_CMP_I32_WITH_RM32 (0x81) /* /7 */
 // #define OPCODE_CMP_I8_WITH_RM32  (0x83) /* /7 */
@@ -257,6 +258,10 @@ void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
 
 void asm_x86_shl_r32_cl(asm_x86_t *as, int dest_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, 4, OPCODE_SHL_RM32_CL);
+}
+
+void asm_x86_shr_r32_cl(asm_x86_t *as, int dest_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, 5, OPCODE_SHR_RM32_CL);
 }
 
 void asm_x86_sar_r32_cl(asm_x86_t *as, int dest_r32) {

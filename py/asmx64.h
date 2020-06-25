@@ -98,6 +98,7 @@ void asm_x64_and_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_or_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_xor_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_shl_r64_cl(asm_x64_t *as, int dest_r64);
+void asm_x64_shr_r64_cl(asm_x64_t *as, int dest_r64);
 void asm_x64_sar_r64_cl(asm_x64_t *as, int dest_r64);
 void asm_x64_add_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
 void asm_x64_sub_r64_r64(asm_x64_t *as, int dest_r64, int src_r64);
@@ -190,6 +191,7 @@ void asm_x64_call_ind(asm_x64_t *as, size_t fun_id, int temp_r32);
 #define ASM_MOV_REG_PCREL(as, reg_dest, label) asm_x64_mov_reg_pcrel((as), (reg_dest), (label))
 
 #define ASM_LSL_REG(as, reg) asm_x64_shl_r64_cl((as), (reg))
+#define ASM_LSR_REG(as, reg) asm_x64_shr_r64_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x64_sar_r64_cl((as), (reg))
 #define ASM_OR_REG_REG(as, reg_dest, reg_src) asm_x64_or_r64_r64((as), (reg_dest), (reg_src))
 #define ASM_XOR_REG_REG(as, reg_dest, reg_src) asm_x64_xor_r64_r64((as), (reg_dest), (reg_src))

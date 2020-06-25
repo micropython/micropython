@@ -67,6 +67,7 @@
 // #define OPCODE_SHR_RM32_BY_I8    (0xc1) /* /5 */
 // #define OPCODE_SAR_RM32_BY_I8    (0xc1) /* /7 */
 #define OPCODE_SHL_RM64_CL       (0xd3) /* /4 */
+#define OPCODE_SHR_RM64_CL       (0xd3) /* /5 */
 #define OPCODE_SAR_RM64_CL       (0xd3) /* /7 */
 // #define OPCODE_CMP_I32_WITH_RM32 (0x81) /* /7 */
 // #define OPCODE_CMP_I8_WITH_RM32  (0x83) /* /7 */
@@ -380,6 +381,10 @@ void asm_x64_xor_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {
 
 void asm_x64_shl_r64_cl(asm_x64_t *as, int dest_r64) {
     asm_x64_generic_r64_r64(as, dest_r64, 4, OPCODE_SHL_RM64_CL);
+}
+
+void asm_x64_shr_r64_cl(asm_x64_t *as, int dest_r64) {
+    asm_x64_generic_r64_r64(as, dest_r64, 5, OPCODE_SHR_RM64_CL);
 }
 
 void asm_x64_sar_r64_cl(asm_x64_t *as, int dest_r64) {
