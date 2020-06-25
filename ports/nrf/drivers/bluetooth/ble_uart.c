@@ -33,6 +33,10 @@
 #include "lib/utils/interrupt_char.h"
 #include "py/runtime.h"
 
+#if MICROPY_PY_SYS_STDFILES
+#include "py/stream.h"
+#endif
+
 #if MICROPY_PY_BLE_NUS
 
 static ubluepy_uuid_obj_t uuid_obj_service = {
@@ -135,6 +139,17 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
     mp_hal_stdout_tx_strn(str, len);
 }
+
+#if MICROPY_PY_SYS_STDFILES
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if ((poll_flags & MP_STREAM_POLL_RD) && ble_uart_enabled()
+        && !isBufferEmpty(mp_rx_ring_buffer)) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    return ret;
+}
+#endif
 
 STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
