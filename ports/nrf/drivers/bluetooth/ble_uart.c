@@ -136,8 +136,25 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     }
 }
 
+void ble_uart_tx_char(char c) {
+    // Not connected: drop output
+    if (!ble_uart_enabled()) return;
+
+    ubluepy_characteristic_obj_t * p_char = &ble_uart_char_tx;
+
+    ble_drv_attr_s_notify(p_char->p_service->p_periph->conn_handle,
+                          p_char->handle,
+                          1,
+                          (uint8_t *)&c);
+}
+
 void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
-    mp_hal_stdout_tx_strn(str, len);
+    for (const char *top = str + len; str < top; str++) {
+        if (*str == '\n') {
+            ble_uart_tx_char('\r');
+        }
+        ble_uart_tx_char(*str);
+    }
 }
 
 #if MICROPY_PY_SYS_STDFILES
