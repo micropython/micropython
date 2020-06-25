@@ -46,8 +46,6 @@ CIRCUITPY_MATH = 1
 FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pewpew_m4
 CIRCUITPY_DISPLAY_FONT = $(TOP)/ports/atmel-samd/boards/ugame10/brutalist-6.bdf
 
-USB_DEVICES = "CDC,MSC"
-
 # Tweak inlining depending on language.
 ifeq ($(TRANSLATION), zh_Latn_pinyin)
 CFLAGS_INLINE_LIMIT = 45
