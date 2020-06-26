@@ -42,7 +42,7 @@
 #include "peripheral_clk_config.h"
 
 #ifndef DEBUG_SDIO
-#define DEBUG_SDIO (1)
+#define DEBUG_SDIO (0)
 #endif
 
 #if DEBUG_SDIO
