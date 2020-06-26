@@ -160,6 +160,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->clock_pin = clock;
     self->MOSI_pin = mosi;
     self->MISO_pin = miso;
+    self->host_id = host_id;
 
     spi_bus_lock_dev_config_t config = { .flags = 0 };
     // The returned lock is stored in the bus lock but must be freed separately with
