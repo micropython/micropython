@@ -177,17 +177,13 @@ char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0
 //     common_hal_bleio_adapter_set_name(self, (char*) default_ble_name);
 // }
 
-void common_hal_bleio_adapter_construct(bleio_adapter_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts, uint32_t baudrate, uint32_t buffer_size, const mcu_pin_obj_t* spi_cs, const mcu_pin_obj_t* gpio0, const mcu_pin_obj_t *reset, bool reset_high) {
+void common_hal_bleio_adapter_hci_init(bleio_adapter_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts, uint32_t baudrate, uint32_t buffer_size) {
     self->tx = tx;
     self->rx = rx;
     self->rts = rts;
     self->cts = cts;
     self->baudrate = baudrate;
     self->buffer_size = buffer_size;
-    self->spi_cs = spi_cs;
-    self->gpio0 = gpio0;
-    self->reset = reset;
-    self->reset_high = reset_high;
     self->enabled = false;
 }
 
@@ -199,60 +195,8 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         return;
     }
 
-    if (enabled) {
-        // Enable adapter.
-
-        // common_hal UART takes rts and cts, but is currently not implemented for many ports.
-        // In addition, rts and cts may be pins that are not part of the serial peripheral
-        // used for tx and rx, so use GPIO for them.
-        common_hal_busio_uart_construct(&self->hci_uart, self->tx, self->rx, NULL, NULL, NULL, false,
-                                        self->baudrate, 8, PARITY_NONE, 1, 0.0f,
-                                        self->buffer_size, NULL, false);
-
-        // RTS is output, active high
-        common_hal_digitalio_digitalinout_construct(&self->rts_digitalio, self->rts);
-        common_hal_digitalio_digitalinout_switch_to_output(&self->rts_digitalio, false, DRIVE_MODE_PUSH_PULL);
-
-        // CTS is input.
-        common_hal_digitalio_digitalinout_construct(&self->cts_digitalio, self->cts);
-
-        // SPI_CS and GPI0 are used to signal entering BLE mode.
-        // SPI_CS should be low, and GPI0 should be high
-        common_hal_digitalio_digitalinout_construct(&self->spi_cs_digitalio, self->spi_cs);
-        common_hal_digitalio_digitalinout_construct(&self->gpio0_digitalio, self->gpio0);
-        common_hal_digitalio_digitalinout_switch_to_output(&self->spi_cs_digitalio, false, DRIVE_MODE_PUSH_PULL);
-        common_hal_digitalio_digitalinout_switch_to_output(&self->gpio0_digitalio, true, DRIVE_MODE_PUSH_PULL);
-
-        // RESET is output, start in non-reset state.
-        common_hal_digitalio_digitalinout_construct(&self->reset_digitalio, self->reset);
-        common_hal_digitalio_digitalinout_switch_to_output(&self->reset_digitalio,
-                                                           !self->reset_high, DRIVE_MODE_PUSH_PULL);
-
-        // Adapter will enter BLE mode on reset, based on SPI_CS and GPIO0 settings.
-        // Reset HCI processor. Assert reset for 100ms, then wait 750ms for reset to complete.
-        common_hal_digitalio_digitalinout_set_value(&self->reset_digitalio, self->reset_high);
-        mp_hal_delay_ms(100);
-        common_hal_digitalio_digitalinout_set_value(&self->reset_digitalio, !self->reset_high);
-        mp_hal_delay_ms(750);
-
-        // After reset, set SPI_CS high.
-        common_hal_digitalio_digitalinout_set_value(&self->spi_cs_digitalio, true);
-
-        return;
-    }
-
-    // Disable.
-    common_hal_digitalio_digitalinout_set_value(&self->reset_digitalio, self->reset_high);
-    mp_hal_delay_ms(100);
-    common_hal_digitalio_digitalinout_set_value(&self->reset_digitalio, !self->reset_high);
-
-    // Free all pins.
-    common_hal_busio_uart_deinit(&self->hci_uart);
-    common_hal_digitalio_digitalinout_deinit(&self->rts_digitalio);
-    common_hal_digitalio_digitalinout_deinit(&self->cts_digitalio);
-    common_hal_digitalio_digitalinout_deinit(&self->spi_cs_digitalio);
-    common_hal_digitalio_digitalinout_deinit(&self->gpio0_digitalio);
-    common_hal_digitalio_digitalinout_deinit(&self->reset_digitalio);
+    //FIX enable/disable HCI adapter, but don't reset it, since we don't know how.
+    self->enabled = enabled;
 }
 
 bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {

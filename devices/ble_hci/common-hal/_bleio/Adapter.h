@@ -58,16 +58,9 @@ typedef struct {
     const mcu_pin_obj_t* cts;
     uint32_t baudrate;
     uint16_t buffer_size;
-    const mcu_pin_obj_t* spi_cs;
-    const mcu_pin_obj_t* gpio0;
-    const mcu_pin_obj_t* reset;
-    bool reset_high;
     busio_uart_obj_t hci_uart;
     digitalio_digitalinout_obj_t rts_digitalio;
     digitalio_digitalinout_obj_t cts_digitalio;
-    digitalio_digitalinout_obj_t spi_cs_digitalio;
-    digitalio_digitalinout_obj_t gpio0_digitalio;
-    digitalio_digitalinout_obj_t reset_digitalio;
     bool enabled;
 } bleio_adapter_obj_t;
 
