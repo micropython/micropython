@@ -285,20 +285,6 @@ STATIC const mp_rom_map_elem_t sdioio_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&sdioio_sdcard_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&sdioio_sdcard_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&sdioio_sdcard_writeblocks_obj) },
-
-// Methods in STM HAL:
-// InitCard
-// ReadBlocks
-// WriteBlocks
-// Erase
-// GetCardState
-// GetCardCID
-// GetCardCSD
-// GetCardInfo
-// GetState
-// GetError
-// Abort
-
 };
 STATIC MP_DEFINE_CONST_DICT(sdioio_sdcard_locals_dict, sdioio_sdcard_locals_dict_table);
 
