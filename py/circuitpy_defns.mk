@@ -216,6 +216,9 @@ endif
 ifeq ($(CIRCUITPY_SDCARDIO),1)
 SRC_PATTERNS += sdcardio/%
 endif
+ifeq ($(CIRCUITPY_SDIOIO),1)
+SRC_PATTERNS += sdioio/%
+endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
 endif
@@ -314,6 +317,8 @@ SRC_COMMON_HAL_ALL = \
 	rotaryio/__init__.c \
 	rtc/RTC.c \
 	rtc/__init__.c \
+	sdioio/SDCard.c \
+	sdioio/__init__.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \
