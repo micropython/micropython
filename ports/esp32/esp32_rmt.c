@@ -110,8 +110,8 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     config.clk_div = self->clock_div;
 
-    check_esp_err(rmt_driver_install(config.channel, 0, 0));
     check_esp_err(rmt_config(&config));
+    check_esp_err(rmt_driver_install(config.channel, 0, 0));
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -180,7 +180,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_wait_done_obj, 1, esp32_rmt_wait_don
 
 STATIC mp_obj_t esp32_rmt_loop(mp_obj_t self_in, mp_obj_t loop) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_esp_err(rmt_set_tx_loop_mode(self->channel_id, mp_obj_get_int(loop)));
+    int loop_en = mp_obj_get_int(loop);
+    check_esp_err(rmt_set_tx_intr_en(self->channel_id, !loop_en));
+    check_esp_err(rmt_set_tx_loop_mode(self->channel_id, loop_en));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_rmt_loop_obj, esp32_rmt_loop);
