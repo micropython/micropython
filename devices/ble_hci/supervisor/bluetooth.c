@@ -27,22 +27,3 @@
 #if CIRCUITPY_BLE_FILE_SERVICE
 #error CIRCUITPY_BLE_FILE_SERVICE not implemented for CIRCUITPY_BLEIO_HCI
 #endif
-
-void supervisor_bluetooth_start_advertising(void) {
-}
-
-void supervisor_start_bluetooth(void) {
-}
-
-FIL active_file;
-volatile bool new_filename;
-volatile bool run_ble_background;
-bool was_connected;
-
-void supervisor_bluetooth_background(void) {
-}
-
-// This happens in an interrupt so we need to be quick.
-bool supervisor_bluetooth_hook(ble_evt_t *ble_evt) {
-    return false;
-}

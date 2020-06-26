@@ -34,7 +34,13 @@
 
 #include "shared-bindings/_bleio/Connection.h"
 #include "shared-bindings/_bleio/ScanResults.h"
+#include "shared-bindings/busio/UART.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
+
+#ifndef BLEIO_TOTAL_CONNECTION_COUNT
+#define BLEIO_TOTAL_CONNECTION_COUNT 5
+#endif
 
 extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 

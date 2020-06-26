@@ -61,8 +61,8 @@ typedef struct {
     volatile pair_status_t pair_status;
     uint8_t sec_status; // Internal security status.
     mp_obj_t connection_obj;
-    ble_drv_evt_handler_entry_t handler_entry;
-    ble_gap_conn_params_t conn_params;
+    //REMOVE ble_drv_evt_handler_entry_t handler_entry;
+    //REMOVE ble_gap_conn_params_t conn_params;
     volatile bool conn_params_updating;
     uint16_t mtu;
     // Request that CCCD values for this conenction be saved, using sys_attr values.
@@ -80,8 +80,6 @@ typedef struct {
     // The HCI disconnect reason.
     uint8_t disconnect_reason;
 } bleio_connection_obj_t;
-
-bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in);
 
 uint16_t bleio_connection_get_conn_handle(bleio_connection_obj_t *self);
 mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t* connection);
