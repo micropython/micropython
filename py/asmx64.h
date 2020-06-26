@@ -61,10 +61,13 @@
 
 // condition codes, used for jcc and setcc (despite their j-name!)
 #define ASM_X64_CC_JB  (0x2) // below, unsigned
+#define ASM_X64_CC_JAE (0x3) // above or equal, unsigned
 #define ASM_X64_CC_JZ  (0x4)
 #define ASM_X64_CC_JE  (0x4)
 #define ASM_X64_CC_JNZ (0x5)
 #define ASM_X64_CC_JNE (0x5)
+#define ASM_X64_CC_JBE (0x6) // below or equal, unsigned
+#define ASM_X64_CC_JA  (0x7) // above, unsigned
 #define ASM_X64_CC_JL  (0xc) // less, signed
 #define ASM_X64_CC_JGE (0xd) // greater or equal, signed
 #define ASM_X64_CC_JLE (0xe) // less or equal, signed
