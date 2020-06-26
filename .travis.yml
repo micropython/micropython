@@ -78,6 +78,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
         - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55
+        - make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1'
         - make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
         - make ${MAKEOPTS} -C ports/stm32/mboot BOARD=NUCLEO_WB55
 
