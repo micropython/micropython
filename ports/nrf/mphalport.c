@@ -37,6 +37,7 @@
 
 #if MICROPY_PY_TIME_TICKS
 #include "nrfx_rtc.h"
+#include "nrf_clock.h"
 #endif
 
 
@@ -48,6 +49,8 @@
 nrfx_rtc_t rtc1 = NRFX_RTC_INSTANCE(1);
 
 volatile mp_uint_t rtc_overflows = 0;
+volatile mp_uint_t rtc_test = 0;
+
 
 const nrfx_rtc_config_t rtc_config_time_ticks = {
     .prescaler    = 0,
@@ -65,6 +68,11 @@ STATIC void rtc_irq_time(nrfx_rtc_int_type_t event) {
     if (event == NRFX_RTC_INT_OVERFLOW) {
         rtc_overflows += 1;
     }
+    // irq handler for wakeup from WFI (~1msec)
+    if (event == NRFX_RTC_INT_COMPARE0) {
+        nrfx_rtc_cc_set(&rtc1, 0, nrfx_rtc_counter_get(&rtc1) + 33, true);
+        rtc_test++;
+    }
 }
 
 void rtc1_init_time_ticks(void) {
@@ -79,63 +87,52 @@ void rtc1_init_time_ticks(void) {
     nrfx_rtc_enable(&rtc1);
 }
 
+// RTC overflow irq handling notes:
+// - If has_overflowed is set it could be before or after COUNTER is read. 
+//   If before then an adjustment must be made, if after then no adjustment is necessary.
+// - The before case is when COUNTER is very small (because it just overflowed and was set to zero), 
+//   the after case is when COUNTER is very large (because it's just about to overflow 
+//   but we read it right before it overflows). 
+// - The extra check for counter is to distinguish these cases. 1<<23 because it's halfway 
+//   between min and max values of COUNTER.    
+#define RTC1_GET_TICKS_ATOMIC(rtc, overflows, counter) \
+    do { \
+        rtc.p_reg->INTENCLR = RTC_INTENCLR_OVRFLW_Msk; \
+        overflows = rtc_overflows; \
+        counter = rtc.p_reg->COUNTER; \
+        uint32_t has_overflowed = rtc.p_reg->EVENTS_OVRFLW; \
+        if (has_overflowed && counter < (1 << 23)) { \
+            overflows += 1; \
+        } \
+        rtc.p_reg->INTENSET = RTC_INTENSET_OVRFLW_Msk; \
+    } while (0);
+
 mp_uint_t mp_hal_ticks_ms(void) {
     // calculate (rtc_overflows << 24 + COUNTER) * 1000 / 32768
     // 
     // note that COUNTER * 1000 / 32768 would overflow during calculation, so use
     // the less obvious * 125 / 4096 calculation (overflow secure)
     //
-    // also make sure not to call this function within an irq with higher
-    // prio than the RTC's irq. This would introduce the danger of 
-    // preempting the RTC irq and calling mp_hal_ticks_ms() at that time
-    // would return a false result
-    //
-    // also lets guard the function against interrupting from the RTC 
-    // overflow irq while the calculation takes place
-
-    // see also mp_hal_ticks_us() for a description of the below code
-    rtc1.p_reg->INTENCLR = RTC_INTENCLR_OVRFLW_Msk;
-    uint32_t overflows = rtc_overflows;
-    uint32_t counter = rtc1.p_reg->COUNTER;
-    uint32_t has_overflowed = rtc1.p_reg->EVENTS_OVRFLW;
-    if (has_overflowed && counter < (1 << 23)) {
-        overflows += 1;
-    }
-    rtc1.p_reg->INTENSET = RTC_INTENSET_OVRFLW_Msk;
+    // - make sure not to call this function within an irq with higher
+    //   prio than the RTC's irq. This would introduce the danger of 
+    //   preempting the RTC irq and calling mp_hal_ticks_ms() at that time
+    //   would return a false result
+    uint32_t overflows;
+    uint32_t counter;
+    // guard against overflow irq
+    RTC1_GET_TICKS_ATOMIC(rtc1, overflows, counter)
     return (overflows << 9) * 1000 + (counter * 125 / 4096);
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
-    // make the best out of the 32kHz tick resolution (= 30.57usec / tick)
-    // to scale we could use same approach as above and use COUNTER * 125000 / 4096
-    // but that will overflow for 32bit multiplications.
-    //
-    // Since this function is likely to be called in a poll loop it must
-    // be fast and casting to 64 bits adds calculation time within that loop,
-    // causing timing inaccuracy.
-    
-    // state = disable_irq(); // fully disable interrupts
-    rtc1.p_reg->INTENCLR = RTC_INTENCLR_OVRFLW_Msk;
-    uint32_t overflows = rtc_overflows;
-    uint32_t counter = rtc1.p_reg->COUNTER;
-    // note: COUNTER may overflow just after reading it and before reading EVENTS_OVRFLW
-    uint32_t has_overflowed = rtc1.p_reg->EVENTS_OVRFLW;
-    // If has_overflowed is set it could be before or after COUNTER is read. 
-    // If before then an adjustment must be made, if after then no adjustment is necessary.
-    //  
-    // The before case is when COUNTER is very small (because it just overflowed and was set to zero), 
-    // the after case is when COUNTER is very large (because it's just about to overflow 
-    // but we read it right before it overflows). 
-    // 
-    // The extra check for counter is to distinguish these cases. 1<<23 because it's halfway 
-    // between min and max values of COUNTER.
-    if (has_overflowed && counter < (1 << 23)) {
-        overflows += 1;
-    }
-    rtc1.p_reg->INTENSET = RTC_INTENSET_OVRFLW_Msk;
-    // enable_irq(state);
     // compute: ticks_us = (overflows << 24 + counter) * 1000000 / 32768
     //    = (overflows << 15 * 15625) + (counter * 15625 / 512)
+    // Since this function is likely to be called in a poll loop it must
+    // be fast, using an optimized 64bit mult/divide
+    uint32_t overflows;
+    uint32_t counter;
+    // guard against overflow irq
+    RTC1_GET_TICKS_ATOMIC(rtc1, overflows, counter)
     // first compute counter * 15625
     uint32_t counter_lo = (counter & 0xffff) * 15625;
     uint32_t counter_hi = (counter >> 16) * 15625;
@@ -184,7 +181,11 @@ int mp_hal_stdin_rx_chr(void) {
         if (MP_STATE_PORT(board_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
             return uart_rx_char(MP_STATE_PORT(board_stdio_uart));
         }
+        #if MICROPY_PY_TIME_TICKS
         MICROPY_EVENT_POLL_HOOK
+        #else
+        __WFI();
+        #endif
     }
 
     return 0;
@@ -219,7 +220,9 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     if (ms == 0) return;
     now =  mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - now < ms) {
+        #if MICROPY_PY_TIME_TICKS
         MICROPY_EVENT_POLL_HOOK
+        #endif
     }
 }
 
