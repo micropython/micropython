@@ -664,7 +664,7 @@ void i2c_init(int addr) {
     i2c_slave_init(MBOOT_I2Cx, I2Cx_EV_IRQn, IRQ_PRI_I2C, addr);
 }
 
-int i2c_slave_process_addr_match(int rw) {
+int i2c_slave_process_addr_match(i2c_slave_t *i2c, int rw) {
     if (i2c_obj.cmd_arg_sent) {
         i2c_obj.cmd_send_arg = false;
     }
@@ -672,14 +672,14 @@ int i2c_slave_process_addr_match(int rw) {
     return 0; // ACK
 }
 
-int i2c_slave_process_rx_byte(uint8_t val) {
+int i2c_slave_process_rx_byte(i2c_slave_t *i2c, uint8_t val) {
     if (i2c_obj.cmd_buf_pos < sizeof(i2c_obj.cmd_buf)) {
         i2c_obj.cmd_buf[i2c_obj.cmd_buf_pos++] = val;
     }
     return 0; // ACK
 }
 
-void i2c_slave_process_rx_end(void) {
+void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
     if (i2c_obj.cmd_buf_pos == 0) {
         return;
     }
@@ -764,7 +764,7 @@ void i2c_slave_process_rx_end(void) {
     i2c_obj.cmd_arg_sent = false;
 }
 
-uint8_t i2c_slave_process_tx_byte(void) {
+uint8_t i2c_slave_process_tx_byte(i2c_slave_t *i2c) {
     if (i2c_obj.cmd_send_arg) {
         i2c_obj.cmd_arg_sent = true;
         return i2c_obj.cmd_arg;
@@ -773,6 +773,9 @@ uint8_t i2c_slave_process_tx_byte(void) {
     } else {
         return 0;
     }
+}
+
+void i2c_slave_process_tx_end(i2c_slave_t *i2c) {
 }
 
 #endif // defined(MBOOT_I2C_SCL)
