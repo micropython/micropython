@@ -50,7 +50,6 @@
 //|         :param busio.SPI spi: The SPI bus
 //|         :param microcontroller.Pin cs: The chip select connected to the card
 //|         :param int baudrate: The SPI data rate to use after card setup
-//|         :param busio.SDIO sdio: The SDIO bus.  Mutually exclusive with spi and cs.
 //|
 //|         Note that during detection and configuration, a hard-coded low baudrate is used.
 //|         Data transfers use the specified baurate (rounded down to one that is supported by
