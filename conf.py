@@ -391,12 +391,13 @@ TEMPLATE = """<html>
 def generate_redirects(app):
     path = os.path.join(app.srcdir, app.config.redirects_file)
     if not os.path.exists(path):
-        app.info("Could not find redirects file at '%s'" % path)
+        logging.info("Could not find redirects file at '%s'" % path)
         return
 
-    if not type(app.builder) == builders.StandaloneHTMLBuilder:
+    logging.warn(f"Builder is {app.builder.name} ({type(app.builder)})")
+    if not isinstance(app.builder, builders.StandaloneHTMLBuilder):
         logging.warn("The 'sphinxcontib-redirects' plugin is only supported "
-                 "by the 'html' builder. Skipping...")
+                 "by the 'html' builder and subclasses. Skipping...")
         return
 
     with open(path) as redirects:
