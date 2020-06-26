@@ -2289,7 +2289,8 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
     DEBUG_printf("binary_op(" UINT_FMT ")\n", op);
     vtype_kind_t vtype_lhs = peek_vtype(emit, 1);
     vtype_kind_t vtype_rhs = peek_vtype(emit, 0);
-    if (vtype_lhs == VTYPE_INT && vtype_rhs == VTYPE_INT) {
+    if ((vtype_lhs == VTYPE_INT || vtype_lhs == VTYPE_UINT)
+        && (vtype_rhs == VTYPE_INT || vtype_rhs == VTYPE_UINT)) {
         // for integers, inplace and normal ops are equivalent, so use just normal ops
         if (MP_BINARY_OP_INPLACE_OR <= op && op <= MP_BINARY_OP_INPLACE_POWER) {
             op += MP_BINARY_OP_OR - MP_BINARY_OP_INPLACE_OR;
@@ -2306,9 +2307,13 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             if (op == MP_BINARY_OP_LSHIFT) {
                 ASM_LSL_REG(emit->as, REG_RET);
             } else {
-                ASM_ASR_REG(emit->as, REG_RET);
+                if (vtype_lhs == VTYPE_UINT) {
+                    ASM_LSR_REG(emit->as, REG_RET);
+                } else {
+                    ASM_ASR_REG(emit->as, REG_RET);
+                }
             }
-            emit_post_push_reg(emit, VTYPE_INT, REG_RET);
+            emit_post_push_reg(emit, vtype_lhs, REG_RET);
             return;
         }
         #endif
@@ -2316,6 +2321,10 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         // special cases for floor-divide and module because we dispatch to helper functions
         if (op == MP_BINARY_OP_FLOOR_DIVIDE || op == MP_BINARY_OP_MODULO) {
             emit_pre_pop_reg_reg(emit, &vtype_rhs, REG_ARG_2, &vtype_lhs, REG_ARG_1);
+            if (vtype_lhs != VTYPE_INT) {
+                EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                    MP_ERROR_TEXT("div/mod not implemented for uint"), mp_binary_op_method_name[op]);
+            }
             if (op == MP_BINARY_OP_FLOOR_DIVIDE) {
                 emit_call(emit, MP_F_SMALL_INT_FLOOR_DIVIDE);
             } else {
@@ -2334,31 +2343,35 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             if (op == MP_BINARY_OP_LSHIFT) {
                 ASM_LSL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             } else {
-                ASM_ASR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+                if (vtype_lhs == VTYPE_UINT) {
+                    ASM_LSR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+                } else {
+                    ASM_ASR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
+                }
             }
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
             return;
         }
         #endif
 
         if (op == MP_BINARY_OP_OR) {
             ASM_OR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
         } else if (op == MP_BINARY_OP_XOR) {
             ASM_XOR_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
         } else if (op == MP_BINARY_OP_AND) {
             ASM_AND_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
         } else if (op == MP_BINARY_OP_ADD) {
             ASM_ADD_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
         } else if (op == MP_BINARY_OP_SUBTRACT) {
             ASM_SUB_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
         } else if (op == MP_BINARY_OP_MULTIPLY) {
             ASM_MUL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
-            emit_post_push_reg(emit, VTYPE_INT, REG_ARG_2);
+            emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
         } else if (MP_BINARY_OP_LESS <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
             // comparison ops are (in enum order):
             //  MP_BINARY_OP_LESS
@@ -2367,11 +2380,26 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             //  MP_BINARY_OP_LESS_EQUAL
             //  MP_BINARY_OP_MORE_EQUAL
             //  MP_BINARY_OP_NOT_EQUAL
+
+            if (vtype_lhs != vtype_rhs) {
+                EMIT_NATIVE_VIPER_TYPE_ERROR(emit, MP_ERROR_TEXT("comparison of int and uint"));
+            }
+
+            size_t op_idx = op - MP_BINARY_OP_LESS + (vtype_lhs == VTYPE_UINT ? 0 : 6);
+
             need_reg_single(emit, REG_RET, 0);
             #if N_X64
             asm_x64_xor_r64_r64(emit->as, REG_RET, REG_RET);
             asm_x64_cmp_r64_with_r64(emit->as, reg_rhs, REG_ARG_2);
-            static byte ops[6] = {
+            static byte ops[6 + 6] = {
+                // unsigned
+                ASM_X64_CC_JB,
+                ASM_X64_CC_JA,
+                ASM_X64_CC_JE,
+                ASM_X64_CC_JBE,
+                ASM_X64_CC_JAE,
+                ASM_X64_CC_JNE,
+                // signed
                 ASM_X64_CC_JL,
                 ASM_X64_CC_JG,
                 ASM_X64_CC_JE,
@@ -2379,11 +2407,19 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 ASM_X64_CC_JGE,
                 ASM_X64_CC_JNE,
             };
-            asm_x64_setcc_r8(emit->as, ops[op - MP_BINARY_OP_LESS], REG_RET);
+            asm_x64_setcc_r8(emit->as, ops[op_idx], REG_RET);
             #elif N_X86
             asm_x86_xor_r32_r32(emit->as, REG_RET, REG_RET);
             asm_x86_cmp_r32_with_r32(emit->as, reg_rhs, REG_ARG_2);
-            static byte ops[6] = {
+            static byte ops[6 + 6] = {
+                // unsigned
+                ASM_X86_CC_JB,
+                ASM_X86_CC_JA,
+                ASM_X86_CC_JE,
+                ASM_X86_CC_JBE,
+                ASM_X86_CC_JAE,
+                ASM_X86_CC_JNE,
+                // signed
                 ASM_X86_CC_JL,
                 ASM_X86_CC_JG,
                 ASM_X86_CC_JE,
@@ -2391,24 +2427,39 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 ASM_X86_CC_JGE,
                 ASM_X86_CC_JNE,
             };
-            asm_x86_setcc_r8(emit->as, ops[op - MP_BINARY_OP_LESS], REG_RET);
+            asm_x86_setcc_r8(emit->as, ops[op_idx], REG_RET);
             #elif N_THUMB
             asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, reg_rhs);
-            static uint16_t ops[6] = {
-                ASM_THUMB_OP_ITE_GE,
+            static uint16_t ops[6 + 6] = {
+                // unsigned
+                ASM_THUMB_OP_ITE_CC,
+                ASM_THUMB_OP_ITE_HI,
+                ASM_THUMB_OP_ITE_EQ,
+                ASM_THUMB_OP_ITE_LS,
+                ASM_THUMB_OP_ITE_CS,
+                ASM_THUMB_OP_ITE_NE,
+                // signed
+                ASM_THUMB_OP_ITE_LT,
                 ASM_THUMB_OP_ITE_GT,
                 ASM_THUMB_OP_ITE_EQ,
-                ASM_THUMB_OP_ITE_GT,
+                ASM_THUMB_OP_ITE_LE,
                 ASM_THUMB_OP_ITE_GE,
-                ASM_THUMB_OP_ITE_EQ,
+                ASM_THUMB_OP_ITE_NE,
             };
-            static byte ret[6] = { 0, 1, 1, 0, 1, 0, };
-            asm_thumb_op16(emit->as, ops[op - MP_BINARY_OP_LESS]);
-            asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS]);
-            asm_thumb_mov_rlo_i8(emit->as, REG_RET, ret[op - MP_BINARY_OP_LESS] ^ 1);
+            asm_thumb_op16(emit->as, ops[op_idx]);
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1);
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0);
             #elif N_ARM
             asm_arm_cmp_reg_reg(emit->as, REG_ARG_2, reg_rhs);
-            static uint ccs[6] = {
+            static uint ccs[6 + 6] = {
+                // unsigned
+                ASM_ARM_CC_CC,
+                ASM_ARM_CC_HI,
+                ASM_ARM_CC_EQ,
+                ASM_ARM_CC_LS,
+                ASM_ARM_CC_CS,
+                ASM_ARM_CC_NE,
+                // signed
                 ASM_ARM_CC_LT,
                 ASM_ARM_CC_GT,
                 ASM_ARM_CC_EQ,
@@ -2416,9 +2467,17 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 ASM_ARM_CC_GE,
                 ASM_ARM_CC_NE,
             };
-            asm_arm_setcc_reg(emit->as, REG_RET, ccs[op - MP_BINARY_OP_LESS]);
+            asm_arm_setcc_reg(emit->as, REG_RET, ccs[op_idx]);
             #elif N_XTENSA || N_XTENSAWIN
-            static uint8_t ccs[6] = {
+            static uint8_t ccs[6 + 6] = {
+                // unsigned
+                ASM_XTENSA_CC_LTU,
+                0x80 | ASM_XTENSA_CC_LTU, // for GTU we'll swap args
+                ASM_XTENSA_CC_EQ,
+                0x80 | ASM_XTENSA_CC_GEU, // for LEU we'll swap args
+                ASM_XTENSA_CC_GEU,
+                ASM_XTENSA_CC_NE,
+                // signed
                 ASM_XTENSA_CC_LT,
                 0x80 | ASM_XTENSA_CC_LT, // for GT we'll swap args
                 ASM_XTENSA_CC_EQ,
@@ -2426,7 +2485,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 ASM_XTENSA_CC_GE,
                 ASM_XTENSA_CC_NE,
             };
-            uint8_t cc = ccs[op - MP_BINARY_OP_LESS];
+            uint8_t cc = ccs[op_idx];
             if ((cc & 0x80) == 0) {
                 asm_xtensa_setcc_reg_reg_reg(emit->as, cc, REG_RET, REG_ARG_2, reg_rhs);
             } else {
