@@ -58,6 +58,10 @@ msgstr ""
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr ""
@@ -83,6 +87,10 @@ msgstr ""
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q pin invalid"
 msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
@@ -417,7 +425,7 @@ msgstr ""
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr ""
 
-#: shared-module/sdcardio/SDCard.c
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
 msgstr ""
 
