@@ -32,10 +32,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/rgb_led_status.h"
 
-#include "esp_log.h"
-
-static const char* TAG = "CircuitPython SPI";
-
 static bool spi_never_reset[SOC_SPI_PERIPH_NUM];
 
 // Store one lock handle per device so that we can free it.
@@ -101,8 +97,7 @@ static bool spi_bus_is_free(spi_host_device_t host_id) {
 }
 
 static void spi_interrupt_handler(void *arg) {
-    busio_spi_obj_t *self = arg;
-    ESP_LOGE(TAG, "SPI interrupt %p", self);
+    // busio_spi_obj_t *self = arg;
 }
 
 // The interrupt may get invoked by the bus lock.
@@ -197,8 +192,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // hal->cs_hold = 0;
     // hal->cs_pin_id = 0;
 
-    hal->sio = 1;
-    // hal->half_duplex = 0;
+    hal->sio = 0;
+    hal->half_duplex = 0;
     // hal->tx_lsbfirst = 0;
     // hal->rx_lsbfirst = 0;
     hal->dma_enabled = 1;
@@ -216,9 +211,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     // This must be set after spi_hal_init.
     hal->timing_conf = &self->timing_conf;
-    if (hal->hw == NULL) {
-        ESP_LOGE(TAG, "SPI error %p", hal->hw);
-    }
 
     common_hal_busio_spi_configure(self, 250000, 0, 0, 8);
 }
@@ -280,11 +272,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         return false;
     }
 
-    ESP_LOGI(TAG, "configure");
-    ESP_LOGI(TAG, "real frequency %d", self->real_frequency);
-    ESP_LOGI(TAG, "timing_conf %p", self->hal_context.timing_conf);
     spi_hal_setup_device(&self->hal_context);
-    ESP_LOGI(TAG, "setup done");
     return true;
 }
 
@@ -351,6 +339,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
         while (!spi_hal_usr_is_done(hal)) {
             RUN_BACKGROUND_TASKS;
         }
+        spi_hal_fetch_result(hal);
     }
 
     return true;
