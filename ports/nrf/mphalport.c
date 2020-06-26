@@ -47,10 +47,7 @@
 // handling in irq
 
 nrfx_rtc_t rtc1 = NRFX_RTC_INSTANCE(1);
-
 volatile mp_uint_t rtc_overflows = 0;
-volatile mp_uint_t rtc_test = 0;
-
 
 const nrfx_rtc_config_t rtc_config_time_ticks = {
     .prescaler    = 0,
@@ -71,7 +68,6 @@ STATIC void rtc_irq_time(nrfx_rtc_int_type_t event) {
     // irq handler for wakeup from WFI (~1msec)
     if (event == NRFX_RTC_INT_COMPARE0) {
         nrfx_rtc_cc_set(&rtc1, 0, nrfx_rtc_counter_get(&rtc1) + 33, true);
-        rtc_test++;
     }
 }
 
@@ -208,6 +204,7 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
+#if MICROPY_PY_TIME_TICKS
 void mp_hal_delay_us(mp_uint_t us) {
     uint32_t now;
     if (us == 0) return;
@@ -220,11 +217,95 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     if (ms == 0) return;
     now =  mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - now < ms) {
-        #if MICROPY_PY_TIME_TICKS
         MICROPY_EVENT_POLL_HOOK
-        #endif
     }
 }
+
+#else
+
+void mp_hal_delay_us(mp_uint_t us) {
+    if (us == 0) {
+        return;
+    }
+    register uint32_t delay __ASM("r0") = us;
+    __ASM volatile (
+        "1:\n"
+        #ifdef NRF51
+        " SUB %0, %0, #1\n"
+        #else
+        " SUBS %0, %0, #1\n"
+        #endif
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        #if defined(NRF52) || defined(NRF9160_XXAA)
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        " NOP\n"
+        #endif
+        " BNE 1b\n"
+        : "+r" (delay));
+}
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    for (mp_uint_t i = 0; i < ms; i++)
+    {
+        mp_hal_delay_us(999);
+    }
+}
+#endif
 
 #if defined(NRFX_LOG_ENABLED) && (NRFX_LOG_ENABLED == 1)
 
