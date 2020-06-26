@@ -90,10 +90,10 @@ STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
         { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 115200 } },
         { MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 256 } },
-        { MP_QSTR_spi_cs, MP_ARG_KW_ONLY }| MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_gpio0, MP_ARG_KW_ONLY }| MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_reset, MP_ARG_KW_ONLY }| MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_reset_high, MP_ARG_KW_ONLY |MP_ARG_BOOL },
+        { MP_QSTR_spi_cs, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_gpio0, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_reset, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_reset_high, MP_ARG_KW_ONLY | MP_ARG_BOOL },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -108,13 +108,23 @@ STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
    const mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
    const bool reset_high  = args[ARG_reset_high].u_bool;
 
+   if (args[ARG_baudrate].u_int <= 0) {
+       mp_raise_ValueError(translate("baudrate must be > 0"));
+   }
+   const uint32_t baudrate = args[ARG_baudrate].u_int;
+
+   if (args[ARG_buffer_size].u_int <= 1) {
+       mp_raise_ValueError(translate("buffer_size must be >= 1"));
+   }
+   const uint32_t buffer_size = args[ARG_buffer_size].u_int;
+
    common_hal_bleio_adapter_construct(&common_hal_bleio_adapter_obj, tx, rx, rts, cts,
-                                      args[ARG_baudrate], arg[ARG_buffer_size],
+                                      baudrate, buffer_size,
                                       spi_cs, gpio0,
                                       reset, reset_high);
    common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
 
-   return MP_OBJ_FROM_PTR(service);
+   return MP_OBJ_FROM_PTR(&common_hal_bleio_adapter_obj);
 }
 #endif
 //|

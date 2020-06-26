@@ -317,6 +317,13 @@ SRC_COMMON_HAL_ALL = \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \
 
+ifeq ($(CIRCUITPY_BLEIO_HCI),1)
+SRC_C +=\
+	common_hal/_bleio/hci.c \
+
+endif
+
+
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
 # These don't have corresponding files in each port but are still located in
@@ -461,6 +468,11 @@ endif
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
 	displayio/display_core.c \
+)
+
+SRC_COMMON_HAL_INTERNAL = \
+$(filter $(SRC_PATTERNS), \
+	_bleio/ \
 )
 
 ifeq ($(INTERNAL_LIBM),1)

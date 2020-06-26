@@ -33,7 +33,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    // Use the native way of storing UUID's:
+    //FIX Use the native way of storing UUID's:
     // - ble_uuid_t.uuid is a 16-bit uuid.
     // - ble_uuid_t.type is BLE_UUID_TYPE_BLE if it's a 16-bit Bluetooth SIG UUID.
     //   or is BLE_UUID_TYPE_VENDOR_BEGIN and higher, which indexes into a table of registered

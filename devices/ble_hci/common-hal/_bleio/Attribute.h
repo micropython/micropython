@@ -29,6 +29,13 @@
 
 #include "shared-module/_bleio/Attribute.h"
 
-extern void bleio_attribute_gatts_set_security_mode(ble_gap_conn_sec_mode_t *perm, bleio_attribute_security_mode_t security_mode);
+// typedef struct
+// {
+//   uint8_t sm : 4;                     /**< Security Mode (1 or 2), 0 for no permissions at all. */
+//   uint8_t lv : 4;                     /**< Level (1, 2, 3 or 4), 0 for no permissions at all. */
+
+// } ble_gap_conn_sec_mode_t;
+
+// extern void bleio_attribute_gatts_set_security_mode(ble_gap_conn_sec_mode_t *perm, bleio_attribute_security_mode_t security_mode);
 
 #endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ATTRIBUTE_H

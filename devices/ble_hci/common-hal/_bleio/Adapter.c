@@ -31,9 +31,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "bonding.h"
-
 #include "py/gc.h"
+#include "py/mphal.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "supervisor/shared/safe_mode.h"
@@ -74,111 +73,111 @@
 
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
-STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
-    // bleio_adapter_obj_t *self = (bleio_adapter_obj_t*)self_in;
+// STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
+//     bleio_adapter_obj_t *self = (bleio_adapter_obj_t*)self_in;
 
-    // // For debugging.
-    // // mp_printf(&mp_plat_print, "Adapter event: 0x%04x\n", ble_evt->header.evt_id);
+//     // For debugging.
+//     // mp_printf(&mp_plat_print, "Adapter event: 0x%04x\n", ble_evt->header.evt_id);
 
-    // switch (ble_evt->header.evt_id) {
-    //     case BLE_GAP_EVT_CONNECTED: {
-    //         // Find an empty connection. One must always be available because the SD has the same
-    //         // total connection limit.
-    //         bleio_connection_internal_t *connection;
-    //         for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-    //             connection = &bleio_connections[i];
-    //             if (connection->conn_handle == BLE_CONN_HANDLE_INVALID) {
-    //                 break;
-    //             }
-    //         }
+//     switch (ble_evt->header.evt_id) {
+//         case BLE_GAP_EVT_CONNECTED: {
+//             // Find an empty connection. One must always be available because the SD has the same
+//             // total connection limit.
+//             bleio_connection_internal_t *connection;
+//             for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+//                 connection = &bleio_connections[i];
+//                 if (connection->conn_handle == BLE_CONN_HANDLE_INVALID) {
+//                     break;
+//                 }
+//             }
 
-    //         // Central has connected.
-    //         ble_gap_evt_connected_t* connected = &ble_evt->evt.gap_evt.params.connected;
+//             // Central has connected.
+//             ble_gap_evt_connected_t* connected = &ble_evt->evt.gap_evt.params.connected;
 
-    //         connection->conn_handle = ble_evt->evt.gap_evt.conn_handle;
-    //         connection->connection_obj = mp_const_none;
-    //         connection->pair_status = PAIR_NOT_PAIRED;
-    //         connection->mtu = 0;
+//             connection->conn_handle = ble_evt->evt.gap_evt.conn_handle;
+//             connection->connection_obj = mp_const_none;
+//             connection->pair_status = PAIR_NOT_PAIRED;
+//             connection->mtu = 0;
 
-    //         ble_drv_add_event_handler_entry(&connection->handler_entry, connection_on_ble_evt, connection);
-    //         self->connection_objs = NULL;
+//             ble_drv_add_event_handler_entry(&connection->handler_entry, connection_on_ble_evt, connection);
+//             self->connection_objs = NULL;
 
-    //         // Save the current connection parameters.
-    //         memcpy(&connection->conn_params, &connected->conn_params, sizeof(ble_gap_conn_params_t));
+//             // Save the current connection parameters.
+//             memcpy(&connection->conn_params, &connected->conn_params, sizeof(ble_gap_conn_params_t));
 
-    //         #if CIRCUITPY_VERBOSE_BLE
-    //         ble_gap_conn_params_t *cp = &connected->conn_params;
-    //         mp_printf(&mp_plat_print, "conn params: min_ci %d max_ci %d s_l %d sup_timeout %d\n", cp->min_conn_interval, cp->max_conn_interval, cp->slave_latency, cp->conn_sup_timeout);
-    //         #endif
+//             #if CIRCUITPY_VERBOSE_BLE
+//             ble_gap_conn_params_t *cp = &connected->conn_params;
+//             mp_printf(&mp_plat_print, "conn params: min_ci %d max_ci %d s_l %d sup_timeout %d\n", cp->min_conn_interval, cp->max_conn_interval, cp->slave_latency, cp->conn_sup_timeout);
+//             #endif
 
-    //         // See if connection interval set by Central is out of range.
-    //         // If so, negotiate our preferred range.
-    //         ble_gap_conn_params_t conn_params;
-    //         sd_ble_gap_ppcp_get(&conn_params);
-    //         if (conn_params.min_conn_interval < connected->conn_params.min_conn_interval ||
-    //             conn_params.min_conn_interval > connected->conn_params.max_conn_interval) {
-    //             sd_ble_gap_conn_param_update(ble_evt->evt.gap_evt.conn_handle, &conn_params);
-    //         }
-    //         self->current_advertising_data = NULL;
-    //         break;
-    //     }
-    //     case BLE_GAP_EVT_DISCONNECTED: {
-    //         // Find the connection that was disconnected.
-    //         bleio_connection_internal_t *connection;
-    //         for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-    //             connection = &bleio_connections[i];
-    //             if (connection->conn_handle == ble_evt->evt.gap_evt.conn_handle) {
-    //                 break;
-    //             }
-    //         }
-    //         ble_drv_remove_event_handler(connection_on_ble_evt, connection);
-    //         connection->conn_handle = BLE_CONN_HANDLE_INVALID;
-    //         connection->pair_status = PAIR_NOT_PAIRED;
-    //         if (connection->connection_obj != mp_const_none) {
-    //             bleio_connection_obj_t* obj = connection->connection_obj;
-    //             obj->connection = NULL;
-    //             obj->disconnect_reason = ble_evt->evt.gap_evt.params.disconnected.reason;
-    //         }
-    //         self->connection_objs = NULL;
+//             // See if connection interval set by Central is out of range.
+//             // If so, negotiate our preferred range.
+//             ble_gap_conn_params_t conn_params;
+//             sd_ble_gap_ppcp_get(&conn_params);
+//             if (conn_params.min_conn_interval < connected->conn_params.min_conn_interval ||
+//                 conn_params.min_conn_interval > connected->conn_params.max_conn_interval) {
+//                 sd_ble_gap_conn_param_update(ble_evt->evt.gap_evt.conn_handle, &conn_params);
+//             }
+//             self->current_advertising_data = NULL;
+//             break;
+//         }
+//         case BLE_GAP_EVT_DISCONNECTED: {
+//             // Find the connection that was disconnected.
+//             bleio_connection_internal_t *connection;
+//             for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+//                 connection = &bleio_connections[i];
+//                 if (connection->conn_handle == ble_evt->evt.gap_evt.conn_handle) {
+//                     break;
+//                 }
+//             }
+//             ble_drv_remove_event_handler(connection_on_ble_evt, connection);
+//             connection->conn_handle = BLE_CONN_HANDLE_INVALID;
+//             connection->pair_status = PAIR_NOT_PAIRED;
+//             if (connection->connection_obj != mp_const_none) {
+//                 bleio_connection_obj_t* obj = connection->connection_obj;
+//                 obj->connection = NULL;
+//                 obj->disconnect_reason = ble_evt->evt.gap_evt.params.disconnected.reason;
+//             }
+//             self->connection_objs = NULL;
 
-    //         break;
-    //     }
+//             break;
+//         }
 
-    //     case BLE_GAP_EVT_ADV_SET_TERMINATED:
-    //         self->current_advertising_data = NULL;
-    //         break;
+//         case BLE_GAP_EVT_ADV_SET_TERMINATED:
+//             self->current_advertising_data = NULL;
+//             break;
 
-    //     default:
-    //         // For debugging.
-    //         // mp_printf(&mp_plat_print, "Unhandled adapter event: 0x%04x\n", ble_evt->header.evt_id);
-    //         return false;
-    //         break;
-    // }
-    return true;
-}
+//         default:
+//             // For debugging.
+//             // mp_printf(&mp_plat_print, "Unhandled adapter event: 0x%04x\n", ble_evt->header.evt_id);
+//             return false;
+//             break;
+//     }
+//     return true;
+// }
 
-STATIC void get_address(bleio_adapter_obj_t *self, ble_gap_addr_t *address) {
+// STATIC void get_address(bleio_adapter_obj_t *self, ble_gap_addr_t *address) {
 //    check_nrf_error(sd_ble_gap_addr_get(address));
-}
+// }
 
 char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0 , 0};
 
-STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
-    uint8_t len = sizeof(default_ble_name) - 1;
+// STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
+//     // uint8_t len = sizeof(default_ble_name) - 1;
 
-    ble_gap_addr_t local_address;
-    get_address(self, &local_address);
+//     // ble_gap_addr_t local_address;
+//     // get_address(self, &local_address);
 
-    default_ble_name[len - 4] = nibble_to_hex_lower[local_address.addr[1] >> 4 & 0xf];
-    default_ble_name[len - 3] = nibble_to_hex_lower[local_address.addr[1] & 0xf];
-    default_ble_name[len - 2] = nibble_to_hex_lower[local_address.addr[0] >> 4 & 0xf];
-    default_ble_name[len - 1] = nibble_to_hex_lower[local_address.addr[0] & 0xf];
-    default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+//     // default_ble_name[len - 4] = nibble_to_hex_lower[local_address.addr[1] >> 4 & 0xf];
+//     // default_ble_name[len - 3] = nibble_to_hex_lower[local_address.addr[1] & 0xf];
+//     // default_ble_name[len - 2] = nibble_to_hex_lower[local_address.addr[0] >> 4 & 0xf];
+//     // default_ble_name[len - 1] = nibble_to_hex_lower[local_address.addr[0] & 0xf];
+//     // default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
 
-    common_hal_bleio_adapter_set_name(self, (char*) default_ble_name);
-}
+//     common_hal_bleio_adapter_set_name(self, (char*) default_ble_name);
+// }
 
-void common_hal_bleio_adapter_construct(bleio_adapter_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, mcu_pin_obj_t *rts, mcu_pin_obj_t *cts, uint32_t baudrate, uint32_t buffer_size, mcu_pin_obj_t* spi_cs, mcu_pin_obj_t* gpio0, mcu_pin_obj_t *reset, bool reset_high) {
+void common_hal_bleio_adapter_construct(bleio_adapter_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts, uint32_t baudrate, uint32_t buffer_size, const mcu_pin_obj_t* spi_cs, const mcu_pin_obj_t* gpio0, const mcu_pin_obj_t *reset, bool reset_high) {
     self->tx = tx;
     self->rx = rx;
     self->rts = rts;
@@ -206,9 +205,9 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         // common_hal UART takes rts and cts, but is currently not implemented for many ports.
         // In addition, rts and cts may be pins that are not part of the serial peripheral
         // used for tx and rx, so use GPIO for them.
-        common_hal_busio_uart_construct(&self->hci_uart, tx, rx, NULL, NULL, NULL, false,
-                                        BLEIO_HCI_BAUDRATE, 8, PARITY_NONE, 1, 0.0f,
-                                        BLEIO_HCI_BUFFER_SIZE, NULL, false);
+        common_hal_busio_uart_construct(&self->hci_uart, self->tx, self->rx, NULL, NULL, NULL, false,
+                                        self->baudrate, 8, PARITY_NONE, 1, 0.0f,
+                                        self->buffer_size, NULL, false);
 
         // RTS is output, active high
         common_hal_digitalio_digitalinout_construct(&self->rts_digitalio, self->rts);
@@ -220,9 +219,9 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         // SPI_CS and GPI0 are used to signal entering BLE mode.
         // SPI_CS should be low, and GPI0 should be high
         common_hal_digitalio_digitalinout_construct(&self->spi_cs_digitalio, self->spi_cs);
-        common_hal_digitalio_digitalinout_construct(&self->gpio0_digitalio, self->gpi0);
+        common_hal_digitalio_digitalinout_construct(&self->gpio0_digitalio, self->gpio0);
         common_hal_digitalio_digitalinout_switch_to_output(&self->spi_cs_digitalio, false, DRIVE_MODE_PUSH_PULL);
-        common_hal_digitalio_digitalinout_switch_to_output(&self->gpio0_digitalio, true DRIVE_MODE_PUSH_PULL);
+        common_hal_digitalio_digitalinout_switch_to_output(&self->gpio0_digitalio, true, DRIVE_MODE_PUSH_PULL);
 
         // RESET is output, start in non-reset state.
         common_hal_digitalio_digitalinout_construct(&self->reset_digitalio, self->reset);
@@ -252,7 +251,7 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     common_hal_digitalio_digitalinout_deinit(&self->rts_digitalio);
     common_hal_digitalio_digitalinout_deinit(&self->cts_digitalio);
     common_hal_digitalio_digitalinout_deinit(&self->spi_cs_digitalio);
-    common_hal_digitalio_digitalinout_deinit(&self->gpi0_digitalio);
+    common_hal_digitalio_digitalinout_deinit(&self->gpio0_digitalio);
     common_hal_digitalio_digitalinout_deinit(&self->reset_digitalio);
 }
 
@@ -263,13 +262,13 @@ bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
 bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *self) {
     common_hal_bleio_adapter_set_enabled(self, true);
 
-    ble_gap_addr_t local_address;
-    get_address(self, &local_address);
+    // ble_gap_addr_t local_address;
+    // get_address(self, &local_address);
 
     bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
     address->base.type = &bleio_address_type;
 
-    common_hal_bleio_address_construct(address, local_address.addr, local_address.addr_type);
+    // common_hal_bleio_address_construct(address, local_address.addr, local_address.addr_type);
     return address;
 }
 
@@ -460,12 +459,12 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     // sd_ble_gap_data_length_update(conn_handle, NULL, NULL);
 
     // Make the connection object and return it.
-    for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-        bleio_connection_internal_t *connection = &bleio_connections[i];
-        if (connection->conn_handle == conn_handle) {
-            return bleio_connection_new_from_internal(connection);
-        }
-    }
+    // for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+    //     bleio_connection_internal_t *connection = &bleio_connections[i];
+    //     if (connection->conn_handle == conn_handle) {
+    //         return bleio_connection_new_from_internal(connection);
+    //     }
+    // }
 
     mp_raise_bleio_BluetoothError(translate("Failed to connect: internal error"));
 
@@ -473,13 +472,13 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
 }
 
 // The nRF SD 6.1.0 can only do one concurrent advertisement so share the advertising handle.
-uint8_t adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
+//FIX uint8_t adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
 STATIC void check_data_fit(size_t data_len, bool connectable) {
-    if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED ||
-        (connectable && data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_CONNECTABLE_MAX_SUPPORTED)) {
-        mp_raise_ValueError(translate("Data too large for advertisement packet"));
-    }
+    //FIX  if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED ||
+    //     (connectable && data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_CONNECTABLE_MAX_SUPPORTED)) {
+    //     mp_raise_ValueError(translate("Data too large for advertisement packet"));
+    // }
 }
 
 // STATIC bool advertising_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
@@ -607,30 +606,31 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     // the same data while cycling the MAC address -- otherwise, what's the
     // point of randomizing the MAC address?
     if (!timeout) {
-        if (anonymous) {
-            // The Nordic macro is in units of 10ms. Convert to seconds.
-            uint32_t adv_timeout_max_secs = UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS);
-            uint32_t rotate_timeout_max_secs = BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S;
-            timeout = MIN(adv_timeout_max_secs, rotate_timeout_max_secs);
-        }
-        else {
-            timeout = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED;
-        }
+        //FIX if (anonymous) {
+        //     // The Nordic macro is in units of 10ms. Convert to seconds.
+        //     uint32_t adv_timeout_max_secs = UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS);
+        //     uint32_t rotate_timeout_max_secs = BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S;
+        //     timeout = MIN(adv_timeout_max_secs, rotate_timeout_max_secs);
+        // }
+        // else {
+        //     timeout = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED;
+        // }
     } else {
-        if (SEC_TO_UNITS(timeout, UNIT_10_MS) > BLE_GAP_ADV_TIMEOUT_LIMITED_MAX) {
-            mp_raise_bleio_BluetoothError(translate("Timeout is too long: Maximum timeout length is %d seconds"),
-                                        UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS));
-        }
+        //FIX if (SEC_TO_UNITS(timeout, UNIT_10_MS) > BLE_GAP_ADV_TIMEOUT_LIMITED_MAX) {
+        //     mp_raise_bleio_BluetoothError(translate("Timeout is too long: Maximum timeout length is %d seconds"),
+        //                                 UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS));
+        // }
     }
 
     // The advertising data buffers must not move, because the SoftDevice depends on them.
     // So make them long-lived and reuse them onwards.
-    if (self->advertising_data == NULL) {
-        self->advertising_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
-    }
-    if (self->scan_response_data == NULL) {
-        self->scan_response_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
-    }
+    //FIX GET CORRECT SIZE
+    // if (self->advertising_data == NULL) {
+    //     self->advertising_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
+    // }
+    // if (self->scan_response_data == NULL) {
+    //     self->scan_response_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
+    // }
 
     memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);
     memcpy(self->scan_response_data, scan_response_data_bufinfo->buf, scan_response_data_bufinfo->len);
@@ -690,7 +690,7 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
 }
 
 void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
-    bonding_erase_storage();
+    //FIX bonding_erase_storage();
 }
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {

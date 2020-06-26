@@ -37,6 +37,10 @@
 
 const mp_obj_type_t bleio_adapter_type;
 
+#if CIRCUITPY_BLEIO_HCI
+void common_hal_bleio_adapter_construct(bleio_adapter_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts, uint32_t baudrate, uint32_t buffer_size, const mcu_pin_obj_t* spi_cs, const mcu_pin_obj_t* gpio0, const mcu_pin_obj_t *reset, bool reset_high);
+#endif
+
 extern bool common_hal_bleio_adapter_get_advertising(bleio_adapter_obj_t *self);
 extern bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self);
 extern void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled);

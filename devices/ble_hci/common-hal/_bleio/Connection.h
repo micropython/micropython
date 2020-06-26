@@ -34,7 +34,6 @@
 #include "py/objlist.h"
 
 #include "common-hal/_bleio/__init__.h"
-#include "common-hal/_bleio/bonding.h"
 #include "shared-module/_bleio/Address.h"
 #include "common-hal/_bleio/Service.h"
 

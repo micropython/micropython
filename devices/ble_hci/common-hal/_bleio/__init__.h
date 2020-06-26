@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
 #define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
 
+#include <stdbool.h>
+
 void bleio_reset(void);
 
 typedef struct {
@@ -38,6 +40,13 @@ typedef struct {
 // We assume variable length data.
 // 20 bytes max (23 - 3).
 #define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
+
+//FIX
+#define BLE_GATT_HANDLE_INVALID 0x0000
+#define BLE_CONN_HANDLE_INVALID 0xFFFF
+#define BLE_GATTS_FIX_ATTR_LEN_MAX (510)  /**< Maximum length for fixed length Attribute Values. */
+#define BLE_GATTS_VAR_ATTR_LEN_MAX (512)  /**< Maximum length for variable length Attribute Values. */
+
 
 // These helpers raise the appropriate exceptions if the code doesn't equal success.
 void check_nrf_error(uint32_t err_code);
