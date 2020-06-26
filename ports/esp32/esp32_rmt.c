@@ -56,6 +56,7 @@ typedef struct _esp32_rmt_obj_t {
     uint32_t carrier_freq;
     mp_uint_t num_items;
     rmt_item32_t *items;
+    bool loop_en;
 } esp32_rmt_obj_t;
 
 STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -93,6 +94,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     self->clock_div = clock_div;
     self->carrier_duty_percent = carrier_duty_percent;
     self->carrier_freq = carrier_freq;
+    self->loop_en = false;
 
     rmt_config_t config;
     config.rmt_mode = RMT_MODE_TX;
@@ -110,8 +112,8 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     config.clk_div = self->clock_div;
 
-    check_esp_err(rmt_driver_install(config.channel, 0, 0));
     check_esp_err(rmt_config(&config));
+    check_esp_err(rmt_driver_install(config.channel, 0, 0));
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -180,7 +182,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_wait_done_obj, 1, esp32_rmt_wait_don
 
 STATIC mp_obj_t esp32_rmt_loop(mp_obj_t self_in, mp_obj_t loop) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_esp_err(rmt_set_tx_loop_mode(self->channel_id, mp_obj_get_int(loop)));
+    self->loop_en = mp_obj_get_int(loop);
+    if (!self->loop_en) {
+        bool loop_en;
+        check_esp_err(rmt_get_tx_loop_mode(self->channel_id, &loop_en));
+        if (loop_en) {
+            check_esp_err(rmt_set_tx_loop_mode(self->channel_id, false));
+            check_esp_err(rmt_set_tx_intr_en(self->channel_id, true));
+        }
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_rmt_loop_obj, esp32_rmt_loop);
@@ -222,7 +232,23 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *pos_args, 
             self->items[item_index].level1 = start++;
         }
     }
+
+    if (self->loop_en) {
+        bool loop_en;
+        check_esp_err(rmt_get_tx_loop_mode(self->channel_id, &loop_en));
+        if (loop_en) {
+            check_esp_err(rmt_set_tx_intr_en(self->channel_id, true));
+            check_esp_err(rmt_set_tx_loop_mode(self->channel_id, false));
+        }
+        check_esp_err(rmt_wait_tx_done(self->channel_id, portMAX_DELAY));
+        check_esp_err(rmt_set_tx_intr_en(self->channel_id, false));
+    }
+
     check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false /* non-blocking */));
+
+    if (self->loop_en) {
+        check_esp_err(rmt_set_tx_loop_mode(self->channel_id, true));
+    }
 
     return mp_const_none;
 }
