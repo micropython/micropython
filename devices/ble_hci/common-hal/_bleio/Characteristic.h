@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +25,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTIC_H
+#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTIC_H
 
-void supervisor_start_bluetooth(void);
-void supervisor_bluetooth_background(void);
+#include "shared-bindings/_bleio/Attribute.h"
+#include "common-hal/_bleio/Descriptor.h"
+#include "shared-module/_bleio/Characteristic.h"
+#include "common-hal/_bleio/Service.h"
+#include "common-hal/_bleio/UUID.h"
 
-#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+typedef struct _bleio_characteristic_obj {
+    mp_obj_base_t base;
+    // Will be MP_OBJ_NULL before being assigned to a Service.
+    bleio_service_obj_t *service;
+    bleio_uuid_obj_t *uuid;
+    mp_obj_t value;
+    uint16_t max_length;
+    bool fixed_length;
+    uint16_t handle;
+    bleio_characteristic_properties_t props;
+    bleio_attribute_security_mode_t read_perm;
+    bleio_attribute_security_mode_t write_perm;
+    bleio_descriptor_obj_t *descriptor_list;
+    uint16_t user_desc_handle;
+    uint16_t cccd_handle;
+    uint16_t sccd_handle;
+} bleio_characteristic_obj_t;
+
+#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTIC_H

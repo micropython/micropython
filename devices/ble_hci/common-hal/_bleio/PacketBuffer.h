@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019-2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_PACKETBUFFER_H
+#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_PACKETBUFFER_H
 
-void supervisor_start_bluetooth(void);
-void supervisor_bluetooth_background(void);
+#include "py/ringbuf.h"
+#include "shared-bindings/_bleio/Characteristic.h"
 
-#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+typedef struct {
+    mp_obj_base_t base;
+    bleio_characteristic_obj_t *characteristic;
+    // Ring buffer storing consecutive incoming values.
+    ringbuf_t ringbuf;
+    // Two outgoing buffers to alternate between. One will be queued for transmission by the SD and
+    // the other is waiting to be queued and can be extended.
+    uint8_t* outgoing[2];
+    volatile uint16_t pending_size;
+    // We remember the conn_handle so we can do a NOTIFY/INDICATE to a client.
+    // We can find out the conn_handle on a Characteristic write or a CCCD write (but not a read).
+    volatile uint16_t conn_handle;
+    uint8_t pending_index;
+    uint8_t write_type;
+    bool client;
+    bool packet_queued;
+} bleio_packet_buffer_obj_t;
+
+#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_PACKETBUFFER_H

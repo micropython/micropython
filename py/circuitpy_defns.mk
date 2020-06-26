@@ -411,7 +411,7 @@ SRC_SHARED_MODULE_ALL = \
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))
 
 # Use the native touchio if requested. This flag is set conditionally in, say, mpconfigport.h.
-# The presence of common-hal/touchio/* # does not imply it's available for all chips in a port,
+# The presence of common-hal/touchio/* does not imply it's available for all chips in a port,
 # so there is an explicit flag. For example, SAMD21 touchio is native, but SAMD51 is not.
 ifeq ($(CIRCUITPY_TOUCHIO_USE_NATIVE),1)
 SRC_COMMON_HAL_ALL += \
@@ -422,6 +422,14 @@ SRC_SHARED_MODULE_ALL += \
 	touchio/TouchIn.c \
 	touchio/__init__.c
 endif
+
+# If supporting _bleio via HCI, make devices/ble_hci/common-hal/_bleio be includable,
+# and use C source files in devices/ble_hci/common-hal.
+ifeq ($(CIRCUITPY_BLEIO_HCI),1)
+INC += -I$(TOP)/devices/ble_hci
+DEVICES_MODULES += $(TOP)/devices/ble_hci
+endif
+
 ifeq ($(CIRCUITPY_AUDIOMP3),1)
 SRC_MOD += $(addprefix lib/mp3/src/, \
 	bitstream.c \

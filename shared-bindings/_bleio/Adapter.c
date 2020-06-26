@@ -65,12 +65,59 @@
 //|     connections and also initiate connections."""
 //|
 
-//|     def __init__(self, ):
-//|         """You cannot create an instance of `_bleio.Adapter`.
+//|     def __init__(self, *, tx: Pin, rx: Pin, rts: Pin, cts: Pin, baudrate: int = 115200, buffer_size: int = 256, spi_cs: Pin, gpio0: Pin, reset: Pin, reset_high: bool):
+//|         """On boards with native BLE, such as the nRf52840,
+//|         you cannot create an instance of `_bleio.Adapter`.
 //|         Use `_bleio.adapter` to access the sole instance available."""
-//|         ...
 //|
+//|         On boards that do not have native BLE,
+//|         call `_bleio.Adapter()` once, passing it the pins used to communicate
+//|         with an HCI co-processor, such as an Adafruit AirLift, on or off the board.
+//|         The `Adapter` object will be initialized, enabled, and will be available as `_bleio.adapter`.
+//|         The `tx`, `rx`, `rts`, and `cs` pins are used to communicate with the HCI co-processor in HCI mode.
+//|         The `spi_cs` and `gpio0` pins are used to enable BLE mode
+//|         (usually `spi_cs` is low and `gpio0` is high to enter BLE mode).
+//|         The `reset` pin is used to reset the co-processor.
+//|         `reset_high` describes whether the reset pin is active high or active low.
+//|
+#if CIRCUITPY_BLEIO_HCI
+STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_baudrate, ARG_buffer_size, ARG_spi_cs, ARG_gpio0, ARG_reset, ARG_reset_high };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 115200 } },
+        { MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 256 } },
+        { MP_QSTR_spi_cs, MP_ARG_KW_ONLY }| MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_gpio0, MP_ARG_KW_ONLY }| MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_reset, MP_ARG_KW_ONLY }| MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_reset_high, MP_ARG_KW_ONLY |MP_ARG_BOOL },
+    };
 
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+   const mcu_pin_obj_t *tx = validate_obj_is_free_pin(args[ARG_tx].u_obj);
+   const mcu_pin_obj_t *rx = validate_obj_is_free_pin(args[ARG_rx].u_obj);
+   const mcu_pin_obj_t *rts = validate_obj_is_free_pin(args[ARG_rts].u_obj);
+   const mcu_pin_obj_t *cts = validate_obj_is_free_pin(args[ARG_cts].u_obj);
+   const mcu_pin_obj_t *spi_cs = validate_obj_is_free_pin(args[ARG_spi_cs].u_obj);
+   const mcu_pin_obj_t *gpio0 = validate_obj_is_free_pin(args[ARG_gpio0].u_obj);
+   const mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
+   const bool reset_high  = args[ARG_reset_high].u_bool;
+
+   common_hal_bleio_adapter_construct(&common_hal_bleio_adapter_obj, tx, rx, rts, cts,
+                                      args[ARG_baudrate], arg[ARG_buffer_size],
+                                      spi_cs, gpio0,
+                                      reset, reset_high);
+   common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
+
+   return MP_OBJ_FROM_PTR(service);
+}
+#endif
+//|
 //|     enabled: Any = ...
 //|     """State of the BLE adapter."""
 //|
@@ -418,5 +465,8 @@ STATIC MP_DEFINE_CONST_DICT(bleio_adapter_locals_dict, bleio_adapter_locals_dict
 const mp_obj_type_t bleio_adapter_type = {
     .base = { &mp_type_type },
     .name = MP_QSTR_Adapter,
+#if CIRCUITPY_BLEIO_HCI
+    .make_new = bleio_adapter_make_new,
+    #endif
     .locals_dict = (mp_obj_t)&bleio_adapter_locals_dict,
 };

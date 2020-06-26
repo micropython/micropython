@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTICBUFFER_H
+#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTICBUFFER_H
 
-void supervisor_start_bluetooth(void);
-void supervisor_bluetooth_background(void);
+#include "py/ringbuf.h"
+#include "shared-bindings/_bleio/Characteristic.h"
 
-#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+typedef struct {
+    mp_obj_base_t base;
+    bleio_characteristic_obj_t *characteristic;
+    uint32_t timeout_ms;
+    // Ring buffer storing consecutive incoming values.
+    ringbuf_t ringbuf;
+} bleio_characteristic_buffer_obj_t;
+
+#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTICBUFFER_H

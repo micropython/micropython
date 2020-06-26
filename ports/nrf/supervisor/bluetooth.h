@@ -24,10 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#ifndef MICROPY_INCLUDED_NRF_SUPERVISOR_BLUETOOTH_H
+#define MICROPY_INCLUDED_NRF_SUPERVISOR_BLUETOOTH_H
 
-void supervisor_start_bluetooth(void);
-void supervisor_bluetooth_background(void);
+#include <stdbool.h>
 
-#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#include "ble.h"
+
+bool supervisor_bluetooth_hook(ble_evt_t *ble_evt);
+
+#endif // MICROPY_INCLUDED_NRF_SUPERVISOR_BLUETOOTH_H

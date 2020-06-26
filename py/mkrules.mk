@@ -42,7 +42,7 @@ $(Q)$(CC) $(CFLAGS) -c -MD -o $@ $<
   $(RM) -f $(@:.o=.d)
 endef
 
-vpath %.c . $(TOP) $(USER_C_MODULES)
+vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
@@ -56,8 +56,7 @@ $(BUILD)/%.o: %.c
 
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
 
-vpath %.c . $(TOP) $(USER_C_MODULES)
-
+vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES)
 $(BUILD)/%.pp: %.c
 	$(STEPECHO) "PreProcess $<"
 	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<

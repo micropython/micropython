@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ATTRIBUTE_H
+#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ATTRIBUTE_H
 
-void supervisor_start_bluetooth(void);
-void supervisor_bluetooth_background(void);
+#include "shared-module/_bleio/Attribute.h"
 
-#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+extern void bleio_attribute_gatts_set_security_mode(ble_gap_conn_sec_mode_t *perm, bleio_attribute_security_mode_t security_mode);
+
+#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ATTRIBUTE_H

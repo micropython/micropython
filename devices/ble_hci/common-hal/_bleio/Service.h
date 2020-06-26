@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +25,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
-#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_SERVICE_H
+#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_SERVICE_H
 
-void supervisor_start_bluetooth(void);
-void supervisor_bluetooth_background(void);
+#include "py/objlist.h"
+#include "common-hal/_bleio/UUID.h"
 
-#endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
+typedef struct bleio_service_obj {
+    mp_obj_base_t base;
+    // Handle for the local service.
+    uint16_t handle;
+    // True if created during discovery.
+    bool is_remote;
+    bool is_secondary;
+    bleio_uuid_obj_t *uuid;
+    // The connection object is set only when this is a remote service.
+    // A local service doesn't know the connection.
+    mp_obj_t connection;
+    mp_obj_list_t *characteristic_list;
+    // Range of attribute handles of this remote service.
+    uint16_t start_handle;
+    uint16_t end_handle;
+    struct bleio_service_obj* next;
+} bleio_service_obj_t;
+
+void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection);
+
+#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_SERVICE_H
