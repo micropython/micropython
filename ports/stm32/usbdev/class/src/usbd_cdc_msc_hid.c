@@ -438,6 +438,20 @@ static size_t make_cdc_desc(uint8_t *dest, int need_iad, uint8_t iface_num) {
         memcpy(dest, cdc_class_desc_data + 8, sizeof(cdc_class_desc_data) - 8);
     }
     dest[2] = iface_num;        // bInterfaceNumber, main class
+
+#ifdef USBD_INTERFACE_CDC0_STRING
+    if (iface_num == 0)
+        dest[8] = USBD_IDX_INTERFACE_CDC0_STR;   // iInterface:
+#endif
+#ifdef USBD_INTERFACE_CDC1_STRING
+    if (iface_num == 2)
+        dest[8] = USBD_IDX_INTERFACE_CDC1_STR;   // iInterface:
+#endif
+#ifdef USBD_INTERFACE_CDC2_STRING
+    if (iface_num == 4)
+        dest[8] = USBD_IDX_INTERFACE_CDC2_STR;   // iInterface:
+#endif
+
     dest[18] = iface_num + 1;   // bDataInterface
     dest[26] = iface_num + 0;   // bMasterInterface
     dest[27] = iface_num + 1;   // bSlaveInterface
