@@ -38,8 +38,9 @@ endif
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
-# MicroPython feature configurations
+ifeq ($(DEBUG), 0)
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
+endif
 
 # include py core make definitions
 include ../../py/py.mk
