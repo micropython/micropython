@@ -263,6 +263,10 @@ mp_obj_t mp_unary_op_maybe(mp_unary_op_t op, mp_obj_t arg) {
                 } else {
                     return MP_OBJ_NEW_SMALL_INT(-val);
                 }
+            case MP_UNARY_OP_FLOAT:
+            case MP_UNARY_OP_COMPLEX:
+                // These are handled in obj.c
+                return MP_OBJ_NULL;
             default:
                 assert(op == MP_UNARY_OP_INVERT);
                 return MP_OBJ_NEW_SMALL_INT(~val);
@@ -302,7 +306,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
     #else
     if (op == MP_UNARY_OP_INT) {
         mp_raise_msg_varg(&mp_type_TypeError,
-	    MP_ERROR_TEXT("can't convert %s to int"), mp_obj_get_type_str(arg));
+            MP_ERROR_TEXT("can't convert %s to int"), mp_obj_get_type_str(arg));
     } else {
         mp_raise_msg_varg(&mp_type_TypeError,
             MP_ERROR_TEXT("unsupported type for %q: '%s'"),
