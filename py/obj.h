@@ -473,11 +473,15 @@ typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 // then the type may check for equality against a different type.
 // If MP_TYPE_FLAG_EQ_HAS_NEQ_TEST is clear then the type only implements the __eq__
 // operator and not the __ne__ operator.  If it's set then __ne__ may be implemented.
+// If MP_TYPE_FLAG_BINDS_SELF is set then the type as a method binds self as the first arg.
+// If MP_TYPE_FLAG_BUILTIN_FUN is set then the type is a built-in function type.
 #define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
 #define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
 #define MP_TYPE_FLAG_EQ_NOT_REFLEXIVE (0x0004)
 #define MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE (0x0008)
 #define MP_TYPE_FLAG_EQ_HAS_NEQ_TEST (0x0010)
+#define MP_TYPE_FLAG_BINDS_SELF (0x0020)
+#define MP_TYPE_FLAG_BUILTIN_FUN (0x0040)
 
 typedef enum {
     PRINT_STR = 0,

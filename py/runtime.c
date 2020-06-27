@@ -993,6 +993,7 @@ STATIC mp_obj_t checked_fun_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
 
 STATIC const mp_obj_type_t mp_type_checked_fun = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF,
     .name = MP_QSTR_function,
     .call = checked_fun_call,
 };
@@ -1011,49 +1012,54 @@ STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) 
 // and put the result in the dest[] array for a possible method call.
 // Conversion means dealing with static/class methods, callables, and values.
 // see http://docs.python.org/3/howto/descriptor.html
+// and also https://mail.python.org/pipermail/python-dev/2015-March/138950.html
 void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest) {
-    if (mp_obj_is_type(member, &mp_type_staticmethod)) {
-        // return just the function
-        dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
-    } else if (mp_obj_is_type(member, &mp_type_classmethod)) {
-        // return a bound method, with self being the type of this object
-        // this type should be the type of the original instance, not the base
-        // type (which is what is passed in the 'type' argument to this function)
-        if (self != MP_OBJ_NULL) {
-            type = mp_obj_get_type(self);
-        }
-        dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
-        dest[1] = MP_OBJ_FROM_PTR(type);
-    } else if (mp_obj_is_type(member, &mp_type_type)) {
-        // Don't try to bind types (even though they're callable)
-        dest[0] = member;
-    } else if (mp_obj_is_fun(member)
-               || (mp_obj_is_obj(member)
-                   && (((mp_obj_base_t *)MP_OBJ_TO_PTR(member))->type->name == MP_QSTR_closure
-                       || ((mp_obj_base_t *)MP_OBJ_TO_PTR(member))->type->name == MP_QSTR_generator))) {
-        // only functions, closures and generators objects can be bound to self
-        #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
+    if (mp_obj_is_obj(member)) {
         const mp_obj_type_t *m_type = ((mp_obj_base_t *)MP_OBJ_TO_PTR(member))->type;
-        if (self == MP_OBJ_NULL
-            && (m_type == &mp_type_fun_builtin_0
-                || m_type == &mp_type_fun_builtin_1
-                || m_type == &mp_type_fun_builtin_2
-                || m_type == &mp_type_fun_builtin_3
-                || m_type == &mp_type_fun_builtin_var)
-            && type != &mp_type_object) {
-            // we extracted a builtin method without a first argument, so we must
-            // wrap this function in a type checker
-            // Note that object will do its own checking so shouldn't be wrapped.
-            dest[0] = mp_obj_new_checked_fun(type, member);
-        } else
-        #endif
-        {
-            // return a bound method, with self being this object
+        if (m_type->flags & MP_TYPE_FLAG_BINDS_SELF) {
+            // `member` is a function that binds self as its first argument.
+            if (m_type->flags & MP_TYPE_FLAG_BUILTIN_FUN) {
+                // `member` is a built-in function, which has special behaviour.
+                if (mp_obj_is_instance_type(type)) {
+                    // Built-in functions on user types always behave like a staticmethod.
+                    dest[0] = member;
+                }
+                #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
+                else if (self == MP_OBJ_NULL && type != &mp_type_object) {
+                    // `member` is a built-in method without a first argument, so wrap
+                    // it in a type checker that will check self when it's supplied.
+                    // Note that object will do its own checking so shouldn't be wrapped.
+                    dest[0] = mp_obj_new_checked_fun(type, member);
+                }
+                #endif
+                else {
+                    // Return a (built-in) bound method, with self being this object.
+                    dest[0] = member;
+                    dest[1] = self;
+                }
+            } else {
+                // Return a bound method, with self being this object.
+                dest[0] = member;
+                dest[1] = self;
+            }
+        } else if (m_type == &mp_type_staticmethod) {
+            // `member` is a staticmethod, return the function that it wraps.
+            dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
+        } else if (m_type == &mp_type_classmethod) {
+            // `member` is a classmethod, return a bound method with self being the type of
+            // this object.  This type should be the type of the original instance, not the
+            // base type (which is what is passed in the `type` argument to this function).
+            if (self != MP_OBJ_NULL) {
+                type = mp_obj_get_type(self);
+            }
+            dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
+            dest[1] = MP_OBJ_FROM_PTR(type);
+        } else {
+            // `member` is a value, so just return that value.
             dest[0] = member;
-            dest[1] = self;
         }
     } else {
-        // class member is a value, so just return that value
+        // `member` is a value, so just return that value.
         dest[0] = member;
     }
 }
