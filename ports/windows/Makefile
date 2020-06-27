@@ -43,17 +43,25 @@ SRC_C = \
 	fmode.c \
 	$(SRC_MOD)
 
+LIB_SRC_C = $(addprefix lib/,\
+        lv_bindings/driver/SDL/SDL_monitor.c \
+        lv_bindings/driver/SDL/SDL_mouse.c \
+        lv_bindings/driver/SDL/modSDL.c \
+        timeutils/timeutils.c \
+        )
+
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 ifeq ($(MICROPY_USE_READLINE),1)
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
 SRC_C += lib/mp-readline/readline.c
 endif
 
-LIB += -lws2_32
+LIB += -lws2_32 -lSDL2
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C)
+SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=

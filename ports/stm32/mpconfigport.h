@@ -126,7 +126,7 @@
 #endif
 #define MICROPY_PY_UERRNO           (1)
 #ifndef MICROPY_PY_THREAD
-#define MICROPY_PY_THREAD           (0)
+#define MICROPY_PY_THREAD           (1)
 #endif
 
 // extended modules
@@ -173,7 +173,9 @@
 #ifndef MICROPY_PY_NETWORK
 #define MICROPY_PY_NETWORK          (1)
 #endif
-#define MICROPY_PY_LVGL                     (1)
+//#define MICROPY_PY_LVGL             (1)
+#define MICROPY_PY_LODEPNG          (1)
+#define MICROPY_PY_RK043FN48H       (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
@@ -211,6 +213,7 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t mp_module_lvgl;
+extern const struct _mp_obj_module_t mp_module_lodepng;
 
 #if MICROPY_PY_LVGL
 #define MICROPY_PORT_LVGL_DEF \
@@ -218,6 +221,12 @@ extern const struct _mp_obj_module_t mp_module_lvgl;
 
 #else
 #define MICROPY_PORT_LVGL_DEF
+#endif
+
+#if MICROPY_PY_LODEPNG
+#define MICROPY_PORT_LODEPNG_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lodepng), (mp_obj_t)&mp_module_lodepng },
+#else
+#define MICROPY_PORT_LODEPNG_DEF
 #endif
 
 #if MICROPY_PY_STM
@@ -252,6 +261,7 @@ extern const struct _mp_obj_module_t mp_module_lvgl;
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
     MICROPY_PORT_LVGL_DEF \
+    MICROPY_PORT_LODEPNG_DEF \
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
 
 // extra constants
@@ -267,6 +277,12 @@ extern const struct _mp_obj_module_t mp_module_lvgl;
 #include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
 #else
 #define LV_ROOTS
+#endif
+
+#if MICROPY_PY_RK043FN48H
+#define RK043FN48H_ROOTS void* rk043fn48h_fb[2];
+#else
+#define RK043FN48H_ROOTS
 #endif
 
 #if MICROPY_SSL_MBEDTLS
@@ -285,6 +301,7 @@ struct _mp_bluetooth_nimble_root_pointers_t;
 #define MICROPY_PORT_ROOT_POINTERS \
     LV_ROOTS \
     void *mp_lv_user_data; \
+    RK043FN48H_ROOTS \
     const char *readline_hist[8]; \
     \
     mp_obj_t pyb_hid_report_desc; \
