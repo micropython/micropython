@@ -182,10 +182,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_wait_done_obj, 1, esp32_rmt_wait_don
 
 STATIC mp_obj_t esp32_rmt_loop(mp_obj_t self_in, mp_obj_t loop) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    bool loop_en = mp_obj_get_int(loop) ? true : false;
-    if (loop_en != self->loop_en) {
-        self->loop_en = loop_en;
-        if (!loop_en) {
+    self->loop_en = mp_obj_get_int(loop);
+    if (!self->loop_en) {
+        bool loop_en;
+        check_esp_err(rmt_get_tx_loop_mode(self->channel_id, &loop_en));
+        if (loop_en) {
             check_esp_err(rmt_set_tx_loop_mode(self->channel_id, false));
             check_esp_err(rmt_set_tx_intr_en(self->channel_id, true));
         }
