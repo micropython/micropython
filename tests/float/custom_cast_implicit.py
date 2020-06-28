@@ -22,7 +22,23 @@ class T3:
         return 1.23j
 
 
-instances = [T1(), T2(), T3()]
+class T4:
+    def __float__(self):
+        return 1
+
+    def __complex__(self):
+        return 1
+
+
+class T5:
+    def __float__(self):
+        return []
+
+    def __complex__(self):
+        return []
+
+
+instances = [T1(), T2(), T3(), T4(), T5()]
 
 for i in instances:
     print(i.__class__.__name__)

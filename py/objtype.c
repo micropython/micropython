@@ -436,7 +436,23 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                     mp_raise_TypeError(NULL);
                 }
                 break;
-            default:
+            #if MICROPY_PY_BUILTINS_FLOAT
+            case MP_UNARY_OP_FLOAT:
+                // Must return float
+                if (!mp_obj_is_type(val, &mp_type_float)) {
+                    mp_raise_TypeError(NULL);
+                }
+                break;
+	    #endif
+            #if MICROPY_PY_BUILTINS_COMPLEX
+            case MP_UNARY_OP_COMPLEX:
+                // Must return complex
+                if (!mp_obj_is_type(val, &mp_type_complex)) {
+                    mp_raise_TypeError(NULL);
+                }
+                break;
+	    #endif
+	    default:
                 // No need to do anything
                 ;
         }

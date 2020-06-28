@@ -404,15 +404,16 @@ bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) 
 void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     if (!mp_obj_get_complex_maybe(arg, real, imag)) {
         arg = mp_unary_op(MP_UNARY_OP_COMPLEX, arg);
-        if (mp_obj_get_complex_maybe(arg, real, imag)) {
-            return;
+        if (arg != MP_OBJ_NULL && mp_obj_is_type(arg, &mp_type_complex)) {
+	    mp_obj_get_complex_maybe(arg, real, imag);
+        } else {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            mp_raise_TypeError(MP_ERROR_TEXT("can't convert to complex"));
+            #else
+            mp_raise_msg_varg(&mp_type_TypeError,
+                MP_ERROR_TEXT("can't convert %s to complex"), mp_obj_get_type_str(arg));
+            #endif
         }
-        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError(MP_ERROR_TEXT("can't convert to complex"));
-        #else
-        mp_raise_msg_varg(&mp_type_TypeError,
-            MP_ERROR_TEXT("can't convert %s to complex"), mp_obj_get_type_str(arg));
-        #endif
     }
 }
 #endif
