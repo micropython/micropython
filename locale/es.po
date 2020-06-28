@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-25 11:44-0500\n"
-"PO-Revision-Date: 2020-06-24 18:32+0000\n"
+"PO-Revision-Date: 2020-06-29 13:13+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -441,7 +441,7 @@ msgstr "Buffer demasiado grande e incapaz de asignar"
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr ""
+msgstr "Búfer muy corto por %d bytes"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
@@ -592,7 +592,7 @@ msgstr "Código crudo corrupto"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
-msgstr ""
+msgstr "No se pudo inicializar el GNSS"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -628,7 +628,7 @@ msgstr "No se pudo iniciar la interrupción, RX ocupado"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
-msgstr ""
+msgstr "No se pudo encontrar el decodificador"
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 #: shared-module/audiomp3/MP3Decoder.c
@@ -637,7 +637,7 @@ msgstr "No se pudo asignar el primer buffer"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate input buffer"
-msgstr ""
+msgstr "No se pudo encontrar el búfer de entrada"
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 #: shared-module/audiomp3/MP3Decoder.c
@@ -702,7 +702,7 @@ msgstr "Modo Drive no se usa cuando la dirección es input."
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
-msgstr ""
+msgstr "ECB solo opera sobre 16 bytes a la vez"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
@@ -1285,6 +1285,8 @@ msgid ""
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
 msgstr ""
+"El pinout utiliza %d bytes por elemento, lo que consume más del ideal de %d "
+"bytes. Si esto no se puede evitar, pase allow_inefficient=True al constructor"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -1321,7 +1323,7 @@ msgstr "PulseOut no es compatible con este chip"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
-msgstr ""
+msgstr "Error de desinicializado del RNG"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG Init Error"
@@ -1329,7 +1331,7 @@ msgstr "Error de inicialización de RNG"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
-msgstr ""
+msgstr "Se especifica inversión de RS485 sin estar en modo RS485"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/rtc/RTC.c
@@ -1343,7 +1345,7 @@ msgstr "RTC no soportado en esta placa"
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
-msgstr ""
+msgstr "Sin capacidad de RTS/CTS/RS485 para este dispositivo"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
@@ -1435,7 +1437,7 @@ msgstr "Rebanadas no soportadas"
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
-msgstr ""
+msgstr "Los búferes de fuente y destino deben ser del mismo tamaño"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1472,6 +1474,8 @@ msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode.\n"
 msgstr ""
+"El módulo de `microcontroller` fue utilizado para bootear en modo seguro. "
+"Presione reset para salir del modo seguro.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1479,6 +1483,11 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
+"La alimentación de la microntroladora bajó. Asegúrate que tu fuente de "
+"poder\n"
+"pueda suplir suficiente energía para todo el circuito y presione reset ("
+"luego de\n"
+"expulsar CIRCUITPY)\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -1533,7 +1542,7 @@ msgstr "Muchos displays"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than outgoing_packet_length"
-msgstr ""
+msgstr "Los datos totales a escribir son más grandes que outgoing_packet_length"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -1545,7 +1554,7 @@ msgstr "Argumento tuple o struct_time requerido"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Buffer allocation error"
-msgstr ""
+msgstr "No se pudo encontrar el búfer para UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART De-init error"
@@ -1643,6 +1652,8 @@ msgid ""
 "Unspecified issue. Can be that the pairing prompt on the other device was "
 "declined or ignored."
 msgstr ""
+"Problema no especificado. Puede ser que la señal de emparejamiento del otro "
+"dispositivo fue declinada o ignorada."
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/I2C.c
@@ -1650,9 +1661,8 @@ msgid "Unsupported baudrate"
 msgstr "Baudrate no soportado"
 
 #: shared-module/displayio/display_core.c
-#, fuzzy
 msgid "Unsupported display bus type"
-msgstr "tipo de bitmap no soportado"
+msgstr "Sin capacidad de bus tipo display"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
@@ -1669,12 +1679,12 @@ msgstr "valor pull no soportado."
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
-msgstr ""
+msgstr "Tamaño del valor != del tamaño fijo requerido"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
-msgstr ""
+msgstr "Tamaño de valor > max_length"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -1682,7 +1692,7 @@ msgstr "funciones Viper actualmente no soportan más de 4 argumentos."
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
-msgstr ""
+msgstr "Tiempo de espera agotado para lectura de voltaje"
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
@@ -1730,7 +1740,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr ""
+msgstr "Estás en modo seguro: algo inesperado ha sucedido.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -1772,7 +1782,7 @@ msgstr "addresses esta vacío"
 
 #: extmod/ulab/code/vectorise.c
 msgid "arctan2 is implemented for scalars and ndarrays only"
-msgstr ""
+msgstr "arctan2 se encuentra implementado solo para escalares y ndarrays"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -1780,7 +1790,7 @@ msgstr "argumento es una secuencia vacía"
 
 #: extmod/ulab/code/numerical.c
 msgid "argsort argument must be an ndarray"
-msgstr ""
+msgstr "El argumento para argsort debe ser un ndarray"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -1797,7 +1807,7 @@ msgstr "argumento deberia ser un '%q' no un '%q'"
 
 #: extmod/ulab/code/linalg.c
 msgid "arguments must be ndarrays"
-msgstr ""
+msgstr "argumentos deben ser ndarrays"
 
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -1805,7 +1815,7 @@ msgstr "array/bytes requeridos en el lado derecho"
 
 #: extmod/ulab/code/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
-msgstr ""
+msgstr "se trató de traer argmin/argmax de una secuencia vacía"
 
 #: py/objstr.c
 msgid "attributes not supported yet"
@@ -1813,15 +1823,15 @@ msgstr "atributos aún no soportados"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be -1, 0, None, or 1"
-msgstr ""
+msgstr "eje debe ser -1, 0, None o 1"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be -1, 0, or 1"
-msgstr ""
+msgstr "eje debe ser -1, 0, o 1"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be None, 0, or 1"
-msgstr ""
+msgstr "eje debe ser None, 0, o 1"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -1852,9 +1862,8 @@ msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample debe ser 8 ó 16"
 
 #: py/emitinlinethumb.c
-#, fuzzy
 msgid "branch not in range"
-msgstr "El argumento de chr() no esta en el rango(256)"
+msgstr "la rama no está dentro del rango"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -1883,7 +1892,7 @@ msgstr "codigo byte no implementado"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
-msgstr ""
+msgstr "byteorder no es una cadena"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -2065,7 +2074,7 @@ msgstr "no se puedo realizar importación relativa"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array (incompatible input/output shape)"
-msgstr ""
+msgstr "no se puede reformar el arreglo (forma de entrada/salida incompatible)"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2085,7 +2094,7 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
-msgstr ""
+msgstr "circle solo puede ser registrado con un pariente"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -2093,7 +2102,7 @@ msgstr "color buffer debe ser 3 bytes (RGB) ó 4 bytes (RGB + pad byte)"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer, tuple, list, or int"
-msgstr ""
+msgstr "el búfer de color debe ser un búfer, una tupla, una lista o un entero"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -2149,11 +2158,11 @@ msgstr ""
 
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
-msgstr ""
+msgstr "los datos deben permitir iteración"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be of equal length"
-msgstr ""
+msgstr "los datos deben ser de igual tamaño"
 
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
@@ -2291,19 +2300,19 @@ msgstr "sistema de archivos debe proporcionar método de montaje"
 
 #: extmod/ulab/code/vectorise.c
 msgid "first argument must be a callable"
-msgstr ""
+msgstr "se debe poder llamar al primer argumento"
 
 #: extmod/ulab/code/approx.c
 msgid "first argument must be a function"
-msgstr ""
+msgstr "el primer argumento debe ser una función"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
-msgstr ""
+msgstr "el primer argumento debe permitir iteración"
 
 #: extmod/ulab/code/vectorise.c
 msgid "first argument must be an ndarray"
-msgstr ""
+msgstr "el primer argumento debe ser ndarray"
 
 #: py/objtype.c
 msgid "first argument to super() must be type"
@@ -2319,7 +2328,7 @@ msgstr ""
 
 #: py/objint.c
 msgid "float too big"
-msgstr ""
+msgstr "punto flotante muy grande"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -2352,7 +2361,7 @@ msgstr ""
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
-msgstr ""
+msgstr "la función está implementada solo para escalares y ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -2411,7 +2420,7 @@ msgstr "formato incompleto"
 
 #: py/objstr.c
 msgid "incomplete format key"
-msgstr ""
+msgstr "formato de llave incompleto"
 
 #: extmod/modubinascii.c
 msgid "incorrect padding"
@@ -2419,7 +2428,7 @@ msgstr "relleno (padding) incorrecto"
 
 #: extmod/ulab/code/ndarray.c
 msgid "index is out of bounds"
-msgstr ""
+msgstr "el índice está fuera de límites"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -2434,11 +2443,11 @@ msgstr "indices deben ser enteros"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
-msgstr ""
+msgstr "los índices deben ser enteros, particiones o listas de booleanos"
 
 #: extmod/ulab/code/approx.c
 msgid "initial values must be iterable"
-msgstr ""
+msgstr "los valores iniciales deben permitir iteración"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2446,35 +2455,35 @@ msgstr "ensamblador en línea debe ser una función"
 
 #: extmod/ulab/code/create.c
 msgid "input argument must be an integer or a 2-tuple"
-msgstr ""
+msgstr "el argumento de entrada debe ser un entero o una tupla de par"
 
 #: extmod/ulab/code/fft.c
 msgid "input array length must be power of 2"
-msgstr ""
+msgstr "el tamaño del arreglo de entrada debe ser potencia de 2"
 
 #: extmod/ulab/code/poly.c
 msgid "input data must be an iterable"
-msgstr ""
+msgstr "los datos de entrada deben permitir iteración"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is asymmetric"
-msgstr ""
+msgstr "la matriz de entrada es asimétrica"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is singular"
-msgstr ""
+msgstr "la matriz de entrada es singular"
 
 #: extmod/ulab/code/linalg.c
 msgid "input must be square matrix"
-msgstr ""
+msgstr "la entrada debe ser una matriz cuadrada"
 
 #: extmod/ulab/code/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
-msgstr ""
+msgstr "la entrada debe ser una tupla, lista, rango o ndarray"
 
 #: extmod/ulab/code/poly.c
 msgid "input vectors must be of equal length"
-msgstr ""
+msgstr "los vectores de entrada deben ser de igual tamaño"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -2491,7 +2500,7 @@ msgstr ""
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
-msgstr ""
+msgstr "el intervalo debe ser der rango %s-%s"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
@@ -2523,7 +2532,7 @@ msgstr "decorador de micropython inválido"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
-msgstr ""
+msgstr "paso inválido"
 
 #: py/compile.c py/parse.c
 msgid "invalid syntax"
@@ -2552,11 +2561,11 @@ msgstr "issubclass() arg 2 debe ser una clase o tuple de clases"
 
 #: extmod/ulab/code/ndarray.c
 msgid "iterables are not of the same length"
-msgstr ""
+msgstr "los iterables no son del mismo tamaño"
 
 #: extmod/ulab/code/linalg.c
 msgid "iterations did not converge"
-msgstr ""
+msgstr "las iteraciones no convergen"
 
 #: py/objstr.c
 msgid "join expects a list of str/bytes objects consistent with self object"
@@ -2587,7 +2596,7 @@ msgstr "argumento length no permitido para este tipo"
 
 #: shared-bindings/audiomixer/MixerVoice.c
 msgid "level must be between 0 and 1"
-msgstr ""
+msgstr "el nivel debe ser entre 0 y 1"
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
