@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-25 11:44-0500\n"
-"PO-Revision-Date: 2020-06-29 22:52+0000\n"
+"PO-Revision-Date: 2020-06-29 23:50+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1740,20 +1740,20 @@ msgid ""
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
 msgstr ""
-"Bem-vindo ao Adafruit CircuitPython% s!\n"
+"Bem-vindo ao Adafruit CircuitPython %s!\n"
 "\n"
-"Visite learn.adafruit.com/category/circuitpython para obter guias de projeto."
+"Para obter guias de projeto, visite learn.adafruit.com/category/"
+"circuitpython.\n"
 "\n"
-"\n"
-"Para listar os módulos internos, faça `help (\" modules \")`.\n"
+"Para listar os módulos internos, faça `help(\"modules\")`.\n"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
-msgstr ""
+msgstr "A escrita não é compatível na Característica"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr ""
+msgstr "Você está no modo de segurança: algo inesperado aconteceu.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -1761,20 +1761,20 @@ msgstr "Você solicitou o início do modo de segurança através do "
 
 #: py/objtype.c
 msgid "__init__() should return None"
-msgstr ""
+msgstr "O __init__() deve retornar Nenhum"
 
 #: py/objtype.c
 #, c-format
 msgid "__init__() should return None, not '%s'"
-msgstr ""
+msgstr "O __init__() deve retornar Nenhum, não '%s'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
-msgstr ""
+msgstr "O argumento __new__ deve ser um tipo usuário"
 
 #: extmod/modubinascii.c extmod/moduhashlib.c
 msgid "a bytes-like object is required"
-msgstr ""
+msgstr "é necessário objetos tipo bytes"
 
 #: lib/embed/abort_.c
 msgid "abort() called"
@@ -1787,23 +1787,23 @@ msgstr "endereço %08x não está alinhado com %d bytes"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
-msgstr ""
+msgstr "endereço fora dos limites"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
-msgstr ""
+msgstr "os endereços estão vazios"
 
 #: extmod/ulab/code/vectorise.c
 msgid "arctan2 is implemented for scalars and ndarrays only"
-msgstr ""
+msgstr "O arctan2 está implementado apenas para escalares e ndarrays"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
-msgstr ""
+msgstr "o arg é uma sequência vazia"
 
 #: extmod/ulab/code/numerical.c
 msgid "argsort argument must be an ndarray"
-msgstr ""
+msgstr "O argumento argsort deve ser um ndarray"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -1812,23 +1812,23 @@ msgstr "argumento tem tipo errado"
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
-msgstr ""
+msgstr "o argumento num/tipos não combinam"
 
 #: py/runtime.c
 msgid "argument should be a '%q' not a '%q'"
-msgstr ""
+msgstr "o argumento deve ser um '%q' e não um '%q'"
 
 #: extmod/ulab/code/linalg.c
 msgid "arguments must be ndarrays"
-msgstr ""
+msgstr "os argumentos devem ser ndarrays"
 
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
-msgstr ""
+msgstr "matriz/bytes são necessários no lado direito"
 
 #: extmod/ulab/code/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
-msgstr ""
+msgstr "tente obter argmin/argmax de uma sequência vazia"
 
 #: py/objstr.c
 msgid "attributes not supported yet"
@@ -1836,39 +1836,39 @@ msgstr "atributos ainda não suportados"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be -1, 0, None, or 1"
-msgstr ""
+msgstr "o eixo deve ser -1, 0, Nenhum ou 1"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be -1, 0, or 1"
-msgstr ""
+msgstr "o eixo deve ser -1, 0 ou 1"
 
 #: extmod/ulab/code/numerical.c
 msgid "axis must be None, 0, or 1"
-msgstr ""
+msgstr "o eixo deve ser Nenhum, 0 ou 1"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
-msgstr ""
+msgstr "modo de compilação ruim"
 
 #: py/objstr.c
 msgid "bad conversion specifier"
-msgstr ""
+msgstr "especificador de conversão incorreto"
 
 #: py/objstr.c
 msgid "bad format string"
-msgstr ""
+msgstr "formato da string incorreta"
 
 #: py/binary.c
 msgid "bad typecode"
-msgstr ""
+msgstr "typecode incorreto"
 
 #: py/emitnative.c
 msgid "binary op %q not implemented"
-msgstr ""
+msgstr "a operação binário %q não foi implementada"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be 7, 8 or 9"
-msgstr ""
+msgstr "os bits devem ser 7, 8 ou 9"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -1880,7 +1880,7 @@ msgstr "ramo fora do alcance"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
-msgstr ""
+msgstr "o buffer deve ser um objeto como bytes"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -1888,24 +1888,24 @@ msgstr "o tamanho do buffer deve coincidir com o formato"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
-msgstr ""
+msgstr "as fatias do buffer devem ter o mesmo comprimento"
 
 #: py/modstruct.c shared-bindings/struct/__init__.c
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
-msgstr ""
+msgstr "o buffer é muito pequeno"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
-msgstr ""
+msgstr "os botões devem ser digitalio.DigitalInOut"
 
 #: py/vm.c
 msgid "byte code not implemented"
-msgstr ""
+msgstr "o código dos bytes ainda não foi implementado"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
-msgstr ""
+msgstr "a ordem dos bytes não é uma cadeia de caracteres"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
@@ -1913,7 +1913,7 @@ msgstr "bytes > 8 bits não suportado"
 
 #: py/objstr.c
 msgid "bytes value out of range"
-msgstr ""
+msgstr "o valor dos bytes estão fora do alcance"
 
 #: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is out of range"
@@ -1929,144 +1929,148 @@ msgstr "Valor de calibração fora do intervalo +/- 127"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
-msgstr ""
+msgstr "só pode haver até 4 parâmetros para a montagem Thumb"
 
 #: py/emitinlinextensa.c
 msgid "can only have up to 4 parameters to Xtensa assembly"
-msgstr ""
+msgstr "só pode haver até 4 parâmetros para a montagem Xtensa"
 
 #: py/persistentcode.c
 msgid "can only save bytecode"
-msgstr ""
+msgstr "apenas o bytecode pode ser salvo"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
-msgstr ""
+msgstr "não é possível adicionar o método especial à classe já subclassificada"
 
 #: py/compile.c
 msgid "can't assign to expression"
-msgstr ""
+msgstr "a expressão não pode ser atribuída"
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to complex"
-msgstr ""
+msgstr "Não é possível converter %s para complex"
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to float"
-msgstr ""
+msgstr "Não é possível converter %s para float"
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to int"
-msgstr ""
+msgstr "Não é possível converter %s para int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
-msgstr ""
+msgstr "não é possível converter implicitamente o objeto '%q' para %q"
 
 #: py/objint.c
 msgid "can't convert NaN to int"
-msgstr ""
+msgstr "Não é possível converter NaN para int"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert address to int"
-msgstr ""
+msgstr "não é possível converter o endereço para int"
 
 #: py/objint.c
 msgid "can't convert inf to int"
-msgstr ""
+msgstr "não é possível converter inf para int"
 
 #: py/obj.c
 msgid "can't convert to complex"
-msgstr ""
+msgstr "não é possível converter para complex"
 
 #: py/obj.c
 msgid "can't convert to float"
-msgstr ""
+msgstr "não é possível converter para float"
 
 #: py/obj.c
 msgid "can't convert to int"
-msgstr ""
+msgstr "não é possível converter para int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
-msgstr ""
+msgstr "não é possível converter implicitamente para str"
 
 #: py/compile.c
 msgid "can't declare nonlocal in outer code"
-msgstr ""
+msgstr "não é possível declarar nonlocal no código externo"
 
 #: py/compile.c
 msgid "can't delete expression"
-msgstr ""
+msgstr "não é possível excluir a expressão"
 
 #: py/emitnative.c
 msgid "can't do binary op between '%q' and '%q'"
-msgstr ""
+msgstr "não é possível executar uma operação binária entre '%q' e '%q'"
 
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
-msgstr ""
+msgstr "não é possível fazer a divisão truncada de um número complexo"
 
 #: py/compile.c
 msgid "can't have multiple **x"
-msgstr ""
+msgstr "não pode haver vários **x"
 
 #: py/compile.c
 msgid "can't have multiple *x"
-msgstr ""
+msgstr "não pode haver vários *x"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
-msgstr ""
+msgstr "não é possível converter implicitamente '%q' em 'bool'"
 
 #: py/emitnative.c
 msgid "can't load from '%q'"
-msgstr ""
+msgstr "não é possível carregar a partir de '%q'"
 
 #: py/emitnative.c
 msgid "can't load with '%q' index"
-msgstr ""
+msgstr "não é possível carregar com o índice '%q'"
 
 #: py/objgenerator.c
 msgid "can't pend throw to just-started generator"
-msgstr ""
+msgstr "não pode pendurar o lançamento para o gerador recém-iniciado"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
+"Não é possível enviar algo que não seja um valor para um gerador recém-"
+"iniciado"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
-msgstr ""
+msgstr "não é possível definir o atributo"
 
 #: py/emitnative.c
 msgid "can't store '%q'"
-msgstr ""
+msgstr "não é possível armazenar '%q'"
 
 #: py/emitnative.c
 msgid "can't store to '%q'"
-msgstr ""
+msgstr "não é possível armazenar em '%q'"
 
 #: py/emitnative.c
 msgid "can't store with '%q' index"
-msgstr ""
+msgstr "não é possível armazenar com o índice '%q'"
 
 #: py/objstr.c
 msgid ""
 "can't switch from automatic field numbering to manual field specification"
 msgstr ""
+"não é possível alternar entre a numeração automática dos campos para a manual"
 
 #: py/objstr.c
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
+"não é possível alternar da especificação de campo manual para a automática"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
-msgstr ""
+msgstr "não é possível criar instâncias '%q'"
 
 #: py/objtype.c
 msgid "cannot create instance"
@@ -2078,43 +2082,46 @@ msgstr "não pode importar nome %q"
 
 #: py/builtinimport.c
 msgid "cannot perform relative import"
-msgstr ""
+msgstr "não pode executar a importação relativa"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array (incompatible input/output shape)"
 msgstr ""
+"não é possível remodelar a matriz (formato de entrada/saída incompatível)"
 
 #: py/emitnative.c
 msgid "casting"
-msgstr ""
+msgstr "fundição"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
-msgstr ""
+msgstr "o buffer dos caracteres é muito pequeno"
 
 #: py/modbuiltins.c
 msgid "chr() arg not in range(0x110000)"
-msgstr ""
+msgstr "o arg chr() está fora do intervalo(0x110000)"
 
 #: py/modbuiltins.c
 msgid "chr() arg not in range(256)"
-msgstr ""
+msgstr "o arg chr() está fora do intervalo(256)"
 
 #: shared-module/vectorio/Circle.c
 msgid "circle can only be registered in one parent"
-msgstr ""
+msgstr "o círculo só pode ser registrado em um pai"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr ""
+msgstr "o buffer das cores deve ter 3 bytes (RGB) ou 4 bytes (RGB + pad byte)"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer, tuple, list, or int"
-msgstr ""
+msgstr "O buffer das cores deve ser um buffer, tupla, lista ou int"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
+"O buffer das cores deve ser uma matriz de bytes ou uma matriz do tipo 'b' ou "
+"'B'"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -2126,15 +2133,15 @@ msgstr "cor deve ser um int"
 
 #: py/objcomplex.c
 msgid "complex division by zero"
-msgstr ""
+msgstr "divisão complexa por zero"
 
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
-msgstr ""
+msgstr "os valores complexos não compatíveis"
 
 #: extmod/moduzlib.c
 msgid "compression header"
-msgstr ""
+msgstr "compressão do cabeçalho"
 
 #: py/parse.c
 msgid "constant must be an integer"
@@ -2142,27 +2149,27 @@ msgstr "constante deve ser um inteiro"
 
 #: py/emitnative.c
 msgid "conversion to object"
-msgstr ""
+msgstr "conversão para o objeto"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must be linear arrays"
-msgstr ""
+msgstr "os argumentos convolutivos devem ser matrizes lineares"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must be ndarrays"
-msgstr ""
+msgstr "os argumentos convolutivos devem ser ndarrays"
 
 #: extmod/ulab/code/filter.c
 msgid "convolve arguments must not be empty"
-msgstr ""
+msgstr "os argumentos convolutivos não devem estar vazios"
 
 #: extmod/ulab/code/ndarray.c
 msgid "could not broadast input array from shape"
-msgstr ""
+msgstr "não foi possível transmitir a matriz da entrada a partir da forma"
 
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
-msgstr ""
+msgstr "não foi possível inverter a matriz Vandermonde"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
@@ -2174,24 +2181,26 @@ msgstr ""
 
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
-msgstr ""
+msgstr "O ddof deve ser menor que o comprimento do conjunto dos dados"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
-msgstr ""
+msgstr "os números decimais não são compatíveis"
 
 #: py/compile.c
 msgid "default 'except' must be last"
-msgstr ""
+msgstr "a predefinição 'exceto' deve ser o último"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
+"o buffer do destino deve ser um bytearray ou matriz do tipo 'B' para "
+"bit_depth = 8"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr ""
+msgstr "o buffer do destino deve ser uma matriz do tipo 'H' para bit_depth = 16"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination_length must be an int >= 0"
@@ -2199,11 +2208,11 @@ msgstr "destination_length deve ser um int >= 0"
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
-msgstr ""
+msgstr "sequência da atualização dict tem o comprimento errado"
 
 #: extmod/ulab/code/numerical.c
 msgid "diff argument must be an ndarray"
-msgstr ""
+msgstr "O argumento diff deve ser um ndarray"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -2220,7 +2229,7 @@ msgstr "a área de alocação dinâmica de variáveis (heap) está vazia"
 
 #: py/objstr.c
 msgid "empty separator"
-msgstr ""
+msgstr "separador vazio"
 
 #: shared-bindings/random/__init__.c
 msgid "empty sequence"
@@ -2228,7 +2237,7 @@ msgstr "seqüência vazia"
 
 #: py/objstr.c
 msgid "end of format while looking for conversion specifier"
-msgstr ""
+msgstr "final de formato enquanto procura pelo especificador de conversão"
 
 #: shared-bindings/displayio/Shape.c
 msgid "end_x should be an int"
