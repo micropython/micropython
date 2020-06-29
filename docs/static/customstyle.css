@@ -10,6 +10,19 @@
 }
 
 
+/* custom CSS to sticky the ' viewing outdated version'
+   warning
+*/
+.document > .admonition {
+    position: sticky;
+    top: 0px;
+    background-color: salmon;
+    z-index: 2;
+}
+
+body {
+    overflow-x: unset!important;
+}
 
 /* override table width restrictions */
 @media screen and (min-width: 767px) {
