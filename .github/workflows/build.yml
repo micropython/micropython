@@ -240,6 +240,7 @@ jobs:
         - "sam32"
         - "same54_xplained"
         - "seeeduino_xiao"
+        - "seeeduino_wio_terminal"
         - "serpente"
         - "shirtty"
         - "simmel"
