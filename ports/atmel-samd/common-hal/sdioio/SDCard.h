@@ -24,31 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H
+#pragma once
 
-#include "common-hal/microcontroller/Pin.h"
-#include "py/obj.h"
+#include "hal_mci_sync.h"
 
-// Type object used in Python. Should be shared between ports.
-extern const mp_obj_type_t mcu_pin_type;
-
-mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj);
-mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj);
-mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj);
-mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj);
-void validate_list_is_free_pins(qstr what, mcu_pin_obj_t **pins_out, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out);
-
-void assert_pin_free(const mcu_pin_obj_t* pin);
-
-bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin);
-void common_hal_never_reset_pin(const mcu_pin_obj_t* pin);
-void common_hal_reset_pin(const mcu_pin_obj_t* pin);
-uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t* pin);
-void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin);
-void common_hal_mcu_pin_claim_number(uint8_t pin_no);
-void common_hal_mcu_pin_reset_number(uint8_t pin_no);
-
-#define COMMON_HAL_MCU_NO_PIN ((uint8_t)0xff)
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER_PIN_H
+typedef struct {
+    mp_obj_base_t base;
+    struct mci_sync_desc IO_BUS;
+    uint32_t frequency;
+    uint32_t capacity;
+    uint8_t num_data:3, state_programming:1, has_lock:1;
+    uint8_t command_pin;
+    uint8_t clock_pin;
+    uint8_t data_pins[4];
+} sdioio_sdcard_obj_t;

@@ -537,6 +537,20 @@ extern const struct _mp_obj_module_t samd_module;
 #define SAMD_MODULE
 #endif
 
+#if CIRCUITPY_SDCARDIO
+extern const struct _mp_obj_module_t sdcardio_module;
+#define SDCARDIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_sdcardio), (mp_obj_t)&sdcardio_module },
+#else
+#define SDCARDIO_MODULE
+#endif
+
+#if CIRCUITPY_SDIOIO
+extern const struct _mp_obj_module_t sdioio_module;
+#define SDIOIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_sdioio), (mp_obj_t)&sdioio_module },
+#else
+#define SDIOIO_MODULE
+#endif
+
 #if CIRCUITPY_STAGE
 extern const struct _mp_obj_module_t stage_module;
 #define STAGE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module },
@@ -709,6 +723,8 @@ extern const struct _mp_obj_module_t watchdog_module;
     ROTARYIO_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
+    SDCARDIO_MODULE \
+    SDIOIO_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \
