@@ -3,25 +3,28 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-25 11:44-0500\n"
-"PO-Revision-Date: 2018-10-02 21:14-0000\n"
-"Last-Translator: \n"
+"PO-Revision-Date: 2020-06-26 16:42+0000\n"
+"Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
+"\n"
+"O código concluiu a execução. Esperando pela recarga.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -29,12 +32,17 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "To exit, please reset the board without "
 msgstr ""
+"\n"
+"Para encerrar, redefina a placa sem "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -56,7 +64,7 @@ msgstr "%%c requer int ou char"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
-msgstr ""
+msgstr "%d endereços dos pinos  e %d pinos rgb indicam uma altura do %d, não %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -78,18 +86,16 @@ msgstr ""
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
 #: shared-bindings/vectorio/Rectangle.c
-#, fuzzy
 msgid "%q must be >= 1"
-msgstr "buffers devem ser o mesmo tamanho"
+msgstr "%q deve ser >= 1"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
-#, fuzzy
 msgid "%q should be an int"
-msgstr "y deve ser um int"
+msgstr "%q deve ser um int"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -261,9 +267,9 @@ msgid "A hardware interrupt channel is already in use"
 msgstr "Um canal de interrupção de hardware já está em uso"
 
 #: shared-bindings/_bleio/Address.c
-#, fuzzy, c-format
+#, c-format
 msgid "Address must be %d bytes long"
-msgstr "buffers devem ser o mesmo tamanho"
+msgstr "O endereço deve ter %d bytes de comprimento"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
@@ -278,9 +284,8 @@ msgid "All SPI peripherals are in use"
 msgstr "Todos os periféricos SPI estão em uso"
 
 #: ports/nrf/common-hal/busio/UART.c
-#, fuzzy
 msgid "All UART peripherals are in use"
-msgstr "Todos os periféricos I2C estão em uso"
+msgstr "Todos os periféricos UART estão em uso"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
@@ -435,14 +440,13 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
-#, fuzzy, c-format
+#, c-format
 msgid "Bus pin %d is already in use"
-msgstr "DAC em uso"
+msgstr "O pino bus %d já está em uso"
 
 #: shared-bindings/_bleio/UUID.c
-#, fuzzy
 msgid "Byte buffer must be 16 bytes."
-msgstr "buffers devem ser o mesmo tamanho"
+msgstr "O buffer deve ter 16 bytes."
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
@@ -471,9 +475,8 @@ msgid "Cannot get pull while in output mode"
 msgstr ""
 
 #: ports/nrf/common-hal/microcontroller/Processor.c
-#, fuzzy
 msgid "Cannot get temperature"
-msgstr "Não pode obter a temperatura. status: 0x%02x"
+msgstr "Não é possível obter a temperatura"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot have scan responses for extended, connectable advertisements."
@@ -527,7 +530,7 @@ msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
-msgstr "Não é possível ler sem um pino MOSI"
+msgstr "Não é possível fazer a escrita sem um pino MOSI."
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -561,9 +564,8 @@ msgstr ""
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
-#, fuzzy
 msgid "Command must be an int between 0 and 255"
-msgstr "Os bytes devem estar entre 0 e 255."
+msgstr "O comando deve ser um int entre 0 e 255"
 
 #: shared-bindings/_bleio/Connection.c
 msgid ""
@@ -659,9 +661,8 @@ msgid "Data chunk must follow fmt chunk"
 msgstr "Pedaço de dados deve seguir o pedaço de cortes"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
 msgid "Data too large for advertisement packet"
-msgstr "Não é possível ajustar dados no pacote de anúncios."
+msgstr "Os dados são grandes demais para o pacote de publicidade"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -713,9 +714,8 @@ msgstr "Esperado um"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-#, fuzzy
 msgid "Expected a Characteristic"
-msgstr "Não é possível adicionar Característica."
+msgstr "Uma característica é necessária"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -723,9 +723,8 @@ msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
-#, fuzzy
 msgid "Expected a UUID"
-msgstr "Esperado um"
+msgstr "Um UUID é necessário"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
@@ -749,9 +748,9 @@ msgid "Failed sending command."
 msgstr "Falha ao enviar comando."
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
+msgstr "Houve uma falha na aquisição do mutex, err 0x%04x"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
@@ -779,9 +778,9 @@ msgid "Failed to parse MP3 file"
 msgstr ""
 
 #: ports/nrf/sd_mutex.c
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to release mutex, err 0x%04x"
-msgstr "Não é possível ler o valor do atributo. status: 0x%02x"
+msgstr "Houve uma falha ao liberar o mutex, err 0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
@@ -911,9 +910,8 @@ msgid "Invalid bits per value"
 msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-#, fuzzy
 msgid "Invalid buffer size"
-msgstr "Arquivo inválido"
+msgstr "O tamanho do buffer é inválido"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "Invalid byteorder string"
@@ -924,13 +922,12 @@ msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
-#, fuzzy
 msgid "Invalid channel count"
-msgstr "certificado inválido"
+msgstr "A contagem do canal é inválido"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Invalid direction."
-msgstr "Direção inválida"
+msgstr "Direção inválida."
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid file"
@@ -1008,9 +1005,8 @@ msgid "Invalid voice"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
-#, fuzzy
 msgid "Invalid voice count"
-msgstr "certificado inválido"
+msgstr "A contagem da voz é inválida"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid wave file"
@@ -1046,7 +1042,7 @@ msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
-msgstr "Inicialização do pino MISO falhou"
+msgstr "A inicialização do pino MISO falhou."
 
 #: shared-module/bitbangio/SPI.c
 msgid "MOSI pin init failed."
@@ -1187,9 +1183,8 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "Not connected"
-msgstr "Não é possível conectar-se ao AP"
+msgstr "Não Conectado"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 #: shared-bindings/audiopwmio/PWMAudioOut.c
@@ -1203,9 +1198,8 @@ msgstr ""
 "Objeto foi desinicializado e não pode ser mais usaado. Crie um novo objeto."
 
 #: ports/nrf/common-hal/busio/UART.c
-#, fuzzy
 msgid "Odd parity is not supported"
-msgstr "I2C operação não suportada"
+msgstr "A paridade ímpar não é compatível"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1276,9 +1270,8 @@ msgid ""
 msgstr ""
 
 #: py/builtinhelp.c
-#, fuzzy
 msgid "Plus any modules on the filesystem\n"
-msgstr "Não é possível remontar o sistema de arquivos"
+msgstr "Além de quaisquer módulos no sistema de arquivos\n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
@@ -1347,9 +1340,8 @@ msgid "Read-only filesystem"
 msgstr "Sistema de arquivos somente leitura"
 
 #: shared-module/displayio/Bitmap.c
-#, fuzzy
 msgid "Read-only object"
-msgstr "Somente leitura"
+msgstr "Objeto de leitura apenas"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1638,9 +1630,8 @@ msgid "Unsupported baudrate"
 msgstr "Taxa de transmissão não suportada"
 
 #: shared-module/displayio/display_core.c
-#, fuzzy
 msgid "Unsupported display bus type"
-msgstr "Taxa de transmissão não suportada"
+msgstr "Não há suporte para o tipo do display bus"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
@@ -1716,7 +1707,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
-msgstr "Você solicitou o início do modo de segurança"
+msgstr "Você solicitou o início do modo de segurança através do "
 
 #: py/objtype.c
 msgid "__init__() should return None"
@@ -1830,23 +1821,20 @@ msgid "bits must be 7, 8 or 9"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
-#, fuzzy
 msgid "bits_per_sample must be 8 or 16"
-msgstr "bits devem ser 8"
+msgstr "bits_per_sample deve ser 8 ou 16"
 
 #: py/emitinlinethumb.c
-#, fuzzy
 msgid "branch not in range"
-msgstr "Calibração está fora do intervalo"
+msgstr "ramo fora do alcance"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr ""
 
 #: shared-module/struct/__init__.c
-#, fuzzy
 msgid "buffer size must match format"
-msgstr "buffers devem ser o mesmo tamanho"
+msgstr "o tamanho do buffer deve coincidir com o formato"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "buffer slices must be of equal length"
@@ -2193,9 +2181,8 @@ msgid "end of format while looking for conversion specifier"
 msgstr ""
 
 #: shared-bindings/displayio/Shape.c
-#, fuzzy
 msgid "end_x should be an int"
-msgstr "y deve ser um int"
+msgstr "end_x deve ser um int"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -3015,9 +3002,8 @@ msgid "start/end indices"
 msgstr ""
 
 #: shared-bindings/displayio/Shape.c
-#, fuzzy
 msgid "start_x should be an int"
-msgstr "y deve ser um int"
+msgstr "start_x deve ser um int"
 
 #: shared-bindings/random/__init__.c
 msgid "step must be non-zero"
@@ -3093,9 +3079,8 @@ msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
-#, fuzzy
 msgid "timeout must be >= 0.0"
-msgstr "bits devem ser 8"
+msgstr "o tempo limite deve ser >= 0,0"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
