@@ -477,7 +477,7 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk)
     deadTimeConfig.DeadTime = compute_dtg_from_ticks(ticks);
     deadTimeConfig.BreakState = brk == BRK_OFF ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
     deadTimeConfig.BreakPolarity = brk == BRK_LOW ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
-    #if defined(STM32F7) || defined(STM32H7) | defined(STM32L4)
+    #if defined(STM32F7) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     deadTimeConfig.BreakFilter = 0;
     deadTimeConfig.Break2State = TIM_BREAK_DISABLE;
     deadTimeConfig.Break2Polarity = TIM_BREAKPOLARITY_LOW;
@@ -769,14 +769,14 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
     HAL_TIM_Base_Init(&self->tim);
     #if !defined(STM32L0)
     #if defined(IS_TIM_ADVANCED_INSTANCE)
-    if (IS_TIM_ADVANCED_INSTANCE(self->tim.Instance)) {
+    if (IS_TIM_ADVANCED_INSTANCE(self->tim.Instance))
     #elif defined(IS_TIM_BREAK_INSTANCE)
-    if (IS_TIM_BREAK_INSTANCE(self->tim.Instance)) {
+    if (IS_TIM_BREAK_INSTANCE(self->tim.Instance))
     #else
-    if (0) {
-        #endif
+    if (0)
+    #endif
+    {
         config_deadtime(self, args[ARG_deadtime].u_int, args[ARG_brk].u_int);
-
     }
     #endif
 
