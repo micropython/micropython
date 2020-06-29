@@ -23,6 +23,7 @@
 
 import json
 import os
+import pathlib
 import re
 import subprocess
 import sys
@@ -30,17 +31,39 @@ import sys
 
 SUPPORTED_PORTS = ['atmel-samd', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'stm']
 
+def get_circuitpython_root_dir():
+    """ The path to the root './circuitpython' directory
+    """
+    cwd = pathlib.Path('.').resolve()
+    cwd_parts = cwd.parts
+
+    root_idx = len(cwd_parts)
+
+    # Search the path from tail to head, so that we capture the
+    # deepest folder. This avoids overshooting in instances like:
+    # '/home/user/circuitpython_v5/circuitpython'
+    for idx, val in enumerate(cwd_parts[::-1]):
+        if val.startswith("circuitpython"):
+            root_idx = root_idx - idx
+            break
+
+    root_dir = '/'.join(cwd_parts[:root_idx])
+
+    return pathlib.Path(root_dir).resolve()
+
 def get_shared_bindings():
     """ Get a list of modules in shared-bindings based on folder names
     """
-    return [item for item in os.listdir("./shared-bindings")]
+    shared_bindings_dir = get_circuitpython_root_dir() / "shared-bindings"
+    return [item.name for item in shared_bindings_dir.iterdir()]
 
 
 def read_mpconfig():
     """ Open 'circuitpy_mpconfig.mk' and return the contents.
     """
     configs = []
-    with open("py/circuitpy_mpconfig.mk") as mpconfig:
+    cpy_mpcfg = get_circuitpython_root_dir() / "py" / "circuitpy_mpconfig.mk"
+    with open(cpy_mpcfg) as mpconfig:
         configs = mpconfig.read()
 
     return configs
@@ -120,7 +143,7 @@ def lookup_setting(settings, key, default=''):
         key = value[2:-1]
     return value
 
-def support_matrix_by_board():
+def support_matrix_by_board(use_branded_name=True):
     """ Compiles a list of the available core modules available for each
         board.
     """
@@ -129,20 +152,22 @@ def support_matrix_by_board():
     boards = dict()
     for port in SUPPORTED_PORTS:
 
-        port_dir = "ports/{}/boards".format(port)
-        for entry in os.scandir(port_dir):
+        port_dir = get_circuitpython_root_dir() / "ports" / port
+        for entry in (port_dir / "boards").iterdir():
             if not entry.is_dir():
                 continue
             board_modules = []
+            board_name = entry.name
 
-            settings = get_settings_from_makefile(f'ports/{port}', entry.name)
+            settings = get_settings_from_makefile(str(port_dir), entry.name)
 
-            with open(os.path.join(entry.path, "mpconfigboard.h")) as get_name:
-                board_contents = get_name.read()
-            board_name_re = re.search("(?<=MICROPY_HW_BOARD_NAME)\s+(.+)",
-                                      board_contents)
-            if board_name_re:
-                board_name = board_name_re.group(1).strip('"')
+            if use_branded_name:
+                with open(os.path.join(entry.path, "mpconfigboard.h")) as get_name:
+                    board_contents = get_name.read()
+                board_name_re = re.search(r"(?<=MICROPY_HW_BOARD_NAME)\s+(.+)",
+                                          board_contents)
+                if board_name_re:
+                    board_name = board_name_re.group(1).strip('"')
 
             board_modules = []
             for module in base:
