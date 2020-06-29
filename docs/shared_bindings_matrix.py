@@ -34,22 +34,10 @@ SUPPORTED_PORTS = ['atmel-samd', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'stm']
 def get_circuitpython_root_dir():
     """ The path to the root './circuitpython' directory
     """
-    cwd = pathlib.Path('.').resolve()
-    cwd_parts = cwd.parts
+    file_path = pathlib.Path(__file__).resolve()
+    root_dir = file_path.parent.parent
 
-    root_idx = len(cwd_parts)
-
-    # Search the path from tail to head, so that we capture the
-    # deepest folder. This avoids overshooting in instances like:
-    # '/home/user/circuitpython_v5/circuitpython'
-    for idx, val in enumerate(cwd_parts[::-1]):
-        if val.startswith("circuitpython"):
-            root_idx = root_idx - idx
-            break
-
-    root_dir = '/'.join(cwd_parts[:root_idx])
-
-    return pathlib.Path(root_dir).resolve()
+    return root_dir
 
 def get_shared_bindings():
     """ Get a list of modules in shared-bindings based on folder names
