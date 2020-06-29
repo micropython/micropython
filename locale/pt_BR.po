@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-25 11:44-0500\n"
+"POT-Creation-Date: 2020-06-26 11:50-0500\n"
 "PO-Revision-Date: 2020-06-29 23:50+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
@@ -66,6 +66,10 @@ msgstr "%%c requer int ou char"
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr "%d endereços dos pinos e %d pinos rgb indicam uma altura do %d, não %d"
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q em uso"
@@ -92,6 +96,10 @@ msgstr "%q deve ser >= 1"
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q deve ser uma tupla de comprimento 2"
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q pin invalid"
+msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -348,7 +356,7 @@ msgstr "Array deve conter meias palavras (tipo 'H')"
 msgid "Array values should be single bytes."
 msgstr "Os valores da matriz devem ser bytes simples."
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
 msgstr "Pelo menos %d %q pode ser definido (não %d)"
 
@@ -432,6 +440,10 @@ msgstr "O buffer é muito pequeno"
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "O tamanho do buffer %d é muito grande. Deve ser menor que %d"
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+msgid "Buffer length must be a multiple of 512"
+msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -721,7 +733,8 @@ msgstr "Canal EXTINT em uso"
 msgid "Error in regex"
 msgstr "Erro no regex"
 
-#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -857,8 +870,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"Arquivo .mpy incompatível. Atualize todos os arquivos .mpy. Consulte "
-"http://adafru.it/mpy-update para mais informações."
+"Arquivo .mpy incompatível. Atualize todos os arquivos .mpy. Consulte http://"
+"adafru.it/mpy-update para mais informações."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -884,6 +897,10 @@ msgstr "Erro interno de definição"
 #, c-format
 msgid "Internal error #%d"
 msgstr "Erro interno #%d"
+
+#: shared-bindings/sdioio/SDCard.c
+msgid "Invalid %q"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1400,6 +1417,10 @@ msgstr "Rodando em modo seguro! Atualização automática está desligada.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Rodando em modo seguro! Não está executando o código salvo.\n"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "SD card CSD format not supported"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
@@ -1555,7 +1576,8 @@ msgstr "Exibições demais"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than outgoing_packet_length"
-msgstr "O total dos dados que serão gravados é maior que outgoing_packet_length"
+msgstr ""
+"O total dos dados que serão gravados é maior que outgoing_packet_length"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2040,6 +2062,10 @@ msgstr ""
 "Não é possível enviar algo que não seja um valor para um gerador recém-"
 "iniciado"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "can't set 512 block size"
+msgstr ""
+
 #: py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "não é possível definir o atributo"
@@ -2171,6 +2197,10 @@ msgstr "não foi possível transmitir a matriz da entrada a partir da forma"
 msgid "could not invert Vandermonde matrix"
 msgstr "não foi possível inverter a matriz Vandermonde"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "couldn't determine SD card version"
+msgstr ""
+
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
 msgstr ""
@@ -2200,7 +2230,8 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr "o buffer do destino deve ser uma matriz do tipo 'H' para bit_depth = 16"
+msgstr ""
+"o buffer do destino deve ser uma matriz do tipo 'H' para bit_depth = 16"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination_length must be an int >= 0"
@@ -2668,8 +2699,8 @@ msgstr ""
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr ""
-"falha na alocação de memória, a área de alocação dinâmica de variáveis (heap)"
-" está bloqueada"
+"falha na alocação de memória, a área de alocação dinâmica de variáveis "
+"(heap) está bloqueada"
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -2732,6 +2763,10 @@ msgstr ""
 msgid "negative shift count"
 msgstr ""
 
+#: shared-module/sdcardio/SDCard.c
+msgid "no SD card"
+msgstr ""
+
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr ""
@@ -2751,6 +2786,10 @@ msgstr ""
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no response from SD card"
 msgstr ""
 
 #: py/runtime.c
@@ -3142,6 +3181,14 @@ msgstr ""
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "o tempo limite deve ser >= 0,0"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v1 card"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v2 card"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
