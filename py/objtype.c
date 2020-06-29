@@ -443,7 +443,7 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                     mp_raise_TypeError(NULL);
                 }
                 break;
-	    #endif
+            #endif
             #if MICROPY_PY_BUILTINS_COMPLEX
             case MP_UNARY_OP_COMPLEX:
                 // Must return complex
@@ -451,8 +451,8 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                     mp_raise_TypeError(NULL);
                 }
                 break;
-	    #endif
-	    default:
+            #endif
+            default:
                 // No need to do anything
                 ;
         }
