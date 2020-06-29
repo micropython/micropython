@@ -162,7 +162,7 @@ def support_matrix_by_board(use_branded_name=True):
             settings = get_settings_from_makefile(str(port_dir), entry.name)
 
             if use_branded_name:
-                with open(os.path.join(entry.path, "mpconfigboard.h")) as get_name:
+                with open(entry / "mpconfigboard.h") as get_name:
                     board_contents = get_name.read()
                 board_name_re = re.search(r"(?<=MICROPY_HW_BOARD_NAME)\s+(.+)",
                                           board_contents)
