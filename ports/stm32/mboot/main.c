@@ -933,6 +933,9 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
         dfu_context.status = DFU_STATUS_OK;
         dfu_context.error = 0;
         return 6;
+    } else if (cmd == DFU_GETSTATE && len == 1) {
+        buf[0] = dfu_context.state; // bState
+        return 1;
     }
     return -1;
 }
