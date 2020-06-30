@@ -49,3 +49,27 @@ try:
     print(complex(Test3()))
 except TypeError:
     print("TypeError")
+
+
+# Test a class that raises non-TypeError exception in conversions
+# Also checks that the error in __complex__ does not cause a fallback
+# to using __float__
+
+
+class Test4:
+    def __float__(self):
+        return [1, 2, 3][4]
+
+    def __complex__(self):
+        return 1.0 / 0.0
+
+
+try:
+    print(float(Test4()))
+except IndexError:
+    print("IndexError")
+
+try:
+    print(complex(Test4()))
+except ZeroDivisionError:
+    print("ZeroDivisionError")
