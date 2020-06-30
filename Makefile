@@ -244,11 +244,48 @@ update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
 	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done
 
-one-of-each: all-source
-	make -C ports/atmel-samd BOARD=trinket_m0
-	make -C ports/atmel-samd BOARD=feather_m4_express
-	make -C ports/esp32s2 BOARD=espressif_saola_1_wroom
-	make -C ports/litex BOARD=fomu
-	make -C ports/mimxrt10xx BOARD=feather_mimxrt1011
-	make -C ports/nrf BOARD=feather_nrf52840_express
-	make -C ports/stm BOARD=feather_stm32f405_express
+one-of-each: samd21 samd51 esp32s2 litex mimxrt10xx nrf stm
+
+samd21:
+	$(MAKE) -C ports/atmel-samd BOARD=trinket_m0
+
+samd51:
+	$(MAKE) -C ports/atmel-samd BOARD=feather_m4_express
+
+esp32s2:
+	$(MAKE) -C ports/esp32s2 BOARD=espressif_saola_1_wroom
+
+litex:
+	$(MAKE) -C ports/litex BOARD=fomu
+
+mimxrt10xx:
+	$(MAKE) -C ports/mimxrt10xx BOARD=feather_mimxrt1011
+
+nrf:
+	$(MAKE) -C ports/nrf BOARD=feather_nrf52840_express
+
+stm:
+	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express
+
+clean-one-of-each: clean-samd21 clean-samd51 clean-esp32s2 clean-litex clean-mimxrt10xx clean-nrf clean-stm
+
+clean-samd21:
+	$(MAKE) -C ports/atmel-samd BOARD=trinket_m0 clean
+
+clean-samd51:
+	$(MAKE) -C ports/atmel-samd BOARD=feather_m4_express clean
+
+clean-esp32s2:
+	$(MAKE) -C ports/esp32s2 BOARD=espressif_saola_1_wroom clean
+
+clean-litex:
+	$(MAKE) -C ports/litex BOARD=fomu clean
+
+clean-mimxrt10xx:
+	$(MAKE) -C ports/mimxrt10xx BOARD=feather_mimxrt1011 clean
+
+clean-nrf:
+	$(MAKE) -C ports/nrf BOARD=feather_nrf52840_express clean
+
+clean-stm:
+	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
