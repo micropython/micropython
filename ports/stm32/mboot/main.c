@@ -480,7 +480,8 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     if (sector <= 0) {
         // Don't allow to erase the sector with this bootloader in it, or invalid sectors
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
-        dfu_context.error = MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX;
+        dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
+                                          : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
         return -1;
     }
 
@@ -503,11 +504,12 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
 }
 
 static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
-    uint32_t sector = flash_get_sector_info(addr, NULL, NULL);
-    if (sector == 0) {
+    int32_t sector = flash_get_sector_info(addr, NULL, NULL);
+    if (sector <= 0) {
         // Don't allow to write the sector with this bootloader in it
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
-        dfu_context.error = MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX;
+        dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
+                                          : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
         return -1;
     }
 
