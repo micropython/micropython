@@ -200,17 +200,21 @@ void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank) {
 
 int can_receive(FDCAN_HandleTypeDef *can, int fifo, FDCAN_RxHeaderTypeDef *hdr, uint8_t *data, uint32_t timeout_ms) {
     volatile uint32_t *rxf, *rxa;
+    uint32_t fl;
+
     if (fifo == FDCAN_RX_FIFO0) {
         rxf = &can->Instance->RXF0S;
         rxa = &can->Instance->RXF0A;
+        fl = FDCAN_RXF0S_F0FL;
     } else {
         rxf = &can->Instance->RXF1S;
         rxa = &can->Instance->RXF1A;
+        fl = FDCAN_RXF1S_F1FL;
     }
 
     // Wait for a message to become available, with timeout
     uint32_t start = HAL_GetTick();
-    while ((*rxf & 7) == 0) {
+    while ((*rxf & fl) == 0) {
         MICROPY_EVENT_POLL_HOOK
         if (HAL_GetTick() - start >= timeout_ms) {
             return -MP_ETIMEDOUT;
