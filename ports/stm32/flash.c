@@ -151,7 +151,7 @@ bool flash_is_valid_addr(uint32_t addr) {
     return flash_layout[0].base_address <= addr && addr < end_of_flash;
 }
 
-uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
+int32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     if (addr >= flash_layout[0].base_address) {
         uint32_t sector_index = 0;
         for (int i = 0; i < MP_ARRAY_SIZE(flash_layout); ++i) {
@@ -172,7 +172,7 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *si
             }
         }
     }
-    return 0;
+    return -1;
 }
 
 int flash_erase(uint32_t flash_dest, uint32_t num_word32) {

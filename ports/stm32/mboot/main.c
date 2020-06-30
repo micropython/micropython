@@ -476,25 +476,27 @@ static int mboot_flash_mass_erase(void) {
 
 static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     uint32_t sector_size = 0;
-    uint32_t sector = flash_get_sector_info(addr, NULL, &sector_size);
-    if (sector == 0) {
-        // Don't allow to erase the sector with this bootloader in it
+    uint32_t sector_start = 0;
+    int32_t sector = flash_get_sector_info(addr, &sector_start, &sector_size);
+    if (sector <= 0) {
+        // Don't allow to erase the sector with this bootloader in it, or invalid sectors
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
-        dfu_context.error = MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX;
+        dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
+                                          : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
         return -1;
     }
 
-    *next_addr = addr + sector_size;
+    *next_addr = sector_start + sector_size;
 
     // Erase the flash page.
-    int ret = flash_erase(addr, sector_size / sizeof(uint32_t));
+    int ret = flash_erase(sector_start, sector_size / sizeof(uint32_t));
     if (ret != 0) {
         return ret;
     }
 
     // Check the erase set bits to 1, at least for the first 256 bytes
     for (int i = 0; i < 64; ++i) {
-        if (((volatile uint32_t*)addr)[i] != 0xffffffff) {
+        if (((volatile uint32_t*)sector_start)[i] != 0xffffffff) {
             return -2;
         }
     }
@@ -503,11 +505,12 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
 }
 
 static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
-    uint32_t sector = flash_get_sector_info(addr, NULL, NULL);
-    if (sector == 0) {
+    int32_t sector = flash_get_sector_info(addr, NULL, NULL);
+    if (sector <= 0) {
         // Don't allow to write the sector with this bootloader in it
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
-        dfu_context.error = MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX;
+        dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
+                                          : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
         return -1;
     }
 
