@@ -1,5 +1,6 @@
 try:
     from math import *
+    from cmath import polar
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -70,5 +71,11 @@ for i in instances:
 
     try:
         print(1.0j + complex(i))
+    except TypeError:
+        print("Type Error")
+
+    try:
+        r, theta = polar(i)
+        print("{:.5g}, {:.5g}".format(r, theta))
     except TypeError:
         print("Type Error")
