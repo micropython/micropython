@@ -249,6 +249,9 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     while (supervisor_ticks_ms64() - start_ticks <= self->timeout_ms) {
         // Read as many chars as we can right now, up to len.
         size_t num_read = uart_read_bytes(self->uart_num, data, len, 0);
+        if (num_read < 0) {
+            break;
+        }
 
         // Advance pointer in data buffer, and decrease how many chars left to read.
         data += num_read;

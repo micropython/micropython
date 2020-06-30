@@ -90,8 +90,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
 #endif
 
 
-    self->semaphore_handle = xSemaphoreCreateBinaryStatic(&self->semaphore);
-    xSemaphoreGive(self->semaphore_handle);
+    if (xSemaphoreCreateBinaryStatic(&self->semaphore) != &self->semaphore) {
+        mp_raise_RuntimeError(translate("Unable to create lock"));
+    }
+    xSemaphoreGive(&self->semaphore);
     self->sda_pin = sda;
     self->scl_pin = scl;
     self->i2c_num = I2C_NUM_MAX;
@@ -161,7 +163,7 @@ bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
-    self->has_lock = xSemaphoreTake(self->semaphore_handle, 0) == pdTRUE;
+    self->has_lock = xSemaphoreTake(&self->semaphore, 0) == pdTRUE;
     return self->has_lock;
 }
 
@@ -170,7 +172,7 @@ bool common_hal_busio_i2c_has_lock(busio_i2c_obj_t *self) {
 }
 
 void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
-    xSemaphoreGive(self->semaphore_handle);
+    xSemaphoreGive(&self->semaphore);
     self->has_lock = false;
 }
 

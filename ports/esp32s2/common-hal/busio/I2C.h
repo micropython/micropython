@@ -40,7 +40,6 @@ typedef struct {
     const mcu_pin_obj_t* sda_pin;
     i2c_port_t i2c_num;
     StaticSemaphore_t semaphore;
-    SemaphoreHandle_t semaphore_handle;
     bool has_lock;
 } busio_i2c_obj_t;
 

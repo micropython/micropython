@@ -209,9 +209,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     hal->io_mode = SPI_LL_IO_MODE_NORMAL;
 
-    // This must be set after spi_hal_init.
-    hal->timing_conf = &self->timing_conf;
-
     common_hal_busio_spi_configure(self, 250000, 0, 0, 8);
 }
 
@@ -261,6 +258,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     self->phase = phase;
     self->bits = bits;
     self->target_frequency = baudrate;
+    self->hal_context.timing_conf = &self->timing_conf;
     esp_err_t result =  spi_hal_get_clock_conf(&self->hal_context,
                                                self->target_frequency,
                                                128 /* duty_cycle */,
@@ -315,6 +313,8 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     spi_hal_context_t* hal = &self->hal_context;
     hal->send_buffer = NULL;
     hal->rcv_buffer = NULL;
+    // Reset timing_conf in case we've moved since the last time we used it.
+    hal->timing_conf = &self->timing_conf;
     // This rounds up.
     size_t dma_count = (len + LLDESC_MAX_NUM_PER_DESC - 1) / LLDESC_MAX_NUM_PER_DESC;
     for (size_t i = 0; i < dma_count; i++) {
