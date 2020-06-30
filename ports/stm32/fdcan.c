@@ -218,8 +218,14 @@ int can_receive(FDCAN_HandleTypeDef *can, int fifo, FDCAN_RxHeaderTypeDef *hdr, 
     }
 
     // Get pointer to incoming message
-    uint32_t index = (can->Instance->RXF0S & FDCAN_RXF0S_F0GI) >> 8;
-    uint32_t *address = (uint32_t *)(can->msgRam.RxFIFO0SA + (index * can->Init.RxFifo0ElmtSize * 4));
+    uint32_t index, *address;
+    if (fifo == FDCAN_RX_FIFO0) {
+        index = (*rxf & FDCAN_RXF0S_F0GI) >> FDCAN_RXF0S_F0GI_Pos;
+        address = (uint32_t *)(can->msgRam.RxFIFO0SA + (index * can->Init.RxFifo0ElmtSize * 4));
+    } else {
+        index = (*rxf & FDCAN_RXF1S_F1GI) >> FDCAN_RXF1S_F1GI_Pos;
+        address = (uint32_t *)(can->msgRam.RxFIFO1SA + (index * can->Init.RxFifo1ElmtSize * 4));
+    }
 
     // Parse header of message
     hdr->IdType = *address & FDCAN_ELEMENT_MASK_XTD;
