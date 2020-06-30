@@ -215,10 +215,12 @@ int can_receive(FDCAN_HandleTypeDef *can, int fifo, FDCAN_RxHeaderTypeDef *hdr, 
     // Wait for a message to become available, with timeout
     uint32_t start = HAL_GetTick();
     while ((*rxf & fl) == 0) {
-        MICROPY_EVENT_POLL_HOOK
-        if (HAL_GetTick() - start >= timeout_ms) {
-            return -MP_ETIMEDOUT;
+        if (timeout_ms != HAL_MAX_DELAY) {
+            if (HAL_GetTick() - start >= timeout_ms) {
+                return -MP_ETIMEDOUT;
+            }
         }
+        MICROPY_EVENT_POLL_HOOK
     }
 
     // Get pointer to incoming message
