@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-25 11:44-0500\n"
+"POT-Creation-Date: 2020-06-26 11:50-0500\n"
 "PO-Revision-Date: 2020-06-16 18:24+0000\n"
 "Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language: de_DE\n"
@@ -65,6 +65,10 @@ msgstr "%%c erwartet int oder char"
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr "%d Adress-Pins und %d rgb-Pins zeigen eine Höhe von %d, nicht von %d"
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q in Benutzung"
@@ -91,6 +95,10 @@ msgstr "%q muss >= 1 sein"
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q muss ein Tupel der Länge 2 sein"
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q pin invalid"
+msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -345,7 +353,7 @@ msgstr "Array muss Halbwörter enthalten (type 'H')"
 msgid "Array values should be single bytes."
 msgstr "Array-Werte sollten aus Einzelbytes bestehen."
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
 msgstr "Es darf höchstens %d %q spezifiziert werden (nicht %d)"
 
@@ -427,6 +435,10 @@ msgstr "Der Puffer ist zu klein"
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein"
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+msgid "Buffer length must be a multiple of 512"
+msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -716,7 +728,8 @@ msgstr "EXTINT Kanal ist schon in Benutzung"
 msgid "Error in regex"
 msgstr "Fehler in regex"
 
-#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -882,6 +895,10 @@ msgstr "Interner Definitionsfehler"
 #, c-format
 msgid "Internal error #%d"
 msgstr "Interner Fehler #%d"
+
+#: shared-bindings/sdioio/SDCard.c
+msgid "Invalid %q"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1395,6 +1412,10 @@ msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "SD card CSD format not supported"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
@@ -2048,6 +2069,10 @@ msgstr ""
 "Nicht \"None\" Werte können nicht an einen gerade gestarteten Generator "
 "gesendet werden"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "can't set 512 block size"
+msgstr ""
+
 #: py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "kann Attribut nicht setzen"
@@ -2180,6 +2205,10 @@ msgstr "Eingabearray konnte nicht aus der Form übertragen werden"
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr "Vandermonde-Matrix konnte nicht invertiert werden"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "couldn't determine SD card version"
+msgstr ""
 
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
@@ -2747,6 +2776,10 @@ msgstr "negative Potenz ohne Gleitkomma (float) Unterstützung"
 msgid "negative shift count"
 msgstr "Negative shift Anzahl"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "no SD card"
+msgstr ""
+
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "Keine aktive Ausnahme zu verusachen (raise)"
@@ -2767,6 +2800,10 @@ msgstr "Kein Modul mit dem Namen '%q'"
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
 msgstr "kein Reset Pin verfügbar"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no response from SD card"
+msgstr ""
 
 #: py/runtime.c
 msgid "no such attribute"
@@ -3164,6 +3201,14 @@ msgstr "Das Zeitlimit muss 0,0-100,0 Sekunden betragen"
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "timeout muss >= 0.0 sein"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v1 card"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v2 card"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
