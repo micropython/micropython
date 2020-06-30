@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-26 11:50-0500\n"
-"PO-Revision-Date: 2020-06-29 23:50+0000\n"
+"PO-Revision-Date: 2020-06-30 17:48+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -68,7 +68,7 @@ msgstr "%d endereços dos pinos e %d pinos rgb indicam uma altura do %d, não %d
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q falha: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -99,7 +99,7 @@ msgstr "%q deve ser uma tupla de comprimento 2"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q pin invalid"
-msgstr ""
+msgstr "%q pino inválido"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -395,7 +395,7 @@ msgstr "A profundidade de bits deve ser o múltiplo de 8."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "Ambos os RX e TX são necessários para o controle do fluxo"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -443,7 +443,7 @@ msgstr "O tamanho do buffer %d é muito grande. Deve ser menor que %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr ""
+msgstr "O comprimento do Buffer deve ser um múltiplo de 512"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -610,7 +610,7 @@ msgstr "Código bruto corrompido"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
-msgstr ""
+msgstr "Não foi possível inicializar o GNSS"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -900,7 +900,7 @@ msgstr "Erro interno #%d"
 
 #: shared-bindings/sdioio/SDCard.c
 msgid "Invalid %q"
-msgstr ""
+msgstr "%q Inválido"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1295,7 +1295,7 @@ msgstr "O pino não tem recursos de ADC"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
-msgstr ""
+msgstr "Apenas o pino de entrada"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1322,7 +1322,7 @@ msgstr "Além de quaisquer módulos no sistema de arquivos\n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
-msgstr ""
+msgstr "O Polígono precisa de pelo menos 3 pontos"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Pop from an empty Ps2 buffer"
@@ -1419,7 +1419,7 @@ msgstr "Rodando em modo seguro! Não está executando o código salvo.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
-msgstr ""
+msgstr "O formato CSD do Cartão SD não é compatível"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
@@ -1491,7 +1491,7 @@ msgstr "Forneça pelo menos um pino UART"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
-msgstr ""
+msgstr "A entrada no sistema deve ser gnss.SatelliteSystem"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
@@ -1561,6 +1561,8 @@ msgstr "A largura do bloco deve dividir exatamente com a largura do bitmap"
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
+"O tempo limite é long demais: O comprimento máximo do tempo limite é de %d "
+"segundos"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1736,22 +1738,26 @@ msgstr "AVISO: Seu arquivo de código tem duas extensões\n"
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
+"O WatchDogTimer não pode ser não-inicializado uma vez que o modo é definido "
+"como RESET"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer is not currently running"
-msgstr ""
+msgstr "O WatchDogTimer não está em execução"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
+"O WatchDogTimer.mode não pode ser alterado uma vez definido para WatchDogMode"
+".RESET"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr ""
+msgstr "O WatchDogTimer.timeout deve ser maior que 0"
 
 #: supervisor/shared/safe_mode.c
 msgid "Watchdog timer expired."
-msgstr ""
+msgstr "O temporizador Watchdog expirou."
 
 #: py/builtinhelp.c
 #, c-format
@@ -2064,7 +2070,7 @@ msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "can't set 512 block size"
-msgstr ""
+msgstr "não é possível definir o tamanho de 512 blocos"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -2199,15 +2205,15 @@ msgstr "não foi possível inverter a matriz Vandermonde"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "couldn't determine SD card version"
-msgstr ""
+msgstr "não foi possível determinar a versão do cartão SD"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
-msgstr ""
+msgstr "os dados devem ser iteráveis"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be of equal length"
-msgstr ""
+msgstr "os dados devem ser de igual comprimento"
 
 #: extmod/ulab/code/numerical.c
 msgid "ddof must be smaller than length of data set"
@@ -2281,31 +2287,31 @@ msgstr "erro = 0x%08lX"
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
-msgstr ""
+msgstr "as exceções devem derivar a partir do BaseException"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
-msgstr ""
+msgstr "é esperado ':' após o especificador do formato"
 
 #: py/obj.c
 msgid "expected tuple/list"
-msgstr ""
+msgstr "é esperada tupla/lista"
 
 #: py/modthread.c
 msgid "expecting a dict for keyword args"
-msgstr ""
+msgstr "esperando um dicionário para os args da palavra-chave"
 
 #: py/compile.c
 msgid "expecting an assembler instruction"
-msgstr ""
+msgstr "esperando uma instrução assembler"
 
 #: py/compile.c
 msgid "expecting just a value for set"
-msgstr ""
+msgstr "esperando apenas um valor para o conjunto"
 
 #: py/compile.c
 msgid "expecting key:value for dict"
-msgstr ""
+msgstr "chave esperada: valor para dict"
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -2317,28 +2323,28 @@ msgstr "argumentos extra posicionais passados"
 
 #: py/parse.c
 msgid "f-string expression part cannot include a '#'"
-msgstr ""
+msgstr "A parte da expressão f-string não pode incluir um '#'"
 
 #: py/parse.c
 msgid "f-string expression part cannot include a backslash"
-msgstr ""
+msgstr "A parte da expressão f-string não pode incluir uma barra invertida"
 
 #: py/parse.c
 msgid "f-string: empty expression not allowed"
-msgstr ""
+msgstr "f-string: expressão vazia não é permitida"
 
 #: py/parse.c
 msgid "f-string: expecting '}'"
-msgstr ""
+msgstr "f-string: esperando '}'"
 
 #: py/parse.c
 msgid "f-string: single '}' is not allowed"
-msgstr ""
+msgstr "f-string: um único '}' não é permitido"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c
 msgid "file must be a file opened in byte mode"
-msgstr ""
+msgstr "o arquivo deve ser um arquivo aberto no modo byte"
 
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
@@ -2346,31 +2352,31 @@ msgstr "sistema de arquivos deve fornecer método de montagem"
 
 #: extmod/ulab/code/vectorise.c
 msgid "first argument must be a callable"
-msgstr ""
+msgstr "o primeiro argumento deve ser chamável"
 
 #: extmod/ulab/code/approx.c
 msgid "first argument must be a function"
-msgstr ""
+msgstr "o primeiro argumento deve ser uma função"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
-msgstr ""
+msgstr "o primeiro argumento deve ser um iterável"
 
 #: extmod/ulab/code/vectorise.c
 msgid "first argument must be an ndarray"
-msgstr ""
+msgstr "o primeiro argumento deve ser um ndarray"
 
 #: py/objtype.c
 msgid "first argument to super() must be type"
-msgstr ""
+msgstr "o primeiro argumento para super() deve ser um tipo"
 
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
-msgstr ""
+msgstr "a ordem do nivelamento deve ser 'C' ou 'F'"
 
 #: extmod/ulab/code/numerical.c
 msgid "flip argument must be an ndarray"
-msgstr ""
+msgstr "o argumento flip deve ser um ndarray"
 
 #: py/objint.c
 msgid "float too big"
@@ -2378,11 +2384,11 @@ msgstr "float muito grande"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
-msgstr ""
+msgstr "a fonte deve ter 2048 bytes de comprimento"
 
 #: py/objstr.c
 msgid "format requires a dict"
-msgstr ""
+msgstr "formato requer um dict"
 
 #: py/objdeque.c
 msgid "full"
@@ -2399,15 +2405,15 @@ msgstr "função esperada na maioria dos %d argumentos, obteve %d"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
-msgstr ""
+msgstr "A função obteve vários valores para o argumento '%q'"
 
 #: extmod/ulab/code/approx.c
 msgid "function has the same sign at the ends of interval"
-msgstr ""
+msgstr "a função tem o mesmo sinal nas extremidades do intervalo"
 
 #: extmod/ulab/code/compare.c
 msgid "function is implemented for scalars and ndarrays only"
-msgstr ""
+msgstr "A função foi implementada apenas para escalares e ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -2416,16 +2422,16 @@ msgstr "função ausente %d requer argumentos posicionais"
 
 #: py/bc.c
 msgid "function missing keyword-only argument"
-msgstr ""
+msgstr "falta apenas a palavra chave do argumento da função"
 
 #: py/bc.c
 msgid "function missing required keyword argument '%q'"
-msgstr ""
+msgstr "falta apenas a palavra chave do argumento '%q' da função"
 
 #: py/bc.c
 #, c-format
 msgid "function missing required positional argument #%d"
-msgstr ""
+msgstr "falta o argumento #%d da posição necessária da função"
 
 #: py/argcheck.c py/bc.c py/objnamedtuple.c
 #, c-format
@@ -2438,15 +2444,15 @@ msgstr "função leva exatamente 9 argumentos"
 
 #: py/objgenerator.c
 msgid "generator already executing"
-msgstr ""
+msgstr "o gerador já está em execução"
 
 #: py/objgenerator.c
 msgid "generator ignored GeneratorExit"
-msgstr ""
+msgstr "ignorando o gerador GeneratorExit"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
-msgstr ""
+msgstr "o gráfico deve ter 2048 bytes de comprimento"
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
@@ -2454,11 +2460,11 @@ msgstr "a área de alocação dinâmica de variáveis (heap) deve ser uma lista"
 
 #: py/compile.c
 msgid "identifier redefined as global"
-msgstr ""
+msgstr "o identificador foi redefinido como global"
 
 #: py/compile.c
 msgid "identifier redefined as nonlocal"
-msgstr ""
+msgstr "o identificador foi redefinido como não-local"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -2466,7 +2472,7 @@ msgstr "formato incompleto"
 
 #: py/objstr.c
 msgid "incomplete format key"
-msgstr ""
+msgstr "a chave do formato está incompleto"
 
 #: extmod/modubinascii.c
 msgid "incorrect padding"
@@ -2474,7 +2480,7 @@ msgstr "preenchimento incorreto"
 
 #: extmod/ulab/code/ndarray.c
 msgid "index is out of bounds"
-msgstr ""
+msgstr "o índice está fora dos limites"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -2485,55 +2491,55 @@ msgstr "Índice fora do intervalo"
 
 #: py/obj.c
 msgid "indices must be integers"
-msgstr ""
+msgstr "os índices devem ser inteiros"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
-msgstr ""
+msgstr "os índices devem ser números inteiros, fatias ou listas booleanas"
 
 #: extmod/ulab/code/approx.c
 msgid "initial values must be iterable"
-msgstr ""
+msgstr "os valores iniciais devem ser iteráveis"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
-msgstr ""
+msgstr "o assembler em linha deve ser uma função"
 
 #: extmod/ulab/code/create.c
 msgid "input argument must be an integer or a 2-tuple"
-msgstr ""
+msgstr "o argumento da entrada deve ser um número inteiro ou uma tupla de 2"
 
 #: extmod/ulab/code/fft.c
 msgid "input array length must be power of 2"
-msgstr ""
+msgstr "comprimento da matriz da entrada deve ter potência de 2"
 
 #: extmod/ulab/code/poly.c
 msgid "input data must be an iterable"
-msgstr ""
+msgstr "os dados da entrada devem ser iteráveis"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is asymmetric"
-msgstr ""
+msgstr "a matriz da entrada é assimétrica"
 
 #: extmod/ulab/code/linalg.c
 msgid "input matrix is singular"
-msgstr ""
+msgstr "a matriz da entrada é singular"
 
 #: extmod/ulab/code/linalg.c
 msgid "input must be square matrix"
-msgstr ""
+msgstr "a entrada deve ser uma matriz quadrada"
 
 #: extmod/ulab/code/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
-msgstr ""
+msgstr "A entrada deve ser tupla, lista, intervalo ou matriz"
 
 #: extmod/ulab/code/poly.c
 msgid "input vectors must be of equal length"
-msgstr ""
+msgstr "os vetores da entrada devem ter o mesmo comprimento"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr ""
+msgstr "int() arg 2 deve ser >= 2 e <= 36"
 
 #: py/objstr.c
 msgid "integer required"
@@ -2541,12 +2547,12 @@ msgstr "inteiro requerido"
 
 #: extmod/ulab/code/approx.c
 msgid "interp is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "o interp é definido para matrizes 1D de igual comprimento"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
 msgid "interval must be in range %s-%s"
-msgstr ""
+msgstr "o intervalo deve estar entre %s-%s"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
@@ -2566,7 +2572,7 @@ msgstr "formato inválido"
 
 #: py/objstr.c
 msgid "invalid format specifier"
-msgstr ""
+msgstr "o especificador do formato é inválido"
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
@@ -2574,7 +2580,7 @@ msgstr "chave inválida"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
-msgstr ""
+msgstr "o decorador micropython é inválido"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
@@ -2582,119 +2588,122 @@ msgstr "passo inválido"
 
 #: py/compile.c py/parse.c
 msgid "invalid syntax"
-msgstr ""
+msgstr "sintaxe inválida"
 
 #: py/parsenum.c
 msgid "invalid syntax for integer"
-msgstr ""
+msgstr "sintaxe inválida para o número inteiro"
 
 #: py/parsenum.c
 #, c-format
 msgid "invalid syntax for integer with base %d"
-msgstr ""
+msgstr "sintaxe inválida para o número inteiro com base %d"
 
 #: py/parsenum.c
 msgid "invalid syntax for number"
-msgstr ""
+msgstr "sintaxe inválida para o número"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
-msgstr ""
+msgstr "issubclass() arg 1 deve ser uma classe"
 
 #: py/objtype.c
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
-msgstr ""
+msgstr "issubclass() arg 2 deve ser uma classe ou uma tupla de classes"
 
 #: extmod/ulab/code/ndarray.c
 msgid "iterables are not of the same length"
-msgstr ""
+msgstr "os iteráveis não têm o mesmo comprimento"
 
 #: extmod/ulab/code/linalg.c
 msgid "iterations did not converge"
-msgstr ""
+msgstr "as iterações não convergiram"
 
 #: py/objstr.c
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
+"join espera uma lista de objetos str/bytes consistentes com o próprio objeto"
 
 #: py/argcheck.c
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
+"o(s) argumento(s) de palavra-chave ainda não foi implementado - em vez "
+"disso, use argumentos normais"
 
 #: py/bc.c
 msgid "keywords must be strings"
-msgstr ""
+msgstr "as palavras-chave devem ser uma cadeia de caracteres"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
-msgstr ""
+msgstr "o rótulo '%q' não foi definido"
 
 #: py/compile.c
 msgid "label redefined"
-msgstr ""
+msgstr "o rótulo foi redefinido"
 
 #: py/stream.c
 msgid "length argument not allowed for this type"
-msgstr ""
+msgstr "o argumento de comprimento não é permitido para este tipo"
 
 #: shared-bindings/audiomixer/MixerVoice.c
 msgid "level must be between 0 and 1"
-msgstr ""
+msgstr "o nível deve estar entre 0 e 1"
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
-msgstr ""
+msgstr "o lhs e rhs devem ser compatíveis"
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
-msgstr ""
+msgstr "o local '%q' tem o tipo '%q', porém a origem é '%q'"
 
 #: py/emitnative.c
 msgid "local '%q' used before type known"
-msgstr ""
+msgstr "o local '%q' usado antes do tipo conhecido"
 
 #: py/vm.c
 msgid "local variable referenced before assignment"
-msgstr ""
+msgstr "a variável local referenciada antes da atribuição"
 
 #: py/objint.c
 msgid "long int not supported in this build"
-msgstr ""
+msgstr "o long int não é suportado nesta compilação"
 
 #: py/parse.c
 msgid "malformed f-string"
-msgstr ""
+msgstr "f-string malformado"
 
 #: shared-bindings/_stage/Layer.c
 msgid "map buffer too small"
-msgstr ""
+msgstr "o mapa do buffer é muito pequeno"
 
 #: py/modmath.c shared-bindings/math/__init__.c
 msgid "math domain error"
-msgstr ""
+msgstr "erro de domínio matemático"
 
 #: extmod/ulab/code/linalg.c
 msgid "matrix dimensions do not match"
-msgstr ""
+msgstr "as dimensões da matriz não coincidem"
 
 #: extmod/ulab/code/linalg.c
 msgid "matrix is not positive definite"
-msgstr ""
+msgstr "a matriz não é definitiva positiva"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr ""
+msgstr "o max_length deve ser 0-%d quando Fixed_length for %s"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
-msgstr ""
+msgstr "a recursão máxima da profundidade foi excedida"
 
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
-msgstr ""
+msgstr "falha na alocação de memória, alocando %u bytes"
 
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
@@ -2704,39 +2713,39 @@ msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"
-msgstr ""
+msgstr "o módulo não foi encontrado"
 
 #: extmod/ulab/code/poly.c
 msgid "more degrees of freedom than data points"
-msgstr ""
+msgstr "mais graus de liberdade do que pontos de dados"
 
 #: py/compile.c
 msgid "multiple *x in assignment"
-msgstr ""
+msgstr "múltiplo *x na atribuição"
 
 #: py/objtype.c
 msgid "multiple bases have instance lay-out conflict"
-msgstr ""
+msgstr "várias bases possuem instâncias de layout com conflitos"
 
 #: py/objtype.c
 msgid "multiple inheritance not supported"
-msgstr ""
+msgstr "herança múltipla não suportada"
 
 #: py/emitnative.c
 msgid "must raise an object"
-msgstr ""
+msgstr "deve levantar um objeto"
 
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
-msgstr ""
+msgstr "deve usar o argumento da palavra-chave para a função da chave"
 
 #: extmod/ulab/code/numerical.c
 msgid "n must be between 0, and 9"
-msgstr ""
+msgstr "n deve estar entre 0 e 9"
 
 #: py/runtime.c
 msgid "name '%q' is not defined"
-msgstr ""
+msgstr "o nome '%q' não está definido"
 
 #: py/runtime.c
 msgid "name not defined"
@@ -2744,11 +2753,11 @@ msgstr "nome não definido"
 
 #: py/compile.c
 msgid "name reused for argument"
-msgstr ""
+msgstr "o nome foi reutilizado para o argumento"
 
 #: py/emitnative.c
 msgid "native yield"
-msgstr ""
+msgstr "rendimento nativo"
 
 #: py/runtime.c
 #, c-format
@@ -2757,113 +2766,113 @@ msgstr "precisa de mais de %d valores para desempacotar"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
-msgstr ""
+msgstr "potência negativa sem suporte de flutuação"
 
 #: py/objint_mpz.c py/runtime.c
 msgid "negative shift count"
-msgstr ""
+msgstr "contagem de turnos negativos"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
-msgstr ""
+msgstr "nenhum cartão SD"
 
 #: py/vm.c
 msgid "no active exception to reraise"
-msgstr ""
+msgstr "nenhuma exceção ativa para reraise"
 
 #: shared-bindings/socket/__init__.c shared-module/network/__init__.c
 msgid "no available NIC"
-msgstr ""
+msgstr "não há uma Placa de Rede disponível"
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
-msgstr ""
+msgstr "nenhuma ligação para nonlocal foi encontrada"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
-msgstr ""
+msgstr "nenhum módulo chamado '%q'"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
-msgstr ""
+msgstr "nenhum pino de redefinição está disponível"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
-msgstr ""
+msgstr "não houve resposta do cartão SD"
 
 #: py/runtime.c
 msgid "no such attribute"
-msgstr ""
+msgstr "não há tal atributo"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
-msgstr ""
+msgstr "um não UUID foi encontrado na lista service_uuids_whitelist"
 
 #: py/compile.c
 msgid "non-default argument follows default argument"
-msgstr ""
+msgstr "o argumento não predefinido segue o argumento predefinido"
 
 #: extmod/modubinascii.c
 msgid "non-hex digit found"
-msgstr ""
+msgstr "um dígito não hexadecimal foi encontrado"
 
 #: py/compile.c
 msgid "non-keyword arg after */**"
-msgstr ""
+msgstr "um arg sem palavra-chave após */ **"
 
 #: py/compile.c
 msgid "non-keyword arg after keyword arg"
-msgstr ""
+msgstr "um arg não-palavra-chave após a palavra-chave arg"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
-msgstr ""
+msgstr "não é um UUID com 128 bits"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
-msgstr ""
+msgstr "nem todos os argumentos são convertidos durante a formatação da string"
 
 #: py/objstr.c
 msgid "not enough arguments for format string"
-msgstr ""
+msgstr "argumentos insuficientes para o formato da string"
 
 #: extmod/ulab/code/poly.c
 msgid "number of arguments must be 2, or 3"
-msgstr ""
+msgstr "a quantidade dos argumentos deve ser 2 ou 3"
 
 #: extmod/ulab/code/create.c
 msgid "number of points must be at least 2"
-msgstr ""
+msgstr "a quantidade dos pontos deve ser pelo menos 2"
 
 #: py/obj.c
 #, c-format
 msgid "object '%s' is not a tuple or list"
-msgstr ""
+msgstr "o objeto '%s' não é uma tupla ou uma lista"
 
 #: py/obj.c
 msgid "object does not support item assignment"
-msgstr ""
+msgstr "O objeto não suporta a atribuição dos itens"
 
 #: py/obj.c
 msgid "object does not support item deletion"
-msgstr ""
+msgstr "objeto não suporta a exclusão do item"
 
 #: py/obj.c
 msgid "object has no len"
-msgstr ""
+msgstr "o objeto não tem len"
 
 #: py/obj.c
 msgid "object is not subscriptable"
-msgstr ""
+msgstr "O objeto não é subroteirizável"
 
 #: py/runtime.c
 msgid "object not an iterator"
-msgstr ""
+msgstr "o objeto não é um iterador"
 
 #: py/objtype.c py/runtime.c
 msgid "object not callable"
-msgstr ""
+msgstr "o objeto não é resgatável"
 
 #: py/sequence.c shared-bindings/displayio/Group.c
 msgid "object not in sequence"
@@ -2876,121 +2885,126 @@ msgstr "objeto não iterável"
 #: py/obj.c
 #, c-format
 msgid "object of type '%s' has no len()"
-msgstr ""
+msgstr "O objeto do tipo '%s' não possui len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
-msgstr ""
+msgstr "é necessário objeto com protocolo do buffer"
 
 #: extmod/modubinascii.c
 msgid "odd-length string"
-msgstr ""
+msgstr "sequência com comprimento ímpar"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
-msgstr ""
+msgstr "desvio fora dos limites"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
-msgstr ""
+msgstr "apenas bit_depth = 16 é compatível"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
-msgstr ""
+msgstr "apenas sample_rate = 16000 é compatível"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
+"apenas fatias com a etapa=1 (também conhecida como Nenhuma) são compatíveis"
 
 #: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
 #: extmod/ulab/code/vectorise.c
 msgid "operands could not be broadcast together"
-msgstr ""
+msgstr "os operandos não puderam ser transmitidos juntos"
 
 #: extmod/ulab/code/numerical.c
 msgid "operation is not implemented on ndarrays"
-msgstr ""
+msgstr "a operação não foi implementada nos ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
-msgstr ""
+msgstr "operação não é compatível com o tipo informado"
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
-msgstr ""
+msgstr "o ord espera um caractere"
 
 #: py/modbuiltins.c
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
 msgstr ""
+"o ord() esperava um caractere, porém a sequência do comprimento %d foi "
+"encontrada"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
 msgstr ""
+"houve um transbordamento durante a conversão int longo para a palavra de "
+"máquina"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
-msgstr ""
+msgstr "a paleta deve ter 32 bytes de comprimento"
 
 #: shared-bindings/displayio/Palette.c
 msgid "palette_index should be an int"
-msgstr ""
+msgstr "palette_index deve ser um int"
 
 #: py/compile.c
 msgid "parameter annotation must be an identifier"
-msgstr ""
+msgstr "a anotação do parâmetro deve ser um identificador"
 
 #: py/emitinlinextensa.c
 msgid "parameters must be registers in sequence a2 to a5"
-msgstr ""
+msgstr "os parâmetros devem ser registradores na sequência a2 até a5"
 
 #: py/emitinlinethumb.c
 msgid "parameters must be registers in sequence r0 to r3"
-msgstr ""
+msgstr "os parâmetros devem ser registradores na sequência r0 até r3"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel coordinates out of bounds"
-msgstr ""
+msgstr "as coordenadas do pixel estão fora dos limites"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "pixel value requires too many bits"
-msgstr ""
+msgstr "o valor do pixel requer bits demais"
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
+msgstr "o pixel_shader deve ser displayio.Palette ou displayio.ColorConverter"
 
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
-msgstr ""
+msgstr "o polígono só pode ser registrado em um pai"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
-msgstr ""
+msgstr "pop a partir de um PulseIn vazio"
 
 #: py/objset.c
 msgid "pop from an empty set"
-msgstr ""
+msgstr "pop a partir de um conjunto vazio"
 
 #: py/objlist.c
 msgid "pop from empty list"
-msgstr ""
+msgstr "pop a partir da lista vazia"
 
 #: py/objdict.c
 msgid "popitem(): dictionary is empty"
-msgstr ""
+msgstr "popitem(): o dicionário está vazio"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
-msgstr ""
+msgstr "O terceiro argumento pow() não pode ser 0"
 
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
-msgstr ""
+msgstr "o pow() com 3 argumentos requer números inteiros"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
@@ -2998,52 +3012,54 @@ msgstr "estouro de fila"
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
-msgstr ""
+msgstr "o f-strings bruto não estão implementados"
 
 #: extmod/ulab/code/fft.c
 msgid "real and imaginary parts must be of equal length"
-msgstr ""
+msgstr "partes reais e imaginárias devem ter o mesmo comprimento"
 
 #: py/builtinimport.c
 msgid "relative import"
-msgstr ""
+msgstr "importação relativa"
 
 #: py/obj.c
 #, c-format
 msgid "requested length %d but object has length %d"
-msgstr ""
+msgstr "o comprimento solicitado %d, porém o objeto tem comprimento %d"
 
 #: py/compile.c
 msgid "return annotation must be an identifier"
-msgstr ""
+msgstr "a anotação do retorno deve ser um identificador"
 
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
-msgstr ""
+msgstr "o retorno esperado era '%q', porém obteve '% q'"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] duplicates another pin assignment"
-msgstr ""
+msgstr "rgb_pins[%d] duplica outra atribuição dos pinos"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] is not on the same port as clock"
-msgstr ""
+msgstr "rgb_pins[%d] não está na mesma porta que o clock"
 
 #: extmod/ulab/code/ndarray.c
 msgid "right hand side must be an ndarray, or a scalar"
-msgstr ""
+msgstr "o lado direito deve ser um ndarray ou um escalar"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
-msgstr ""
+msgstr "rsplit(Nenhum,n)"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
 msgstr ""
+"O buffer sample_source deve ser um bytearray ou matriz do tipo 'h', 'H', 'b' "
+"ou 'B'"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
@@ -3051,7 +3067,7 @@ msgstr "Taxa de amostragem fora do intervalo"
 
 #: py/modmicropython.c
 msgid "schedule stack full"
-msgstr ""
+msgstr "agende a pilha de função completa"
 
 #: lib/utils/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
@@ -3059,47 +3075,47 @@ msgstr "compilação de script não suportada"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a 2-tuple"
-msgstr ""
+msgstr "a forma deve ser uma tupla de 2"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
-msgstr ""
+msgstr "sinal não permitido no especificador do formato da sequência"
 
 #: py/objstr.c
 msgid "sign not allowed with integer format specifier 'c'"
-msgstr ""
+msgstr "sinal não permitido com o especificador no formato inteiro 'c'"
 
 #: py/objstr.c
 msgid "single '}' encountered in format string"
-msgstr ""
+msgstr "único '}' encontrado na string do formato"
 
 #: extmod/ulab/code/linalg.c
 msgid "size is defined for ndarrays only"
-msgstr ""
+msgstr "o tamanho é definido apenas para os ndarrays"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
-msgstr ""
+msgstr "a duração do sleep não deve ser negativo"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
-msgstr ""
+msgstr "a etapa da fatia não pode ser zero"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
-msgstr ""
+msgstr "transbordamento int pequeno"
 
 #: main.c
 msgid "soft reboot\n"
-msgstr ""
+msgstr "reinicialização soft\n"
 
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr ""
+msgstr "o argumento da classificação deve ser um ndarray"
 
 #: py/objstr.c
 msgid "start/end indices"
-msgstr ""
+msgstr "os índices de início/fim"
 
 #: shared-bindings/displayio/Shape.c
 msgid "start_x should be an int"
@@ -3111,28 +3127,28 @@ msgstr "o passo deve ser diferente de zero"
 
 #: shared-bindings/busio/UART.c
 msgid "stop must be 1 or 2"
-msgstr ""
+msgstr "o stop deve ser 1 ou 2"
 
 #: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
-msgstr ""
+msgstr "stop não está acessível a partir do início"
 
 #: py/stream.c
 msgid "stream operation not supported"
-msgstr ""
+msgstr "a operação do fluxo não é compatível"
 
 #: py/objstrunicode.c
 msgid "string index out of range"
-msgstr ""
+msgstr "o índice da string está fora do intervalo"
 
 #: py/objstrunicode.c
 #, c-format
 msgid "string indices must be integers, not %s"
-msgstr ""
+msgstr "o índices das string devem ser números inteiros, não %s"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
-msgstr ""
+msgstr "a string não é compatível; use bytes ou bytearray"
 
 #: extmod/moductypes.c
 msgid "struct: cannot index"
@@ -3148,11 +3164,11 @@ msgstr "struct: sem campos"
 
 #: py/objstr.c
 msgid "substring not found"
-msgstr ""
+msgstr "a substring não foi encontrada"
 
 #: py/compile.c
 msgid "super() can't find self"
-msgstr ""
+msgstr "o super() não consegue se encontrar"
 
 #: extmod/modujson.c
 msgid "syntax error in JSON"
@@ -3160,7 +3176,7 @@ msgstr "erro de sintaxe no JSON"
 
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
-msgstr ""
+msgstr "houve um erro de sintaxe no descritor uctypes"
 
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
@@ -3168,15 +3184,15 @@ msgstr "Limite deve estar no alcance de 0-65536"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
-msgstr ""
+msgstr "time.struct_time() leva uma sequência com 9"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
-msgstr ""
+msgstr "a duração do tempo limite excedeu o valor máximo suportado"
 
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
-msgstr ""
+msgstr "o tempo limite deve ser entre 0.0 a 100.0 segundos"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
@@ -3184,11 +3200,11 @@ msgstr "o tempo limite deve ser >= 0,0"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
-msgstr ""
+msgstr "o tempo limite na espera pelo cartão v1"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v2 card"
-msgstr ""
+msgstr "o tempo limite na espera pelo cartão v2"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -3200,24 +3216,24 @@ msgstr "Muitos argumentos fornecidos com o formato dado"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
-msgstr ""
+msgstr "índices demais"
 
 #: py/runtime.c
 #, c-format
 msgid "too many values to unpack (expected %d)"
-msgstr ""
+msgstr "valores demais para descompactar (esperado %d)"
 
 #: extmod/ulab/code/linalg.c py/objstr.c
 msgid "tuple index out of range"
-msgstr ""
+msgstr "o índice da tupla está fora do intervalo"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
-msgstr ""
+msgstr "a tupla/lista está com tamanho incorreto"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 msgid "tuple/list required on RHS"
-msgstr ""
+msgstr "a tupla/lista necessária no RHS"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
@@ -3226,69 +3242,69 @@ msgstr "TX e RX não podem ser ambos"
 
 #: py/objtype.c
 msgid "type '%q' is not an acceptable base type"
-msgstr ""
+msgstr "o tipo '%q' não é um tipo base aceitável"
 
 #: py/objtype.c
 msgid "type is not an acceptable base type"
-msgstr ""
+msgstr "tipo não é um tipo base aceitável"
 
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
-msgstr ""
+msgstr "o objeto tipo '%q' não possuí atributo '%q'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
-msgstr ""
+msgstr "o tipo usa 1 ou 3 argumentos"
 
 #: py/objint_longlong.c
 msgid "ulonglong too large"
-msgstr ""
+msgstr "ulonglong é muito grande"
 
 #: py/emitnative.c
 msgid "unary op %q not implemented"
-msgstr ""
+msgstr "op %q unário não foi implementado"
 
 #: py/parse.c
 msgid "unexpected indent"
-msgstr ""
+msgstr "recuo inesperado"
 
 #: py/bc.c
 msgid "unexpected keyword argument"
-msgstr ""
+msgstr "argumento inesperado da palavra-chave"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "unexpected keyword argument '%q'"
-msgstr ""
+msgstr "argumento inesperado da palavra-chave '%q'"
 
 #: py/lexer.c
 msgid "unicode name escapes"
-msgstr ""
+msgstr "escapar o nome unicode"
 
 #: py/parse.c
 msgid "unindent does not match any outer indentation level"
-msgstr ""
+msgstr "o unindent não coincide com nenhum nível de recuo externo"
 
 #: py/objstr.c
 #, c-format
 msgid "unknown conversion specifier %c"
-msgstr ""
+msgstr "especificador de conversão desconhecido %c"
 
 #: py/objstr.c
 #, c-format
 msgid "unknown format code '%c' for object of type '%s'"
-msgstr ""
+msgstr "código de formato desconhecido '%c' para o objeto do tipo '%s'"
 
 #: py/compile.c
 msgid "unknown type"
-msgstr ""
+msgstr "tipo desconhecido"
 
 #: py/emitnative.c
 msgid "unknown type '%q'"
-msgstr ""
+msgstr "tipo desconhecido '%q'"
 
 #: py/objstr.c
 msgid "unmatched '{' in format"
-msgstr ""
+msgstr "um '{' sem par no formato"
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -3297,83 +3313,83 @@ msgstr "atributo ilegível"
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 #: shared-module/vectorio/Polygon.c
 msgid "unsupported %q type"
-msgstr ""
+msgstr "tipo %q não suportado"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr ""
+msgstr "instrução Thumb '%s' não compatível com argumentos %d"
 
 #: py/emitinlinextensa.c
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
-msgstr ""
+msgstr "instrução Xtensa '%s' não compatível com argumentos %d"
 
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
-msgstr ""
+msgstr "o caractere do formato não é compatível '%c' (0x%x) no índice %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%s'"
-msgstr ""
+msgstr "tipo não compatível para %q: '%s'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
-msgstr ""
+msgstr "tipo não compatível para o operador"
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%s', '%s'"
-msgstr ""
+msgstr "tipos não compatíveis para %q: '%s', '%s'"
 
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
-msgstr ""
+msgstr "o valor deve caber em %d byte(s)"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
-msgstr ""
+msgstr "o value_count deve ser > 0"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
-msgstr ""
+msgstr "o tempo limite do watchdog deve ser maior que 0"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr ""
+msgstr "a janela deve ser <= intervalo"
 
 #: extmod/ulab/code/linalg.c
 msgid "wrong argument type"
-msgstr ""
+msgstr "tipo do argumento errado"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong index type"
-msgstr ""
+msgstr "tipo do índice errado"
 
 #: extmod/ulab/code/vectorise.c
 msgid "wrong input type"
-msgstr ""
+msgstr "tipo da entrada incorreta"
 
 #: py/objstr.c
 msgid "wrong number of arguments"
-msgstr ""
+msgstr "quantidade errada dos argumentos"
 
 #: py/runtime.c
 msgid "wrong number of values to unpack"
-msgstr ""
+msgstr "quantidade incorreta dos valores para descompressão"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
-msgstr ""
+msgstr "tipo do operando errado"
 
 #: extmod/ulab/code/vectorise.c
 msgid "wrong output type"
-msgstr ""
+msgstr "tipo da saída incorreta"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
-msgstr ""
+msgstr "a valor x está fora dos limites"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
@@ -3381,7 +3397,7 @@ msgstr "y deve ser um int"
 
 #: shared-module/displayio/Shape.c
 msgid "y value out of bounds"
-msgstr ""
+msgstr "o valor y está fora dos limites"
 
 #: py/objrange.c
 msgid "zero step"
