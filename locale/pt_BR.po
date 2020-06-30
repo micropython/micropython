@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-10 15:45+0000\n"
+"PO-Revision-Date: 2023-11-16 15:03+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 #: main.c
 msgid ""
@@ -1125,8 +1125,7 @@ msgstr "Para o espaço de cor L8, o bitmap da entrada deve ter 8 bits por pixel"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
-msgstr ""
-"Para espaços de cor RGB, o bitmap da entrada deve ter 16 bits por pixel"
+msgstr "Para espaços de cor RGB, o bitmap da entrada deve ter 16 bits por pixel"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1840,8 +1839,7 @@ msgstr "O Polígono precisa de pelo menos 3 pontos"
 
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr ""
-"Falta de energia. Certifique-se que está fornecendo energia suficiente."
+msgstr "Falta de energia. Certifique-se que está fornecendo energia suficiente."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -2134,8 +2132,8 @@ msgstr "Muitos canais na amostra."
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
-"Excesso de barramentos de exibição; esqueceu do displayio."
-"release_displays() ?"
+"Excesso de barramentos de exibição; esqueceu do displayio.release_displays() "
+"?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -3012,8 +3010,7 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr ""
-"o buffer do destino deve ser uma matriz do tipo 'H' para bit_depth = 16"
+msgstr "o buffer do destino deve ser uma matriz do tipo 'H' para bit_depth = 16"
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
@@ -3350,8 +3347,7 @@ msgstr "as formas da entrada e da saída diferem"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
-msgstr ""
-"argumento da entrada deve ser um número inteiro, uma tupla ou uma lista"
+msgstr "argumento da entrada deve ser um número inteiro, uma tupla ou uma lista"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
@@ -3611,8 +3607,8 @@ msgstr "falha na alocação de memória, alocando %u bytes"
 #: py/runtime.c
 msgid "memory allocation failed, heap is locked"
 msgstr ""
-"falha na alocação de memória, a área de alocação dinâmica de variáveis "
-"(heap) está bloqueada"
+"falha na alocação de memória, a área de alocação dinâmica de variáveis (heap)"
+" está bloqueada"
 
 #: py/objarray.c
 msgid "memoryview offset too large"
