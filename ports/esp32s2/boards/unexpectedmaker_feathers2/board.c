@@ -30,21 +30,21 @@
 
 void board_init(void) {
     // USB
-    never_reset_pin(&pin_GPIO19);
-    never_reset_pin(&pin_GPIO20);
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
     // Debug UART
-    never_reset_pin(&pin_GPIO43);
-    never_reset_pin(&pin_GPIO44);
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
 
     // SPI Flash and RAM
-    never_reset_pin(&pin_GPIO26);
-    never_reset_pin(&pin_GPIO27);
-    never_reset_pin(&pin_GPIO28);
-    never_reset_pin(&pin_GPIO29);
-    never_reset_pin(&pin_GPIO30);
-    never_reset_pin(&pin_GPIO31);
-    never_reset_pin(&pin_GPIO32);
+    common_hal_never_reset_pin(&pin_GPIO26);
+    common_hal_never_reset_pin(&pin_GPIO27);
+    common_hal_never_reset_pin(&pin_GPIO28);
+    common_hal_never_reset_pin(&pin_GPIO29);
+    common_hal_never_reset_pin(&pin_GPIO30);
+    common_hal_never_reset_pin(&pin_GPIO31);
+    common_hal_never_reset_pin(&pin_GPIO32);
 }
 
 bool board_requests_safe_mode(void) {
