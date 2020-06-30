@@ -239,6 +239,7 @@ jobs:
         - "robohatmm1_m4"
         - "sam32"
         - "same54_xplained"
+        - "seeeduino_wio_terminal"
         - "seeeduino_xiao"
         - "serpente"
         - "shirtty"
