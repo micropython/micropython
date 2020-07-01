@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-01 10:33-0500\n"
-"PO-Revision-Date: 2020-06-30 17:48+0000\n"
+"PO-Revision-Date: 2020-07-02 02:02+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -354,7 +354,7 @@ msgstr "Array deve conter meias palavras (tipo 'H')"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr "Os valores da matriz devem ser bytes simples."
+msgstr "Os valores das matrizes devem ser bytes simples."
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
@@ -3099,7 +3099,7 @@ msgstr "a duração do sleep não deve ser negativo"
 
 #: extmod/ulab/code/ndarray.c
 msgid "slice step can't be zero"
-msgstr ""
+msgstr "a etapa da fatia não pode ser zero"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
@@ -3119,15 +3119,15 @@ msgstr "o argumento da classificação deve ser um ndarray"
 
 #: extmod/ulab/code/filter.c
 msgid "sos array must be of shape (n_section, 6)"
-msgstr ""
+msgstr "o sos da matriz deve estar na forma (n_section, 6)"
 
 #: extmod/ulab/code/filter.c
 msgid "sos[:, 3] should be all ones"
-msgstr ""
+msgstr "sos[:, 3] deve ser um em todos"
 
 #: extmod/ulab/code/filter.c
 msgid "sosfilt requires iterable arguments"
-msgstr ""
+msgstr "o sosfilt requer que os argumentos sejam iteráveis"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3421,15 +3421,15 @@ msgstr "passo zero"
 
 #: extmod/ulab/code/filter.c
 msgid "zi must be an ndarray"
-msgstr ""
+msgstr "zi deve ser um ndarray"
 
 #: extmod/ulab/code/filter.c
 msgid "zi must be of float type"
-msgstr ""
+msgstr "zi deve ser de um tipo float"
 
 #: extmod/ulab/code/filter.c
 msgid "zi must be of shape (n_section, 2)"
-msgstr ""
+msgstr "zi deve estar na forma (n_section, 2)"
 
 #~ msgid "AP required"
 #~ msgstr "AP requerido"
