@@ -112,7 +112,10 @@ NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* fmt, ...) 
 
 // Called when _bleio is imported.
 STATIC mp_obj_t bleio___init__(void) {
+#if !CIRCUITPY_BLEIO_HCI
+    // HCI cannot be enabled on import, because we need to setup the HCI adapter first.
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
+#endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(bleio___init___obj, bleio___init__);

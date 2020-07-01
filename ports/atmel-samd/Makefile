@@ -248,7 +248,7 @@ endif
 
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
-SRC_C = \
+SRC_C += \
 	audio_dma.c \
 	background.c \
 	bindings/samd/Clock.c \

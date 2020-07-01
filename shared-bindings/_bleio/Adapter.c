@@ -64,20 +64,20 @@
 //|     advertisements and it can advertise its own data. Furthermore, Adapters can accept incoming
 //|     connections and also initiate connections."""
 //|
-
-//|     def __init__(self, *, tx: Pin, rx: Pin, rts: Pin, cts: Pin, baudrate: int = 115200, buffer_size: int = 256):
 //|         You cannot create an instance of `_bleio.Adapter`.
 //|         Use `_bleio.adapter` to access the sole instance available."""
 //|
-//|         On boards that do not have native BLE. You can use HCI co-processor.
+
+//|     def hci_init(self, *, tx: Pin, rx: Pin, rts: Pin, cts: Pin, baudrate: int = 115200, buffer_size: int = 256):
+//|         On boards that do not have native BLE, you can an use HCI co-processor.
 //|         Call `_bleio.adapter.hci_init()` passing it the pins used to communicate
 //|         with the co-processor, such as an Adafruit AirLift.
 //|         The co-processor must have been reset and put into BLE mode beforehand
 //|         by the appropriate pin manipulation.
 //|         The `tx`, `rx`, `rts`, and `cs` pins are used to communicate with the HCI co-processor in HCI mode.
 //|
-#if CIRCUITPY_BLEIO_HCI
 mp_obj_t bleio_adapter_hci_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+#if CIRCUITPY_BLEIO_HCI
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     if (self->enabled) {
@@ -114,10 +114,14 @@ mp_obj_t bleio_adapter_hci_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_m
 
     common_hal_bleio_adapter_hci_init(&common_hal_bleio_adapter_obj, tx, rx, rts, cts,
                                       baudrate, buffer_size);
+
     return mp_const_none;
+#else
+    mp_raise_RuntimeError(translate("hci_init not available"));
+    return mp_const_none;
+#endif // CIRCUITPY_BLEIO_HCI
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_hci_init_obj, 1, bleio_adapter_hci_init);
-#endif // CIRCUITPY_BLEIO_HCI
 
 //|
 //|     enabled: Any = ...

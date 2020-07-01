@@ -318,8 +318,8 @@ SRC_COMMON_HAL_ALL = \
 	watchdog/__init__.c \
 
 ifeq ($(CIRCUITPY_BLEIO_HCI),1)
-SRC_C +=\
-	common_hal/_bleio/hci.c \
+SRC_C += \
+	common-hal/_bleio/hci.c \
 
 endif
 
