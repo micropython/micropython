@@ -163,6 +163,9 @@ bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
+    if (self->has_lock) {
+        return false;
+    }
     self->has_lock = xSemaphoreTake(&self->semaphore, 0) == pdTRUE;
     return self->has_lock;
 }
