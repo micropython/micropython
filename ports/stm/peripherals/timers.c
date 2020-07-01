@@ -23,20 +23,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "timers.h"
+
+#include "py/mpconfig.h"
+#include "py/gc.h"
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "supervisor/shared/translate.h"
+
+#include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
+
+#define ALL_CLOCKS 0xFFFF
 
 static bool stm_timer_reserved[MP_ARRAY_SIZE(mcu_tim_banks)];
 static bool stm_timer_never_reset[MP_ARRAY_SIZE(mcu_tim_banks)];
-static void *stm_timer_callback[MP_ARRAY_SIZE(mcu_tim_banks)](void);
-
-STATIC void tim_clock_enable(uint16_t mask);
-STATIC void tim_clock_disable(uint16_t mask);
+static void (*stm_timer_callback[MP_ARRAY_SIZE(mcu_tim_banks)])(void);
+static size_t irq_map[] = {
+    TIM1_CC_IRQn,
+    TIM2_IRQn,
+    TIM3_IRQn,
+    TIM4_IRQn,
+    TIM5_IRQn,
+    TIM6_DAC_IRQn,
+    TIM7_IRQn,
+    TIM8_CC_IRQn,
+    TIM1_BRK_TIM9_IRQn,
+    TIM1_UP_TIM10_IRQn,
+    TIM1_TRG_COM_TIM11_IRQn,
+    TIM8_BRK_TIM12_IRQn,
+    TIM8_UP_TIM13_IRQn,
+    TIM8_TRG_COM_TIM14_IRQn,
+#if (CPY_STM32H7)
+    TIM15_IRQn,
+    TIM16_IRQn,
+    TIM17_IRQn,
+#endif
+};
 
 // Get the frequency (in Hz) of the source clock for the given timer.
 // On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
 // If the APB prescaler is 1, then the timer clock is equal to its respective
 // APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
 // respective APB clock.  See DM00031020 Rev 4, page 115.
-STATIC uint32_t timer_get_source_freq(uint32_t tim_id) {
+uint32_t stm_peripherals_timer_get_source_freq(TIM_TypeDef * timer) {
+    size_t tim_id = stm_peripherals_timer_get_index(timer);
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
@@ -54,11 +85,44 @@ STATIC uint32_t timer_get_source_freq(uint32_t tim_id) {
     return source;
 }
 
+void timers_reset(void) {
+    uint16_t never_reset_mask = 0x00;
+    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_tim_banks); i++) {
+        if (!stm_timer_never_reset[i]) {
+            stm_timer_reserved[i] = false;
+        } else {
+            never_reset_mask |= 1 << i;
+        }
+    }
+    tim_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
+}
+
 TIM_TypeDef * stm_peripherals_find_timer(void) {
-    // TODO: check for unreserved timers from already claimed pins
+    // Check for timers on pins outside the package size
+    // for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_tim_banks); i++) {
+    //     bool timer_in_package = false;
+    //     // Find each timer instance on the given bank
+    //     for (size_t j = 0; j < MP_ARRAY_SIZE(mcu_tim_pin_list); j++) {
+    //         // If a pin is claimed, we skip it
+    //         if ( (mcu_tim_pin_list[j].tim_index == i)
+    //             && (common_hal_mcu_pin_is_free(mcu_tim_pin_list[j].pin) == true) ) {
+    //             // Search whether any pins in the package array match it
+    //             for (size_t k = 0; k < mcu_pin_globals.map.alloc; k++) {
+    //                 if ( (mcu_tim_pin_list[j].pin == (mcu_pin_obj_t*)(mcu_pin_globals.map.table[k].value)) ) {
+    //                     timer_in_package = true;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     // If no results are found, no unclaimed pins with this timer are in this package,
+    //     // and it is safe to pick
+    //     if (timer_in_package == false && mcu_tim_banks[i] != NULL) {
+    //         return mcu_tim_banks[i];
+    //     }
+    // }
 
     // Work backwards - higher index timers have fewer pin allocations
-    for (size_t i = MP_ARRAY_SIZE(stm_timer_reserved); i>=0; i--) {
+    for (size_t i = (MP_ARRAY_SIZE(mcu_tim_banks) - 1); i>=0; i--) {
         if ((!stm_timer_reserved[i]) && (mcu_tim_banks[i] != NULL)) {
             return mcu_tim_banks[i];
         }
@@ -67,20 +131,58 @@ TIM_TypeDef * stm_peripherals_find_timer(void) {
     return NULL;
 }
 
+void stm_peripherals_timer_preinit(TIM_TypeDef * instance, uint8_t prio, void (*callback)(void)) {
+    size_t tim_idx = stm_peripherals_timer_get_index(instance);
+    stm_timer_callback[tim_idx] = callback;
+    tim_clock_enable(1 << tim_idx);
+    HAL_NVIC_SetPriority(irq_map[tim_idx], prio, 0);
+    HAL_NVIC_EnableIRQ(irq_map[tim_idx]);
+}
+
+void stm_peripherals_timer_reserve(TIM_TypeDef * instance) {
+    size_t tim_idx = stm_peripherals_timer_get_index(instance);
+    stm_timer_reserved[tim_idx] = true;
+}
+
 void stm_peripherals_timer_set_callback(void(*callback)(void), TIM_TypeDef * timer) {
-    stm_timer_callback[stm_peripherals_timer_get_index]
+    stm_timer_callback[stm_peripherals_timer_get_index(timer)] = callback;
 }
 
 void stm_peripherals_timer_free(TIM_TypeDef * instance) {
-
+    size_t tim_idx = stm_peripherals_timer_get_index(instance);
+    stm_timer_callback[tim_idx] = NULL;
+    tim_clock_disable(1 << tim_idx);
+    stm_timer_reserved[tim_idx] = false;
+    stm_timer_never_reset[tim_idx] = false;
 }
-void stm_peripherals_timer_never_reset(TIM_TypeDef * instance);
-void stm_peripherals_timer_reset_ok(TIM_TypeDef * instance);
-void stm_peripherals_timer_is_never_reset(TIM_TypeDef * instance);
-void stm_peripherals_timer_is_reserved(TIM_TypeDef * instance);
-size_t stm_peripherals_timer_get_index(TIM_TypeDef * instance);
 
-STATIC void tim_clock_enable(uint16_t mask) {
+void stm_peripherals_timer_never_reset(TIM_TypeDef * instance) {
+    size_t tim_idx = stm_peripherals_timer_get_index(instance);
+    stm_timer_never_reset[tim_idx] = true;
+}
+void stm_peripherals_timer_reset_ok(TIM_TypeDef * instance) {
+    size_t tim_idx = stm_peripherals_timer_get_index(instance);
+    stm_timer_never_reset[tim_idx] = false;
+}
+bool stm_peripherals_timer_is_never_reset(TIM_TypeDef * instance){
+    size_t tim_idx = stm_peripherals_timer_get_index(instance);
+    return stm_timer_never_reset[tim_idx];
+}
+bool stm_peripherals_timer_is_reserved(TIM_TypeDef * instance) {
+    size_t tim_idx = stm_peripherals_timer_get_index(instance);
+    return stm_timer_reserved[tim_idx];
+}
+
+size_t stm_peripherals_timer_get_index(TIM_TypeDef * instance) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_tim_banks); i++) {
+        if (instance == mcu_tim_banks[i]) {
+            return i;
+        }
+    }
+    return ~(size_t)0;
+}
+
+void tim_clock_enable(uint16_t mask) {
     #ifdef TIM1
     if (mask & (1 << 0)) {
         __HAL_RCC_TIM1_CLK_ENABLE();
@@ -144,7 +246,7 @@ STATIC void tim_clock_enable(uint16_t mask) {
     #endif
 }
 
-STATIC void tim_clock_disable(uint16_t mask) {
+void tim_clock_disable(uint16_t mask) {
     #ifdef TIM1
     if (mask & (1 << 0)) {
         __HAL_RCC_TIM1_CLK_DISABLE();
@@ -209,8 +311,8 @@ STATIC void tim_clock_disable(uint16_t mask) {
 }
 
 STATIC void callback_router(size_t index) {
-    if (stm_timer_callback[index]) {
-        (*stm_timer_callback[index])();
+    if (stm_timer_callback[index - 1]) {
+        (*stm_timer_callback[index - 1])();
     }
 }
 
