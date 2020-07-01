@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-26 11:50-0500\n"
+"POT-Creation-Date: 2020-07-01 10:33-0500\n"
 "PO-Revision-Date: 2020-06-30 17:48+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
@@ -1748,8 +1748,8 @@ msgstr "O WatchDogTimer não está em execução"
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
-"O WatchDogTimer.mode não pode ser alterado uma vez definido para WatchDogMode"
-".RESET"
+"O WatchDogTimer.mode não pode ser alterado uma vez definido para "
+"WatchDogMode.RESET"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
@@ -3097,6 +3097,10 @@ msgstr "o tamanho é definido apenas para os ndarrays"
 msgid "sleep length must be non-negative"
 msgstr "a duração do sleep não deve ser negativo"
 
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr ""
+
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
 msgstr "a etapa da fatia não pode ser zero"
@@ -3112,6 +3116,18 @@ msgstr "reinicialização soft\n"
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "o argumento da classificação deve ser um ndarray"
+
+#: extmod/ulab/code/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sosfilt requires iterable arguments"
+msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3402,6 +3418,18 @@ msgstr "o valor y está fora dos limites"
 #: py/objrange.c
 msgid "zero step"
 msgstr "passo zero"
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of float type"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of shape (n_section, 2)"
+msgstr ""
 
 #~ msgid "AP required"
 #~ msgstr "AP requerido"

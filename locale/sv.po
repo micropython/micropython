@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-26 11:50-0500\n"
+"POT-Creation-Date: 2020-07-01 10:33-0500\n"
 "PO-Revision-Date: 2020-06-03 18:59+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3066,6 +3066,10 @@ msgstr "storlek är enbart definierad ndarrays"
 msgid "sleep length must be non-negative"
 msgstr "värdet för sleep måste vara positivt"
 
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr ""
+
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
 msgstr "segmentsteg får inte vara noll"
@@ -3081,6 +3085,18 @@ msgstr "mjuk omstart\n"
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "argumentet sort måste vara en ndarray"
+
+#: extmod/ulab/code/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sosfilt requires iterable arguments"
+msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3371,6 +3387,18 @@ msgstr "y-värde utanför intervall"
 #: py/objrange.c
 msgid "zero step"
 msgstr "noll steg"
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of float type"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of shape (n_section, 2)"
+msgstr ""
 
 #~ msgid "I2C operation not supported"
 #~ msgstr "I2C-åtgärd stöds inte"

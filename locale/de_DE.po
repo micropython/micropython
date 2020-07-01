@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-26 11:50-0500\n"
+"POT-Creation-Date: 2020-07-01 10:33-0500\n"
 "PO-Revision-Date: 2020-06-16 18:24+0000\n"
 "Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language: de_DE\n"
@@ -3100,6 +3100,10 @@ msgstr "Größe ist nur für ndarrays definiert"
 msgid "sleep length must be non-negative"
 msgstr "Die Schlafdauer darf nicht negativ sein"
 
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr ""
+
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
 msgstr "Der Slice-Schritt kann nicht Null sein"
@@ -3115,6 +3119,18 @@ msgstr "weicher reboot\n"
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "sortierungs Argument muss ein ndarray sein"
+
+#: extmod/ulab/code/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sosfilt requires iterable arguments"
+msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3410,6 +3426,18 @@ msgstr "y Wert außerhalb der Grenzen"
 #: py/objrange.c
 msgid "zero step"
 msgstr "Nullschritt"
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of float type"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of shape (n_section, 2)"
+msgstr ""
 
 #~ msgid "AP required"
 #~ msgstr "AP erforderlich"

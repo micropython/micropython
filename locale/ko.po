@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-26 11:50-0500\n"
+"POT-Creation-Date: 2020-07-01 10:33-0500\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3014,6 +3014,10 @@ msgstr ""
 msgid "sleep length must be non-negative"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr ""
+
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
 msgstr ""
@@ -3028,6 +3032,18 @@ msgstr ""
 
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sosfilt requires iterable arguments"
 msgstr ""
 
 #: py/objstr.c
@@ -3318,6 +3334,18 @@ msgstr ""
 
 #: py/objrange.c
 msgid "zero step"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of float type"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
 #~ msgid "Can't add services in Central mode"
