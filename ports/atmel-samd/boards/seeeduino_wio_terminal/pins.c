@@ -44,6 +44,27 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // LED pins
     { MP_ROM_QSTR(MP_QSTR_LED),   MP_ROM_PTR(&pin_PA15) }, // status
 
+    // LCD Display
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_MISO),  MP_ROM_PTR(&pin_PB18) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_MOSI),  MP_ROM_PTR(&pin_PB19) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_SCK),  MP_ROM_PTR(&pin_PB20) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_SS),  MP_ROM_PTR(&pin_PB21) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_DC),  MP_ROM_PTR(&pin_PC06) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_BACKLIGHT),  MP_ROM_PTR(&pin_PC05) },
+    
+    // Special named pins
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_UP),  MP_ROM_PTR(&pin_PD20) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_LEFT),  MP_ROM_PTR(&pin_PD12) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_RIGHT),  MP_ROM_PTR(&pin_PD09) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_DOWN),  MP_ROM_PTR(&pin_PD08) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_PRESS),  MP_ROM_PTR(&pin_PD10) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_1),  MP_ROM_PTR(&pin_PC26) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_2),  MP_ROM_PTR(&pin_PC27) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_3),  MP_ROM_PTR(&pin_PC28) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LIGHT),  MP_ROM_PTR(&pin_PD01) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUZZER),  MP_ROM_PTR(&pin_PD11) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IR),  MP_ROM_PTR(&pin_PB31) },
+
     // Comm objects
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
