@@ -204,6 +204,7 @@ jobs:
         - "mini_sam_m4"
         - "monster_m4sk"
         - "ndgarage_ndbit6"
+        - "ndgarage_ndbit6_v2"
         - "nfc_copy_cat"
         - "nice_nano"
         - "nucleo_f746zg"
