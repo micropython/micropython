@@ -38,14 +38,12 @@
 #include "powerctrl.h"
 #include "dfu.h"
 
-// Using polling is about 10% faster than not using it (and using IRQ instead)
-// This DFU code with polling runs in about 70% of the time of the ST bootloader
+// This option selects whether to use explicit polling or IRQs for USB events.
+// In some test cases polling mode can run slightly faster, but it uses more power.
+// Polling mode will also cause failures with the mass-erase command because USB
+// events will not be serviced for the duration of the mass erase.
 // With STM32WB MCUs only non-polling/IRQ mode is supported.
-#if defined(STM32WB)
 #define USE_USB_POLLING (0)
-#else
-#define USE_USB_POLLING (1)
-#endif
 
 // Using cache probably won't make it faster because we run at a low frequency, and best
 // to keep the MCU config as minimal as possible.
