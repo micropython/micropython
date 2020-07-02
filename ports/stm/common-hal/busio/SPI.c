@@ -238,11 +238,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     self->handle.Instance = SPIx;
     self->handle.Init.Mode = SPI_MODE_MASTER;
-    // Implementing one-directional recieve-only SPI as per [RefMan RM0090:884]
-    // results in BSY bit related hangs. Using MOSI as an IO works fine without it,
-    // so it's unclear why this mode is present in the first place.
-    //self->handle.Init.Direction =  (self->mosi == NULL) ? SPI_DIRECTION_2LINES_RXONLY : SPI_DIRECTION_2LINES;
-    self->handle.Init.Direction = SPI_DIRECTION_2LINES;
+    // Direction change only required for RX-only, see RefMan RM0090:884
+    self->handle.Init.Direction = (self->mosi == NULL) ? SPI_DIRECTION_2LINES_RXONLY : SPI_DIRECTION_2LINES;
     self->handle.Init.DataSize = SPI_DATASIZE_8BIT;
     self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
     self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
