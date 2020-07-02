@@ -52,6 +52,8 @@
 #include "i2c.h"
 #include "adc.h"
 #include "rtcounter.h"
+#include "mphalport.h"
+
 #if MICROPY_PY_MACHINE_HW_PWM
 #include "pwm.h"
 #endif
@@ -101,6 +103,9 @@ int main(int argc, char **argv) {
 
 
 soft_reset:
+    #if MICROPY_PY_TIME_TICKS
+    rtc1_init_time_ticks();
+    #endif
 
     led_init();
 
