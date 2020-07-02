@@ -49,7 +49,6 @@
 #include "samd/dma.h"
 
 #include "audio_dma.h"
-#include "tick.h"
 
 #define OVERSAMPLING 64
 #define SAMPLES_PER_BUFFER 32
@@ -61,7 +60,7 @@
 #define SERCTRL(name) I2S_SERCTRL_ ## name
 #endif
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 #define SERCTRL(name) I2S_RXCTRL_ ## name
 #endif
 
@@ -74,6 +73,7 @@ void pdmin_reset(void) {
     I2S->CTRLA.reg = I2S_CTRLA_SWRST;
 }
 
+// Caller validates that pins are free.
 void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
                                            const mcu_pin_obj_t* clock_pin,
                                            const mcu_pin_obj_t* data_pin,
@@ -94,7 +94,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
             self->clock_unit = 1;
         #endif
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
         if (clock_pin == &pin_PA10 || clock_pin == &pin_PB16) {
             self->clock_unit = 0;
     } else if (clock_pin == &pin_PB12
@@ -122,7 +122,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
         #endif
         self->serializer = 1;
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     if (data_pin == &pin_PB10 || data_pin == &pin_PA22) {
         self->serializer = 1;
     #endif
@@ -145,20 +145,18 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
             mp_raise_RuntimeError(translate("Serializer in use"));
         }
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         if (I2S->CTRLA.bit.RXEN == 1) {
             mp_raise_RuntimeError(translate("Serializer in use"));
         }
         #endif
     }
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_J
     #endif
     #ifdef SAMD21
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_G
     #endif
-    assert_pin_free(clock_pin);
-    assert_pin_free(data_pin);
 
     uint32_t clock_divisor = (uint32_t) roundf( 48000000.0f / sample_rate / oversample);
     float mic_clock_freq = 48000000.0f / clock_divisor;
@@ -187,7 +185,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     #ifdef SAMD21
     uint32_t serctrl = (self->clock_unit << I2S_SERCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_PDM2) | SERCTRL(DATASIZE_32);
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     uint32_t serctrl = (self->clock_unit << I2S_RXCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_PDM2) | SERCTRL(DATASIZE_32);
     #endif
 
@@ -198,7 +196,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     #ifdef SAMD21
     I2S->SERCTRL[self->serializer].reg = serctrl;
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     I2S->RXCTRL.reg = serctrl;
     #endif
 
@@ -219,7 +217,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
 }
 
 bool common_hal_audiobusio_pdmin_deinited(audiobusio_pdmin_obj_t* self) {
-    return self->clock_pin == mp_const_none;
+    return self->clock_pin == NULL;
 }
 
 void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
@@ -237,8 +235,8 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
 
     reset_pin_number(self->clock_pin->number);
     reset_pin_number(self->data_pin->number);
-    self->clock_pin = mp_const_none;
-    self->data_pin = mp_const_none;
+    self->clock_pin = NULL;
+    self->data_pin = NULL;
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self) {
@@ -276,7 +274,7 @@ static void setup_dma(audiobusio_pdmin_obj_t* self, uint32_t length,
     #ifdef SAMD21
     descriptor->SRCADDR.reg = (uint32_t)&I2S->DATA[self->serializer];
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     descriptor->SRCADDR.reg = (uint32_t)&I2S->RXDATA;
     #endif
 
@@ -297,7 +295,7 @@ static void setup_dma(audiobusio_pdmin_obj_t* self, uint32_t length,
         #ifdef SAMD21
         second_descriptor->SRCADDR.reg = (uint32_t)&I2S->DATA[self->serializer];
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         second_descriptor->SRCADDR.reg = (uint32_t)&I2S->RXDATA;
         #endif
         second_descriptor->BTCTRL.reg = DMAC_BTCTRL_VALID |
@@ -402,7 +400,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
         #ifdef SAMD21
           #define MAX_WAIT_COUNTS 1000
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
           #define MAX_WAIT_COUNTS 6000
         #endif
         // If wait_counts exceeds the max count, buffer has probably stopped filling;

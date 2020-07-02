@@ -37,31 +37,27 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: displayio
+//| class ParallelBus:
+//|     """Manage updating a display over 8-bit parallel bus in the background while Python code runs. This
+//|     protocol may be refered to as 8080-I Series Parallel Interface in datasheets. It doesn't handle
+//|     display initialization."""
 //|
-//| :class:`ParallelBus` -- Manage updating a display over 8-bit parallel bus
-//| ==============================================================================
+//|     def __init__(self, *, data0: microcontroller.Pin, command: microcontroller.Pin, chip_select: microcontroller.Pin, write: microcontroller.Pin, read: microcontroller.Pin, reset: microcontroller.Pin):
+//|         """Create a ParallelBus object associated with the given pins. The bus is inferred from data0
+//|         by implying the next 7 additional pins on a given GPIO port.
 //|
-//| Manage updating a display over 8-bit parallel bus in the background while Python code runs. This
-//| protocol may be refered to as 8080-I Series Parallel Interface in datasheets. It doesn't handle
-//| display initialization.
+//|         The parallel bus and pins are then in use by the display until `displayio.release_displays()`
+//|         is called even after a reload. (It does this so CircuitPython can use the display after your
+//|         code is done.) So, the first time you initialize a display bus in code.py you should call
+//|         :py:func`displayio.release_displays` first, otherwise it will error after the first code.py run.
 //|
-//| .. class:: ParallelBus(*, data0, command, chip_select, write, read, reset)
-//|
-//|   Create a ParallelBus object associated with the given pins. The bus is inferred from data0
-//|   by implying the next 7 additional pins on a given GPIO port.
-//|
-//|   The parallel bus and pins are then in use by the display until `displayio.release_displays()`
-//|   is called even after a reload. (It does this so CircuitPython can use the display after your
-//|   code is done.) So, the first time you initialize a display bus in code.py you should call
-//|   :py:func`displayio.release_displays` first, otherwise it will error after the first code.py run.
-//|
-//|   :param microcontroller.Pin data0: The first data pin. The rest are implied
-//|   :param microcontroller.Pin command: Data or command pin
-//|   :param microcontroller.Pin chip_select: Chip select pin
-//|   :param microcontroller.Pin write: Write pin
-//|   :param microcontroller.Pin read: Read pin
-//|   :param microcontroller.Pin reset: Reset pin
+//|         :param microcontroller.Pin data0: The first data pin. The rest are implied
+//|         :param microcontroller.Pin command: Data or command pin
+//|         :param microcontroller.Pin chip_select: Chip select pin
+//|         :param microcontroller.Pin write: Write pin
+//|         :param microcontroller.Pin read: Read pin
+//|         :param microcontroller.Pin reset: Reset pin"""
+//|         ...
 //|
 STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_data0, ARG_command, ARG_chip_select, ARG_write, ARG_read, ARG_reset };
@@ -71,46 +67,31 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
         { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_write, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_read, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
-        { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t data0 = args[ARG_data0].u_obj;
-    mp_obj_t command = args[ARG_command].u_obj;
-    mp_obj_t chip_select = args[ARG_chip_select].u_obj;
-    mp_obj_t write = args[ARG_write].u_obj;
-    mp_obj_t read = args[ARG_read].u_obj;
-    mp_obj_t reset = args[ARG_reset].u_obj;
-    assert_pin_free(data0);
-    assert_pin_free(command);
-    assert_pin_free(chip_select);
-    assert_pin_free(write);
-    assert_pin_free(read);
-    assert_pin_free(reset);
+    mcu_pin_obj_t *data0 = validate_obj_is_free_pin(args[ARG_data0].u_obj);
+    mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
+    mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
+    mcu_pin_obj_t *write = validate_obj_is_free_pin(args[ARG_write].u_obj);
+    mcu_pin_obj_t *read = validate_obj_is_free_pin(args[ARG_read].u_obj);
+    mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
 
-    displayio_parallelbus_obj_t* self = NULL;
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].parallel_bus.base.type== NULL ||
-            displays[i].parallel_bus.base.type == &mp_type_NoneType) {
-            self = &displays[i].parallel_bus;
-            self->base.type = &displayio_parallelbus_type;
-            break;
-        }
-    }
-    if (self == NULL) {
-        mp_raise_RuntimeError(translate("Too many display busses"));
-    }
+    displayio_parallelbus_obj_t* self = &allocate_display_bus_or_raise()->parallel_bus;
+    self->base.type = &displayio_parallelbus_type;
 
     common_hal_displayio_parallelbus_construct(self, data0, command, chip_select, write, read, reset);
     return self;
 }
 
-//|   .. method:: reset()
+//|     def reset(self, ) -> Any:
+//|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
+//|         is available."""
+//|         ...
 //|
-//|     Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
-//|     is available.
-//|
+
 STATIC mp_obj_t displayio_parallelbus_obj_reset(mp_obj_t self_in) {
     displayio_parallelbus_obj_t *self = self_in;
 
@@ -121,10 +102,10 @@ STATIC mp_obj_t displayio_parallelbus_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_parallelbus_reset_obj, displayio_parallelbus_obj_reset);
 
-//|   .. method:: send(command, data)
-//|
-//|     Sends the given command value followed by the full set of data. Display state, such as
-//|     vertical scroll, set via ``send`` may or may not be reset once the code is done.
+//|     def send(self, command: Any, data: Any) -> Any:
+//|         """Sends the given command value followed by the full set of data. Display state, such as
+//|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_parallelbus_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
     mp_int_t command_int = MP_OBJ_SMALL_INT_VALUE(command_obj);

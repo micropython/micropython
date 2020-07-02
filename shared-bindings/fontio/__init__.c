@@ -33,22 +33,7 @@
 #include "shared-bindings/fontio/BuiltinFont.h"
 #include "shared-bindings/fontio/Glyph.h"
 
-//| :mod:`fontio` --- Core font related data structures
-//| =========================================================================
-//|
-//| .. module:: fontio
-//|   :synopsis: Core font related data structures
-//|   :platform: SAMD21, SAMD51, nRF52
-//|
-//| The `fontio` module contains classes to store font related information.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     BuiltinFont
-//|     Glyph
+//| """Core font related data structures"""
 //|
 
 STATIC const mp_rom_map_elem_t fontio_module_globals_table[] = {

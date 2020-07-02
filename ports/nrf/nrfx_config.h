@@ -31,8 +31,8 @@
 #define CIRCUITPY_NRF_NUM_I2C 2
 #endif
 
-#if CIRCUITPY_NRF_NUM_I2C != 1 && CIRCUITPY_NRF_NUM_I2C != 2
-# error CIRCUITPY_NRF_NUM_I2C must be 1 or 2
+#if CIRCUITPY_NRF_NUM_I2C != 0 && CIRCUITPY_NRF_NUM_I2C != 1 && CIRCUITPY_NRF_NUM_I2C != 2
+# error CIRCUITPY_NRF_NUM_I2C must be 0, 1, or 2
 #endif
 
 // Enable SPIM1, SPIM2 and SPIM3 (if available)
@@ -41,11 +41,13 @@
 #define NRFX_SPIM1_ENABLED 1
 #endif
 #define NRFX_SPIM2_ENABLED 1
-#ifdef NRF52840_XXAA
+#ifndef NRFX_SPIM3_ENABLED
+#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
     #define NRFX_SPIM_EXTENDED_ENABLED 1
     #define NRFX_SPIM3_ENABLED 1
-#else
+#elif CIRCUITPY_NRF_NUM_I2C == 2
     #define NRFX_SPIM3_ENABLED 0
+#endif
 #endif
 
 
@@ -53,19 +55,22 @@
 #define NRFX_SPIM_MISO_PULL_CFG 1
 
 // QSPI
+#if defined(NRF52840_XXAA)
 #define NRFX_QSPI_ENABLED                          1
+#endif
 
 // TWI aka. I2C; always enable TWIM0 (no conflict with SPIM1 and SPIM2)
+#if CIRCUITPY_NRF_NUM_I2C == 1 || CIRCUITPY_NRF_NUM_I2C == 2
 #define NRFX_TWIM_ENABLED 1
 #define NRFX_TWIM0_ENABLED 1
+#define NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY 7
+#define NRFX_TWIM_DEFAULT_CONFIG_FREQUENCY NRF_TWIM_FREQ_400K
+#define NRFX_TWIM_DEFAULT_CONFIG_HOLD_BUS_UNINIT 0
+#endif
 
 #if CIRCUITPY_NRF_NUM_I2C == 2
 #define NRFX_TWIM1_ENABLED 1
 #endif
-
-#define NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY 7
-#define NRFX_TWIM_DEFAULT_CONFIG_FREQUENCY NRF_TWIM_FREQ_400K
-#define NRFX_TWIM_DEFAULT_CONFIG_HOLD_BUS_UNINIT 0
 
 // UART
 #define NRFX_UARTE_ENABLED 1
@@ -116,5 +121,12 @@
 
 // NVM controller
 #define NRFX_NVMC_ENABLED 1
+
+// Watchdog timer
+#define NRFX_WDT_ENABLED 1
+#define NRFX_WDT0_ENABLED 1
+// This IRQ indicates the system will reboot shortly, so give
+// it a high priority.
+#define NRFX_WDT_DEFAULT_CONFIG_IRQ_PRIORITY 2
 
 #endif // NRFX_CONFIG_H__

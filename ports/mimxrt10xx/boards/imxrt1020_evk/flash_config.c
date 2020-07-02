@@ -45,7 +45,7 @@ const flexspi_nor_config_t qspiflash_config = {
 #ifdef BOARD_USING_SECONDARY_QSPI_PINMUX
             .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromInternally,
 #else
-            .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromDqsPad,            
+            .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromDqsPad,
 #endif
             .csHoldTime       = 1u,
             .csSetupTime      = 2u,

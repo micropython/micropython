@@ -45,6 +45,9 @@
 
 #include "samd/sercom.h"
 
+#define UART_DEBUG(...) (void)0
+// #define UART_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+
 // Do-nothing callback needed so that usart_async code will enable rx interrupts.
 // See comment below re usart_async_register_callback()
 static void usart_async_rxc_callback(const struct usart_async_descriptor *const descr) {
@@ -55,8 +58,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
     const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
     const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
-    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
-    mp_float_t timeout, uint16_t receiver_buffer_size) {
+    uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
+    bool sigint_enabled) {
 
     Sercom* sercom = NULL;
     uint8_t sercom_index = 255; // Unset index
@@ -65,7 +69,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint32_t tx_pinmux = 0;
     uint8_t tx_pad = 255; // Unset pad
 
-    if ((rts != mp_const_none) || (cts != mp_const_none) || (rs485_dir != mp_const_none) || (rs485_invert)) {
+    if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
     }
 
@@ -73,8 +77,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_NotImplementedError(translate("bytes > 8 bits not supported"));
     }
 
-    bool have_tx = tx != mp_const_none;
-    bool have_rx = rx != mp_const_none;
+    bool have_tx = tx != NULL;
+    bool have_rx = rx != NULL;
     if (!have_tx && !have_rx) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
@@ -101,7 +105,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 continue;
             }
 #endif
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 	    if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
                 !(tx->sercom[i].pad == 0)) {
                 continue;
@@ -109,7 +113,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 #endif
             tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
-            if (rx == mp_const_none) {
+            if (rx == NULL) {
                 sercom = potential_sercom;
                 break;
             }
@@ -191,7 +195,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                                  SERCOM_USART_CTRLA_FORM_Msk);
     sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_TXPO(tx_pad / 2) |
                                SERCOM_USART_CTRLA_RXPO(rx_pad) |
-                               (parity == PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
+                               (parity == BUSIO_UART_PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
 
     // Enable tx and/or rx based on whether the pins were specified.
     // CHSIZE is 0 for 8 bits, 5, 6, 7 for 5, 6, 7 bits. 1 for 9 bits, but we don't support that.
@@ -202,7 +206,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                                  SERCOM_USART_CTRLB_CHSIZE_Msk);
     sercom->USART.CTRLB.reg |= (have_tx ? SERCOM_USART_CTRLB_TXEN : 0) |
                                (have_rx ? SERCOM_USART_CTRLB_RXEN : 0) |
-                               (parity == PARITY_ODD ? SERCOM_USART_CTRLB_PMODE : 0) |
+                               (parity == BUSIO_UART_PARITY_ODD ? SERCOM_USART_CTRLB_PMODE : 0) |
                                (stop > 1 ? SERCOM_USART_CTRLB_SBMODE : 0) |
                                SERCOM_USART_CTRLB_CHSIZE(bits % 8);
 

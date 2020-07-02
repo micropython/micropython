@@ -4,4 +4,3 @@ class Foo(tuple):
 
 foo = Foo((1,2))
 foo[0]
-

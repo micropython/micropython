@@ -32,8 +32,6 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/busio/SPI.h"
 
-#include "tick.h"
-
 displayio_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
@@ -79,7 +77,9 @@ void board_init(void) {
         &pin_PA28, // Command or data
         &pin_PA01, // Chip select
         &pin_PA27, // Reset
-        12000000);
+        12000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
@@ -95,6 +95,7 @@ void board_init(void) {
         false, // Pixels in a byte share a row. Only used for depth < 8
         1, // bytes per cell. Only valid for depths < 8
         false, // reverse_pixels_in_byte. Only valid for depths < 8
+        true, // reverse_pixels_in_word
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
@@ -108,7 +109,8 @@ void board_init(void) {
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
-        60); // native_frames_per_second
+        60, // native_frames_per_second
+        true); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {

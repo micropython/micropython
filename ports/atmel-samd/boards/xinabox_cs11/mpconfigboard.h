@@ -22,3 +22,34 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+// Turn off pins not in the board mapping to save space. They aren't broken out.
+#define IGNORE_PIN_PA00     1
+#define IGNORE_PIN_PA01     1
+#define IGNORE_PIN_PA02     1
+#define IGNORE_PIN_PA03     1
+
+#define IGNORE_PIN_PB08     1
+#define IGNORE_PIN_PB09     1
+
+#define IGNORE_PIN_PA04     1
+#define IGNORE_PIN_PA05     1
+#define IGNORE_PIN_PA06     1
+#define IGNORE_PIN_PA08     1
+
+#define IGNORE_PIN_PA13     1
+#define IGNORE_PIN_PA14     1
+#define IGNORE_PIN_PA15     1
+#define IGNORE_PIN_PA18     1
+#define IGNORE_PIN_PA20     1
+#define IGNORE_PIN_PA21     1
+
+#define IGNORE_PIN_PB22     1
+#define IGNORE_PIN_PB23     1
+
+#define IGNORE_PIN_PA27     1
+#define IGNORE_PIN_PA28     1
+#define IGNORE_PIN_PA30     1
+#define IGNORE_PIN_PA31     1
+#define IGNORE_PIN_PB02     1
+#define IGNORE_PIN_PB03     1

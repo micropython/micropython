@@ -1172,7 +1172,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
         mp_raise_AttributeError(translate("no such attribute"));
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-            translate("'%s' object has no attribute '%q'"),
+            translate("'%s' object cannot assign attribute '%q'"),
             mp_obj_get_type_str(base), attr));
     }
 }

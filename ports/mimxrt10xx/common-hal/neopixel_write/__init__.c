@@ -25,17 +25,13 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 
-#include "tick.h"
-#include "py/mperrno.h"
-#include "py/runtime.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "fsl_gpio.h"
+#include "supervisor/linker.h"
+#include "supervisor/port.h"
 
-uint64_t next_start_tick_ms = 0;
-uint32_t next_start_tick_us = 1000;
+uint64_t next_start_raw_ticks = 0;
 
 //sysclock divisors
 #define MAGIC_800_INT  900000  // ~1.11 us  -> 1.2  field
@@ -45,7 +41,7 @@ uint32_t next_start_tick_us = 1000;
 #pragma GCC push_options
 #pragma GCC optimize ("Os")
 
-void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels,
+void PLACE_IN_ITCM(common_hal_neopixel_write)(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels,
                                 uint32_t numBytes) {
     uint8_t *p = pixels, *end = p + numBytes, pix = *p++, mask = 0x80;
     uint32_t start = 0;
@@ -54,18 +50,14 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     //assumes 800_000Hz frequency
     //Theoretical values here are 800_000 -> 1.25us, 2500000->0.4us, 1250000->0.8us
     //TODO: try to get dynamic weighting working again
-#ifdef MIMXRT1011_SERIES
-    uint32_t sys_freq = CLOCK_GetCoreFreq();
-#else
-    uint32_t sys_freq = CLOCK_GetAhbFreq();
-#endif
-    uint32_t interval = sys_freq/MAGIC_800_INT;
-    uint32_t t0 = (sys_freq/MAGIC_800_T0H);
-    uint32_t t1 = (sys_freq/MAGIC_800_T1H);
+    const uint32_t sys_freq = SystemCoreClock;
+    const uint32_t interval = (sys_freq / MAGIC_800_INT);
+    const uint32_t t0 = (sys_freq / MAGIC_800_T0H);
+    const uint32_t t1 = (sys_freq / MAGIC_800_T1H);
 
-    // This must be called while interrupts are on in case we're waiting for a
-    // future ms tick.
-    wait_until(next_start_tick_ms, next_start_tick_us);
+    // Wait to make sure we don't append onto the last transmission. This should only be a tick or
+    // two.
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
 
     GPIO_Type *gpio = digitalinout->pin->gpio;
     const uint32_t pin = digitalinout->pin->number;
@@ -79,9 +71,9 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     for(;;) {
         cyc = (pix & mask) ? t1 : t0;
         start = DWT->CYCCNT;
-        GPIO_PinWrite(gpio, pin, 1);
+        gpio->DR |= (1U << pin);
         while((DWT->CYCCNT - start) < cyc);
-        GPIO_PinWrite(gpio, pin, 0);
+        gpio->DR &= ~(1U << pin);
         while((DWT->CYCCNT - start) < interval);
         if(!(mask >>= 1)) {
             if(p >= end) break;
@@ -90,17 +82,11 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         }
     }
 
+    // Update the next start.
+    next_start_raw_ticks = port_get_raw_ticks(NULL) + 4;
+
     // Enable interrupts again
     __enable_irq();
-
-    // Update the next start.
-    current_tick(&next_start_tick_ms, &next_start_tick_us);
-    if (next_start_tick_us < 100) {
-        next_start_tick_ms += 1;
-        next_start_tick_us = 100 - next_start_tick_us;
-    } else {
-        next_start_tick_us -= 100;
-    }
 }
 
 #pragma GCC pop_options

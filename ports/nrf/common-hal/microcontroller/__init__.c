@@ -94,7 +94,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
 
 void common_hal_mcu_reset(void) {
     filesystem_flush();
-    NVIC_SystemReset();
+    reset_cpu();
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
@@ -106,7 +106,6 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
 };
 
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
-
 // The singleton nvm.ByteArray object.
 const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
@@ -114,6 +113,17 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     },
     .start_address = (uint8_t*) CIRCUITPY_INTERNAL_NVM_START_ADDR,
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
+};
+#endif
+
+#if CIRCUITPY_WATCHDOG
+// The singleton watchdog.WatchDogTimer object.
+watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
+    .base = {
+        .type = &watchdog_watchdogtimer_type,
+    },
+    .timeout = 0.0f,
+    .mode = WATCHDOGMODE_NONE,
 };
 #endif
 
@@ -167,6 +177,18 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_P1_13), MP_ROM_PTR(&pin_P1_13) },
   { MP_ROM_QSTR(MP_QSTR_P1_14), MP_ROM_PTR(&pin_P1_14) },
   { MP_ROM_QSTR(MP_QSTR_P1_15), MP_ROM_PTR(&pin_P1_15) },
+#endif
+#ifdef NRF52833
+  { MP_ROM_QSTR(MP_QSTR_P1_00), MP_ROM_PTR(&pin_P1_00) },
+  { MP_ROM_QSTR(MP_QSTR_P1_01), MP_ROM_PTR(&pin_P1_01) },
+  { MP_ROM_QSTR(MP_QSTR_P1_02), MP_ROM_PTR(&pin_P1_02) },
+  { MP_ROM_QSTR(MP_QSTR_P1_03), MP_ROM_PTR(&pin_P1_03) },
+  { MP_ROM_QSTR(MP_QSTR_P1_04), MP_ROM_PTR(&pin_P1_04) },
+  { MP_ROM_QSTR(MP_QSTR_P1_05), MP_ROM_PTR(&pin_P1_05) },
+  { MP_ROM_QSTR(MP_QSTR_P1_06), MP_ROM_PTR(&pin_P1_06) },
+  { MP_ROM_QSTR(MP_QSTR_P1_07), MP_ROM_PTR(&pin_P1_07) },
+  { MP_ROM_QSTR(MP_QSTR_P1_08), MP_ROM_PTR(&pin_P1_08) },
+  { MP_ROM_QSTR(MP_QSTR_P1_09), MP_ROM_PTR(&pin_P1_09) },
 #endif
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_globals_table);

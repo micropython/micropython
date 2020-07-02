@@ -56,11 +56,16 @@ bool bleio_scanentry_data_matches(const uint8_t* data, size_t len, const uint8_t
     if (prefixes_length == 0) {
         return true;
     }
+    if (len == 0) {
+        // Prefixes exist, but no data.
+        return false;
+    }
     size_t i = 0;
     while(i < prefixes_length) {
         uint8_t prefix_length = prefixes[i];
         i += 1;
         size_t j = 0;
+        bool prefix_matched = false;
         while (j < len) {
             uint8_t structure_length = data[j];
             j += 1;
@@ -71,13 +76,18 @@ bool bleio_scanentry_data_matches(const uint8_t* data, size_t len, const uint8_t
                 if (any) {
                     return true;
                 }
-            } else if (!any) {
-                return false;
+                prefix_matched = true;
+                break;
             }
             j += structure_length;
         }
+        // If all (!any), the current prefix must have matched at least one field.
+        if (!prefix_matched && !any) {
+            return false;
+        }
         i += prefix_length;
     }
+    // All prefixes matched some field (if !any), or none did (if any).
     return !any;
 }
 

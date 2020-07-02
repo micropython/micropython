@@ -7,13 +7,17 @@ present or if flash space is limited. For example, a microcontroller without
 analog features will not have `analogio`. See the `support_matrix` page for
 a list of modules supported on each board.
 
+.. toctree::
+    :hidden:
+
+    support_matrix
+
 Modules
 ---------
 
 .. toctree::
     :glob:
-    :maxdepth: 3
+    :maxdepth: 2
 
-    support_matrix
-    */__init__
+    ../shared-bindings/*/index
     help

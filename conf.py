@@ -14,10 +14,13 @@
 # serve to show the default.
 
 import json
-import sys
+import logging
 import os
+import subprocess
+import sys
+import urllib.parse
 
-from recommonmark.parser import CommonMarkParser
+import recommonmark
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -55,16 +58,32 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'rstjinja',
-    'c2rst'
+    'recommonmark',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
 
 # The suffix of source filenames.
-source_suffix = ['.rst', '.md', '.c', '.h']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
-source_parsers = {'.md': CommonMarkParser}
+subprocess.check_output(["make", "stubs"])
+extensions.append('autoapi.extension')
+
+autoapi_type = 'python'
+# Uncomment this if debugging autoapi
+autoapi_keep_files = True
+autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circuitpython-stubs')]
+autoapi_add_toctree_entry = False
+autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members', 'show-module-summary']
+autoapi_template_dir = 'docs/autoapi/templates'
+autoapi_python_use_implicit_namespaces = True
+autoapi_root = "shared-bindings"
+
+redirects_file = 'docs/redirects.txt'
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -74,7 +93,7 @@ source_parsers = {'.md': CommonMarkParser}
 
 # General information about the project.
 project = 'Adafruit CircuitPython'
-copyright = '2014-2018, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
+copyright = '2014-2020, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
 
 # These are overwritten on ReadTheDocs.
 # The version info for the project you're documenting, acts as replacement for
@@ -101,6 +120,7 @@ exclude_patterns = ["**/build*",
                     ".git",
                     ".venv",
                     ".direnv",
+                    "docs/autoapi",
                     "docs/README.md",
                     "drivers",
                     "examples",
@@ -121,16 +141,11 @@ exclude_patterns = ["**/build*",
                     "ports/atmel-samd/peripherals",
                     "ports/atmel-samd/QTouch",
                     "ports/atmel-samd/tools",
-                    "ports/bare-arm",
-                    "ports/cc3200",
-                    "ports/cc3200/FreeRTOS",
-                    "ports/cc3200/hal",
                     "ports/cxd56/mkspk",
                     "ports/cxd56/spresense-exported-sdk",
-                    "ports/esp32",
-                    "ports/esp8266/boards",
-                    "ports/esp8266/common-hal",
-                    "ports/esp8266/modules",
+                    "ports/esp32s2/esp-idf",
+                    "ports/esp32s2/peripherals",
+                    "ports/litex/hw",
                     "ports/minimal",
                     "ports/mimxrt10xx/peripherals",
                     "ports/mimxrt10xx/sdk",
@@ -140,20 +155,11 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/nrfx",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
-                    "ports/stm32f4/stm32f4",
-                    "ports/stm32f4/peripherals",
-                    "ports/stm32f4/ref",
-                    "ports/pic16bit",
-                    "ports/qemu-arm",
-                    "ports/stm32",
-                    "ports/stm32/hal",
-                    "ports/stm32/cmsis",
-                    "ports/stm32/usbdev",
-                    "ports/stm32/usbhost",
-                    "ports/teensy",
+                    "ports/stm/st_driver",
+                    "ports/stm/packages",
+                    "ports/stm/peripherals",
+                    "ports/stm/ref",
                     "ports/unix",
-                    "ports/windows",
-                    "ports/zephyr",
                     "py",
                     "shared-bindings/util.*",
                     "shared-module",
@@ -373,5 +379,47 @@ intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
                        "bus_device": ('https://circuitpython.readthedocs.io/projects/busdevice/en/latest/', None),
                        "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}
 
+# Adapted from sphinxcontrib-redirects
+from sphinx.builders import html as builders
+
+TEMPLATE = """<html>
+  <head><meta http-equiv="refresh" content="0; url=%s"/></head>
+</html>
+"""
+
+
+def generate_redirects(app):
+    path = os.path.join(app.srcdir, app.config.redirects_file)
+    if not os.path.exists(path):
+        logging.error("Could not find redirects file at '%s'" % path)
+        return
+
+    if not isinstance(app.builder, builders.StandaloneHTMLBuilder):
+        logging.warn("The 'sphinxcontib-redirects' plugin is only supported "
+                 "by the 'html' builder and subclasses. Skipping...")
+        logging.warn(f"Builder is {app.builder.name} ({type(app.builder)})")
+        return
+
+    with open(path) as redirects:
+        for line in redirects.readlines():
+            from_path, to_path = line.rstrip().split(' ')
+
+            logging.debug("Redirecting '%s' to '%s'" % (from_path, to_path))
+
+            from_path = os.path.splitext(from_path)[0] + ".html"
+            to_path_prefix = '..%s' % os.path.sep * (
+                len(from_path.split(os.path.sep)) - 1)
+            to_path = to_path_prefix + to_path
+
+            redirected_filename = os.path.join(app.builder.outdir, from_path)
+            redirected_directory = os.path.dirname(redirected_filename)
+            if not os.path.exists(redirected_directory):
+                os.makedirs(redirected_directory)
+
+            with open(redirected_filename, 'w') as f:
+                f.write(TEMPLATE % urllib.parse.quote(to_path, '#/'))
+
 def setup(app):
-    app.add_stylesheet("customstyle.css")
+    app.add_css_file("customstyle.css")
+    app.add_config_value('redirects_file', 'redirects', 'env')
+    app.connect('builder-inited', generate_redirects)

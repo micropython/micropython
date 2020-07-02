@@ -25,13 +25,18 @@
  */
 
 #include <stdint.h>
+
 #include <sys/boardctl.h>
+#include <sys/time.h>
+
+#include <cxd56_rtc.h>
 
 #include "sched/sched.h"
 
 #include "boards/board.h"
 
 #include "supervisor/port.h"
+#include "supervisor/shared/tick.h"
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogIn.h"
@@ -42,7 +47,8 @@
 safe_mode_t port_init(void) {
     boardctl(BOARDIOC_INIT, 0);
 
-    board_init();
+    // Wait until RTC is available
+    while (g_rtc_enabled == false);
 
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
@@ -71,6 +77,10 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
+}
+
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
 }
 
 uint32_t *port_stack_get_limit(void) {
@@ -102,4 +112,37 @@ void port_set_saved_word(uint32_t value) {
 
 uint32_t port_get_saved_word(void) {
     return _ebss;
+}
+
+volatile bool _tick_enabled;
+void board_timerhook(void)
+{
+    // Do things common to all ports when the tick occurs
+    if (_tick_enabled) {
+        supervisor_tick();
+    }
+}
+
+uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    uint64_t count = cxd56_rtc_count();
+    *subticks = count % 32;
+
+    return count / 32;
+}
+
+// Enable 1/1024 second tick.
+void port_enable_tick(void) {
+    _tick_enabled = true;
+}
+
+// Disable 1/1024 second tick.
+void port_disable_tick(void) {
+    _tick_enabled = false;
+}
+
+void port_interrupt_after_ticks(uint32_t ticks) {
+}
+
+void port_sleep_until_interrupt(void) {
+    // TODO: Implement sleep.
 }

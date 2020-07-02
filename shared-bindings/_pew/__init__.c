@@ -27,7 +27,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "PewPew.h"
-#include "shared-module/_pew/PewPew.h"
+#include "common-hal/_pew/PewPew.h"
 
 STATIC mp_obj_t get_pressed(void) {
     pew_obj_t *pew = MP_STATE_VM(pew_singleton);
@@ -41,17 +41,7 @@ STATIC mp_obj_t get_pressed(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(get_pressed_obj, get_pressed);
 
 
-//| :mod:`_pew` --- LED matrix driver
-//| ==================================
-//|
-//| .. module:: _pew
-//|   :synopsis: LED matrix driver
-//|   :platform: SAMD21
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     PewPew
+//| """LED matrix driver"""
 //|
 STATIC const mp_rom_map_elem_t pew_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__pew) },

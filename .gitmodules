@@ -29,10 +29,6 @@
 [submodule "tools/python-semver"]
 	path = tools/python-semver
 	url = https://github.com/k-bx/python-semver.git
-[submodule "lib/stm32lib"]
-	path = lib/stm32lib
-	url = https://github.com/micropython/stm32lib
-	branch = work-F4-1.13.1+F7-1.5.0+L4-1.3.0
 [submodule "atmel-samd/asf4"]
 	path = ports/atmel-samd/asf4
 	url = https://github.com/adafruit/asf4.git
@@ -96,9 +92,6 @@
 [submodule "frozen/circuitpython-stage"]
 	path = frozen/circuitpython-stage
 	url = https://github.com/python-ugame/circuitpython-stage.git
-[submodule "ports/stm32f4/stm32f4"]
-	path = ports/stm32f4/stm32f4
-	url = https://github.com/adafruit/stm32f4.git
 [submodule "ports/cxd56/spresense-exported-sdk"]
 	path = ports/cxd56/spresense-exported-sdk
 	url = https://github.com/sonydevworld/spresense-exported-sdk.git
@@ -114,9 +107,39 @@
 [submodule "frozen/Adafruit_CircuitPython_Register"]
 	path = frozen/Adafruit_CircuitPython_Register
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Register.git
+[submodule "extmod/ulab"]
+	path = extmod/ulab
+	url = https://github.com/v923z/micropython-ulab
 [submodule "frozen/Adafruit_CircuitPython_ESP32SPI"]
 	path = frozen/Adafruit_CircuitPython_ESP32SPI
 	url = https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI
 [submodule "frozen/Adafruit_CircuitPython_Requests"]
 	path = frozen/Adafruit_CircuitPython_Requests
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Requests
+[submodule "ports/stm/st_driver"]
+	path = ports/stm/st_driver
+	url = https://github.com/hathach/st_driver.git
+[submodule "lib/protomatter"]
+	path = lib/protomatter
+	url = https://github.com/adafruit/Adafruit_Protomatter
+[submodule "frozen/Adafruit_CircuitPython_LSM6DS"]
+	path = frozen/Adafruit_CircuitPython_LSM6DS
+	url = https://github.com/adafruit/Adafruit_CircuitPython_LSM6DS
+[submodule "frozen/Adafruit_CircuitPython_FocalTouch"]
+	path = frozen/Adafruit_CircuitPython_FocalTouch
+	url = https://github.com/adafruit/Adafruit_CircuitPython_FocalTouch
+[submodule "frozen/Adafruit_CircuitPython_DS3231"]
+	path = frozen/Adafruit_CircuitPython_DS3231
+	url = https://github.com/adafruit/Adafruit_CircuitPython_DS3231
+[submodule "frozen/Adafruit_CircuitPython_DRV2605"]
+	path = frozen/Adafruit_CircuitPython_DRV2605
+	url = https://github.com/adafruit/Adafruit_CircuitPython_DRV2605
+[submodule "frozen/Adafruit_CircuitPython_BLE"]
+	path = frozen/Adafruit_CircuitPython_BLE
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BLE
+[submodule "frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center"]
+	path = frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BLE_Apple_Notification_Center
+[submodule "ports/esp32s2/esp-idf"]
+	path = ports/esp32s2/esp-idf
+	url = https://github.com/tannewt/esp-idf.git

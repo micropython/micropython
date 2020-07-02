@@ -30,7 +30,7 @@
 #include "py/mphal.h"
 #include "mimxrt10xx/periph.h"
 
-LPI2C_Type *mcu_i2c_banks[] = { LPI2C1, LPI2C2, LPI2C3, LPI2C4 };
+LPI2C_Type *mcu_i2c_banks[4] = { LPI2C1, LPI2C2, LPI2C3, LPI2C4 };
 
 const mcu_periph_obj_t mcu_i2c_sda_list[8] = {
     PERIPH_PIN(1, 6, kIOMUXC_LPI2C1_SDA_SELECT_INPUT, 0, &pin_GPIO_EMC_03),
@@ -60,7 +60,7 @@ const mcu_periph_obj_t mcu_i2c_scl_list[8] = {
     PERIPH_PIN(4, 3, kIOMUXC_LPI2C4_SCL_SELECT_INPUT, 1, &pin_GPIO_SD_B1_02),
 };
 
-LPSPI_Type *mcu_spi_banks[] = { LPSPI1, LPSPI2, LPSPI3, LPSPI4 };
+LPSPI_Type *mcu_spi_banks[4] = { LPSPI1, LPSPI2, LPSPI3, LPSPI4 };
 
 const mcu_periph_obj_t mcu_spi_sck_list[8] = {
     PERIPH_PIN(1, 4, kIOMUXC_LPSPI1_SCK_SELECT_INPUT, 0, &pin_GPIO_SD_B0_02),
@@ -104,7 +104,7 @@ const mcu_periph_obj_t mcu_spi_miso_list[8] = {
     PERIPH_PIN(4, 4, kIOMUXC_LPSPI2_SDI_SELECT_INPUT, 1, &pin_GPIO_EMC_35),
 };
 
-LPUART_Type *mcu_uart_banks[] = { LPUART1, LPUART2, LPUART3, LPUART4, LPUART5, LPUART6, LPUART7, LPUART8 };
+LPUART_Type *mcu_uart_banks[8] = { LPUART1, LPUART2, LPUART3, LPUART4, LPUART5, LPUART6, LPUART7, LPUART8 };
 
 const mcu_periph_obj_t mcu_uart_rx_list[16] = {
     PERIPH_PIN(1, 2, 0, 0, &pin_GPIO_AD_B0_07),
@@ -160,7 +160,7 @@ const mcu_periph_obj_t mcu_uart_tx_list[16] = {
 
 const mcu_periph_obj_t mcu_uart_rts_list[10] = {
     PERIPH_PIN(1, 2, 0, 0, &pin_GPIO_AD_B0_09),
-   
+
     PERIPH_PIN(2, 2, 0, 0, &pin_GPIO_EMC_21),
     PERIPH_PIN(2, 2, 0, 1, &pin_GPIO_AD_B1_07),
 

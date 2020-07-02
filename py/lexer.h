@@ -44,6 +44,14 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_INVALID,
     MP_TOKEN_DEDENT_MISMATCH,
     MP_TOKEN_LONELY_STRING_OPEN,
+#if MICROPY_COMP_FSTRING_LITERAL
+    MP_TOKEN_FSTRING_BACKSLASH,
+    MP_TOKEN_FSTRING_COMMENT,
+    MP_TOKEN_FSTRING_UNCLOSED,
+    MP_TOKEN_FSTRING_UNOPENED,
+    MP_TOKEN_FSTRING_EMPTY_EXP,
+    MP_TOKEN_FSTRING_RAW,
+#endif
 
     MP_TOKEN_NEWLINE,
     MP_TOKEN_INDENT,
@@ -150,6 +158,9 @@ typedef struct _mp_lexer_t {
     mp_reader_t reader;         // stream source
 
     unichar chr0, chr1, chr2;   // current cached characters from source
+#if MICROPY_COMP_FSTRING_LITERAL
+    unichar chr3, chr4, chr5;   // current cached characters from alt source
+#endif
 
     size_t line;                // current source line
     size_t column;              // current source column
@@ -165,6 +176,11 @@ typedef struct _mp_lexer_t {
     size_t tok_column;          // token source column
     mp_token_kind_t tok_kind;   // token kind
     vstr_t vstr;                // token data
+#if MICROPY_COMP_FSTRING_LITERAL
+    vstr_t vstr_postfix;        // postfix to apply to string
+    bool vstr_postfix_processing;
+    uint16_t vstr_postfix_idx;
+#endif
 } mp_lexer_t;
 
 mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader);

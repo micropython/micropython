@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "tick.h"
 #include "py/objstr.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-module/usb_midi/__init__.h"
@@ -76,7 +75,9 @@ void usb_init(void) {
 
 void usb_background(void) {
     if (usb_enabled()) {
+        #if CFG_TUSB_OS == OPT_OS_NONE
         tud_task();
+        #endif
         tud_cdc_write_flush();
     }
 }

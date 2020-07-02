@@ -31,7 +31,7 @@
 
 #include "supervisor/shared/display.h"
 
-#define CIRCUITPY_SUPERVISOR_ALLOC_COUNT 8
+#define CIRCUITPY_SUPERVISOR_ALLOC_COUNT (12)
 
 static supervisor_allocation allocations[CIRCUITPY_SUPERVISOR_ALLOC_COUNT];
 // We use uint32_t* to ensure word (4 byte) alignment.
@@ -82,6 +82,15 @@ void free_memory(supervisor_allocation* allocation) {
     allocation->ptr = NULL;
 }
 
+supervisor_allocation* allocation_from_ptr(void *ptr) {
+    for (size_t index = 0; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {
+        if (allocations[index].ptr == ptr) {
+            return &allocations[index];
+        }
+    }
+    return NULL;
+}
+
 supervisor_allocation* allocate_remaining_memory(void) {
     if (low_address == high_address) {
         return NULL;
@@ -120,5 +129,7 @@ supervisor_allocation* allocate_memory(uint32_t length, bool high) {
 }
 
 void supervisor_move_memory(void) {
+    #if CIRCUITPY_DISPLAYIO
     supervisor_display_move_memory();
+    #endif
 }

@@ -53,6 +53,6 @@ def generate_eddystone_adv_packet(url):
     return packet
 
 def start():
-    adv_packet = generate_eddystone_adv_packet("micropython")  
+    adv_packet = generate_eddystone_adv_packet("micropython")
     p = Peripheral()
     p.advertise(data=adv_packet, connectable=False)

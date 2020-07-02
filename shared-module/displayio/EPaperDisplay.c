@@ -42,8 +42,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "tick.h"
-
 void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t* self,
         mp_obj_t bus, uint8_t* start_sequence, uint16_t start_sequence_len, uint8_t* stop_sequence, uint16_t stop_sequence_len,
         uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height,
@@ -58,7 +56,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
         self->core.colorspace.tricolor_luma = displayio_colorconverter_compute_luma(highlight_color);
     }
 
-    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation, 1, true, true, 1, true);
+    displayio_display_core_construct(&self->core, bus, width, height, ram_width, ram_height, colstart, rowstart, rotation, 1, true, true, 1, true, true);
 
     self->set_column_window_command = set_column_window_command;
     self->set_row_window_command = set_row_window_command;

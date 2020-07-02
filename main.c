@@ -105,12 +105,18 @@ void start_mp(supervisor_allocation* heap) {
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
     mp_stack_ctrl_init();
-    mp_stack_set_limit(stack_alloc->length - 1024);
+
+    if (stack_alloc != NULL) {
+        mp_stack_set_limit(stack_alloc->length - 1024);
+    }
+
 
 #if MICROPY_MAX_STACK_USAGE
     // _ezero (same as _ebss) is an int, so start 4 bytes above it.
-    mp_stack_set_bottom(stack_alloc->ptr);
-    mp_stack_fill_with_sentinel();
+    if (stack_alloc != NULL) {
+        mp_stack_set_bottom(stack_alloc->ptr);
+        mp_stack_fill_with_sentinel();
+    }
 #endif
 
     // Sync the file systems in case any used RAM from the GC to cache. As soon
@@ -179,7 +185,7 @@ bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
     }
     mp_hal_stdout_tx_str(filename);
     const compressed_string_t* compressed = translate(" output:\n");
-    char decompressed[compressed->length];
+    char decompressed[decompress_length(compressed)];
     decompress(compressed, decompressed);
     mp_hal_stdout_tx_str(decompressed);
     pyexec_file(filename, exec_result);
@@ -428,7 +434,10 @@ int __attribute__((used)) main(void) {
     filesystem_init(safe_mode == NO_SAFE_MODE, false);
 
     // displays init after filesystem, since they could share the flash SPI
-    board_init(); 
+    board_init();
+
+    // Start the debug serial
+    serial_early_init();
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();

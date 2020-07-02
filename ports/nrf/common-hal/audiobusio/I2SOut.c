@@ -31,6 +31,7 @@
 #include "common-hal/audiobusio/I2SOut.h"
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-module/audiocore/__init__.h"
+#include "supervisor/shared/tick.h"
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -158,7 +159,7 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t* self) {
 
     // Find the last frame of real audio data and replicate its samples until
     // you have 32 bits worth, which is the fundamental unit of nRF I2S DMA
-    if(buffer != buffer_start) {
+    if (buffer != buffer_start) {
         if (self->bytes_per_sample == 1 && self->channel_count == 1) {
             // For 8-bit mono, 4 copies of the final sample are required
             self->hold_value = 0x01010101 * *(uint8_t*)(buffer-1);
@@ -211,6 +212,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     NRF_I2S->CONFIG.ALIGN = I2S_CONFIG_ALIGN_ALIGN_Left;
     NRF_I2S->CONFIG.FORMAT = left_justified ? I2S_CONFIG_FORMAT_FORMAT_Aligned
                                     : I2S_CONFIG_FORMAT_FORMAT_I2S;
+
+    supervisor_enable_tick();
 }
 
 bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {
@@ -230,6 +233,7 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
     reset_pin_number(self->data_pin_number);
     self->data_pin_number = 0xff;
     instance = NULL;
+    supervisor_disable_tick();
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
@@ -283,6 +287,9 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     i2s_buffer_fill(self);
 
     NRF_I2S->RXTXD.MAXCNT = self->buffer_length / 4;
+    // Turn on the interrupt to the NVIC but not within the NVIC itself. This will wake the CPU and
+    // keep it awake until it is serviced without triggering an interrupt handler.
+    NRF_I2S->INTENSET = I2S_INTENSET_TXPTRUPD_Msk;
     NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Enabled;
 
     NRF_I2S->TASKS_START = 1;
@@ -305,6 +312,7 @@ bool common_hal_audiobusio_i2sout_get_paused(audiobusio_i2sout_obj_t* self) {
 void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
     NRF_I2S->TASKS_STOP = 1;
     self->stopping = true;
+    NRF_I2S->INTENCLR = I2S_INTENSET_TXPTRUPD_Msk;
 }
 
 bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
@@ -316,8 +324,9 @@ bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
 }
 
 void i2s_background(void) {
-    if (NRF_I2S->EVENTS_TXPTRUPD) {
+    if (NVIC_GetPendingIRQ(I2S_IRQn) && NRF_I2S->EVENTS_TXPTRUPD) {
         NRF_I2S->EVENTS_TXPTRUPD = 0;
+        NVIC_ClearPendingIRQ(I2S_IRQn);
         if (instance) {
             i2s_buffer_fill(instance);
         } else {
@@ -328,11 +337,15 @@ void i2s_background(void) {
 
 void i2s_reset(void) {
     NRF_I2S->TASKS_STOP = 1;
+    NRF_I2S->INTENCLR = I2S_INTENSET_TXPTRUPD_Msk;
     NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Disabled;
     NRF_I2S->PSEL.MCK = 0xFFFFFFFF;
     NRF_I2S->PSEL.SCK = 0xFFFFFFFF;
     NRF_I2S->PSEL.LRCK = 0xFFFFFFFF;
     NRF_I2S->PSEL.SDOUT = 0xFFFFFFFF;
     NRF_I2S->PSEL.SDIN = 0xFFFFFFFF;
+    if (instance) {
+        supervisor_disable_tick();
+    }
     instance = NULL;
 }

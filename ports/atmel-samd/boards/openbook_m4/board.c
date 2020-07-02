@@ -32,7 +32,6 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
-#include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -55,7 +54,7 @@ uint8_t stop_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, mp_const_none);
+    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
@@ -65,7 +64,9 @@ void board_init(void) {
         &pin_PB05, // EPD_DC Command or data
         &pin_PB07, // EPD_CS Chip select
         &pin_PA00, // EPD_RST Reset
-        1000000);
+        1000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_epaperdisplay_obj_t* display = &displays[0].epaper_display;
     display->base.type = &displayio_epaperdisplay_type;

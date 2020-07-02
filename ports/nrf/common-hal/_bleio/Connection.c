@@ -162,7 +162,8 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
                 self->do_bond_cccds = true;
                 self->do_bond_cccds_request_time = supervisor_ticks_ms64();
             }
-            break;
+            // Return false so other handlers get this event as well.
+            return false;
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
             sd_ble_gatts_sys_attr_set(self->conn_handle, NULL, 0, 0);
@@ -368,6 +369,11 @@ mp_float_t common_hal_bleio_connection_get_connection_interval(bleio_connection_
         RUN_BACKGROUND_TASKS;
     }
     return 1.25f * self->conn_params.min_conn_interval;
+}
+
+// Return the current negotiated MTU length, minus overhead.
+mp_int_t common_hal_bleio_connection_get_max_packet_length(bleio_connection_internal_t *self) {
+    return (self->mtu == 0 ? BLE_GATT_ATT_MTU_DEFAULT : self->mtu) - 3;
 }
 
 void common_hal_bleio_connection_set_connection_interval(bleio_connection_internal_t *self, mp_float_t new_interval) {
@@ -750,4 +756,17 @@ mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t* interna
     internal->connection_obj = connection;
 
     return MP_OBJ_FROM_PTR(connection);
+}
+
+// Find the connection that uses the given conn_handle. Return NULL if not found.
+bleio_connection_internal_t *bleio_conn_handle_to_connection(uint16_t conn_handle) {
+    bleio_connection_internal_t *connection;
+    for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+        connection = &bleio_connections[i];
+        if (connection->conn_handle == conn_handle) {
+            return connection;
+        }
+    }
+
+    return NULL;
 }

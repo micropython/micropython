@@ -41,22 +41,24 @@ supervisor_allocation* stack_alloc = NULL;
 #define EXCEPTION_STACK_SIZE 1024
 
 void allocate_stack(void) {
-    mp_uint_t regs[10];
-    mp_uint_t sp = cpu_get_regs_and_sp(regs);
 
-    mp_uint_t c_size = (uint32_t) port_stack_get_top() - sp;
-
-    if (port_stack_get_top() != port_heap_get_top()) {
-        return;
-    }
-
-    stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true);
-    if (stack_alloc == NULL) {
-        stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true);
-        current_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
+    if (port_fixed_stack() != NULL) {
+        stack_alloc = port_fixed_stack();
+        current_stack_size = stack_alloc->length;
     } else {
-        current_stack_size = next_stack_size;
+        mp_uint_t regs[10];
+        mp_uint_t sp = cpu_get_regs_and_sp(regs);
+
+        mp_uint_t c_size = (uint32_t) port_stack_get_top() - sp;
+        stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true);
+        if (stack_alloc == NULL) {
+            stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true);
+            current_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
+        } else {
+            current_stack_size = next_stack_size;
+        }
     }
+
     *stack_alloc->ptr = STACK_CANARY_VALUE;
 }
 

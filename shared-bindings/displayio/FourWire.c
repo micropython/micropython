@@ -38,75 +38,68 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: displayio
+//| class FourWire:
+//|     """Manage updating a display over SPI four wire protocol in the background while Python code runs.
+//|     It doesn't handle display initialization."""
 //|
-//| :class:`FourWire` -- Manage updating a display over SPI four wire protocol
-//| ==========================================================================
+//|     def __init__(self, spi_bus: busio.SPI, *, command: microcontroller.Pin, chip_select: microcontroller.Pin, reset: microcontroller.Pin = None, baudrate: int = 24000000, polarity: int = 0, phase: int = 0):
+//|         """Create a FourWire object associated with the given pins.
 //|
-//| Manage updating a display over SPI four wire protocol in the background while Python code runs.
-//| It doesn't handle display initialization.
+//|         The SPI bus and pins are then in use by the display until `displayio.release_displays()` is
+//|         called even after a reload. (It does this so CircuitPython can use the display after your code
+//|         is done.) So, the first time you initialize a display bus in code.py you should call
+//|         :py:func`displayio.release_displays` first, otherwise it will error after the first code.py run.
 //|
-//| .. class:: FourWire(spi_bus, *, command, chip_select, reset=None, baudrate=24000000)
-//|
-//|   Create a FourWire object associated with the given pins.
-//|
-//|   The SPI bus and pins are then in use by the display until `displayio.release_displays()` is
-//|   called even after a reload. (It does this so CircuitPython can use the display after your code
-//|   is done.) So, the first time you initialize a display bus in code.py you should call
-//|   :py:func`displayio.release_displays` first, otherwise it will error after the first code.py run.
-//|
-//|   :param busio.SPI spi_bus: The SPI bus that make up the clock and data lines
-//|   :param microcontroller.Pin command: Data or command pin
-//|   :param microcontroller.Pin chip_select: Chip select pin
-//|   :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
-//|   :param int baudrate: Maximum baudrate in Hz for the display on the bus
+//|         :param busio.SPI spi_bus: The SPI bus that make up the clock and data lines
+//|         :param microcontroller.Pin command: Data or command pin
+//|         :param microcontroller.Pin chip_select: Chip select pin
+//|         :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
+//|         :param int baudrate: Maximum baudrate in Hz for the display on the bus
+//|         :param int polarity: the base state of the clock line (0 or 1)
+//|         :param int phase: the edge of the clock that data is captured. First (0)
+//|             or second (1). Rising or falling depends on clock polarity."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset, ARG_baudrate };
+    enum { ARG_spi_bus, ARG_command, ARG_chip_select, ARG_reset, ARG_baudrate, ARG_polarity, ARG_phase };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_baudrate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 24000000} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t command = args[ARG_command].u_obj;
-    mp_obj_t chip_select = args[ARG_chip_select].u_obj;
-    assert_pin_free(command);
-    assert_pin_free(chip_select);
-    mp_obj_t reset = args[ARG_reset].u_obj;
-    if (reset != mp_const_none) {
-        assert_pin_free(reset);
-    } else {
-        reset = NULL;
-    }
+    mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
+    mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
+    mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
 
-    displayio_fourwire_obj_t* self = NULL;
     mp_obj_t spi = args[ARG_spi_bus].u_obj;
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].fourwire_bus.base.type == NULL ||
-            displays[i].fourwire_bus.base.type == &mp_type_NoneType) {
-            self = &displays[i].fourwire_bus;
-            self->base.type = &displayio_fourwire_type;
-            break;
-        }
+    displayio_fourwire_obj_t* self = &allocate_display_bus_or_raise()->fourwire_bus;
+    self->base.type = &displayio_fourwire_type;
+
+    uint8_t polarity = args[ARG_polarity].u_int;
+    if (polarity != 0 && polarity != 1) {
+        mp_raise_ValueError(translate("Invalid polarity"));
     }
-    if (self == NULL) {
-        mp_raise_RuntimeError(translate("Too many display busses"));
+    uint8_t phase = args[ARG_phase].u_int;
+    if (phase != 0 && phase != 1) {
+        mp_raise_ValueError(translate("Invalid phase"));
     }
 
     common_hal_displayio_fourwire_construct(self,
-        MP_OBJ_TO_PTR(spi), command, chip_select, reset, args[ARG_baudrate].u_int);
+        MP_OBJ_TO_PTR(spi), command, chip_select, reset, args[ARG_baudrate].u_int, polarity, phase);
     return self;
 }
 
-//|   .. method:: reset()
-//|
-//|     Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
-//|     is available.
+//|     def reset(self, ) -> Any:
+//|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
+//|         is available."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
     displayio_fourwire_obj_t *self = self_in;
@@ -118,10 +111,10 @@ STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_reset_obj, displayio_fourwire_obj_reset);
 
-//|   .. method:: send(command, data, *, toggle_every_byte=False)
-//|
-//|     Sends the given command value followed by the full set of data. Display state, such as
-//|     vertical scroll, set via ``send`` may or may not be reset once the code is done.
+//|     def send(self, command: Any, data: Any, *, toggle_every_byte: Any = False) -> Any:
+//|         """Sends the given command value followed by the full set of data. Display state, such as
+//|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_command, ARG_data, ARG_toggle_every_byte };

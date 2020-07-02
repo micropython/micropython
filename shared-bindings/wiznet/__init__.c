@@ -35,21 +35,7 @@
 
 #include "shared-module/network/__init__.h"
 
-//| :mod:`wiznet` --- Support for WizNet hardware
-//| =============================================
-//|
-//| .. module:: wiznet
-//|   :synopsis: Support for WizNet hardware
-//|   :platform: SAMD
-//|
-//| Support for WizNet hardware, including the WizNet 5500 Ethernet adaptor.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|   :maxdepth: 3
-//|
-//|   wiznet5k
+//| """Support for WizNet hardware, including the WizNet 5500 Ethernet adaptor."""
 //|
 
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
@@ -66,4 +52,3 @@ const mp_obj_module_t wiznet_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_wiznet_globals,
 };
-

@@ -38,26 +38,22 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: displayio
+//| class I2CDisplay:
+//|     """Manage updating a display over I2C in the background while Python code runs.
+//|     It doesn't handle display initialization."""
 //|
-//| :class:`I2CDisplay` -- Manage updating a display over I2C
-//| ==========================================================================
+//|     def __init__(self, i2c_bus: busio.I2C, *, device_address: int, reset: microcontroller.Pin = None):
+//|         """Create a I2CDisplay object associated with the given I2C bus and reset pin.
 //|
-//| Manage updating a display over I2C in the background while Python code runs.
-//| It doesn't handle display initialization.
+//|         The I2C bus and pins are then in use by the display until `displayio.release_displays()` is
+//|         called even after a reload. (It does this so CircuitPython can use the display after your code
+//|         is done.) So, the first time you initialize a display bus in code.py you should call
+//|         :py:func`displayio.release_displays` first, otherwise it will error after the first code.py run.
 //|
-//| .. class:: I2CDisplay(i2c_bus, *, device_address, reset=None)
-//|
-//|   Create a I2CDisplay object associated with the given I2C bus and reset pin.
-//|
-//|   The I2C bus and pins are then in use by the display until `displayio.release_displays()` is
-//|   called even after a reload. (It does this so CircuitPython can use the display after your code
-//|   is done.) So, the first time you initialize a display bus in code.py you should call
-//|   :py:func`displayio.release_displays` first, otherwise it will error after the first code.py run.
-//|
-//|   :param busio.I2C i2c_bus: The I2C bus that make up the clock and data lines
-//|   :param int device_address: The I2C address of the device
-//|   :param microcontroller.Pin reset: Reset pin. When None only software reset can be used
+//|         :param busio.I2C i2c_bus: The I2C bus that make up the clock and data lines
+//|         :param int device_address: The I2C address of the device
+//|         :param microcontroller.Pin reset: Reset pin. When None only software reset can be used"""
+//|         ...
 //|
 STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_i2c_bus, ARG_device_address, ARG_reset };
@@ -69,36 +65,21 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t reset = args[ARG_reset].u_obj;
-    if (reset != mp_const_none) {
-        assert_pin_free(reset);
-    } else {
-        reset = NULL;
-    }
+    mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
 
-    displayio_i2cdisplay_obj_t* self = NULL;
     mp_obj_t i2c = args[ARG_i2c_bus].u_obj;
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].i2cdisplay_bus.base.type == NULL ||
-            displays[i].i2cdisplay_bus.base.type == &mp_type_NoneType) {
-            self = &displays[i].i2cdisplay_bus;
-            self->base.type = &displayio_i2cdisplay_type;
-            break;
-        }
-    }
-    if (self == NULL) {
-        mp_raise_RuntimeError(translate("Too many display busses"));
-    }
+    displayio_i2cdisplay_obj_t* self = &allocate_display_bus_or_raise()->i2cdisplay_bus;
+    self->base.type = &displayio_i2cdisplay_type;
 
     common_hal_displayio_i2cdisplay_construct(self,
         MP_OBJ_TO_PTR(i2c), args[ARG_device_address].u_int, reset);
     return self;
 }
 
-//|   .. method:: reset()
-//|
-//|     Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
-//|     is available.
+//|     def reset(self, ) -> Any:
+//|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
+//|         is available."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_i2cdisplay_obj_reset(mp_obj_t self_in) {
     displayio_i2cdisplay_obj_t *self = self_in;
@@ -110,10 +91,10 @@ STATIC mp_obj_t displayio_i2cdisplay_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_i2cdisplay_reset_obj, displayio_i2cdisplay_obj_reset);
 
-//|   .. method:: send(command, data)
-//|
-//|     Sends the given command value followed by the full set of data. Display state, such as
-//|     vertical scroll, set via ``send`` may or may not be reset once the code is done.
+//|     def send(self, command: Any, data: Any) -> Any:
+//|         """Sends the given command value followed by the full set of data. Display state, such as
+//|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
     mp_int_t command_int = MP_OBJ_SMALL_INT_VALUE(command_obj);

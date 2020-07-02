@@ -47,8 +47,8 @@
 #define MICROPY_PY_FUNCTION_ATTRS                   (0)
 // MICROPY_PY_UJSON depends on MICROPY_PY_IO
 #define MICROPY_PY_IO                               (0)
-#define MICROPY_PY_UJSON                            (0)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
+#define MICROPY_PY_UJSON                            (0)
 #define MICROPY_PY_UERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
@@ -65,13 +65,17 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 
-// HSRAM_SIZE is defined in the ASF4 include files for each SAMD51 chip.
+// HSRAM_SIZE is defined in the ASF4 include files for each SAM_D5X_E5X chip.
 #define RAM_SIZE                                    HSRAM_SIZE
 #define BOOTLOADER_SIZE                             (16*1024)
 #define CIRCUITPY_MCU_FAMILY                        samd51
+#ifdef SAMD51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
+#elif defined(SAME54)
+#define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAME54"
+#endif
 #define SPI_FLASH_MAX_BAUDRATE 24000000
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
@@ -79,10 +83,9 @@
 // MICROPY_PY_UJSON depends on MICROPY_PY_IO
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_UJSON                            (1)
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS          (1)
 //      MICROPY_PY_UERRNO_LIST - Use the default
 
-#endif // SAMD51
+#endif // SAM_D5X_E5X
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -116,7 +119,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
 #define CIRCUITPY_INTERNAL_NVM_SIZE (8192)
@@ -138,7 +141,7 @@
   #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
 #endif
 
-#endif // SAMD51
+#endif // SAM_D5X_E5X
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

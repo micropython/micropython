@@ -61,4 +61,9 @@ extern const mp_obj_type_t mcu_pin_type;
 #include "nrf52840/pins.h"
 #endif
 
+// Choose based on chip, but not specifically revision (e.g., not NRF52840_XXAA)
+#ifdef NRF52833
+#include "nrf52833/pins.h"
+#endif
+
 #endif // __MICROPY_INCLUDED_NRF_PERIPHERALS_PINS_H__

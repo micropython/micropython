@@ -38,8 +38,7 @@ typedef struct {
     uint8_t channel;
     uint8_t event_channel;
     uint32_t frequency;
-    volatile uint64_t last_ms;
-    volatile uint32_t last_us;
+    volatile uint64_t last_ns;
     float factor;
     uint32_t capture_period;
     uint8_t TC_IRQ;
@@ -51,7 +50,7 @@ void frequencyin_emergency_cancel_capture(uint8_t index);
 void frequencyin_reference_tc_init(void);
 void frequencyin_reference_tc_enable(bool enable);
 bool frequencyin_reference_tc_enabled(void);
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 void frequencyin_samd51_start_dpll(void);
 void frequencyin_samd51_stop_dpll(void);
 #endif

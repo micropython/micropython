@@ -34,24 +34,11 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 
-//| :mod:`analogio` --- Analog hardware support
-//| =================================================
-//|
-//| .. module:: analogio
-//|   :synopsis: Analog hardware support
-//|   :platform: SAMD21, ESP8266
+//| """Analog hardware support
 //|
 //| The `analogio` module contains classes to provide access to analog IO
 //| typically implemented with digital-to-analog (DAC) and analog-to-digital
 //| (ADC) converters.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     AnalogIn
-//|     AnalogOut
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
@@ -70,7 +57,7 @@
 //| This example will initialize the the device, read
 //| :py:data:`~analogio.AnalogIn.value` and then
 //| :py:meth:`~analogio.AnalogIn.deinit` the hardware. The last step is optional
-//| because CircuitPython will do it automatically after the program finishes.
+//| because CircuitPython will do it automatically after the program finishes."""
 //|
 
 STATIC const mp_rom_map_elem_t analogio_module_globals_table[] = {

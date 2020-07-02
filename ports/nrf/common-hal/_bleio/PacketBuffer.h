@@ -40,8 +40,10 @@ typedef struct {
     // Two outgoing buffers to alternate between. One will be queued for transmission by the SD and
     // the other is waiting to be queued and can be extended.
     uint8_t* outgoing[2];
-    uint16_t pending_size;
-    uint16_t conn_handle;
+    volatile uint16_t pending_size;
+    // We remember the conn_handle so we can do a NOTIFY/INDICATE to a client.
+    // We can find out the conn_handle on a Characteristic write or a CCCD write (but not a read).
+    volatile uint16_t conn_handle;
     uint8_t pending_index;
     uint8_t write_type;
     bool client;

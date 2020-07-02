@@ -55,28 +55,37 @@ uint8_t tcc_refcount[TCC_INST_NUM];
 #ifdef SAMD21
 uint8_t tcc_channels[3];   // Set by pwmout_reset() to {0xf0, 0xfc, 0xfc} initially.
 #endif
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 0xfc} initially.
 #endif
 
 static uint8_t never_reset_tc_or_tcc[TC_INST_NUM + TCC_INST_NUM];
 
-void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
-    if (self->timer->is_tc) {
-        never_reset_tc_or_tcc[self->timer->index] += 1;
+STATIC void timer_refcount(int index, bool is_tc, int increment) {
+    if (is_tc) {
+        never_reset_tc_or_tcc[index] += increment;
     } else {
-        never_reset_tc_or_tcc[TC_INST_NUM + self->timer->index] += 1;
+        never_reset_tc_or_tcc[TC_INST_NUM + index] += increment;
     }
+}
+
+void timer_never_reset(int index, bool is_tc) {
+    timer_refcount(index, is_tc, 1);
+}
+
+void timer_reset_ok(int index, bool is_tc) {
+    timer_refcount(index, is_tc, -1);
+}
+
+
+void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+    timer_never_reset(self->timer->index, self->timer->is_tc);
 
     never_reset_pin_number(self->pin->number);
 }
 
 void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
-    if (self->timer->is_tc) {
-        never_reset_tc_or_tcc[self->timer->index] -= 1;
-    } else {
-        never_reset_tc_or_tcc[TC_INST_NUM + self->timer->index] -= 1;
-    }
+    timer_reset_ok(self->timer->index, self->timer->is_tc);
 }
 
 void pwmout_reset(void) {
@@ -139,7 +148,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     if (pin->timer[0].index >= TC_INST_NUM &&
         pin->timer[1].index >= TCC_INST_NUM
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
         && pin->timer[2].index >= TCC_INST_NUM
 #endif
         ) {
@@ -172,7 +181,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                     mux_position = j;
                     // Claim channel.
                     tcc_channels[timer->index] |= (1 << tcc_channel(timer));
-
+                    tcc_refcount[timer->index]++;
                 }
             }
         }
@@ -251,7 +260,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                                     TC_CTRLA_WAVEGEN_MPWM;
             tc->COUNT16.CC[0].reg = top;
             #endif
-            #ifdef SAMD51
+            #ifdef SAM_D5X_E5X
 
             tc->COUNT16.CTRLA.bit.SWRST = 1;
             while (tc->COUNT16.CTRLA.bit.SWRST == 1) {
@@ -292,7 +301,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
-    return self->pin == mp_const_none;
+    return self->pin == NULL;
 }
 
 void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
@@ -319,7 +328,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
         }
     }
     reset_pin_number(self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
 
 extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
@@ -336,7 +345,7 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
         #ifdef SAMD21
         tc_insts[t->index]->COUNT16.CC[t->wave_output].reg = adjusted_duty;
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         Tc* tc = tc_insts[t->index];
         while (tc->COUNT16.SYNCBUSY.bit.CC1 != 0) {}
         tc->COUNT16.CCBUF[1].reg = adjusted_duty;
@@ -357,7 +366,7 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
         #ifdef SAMD21
         tcc->CCB[channel].reg = adjusted_duty;
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         tcc->CCBUF[channel].reg = adjusted_duty;
         #endif
         tcc->CTRLBCLR.bit.LUPD = 1;
@@ -387,7 +396,7 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
             cv = tcc->CC[channel].reg;
         }
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         if ((tcc->STATUS.vec.CCBUFV & (1 << channel)) != 0) {
             cv = tcc->CCBUF[channel].reg;
         } else {
@@ -435,7 +444,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
         #ifdef SAMD21
         tc->COUNT16.CC[0].reg = new_top;
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         while (tc->COUNT16.SYNCBUSY.reg != 0) {}
         tc->COUNT16.CCBUF[0].reg = new_top;
         #endif
@@ -452,7 +461,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
         #ifdef SAMD21
         tcc->PERB.bit.PERB = new_top;
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         tcc->PERBUF.bit.PERBUF = new_top;
         #endif
     }

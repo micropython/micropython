@@ -9,10 +9,13 @@ import base64
 from datetime import date
 from sh.contrib import git
 
+sys.path.append("../docs")
+import shared_bindings_matrix
+
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = ["nrf", "atmel-samd", "stm32f4", "cxd56", "mimxrt10xx"]
+SUPPORTED_PORTS = ["atmel-samd", "cxd56", "esp32s2", "litex", "mimxrt10xx", "nrf", "stm"]
 
 BIN = ('bin',)
 UF2 = ('uf2',)
@@ -20,6 +23,8 @@ BIN_UF2 = ('bin', 'uf2')
 HEX = ('hex',)
 HEX_UF2 = ('hex', 'uf2')
 SPK = ('spk',)
+DFU = ('dfu',)
+BIN_DFU = ('bin', 'dfu')
 
 # Example:
 # https://downloads.circuitpython.org/bin/trinket_m0/en_US/adafruit-circuitpython-trinket_m0-en_US-5.0.0-rc.0.uf2
@@ -29,9 +34,11 @@ DOWNLOAD_BASE_URL = "https://downloads.circuitpython.org/bin"
 extension_by_port = {
     "nrf": UF2,
     "atmel-samd": UF2,
-    "stm32f4": BIN,
+    "stm": BIN,
     "cxd56": SPK,
     "mimxrt10xx": HEX_UF2,
+    "litex": DFU,
+    "esp32s2": BIN
 }
 
 # Per board overrides
@@ -45,13 +52,17 @@ extension_by_board = {
     "feather_m0_basic": BIN_UF2,
     "feather_m0_rfm69": BIN_UF2,
     "feather_m0_rfm9x": BIN_UF2,
+    "uchip": BIN_UF2,
 
     # nRF52840 dev kits that may not have UF2 bootloaders,
     "makerdiary_nrf52840_mdk": HEX,
-    "makerdiary_nrf52840_mdk_usb_dongle": HEX,
+    "makerdiary_nrf52840_mdk_usb_dongle": HEX_UF2,
     "pca10056": BIN_UF2,
     "pca10059": BIN_UF2,
-    "electronut_labs_blip": HEX
+    "electronut_labs_blip": HEX,
+
+    # stm32
+    "meowbit_v121": UF2
 }
 
 aliases_by_board = {
@@ -238,6 +249,10 @@ def generate_download_info():
 
     languages = get_languages()
 
+    support_matrix = shared_bindings_matrix.support_matrix_by_board(
+        use_branded_name=False
+    )
+
     new_stable = "-" not in new_tag
 
     previous_releases = set()
@@ -275,6 +290,7 @@ def generate_download_info():
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
+                        "modules": support_matrix.get(alias, "[]"),
                         "files": {}
                     }
                     for language in languages:

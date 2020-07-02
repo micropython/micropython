@@ -34,29 +34,16 @@
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
 
-//| :mod:`audiobusio` --- Support for audio input and output over digital bus
-//| =========================================================================
-//|
-//| .. module:: audiobusio
-//|   :synopsis: Support for audio input and output over digital bus
-//|   :platform: SAMD21
+//| """Support for audio input and output over digital buses
 //|
 //| The `audiobusio` module contains classes to provide access to audio IO
 //| over digital buses. These protocols are used to communicate audio to other
 //| chips in the same circuit. It doesn't include audio interconnect protocols
 //| such as S/PDIF.
 //|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     I2SOut
-//|     PDMIn
-//|
 //| All libraries change hardware state and should be deinitialized when they
 //| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
-//| context manager.
+//| context manager."""
 //|
 
 STATIC const mp_rom_map_elem_t audiobusio_module_globals_table[] = {

@@ -45,10 +45,10 @@ bleio_scanresults_obj_t* shared_module_bleio_new_scanresults(size_t buffer_size,
 }
 
 mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self) {
-    while (ringbuf_count(&self->buf) == 0 && !self->done && !mp_hal_is_interrupted()) {
+    while (ringbuf_num_filled(&self->buf) == 0 && !self->done && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
     }
-    if (ringbuf_count(&self->buf) == 0 || mp_hal_is_interrupted()) {
+    if (ringbuf_num_filled(&self->buf) == 0 || mp_hal_is_interrupted()) {
         return mp_const_none;
     }
 
@@ -56,7 +56,7 @@ mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self) {
     uint8_t type = ringbuf_get(&self->buf);
     bool connectable = (type & (1 << 0)) != 0;
     bool scan_response = (type & (1 << 1)) != 0;
-    uint64_t ticks_ms; 
+    uint64_t ticks_ms;
     ringbuf_get_n(&self->buf, (uint8_t*) &ticks_ms, sizeof(ticks_ms));
     uint8_t rssi = ringbuf_get(&self->buf);
     uint8_t peer_addr[NUM_BLEIO_ADDRESS_BYTES];
@@ -81,7 +81,7 @@ mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self) {
     entry->time_received = ticks_ms;
     entry->connectable = connectable;
     entry->scan_response = scan_response;
-    
+
     return MP_OBJ_FROM_PTR(entry);
 }
 
@@ -97,7 +97,7 @@ void shared_module_bleio_scanresults_append(bleio_scanresults_obj_t* self,
                                             uint16_t len) {
     int32_t packet_size = sizeof(uint8_t) + sizeof(ticks_ms) + sizeof(rssi) + NUM_BLEIO_ADDRESS_BYTES +
         sizeof(addr_type) + sizeof(len) + len;
-    int32_t empty_space = self->buf.size - ringbuf_count(&self->buf);
+    int32_t empty_space = self->buf.size - ringbuf_num_filled(&self->buf);
     if (packet_size >= empty_space) {
         // We can't fit the packet so skip it.
         return;

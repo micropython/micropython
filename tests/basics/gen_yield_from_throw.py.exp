@@ -1,0 +1,6 @@
+1
+got ValueError from upstream!
+str1
+got TypeError from downstream!
+123
+got StopIteration from downstream!

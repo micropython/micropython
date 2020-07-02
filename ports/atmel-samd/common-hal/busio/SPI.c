@@ -89,8 +89,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     Sercom* sercom = NULL;
     uint8_t sercom_index;
     uint32_t clock_pinmux = 0;
-    bool mosi_none = mosi == mp_const_none || mosi == NULL;
-    bool miso_none = miso == mp_const_none || miso == NULL;
+    bool mosi_none = mosi == NULL;
+    bool miso_none = miso == NULL;
     uint32_t mosi_pinmux = 0;
     uint32_t miso_pinmux = 0;
     uint8_t clock_pad = 0;
@@ -341,7 +341,7 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     return status >= 0; // Status is number of chars read or an error code < 0.
 }
 
-bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
     if (len == 0) {
         return true;
     }
@@ -350,7 +350,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uin
         status = sercom_dma_transfer(self->spi_desc.dev.prvt, data_out, data_in, len);
     } else {
         struct spi_xfer xfer;
-        xfer.txbuf = data_out;
+        xfer.txbuf = (uint8_t*) data_out;
         xfer.rxbuf = data_in;
         xfer.size = len;
         status = spi_m_sync_transfer(&self->spi_desc, &xfer);

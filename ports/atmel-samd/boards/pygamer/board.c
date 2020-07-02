@@ -32,7 +32,6 @@
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 #include "supervisor/shared/board.h"
-#include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -72,7 +71,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, mp_const_none);
+    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
@@ -82,7 +81,9 @@ void board_init(void) {
         &pin_PB05, // TFT_DC Command or data
         &pin_PB12, // TFT_CS Chip select
         &pin_PA00, // TFT_RST Reset
-        60000000);
+        60000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     displayio_display_obj_t* display = &displays[0].display;
     display->base.type = &displayio_display_type;
@@ -98,6 +99,7 @@ void board_init(void) {
         false, // pixels in a byte share a row. Only valid for depths < 8
         1, // bytes per cell. Only valid for depths < 8
         false, // reverse_pixels_in_byte. Only valid for depths < 8
+        true, // reverse_pixels_in_word
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
@@ -111,7 +113,8 @@ void board_init(void) {
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
-        60); // native_frames_per_second
+        60, // native_frames_per_second
+        true); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {

@@ -47,9 +47,7 @@ uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
     uint32_t r5 = (color_rgb888 >> 19);
     uint32_t g6 = (color_rgb888 >> 10) & 0x3f;
     uint32_t b5 = (color_rgb888 >> 3) & 0x1f;
-    uint32_t packed = r5 << 11 | g6 << 5 | b5;
-    // swap bytes
-    return __builtin_bswap16(packed);
+    return r5 << 11 | g6 << 5 | b5;
 }
 
 uint8_t displayio_colorconverter_compute_luma(uint32_t color_rgb888) {
@@ -112,7 +110,7 @@ void common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *sel
     displayio_input_pixel_t input_pixel;
     input_pixel.pixel = input_color;
     input_pixel.x = input_pixel.y = input_pixel.tile = input_pixel.tile_x = input_pixel.tile_y = 0;
-    
+
     displayio_output_pixel_t output_pixel;
     output_pixel.pixel = 0;
     output_pixel.opaque = false;
@@ -132,7 +130,7 @@ bool common_hal_displayio_colorconverter_get_dither(displayio_colorconverter_t* 
 
 void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
     uint32_t pixel = input_pixel->pixel;
-    
+
     if (self->dither){
         uint8_t randr = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y));
         uint8_t randg = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x+33,input_pixel->tile_y));
@@ -156,7 +154,12 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
     }
 
     if (colorspace->depth == 16) {
-        output_color->pixel = displayio_colorconverter_compute_rgb565(pixel);
+        uint16_t packed = displayio_colorconverter_compute_rgb565(pixel);
+        if (colorspace->reverse_bytes_in_word) {
+            // swap bytes
+            packed = __builtin_bswap16(packed);
+        }
+        output_color->pixel = packed;
         output_color->opaque = true;
         return;
     } else if (colorspace->tricolor) {
@@ -190,4 +193,3 @@ bool displayio_colorconverter_needs_refresh(displayio_colorconverter_t *self) {
 
 void displayio_colorconverter_finish_refresh(displayio_colorconverter_t *self) {
 }
-

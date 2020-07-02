@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries, 2020 Radomir
+ * Dopieralski
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +32,6 @@
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
-#include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -79,7 +79,7 @@ uint8_t display_init_sequence[] = {
     0xc4, 2, 0x8a, 0xee,
     0xc5, 1, 0x0e, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x2a, 0, // _INVOFF
-    0x36, 1, 0xa8, // _MADCTL
+    0x36, 1, 0xa0, // _MADCTL
     // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 cycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05, // COLMOD - 16bit color
@@ -97,7 +97,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_PA13, &pin_PA15, mp_const_none);
+    common_hal_busio_spi_construct(spi, &pin_PA13, &pin_PA15, NULL);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
@@ -107,7 +107,9 @@ void board_init(void) {
         &pin_PA16, // TFT_DC Command or data
         &pin_PA11, // TFT_CS Chip select
         &pin_PA17, // TFT_RST Reset
-        60000000);
+        60000000, // Baudrate
+        0, // Polarity
+        0); // Phase
 
     uint32_t cfg0 = lookupCfg(CFG_DISPLAY_CFG0, 0x000000);
     uint32_t offX = (cfg0 >> 8) & 0xff;
@@ -126,6 +128,7 @@ void board_init(void) {
         false, // pixels in byte share row. only used for depth < 8
         1, // bytes per cell. Only valid for depths < 8
         false, // reverse_pixels_in_byte. Only valid for depths < 8
+        true, // reverse_pixels_in_word
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
@@ -139,7 +142,8 @@ void board_init(void) {
         false, // single_byte_bounds
         false, // data_as_commands
         false, // auto_refresh
-        20); // native_frames_per_second
+        20, // native_frames_per_second
+        true); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {

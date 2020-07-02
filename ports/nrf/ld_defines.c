@@ -9,6 +9,9 @@
 // The next line is a marker to start looking for definitions. Lines above the next line are ignored.
 // START_LD_DEFINES
 
+/*FLASH_SIZE=*/                                     FLASH_SIZE;
+/*RAM_SIZE=*/                                       RAM_SIZE;
+
 /*MBR_START_ADDR=*/                                 MBR_START_ADDR;
 /*MBR_SIZE=*/                                       MBR_SIZE;
 

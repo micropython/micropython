@@ -90,9 +90,9 @@ else
     last_rev="v1.0"
 fi
 
-# get a list of hashes between last revision (exclusive) and master
-hashes=$(git log --format=format:"%H" --reverse ${last_rev}..master)
-#hashes=$(git log --format=format:"%H" --reverse ${last_rev}..master | $AWK '{if (NR % 10 == 0) print $0}') # do every 10th one
+# get a list of hashes between last revision (exclusive) and main
+hashes=$(git log --format=format:"%H" --reverse ${last_rev}..main)
+#hashes=$(git log --format=format:"%H" --reverse ${last_rev}..main | $AWK '{if (NR % 10 == 0) print $0}') # do every 10th one
 
 for hash in $hashes; do
 
@@ -116,7 +116,7 @@ index 77d2945..dae0644 100644
 @@ -55,10 +55,8 @@ void msec_sleep_tv(struct timeval *tv) {
  #define MP_CLOCKS_PER_SEC CLOCKS_PER_SEC
  #endif
- 
+
 -#if defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000000) // POSIX
 -#define CLOCK_DIV 1000.0
 -#elif defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000) // WIN32
@@ -182,6 +182,6 @@ EOF
 
 done
 
-# checkout master and cleanup
-git checkout master
+# checkout main and cleanup
+git checkout main
 $RM $pystoneavg

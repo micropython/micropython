@@ -42,7 +42,8 @@ typedef struct {
 
 void pwmout_reset(void);
 NRF_PWM_Type *pwmout_allocate(uint16_t countertop, nrf_pwm_clk_t base_clock,
-    bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out);
+    bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out,
+    IRQn_Type *irq);
 void pwmout_free_channel(NRF_PWM_Type *pwm, int8_t channel);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PWMOUT_H

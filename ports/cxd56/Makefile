@@ -152,7 +152,6 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 SRC_S = supervisor/cpu.s
 
 SRC_C = \
-	tick.c \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
@@ -176,11 +175,15 @@ OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_EXPANDED:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_MODULE_EXPANDED:.c=.o))
+ifeq ($(INTERNAL_LIBM),1)
+OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
+endif
+OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 # Sources that only hold QSTRs after pre-processing.
-SRC_QSTR_PREPROCESSOR += 
+SRC_QSTR_PREPROCESSOR +=
 
 all: $(BUILD)/firmware.spk
 
@@ -193,7 +196,7 @@ $(FIRMWARE):
 	$(ECHO) "run make flash-bootloader again to flash bootloader."
 	exit 1
 
-$(BUILD)/libmpy.a: $(SPRESENSE_SDK) $(OBJ) 
+$(BUILD)/libmpy.a: $(SPRESENSE_SDK) $(OBJ)
 	$(ECHO) "AR $@"
 	$(Q)$(AR) rcs $(BUILD)/libmpy.a $(OBJ)
 

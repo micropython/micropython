@@ -3,7 +3,6 @@ SRC_SUPERVISOR = \
 	supervisor/port.c \
 	supervisor/shared/autoreload.c \
 	supervisor/shared/board.c \
-	supervisor/shared/display.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/micropython.c \
@@ -73,36 +72,57 @@ else
 		lib/tinyusb/src/device/usbd_control.c \
 		lib/tinyusb/src/class/msc/msc_device.c \
 		lib/tinyusb/src/class/cdc/cdc_device.c \
-		lib/tinyusb/src/class/hid/hid_device.c \
-		lib/tinyusb/src/class/midi/midi_device.c \
 		lib/tinyusb/src/tusb.c \
 		supervisor/shared/serial.c \
 		supervisor/usb.c \
 		supervisor/shared/usb/usb_desc.c \
 		supervisor/shared/usb/usb.c \
 		supervisor/shared/usb/usb_msc_flash.c \
-		shared-bindings/usb_hid/__init__.c \
-		shared-bindings/usb_hid/Device.c \
-		shared-bindings/usb_midi/__init__.c \
-		shared-bindings/usb_midi/PortIn.c \
-		shared-bindings/usb_midi/PortOut.c \
-		shared-module/usb_hid/__init__.c \
-		shared-module/usb_hid/Device.c \
-		shared-module/usb_midi/__init__.c \
-		shared-module/usb_midi/PortIn.c \
-		shared-module/usb_midi/PortOut.c \
 		$(BUILD)/autogen_usb_descriptor.c
+
+	ifeq ($(CIRCUITPY_USB_HID), 1)
+		SRC_SUPERVISOR += \
+			lib/tinyusb/src/class/hid/hid_device.c \
+			shared-bindings/usb_hid/__init__.c \
+			shared-bindings/usb_hid/Device.c \
+			shared-module/usb_hid/__init__.c \
+			shared-module/usb_hid/Device.c
+	endif
+
+	ifeq ($(CIRCUITPY_USB_MIDI), 1)
+		SRC_SUPERVISOR += \
+			lib/tinyusb/src/class/midi/midi_device.c \
+			shared-bindings/usb_midi/__init__.c \
+			shared-bindings/usb_midi/PortIn.c \
+			shared-bindings/usb_midi/PortOut.c \
+			shared-module/usb_midi/__init__.c \
+			shared-module/usb_midi/PortIn.c \
+			shared-module/usb_midi/PortOut.c
+	endif
 
 	CFLAGS += -DUSB_AVAILABLE
 endif
 
+SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o))
+
+ifeq ($(CIRCUITPY_DISPLAYIO), 1)
+	SRC_SUPERVISOR += \
+		supervisor/shared/display.c
+
+	SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+endif
 ifndef USB_INTERFACE_NAME
 USB_INTERFACE_NAME = "CircuitPython"
 endif
 
-ifndef USB_DEVICES
-USB_DEVICES = "CDC,MSC,AUDIO,HID"
+USB_DEVICES_COMPUTED := CDC,MSC
+ifeq ($(CIRCUITPY_USB_MIDI),1)
+USB_DEVICES_COMPUTED := $(USB_DEVICES_COMPUTED),AUDIO
 endif
+ifeq ($(CIRCUITPY_USB_HID),1)
+USB_DEVICES_COMPUTED := $(USB_DEVICES_COMPUTED),HID
+endif
+USB_DEVICES ?= "$(USB_DEVICES_COMPUTED)"
 
 ifndef USB_HID_DEVICES
 USB_HID_DEVICES = "KEYBOARD,MOUSE,CONSUMER,GAMEPAD"
@@ -173,8 +193,6 @@ USB_DESCRIPTOR_ARGS = \
 ifeq ($(USB_RENUMBER_ENDPOINTS), 0)
 USB_DESCRIPTOR_ARGS += --no-renumber_endpoints
 endif
-
-SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o)) $(BUILD)/autogen_display_resources.o
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
 

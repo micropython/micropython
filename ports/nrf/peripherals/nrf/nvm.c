@@ -40,6 +40,8 @@
 
 STATIC bool sd_is_enabled(void) {
     uint8_t sd_en = 0;
+    if (__get_PRIMASK())
+        return false;
     (void) sd_softdevice_is_enabled(&sd_en);
     return sd_en;
 }

@@ -377,6 +377,11 @@
 #define MICROPY_COMP_RETURN_IF_EXPR (0)
 #endif
 
+// Whether to include parsing of f-string literals
+#ifndef MICROPY_COMP_FSTRING_LITERAL
+#define MICROPY_COMP_FSTRING_LITERAL (1)
+#endif
+
 /*****************************************************************************/
 /* Internal debugging stuff                                                  */
 
@@ -1171,6 +1176,10 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UJSON
 #define MICROPY_PY_UJSON (0)
+#endif
+
+#ifndef CIRCUITPY_ULAB
+#define CIRCUITPY_ULAB (0)
 #endif
 
 #ifndef MICROPY_PY_URE

@@ -87,28 +87,32 @@ def run_micropython(pyb, args, test_file, is_special=False):
                     def get(required=False):
                         rv = b''
                         while True:
-                            ready = select.select([master], [], [], 0.02)
-                            if ready[0] == [master]:
-                                rv += os.read(master, 1024)
+                            ready = select.select([emulator], [], [], 0.02)
+                            if ready[0] == [emulator]:
+                                rv += os.read(emulator, 1024)
                             else:
                                 if not required or rv:
                                     return rv
 
                     def send_get(what):
-                        os.write(master, what)
+                        os.write(emulator, what)
                         return get()
 
                     with open(test_file, 'rb') as f:
                         # instead of: output_mupy = subprocess.check_output(args, stdin=f)
-                        master, slave = pty.openpty()
-                        p = subprocess.Popen(args, stdin=slave, stdout=slave,
+                        # openpty returns two read/write file descriptors.  The first one is
+                        # used by the program which provides the virtual
+                        # terminal service, and the second one is used by the
+                        # subprogram which requires a tty to work.
+                        emulator, subterminal = pty.openpty()
+                        p = subprocess.Popen(args, stdin=subterminal, stdout=subterminal,
                                              stderr=subprocess.STDOUT, bufsize=0)
                         banner = get(True)
                         output_mupy = banner + b''.join(send_get(line) for line in f)
                         send_get(b'\x04') # exit the REPL, so coverage info is saved
                         p.kill()
-                        os.close(master)
-                        os.close(slave)
+                        os.close(emulator)
+                        os.close(subterminal)
                 else:
                     output_mupy = subprocess.check_output(args + [test_file], stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError:
@@ -385,6 +389,7 @@ def run_tests(pyb, tests, args, base_path=".", num_threads=1):
         skip_tests.add('stress/gc_trace.py') # requires yield
         skip_tests.add('stress/recursive_gen.py') # requires yield
         skip_tests.add('extmod/vfs_userfs.py') # because native doesn't properly handle globals across different modules
+        skip_tests.add('../extmod/ulab/tests/argminmax.py') # requires yield
 
     def run_one_test(test_file):
         test_file = test_file.replace('\\', '/')
@@ -579,7 +584,7 @@ the last matching regex is used:
                 # run PC tests
                 test_dirs = (
                     'basics', 'micropython', 'float', 'import', 'io', 'misc',
-                    'stress', 'unicode', 'extmod', 'unix', 'cmdline',
+                    'stress', 'unicode', 'extmod', '../extmod/ulab/tests', 'unix', 'cmdline',
                 )
         else:
             # run tests from these directories
