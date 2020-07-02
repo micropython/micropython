@@ -165,7 +165,7 @@ STATIC mp_obj_t bitbangio_i2c_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_unlock_obj, bitbangio_i2c_obj_unlock);
 
-//|     def readfrom_into(self, address: int, buffer: bytearray, *, start: int = 0, end: int = None) -> None:
+//|     def readfrom_into(self, address: int, buffer: Union[bytes, bytearray, memoryview], *, start: int = 0, end: int = None) -> None:
 //|         """Read into ``buffer`` from the device selected by ``address``.
 //|         The number of bytes read will be the length of ``buffer``.
 //|         At least one byte must be read.
@@ -217,7 +217,7 @@ STATIC mp_obj_t bitbangio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 3, bitbangio_i2c_readfrom_into);
 
-//|     def writeto(self, address: int, buffer: bytearray, *, start: int = 0, end: int = None, stop: bool = True) -> None:
+//|     def writeto(self, address: int, buffer: Union[bytes, bytearray, memoryview], *, start: int = 0, end: int = None, stop: bool = True) -> None:
 //|         """Write the bytes from ``buffer`` to the device selected by ``address`` and then transmits a
 //|         stop bit. Use `writeto_then_readfrom` when needing a write, no stop and repeated start
 //|         before a read.
@@ -277,7 +277,7 @@ STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, m
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_writeto);
 
 
-//|     def writeto_then_readfrom(self, address: int, out_buffer: bytearray, in_buffer: bytearray, *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> None:
+//|     def writeto_then_readfrom(self, address: int, out_buffer: Union[bytes, bytearray, memoryview], in_buffer: Union[bytes, bytearray, memoryview], *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> None:
 //|         """Write the bytes from ``out_buffer`` to the device selected by ``address``, generate no stop
 //|         bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
 //|         ``in_buffer`` can be the same buffer because they are used sequentially.

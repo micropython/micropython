@@ -168,7 +168,7 @@ STATIC mp_obj_t audiobusio_pdmin_obj___exit__(size_t n_args, const mp_obj_t *arg
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_pdmin___exit___obj, 4, 4, audiobusio_pdmin_obj___exit__);
 
 
-//|     def record(self, destination: bytearray, destination_length: int) -> None:
+//|     def record(self, destination: Union[bytes, bytearray, memoryview], destination_length: int) -> None:
 //|         """Records destination_length bytes of samples to destination. This is
 //|         blocking.
 //|
