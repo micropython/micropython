@@ -202,7 +202,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|     def readline(self, ) -> Any:
 //|         """Read a line, ending in a newline character, or
 //|            return None if a timeout occurs sooner, or
-//|            return everything readable if no newline is found and timeout=0 
+//|            return everything readable if no newline is found and timeout=0
 //|
 //|         :return: the line read
 //|         :rtype: bytes or None"""
