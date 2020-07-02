@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2020 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_ONEWIRE_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_ONEWIRE_H
 
-#include "py/mphal.h"
+// Use bitbangio.
+#include "shared-module/busio/OneWire.h"
 
-#include "peripherals/pins.h"
-
-extern bool apa102_mosi_in_use;
-extern bool apa102_sck_in_use;
-
-void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
-void reset_pin_number(gpio_num_t pin_number);
-void common_hal_reset_pin(const mcu_pin_obj_t* pin);
-void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(gpio_num_t pin_number);
-void never_reset_pin_number(gpio_num_t pin_number);
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_ONEWIRE_H

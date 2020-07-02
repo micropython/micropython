@@ -24,23 +24,39 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
 
-#include "py/mphal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "peripherals/pins.h"
+#include "esp-idf/components/driver/include/driver/spi_common_internal.h"
+#include "esp-idf/components/soc/include/hal/spi_hal.h"
+#include "esp-idf/components/soc/include/hal/spi_types.h"
+#include "py/obj.h"
 
-extern bool apa102_mosi_in_use;
-extern bool apa102_sck_in_use;
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t* clock_pin;
+    const mcu_pin_obj_t* MOSI_pin;
+    const mcu_pin_obj_t* MISO_pin;
+    spi_host_device_t host_id;
+    spi_bus_lock_dev_handle_t lock;
+    spi_hal_context_t hal_context;
+    spi_hal_timing_conf_t timing_conf;
+    intr_handle_t interrupt;
+    // IDF allocates these in DMA accessible memory so they may need to move when
+    // we use external RAM for CircuitPython.
+    lldesc_t tx_dma;
+    lldesc_t rx_dma;
+    uint32_t target_frequency;
+    int32_t real_frequency;
+    uint8_t polarity;
+    uint8_t phase;
+    uint8_t bits;
+    bool has_lock;
+    bool connected_through_gpio;
+} busio_spi_obj_t;
 
-void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
-void reset_pin_number(gpio_num_t pin_number);
-void common_hal_reset_pin(const mcu_pin_obj_t* pin);
-void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(gpio_num_t pin_number);
-void never_reset_pin_number(gpio_num_t pin_number);
+void spi_reset(void);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H

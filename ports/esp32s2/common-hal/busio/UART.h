@@ -24,23 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_UART_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_UART_H
 
-#include "py/mphal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "peripherals/pins.h"
+#include "esp-idf/components/soc/include/hal/uart_types.h"
+#include "py/obj.h"
 
-extern bool apa102_mosi_in_use;
-extern bool apa102_sck_in_use;
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t* rx_pin;
+    const mcu_pin_obj_t* tx_pin;
+    const mcu_pin_obj_t* rts_pin;
+    const mcu_pin_obj_t* cts_pin;
+    uart_port_t uart_num;
+    uint8_t character_bits;
+    bool rx_error;
+    uint32_t timeout_ms;
+} busio_uart_obj_t;
 
-void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
-void reset_pin_number(gpio_num_t pin_number);
-void common_hal_reset_pin(const mcu_pin_obj_t* pin);
-void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(gpio_num_t pin_number);
-void never_reset_pin_number(gpio_num_t pin_number);
+void uart_reset(void);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_MICROCONTROLLER_PIN_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_UART_H

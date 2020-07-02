@@ -271,13 +271,13 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size_t len,
     return true;
 }
 
-bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
     const bool is_spim3 = self->spim_peripheral->spim.p_reg == NRF_SPIM3;
-    uint8_t *next_chunk_out = data_out;
+    const uint8_t *next_chunk_out = data_out;
     uint8_t *next_chunk_in = data_in;
 
     while (len > 0) {
-        uint8_t *chunk_out = next_chunk_out;
+        const uint8_t *chunk_out = next_chunk_out;
         size_t chunk_size = MIN(len, self->spim_peripheral->max_xfer_size);
         if (is_spim3) {
             // If SPIM3, copy into unused RAM block, and do DMA from there.
