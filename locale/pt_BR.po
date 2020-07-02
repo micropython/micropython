@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-01 10:33-0500\n"
-"PO-Revision-Date: 2020-07-02 02:02+0000\n"
+"PO-Revision-Date: 2020-07-02 13:32+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3405,7 +3405,7 @@ msgstr "tipo da saída incorreta"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
-msgstr "a valor x está fora dos limites"
+msgstr "o valor x está fora dos limites"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
