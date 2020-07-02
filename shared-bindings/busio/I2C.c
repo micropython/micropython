@@ -83,7 +83,7 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, con
     return (mp_obj_t)self;
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self, ) -> None:
 //|         """Releases control of the underlying hardware so other classes can use it."""
 //|         ...
 //|
@@ -100,13 +100,13 @@ STATIC void check_for_deinit(busio_i2c_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self, ) -> I2C:
 //|         """No-op used in Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self, ) -> None:
 //|         """Automatically deinitializes the hardware on context exit. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -125,7 +125,7 @@ static void check_lock(busio_i2c_obj_t *self) {
     }
 }
 
-//|     def scan(self, ) -> Any:
+//|     def scan(self, ) -> list:
 //|
 //|          """Scan all I2C addresses between 0x08 and 0x77 inclusive and return a
 //|          list of those that respond.
@@ -150,7 +150,7 @@ STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_scan_obj, busio_i2c_scan);
 
-//|     def try_lock(self, ) -> Any:
+//|     def try_lock(self, ) -> bool:
 //|         """Attempts to grab the I2C lock. Returns True on success.
 //|
 //|         :return: True when lock has been grabbed
@@ -164,7 +164,7 @@ STATIC mp_obj_t busio_i2c_obj_try_lock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_try_lock_obj, busio_i2c_obj_try_lock);
 
-//|     def unlock(self, ) -> Any:
+//|     def unlock(self, ) -> none:
 //|         """Releases the I2C lock."""
 //|         ...
 //|
@@ -176,7 +176,7 @@ STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 
-//|     def readfrom_into(self, address: int, buffer: bytearray, *, start: int = 0, end: int = None) -> Any:
+//|     def readfrom_into(self, address: int, buffer: bytearray, *, start: int = 0, end: int = None) -> None:
 //|          """Read into ``buffer`` from the device selected by ``address``.
 //|          The number of bytes read will be the length of ``buffer``.
 //|          At least one byte must be read.
@@ -228,7 +228,7 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_into);
 
-//|     def writeto(self, address: int, buffer: bytearray, *, start: int = 0, end: int = None, stop: bool = True) -> Any:
+//|     def writeto(self, address: int, buffer: bytearray, *, start: int = 0, end: int = None, stop: bool = True) -> None:
 //|          """Write the bytes from ``buffer`` to the device selected by ``address``.
 //|          Transmits a stop bit when stop is True. Setting stop=False is deprecated and stop will be
 //|          removed in CircuitPython 6.x. Use `writeto_then_readfrom` when needing a write, no stop and
@@ -287,7 +287,7 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 
-//|     def writeto_then_readfrom(self, address: int, out_buffer: bytearray, in_buffer: bytearray, *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> Any:
+//|     def writeto_then_readfrom(self, address: int, out_buffer: bytearray, in_buffer: bytearray, *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> None:
 //|          """Write the bytes from ``out_buffer`` to the device selected by ``address``, generate no stop
 //|          bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
 //|          ``in_buffer`` can be the same buffer because they are used sequentially.

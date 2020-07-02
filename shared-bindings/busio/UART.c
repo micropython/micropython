@@ -142,7 +142,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     return (mp_obj_t)self;
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self, ) -> None:
 //|         """Deinitialises the UART and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -159,13 +159,13 @@ STATIC void check_for_deinit(busio_uart_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self, ) -> UART:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self, ) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -179,7 +179,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|     def read(self, nbytes: Any = None) -> Any:
+//|     def read(self, nbytes: int = None) -> Optional[bytes]:
 //|         """Read characters.  If ``nbytes`` is specified then read at most that many
 //|         bytes. Otherwise, read everything that arrives until the connection
 //|         times out. Providing the number of bytes expected is highly recommended
@@ -190,7 +190,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         ...
 //|
 
-//|     def readinto(self, buf: Any) -> Any:
+//|     def readinto(self, buf: bytes) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``
@@ -200,7 +200,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         ...
 //|
 
-//|     def readline(self, ) -> Any:
+//|     def readline(self, ) -> Optional[int]:
 //|         """Read a line, ending in a newline character.
 //|
 //|         :return: the line read
@@ -208,7 +208,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         ...
 //|
 
-//|     def write(self, buf: Any) -> Any:
+//|     def write(self, buf: bytearray) -> Optional[int]:
 //|         """Write the buffer of bytes to the bus.
 //|
 //|       *New in CircuitPython 4.0:* ``buf`` must be bytes, not a string.
@@ -261,7 +261,7 @@ STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t
     return ret;
 }
 
-//|     baudrate: Any = ...
+//|     baudrate: int = ...
 //|     """The current baudrate."""
 //|
 STATIC mp_obj_t busio_uart_obj_get_baudrate(mp_obj_t self_in) {
@@ -287,7 +287,7 @@ const mp_obj_property_t busio_uart_baudrate_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     in_waiting: Any = ...
+//|     in_waiting: int = ...
 //|     """The number of bytes in the input buffer, available to be read"""
 //|
 STATIC mp_obj_t busio_uart_obj_get_in_waiting(mp_obj_t self_in) {
@@ -304,7 +304,7 @@ const mp_obj_property_t busio_uart_in_waiting_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     timeout: Any = ...
+//|     timeout: float = ...
 //|     """The current timeout, in seconds (float)."""
 //|
 STATIC mp_obj_t busio_uart_obj_get_timeout(mp_obj_t self_in) {
@@ -332,8 +332,9 @@ const mp_obj_property_t busio_uart_timeout_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def reset_input_buffer(self, ) -> Any: ...
-//|     """Discard any unread characters in the input buffer."""
+//|     def reset_input_buffer(self, ) -> None:
+//|         """Discard any unread characters in the input buffer."""
+//|         ...
 //|
 STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -346,10 +347,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_o
 //| class Parity:
 //|     """Enum-like class to define the parity used to verify correct data transfer."""
 //|
-//|     ODD: Any = ...
+//|     ODD: int = ...
 //|     """Total number of ones should be odd."""
 //|
-//|     EVEN: Any = ...
+//|     EVEN: int = ...
 //|     """Total number of ones should be even."""
 //|
 const mp_obj_type_t busio_uart_parity_type;

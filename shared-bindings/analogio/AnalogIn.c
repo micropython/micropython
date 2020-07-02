@@ -86,7 +86,7 @@ STATIC void check_for_deinit(analogio_analogin_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|     def __enter__(self, ) -> None:
+//|     def __enter__(self, ) -> AnalogIn:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|

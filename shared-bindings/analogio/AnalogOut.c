@@ -79,7 +79,7 @@ STATIC mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogout_deinit);
 
-//|     def __enter__(self, ) -> None:
+//|     def __enter__(self, ) -> AnalogOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
