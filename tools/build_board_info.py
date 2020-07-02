@@ -9,6 +9,9 @@ import base64
 from datetime import date
 from sh.contrib import git
 
+sys.path.append("../docs")
+import shared_bindings_matrix
+
 sys.path.append("adabot")
 import adabot.github_requests as github
 
@@ -246,6 +249,10 @@ def generate_download_info():
 
     languages = get_languages()
 
+    support_matrix = shared_bindings_matrix.support_matrix_by_board(
+        use_branded_name=False
+    )
+
     new_stable = "-" not in new_tag
 
     previous_releases = set()
@@ -283,6 +290,7 @@ def generate_download_info():
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
+                        "modules": support_matrix.get(alias, "[]"),
                         "files": {}
                     }
                     for language in languages:
