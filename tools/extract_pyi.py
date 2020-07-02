@@ -1,3 +1,7 @@
+# Run with 'python tools/extract_pyi.py shared-bindings/ path/to/stub/dir
+# You can also test a specific library in shared-bindings by putting the path
+# to that directory instead
+
 import os
 import sys
 import astroid
@@ -58,8 +62,10 @@ def convert_folder(top_level, stub_directory):
                 print(i.__dict__['name'])
                 for j in i.body:
                     if isinstance(j, astroid.scoped_nodes.FunctionDef):
-                        if None in j.args.__dict__['annotations']:
-                            print(f"Missing parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}\n")
+                        for i in j.args.__dict__['annotations']:
+                            if type(i) == astroid.node_classes.Name:
+                                if i.name == 'Any':
+                                    print(f"Missing parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}\n")
                         if j.returns:
                             if 'Any' in j.returns.__dict__.values():
                                 print(f"Missing return type: {j.__dict__['name']} on line {j.__dict__['lineno']}")
