@@ -62,10 +62,14 @@ def convert_folder(top_level, stub_directory):
                 print(i.__dict__['name'])
                 for j in i.body:
                     if isinstance(j, astroid.scoped_nodes.FunctionDef):
-                        for i in j.args.__dict__['annotations']:
-                            if type(i) == astroid.node_classes.Name:
-                                if i.name == 'Any':
+                        for k, l in zip(j.args.__dict__['annotations'], j.args.__dict__['args']):
+                            # K is type, l is name
+                            if l.name != 'self':
+                                if not k:
                                     print(f"Missing parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}\n")
+                                elif str(type(k)) == "<class 'astroid.node_classes.Name'>":
+                                   if k.name == 'Any':
+                                      print(f"'Any' parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}\n")
                         if j.returns:
                             if 'Any' in j.returns.__dict__.values():
                                 print(f"Missing return type: {j.__dict__['name']} on line {j.__dict__['lineno']}")
