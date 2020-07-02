@@ -59,6 +59,7 @@ def convert_folder(top_level, stub_directory):
         tree = astroid.parse(stub_contents)
         for i in tree.body:
             if 'name' in i.__dict__:
+                print()
                 print(i.__dict__['name'])
                 for j in i.body:
                     if isinstance(j, astroid.scoped_nodes.FunctionDef):
@@ -66,10 +67,10 @@ def convert_folder(top_level, stub_directory):
                             # K is type, l is name
                             if l.name != 'self':
                                 if not k:
-                                    print(f"Missing parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}\n")
+                                    print(f"Missing parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}")
                                 elif str(type(k)) == "<class 'astroid.node_classes.Name'>":
                                    if k.name == 'Any':
-                                      print(f"'Any' parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}\n")
+                                      print(f"'Any' parameter type: {j.__dict__['name']} on line {j.__dict__['lineno']}")
                         if j.returns:
                             if 'Any' in j.returns.__dict__.values():
                                 print(f"Missing return type: {j.__dict__['name']} on line {j.__dict__['lineno']}")
