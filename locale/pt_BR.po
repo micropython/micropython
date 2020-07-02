@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-01 10:33-0500\n"
-"PO-Revision-Date: 2020-07-02 02:02+0000\n"
+"POT-Creation-Date: 2020-07-02 15:29+0200\n"
+"PO-Revision-Date: 2020-07-02 13:32+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -441,7 +441,8 @@ msgstr "O buffer é muito pequeno"
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "O tamanho do buffer %d é muito grande. Deve ser menor que %d"
 
-#: ports/atmel-samd/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
 msgstr "O comprimento do Buffer deve ser um múltiplo de 512"
 
@@ -611,6 +612,10 @@ msgstr "Código bruto corrompido"
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
 msgstr "Não foi possível inicializar o GNSS"
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -1009,7 +1014,8 @@ msgstr "Pino inválido para canal direito"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -3405,7 +3411,7 @@ msgstr "tipo da saída incorreta"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
-msgstr "a valor x está fora dos limites"
+msgstr "o valor x está fora dos limites"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"

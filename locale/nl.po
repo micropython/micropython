@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-01 10:33-0500\n"
-"PO-Revision-Date: 2020-06-02 19:50+0000\n"
+"POT-Creation-Date: 2020-07-02 15:29+0200\n"
+"PO-Revision-Date: 2020-07-02 20:42+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: main.c
 msgid ""
@@ -68,7 +68,7 @@ msgstr "%d adres pins en %d RGB pins geven een hoogte van %d aan, niet %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q fout: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -99,7 +99,7 @@ msgstr "%q moet een tuple van lengte 2 zijn"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q pin invalid"
-msgstr ""
+msgstr "%q pin onjuist"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -435,9 +435,10 @@ msgstr "Buffer is te klein"
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "Buffer lengte %d te groot. Het moet kleiner zijn dan %d"
 
-#: ports/atmel-samd/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr ""
+msgstr "Buffer lengte moet een veelvoud van 512 zijn"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -603,7 +604,11 @@ msgstr "Corrupt raw code"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
-msgstr ""
+msgstr "Kan GNSS niet initialiseren"
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
+msgstr "Kan SDCard niet initialiseren"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -893,7 +898,7 @@ msgstr "Interne fout #%d"
 
 #: shared-bindings/sdioio/SDCard.c
 msgid "Invalid %q"
-msgstr ""
+msgstr "Ongeldige %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1002,7 +1007,8 @@ msgstr "Ongeldige pin voor rechter kanaal"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -1411,7 +1417,7 @@ msgstr "Draaiende in veilige modus! Opgeslagen code wordt niet uitgevoerd.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
-msgstr ""
+msgstr "SD kaart CSD formaat niet ondersteund"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
@@ -1483,7 +1489,7 @@ msgstr "Geef op zijn minst 1 UART pin op"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
-msgstr ""
+msgstr "Systeem invoer moet gnss.SatelliteSystem zijn"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
@@ -2056,7 +2062,7 @@ msgstr "kan geen niet-'None' waarde naar een net gestartte generator sturen"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "can't set 512 block size"
-msgstr ""
+msgstr "kan geen 512 blokgrootte instellen"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -2187,7 +2193,7 @@ msgstr "kon de Vandermonde matrix niet omkeren"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "couldn't determine SD card version"
-msgstr ""
+msgstr "kon SD kaart versie niet bepalen"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
@@ -2754,7 +2760,7 @@ msgstr "negatieve verschuivingstelling (shift count)"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
-msgstr ""
+msgstr "geen SD kaart"
 
 #: py/vm.c
 msgid "no active exception to reraise"
@@ -2779,7 +2785,7 @@ msgstr "geen reset pin beschikbaar"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
-msgstr ""
+msgstr "geen antwoord van SD kaart"
 
 #: py/runtime.c
 msgid "no such attribute"
@@ -3075,7 +3081,7 @@ msgstr "de slaapduur mag niet negatief zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "slice step can't be zero"
-msgstr ""
+msgstr "segmentstap mag niet nul zijn"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
@@ -3095,15 +3101,15 @@ msgstr "sorteerargument moet een ndarray zijn"
 
 #: extmod/ulab/code/filter.c
 msgid "sos array must be of shape (n_section, 6)"
-msgstr ""
+msgstr "sos array moet vorm (n_section, 6) hebben"
 
 #: extmod/ulab/code/filter.c
 msgid "sos[:, 3] should be all ones"
-msgstr ""
+msgstr "sos[:, 3] moeten allemaal 1 zijn"
 
 #: extmod/ulab/code/filter.c
 msgid "sosfilt requires iterable arguments"
-msgstr ""
+msgstr "sosfilt vereist itereerbare argumenten"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3192,11 +3198,11 @@ msgstr "timeout moet groter dan 0.0 zijn"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
-msgstr ""
+msgstr "timeout bij wachten op v1 kaart"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v2 card"
-msgstr ""
+msgstr "timeout bij wachten op v2 kaart"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -3397,15 +3403,15 @@ msgstr "nul-stap"
 
 #: extmod/ulab/code/filter.c
 msgid "zi must be an ndarray"
-msgstr ""
+msgstr "zi moet een ndarray zijn"
 
 #: extmod/ulab/code/filter.c
 msgid "zi must be of float type"
-msgstr ""
+msgstr "zi moet van type float zijn"
 
 #: extmod/ulab/code/filter.c
 msgid "zi must be of shape (n_section, 2)"
-msgstr ""
+msgstr "zi moet vorm (n_section, 2) hebben"
 
 #~ msgid "I2C operation not supported"
 #~ msgstr "I2C actie niet ondersteund"

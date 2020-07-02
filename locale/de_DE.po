@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-01 10:33-0500\n"
+"POT-Creation-Date: 2020-07-02 15:29+0200\n"
 "PO-Revision-Date: 2020-06-16 18:24+0000\n"
 "Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language: de_DE\n"
@@ -436,7 +436,8 @@ msgstr "Der Puffer ist zu klein"
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein"
 
-#: ports/atmel-samd/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
 msgstr ""
 
@@ -605,6 +606,10 @@ msgstr "Beschädigter raw code"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
+msgstr ""
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
@@ -1007,7 +1012,8 @@ msgstr "Ungültiger Pin für rechten Kanal"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
