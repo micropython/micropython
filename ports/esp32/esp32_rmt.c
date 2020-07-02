@@ -54,6 +54,8 @@ typedef struct _esp32_rmt_obj_t {
     uint8_t clock_div;
     uint16_t carrier_duty_percent;
     uint32_t carrier_freq;
+    uint8_t carrier_level;
+    uint8_t idle_level;
     mp_uint_t num_items;
     rmt_item32_t *items;
 } esp32_rmt_obj_t;
@@ -65,6 +67,8 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_clock_div,                   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} }, // 100ns resolution
         { MP_QSTR_carrier_duty_percent,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 50} },
         { MP_QSTR_carrier_freq,                MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_carrier_level,               MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_idle_level,                  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -75,12 +79,16 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     bool carrier_en = false;
     mp_uint_t carrier_duty_percent = 0;
     mp_uint_t carrier_freq = 0;
+    mp_uint_t carrier_level = 1;
 
     if (args[4].u_int > 0) {
         carrier_en = true;
         carrier_duty_percent = args[3].u_int;
         carrier_freq = args[4].u_int;
+        carrier_level = args[5].u_int;
     }
+
+    mp_uint_t idle_level = args[6].u_int;
 
     if (clock_div < 1 || clock_div > 255) {
         mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
@@ -93,6 +101,8 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     self->clock_div = clock_div;
     self->carrier_duty_percent = carrier_duty_percent;
     self->carrier_freq = carrier_freq;
+    self->carrier_level = carrier_level;
+    self->idle_level = idle_level;
 
     rmt_config_t config;
     config.rmt_mode = RMT_MODE_TX;
@@ -103,10 +113,10 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     config.tx_config.carrier_en = carrier_en;
     config.tx_config.idle_output_en = 1;
-    config.tx_config.idle_level = 0;
+    config.tx_config.idle_level = self->idle_level;
     config.tx_config.carrier_duty_percent = self->carrier_duty_percent;
     config.tx_config.carrier_freq_hz = self->carrier_freq;
-    config.tx_config.carrier_level = 1;
+    config.tx_config.carrier_level = self->carrier_level;
 
     config.clk_div = self->clock_div;
 
@@ -119,11 +129,11 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 STATIC void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->pin != -1) {
-        mp_printf(print, "RMT(channel=%u, pin=%u, source_freq=%u, clock_div=%u",
-            self->channel_id, self->pin, APB_CLK_FREQ, self->clock_div);
+        mp_printf(print, "RMT(channel=%u, pin=%u, source_freq=%u, clock_div=%u, idle_level=%u",
+            self->channel_id, self->pin, APB_CLK_FREQ, self->clock_div, self->idle_level);
         if (self->carrier_freq > 0) {
-            mp_printf(print, ", carrier_freq=%u, carrier_duty_percent=%u)",
-                self->carrier_freq, self->carrier_duty_percent);
+            mp_printf(print, ", carrier_freq=%u, carrier_duty_percent=%u, carrier_level=%u)",
+                self->carrier_freq, self->carrier_duty_percent, self->carrier_level);
         } else {
             mp_printf(print, ")");
         }

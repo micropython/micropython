@@ -156,6 +156,9 @@ used to transmit or receive many other types of digital signals::
     r = esp32.RMT(0, pin=Pin(18), clock_div=8, carrier_freq=38000)
     r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8, carrier_freq=38000, carrier_duty_percent=50)
 
+    # ...or with an active low output
+    r = esp32.RMT(0, pin=Pin(18), carrier_freq=38000, carrier_level=0, idle_level=1)
+
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), start=0)  # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
@@ -186,7 +189,7 @@ For more details see Espressif's `ESP-IDF RMT documentation.
    *beta feature* and the interface may change in the future.
 
 
-.. class:: RMT(channel, \*, pin=None, clock_div=8, carrier_freq=0, carrier_duty_percent=50)
+.. class:: RMT(channel, \*, pin=None, clock_div=8, carrier_freq=0, carrier_duty_percent=50, carrier_level=1, idle_level=0)
 
     This class provides access to one of the eight RMT channels. *channel* is
     required and identifies which RMT channel (0-7) will be configured. *pin*,
@@ -195,7 +198,9 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     channel allowing the resolution to be specified. *carrier_freq* is used to
     enable the carrier feature and specify its frequency, default value is ``0``
     (not enabled).  To enable, specify a positive integer.  *carrier_duty_percent*
-    defaults to 50.
+    defaults to 50. *carrier_level* sets the carrier to be enabled either for
+    logic level 1 (the default) or level 0. *idle_level* sets the output level
+    when the RMT is idle.
 
 .. method:: RMT.source_freq()
 
