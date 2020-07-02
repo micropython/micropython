@@ -97,7 +97,7 @@ STATIC mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4, analogio_analogout___exit__);
 
-//|     value: None = ...
+//|     value: int = ...
 //|     """The value on the analog pin between 0 and 65535 inclusive (16-bit). (write-only)
 //|
 //|     Even if the underlying digital to analog converter (DAC) is lower

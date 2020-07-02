@@ -224,7 +224,7 @@ STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
 MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 
 
-//|     def readinto(self, buf: Union[bytes, bytearray, memoryview]) -> None:
+//|     def readinto(self, buf: Union[bytearray, memoryview]) -> None:
 //|         """Read into the buffer specified by ``buf`` while writing zeroes.
 //|         Requires the SPI being locked.
 //|         If the number of bytes to read is 0, nothing happens."""
@@ -248,7 +248,7 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_spi_readinto);
 
-//|     def write_readinto(self, buffer_out: Union[bytes, bytearray, memoryview], buffer_in: Union[bytes, bytearray, memoryview], *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> None:
+//|     def write_readinto(self, buffer_out: Union[bytes, bytearray, memoryview], buffer_in: Union[bytearray, memoryview], *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> None:
 //|         """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
 //|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
 //|         must be equal.

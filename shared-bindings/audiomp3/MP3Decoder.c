@@ -37,7 +37,7 @@
 //| class MP3:
 //|     """Load a mp3 file for audio playback"""
 //|
-//|     def __init__(self, file: typing.BinaryIO, buffer: Union[bytes, bytearray, memoryview]):
+//|     def __init__(self, file: typing.BinaryIO, buffer: Union[bytearray, memoryview]):
 //|
 //|         """Load a .mp3 file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|

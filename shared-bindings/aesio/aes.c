@@ -152,7 +152,7 @@ STATIC void validate_length(aesio_aes_obj_t *self, size_t src_length,
   }
 }
 
-//|     def encrypt_into(src: Union[bytes, bytearray, memoryview], dest: Union[bytes, bytearray, memoryview]) -> None:
+//|     def encrypt_into(src: Union[bytearray, memoryview], dest: Union[bytearray, memoryview]) -> None:
 //|         """Encrypt the buffer from ``src`` into ``dest``.
 //|
 //|            For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
@@ -183,7 +183,7 @@ STATIC mp_obj_t aesio_aes_encrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(aesio_aes_encrypt_into_obj,
                                  aesio_aes_encrypt_into);
 
-//|     def decrypt_into(src: Union[bytes, bytearray, memoryview], dest: Union[bytes, bytearray, memoryview]) -> None:
+//|     def decrypt_into(src: Union[bytearray, memoryview], dest: Union[bytearray, memoryview]) -> None:
 //|
 //|         """Decrypt the buffer from ``src`` into ``dest``.
 //|            For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the

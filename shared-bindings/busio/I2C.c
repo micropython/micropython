@@ -176,7 +176,7 @@ STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 
-//|     def readfrom_into(self, address: int, buffer: Union[bytes, bytearray, memoryview], *, start: int = 0, end: int = None) -> None:
+//|     def readfrom_into(self, address: int, buffer: Union[bytearray, memoryview], *, start: int = 0, end: int = None) -> None:
 //|          """Read into ``buffer`` from the device selected by ``address``.
 //|          The number of bytes read will be the length of ``buffer``.
 //|          At least one byte must be read.
@@ -287,7 +287,7 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 
-//|     def writeto_then_readfrom(self, address: int, out_buffer: Union[bytes, bytearray, memoryview], in_buffer: Union[bytes, bytearray, memoryview], *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> None:
+//|     def writeto_then_readfrom(self, address: int, out_buffer: Union[bytes, bytearray, memoryview], in_buffer: Union[bytearray, memoryview], *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> None:
 //|          """Write the bytes from ``out_buffer`` to the device selected by ``address``, generate no stop
 //|          bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
 //|          ``in_buffer`` can be the same buffer because they are used sequentially.

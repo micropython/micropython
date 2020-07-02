@@ -228,7 +228,7 @@ STATIC mp_obj_t busio_spi_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 
-//|     def write(self, buffer: bytes, *, start: int = 0, end: int = None) -> None:
+//|     def write(self, buffer: Union[bytes, bytearray, memoryview], *, start: int = 0, end: int = None) -> None:
 //|         """Write the data contained in ``buffer``. The SPI object must be locked.
 //|         If the buffer is empty, nothing happens.
 //|
@@ -314,7 +314,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 2, busio_spi_readinto);
 
-//|     def write_readinto(self, buffer_out: bytearray, buffer_in: bytearray, *, out_start: int = 0, out_end: int = None, in_start: None = 0, in_end: int = None) -> None:
+//|     def write_readinto(self, buffer_out: Union[bytes, bytearray, memoryview], buffer_in: Union[bytes, bytearray, memoryview], *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> None:
 //|         """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
 //|         The SPI object must be locked.
 //|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
