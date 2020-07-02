@@ -110,7 +110,7 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 //|         :rtype: bytes or None"""
 //|         ...
 //|
-//|     def readinto(self, buf: Union[bytearray, memoryview]) -> Optional[int]:
+//|     def readinto(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``

@@ -167,7 +167,7 @@ const mp_obj_property_t bleio_descriptor_characteristic_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     value: Union[bytearray, memoryview] = ...
+//|     value: WriteableBuffer = ...
 //|     """The value of this descriptor."""
 //|
 STATIC mp_obj_t bleio_descriptor_get_value(mp_obj_t self_in) {

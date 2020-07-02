@@ -40,7 +40,7 @@
 //|     be 8 bit unsigned or 16 bit signed. If a buffer is provided, it will be used instead of allocating
 //|     an internal buffer."""
 //|
-//|     def __init__(self, file: typing.BinaryIO, buffer: Union[bytes, bytearray, memoryview]):
+//|     def __init__(self, file: typing.BinaryIO, buffer: ReadableBuffer):
 //|         """Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|         :param typing.BinaryIO file: Already opened wave file

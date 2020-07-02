@@ -190,7 +190,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         ...
 //|
 
-//|     def readinto(self, buf: Union[bytearray, memoryview]) -> Optional[int]:
+//|     def readinto(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``
@@ -208,7 +208,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         ...
 //|
 
-//|     def write(self, buf: Union[bytearray, memoryview]) -> Optional[int]:
+//|     def write(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Write the buffer of bytes to the bus.
 //|
 //|       *New in CircuitPython 4.0:* ``buf`` must be bytes, not a string.

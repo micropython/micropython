@@ -93,7 +93,7 @@ STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
     }
 }
 
-//|     def readinto(self, buf: Union[bytearray, memoryview]) -> int:
+//|     def readinto(self, buf: WriteableBuffer) -> int:
 //|         """Reads a single BLE packet into the ``buf``. Raises an exception if the next packet is longer
 //|         than the given buffer. Use `packet_size` to read the maximum length of a single packet.
 //|

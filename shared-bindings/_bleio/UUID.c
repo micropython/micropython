@@ -186,7 +186,7 @@ const mp_obj_property_t bleio_uuid_size_obj = {
 };
 
 
-//|     def pack_into(self, buffer: Union[bytearray, memoryview], offset: int = 0) -> None:
+//|     def pack_into(self, buffer: WriteableBuffer, offset: int = 0) -> None:
 //|         """Packs the UUID into the given buffer at the given offset."""
 //|         ...
 //|

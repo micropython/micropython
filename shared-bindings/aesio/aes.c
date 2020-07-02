@@ -12,7 +12,7 @@
 //| class AES:
 //|     """Encrypt and decrypt AES streams"""
 //|
-//|     def __init__(self, key: Union[bytes, bytearray, memoryview], mode: int=0, iv: Union[bytes, bytearray, memoryview]=None, segment_size: int=8) -> AES:
+//|     def __init__(self, key: ReadableBuffer, mode: int=0, iv: ReadableBuffer=None, segment_size: int=8) -> AES:
 //|         """Create a new AES state with the given key.
 //|
 //|            :param bytearray key: A 16-, 24-, or 32-byte key
@@ -152,7 +152,7 @@ STATIC void validate_length(aesio_aes_obj_t *self, size_t src_length,
   }
 }
 
-//|     def encrypt_into(src: Union[bytearray, memoryview], dest: Union[bytearray, memoryview]) -> None:
+//|     def encrypt_into(src: WriteableBuffer, dest: WriteableBuffer) -> None:
 //|         """Encrypt the buffer from ``src`` into ``dest``.
 //|
 //|            For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
@@ -183,7 +183,7 @@ STATIC mp_obj_t aesio_aes_encrypt_into(mp_obj_t aesio_obj, mp_obj_t src,
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(aesio_aes_encrypt_into_obj,
                                  aesio_aes_encrypt_into);
 
-//|     def decrypt_into(src: Union[bytearray, memoryview], dest: Union[bytearray, memoryview]) -> None:
+//|     def decrypt_into(src: WriteableBuffer, dest: WriteableBuffer) -> None:
 //|
 //|         """Decrypt the buffer from ``src`` into ``dest``.
 //|            For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the

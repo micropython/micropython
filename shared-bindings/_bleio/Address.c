@@ -38,7 +38,7 @@
 //|     """Encapsulates the address of a BLE device."""
 //|
 
-//|     def __init__(self, address: Union[bytes, bytearray, memoryview], address_type: int):
+//|     def __init__(self, address: ReadableBuffer, address_type: int):
 //|         """Create a new Address object encapsulating the address value.
 //|         The value itself can be one of:
 //|
