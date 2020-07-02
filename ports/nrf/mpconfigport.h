@@ -175,7 +175,7 @@
 #endif
 
 #ifndef MICROPY_PY_TIME_TICKS
-#define MICROPY_PY_TIME_TICKS       (0)
+#define MICROPY_PY_TIME_TICKS       (1)
 #endif
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
