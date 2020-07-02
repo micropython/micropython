@@ -101,7 +101,7 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self, ) -> None:
 //|         """Deinitialises the AudioOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -118,13 +118,13 @@ STATIC void check_for_deinit(audioio_rawsample_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self, ) -> RawSample:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self, ) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -136,7 +136,7 @@ STATIC mp_obj_t audioio_rawsample_obj___exit__(size_t n_args, const mp_obj_t *ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_rawsample___exit___obj, 4, 4, audioio_rawsample_obj___exit__);
 
-//|     sample_rate: Any = ...
+//|     sample_rate: Optional(int) = ...
 //|     """32 bit value that dictates how quickly samples are played in Hertz (cycles per second).
 //|     When the sample is looped, this can change the pitch output without changing the underlying
 //|     sample. This will not change the sample rate of any active playback. Call ``play`` again to
