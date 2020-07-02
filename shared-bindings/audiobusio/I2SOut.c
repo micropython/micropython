@@ -112,7 +112,7 @@ STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self, ) -> None:
 //|         """Deinitialises the I2SOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -128,13 +128,13 @@ STATIC void check_for_deinit(audiobusio_i2sout_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self, ) -> I2SOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self, ) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -147,7 +147,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj___exit__(size_t n_args, const mp_obj_t *ar
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_i2sout___exit___obj, 4, 4, audiobusio_i2sout_obj___exit__);
 
 
-//|     def play(self, sample: Any, *, loop: Any = False) -> Any:
+//|     def play(self, sample: Union[audiocore.WaveFile, audiocore.RawSample, audiomixe.Mixer], *, loop: Any = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|
@@ -174,7 +174,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_play(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiobusio_i2sout_play_obj, 1, audiobusio_i2sout_obj_play);
 
-//|     def stop(self, ) -> Any:
+//|     def stop(self, ) -> None:
 //|         """Stops playback."""
 //|         ...
 //|
@@ -186,7 +186,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_stop(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_stop_obj, audiobusio_i2sout_obj_stop);
 
-//|     playing: Any = ...
+//|     playing: bool = ...
 //|     """True when the audio sample is being output. (read-only)"""
 //|
 STATIC mp_obj_t audiobusio_i2sout_obj_get_playing(mp_obj_t self_in) {
@@ -203,7 +203,7 @@ const mp_obj_property_t audiobusio_i2sout_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def pause(self, ) -> Any:
+//|     def pause(self, ) -> None:
 //|         """Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
 //|         ...
 //|
@@ -219,7 +219,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_pause_obj, audiobusio_i2sout_obj_pause);
 
-//|     def resume(self, ) -> Any:
+//|     def resume(self, ) -> None:
 //|         """Resumes sample playback after :py:func:`pause`."""
 //|         ...
 //|
@@ -235,7 +235,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_resume(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_resume_obj, audiobusio_i2sout_obj_resume);
 
-//|     paused: Any = ...
+//|     paused: bool = ...
 //|     """True when playback is paused. (read-only)"""
 //|
 STATIC mp_obj_t audiobusio_i2sout_obj_get_paused(mp_obj_t self_in) {

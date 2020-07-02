@@ -134,7 +134,7 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self, ) -> None:
 //|         """Deinitialises the PDMIn and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -150,13 +150,13 @@ STATIC void check_for_deinit(audiobusio_pdmin_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self, ) -> PDMIn:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self, ) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context."""
 //|         ...
 //|
@@ -168,7 +168,7 @@ STATIC mp_obj_t audiobusio_pdmin_obj___exit__(size_t n_args, const mp_obj_t *arg
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_pdmin___exit___obj, 4, 4, audiobusio_pdmin_obj___exit__);
 
 
-//|     def record(self, destination: Any, destination_length: Any) -> Any:
+//|     def record(self, destination: bytearray, destination_length: int) -> None:
 //|         """Records destination_length bytes of samples to destination. This is
 //|         blocking.
 //|
@@ -210,7 +210,7 @@ STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destinat
 }
 MP_DEFINE_CONST_FUN_OBJ_3(audiobusio_pdmin_record_obj, audiobusio_pdmin_obj_record);
 
-//|     sample_rate: Any = ...
+//|     sample_rate: int = ...
 //|     """The actual sample_rate of the recording. This may not match the constructed
 //|     sample rate due to internal clock limitations."""
 //|
