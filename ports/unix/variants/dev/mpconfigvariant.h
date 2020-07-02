@@ -24,13 +24,22 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_REPL_EMACS_WORDS_MOVE (1)
-#define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE (1)
-#define MICROPY_ENABLE_SCHEDULER (1)
+#define MICROPY_READER_VFS                      (1)
+#define MICROPY_REPL_EMACS_WORDS_MOVE           (1)
+#define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE     (1)
+#define MICROPY_ENABLE_SCHEDULER                (1)
+#define MICROPY_VFS                             (1)
+#define MICROPY_VFS_POSIX                       (1)
 
-#define MICROPY_PY_SYS_SETTRACE (1)
-#define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
+#define MICROPY_PY_SYS_SETTRACE                 (1)
+#define MICROPY_PY_UOS_VFS                      (1)
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS          (1)
 
 #ifndef MICROPY_PY_UASYNCIO
-#define MICROPY_PY_UASYNCIO (1)
+#define MICROPY_PY_UASYNCIO                     (1)
 #endif
+
+// Use vfs's functions for import stat and builtin open.
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
+#define mp_builtin_open_obj mp_vfs_open_obj
