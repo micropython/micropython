@@ -76,7 +76,7 @@ def convert_folder(top_level, stub_directory):
                     elif isinstance(j, astroid.node_classes.AnnAssign):
                         if 'name' in j.__dict__['annotation'].__dict__:
                             if j.__dict__['annotation'].__dict__['name'] == 'Any':
-                                print(f"missing attribute type on line {j.__dict__['lineno']}")
+                                print(f"missing attribute type: {j.__dict__['target'].name} on line {j.__dict__['lineno']}")
 
         ok += 1
     except astroid.exceptions.AstroidSyntaxError as e:
