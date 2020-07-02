@@ -54,7 +54,7 @@ def main():
             test_one(site, opts)
             print(site, "ok")
         except Exception as e:
-            print(site, repr(e))
+            print(site, e)
 
 
 main()

@@ -14,10 +14,10 @@ def test(addr):
         print("wrap: no exception")
     except OSError as e:
         # mbedtls produces "mbedtls -0x7200: SSL - An invalid SSL record was received"
-        # axtls produces "RECORD_OVERFLOW"
+        # axtls produces "RECORD_OVERFLOW" but also prints "TLS buffer overflow,..."
         # CPython produces "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1108)"
         ok = (
-            "invalid SSL record" in str(e)
+            "SSL_INVALID_RECORD" in str(e)
             or "RECORD_OVERFLOW" in str(e)
             or "wrong version" in str(e)
         )

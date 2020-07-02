@@ -362,6 +362,7 @@ EXTMOD_SRC_C += $(addprefix extmod/,\
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
+	mbedtls_errors/mp_mbedtls_errors.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
@@ -528,11 +529,12 @@ ESPIDF_LWIP_O = $(patsubst %.c,%.o,\
 	$(wildcard $(ESPCOMP)/lwip/port/esp32/*/*.c) \
 	)
 
-ESPIDF_MBEDTLS_O = $(patsubst %.c,%.o,\
+# Mbedtls source files, exclude error.c in favor of lib/mbedtls_errors/mp_mbedtls_errors.c
+ESPIDF_MBEDTLS_O = $(patsubst %.c,%.o, $(filter-out %/error.c,\
 	$(wildcard $(ESPCOMP)/mbedtls/mbedtls/library/*.c) \
 	$(wildcard $(ESPCOMP)/mbedtls/port/*.c) \
 	$(wildcard $(ESPCOMP)/mbedtls/port/esp32/*.c) \
-	)
+	))
 
 ESPIDF_MDNS_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/mdns/*.c))
 

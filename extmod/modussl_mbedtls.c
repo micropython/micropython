@@ -77,17 +77,21 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 #endif
 
 STATIC NORETURN void mbedtls_raise_error(int err) {
-    #if defined(MBEDTLS_ERROR_C)
-    // Including mbedtls_strerror takes about 16KB on the esp32 due to all the strings.
-    // MBEDTLS_ERROR_C is the define used by mbedtls to conditionally include mbedtls_strerror.
-    // It is set/unset in the MBEDTLS_CONFIG_FILE which is defined in the Makefile.
-    // "small" negative integer error codes come from underlying stream/sockets, not mbedtls
+    // _mbedtls_ssl_send and _mbedtls_ssl_recv (below) turn positive error codes from the
+    // underlying socket into negative codes to pass them through mbedtls. Here we turn them
+    // positive again so they get interpreted as the OSError they really are. The
+    // cut-off of -256 is a bit hacky, sigh.
     if (err < 0 && err > -256) {
         mp_raise_OSError(-err);
     }
 
+    #if defined(MBEDTLS_ERROR_C)
+    // Including mbedtls_strerror takes about 1.5KB due to the error strings.
+    // MBEDTLS_ERROR_C is the define used by mbedtls to conditionally include mbedtls_strerror.
+    // It is set/unset in the MBEDTLS_CONFIG_FILE which is defined in the Makefile.
+
     // Try to allocate memory for the message
-    #define ERR_STR_MAX 100  // mbedtls_strerror truncates if it doesn't fit
+    #define ERR_STR_MAX 80  // mbedtls_strerror truncates if it doesn't fit
     mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
     byte *o_str_buf = m_new_maybe(byte, ERR_STR_MAX);
     if (o_str == NULL || o_str_buf == NULL) {
@@ -96,7 +100,7 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
 
     // print the error message into the allocated buffer
     mbedtls_strerror(err, (char *)o_str_buf, ERR_STR_MAX);
-    size_t len = strnlen((char *)o_str_buf, ERR_STR_MAX);
+    size_t len = strlen((char *)o_str_buf);
 
     // Put the exception object together
     o_str->base.type = &mp_type_str;
@@ -108,7 +112,7 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
     nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
     #else
     // mbedtls is compiled without error strings so we simply return the err number
-    mp_raise_OSError(err); // typ. err is negative
+    mp_raise_OSError(err); // err is typically a large negative number
     #endif
 }
 
