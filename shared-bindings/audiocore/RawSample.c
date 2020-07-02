@@ -101,7 +101,7 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the AudioOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -118,13 +118,13 @@ STATIC void check_for_deinit(audioio_rawsample_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> RawSample:
+//|     def __enter__(self) -> RawSample:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

@@ -80,7 +80,7 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Deinitializes the IncrementalEncoder and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -97,13 +97,13 @@ STATIC void check_for_deinit(rotaryio_incrementalencoder_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Any:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> Any:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

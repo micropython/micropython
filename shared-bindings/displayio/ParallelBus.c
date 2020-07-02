@@ -86,7 +86,7 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
     return self;
 }
 
-//|     def reset(self, ) -> Any:
+//|     def reset(self) -> Any:
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...

@@ -90,7 +90,7 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     return (mp_obj_t)self;
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Turn off the SPI bus."""
 //|         ...
 //|
@@ -107,13 +107,13 @@ STATIC void check_for_deinit(bitbangio_spi_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> SPI:
+//|     def __enter__(self) -> SPI:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -174,7 +174,7 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_configure_obj, 1, bitbangio_spi_configure);
 
-//|     def try_lock(self, ) -> bool:
+//|     def try_lock(self) -> bool:
 //|         """Attempts to grab the SPI lock. Returns True on success.
 //|
 //|         :return: True when lock has been grabbed
@@ -188,7 +188,7 @@ STATIC mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_try_lock_obj, bitbangio_spi_obj_try_lock);
 
-//|     def unlock(self, ) -> None:
+//|     def unlock(self) -> None:
 //|         """Releases the SPI lock."""
 //|         ...
 //|

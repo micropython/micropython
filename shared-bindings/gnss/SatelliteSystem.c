@@ -29,7 +29,7 @@
 //| class SatelliteSystem:
 //|     """Satellite system type"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """Enum-like class to define the satellite system type."""
 //|
 //|     GPS: Any = ...

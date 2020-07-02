@@ -83,7 +83,7 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, con
     return (mp_obj_t)self;
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Releases control of the underlying hardware so other classes can use it."""
 //|         ...
 //|
@@ -100,13 +100,13 @@ STATIC void check_for_deinit(busio_i2c_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> I2C:
+//|     def __enter__(self) -> I2C:
 //|         """No-op used in Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware on context exit. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -125,7 +125,7 @@ static void check_lock(busio_i2c_obj_t *self) {
     }
 }
 
-//|     def scan(self, ) -> list:
+//|     def scan(self) -> list:
 //|
 //|          """Scan all I2C addresses between 0x08 and 0x77 inclusive and return a
 //|          list of those that respond.
@@ -150,7 +150,7 @@ STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_scan_obj, busio_i2c_scan);
 
-//|     def try_lock(self, ) -> bool:
+//|     def try_lock(self) -> bool:
 //|         """Attempts to grab the I2C lock. Returns True on success.
 //|
 //|         :return: True when lock has been grabbed
@@ -164,7 +164,7 @@ STATIC mp_obj_t busio_i2c_obj_try_lock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_try_lock_obj, busio_i2c_obj_try_lock);
 
-//|     def unlock(self, ) -> None:
+//|     def unlock(self) -> None:
 //|         """Releases the I2C lock."""
 //|         ...
 //|

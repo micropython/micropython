@@ -81,7 +81,7 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Deinitialises the PulseOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -92,13 +92,13 @@ STATIC mp_obj_t pulseio_pulseout_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulseout_deinit_obj, pulseio_pulseout_deinit);
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Any:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> Any:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

@@ -66,7 +66,7 @@ STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Turn off the AnalogOut and release the pin for other use."""
 //|         ...
 //|
@@ -79,13 +79,13 @@ STATIC mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogout_deinit);
 
-//|     def __enter__(self, ) -> AnalogOut:
+//|     def __enter__(self) -> AnalogOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

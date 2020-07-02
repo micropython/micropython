@@ -39,7 +39,7 @@
 //| class BuiltinFont:
 //|     """A font built into CircuitPython"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """Creation not supported. Available fonts are defined when CircuitPython is built. See the
 //|         `Adafruit_CircuitPython_Bitmap_Font <https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font>`_
 //|         library for dynamically loaded fonts."""
@@ -64,7 +64,7 @@ const mp_obj_property_t fontio_builtinfont_bitmap_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def get_bounding_box(self, ) -> Any:
+//|     def get_bounding_box(self) -> Any:
 //|         """Returns the maximum bounds of all glyphs in the font in a tuple of two values: width, height."""
 //|         ...
 //|

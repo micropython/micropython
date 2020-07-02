@@ -94,7 +94,7 @@ STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Deinitialises the FrequencyIn and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -111,13 +111,13 @@ STATIC void check_for_deinit(frequencyio_frequencyin_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Any:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> Any:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -129,7 +129,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj___exit__(size_t n_args, const mp_obj
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(frequencyio_frequencyin___exit___obj, 4, 4, frequencyio_frequencyin_obj___exit__);
 
-//|     def pause(self, ) -> Any:
+//|     def pause(self) -> Any:
 //|         """Pause frequency capture."""
 //|         ...
 //|
@@ -142,7 +142,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_pause_obj, frequencyio_frequencyin_obj_pause);
 
-//|     def resume(self, ) -> Any:
+//|     def resume(self) -> Any:
 //|         """Resumes frequency capture."""
 //|         ...
 //|
@@ -155,7 +155,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_resume(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_resume_obj, frequencyio_frequencyin_obj_resume);
 
-//|     def clear(self, ) -> Any:
+//|     def clear(self) -> Any:
 //|         """Clears the last detected frequency capture value."""
 //|         ...
 //|

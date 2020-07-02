@@ -96,7 +96,7 @@ STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Deinitialises the PulseIn and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -113,13 +113,13 @@ STATIC void check_for_deinit(pulseio_pulsein_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Any:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> Any:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -131,7 +131,7 @@ STATIC mp_obj_t pulseio_pulsein_obj___exit__(size_t n_args, const mp_obj_t *args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulsein___exit___obj, 4, 4, pulseio_pulsein_obj___exit__);
 
-//|     def pause(self, ) -> Any:
+//|     def pause(self) -> Any:
 //|         """Pause pulse capture"""
 //|         ...
 //|
@@ -171,7 +171,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_resume(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pulseio_pulsein_resume_obj, 1, pulseio_pulsein_obj_resume);
 
-//|     def clear(self, ) -> Any:
+//|     def clear(self) -> Any:
 //|         """Clears all captured pulses"""
 //|         ...
 //|
@@ -184,7 +184,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_clear(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_clear_obj, pulseio_pulsein_obj_clear);
 
-//|     def popleft(self, ) -> Any:
+//|     def popleft(self) -> Any:
 //|         """Removes and returns the oldest read pulse."""
 //|         ...
 //|
@@ -234,7 +234,7 @@ const mp_obj_property_t pulseio_pulsein_paused_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __len__(self, ) -> Any:
+//|     def __len__(self) -> Any:
 //|         """Returns the current pulse length
 //|
 //|         This allows you to::

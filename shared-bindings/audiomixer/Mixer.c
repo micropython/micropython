@@ -121,7 +121,7 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the Mixer and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -138,13 +138,13 @@ STATIC void check_for_deinit(audiomixer_mixer_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Mixer:
+//|     def __enter__(self) -> Mixer:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

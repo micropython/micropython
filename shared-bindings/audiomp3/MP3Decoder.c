@@ -89,7 +89,7 @@ STATIC mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the MP3 and releases all memory resources for reuse."""
 //|         ...
 //|
@@ -106,13 +106,13 @@ STATIC void check_for_deinit(audiomp3_mp3file_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> MP3:
+//|     def __enter__(self) -> MP3:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

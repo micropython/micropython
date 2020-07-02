@@ -42,7 +42,7 @@
 //|
 //|     Used to access and control samples with `audiomixer.Mixer`."""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """MixerVoice instance object(s) created by `audiomixer.Mixer`."""
 //|         ...
 //|
@@ -81,7 +81,7 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *po
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_play_obj, 1, audiomixer_mixervoice_obj_play);
 
-//|     def stop(self, ) -> None:
+//|     def stop(self) -> None:
 //|         """Stops playback of the sample on this voice."""
 //|         ...
 //|

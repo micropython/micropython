@@ -53,7 +53,7 @@
 //|                 print("Longitude: {0:.6f} degrees".format(nav.longitude))"""
 //|
 
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """Turn on the GNSS.
 //|
 //|         :param gnss.SatelliteSystem system: satellite system to use"""
@@ -90,7 +90,7 @@ STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, const mp
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Turn off the GNSS."""
 //|         ...
 //|
@@ -107,7 +107,7 @@ STATIC void check_for_deinit(gnss_obj_t *self) {
     }
 }
 
-//|     def update(self, ) -> Any:
+//|     def update(self) -> Any:
 //|         """Update GNSS positioning information."""
 //|         ...
 //|

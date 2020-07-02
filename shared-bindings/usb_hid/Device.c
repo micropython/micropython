@@ -39,7 +39,7 @@
 //|        mouse.send_report()"""
 //|
 
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """Not currently dynamically supported."""
 //|         ...
 //|

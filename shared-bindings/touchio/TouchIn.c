@@ -73,7 +73,7 @@ STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
     return (mp_obj_t) self;
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Deinitialises the TouchIn and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -90,13 +90,13 @@ STATIC void check_for_deinit(touchio_touchin_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Any:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> Any:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

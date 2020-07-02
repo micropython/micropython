@@ -142,7 +142,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     return (mp_obj_t)self;
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the UART and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -159,13 +159,13 @@ STATIC void check_for_deinit(busio_uart_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> UART:
+//|     def __enter__(self) -> UART:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -200,7 +200,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         ...
 //|
 
-//|     def readline(self, ) -> bytes:
+//|     def readline(self) -> bytes:
 //|         """Read a line, ending in a newline character.
 //|
 //|         :return: the line read
@@ -332,7 +332,7 @@ const mp_obj_property_t busio_uart_timeout_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def reset_input_buffer(self, ) -> None:
+//|     def reset_input_buffer(self) -> None:
 //|         """Discard any unread characters in the input buffer."""
 //|         ...
 //|

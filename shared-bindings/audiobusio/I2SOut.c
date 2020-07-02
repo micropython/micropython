@@ -112,7 +112,7 @@ STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the I2SOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -128,13 +128,13 @@ STATIC void check_for_deinit(audiobusio_i2sout_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|     def __enter__(self, ) -> I2SOut:
+//|     def __enter__(self) -> I2SOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -174,7 +174,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_play(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiobusio_i2sout_play_obj, 1, audiobusio_i2sout_obj_play);
 
-//|     def stop(self, ) -> None:
+//|     def stop(self) -> None:
 //|         """Stops playback."""
 //|         ...
 //|
@@ -203,7 +203,7 @@ const mp_obj_property_t audiobusio_i2sout_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def pause(self, ) -> None:
+//|     def pause(self) -> None:
 //|         """Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
 //|         ...
 //|
@@ -219,7 +219,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_pause_obj, audiobusio_i2sout_obj_pause);
 
-//|     def resume(self, ) -> None:
+//|     def resume(self) -> None:
 //|         """Resumes sample playback after :py:func:`pause`."""
 //|         ...
 //|

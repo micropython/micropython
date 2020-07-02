@@ -134,7 +134,7 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the PDMIn and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -150,13 +150,13 @@ STATIC void check_for_deinit(audiobusio_pdmin_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|     def __enter__(self, ) -> PDMIn:
+//|     def __enter__(self) -> PDMIn:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context."""
 //|         ...
 //|

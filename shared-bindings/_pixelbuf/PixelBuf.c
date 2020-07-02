@@ -245,7 +245,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|     def show(self, ) -> Any:
+//|     def show(self) -> Any:
 //|         """Transmits the color data to the pixels so that they are shown. This is done automatically
 //|         when `auto_write` is True."""
 //|         ...

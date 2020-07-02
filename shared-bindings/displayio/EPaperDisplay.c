@@ -190,7 +190,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t grou
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_show_obj, displayio_epaperdisplay_obj_show);
 
-//|     def refresh(self, ) -> Any:
+//|     def refresh(self) -> Any:
 //|         """Refreshes the display immediately or raises an exception if too soon. Use
 //|         ``time.sleep(display.time_to_refresh)`` to sleep until a refresh can occur."""
 //|         ...

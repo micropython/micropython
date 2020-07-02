@@ -29,7 +29,7 @@
 //| class WatchDogMode:
 //|     """run state of the watchdog timer"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """Enum-like class to define the run mode of the watchdog timer."""
 //|
 //|     RAISE: Any = ...

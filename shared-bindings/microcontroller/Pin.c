@@ -36,7 +36,7 @@
 //| class Pin:
 //|     """Identifies an IO pin on the microcontroller."""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """Identifies an IO pin on the microcontroller. They are fixed by the
 //|         hardware so they cannot be constructed on demand. Instead, use
 //|         `board` or `microcontroller.pin` to reference the desired pin."""

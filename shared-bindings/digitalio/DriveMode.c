@@ -29,7 +29,7 @@
 //| class DriveMode:
 //|     """Defines the drive mode of a digital pin"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """Enum-like class to define the drive mode used when outputting
 //|         digital values."""
 //|         ...

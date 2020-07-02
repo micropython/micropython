@@ -237,7 +237,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Free the resources (pins, timers, etc.) associated with this
 //|         rgbmatrix instance.  After deinitialization, no further operations
 //|         may be performed."""

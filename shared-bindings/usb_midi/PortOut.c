@@ -38,7 +38,7 @@
 //| class PortOut:
 //|     """Sends midi messages to a computer over USB"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """You cannot create an instance of `usb_midi.PortOut`.
 //|
 //|         PortOut objects are constructed for every corresponding entry in the USB

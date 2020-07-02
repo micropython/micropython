@@ -91,7 +91,7 @@ STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the WaveFile and releases all memory resources for reuse."""
 //|         ...
 STATIC mp_obj_t audioio_wavefile_deinit(mp_obj_t self_in) {
@@ -107,13 +107,13 @@ STATIC void check_for_deinit(audioio_wavefile_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> WaveFile:
+//|     def __enter__(self) -> WaveFile:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

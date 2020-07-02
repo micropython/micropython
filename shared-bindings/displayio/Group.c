@@ -264,7 +264,7 @@ STATIC mp_obj_t displayio_group_obj_remove(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_remove_obj, displayio_group_obj_remove);
 
-//|     def __len__(self, ) -> Any:
+//|     def __len__(self) -> Any:
 //|         """Returns the number of layers in a Group"""
 //|         ...
 //|

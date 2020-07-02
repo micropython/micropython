@@ -255,13 +255,13 @@ STATIC mp_obj_t sdioio_sdcard_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_deinit_obj, sdioio_sdcard_obj_deinit);
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Any:
 //|         """No-op used by Context Managers.
 //|         Provided by context manager helper."""
 //|         ...
 //|
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> Any:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

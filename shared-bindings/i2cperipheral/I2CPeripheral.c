@@ -102,7 +102,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_make_new(const mp_obj_type_t *type,
     return (mp_obj_t)self;
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Releases control of the underlying hardware so other classes can use it."""
 //|         ...
 //|
@@ -114,13 +114,13 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(i2cperipheral_i2c_peripheral_deinit_obj, i2cperipheral_i2c_peripheral_obj_deinit);
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Any:
 //|         """No-op used in Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> Any:
 //|         """Automatically deinitializes the hardware on context exit. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -241,13 +241,13 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_make_new(const mp_obj_type_
     return mp_obj_new_i2cperipheral_i2c_peripheral_request(args[0], mp_obj_get_int(args[1]), mp_obj_is_true(args[2]), mp_obj_is_true(args[3]));
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Any:
 //|         """No-op used in Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> Any:
 //|         """Close the request."""
 //|         ...
 //|

@@ -145,7 +145,7 @@ STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
 
-//|     def accept(self, ) -> Any:
+//|     def accept(self) -> Any:
 //|         """Accept a connection on a listening socket of type SOCK_STREAM,
 //|         creating a new socket of type SOCK_STREAM.
 //|         Returns a tuple of (new_socket, remote_address)"""

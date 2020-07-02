@@ -29,7 +29,7 @@
 //| class Pull:
 //|     """Defines the pull of a digital input pin"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """Enum-like class to define the pull value, if any, used while reading
 //|         digital values in."""
 //|         ...

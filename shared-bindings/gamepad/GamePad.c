@@ -114,7 +114,7 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(gamepad_singleton);
 }
 
-//|     def get_pressed(self, ) -> Any:
+//|     def get_pressed(self) -> Any:
 //|         """Get the status of buttons pressed since the last call and clear it.
 //|
 //|         Returns an 8-bit number, with bits that correspond to buttons,
@@ -133,7 +133,7 @@ STATIC mp_obj_t gamepad_get_pressed(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(gamepad_get_pressed_obj, gamepad_get_pressed);
 
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> Any:
 //|         """Disable button scanning."""
 //|         ...
 //|

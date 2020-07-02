@@ -96,7 +96,7 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     return self;
 }
 
-//|     def reset(self, ) -> Any:
+//|     def reset(self) -> Any:
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...

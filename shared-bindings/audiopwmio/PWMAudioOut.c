@@ -114,7 +114,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> None:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the PWMAudioOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -130,13 +130,13 @@ STATIC void check_for_deinit(audiopwmio_pwmaudioout_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|     def __enter__(self, ) -> PWMAudioOut:
+//|     def __enter__(self) -> PWMAudioOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -177,7 +177,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_obj_play(size_t n_args, const mp_obj_t *p
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiopwmio_pwmaudioout_play_obj, 1, audiopwmio_pwmaudioout_obj_play);
 
-//|     def stop(self, ) -> None:
+//|     def stop(self) -> None:
 //|         """Stops playback and resets to the start of the sample."""
 //|         ...
 //|
@@ -206,7 +206,7 @@ const mp_obj_property_t audiopwmio_pwmaudioout_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def pause(self, ) -> None:
+//|     def pause(self) -> None:
 //|         """Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
 //|         ...
 //|
@@ -222,7 +222,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_pause_obj, audiopwmio_pwmaudioout_obj_pause);
 
-//|     def resume(self, ) -> None:
+//|     def resume(self) -> None:
 //|         """Resumes sample playback after :py:func:`pause`."""
 //|         ...
 //|
