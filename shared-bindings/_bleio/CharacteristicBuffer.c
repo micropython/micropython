@@ -100,7 +100,7 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|     def read(self, nbytes: Any = None) -> Any:
+//|     def read(self, nbytes: int = None) -> Optional[bytes]:
 //|         """Read characters.  If ``nbytes`` is specified then read at most that many
 //|         bytes. Otherwise, read everything that arrives until the connection
 //|         times out. Providing the number of bytes expected is highly recommended
@@ -110,14 +110,14 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 //|         :rtype: bytes or None"""
 //|         ...
 //|
-//|     def readinto(self, buf: Any) -> Any:
+//|     def readinto(self, buf: Union[bytearray, memoryview]) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: int or None (on a non-blocking error)"""
 //|         ...
 //|
-//|     def readline(self, ) -> Any:
+//|     def readline(self) -> bytes:
 //|         """Read a line, ending in a newline character.
 //|
 //|         :return: the line read
@@ -167,7 +167,7 @@ STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t r
     return ret;
 }
 
-//|     in_waiting: Any = ...
+//|     in_waiting: int = ...
 //|     """The number of bytes in the input buffer, available to be read"""
 //|
 STATIC mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in) {
@@ -184,7 +184,7 @@ const mp_obj_property_t bleio_characteristic_buffer_in_waiting_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def reset_input_buffer(self, ) -> Any:
+//|     def reset_input_buffer(self) -> None:
 //|         """Discard any unread characters in the input buffer."""
 //|         ...
 //|
@@ -196,7 +196,7 @@ STATIC mp_obj_t bleio_characteristic_buffer_obj_reset_input_buffer(mp_obj_t self
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_reset_input_buffer_obj, bleio_characteristic_buffer_obj_reset_input_buffer);
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Disable permanently."""
 //|         ...
 //|

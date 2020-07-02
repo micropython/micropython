@@ -60,7 +60,7 @@
 
 
 //| class BluetoothError:
-//|     def __init__(self, Exception: Any):
+//|     def __init__(self, Exception: Exception):
 //|         """Catch all exception for Bluetooth related errors."""
 //|         ...
 MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
@@ -73,7 +73,7 @@ NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* fmt, ...)
     nlr_raise(exception);
 }
 //| class ConnectionError:
-//|     def __init__(self, BluetoothError: Any):
+//|     def __init__(self, BluetoothError: _bleio.BluetoothError):
 //|         """Raised when a connection is unavailable."""
 //|         ...
 //|
@@ -87,7 +87,7 @@ NORETURN void mp_raise_bleio_ConnectionError(const compressed_string_t* fmt, ...
 }
 
 //| class RoleError:
-//|     def __init__(self, BluetoothError: Any):
+//|     def __init__(self, BluetoothError: _bleio.BluetoothError):
 //|         """Raised when a resource is used as the mismatched role. For example, if a local CCCD is
 //|         attempted to be set but they can only be set when remote."""
 //|         ...
@@ -97,7 +97,7 @@ NORETURN void mp_raise_bleio_RoleError(const compressed_string_t* msg) {
     mp_raise_msg(&mp_type_bleio_RoleError, msg);
 }
 //| class SecurityError:
-//|     def __init__(self, BluetoothError: Any):
+//|     def __init__(self, BluetoothError: _bleio.BluetoothError):
 //|         """Raised when a security related error occurs."""
 //|         ...
 //|

@@ -46,15 +46,15 @@ STATIC mp_obj_t scanresults_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
-//|     def __init__(self, ):
+//|     def __init__(self):
 //|         """Cannot be instantiated directly. Use `_bleio.Adapter.start_scan`."""
 //|         ...
 //|
-//|     def __iter__(self, ) -> Any:
+//|     def __iter__(self) -> __iter__:
 //|         """Returns itself since it is the iterator."""
 //|         ...
 //|
-//|     def __next__(self, ) -> Any:
+//|     def __next__(self) -> _bleio.ScanEntry:
 //|         """Returns the next `_bleio.ScanEntry`. Blocks if none have been received and scanning is still
 //|         active. Raises `StopIteration` if scanning is finished and no other results are available."""
 //|         ...
