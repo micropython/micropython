@@ -24,7 +24,20 @@
  * THE SOFTWARE.
  */
 
+#include "py/objtuple.h"
+
 #include "shared-bindings/board/__init__.h"
+
+STATIC const mp_rom_obj_tuple_t sdio_data_tuple = {
+    {&mp_type_tuple},
+    4,
+    {
+        MP_ROM_PTR(&pin_SDIO_DATA0),
+        MP_ROM_PTR(&pin_SDIO_DATA1),
+        MP_ROM_PTR(&pin_SDIO_DATA2),
+        MP_ROM_PTR(&pin_SDIO_DATA3),
+    }
+};
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_UART2_RXD) },
@@ -76,5 +89,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
+    { MP_ROM_QSTR(MP_QSTR_SDIO_CLOCK), MP_ROM_PTR(&pin_SDIO_CLK) },
+    { MP_ROM_QSTR(MP_QSTR_SDIO_COMMAND), MP_ROM_PTR(&pin_SDIO_CMD) },
+    { MP_ROM_QSTR(MP_QSTR_SDIO_DATA), MP_ROM_PTR(&sdio_data_tuple) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
