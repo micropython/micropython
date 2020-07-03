@@ -47,7 +47,7 @@
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|     def write(self, buf: Any) -> Any:
+//|     def write(self, buf: ReadableBuffer) -> Optional[int]:
 //|         """Write the buffer of bytes to the bus.
 //|
 //|         :return: the number of bytes written
