@@ -82,7 +82,7 @@ STATIC mp_obj_t text_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def move(self, x: Any, y: Any) -> Any:
+//|     def move(self, x: int, y: int) -> None:
 //|         """Set the offset of the text to the specified values."""
 //|         ...
 //|
