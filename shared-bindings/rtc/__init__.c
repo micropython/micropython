@@ -50,7 +50,7 @@ mp_obj_t rtc_get_time_source_time(void) {
     return struct_time_from_tm(&tm);
 }
 
-//| def set_time_source(rtc: Any) -> Any:
+//| def set_time_source(rtc: RTC) -> None:
 //|     """Sets the RTC time source used by :func:`time.localtime`.
 //|     The default is :class:`rtc.RTC`, but it's useful to use this to override the
 //|     time source for testing purposes. For example::
