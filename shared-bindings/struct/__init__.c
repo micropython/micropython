@@ -62,7 +62,7 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(struct_calcsize_obj, struct_calcsize);
 
-//| def pack(fmt: Any, *values: Any) -> Any:
+//| def pack(fmt: string, *values: ReadableBuffer) -> bytes:
 //|     """Pack the values according to the format string fmt.
 //|     The return value is a bytes object encoding the values."""
 //|     ...
@@ -80,7 +80,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 
-//| def pack_into(fmt: Any, buffer: Any, offset: Any, *values: Any) -> Any:
+//| def pack_into(fmt: string, buffer: WriteableBuffer, offset: int, *values: readableBuffer) -> None:
 //|     """Pack the values according to the format string fmt into a buffer
 //|     starting at offset. offset may be negative to count from the end of buffer."""
 //|     ...
@@ -106,7 +106,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_into_obj, 3, MP_OBJ_FUN_ARGS_MAX, struct_pack_into);
 
-//| def unpack(fmt: Any, data: Any) -> Any:
+//| def unpack(fmt: string, data: ReadableBuffer) -> tuple:
 //|     """Unpack from the data according to the format string fmt. The return value
 //|     is a tuple of the unpacked values. The buffer size must match the size
 //|     required by the format."""
@@ -124,7 +124,7 @@ STATIC mp_obj_t struct_unpack(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_obj, 2, 3, struct_unpack);
 
-//| def unpack_from(fmt: Any, data: Any, offset: Any = 0) -> Any:
+//| def unpack_from(fmt: string, data: ReadableBuffer, offset: int = 0) -> tuple:
 //|     """Unpack from the data starting at offset according to the format string fmt.
 //|     offset may be negative to count from the end of buffer. The return value is
 //|     a tuple of the unpacked values. The buffer size must be at least as big
