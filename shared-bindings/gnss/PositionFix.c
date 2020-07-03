@@ -32,17 +32,17 @@
 //|     def __init__(self):
 //|         """Enum-like class to define the position fix mode."""
 //|
-//|     INVALID: Any = ...
+//|     INVALID: gnss.PositionFix = ...
 //|     """No measurement.
 //|
 //|     :type gnss.PositionFix:"""
 //|
-//|     FIX_2D: Any = ...
+//|     FIX_2D: gnss.PositionFix = ...
 //|     """2D fix.
 //|
 //|     :type gnss.PositionFix:"""
 //|
-//|     FIX_3D: Any = ...
+//|     FIX_3D: gnss.PositionFix = ...
 //|     """3D fix.
 //|
 //|     :type gnss.PositionFix:"""
