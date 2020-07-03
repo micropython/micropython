@@ -33,18 +33,18 @@
 //|         """Enum-like class to define the run mode of the microcontroller and
 //|         CircuitPython."""
 //|
-//|     NORMAL: Any = ...
+//|     NORMAL: microcontroller.RunMode = ...
 //|     """Run CircuitPython as normal.
 //|
 //|     :type microcontroller.RunMode:"""
 //|
-//|     SAFE_MODE: Any = ...
+//|     SAFE_MODE: microcontroller.RunMode = ...
 //|     """Run CircuitPython in safe mode. User code will not be run and the
 //|     file system will be writeable over USB.
 //|
 //|     :type microcontroller.RunMode:"""
 //|
-//|     BOOTLOADER: Any = ...
+//|     BOOTLOADER: microcontroller.RunMode = ...
 //|     """Run the bootloader.
 //|
 //|     :type microcontroller.RunMode:"""
