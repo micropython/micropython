@@ -48,13 +48,16 @@ Constructors
 
 .. class:: pyb.UART(bus, ...)
 
-   Construct a UART object on the given bus.  ``bus`` can be 1-6, or 'XA', 'XB', 'YA', or 'YB'.
+   Construct a UART object on the given bus.
+   For Pyboard ``bus`` can be 1-4, 6, 'XA', 'XB', 'YA', or 'YB'.
+   For Pyboard Lite ``bus`` can be 1, 2, 6, 'XB', or 'YA'.
+   For Pyboard D ``bus`` can be 1-4, 'XA', 'YA' or 'YB'.
    With no additional parameters, the UART object is created but not
    initialised (it has the settings from the last initialisation of
    the bus, if any).  If extra arguments are given, the bus is initialised.
    See ``init`` for parameters of initialisation.
 
-   The physical pins of the UART busses are:
+   The physical pins of the UART busses on Pyboard are:
 
      - ``UART(4)`` is on ``XA``: ``(TX, RX) = (X1, X2) = (PA0, PA1)``
      - ``UART(1)`` is on ``XB``: ``(TX, RX) = (X9, X10) = (PB6, PB7)``
@@ -62,9 +65,21 @@ Constructors
      - ``UART(3)`` is on ``YB``: ``(TX, RX) = (Y9, Y10) = (PB10, PB11)``
      - ``UART(2)`` is on: ``(TX, RX) = (X3, X4) = (PA2, PA3)``
 
-   The Pyboard Lite supports UART(1), UART(2) and UART(6) only. Pins are as above except:
+   The Pyboard Lite supports UART(1), UART(2) and UART(6) only, pins are:
 
+     - ``UART(1)`` is on ``XB``: ``(TX, RX) = (X9, X10) = (PB6, PB7)``
+     - ``UART(6)`` is on ``YA``: ``(TX, RX) = (Y1, Y2) = (PC6, PC7)``
      - ``UART(2)`` is on: ``(TX, RX) = (X1, X2) = (PA2, PA3)``
+
+   The Pyboard D supports UART(1), UART(2), UART(3) and UART(4) only, pins are:
+
+     - ``UART(4)`` is on ``XA``: ``(TX, RX) = (X1, X2) = (PA0, PA1)``
+     - ``UART(1)`` is on ``YA``: ``(TX, RX) = (Y1, Y2) = (PA9, PA10)``
+     - ``UART(3)`` is on ``YB``: ``(TX, RX) = (Y9, Y10) = (PB10, PB11)``
+     - ``UART(2)`` is on: ``(TX, RX) = (X3, X4) = (PA2, PA3)``
+
+   *Note:* Pyboard D has ``UART(1)`` on ``YA``, unlike Pyboard and Pyboard Lite that both
+   have ``UART(1)`` on ``XB`` and ``UART(6)`` on ``YA``.
 
 Methods
 -------
