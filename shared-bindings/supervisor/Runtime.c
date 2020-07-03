@@ -39,7 +39,7 @@
 //|            print("Hello World!")"""
 //|
 
-//|     def __init__(self): -> None
+//|     def __init__(self) -> None:
 //|         """You cannot create an instance of `supervisor.Runtime`.
 //|         Use `supervisor.runtime` to access the sole instance available."""
 //|         ...
