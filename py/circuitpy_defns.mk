@@ -162,8 +162,11 @@ endif
 ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
 SRC_PATTERNS += gamepadshift/%
 endif
-ifeq ($(CIRCUITPY_I2CSLAVE),1)
-SRC_PATTERNS += i2cslave/%
+ifeq ($(CIRCUITPY_GNSS),1)
+SRC_PATTERNS += gnss/%
+endif
+ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
+SRC_PATTERNS += i2cperipheral/%
 endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
@@ -209,6 +212,12 @@ SRC_PATTERNS += rtc/%
 endif
 ifeq ($(CIRCUITPY_SAMD),1)
 SRC_PATTERNS += samd/%
+endif
+ifeq ($(CIRCUITPY_SDCARDIO),1)
+SRC_PATTERNS += sdcardio/%
+endif
+ifeq ($(CIRCUITPY_SDIOIO),1)
+SRC_PATTERNS += sdioio/%
 endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
@@ -283,8 +292,12 @@ SRC_COMMON_HAL_ALL = \
 	displayio/ParallelBus.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
-	i2cslave/I2CSlave.c \
-	i2cslave/__init__.c \
+	gnss/__init__.c \
+	gnss/GNSS.c \
+	gnss/PositionFix.c \
+	gnss/SatelliteSystem.c \
+	i2cperipheral/I2CPeripheral.c \
+	i2cperipheral/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	microcontroller/__init__.c \
@@ -304,6 +317,8 @@ SRC_COMMON_HAL_ALL = \
 	rotaryio/__init__.c \
 	rtc/RTC.c \
 	rtc/__init__.c \
+	sdioio/SDCard.c \
+	sdioio/__init__.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \
@@ -377,6 +392,8 @@ SRC_SHARED_MODULE_ALL = \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
+	sdcardio/SDCard.c \
+	sdcardio/__init__.c \
 	gamepad/GamePad.c \
 	gamepad/__init__.c \
 	gamepadshift/GamePadShift.c \

@@ -238,6 +238,8 @@ jobs:
         - "pyruler"
         - "robohatmm1_m4"
         - "sam32"
+        - "same54_xplained"
+        - "seeeduino_wio_terminal"
         - "seeeduino_xiao"
         - "serpente"
         - "shirtty"
@@ -368,6 +370,7 @@ jobs:
         board:
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
+        - "unexpectedmaker_feathers2"
 
     steps:
     - name: Set up Python 3.8

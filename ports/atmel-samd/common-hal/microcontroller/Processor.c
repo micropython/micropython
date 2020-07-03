@@ -163,7 +163,7 @@ STATIC float calculate_temperature(uint16_t raw_value) {
 }
 #endif // SAMD21
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 STATIC float calculate_temperature(uint16_t TP, uint16_t TC) {
     uint32_t TLI = (*(uint32_t *)FUSES_ROOM_TEMP_VAL_INT_ADDR & FUSES_ROOM_TEMP_VAL_INT_Msk) >> FUSES_ROOM_TEMP_VAL_INT_Pos;
     uint32_t TLD = (*(uint32_t *)FUSES_ROOM_TEMP_VAL_DEC_ADDR & FUSES_ROOM_TEMP_VAL_DEC_Msk) >> FUSES_ROOM_TEMP_VAL_DEC_Pos;
@@ -231,7 +231,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     return calculate_temperature(value);
 #endif // SAMD21
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
     adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
     // Using INTVCC0 as the reference voltage.
     // INTVCC1 seems to read a little high.
@@ -285,7 +285,7 @@ float common_hal_mcu_processor_get_voltage(void) {
     adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INT1V_Val);
 #endif
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
     hri_supc_set_VREF_SEL_bf(SUPC, SUPC_VREF_SEL_1V0_Val);
     hri_supc_set_VREF_VREFOE_bit(SUPC);
 
@@ -332,7 +332,7 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     uint32_t* id_addresses[4] = {(uint32_t *) 0x0080A00C, (uint32_t *) 0x0080A040,
                                  (uint32_t *) 0x0080A044, (uint32_t *) 0x0080A048};
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     uint32_t* id_addresses[4] = {(uint32_t *) 0x008061FC, (uint32_t *) 0x00806010,
                                  (uint32_t *) 0x00806014, (uint32_t *) 0x00806018};
     #endif

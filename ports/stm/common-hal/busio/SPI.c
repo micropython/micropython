@@ -380,12 +380,12 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
-        uint8_t *data_out, uint8_t *data_in, size_t len) {
+        const uint8_t *data_out, uint8_t *data_in, size_t len) {
     if (self->miso == NULL || self->mosi == NULL) {
         mp_raise_ValueError(translate("Missing MISO or MOSI Pin"));
     }
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive (&self->handle,
-        data_out, data_in, (uint16_t)len,HAL_MAX_DELAY);
+        (uint8_t *) data_out, data_in, (uint16_t)len,HAL_MAX_DELAY);
     return result == HAL_OK;
 }
 

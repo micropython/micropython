@@ -40,11 +40,14 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hpl/pm/hpl_pm_base.h"
 
-#ifdef SAMD21
+#if defined(SAMD21)
 #include "hri/hri_pm_d21.h"
-#endif
-#ifdef SAMD51
+#elif defined(SAME54)
+#include "hri/hri_rstc_e54.h"
+#elif defined(SAMD51)
 #include "hri/hri_rstc_d51.h"
+#else
+#error Unknown chip family
 #endif
 
 #include "common-hal/analogio/AnalogIn.h"
@@ -146,7 +149,7 @@ static void rtc_init(void) {
                      RTC_MODE0_CTRL_MODE_COUNT32 |
                      RTC_MODE0_CTRL_PRESCALER_DIV2;
 #endif
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
     hri_mclk_set_APBAMASK_RTC_bit(MCLK);
     RTC->MODE0.CTRLA.bit.SWRST = true;
     while (RTC->MODE0.SYNCBUSY.bit.SWRST != 0) {}
@@ -169,7 +172,7 @@ static void rtc_init(void) {
     NVIC_SetPriority(USB_IRQn, 1);
     #endif
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     NVIC_SetPriority(USB_0_IRQn, 1);
     NVIC_SetPriority(USB_1_IRQn, 1);
     NVIC_SetPriority(USB_2_IRQn, 1);
@@ -204,7 +207,7 @@ safe_mode_t port_init(void) {
     #endif
 #endif
 
-#if defined(SAMD51)
+#if defined(SAM_D5X_E5X)
     // Set brownout detection to ~2.7V. Default from factory is 1.7V,
     // which is too low for proper operation of external SPI flash chips (they are 2.7-3.6V).
     // Disable while changing level.
@@ -283,7 +286,7 @@ safe_mode_t port_init(void) {
         return BROWNOUT;
     }
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     if (RSTC->RCAUSE.bit.BODVDD == 1 || RSTC->RCAUSE.bit.BODCORE == 1) {
         return BROWNOUT;
     }
@@ -341,7 +344,7 @@ void reset_port(void) {
 
     // Output clocks for debugging.
     // not supported by SAMD51G; uncomment for SAMD51J or update for 51G
-    // #ifdef SAMD51
+    // #ifdef SAM_D5X_E5X
     // gpio_set_pin_function(PIN_PA10, GPIO_PIN_FUNCTION_M); // GCLK4, D3
     // gpio_set_pin_function(PIN_PA11, GPIO_PIN_FUNCTION_M); // GCLK5, A4
     // gpio_set_pin_function(PIN_PB14, GPIO_PIN_FUNCTION_M); // GCLK0, D5
@@ -388,7 +391,7 @@ uint32_t *port_heap_get_top(void) {
 #ifdef SAMD21
 uint32_t* safe_word = (uint32_t*) (HMCRAMC0_ADDR + HMCRAMC0_SIZE - 0x2000);
 #endif
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 uint32_t* safe_word = (uint32_t*) (HSRAM_ADDR + HSRAM_SIZE - 0x2000);
 #endif
 
@@ -412,7 +415,7 @@ void RTC_Handler(void) {
         // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
         // tick.
         overflowed_ticks += (1L<< (32 - 4));
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     } else if (intflag & RTC_MODE0_INTFLAG_PER2) {
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_PER2;
         // Do things common to all ports when the tick occurs
@@ -431,14 +434,14 @@ void RTC_Handler(void) {
             }
         }
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
         #endif
     }
 }
 
 static uint32_t _get_count(void) {
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
     #endif
     #ifdef SAMD21
@@ -459,7 +462,7 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // PER2 will generate an interrupt every 32 ticks of the source 32.768 clock.
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_PER2;
     #endif
@@ -471,7 +474,7 @@ void port_enable_tick(void) {
 
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_PER2;
     #endif
     #ifdef SAMD21
@@ -492,7 +495,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
 void port_sleep_until_interrupt(void) {
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (__get_FPSCR()  & ~(0x9f)) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));

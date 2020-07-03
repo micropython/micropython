@@ -45,7 +45,7 @@ bool speaker_enable_in_use;
 
 #define PORT_COUNT (PORT_BITS / 32 + 1)
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 #define SWD_MUX GPIO_PIN_FUNCTION_H
 #endif
 #ifdef SAMD21
@@ -80,7 +80,7 @@ void reset_all_pins(void) {
 
     // Configure SWD. SWDIO will be automatically switched on PA31 when a signal is input on
     // SWCLK.
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     gpio_set_pin_function(PIN_PA30, MUX_PA30H_CM4_SWCLK);
     #endif
     #ifdef SAMD21
@@ -136,7 +136,7 @@ void reset_pin_number(uint8_t pin_number) {
     #endif
 
     if (pin_number == PIN_PA30
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         ) {
         #endif
         #ifdef SAMD21
@@ -199,7 +199,7 @@ bool pin_number_is_free(uint8_t pin_number) {
             return false;
         }
         if (pin_number == PIN_PA30
-            #ifdef SAMD51
+            #ifdef SAM_D5X_E5X
             ) {
             #endif
             #ifdef SAMD21
