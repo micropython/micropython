@@ -40,7 +40,7 @@
 //| class I2C:
 //|     """Two wire serial protocol"""
 //|
-//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, *, frequency: int = 400000, timeout: int):
+//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, *, frequency: int = 400000, timeout: int) -> None:
 //|         """I2C is a two-wire protocol for communicating between devices.  At the
 //|         physical level it consists of 2 wires: SCL and SDA, the clock and data
 //|         lines respectively.

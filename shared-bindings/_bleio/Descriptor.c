@@ -39,7 +39,7 @@
 //|     Descriptors are attached to BLE characteristics and provide contextual
 //|     information about the characteristic."""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """There is no regular constructor for a Descriptor. A new local Descriptor can be created
 //|         and attached to a Characteristic by calling `add_to_characteristic()`.
 //|         Remote Descriptor objects are created by `Connection.discover_remote_services()`

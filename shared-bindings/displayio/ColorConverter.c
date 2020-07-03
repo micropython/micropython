@@ -39,7 +39,7 @@
 //| class ColorConverter:
 //|     """Converts one color format to another."""
 //|
-//|     def __init__(self, *, dither: bool = False):
+//|     def __init__(self, *, dither: bool = False) -> None:
 //|         """Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
 //|         currently.
 //|         :param bool dither: Adds random noise to dither the output image"""

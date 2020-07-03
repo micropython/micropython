@@ -41,7 +41,7 @@
 //|     it has no user-visible constructor."""
 //|
 
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `_bleio.Adapter.start_scan`."""
 //|         ...
 //|

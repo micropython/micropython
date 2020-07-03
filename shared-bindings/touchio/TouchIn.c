@@ -52,7 +52,7 @@
 //|                print("touched!")"""
 //|
 
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the TouchIn on the given pin.
 //|
 //|         :param ~microcontroller.Pin pin: the pin to read from"""

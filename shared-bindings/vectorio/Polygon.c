@@ -18,7 +18,7 @@
 //| from typing import List, Tuple
 //|
 //| class Polygon:
-//|     def __init__(self, points: List[ Tuple[ x, y ], ... ] ):
+//|     def __init__(self, points: List[ Tuple[ x, y ], ... ] ) -> None:
 //|         """Represents a closed shape by ordered vertices
 //|
 //|            :param points: Vertices for the polygon"""

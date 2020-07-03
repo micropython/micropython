@@ -37,7 +37,7 @@
 //| class Shape:
 //|     """Represents a shape made by defining boundaries that may be mirrored."""
 //|
-//|     def __init__(self, width: int, height: int, *, mirror_x: bool = False, mirror_y: bool = False):
+//|     def __init__(self, width: int, height: int, *, mirror_x: bool = False, mirror_y: bool = False) -> None:
 //|         """Create a Shape object with the given fixed size. Each pixel is one bit and is stored by the
 //|         column boundaries of the shape on each row. Each row's boundary defaults to the full row.
 //|

@@ -48,7 +48,7 @@
 //|
 //|     A single tile grid is also known as a Sprite."""
 //|
-//|     def __init__(self, bitmap: displayio.Bitmap, *, pixel_shader: displayio.Palette, width: int = 1, height: int = 1, tile_width: int = None, tile_height: int = None, default_tile: int = 0, x: int = 0, y: int = 0):
+//|     def __init__(self, bitmap: displayio.Bitmap, *, pixel_shader: displayio.Palette, width: int = 1, height: int = 1, tile_width: int = None, tile_height: int = None, default_tile: int = 0, x: int = 0, y: int = 0) -> None:
 //|         """Create a TileGrid object. The bitmap is source for 2d pixels. The pixel_shader is used to
 //|         convert the value and its location to a display native pixel color. This may be a simple color
 //|         palette lookup, a gradient, a pattern or a color transformer.

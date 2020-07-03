@@ -42,7 +42,7 @@
 //|
 //|     Protocol definition is here: https://www.maximintegrated.com/en/app-notes/index.mvp/id/126"""
 //|
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|
 //|         """Create a OneWire object associated with the given pin. The object
 //|         implements the lowest level timing-sensitive bits of the protocol.

@@ -41,7 +41,7 @@
 //| class Mixer:
 //|     """Mixes one or more audio samples together into one sample."""
 //|
-//|     def __init__(self, voice_count: int = 2, buffer_size: int = 1024, channel_count: int = 2, bits_per_sample: int = 16, samples_signed: bool = True, sample_rate: int = 8000):
+//|     def __init__(self, voice_count: int = 2, buffer_size: int = 1024, channel_count: int = 2, bits_per_sample: int = 16, samples_signed: bool = True, sample_rate: int = 8000) -> None:
 //|         """Create a Mixer object that can mix multiple channels with the same sample rate.
 //|         Samples are accessed and controlled with the mixer's `audiomixer.MixerVoice` objects.
 //|

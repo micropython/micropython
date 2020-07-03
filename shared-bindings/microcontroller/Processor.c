@@ -44,7 +44,7 @@
 //|        print(microcontroller.cpu.temperature)"""
 //|
 
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """You cannot create an instance of `microcontroller.Processor`.
 //|         Use `microcontroller.cpu` to access the sole instance available."""
 //|         ...

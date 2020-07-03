@@ -36,7 +36,7 @@
 //| class UUID:
 //|     """A 16-bit or 128-bit UUID. Can be used for services, characteristics, descriptors and more."""
 //|
-//|     def __init__(self, value: Union[int, ReadableBuffer, str]):
+//|     def __init__(self, value: Union[int, ReadableBuffer, str]) -> None:
 //|         """Create a new UUID or UUID object encapsulating the uuid value.
 //|         The value can be one of:
 //|

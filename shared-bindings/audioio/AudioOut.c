@@ -39,7 +39,7 @@
 //| class AudioOut:
 //|     """Output an analog audio signal"""
 //|
-//|     def __init__(self, left_channel: microcontroller.Pin, *, right_channel: microcontroller.Pin = None, quiescent_value: int = 0x8000):
+//|     def __init__(self, left_channel: microcontroller.Pin, *, right_channel: microcontroller.Pin = None, quiescent_value: int = 0x8000) -> None:
 //|         """Create a AudioOut object associated with the given pin(s). This allows you to
 //|         play audio signals out on the given pin(s).
 //|

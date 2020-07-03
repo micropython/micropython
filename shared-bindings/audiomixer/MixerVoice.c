@@ -42,7 +42,7 @@
 //|
 //|     Used to access and control samples with `audiomixer.Mixer`."""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """MixerVoice instance object(s) created by `audiomixer.Mixer`."""
 //|         ...
 //|

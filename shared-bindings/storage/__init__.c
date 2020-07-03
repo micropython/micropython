@@ -168,7 +168,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_erase_filesystem), MP_ROM_PTR(&storage_erase_filesystem_obj) },
 
 //| class VfsFat:
-//|     def __init__(self, block_device: Any):
+//|     def __init__(self, block_device: Any) -> None:
 //|         """Create a new VfsFat filesystem around the given block device.
 //|
 //|         :param block_device: Block device the the filesystem lives on"""

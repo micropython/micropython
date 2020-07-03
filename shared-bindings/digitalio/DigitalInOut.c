@@ -50,7 +50,7 @@
 //|     a pin, see the :py:class:`analogio.AnalogIn` and
 //|     :py:class:`analogio.AnalogOut` classes."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Create a new DigitalInOut object associated with the pin. Defaults to input
 //|         with no pull. Use :py:meth:`switch_to_input` and
 //|         :py:meth:`switch_to_output` to change the direction.

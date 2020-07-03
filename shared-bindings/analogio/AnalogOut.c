@@ -47,7 +47,7 @@
 //|        dac = analogio.AnalogOut(pin.PA02)          # output on pin PA02
 //|         dac.value = 32768                           # makes PA02 1.65V"""
 //|
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the AnalogOut on the given pin.
 //|
 //|         :param ~microcontroller.Pin pin: the pin to output to"""

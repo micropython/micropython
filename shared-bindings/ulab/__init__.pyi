@@ -17,7 +17,7 @@ https://docs.scipy.org/doc/numpy/index.html"""
 
 class array:
     """1- and 2- dimensional array"""
-    def __init__(self, values, *, dtype=float):
+    def __init__(self, values, *, dtype=float) -> None:
         """:param sequence values: Sequence giving the initial content of the array.
           :param dtype: The type of array values, ``int8``, ``uint8``, ``int16``, ``uint16``, or ``float``
 

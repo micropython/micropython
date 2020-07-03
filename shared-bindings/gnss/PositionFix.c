@@ -29,7 +29,7 @@
 //| class PositionFix:
 //|     """Position fix mode"""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """Enum-like class to define the position fix mode."""
 //|
 //|     INVALID: PositionFix = ...

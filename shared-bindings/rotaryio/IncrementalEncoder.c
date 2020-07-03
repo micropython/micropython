@@ -37,7 +37,7 @@
 //| class IncrementalEncoder:
 //|     """IncrementalEncoder determines the relative rotational position based on two series of pulses."""
 //|
-//|     def __init__(self, pin_a: microcontroller.Pin, pin_b: microcontroller.Pin):
+//|     def __init__(self, pin_a: microcontroller.Pin, pin_b: microcontroller.Pin) -> None:
 //|         """Create an IncrementalEncoder object associated with the given pins. It tracks the positional
 //|         state of an incremental rotary encoder (also known as a quadrature encoder.) Position is
 //|         relative to the position when the object is contructed.

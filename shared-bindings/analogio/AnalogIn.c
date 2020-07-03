@@ -48,7 +48,7 @@
 //|        val = adc.value"""
 //|
 
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the AnalogIn on the given pin. The reference voltage varies by
 //|         platform so use ``reference_voltage`` to read the configured setting.
 //|

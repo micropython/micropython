@@ -37,7 +37,7 @@
 //| class OneWire:
 //|     """Lowest-level of the Maxim OneWire protocol"""
 //|
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """(formerly Dallas Semi) OneWire protocol.
 //|
 //|         Protocol definition is here: https://www.maximintegrated.com/en/app-notes/index.mvp/id/126

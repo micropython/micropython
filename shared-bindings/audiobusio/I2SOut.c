@@ -38,7 +38,7 @@
 //| class I2SOut:
 //|     """Output an I2S audio signal"""
 //|
-//|     def __init__(self, bit_clock: microcontroller.Pin, word_select: microcontroller.Pin, data: microcontroller.Pin, *, left_justified: bool):
+//|     def __init__(self, bit_clock: microcontroller.Pin, word_select: microcontroller.Pin, data: microcontroller.Pin, *, left_justified: bool) -> None:
 //|         """Create a I2SOut object associated with the given pins.
 //|
 //|         :param ~microcontroller.Pin bit_clock: The bit clock (or serial clock) pin

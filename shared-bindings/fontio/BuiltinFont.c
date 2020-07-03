@@ -39,7 +39,7 @@
 //| class BuiltinFont:
 //|     """A font built into CircuitPython"""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """Creation not supported. Available fonts are defined when CircuitPython is built. See the
 //|         `Adafruit_CircuitPython_Bitmap_Font <https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font>`_
 //|         library for dynamically loaded fonts."""

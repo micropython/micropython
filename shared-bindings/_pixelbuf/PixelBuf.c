@@ -47,7 +47,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //| class PixelBuf:
 //|     """A fast RGB[W] pixel buffer for LED and similar devices."""
 //|
-//|     def __init__(self, size: int, *, byteorder: str = "BGR", brightness: float = 0, auto_write: bool = False, header: bytes = b"", trailer: bytes = b""):
+//|     def __init__(self, size: int, *, byteorder: str = "BGR", brightness: float = 0, auto_write: bool = False, header: bytes = b"", trailer: bytes = b"") -> None:
 //|         """Create a PixelBuf object of the specified size, byteorder, and bits per pixel.
 //|
 //|         When brightness is less than 1.0, a second buffer will be used to store the color values

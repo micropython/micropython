@@ -36,7 +36,7 @@
 //|     :py:class:`~Characteristic` and :py:class:`~Descriptor`,
 //|     but is not defined as a Python superclass of those classes."""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """You cannot create an instance of :py:class:`~_bleio.Attribute`."""
 //|         ...
 //|

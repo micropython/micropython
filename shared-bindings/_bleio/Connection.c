@@ -68,7 +68,7 @@ void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
     }
 }
 
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """Connections cannot be made directly. Instead, to initiate a connection use `Adapter.connect`.
 //|         Connections may also be made when another device initiates a connection. To use a Connection
 //|         created by a peer, read the `Adapter.connections` property.

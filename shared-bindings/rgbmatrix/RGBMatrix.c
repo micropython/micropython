@@ -128,7 +128,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//|     def __init__(self, *, width: int, bit_depth: List[digitalio.DigitalInOut], rgb_pins: List[digitalio.DigitalInOut], addr_pins: List[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0):
+//|     def __init__(self, *, width: int, bit_depth: List[digitalio.DigitalInOut], rgb_pins: List[digitalio.DigitalInOut], addr_pins: List[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0) -> None:
 //|         """Create a RGBMatrix object with the given attributes.  The height of
 //|         the display is determined by the number of rgb and address pins:
 //|         len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4

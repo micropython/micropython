@@ -41,7 +41,7 @@ const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 //| class RTC:
 //|     """Real Time Clock"""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """This class represents the onboard Real Time Clock. It is a singleton and will always return the same instance."""
 //|         ...
 //|

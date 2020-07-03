@@ -33,7 +33,7 @@
 //| class Layer:
 //|     """Keep information about a single layer of graphics"""
 //|
-//|     def __init__(self, width: int, height: int, graphic: bytearray, palette: bytearray, grid: bytearray):
+//|     def __init__(self, width: int, height: int, graphic: bytearray, palette: bytearray, grid: bytearray) -> None:
 //|         """Keep internal information about a layer of graphics (either a
 //|         ``Grid`` or a ``Sprite``) in a format suitable for fast rendering
 //|         with the ``render()`` function.

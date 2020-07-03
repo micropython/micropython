@@ -49,7 +49,7 @@
 //| class WIZNET5K:
 //|     """Wrapper for Wiznet 5500 Ethernet interface"""
 //|
-//|     def __init__(self, spi: busio.SPI, cs: microcontroller.Pin, rst: microcontroller.Pin, dhcp: bool = True):
+//|     def __init__(self, spi: busio.SPI, cs: microcontroller.Pin, rst: microcontroller.Pin, dhcp: bool = True) -> None:
 //|         """Create a new WIZNET5500 interface using the specified pins
 //|
 //|         :param ~busio.SPI spi: spi bus to use

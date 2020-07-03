@@ -46,7 +46,7 @@ STATIC const mp_obj_type_t socket_type;
 
 //| class socket:
 //|
-//|     def __init__(self, family: int, type: int, proto: int):
+//|     def __init__(self, family: int, type: int, proto: int) -> None:
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6

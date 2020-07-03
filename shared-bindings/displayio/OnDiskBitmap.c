@@ -69,7 +69,7 @@
 //|           while True:
 //|               pass"""
 //|
-//|     def __init__(self, file: file):
+//|     def __init__(self, file: file) -> None:
 //|         """Create an OnDiskBitmap object with the given file.
 //|
 //|         :param file file: The open bitmap file"""

@@ -47,7 +47,7 @@
 //|     objects in CircuitPython, Display objects live until `displayio.release_displays()`
 //|     is called. This is done so that CircuitPython can use the display itself."""
 //|
-//|     def __init__(self, framebuffer: framebuffer, *, rotation: int = 0, auto_refresh: bool = True):
+//|     def __init__(self, framebuffer: framebuffer, *, rotation: int = 0, auto_refresh: bool = True) -> None:
 //|         """Create a Display object with the given framebuffer (a buffer, array, ulab.array, etc)
 //|
 //|         :param framebuffer: The framebuffer that the display is connected to

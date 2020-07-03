@@ -41,7 +41,7 @@
 //| class Direction:
 //|     """Defines the direction of a digital pin"""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """Enum-like class to define which direction the digital values are
 //|         going."""
 //|         ...

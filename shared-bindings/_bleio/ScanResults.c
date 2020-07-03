@@ -46,7 +46,7 @@ STATIC mp_obj_t scanresults_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `_bleio.Adapter.start_scan`."""
 //|         ...
 //|

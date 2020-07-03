@@ -49,7 +49,7 @@
 //|     25MHz.  Usually an SDCard object is used with ``storage.VfsFat``
 //|     to allow file I/O to an SD card."""
 //|
-//|     def __init__(*, clock: digitalio.DigitalInOut, command: digitalio.DigitalInOut, data: List[digitalio.DigitalInOut], frequency: int):
+//|     def __init__(*, clock: digitalio.DigitalInOut, command: digitalio.DigitalInOut, data: List[digitalio.DigitalInOut], frequency: int) -> None:
 //|         """Construct an SDIO SD Card object with the given properties
 //|
 //|         :param ~microcontroller.Pin clock: the pin to use for the clock.

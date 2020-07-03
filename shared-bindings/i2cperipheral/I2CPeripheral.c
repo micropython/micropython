@@ -52,7 +52,7 @@ STATIC mp_obj_t mp_obj_new_i2cperipheral_i2c_peripheral_request(i2cperipheral_i2
 //| class I2CPeripheral:
 //|     """Two wire serial protocol peripheral"""
 //|
-//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, addresses: tuple, smbus: bool = False):
+//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, addresses: tuple, smbus: bool = False) -> None:
 //|         """I2C is a two-wire protocol for communicating between devices.
 //|         This implements the peripheral (sensor, secondary) side.
 //|
@@ -227,7 +227,7 @@ const mp_obj_type_t i2cperipheral_i2c_peripheral_type = {
 
 //| class I2CPeripheralRequest:
 //|
-//|     def __init__(self, peripheral: i2cperipheral.I2CPeripheral, address: int, is_read: bool, is_restart: bool):
+//|     def __init__(self, peripheral: i2cperipheral.I2CPeripheral, address: int, is_read: bool, is_restart: bool) -> None:
 //|         """Information about an I2C transfer request
 //|         This cannot be instantiated directly, but is returned by :py:meth:`I2CPeripheral.request`.
 //|

@@ -40,7 +40,7 @@
 //|        and low cost temperature sensors (DHT). The pulsed signal consists of timed active and
 //|        idle periods. Unlike PWM, there is no set duration for active and idle pairs."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, maxlen: int = 2, *, idle_state: bool = False):
+//|     def __init__(self, pin: microcontroller.Pin, maxlen: int = 2, *, idle_state: bool = False) -> None:
 //|         """Create a PulseIn object associated with the given pin. The object acts as
 //|         a read-only sequence of pulse lengths with a given max length. When it is
 //|         active, new pulse lengths are added to the end of the list. When there is

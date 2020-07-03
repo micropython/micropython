@@ -39,7 +39,7 @@
 //| class PDMIn:
 //|     """Record an input PDM audio stream"""
 //|
-//|     def __init__(self, clock_pin: microcontroller.Pin, data_pin: microcontroller.Pin, *, sample_rate: int = 16000, bit_depth: int = 8, mono: bool = True, oversample: int = 64, startup_delay: float = 0.11):
+//|     def __init__(self, clock_pin: microcontroller.Pin, data_pin: microcontroller.Pin, *, sample_rate: int = 16000, bit_depth: int = 8, mono: bool = True, oversample: int = 64, startup_delay: float = 0.11) -> None:
 //|         """Create a PDMIn object associated with the given pins. This allows you to
 //|         record audio signals from the given pins. Individual ports may put further
 //|         restrictions on the recording parameters. The overall sample rate is

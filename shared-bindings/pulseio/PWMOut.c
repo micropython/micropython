@@ -38,7 +38,7 @@
 //| class PWMOut:
 //|     """Output a Pulse Width Modulated signal on a given pin."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, *, duty_cycle: int = 0, frequency: int = 500, variable_frequency: bool = False):
+//|     def __init__(self, pin: microcontroller.Pin, *, duty_cycle: int = 0, frequency: int = 500, variable_frequency: bool = False) -> None:
 //|         """Create a PWM object associated with the given pin. This allows you to
 //|         write PWM signals out on the given pin. Frequency is fixed after init
 //|         unless ``variable_frequency`` is True.

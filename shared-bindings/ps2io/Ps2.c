@@ -45,7 +45,7 @@
 //|     level converters must be used to connect the I/O lines to pins
 //|     of 3.3V boards."""
 //|
-//|     def __init__(self, data_pin: microcontroller.Pin, clock_pin: microcontroller.Pin):
+//|     def __init__(self, data_pin: microcontroller.Pin, clock_pin: microcontroller.Pin) -> None:
 //|         """Create a Ps2 object associated with the given pins.
 //|
 //|         :param ~microcontroller.Pin data_pin: Pin tied to data wire.

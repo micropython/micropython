@@ -65,7 +65,7 @@
 //|     connections and also initiate connections."""
 //|
 
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """You cannot create an instance of `_bleio.Adapter`.
 //|         Use `_bleio.adapter` to access the sole instance available."""
 //|         ...

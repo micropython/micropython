@@ -46,7 +46,7 @@
 //|     """Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to
 //|     save memory."""
 //|
-//|     def __init__(self, color_count: int):
+//|     def __init__(self, color_count: int) -> None:
 //|         """Create a Palette object to store a set number of colors.
 //|
 //|         :param int color_count: The number of colors in the Palette"""

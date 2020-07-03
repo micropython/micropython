@@ -44,7 +44,7 @@
 
 //| class UART:
 //|     """A bidirectional serial protocol"""
-//|     def __init__(self, tx: microcontroller.Pin, rx: microcontroller.Pin, *, baudrate: int = 9600, bits: int = 8, parity: Parity = None, stop: int = 1, timeout: float = 1, receiver_buffer_size: int = 64):
+//|     def __init__(self, tx: microcontroller.Pin, rx: microcontroller.Pin, *, baudrate: int = 9600, bits: int = 8, parity: Parity = None, stop: int = 1, timeout: float = 1, receiver_buffer_size: int = 64) -> None:
 //|         """A common bidirectional serial protocol that uses an an agreed upon speed
 //|         rather than a shared clock line.
 //|

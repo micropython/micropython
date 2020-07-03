@@ -46,7 +46,7 @@
 //|
 //|     FrequencyIn will not determine pulse width (use ``PulseIn``)."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, capture_period: int = 10):
+//|     def __init__(self, pin: microcontroller.Pin, capture_period: int = 10) -> None:
 //|         """Create a FrequencyIn object associated with the given pin.
 //|
 //|         :param ~microcontroller.Pin pin: Pin to read frequency from.

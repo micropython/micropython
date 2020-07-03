@@ -40,7 +40,7 @@
 //| class Terminal:
 //|     """Display a character stream with a TileGrid"""
 //|
-//|     def __init__(self, tilegrid: bitmap, font: fontio.BuiltinFont):
+//|     def __init__(self, tilegrid: bitmap, font: fontio.BuiltinFont) -> None:
 //|         """Terminal manages tile indices and cursor position based on VT100 commands. The font should be
 //|         a `fontio.BuiltinFont` and the TileGrid's bitmap should match the font's bitmap."""
 //|         ...

@@ -39,7 +39,7 @@
 //| class Bitmap:
 //|     """Stores values of a certain size in a 2D array"""
 //|
-//|     def __init__(self, width: int, height: int, value_count: int):
+//|     def __init__(self, width: int, height: int, value_count: int) -> None:
 //|         """Create a Bitmap object with the given fixed size. Each pixel stores a value that is used to
 //|         index into a corresponding palette. This enables differently colored sprites to share the
 //|         underlying Bitmap. value_count is used to minimize the memory used to store the Bitmap.

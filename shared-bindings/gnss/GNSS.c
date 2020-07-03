@@ -53,7 +53,7 @@
 //|                 print("Longitude: {0:.6f} degrees".format(nav.longitude))"""
 //|
 
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """Turn on the GNSS.
 //|
 //|         :param gnss.SatelliteSystem system: satellite system to use"""

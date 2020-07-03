@@ -38,7 +38,7 @@
 //| class PortIn:
 //|     """Receives midi commands over USB"""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """You cannot create an instance of `usb_midi.PortIn`.
 //|
 //|         PortIn objects are constructed for every corresponding entry in the USB

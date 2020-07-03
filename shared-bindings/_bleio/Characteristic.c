@@ -37,7 +37,7 @@
 //|     """Stores information about a BLE service characteristic and allows reading
 //|        and writing of the characteristic's value."""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """There is no regular constructor for a Characteristic. A new local Characteristic can be created
 //|         and attached to a Service by calling `add_to_service()`.
 //|         Remote Characteristic objects are created by `Connection.discover_remote_services()`
