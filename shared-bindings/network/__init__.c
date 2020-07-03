@@ -44,7 +44,7 @@
 //| It is used by the 'socket' module to look up a suitable
 //| NIC when a socket is created."""
 //|
-//| def route() -> Any:
+//| def route() -> list:
 //|     """Returns a list of all configured NICs."""
 //|     ...
 //|
