@@ -153,7 +153,7 @@ def create_pr(changes, updated, git_info, user):
         info["id"] = id
         updated_list.append(info)
 
-    updated = json.dumps(updated_list, sort_keys=True, indent=4).encode("utf-8") + b"\n"
+    updated = json.dumps(updated_list, sort_keys=True, indent=1).encode("utf-8") + b"\n"
     #print(updated.decode("utf-8"))
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
@@ -204,19 +204,6 @@ def create_pr(changes, updated, git_info, user):
         return
     print(changes)
     print(pr_info)
-
-def update_downloads(boards, release):
-    response = github.get("/repos/adafruit/circuitpython/releases/tags/{}".format(release))
-    if not response.ok:
-        print(response.text)
-        raise RuntimeError("cannot get previous release info")
-
-    assets = response.json()["assets"]
-    for asset in assets:
-        board_name = asset["name"].split("-")[2]
-        if board_name not in boards:
-            continue
-        boards[board_name]["download_count"] += asset["download_count"]
 
 
 def print_active_user():
@@ -269,9 +256,6 @@ def generate_download_info():
 
     board_mapping = get_board_mapping()
 
-    for release in previous_releases:
-        update_downloads(board_mapping, release)
-
     for port in SUPPORTED_PORTS:
         board_path = os.path.join("../ports", port, "boards")
         for board_path in os.scandir(board_path):
@@ -291,7 +275,9 @@ def generate_download_info():
                         "stable": new_stable,
                         "version": new_tag,
                         "modules": support_matrix.get(alias, "[]"),
-                        "files": {}
+                        "files": {},
+                        "languages": languages,
+                        "extensions": board_info["extensions"]
                     }
                     for language in languages:
                         files = []
