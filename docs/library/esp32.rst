@@ -209,19 +209,21 @@ For more details see Espressif's `ESP-IDF RMT documentation.
 
 .. method:: RMT.wait_done(timeout=0)
 
-    Returns True if `RMT.write_pulses` has completed.
+    Returns ``True`` if the channel is currently transmitting a stream of pulses
+    started with a call to `RMT.write_pulses`.
 
     If *timeout* (defined in ticks of ``source_freq / clock_div``) is specified
-    the method will wait for *timeout* or until `RMT.write_pulses` is complete,
-    returning ``False`` if the channel continues to transmit.
-
-.. Warning::
-    Avoid using ``wait_done()`` if looping is enabled.
+    the method will wait for *timeout* or until transmission is complete,
+    returning ``False`` if the channel continues to transmit. If looping is
+    enabled with `RMT.loop` and a stream has started, then this method will
+    always (wait and) return ``False``.
 
 .. method:: RMT.loop(enable_loop)
 
-    Configure looping on the channel, allowing a stream of pulses to be
-    indefinitely repeated. *enable_loop* is bool, set to True to enable looping.
+    Configure looping on the channel. *enable_loop* is bool, set to ``True`` to
+    enable looping on the *next* call to `RMT.write_pulses`. If called with
+    ``False`` while a looping stream is currently being transmitted then the
+    current set of pulses will be completed before transmission stops.
 
 .. method:: RMT.write_pulses(pulses, start)
 
@@ -229,6 +231,15 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     length of each pulse is defined by a number to be multiplied by the channel
     resolution ``(1 / (source_freq / clock_div))``. *start* defines whether the
     stream starts at 0 or 1.
+
+    If transmission of a stream is currently in progress then this method will
+    block until transmission of that stream has ended before beginning sending
+    *pulses*.
+
+    If looping is enabled with `RMT.loop`, the stream of pulses will be repeated
+    indefinitely. Further calls to `RMT.write_pulses` will end the previous
+    stream - blocking until the last set of pulses has been transmitted -
+    before starting the next stream.
 
 
 Ultra-Low-Power co-processor
