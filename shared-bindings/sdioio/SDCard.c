@@ -109,7 +109,7 @@ STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
     }
 }
 
-//|     def configure(*, frequency=0, width=0) -> None:
+//|     def configure(*, frequency: int=0, width: int=0) -> None:
 //|         """Configures the SDIO bus.
 //|
 //|         :param int frequency: the desired clock rate in Hertz. The actual clock rate may be higher or lower due to the granularity of available clock settings.  Check the `frequency` attribute for the actual clock rate.
@@ -255,13 +255,13 @@ STATIC mp_obj_t sdioio_sdcard_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_deinit_obj, sdioio_sdcard_obj_deinit);
 
-//|     def __enter__(self) -> Any:
+//|     def __enter__(self) -> SDCard:
 //|         """No-op used by Context Managers.
 //|         Provided by context manager helper."""
 //|         ...
 //|
 
-//|     def __exit__(self) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
