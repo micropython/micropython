@@ -46,7 +46,7 @@
 //|         that library."""
 //|
 
-//|     def __init__(self, buffer: Any, rows: Any, cols: Any, buttons: Any):
+//|     def __init__(self, buffer: ReadableBuffer, rows: List[DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput], cols: List[DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput, DigitalInputOutput], buttons: DigitalInputOutput):
 //|         """Initializes matrix scanning routines.
 //|
 //|         The ``buffer`` is a 64 byte long ``bytearray`` that stores what should
