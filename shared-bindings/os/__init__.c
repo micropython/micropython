@@ -44,7 +44,7 @@
 //| other way around."""
 //|
 
-//| def uname() -> Any:
+//| def uname() -> tuple:
 //|     """Returns a named tuple of operating specific and CircuitPython port
 //|     specific information."""
 //|     ...
@@ -54,7 +54,7 @@ STATIC mp_obj_t os_uname(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
-//| def chdir(path: Any) -> Any:
+//| def chdir(path: string) -> None:
 //|     """Change current directory."""
 //|     ...
 //|
@@ -65,7 +65,7 @@ mp_obj_t os_chdir(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
 
-//| def getcwd() -> Any:
+//| def getcwd() -> string:
 //|     """Get the current directory."""
 //|     ...
 //|
@@ -74,7 +74,7 @@ mp_obj_t os_getcwd(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 
-//| def listdir(dir: Any) -> Any:
+//| def listdir(dir: string) -> string:
 //|     """With no argument, list the current directory.  Otherwise list the given directory."""
 //|     ...
 //|
@@ -89,7 +89,7 @@ mp_obj_t os_listdir(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
 
-//| def mkdir(path: Any) -> Any:
+//| def mkdir(path: string) -> None:
 //|     """Create a new directory."""
 //|     ...
 //|
@@ -100,7 +100,7 @@ mp_obj_t os_mkdir(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 
-//| def remove(path: Any) -> Any:
+//| def remove(path: string) -> None:
 //|     """Remove a file."""
 //|     ...
 //|
@@ -111,7 +111,7 @@ mp_obj_t os_remove(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
 
-//| def rmdir(path: Any) -> Any:
+//| def rmdir(path: string) -> None:
 //|     """Remove a directory."""
 //|     ...
 //|
@@ -123,7 +123,7 @@ mp_obj_t os_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
 
-//| def rename(old_path: Any, new_path: Any) -> Any:
+//| def rename(old_path: string, new_path: string) -> string:
 //|     """Rename a file."""
 //|     ...
 //|
@@ -134,7 +134,7 @@ mp_obj_t os_rmdir(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 
-//| def stat(path: Any) -> Any:
+//| def stat(path: string) -> string:
 //|     """Get the status of a file or directory.
 //|
 //|     .. note:: On builds without long integers, the number of seconds
@@ -149,7 +149,7 @@ mp_obj_t os_stat(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
-//| def statvfs(path: Any) -> Any:
+//| def statvfs(path: string) -> Tuple[string, string, string, string, string, string, string, string, string, string]:
 //|     """Get the status of a fileystem.
 //|
 //|     Returns a tuple with the filesystem information in the following order:
@@ -176,7 +176,7 @@ mp_obj_t os_statvfs(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_statvfs_obj, os_statvfs);
 
-//| def sync() -> Any:
+//| def sync() -> None:
 //|     """Sync all filesystems."""
 //|     ...
 //|
@@ -189,7 +189,7 @@ STATIC mp_obj_t os_sync(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 
-//| def urandom(size: Any) -> Any:
+//| def urandom(size: int) -> string:
 //|     """Returns a string of *size* random bytes based on a hardware True Random
 //|     Number Generator. When not available, it will raise a NotImplementedError."""
 //|     ...
