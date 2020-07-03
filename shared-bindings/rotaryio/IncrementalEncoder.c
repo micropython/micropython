@@ -80,7 +80,7 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitializes the IncrementalEncoder and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -97,13 +97,13 @@ STATIC void check_for_deinit(rotaryio_incrementalencoder_obj_t *self) {
     }
 }
 
-//|     def __enter__(self) -> Any:
+//|     def __enter__(self) -> IncrementalEncoder:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -116,7 +116,7 @@ STATIC mp_obj_t rotaryio_incrementalencoder_obj___exit__(size_t n_args, const mp
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rotaryio_incrementalencoder___exit___obj, 4, 4, rotaryio_incrementalencoder_obj___exit__);
 
 
-//|     position: Any = ...
+//|     position: Optional[int] = ...
 //|     """The current position in terms of pulses. The number of pulses per rotation is defined by the
 //|     specific hardware."""
 //|
