@@ -73,7 +73,7 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
 
     return MP_OBJ_FROM_PTR(self);
 }
-//|     width: Any = ...
+//|     width: int = ...
 //|     """Width of the bitmap. (read only)"""
 //|
 STATIC mp_obj_t displayio_bitmap_obj_get_width(mp_obj_t self_in) {
@@ -91,7 +91,7 @@ const mp_obj_property_t displayio_bitmap_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: Any = ...
+//|     height: int = ...
 //|     """Height of the bitmap. (read only)"""
 //|
 STATIC mp_obj_t displayio_bitmap_obj_get_height(mp_obj_t self_in) {
@@ -109,7 +109,7 @@ const mp_obj_property_t displayio_bitmap_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __getitem__(self, index: Any) -> Any:
+//|     def __getitem__(self, index: Union[Tuple[int, int], int]) -> int:
 //|         """Returns the value at the given index. The index can either be an x,y tuple or an int equal
 //|         to ``y * width + x``.
 //|
@@ -118,7 +118,7 @@ const mp_obj_property_t displayio_bitmap_height_obj = {
 //|           print(bitmap[0,1])"""
 //|         ...
 //|
-//|     def __setitem__(self, index: Any, value: Any) -> Any:
+//|     def __setitem__(self, index: Union[Tuple[int, int], int], value: int) -> None:
 //|         """Sets the value at the given index. The index can either be an x,y tuple or an int equal
 //|         to ``y * width + x``.
 //|
@@ -172,7 +172,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     return mp_const_none;
 }
 
-//|     def fill(self, value: Any) -> Any:
+//|     def fill(self, value: int) -> None:
 //|         """Fills the bitmap with the supplied palette index value."""
 //|         ...
 //|

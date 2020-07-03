@@ -141,7 +141,7 @@ static displayio_tilegrid_t* native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
 }
-//|     hidden: Any = ...
+//|     hidden: Optional[bool] = ...
 //|     """True when the TileGrid is hidden. This may be False even when a part of a hidden Group."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_hidden(mp_obj_t self_in) {
@@ -165,7 +165,7 @@ const mp_obj_property_t displayio_tilegrid_hidden_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     x: Any = ...
+//|     x: Optional[int] = ...
 //|     """X position of the left edge in the parent."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_x(mp_obj_t self_in) {
@@ -190,7 +190,7 @@ const mp_obj_property_t displayio_tilegrid_x_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     y: Any = ...
+//|     y: Optional[int] = ...
 //|     """Y position of the top edge in the parent."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_y(mp_obj_t self_in) {
@@ -215,7 +215,7 @@ const mp_obj_property_t displayio_tilegrid_y_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     flip_x: Any = ...
+//|     flip_x: Optional[bool] = ...
 //|     """If true, the left edge rendered will be the right edge of the right-most tile."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_flip_x(mp_obj_t self_in) {
@@ -239,7 +239,7 @@ const mp_obj_property_t displayio_tilegrid_flip_x_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     flip_y: Any = ...
+//|     flip_y: Optional[bool] = ...
 //|     """If true, the top edge rendered will be the bottom edge of the bottom-most tile."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_flip_y(mp_obj_t self_in) {
@@ -264,7 +264,7 @@ const mp_obj_property_t displayio_tilegrid_flip_y_obj = {
 };
 
 
-//|     transpose_xy: Any = ...
+//|     transpose_xy: Optional[bool] = ...
 //|     """If true, the TileGrid's axis will be swapped. When combined with mirroring, any 90 degree
 //|     rotation can be achieved along with the corresponding mirrored version."""
 //|
@@ -289,7 +289,7 @@ const mp_obj_property_t displayio_tilegrid_transpose_xy_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     pixel_shader: Any = ...
+//|     pixel_shader: pixel_shader = ...
 //|     """The pixel shader of the tilegrid."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_pixel_shader(mp_obj_t self_in) {
@@ -317,7 +317,7 @@ const mp_obj_property_t displayio_tilegrid_pixel_shader_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __getitem__(self, index: Any) -> Any:
+//|     def __getitem__(self, index: Union[Tuple[int, int], int]) -> int:
 //|         """Returns the tile index at the given index. The index can either be an x,y tuple or an int equal
 //|         to ``y * width + x``.
 //|
@@ -326,7 +326,7 @@ const mp_obj_property_t displayio_tilegrid_pixel_shader_obj = {
 //|           print(grid[0])"""
 //|         ...
 //|
-//|     def __setitem__(self, index: Any, tile_index: Any) -> Any:
+//|     def __setitem__(self, index: Union[Tuple[int, int], int], tile_index: int) -> None:
 //|         """Sets the tile index at the given index. The index can either be an x,y tuple or an int equal
 //|         to ``y * width + x``.
 //|

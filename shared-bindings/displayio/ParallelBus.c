@@ -86,7 +86,7 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
     return self;
 }
 
-//|     def reset(self) -> Any:
+//|     def reset(self) -> None:
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...
@@ -102,7 +102,7 @@ STATIC mp_obj_t displayio_parallelbus_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_parallelbus_reset_obj, displayio_parallelbus_obj_reset);
 
-//|     def send(self, command: Any, data: Any) -> Any:
+//|     def send(self, command: int, data: displayio) -> None:
 //|         """Sends the given command value followed by the full set of data. Display state, such as
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...
