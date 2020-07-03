@@ -70,7 +70,7 @@
 //|                 time.sleep(0.1)"""
 //|
 
-//|     def __init__(self, b1: DigialInOut, b2: DigialInOut, b3: DigialInOut, b4: DigialInOut, b5: DigialInOut, b6: DigialInOut, b7: DigialInOut, b8: DigialInOut):
+//|     def __init__(self, b1: DigitalInOut, b2: DigitalInOut, b3: DigitalInOut, b4: DigitalInOut, b5: DigitalInOut, b6: DigitalInOut, b7: DigitalInOut, b8: DigitalInOut):
 //|         """Initializes button scanning routines.
 //|
 //|         The ``b1``-``b8`` parameters are ``DigitalInOut`` objects, which

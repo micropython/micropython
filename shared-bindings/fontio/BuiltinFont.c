@@ -76,7 +76,7 @@ STATIC mp_obj_t fontio_builtinfont_obj_get_bounding_box(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(fontio_builtinfont_get_bounding_box_obj, fontio_builtinfont_obj_get_bounding_box);
 
 
-//|     def get_glyph(self, codepoint: int) -> fontio.Glyph:
+//|     def get_glyph(self, codepoint: int) -> Glyph:
 //|         """Returns a `fontio.Glyph` for the given codepoint or None if no glyph is available."""
 //|         ...
 //|

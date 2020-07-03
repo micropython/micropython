@@ -36,7 +36,7 @@
 //| class UUID:
 //|     """A 16-bit or 128-bit UUID. Can be used for services, characteristics, descriptors and more."""
 //|
-//|     def __init__(self, value: Union[int, typing.ByteString]):
+//|     def __init__(self, value: Union[int, ReadableBuffer, str]):
 //|         """Create a new UUID or UUID object encapsulating the uuid value.
 //|         The value can be one of:
 //|
@@ -248,7 +248,7 @@ STATIC mp_obj_t bleio_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|     def __eq__(self, other: UUID) -> Optional[bool]:
+//|     def __eq__(self, other: Any) -> bool:
 //|         """Two UUID objects are equal if their values match and they are both 128-bit or both 16-bit."""
 //|         ...
 //|

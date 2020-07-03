@@ -151,7 +151,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_refresh(size_t n_args, cons
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_refresh_obj, 1, framebufferio_framebufferdisplay_obj_refresh);
 
-//|     auto_refresh: Optional[bool] = ...
+//|     auto_refresh: bool = ...
 //|     """True when the display is refreshed automatically."""
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_auto_refresh(mp_obj_t self_in) {
@@ -176,7 +176,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_auto_refresh_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     brightness: Optional[float] = ...
+//|     brightness: float = ...
 //|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
 //|     `auto_brightness` is True, the value of `brightness` will change automatically.
 //|     If `brightness` is set, `auto_brightness` will be disabled and will be set to False."""
@@ -213,7 +213,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     auto_brightness: Optional[bool] = ...
+//|     auto_brightness: bool = ...
 //|     """True when the display brightness is adjusted automatically, based on an ambient
 //|     light sensor or other method. Note that some displays may have this set to True by default,
 //|     but not actually implement automatic brightness adjustment. `auto_brightness` is set to False
@@ -276,7 +276,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     rotation: Optional[int] = ...
+//|     rotation: int = ...
 //|     """The rotation of the display as an int in degrees."""
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_rotation(mp_obj_t self_in) {
@@ -317,7 +317,7 @@ const mp_obj_property_t framebufferio_framebufferframebuffer_obj = {
 };
 
 
-//|     def fill_row(self, y: int, buffer: ReadableBuffer) -> displayio:
+//|     def fill_row(self, y: int, buffer: WriteableBuffer) -> displayio:
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area

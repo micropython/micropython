@@ -86,7 +86,7 @@ displayio_group_t* native_group(mp_obj_t group_obj) {
     return MP_OBJ_TO_PTR(native_group);
 }
 
-//|     hidden: Optional[bool] = ...
+//|     hidden: bool = ...
 //|     """True when the Group and all of it's layers are not visible. When False, the Group's layers
 //|     are visible if they haven't been hidden."""
 //|
@@ -111,7 +111,7 @@ const mp_obj_property_t displayio_group_hidden_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     scale: Optional[int] = ...
+//|     scale: int = ...
 //|     """Scales each pixel within the Group in both directions. For example, when scale=2 each pixel
 //|     will be represented by 2x2 pixels."""
 //|
@@ -140,7 +140,7 @@ const mp_obj_property_t displayio_group_scale_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     x: Optional[int] = ...
+//|     x: int = ...
 //|     """X position of the Group in the parent."""
 //|
 STATIC mp_obj_t displayio_group_obj_get_x(mp_obj_t self_in) {
@@ -165,7 +165,7 @@ const mp_obj_property_t displayio_group_x_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     y: Optional[int] = ...
+//|     y: int = ...
 //|     """Y position of the Group in the parent."""
 //|
 STATIC mp_obj_t displayio_group_obj_get_y(mp_obj_t self_in) {
@@ -264,7 +264,9 @@ STATIC mp_obj_t displayio_group_obj_remove(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_remove_obj, displayio_group_obj_remove);
 
-//|     def __len__(self) -> Union[bool, int, None]:
+//|     def __bool__(self) -> bool: ...
+//|
+//|     def __len__(self) -> int:
 //|         """Returns the number of layers in a Group"""
 //|         ...
 //|

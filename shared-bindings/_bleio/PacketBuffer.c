@@ -117,7 +117,7 @@ STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_o
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_buffer_readinto);
 
-//|     def write(self, data: bytes, *, header: bytes = None) -> int:
+//|     def write(self, data: bytes, *, header: Optional[bytes] = None) -> int:
 //|         """Writes all bytes from data into the same outgoing packet. The bytes from header are included
 //|         before data when the pending packet is currently empty.
 //|

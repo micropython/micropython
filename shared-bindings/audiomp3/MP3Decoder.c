@@ -124,7 +124,7 @@ STATIC mp_obj_t audiomp3_mp3file_obj___exit__(size_t n_args, const mp_obj_t *arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiomp3_mp3file___exit___obj, 4, 4, audiomp3_mp3file_obj___exit__);
 
-//|     file: Optional[file] = ...
+//|     file: file = ...
 //|     """File to play back."""
 //|
 STATIC mp_obj_t audiomp3_mp3file_obj_get_file(mp_obj_t self_in) {
@@ -154,7 +154,7 @@ const mp_obj_property_t audiomp3_mp3file_file_obj = {
 
 
 
-//|     sample_rate: Optional[int] = ...
+//|     sample_rate: int = ...
 //|     """32 bit value that dictates how quickly samples are loaded into the DAC
 //|     in Hertz (cycles per second). When the sample is looped, this can change
 //|     the pitch output without changing the underlying sample."""

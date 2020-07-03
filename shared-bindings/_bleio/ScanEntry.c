@@ -70,7 +70,7 @@ STATIC mp_obj_t bleio_scanentry_matches(mp_uint_t n_args, const mp_obj_t *pos_ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanentry_matches_obj, 2, bleio_scanentry_matches);
 
-//|     address: _bleio.Address = ...
+//|     address: Address = ...
 //|     """The address of the device (read-only), of type `_bleio.Address`."""
 //|
 STATIC mp_obj_t bleio_scanentry_get_address(mp_obj_t self_in) {

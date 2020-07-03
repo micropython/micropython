@@ -179,7 +179,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|     def read(self, nbytes: int = None) -> Optional[bytes]:
+//|     def read(self, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read characters.  If ``nbytes`` is specified then read at most that many
 //|         bytes. Otherwise, read everything that arrives until the connection
 //|         times out. Providing the number of bytes expected is highly recommended

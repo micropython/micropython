@@ -109,7 +109,7 @@ STATIC mp_obj_t bleio_connection_pair(mp_uint_t n_args, const mp_obj_t *pos_args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_pair_obj, 1, bleio_connection_pair);
 
-//|     def discover_remote_services(self, service_uuids_whitelist: iterable = None) -> Tuple(_bleio.Service, ...):
+//|     def discover_remote_services(self, service_uuids_whitelist: iterable = None) -> Service:
 //|         """Do BLE discovery for all services or for the given service UUIDS,
 //|          to find their handles and characteristics, and return the discovered services.
 //|          `Connection.connected` must be True.

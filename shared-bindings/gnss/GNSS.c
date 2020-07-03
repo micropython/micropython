@@ -171,7 +171,7 @@ const mp_obj_property_t gnss_altitude_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     timestamp: string = ...
+//|     timestamp: time.struct_time = ...
 //|     """Time when the position data was updated."""
 //|
 STATIC mp_obj_t gnss_obj_get_timestamp(mp_obj_t self_in) {

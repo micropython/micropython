@@ -49,7 +49,9 @@
 //|         ...
 //|
 
-//|     def __len__(self) -> Union[bool, int, None]:
+//|     def __bool__(self) -> bool: ...
+//|
+//|     def __len__(self) -> int:
 //|         """Return the length. This is used by (`len`)"""
 //|         ...
 //|

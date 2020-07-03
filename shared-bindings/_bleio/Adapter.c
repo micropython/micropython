@@ -95,7 +95,7 @@ const mp_obj_property_t bleio_adapter_enabled_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     address: str = ...
+//|     address: Address = ...
 //|     """MAC address of the BLE adapter. (read-only)"""
 //|
 STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
@@ -350,7 +350,7 @@ const mp_obj_property_t bleio_adapter_connections_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     def connect(self, address: Address, *, timeout: float/int) -> Adapter.connect:
+//|     def connect(self, address: Address, *, timeout: float/int) -> Connection:
 //|         """Attempts a connection to the device with the given address.
 //|
 //|         :param Address address: The address of the peripheral to connect to

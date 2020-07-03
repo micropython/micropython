@@ -91,7 +91,7 @@ STATIC mp_obj_t displayio_i2cdisplay_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_i2cdisplay_reset_obj, displayio_i2cdisplay_obj_reset);
 
-//|     def send(self, command: int, data: displayio) -> None:
+//|     def send(self, command: int, data: ReadableBuffer) -> None:
 //|         """Sends the given command value followed by the full set of data. Display state, such as
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...

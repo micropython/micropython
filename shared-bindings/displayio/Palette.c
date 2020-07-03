@@ -70,7 +70,9 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def __len__(self) -> Union[bool, int, None]:
+//|     def __bool__(self) -> bool: ...
+//|
+//|     def __len__(self) -> int:
 //|         """Returns the number of colors in a Palette"""
 //|         ...
 //|

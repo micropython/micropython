@@ -128,7 +128,7 @@ const mp_obj_property_t bleio_address_type_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __eq__(self, other: bytes) -> Optional[bool]:
+//|     def __eq__(self, other: Any) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""
 //|         ...
 //|
@@ -154,7 +154,7 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
     }
 }
 
-//|     def __hash__(self) -> Optional[int]:
+//|     def __hash__(self) -> int:
 //|         """Returns a hash for the Address data."""
 //|         ...
 //|
@@ -187,7 +187,7 @@ STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
               buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
 }
 
-//|     PUBLIC: bytes = ...
+//|     PUBLIC: int = ...
 //|     """A publicly known address, with a company ID (high 24 bits)and company-assigned part (low 24 bits)."""
 //|
 //|     RANDOM_STATIC: int = ...

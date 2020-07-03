@@ -169,7 +169,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_clear(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_clear_obj, frequencyio_frequencyin_obj_clear);
 
-//|     capture_period: Optional[int] = ...
+//|     capture_period: int = ...
 //|     """The capture measurement period. Lower incoming frequencies will be measured
 //|     more accurately with longer capture periods. Higher frequencies are more
 //|     accurate with shorter capture periods.

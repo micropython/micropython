@@ -133,7 +133,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_obj___exit__(size_t n_args, const m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cperipheral_i2c_peripheral___exit___obj, 4, 4, i2cperipheral_i2c_peripheral_obj___exit__);
 
-//|     def request(self, timeout: float = -1) -> i2cperipheral.I2CPeripheralRequest:
+//|     def request(self, timeout: float = -1) -> I2CPeripheralRequest:
 //|         """Wait for an I2C request.
 //|
 //|         :param float timeout: Timeout in seconds. Zero means wait forever, a negative value means check once

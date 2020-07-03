@@ -58,7 +58,7 @@ STATIC mp_obj_t _register(mp_obj_t self, mp_obj_t o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(register_obj, _register);
 
-//| def flush(self) -> Any:
+//| def flush(self) -> None:
 //|     """Send any queued drawing commands directly to the hardware.
 //|
 //|     :param int width: The width of the grid in tiles, or 1 for sprites."""
@@ -559,9 +559,9 @@ STATIC mp_obj_t _colorrgb(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colorrgb_obj, 4, 4, _colorrgb);
 
-//| def Display(self) -> Any: ...
-//| """End the display list"""
-//|
+//| def Display(self) -> None:
+//|     """End the display list"""
+//|     ...
 
 STATIC mp_obj_t _display(mp_obj_t self) {
 
@@ -570,7 +570,7 @@ STATIC mp_obj_t _display(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(display_obj, _display);
 
-//| def End(self) -> Any:
+//| def End(self) -> None:
 //|     """End drawing a graphics primitive
 //|
 //|     :meth:`Vertex2ii` and :meth:`Vertex2f` calls are ignored until the next :meth:`Begin`."""
@@ -628,7 +628,7 @@ STATIC mp_obj_t _macro(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(macro_obj, _macro);
 
-//| def Nop(self) -> Any:
+//| def Nop(self) -> None:
 //|     """No operation"""
 //|     ...
 //|
@@ -672,7 +672,7 @@ STATIC mp_obj_t _pointsize(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pointsize_obj, _pointsize);
 
-//| def RestoreContext(self) -> Any:
+//| def RestoreContext(self) -> None:
 //|     """Restore the current graphics context from the context stack"""
 //|     ...
 //|
@@ -684,7 +684,7 @@ STATIC mp_obj_t _restorecontext(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(restorecontext_obj, _restorecontext);
 
-//| def Return(self) -> Any:
+//| def Return(self) -> None:
 //|     """Return from a previous call command"""
 //|     ...
 //|
@@ -696,7 +696,7 @@ STATIC mp_obj_t _return(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(return_obj, _return);
 
-//| def SaveContext(self) -> Any:
+//| def SaveContext(self) -> None:
 //|     """Push the current graphics context on the context stack"""
 //|     ...
 //|

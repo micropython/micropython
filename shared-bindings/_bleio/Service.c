@@ -73,7 +73,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(service);
 }
 
-//|     characteristics: Tuple(Characteristic, ...) = ...
+//|     characteristics: Tuple[Characteristic, ...] = ...
 //|     """A tuple of :py:class:`Characteristic` designating the characteristics that are offered by
 //|     this service. (read-only)"""
 //|

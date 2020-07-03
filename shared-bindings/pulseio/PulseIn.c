@@ -234,7 +234,9 @@ const mp_obj_property_t pulseio_pulsein_paused_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __len__(self) -> Union[bool, int, None]:
+//|     def __bool__(self) -> bool: ...
+//|
+//|     def __len__(self) -> int:
 //|         """Returns the current pulse length
 //|
 //|         This allows you to::

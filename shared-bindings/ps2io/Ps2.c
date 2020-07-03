@@ -122,7 +122,7 @@ STATIC mp_obj_t ps2io_ps2_obj___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ps2io_ps2___exit___obj, 4, 4, ps2io_ps2_obj___exit__);
 
-//|     def popleft(self) -> byte:
+//|     def popleft(self) -> int:
 //|         """Removes and returns the oldest received byte. When buffer
 //|         is empty, raises an IndexError exception."""
 //|         ...
@@ -164,7 +164,7 @@ STATIC mp_obj_t ps2io_ps2_obj_sendcmd(mp_obj_t self_in, mp_obj_t ob) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(ps2io_ps2_sendcmd_obj, ps2io_ps2_obj_sendcmd);
 
-//|     def clear_errors(self) -> int:
+//|     def clear_errors(self) -> None:
 //|         """Returns and clears a bitmap with latest recorded communication errors.
 //|
 //|         Reception errors (arise asynchronously, as data is received):
@@ -202,7 +202,9 @@ STATIC mp_obj_t ps2io_ps2_obj_clear_errors(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_clear_errors_obj, ps2io_ps2_obj_clear_errors);
 
-//|     def __len__(self) -> Union[bool, int, None]:
+//|     def __bool__(self) -> bool: ...
+//|
+//|     def __len__(self) -> int:
 //|         """Returns the number of received bytes in buffer, available
 //|         to :py:func:`popleft()`."""
 //|         ...

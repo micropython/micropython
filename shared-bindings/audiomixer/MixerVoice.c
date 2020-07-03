@@ -56,7 +56,7 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def play(self, sample: Union[audiocore.WaveFile, audiomixer.Mixer, audiocore.RawSample], *, loop: bool = False) -> None:
+//|     def play(self, sample: Union[audiocore.WaveFile, Mixer, audiocore.RawSample], *, loop: bool = False) -> None:
 //|         """Plays the sample once when ``loop=False``, and continuously when ``loop=True``.
 //|         Does not block. Use `playing` to block.
 //|

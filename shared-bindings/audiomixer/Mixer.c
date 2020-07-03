@@ -190,7 +190,7 @@ const mp_obj_property_t audiomixer_mixer_sample_rate_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     voice: Tuple[audiomixer.MixerVoice, ...] = ...
+//|     voice: Tuple[MixerVoice, ...] = ...
 //|     """A tuple of the mixer's `audiomixer.MixerVoice` object(s).
 //|
 //|     .. code-block:: python

@@ -257,7 +257,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_show);
 
-//|     def fill(color: tuple[int, int, int]) -> None:
+//|     def fill(color: Union[int, Tuple[int, int, int]]) -> None:
 //|         """Fills the given pixelbuf with the given color."""
 //|         ...
 //|
