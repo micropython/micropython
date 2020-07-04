@@ -39,6 +39,7 @@
 #endif
 
 #include "py/obj.h"
+#include "py/objstr.h"
 #include "py/stream.h"
 #include "py/mpstate.h"
 #include "py/mphal.h"
@@ -50,6 +51,38 @@ TaskHandle_t mp_main_task_handle;
 
 STATIC uint8_t stdin_ringbuf_array[256];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};
+
+// Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
+void check_esp_err(esp_err_t code) {
+    if (code != ESP_OK) {
+        // map esp-idf error code to posix error code
+        uint32_t pcode = -code;
+        switch (code) {
+            case ESP_ERR_NO_MEM:
+                pcode = MP_ENOMEM;
+                break;
+            case ESP_ERR_TIMEOUT:
+                pcode = MP_ETIMEDOUT;
+                break;
+            case ESP_ERR_NOT_SUPPORTED:
+                pcode = MP_EOPNOTSUPP;
+                break;
+        }
+        // construct string object
+        mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
+        if (o_str == NULL) {
+            mp_raise_OSError(pcode);
+            return;
+        }
+        o_str->base.type = &mp_type_str;
+        o_str->data = (const byte *)esp_err_to_name(code); // esp_err_to_name ret's ptr to const str
+        o_str->len = strlen((char *)o_str->data);
+        o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+        // raise
+        mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(pcode), MP_OBJ_FROM_PTR(o_str)};
+        nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
+    }
+}
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
@@ -157,17 +190,10 @@ void mp_hal_delay_us(uint32_t us) {
         if (dt + pend_overhead < us) {
             // we have enough time to service pending events
             // (don't use MICROPY_EVENT_POLL_HOOK because it also yields)
-            mp_handle_pending();
+            mp_handle_pending(true);
         }
     }
 }
-
-/*
-extern int mp_stream_errno;
-int *__errno() {
-    return &mp_stream_errno;
-}
-*/
 
 // Wake up the main task if it is sleeping
 void mp_hal_wake_main_task_from_isr(void) {

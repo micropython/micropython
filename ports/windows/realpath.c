@@ -33,8 +33,9 @@ char *to_unix_path(char *p) {
     if (p != NULL) {
         char *pp = p;
         while (*pp != 0) {
-            if (*pp == '\\')
+            if (*pp == '\\') {
                 *pp = '/';
+            }
             ++pp;
         }
     }
@@ -50,14 +51,16 @@ char *realpath(const char *path, char *resolved_path) {
         errno = EINVAL;
     } else if (access(path, R_OK) == 0) {
         ret = resolved_path;
-        if (ret == NULL)
+        if (ret == NULL) {
             ret = malloc(_MAX_PATH);
+        }
         if (ret == NULL) {
             errno = ENOMEM;
         } else {
             ret = _fullpath(ret, path, _MAX_PATH);
-            if (ret == NULL)
+            if (ret == NULL) {
                 errno = EIO;
+            }
         }
     }
     return to_unix_path(ret);

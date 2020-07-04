@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 #include <zephyr.h>
-#include <console.h>
+#include <console/console.h>
 #include "zephyr_getchar.h"
 
 int real_main(void);

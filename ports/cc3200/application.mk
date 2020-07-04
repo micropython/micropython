@@ -73,13 +73,11 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 	help.c \
 	mpirq.c \
 	mperror.c \
-	mpexception.c \
 	)
 
 APP_MODS_SRC_C = $(addprefix mods/,\
 	modmachine.c \
 	modnetwork.c \
-	modubinascii.c \
 	moduos.c \
 	modusocket.c \
 	modussl.c \
@@ -113,12 +111,12 @@ APP_CC3100_SRC_C = $(addprefix drivers/cc3100/src/,\
 APP_SL_SRC_C = $(addprefix simplelink/,\
 	oslib/osi_freertos.c \
 	cc_pal.c \
-	) 
+	)
 
 APP_TELNET_SRC_C = $(addprefix telnet/,\
 	telnet.c \
 	)
-	
+
 APP_UTIL_SRC_C = $(addprefix util/,\
 	cryptohash.c \
 	fifo.c \
@@ -126,18 +124,19 @@ APP_UTIL_SRC_C = $(addprefix util/,\
 	random.c \
 	socketfifo.c \
 	)
-	
+
 APP_UTIL_SRC_S = $(addprefix util/,\
+	cortex_m3_get_sp.s \
 	sleeprestore.s \
 	)
-	
+
 APP_MAIN_SRC_C = \
 	main.c \
 	mptask.c \
 	mpthreadport.c \
 	serverstask.c \
 	fatfs_port.c \
-	
+
 APP_LIB_SRC_C = $(addprefix lib/,\
 	oofatfs/ff.c \
 	oofatfs/ffunicode.c \
@@ -145,11 +144,12 @@ APP_LIB_SRC_C = $(addprefix lib/,\
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
+	utils/gchelper_native.c \
 	utils/pyexec.c \
 	utils/interrupt_char.c \
 	utils/sys_stdio_mphal.c \
 	)
-	
+
 APP_STM_SRC_C = $(addprefix ports/stm32/,\
 	bufhelper.c \
 	irq.c \

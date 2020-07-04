@@ -58,6 +58,9 @@ Methods
      - *rx* specifies the RX pin to use.
      - *txbuf* specifies the length in characters of the TX buffer.
      - *rxbuf* specifies the length in characters of the RX buffer.
+     - *timeout* specifies the time to wait for the first character (in ms).
+     - *timeout_char* specifies the time to wait between characters (in ms).
+     - *invert* specifies which lines to invert.
 
    On the WiPy only the following keyword-only parameter is supported:
 
@@ -87,7 +90,8 @@ Methods
 .. method:: UART.read([nbytes])
 
    Read characters.  If ``nbytes`` is specified then read at most that many bytes,
-   otherwise read as much data as possible.
+   otherwise read as much data as possible. It may return sooner if a timeout
+   is reached. The timeout is configurable in the constructor.
 
    Return value: a bytes object containing the bytes read in.  Returns ``None``
    on timeout.
@@ -95,14 +99,16 @@ Methods
 .. method:: UART.readinto(buf[, nbytes])
 
    Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
-   that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
+   that many bytes.  Otherwise, read at most ``len(buf)`` bytes. It may return sooner if a timeout
+   is reached. The timeout is configurable in the constructor.
 
    Return value: number of bytes read and stored into ``buf`` or ``None`` on
    timeout.
 
 .. method:: UART.readline()
 
-   Read a line, ending in a newline character.
+   Read a line, ending in a newline character. It may return sooner if a timeout
+   is reached. The timeout is configurable in the constructor.
 
    Return value: the line read or ``None`` on timeout.
 

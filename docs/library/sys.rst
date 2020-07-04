@@ -9,7 +9,7 @@
 Functions
 ---------
 
-.. function:: exit(retval=0)
+.. function:: exit(retval=0, /)
 
    Terminate current program with a given exit code. Underlyingly, this
    function raise as `SystemExit` exception. If an argument is given, its
@@ -28,7 +28,7 @@ Functions
       This function is a MicroPython extension intended to provide similar
       functionality to the :mod:`atexit` module in CPython.
 
-.. function:: print_exception(exc, file=sys.stdout)
+.. function:: print_exception(exc, file=sys.stdout, /)
 
    Print exception with a traceback to a file-like object *file* (or
    `sys.stdout` by default).

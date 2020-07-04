@@ -29,7 +29,7 @@ This summarises the points detailed below and lists the principal recommendation
 * Allocate an emergency exception buffer (see below).
 
 
-MicroPython Issues
+MicroPython issues
 ------------------
 
 The emergency exception buffer
@@ -42,6 +42,11 @@ for the purpose. Debugging is simplified if the following code is included in an
 
     import micropython
     micropython.alloc_emergency_exception_buf(100)
+
+The emergency exception buffer can only hold one exception stack trace. This means that if a second exception is
+thrown during the handling of an exception while the heap is locked, that second exception's stack trace will
+replace the original one - even if the second exception is cleanly handled. This can lead to confusing exception
+messages if the buffer is later printed.
 
 Simplicity
 ~~~~~~~~~~
@@ -214,7 +219,7 @@ Exceptions
 If an ISR raises an exception it will not propagate to the main loop. The interrupt will be disabled unless the
 exception is handled by the ISR code.
 
-General Issues
+General issues
 --------------
 
 This is merely a brief introduction to the subject of real time programming. Beginners should note
@@ -225,7 +230,7 @@ with an appreciation of the following issues.
 
 .. _ISR:
 
-Interrupt Handler Design
+Interrupt handler design
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 As mentioned above, ISR's should be designed to be as simple as possible. They should always return in a short,
@@ -276,7 +281,7 @@ advanced topic beyond the scope of this tutorial.
 
 .. _Critical:
 
-Critical Sections
+Critical sections
 ~~~~~~~~~~~~~~~~~
 
 An example of a critical section of code is one which accesses more than one variable which can be affected by an ISR. If

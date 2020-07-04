@@ -48,6 +48,7 @@ LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 SRC_C = \
 	main.c \
 	gccollect.c \
+	lib/utils/gchelper_generic.c \
 
 # Add fmode when compiling with mingw gcc
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)

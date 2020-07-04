@@ -49,7 +49,7 @@ static void gc_collect_inner(int level) {
     if (level == XCHAL_NUM_AREGS / 8) {
         // get the sp
         volatile uint32_t sp = (uint32_t)get_sp();
-        gc_collect_root((void**)sp, ((mp_uint_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+        gc_collect_root((void **)sp, ((mp_uint_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
         return;
     }
 

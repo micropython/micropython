@@ -1,0 +1,47 @@
+MicroPython \.\+ version
+Use \.\+
+>>> # word movement
+>>> # backward-word, start in word
+>>> \.\+
+1234
+>>> # backward-word, don't start in word
+>>> \.\+
+1234
+>>> # backward-word on start of line. if cursor is moved, this will result in a SyntaxError
+>>> \.\+
+6
+>>> # forward-word, start in word
+>>> \.\+
+18
+>>> # forward-word, don't start in word
+>>> \.\+
+16
+>>> # forward-word on eol. if cursor is moved, this will result in a SyntaxError
+>>> \.\+
+6
+>>> 
+>>> # kill word
+>>> # backward-kill-word, start in word
+>>> \.\+
+123
+>>> # backward-kill-word, don't start in word
+>>> \.\+
+101
+>>> # forward-kill-word, start in word
+>>> \.\+
+123
+>>> # forward-kill-word, don't start in word
+>>> \.\+
+3
+>>> 
+>>> # extra move/kill shortcuts
+>>> # ctrl-left
+>>> \.\+
+1234
+>>> # ctrl-right
+>>> \.\+
+123
+>>> # ctrl-w
+>>> \.\+
+1
+>>> 

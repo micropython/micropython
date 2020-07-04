@@ -1,5 +1,5 @@
-Floating Point instructions
-==============================
+Floating point instructions
+===========================
 
 These instructions support the use of the ARM floating point coprocessor
 (on platforms such as the Pyboard which are equipped with one). The FPU
@@ -61,7 +61,7 @@ Where ``[Rn + offset]`` denotes the memory address obtained by adding Rn to the 
 is specified in bytes. Since each float value occupies a 32 bit word, when accessing arrays of
 floats the offset must always be a multiple of four bytes.
 
-Data Comparison
+Data comparison
 ---------------
 
 * vcmp(Sd, Sm)

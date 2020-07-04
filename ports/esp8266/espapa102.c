@@ -33,7 +33,7 @@
 #include "user_interface.h"
 #include "espapa102.h"
 
-#define NOP asm volatile(" nop \n\t")
+#define NOP asm volatile (" nop \n\t")
 
 static inline void _esp_apa102_send_byte(uint32_t clockPinMask, uint32_t dataPinMask, uint8_t byte) {
     for (uint32_t i = 0; i < 8; i++) {

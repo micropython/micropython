@@ -40,7 +40,6 @@
 #include "prcm.h"
 #include "utils.h"
 #include "pybwdt.h"
-#include "mpexception.h"
 #include "mperror.h"
 
 
@@ -105,7 +104,7 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
     uint timeout_ms = args[1].u_int;
     if (timeout_ms < PYBWDT_MIN_TIMEOUT_MS) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
     if (pyb_wdt_obj.running) {
         mp_raise_OSError(MP_EPERM);

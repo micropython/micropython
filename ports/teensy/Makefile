@@ -3,6 +3,9 @@ include ../../py/mkenv.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
@@ -20,10 +23,10 @@ endif
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
 $(info Using ARDUINO toolchain)
-CROSS_COMPILE = $(ARDUINO)/hardware/tools/arm-none-eabi/bin/arm-none-eabi-
+CROSS_COMPILE ?= $(ARDUINO)/hardware/tools/arm-none-eabi/bin/arm-none-eabi-
 else
 $(info Using toolchain from PATH)
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 endif
 
 CFLAGS_TEENSY = -DF_CPU=96000000 -DUSB_SERIAL -D__MK20DX256__
@@ -101,6 +104,7 @@ STM_SRC_C = $(addprefix ports/stm32/,\
 LIB_SRC_C = $(addprefix lib/,\
 	libc/string0.c \
 	mp-readline/readline.c \
+	utils/gchelper_native.c \
 	utils/pyexec.c \
 	utils/sys_stdio_mphal.c \
 	)

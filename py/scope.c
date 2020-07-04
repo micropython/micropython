@@ -30,7 +30,7 @@
 
 #if MICROPY_ENABLE_COMPILER
 
-// these low numbered qstrs should fit in 8 bits
+// These low numbered qstrs should fit in 8 bits.  See assertions below.
 STATIC const uint8_t scope_simple_name_table[] = {
     [SCOPE_MODULE] = MP_QSTR__lt_module_gt_,
     [SCOPE_LAMBDA] = MP_QSTR__lt_lambda_gt_,
@@ -41,13 +41,21 @@ STATIC const uint8_t scope_simple_name_table[] = {
 };
 
 scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options) {
+    // Make sure those qstrs indeed fit in an uint8_t.
+    MP_STATIC_ASSERT(MP_QSTR__lt_module_gt_ <= UINT8_MAX);
+    MP_STATIC_ASSERT(MP_QSTR__lt_lambda_gt_ <= UINT8_MAX);
+    MP_STATIC_ASSERT(MP_QSTR__lt_listcomp_gt_ <= UINT8_MAX);
+    MP_STATIC_ASSERT(MP_QSTR__lt_dictcomp_gt_ <= UINT8_MAX);
+    MP_STATIC_ASSERT(MP_QSTR__lt_setcomp_gt_ <= UINT8_MAX);
+    MP_STATIC_ASSERT(MP_QSTR__lt_genexpr_gt_ <= UINT8_MAX);
+
     scope_t *scope = m_new0(scope_t, 1);
     scope->kind = kind;
     scope->pn = pn;
     scope->source_file = source_file;
     if (kind == SCOPE_FUNCTION || kind == SCOPE_CLASS) {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
-        scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t*)pn)->nodes[0]);
+        scope->simple_name = MP_PARSE_NODE_LEAF_ARG(((mp_parse_node_struct_t *)pn)->nodes[0]);
     } else {
         scope->simple_name = scope_simple_name_table[kind];
     }

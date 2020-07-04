@@ -22,6 +22,7 @@ def asm_sum_words(r0, r1):
 
     mov(r0, r2)
 
+
 @micropython.asm_thumb
 def asm_sum_bytes(r0, r1):
 
@@ -46,12 +47,13 @@ def asm_sum_bytes(r0, r1):
 
     mov(r0, r2)
 
+
 import array
 
-b = array.array('l', (100, 200, 300, 400))
+b = array.array("l", (100, 200, 300, 400))
 n = asm_sum_words(len(b), b)
 print(b, n)
 
-b = array.array('b', (10, 20, 30, 40, 50, 60, 70, 80))
+b = array.array("b", (10, 20, 30, 40, 50, 60, 70, 80))
 n = asm_sum_bytes(len(b), b)
 print(b, n)

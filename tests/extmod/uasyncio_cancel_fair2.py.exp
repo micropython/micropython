@@ -1,0 +1,8 @@
+sleep a
+sleep b 0
+sleep b 1
+sleep b 2
+cancelled a
+done b 0
+done b 1
+done b 2

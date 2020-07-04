@@ -1,16 +1,17 @@
 # 1-Wire driver for MicroPython
 # MIT license; Copyright (c) 2016 Damien P. George
 
-from micropython import const
 import _onewire as _ow
+
 
 class OneWireError(Exception):
     pass
 
+
 class OneWire:
-    SEARCH_ROM = const(0xf0)
-    MATCH_ROM = const(0x55)
-    SKIP_ROM = const(0xcc)
+    SEARCH_ROM = 0xF0
+    MATCH_ROM = 0x55
+    SKIP_ROM = 0xCC
 
     def __init__(self, pin):
         self.pin = pin
@@ -44,14 +45,14 @@ class OneWire:
 
     def select_rom(self, rom):
         self.reset()
-        self.writebyte(MATCH_ROM)
+        self.writebyte(self.MATCH_ROM)
         self.write(rom)
 
     def scan(self):
         devices = []
         diff = 65
         rom = False
-        for i in range(0xff):
+        for i in range(0xFF):
             rom, diff = self._search_rom(rom, diff)
             if rom:
                 devices += [rom]
@@ -62,7 +63,7 @@ class OneWire:
     def _search_rom(self, l_rom, diff):
         if not self.reset():
             return None, 0
-        self.writebyte(SEARCH_ROM)
+        self.writebyte(self.SEARCH_ROM)
         if not l_rom:
             l_rom = bytearray(8)
         rom = bytearray(8)
@@ -73,10 +74,10 @@ class OneWire:
             for bit in range(8):
                 b = self.readbit()
                 if self.readbit():
-                    if b: # there are no devices or there is an error on the bus
+                    if b:  # there are no devices or there is an error on the bus
                         return None, 0
                 else:
-                    if not b: # collision, two devices with different bit meaning
+                    if not b:  # collision, two devices with different bit meaning
                         if diff > i or ((l_rom[byte] & (1 << bit)) and diff != i):
                             b = 1
                             next_diff = i

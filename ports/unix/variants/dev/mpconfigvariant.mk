@@ -1,0 +1,7 @@
+PROG ?= micropython-dev
+
+FROZEN_MANIFEST ?= $(VARIANT_DIR)/manifest.py
+
+MICROPY_ROM_TEXT_COMPRESSION = 1
+
+MICROPY_PY_BLUETOOTH = 1

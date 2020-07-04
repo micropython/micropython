@@ -33,6 +33,9 @@
 #include "soc/sens_reg.h"
 #include "driver/gpio.h"
 #include "driver/adc.h"
+#include "esp_heap_caps.h"
+#include "multi_heap.h"
+#include "../heap_private.h"
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -46,9 +49,9 @@
 STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 
     if (machine_rtc_config.ext0_pin != -1) {
-        mp_raise_ValueError("no resources");
+        mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
-    //mp_raise_msg(&mp_type_RuntimeError, "touchpad wakeup not available for this version of ESP-IDF");
+    // mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("touchpad wakeup not available for this version of ESP-IDF"));
 
     machine_rtc_config.wake_on_touch = mp_obj_is_true(wake);
     return mp_const_none;
@@ -58,7 +61,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_touch_obj, esp32_wake_on_touch);
 STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     if (machine_rtc_config.wake_on_touch) {
-        mp_raise_ValueError("no resources");
+        mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
     }
     enum {ARG_pin, ARG_level};
     const mp_arg_t allowed_args[] = {
@@ -74,7 +77,7 @@ STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_m
         gpio_num_t pin_id = machine_pin_get_id(args[ARG_pin].u_obj);
         if (pin_id != machine_rtc_config.ext0_pin) {
             if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
-                mp_raise_msg(&mp_type_ValueError, "invalid pin");
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
             }
             machine_rtc_config.ext0_pin = pin_id;
         }
@@ -109,7 +112,7 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 
             gpio_num_t pin_id = machine_pin_get_id(elem[i]);
             if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
-                mp_raise_msg(&mp_type_ValueError, "invalid pin");
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
                 break;
             }
             ext1_pins |= (1ll << pin_id);
@@ -145,6 +148,28 @@ STATIC mp_obj_t esp32_hall_sensor(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_hall_sensor_obj, esp32_hall_sensor);
 
+STATIC mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
+    mp_int_t cap = mp_obj_get_int(cap_in);
+    multi_heap_info_t info;
+    heap_t *heap;
+    mp_obj_t heap_list = mp_obj_new_list(0, 0);
+    SLIST_FOREACH(heap, &registered_heaps, next) {
+        if (heap_caps_match(heap, cap)) {
+            multi_heap_get_info(heap->heap, &info);
+            mp_obj_t data[] = {
+                MP_OBJ_NEW_SMALL_INT(heap->end - heap->start), // total heap size
+                MP_OBJ_NEW_SMALL_INT(info.total_free_bytes),   // total free bytes
+                MP_OBJ_NEW_SMALL_INT(info.largest_free_block), // largest free contiguous
+                MP_OBJ_NEW_SMALL_INT(info.minimum_free_bytes), // minimum free seen
+            };
+            mp_obj_t this_heap = mp_obj_new_tuple(4, data);
+            mp_obj_list_append(heap_list, this_heap);
+        }
+    }
+    return heap_list;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_idf_heap_info_obj, esp32_idf_heap_info);
+
 STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
@@ -153,18 +178,22 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
     { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
+    { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Partition), MP_ROM_PTR(&esp32_partition_type) },
     { MP_ROM_QSTR(MP_QSTR_RMT), MP_ROM_PTR(&esp32_rmt_type) },
     { MP_ROM_QSTR(MP_QSTR_ULP), MP_ROM_PTR(&esp32_ulp_type) },
 
-    { MP_ROM_QSTR(MP_QSTR_WAKEUP_ALL_LOW), MP_ROM_PTR(&mp_const_false_obj) },
-    { MP_ROM_QSTR(MP_QSTR_WAKEUP_ANY_HIGH), MP_ROM_PTR(&mp_const_true_obj) },
+    { MP_ROM_QSTR(MP_QSTR_WAKEUP_ALL_LOW), MP_ROM_FALSE },
+    { MP_ROM_QSTR(MP_QSTR_WAKEUP_ANY_HIGH), MP_ROM_TRUE },
+
+    { MP_ROM_QSTR(MP_QSTR_HEAP_DATA), MP_ROM_INT(MALLOC_CAP_8BIT) },
+    { MP_ROM_QSTR(MP_QSTR_HEAP_EXEC), MP_ROM_INT(MALLOC_CAP_EXEC) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp32_module_globals, esp32_module_globals_table);
 
 const mp_obj_module_t esp32_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&esp32_module_globals,
+    .globals = (mp_obj_dict_t *)&esp32_module_globals,
 };

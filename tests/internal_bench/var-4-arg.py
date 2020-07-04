@@ -6,4 +6,5 @@ def test(num):
     while i < num:
         i += 1
 
-bench.run(lambda n:test(20000000))
+
+bench.run(lambda n: test(20000000))

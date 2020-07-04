@@ -33,7 +33,7 @@
 
 STATIC mp_obj_list_t *uheapq_get_heap(mp_obj_t heap_in) {
     if (!mp_obj_is_type(heap_in, &mp_type_list)) {
-        mp_raise_TypeError("heap must be a list");
+        mp_raise_TypeError(MP_ERROR_TEXT("heap must be a list"));
     }
     return MP_OBJ_TO_PTR(heap_in);
 }
@@ -81,7 +81,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_uheapq_heappush_obj, mod_uheapq_heappush);
 STATIC mp_obj_t mod_uheapq_heappop(mp_obj_t heap_in) {
     mp_obj_list_t *heap = uheapq_get_heap(heap_in);
     if (heap->len == 0) {
-        mp_raise_msg(&mp_type_IndexError, "empty heap");
+        mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("empty heap"));
     }
     mp_obj_t item = heap->items[0];
     heap->len -= 1;
@@ -115,8 +115,8 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_uheapq_globals, mp_module_uheapq_globals_t
 
 const mp_obj_module_t mp_module_uheapq = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_uheapq_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_uheapq_globals,
 };
 #endif
 
-#endif //MICROPY_PY_UHEAPQ
+#endif // MICROPY_PY_UHEAPQ

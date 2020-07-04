@@ -7,7 +7,7 @@ QSTR_DEFS = qstrdefsport.h
 include $(TOP)/py/py.mk
 
 XC16 = /opt/microchip/xc16/v1.35
-CROSS_COMPILE = $(XC16)/bin/xc16-
+CROSS_COMPILE ?= $(XC16)/bin/xc16-
 
 PARTFAMILY = dsPIC33F
 PART = 33FJ256GP506

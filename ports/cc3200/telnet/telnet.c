@@ -26,8 +26,7 @@
 
 #include <stdint.h>
 
-#include "py/mpconfig.h"
-#include "py/obj.h"
+#include "py/runtime.h"
 #include "py/mphal.h"
 #include "lib/utils/interrupt_char.h"
 #include "telnet.h"
@@ -36,7 +35,6 @@
 #include "modwlan.h"
 #include "modusocket.h"
 #include "debug.h"
-#include "mpexception.h"
 #include "serverstask.h"
 #include "genhdr/mpversion.h"
 #include "irq.h"

@@ -110,13 +110,17 @@
         vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
         extern void ets_loop_iter(void); \
         ets_loop_iter(); \
-    }
+}
 #define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
 #define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
 
+#include "xtirq.h"
+#define MICROPY_BEGIN_ATOMIC_SECTION() disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state) enable_irq(state)
+
 // type definitions for the specific machine
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p)))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
@@ -131,7 +135,7 @@ typedef uint32_t sys_prot_t; // for modlwip
 #include <sys/types.h>
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
-void *esp_native_code_commit(void*, size_t, void*);
+void *esp_native_code_commit(void *, size_t, void *);
 #define MP_PLAT_COMMIT_EXEC(buf, len, reloc) esp_native_code_commit(buf, len, reloc)
 
 // printer for debugging output, goes to UART only
@@ -191,5 +195,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define MICROPY_PY_SYS_PLATFORM "esp8266"
 
 #define MP_FASTCODE(n) __attribute__((section(".iram0.text." #n))) n
+#define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) MP_FASTCODE(f)
+#define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) MP_FASTCODE(f)
 
 #define _assert(expr) ((expr) ? (void)0 : __assert_func(__FILE__, __LINE__, __func__, #expr))

@@ -71,7 +71,7 @@ STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
         netif->ip_addr.addr >> 8 & 0xff,
         netif->ip_addr.addr >> 16 & 0xff,
         netif->ip_addr.addr >> 24
-    );
+        );
 }
 
 STATIC mp_obj_t network_cyw43_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -135,7 +135,7 @@ STATIC int network_cyw43_scan_cb(void *env, const cyw43_ev_scan_result_t *res) {
     mp_obj_get_array(list, &len, &items);
     for (size_t i = 0; i < len; ++i) {
         mp_obj_tuple_t *t = MP_OBJ_TO_PTR(items[i]);
-        if (memcmp(res->bssid, ((mp_obj_str_t*)MP_OBJ_TO_PTR(t->items[1]))->data, sizeof(res->bssid)) == 0) {
+        if (memcmp(res->bssid, ((mp_obj_str_t *)MP_OBJ_TO_PTR(t->items[1]))->data, sizeof(res->bssid)) == 0) {
             if (res->rssi > MP_OBJ_SMALL_INT_VALUE(t->items[3])) {
                 t->items[3] = MP_OBJ_NEW_SMALL_INT(res->rssi);
             }
@@ -153,7 +153,7 @@ STATIC int network_cyw43_scan_cb(void *env, const cyw43_ev_scan_result_t *res) {
             MP_OBJ_NEW_SMALL_INT(res->channel),
             MP_OBJ_NEW_SMALL_INT(res->rssi),
             MP_OBJ_NEW_SMALL_INT(res->auth_mode),
-            //mp_const_false, // hidden
+            // mp_const_false, // hidden
             MP_OBJ_NEW_SMALL_INT(1), // N
         };
         mp_obj_list_append(list, mp_obj_new_tuple(6, tuple));
@@ -166,8 +166,8 @@ STATIC mp_obj_t network_cyw43_scan(size_t n_args, const mp_obj_t *pos_args, mp_m
     enum { ARG_passive, ARG_essid, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_passive, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_essid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_essid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -196,7 +196,7 @@ STATIC mp_obj_t network_cyw43_scan(size_t n_args, const mp_obj_t *pos_args, mp_m
     int scan_res = cyw43_wifi_scan(self->cyw, &opts, MP_OBJ_TO_PTR(res), network_cyw43_scan_cb);
 
     if (scan_res < 0) {
-        mp_raise_msg(&mp_type_OSError, "STA must be active");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
     }
 
     // Wait for scan to finish, with a 10s timeout
@@ -212,10 +212,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_cyw43_scan_obj, 1, network_cyw43_scan)
 STATIC mp_obj_t network_cyw43_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_essid, ARG_key, ARG_auth, ARG_bssid, ARG_channel };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_essid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
-        { MP_QSTR_key, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_essid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_key, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_auth, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
 
@@ -279,7 +279,7 @@ STATIC mp_obj_t network_cyw43_status(size_t n_args, const mp_obj_t *args) {
         case MP_QSTR_stations: {
             // return list of connected stations
             if (self->itf != CYW43_ITF_AP) {
-                mp_raise_ValueError("AP required");
+                mp_raise_ValueError(MP_ERROR_TEXT("AP required"));
             }
             int num_stas;
             uint8_t macs[32 * 6];
@@ -289,13 +289,13 @@ STATIC mp_obj_t network_cyw43_status(size_t n_args, const mp_obj_t *args) {
                 mp_obj_t tuple[1] = {
                     mp_obj_new_bytes(&macs[i * 6], 6),
                 };
-                ((mp_obj_list_t*)MP_OBJ_TO_PTR(list))->items[i] = mp_obj_new_tuple(1, tuple);
+                ((mp_obj_list_t *)MP_OBJ_TO_PTR(list))->items[i] = mp_obj_new_tuple(1, tuple);
             }
             return list;
         }
     }
 
-    mp_raise_ValueError("unknown status param");
+    mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_cyw43_status_obj, 1, 2, network_cyw43_status);
 
@@ -316,7 +316,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
     if (kwargs->used == 0) {
         // Get config value
         if (n_args != 2) {
-            mp_raise_TypeError("must query one param");
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
         }
 
         switch (mp_obj_str_get_qstr(args[1])) {
@@ -334,12 +334,12 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 if (self->itf == CYW43_ITF_STA) {
                     uint8_t buf[36];
                     cyw43_ioctl(self->cyw, CYW43_IOCTL_GET_SSID, 36, buf, self->itf);
-                    return mp_obj_new_str((const char*)buf + 4, nw_get_le32(buf));
+                    return mp_obj_new_str((const char *)buf + 4, nw_get_le32(buf));
                 } else {
                     size_t len;
                     const uint8_t *buf;
                     cyw43_wifi_ap_get_ssid(self->cyw, &len, &buf);
-                    return mp_obj_new_str((const char*)buf, len);
+                    return mp_obj_new_str((const char *)buf, len);
                 }
             }
             case MP_QSTR_mac: {
@@ -354,12 +354,12 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                 return MP_OBJ_NEW_SMALL_INT(nw_get_le32(buf) / 4);
             }
             default:
-                mp_raise_ValueError("unknown config param");
+                mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
     } else {
         // Set config value(s)
         if (n_args != 1) {
-            mp_raise_TypeError("can't specify pos and kw args");
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
         }
 
         for (size_t i = 0; i < kwargs->alloc; ++i) {
@@ -379,7 +379,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     case MP_QSTR_essid: {
                         size_t len;
                         const char *str = mp_obj_str_get_data(e->value, &len);
-                        cyw43_wifi_ap_set_ssid(self->cyw, len, (const uint8_t*)str);
+                        cyw43_wifi_ap_set_ssid(self->cyw, len, (const uint8_t *)str);
                         break;
                     }
                     case MP_QSTR_monitor: {
@@ -400,7 +400,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     case MP_QSTR_password: {
                         size_t len;
                         const char *str = mp_obj_str_get_data(e->value, &len);
-                        cyw43_wifi_ap_set_password(self->cyw, len, (const uint8_t*)str);
+                        cyw43_wifi_ap_set_password(self->cyw, len, (const uint8_t *)str);
                         break;
                     }
                     case MP_QSTR_pm: {
@@ -420,7 +420,7 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         break;
                     }
                     default:
-                        mp_raise_ValueError("unknown config param");
+                        mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }
             }
         }
@@ -454,7 +454,7 @@ const mp_obj_type_t mp_network_cyw43_type = {
     .name = MP_QSTR_CYW43,
     .print = network_cyw43_print,
     .make_new = network_cyw43_make_new,
-    .locals_dict = (mp_obj_dict_t*)&network_cyw43_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&network_cyw43_locals_dict,
 };
 
 #endif // MICROPY_PY_NETWORK_CYW43

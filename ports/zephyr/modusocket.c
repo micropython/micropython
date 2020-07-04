@@ -75,18 +75,18 @@ STATIC void socket_check_closed(socket_obj_t *socket) {
 
 STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct sockaddr *sockaddr) {
     // We employ the fact that port and address offsets are the same for IPv4 & IPv6
-    struct sockaddr_in *sockaddr_in = (struct sockaddr_in*)sockaddr;
+    struct sockaddr_in *sockaddr_in = (struct sockaddr_in *)sockaddr;
 
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
-    sockaddr_in->sin_family = net_context_get_family((void*)socket->ctx);
+    sockaddr_in->sin_family = net_context_get_family((void *)socket->ctx);
     RAISE_ERRNO(net_addr_pton(sockaddr_in->sin_family, mp_obj_str_get_str(addr_items[0]), &sockaddr_in->sin_addr));
     sockaddr_in->sin_port = htons(mp_obj_get_int(addr_items[1]));
 }
 
 STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     // We employ the fact that port and address offsets are the same for IPv4 & IPv6
-    struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6*)addr;
+    struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6 *)addr;
     char buf[40];
     net_addr_ntop(addr->sa_family, &sockaddr_in6->sin6_addr, buf, sizeof(buf));
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(addr->sa_family == AF_INET ? 2 : 4, NULL);
@@ -94,7 +94,7 @@ STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     tuple->items[0] = mp_obj_new_str(buf, strlen(buf));
     // We employ the fact that port offset is the same for IPv4 & IPv6
     // not filled in
-    //tuple->items[1] = mp_obj_new_int(ntohs(((struct sockaddr_in*)addr)->sin_port));
+    // tuple->items[1] = mp_obj_new_int(ntohs(((struct sockaddr_in*)addr)->sin_port));
     tuple->items[1] = port;
 
     if (addr->sa_family == AF_INET6) {
@@ -119,7 +119,7 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     if (self->ctx == -1) {
         mp_printf(print, "<socket NULL>");
     } else {
-        struct net_context *ctx = (void*)self->ctx;
+        struct net_context *ctx = (void *)self->ctx;
         mp_printf(print, "<socket %p type=%d>", ctx, net_context_get_type(ctx));
     }
 }
@@ -462,7 +462,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals
 
 const mp_obj_module_t mp_module_usocket = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_usocket_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
 };
 
 #endif // MICROPY_PY_USOCKET

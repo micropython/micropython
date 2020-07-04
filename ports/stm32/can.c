@@ -163,16 +163,16 @@ void can_deinit(pyb_can_obj_t *self) {
 void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank) {
     CAN_FilterConfTypeDef filter;
 
-    filter.FilterIdHigh         = 0;
-    filter.FilterIdLow          = 0;
-    filter.FilterMaskIdHigh     = 0;
-    filter.FilterMaskIdLow      = 0;
+    filter.FilterIdHigh = 0;
+    filter.FilterIdLow = 0;
+    filter.FilterMaskIdHigh = 0;
+    filter.FilterMaskIdLow = 0;
     filter.FilterFIFOAssignment = CAN_FILTER_FIFO0;
-    filter.FilterNumber         = f;
-    filter.FilterMode           = CAN_FILTERMODE_IDMASK;
-    filter.FilterScale          = CAN_FILTERSCALE_16BIT;
-    filter.FilterActivation     = DISABLE;
-    filter.BankNumber           = bank;
+    filter.FilterNumber = f;
+    filter.FilterMode = CAN_FILTERMODE_IDMASK;
+    filter.FilterScale = CAN_FILTERSCALE_16BIT;
+    filter.FilterActivation = DISABLE;
+    filter.BankNumber = bank;
 
     HAL_CAN_ConfigFilter(NULL, &filter);
 }
@@ -235,15 +235,15 @@ HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
     assert_param(IS_CAN_DLC(hcan->pTxMsg->DLC));
 
     // Select one empty transmit mailbox
-    if ((hcan->Instance->TSR&CAN_TSR_TME0) == CAN_TSR_TME0) {
+    if ((hcan->Instance->TSR & CAN_TSR_TME0) == CAN_TSR_TME0) {
         transmitmailbox = CAN_TXMAILBOX_0;
         rqcpflag = CAN_FLAG_RQCP0;
         txokflag = CAN_FLAG_TXOK0;
-    } else if ((hcan->Instance->TSR&CAN_TSR_TME1) == CAN_TSR_TME1) {
+    } else if ((hcan->Instance->TSR & CAN_TSR_TME1) == CAN_TSR_TME1) {
         transmitmailbox = CAN_TXMAILBOX_1;
         rqcpflag = CAN_FLAG_RQCP1;
         txokflag = CAN_FLAG_TXOK1;
-    } else if ((hcan->Instance->TSR&CAN_TSR_TME2) == CAN_TSR_TME2) {
+    } else if ((hcan->Instance->TSR & CAN_TSR_TME2) == CAN_TSR_TME2) {
         transmitmailbox = CAN_TXMAILBOX_2;
         rqcpflag = CAN_FLAG_RQCP2;
         txokflag = CAN_FLAG_TXOK2;
@@ -257,12 +257,12 @@ HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
         if (hcan->pTxMsg->IDE == CAN_ID_STD) {
             assert_param(IS_CAN_STDID(hcan->pTxMsg->StdId));
             hcan->Instance->sTxMailBox[transmitmailbox].TIR |= ((hcan->pTxMsg->StdId << 21) | \
-                                                        hcan->pTxMsg->RTR);
+                hcan->pTxMsg->RTR);
         } else {
             assert_param(IS_CAN_EXTID(hcan->pTxMsg->ExtId));
             hcan->Instance->sTxMailBox[transmitmailbox].TIR |= ((hcan->pTxMsg->ExtId << 3) | \
-                                                        hcan->pTxMsg->IDE | \
-                                                        hcan->pTxMsg->RTR);
+                hcan->pTxMsg->IDE | \
+                hcan->pTxMsg->RTR);
         }
 
         // Set up the DLC
@@ -272,13 +272,13 @@ HAL_StatusTypeDef CAN_Transmit(CAN_HandleTypeDef *hcan, uint32_t Timeout) {
 
         // Set up the data field
         hcan->Instance->sTxMailBox[transmitmailbox].TDLR = (((uint32_t)hcan->pTxMsg->Data[3] << 24) |
-                                                ((uint32_t)hcan->pTxMsg->Data[2] << 16) |
-                                                ((uint32_t)hcan->pTxMsg->Data[1] << 8) |
-                                                ((uint32_t)hcan->pTxMsg->Data[0]));
+            ((uint32_t)hcan->pTxMsg->Data[2] << 16) |
+            ((uint32_t)hcan->pTxMsg->Data[1] << 8) |
+            ((uint32_t)hcan->pTxMsg->Data[0]));
         hcan->Instance->sTxMailBox[transmitmailbox].TDHR = (((uint32_t)hcan->pTxMsg->Data[7] << 24) |
-                                                ((uint32_t)hcan->pTxMsg->Data[6] << 16) |
-                                                ((uint32_t)hcan->pTxMsg->Data[5] << 8) |
-                                                ((uint32_t)hcan->pTxMsg->Data[4]));
+            ((uint32_t)hcan->pTxMsg->Data[6] << 16) |
+            ((uint32_t)hcan->pTxMsg->Data[5] << 8) |
+            ((uint32_t)hcan->pTxMsg->Data[4]));
         // Request transmission
         hcan->Instance->sTxMailBox[transmitmailbox].TIR |= CAN_TI0R_TXRQ;
 

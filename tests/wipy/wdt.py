@@ -1,6 +1,6 @@
-'''
+"""
 WDT test for the CC3200 based boards
-'''
+"""
 
 from machine import WDT
 import time

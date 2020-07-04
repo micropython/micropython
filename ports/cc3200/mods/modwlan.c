@@ -45,7 +45,6 @@
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
 #include "serverstask.h"
 #endif
-#include "mpexception.h"
 #include "mpirq.h"
 #include "pybsleep.h"
 #include "antenna.h"
@@ -589,7 +588,7 @@ STATIC void wlan_reset (void) {
 
 STATIC void wlan_validate_mode (uint mode) {
     if (mode != ROLE_STA && mode != ROLE_AP) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
@@ -600,7 +599,7 @@ STATIC void wlan_set_mode (uint mode) {
 
 STATIC void wlan_validate_ssid_len (uint32_t len) {
     if (len > MODWLAN_SSID_LEN_MAX) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
@@ -633,7 +632,7 @@ STATIC void wlan_validate_security (uint8_t auth, const char *key, uint8_t len) 
     return;
 
 invalid_args:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 STATIC void wlan_set_security (uint8_t auth, const char *key, uint8_t len) {
@@ -656,7 +655,7 @@ STATIC void wlan_set_security (uint8_t auth, const char *key, uint8_t len) {
 
 STATIC void wlan_validate_channel (uint8_t channel) {
     if (channel < 1 || channel > 11) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
@@ -668,7 +667,7 @@ STATIC void wlan_set_channel (uint8_t channel) {
 #if MICROPY_HW_ANTENNA_DIVERSITY
 STATIC void wlan_validate_antenna (uint8_t antenna) {
     if (antenna != ANTENNA_TYPE_INTERNAL && antenna != ANTENNA_TYPE_EXTERNAL) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
@@ -964,7 +963,7 @@ STATIC mp_obj_t wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     if (status == MODWLAN_ERROR_TIMEOUT) {
         mp_raise_OSError(MP_ETIMEDOUT);
     } else if (status == MODWLAN_ERROR_INVALID_PARAMS) {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
     return mp_const_none;
 }
@@ -1040,7 +1039,7 @@ STATIC mp_obj_t wlan_ifconfig(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
             // check for the correct string
             const char *mode = mp_obj_str_get_str(args[1].u_obj);
             if (strcmp("dhcp", mode)) {
-                mp_raise_ValueError(mpexception_value_invalid_arguments);
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
             }
 
             // only if we are not in AP mode
@@ -1154,7 +1153,7 @@ STATIC mp_obj_t wlan_mac(size_t n_args, const mp_obj_t *args) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
         if (bufinfo.len != 6) {
-            mp_raise_ValueError(mpexception_value_invalid_arguments);
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
         }
         memcpy(self->mac, bufinfo.buf, SL_MAC_ADDR_LEN);
         sl_NetCfgSet(SL_MAC_ADDRESS_SET, 1, SL_MAC_ADDR_LEN, (_u8 *)self->mac);
@@ -1190,7 +1189,7 @@ STATIC mp_obj_t wlan_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     return _irq;
 
 invalid_args:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 
@@ -1219,7 +1218,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wlan_irq_obj, 1, wlan_irq);
 //
 //        // the call to sl_NetAppSet corrupts the input string URN=args[1], so we copy into a local buffer
 //        if (len > MAX_DEVICE_URN_LEN) {
-//            mp_raise_ValueError(mpexception_value_invalid_arguments);
+//            mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 //        }
 //        strcpy(urn, p);
 //

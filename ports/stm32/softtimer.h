@@ -26,14 +26,13 @@
 #ifndef MICROPY_INCLUDED_STM32_SOFTTIMER_H
 #define MICROPY_INCLUDED_STM32_SOFTTIMER_H
 
-#include "py/obj.h"
+#include "py/pairheap.h"
 
 #define SOFT_TIMER_MODE_ONE_SHOT (1)
 #define SOFT_TIMER_MODE_PERIODIC (2)
 
 typedef struct _soft_timer_entry_t {
-    mp_obj_base_t base; // so struct can be used as an object and still be traced by GC
-    struct _soft_timer_entry_t *next;
+    mp_pairheap_t pairheap;
     uint32_t mode;
     uint32_t expiry_ms;
     uint32_t delta_ms; // for periodic mode

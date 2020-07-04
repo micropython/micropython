@@ -42,7 +42,14 @@
 
 // Location in RAM of bootloader state (just after the top of the stack)
 extern uint32_t _estack[];
-#define BL_STATE ((uint32_t*)&_estack)
+#define BL_STATE ((uint32_t *)&_estack)
+
+static inline void powerctrl_disable_hsi_if_unused(void) {
+    #if !MICROPY_HW_CLK_USE_HSI && (defined(STM32F4) || defined(STM32F7) || defined(STM32H7))
+    // Disable HSI if it's not used to save a little bit of power
+    __HAL_RCC_HSI_DISABLE();
+    #endif
+}
 
 NORETURN void powerctrl_mcu_reset(void) {
     BL_STATE[1] = 1; // invalidate bootloader address
@@ -67,7 +74,7 @@ static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl
         "msr msp, r2\n"         // get stack pointer
         "ldr r2, [r1, #4]\n"    // get address of destination
         "bx r2\n"               // branch to bootloader
-    );
+        );
 }
 
 void powerctrl_check_enter_bootloader(void) {
@@ -86,17 +93,55 @@ void powerctrl_check_enter_bootloader(void) {
 
 #if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32WB)
 
+typedef struct _sysclk_scaling_table_entry_t {
+    uint16_t mhz;
+    uint16_t value;
+} sysclk_scaling_table_entry_t;
+
+#if defined(STM32F7)
+STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+    { 151, PWR_REGULATOR_VOLTAGE_SCALE3 },
+    { 180, PWR_REGULATOR_VOLTAGE_SCALE2 },
+    // Above 180MHz uses default PWR_REGULATOR_VOLTAGE_SCALE1
+};
+#elif defined(STM32H7)
+STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+    // See table 55 "Kernel clock distribution overview" of RM0433.
+    {200, PWR_REGULATOR_VOLTAGE_SCALE3},
+    {300, PWR_REGULATOR_VOLTAGE_SCALE2},
+    // Above 300MHz uses default PWR_REGULATOR_VOLTAGE_SCALE1
+    // (above 400MHz needs special handling for overdrive, currently unsupported)
+};
+#endif
+
+STATIC int powerctrl_config_vos(uint32_t sysclk_mhz) {
+    #if defined(STM32F7) || defined(STM32H7)
+    uint32_t volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
+    for (int i = 0; i < MP_ARRAY_SIZE(volt_scale_table); ++i) {
+        if (sysclk_mhz <= volt_scale_table[i].mhz) {
+            volt_scale = volt_scale_table[i].value;
+            break;
+        }
+    }
+    if (HAL_PWREx_ControlVoltageScaling(volt_scale) != HAL_OK) {
+        return -MP_EIO;
+    }
+    #endif
+    return 0;
+}
+
 // Assumes that PLL is used as the SYSCLK source
 int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk_mhz, bool need_pllsai) {
     uint32_t flash_latency;
 
     #if defined(STM32F7)
-
     if (need_pllsai) {
         // Configure PLLSAI at 48MHz for those peripherals that need this freq
-        const uint32_t pllsain = 192;
+        // (calculation assumes it can get an integral value of PLLSAIN)
+        const uint32_t pllm = (RCC->PLLCFGR >> RCC_PLLCFGR_PLLM_Pos) & 0x3f;
         const uint32_t pllsaip = 4;
         const uint32_t pllsaiq = 2;
+        const uint32_t pllsain = 48 * pllsaip * pllm / (HSE_VALUE / 1000000);
         RCC->PLLSAICFGR = pllsaiq << RCC_PLLSAICFGR_PLLSAIQ_Pos
             | (pllsaip / 2 - 1) << RCC_PLLSAICFGR_PLLSAIP_Pos
             | pllsain << RCC_PLLSAICFGR_PLLSAIN_Pos;
@@ -109,19 +154,15 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
         }
         RCC->DCKCFGR2 |= RCC_DCKCFGR2_CK48MSEL;
     }
+    #endif
 
     // If possible, scale down the internal voltage regulator to save power
-    uint32_t volt_scale;
-    if (sysclk_mhz <= 151) {
-        volt_scale = PWR_REGULATOR_VOLTAGE_SCALE3;
-    } else if (sysclk_mhz <= 180) {
-        volt_scale = PWR_REGULATOR_VOLTAGE_SCALE2;
-    } else {
-        volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
+    int ret = powerctrl_config_vos(sysclk_mhz);
+    if (ret) {
+        return ret;
     }
-    if (HAL_PWREx_ControlVoltageScaling(volt_scale) != HAL_OK) {
-        return -MP_EIO;
-    }
+
+    #if defined(STM32F7)
 
     // These flash_latency values assume a supply voltage between 2.7V and 3.6V
     if (sysclk_mhz <= 30) {
@@ -153,32 +194,106 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
         return -MP_EIO;
     }
 
+    powerctrl_disable_hsi_if_unused();
+
     return 0;
 }
 
 #endif
 
-#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB)
+#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
-    if (wanted_div <= 1) { return RCC_SYSCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_SYSCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_SYSCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_SYSCLK_DIV8; }
-    else if (wanted_div <= 16) { return RCC_SYSCLK_DIV16; }
-    else if (wanted_div <= 64) { return RCC_SYSCLK_DIV64; }
-    else if (wanted_div <= 128) { return RCC_SYSCLK_DIV128; }
-    else if (wanted_div <= 256) { return RCC_SYSCLK_DIV256; }
-    else { return RCC_SYSCLK_DIV512; }
+    #if defined(STM32H7)
+    if (wanted_div <= 1) {
+        return RCC_HCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_HCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_HCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_HCLK_DIV8;
+    } else if (wanted_div <= 16) {
+        return RCC_HCLK_DIV16;
+    } else if (wanted_div <= 64) {
+        return RCC_HCLK_DIV64;
+    } else if (wanted_div <= 128) {
+        return RCC_HCLK_DIV128;
+    } else if (wanted_div <= 256) {
+        return RCC_HCLK_DIV256;
+    } else {
+        return RCC_HCLK_DIV512;
+    }
+    #else
+    if (wanted_div <= 1) {
+        return RCC_SYSCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_SYSCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_SYSCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_SYSCLK_DIV8;
+    } else if (wanted_div <= 16) {
+        return RCC_SYSCLK_DIV16;
+    } else if (wanted_div <= 64) {
+        return RCC_SYSCLK_DIV64;
+    } else if (wanted_div <= 128) {
+        return RCC_SYSCLK_DIV128;
+    } else if (wanted_div <= 256) {
+        return RCC_SYSCLK_DIV256;
+    } else {
+        return RCC_SYSCLK_DIV512;
+    }
+    #endif
 }
 
-STATIC uint32_t calc_apb_div(uint32_t wanted_div) {
-    if (wanted_div <= 1) { return RCC_HCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_HCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_HCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
-    else { return RCC_SYSCLK_DIV16; }
+STATIC uint32_t calc_apb1_div(uint32_t wanted_div) {
+    #if defined(STM32H7)
+    if (wanted_div <= 1) {
+        return RCC_APB1_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_APB1_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_APB1_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_APB1_DIV8;
+    } else {
+        return RCC_APB1_DIV16;
+    }
+    #else
+    if (wanted_div <= 1) {
+        return RCC_HCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_HCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_HCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_HCLK_DIV8;
+    } else {
+        return RCC_HCLK_DIV16;
+    }
+    #endif
 }
+
+STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
+    #if defined(STM32H7)
+    if (wanted_div <= 1) {
+        return RCC_APB2_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_APB2_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_APB2_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_APB2_DIV8;
+    } else {
+        return RCC_APB2_DIV16;
+    }
+    #else
+    return calc_apb1_div(wanted_div);
+    #endif
+}
+
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
     // Return straightaway if the clocks are already at the desired frequency
@@ -196,11 +311,11 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
 
     // Search for a valid PLL configuration that keeps USB at 48MHz
     uint32_t sysclk_mhz = sysclk / 1000000;
-    for (const uint16_t *pll = &pll_freq_table[MP_ARRAY_SIZE(pll_freq_table) - 1]; pll >= &pll_freq_table[0]; --pll) {
-        uint32_t sys = *pll & 0xff;
+    for (const pll_freq_table_t *pll = &pll_freq_table[MP_ARRAY_SIZE(pll_freq_table) - 1]; pll >= &pll_freq_table[0]; --pll) {
+        uint32_t sys = PLL_FREQ_TABLE_SYS(*pll);
         if (sys <= sysclk_mhz) {
-            m = (*pll >> 10) & 0x3f;
-            p = ((*pll >> 7) & 0x6) + 2;
+            m = PLL_FREQ_TABLE_M(*pll);
+            p = PLL_FREQ_TABLE_P(*pll);
             if (m == 0) {
                 // special entry for using HSI directly
                 sysclk_source = RCC_SYSCLKSOURCE_HSI;
@@ -248,8 +363,13 @@ set_clk:
     #if !defined(STM32H7)
     ahb = sysclk >> AHBPrescTable[RCC_ClkInitStruct.AHBCLKDivider >> RCC_CFGR_HPRE_Pos];
     #endif
-    RCC_ClkInitStruct.APB1CLKDivider = calc_apb_div(ahb / apb1);
-    RCC_ClkInitStruct.APB2CLKDivider = calc_apb_div(ahb / apb2);
+    RCC_ClkInitStruct.APB1CLKDivider = calc_apb1_div(ahb / apb1);
+    RCC_ClkInitStruct.APB2CLKDivider = calc_apb2_div(ahb / apb2);
+    #if defined(STM32H7)
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+    #endif
 
     #if MICROPY_HW_CLK_LAST_FREQ
     // Save the bus dividers for use later
@@ -283,6 +403,26 @@ set_clk:
     RCC_OscInitStruct.PLL.PLLN = n;
     RCC_OscInitStruct.PLL.PLLP = p;
     RCC_OscInitStruct.PLL.PLLQ = q;
+
+    #if defined(STM32H7)
+    RCC_OscInitStruct.PLL.PLLR = 0;
+    if (MICROPY_HW_CLK_VALUE / 1000000 <= 2 * m) {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_0; // 1-2MHz
+    } else if (MICROPY_HW_CLK_VALUE / 1000000 <= 4 * m) {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_1; // 2-4MHz
+    } else if (MICROPY_HW_CLK_VALUE / 1000000 <= 8 * m) {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2; // 4-8MHz
+    } else {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3; // 8-16MHz
+    }
+    if (MICROPY_HW_CLK_VALUE / 1000000 * n <= 420 * m) {
+        RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOMEDIUM; // 150-420MHz
+    } else {
+        RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE; // 192-960MHz
+    }
+    RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    #endif
+
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         return -MP_EIO;
     }
@@ -317,7 +457,35 @@ set_clk:
     return 0;
 }
 
+#elif defined(STM32WB)
+
+int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
+    // For now it's not supported to change SYSCLK (only bus dividers).
+    if (sysclk != HAL_RCC_GetSysClockFreq()) {
+        return -MP_EINVAL;
+    }
+
+    // Return straightaway if the clocks are already at the desired frequency.
+    if (ahb == HAL_RCC_GetHCLKFreq()
+        && apb1 == HAL_RCC_GetPCLK1Freq()
+        && apb2 == HAL_RCC_GetPCLK2Freq()) {
+        return 0;
+    }
+
+    // Calculate and configure the bus clock dividers.
+    uint32_t cfgr = RCC->CFGR;
+    cfgr &= ~(7 << RCC_CFGR_PPRE2_Pos | 7 << RCC_CFGR_PPRE1_Pos | 0xf << RCC_CFGR_HPRE_Pos);
+    cfgr |= calc_ahb_div(sysclk / ahb);
+    cfgr |= calc_apb1_div(ahb / apb1);
+    cfgr |= calc_apb2_div(ahb / apb2) << (RCC_CFGR_PPRE2_Pos - RCC_CFGR_PPRE1_Pos);
+    RCC->CFGR = cfgr;
+
+    return 0;
+}
+
 #endif
+
+#endif // !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
 
 void powerctrl_enter_stop_mode(void) {
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
@@ -338,9 +506,9 @@ void powerctrl_enter_stop_mode(void) {
     HAL_PWREx_EnableFlashPowerDown();
     #endif
 
-    # if defined(STM32F7)
+    #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
-    # else
+    #else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
     #endif
 
@@ -370,6 +538,11 @@ void powerctrl_enter_stop_mode(void) {
     }
     #endif
 
+    #if defined(STM32F7)
+    // Enable overdrive to reach 216MHz (if needed)
+    HAL_PWREx_EnableOverDrive();
+    #endif
+
     // enable PLL
     __HAL_RCC_PLL_ENABLE();
     while (!__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY)) {
@@ -388,12 +561,21 @@ void powerctrl_enter_stop_mode(void) {
     }
     #endif
 
+    powerctrl_disable_hsi_if_unused();
+
     #if defined(STM32F7)
     if (RCC->DCKCFGR2 & RCC_DCKCFGR2_CK48MSEL) {
         // Enable PLLSAI if it is selected as 48MHz source
         RCC->CR |= RCC_CR_PLLSAION;
         while (!(RCC->CR & RCC_CR_PLLSAIRDY)) {
         }
+    }
+    #endif
+
+    #if defined(STM32H7)
+    // Enable PLL3 for USB
+    RCC->CR |= RCC_CR_PLL3ON;
+    while (!(RCC->CR & RCC_CR_PLL3RDY)) {
     }
     #endif
 

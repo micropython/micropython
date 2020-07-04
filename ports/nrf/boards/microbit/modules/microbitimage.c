@@ -162,7 +162,7 @@ STATIC microbit_image_obj_t *image_from_parsed_str(const char *s, mp_int_t len) 
         } else if ('c' >= '0' && c <= '9') {
             ++line_len;
         } else {
-            mp_raise_ValueError("Unexpected character in Image definition.");
+            mp_raise_ValueError(MP_ERROR_TEXT("Unexpected character in Image definition."));
         }
     }
     if (line_len) {
@@ -227,7 +227,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
                     return image_from_parsed_str(str, len);
                 }
             } else {
-                mp_raise_msg(&mp_type_TypeError, "Image(s) takes a string.");
+                mp_raise_TypeError(MP_ERROR_TEXT("Image(s) takes a string."));
             }
         }
 
@@ -243,7 +243,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
                 mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
 
                 if (w < 0 || h < 0 || (size_t)(w * h) != bufinfo.len) {
-                    mp_raise_ValueError("image data is incorrect size");
+                    mp_raise_ValueError(MP_ERROR_TEXT("image data is incorrect size"));
                 }
                 mp_int_t i = 0;
                 for (mp_int_t y = 0; y < h; y++) {
@@ -258,7 +258,7 @@ STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t 
         }
 
         default: {
-            mp_raise_msg(&mp_type_TypeError, "Image() takes 0 to 3 arguments");
+            mp_raise_TypeError(MP_ERROR_TEXT("Image() takes 0 to 3 arguments"));
         }
     }
 }
@@ -351,19 +351,19 @@ mp_obj_t microbit_image_get_pixel(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in
     mp_int_t x = mp_obj_get_int(x_in);
     mp_int_t y = mp_obj_get_int(y_in);
     if (x < 0 || y < 0) {
-        mp_raise_ValueError("index cannot be negative");
+        mp_raise_ValueError(MP_ERROR_TEXT("index can't be negative"));
     }
     if (x < imageWidth(self) && y < imageHeight(self)) {
         return MP_OBJ_NEW_SMALL_INT(imageGetPixelValue(self, x, y));
     }
-    mp_raise_ValueError("index too large");
+    mp_raise_ValueError(MP_ERROR_TEXT("index too large"));
 }
 MP_DEFINE_CONST_FUN_OBJ_3(microbit_image_get_pixel_obj, microbit_image_get_pixel);
 
 /* Raise an exception if not mutable */
 static void check_mutability(microbit_image_obj_t *self) {
     if (self->base.five) {
-        mp_raise_msg(&mp_type_TypeError, "image cannot be modified (try copying first)");
+        mp_raise_TypeError(MP_ERROR_TEXT("image can't be modified (try copying first)"));
     }
 }
 
@@ -375,16 +375,16 @@ mp_obj_t microbit_image_set_pixel(mp_uint_t n_args, const mp_obj_t *args) {
     mp_int_t x = mp_obj_get_int(args[1]);
     mp_int_t y = mp_obj_get_int(args[2]);
     if (x < 0 || y < 0) {
-        mp_raise_ValueError("index cannot be negative");
+        mp_raise_ValueError(MP_ERROR_TEXT("index can't be negative"));
     }
     mp_int_t bright = mp_obj_get_int(args[3]);
     if (bright < 0 || bright > MAX_BRIGHTNESS)
-        mp_raise_ValueError("brightness out of bounds.");
+        mp_raise_ValueError(MP_ERROR_TEXT("brightness out of bounds."));
     if (x < imageWidth(self) && y < imageHeight(self)) {
         greyscaleSetPixelValue(&(self->greyscale), x, y, bright);
         return mp_const_none;
     }
-    mp_raise_ValueError("index too large");
+    mp_raise_ValueError(MP_ERROR_TEXT("index too large"));
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(microbit_image_set_pixel_obj, 4, 4, microbit_image_set_pixel);
 
@@ -393,7 +393,7 @@ mp_obj_t microbit_image_fill(mp_obj_t self_in, mp_obj_t n_in) {
     check_mutability(self);
     mp_int_t n = mp_obj_get_int(n_in);
     if (n < 0 || n > MAX_BRIGHTNESS) {
-        mp_raise_ValueError("brightness out of bounds.");
+        mp_raise_ValueError(MP_ERROR_TEXT("brightness out of bounds."));
     }
     greyscaleFill(&self->greyscale, n);
     return mp_const_none;
@@ -406,17 +406,17 @@ mp_obj_t microbit_image_blit(mp_uint_t n_args, const mp_obj_t *args) {
 
     mp_obj_t src = args[1];
     if (mp_obj_get_type(src) != &microbit_image_type) {
-        mp_raise_msg(&mp_type_TypeError, "expecting an image");
+        mp_raise_TypeError(MP_ERROR_TEXT("expecting an image"));
     }
     if (n_args == 7) {
-        mp_raise_msg(&mp_type_TypeError, "must specify both offsets");
+        mp_raise_TypeError(MP_ERROR_TEXT("must specify both offsets"));
     }
     mp_int_t x = mp_obj_get_int(args[2]);
     mp_int_t y = mp_obj_get_int(args[3]);
     mp_int_t w = mp_obj_get_int(args[4]);
     mp_int_t h = mp_obj_get_int(args[5]);
     if (w < 0 || h < 0) {
-        mp_raise_ValueError("size cannot be negative");
+        mp_raise_ValueError(MP_ERROR_TEXT("size can't be negative"));
     }
     mp_int_t xdest;
     mp_int_t ydest;
@@ -608,7 +608,7 @@ microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_float_t f
 microbit_image_obj_t *microbit_image_dim(microbit_image_obj_t *lhs, mp_int_t fval) {
 #endif
     if (fval < 0)
-        mp_raise_ValueError("Brightness multiplier must not be negative.");
+        mp_raise_ValueError(MP_ERROR_TEXT("Brightness multiplier must not be negative."));
     greyscale_t *result = greyscale_new(imageWidth(lhs), imageHeight(lhs));
     for (int x = 0; x < imageWidth(lhs); ++x) {
         for (int y = 0; y < imageWidth(lhs); ++y) {
@@ -628,7 +628,7 @@ microbit_image_obj_t *microbit_image_sum(microbit_image_obj_t *lhs, microbit_ima
     mp_int_t w = imageWidth(lhs);
     if (imageHeight(rhs) != h || imageWidth(lhs) != w) {
 // TODO: verify that image width in test above should really test (lhs != w)
-        mp_raise_ValueError("Images must be the same size.");
+        mp_raise_ValueError(MP_ERROR_TEXT("Images must be the same size."));
     }
     greyscale_t *result = greyscale_new(w, h);
     for (int x = 0; x < w; ++x) {

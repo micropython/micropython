@@ -34,6 +34,7 @@
 #include "py/persistentcode.h"
 #include "py/bc0.h"
 #include "py/objstr.h"
+#include "py/mpthread.h"
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
@@ -134,7 +135,7 @@ STATIC byte *extract_prelude(const byte **ip, bytecode_prelude_t *prelude) {
     prelude->n_kwonly_args = n_kwonly_args;
     prelude->n_def_pos_args = n_def_pos_args;
     MP_BC_PRELUDE_SIZE_DECODE(*ip);
-    byte *ip_info = (byte*)*ip;
+    byte *ip_info = (byte *)*ip;
     *ip += n_info;
     *ip += n_cell;
     return ip_info;
@@ -159,9 +160,9 @@ typedef struct _reloc_info_t {
 #if MICROPY_EMIT_THUMB
 STATIC void asm_thumb_rewrite_mov(uint8_t *pc, uint16_t val) {
     // high part
-    *(uint16_t*)pc = (*(uint16_t*)pc & 0xfbf0) | (val >> 1 & 0x0400) | (val >> 12);
+    *(uint16_t *)pc = (*(uint16_t *)pc & 0xfbf0) | (val >> 1 & 0x0400) | (val >> 12);
     // low part
-    *(uint16_t*)(pc + 2) = (*(uint16_t*)(pc + 2) & 0x0f00) | (val << 4 & 0x7000) | (val & 0x00ff);
+    *(uint16_t *)(pc + 2) = (*(uint16_t *)(pc + 2) & 0x0f00) | (val << 4 & 0x7000) | (val & 0x00ff);
 
 }
 #endif
@@ -199,10 +200,10 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
             size_t addr = read_uint(ri->reader, NULL);
             if ((addr & 1) == 0) {
                 // Point to somewhere in text
-                addr_to_adjust = &((uintptr_t*)text)[addr >> 1];
+                addr_to_adjust = &((uintptr_t *)text)[addr >> 1];
             } else {
                 // Point to somewhere in rodata
-                addr_to_adjust = &((uintptr_t*)ri->const_table[1])[addr >> 1];
+                addr_to_adjust = &((uintptr_t *)ri->const_table[1])[addr >> 1];
             }
         }
         op >>= 1;
@@ -226,7 +227,7 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
             dest = (uintptr_t)&mp_fun_table;
         } else {
             // Destination is an entry in mp_fun_table
-            dest = ((uintptr_t*)&mp_fun_table)[op - 7];
+            dest = ((uintptr_t *)&mp_fun_table)[op - 7];
         }
         while (n--) {
             *addr_to_adjust++ += dest;
@@ -274,7 +275,7 @@ STATIC qstr load_qstr(mp_reader_t *reader, qstr_window_t *qw) {
     }
     len >>= 1;
     char *str = m_new(char, len);
-    read_bytes(reader, (byte*)str, len);
+    read_bytes(reader, (byte *)str, len);
     qstr qst = qstr_from_strn(str, len);
     m_del(char, str, len);
     qstr_window_push(qw, qst);
@@ -289,7 +290,7 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
         size_t len = read_uint(reader, NULL);
         vstr_t vstr;
         vstr_init_len(&vstr, len);
-        read_bytes(reader, (byte*)vstr.buf, len);
+        read_bytes(reader, (byte *)vstr.buf, len);
         if (obj_type == 's' || obj_type == 'b') {
             return mp_obj_new_str_from_vstr(obj_type == 's' ? &mp_type_str : &mp_type_bytes, &vstr);
         } else if (obj_type == 'i') {
@@ -303,9 +304,11 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
 
 STATIC void load_prelude_qstrs(mp_reader_t *reader, qstr_window_t *qw, byte *ip) {
     qstr simple_name = load_qstr(reader, qw);
-    ip[0] = simple_name; ip[1] = simple_name >> 8;
+    ip[0] = simple_name;
+    ip[1] = simple_name >> 8;
     qstr source_file = load_qstr(reader, qw);
-    ip[2] = source_file; ip[3] = source_file >> 8;
+    ip[2] = source_file;
+    ip[3] = source_file >> 8;
 }
 
 STATIC void load_prelude(mp_reader_t *reader, qstr_window_t *qw, byte **ip, bytecode_prelude_t *prelude) {
@@ -315,7 +318,7 @@ STATIC void load_prelude(mp_reader_t *reader, qstr_window_t *qw, byte **ip, byte
     read_uint(reader, &ip_read);                    // read in n_info/n_cell (is effectively a var-uint)
 
     // Prelude header has been read into *ip, now decode and extract values from it
-    extract_prelude((const byte**)ip, prelude);
+    extract_prelude((const byte **)ip, prelude);
 
     // Load qstrs in prelude
     load_prelude_qstrs(reader, qw, ip_read);
@@ -354,7 +357,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
     #if !MICROPY_EMIT_MACHINE_CODE
     if (kind != MP_CODE_BYTECODE) {
-        mp_raise_ValueError("incompatible .mpy file");
+        mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
     #endif
 
@@ -381,7 +384,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
     } else {
         // Allocate memory for native data and load it
         size_t fun_alloc;
-        MP_PLAT_ALLOC_EXEC(fun_data_len, (void**)&fun_data, &fun_alloc);
+        MP_PLAT_ALLOC_EXEC(fun_data_len, (void **)&fun_data, &fun_alloc);
         read_bytes(reader, fun_data, fun_data_len);
 
         if (kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER) {
@@ -397,7 +400,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
                     dest[1] = (qst >> 8) & 0xff;
                 } else if ((off & 3) == 3) {
                     // Generic, aligned qstr-object link
-                    *(mp_obj_t*)dest = MP_OBJ_NEW_QSTR(qst);
+                    *(mp_obj_t *)dest = MP_OBJ_NEW_QSTR(qst);
                 } else {
                     // Architecture-specific link
                     arch_link_qstr(dest, (off & 3) == 2, qst);
@@ -539,12 +542,12 @@ mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
         || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()
         || read_uint(reader, NULL) > QSTR_WINDOW_SIZE) {
-        mp_raise_ValueError("incompatible .mpy file");
+        mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
         byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
-            mp_raise_ValueError("incompatible .mpy arch");
+            mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy arch"));
         }
     }
     qstr_window_t qw;
@@ -577,7 +580,7 @@ mp_raw_code_t *mp_raw_code_load_file(const char *filename) {
 #include "py/objstr.h"
 
 STATIC void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
-    print->print_strn(print->data, (const char*)data, len);
+    print->print_strn(print->data, (const char *)data, len);
 }
 
 #define BYTES_FOR_INT ((BYTES_PER_WORD * 8 + 6) / 7)
@@ -589,7 +592,7 @@ STATIC void mp_print_uint(mp_print_t *print, size_t n) {
     for (; n != 0; n >>= 7) {
         *--p = 0x80 | (n & 0x7f);
     }
-    print->print_strn(print->data, (char*)p, buf + sizeof(buf) - p);
+    print->print_strn(print->data, (char *)p, buf + sizeof(buf) - p);
 }
 
 STATIC void save_qstr(mp_print_t *print, qstr_window_t *qw, qstr qst) {
@@ -623,7 +626,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         const char *str = mp_obj_str_get_data(o, &len);
         mp_print_bytes(print, &obj_type, 1);
         mp_print_uint(print, len);
-        mp_print_bytes(print, (const byte*)str, len);
+        mp_print_bytes(print, (const byte *)str, len);
     } else if (MP_OBJ_TO_PTR(o) == &mp_const_ellipsis_obj) {
         byte obj_type = 'e';
         mp_print_bytes(print, &obj_type, 1);
@@ -647,7 +650,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         mp_obj_print_helper(&pr, o, PRINT_REPR);
         mp_print_bytes(print, &obj_type, 1);
         mp_print_uint(print, vstr.len);
-        mp_print_bytes(print, (const byte*)vstr.buf, vstr.len);
+        mp_print_bytes(print, (const byte *)vstr.buf, vstr.len);
         vstr_clear(&vstr);
     }
 }
@@ -685,13 +688,13 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
         const byte *ip_info = extract_prelude(&ip, &prelude);
 
         // Save prelude
-        mp_print_bytes(print, rc->fun_data, ip_info - (const byte*)rc->fun_data);
+        mp_print_bytes(print, rc->fun_data, ip_info - (const byte *)rc->fun_data);
         save_prelude_qstrs(print, qstr_window, ip_info);
         ip_info += 4;
         mp_print_bytes(print, ip_info, ip - ip_info);
 
         // Save bytecode
-        const byte *ip_top = (const byte*)rc->fun_data + rc->fun_data_len;
+        const byte *ip_top = (const byte *)rc->fun_data + rc->fun_data_len;
         save_bytecode(print, qstr_window, ip, ip_top);
     #if MICROPY_EMIT_MACHINE_CODE
     } else {
@@ -712,7 +715,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
             mp_print_uint(print, rc->prelude_offset);
 
             // Extract prelude and save qstrs in prelude
-            const byte *ip = (const byte*)rc->fun_data + rc->prelude_offset;
+            const byte *ip = (const byte *)rc->fun_data + rc->prelude_offset;
             const byte *ip_info = extract_prelude(&ip, &prelude);
             save_prelude_qstrs(print, qstr_window, ip_info);
         } else {
@@ -754,7 +757,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc, qstr_window_t *q
             save_obj(print, (mp_obj_t)*const_table++);
         }
         for (size_t i = 0; i < rc->n_raw_code; ++i) {
-            save_raw_code(print, (mp_raw_code_t*)(uintptr_t)*const_table++, qstr_window);
+            save_raw_code(print, (mp_raw_code_t *)(uintptr_t)*const_table++, qstr_window);
         }
     }
 }
@@ -773,7 +776,7 @@ STATIC bool mp_raw_code_has_native(mp_raw_code_t *rc) {
         + rc->n_obj;
 
     for (size_t i = 0; i < rc->n_raw_code; ++i) {
-        if (mp_raw_code_has_native((mp_raw_code_t*)(uintptr_t)*const_table++)) {
+        if (mp_raw_code_has_native((mp_raw_code_t *)(uintptr_t)*const_table++)) {
             return true;
         }
     }
@@ -821,15 +824,21 @@ void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
 
 STATIC void fd_print_strn(void *env, const char *str, size_t len) {
     int fd = (intptr_t)env;
+    MP_THREAD_GIL_EXIT();
     ssize_t ret = write(fd, str, len);
+    MP_THREAD_GIL_ENTER();
     (void)ret;
 }
 
 void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
+    MP_THREAD_GIL_EXIT();
     int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    mp_print_t fd_print = {(void*)(intptr_t)fd, fd_print_strn};
+    MP_THREAD_GIL_ENTER();
+    mp_print_t fd_print = {(void *)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(rc, &fd_print);
+    MP_THREAD_GIL_EXIT();
     close(fd);
+    MP_THREAD_GIL_ENTER();
 }
 
 #else

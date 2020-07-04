@@ -63,9 +63,9 @@
 
 #if MICROPY_PY_UERRNO_ERRORCODE
 STATIC const mp_rom_map_elem_t errorcode_table[] = {
-    #define X(e) { MP_ROM_INT(MP_ ## e), MP_ROM_QSTR(MP_QSTR_## e) },
+    #define X(e) { MP_ROM_INT(MP_##e), MP_ROM_QSTR(MP_QSTR_##e) },
     MICROPY_PY_UERRNO_LIST
-    #undef X
+#undef X
 };
 
 STATIC const mp_obj_dict_t errorcode_dict = {
@@ -76,7 +76,7 @@ STATIC const mp_obj_dict_t errorcode_dict = {
         .is_ordered = 1,
         .used = MP_ARRAY_SIZE(errorcode_table),
         .alloc = MP_ARRAY_SIZE(errorcode_table),
-        .table = (mp_map_elem_t*)(mp_rom_map_elem_t*)errorcode_table,
+        .table = (mp_map_elem_t *)(mp_rom_map_elem_t *)errorcode_table,
     },
 };
 #endif
@@ -87,22 +87,22 @@ STATIC const mp_rom_map_elem_t mp_module_uerrno_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_errorcode), MP_ROM_PTR(&errorcode_dict) },
     #endif
 
-    #define X(e) { MP_ROM_QSTR(MP_QSTR_## e), MP_ROM_INT(MP_ ## e) },
+    #define X(e) { MP_ROM_QSTR(MP_QSTR_##e), MP_ROM_INT(MP_##e) },
     MICROPY_PY_UERRNO_LIST
-    #undef X
+#undef X
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_uerrno_globals, mp_module_uerrno_globals_table);
 
 const mp_obj_module_t mp_module_uerrno = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_uerrno_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_uerrno_globals,
 };
 
 qstr mp_errno_to_str(mp_obj_t errno_val) {
     #if MICROPY_PY_UERRNO_ERRORCODE
     // We have the errorcode dict so can do a lookup using the hash map
-    mp_map_elem_t *elem = mp_map_lookup((mp_map_t*)&errorcode_dict.map, errno_val, MP_MAP_LOOKUP);
+    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&errorcode_dict.map, errno_val, MP_MAP_LOOKUP);
     if (elem == NULL) {
         return MP_QSTRnull;
     } else {
@@ -119,4 +119,4 @@ qstr mp_errno_to_str(mp_obj_t errno_val) {
     #endif
 }
 
-#endif //MICROPY_PY_UERRNO
+#endif // MICROPY_PY_UERRNO

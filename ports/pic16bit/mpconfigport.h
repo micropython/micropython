@@ -73,9 +73,9 @@
 // The xc16 compiler doesn't seem to respect alignment (!!) so we
 // need to use instead an object representation that allows for
 // 2-byte aligned pointers (see config setting above).
-//#define MICROPY_OBJ_BASE_ALIGNMENT  __attribute__((aligned(4)))
+// #define MICROPY_OBJ_BASE_ALIGNMENT  __attribute__((aligned(4)))
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p)))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
 
 #define UINT_FMT "%u"
 #define INT_FMT "%d"

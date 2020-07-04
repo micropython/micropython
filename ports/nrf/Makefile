@@ -38,6 +38,11 @@ endif
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
+# MicroPython feature configurations
+ifeq ($(DEBUG), 0)
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+endif
+
 # include py core make definitions
 include ../../py/py.mk
 
@@ -47,7 +52,7 @@ MICROPY_VFS_FAT ?= 0
 MPY_CROSS = ../../mpy-cross/mpy-cross
 MPY_TOOL = ../../tools/mpy-tool.py
 
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -I.
 INC += -I../..
@@ -56,7 +61,6 @@ INC += -I./../../lib/cmsis/inc
 INC += -I./modules/machine
 INC += -I./modules/ubluepy
 INC += -I./modules/music
-INC += -I./modules/random
 INC += -I./modules/ble
 INC += -I./modules/board
 INC += -I../../lib/mp-readline
@@ -97,7 +101,7 @@ CFLAGS_MCU_m33 = $(CFLAGS_CORTEX_M) -mcpu=cortex-m33 -march=armv8-m.main+dsp -mc
 
 CFLAGS_MCU_m4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 
-CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) -fshort-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft -fno-builtin
+CFLAGS_MCU_m0 = $(CFLAGS_CORTEX_M) -fshort-enums -mtune=cortex-m0 -mcpu=cortex-m0 -mfloat-abi=soft
 
 LTO ?= 1
 ifeq ($(LTO),1)
@@ -151,6 +155,7 @@ SRC_LIB += $(addprefix lib/,\
         libm/asinfacosf.c \
         libm/atanf.c \
         libm/atan2f.c \
+        libm/roundf.c \
 	)
 
 endif
@@ -209,6 +214,7 @@ SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	nrfx_uart.c \
 	nrfx_adc.c \
 	nrfx_saadc.c \
+	nrfx_temp.c \
 	nrfx_rng.c \
 	nrfx_twi.c \
 	nrfx_spi.c \
@@ -230,6 +236,7 @@ SRC_C += \
 	pin_named_pins.c \
 	fatfs_port.c \
 	drivers/flash.c \
+	drivers/rng.c \
 	drivers/softpwm.c \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
@@ -259,7 +266,6 @@ SRC_C += $(addprefix lib/tinyusb/src/,\
 	class/cdc/cdc_device.c \
 	tusb.c \
 	portable/nordic/nrf5x/dcd_nrf5x.c \
-	portable/nordic/nrf5x/hal_nrf5x.c \
 	)
 endif
 
@@ -292,7 +298,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	music/modmusic.c \
 	music/musictunes.c \
 	ble/modble.c \
-	random/modrandom.c \
 	)
 
 # Custom micropython startup file with smaller interrupt vector table
@@ -415,6 +420,24 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).elf
 	    -ex 'kill' \
 	    -ex 'quit' \
 	    $<
+
+else ifeq ($(FLASHER), openocd)
+
+OPENOCD ?= openocd
+
+ifeq ($(MCU_VARIANT), nrf51)
+OPENOCD_TARGET ?= target/nrf52.cfg
+else ifeq ($(MCU_VARIANT), nrf52)
+OPENOCD_TARGET ?= target/nrf52.cfg
+else
+$(error Unsupported openocd target)
+endif
+
+deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)$(OPENOCD) -f interface/cmsis-dap.cfg -f $(OPENOCD_TARGET) -c "init" -c "program $< verify reset" -c "exit"
+
+sd: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)$(OPENOCD) -f interface/cmsis-dap.cfg -f $(OPENOCD_TARGET) -c "init" -c "program $(SOFTDEV_HEX) verify reset" -c "exit"
 
 endif
 

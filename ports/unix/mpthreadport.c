@@ -39,6 +39,19 @@
 #include <sched.h>
 #include <semaphore.h>
 
+#include "lib/utils/gchelper.h"
+
+// Some platforms don't have SIGRTMIN but if we do have it, use it to avoid
+// potential conflict with other uses of the more commonly used SIGUSR1.
+#ifdef SIGRTMIN
+#define MP_THREAD_GC_SIGNAL (SIGRTMIN + 5)
+#else
+#define MP_THREAD_GC_SIGNAL (SIGUSR1)
+#endif
+
+// This value seems to be about right for both 32-bit and 64-bit builds.
+#define THREAD_STACK_OVERFLOW_MARGIN (8192)
+
 // this structure forms a linked list, one node per active thread
 typedef struct _thread_t {
     pthread_t id;           // system id of thread
@@ -49,7 +62,9 @@ typedef struct _thread_t {
 
 STATIC pthread_key_t tls_key;
 
-// the mutex controls access to the linked list
+// The mutex is used for any code in this port that needs to be thread safe.
+// Specifically for thread management, access to the linked list is one example.
+// But also, e.g. scheduler state.
 STATIC pthread_mutex_t thread_mutex = PTHREAD_MUTEX_INITIALIZER;
 STATIC thread_t *thread;
 
@@ -62,22 +77,29 @@ STATIC sem_t *thread_signal_done_p;
 STATIC sem_t thread_signal_done;
 #endif
 
+void mp_thread_unix_begin_atomic_section(void) {
+    pthread_mutex_lock(&thread_mutex);
+}
+
+void mp_thread_unix_end_atomic_section(void) {
+    pthread_mutex_unlock(&thread_mutex);
+}
+
 // this signal handler is used to scan the regs and stack of a thread
 STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
     (void)info; // unused
     (void)context; // unused
-    if (signo == SIGUSR1) {
-        void gc_collect_regs_and_stack(void);
-        gc_collect_regs_and_stack();
+    if (signo == MP_THREAD_GC_SIGNAL) {
+        gc_helper_collect_regs_and_stack();
         // We have access to the context (regs, stack) of the thread but it seems
         // that we don't need the extra information, enough is captured by the
         // gc_collect_regs_and_stack function above
-        //gc_collect_root((void**)context, sizeof(ucontext_t) / sizeof(uintptr_t));
+        // gc_collect_root((void**)context, sizeof(ucontext_t) / sizeof(uintptr_t));
         #if MICROPY_ENABLE_PYSTACK
-        void **ptrs = (void**)(void*)MP_STATE_THREAD(pystack_start);
-        gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void*));
+        void **ptrs = (void **)(void *)MP_STATE_THREAD(pystack_start);
+        gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void *));
         #endif
-        #if defined (__APPLE__)
+        #if defined(__APPLE__)
         sem_post(thread_signal_done_p);
         #else
         sem_post(&thread_signal_done);
@@ -108,18 +130,18 @@ void mp_thread_init(void) {
     sa.sa_flags = SA_SIGINFO;
     sa.sa_sigaction = mp_thread_gc;
     sigemptyset(&sa.sa_mask);
-    sigaction(SIGUSR1, &sa, NULL);
+    sigaction(MP_THREAD_GC_SIGNAL, &sa, NULL);
 }
 
 void mp_thread_deinit(void) {
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
     while (thread->next != NULL) {
         thread_t *th = thread;
         thread = thread->next;
         pthread_cancel(th->id);
         free(th);
     }
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
     #if defined(__APPLE__)
     sem_close(thread_signal_done_p);
     sem_unlink(thread_signal_done_name);
@@ -135,7 +157,7 @@ void mp_thread_deinit(void) {
 // the global root pointers (in mp_state_ctx) while another thread is doing a
 // garbage collection and tracing these pointers.
 void mp_thread_gc_others(void) {
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
     for (thread_t *th = thread; th != NULL; th = th->next) {
         gc_collect_root(&th->arg, 1);
         if (th->id == pthread_self()) {
@@ -144,37 +166,37 @@ void mp_thread_gc_others(void) {
         if (!th->ready) {
             continue;
         }
-        pthread_kill(th->id, SIGUSR1);
+        pthread_kill(th->id, MP_THREAD_GC_SIGNAL);
         #if defined(__APPLE__)
         sem_wait(thread_signal_done_p);
         #else
         sem_wait(&thread_signal_done);
         #endif
     }
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
 }
 
 mp_state_thread_t *mp_thread_get_state(void) {
-    return (mp_state_thread_t*)pthread_getspecific(tls_key);
+    return (mp_state_thread_t *)pthread_getspecific(tls_key);
 }
 
-void mp_thread_set_state(void *state) {
+void mp_thread_set_state(mp_state_thread_t *state) {
     pthread_setspecific(tls_key, state);
 }
 
 void mp_thread_start(void) {
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
             th->ready = 1;
             break;
         }
     }
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
+void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     // default stack size is 8k machine-words
     if (*stack_size == 0) {
         *stack_size = 8192 * BYTES_PER_WORD;
@@ -183,6 +205,11 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
     // minimum stack size is set by pthreads
     if (*stack_size < PTHREAD_STACK_MIN) {
         *stack_size = PTHREAD_STACK_MIN;
+    }
+
+    // ensure there is enough stack to include a stack-overflow margin
+    if (*stack_size < 2 * THREAD_STACK_OVERFLOW_MARGIN) {
+        *stack_size = 2 * THREAD_STACK_OVERFLOW_MARGIN;
     }
 
     // set thread attributes
@@ -201,19 +228,18 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
         goto er;
     }
 
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
 
     // create thread
     pthread_t id;
     ret = pthread_create(&id, &attr, entry, arg);
     if (ret != 0) {
-        pthread_mutex_unlock(&thread_mutex);
+        mp_thread_unix_end_atomic_section();
         goto er;
     }
 
     // adjust stack_size to provide room to recover from hitting the limit
-    // this value seems to be about right for both 32-bit and 64-bit builds
-    *stack_size -= 8192;
+    *stack_size -= THREAD_STACK_OVERFLOW_MARGIN;
 
     // add thread to linked list of all threads
     thread_t *th = malloc(sizeof(thread_t));
@@ -223,7 +249,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
     th->next = thread;
     thread = th;
 
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
 
     return;
 
@@ -232,7 +258,7 @@ er:
 }
 
 void mp_thread_finish(void) {
-    pthread_mutex_lock(&thread_mutex);
+    mp_thread_unix_begin_atomic_section();
     thread_t *prev = NULL;
     for (thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
@@ -246,7 +272,7 @@ void mp_thread_finish(void) {
         }
         prev = th;
     }
-    pthread_mutex_unlock(&thread_mutex);
+    mp_thread_unix_end_atomic_section();
 }
 
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {

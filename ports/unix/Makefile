@@ -1,16 +1,29 @@
--include mpconfigport.mk
+# Select the variant to build for.
+VARIANT ?= standard
+
+# If the build directory is not given, make it reflect the variant name.
+BUILD ?= build-$(VARIANT)
+
+VARIANT_DIR ?= variants/$(VARIANT)
+ifeq ($(wildcard $(VARIANT_DIR)/.),)
+$(error Invalid VARIANT specified: $(VARIANT_DIR))
+endif
+
 include ../../py/mkenv.mk
+-include mpconfigport.mk
+include $(VARIANT_DIR)/mpconfigvariant.mk
 
 # use FROZEN_MANIFEST for new projects, others are legacy
-FROZEN_MANIFEST ?= manifest.py
+FROZEN_MANIFEST ?= variants/manifest.py
 FROZEN_DIR =
 FROZEN_MPY_DIR =
 
-# define main target
-PROG = micropython
+# This should be configured by the mpconfigvariant.mk
+PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
 
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
@@ -18,7 +31,7 @@ UNAME_S := $(shell uname -s)
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx lib/libffi
+GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx lib/libffi
 
 INC +=  -I.
 INC +=  -I$(TOP)
@@ -26,15 +39,24 @@ INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wpointer-arith -Wuninitialized
-CFLAGS = $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+CWARN += -Wpointer-arith -Wuninitialized -Wdouble-promotion -Wsign-compare -Wfloat-conversion
+CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
 CFLAGS += -g3
-COPT = -O0
+COPT ?= -O0
 else
-COPT = -Os -fdata-sections -ffunction-sections -DNDEBUG
+COPT ?= -Os
+COPT += -fdata-sections -ffunction-sections
+COPT += -DNDEBUG
+endif
+
+# Always enable symbols -- They're occasionally useful, and don't make it into the
+# final .bin/.hex/.dfu so the extra size doesn't matter.
+CFLAGS += -g
+
+ifndef DEBUG
 # _FORTIFY_SOURCE is a feature in gcc/glibc which is intended to provide extra
 # security for detecting buffer overflows. Some distros (Ubuntu at the very least)
 # have it enabled by default.
@@ -78,7 +100,7 @@ else
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
-LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA) -lSDL2
+LDFLAGS += $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA) -lSDL2
 
 # Flags to link with pthread library
 LIBPTHREAD = -lpthread
@@ -109,6 +131,28 @@ endif
 ifeq ($(MICROPY_PY_THREAD),1)
 CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS_MOD += $(LIBPTHREAD)
+endif
+
+# If the variant enables it and we have libusb, enable BTStack support for USB adaptors.
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+
+HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
+ifeq ($(HAVE_LIBUSB),1)
+
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK=1
+
+MICROPY_BLUETOOTH_BTSTACK ?= 1
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+GIT_SUBMODULES += lib/btstack
+
+include $(TOP)/extmod/btstack/btstack.mk
+endif
+
+endif
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
@@ -147,7 +191,6 @@ SRC_C = \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	file.c \
 	modmachine.c \
 	modos.c \
 	moduos_vfs.c \
@@ -156,14 +199,17 @@ SRC_C = \
 	alloc.c \
 	coverage.c \
 	fatfs_port.c \
-	$(SRC_MOD)
+	btstack_usb.c \
+	$(SRC_MOD) \
+	$(wildcard $(VARIANT_DIR)/*.c)
 
-LIB_SRC_C = $(addprefix lib/,\
+LIB_SRC_C += $(addprefix lib/,\
     lv_bindings/driver/SDL/SDL_monitor.c \
     lv_bindings/driver/SDL/SDL_mouse.c \
 	lv_bindings/driver/SDL/modSDL.c \
 	$(LIB_SRC_C_EXTRA) \
 	timeutils/timeutils.c \
+	utils/gchelper_generic.c \
 	)
 
 ifneq ($(UNAME_S),Darwin)
@@ -175,9 +221,10 @@ endif
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
+SRC_QSTR += $(SRC_C) $(LIB_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -195,85 +242,32 @@ ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
+ifeq ($(MICROPY_FORCE_32BIT),1)
+RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc -march=x86'
+else
+RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc'
+endif
+
 include $(TOP)/py/mkrules.mk
 
-.PHONY: test
+.PHONY: test test_full
 
 test: $(PROG) $(TOP)/tests/run-tests
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
 	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
 
-# install micropython in /usr/local/bin
-TARGET = micropython
-PREFIX = $(DESTDIR)/usr/local
-BINDIR = $(PREFIX)/bin
-
-install: micropython
-	install -d $(BINDIR)
-	install $(TARGET) $(BINDIR)/$(TARGET)
-
-# uninstall micropython
-uninstall:
-	-rm $(BINDIR)/$(TARGET)
-
-# build synthetically fast interpreter for benchmarking
-fast:
-	$(MAKE) COPT="-O2 -DNDEBUG -fno-crossjumping" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_fast.h>"' BUILD=build-fast PROG=micropython_fast FROZEN_MANIFEST=
-
-# build a minimal interpreter
-minimal:
-	$(MAKE) COPT="-Os -DNDEBUG" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_minimal.h>"' \
-	    BUILD=build-minimal PROG=micropython_minimal FROZEN_MANIFEST= \
-	    MICROPY_PY_BTREE=0 MICROPY_PY_FFI=0 MICROPY_PY_SOCKET=0 MICROPY_PY_THREAD=0 \
-	    MICROPY_PY_TERMIOS=0 MICROPY_PY_USSL=0 \
-	    MICROPY_USE_READLINE=0
-
-# build interpreter with nan-boxing as object model
-nanbox:
-	$(MAKE) \
-	CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_nanbox.h>"' \
-	BUILD=build-nanbox \
-	PROG=micropython_nanbox \
-	MICROPY_FORCE_32BIT=1
-
-freedos:
-	$(MAKE) \
-	CC=i586-pc-msdosdjgpp-gcc \
-	STRIP=i586-pc-msdosdjgpp-strip \
-	SIZE=i586-pc-msdosdjgpp-size \
-	CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_freedos.h>" -DMICROPY_NLR_SETJMP -Dtgamma=gamma -DMICROPY_EMIT_X86=0 -DMICROPY_NO_ALLOCA=1 -DMICROPY_PY_USELECT_POSIX=0' \
-	BUILD=build-freedos \
-	PROG=micropython_freedos \
-	MICROPY_PY_SOCKET=0 \
-	MICROPY_PY_FFI=0 \
-	MICROPY_PY_JNI=0 \
-	MICROPY_PY_BTREE=0 \
-	MICROPY_PY_THREAD=0 \
-	MICROPY_PY_USSL=0
-
-# build an interpreter for coverage testing and do the testing
-coverage:
-	$(MAKE) \
-	    COPT="-O0" CFLAGS_EXTRA='$(CFLAGS_EXTRA) -DMP_CONFIGFILE="<mpconfigport_coverage.h>" \
-	    -fprofile-arcs -ftest-coverage \
-	    -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wsign-compare \
-	    -Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
-	    -DMICROPY_UNIX_COVERAGE' \
-	    LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' \
-	    MICROPY_VFS_FAT=1 MICROPY_VFS_LFS1=1 MICROPY_VFS_LFS2=1 \
-	    FROZEN_MANIFEST=manifest_coverage.py \
-	    BUILD=build-coverage PROG=micropython_coverage
-
-coverage_test: coverage
+test_full: $(PROG) $(TOP)/tests/run-tests
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests -d thread
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --emit native
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --via-mpy -d basics float micropython
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/micropython_coverage ./run-tests --via-mpy --emit native -d basics float micropython
-	cat $(TOP)/tests/basics/0prelim.py | ./micropython_coverage | grep -q 'abc'
-	gcov -o build-coverage/py $(TOP)/py/*.c
-	gcov -o build-coverage/extmod $(TOP)/extmod/*.c
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests -d thread
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --emit native
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
+	cat $(TOP)/tests/basics/0prelim.py | ./$(PROG) | grep -q 'abc'
+
+test_gcov: test_full
+	gcov -o $(BUILD)/py $(TOP)/py/*.c
+	gcov -o $(BUILD)/extmod $(TOP)/extmod/*.c
 
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.
@@ -302,3 +296,13 @@ axtls: $(TOP)/lib/axtls/README
 $(TOP)/lib/axtls/README:
 	@echo "You cloned without --recursive, fetching submodules for you."
 	(cd $(TOP); git submodule update --init --recursive)
+
+PREFIX = /usr/local
+BINDIR = $(DESTDIR)$(PREFIX)/bin
+
+install: $(PROG)
+	install -d $(BINDIR)
+	install $(PROG) $(BINDIR)/$(PROG)
+
+uninstall:
+	-rm $(BINDIR)/$(PROG)

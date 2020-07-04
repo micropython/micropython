@@ -42,7 +42,7 @@
 
 #define MODESP_INCLUDE_CONSTANTS (1)
 
-void error_check(bool status, const char *msg) {
+void error_check(bool status, mp_rom_error_text_t msg) {
     if (!status) {
         mp_raise_msg(&mp_type_OSError, msg);
     }
@@ -101,7 +101,7 @@ STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
     }
 
     // We know that allocation will be 4-byte aligned for sure
-    SpiFlashOpResult res = spi_flash_read(offset, (uint32_t*)buf, len);
+    SpiFlashOpResult res = spi_flash_read(offset, (uint32_t *)buf, len);
     if (res == SPI_FLASH_RESULT_OK) {
         if (alloc_buf) {
             return mp_obj_new_bytes(buf, len);
@@ -120,7 +120,7 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     if (bufinfo.len & 0x3) {
-        mp_raise_ValueError("len must be multiple of 4");
+        mp_raise_ValueError(MP_ERROR_TEXT("len must be multiple of 4"));
     }
     ets_loop_iter(); // flash access takes time so run any pending tasks
     SpiFlashOpResult res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
@@ -148,7 +148,7 @@ STATIC mp_obj_t esp_flash_size(void) {
     extern char flashchip;
     // For SDK 1.5.2, either address has shifted and not mirrored in
     // eagle.rom.addr.v6.ld, or extra initial member was added.
-    SpiFlashChip *flash = (SpiFlashChip*)(&flashchip + 4);
+    SpiFlashChip *flash = (SpiFlashChip *)(&flashchip + 4);
     #if 0
     printf("deviceId: %x\n", flash->deviceId);
     printf("chip_size: %u\n", flash->chip_size);
@@ -163,7 +163,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
 // If there's just 1 loadable segment at the start of flash,
 // we assume there's a yaota8266 bootloader.
-#define IS_OTA_FIRMWARE() ((*(uint32_t*)0x40200000 & 0xff00) == 0x100)
+#define IS_OTA_FIRMWARE() ((*(uint32_t *)0x40200000 & 0xff00) == 0x100)
 
 extern byte _firmware_size[];
 
@@ -174,13 +174,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start)
 
 STATIC mp_obj_t esp_check_fw(void) {
     MD5_CTX ctx;
-    char *fw_start = (char*)0x40200000;
+    char *fw_start = (char *)0x40200000;
     if (IS_OTA_FIRMWARE()) {
         // Skip yaota8266 bootloader
         fw_start += 0x3c000;
     }
 
-    uint32_t size = *(uint32_t*)(fw_start + 0x8ffc);
+    uint32_t size = *(uint32_t *)(fw_start + 0x8ffc);
     printf("size: %d\n", size);
     if (size > 1024 * 1024) {
         printf("Invalid size\n");
@@ -204,7 +204,7 @@ STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t is800k)
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     esp_neopixel_write(mp_obj_get_pin_obj(pin)->phys_port,
-        (uint8_t*)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k));
+        (uint8_t *)bufinfo.buf, bufinfo.len, mp_obj_is_true(is800k));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
@@ -215,7 +215,7 @@ STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t 
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     esp_apa102_write(mp_obj_get_pin_obj(clockPin)->phys_port,
         mp_obj_get_pin_obj(dataPin)->phys_port,
-        (uint8_t*)bufinfo.buf, bufinfo.len);
+        (uint8_t *)bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
@@ -238,7 +238,7 @@ STATIC mp_obj_t esp_malloc(mp_obj_t size_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_malloc_obj, esp_malloc);
 
 STATIC mp_obj_t esp_free(mp_obj_t addr_in) {
-    os_free((void*)mp_obj_get_int(addr_in));
+    os_free((void *)mp_obj_get_int(addr_in));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_free_obj, esp_free);
@@ -284,19 +284,19 @@ void esp_native_code_init(void) {
 }
 
 void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
-    //printf("COMMIT(buf=%p, len=%u, start=%08x, cur=%08x, end=%08x, erased=%08x)\n", buf, len, esp_native_code_start, esp_native_code_cur, esp_native_code_end, esp_native_code_erased);
+    // printf("COMMIT(buf=%p, len=%u, start=%08x, cur=%08x, end=%08x, erased=%08x)\n", buf, len, esp_native_code_start, esp_native_code_cur, esp_native_code_end, esp_native_code_erased);
 
     len = (len + 3) & ~3;
     if (esp_native_code_cur + len > esp_native_code_end) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_MemoryError,
-            "memory allocation failed, allocating %u bytes for native code", (uint)len));
+        mp_raise_msg_varg(&mp_type_MemoryError,
+            MP_ERROR_TEXT("memory allocation failed, allocating %u bytes for native code"), (uint)len);
     }
 
     void *dest;
     if (esp_native_code_location == ESP_NATIVE_CODE_IRAM1) {
-        dest = (void*)esp_native_code_cur;
+        dest = (void *)esp_native_code_cur;
     } else {
-        dest = (void*)(FLASH_START + esp_native_code_cur);
+        dest = (void *)(FLASH_START + esp_native_code_cur);
     }
     if (reloc) {
         mp_native_relocate(reloc, buf, (uintptr_t)dest);
@@ -342,7 +342,7 @@ STATIC mp_obj_t esp_set_native_code_location(mp_obj_t start_in, mp_obj_t len_in)
         esp_native_code_erased = esp_native_code_start;
         // memory-mapped flash is limited in extents to 1MByte
         if (esp_native_code_end > FLASH_END - FLASH_START) {
-            mp_raise_ValueError("flash location must be below 1MByte");
+            mp_raise_ValueError(MP_ERROR_TEXT("flash location must be below 1MByte"));
         }
     }
     return mp_const_none;
@@ -381,16 +381,16 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_native_code_location), MP_ROM_PTR(&esp_set_native_code_location_obj) },
     #endif
 
-#if MODESP_INCLUDE_CONSTANTS
+    #if MODESP_INCLUDE_CONSTANTS
     { MP_ROM_QSTR(MP_QSTR_SLEEP_NONE), MP_ROM_INT(NONE_SLEEP_T) },
     { MP_ROM_QSTR(MP_QSTR_SLEEP_LIGHT), MP_ROM_INT(LIGHT_SLEEP_T) },
     { MP_ROM_QSTR(MP_QSTR_SLEEP_MODEM), MP_ROM_INT(MODEM_SLEEP_T) },
-#endif
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp_module_globals, esp_module_globals_table);
 
 const mp_obj_module_t esp_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&esp_module_globals,
+    .globals = (mp_obj_dict_t *)&esp_module_globals,
 };
