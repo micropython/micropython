@@ -1,7 +1,7 @@
 LD_FILE = boards/samd21x18-bootloader.ld
 USB_VID = 0x239A
-USB_PID = 0x8066
-USB_PRODUCT = "Bit6"
+USB_PID = 0x80B9
+USB_PRODUCT = "Bit7"
 USB_MANUFACTURER = "ndGarage"
 
 CHIP_VARIANT = SAMD21E18A
