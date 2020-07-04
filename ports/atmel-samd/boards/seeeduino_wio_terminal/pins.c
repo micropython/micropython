@@ -36,7 +36,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PB02) },
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PB03) },
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PB00) },
-    { MP_ROM_QSTR(MP_QSTR_SS), MP_ROM_PTR(&pin_PB01) },
+    { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_PB01) },
 
     // I2C pins
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA16) },
@@ -49,7 +49,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_MISO),  MP_ROM_PTR(&pin_PB18) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_MOSI),  MP_ROM_PTR(&pin_PB19) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_SCK),  MP_ROM_PTR(&pin_PB20) },
-    { MP_ROM_QSTR(MP_QSTR_TFT_SS),  MP_ROM_PTR(&pin_PB21) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_CS),  MP_ROM_PTR(&pin_PB21) },
     { MP_ROM_QSTR(MP_QSTR_TFT_DC),  MP_ROM_PTR(&pin_PC06) },
     { MP_ROM_QSTR(MP_QSTR_TFT_BACKLIGHT),  MP_ROM_PTR(&pin_PC05) },
     { MP_ROM_QSTR(MP_QSTR_TFT_RESET),  MP_ROM_PTR(&pin_PC07) },
@@ -58,7 +58,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_MISO),  MP_ROM_PTR(&pin_PC18) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_MOSI),  MP_ROM_PTR(&pin_PC16) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_SCK),  MP_ROM_PTR(&pin_PC17) },
-    { MP_ROM_QSTR(MP_QSTR_SD_SS),  MP_ROM_PTR(&pin_PC19) },
+    { MP_ROM_QSTR(MP_QSTR_SD_CS),  MP_ROM_PTR(&pin_PC19) },
     { MP_ROM_QSTR(MP_QSTR_SD_DET),  MP_ROM_PTR(&pin_PC21) },
 
     // Switch
