@@ -91,6 +91,23 @@
 #if CIRCUITPY_PEW
 #include "common-hal/_pew/PewPew.h"
 #endif
+#ifdef SAMD21
+volatile bool hold_interrupt = false;
+
+void rtc_start_pulsein(void) {
+    rtc_set_continuous();
+    hold_interrupt = true;
+}
+void rtc_end_pulsein(void) {
+    hold_interrupt = false;
+}
+
+void rtc_set_continuous(void) {
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+    RTC->MODE0.READREQ.reg = RTC_READREQ_RREQ | RTC_READREQ_RCONT | 0x0010;
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+}
+#endif
 
 extern volatile bool mp_msc_enabled;
 
@@ -489,6 +506,11 @@ void port_interrupt_after_ticks(uint32_t ticks) {
         // We'll interrupt sooner with an overflow.
         return;
     }
+#ifdef SAMD21
+    if (hold_interrupt == true) {
+        return;
+    }
+#endif
     RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
     RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
