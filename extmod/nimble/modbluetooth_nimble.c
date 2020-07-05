@@ -846,7 +846,7 @@ STATIC int ble_gatt_attr_read_cb(uint16_t conn_handle, const struct ble_gatt_err
     if (error->status == 0) {
         gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, attr->handle, attr->om);
     }
-    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_READ_DONE, conn_handle, attr->handle, error->status);
+    mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_READ_DONE, conn_handle, attr ? attr->handle : -1, error->status);
     return 0;
 }
 
