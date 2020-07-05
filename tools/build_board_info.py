@@ -9,6 +9,9 @@ import base64
 from datetime import date
 from sh.contrib import git
 
+sys.path.append("../docs")
+import shared_bindings_matrix
+
 sys.path.append("adabot")
 import adabot.github_requests as github
 
@@ -56,7 +59,10 @@ extension_by_board = {
     "makerdiary_nrf52840_mdk_usb_dongle": HEX_UF2,
     "pca10056": BIN_UF2,
     "pca10059": BIN_UF2,
-    "electronut_labs_blip": HEX
+    "electronut_labs_blip": HEX,
+
+    # stm32
+    "meowbit_v121": UF2
 }
 
 aliases_by_board = {
@@ -147,7 +153,7 @@ def create_pr(changes, updated, git_info, user):
         info["id"] = id
         updated_list.append(info)
 
-    updated = json.dumps(updated_list, sort_keys=True, indent=4).encode("utf-8") + b"\n"
+    updated = json.dumps(updated_list, sort_keys=True, indent=1).encode("utf-8") + b"\n"
     #print(updated.decode("utf-8"))
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
@@ -199,19 +205,6 @@ def create_pr(changes, updated, git_info, user):
     print(changes)
     print(pr_info)
 
-def update_downloads(boards, release):
-    response = github.get("/repos/adafruit/circuitpython/releases/tags/{}".format(release))
-    if not response.ok:
-        print(response.text)
-        raise RuntimeError("cannot get previous release info")
-
-    assets = response.json()["assets"]
-    for asset in assets:
-        board_name = asset["name"].split("-")[2]
-        if board_name not in boards:
-            continue
-        boards[board_name]["download_count"] += asset["download_count"]
-
 
 def print_active_user():
     response = github.get("/user")
@@ -243,6 +236,10 @@ def generate_download_info():
 
     languages = get_languages()
 
+    support_matrix = shared_bindings_matrix.support_matrix_by_board(
+        use_branded_name=False
+    )
+
     new_stable = "-" not in new_tag
 
     previous_releases = set()
@@ -258,9 +255,6 @@ def generate_download_info():
                 info["versions"].remove(version)
 
     board_mapping = get_board_mapping()
-
-    for release in previous_releases:
-        update_downloads(board_mapping, release)
 
     for port in SUPPORTED_PORTS:
         board_path = os.path.join("../ports", port, "boards")
@@ -280,7 +274,10 @@ def generate_download_info():
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
-                        "files": {}
+                        "modules": support_matrix.get(alias, "[]"),
+                        "files": {},
+                        "languages": languages,
+                        "extensions": board_info["extensions"]
                     }
                     for language in languages:
                         files = []

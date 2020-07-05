@@ -52,8 +52,8 @@
 //|         :param ~microcontroller.Pin rx: the pin to receive on, or ``None`` if this ``UART`` is transmit-only.
 //|         :param ~microcontroller.Pin rts: the pin for rts, or ``None`` if rts not in use.
 //|         :param ~microcontroller.Pin cts: the pin for cts, or ``None`` if cts not in use.
-//|         :param ~microcontroller.Pin rs485_dir: the pin for rs485 direction setting, or ``None`` if rs485 not in use.
-//|         :param bool rs485_invert: set to invert the sense of the rs485_dir pin.
+//|         :param ~microcontroller.Pin rs485_dir: the output pin for rs485 direction setting, or ``None`` if rs485 not in use.
+//|         :param bool rs485_invert: rs485_dir pin active high when set. Active low otherwise.
 //|         :param int baudrate: the transmit and receive speed.
 //|         :param int bits:  the number of bits per byte, 7, 8 or 9.
 //|         :param Parity parity:  the parity used for error checking.
@@ -87,8 +87,8 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size,
            ARG_rts, ARG_cts, ARG_rs485_dir,ARG_rs485_invert};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_tx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 9600} },
         { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_parity, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -115,11 +115,11 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
         mp_raise_ValueError(translate("bits must be 7, 8 or 9"));
     }
 
-    uart_parity_t parity = PARITY_NONE;
+    busio_uart_parity_t parity = BUSIO_UART_PARITY_NONE;
     if (args[ARG_parity].u_obj == &busio_uart_parity_even_obj) {
-        parity = PARITY_EVEN;
+        parity = BUSIO_UART_PARITY_EVEN;
     } else if (args[ARG_parity].u_obj == &busio_uart_parity_odd_obj) {
-        parity = PARITY_ODD;
+        parity = BUSIO_UART_PARITY_ODD;
     }
 
     uint8_t stop = args[ARG_stop].u_int;

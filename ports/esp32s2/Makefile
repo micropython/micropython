@@ -78,6 +78,7 @@ INC += -Iesp-idf/components/freertos/xtensa/include
 INC += -Iesp-idf/components/esp32s2/include
 INC += -Iesp-idf/components/xtensa/esp32s2/include
 INC += -Iesp-idf/components/esp_common/include
+INC += -Iesp-idf/components/esp_ringbuf/include
 INC += -Iesp-idf/components/esp_rom/include
 INC += -Iesp-idf/components/xtensa/include
 INC += -Iesp-idf/components/esp_timer/include
@@ -212,7 +213,7 @@ $(BUILD)/esp-idf:
 
 # create the config headers
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-idf
-	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;boards/$(BOARD)/sdkconfig" -DCMAKE_TOOLCHAIN_FILE=$IDF_PATH/tools/cmake/toolchain-esp32s2.cmake -DIDF_TARGET=esp32s2 -GNinja
+	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;boards/$(BOARD)/sdkconfig" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-esp32s2.cmake -DIDF_TARGET=esp32s2 -GNinja
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
@@ -257,7 +258,7 @@ ESP_AUTOGEN_LD = $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld $(BUILD)/esp-id
 
 FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
 
-all: $(BUILD)/firmware.bin
+all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
 $(BUILD)/firmware.elf: $(OBJ) | $(ESP_IDF_COMPONENTS_EXPANDED) $(ESP_AUTOGEN_LD)
 	$(STEPECHO) "LINK $@"
@@ -273,8 +274,15 @@ $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.bin: $(BUILD)/esp-idf/partition_table/partition-table.bin $(BUILD)/esp-idf/bootloader/bootloader.bin $(BUILD)/circuitpython-firmware.bin
 	$(Q)$(PYTHON) ../../tools/join_bins.py $@ 0x1000 $(BUILD)/esp-idf/bootloader/bootloader.bin 0x8000 $(BUILD)/esp-idf/partition_table/partition-table.bin 0x10000 $(BUILD)/circuitpython-firmware.bin
 
+$(BUILD)/firmware.uf2: $(BUILD)/circuitpython-firmware.bin
+	$(STEPECHO) "Create $@"
+	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xbfdd4eee -b 0x0000 -c -o $@ $^
+
 flash: $(BUILD)/firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+
+flash-circuitpython-only: $(BUILD)/circuitpython-firmware.bin
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x10000 $^
 
 include $(TOP)/py/mkrules.mk
 

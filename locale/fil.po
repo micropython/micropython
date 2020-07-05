@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"POT-Creation-Date: 2020-07-02 15:29+0200\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -58,6 +58,10 @@ msgstr "%%c nangangailangan ng int o char"
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q ay ginagamit"
@@ -84,6 +88,10 @@ msgstr "aarehas na haba dapat ang buffer slices"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q pin invalid"
 msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
@@ -295,6 +303,7 @@ msgstr "Lahat ng sync event channels ay ginagamit"
 msgid "All timers for this pin are in use"
 msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 
+#: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -302,7 +311,7 @@ msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
+#: shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr "Lahat ng timer ginagamit"
 
@@ -341,7 +350,7 @@ msgstr "May halfwords (type 'H') dapat ang array"
 msgid "Array values should be single bytes."
 msgstr "Array values ay dapat single bytes."
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
 msgstr ""
 
@@ -420,6 +429,11 @@ msgstr ""
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+msgid "Buffer length must be a multiple of 512"
 msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
@@ -581,6 +595,14 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "Could not initialize GNSS"
+msgstr ""
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
@@ -705,7 +727,8 @@ msgstr "Ginagamit na ang EXTINT channel"
 msgid "Error in regex"
 msgstr "May pagkakamali sa REGEX"
 
-#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -831,10 +854,6 @@ msgstr "I/O operasyon sa saradong file"
 msgid "I2C Init Error"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr "Hindi supportado ang operasyong I2C"
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -871,6 +890,10 @@ msgstr ""
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Internal error #%d"
+msgstr ""
+
+#: shared-bindings/sdioio/SDCard.c
+msgid "Invalid %q"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
@@ -978,9 +1001,10 @@ msgstr "Mali ang pin para sa kanang channel"
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -1380,6 +1404,10 @@ msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "SD card CSD format not supported"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
@@ -1446,6 +1474,10 @@ msgstr "Stream kulang ng readinto() o write() method."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
+msgstr ""
+
+#: shared-bindings/gnss/GNSS.c
+msgid "System entry must be gnss.SatelliteSystem"
 msgstr ""
 
 #: ports/stm/common-hal/microcontroller/Processor.c
@@ -1635,6 +1667,7 @@ msgid ""
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Hindi supportadong baudrate"
 
@@ -1753,11 +1786,11 @@ msgstr "abort() tinawag"
 msgid "address %08x is not aligned to %d bytes"
 msgstr "address %08x ay hindi pantay sa %d bytes"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "wala sa sakop ang address"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "walang laman ang address"
 
@@ -1838,10 +1871,6 @@ msgstr "binary op %q hindi implemented"
 msgid "bits must be 7, 8 or 9"
 msgstr "bits ay dapat 7, 8 o 9"
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "bits ay dapat walo (8)"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr "bits_per_sample ay dapat 8 o 16"
@@ -1867,10 +1896,6 @@ msgstr "aarehas na haba dapat ang buffer slices"
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "masyadong maliit ang buffer"
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "ang buffers ay dapat parehas sa haba"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1948,7 +1973,7 @@ msgstr "hindi maaaring i-convert ang '%q' na bagay sa %q nang walang pahiwatig"
 msgid "can't convert NaN to int"
 msgstr "hindi ma i-convert NaN sa int"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert address to int"
 msgstr "hindi ma i-convert ang address sa INT"
 
@@ -2016,6 +2041,10 @@ msgstr "hindi mapadala ang send throw sa isang kaka umpisang generator"
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr "hindi mapadala ang non-None value sa isang kaka umpisang generator"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "can't set 512 block size"
+msgstr ""
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -2145,6 +2174,10 @@ msgstr ""
 
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "couldn't determine SD card version"
 msgstr ""
 
 #: extmod/ulab/code/approx.c
@@ -2311,10 +2344,6 @@ msgstr ""
 #: py/objtype.c
 msgid "first argument to super() must be type"
 msgstr "unang argument ng super() ay dapat type"
-
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr "firstbit ay dapat MSB"
 
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
@@ -2501,14 +2530,6 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "maling I2C peripheral"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "hindi wastong SPI peripheral"
-
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr "mali ang mga argumento"
@@ -2689,10 +2710,6 @@ msgstr "maraming inhertance hindi sinusuportahan"
 msgid "must raise an object"
 msgstr "dapat itaas ang isang object"
 
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
-
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
 msgstr "dapat gumamit ng keyword argument para sa key function"
@@ -2730,6 +2747,10 @@ msgstr "negatibong power na walang float support"
 msgid "negative shift count"
 msgstr "negative shift count"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "no SD card"
+msgstr ""
+
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "walang aktibong exception para i-reraise"
@@ -2749,6 +2770,10 @@ msgstr "walang module na '%q'"
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no response from SD card"
 msgstr ""
 
 #: py/runtime.c
@@ -3044,6 +3069,10 @@ msgstr ""
 msgid "sleep length must be non-negative"
 msgstr "sleep length ay dapat hindi negatibo"
 
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr ""
+
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
 msgstr "slice step ay hindi puedeng 0"
@@ -3058,6 +3087,18 @@ msgstr "malambot na reboot\n"
 
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sosfilt requires iterable arguments"
 msgstr ""
 
 #: py/objstr.c
@@ -3146,6 +3187,14 @@ msgstr ""
 #, fuzzy
 msgid "timeout must be >= 0.0"
 msgstr "bits ay dapat walo (8)"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v1 card"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v2 card"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -3346,6 +3395,18 @@ msgstr "wala sa sakop ang address"
 msgid "zero step"
 msgstr "zero step"
 
+#: extmod/ulab/code/filter.c
+msgid "zi must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of float type"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of shape (n_section, 2)"
+msgstr ""
+
 #~ msgid "AP required"
 #~ msgstr "AP kailangan"
 
@@ -3506,6 +3567,9 @@ msgstr "zero step"
 #~ msgid "GPIO16 does not support pull up."
 #~ msgstr "Walang pull down support ang GPI016."
 
+#~ msgid "I2C operation not supported"
+#~ msgstr "Hindi supportado ang operasyong I2C"
+
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Mali ang bit clock pin"
 
@@ -3647,8 +3711,14 @@ msgstr "zero step"
 #~ msgid "[addrinfo error %d]"
 #~ msgstr "[addrinfo error %d]"
 
+#~ msgid "bits must be 8"
+#~ msgstr "bits ay dapat walo (8)"
+
 #~ msgid "buffer too long"
 #~ msgstr "masyadong mahaba ng buffer"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "ang buffers ay dapat parehas sa haba"
 
 #~ msgid "can query only one param"
 #~ msgstr "maaaring i-query lamang ang isang param"
@@ -3680,6 +3750,9 @@ msgstr "zero step"
 #~ msgid "ffi_prep_closure_loc"
 #~ msgstr "ffi_prep_closure_loc"
 
+#~ msgid "firstbit must be MSB"
+#~ msgstr "firstbit ay dapat MSB"
+
 #~ msgid "flash location must be below 1MByte"
 #~ msgstr "dapat na mas mababa sa 1MB ang lokasyon ng flash"
 
@@ -3688,6 +3761,12 @@ msgstr "zero step"
 
 #~ msgid "impossible baudrate"
 #~ msgstr "impossibleng baudrate"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "maling I2C peripheral"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "hindi wastong SPI peripheral"
 
 #~ msgid "invalid alarm"
 #~ msgstr "mali ang alarm"
@@ -3710,6 +3789,9 @@ msgstr "zero step"
 #~ msgid "memory allocation failed, allocating %u bytes for native code"
 #~ msgstr ""
 #~ "nabigo ang paglalaan ng memorya, naglalaan ng %u bytes para sa native code"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
 
 #, fuzzy
 #~ msgid "name must be a string"

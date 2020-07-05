@@ -39,6 +39,12 @@
 #ifdef SAMD21
 #include "hpl/pm/hpl_pm_base.h"
 #endif
+#ifdef SAME54
+#include "hri/hri_mclk_e54.h"
+#endif
+#ifdef SAMD51
+#include "hri/hri_mclk_d51.h"
+#endif
 #include "hal/include/hal_flash.h"
 
 #include "supervisor/flash.h"
@@ -57,7 +63,7 @@ void supervisor_flash_init(void) {
         port_pin_set_output_level(MICROPY_HW_LED_MSC, false);
     #endif
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     hri_mclk_set_AHBMASK_NVMCTRL_bit(MCLK);
     #endif
     #ifdef SAMD21

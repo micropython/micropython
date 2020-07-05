@@ -64,7 +64,7 @@ as a natural "TODO" list. An example minimal build list is shown below:
     CIRCUITPY_ROTARYIO = 0
     CIRCUITPY_RTC = 0
     CIRCUITPY_FREQUENCYIO = 0
-    CIRCUITPY_I2CSLAVE = 0
+    CIRCUITPY_I2CPERIPHERAL = 0
     CIRCUITPY_DISPLAYIO = 0       # Requires SPI, PulseIO (stub ok)
 
     # These modules are implemented in shared-module/ - they can be included in
