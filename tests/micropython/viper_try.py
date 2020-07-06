@@ -6,11 +6,13 @@ def f():
     try:
         fail
     finally:
-        print('finally')
+        print("finally")
+
+
 try:
     f()
 except NameError:
-    print('NameError')
+    print("NameError")
 
 # nested try-except with try-finally
 @micropython.viper
@@ -19,9 +21,11 @@ def f():
         try:
             fail
         finally:
-            print('finally')
+            print("finally")
     except NameError:
-        print('NameError')
+        print("NameError")
+
+
 f()
 
 # check that locals written to in try blocks keep their values
@@ -36,5 +40,6 @@ def f():
         print(a)
         a = 300
     print(a)
-f()
 
+
+f()

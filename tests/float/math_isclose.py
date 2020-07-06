@@ -6,8 +6,10 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+
 def test(a, b, **kwargs):
     print(isclose(a, b, **kwargs))
+
 
 def test_combinations(a, b, **kwargs):
     test(a, a, **kwargs)
@@ -15,10 +17,11 @@ def test_combinations(a, b, **kwargs):
     test(b, a, **kwargs)
     test(b, b, **kwargs)
 
+
 # Special numbers
-test_combinations(float('nan'), 1)
-test_combinations(float('inf'), 1)
-test_combinations(float('-inf'), 1)
+test_combinations(float("nan"), 1)
+test_combinations(float("inf"), 1)
+test_combinations(float("-inf"), 1)
 
 # Equality
 test(1.0, 1.0, rel_tol=0.0, abs_tol=0.0)
@@ -40,8 +43,8 @@ test(0.0, 1e-10, abs_tol=0.0, rel_tol=0.1)
 try:
     isclose(0, 0, abs_tol=-1)
 except ValueError:
-    print('ValueError')
+    print("ValueError")
 try:
     isclose(0, 0, rel_tol=-1)
 except ValueError:
-    print('ValueError')
+    print("ValueError")

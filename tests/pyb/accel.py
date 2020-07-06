@@ -1,7 +1,7 @@
 import pyb
 
-if not hasattr(pyb, 'Accel'):
-    print('SKIP')
+if not hasattr(pyb, "Accel"):
+    print("SKIP")
     raise SystemExit
 
 accel = pyb.Accel()

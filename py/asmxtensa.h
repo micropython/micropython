@@ -243,6 +243,10 @@ static inline void asm_xtensa_op_sll(asm_xtensa_t *as, uint reg_dest, uint reg_s
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 1, 10, reg_dest, reg_src, 0));
 }
 
+static inline void asm_xtensa_op_srl(asm_xtensa_t *as, uint reg_dest, uint reg_src) {
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 1, 9, reg_dest, 0, reg_src));
+}
+
 static inline void asm_xtensa_op_sra(asm_xtensa_t *as, uint reg_dest, uint reg_src) {
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 1, 11, reg_dest, 0, reg_src));
 }
@@ -371,6 +375,11 @@ void asm_xtensa_call_ind_win(asm_xtensa_t *as, uint idx);
     do { \
         asm_xtensa_op_ssl((as), (reg_shift)); \
         asm_xtensa_op_sll((as), (reg_dest), (reg_dest)); \
+    } while (0)
+#define ASM_LSR_REG_REG(as, reg_dest, reg_shift) \
+    do { \
+        asm_xtensa_op_ssr((as), (reg_shift)); \
+        asm_xtensa_op_srl((as), (reg_dest), (reg_dest)); \
     } while (0)
 #define ASM_ASR_REG_REG(as, reg_dest, reg_shift) \
     do { \

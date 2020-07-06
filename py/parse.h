@@ -63,7 +63,7 @@ typedef struct _mp_parse_node_struct_t {
 #define MP_PARSE_NODE_IS_NULL(pn) ((pn) == MP_PARSE_NODE_NULL)
 #define MP_PARSE_NODE_IS_LEAF(pn) ((pn) & 3)
 #define MP_PARSE_NODE_IS_STRUCT(pn) ((pn) != MP_PARSE_NODE_NULL && ((pn) & 3) == 0)
-#define MP_PARSE_NODE_IS_STRUCT_KIND(pn, k) ((pn) != MP_PARSE_NODE_NULL && ((pn) & 3) == 0 && MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t*)(pn)) == (k))
+#define MP_PARSE_NODE_IS_STRUCT_KIND(pn, k) ((pn) != MP_PARSE_NODE_NULL && ((pn) & 3) == 0 && MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t *)(pn)) == (k))
 
 #define MP_PARSE_NODE_IS_SMALL_INT(pn) (((pn) & 0x1) == MP_PARSE_NODE_SMALL_INT)
 #define MP_PARSE_NODE_IS_ID(pn) (((pn) & 0x0f) == MP_PARSE_NODE_ID)
@@ -85,7 +85,7 @@ static inline mp_parse_node_t mp_parse_node_new_leaf(size_t kind, mp_int_t arg) 
 bool mp_parse_node_is_const_false(mp_parse_node_t pn);
 bool mp_parse_node_is_const_true(mp_parse_node_t pn);
 bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o);
-int mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes);
+size_t mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes);
 void mp_parse_node_print(mp_parse_node_t pn, size_t indent);
 
 typedef enum {

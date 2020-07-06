@@ -114,7 +114,7 @@ void pin_init0(void) {
     }
     // Initialize GPIOTE if not done yet.
     if (!nrfx_gpiote_is_init()) {
-        nrfx_gpiote_init();
+        nrfx_gpiote_init(NRFX_GPIOTE_DEFAULT_CONFIG_IRQ_PRIORITY);
     }
 
     #if PIN_DEBUG
@@ -150,7 +150,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         pin_obj = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
         if (pin_obj != mp_const_none) {
             if (!mp_obj_is_type(pin_obj, &pin_type)) {
-                mp_raise_ValueError("Pin.mapper didn't return a Pin object");
+                mp_raise_ValueError(MP_ERROR_TEXT("Pin.mapper didn't return a Pin object"));
             }
             if (pin_class_debug) {
                 printf("Pin.mapper maps ");
@@ -207,7 +207,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    mp_raise_ValueError("not a valid pin identifier");
+    mp_raise_ValueError(MP_ERROR_TEXT("not a valid pin identifier"));
 }
 
 /// \method __str__()
@@ -375,7 +375,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
                      NRF_GPIO_PIN_S0S1,
                      NRF_GPIO_PIN_NOSENSE);
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
     }
 
     return mp_const_none;

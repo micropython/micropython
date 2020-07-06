@@ -47,9 +47,9 @@ typedef struct _mp_obj_set_it_t {
 
 STATIC bool is_set_or_frozenset(mp_obj_t o) {
     return mp_obj_is_type(o, &mp_type_set)
-#if MICROPY_PY_BUILTINS_FROZENSET
-        || mp_obj_is_type(o, &mp_type_frozenset)
-#endif
+           #if MICROPY_PY_BUILTINS_FROZENSET
+           || mp_obj_is_type(o, &mp_type_frozenset)
+           #endif
     ;
 }
 
@@ -121,7 +121,7 @@ STATIC mp_obj_t set_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 mp_obj_set_store(set, item);
             }
             // Set actual set/frozenset type
-            ((mp_obj_set_t*)MP_OBJ_TO_PTR(set))->base.type = type;
+            ((mp_obj_set_t *)MP_OBJ_TO_PTR(set))->base.type = type;
             return set;
         }
     }
@@ -144,7 +144,7 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
 
 STATIC mp_obj_t set_getiter(mp_obj_t set_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_set_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_obj_set_it_t *o = (mp_obj_set_it_t*)iter_buf;
+    mp_obj_set_it_t *o = (mp_obj_set_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = set_it_iternext;
     o->set = (mp_obj_set_t *)MP_OBJ_TO_PTR(set_in);
@@ -205,7 +205,7 @@ STATIC mp_obj_t set_diff_int(size_t n_args, const mp_obj_t *args, bool update) {
         if (self == other) {
             set_clear(self);
         } else {
-            mp_set_t *self_set = &((mp_obj_set_t*)MP_OBJ_TO_PTR(self))->set;
+            mp_set_t *self_set = &((mp_obj_set_t *)MP_OBJ_TO_PTR(self))->set;
             mp_obj_t iter = mp_getiter(other, NULL);
             mp_obj_t next;
             while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
@@ -362,7 +362,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        mp_raise_msg(&mp_type_KeyError, "pop from an empty set");
+        mp_raise_msg(&mp_type_KeyError, MP_ERROR_TEXT("pop from an empty set"));
     }
     return obj;
 }
@@ -426,9 +426,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
 STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->set.used != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->set.used);
-#if MICROPY_PY_BUILTINS_FROZENSET
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->set.used != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(self->set.used);
+        #if MICROPY_PY_BUILTINS_FROZENSET
         case MP_UNARY_OP_HASH:
             if (mp_obj_is_type(self_in, &mp_type_frozenset)) {
                 // start hash with unique value
@@ -443,8 +445,9 @@ STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 }
                 return MP_OBJ_NEW_SMALL_INT(hash);
             }
-#endif
-        default: return MP_OBJ_NULL; // op not supported
+        #endif
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -544,7 +547,7 @@ const mp_obj_type_t mp_type_set = {
     .unary_op = set_unary_op,
     .binary_op = set_binary_op,
     .getiter = set_getiter,
-    .locals_dict = (mp_obj_dict_t*)&set_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&set_locals_dict,
 };
 
 #if MICROPY_PY_BUILTINS_FROZENSET
@@ -563,13 +566,14 @@ STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
 
 const mp_obj_type_t mp_type_frozenset = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_frozenset,
     .print = set_print,
     .make_new = set_make_new,
     .unary_op = set_unary_op,
     .binary_op = set_binary_op,
     .getiter = set_getiter,
-    .locals_dict = (mp_obj_dict_t*)&frozenset_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&frozenset_locals_dict,
 };
 #endif
 

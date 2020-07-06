@@ -1,19 +1,19 @@
-'''
+"""
 ADC test for the CC3200 based boards.
-'''
+"""
 
 from machine import ADC
 import os
 
 mch = os.uname().machine
-if 'LaunchPad' in mch:
-    adc_pin = 'GP5'
+if "LaunchPad" in mch:
+    adc_pin = "GP5"
     adc_channel = 3
-elif 'WiPy' in mch:
-    adc_pin = 'GP3'
+elif "WiPy" in mch:
+    adc_pin = "GP3"
     adc_channel = 1
 else:
-    raise Exception('Board not supported!')
+    raise Exception("Board not supported!")
 
 adc = ADC(0)
 print(adc)
@@ -49,7 +49,7 @@ print(apin)
 print(apin() > 3000)
 
 # check for memory leaks...
-for i in range (0, 1000):
+for i in range(0, 1000):
     adc = ADC()
     apin = adc.channel(adc_channel)
 
@@ -57,56 +57,56 @@ for i in range (0, 1000):
 try:
     adc = ADC(bits=17)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     adc = ADC(id=1)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     adc = ADC(0, 16)
 except:
-    print('Exception')
+    print("Exception")
 
 adc = ADC()
 try:
     apin = adc.channel(4)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     apin = adc.channel(-1)
 except:
-    print('Exception')
+    print("Exception")
 
 try:
-    apin = adc.channel(0, pin='GP3')
+    apin = adc.channel(0, pin="GP3")
 except:
-    print('Exception')
+    print("Exception")
 
 apin = adc.channel(1)
 apin.deinit()
 try:
     apin()
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     apin.value()
 except:
-    print('Exception')
+    print("Exception")
 
 adc.deinit()
 try:
     apin.value()
 except:
-    print('Exception')
+    print("Exception")
 
 try:
     apin = adc.channel(1)
 except:
-    print('Exception')
+    print("Exception")
 
 # re-init must work
 adc.init()

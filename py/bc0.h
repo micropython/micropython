@@ -48,15 +48,15 @@
 #define MP_BC_BASE_BYTE_O                   (0x50) // LLLLSSDTTTTTEEFF
 #define MP_BC_BASE_BYTE_E                   (0x60) // --BREEEYYI------
 #define MP_BC_LOAD_CONST_SMALL_INT_MULTI    (0x70) // LLLLLLLLLLLLLLLL
-                                         // (0x80) // LLLLLLLLLLLLLLLL
-                                         // (0x90) // LLLLLLLLLLLLLLLL
-                                         // (0xa0) // LLLLLLLLLLLLLLLL
+//                                          (0x80) // LLLLLLLLLLLLLLLL
+//                                          (0x90) // LLLLLLLLLLLLLLLL
+//                                          (0xa0) // LLLLLLLLLLLLLLLL
 #define MP_BC_LOAD_FAST_MULTI               (0xb0) // LLLLLLLLLLLLLLLL
 #define MP_BC_STORE_FAST_MULTI              (0xc0) // SSSSSSSSSSSSSSSS
 #define MP_BC_UNARY_OP_MULTI                (0xd0) // OOOOOOO
 #define MP_BC_BINARY_OP_MULTI               (0xd7) //        OOOOOOOOO
-                                         // (0xe0) // OOOOOOOOOOOOOOOO
-                                         // (0xf0) // OOOOOOOOOO------
+//                                          (0xe0) // OOOOOOOOOOOOOOOO
+//                                          (0xf0) // OOOOOOOOOO------
 
 #define MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM (64)
 #define MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS (16)

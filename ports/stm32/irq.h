@@ -52,7 +52,7 @@ extern uint32_t irq_stats[IRQ_STATS_MAX];
 #define IRQ_EXIT(irq)
 #endif
 
-static inline mp_uint_t query_irq(void) {
+static inline uint32_t query_irq(void) {
     return __get_PRIMASK();
 }
 
@@ -91,11 +91,6 @@ static inline void restore_irq_pri(uint32_t state) {
 }
 
 #endif
-
-MP_DECLARE_CONST_FUN_OBJ_0(pyb_wfi_obj);
-MP_DECLARE_CONST_FUN_OBJ_0(pyb_disable_irq_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_enable_irq_obj);
-MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
 
 // IRQ priority definitions.
 //

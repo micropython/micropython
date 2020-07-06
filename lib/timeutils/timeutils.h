@@ -28,14 +28,14 @@
 #define MICROPY_INCLUDED_LIB_TIMEUTILS_TIMEUTILS_H
 
 typedef struct _timeutils_struct_time_t {
-    uint16_t    tm_year;    // i.e. 2014
-    uint8_t     tm_mon;     // 1..12
-    uint8_t     tm_mday;    // 1..31
-    uint8_t     tm_hour;    // 0..23
-    uint8_t     tm_min;     // 0..59
-    uint8_t     tm_sec;     // 0..59
-    uint8_t     tm_wday;    // 0..6  0 = Monday
-    uint16_t    tm_yday;    // 1..366
+    uint16_t tm_year;       // i.e. 2014
+    uint8_t tm_mon;         // 1..12
+    uint8_t tm_mday;        // 1..31
+    uint8_t tm_hour;        // 0..23
+    uint8_t tm_min;         // 0..59
+    uint8_t tm_sec;         // 0..59
+    uint8_t tm_wday;        // 0..6  0 = Monday
+    uint16_t tm_yday;       // 1..366
 } timeutils_struct_time_t;
 
 bool timeutils_is_leap_year(mp_uint_t year);

@@ -1,4 +1,5 @@
 import sys
+
 try:
     try:
         import uio as io
@@ -8,11 +9,13 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-if hasattr(sys, 'print_exception'):
+if hasattr(sys, "print_exception"):
     print_exception = sys.print_exception
 else:
     import traceback
+
     print_exception = lambda e, f: traceback.print_exception(None, e, sys.exc_info()[2], file=f)
+
 
 def print_exc(e):
     buf = io.StringIO()
@@ -29,22 +32,27 @@ def print_exc(e):
         elif not l.startswith("    "):
             print(l)
 
+
 # basic exception message
 try:
-    raise Exception('msg')
+    raise Exception("msg")
 except Exception as e:
-    print('caught')
+    print("caught")
     print_exc(e)
 
 # exception message with more than 1 source-code line
 def f():
     g()
+
+
 def g():
-    raise Exception('fail')
+    raise Exception("fail")
+
+
 try:
     f()
 except Exception as e:
-    print('caught')
+    print("caught")
     print_exc(e)
 
 # Test that an exception propagated through a finally doesn't have a traceback added there
@@ -52,9 +60,9 @@ try:
     try:
         f()
     finally:
-        print('finally')
+        print("finally")
 except Exception as e:
-    print('caught')
+    print("caught")
     print_exc(e)
 
 # Test that re-raising an exception doesn't add traceback info
@@ -62,25 +70,27 @@ try:
     try:
         f()
     except Exception as e:
-        print('reraise')
+        print("reraise")
         print_exc(e)
         raise
 except Exception as e:
-    print('caught')
+    print("caught")
     print_exc(e)
 
 # Here we have a function with lots of bytecode generated for a single source-line, and
 # there is an error right at the end of the bytecode.  It should report the correct line.
 def f():
-    f([1, 2], [1, 2], [1, 2], {1:1, 1:1, 1:1, 1:1, 1:1, 1:1, 1:f.X})
+    f([1, 2], [1, 2], [1, 2], {1: 1, 1: 1, 1: 1, 1: 1, 1: 1, 1: 1, 1: f.X})
     return 1
+
+
 try:
     f()
 except Exception as e:
     print_exc(e)
 
 # Test non-stream object passed as output object, only valid for uPy
-if hasattr(sys, 'print_exception'):
+if hasattr(sys, "print_exception"):
     try:
         sys.print_exception(Exception, 1)
         had_exception = False

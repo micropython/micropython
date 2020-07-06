@@ -1,14 +1,14 @@
 from pyb import Pin
 
-p = Pin('X8', Pin.IN)
+p = Pin("X8", Pin.IN)
 print(p)
 print(p.name())
 print(p.pin())
 print(p.port())
 
-p = Pin('X8', Pin.IN, Pin.PULL_UP)
-p = Pin('X8', Pin.IN, pull=Pin.PULL_UP)
-p = Pin('X8', mode=Pin.IN, pull=Pin.PULL_UP)
+p = Pin("X8", Pin.IN, Pin.PULL_UP)
+p = Pin("X8", Pin.IN, pull=Pin.PULL_UP)
+p = Pin("X8", mode=Pin.IN, pull=Pin.PULL_UP)
 print(p)
 print(p.value())
 

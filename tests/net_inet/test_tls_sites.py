@@ -6,6 +6,7 @@ try:
     import ussl as ssl
 except:
     import ssl
+
     # CPython only supports server_hostname with SSLContext
     ssl = ssl.SSLContext()
 
@@ -24,9 +25,9 @@ def test_one(site, opts):
         else:
             s = ssl.wrap_socket(s)
 
-        s.write(b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % bytes(site, 'latin'))
+        s.write(b"GET / HTTP/1.0\r\nHost: %s\r\n\r\n" % bytes(site, "latin"))
         resp = s.read(4096)
-#        print(resp)
+        # print(resp)
 
     finally:
         s.close()
@@ -37,7 +38,7 @@ SITES = [
     "www.google.com",
     "api.telegram.org",
     {"host": "api.pushbullet.com", "sni": True},
-#    "w9rybpfril.execute-api.ap-southeast-2.amazonaws.com",
+    # "w9rybpfril.execute-api.ap-southeast-2.amazonaws.com",
     {"host": "w9rybpfril.execute-api.ap-southeast-2.amazonaws.com", "sni": True},
 ]
 

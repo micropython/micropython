@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+// *FORMAT-OFF*
+
 #include "py/mpconfig.h"
 
 // All the qstr definitions in this file are available as constants.

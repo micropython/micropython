@@ -45,7 +45,6 @@
 #include "pybuart.h"
 #include "mpirq.h"
 #include "pybsleep.h"
-#include "mpexception.h"
 #include "osi.h"
 #include "utils.h"
 #include "pin.h"
@@ -431,7 +430,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, const mp_arg_val_t *a
     return mp_const_none;
 
 error:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 STATIC const mp_arg_t pyb_uart_init_args[] = {
@@ -555,7 +554,7 @@ STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     return uart_irq_new (self, trigger, priority, args[2].u_obj);
 
 invalid_args:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
 

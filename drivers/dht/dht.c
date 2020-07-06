@@ -45,7 +45,7 @@ STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
 
     if (bufinfo.len < 5) {
-        mp_raise_ValueError("buffer too small");
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer too small"));
     }
 
     // issue start command

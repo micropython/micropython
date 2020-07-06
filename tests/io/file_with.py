@@ -15,7 +15,7 @@ except:
 # Regression test: test that exception in with initialization properly
 # thrown and doesn't crash.
 try:
-    with open('__non_existent', 'r'):
+    with open("__non_existent", "r"):
         pass
 except OSError:
     print("OSError")

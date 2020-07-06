@@ -42,7 +42,6 @@
 #include "prcm.h"
 #include "systick.h"
 #include "pybrtc.h"
-#include "mpexception.h"
 #include "utils.h"
 
 /// \module time - time related functions
@@ -109,7 +108,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
 
     // localtime generates a tuple of len 8. CPython uses 9, so we accept both.
     if (len < 8 || len > 9) {
-        mp_raise_TypeError(mpexception_num_type_invalid_arguments);
+        mp_raise_TypeError(MP_ERROR_TEXT("invalid argument(s) num/type"));
     }
 
     return mp_obj_new_int_from_uint(timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),

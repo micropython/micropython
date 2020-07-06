@@ -50,19 +50,19 @@
 // Note: descriptors returned from callbacks must exist long enough for transfer to complete
 
 static const tusb_desc_device_t usbd_desc_device = {
-    .bLength            = sizeof(tusb_desc_device_t),
-    .bDescriptorType    = TUSB_DESC_DEVICE,
-    .bcdUSB             = 0x0200,
-    .bDeviceClass       = TUSB_CLASS_MISC,
-    .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
-    .bDeviceProtocol    = MISC_PROTOCOL_IAD,
-    .bMaxPacketSize0    = CFG_TUD_ENDOINT0_SIZE,
-    .idVendor           = USBD_VID,
-    .idProduct          = USBD_PID,
-    .bcdDevice          = 0x0100,
-    .iManufacturer      = USBD_STR_MANUF,
-    .iProduct           = USBD_STR_PRODUCT,
-    .iSerialNumber      = USBD_STR_SERIAL,
+    .bLength = sizeof(tusb_desc_device_t),
+    .bDescriptorType = TUSB_DESC_DEVICE,
+    .bcdUSB = 0x0200,
+    .bDeviceClass = TUSB_CLASS_MISC,
+    .bDeviceSubClass = MISC_SUBCLASS_COMMON,
+    .bDeviceProtocol = MISC_PROTOCOL_IAD,
+    .bMaxPacketSize0 = CFG_TUD_ENDOINT0_SIZE,
+    .idVendor = USBD_VID,
+    .idProduct = USBD_PID,
+    .bcdDevice = 0x0100,
+    .iManufacturer = USBD_STR_MANUF,
+    .iProduct = USBD_STR_PRODUCT,
+    .iSerialNumber = USBD_STR_SERIAL,
     .bNumConfigurations = 1,
 };
 
@@ -82,7 +82,7 @@ static const char *const usbd_desc_str[] = {
 };
 
 const uint8_t *tud_descriptor_device_cb(void) {
-    return (const uint8_t*)&usbd_desc_device;
+    return (const uint8_t *)&usbd_desc_device;
 }
 
 const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
@@ -102,14 +102,14 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index) {
         if (index >= sizeof(usbd_desc_str) / sizeof(usbd_desc_str[0])) {
             return NULL;
         }
-        const char* str = usbd_desc_str[index];
+        const char *str = usbd_desc_str[index];
         for (len = 0; len < DESC_STR_MAX - 1 && str[len]; ++len) {
             desc_str[1 + len] = str[len];
         }
     }
 
-    // first byte is len, second byte is string type
-    desc_str[0] = TUD_DESC_STR_HEADER(len);
+    // first byte is length (including header), second byte is string type
+    desc_str[0] = (TUSB_DESC_STRING << 8) | (2 * len + 2);
 
     return desc_str;
 }

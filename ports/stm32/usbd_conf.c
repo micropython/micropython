@@ -171,7 +171,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
         // Configure USB HS GPIOs
         static const mp_hal_pin_obj_t usb_pins[] = {
-            pin_A5, pin_C0, pin_H4, pin_I11, // CLK, STP, NXT, DIR
+            pin_A5, pin_C0, MICROPY_HW_USB_HS_ULPI_NXT, MICROPY_HW_USB_HS_ULPI_DIR, // CLK, STP, NXT, DIR
             pin_A3, pin_B0, pin_B1, pin_B5, pin_B10, pin_B11, pin_B12, pin_B13, // D0-D7
         };
         for (size_t i = 0; i < MP_ARRAY_SIZE(usb_pins); ++i) {
@@ -363,7 +363,7 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd) {
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const uint8_t *fifo_size) {
     #if MICROPY_HW_USB_FS
-    if (pdev->id ==  USB_PHY_FS_ID) {
+    if (pdev->id == USB_PHY_FS_ID) {
         #if defined(STM32WB)
         PWR->CR2 |= PWR_CR2_USV; // USB supply is valid
         #endif
@@ -631,7 +631,7 @@ USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
   * @param  ep_addr: Endpoint Number
   * @retval Recived Data Size
   */
-uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr) {
+uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t ep_addr) {
     return HAL_PCD_EP_GetRxCount(pdev->pData, ep_addr);
 }
 

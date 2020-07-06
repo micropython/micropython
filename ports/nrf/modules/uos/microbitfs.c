@@ -31,7 +31,7 @@
 
 #include "microbitfs.h"
 #include "drivers/flash.h"
-#include "modrandom.h"
+#include "drivers/rng.h"
 #include "py/obj.h"
 #include "py/stream.h"
 #include "py/runtime.h"
@@ -175,7 +175,7 @@ STATIC void init_limits(void) {
 }
 
 STATIC void randomise_start_index(void) {
-    start_index = machine_rng_generate_random_word() % chunks_in_file_system + 1;
+    start_index = rng_generate_random_word() % chunks_in_file_system + 1;
 }
 
 void microbit_filesystem_init(void) {
@@ -389,7 +389,7 @@ STATIC mp_obj_t microbit_remove(mp_obj_t filename) {
 
 STATIC void check_file_open(file_descriptor_obj *self) {
     if (!self->open) {
-        mp_raise_ValueError("I/O operation on closed file");
+        mp_raise_ValueError(MP_ERROR_TEXT("I/O operation on closed file"));
     }
 }
 
@@ -685,7 +685,7 @@ mp_obj_t uos_mbfs_open(size_t n_args, const mp_obj_t *args) {
     }
     return res;
 mode_error:
-    mp_raise_ValueError("illegal mode");
+    mp_raise_ValueError(MP_ERROR_TEXT("illegal mode"));
 }
 
 STATIC mp_obj_t uos_mbfs_stat(mp_obj_t filename) {

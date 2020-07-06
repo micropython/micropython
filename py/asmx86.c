@@ -41,13 +41,13 @@
 
 #define OPCODE_NOP               (0x90)
 #define OPCODE_PUSH_R32          (0x50)
-//#define OPCODE_PUSH_I32          (0x68)
-//#define OPCODE_PUSH_M32          (0xff) /* /6 */
+// #define OPCODE_PUSH_I32          (0x68)
+// #define OPCODE_PUSH_M32          (0xff) /* /6 */
 #define OPCODE_POP_R32           (0x58)
 #define OPCODE_RET               (0xc3)
-//#define OPCODE_MOV_I8_TO_R8      (0xb0) /* +rb */
+// #define OPCODE_MOV_I8_TO_R8      (0xb0) /* +rb */
 #define OPCODE_MOV_I32_TO_R32    (0xb8)
-//#define OPCODE_MOV_I32_TO_RM32   (0xc7)
+// #define OPCODE_MOV_I32_TO_RM32   (0xc7)
 #define OPCODE_MOV_R8_TO_RM8     (0x88) /* /r */
 #define OPCODE_MOV_R32_TO_RM32   (0x89) /* /r */
 #define OPCODE_MOV_RM32_TO_R32   (0x8b) /* /r */
@@ -63,15 +63,16 @@
 #define OPCODE_SUB_R32_FROM_RM32 (0x29)
 #define OPCODE_SUB_I32_FROM_RM32 (0x81) /* /5 */
 #define OPCODE_SUB_I8_FROM_RM32  (0x83) /* /5 */
-//#define OPCODE_SHL_RM32_BY_I8    (0xc1) /* /4 */
-//#define OPCODE_SHR_RM32_BY_I8    (0xc1) /* /5 */
-//#define OPCODE_SAR_RM32_BY_I8    (0xc1) /* /7 */
+// #define OPCODE_SHL_RM32_BY_I8    (0xc1) /* /4 */
+// #define OPCODE_SHR_RM32_BY_I8    (0xc1) /* /5 */
+// #define OPCODE_SAR_RM32_BY_I8    (0xc1) /* /7 */
 #define OPCODE_SHL_RM32_CL       (0xd3) /* /4 */
+#define OPCODE_SHR_RM32_CL       (0xd3) /* /5 */
 #define OPCODE_SAR_RM32_CL       (0xd3) /* /7 */
-//#define OPCODE_CMP_I32_WITH_RM32 (0x81) /* /7 */
-//#define OPCODE_CMP_I8_WITH_RM32  (0x83) /* /7 */
+// #define OPCODE_CMP_I32_WITH_RM32 (0x81) /* /7 */
+// #define OPCODE_CMP_I8_WITH_RM32  (0x83) /* /7 */
 #define OPCODE_CMP_R32_WITH_RM32 (0x39)
-//#define OPCODE_CMP_RM32_WITH_R32 (0x3b)
+// #define OPCODE_CMP_RM32_WITH_R32 (0x3b)
 #define OPCODE_TEST_R8_WITH_RM8  (0x84) /* /r */
 #define OPCODE_TEST_R32_WITH_RM32 (0x85) /* /r */
 #define OPCODE_JMP_REL8          (0xeb)
@@ -103,14 +104,14 @@
 #define SIGNED_FIT8(x) (((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80)
 
 STATIC void asm_x86_write_byte_1(asm_x86_t *as, byte b1) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 1);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 1);
     if (c != NULL) {
         c[0] = b1;
     }
 }
 
 STATIC void asm_x86_write_byte_2(asm_x86_t *as, byte b1, byte b2) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 2);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 2);
     if (c != NULL) {
         c[0] = b1;
         c[1] = b2;
@@ -118,7 +119,7 @@ STATIC void asm_x86_write_byte_2(asm_x86_t *as, byte b1, byte b2) {
 }
 
 STATIC void asm_x86_write_byte_3(asm_x86_t *as, byte b1, byte b2, byte b3) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 3);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 3);
     if (c != NULL) {
         c[0] = b1;
         c[1] = b2;
@@ -127,7 +128,7 @@ STATIC void asm_x86_write_byte_3(asm_x86_t *as, byte b1, byte b2, byte b3) {
 }
 
 STATIC void asm_x86_write_word32(asm_x86_t *as, int w32) {
-    byte* c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
+    byte *c = mp_asm_base_get_cur_to_write_bytes(&as->base, 4);
     if (c != NULL) {
         c[0] = IMM32_L0(w32);
         c[1] = IMM32_L1(w32);
@@ -255,11 +256,15 @@ void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, src_r32, OPCODE_XOR_R32_TO_RM32);
 }
 
-void asm_x86_shl_r32_cl(asm_x86_t* as, int dest_r32) {
+void asm_x86_shl_r32_cl(asm_x86_t *as, int dest_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, 4, OPCODE_SHL_RM32_CL);
 }
 
-void asm_x86_sar_r32_cl(asm_x86_t* as, int dest_r32) {
+void asm_x86_shr_r32_cl(asm_x86_t *as, int dest_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, 5, OPCODE_SHR_RM32_CL);
+}
+
+void asm_x86_sar_r32_cl(asm_x86_t *as, int dest_r32) {
     asm_x86_generic_r32_r32(as, dest_r32, 7, OPCODE_SAR_RM32_CL);
 }
 
@@ -368,7 +373,7 @@ void asm_x86_jmp_label(asm_x86_t *as, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 5;
         asm_x86_write_byte_1(as, OPCODE_JMP_REL32);
         asm_x86_write_word32(as, rel);
@@ -390,7 +395,7 @@ void asm_x86_jcc_label(asm_x86_t *as, mp_uint_t jcc_type, mp_uint_t label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         rel -= 6;
         asm_x86_write_byte_2(as, OPCODE_JCC_REL32_A, OPCODE_JCC_REL32_B | jcc_type);
         asm_x86_write_word32(as, rel);
@@ -403,7 +408,7 @@ void asm_x86_entry(asm_x86_t *as, int num_locals) {
     asm_x86_push_r32(as, ASM_X86_REG_EBX);
     asm_x86_push_r32(as, ASM_X86_REG_ESI);
     asm_x86_push_r32(as, ASM_X86_REG_EDI);
-    num_locals |= 1; // make it odd so stack is aligned on 16 byte boundary
+    num_locals |= 3; // make it odd so stack is aligned on 16 byte boundary
     asm_x86_sub_r32_i32(as, ASM_X86_REG_ESP, num_locals * WORD_SIZE);
     as->num_locals = num_locals;
 }
@@ -488,8 +493,7 @@ void asm_x86_push_local(asm_x86_t *as, int local_num) {
     asm_x86_push_disp(as, ASM_X86_REG_ESP, asm_x86_local_offset_from_esp(as, local_num));
 }
 
-void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
-{
+void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32) {
     asm_x86_mov_r32_r32(as, temp_r32, ASM_X86_REG_ESP);
     asm_x86_add_i32_to_r32(as, asm_x86_local_offset_from_esp(as, local_num), temp_r32);
     asm_x86_push_r32(as, temp_r32);
@@ -497,11 +501,14 @@ void asm_x86_push_local_addr(asm_x86_t *as, int local_num, int temp_r32)
 #endif
 
 void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r32) {
-    // TODO align stack on 16-byte boundary before the call
-    assert(n_args <= 5);
-    if (n_args > 4) {
-        asm_x86_push_r32(as, ASM_X86_REG_ARG_5);
+    assert(n_args <= 4);
+
+    // Align stack on 16-byte boundary during the call
+    unsigned int align = ((n_args + 3) & ~3) - n_args;
+    if (align) {
+        asm_x86_sub_r32_i32(as, ASM_X86_REG_ESP, align * WORD_SIZE);
     }
+
     if (n_args > 3) {
         asm_x86_push_r32(as, ASM_X86_REG_ARG_4);
     }
@@ -521,7 +528,7 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
 
     // the caller must clean up the stack
     if (n_args > 0) {
-        asm_x86_add_i32_to_r32(as, WORD_SIZE * n_args, ASM_X86_REG_ESP);
+        asm_x86_add_i32_to_r32(as, (n_args + align) * WORD_SIZE, ASM_X86_REG_ESP);
     }
 }
 

@@ -36,7 +36,7 @@ typedef struct _mp_lexer_str32_buf_t {
 } mp_lexer_str32_buf_t;
 
 STATIC mp_uint_t str32_buf_next_byte(void *sb_in) {
-    mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t*)sb_in;
+    mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t *)sb_in;
     byte c = sb->val & 0xff;
     if (c == 0) {
         return MP_READER_EOF;
@@ -53,14 +53,14 @@ STATIC mp_uint_t str32_buf_next_byte(void *sb_in) {
 }
 
 STATIC void str32_buf_free(void *sb_in) {
-    mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t*)sb_in;
+    mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t *)sb_in;
     m_del_obj(mp_lexer_str32_buf_t, sb);
 }
 
 mp_lexer_t *mp_lexer_new_from_str32(qstr src_name, const char *str, mp_uint_t len, mp_uint_t free_len) {
     mp_lexer_str32_buf_t *sb = m_new_obj(mp_lexer_str32_buf_t);
     sb->byte_off = (uint32_t)str & 3;
-    sb->src_cur = (uint32_t*)(str - sb->byte_off);
+    sb->src_cur = (uint32_t *)(str - sb->byte_off);
     sb->val = *sb->src_cur++ >> sb->byte_off * 8;
     mp_reader_t reader = {sb, str32_buf_next_byte, str32_buf_free};
     return mp_lexer_new(src_name, reader);

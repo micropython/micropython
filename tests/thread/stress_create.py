@@ -6,8 +6,10 @@ except ImportError:
     import time
 import _thread
 
+
 def thread_entry(n):
     pass
+
 
 thread_num = 0
 while thread_num < 500:
@@ -19,4 +21,4 @@ while thread_num < 500:
 
 # wait for the last threads to terminate
 time.sleep(1)
-print('done')
+print("done")

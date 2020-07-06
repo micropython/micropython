@@ -116,7 +116,7 @@ Methods
    Flush any data in cache to the underlying stream.
 
 .. method:: btree.__getitem__(key)
-            btree.get(key, default=None)
+            btree.get(key, default=None, /)
             btree.__setitem__(key, val)
             btree.__detitem__(key)
             btree.__contains__(key)

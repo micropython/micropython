@@ -1,0 +1,30 @@
+--- instance0 ---
+gap_advertise
+_IRQ_CENTRAL_CONNECT
+_IRQ_GATTS_WRITE b'central0'
+gatts_write
+gatts_notify
+_IRQ_GATTS_WRITE b'central1'
+gatts_notify
+_IRQ_CENTRAL_DISCONNECT
+--- instance1 ---
+gap_connect
+_IRQ_PERIPHERAL_CONNECT
+_IRQ_GATTC_CHARACTERISTIC_RESULT UUID128('00000000-1111-2222-3333-444444444444')
+gattc_read
+_IRQ_GATTC_READ_RESULT b'periph0'
+_IRQ_GATTC_READ_DONE 0
+gattc_write
+_IRQ_GATTC_WRITE_DONE 0
+_IRQ_GATTC_NOTIFY b'periph1'
+gattc_read
+_IRQ_GATTC_READ_RESULT b'periph1'
+_IRQ_GATTC_READ_DONE 0
+gattc_write
+_IRQ_GATTC_WRITE_DONE 0
+_IRQ_GATTC_NOTIFY b'periph2'
+gattc_read
+_IRQ_GATTC_READ_RESULT b'central1'
+_IRQ_GATTC_READ_DONE 0
+gap_disconnect: True
+_IRQ_PERIPHERAL_DISCONNECT

@@ -29,7 +29,6 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "irq.h"
 #include "inc/hw_types.h"
 #include "inc/hw_gpio.h"
 #include "inc/hw_ints.h"
@@ -47,7 +46,6 @@
 #include "FreeRTOS.h"
 #include "portable.h"
 #include "task.h"
-#include "mpexception.h"
 #include "random.h"
 #include "pybadc.h"
 #include "pybi2c.h"
@@ -69,6 +67,9 @@ extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 
 /// \module machine - functions related to the SoC
 ///
+
+MP_DECLARE_CONST_FUN_OBJ_0(machine_disable_irq_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_enable_irq_obj);
 
 /******************************************************************************/
 // MicroPython bindings;
@@ -125,7 +126,7 @@ STATIC mp_obj_t machine_main(mp_obj_t main) {
     if (mp_obj_is_str(main)) {
         MP_STATE_PORT(machine_config_main) = main;
     } else {
-        mp_raise_ValueError(mpexception_value_invalid_arguments);
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
     return mp_const_none;
 }
@@ -177,8 +178,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_reason),         MP_ROM_PTR(&machine_wake_reason_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&pyb_disable_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&pyb_enable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&pyb_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&pin_type) },

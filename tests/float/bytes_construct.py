@@ -9,4 +9,4 @@ except ImportError:
         print("SKIP")
         raise SystemExit
 
-print(bytes(array('f', [1, 2.3])))
+print(bytes(array("f", [1, 2.3])))

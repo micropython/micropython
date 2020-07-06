@@ -1,0 +1,18 @@
+name: Build docs
+
+on:
+  pull_request:
+    paths:
+      - docs/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+    - name: Install Python packages
+      run: pip install Sphinx
+    - name: Build docs
+      run: make -C docs/ html

@@ -130,11 +130,11 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // Get I2C bus
     mp_int_t i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
     if (!(I2C_NUM_0 <= i2c_id && i2c_id < I2C_NUM_MAX)) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "I2C(%d) doesn't exist", i2c_id));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
 
     // Get static peripheral object
-    machine_hw_i2c_obj_t *self = (machine_hw_i2c_obj_t*)&machine_hw_i2c_obj[i2c_id];
+    machine_hw_i2c_obj_t *self = (machine_hw_i2c_obj_t *)&machine_hw_i2c_obj[i2c_id];
 
     bool first_init = false;
     if (self->base.type == NULL) {
@@ -175,5 +175,5 @@ STATIC const mp_obj_type_t machine_hw_i2c_type = {
     .print = machine_hw_i2c_print,
     .make_new = machine_hw_i2c_make_new,
     .protocol = &machine_hw_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
 };

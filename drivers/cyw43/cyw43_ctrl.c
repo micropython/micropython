@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include "py/mphal.h"
@@ -252,7 +253,7 @@ STATIC const char *cyw43_async_event_name_table[89] = {
 
 STATIC void cyw43_dump_async_event(const cyw43_async_event_t *ev) {
     printf("[% 8d] ASYNC(%04x,",
-        mp_hal_ticks_ms(),
+        (int)mp_hal_ticks_ms(),
         (unsigned int)ev->flags
     );
     if (ev->event_type < MP_ARRAY_SIZE(cyw43_async_event_name_table)
@@ -455,7 +456,9 @@ void cyw43_wifi_set_up(cyw43_t *self, int itf, bool up) {
             } else {
                 country = MAKE_COUNTRY(pyb_country_code[0], pyb_country_code[1], 0);
             }
-            cyw43_wifi_on(self, country);
+            if (cyw43_wifi_on(self, country) != 0) {
+                return;
+            }
             cyw43_wifi_pm(self, 10 << 20 | 1 << 16 | 1 << 12 | 20 << 4 | 2);
         }
         if (itf == CYW43_ITF_AP) {

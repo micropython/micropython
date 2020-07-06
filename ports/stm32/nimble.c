@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Jim Mussared
+ * Copyright (c) 2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,35 +31,24 @@
 
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
 
-#include "systick.h"
-#include "pendsv.h"
-
 #include "transport/uart/ble_hci_uart.h"
 #include "host/ble_hs.h"
 
-#include "extmod/modbluetooth_nimble.h"
+#include "extmod/modbluetooth_hci.h"
+#include "extmod/nimble/modbluetooth_nimble.h"
+#include "extmod/nimble/nimble/nimble_hci_uart.h"
 
-extern void nimble_uart_process(void);
 extern void os_eventq_run_all(void);
 extern void os_callout_process(void);
 
-// Hook for pendsv poller to run this periodically every 128ms
-#define NIMBLE_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
-
-void nimble_poll(void) {
+void mp_bluetooth_hci_poll(void) {
     if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
         return;
     }
 
-    nimble_uart_process();
+    mp_bluetooth_nimble_hci_uart_process();
     os_callout_process();
     os_eventq_run_all();
-}
-
-void mod_bluetooth_nimble_poll_wrapper(uint32_t ticks_ms) {
-    if (NIMBLE_TICK(ticks_ms)) {
-        pendsv_schedule_dispatch(PENDSV_DISPATCH_NIMBLE, nimble_poll);
-    }
 }
 
 void mp_bluetooth_nimble_port_preinit(void) {
@@ -70,13 +60,29 @@ void mp_bluetooth_nimble_port_postinit(void) {
 }
 
 void mp_bluetooth_nimble_port_deinit(void) {
-    #ifdef pyb_pin_BT_REG_ON
-    mp_hal_pin_low(pyb_pin_BT_REG_ON);
-    #endif
+    mp_bluetooth_hci_controller_deactivate();
 }
 
 void mp_bluetooth_nimble_port_start(void) {
     ble_hs_start();
+}
+
+void mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
+    bool host_wake = mp_bluetooth_hci_controller_woken();
+
+    int chr;
+    while ((chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
+        // printf("UART RX: %02x\n", data);
+        rx_cb(rx_arg, chr);
+    }
+
+    if (host_wake) {
+        mp_bluetooth_hci_controller_sleep_maybe();
+    }
+}
+
+void mp_bluetooth_nimble_hci_uart_tx_strn(const char *str, uint len) {
+    mp_bluetooth_hci_uart_write((const uint8_t *)str, len);
 }
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE

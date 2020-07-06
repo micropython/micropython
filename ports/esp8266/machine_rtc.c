@@ -181,7 +181,7 @@ STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
         if (bufinfo.len > MEM_USER_MAXLEN) {
-            mp_raise_ValueError("buffer too long");
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer too long"));
         }
 
         len = bufinfo.len;
@@ -205,7 +205,7 @@ STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time
 
     // check we want alarm0
     if (mp_obj_get_int(alarm_id) != 0) {
-        mp_raise_ValueError("invalid alarm");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid alarm"));
     }
 
     // set expiry time (in microseconds)
@@ -219,7 +219,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_rtc_alarm_obj, pyb_rtc_alarm);
 STATIC mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     // check we want alarm0
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
-        mp_raise_ValueError("invalid alarm");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid alarm"));
     }
 
     uint64_t now = pyb_rtc_get_us_since_2000();
@@ -242,7 +242,7 @@ STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     // check we want alarm0
     if (args[ARG_trigger].u_int != 0) {
-        mp_raise_ValueError("invalid alarm");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid alarm"));
     }
 
     // set the wake value
@@ -266,5 +266,5 @@ const mp_obj_type_t pyb_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = pyb_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_rtc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_rtc_locals_dict,
 };

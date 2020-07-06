@@ -86,7 +86,7 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
         { MP_QSTR_nss,      MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_NSS_SOFT} },
         { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT,  {.u_int = SPI_FIRSTBIT_MSB} },
         { MP_QSTR_ti,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_crc,      MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+        { MP_QSTR_crc,      MP_ARG_KW_ONLY | MP_ARG_OBJ,  {.u_rom_obj = MP_ROM_NONE} },
     };
 
     // parse args
@@ -223,7 +223,7 @@ STATIC mp_obj_t pyb_spi_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     mp_obj_t o_ret = pyb_buf_get_for_recv(args[0].u_obj, &vstr);
 
     // receive the data
-    spi_transfer(self->spi, vstr.len, NULL, (uint8_t*)vstr.buf, args[1].u_int);
+    spi_transfer(self->spi, vstr.len, NULL, (uint8_t *)vstr.buf, args[1].u_int);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
@@ -285,7 +285,7 @@ STATIC mp_obj_t pyb_spi_send_recv(size_t n_args, const mp_obj_t *pos_args, mp_ma
             // recv argument given
             mp_get_buffer_raise(args[1].u_obj, &bufinfo_recv, MP_BUFFER_WRITE);
             if (bufinfo_recv.len != bufinfo_send.len) {
-                mp_raise_ValueError("recv must be same length as send");
+                mp_raise_ValueError(MP_ERROR_TEXT("recv must be same length as send"));
             }
             o_ret = args[1].u_obj;
         }
@@ -339,7 +339,7 @@ STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
 STATIC void spi_transfer_machine(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    pyb_spi_obj_t *self = (pyb_spi_obj_t*)self_in;
+    pyb_spi_obj_t *self = (pyb_spi_obj_t *)self_in;
     spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
@@ -353,5 +353,5 @@ const mp_obj_type_t pyb_spi_type = {
     .print = pyb_spi_print,
     .make_new = pyb_spi_make_new,
     .protocol = &pyb_spi_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_spi_locals_dict,
 };

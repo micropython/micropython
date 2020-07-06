@@ -58,6 +58,7 @@ STATIC mp_obj_t fun_builtin_0_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 const mp_obj_type_t mp_type_fun_builtin_0 = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     .name = MP_QSTR_function,
     .call = fun_builtin_0_call,
     .unary_op = mp_generic_unary_op,
@@ -72,6 +73,7 @@ STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 const mp_obj_type_t mp_type_fun_builtin_1 = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     .name = MP_QSTR_function,
     .call = fun_builtin_1_call,
     .unary_op = mp_generic_unary_op,
@@ -86,6 +88,7 @@ STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 const mp_obj_type_t mp_type_fun_builtin_2 = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     .name = MP_QSTR_function,
     .call = fun_builtin_2_call,
     .unary_op = mp_generic_unary_op,
@@ -100,6 +103,7 @@ STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 const mp_obj_type_t mp_type_fun_builtin_3 = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     .name = MP_QSTR_function,
     .call = fun_builtin_3_call,
     .unary_op = mp_generic_unary_op,
@@ -130,6 +134,7 @@ STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
 const mp_obj_type_t mp_type_fun_builtin_var = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
     .name = MP_QSTR_function,
     .call = fun_builtin_var_call,
     .unary_op = mp_generic_unary_op,
@@ -188,7 +193,7 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 // With this macro you can tune the maximum number of function state bytes
 // that will be allocated on the stack.  Any function that needs more
 // than this will try to use the heap, with fallback to stack allocation.
-#define VM_MAX_STATE_ON_STACK (11 * sizeof(mp_uint_t))
+#define VM_MAX_STATE_ON_STACK (sizeof(mp_uint_t) * 11)
 
 #define DECODE_CODESTATE_SIZE(bytecode, n_state_out_var, state_size_out_var) \
     { \
@@ -198,7 +203,7 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
                                     \
         /* state size in bytes */                                                 \
         state_size_out_var = n_state_out_var * sizeof(mp_obj_t)                   \
-                           + n_exc_stack * sizeof(mp_exc_stack_t);                \
+            + n_exc_stack * sizeof(mp_exc_stack_t);                \
     }
 
 #define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
@@ -355,15 +360,16 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_fun_bc = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF,
     .name = MP_QSTR_function,
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     .print = fun_bc_print,
-#endif
+    #endif
     .call = fun_bc_call,
     .unary_op = mp_generic_unary_op,
-#if MICROPY_PY_FUNCTION_ATTRS
+    #if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
-#endif
+    #endif
 };
 
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table) {
@@ -400,19 +406,20 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byt
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = self_in;
-    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void*)self->bytecode);
+    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
     return fun(self_in, n_args, n_kw, args);
 }
 
 STATIC const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF,
     .name = MP_QSTR_function,
     .call = fun_native_call,
     .unary_op = mp_generic_unary_op,
 };
 
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table) {
-    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte*)fun_data, const_table);
+    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte *)fun_data, const_table);
     o->base.type = &mp_type_fun_native;
     return o;
 }
@@ -455,13 +462,13 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         size_t l;
         return (mp_uint_t)mp_obj_str_get_data(obj, &l);
     } else {
-        mp_obj_type_t *type = mp_obj_get_type(obj);
-#if MICROPY_PY_BUILTINS_FLOAT
+        const mp_obj_type_t *type = mp_obj_get_type(obj);
+        #if MICROPY_PY_BUILTINS_FLOAT
         if (type == &mp_type_float) {
             // convert float to int (could also pass in float registers)
             return (mp_int_t)mp_obj_float_get(obj);
-        } else
-#endif
+        }
+        #endif
         if (type == &mp_type_tuple || type == &mp_type_list) {
             // pointer to start of tuple (could pass length, but then could use len(x) for that)
             size_t len;
@@ -505,7 +512,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
             convert_obj_for_inline_asm(args[1]),
             convert_obj_for_inline_asm(args[2]),
             convert_obj_for_inline_asm(args[3])
-        );
+            );
     }
 
     return mp_native_to_obj(ret, self->type_sig);
@@ -513,6 +520,7 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
 
 STATIC const mp_obj_type_t mp_type_fun_asm = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF,
     .name = MP_QSTR_function,
     .call = fun_asm_call,
     .unary_op = mp_generic_unary_op,

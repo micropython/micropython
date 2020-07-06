@@ -6,4 +6,4 @@
 
 import umachine as machine
 
-print(hex(machine.mem16[0xc0000]))
+print(hex(machine.mem16[0xC0000]))

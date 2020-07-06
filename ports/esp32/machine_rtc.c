@@ -74,7 +74,7 @@ STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 machine_rtc_config_t machine_rtc_config = {
     .ext1_pins = 0,
     .ext0_pin = -1
-    };
+};
 
 STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
@@ -146,7 +146,7 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // read RTC memory
         uint8_t rtcram[MICROPY_HW_RTC_USER_MEM_MAX];
-        memcpy((char*)rtcram, (char*)rtc_user_mem_data, rtc_user_mem_len);
+        memcpy((char *)rtcram, (char *)rtc_user_mem_data, rtc_user_mem_len);
         return mp_obj_new_bytes(rtcram, rtc_user_mem_len);
     } else {
         // write RTC memory
@@ -154,9 +154,9 @@ STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
 
         if (bufinfo.len > MICROPY_HW_RTC_USER_MEM_MAX) {
-            mp_raise_ValueError("buffer too long");
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer too long"));
         }
-        memcpy( (char *) rtc_user_mem_data, (char *) bufinfo.buf, bufinfo.len);
+        memcpy((char *)rtc_user_mem_data, (char *)bufinfo.buf, bufinfo.len);
         rtc_user_mem_len = bufinfo.len;
         return mp_const_none;
     }

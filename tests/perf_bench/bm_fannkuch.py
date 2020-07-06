@@ -5,6 +5,7 @@
 # http://benchmarksgame.alioth.debian.org/
 # Contributed by Sokolov Yura, modified by Tupteq.
 
+
 def fannkuch(n):
     count = list(range(1, n + 1))
     max_flips = 0
@@ -29,7 +30,7 @@ def fannkuch(n):
             flips_count = 0
             k = perm[0]
             while k:
-                perm[:k + 1] = perm[k::-1]
+                perm[: k + 1] = perm[k::-1]
                 flips_count += 1
                 k = perm[0]
 
@@ -57,11 +58,15 @@ bm_params = {
     (5000, 10): (9,),
 }
 
+
 def bm_setup(params):
     state = None
+
     def run():
         nonlocal state
         state = fannkuch(params[0])
+
     def result():
         return params[0], state
+
     return run, result

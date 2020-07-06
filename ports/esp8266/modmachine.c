@@ -30,6 +30,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "lib/utils/pyexec.h"
 
 // This needs to be set before we include the RTOS headers
 #define USE_US_TIMER 1
@@ -49,8 +50,8 @@
 
 #if MICROPY_PY_MACHINE
 
-//#define MACHINE_WAKE_IDLE (0x01)
-//#define MACHINE_WAKE_SLEEP (0x02)
+// #define MACHINE_WAKE_IDLE (0x01)
+// #define MACHINE_WAKE_SLEEP (0x02)
 #define MACHINE_WAKE_DEEPSLEEP (0x04)
 
 extern const mp_obj_type_t esp_wdt_type;
@@ -63,7 +64,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
         if (freq != 80 && freq != 160) {
-            mp_raise_ValueError("frequency can only be either 80Mhz or 160MHz");
+            mp_raise_ValueError(MP_ERROR_TEXT("frequency can only be either 80Mhz or 160MHz"));
         }
         system_update_cpu_freq(freq);
         return mp_const_none;
@@ -77,6 +78,12 @@ STATIC mp_obj_t machine_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
+STATIC mp_obj_t machine_soft_reset(void) {
+    pyexec_system_exit = PYEXEC_FORCED_EXIT;
+    mp_raise_type(&mp_type_SystemExit);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
+
 STATIC mp_obj_t machine_reset_cause(void) {
     return MP_OBJ_NEW_SMALL_INT(system_get_rst_info()->reason);
 }
@@ -84,13 +91,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
 STATIC mp_obj_t machine_unique_id(void) {
     uint32_t id = system_get_chip_id();
-    return mp_obj_new_bytes((byte*)&id, sizeof(id));
+    return mp_obj_new_bytes((byte *)&id, sizeof(id));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 STATIC mp_obj_t machine_idle(void) {
     uint32_t t = mp_hal_ticks_cpu();
-    asm("waiti 0");
+    asm ("waiti 0");
     t = mp_hal_ticks_cpu() - t;
     ets_event_poll(); // handle any events after possibly a long wait (eg feed WDT)
     return MP_OBJ_NEW_SMALL_INT(t);
@@ -112,7 +119,7 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         ets_event_poll();
         if (wifi_mode == NULL_MODE) {
             // Can only idle if the wifi is off
-            asm("waiti 0");
+            asm ("waiti 0");
         }
     }
     return mp_const_none;
@@ -256,11 +263,11 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
         { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
-#if MICROPY_PY_BUILTINS_FLOAT
+        #if MICROPY_PY_BUILTINS_FLOAT
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-#else
+        #else
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
-#endif
+        #endif
     };
 
     // parse args
@@ -272,7 +279,7 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
     os_timer_disarm(&self->timer);
     os_timer_setfn(&self->timer, esp_timer_cb, self);
 
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     if (args[ARG_freq].u_obj != mp_const_none) {
         mp_float_t freq = mp_obj_get_float(args[ARG_freq].u_obj);
         if (freq < 0.001) {
@@ -281,11 +288,11 @@ STATIC mp_obj_t esp_timer_init_helper(esp_timer_obj_t *self, size_t n_args, cons
             esp_timer_arm_us(self, (mp_int_t)(1000000 / freq), args[ARG_mode].u_int);
         }
     }
-#else
+    #else
     if (args[ARG_freq].u_int != 0xffffffff) {
         esp_timer_arm_us(self, 1000000 / args[ARG_freq].u_int, args[ARG_mode].u_int);
     }
-#endif
+    #endif
     else {
         mp_int_t period = args[ARG_period].u_int;
         mp_int_t hz = args[ARG_tick_hz].u_int;
@@ -333,7 +340,7 @@ const mp_obj_type_t esp_timer_type = {
     .name = MP_QSTR_Timer,
     .print = esp_timer_print,
     .make_new = esp_timer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&esp_timer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&esp_timer_locals_dict,
 };
 
 // this bit is unused in the Xtensa PS register
@@ -392,6 +399,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_freq_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
@@ -434,7 +442,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
 #endif // MICROPY_PY_MACHINE

@@ -29,8 +29,8 @@
 #include "py/obj.h"
 
 typedef enum {
-    PYEXEC_MODE_RAW_REPL,
     PYEXEC_MODE_FRIENDLY_REPL,
+    PYEXEC_MODE_RAW_REPL,
 } pyexec_mode_kind_t;
 
 extern pyexec_mode_kind_t pyexec_mode_kind;
@@ -51,8 +51,10 @@ int pyexec_frozen_module(const char *name);
 void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
 extern uint8_t pyexec_repl_active;
-mp_obj_t pyb_set_repl_info(mp_obj_t o_value);
 
+#if MICROPY_REPL_INFO
+mp_obj_t pyb_set_repl_info(mp_obj_t o_value);
 MP_DECLARE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj);
+#endif
 
 #endif // MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H

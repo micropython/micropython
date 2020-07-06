@@ -34,9 +34,11 @@
 // M_PI is not part of the math.h standard and may not be defined
 // And by defining our own we can ensure it uses the correct const format.
 #define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
+#define MP_PI_4 MICROPY_FLOAT_CONST(0.78539816339744830962)
+#define MP_3_PI_4 MICROPY_FLOAT_CONST(2.35619449019234492885)
 
 STATIC NORETURN void math_error(void) {
-    mp_raise_ValueError("math domain error");
+    mp_raise_ValueError(MP_ERROR_TEXT("math domain error"));
 }
 
 STATIC mp_obj_t math_generic_1(mp_obj_t x_obj, mp_float_t (*f)(mp_float_t)) {
@@ -59,30 +61,30 @@ STATIC mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
 }
 
 #define MATH_FUN_1(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { \
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { \
         return math_generic_1(x_obj, MICROPY_FLOAT_C_FUN(c_name)); \
     } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_1_TO_BOOL(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_bool(c_name(mp_obj_get_float(x_obj))); } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { return mp_obj_new_bool(c_name(mp_obj_get_float(x_obj))); } \
+    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_1_TO_INT(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj) { return mp_obj_new_int_from_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj) { return mp_obj_new_int_from_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj))); } \
+    STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_2(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
         return math_generic_2(x_obj, y_obj, MICROPY_FLOAT_C_FUN(c_name)); \
     } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #define MATH_FUN_2_FLT_INT(py_name, c_name) \
-    STATIC mp_obj_t mp_math_ ## py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
+    STATIC mp_obj_t mp_math_##py_name(mp_obj_t x_obj, mp_obj_t y_obj) { \
         return mp_obj_new_float(MICROPY_FLOAT_C_FUN(c_name)(mp_obj_get_float(x_obj), mp_obj_get_int(y_obj))); \
     } \
-    STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_## py_name ## _obj, mp_math_ ## py_name);
+    STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_##py_name##_obj, mp_math_##py_name);
 
 #if MP_NEED_LOG2
 #undef log2
@@ -132,7 +134,17 @@ MATH_FUN_1(asin, asin)
 // atan(x)
 MATH_FUN_1(atan, atan)
 // atan2(y, x)
+#if MICROPY_PY_MATH_ATAN2_FIX_INFNAN
+mp_float_t atan2_func(mp_float_t x, mp_float_t y) {
+    if (isinf(x) && isinf(y)) {
+        return copysign(y < 0 ? MP_3_PI_4 : MP_PI_4, x);
+    }
+    return atan2(x, y);
+}
+MATH_FUN_2(atan2, atan2_func)
+#else
 MATH_FUN_2(atan2, atan2)
+#endif
 // ceil(x)
 MATH_FUN_1_TO_INT(ceil, ceil)
 // copysign(x, y)
@@ -146,9 +158,16 @@ STATIC mp_float_t MICROPY_FLOAT_C_FUN(fabs_func)(mp_float_t x) {
 }
 MATH_FUN_1(fabs, fabs_func)
 // floor(x)
-MATH_FUN_1_TO_INT(floor, floor) //TODO: delegate to x.__floor__() if x is not a float
+MATH_FUN_1_TO_INT(floor, floor) // TODO: delegate to x.__floor__() if x is not a float
 // fmod(x, y)
+#if MICROPY_PY_MATH_FMOD_FIX_INFNAN
+mp_float_t fmod_func(mp_float_t x, mp_float_t y) {
+    return (!isinf(x) && isinf(y)) ? x : fmod(x, y);
+}
+MATH_FUN_2(fmod, fmod_func)
+#else
 MATH_FUN_2(fmod, fmod)
+#endif
 // isfinite(x)
 MATH_FUN_1_TO_BOOL(isfinite, isfinite)
 // isinf(x)
@@ -169,7 +188,7 @@ MATH_FUN_1(gamma, tgamma)
 // lgamma(x): return the natural logarithm of the gamma function of x
 MATH_FUN_1(lgamma, lgamma)
 #endif
-//TODO: fsum
+// TODO: fsum
 
 #if MICROPY_PY_MATH_ISCLOSE
 STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -223,7 +242,7 @@ STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
         if (base <= (mp_float_t)0.0) {
             math_error();
         } else if (base == (mp_float_t)1.0) {
-            mp_raise_msg(&mp_type_ZeroDivisionError, "divide by zero");
+            mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));
     }
@@ -246,7 +265,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_frexp_obj, mp_math_frexp);
 // modf(x)
 STATIC mp_obj_t mp_math_modf(mp_obj_t x_obj) {
     mp_float_t int_part = 0.0;
-    mp_float_t fractional_part = MICROPY_FLOAT_C_FUN(modf)(mp_obj_get_float(x_obj), &int_part);
+    mp_float_t x = mp_obj_get_float(x_obj);
+    mp_float_t fractional_part = MICROPY_FLOAT_C_FUN(modf)(x, &int_part);
+    #if MICROPY_PY_MATH_MODF_FIX_NEGZERO
+    if (fractional_part == MICROPY_FLOAT_CONST(0.0)) {
+        fractional_part = copysign(fractional_part, x);
+    }
+    #endif
     mp_obj_t tuple[2];
     tuple[0] = mp_obj_new_float(fractional_part);
     tuple[1] = mp_obj_new_float(int_part);
@@ -294,7 +319,7 @@ STATIC mp_obj_t mp_math_factorial_inner(mp_uint_t start, mp_uint_t end) {
 STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
     mp_int_t max = mp_obj_get_int(x_obj);
     if (max < 0) {
-        mp_raise_msg(&mp_type_ValueError, "negative factorial");
+        mp_raise_ValueError(MP_ERROR_TEXT("negative factorial"));
     } else if (max == 0) {
         return MP_OBJ_NEW_SMALL_INT(1);
     }
@@ -308,7 +333,7 @@ STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
 STATIC mp_obj_t mp_math_factorial(mp_obj_t x_obj) {
     mp_int_t max = mp_obj_get_int(x_obj);
     if (max < 0) {
-        mp_raise_msg(&mp_type_ValueError, "negative factorial");
+        mp_raise_ValueError(MP_ERROR_TEXT("negative factorial"));
     } else if (max <= 1) {
         return MP_OBJ_NEW_SMALL_INT(1);
     }
@@ -392,7 +417,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_math_globals, mp_module_math_globals_table
 
 const mp_obj_module_t mp_module_math = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_math_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_math_globals,
 };
 
 #endif // MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH

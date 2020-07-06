@@ -3,8 +3,8 @@
 from micropython import const
 
 # check we can make consts from bignums
-Z1 = const(0xffffffff)
-Z2 = const(0xffffffffffffffff)
+Z1 = const(0xFFFFFFFF)
+Z2 = const(0xFFFFFFFFFFFFFFFF)
 print(hex(Z1), hex(Z2))
 
 # check arithmetic with bignum

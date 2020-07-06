@@ -116,7 +116,7 @@ STATIC int rtc_find(mp_obj_t id) {
     if (rtc_id >= 0 && rtc_id < MP_ARRAY_SIZE(machine_rtc_obj)) {
         return rtc_id;
     }
-    mp_raise_ValueError("RTCounter doesn't exist");
+    mp_raise_ValueError(MP_ERROR_TEXT("RTCounter doesn't exist"));
 }
 
 STATIC void rtc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -162,7 +162,7 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     } else if (mp_obj_is_fun(args[ARG_callback].u_obj)) {
         config->callback = args[ARG_callback].u_obj;
     } else {
-        mp_raise_ValueError("callback must be a function");
+        mp_raise_ValueError(MP_ERROR_TEXT("callback must be a function"));
     }
 
     // Periodic or one-shot
@@ -175,8 +175,8 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
 
     // Start the low-frequency clock (if it hasn't been started already)
-    if (!nrf_clock_lf_is_running()) {
-        nrf_clock_task_trigger(NRF_CLOCK_TASK_LFCLKSTART);
+    if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
+        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
     }
 
     // Make sure it's uninitialized.

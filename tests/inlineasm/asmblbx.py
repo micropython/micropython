@@ -1,5 +1,6 @@
 # test bl and bx instructions
 
+
 @micropython.asm_thumb
 def f(r0):
     # jump over the internal functions
@@ -16,6 +17,7 @@ def f(r0):
     label(entry)
     bl(func1)
     bl(func2)
+
 
 print(f(0))
 print(f(1))

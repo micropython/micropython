@@ -25,6 +25,7 @@
  */
 
 #include "py/mphal.h"
+#include "irq.h"
 #include "powerctrl.h"
 
 static inline void powerctrl_config_systick(void) {
@@ -166,10 +167,10 @@ void SystemClock_Config(void) {
     #define PLLR (3) // f_R = 64MHz
     RCC->PLLCFGR =
         (PLLR - 1) << RCC_PLLCFGR_PLLR_Pos | RCC_PLLCFGR_PLLREN
-        | (PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN
-        | PLLN << RCC_PLLCFGR_PLLN_Pos
-        | (PLLM - 1) << RCC_PLLCFGR_PLLM_Pos
-        | 3 << RCC_PLLCFGR_PLLSRC_Pos;
+            | (PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN
+            | PLLN << RCC_PLLCFGR_PLLN_Pos
+            | (PLLM - 1) << RCC_PLLCFGR_PLLM_Pos
+            | 3 << RCC_PLLCFGR_PLLSRC_Pos;
     RCC->CR |= RCC_CR_PLLON;
     while (!(RCC->CR & RCC_CR_PLLRDY)) {
         // Wait for PLL to lock

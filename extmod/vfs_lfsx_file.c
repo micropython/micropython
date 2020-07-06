@@ -32,13 +32,13 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 
-STATIC void MP_VFS_LFSx(check_open)(MP_OBJ_VFS_LFSx_FILE *self) {
+STATIC void MP_VFS_LFSx(check_open)(MP_OBJ_VFS_LFSx_FILE * self) {
     if (self->vfs == NULL) {
         mp_raise_ValueError(NULL);
     }
 }
 
-STATIC void MP_VFS_LFSx(file_print)(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void MP_VFS_LFSx(file_print)(const mp_print_t * print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)self_in;
     (void)kind;
     mp_printf(print, "<io.%s>", mp_obj_get_type_str(self_in));
@@ -147,7 +147,7 @@ STATIC mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, ui
     }
 
     if (request == MP_STREAM_SEEK) {
-        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)(uintptr_t)arg;
+        struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)(uintptr_t)arg;
         int res = LFSx_API(file_seek)(&self->vfs->lfs, &self->file, s->offset, s->whence);
         if (res < 0) {
             *errcode = -res;
@@ -214,7 +214,7 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &MP_VFS_LFSx(fileio_stream_p),
-    .locals_dict = (mp_obj_dict_t*)&MP_VFS_LFSx(file_locals_dict),
+    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
 };
 #endif
 
@@ -232,5 +232,5 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx_(_textio) = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &MP_VFS_LFSx(textio_stream_p),
-    .locals_dict = (mp_obj_dict_t*)&MP_VFS_LFSx(file_locals_dict),
+    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
 };

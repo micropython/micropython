@@ -46,10 +46,10 @@
 
 #ifndef MPZ_DIG_SIZE
   #if defined(__x86_64__) || defined(_WIN64)
-    // 64-bit machine, using 32-bit storage for digits
+// 64-bit machine, using 32-bit storage for digits
     #define MPZ_DIG_SIZE (32)
   #else
-    // default: 32-bit machine, using 16-bit storage for digits
+// default: 32-bit machine, using 16-bit storage for digits
     #define MPZ_DIG_SIZE (16)
   #endif
 #endif
@@ -93,13 +93,13 @@ typedef int8_t mpz_dbl_dig_signed_t;
 typedef struct _mpz_t {
     size_t neg : 1;
     size_t fixed_dig : 1;
-    size_t alloc : 8 * sizeof(size_t) - 2;
+    size_t alloc : (8 * sizeof(size_t) - 2);
     size_t len;
     mpz_dig_t *dig;
 } mpz_t;
 
 // convenience macro to declare an mpz with a digit array from the stack, initialised by an integer
-#define MPZ_CONST_INT(z, val) mpz_t z; mpz_dig_t z ## _digits[MPZ_NUM_DIG_FOR_INT]; mpz_init_fixed_from_int(&z, z_digits, MPZ_NUM_DIG_FOR_INT, val);
+#define MPZ_CONST_INT(z, val) mpz_t z; mpz_dig_t z##_digits[MPZ_NUM_DIG_FOR_INT]; mpz_init_fixed_from_int(&z, z_digits, MPZ_NUM_DIG_FOR_INT, val);
 
 void mpz_init_zero(mpz_t *z);
 void mpz_init_from_int(mpz_t *z, mp_int_t val);
@@ -115,8 +115,12 @@ void mpz_set_from_float(mpz_t *z, mp_float_t src);
 size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigned int base);
 void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf);
 
-static inline bool mpz_is_zero(const mpz_t *z) { return z->len == 0; }
-static inline bool mpz_is_neg(const mpz_t *z) { return z->len != 0 && z->neg != 0; }
+static inline bool mpz_is_zero(const mpz_t *z) {
+    return z->len == 0;
+}
+static inline bool mpz_is_neg(const mpz_t *z) {
+    return z->len != 0 && z->neg != 0;
+}
 int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
 
 void mpz_abs_inpl(mpz_t *dest, const mpz_t *z);
@@ -134,7 +138,9 @@ void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs);
 void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const mpz_t *rhs);
 
-static inline size_t mpz_max_num_bits(const mpz_t *z) { return z->len * MPZ_DIG_SIZE; }
+static inline size_t mpz_max_num_bits(const mpz_t *z) {
+    return z->len * MPZ_DIG_SIZE;
+}
 mp_int_t mpz_hash(const mpz_t *z);
 bool mpz_as_int_checked(const mpz_t *z, mp_int_t *value);
 bool mpz_as_uint_checked(const mpz_t *z, mp_uint_t *value);

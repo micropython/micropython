@@ -37,11 +37,11 @@
 
 // first entry in enum will be MP_QSTRnull=0, which indicates invalid/no qstr
 enum {
-#ifndef NO_QSTR
+    #ifndef NO_QSTR
 #define QDEF(id, str) id,
-#include "genhdr/qstrdefs.generated.h"
+    #include "genhdr/qstrdefs.generated.h"
 #undef QDEF
-#endif
+    #endif
     MP_QSTRnumber_of, // no underscore so it can't clash with any of the above
 };
 
@@ -73,5 +73,10 @@ const byte *qstr_data(qstr q, size_t *len);
 
 void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, size_t *n_total_bytes);
 void qstr_dump_data(void);
+
+#if MICROPY_ROM_TEXT_COMPRESSION
+void mp_decompress_rom_string(byte *dst, mp_rom_error_text_t src);
+#define MP_IS_COMPRESSED_ROM_STRING(s) (*(byte *)(s) == 0xff)
+#endif
 
 #endif // MICROPY_INCLUDED_PY_QSTR_H

@@ -44,15 +44,24 @@
 
 int mp_native_type_from_qstr(qstr qst) {
     switch (qst) {
-        case MP_QSTR_object: return MP_NATIVE_TYPE_OBJ;
-        case MP_QSTR_bool: return MP_NATIVE_TYPE_BOOL;
-        case MP_QSTR_int: return MP_NATIVE_TYPE_INT;
-        case MP_QSTR_uint: return MP_NATIVE_TYPE_UINT;
-        case MP_QSTR_ptr: return MP_NATIVE_TYPE_PTR;
-        case MP_QSTR_ptr8: return MP_NATIVE_TYPE_PTR8;
-        case MP_QSTR_ptr16: return MP_NATIVE_TYPE_PTR16;
-        case MP_QSTR_ptr32: return MP_NATIVE_TYPE_PTR32;
-        default: return -1;
+        case MP_QSTR_object:
+            return MP_NATIVE_TYPE_OBJ;
+        case MP_QSTR_bool:
+            return MP_NATIVE_TYPE_BOOL;
+        case MP_QSTR_int:
+            return MP_NATIVE_TYPE_INT;
+        case MP_QSTR_uint:
+            return MP_NATIVE_TYPE_UINT;
+        case MP_QSTR_ptr:
+            return MP_NATIVE_TYPE_PTR;
+        case MP_QSTR_ptr8:
+            return MP_NATIVE_TYPE_PTR8;
+        case MP_QSTR_ptr16:
+            return MP_NATIVE_TYPE_PTR16;
+        case MP_QSTR_ptr32:
+            return MP_NATIVE_TYPE_PTR32;
+        default:
+            return -1;
     }
 }
 
@@ -60,10 +69,13 @@ int mp_native_type_from_qstr(qstr qst) {
 mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
     DEBUG_printf("mp_native_from_obj(%p, " UINT_FMT ")\n", obj, type);
     switch (type & 0xf) {
-        case MP_NATIVE_TYPE_OBJ: return (mp_uint_t)obj;
-        case MP_NATIVE_TYPE_BOOL: return mp_obj_is_true(obj);
+        case MP_NATIVE_TYPE_OBJ:
+            return (mp_uint_t)obj;
+        case MP_NATIVE_TYPE_BOOL:
+            return mp_obj_is_true(obj);
         case MP_NATIVE_TYPE_INT:
-        case MP_NATIVE_TYPE_UINT: return mp_obj_get_int_truncated(obj);
+        case MP_NATIVE_TYPE_UINT:
+            return mp_obj_get_int_truncated(obj);
         default: { // cast obj to a pointer
             mp_buffer_info_t bufinfo;
             if (mp_get_buffer(obj, &bufinfo, MP_BUFFER_READ)) {
@@ -84,10 +96,14 @@ mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type) {
 mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
     DEBUG_printf("mp_native_to_obj(" UINT_FMT ", " UINT_FMT ")\n", val, type);
     switch (type & 0xf) {
-        case MP_NATIVE_TYPE_OBJ: return (mp_obj_t)val;
-        case MP_NATIVE_TYPE_BOOL: return mp_obj_new_bool(val);
-        case MP_NATIVE_TYPE_INT: return mp_obj_new_int(val);
-        case MP_NATIVE_TYPE_UINT: return mp_obj_new_int_from_uint(val);
+        case MP_NATIVE_TYPE_OBJ:
+            return (mp_obj_t)val;
+        case MP_NATIVE_TYPE_BOOL:
+            return mp_obj_new_bool(val);
+        case MP_NATIVE_TYPE_INT:
+            return mp_obj_new_int(val);
+        case MP_NATIVE_TYPE_UINT:
+            return mp_obj_new_int_from_uint(val);
         default: // a pointer
             // we return just the value of the pointer as an integer
             return mp_obj_new_int_from_uint(val);
@@ -102,13 +118,13 @@ mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type) {
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
     (void)n_args;
     (void)items;
-    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("set unsupported"));
 }
 
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
     (void)self_in;
     (void)item;
-    mp_raise_msg(&mp_type_RuntimeError, "set unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("set unsupported"));
 }
 #endif
 
@@ -117,7 +133,7 @@ mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
     (void)ostart;
     (void)ostop;
     (void)ostep;
-    mp_raise_msg(&mp_type_RuntimeError, "slice unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("slice unsupported"));
 }
 #endif
 
@@ -211,53 +227,35 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
     return false;
 }
 
-#if MICROPY_PY_BUILTINS_FLOAT
-
-STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
-    return mp_obj_new_float((mp_float_t)f);
-}
-
-STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
-    return mp_obj_new_float((mp_float_t)d);
-}
-
-STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
-    return (float)mp_obj_get_float(o);
-}
-
-STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
-    return (double)mp_obj_get_float(o);
-}
-
-#else
+#if !MICROPY_PY_BUILTINS_FLOAT
 
 STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
     (void)f;
-    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
 STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
     (void)d;
-    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
 STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
     (void)o;
-    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
 STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
     (void)o;
-    mp_raise_msg(&mp_type_RuntimeError, "float unsupported");
+    mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
 #endif
 
-// these must correspond to the respective enum in runtime0.h
+// these must correspond to the respective enum in nativeglue.h
 const mp_fun_table_t mp_fun_table = {
-    &mp_const_none_obj,
-    &mp_const_false_obj,
-    &mp_const_true_obj,
+    mp_const_none,
+    mp_const_false,
+    mp_const_true,
     mp_native_from_obj,
     mp_native_to_obj,
     mp_native_swap_globals,

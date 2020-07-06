@@ -49,9 +49,13 @@
 
 #define nrfx_twi_init     nrfx_twim_init
 #define nrfx_twi_enable   nrfx_twim_enable
-#define nrfx_twi_rx       nrfx_twim_rx
-#define nrfx_twi_tx       nrfx_twim_tx
+#define nrfx_twi_xfer     nrfx_twim_xfer
 #define nrfx_twi_disable  nrfx_twim_disable
+
+#define nrfx_twi_xfer_desc_t nrfx_twim_xfer_desc_t
+
+#define NRFX_TWI_XFER_DESC_RX NRFX_TWIM_XFER_DESC_RX
+#define NRFX_TWI_XFER_DESC_TX NRFX_TWIM_XFER_DESC_TX
 
 #define NRFX_TWI_INSTANCE NRFX_TWIM_INSTANCE
 
@@ -80,7 +84,7 @@ STATIC int i2c_find(mp_obj_t id) {
     if (i2c_id >= 0 && i2c_id < MP_ARRAY_SIZE(machine_hard_i2c_obj)) {
         return i2c_id;
     }
-    mp_raise_ValueError("I2C doesn't exist");
+    mp_raise_ValueError(MP_ERROR_TEXT("I2C doesn't exist"));
 }
 
 STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -129,9 +133,11 @@ int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size
     nrfx_err_t err_code;
     int transfer_ret = 0;
     if (flags & MP_MACHINE_I2C_FLAG_READ) {
-        err_code = nrfx_twi_rx(&self->p_twi, addr, buf, len);
+        nrfx_twi_xfer_desc_t desc = NRFX_TWI_XFER_DESC_RX(addr, buf, len);
+        err_code = nrfx_twi_xfer(&self->p_twi, &desc, 0);
     } else {
-        err_code = nrfx_twi_tx(&self->p_twi, addr, buf, len, (flags & MP_MACHINE_I2C_FLAG_STOP) == 0);
+        nrfx_twi_xfer_desc_t desc = NRFX_TWI_XFER_DESC_TX(addr, buf, len);
+        err_code = nrfx_twi_xfer(&self->p_twi, &desc, (flags & MP_MACHINE_I2C_FLAG_STOP) == 0);
         transfer_ret = len;
     }
 

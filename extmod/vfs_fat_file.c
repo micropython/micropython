@@ -107,7 +107,7 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
     pyb_file_obj_t *self = MP_OBJ_TO_PTR(o_in);
 
     if (request == MP_STREAM_SEEK) {
-        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)(uintptr_t)arg;
+        struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)(uintptr_t)arg;
 
         switch (s->whence) {
             case 0: // SEEK_SET
@@ -154,9 +154,9 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
 // Note: encoding is ignored for now; it's also not a valid kwarg for CPython's FileIO,
 // but by adding it here we can use one single mp_arg_t array for open() and FileIO's constructor
 STATIC const mp_arg_t file_open_args[] = {
-    { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+    { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_r)} },
-    { MP_QSTR_encoding, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+    { MP_QSTR_encoding, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = MP_ROM_NONE} },
 };
 #define FILE_OPEN_NUM_ARGS MP_ARRAY_SIZE(file_open_args)
 
@@ -251,7 +251,7 @@ const mp_obj_type_t mp_type_vfs_fat_fileio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &vfs_fat_fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&vfs_fat_rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
 };
 #endif
 
@@ -270,7 +270,7 @@ const mp_obj_type_t mp_type_vfs_fat_textio = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &vfs_fat_textio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&vfs_fat_rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
 };
 
 // Factory function for I/O stream classes

@@ -25,7 +25,7 @@
  */
 
 #define mftb()  ({unsigned long rval;                                   \
-        __asm__ volatile("mftb %0" : "=r" (rval)); rval;})
+                  __asm__ volatile ("mftb %0" : "=r" (rval)); rval;})
 
 #define TBFREQ 512000000
 

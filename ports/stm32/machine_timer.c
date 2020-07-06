@@ -33,7 +33,7 @@ typedef soft_timer_entry_t machine_timer_obj_t;
 const mp_obj_type_t machine_timer_type;
 
 STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_timer_obj_t *self = self_in;
+    machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     qstr mode = self->mode == SOFT_TIMER_MODE_ONE_SHOT ? MP_QSTR_ONE_SHOT : MP_QSTR_PERIODIC;
     mp_printf(print, "Timer(mode=%q, period=%u)", mode, self->delta_ms);
 }
@@ -42,10 +42,10 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     enum { ARG_mode, ARG_callback, ARG_period, ARG_tick_hz, ARG_freq, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SOFT_TIMER_MODE_PERIODIC} },
-        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_callback,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_period,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0xffffffff} },
         { MP_QSTR_tick_hz,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
-        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
     };
 
     // Parse args
@@ -56,7 +56,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     if (args[ARG_freq].u_obj != mp_const_none) {
         // Frequency specified in Hz
         #if MICROPY_PY_BUILTINS_FLOAT
-        self->delta_ms = 1000 / mp_obj_get_float(args[ARG_freq].u_obj);
+        self->delta_ms = (uint32_t)(MICROPY_FLOAT_CONST(1000.0) / mp_obj_get_float(args[ARG_freq].u_obj));
         #else
         self->delta_ms = 1000 / mp_obj_get_int(args[ARG_freq].u_obj);
         #endif
@@ -77,7 +77,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     machine_timer_obj_t *self = m_new_obj(machine_timer_obj_t);
-    self->base.type = &machine_timer_type;
+    self->pairheap.base.type = &machine_timer_type;
 
     // Get timer id (only soft timer (-1) supported at the moment)
     mp_int_t id = -1;
@@ -87,7 +87,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         ++args;
     }
     if (id != -1) {
-        mp_raise_ValueError("Timer doesn't exist");
+        mp_raise_ValueError(MP_ERROR_TEXT("Timer doesn't exist"));
     }
 
     if (n_args > 0 || n_kw > 0) {
@@ -128,5 +128,5 @@ const mp_obj_type_t machine_timer_type = {
     .name = MP_QSTR_Timer,
     .print = machine_timer_print,
     .make_new = machine_timer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_timer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_timer_locals_dict,
 };

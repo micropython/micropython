@@ -58,17 +58,17 @@ typedef enum {
 } RcvMsgBuffState;
 
 typedef struct {
-    uint32     RcvBuffSize;
-    uint8     *pRcvMsgBuff;
-    uint8     *pWritePos;
-    uint8     *pReadPos;
-    uint8      TrigLvl; //JLU: may need to pad
-    RcvMsgBuffState  BuffState;
+    uint32 RcvBuffSize;
+    uint8 *pRcvMsgBuff;
+    uint8 *pWritePos;
+    uint8 *pReadPos;
+    uint8 TrigLvl;      // JLU: may need to pad
+    RcvMsgBuffState BuffState;
 } RcvMsgBuff;
 
 typedef struct {
-    uint32   TrxBuffSize;
-    uint8   *pTrxBuff;
+    uint32 TrxBuffSize;
+    uint8 *pTrxBuff;
 } TrxMsgBuff;
 
 typedef enum {
@@ -80,17 +80,17 @@ typedef enum {
 } RcvMsgState;
 
 typedef struct {
-    UartBautRate      baut_rate;
-    UartBitsNum4Char  data_bits;
-    UartExistParity   exist_parity;
-    UartParityMode    parity;    // chip size in byte
-    UartStopBitsNum   stop_bits;
-    UartFlowCtrl      flow_ctrl;
-    RcvMsgBuff        rcv_buff;
-    TrxMsgBuff        trx_buff;
-    RcvMsgState       rcv_state;
-    int               received;
-    int               buff_uart_no;  //indicate which uart use tx/rx buffer
+    UartBautRate baut_rate;
+    UartBitsNum4Char data_bits;
+    UartExistParity exist_parity;
+    UartParityMode parity;       // chip size in byte
+    UartStopBitsNum stop_bits;
+    UartFlowCtrl flow_ctrl;
+    RcvMsgBuff rcv_buff;
+    TrxMsgBuff trx_buff;
+    RcvMsgState rcv_state;
+    int received;
+    int buff_uart_no;                // indicate which uart use tx/rx buffer
 } UartDevice;
 
 extern uint8 uart_ringbuf_array[UART0_STATIC_RXBUF_LEN];

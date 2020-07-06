@@ -114,7 +114,9 @@ Classes
         Get the current contents of the underlying buffer which holds data.
 
 .. class:: StringIO(alloc_size)
+    :noindex:
 .. class:: BytesIO(alloc_size)
+    :noindex:
 
     Create an empty `StringIO`/`BytesIO` object, preallocated to hold up
     to *alloc_size* number of bytes. That means that writing that amount

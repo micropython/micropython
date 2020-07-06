@@ -187,7 +187,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
             self->bits = 8;
             break;
         default:
-            mp_raise_ValueError("invalid data bits");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid data bits"));
             break;
     }
 
@@ -222,7 +222,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
             self->stop = 2;
             break;
         default:
-            mp_raise_ValueError("invalid stop bits");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid stop bits"));
             break;
     }
 
@@ -239,7 +239,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     // set line inversion
     if (args[ARG_invert].u_int & ~UART_LINE_INV_MASK) {
-        mp_raise_ValueError("invalid inversion mask");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid inversion mask"));
     }
     self->invert = args[ARG_invert].u_int;
     uart_set_line_inverse(self->uart_num, self->invert);
@@ -251,16 +251,16 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     // get uart id
     mp_int_t uart_num = mp_obj_get_int(args[0]);
     if (uart_num < 0 || uart_num >= UART_NUM_MAX) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", uart_num));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) does not exist"), uart_num);
     }
 
     // Attempts to use UART0 from Python has resulted in all sorts of fun errors.
     // FIXME: UART0 is disabled for now.
     if (uart_num == UART_NUM_0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) is disabled (dedicated to REPL)", uart_num));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) is disabled (dedicated to REPL)"), uart_num);
     }
 
-     // Defaults
+    // Defaults
     uart_config_t uartcfg = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
@@ -463,5 +463,5 @@ const mp_obj_type_t machine_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&machine_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_uart_locals_dict,
 };

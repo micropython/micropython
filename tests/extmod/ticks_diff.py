@@ -1,4 +1,8 @@
-from utime import ticks_diff, ticks_add
+try:
+    from utime import ticks_diff, ticks_add
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 MAX = ticks_add(0, -1)
 # Should be done like this to avoid small int overflow
