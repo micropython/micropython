@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
 #define MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
 
-#include <nuttx/drivers/pwm.h>
+#include <nuttx/timers/pwm.h>
 
 #include "common-hal/microcontroller/Pin.h"
 
