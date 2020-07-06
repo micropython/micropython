@@ -597,7 +597,7 @@ STATIC unsigned long resolve_target(mp_obj_t target) {
     } else if (mp_obj_is_symbol(target)) {
         addr = ((sym_obj_t*)MP_OBJ_TO_PTR(target))->value;
     } else {
-        mp_raise_TypeError("int/str/Symbol require for target");
+        mp_raise_TypeError("int/str/Symbol required for target");
     }
 
     return addr;
@@ -606,7 +606,7 @@ STATIC unsigned long resolve_target(mp_obj_t target) {
 STATIC mp_obj_t kernel_ffi_kprobe(mp_obj_t target, mp_obj_t _type, mp_obj_t func) {
     enum kp_type type = mp_obj_get_int(_type);
     if (type < KP_TYPE_MIN || type >= KP_TYPE_NUM) {
-        mp_raise_ValueError("bad kprobe type, accepeted values are KP_*");
+        mp_raise_ValueError("bad kprobe type, accepted values are KP_*");
     }
 
     size_t nargs = check_func_for_cb(func, type == KP_ARGS_MODIFY);
@@ -833,7 +833,7 @@ STATIC mp_obj_t kernel_ffi_ftrace(mp_obj_t target, mp_obj_t func) {
     ft_obj->base.type = &ftrace_type;
 
     ft_obj->ops.func = ftrace_trampoline;
-    ft_obj->ops.flags = FTRACE_OPS_FL_SAVE_REGS  | FTRACE_OPS_FL_RECURSION_SAFE | FTRACE_OPS_FL_IPMODIFY;
+    ft_obj->ops.flags = FTRACE_OPS_FL_SAVE_REGS | FTRACE_OPS_FL_RECURSION_SAFE | FTRACE_OPS_FL_IPMODIFY;
 
     ft_obj->func = func;
     ft_obj->nargs = nargs;
