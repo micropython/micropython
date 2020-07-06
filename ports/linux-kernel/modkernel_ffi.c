@@ -460,15 +460,26 @@ STATIC unsigned long call_py_func_threaded(mp_obj_t func, size_t nargs, bool *ca
 
         nlr_pop();
     } else {
-        pr_err("exception in python callback\n");
-        static const mp_print_t print = {NULL, mp_print_printk};
-        if (nlr_push(&nlr) == 0) {
-            // this nice fella can itself raise exceptions, so wrap it.
-            mp_obj_print_exception(&print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            nlr_pop();
+        assert(mp_obj_is_exception_instance(MP_OBJ_FROM_PTR(nlr.ret_val)));
+        mp_obj_exception_t *exc = (mp_obj_exception_t*)nlr.ret_val;
+        if (exc->args && exc->args->len == 1 &&
+            // see mp_raise_recursion_depth
+            exc->args->items[0] == MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded)) {
+
+            pr_err("stack exceeded when calling python code\n");
         } else {
-            pr_err("double exception while printing previous exception\n");
+            pr_err("exception in python callback\n");
+
+            static const mp_print_t print = {NULL, mp_print_printk};
+            if (nlr_push(&nlr) == 0) {
+                // this nice fella can itself raise exceptions, so wrap it.
+                mp_obj_print_exception(&print, MP_OBJ_FROM_PTR(exc));
+                nlr_pop();
+            } else {
+                pr_err("double exception while printing previous exception\n");
+            }
         }
+
         *call_ok = false;
     }
 
