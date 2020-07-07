@@ -77,9 +77,6 @@ void run_background_tasks(void) {
     assert_heap_ok();
     running_background_tasks = true;
 
-    #if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
-    audio_dma_background();
-    #endif
     #if CIRCUITPY_DISPLAYIO
     displayio_background();
     #endif
