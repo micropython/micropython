@@ -507,7 +507,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
         return;
     }
 #ifdef SAMD21
-    if (hold_interrupt == true) {
+    if (hold_interrupt) {
         return;
     }
 #endif
@@ -525,7 +525,7 @@ void port_sleep_until_interrupt(void) {
     }
     #endif
     common_hal_mcu_disable_interrupts();
-    if (!tud_task_event_ready()) {
+    if (!tud_task_event_ready() && !hold_interrupt) {
         __DSB();
         __WFI();
     }
