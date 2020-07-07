@@ -27,6 +27,7 @@
 #include "py/objstr.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-module/usb_midi/__init__.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/port.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
@@ -80,6 +81,16 @@ void usb_background(void) {
         #endif
         tud_cdc_write_flush();
     }
+}
+
+static background_callback_t callback;
+static void usb_background_do(void* unused) {
+    usb_background();
+}
+
+void usb_irq_handler(void) {
+    tud_int_handler(0);
+    background_callback_add(&callback, usb_background_do, NULL);
 }
 
 //--------------------------------------------------------------------+

@@ -27,6 +27,7 @@
 
 #include "fsl_clock.h"
 #include "tusb.h"
+#include "supervisor/usb.h"
 
 void init_usb_hardware(void) {
     CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
@@ -56,5 +57,5 @@ void init_usb_hardware(void) {
 }
 
 void USB_OTG1_IRQHandler(void) {
-    tud_int_handler(0);
+    usb_irq_handler();
 }

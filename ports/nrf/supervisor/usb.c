@@ -30,6 +30,7 @@
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 #include "lib/tinyusb/src/device/usbd.h"
+#include "supervisor/background_callback.h"
 
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_sdm.h"
@@ -42,7 +43,9 @@ extern void tusb_hal_nrf_power_event(uint32_t event);
 
 void init_usb_hardware(void) {
 
-    // 2 is max priority (0, 1 are reserved for SD)
+    // 2 is max priority (0, 1, and 4 are reserved for SD)
+    // 5 is max priority that still allows calling SD functions such as
+    // sd_softdevice_is_enabled
     NVIC_SetPriority(USBD_IRQn, 2);
 
     // USB power may already be ready at this time -> no event generated
@@ -89,5 +92,5 @@ void init_usb_hardware(void) {
 }
 
 void USBD_IRQHandler(void) {
-  tud_int_handler(0);
+    usb_irq_handler();
 }

@@ -59,7 +59,6 @@ void run_background_tasks(void) {
     }
     running_background_tasks = true;
     filesystem_background();
-    usb_background();
 #if CIRCUITPY_AUDIOPWMIO
     audiopwmout_background();
 #endif

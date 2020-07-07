@@ -85,7 +85,6 @@ void run_background_tasks(void) {
     network_module_background();
     #endif
     filesystem_background();
-    usb_background();
     running_background_tasks = false;
     assert_heap_ok();
 
