@@ -91,8 +91,8 @@
 #if CIRCUITPY_PEW
 #include "common-hal/_pew/PewPew.h"
 #endif
-#ifdef SAMD21
 volatile bool hold_interrupt = false;
+#ifdef SAMD21
 
 void rtc_start_pulsein(void) {
     rtc_set_continuous();
