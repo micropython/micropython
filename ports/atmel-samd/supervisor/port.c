@@ -93,11 +93,11 @@
 #endif
 volatile bool hold_interrupt = false;
 #ifdef SAMD21
-
 void rtc_start_pulsein(void) {
     rtc_set_continuous();
     hold_interrupt = true;
 }
+
 void rtc_end_pulsein(void) {
     hold_interrupt = false;
 }
