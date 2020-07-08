@@ -112,8 +112,11 @@
 #define CIRCUITPY_DEFAULT_STACK_SIZE                4096
 #endif
 
-#ifndef BOARD_BROWNOUT_LEVEL (
-#define BOARD_BROWNLOUT_LEVEL (39)
+#ifndef SAMD21_BOD33_LEVEL
+// Set brownout detection to ~2.7V. Default from factory is 1.7V,
+// which is too low for proper operation of external SPI flash chips
+// (they are 2.7-3.6V).
+#define SAMD21_BOD33_LEVEL (39)
 // 2.77V with hysteresis off. Table 37.20 in datasheet.
 #endif
 
@@ -134,8 +137,11 @@
 #define CIRCUITPY_DEFAULT_STACK_SIZE                (24*1024)
 #endif
 
-#ifndef BOARD_BROWNOUT_LEVEL (
-#define BOARD_BROWNLOUT_LEVEL (200)
+#ifndef SAMD5x_E5x_BOD33_LEVEL
+// Set brownout detection to ~2.7V. Default from factory is 1.7V,
+// which is too low for proper operation of external SPI flash chips
+// (they are 2.7-3.6V).
+#define SAMD5x_E5x_BOD33_LEVEL (200)
 // 2.7V: 1.5V + LEVEL * 6mV.
 #endif
 

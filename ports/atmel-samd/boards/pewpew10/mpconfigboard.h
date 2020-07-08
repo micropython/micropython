@@ -44,4 +44,4 @@
 #define DEFAULT_UART_BUS_RX (&pin_PA01)
 #define DEFAULT_UART_BUS_TX (&pin_PA00)
 
-#define BOARD_BROWNOUT_LEVEL (6)
+#define SAMD21_BOD33_LEVEL (6)
