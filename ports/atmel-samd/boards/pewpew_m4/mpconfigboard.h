@@ -40,3 +40,6 @@
 #define IGNORE_PIN_PB09     1
 #define IGNORE_PIN_PB10     1
 #define IGNORE_PIN_PB11     1
+
+#define BOARD_BROWNOUT_LEVEL (6)
+// 1.6V

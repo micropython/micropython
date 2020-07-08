@@ -112,6 +112,11 @@
 #define CIRCUITPY_DEFAULT_STACK_SIZE                4096
 #endif
 
+#ifndef BOARD_BROWNOUT_LEVEL (
+#define BOARD_BROWNLOUT_LEVEL (39)
+// 2.77V with hysteresis off. Table 37.20 in datasheet.
+#endif
+
 // Smallest unit of flash that can be erased.
 #define FLASH_ERASE_SIZE NVMCTRL_ROW_SIZE
 
@@ -127,6 +132,11 @@
 
 #ifndef CIRCUITPY_DEFAULT_STACK_SIZE
 #define CIRCUITPY_DEFAULT_STACK_SIZE                (24*1024)
+#endif
+
+#ifndef BOARD_BROWNOUT_LEVEL (
+#define BOARD_BROWNLOUT_LEVEL (200)
+// 2.7V: 1.5V + LEVEL * 6mV.
 #endif
 
 // Smallest unit of flash that can be erased.
