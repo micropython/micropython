@@ -79,7 +79,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
     common_hal_framebufferio_framebufferdisplay_show(self, &circuitpython_splash);
-    self->auto_refresh = auto_refresh;
+    common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, auto_refresh);
 }
 
 bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t* self, displayio_group_t* root_group) {
@@ -280,6 +280,13 @@ bool common_hal_framebufferio_framebufferdisplay_get_auto_refresh(framebufferio_
 void common_hal_framebufferio_framebufferdisplay_set_auto_refresh(framebufferio_framebufferdisplay_obj_t* self,
                                                    bool auto_refresh) {
     self->first_manual_refresh = !auto_refresh;
+    if (auto_refresh != self->auto_refresh) {
+        if (auto_refresh) {
+            supervisor_enable_tick();
+        } else {
+            supervisor_disable_tick();
+        }
+    }
     self->auto_refresh = auto_refresh;
 }
 
@@ -297,12 +304,13 @@ void framebufferio_framebufferdisplay_background(framebufferio_framebufferdispla
 }
 
 void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
+    common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, false);
     release_display_core(&self->core);
     self->framebuffer_protocol->deinit(self->framebuffer);
 }
 
 void reset_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
-    self->auto_refresh = true;
+    common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, true);
     common_hal_framebufferio_framebufferdisplay_show(self, NULL);
 }
 
