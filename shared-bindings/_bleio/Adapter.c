@@ -68,52 +68,37 @@
 //|         Use `_bleio.adapter` to access the sole instance available."""
 //|
 
-//|     def hci_init(self, *, tx: Pin, rx: Pin, rts: Pin, cts: Pin, baudrate: int = 115200, buffer_size: int = 256):
+//|     def hci_init(self, *, uart: busio.UART, cts: Pin, baudrate: int = 115200, buffer_size: int = 256):
 //|         On boards that do not have native BLE, you can an use HCI co-processor.
-//|         Call `_bleio.adapter.hci_init()` passing it the pins used to communicate
+//|         Call `_bleio.adapter.hci_init()` passing it the uart and pins used to communicate
 //|         with the co-processor, such as an Adafruit AirLift.
 //|         The co-processor must have been reset and put into BLE mode beforehand
 //|         by the appropriate pin manipulation.
-//|         The `tx`, `rx`, `rts`, and `cs` pins are used to communicate with the HCI co-processor in HCI mode.
+//|         The `uart` object, and `rts` and `cs` pins are used to
+//|         communicate with the HCI co-processor in HCI mode.
 //|
 mp_obj_t bleio_adapter_hci_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 #if CIRCUITPY_BLEIO_HCI
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    if (self->enabled) {
-        mp_raise_ValueError(translate("HCI Adapter is already enabled"));
-    }
-
-    enum { ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_baudrate, ARG_buffer_size };
+    enum { ARG_uart, ARG_rts, ARG_cts };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_uart, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 115200 } },
-        { MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 256 } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *tx = validate_obj_is_free_pin(args[ARG_tx].u_obj);
-    const mcu_pin_obj_t *rx = validate_obj_is_free_pin(args[ARG_rx].u_obj);
+    busio_uart_obj_t *uart = args[ARG_uart].u_obj;
+    if (!MP_OBJ_IS_TYPE(uart, &busio_uart_type)) {
+        mp_raise_ValueError(translate("Expected a UART"));
+    }
     const mcu_pin_obj_t *rts = validate_obj_is_free_pin(args[ARG_rts].u_obj);
     const mcu_pin_obj_t *cts = validate_obj_is_free_pin(args[ARG_cts].u_obj);
 
-    if (args[ARG_baudrate].u_int <= 0) {
-        mp_raise_ValueError(translate("baudrate must be > 0"));
-    }
-    const uint32_t baudrate = args[ARG_baudrate].u_int;
-
-    if (args[ARG_buffer_size].u_int <= 1) {
-        mp_raise_ValueError(translate("buffer_size must be >= 1"));
-    }
-    const uint32_t buffer_size = args[ARG_buffer_size].u_int;
-
-    common_hal_bleio_adapter_hci_init(&common_hal_bleio_adapter_obj, tx, rx, rts, cts,
-                                      baudrate, buffer_size);
+    common_hal_bleio_adapter_hci_init(self, uart, rts, cts);
 
     return mp_const_none;
 #else
@@ -268,7 +253,7 @@ STATIC mp_obj_t bleio_adapter_stop_advertising(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_advertising_obj, bleio_adapter_stop_advertising);
 
-//|     def start_scan(self, prefixes: sequence = b"", *, buffer_size: int = 512, extended: bool = False, timeout: float = None, interval: float = 0.1, window: float = 0.1, minimum_rssi: int = -80, active: bool = True) -> Any:
+//|     def start_scan(self, *, prefixes: sequence = b"", buffer_size: int = 512, extended: bool = False, timeout: float = None, interval: float = 0.1, window: float = 0.1, minimum_rssi: int = -80, active: bool = True) -> Any:
 //|         """Starts a BLE scan and returns an iterator of results. Advertisements and scan responses are
 //|         filtered and returned separately.
 //|

@@ -319,7 +319,7 @@ SRC_COMMON_HAL_ALL = \
 
 ifeq ($(CIRCUITPY_BLEIO_HCI),1)
 SRC_C += \
-	common-hal/_bleio/hci.c \
+	common-hal/_bleio/hci_api.c \
 
 endif
 

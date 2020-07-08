@@ -43,8 +43,9 @@
 //| way around."""
 //|
 //| def monotonic() -> Any:
-//|     """Returns an always increasing value of time with an unknown reference
-//|     point. Only use it to compare against other values from `monotonic`.
+//|     """Returns an always increasing value of time, in fractional seconds,
+//|     with an unknown reference point.
+//|     Only use it to compare against other values from `monotonic`.
 //|
 //|     :return: the current monotonic time
 //|     :rtype: float"""

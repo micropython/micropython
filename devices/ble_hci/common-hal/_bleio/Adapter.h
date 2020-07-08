@@ -52,13 +52,9 @@ typedef struct {
     bleio_scanresults_obj_t* scan_results;
     mp_obj_t name;
     mp_obj_tuple_t *connection_objs;
-    const mcu_pin_obj_t* tx_pin;
-    const mcu_pin_obj_t* rx_pin;
+    busio_uart_obj_t* hci_uart;
     const mcu_pin_obj_t* rts_pin;
     const mcu_pin_obj_t* cts_pin;
-    uint32_t baudrate;
-    uint16_t buffer_size;
-    busio_uart_obj_t hci_uart;
     digitalio_digitalinout_obj_t rts_digitalinout;
     digitalio_digitalinout_obj_t cts_digitalinout;
     bool enabled;

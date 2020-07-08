@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "hci.h"
+#include "hci_api.h"
 
 #include "py/gc.h"
 #include "py/mphal.h"
@@ -179,13 +179,10 @@ char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0
 //     common_hal_bleio_adapter_set_name(self, (char*) default_ble_name);
 // }
 
-void common_hal_bleio_adapter_hci_init(bleio_adapter_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts, uint32_t baudrate, uint32_t buffer_size) {
-    self->tx_pin = tx;
-    self->rx_pin = rx;
+void common_hal_bleio_adapter_hci_init(bleio_adapter_obj_t *self, busio_uart_obj_t *uart, const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts) {
+    self->hci_uart = uart;
     self->rts_pin = rts;
     self->cts_pin = cts;
-    self->baudrate = baudrate;
-    self->buffer_size = buffer_size;
     self->enabled = false;
 }
 
@@ -198,33 +195,14 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     }
 
     if (enabled) {
-        common_hal_busio_uart_construct(
-            &self->hci_uart,
-            self->tx_pin,       // tx pin
-            self->rx_pin,       // rx pin
-            NULL,               // rts pin
-            NULL,               // cts pin
-            NULL,               // rs485 dir pin
-            false,              // rs485 invert
-            0,                  // timeout
-            self->baudrate,     // baudrate
-            8,                  // nbits
-            PARITY_NONE,        // parity
-            1,                  // stop bits
-            self->buffer_size,  // buffer size
-            NULL,               // buffer
-            false               // sigint_enabled
-            );
         common_hal_digitalio_digitalinout_construct(&self->rts_digitalinout, self->rts_pin);
         common_hal_digitalio_digitalinout_construct(&self->cts_digitalinout, self->cts_pin);
 
         hci_init(self);
     } else {
-        common_hal_busio_uart_deinit(&self->hci_uart);
         common_hal_digitalio_digitalinout_deinit(&self->rts_digitalinout);
         common_hal_digitalio_digitalinout_deinit(&self->cts_digitalinout);
     }
-
 
     //FIX enable/disable HCI adapter, but don't reset it, since we don't know how.
     self->enabled = enabled;
@@ -235,35 +213,22 @@ bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
 }
 
 bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *self) {
-    common_hal_bleio_adapter_set_enabled(self, true);
-
-    uint8_t addr[6];
-    hci_readBdAddr(addr);
+    bt_addr_le_t addr;
+    hci_read_bd_addr(&addr.a);
 
     bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
     address->base.type = &bleio_address_type;
 
-    // 0 is the type designating a public address.
-    common_hal_bleio_address_construct(address, addr, 0);
+    common_hal_bleio_address_construct(address, addr.a.val, addr.type);
     return address;
 }
 
 mp_obj_str_t* common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
-    uint16_t len = 0;
-//    sd_ble_gap_device_name_get(NULL, &len);
-    uint8_t buf[len];
-//    uint32_t err_code = sd_ble_gap_device_name_get(buf, &len);
-//    if (err_code != NRF_SUCCESS) {
-//        return NULL;
-//    }
-    return mp_obj_new_str((char*) buf, len);
+    return self->name;
 }
 
 void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char* name) {
-    // ble_gap_conn_sec_mode_t sec;
-    // sec.lv = 0;
-    // sec.sm = 0;
-    // sd_ble_gap_device_name_set(&sec, (const uint8_t*) name, strlen(name));
+    self->name = mp_obj_new_str(name, strlen(name));
 }
 
 // STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
