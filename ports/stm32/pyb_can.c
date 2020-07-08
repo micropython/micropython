@@ -436,12 +436,12 @@ STATIC mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     uint32_t start = HAL_GetTick();
     while (HAL_FDCAN_GetTxFifoFreeLevel(&self->can) == 0) {
         if (timeout_ms == 0) {
-            mp_hal_raise(HAL_TIMEOUT);
+            mp_raise_OSError(MP_ETIMEDOUT);
         }
         // Check for the Timeout
         if (timeout_ms != HAL_MAX_DELAY) {
             if (HAL_GetTick() - start >= timeout_ms) {
-                mp_hal_raise(HAL_TIMEOUT);
+                mp_raise_OSError(MP_ETIMEDOUT);
             }
         }
         MICROPY_EVENT_POLL_HOOK
