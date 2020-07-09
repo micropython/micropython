@@ -57,6 +57,10 @@
 #define MICROPY_HW_ENABLE_DAC       (0)
 #define MICROPY_HW_ENABLE_CAN       (0)
 
+#define MICROPY_PY_USOCKET          (1)
+#define MICROPY_PY_NETWORK          (1)
+#define MICROPY_PY_LTE_SOCKET       (1)
+
 #define MICROPY_HW_LED_TRICOLOR     (1)
 #define MICROPY_HW_LED_PULLUP       (1)
 
