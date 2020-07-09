@@ -52,6 +52,14 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 #define WATCHDOG_EXCEPTION_CHECK() 0
 #endif
 
+static background_callback_t callback;
+
+extern void run_background_tasks(void);
+
+void background_task_tick(void *unused) {
+    run_background_tasks();
+}
+
 void supervisor_tick(void) {
 #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
@@ -69,6 +77,7 @@ void supervisor_tick(void) {
         #endif
     }
 #endif
+    background_callback_add(&callback, background_task_tick, NULL);
 }
 
 uint64_t supervisor_ticks_ms64() {
@@ -84,11 +93,9 @@ uint32_t supervisor_ticks_ms32() {
     return supervisor_ticks_ms64();
 }
 
-extern void run_background_tasks(void);
 
 void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
     background_callback_run_all();
-    run_background_tasks();
 }
 
 void mp_hal_delay_ms(mp_uint_t delay) {
