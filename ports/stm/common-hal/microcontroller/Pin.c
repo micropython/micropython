@@ -89,6 +89,8 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
 
 void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
     never_reset_pins[pin_port] |= 1<<pin_number;
+    // Make sure never reset pins are also always claimed
+    claimed_pins[pin_port] |= 1<<pin_number;
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {

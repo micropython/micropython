@@ -99,30 +99,30 @@ void timers_reset(void) {
 
 TIM_TypeDef * stm_peripherals_find_timer(void) {
     // Check for timers on pins outside the package size
-    // for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_tim_banks); i++) {
-    //     bool timer_in_package = false;
-    //     // Find each timer instance on the given bank
-    //     for (size_t j = 0; j < MP_ARRAY_SIZE(mcu_tim_pin_list); j++) {
-    //         // If a pin is claimed, we skip it
-    //         if ( (mcu_tim_pin_list[j].tim_index == i)
-    //             && (common_hal_mcu_pin_is_free(mcu_tim_pin_list[j].pin) == true) ) {
-    //             // Search whether any pins in the package array match it
-    //             for (size_t k = 0; k < mcu_pin_globals.map.alloc; k++) {
-    //                 if ( (mcu_tim_pin_list[j].pin == (mcu_pin_obj_t*)(mcu_pin_globals.map.table[k].value)) ) {
-    //                     timer_in_package = true;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     // If no results are found, no unclaimed pins with this timer are in this package,
-    //     // and it is safe to pick
-    //     if (timer_in_package == false && mcu_tim_banks[i] != NULL) {
-    //         return mcu_tim_banks[i];
-    //     }
-    // }
+    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_tim_banks); i++) {
+        bool timer_in_package = false;
+        // Find each timer instance on the given bank
+        for (size_t j = 0; j < MP_ARRAY_SIZE(mcu_tim_pin_list); j++) {
+            // If a pin is claimed, we skip it
+            if ( (mcu_tim_pin_list[j].tim_index == i + 1)
+                && (common_hal_mcu_pin_is_free(mcu_tim_pin_list[j].pin) == true) ) {
+                // Search whether any pins in the package array match it
+                for (size_t k = 0; k < mcu_pin_globals.map.alloc; k++) {
+                    if ( (mcu_tim_pin_list[j].pin == (mcu_pin_obj_t*)(mcu_pin_globals.map.table[k].value)) ) {
+                        timer_in_package = true;
+                    }
+                }
+            }
+        }
+        // If no results are found, no unclaimed pins with this timer are in this package,
+        // and it is safe to pick
+        if (timer_in_package == false && mcu_tim_banks[i] != NULL) {
+            return mcu_tim_banks[i];
+        }
+    }
 
     // Work backwards - higher index timers have fewer pin allocations
-    for (size_t i = (MP_ARRAY_SIZE(mcu_tim_banks) - 1); i>=0; i--) {
+    for (size_t i = (MP_ARRAY_SIZE(mcu_tim_banks) - 1); i >= 0; i--) {
         if ((!stm_timer_reserved[i]) && (mcu_tim_banks[i] != NULL)) {
             return mcu_tim_banks[i];
         }
