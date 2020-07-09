@@ -27,16 +27,15 @@
 #include <stddef.h>
 
 #include "common-hal/rgbmatrix/RGBMatrix.h"
+#include "timers.h"
 
 #include STM32_HAL_H
 
 extern void _PM_IRQ_HANDLER(void);
 
 void *common_hal_rgbmatrix_timer_allocate() {
-    // TODO(jepler) properly handle resource allocation including never-reset
-    return TIM6;
+    return stm_peripherals_find_timer();
 }
-
 
 void common_hal_rgbmatrix_timer_enable(void* ptr) {
     HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);

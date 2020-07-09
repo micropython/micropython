@@ -85,6 +85,11 @@ uint32_t stm_peripherals_timer_get_source_freq(TIM_TypeDef * timer) {
     return source;
 }
 
+size_t stm_peripherals_timer_get_irqnum(TIM_TypeDef * instance) {
+    size_t tim_id = stm_peripherals_timer_get_index(instance);
+    return irq_map[tim_id];
+}
+
 void timers_reset(void) {
     uint16_t never_reset_mask = 0x00;
     for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_tim_banks); i++) {
@@ -120,6 +125,7 @@ TIM_TypeDef * stm_peripherals_find_timer(void) {
             return mcu_tim_banks[i];
         }
     }
+    //TODO: secondary search for timers outside the pins in the board profile
 
     // Work backwards - higher index timers have fewer pin allocations
     for (size_t i = (MP_ARRAY_SIZE(mcu_tim_banks) - 1); i >= 0; i--) {
