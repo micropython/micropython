@@ -179,10 +179,10 @@ char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0
 //     common_hal_bleio_adapter_set_name(self, (char*) default_ble_name);
 // }
 
-void common_hal_bleio_adapter_hci_init(bleio_adapter_obj_t *self, busio_uart_obj_t *uart, const mcu_pin_obj_t *rts, const mcu_pin_obj_t *cts) {
+void common_hal_bleio_adapter_hci_uart_init(bleio_adapter_obj_t *self, busio_uart_obj_t *uart, digitalio_digitalinout_obj_t *rts, digitalio_digitalinout_obj_t *cts) {
     self->hci_uart = uart;
-    self->rts_pin = rts;
-    self->cts_pin = cts;
+    self->rts_digitalinout = rts;
+    self->cts_digitalinout = cts;
     self->enabled = false;
 }
 
@@ -194,16 +194,6 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         return;
     }
 
-    if (enabled) {
-        common_hal_digitalio_digitalinout_construct(&self->rts_digitalinout, self->rts_pin);
-        common_hal_digitalio_digitalinout_construct(&self->cts_digitalinout, self->cts_pin);
-
-        hci_init(self);
-    } else {
-        common_hal_digitalio_digitalinout_deinit(&self->rts_digitalinout);
-        common_hal_digitalio_digitalinout_deinit(&self->cts_digitalinout);
-    }
-
     //FIX enable/disable HCI adapter, but don't reset it, since we don't know how.
     self->enabled = enabled;
 }
@@ -213,13 +203,13 @@ bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
 }
 
 bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *self) {
-    bt_addr_le_t addr;
-    hci_read_bd_addr(&addr.a);
+    bt_addr_t addr;
+    check_hci_error(hci_read_bd_addr(&addr));
 
     bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
     address->base.type = &bleio_address_type;
 
-    common_hal_bleio_address_construct(address, addr.a.val, addr.type);
+    common_hal_bleio_address_construct(address, addr.val, BT_ADDR_LE_PUBLIC);
     return address;
 }
 

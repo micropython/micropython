@@ -29,6 +29,8 @@
 
 #include <stdbool.h>
 
+#include "hci_api.h"
+
 void bleio_reset(void);
 
 typedef struct {
@@ -49,7 +51,7 @@ typedef struct {
 
 
 // These helpers raise the appropriate exceptions if the code doesn't equal success.
-void check_nrf_error(uint32_t err_code);
+void check_hci_error(hci_result_t result);
 void check_gatt_status(uint16_t gatt_status);
 void check_sec_status(uint8_t sec_status);
 

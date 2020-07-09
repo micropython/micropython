@@ -38,25 +38,41 @@
 #include "shared-bindings/_bleio/UUID.h"
 #include "supervisor/shared/bluetooth.h"
 
-#include "common-hal/_bleio/__init__.h"
+void check_hci_error(hci_result_t result) {
+    switch (result) {
+        case HCI_OK:
+            return;
 
-//FIX to check HCI error
-// void check_nrf_error(uint32_t err_code) {
-//     if (err_code == NRF_SUCCESS) {
-//         return;
-//     }
-//     switch (err_code) {
-//         case NRF_ERROR_TIMEOUT:
-//             mp_raise_msg(&mp_type_TimeoutError, NULL);
-//             return;
-//         case BLE_ERROR_INVALID_CONN_HANDLE:
-//             mp_raise_bleio_ConnectionError(translate("Not connected"));
-//             return;
-//         default:
-//             mp_raise_bleio_BluetoothError(translate("Unknown soft device error: %04x"), err_code);
-//             break;
-//     }
-// }
+        case HCI_NO_RESPONSE:
+            mp_raise_bleio_BluetoothError(translate("No HCI command response received"));
+            return;
+
+        case HCI_READ_TIMEOUT:
+            mp_raise_bleio_BluetoothError(translate("Timeout waiting for HCI response"));
+            return;
+
+        case HCI_WRITE_TIMEOUT:
+            mp_raise_bleio_BluetoothError(translate("Timeout waiting to write HCI request"));
+            return;
+
+        case HCI_READ_ERROR:
+            mp_raise_bleio_BluetoothError(translate("Error reading from HCI adapter"));
+            return;
+
+        case HCI_WRITE_ERROR:
+            mp_raise_bleio_BluetoothError(translate("Error writing to HCI adapter"));
+            return;
+
+        default:
+            // Should be an HCI status error, > 0.
+            if (result > 0) {
+                mp_raise_bleio_BluetoothError(translate("HCI status error: %02x"), result);
+            } else {
+                mp_raise_bleio_BluetoothError(translate("Unknown hci_result_t: %d"), result);
+            }
+            return;
+    }
+}
 
 // void check_gatt_status(uint16_t gatt_status) {
 //     if (gatt_status == BLE_GATT_STATUS_SUCCESS) {
@@ -104,7 +120,6 @@ void bleio_reset() {
 }
 
 // The singleton _bleio.Adapter object, bound to _bleio.adapter
-// It currently only has properties and no state
 bleio_adapter_obj_t common_hal_bleio_adapter_obj = {
     .base = {
         .type = &bleio_adapter_type,

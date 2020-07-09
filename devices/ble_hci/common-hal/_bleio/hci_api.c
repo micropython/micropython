@@ -14,6 +14,8 @@
 
 #include "hci_api.h"
 
+#include "py/obj.h"
+
 // Zephyr include files to define HCI communication values and structs.
 #include "hci_include/hci.h"
 #include "hci_include/hci_err.h"
@@ -21,6 +23,8 @@
 #include <string.h>
 
 #include "supervisor/shared/tick.h"
+#include "shared-bindings/_bleio/__init__.h"
+#include "common-hal/_bleio/Adapter.h"
 
 // HCI H4 protocol packet types: first byte in the packet.
 #define H4_CMD 0x01
@@ -31,13 +35,15 @@
 //FIX replace
 #define ATT_CID       0x0004
 
+#define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
+
 #define RX_BUFFER_SIZE (3 + 255)
 #define ACL_PKT_BUFFER_SIZE (255)
 
 #define CTS_TIMEOUT_MSECS (1000)
 #define RESPONSE_TIMEOUT_MSECS (1000)
 
-STATIC bleio_adapter_obj_t *adapter;
+#define adapter (&common_hal_bleio_adapter_obj)
 
 STATIC uint8_t rx_buffer[RX_BUFFER_SIZE];
 STATIC size_t rx_idx;
@@ -81,12 +87,55 @@ typedef struct __attribute__ ((packed)) {
 } h4_hci_evt_hdr_t;
 
 
-
-STATIC void dump_pkt(const char* prefix, uint8_t pkt_len, uint8_t pkt_data[]) {
+STATIC void dump_cmd_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     if (debug) {
-        mp_printf(&mp_plat_print, "%s", prefix);
-        for (uint8_t i = 0; i < pkt_len; i++) {
-            mp_printf(&mp_plat_print, "%02x", pkt_data[i]);
+        h4_hci_cmd_hdr_t *pkt = (h4_hci_cmd_hdr_t *) pkt_data;
+        mp_printf(&mp_plat_print,
+                  "%s HCI COMMAND (%x) opcode: %04x, len: %d, data: ",
+                  tx ? "TX->" : "RX<-",
+                  pkt->pkt_type, pkt->opcode, pkt->param_len);
+        uint8_t i;
+        for (i = sizeof(h4_hci_cmd_hdr_t); i < pkt_len; i++) {
+            mp_printf(&mp_plat_print, "%02x ", pkt_data[i]);
+        }
+        if (i != pkt->param_len + sizeof(h4_hci_cmd_hdr_t)) {
+            mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
+        }
+        mp_printf(&mp_plat_print, "\n");
+    }
+}
+
+STATIC void dump_acl_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
+    if (debug) {
+        h4_hci_acl_hdr_t *pkt = (h4_hci_acl_hdr_t *) pkt_data;
+        mp_printf(&mp_plat_print,
+                  "%s HCI ACLDATA (%x) handle: %04x, total_data_len: %d, acl_data_len: %d,  cid: %04x,  data: ",
+                  tx ? "TX->" : "RX<-",
+                  pkt->pkt_type, pkt->handle, pkt->total_data_len, pkt->acl_data_len, pkt->cid);
+        uint8_t i;
+        for (i = sizeof(h4_hci_acl_hdr_t); i < pkt_len; i++) {
+            mp_printf(&mp_plat_print, "%02x ", pkt_data[i]);
+        }
+        if (i != pkt->acl_data_len + sizeof(h4_hci_acl_hdr_t)) {
+            mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
+        }
+        mp_printf(&mp_plat_print, "\n");
+    }
+}
+
+STATIC void dump_evt_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
+    if (debug) {
+        h4_hci_evt_hdr_t *pkt = (h4_hci_evt_hdr_t *) pkt_data;
+        mp_printf(&mp_plat_print,
+                  "%s HCI EVENT   (%x) evt: %02x,  param_len: %d,  data: ",
+                  tx ? "TX->" : "RX<-",
+                  pkt->pkt_type, pkt->evt, pkt->param_len);
+        uint8_t i;
+        for (i = sizeof(h4_hci_evt_hdr_t); i < pkt_len; i++) {
+            mp_printf(&mp_plat_print, "%02x ", pkt_data[i]);
+        }
+        if (i != pkt->param_len + sizeof(h4_hci_evt_hdr_t)) {
+            mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
         }
         mp_printf(&mp_plat_print, "\n");
     }
@@ -184,9 +233,11 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
             cmd_response_received = true;
             cmd_response_opcode = evt->cmd_complete.opcode;
             cmd_response_status = evt->cc_status.status;
-            // All the bytes following status.
-            cmd_response_data = &evt_data[sizeof(struct cmd_complete_with_status)];
-            cmd_response_len = evt_hdr->param_len - sizeof(struct cmd_complete_with_status);
+            // All the bytes following cmd_complete, -including- the status byte, which is
+            // included in all the _bt_hci_rp_* structs.
+            cmd_response_data = &evt_data[sizeof_field(struct cmd_complete_with_status, cmd_complete)];
+            // Includes status byte.
+            cmd_response_len = evt_hdr->param_len - sizeof_field(struct cmd_complete_with_status, cmd_complete);
 
             break;
         }
@@ -265,15 +316,14 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
     }
 }
 
-void hci_init(bleio_adapter_obj_t *adapter_in) {
-    adapter = adapter_in;
+void hci_init(void) {
     rx_idx = 0;
     pending_pkt = 0;
 }
 
 hci_result_t hci_poll_for_incoming_pkt(void) {
     // Assert RTS low to say we're ready to read data.
-    common_hal_digitalio_digitalinout_set_value(&adapter->rts_digitalinout, false);
+    common_hal_digitalio_digitalinout_set_value(adapter->rts_digitalinout, false);
 
     int errcode = 0;
     bool packet_is_complete = false;
@@ -281,7 +331,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
     // Read bytes until we run out, or accumulate a complete packet.
     while (common_hal_busio_uart_rx_characters_available(adapter->hci_uart)) {
         common_hal_busio_uart_read(adapter->hci_uart, rx_buffer + rx_idx, 1, &errcode);
-        if (!errcode) {
+        if (errcode) {
             return HCI_READ_ERROR;
         }
         rx_idx++;
@@ -313,14 +363,15 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
     }
 
     // Stop incoming data while processing packet.
-    common_hal_digitalio_digitalinout_set_value(&adapter->rts_digitalinout, true);
+    common_hal_digitalio_digitalinout_set_value(adapter->rts_digitalinout, true);
     size_t pkt_len = rx_idx;
+    // Reset for next pack
     rx_idx = 0;
 
     switch (rx_buffer[0]) {
         case H4_ACL:
             if (debug) {
-                dump_pkt("HCI EVENT RX <- ", rx_idx, rx_buffer);
+                dump_acl_pkt(false, pkt_len, rx_buffer);
             }
 
             process_acl_data_pkt(pkt_len, rx_buffer);
@@ -328,7 +379,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
 
         case H4_EVT:
             if (debug) {
-                dump_pkt("HCI ACLDATA RX <- ", rx_idx, rx_buffer);
+                dump_evt_pkt(false, pkt_len, rx_buffer);
             }
 
             process_evt_pkt(pkt_len, rx_buffer);
@@ -338,7 +389,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
             break;
     }
 
-    common_hal_digitalio_digitalinout_set_value(&adapter->rts_digitalinout, true);
+    common_hal_digitalio_digitalinout_set_value(adapter->rts_digitalinout, true);
 
     return HCI_OK;
 }
@@ -348,7 +399,8 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
 STATIC hci_result_t write_pkt(uint8_t *buffer, size_t len) {
     // Wait for CTS to go low before writing to HCI adapter.
     uint64_t start = supervisor_ticks_ms64();
-    while (common_hal_digitalio_digitalinout_get_value(&adapter->cts_digitalinout)) {
+
+    while (common_hal_digitalio_digitalinout_get_value(adapter->cts_digitalinout)) {
         RUN_BACKGROUND_TASKS;
         if (supervisor_ticks_ms64() - start > CTS_TIMEOUT_MSECS) {
             return HCI_WRITE_TIMEOUT;
@@ -377,7 +429,7 @@ STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* para
     memcpy(&tx_buffer[sizeof(h4_hci_cmd_hdr_t)], params, params_len);
 
     if (debug) {
-        dump_pkt("HCI COMMAND TX -> ", sizeof(tx_buffer), tx_buffer);
+        dump_cmd_pkt(true, sizeof(tx_buffer), tx_buffer);
     }
 
     int result = write_pkt(tx_buffer, sizeof(h4_hci_cmd_hdr_t) + params_len);
@@ -426,7 +478,7 @@ STATIC int __attribute__((unused)) send_acl_pkt(uint16_t handle, uint8_t cid, vo
     }
 
     // data_len does not include cid.
-    const size_t cid_len = sizeof(((h4_hci_acl_hdr_t *)0)->cid);
+    const size_t cid_len = sizeof_field(h4_hci_acl_hdr_t, cid);
     // buf_len is size of entire packet including header.
     const size_t buf_len = sizeof(h4_hci_acl_hdr_t) + cid_len + data_len;
     uint8_t tx_buffer[buf_len];
@@ -441,7 +493,7 @@ STATIC int __attribute__((unused)) send_acl_pkt(uint16_t handle, uint8_t cid, vo
     memcpy(&tx_buffer[sizeof(h4_hci_acl_hdr_t)], data, data_len);
 
     if (debug) {
-        dump_pkt("HCI ACLDATA TX -> ", buf_len, tx_buffer);
+        dump_acl_pkt(true, buf_len, tx_buffer);
     }
 
     pending_pkt++;
@@ -478,7 +530,7 @@ hci_result_t hci_read_bd_addr(bt_addr_t *addr) {
     int result = send_command(BT_HCI_OP_READ_BD_ADDR, 0, NULL);
     if (result == HCI_OK) {
         struct bt_hci_rp_read_bd_addr *response = (struct bt_hci_rp_read_bd_addr *) cmd_response_data;
-        memcpy(addr->val, response->bdaddr.val, sizeof(bt_addr_t));
+        memcpy(addr->val, response->bdaddr.val, sizeof_field(bt_addr_t, val));
     }
 
     return result;

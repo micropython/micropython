@@ -17,27 +17,27 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H
-#define MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H
+#ifndef MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_API_H
+#define MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_API_H
 
 #include <stdint.h>
 
 #include "common-hal/_bleio/hci_include/hci.h"
 
-#include "common-hal/_bleio/Adapter.h"
+// Incomplete forward declaration to get around mutually-dependent include files.
+typedef struct _bleio_adapter_obj_t bleio_adapter_obj_t;
 
 // An hci_result_t is one of the HCI_x values below,
 // or is it > 0 and is an HCI command status value (see hci_include/hci_err.h)
 typedef int hci_result_t;
 #define HCI_OK (0)
 #define HCI_NO_RESPONSE (-1)
-#define HCI_ERR_RESPONSE (-2)
-#define HCI_READ_TIMEOUT (-3)
-#define HCI_WRITE_TIMEOUT (-4)
-#define HCI_READ_ERROR (-5)
-#define HCI_WRITE_ERROR (-6)
+#define HCI_READ_TIMEOUT (-2)
+#define HCI_WRITE_TIMEOUT (-3)
+#define HCI_READ_ERROR (-4)
+#define HCI_WRITE_ERROR (-5)
 
-void hci_init(bleio_adapter_obj_t *adapter_in);
+void hci_init(void);
 
 hci_result_t hci_disconnect(uint16_t handle);
 
@@ -66,4 +66,4 @@ hci_result_t hci_reset(void);
 
 hci_result_t hci_set_evt_mask(uint64_t event_mask);
 
-#endif // MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H
+#endif // MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_API_H

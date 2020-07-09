@@ -356,7 +356,7 @@ void common_hal_bleio_connection_pair(bleio_connection_internal_t *self, bool bo
     if (mp_hal_is_interrupted()) {
         return;
     }
-    check_sec_status(self->sec_status);
+    //FIX    check_sec_status(self->sec_status);
 }
 
 mp_float_t common_hal_bleio_connection_get_connection_interval(bleio_connection_internal_t *self) {

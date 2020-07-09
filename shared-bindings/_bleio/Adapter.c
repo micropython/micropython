@@ -68,16 +68,16 @@
 //|         Use `_bleio.adapter` to access the sole instance available."""
 //|
 
-//|     def hci_init(self, *, uart: busio.UART, cts: Pin, baudrate: int = 115200, buffer_size: int = 256):
+//|     def hci_uart_init(self, *, uart: busio.UART, rts: digitalio.DigitalInOut, cts: digitalio.DigitalInOut, baudrate: int = 115200, buffer_size: int = 256):
 //|         On boards that do not have native BLE, you can an use HCI co-processor.
-//|         Call `_bleio.adapter.hci_init()` passing it the uart and pins used to communicate
+//|         Call `_bleio.adapter.hci_uart_init()` passing it the uart and pins used to communicate
 //|         with the co-processor, such as an Adafruit AirLift.
 //|         The co-processor must have been reset and put into BLE mode beforehand
 //|         by the appropriate pin manipulation.
-//|         The `uart` object, and `rts` and `cs` pins are used to
+//|         The `uart`, `rts`, and `cts` objects are used to
 //|         communicate with the HCI co-processor in HCI mode.
 //|
-mp_obj_t bleio_adapter_hci_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+mp_obj_t bleio_adapter_hci_uart_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 #if CIRCUITPY_BLEIO_HCI
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
@@ -95,18 +95,23 @@ mp_obj_t bleio_adapter_hci_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_m
     if (!MP_OBJ_IS_TYPE(uart, &busio_uart_type)) {
         mp_raise_ValueError(translate("Expected a UART"));
     }
-    const mcu_pin_obj_t *rts = validate_obj_is_free_pin(args[ARG_rts].u_obj);
-    const mcu_pin_obj_t *cts = validate_obj_is_free_pin(args[ARG_cts].u_obj);
 
-    common_hal_bleio_adapter_hci_init(self, uart, rts, cts);
+    digitalio_digitalinout_obj_t *rts = args[ARG_rts].u_obj;
+    digitalio_digitalinout_obj_t *cts = args[ARG_cts].u_obj;
+    if (!MP_OBJ_IS_TYPE(rts, &digitalio_digitalinout_type) ||
+        !MP_OBJ_IS_TYPE(cts, &digitalio_digitalinout_type)) {
+        mp_raise_ValueError(translate("Expected a DigitalInOut"));
+    }
+    common_hal_bleio_adapter_hci_uart_init(self, uart, rts, cts);
+    common_hal_bleio_adapter_set_enabled(self, true);
 
     return mp_const_none;
 #else
-    mp_raise_RuntimeError(translate("hci_init not available"));
+    mp_raise_RuntimeError(translate("hci_uart_init not available"));
     return mp_const_none;
 #endif // CIRCUITPY_BLEIO_HCI
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_hci_init_obj, 1, bleio_adapter_hci_init);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_hci_uart_init_obj, 1, bleio_adapter_hci_uart_init);
 
 //|
 //|     enabled: Any = ...
@@ -433,7 +438,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_erase_bonding_obj, bleio_adapter_
 
 STATIC const mp_rom_map_elem_t bleio_adapter_locals_dict_table[] = {
 #if CIRCUITPY_BLEIO_HCI
-    { MP_ROM_QSTR(MP_QSTR_hci_init), MP_ROM_PTR(&bleio_adapter_hci_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hci_uart_init), MP_ROM_PTR(&bleio_adapter_hci_uart_init_obj) },
 #endif
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&bleio_adapter_enabled_obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&bleio_adapter_address_obj) },
