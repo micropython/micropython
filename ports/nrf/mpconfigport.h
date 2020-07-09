@@ -178,6 +178,14 @@
 #define MICROPY_PY_TIME_TICKS       (1)
 #endif
 
+#ifndef MICROPY_PY_LTE_SOCKET
+#define MICROPY_PY_LTE_SOCKET       (0)
+#endif
+
+#ifndef MICROPY_PY_NETWORK
+#define MICROPY_PY_NETWORK          (0)
+#endif
+
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
 
@@ -217,6 +225,22 @@ extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
 extern const struct _mp_obj_module_t music_module;
+
+#if MICROPY_PY_USOCKET
+extern const struct _mp_obj_module_t mp_module_usocket;
+#define SOCKET_BUILTIN_MODULE               { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket },
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS    { MP_OBJ_NEW_QSTR(MP_QSTR_socket), (mp_obj_t)&mp_module_usocket },
+#else
+#define SOCKET_BUILTIN_MODULE
+#define SOCKET_BUILTIN_MODULE_WEAK_LINKS
+#endif
+
+#if MICROPY_PY_NETWORK
+extern const struct _mp_obj_module_t mp_module_network;
+#define NETWORK_BUILTIN_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network },
+#else
+#define NETWORK_BUILTIN_MODULE
+#endif
 
 #if MICROPY_PY_UBLUEPY
 #define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
@@ -267,7 +291,8 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     MUSIC_MODULE \
     MICROPY_BOARD_BUILTINS \
-
+    SOCKET_BUILTIN_MODULE \
+    NETWORK_BUILTIN_MODULE \
 
 #endif // BLUETOOTH_SD
 
@@ -299,6 +324,13 @@ extern const struct _mp_obj_module_t ble_module;
 #define ROOT_POINTERS_SOFTPWM
 #endif
 
+#if MICROPY_PY_NETWORK && MICROPY_PY_LTE_SOCKET
+#define ROOT_POINTERS_NIC_LIST \
+    mp_obj_list_t mod_network_nic_list;
+#else
+#define ROOT_POINTERS_NIC_LIST
+#endif
+
 #if defined(NRF52840_XXAA)
 #define NUM_OF_PINS 48
 #else
@@ -319,6 +351,8 @@ extern const struct _mp_obj_module_t ble_module;
     \
     /* micro:bit root pointers */ \
     void *async_data[2]; \
+    \
+    ROOT_POINTERS_NIC_LIST \
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \

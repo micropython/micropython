@@ -76,6 +76,10 @@
 #include "usb_cdc.h"
 #endif
 
+#if MICROPY_PY_NETWORK
+#include "modnetwork.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -232,6 +236,10 @@ soft_reset:
     #endif
 
     led_state(1, 0);
+
+    #if MICROPY_PY_NETWORK
+    mod_network_init();
+    #endif
 
     #if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
     // run boot.py and main.py if they exist.
