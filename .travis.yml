@@ -304,6 +304,7 @@ jobs:
         - make ${MAKEOPTS} -C ports/nrf BOARD=pca10040
         - make ${MAKEOPTS} -C ports/nrf BOARD=microbit
         - make ${MAKEOPTS} -C ports/nrf BOARD=pca10056 SD=s132
+        - make ${MAKEOPTS} -C ports/nrf BOARD=pca10090
 
     # bare-arm and minimal ports, with size-diff check
     - stage: test
