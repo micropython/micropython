@@ -61,8 +61,11 @@ void background_callback_add(background_callback_t *cb, background_callback_fun 
 
 static bool in_background_callback;
 void background_callback_run_all() {
+    if (!callback_head) {
+        return;
+    }
     CALLBACK_CRITICAL_BEGIN;
-    if(in_background_callback) {
+    if (in_background_callback) {
         CALLBACK_CRITICAL_END;
         return;
     }
