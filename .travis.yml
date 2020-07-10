@@ -292,7 +292,10 @@ jobs:
     - stage: test
       name: "nrf port build"
       install:
-        - sudo apt-get install gcc-arm-none-eabi
+        # need newer gcc version for Cortex-M33 support
+        - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
+        - sudo apt-get update -qq || true
+        - sudo apt-get install gcc-arm-embedded
         - sudo apt-get install libnewlib-arm-none-eabi
         - arm-none-eabi-gcc --version
       script:
