@@ -1,5 +1,5 @@
-USB_VID = 0x1915
-USB_PID = 0xb001
+USB_VID = 0x2886
+USB_PID = 0xf002
 USB_PRODUCT = "M60 Keyboard"
 USB_MANUFACTURER = "Makerdiary"
 

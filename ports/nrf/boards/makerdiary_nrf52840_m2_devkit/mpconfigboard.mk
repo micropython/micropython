@@ -1,5 +1,5 @@
-USB_VID = 0x1915
-USB_PID = 0xb001
+USB_VID = 0x2886
+USB_PID = 0xf001
 USB_PRODUCT = "nRF52840 M.2 Developer Kit"
 USB_MANUFACTURER = "Makerdiary"
 
