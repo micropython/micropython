@@ -49,7 +49,7 @@ To output a continuous sine-wave at 12-bit resolution::
 Constructors
 ------------
 
-.. class:: pyb.DAC(port, bits=8, \*, buffering=None)
+.. class:: pyb.DAC(port, bits=8, *, buffering=None)
 
    Construct a new DAC object.
 
@@ -76,7 +76,7 @@ Constructors
 Methods
 -------
 
-.. method:: DAC.init(bits=8, \*, buffering=None)
+.. method:: DAC.init(bits=8, *, buffering=None)
 
    Reinitialise the DAC.  *bits* can be 8 or 12.  *buffering* can be
    ``None``, ``False`` or ``True``; see above constructor for the meaning
@@ -103,7 +103,7 @@ Methods
    value is 2\*\*``bits``-1, where ``bits`` is set when creating the DAC
    object or by using the ``init`` method.
 
-.. method:: DAC.write_timed(data, freq, \*, mode=DAC.NORMAL)
+.. method:: DAC.write_timed(data, freq, *, mode=DAC.NORMAL)
 
    Initiates a burst of RAM to DAC using a DMA transfer.
    The input data is treated as an array of bytes in 8-bit mode, and
