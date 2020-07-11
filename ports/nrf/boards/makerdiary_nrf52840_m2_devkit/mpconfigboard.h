@@ -27,10 +27,10 @@
 
 #include "nrfx/hal/nrf_gpio.h"
 
-#define MAKERDIARYNRF52840M2DEVKIT
-
 #define MICROPY_HW_BOARD_NAME       "Makerdiary nRF52840 M.2 Developer Kit"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
+
+#define MICROPY_HW_LED_STATUS       (&pin_P0_30)
 
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(1, 10)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(1, 14)
