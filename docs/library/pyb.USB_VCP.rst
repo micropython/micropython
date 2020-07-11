@@ -21,7 +21,7 @@ Constructors
 Methods
 -------
 
-.. method:: USB_VCP.init(\*, flow=-1)
+.. method:: USB_VCP.init(*, flow=-1)
 
    Configure the USB VCP port.  If the *flow* argument is not -1 then the value sets
    the flow control, which can be a bitwise-or of ``USB_VCP.RTS`` and ``USB_VCP.CTS``.
@@ -89,7 +89,7 @@ Methods
 
    Returns the number of bytes written.
 
-.. method:: USB_VCP.recv(data, \*, timeout=5000)
+.. method:: USB_VCP.recv(data, *, timeout=5000)
 
    Receive data on the bus:
 
@@ -100,7 +100,7 @@ Methods
    Return value: if ``data`` is an integer then a new buffer of the bytes received,
    otherwise the number of bytes read into ``data`` is returned.
 
-.. method:: USB_VCP.send(data, \*, timeout=5000)
+.. method:: USB_VCP.send(data, *, timeout=5000)
 
    Send data over the USB VCP:
 
