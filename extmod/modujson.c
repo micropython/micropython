@@ -127,6 +127,8 @@ STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
         stream_p = mp_get_stream_raise(stream_obj, MP_STREAM_OP_READ);
         s.stream_obj = stream_obj;
         s.read = stream_p->read;
+        s.errcode = 0;
+        s.cur = 0;
     }
 
     JSON_DEBUG("got JSON stream\n");
