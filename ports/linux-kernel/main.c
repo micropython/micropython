@@ -343,7 +343,7 @@ kill_conn:
 
 void set_stack_limit(void) {
     // -500: have a safe zone. recursion errors are raised correctly.
-    mp_stack_set_limit(get_current_stack_limit() - 500);
+    mp_stack_set_limit(get_current_stack_limit() - 300);
 }
 
 STATIC int run_python(struct socket *peer) {
