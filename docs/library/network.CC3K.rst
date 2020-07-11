@@ -51,7 +51,7 @@ Constructors
 Methods
 -------
 
-.. method:: CC3K.connect(ssid, key=None, \*, security=WPA2, bssid=None)
+.. method:: CC3K.connect(ssid, key=None, *, security=WPA2, bssid=None)
 
    Connect to a WiFi access point using the given SSID, and other security
    parameters.
