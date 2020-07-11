@@ -39,7 +39,7 @@ Constructors
 Methods
 -------
 
-.. method:: TimerWiPy.init(mode, \*, width=16)
+.. method:: TimerWiPy.init(mode, *, width=16)
 
    Initialise the timer. Example::
 
@@ -64,7 +64,7 @@ Methods
 
    Deinitialises the timer. Stops the timer, and disables the timer peripheral.
 
-.. method:: TimerWiPy.channel(channel, \**, freq, period, polarity=TimerWiPy.POSITIVE, duty_cycle=0)
+.. method:: TimerWiPy.channel(channel, **, freq, period, polarity=TimerWiPy.POSITIVE, duty_cycle=0)
 
    If only a channel identifier passed, then a previously initialized channel
    object is returned (or ``None`` if there is no previous channel).
@@ -113,7 +113,7 @@ TimerChannel objects are created using the Timer.channel() method.
 Methods
 -------
 
-.. method:: timerchannel.irq(\*, trigger, priority=1, handler=None)
+.. method:: timerchannel.irq(*, trigger, priority=1, handler=None)
 
     The behavior of this callback is heavily dependent on the operating
     mode of the timer channel:
