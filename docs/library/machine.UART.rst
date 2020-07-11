@@ -43,7 +43,7 @@ Constructors
 Methods
 -------
 
-.. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, \*, ...)
+.. method:: UART.init(baudrate=9600, bits=8, parity=None, stop=1, *, ...)
 
    Initialise the UART bus with the given parameters:
 

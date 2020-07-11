@@ -32,7 +32,7 @@ Methods
     argument is passed. Otherwise, query current state if no argument is
     provided. Most other methods require active interface.
 
-.. method:: WLAN.connect(ssid=None, password=None, \*, bssid=None)
+.. method:: WLAN.connect(ssid=None, password=None, *, bssid=None)
 
     Connect to the specified wireless network, using the specified password.
     If *bssid* is given then the connection will be restricted to the
