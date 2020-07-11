@@ -84,7 +84,7 @@ Methods
 
    Turn off the I2C bus.
 
-.. method:: I2C.init(mode, \*, addr=0x12, baudrate=400000, gencall=False, dma=False)
+.. method:: I2C.init(mode, *, addr=0x12, baudrate=400000, gencall=False, dma=False)
 
   Initialise the I2C bus with the given parameters:
 
@@ -100,7 +100,7 @@ Methods
 
    Check if an I2C device responds to the given address.  Only valid when in master mode.
 
-.. method:: I2C.mem_read(data, addr, memaddr, \*, timeout=5000, addr_size=8)
+.. method:: I2C.mem_read(data, addr, memaddr, *, timeout=5000, addr_size=8)
 
    Read from the memory of an I2C device:
 
@@ -113,7 +113,7 @@ Methods
    Returns the read data.
    This is only valid in master mode.
 
-.. method:: I2C.mem_write(data, addr, memaddr, \*, timeout=5000, addr_size=8)
+.. method:: I2C.mem_write(data, addr, memaddr, *, timeout=5000, addr_size=8)
 
    Write to the memory of an I2C device:
 
@@ -126,7 +126,7 @@ Methods
    Returns ``None``.
    This is only valid in master mode.
 
-.. method:: I2C.recv(recv, addr=0x00, \*, timeout=5000)
+.. method:: I2C.recv(recv, addr=0x00, *, timeout=5000)
 
    Receive data on the bus:
 
@@ -138,7 +138,7 @@ Methods
    Return value: if ``recv`` is an integer then a new buffer of the bytes received,
    otherwise the same buffer that was passed in to ``recv``.
 
-.. method:: I2C.send(send, addr=0x00, \*, timeout=5000)
+.. method:: I2C.send(send, addr=0x00, *, timeout=5000)
 
    Send data on the bus:
 
