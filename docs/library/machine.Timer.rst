@@ -35,7 +35,7 @@ Constructors
 Methods
 -------
 
-.. method:: Timer.init(\*, mode=Timer.PERIODIC, period=-1, callback=None)
+.. method:: Timer.init(*, mode=Timer.PERIODIC, period=-1, callback=None)
 
    Initialise the timer. Example::
 
