@@ -210,7 +210,7 @@ Miscellaneous functions
 
    It only makes sense to call this function from within boot.py.
 
-.. function:: mount(device, mountpoint, \*, readonly=False, mkfs=False)
+.. function:: mount(device, mountpoint, *, readonly=False, mkfs=False)
 
    .. note:: This function is deprecated. Mounting and unmounting devices should
       be performed by :meth:`uos.mount` and :meth:`uos.umount` instead.
