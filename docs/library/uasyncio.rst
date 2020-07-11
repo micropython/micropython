@@ -80,7 +80,7 @@ Additional functions
 
     This is a coroutine, and a MicroPython extension.
 
-.. function:: gather(\*awaitables, return_exceptions=False)
+.. function:: gather(*awaitables, return_exceptions=False)
 
     Run all *awaitables* concurrently.  Any *awaitables* that are not tasks are
     promoted to tasks.
