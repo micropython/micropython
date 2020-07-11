@@ -37,7 +37,7 @@ For example::
 Constructors
 ------------
 
-.. class:: LCD160CR(connect=None, \*, pwr=None, i2c=None, spi=None, i2c_addr=98)
+.. class:: LCD160CR(connect=None, *, pwr=None, i2c=None, spi=None, i2c_addr=98)
 
     Construct an LCD160CR object.  The parameters are:
 
