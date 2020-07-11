@@ -75,7 +75,7 @@ Constructors
 ------------
 
 .. class:: Signal(pin_obj, invert=False)
-           Signal(pin_arguments..., \*, invert=False)
+           Signal(pin_arguments..., *, invert=False)
 
    Create a Signal object. There're two ways to create it:
 

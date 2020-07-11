@@ -21,7 +21,7 @@ Constructors
 Methods
 -------
 
-.. method:: USB_HID.recv(data, \*, timeout=5000)
+.. method:: USB_HID.recv(data, *, timeout=5000)
 
    Receive data on the bus:
 

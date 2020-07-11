@@ -144,7 +144,7 @@ programs.  Ports that have this functionality provide the :func:`mount` and
 :func:`umount` functions, and possibly various filesystem implementations
 represented by VFS classes.
 
-.. function:: mount(fsobj, mount_point, \*, readonly)
+.. function:: mount(fsobj, mount_point, *, readonly)
 
     Mount the filesystem object *fsobj* at the location in the VFS given by the
     *mount_point* string.  *fsobj* can be a a VFS object that has a ``mount()``
