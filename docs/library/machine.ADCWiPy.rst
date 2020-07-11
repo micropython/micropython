@@ -22,7 +22,7 @@ Usage::
 Constructors
 ------------
 
-.. class:: ADCWiPy(id=0, \*, bits=12)
+.. class:: ADCWiPy(id=0, *, bits=12)
 
    Create an ADC object associated with the given pin.
    This allows you to then read analog values on that pin.
@@ -39,7 +39,7 @@ Constructors
 Methods
 -------
 
-.. method:: ADCWiPy.channel(id, \*, pin)
+.. method:: ADCWiPy.channel(id, *, pin)
 
    Create an analog pin. If only channel ID is given, the correct pin will
    be selected. Alternatively, only the pin can be passed and the correct
