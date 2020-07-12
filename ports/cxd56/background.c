@@ -45,6 +45,10 @@ void run_background_tasks(void) {
     assert_heap_ok();
     running_background_tasks = true;
 
+#if CIRCUITPY_BLEIO
+    bleio_background();
+#endif
+
     usb_background();
     filesystem_background();
 

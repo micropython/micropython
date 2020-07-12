@@ -263,3 +263,10 @@ void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buff
 void common_hal_bleio_gc_collect(void) {
     bleio_adapter_gc_collect(&common_hal_bleio_adapter_obj);
 }
+
+
+void bleio_background(void) {
+    supervisor_bluetooth_background();
+    bleio_adapter_background(&common_hal_bleio_adapter_obj);
+    //FIX bonding_background();
+}

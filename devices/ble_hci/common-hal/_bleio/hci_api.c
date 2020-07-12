@@ -215,7 +215,7 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
             //FIX
             // ATT.removeConnection(disconn_complete->handle, disconn_complete->reason);
             // L2CAPSignaling.removeConnection(disconn_complete->handle, disconn_complete->reason);
-            hci_le_set_advertise_enable(0x01);
+            hci_le_set_advertising_enable(0x01);
             break;
         }
 
@@ -365,7 +365,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
     // Stop incoming data while processing packet.
     common_hal_digitalio_digitalinout_set_value(adapter->rts_digitalinout, true);
     size_t pkt_len = rx_idx;
-    // Reset for next pack
+    // Reset for next packet.
     rx_idx = 0;
 
     switch (rx_buffer[0]) {
@@ -395,7 +395,6 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
 }
 
 
-// Returns
 STATIC hci_result_t write_pkt(uint8_t *buffer, size_t len) {
     // Wait for CTS to go low before writing to HCI adapter.
     uint64_t start = supervisor_ticks_ms64();
@@ -555,13 +554,27 @@ hci_result_t hci_set_evt_mask(uint64_t event_mask) {
     return send_command(BT_HCI_OP_SET_EVENT_MASK, sizeof(event_mask), &event_mask);
 }
 
-hci_result_t hci_read_le_buffer_size(uint16_t *le_max_len, uint8_t *le_max_num) {
+hci_result_t hci_le_read_buffer_size(uint16_t *le_max_len, uint8_t *le_max_num) {
     int result = send_command(BT_HCI_OP_LE_READ_BUFFER_SIZE, 0, NULL);
     if (result == HCI_OK) {
         struct bt_hci_rp_le_read_buffer_size *response =
             (struct bt_hci_rp_le_read_buffer_size *) cmd_response_data;
         *le_max_len = response->le_max_len;
         *le_max_num = response->le_max_num;
+    }
+
+    return result;
+}
+
+hci_result_t hci_read_buffer_size(uint16_t *acl_max_len, uint8_t *sco_max_len, uint16_t *acl_max_num, uint16_t *sco_max_num) {
+    int result = send_command(BT_HCI_OP_READ_BUFFER_SIZE, 0, NULL);
+    if (result == HCI_OK) {
+        struct bt_hci_rp_read_buffer_size *response =
+            (struct bt_hci_rp_read_buffer_size *) cmd_response_data;
+        *acl_max_len = response->acl_max_len;
+        *sco_max_len = response->sco_max_len;
+        *acl_max_num = response->acl_max_num;
+        *sco_max_num = response->sco_max_num;
     }
 
     return result;
@@ -587,7 +600,30 @@ hci_result_t hci_le_set_advertising_parameters(uint16_t min_interval, uint16_t m
     return send_command(BT_HCI_OP_LE_SET_ADV_PARAM, sizeof(params), &params);
 }
 
-hci_result_t hci_le_read_maximum_advertising_data_length(int *max_adv_data_len) {
+hci_result_t hci_le_set_extended_advertising_parameters(uint8_t handle, uint16_t props, uint32_t prim_min_interval, uint32_t prim_max_interval, uint8_t prim_channel_map, uint8_t own_addr_type, bt_addr_le_t *peer_addr, uint8_t filter_policy, int8_t tx_power, uint8_t prim_adv_phy, uint8_t sec_adv_max_skip, uint8_t sec_adv_phy, uint8_t sid, uint8_t scan_req_notify_enable) {
+    struct bt_hci_cp_le_set_ext_adv_param params = {
+        .handle = handle,
+        .props = props,
+        // .prim_min_interval and .prim_max_interval set below
+        .prim_channel_map = prim_channel_map,
+        .own_addr_type = own_addr_type,
+        // .peer_addr set below.
+        .tx_power = tx_power,
+        .sec_adv_max_skip = sec_adv_max_skip,
+        .sec_adv_phy = sec_adv_phy,
+        .sid = sid,
+        .scan_req_notify_enable = scan_req_notify_enable,
+    };
+    // Assumes little-endian.
+    memcpy(params.prim_min_interval, (void *) &prim_min_interval,
+           sizeof_field(struct bt_hci_cp_le_set_ext_adv_param, prim_min_interval));
+    memcpy(params.prim_max_interval, (void *) &prim_max_interval,
+           sizeof_field(struct bt_hci_cp_le_set_ext_adv_param, prim_max_interval));
+    memcpy(params.peer_addr.a.val, peer_addr->a.val, sizeof_field(bt_addr_le_t, a.val));
+    return send_command(BT_HCI_OP_LE_SET_EXT_ADV_PARAM, sizeof(params), &params);
+}
+
+hci_result_t hci_le_read_maximum_advertising_data_length(uint16_t *max_adv_data_len) {
     int result = send_command(BT_HCI_OP_LE_READ_MAX_ADV_DATA_LEN, 0, NULL);
     if (result == HCI_OK) {
         struct bt_hci_rp_le_read_max_adv_data_len *response =
@@ -625,8 +661,23 @@ hci_result_t hci_le_set_scan_response_data(uint8_t len, uint8_t data[]) {
     return send_command(BT_HCI_OP_LE_SET_SCAN_RSP_DATA, sizeof(params), &params);
 }
 
-hci_result_t hci_le_set_advertise_enable(uint8_t enable) {
+hci_result_t hci_le_set_advertising_enable(uint8_t enable) {
     return send_command(BT_HCI_OP_LE_SET_ADV_ENABLE, sizeof(enable), &enable);
+}
+
+hci_result_t hci_le_set_extended_advertising_enable(uint8_t enable, uint8_t set_num, uint8_t handle[], uint16_t duration[], uint8_t max_ext_adv_evts[]) {
+    uint8_t params[sizeof(struct bt_hci_cp_le_set_ext_adv_enable) +
+                   set_num * (sizeof(struct bt_hci_ext_adv_set))];
+    struct bt_hci_cp_le_set_ext_adv_enable *params_p = (struct bt_hci_cp_le_set_ext_adv_enable *) &params;
+    params_p->enable = enable;
+    params_p->set_num = set_num;
+    for (size_t i = 0; i < set_num; i++) {
+        params_p->s[i].handle = handle[i];
+        params_p->s[i].duration = duration[i];
+        params_p->s[i].max_ext_adv_evts = max_ext_adv_evts[i];
+    }
+
+    return send_command(BT_HCI_OP_LE_SET_EXT_ADV_ENABLE, sizeof(params), &params);
 }
 
 hci_result_t hci_le_set_scan_parameters(uint8_t scan_type, uint16_t interval, uint16_t window, uint8_t addr_type, uint8_t filter_policy) {

@@ -35,7 +35,11 @@
 #include "supervisor/shared/stack.h"
 #include "supervisor/port.h"
 
-#ifdef CIRCUITPY_DISPLAYIO
+#if CIRCUITPY_BLEIO
+#include "common-hal/_bleio/__init__.h"
+#endif
+
+#if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
 
@@ -77,16 +81,22 @@ void run_background_tasks(void) {
     assert_heap_ok();
     running_background_tasks = true;
 
-    #if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
+#if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
     audio_dma_background();
-    #endif
-    #if CIRCUITPY_DISPLAYIO
-    displayio_background();
-    #endif
+#endif
 
-    #if CIRCUITPY_NETWORK
+#if CIRCUITPY_BLEIO
+    bleio_background();
+#endif
+
+#if CIRCUITPY_DISPLAYIO
+    displayio_background();
+#endif
+
+#if CIRCUITPY_NETWORK
     network_module_background();
-    #endif
+#endif
+
     filesystem_background();
     usb_background();
     running_background_tasks = false;

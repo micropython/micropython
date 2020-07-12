@@ -48,6 +48,21 @@
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/time/__init__.h"
 
+#define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
+#define SEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000000) / (RESOLUTION))
+#define UNITS_TO_SEC(TIME, RESOLUTION) (((TIME) * (RESOLUTION)) / 1000000)
+// 0.625 msecs (625 usecs)
+#define ADV_INTERVAL_UNIT_FLOAT_SECS (0.000625)
+// Microseconds is the base unit. The macros above know that.
+#define UNIT_0_625_MS (625)
+#define UNIT_1_25_MS  (1250)
+#define UNIT_10_MS    (10000)
+
+// TODO make this settable from Python.
+#define DEFAULT_TX_POWER 0  // 0 dBm
+#define MAX_ANONYMOUS_ADV_TIMEOUT_SECS (60*15)
+#define MAX_LIMITED_DISCOVERABLE_ADV_TIMEOUT_SECS (180)
+
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
 #define BLE_MAX_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
 #define BLE_SLAVE_LATENCY            0
@@ -158,32 +173,66 @@ bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 //     return true;
 // }
 
-// STATIC void get_address(bleio_adapter_obj_t *self, ble_gap_addr_t *address) {
-//    check_nrf_error(sd_ble_gap_addr_get(address));
-// }
-
 char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0 , 0};
 
-// STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
-//     // uint8_t len = sizeof(default_ble_name) - 1;
+STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
+    uint8_t len = sizeof(default_ble_name) - 1;
 
-//     // ble_gap_addr_t local_address;
-//     // get_address(self, &local_address);
+    bt_addr_t addr;
+    check_hci_error(hci_read_bd_addr(&addr));
 
-//     // default_ble_name[len - 4] = nibble_to_hex_lower[local_address.addr[1] >> 4 & 0xf];
-//     // default_ble_name[len - 3] = nibble_to_hex_lower[local_address.addr[1] & 0xf];
-//     // default_ble_name[len - 2] = nibble_to_hex_lower[local_address.addr[0] >> 4 & 0xf];
-//     // default_ble_name[len - 1] = nibble_to_hex_lower[local_address.addr[0] & 0xf];
-//     // default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
+    default_ble_name[len - 4] = nibble_to_hex_lower[addr.val[1] >> 4 & 0xf];
+    default_ble_name[len - 3] = nibble_to_hex_lower[addr.val[1] & 0xf];
+    default_ble_name[len - 2] = nibble_to_hex_lower[addr.val[0] >> 4 & 0xf];
+    default_ble_name[len - 1] = nibble_to_hex_lower[addr.val[0] & 0xf];
+    default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
 
-//     common_hal_bleio_adapter_set_name(self, (char*) default_ble_name);
-// }
+    common_hal_bleio_adapter_set_name(self, (char*) default_ble_name);
+}
+
+// Get various values and limits set by the adapter.
+STATIC void bleio_adapter_get_info(bleio_adapter_obj_t *self) {
+
+    // Get ACL buffer info.
+    uint16_t le_max_len;
+    uint8_t le_max_num;
+    if (hci_le_read_buffer_size(&le_max_len, &le_max_num) == HCI_OK) {
+        self->max_acl_buffer_len = le_max_len;
+        self->max_acl_num_buffers = le_max_num;
+    } else {
+        // LE Read Buffer Size not available; use the general Read Buffer Size.
+        uint16_t acl_max_len;
+        uint8_t sco_max_len;
+        uint16_t acl_max_num;
+        uint16_t sco_max_num;
+        if (hci_read_buffer_size(&acl_max_len, &sco_max_len, &acl_max_num, &sco_max_num) != HCI_OK) {
+            mp_raise_bleio_BluetoothError(translate("Could not read BLE buffer info"));
+        }
+        self->max_acl_buffer_len = acl_max_len;
+        self->max_acl_num_buffers = acl_max_num;
+    }
+
+    // Get max advertising length.
+    uint16_t max_adv_data_len;
+    if (hci_le_read_maximum_advertising_data_length(&max_adv_data_len) != HCI_OK) {
+        mp_raise_bleio_BluetoothError(translate("Could not get max advertising length"));
+    }
+    self->max_adv_data_len = max_adv_data_len;
+}
 
 void common_hal_bleio_adapter_hci_uart_init(bleio_adapter_obj_t *self, busio_uart_obj_t *uart, digitalio_digitalinout_obj_t *rts, digitalio_digitalinout_obj_t *cts) {
     self->hci_uart = uart;
     self->rts_digitalinout = rts;
     self->cts_digitalinout = cts;
     self->enabled = false;
+    self->now_advertising = false;
+    self->circuitpython_advertising = false;
+    self->extended_advertising = false;
+    self->advertising_timeout_msecs = 0;
+
+    bleio_adapter_get_info(self);
+
+    bleio_adapter_reset_name(self);
 }
 
 void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled) {
@@ -196,6 +245,13 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
 
     //FIX enable/disable HCI adapter, but don't reset it, since we don't know how.
     self->enabled = enabled;
+    if (!enabled) {
+        // Stop any current activity.
+        check_hci_error(hci_reset());
+        self->now_advertising = false;
+        self->extended_advertising = false;
+        self->circuitpython_advertising = false;
+    }
 }
 
 bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
@@ -220,6 +276,7 @@ mp_obj_str_t* common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
 void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char* name) {
     self->name = mp_obj_new_str(name, strlen(name));
 }
+
 
 // STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
 //     bleio_scanresults_obj_t *scan_results = (bleio_scanresults_obj_t*)scan_results_in;
@@ -262,6 +319,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
         self->scan_results = NULL;
     }
     self->scan_results = shared_module_bleio_new_scanresults(buffer_size, prefixes, prefix_length, minimum_rssi);
+
     // size_t max_packet_size = extended ? BLE_GAP_SCAN_BUFFER_EXTENDED_MAX_SUPPORTED : BLE_GAP_SCAN_BUFFER_MAX;
     // uint8_t *raw_data = m_malloc(sizeof(ble_data_t) + max_packet_size, false);
     // ble_data_t * sd_data = (ble_data_t *) raw_data;
@@ -298,9 +356,8 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
 }
 
 void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self) {
-    // sd_ble_gap_scan_stop();
+    check_hci_error(hci_le_set_scan_enable(BT_HCI_LE_SCAN_DISABLE, BT_HCI_LE_SCAN_FILTER_DUP_DISABLE));
     shared_module_bleio_scanresults_set_done(self->scan_results, true);
-    // ble_drv_remove_event_handler(scan_on_ble_evt, self->scan_results);
     self->scan_results = NULL;
 }
 
@@ -431,99 +488,123 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
 // }
 
 uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len) {
-    // if (self->current_advertising_data != NULL && self->current_advertising_data == self->advertising_data) {
-    //     return NRF_ERROR_BUSY;
-    // }
+    if (self->now_advertising) {
+        if (self->circuitpython_advertising) {
+            common_hal_bleio_adapter_stop_advertising(self);
+        } else {
+            // User-requested advertising.
+            // TODO allow multiple advertisements.
+            // Already advertising. Can't advertise twice.
+            return 1;
+        }
+    }
 
-    // // If the current advertising data isn't owned by the adapter then it must be an internal
-    // // advertisement that we should stop.
-    // if (self->current_advertising_data != NULL) {
-    //     common_hal_bleio_adapter_stop_advertising(self);
-    // }
+    // Peer address, which we don't use (no directed advertising).
+    bt_addr_le_t empty_addr = { 0 };
 
-    // uint32_t err_code;
-    // bool extended = advertising_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX ||
-    //                 scan_response_data_len > BLE_GAP_ADV_SET_DATA_SIZE_MAX;
+    bool extended =
+        advertising_data_len > self->max_adv_data_len || scan_response_data_len > self->max_adv_data_len;
 
-    // uint8_t adv_type;
-    // if (extended) {
-    //     if (connectable) {
-    //         adv_type = BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_UNDIRECTED;
-    //     } else if (scan_response_data_len > 0) {
-    //         adv_type = BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_UNDIRECTED;
-    //     } else {
-    //         adv_type = BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
-    //     }
-    // } else if (connectable) {
-    //     adv_type = BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED;
-    // } else if (scan_response_data_len > 0) {
-    //     adv_type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_SCANNABLE_UNDIRECTED;
-    // } else {
-    //     adv_type = BLE_GAP_ADV_TYPE_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED;
-    // }
+    if (extended) {
+        uint16_t props = 0;
+        if (connectable) {
+            props |= BT_HCI_LE_ADV_PROP_CONN;
+        }
+        if (scan_response_data_len > 0) {
+            props |= BT_HCI_LE_ADV_PROP_SCAN;
+        }
 
-    // if (anonymous) {
-    //     ble_gap_privacy_params_t privacy = {
-    //         .privacy_mode = BLE_GAP_PRIVACY_MODE_DEVICE_PRIVACY,
-    //         .private_addr_type = BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE,
-    //         // Rotate the keys one second after we're scheduled to stop
-    //         // advertising. This prevents a potential race condition where we
-    //         // fire off a beacon with the same advertising data but a new MAC
-    //         // address just as we tear down the connection.
-    //         .private_addr_cycle_s = timeout + 1,
-    //         .p_device_irk = NULL,
-    //     };
-    //     err_code = sd_ble_gap_privacy_set(&privacy);
-    // } else {
-    //     ble_gap_privacy_params_t privacy = {
-    //         .privacy_mode = BLE_GAP_PRIVACY_MODE_OFF,
-    //         .private_addr_type = BLE_GAP_ADDR_TYPE_PUBLIC,
-    //         .private_addr_cycle_s = 0,
-    //         .p_device_irk = NULL,
-    //     };
-    //     err_code = sd_ble_gap_privacy_set(&privacy);
-    // }
-    // if (err_code != NRF_SUCCESS) {
-    //     return err_code;
-    // }
+        // Advertising interval.
+        uint32_t interval_units = SEC_TO_UNITS(interval, UNIT_0_625_MS);
 
-    // ble_gap_adv_params_t adv_params = {
-    //     .interval = SEC_TO_UNITS(interval, UNIT_0_625_MS),
-    //     .properties.type = adv_type,
-    //     .duration = SEC_TO_UNITS(timeout, UNIT_10_MS),
-    //     .filter_policy = BLE_GAP_ADV_FP_ANY,
-    //     .primary_phy = BLE_GAP_PHY_1MBPS,
-    // };
+        check_hci_error(
+            hci_le_set_extended_advertising_parameters(
+                0,              // handle
+                props,          // adv properties
+                interval_units, // min interval
+                interval_units, // max interval
+                0b111,          // channel map: channels 37, 38, 39
+                anonymous ? BT_ADDR_LE_RANDOM : BT_ADDR_LE_PUBLIC,
+                &empty_addr,    // peer_addr,
+                0x00,           // filter policy: no filter
+                DEFAULT_TX_POWER,
+                BT_HCI_LE_EXT_SCAN_PHY_1M, // Secondary PHY to use
+                0x00,                      // AUX_ADV_IND shall be sent prior to next adv event
+                BT_HCI_LE_EXT_SCAN_PHY_1M, // Secondary PHY to use
+                0x00,                      // Advertising SID
+                0x00                       // Scan req notify disable
+                ));
 
-    // const ble_gap_adv_data_t ble_gap_adv_data = {
-    //     .adv_data.p_data = advertising_data,
-    //     .adv_data.len = advertising_data_len,
-    //     .scan_rsp_data.p_data = scan_response_data_len > 0 ? scan_response_data : NULL,
-    //     .scan_rsp_data.len = scan_response_data_len,
-    // };
+        // We can use the duration mechanism provided, instead of our own.
+        self->advertising_timeout_msecs = 0;
 
-    // err_code = sd_ble_gap_adv_set_configure(&adv_handle, &ble_gap_adv_data, &adv_params);
-    // if (err_code != NRF_SUCCESS) {
-    //     return err_code;
-    // }
+        uint8_t handle[1] = { 0 };
+        uint16_t duration_10msec[1] = { timeout * 100 };
+        uint8_t max_ext_adv_evts[1] =  { 0 };
+        check_hci_error(
+            hci_le_set_extended_advertising_enable(
+                BT_HCI_LE_ADV_ENABLE,
+                1,                // one advertising set.
+                handle,
+                duration_10msec,
+                max_ext_adv_evts
+                ));
 
-    // ble_drv_add_event_handler(advertising_on_ble_evt, self);
+        self->extended_advertising = true;
+    } else {
+        // Legacy advertising (not extended).
 
-    // vm_used_ble = true;
-    // err_code = sd_ble_gap_adv_start(adv_handle, BLE_CONN_CFG_TAG_CUSTOM);
-    // if (err_code != NRF_SUCCESS) {
-    //     return err_code;
-    // }
-    // self->current_advertising_data = advertising_data;
-    // return NRF_SUCCESS;
+        uint8_t adv_type;
+        if (connectable) {
+            // Connectable, scannable, undirected.
+            adv_type = BT_HCI_ADV_IND;
+        } else if (scan_response_data_len > 0) {
+            // Unconnectable, scannable, undirected.
+            adv_type = BT_HCI_ADV_SCAN_IND;
+        } else {
+            // Unconnectable, unscannable, undirected.
+            adv_type = BT_HCI_ADV_NONCONN_IND;
+        }
+
+        // Advertising interval.
+        uint16_t interval_units = SEC_TO_UNITS(interval, UNIT_0_625_MS);
+
+        check_hci_error(
+            hci_le_set_advertising_parameters(
+                interval_units, // min interval
+                interval_units, // max interval
+                adv_type,
+                anonymous ? BT_ADDR_LE_RANDOM : BT_ADDR_LE_PUBLIC,
+                &empty_addr,
+                0b111,          // channel map: channels 37, 38, 39
+                0x00            // filter policy: no filter
+                ));
+
+        // The HCI commands expect 31 octets, even though the actual data length may be shorter.
+        uint8_t full_data[31] = { 0 };
+        memcpy(full_data, advertising_data, MIN(sizeof(full_data), advertising_data_len));
+        check_hci_error(hci_le_set_advertising_data(advertising_data_len, full_data));
+        memset(full_data, 0, sizeof(full_data));
+        if (scan_response_data_len > 0) {
+            memcpy(full_data, advertising_data, MIN(sizeof(full_data), scan_response_data_len));
+            check_hci_error(hci_le_set_scan_response_data(scan_response_data_len, full_data));
+        }
+
+        // No duration mechanism is provided for legacy advertising, so we need to do our own.
+        self->advertising_timeout_msecs = timeout * 1000;
+        self->advertising_start_ticks = supervisor_ticks_ms64();
+
+        // Start advertising.
+        check_hci_error(hci_le_set_advertising_enable(BT_HCI_LE_ADV_ENABLE));
+        self->extended_advertising = false;
+    } // end legacy advertising setup
+
+    vm_used_ble = true;
+    self->now_advertising = true;
     return 0;
 }
 
-
 void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
-    if (self->current_advertising_data != NULL && self->current_advertising_data == self->advertising_data) {
-        mp_raise_bleio_BluetoothError(translate("Already advertising."));
-    }
     // interval value has already been validated.
 
     check_data_fit(advertising_data_bufinfo->len, connectable);
@@ -536,58 +617,38 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     // Anonymous mode requires a timeout so that we don't continue to broadcast
     // the same data while cycling the MAC address -- otherwise, what's the
     // point of randomizing the MAC address?
-    if (!timeout) {
-        //FIX if (anonymous) {
-        //     // The Nordic macro is in units of 10ms. Convert to seconds.
-        //     uint32_t adv_timeout_max_secs = UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS);
-        //     uint32_t rotate_timeout_max_secs = BLE_GAP_DEFAULT_PRIVATE_ADDR_CYCLE_INTERVAL_S;
-        //     timeout = MIN(adv_timeout_max_secs, rotate_timeout_max_secs);
-        // }
-        // else {
-        //     timeout = BLE_GAP_ADV_TIMEOUT_GENERAL_UNLIMITED;
-        // }
+    if (timeout == 0 && anonymous) {
+        timeout = MAX_ANONYMOUS_ADV_TIMEOUT_SECS;
     } else {
-        //FIX if (SEC_TO_UNITS(timeout, UNIT_10_MS) > BLE_GAP_ADV_TIMEOUT_LIMITED_MAX) {
-        //     mp_raise_bleio_BluetoothError(translate("Timeout is too long: Maximum timeout length is %d seconds"),
-        //                                 UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS));
-        // }
+        if (timeout > MAX_LIMITED_DISCOVERABLE_ADV_TIMEOUT_SECS) {
+            mp_raise_bleio_BluetoothError(translate("Timeout is too long: Maximum timeout length is %d seconds"),
+                                          MAX_LIMITED_DISCOVERABLE_ADV_TIMEOUT_SECS);
+        }
     }
 
-    // The advertising data buffers must not move, because the SoftDevice depends on them.
-    // So make them long-lived and reuse them onwards.
-    //FIX GET CORRECT SIZE
-    // if (self->advertising_data == NULL) {
-    //     self->advertising_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
-    // }
-    // if (self->scan_response_data == NULL) {
-    //     self->scan_response_data = (uint8_t *) gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
-    // }
+    const uint32_t result =_common_hal_bleio_adapter_start_advertising(
+        self, connectable, anonymous, timeout, interval,
+        advertising_data_bufinfo->buf,
+        advertising_data_bufinfo->len,
+        scan_response_data_bufinfo->buf,
+        scan_response_data_bufinfo->len);
 
-    memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);
-    memcpy(self->scan_response_data, scan_response_data_bufinfo->buf, scan_response_data_bufinfo->len);
-
-    // check_nrf_error(_common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
-    //                                                             self->advertising_data,
-    //                                                             advertising_data_bufinfo->len,
-    //                                                             self->scan_response_data,
-    //                                                             scan_response_data_bufinfo->len));
+    if (result) {
+        mp_raise_bleio_BluetoothError(translate("Already advertising"));
+    }
+    self->circuitpython_advertising = false;
 }
 
 void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
-    // if (adv_handle == BLE_GAP_ADV_SET_HANDLE_NOT_SET)
-    //     return;
-
-    // // TODO: Don't actually stop. Switch to advertising CircuitPython if we don't already have a connection.
-    // const uint32_t err_code = sd_ble_gap_adv_stop(adv_handle);
-    // self->current_advertising_data = NULL;
-
-    // if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_INVALID_STATE)) {
-    //     check_nrf_error(err_code);
-    // }
+    self->now_advertising = false;
+    self->extended_advertising = false;
+    self->circuitpython_advertising = false;
+    check_hci_error(hci_le_set_advertising_enable(BT_HCI_LE_ADV_DISABLE));
+    //TODO startup CircuitPython advertising again.
 }
 
 bool common_hal_bleio_adapter_get_advertising(bleio_adapter_obj_t *self) {
-    return self->current_advertising_data != NULL;
+    return self->now_advertising;
 }
 
 bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self) {
@@ -631,7 +692,7 @@ void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
 
 void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
     common_hal_bleio_adapter_stop_scan(adapter);
-    if (adapter->current_advertising_data != NULL) {
+    if (adapter->now_advertising) {
         common_hal_bleio_adapter_stop_advertising(adapter);
     }
 
@@ -644,5 +705,13 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
             common_hal_bleio_connection_disconnect(connection);
         }
         connection->connection_obj = mp_const_none;
+    }
+}
+
+void bleio_adapter_background(bleio_adapter_obj_t* adapter) {
+    if (adapter->advertising_timeout_msecs > 0 &&
+        supervisor_ticks_ms64() - adapter->advertising_start_ticks > adapter->advertising_timeout_msecs) {
+        adapter->advertising_timeout_msecs = 0;
+        common_hal_bleio_adapter_stop_advertising(adapter);
     }
 }

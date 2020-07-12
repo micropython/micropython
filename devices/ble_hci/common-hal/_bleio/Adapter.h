@@ -43,20 +43,32 @@
 
 extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
+
+
 typedef struct _bleio_adapter_obj_t {
     mp_obj_base_t base;
-    uint8_t* advertising_data;
-    uint8_t* scan_response_data;
-    uint8_t* current_advertising_data;
     bleio_scanresults_obj_t *scan_results;
     mp_obj_t name;
     mp_obj_tuple_t *connection_objs;
     busio_uart_obj_t* hci_uart;
     digitalio_digitalinout_obj_t *rts_digitalinout;
     digitalio_digitalinout_obj_t *cts_digitalinout;
+    bool now_advertising;
+    bool extended_advertising;
+    bool circuitpython_advertising;
     bool enabled;
+
+    // Used to monitor advertising timeout for legacy avertising.
+    uint64_t advertising_start_ticks;
+    uint64_t advertising_timeout_msecs;  // If zero, do not check.
+
+    uint16_t max_acl_buffer_len;
+    uint16_t max_acl_num_buffers;
+    uint16_t max_adv_data_len;
+
 } bleio_adapter_obj_t;
 
+void bleio_adapter_background(bleio_adapter_obj_t* adapter);
 void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter);
 void bleio_adapter_reset(bleio_adapter_obj_t* adapter);
 

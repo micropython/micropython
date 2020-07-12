@@ -68,8 +68,7 @@ void run_background_tasks(void) {
 #endif
 
 #if CIRCUITPY_BLEIO
-    supervisor_bluetooth_background();
-    bonding_background();
+    bleio_background();
 #endif
 
     #if CIRCUITPY_DISPLAYIO

@@ -27,7 +27,8 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
 #define MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H
 
-void supervisor_start_bluetooth(void);
+void bleio_background(void);
 void supervisor_bluetooth_background(void);
+void supervisor_start_bluetooth(void);
 
 #endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_H

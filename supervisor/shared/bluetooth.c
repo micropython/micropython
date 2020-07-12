@@ -214,7 +214,6 @@ STATIC void close_current_file(void) {
 uint32_t current_command[1024 / sizeof(uint32_t)];
 volatile size_t current_offset;
 
-
 void supervisor_bluetooth_background(void) {
     if (!run_ble_background) {
         return;

@@ -47,13 +47,18 @@ void run_background_tasks(void) {
     running_background_tasks = true;
     filesystem_background();
 
-    #if USB_AVAILABLE
+#if USB_AVAILABLE
     usb_background();
-    #endif
+#endif
 
-    #if CIRCUITPY_DISPLAYIO
+#if CIRCUITPY_BLEIO
+    bleio_background();
+#endif
+
+#if CIRCUITPY_DISPLAYIO
     displayio_background();
-    #endif
+#endif
+
     running_background_tasks = false;
 
     assert_heap_ok();

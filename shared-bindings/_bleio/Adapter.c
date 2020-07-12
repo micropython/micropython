@@ -47,6 +47,12 @@
 #define INTERVAL_MAX_STRING "40.959375"
 #define WINDOW_DEFAULT (0.1f)
 
+STATIC void check_enabled(bleio_adapter_obj_t *self) {
+    if (!common_hal_bleio_adapter_get_enabled(self)) {
+        mp_raise_bleio_BluetoothError(translate("Adapter not enabled"));
+    }
+}
+
 //| class Adapter:
 //|     """BLE adapter
 //|
@@ -102,6 +108,7 @@ mp_obj_t bleio_adapter_hci_uart_init(mp_uint_t n_args, const mp_obj_t *pos_args,
         !MP_OBJ_IS_TYPE(cts, &digitalio_digitalinout_type)) {
         mp_raise_ValueError(translate("Expected a DigitalInOut"));
     }
+    check_enabled(self);
     common_hal_bleio_adapter_hci_uart_init(self, uart, rts, cts);
     common_hal_bleio_adapter_set_enabled(self, true);
 
@@ -238,6 +245,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
         mp_raise_bleio_BluetoothError(translate("Cannot have scan responses for extended, connectable advertisements."));
     }
 
+    check_enabled(self);
     common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
                                                &data_bufinfo, &scan_response_bufinfo);
 
@@ -252,6 +260,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_start_advertising_obj, 2, bleio_
 STATIC mp_obj_t bleio_adapter_stop_advertising(mp_obj_t self_in) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_enabled(self);
     common_hal_bleio_adapter_stop_advertising(self);
 
     return mp_const_none;
@@ -327,6 +336,7 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
         }
     }
 
+    check_enabled(self);
     return common_hal_bleio_adapter_start_scan(self, prefix_bufinfo.buf, prefix_bufinfo.len, args[ARG_extended].u_bool, args[ARG_buffer_size].u_int, timeout, interval, window, args[ARG_minimum_rssi].u_int, args[ARG_active].u_bool);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_start_scan_obj, 1, bleio_adapter_start_scan);
@@ -338,6 +348,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_start_scan_obj, 1, bleio_adapter
 STATIC mp_obj_t bleio_adapter_stop_scan(mp_obj_t self_in) {
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
+    check_enabled(self);
     common_hal_bleio_adapter_stop_scan(self);
 
     return mp_const_none;
@@ -365,6 +376,7 @@ const mp_obj_property_t bleio_adapter_advertising_obj = {
 //|     connection. (read-only)"""
 //|
 STATIC mp_obj_t bleio_adapter_get_connected(mp_obj_t self) {
+    check_enabled(self);
     return mp_obj_new_bool(common_hal_bleio_adapter_get_connected(self));
 
 }
@@ -382,6 +394,7 @@ const mp_obj_property_t bleio_adapter_connected_obj = {
 //|     :py:meth:`_bleio.Adapter.connect`. (read-only)"""
 //|
 STATIC mp_obj_t bleio_adapter_get_connections(mp_obj_t self) {
+    check_enabled(self);
     return common_hal_bleio_adapter_get_connections(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_connections_obj, bleio_adapter_get_connections);
@@ -419,6 +432,7 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
     bleio_address_obj_t *address = MP_OBJ_TO_PTR(args[ARG_address].u_obj);
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
 
+    check_enabled(self);
     return common_hal_bleio_adapter_connect(self, address, timeout);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 2, bleio_adapter_connect);

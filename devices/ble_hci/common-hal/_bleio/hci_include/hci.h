@@ -14,6 +14,8 @@
 #include <string.h>
 #include "addr.h"
 
+#define BIT(n)  (1UL << (n))
+
 /* Special own address types for LL privacy (used in adv & scan parameters) */
 #define BT_HCI_OWN_ADDR_RPA_OR_PUBLIC  0x02
 #define BT_HCI_OWN_ADDR_RPA_OR_RANDOM  0x03

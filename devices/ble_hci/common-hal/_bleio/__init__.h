@@ -31,6 +31,7 @@
 
 #include "hci_api.h"
 
+void bleio_background(void);
 void bleio_reset(void);
 
 typedef struct {
