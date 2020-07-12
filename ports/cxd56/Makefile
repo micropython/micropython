@@ -62,6 +62,13 @@ SPRESENSE_SDK = spresense-exported-sdk
 
 FIRMWARE = $(SPRESENSE_SDK)/firmware
 
+BOOTLOADER_FILES += \
+	$(FIRMWARE)/AESM.espk \
+	$(FIRMWARE)/dnnrt-mp.espk \
+	$(FIRMWARE)/gnssfw.espk \
+	$(FIRMWARE)/loader.espk \
+	$(FIRMWARE)/sysutil.spk \
+
 # Platforms are: Linux, Darwin, MSYS, CYGWIN
 PLATFORM := $(firstword $(subst _, ,$(shell uname -s 2>/dev/null)))
 
@@ -91,8 +98,7 @@ INC += \
 	-I$(SPRESENSE_SDK)/nuttx/arch \
 	-I$(SPRESENSE_SDK)/nuttx/arch/chip \
 	-I$(SPRESENSE_SDK)/nuttx/arch/os \
-	-I$(SPRESENSE_SDK)/sdk/bsp/include \
-	-I$(SPRESENSE_SDK)/sdk/bsp/include/sdk \
+	-I$(SPRESENSE_SDK)/sdk/include \
 
 CFLAGS += \
 	$(INC) \
@@ -125,7 +131,7 @@ LDFLAGS = \
 	--entry=__start \
 	-nostartfiles \
 	-nodefaultlibs \
-	-T$(SPRESENSE_SDK)/nuttx/build/ramconfig.ld \
+	-T$(SPRESENSE_SDK)/nuttx/scripts/ramconfig.ld \
 	--gc-sections \
 	-Map=$(BUILD)/output.map \
 	-o $(BUILD)/firmware.elf \
@@ -133,8 +139,8 @@ LDFLAGS = \
 	-u spresense_main \
 	-u board_timerhook \
 	$(BUILD)/libmpy.a \
-	$(SPRESENSE_SDK)/sdk/libs/libapps.a \
-	$(SPRESENSE_SDK)/sdk/libs/libsdk.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libapps.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libnuttx.a \
 	$(LIBM) \
 	$(LIBGCC) \
 	--end-group \
@@ -213,11 +219,11 @@ $(BUILD)/firmware.spk: $(BUILD)/firmware.elf $(MKSPK)
 
 flash: $(BUILD)/firmware.spk
 	$(ECHO) "Writing $< to the board"
-	$(SPRESENSE_SDK)/sdk/tools/flash.sh -c $(SERIAL) $(BUILD)/firmware.spk
+	tools/flash_writer.py -s -c $(SERIAL) -d -b 115200 -n $(BUILD)/firmware.spk
 
 flash-bootloader: $(SPRESENSE_SDK) $(FIRMWARE)
 	$(ECHO) "Writing loader to the board"
-	$(SPRESENSE_SDK)/sdk/tools/flash.sh -l $(FIRMWARE) -c $(SERIAL)
+	tools/flash_writer.py -s -c $(SERIAL) -d -b 115200 -n $(BOOTLOADER_FILES)
 
 include $(TOP)/py/mkrules.mk
 

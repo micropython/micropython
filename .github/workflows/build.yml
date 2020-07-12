@@ -22,7 +22,9 @@ jobs:
         fetch-depth: 0
     - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
-      run: git describe --dirty --tags
+      run: |
+        git describe --dirty --tags
+        echo "::set-env name=CP_VERSION::$(git describe --dirty --tags)"
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
@@ -68,7 +70,7 @@ jobs:
         name: stubs
         path: circuitpython-stubs*
     - name: Docs
-      run: sphinx-build -E -W -b html . _build/html
+      run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
     - uses: actions/upload-artifact@v2
       with:
         name: docs
@@ -147,6 +149,7 @@ jobs:
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "bdmicro_vina_m0"
+        - "bless_dev_board_multi_sensor"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
         - "circuitbrains_basic_m0"
@@ -236,6 +239,7 @@ jobs:
         - "pyportal"
         - "pyportal_titano"
         - "pyruler"
+        - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
         - "sam32"
         - "same54_xplained"

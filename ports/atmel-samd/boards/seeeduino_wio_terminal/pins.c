@@ -33,9 +33,10 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PB27) },
 
     // SPI pins
-    { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PA02) },
-    { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PA03) },
-    { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PA00) },
+    { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PB02) },
+    { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PB03) },
+    { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PB00) },
+    { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_PB01) },
 
     // I2C pins
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA16) },
@@ -43,6 +44,43 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     // LED pins
     { MP_ROM_QSTR(MP_QSTR_LED),   MP_ROM_PTR(&pin_PA15) }, // status
+
+    // LCD Display
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_MISO),  MP_ROM_PTR(&pin_PB18) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_MOSI),  MP_ROM_PTR(&pin_PB19) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_SCK),  MP_ROM_PTR(&pin_PB20) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_CS),  MP_ROM_PTR(&pin_PB21) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_DC),  MP_ROM_PTR(&pin_PC06) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_BACKLIGHT),  MP_ROM_PTR(&pin_PC05) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_RESET),  MP_ROM_PTR(&pin_PC07) },
+
+    // SD Card
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_MISO),  MP_ROM_PTR(&pin_PC18) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_MOSI),  MP_ROM_PTR(&pin_PC16) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_SCK),  MP_ROM_PTR(&pin_PC17) },
+    { MP_ROM_QSTR(MP_QSTR_SD_CS),  MP_ROM_PTR(&pin_PC19) },
+    { MP_ROM_QSTR(MP_QSTR_SD_DET),  MP_ROM_PTR(&pin_PC21) },
+
+    // Switch
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_UP),  MP_ROM_PTR(&pin_PD20) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_LEFT),  MP_ROM_PTR(&pin_PD12) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_RIGHT),  MP_ROM_PTR(&pin_PD09) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_DOWN),  MP_ROM_PTR(&pin_PD08) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SWITCH_PRESS),  MP_ROM_PTR(&pin_PD10) },
+
+    // Button
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_1),  MP_ROM_PTR(&pin_PC26) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_2),  MP_ROM_PTR(&pin_PC27) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_3),  MP_ROM_PTR(&pin_PC28) },
+
+    // Special named pins
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LIGHT),  MP_ROM_PTR(&pin_PD01) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BUZZER),  MP_ROM_PTR(&pin_PD11) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_IR),  MP_ROM_PTR(&pin_PB31) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MIC),  MP_ROM_PTR(&pin_PC30) },
+    { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_SCL),  MP_ROM_PTR(&pin_PA12) },
+    { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_SDA),  MP_ROM_PTR(&pin_PA13) },
+    { MP_ROM_QSTR(MP_QSTR_GYROSCOPE_INT),  MP_ROM_PTR(&pin_PC21) },
 
     // Comm objects
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
