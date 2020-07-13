@@ -272,7 +272,7 @@ MP_DEFINE_CONST_DICT(samd_clock_globals, samd_clock_global_dict_table);
 
 #endif // SAMD21
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 
 
 

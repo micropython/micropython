@@ -102,9 +102,15 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     while (remaining > 0) {
         RUN_BACKGROUND_TASKS;
         // Check to see if we've been CTRL-Ced by autoreload or the user.
-        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
-           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception)) ||
+        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)))
+           {
+           // clear exception and generate stacktrace
+            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+            nlr_raise(&MP_STATE_VM(mp_kbd_exception));
+          }
+        if( MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception)) ||
            WATCHDOG_EXCEPTION_CHECK()) {
+           // stop sleeping immediately
             break;
         }
         remaining = end_tick - port_get_raw_ticks(NULL);

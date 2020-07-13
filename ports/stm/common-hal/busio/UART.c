@@ -79,7 +79,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
     const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
     const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
-    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
     bool sigint_enabled) {
 
@@ -201,8 +201,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->handle.Init.BaudRate = baudrate;
     self->handle.Init.WordLength = (bits == 9) ? UART_WORDLENGTH_9B : UART_WORDLENGTH_8B;
     self->handle.Init.StopBits = (stop > 1) ? UART_STOPBITS_2 : UART_STOPBITS_1;
-    self->handle.Init.Parity = (parity == PARITY_ODD) ? UART_PARITY_ODD :
-                               (parity == PARITY_EVEN) ? UART_PARITY_EVEN :
+    self->handle.Init.Parity = (parity == BUSIO_UART_PARITY_ODD) ? UART_PARITY_ODD :
+                               (parity == BUSIO_UART_PARITY_EVEN) ? UART_PARITY_EVEN :
                                UART_PARITY_NONE;
     self->handle.Init.Mode = (self->tx != NULL && self->rx != NULL) ? UART_MODE_TX_RX :
                              (self->tx != NULL) ? UART_MODE_TX :

@@ -88,7 +88,7 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
 
 mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
-        if (block_num > 1) {
+        if (num_blocks > 1) {
             return 1; // error
         }
         // fake the MBR so we can decide on our own partition table

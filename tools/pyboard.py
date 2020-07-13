@@ -191,7 +191,7 @@ class ProcessToSerial:
 
 
 class ProcessPtyToTerminal:
-    """Execute a process which creates a PTY and prints slave PTY as
+    """Execute a process which creates a PTY and prints secondary PTY as
     first line of its output, and emulate serial connection using
     this PTY."""
 

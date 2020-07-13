@@ -32,9 +32,10 @@
 #include "py/gc.h"
 
 #include "esp-idf/components/xtensa/include/esp_debug_helpers.h"
+#include "esp-idf/components/esp_rom/include/esp32s2/rom/ets_sys.h"
 
 void mp_hal_delay_us(mp_uint_t delay) {
-    mp_hal_delay_ms(delay / 1000);
+    ets_delay_us(delay);
 }
 
 // This is provided by the esp-idf/components/xtensa/esp32s2/libhal.a binary

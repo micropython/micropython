@@ -19,5 +19,5 @@ Modules
     :glob:
     :maxdepth: 2
 
-    ../autoapi/*/index
+    ../shared-bindings/*/index
     help

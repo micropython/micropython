@@ -27,7 +27,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "PewPew.h"
-#include "shared-module/_pew/PewPew.h"
+#include "common-hal/_pew/PewPew.h"
 
 STATIC mp_obj_t get_pressed(void) {
     pew_obj_t *pew = MP_STATE_VM(pew_singleton);

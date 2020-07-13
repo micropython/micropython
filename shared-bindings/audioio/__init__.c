@@ -33,15 +33,6 @@
 #include "shared-bindings/audioio/__init__.h"
 #include "shared-bindings/audioio/AudioOut.h"
 
-#if CIRCUITPY_AUDIOIO_COMPAT
-#include "shared-bindings/audiomixer/Mixer.h"
-#include "shared-bindings/audiocore/RawSample.h"
-#include "shared-bindings/audiocore/WaveFile.h"
-#endif
-#if CIRCUITPY_AUDIOMIXER
-#include "shared-bindings/audiomixer/Mixer.h"
-#endif
-
 //| """Support for audio output
 //|
 //| The `audioio` module contains classes to provide access to audio IO.
@@ -62,13 +53,6 @@
 STATIC const mp_rom_map_elem_t audioio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audioio) },
     { MP_ROM_QSTR(MP_QSTR_AudioOut), MP_ROM_PTR(&audioio_audioout_type) },
-#if CIRCUITPY_AUDIOIO_COMPAT
-    #if CIRCUITPY_AUDIOMIXER
-    { MP_ROM_QSTR(MP_QSTR_Mixer), MP_ROM_PTR(&audiomixer_mixer_type) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
-    { MP_ROM_QSTR(MP_QSTR_WaveFile), MP_ROM_PTR(&audioio_wavefile_type) },
-#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(audioio_module_globals, audioio_module_globals_table);

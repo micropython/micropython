@@ -401,11 +401,18 @@ extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPAD_ROOT_POINTERS
 #endif
 
-#if CIRCUITPY_I2CSLAVE
-extern const struct _mp_obj_module_t i2cslave_module;
-#define I2CSLAVE_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_i2cslave), (mp_obj_t)&i2cslave_module },
+#if CIRCUITPY_GNSS
+extern const struct _mp_obj_module_t gnss_module;
+#define GNSS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_gnss), (mp_obj_t)&gnss_module },
 #else
-#define I2CSLAVE_MODULE
+#define GNSS_MODULE
+#endif
+
+#if CIRCUITPY_I2CPERIPHERAL
+extern const struct _mp_obj_module_t i2cperipheral_module;
+#define I2CPERIPHERAL_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_i2cperipheral), (mp_obj_t)&i2cperipheral_module },
+#else
+#define I2CPERIPHERAL_MODULE
 #endif
 
 #if CIRCUITPY_MATH
@@ -528,6 +535,20 @@ extern const struct _mp_obj_module_t samd_module;
 #define SAMD_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module },
 #else
 #define SAMD_MODULE
+#endif
+
+#if CIRCUITPY_SDCARDIO
+extern const struct _mp_obj_module_t sdcardio_module;
+#define SDCARDIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_sdcardio), (mp_obj_t)&sdcardio_module },
+#else
+#define SDCARDIO_MODULE
+#endif
+
+#if CIRCUITPY_SDIOIO
+extern const struct _mp_obj_module_t sdioio_module;
+#define SDIOIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_sdioio), (mp_obj_t)&sdioio_module },
+#else
+#define SDIOIO_MODULE
 #endif
 
 #if CIRCUITPY_STAGE
@@ -682,7 +703,8 @@ extern const struct _mp_obj_module_t watchdog_module;
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
-    I2CSLAVE_MODULE \
+    GNSS_MODULE \
+    I2CPERIPHERAL_MODULE \
     JSON_MODULE \
     MATH_MODULE \
     _EVE_MODULE \
@@ -701,6 +723,8 @@ extern const struct _mp_obj_module_t watchdog_module;
     ROTARYIO_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
+    SDCARDIO_MODULE \
+    SDIOIO_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \
