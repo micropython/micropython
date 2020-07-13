@@ -1,14 +1,10 @@
 nRF52840 MDK USB Dongle
 =======================
 
-The *nRF52840 MDK USB
-Dongle* ([developer wiki](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle)) is a small,
+The *[nRF52840 MDK USB
+Dongle](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle)* is a small,
 low-cost development board in a USB dongle form-factor powered by an nRF52840
 with 1MB flash and 256KB RAM.
-
-<p align="center">
-    <img src="images/dongle_pcba_case.jpg">
-</p>
 
 This device is pre-installed with [Open
 Bootloader](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle/programming/),
@@ -20,18 +16,19 @@ Open Bootloader, the flash and memory layout must be adjusted slightly (details
 from the typical nRF build; this board definition ensure the appropriate build
 configuration is used for MicroPython.
 
+
 Pinout
 ------
 
-All pins are available in MicroPython, using the pin numbers labelled in the
-image below (excluding the leading port number, *P0*).
+The [pinout
+diagram](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle/#pinout-diagram)
+provides an overview of the available pins and their capabilities. All pins are
+available in MicroPython, using the pin numbers labelled in the diagram
+(excluding the leading port number, *P0*).
 
 The three LEDs are available either through the usual `Pin` mechanism - pins
 22-24 - or by `board.LED(n)` where n can be 1, 2 or 3.
 
-<p align="center">
-    <a href="images/nrf52840-mdk-usb-dongle-pinout.png"><img src="images/nrf52840-mdk-usb-dongle-pinout.png" width="550"></a>
-</p>
 
 Build instructions
 ------------------
@@ -50,8 +47,3 @@ wiki](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle/programming/).
 **Note** that the regular method of deployment for the MicroPython nRF port
 (using `make deploy`) will *not* operate correctly and will overwrite the
 bootloader.
-
-Attribution
------------
-Images courtesy of
-[Makerdiary](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle/).
