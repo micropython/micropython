@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 14:38-0500\n"
-"PO-Revision-Date: 2020-07-02 20:42+0000\n"
+"PO-Revision-Date: 2020-07-13 17:39+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -1114,7 +1114,7 @@ msgstr "MISO of MOSI moeten worden gegeven"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "Must provide SCK pin"
-msgstr ""
+msgstr "SCK pin moet opgegeven worden"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
