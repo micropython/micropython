@@ -35,30 +35,97 @@
 #include "shared-bindings/microcontroller/Pin.h"
 
 #define ALL_CLOCKS 0xFFFF
+#define NULL_IRQ 0xFF
 
 static bool stm_timer_reserved[MP_ARRAY_SIZE(mcu_tim_banks)];
 static bool stm_timer_never_reset[MP_ARRAY_SIZE(mcu_tim_banks)];
 static void (*stm_timer_callback[MP_ARRAY_SIZE(mcu_tim_banks)])(void);
 static size_t irq_map[] = {
+    #ifdef TIM1
     TIM1_CC_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM2
     TIM2_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM3
     TIM3_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM4
     TIM4_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM5
     TIM5_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM6
     TIM6_DAC_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM7
     TIM7_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM8
     TIM8_CC_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM9
     TIM1_BRK_TIM9_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM10
     TIM1_UP_TIM10_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM11
     TIM1_TRG_COM_TIM11_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM12
     TIM8_BRK_TIM12_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM13
     TIM8_UP_TIM13_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM14
     TIM8_TRG_COM_TIM14_IRQn,
-#if (CPY_STM32H7)
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM15
     TIM15_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM16
     TIM16_IRQn,
+    #else
+    NULL_IRQ,
+    #endif
+    #ifdef TIM17
     TIM17_IRQn,
-#endif
+    #else
+    NULL_IRQ,
+    #endif
 };
 
 // Get the frequency (in Hz) of the source clock for the given timer.
