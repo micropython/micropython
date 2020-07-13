@@ -121,7 +121,7 @@ STATIC byte *emit_get_cur_to_write_code_info(emit_t *emit, int num_bytes_to_writ
     }
 }
 
-STATIC void emit_write_code_info_byte(emit_t* emit, byte val) {
+STATIC void emit_write_code_info_byte(emit_t *emit, byte val) {
     *emit_get_cur_to_write_code_info(emit, 1) = val;
 }
 
@@ -230,7 +230,7 @@ STATIC void emit_write_bytecode_byte_const(emit_t *emit, int stack_adj, byte b, 
 }
 #endif
 
-STATIC void emit_write_bytecode_byte_qstr(emit_t* emit, int stack_adj, byte b, qstr qst) {
+STATIC void emit_write_bytecode_byte_qstr(emit_t *emit, int stack_adj, byte b, qstr qst) {
     #if MICROPY_PERSISTENT_CODE
     assert((qst >> 16) == 0);
     mp_emit_bc_adjust_stack_size(emit, stack_adj);
@@ -252,7 +252,7 @@ STATIC void emit_write_bytecode_byte_obj(emit_t *emit, int stack_adj, byte b, mp
     // aligns the pointer so it is friendly to GC
     emit_write_bytecode_byte(emit, stack_adj, b);
     emit->bytecode_offset = (size_t)MP_ALIGN(emit->bytecode_offset, sizeof(mp_obj_t));
-    mp_obj_t *c = (mp_obj_t*)emit_get_cur_to_write_bytecode(emit, sizeof(mp_obj_t));
+    mp_obj_t *c = (mp_obj_t *)emit_get_cur_to_write_bytecode(emit, sizeof(mp_obj_t));
     // Verify thar c is already uint-aligned
     assert(c == MP_ALIGN(c, sizeof(mp_obj_t)));
     *c = obj;
@@ -267,10 +267,10 @@ STATIC void emit_write_bytecode_byte_raw_code(emit_t *emit, int stack_adj, byte 
     #else
     // aligns the pointer so it is friendly to GC
     emit_write_bytecode_byte(emit, stack_adj, b);
-    emit->bytecode_offset = (size_t)MP_ALIGN(emit->bytecode_offset, sizeof(void*));
-    void **c = (void**)emit_get_cur_to_write_bytecode(emit, sizeof(void*));
+    emit->bytecode_offset = (size_t)MP_ALIGN(emit->bytecode_offset, sizeof(void *));
+    void **c = (void **)emit_get_cur_to_write_bytecode(emit, sizeof(void *));
     // Verify thar c is already uint-aligned
-    assert(c == MP_ALIGN(c, sizeof(void*)));
+    assert(c == MP_ALIGN(c, sizeof(void *)));
     *c = rc;
     #endif
     #if MICROPY_PY_SYS_SETTRACE
@@ -467,7 +467,7 @@ void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
 }
 
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
-#if MICROPY_ENABLE_SOURCE_LINE
+    #if MICROPY_ENABLE_SOURCE_LINE
     if (MP_STATE_VM(mp_optimise_value) >= 3) {
         // If we compile with -O3, don't store line numbers.
         return;
@@ -479,10 +479,10 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
         emit->last_source_line_offset = emit->bytecode_offset;
         emit->last_source_line = source_line;
     }
-#else
+    #else
     (void)emit;
     (void)source_line;
-#endif
+    #endif
 }
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
@@ -940,4 +940,4 @@ const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops = {
 };
 #endif
 
-#endif //MICROPY_ENABLE_COMPILER
+#endif // MICROPY_ENABLE_COMPILER

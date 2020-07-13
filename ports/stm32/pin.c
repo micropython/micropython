@@ -119,7 +119,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         mp_obj_t o = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
         if (o != mp_const_none) {
             if (!mp_obj_is_type(o, &pin_type)) {
-                mp_raise_ValueError("Pin.mapper didn't return a Pin object");
+                mp_raise_ValueError(MP_ERROR_TEXT("Pin.mapper didn't return a Pin object"));
             }
             if (pin_class_debug) {
                 printf("Pin.mapper maps ");
@@ -176,7 +176,7 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    mp_raise_msg_varg(&mp_type_ValueError, "Pin(%s) doesn't exist", mp_obj_str_get_str(user_obj));
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%s) doesn't exist"), mp_obj_str_get_str(user_obj));
 }
 
 /// \method __str__()
@@ -342,7 +342,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
     // get io mode
     uint mode = args[0].u_int;
     if (!IS_GPIO_MODE(mode)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "invalid pin mode: %d", mode);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
     }
 
     // get pull mode
@@ -351,7 +351,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
         pull = mp_obj_get_int(args[1].u_obj);
     }
     if (!IS_GPIO_PULL(pull)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "invalid pin pull: %d", pull);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin pull: %d"), pull);
     }
 
     // get af (alternate function); alt-arg overrides af-arg
@@ -360,7 +360,7 @@ STATIC mp_obj_t pin_obj_init_helper(const pin_obj_t *self, size_t n_args, const 
         af = args[2].u_int;
     }
     if ((mode == GPIO_MODE_AF_PP || mode == GPIO_MODE_AF_OD) && !IS_GPIO_AF(af)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "invalid pin af: %d", af);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin af: %d"), af);
     }
 
     // enable the peripheral clock for the port of this pin
@@ -564,7 +564,7 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AF_OD),     MP_ROM_INT(GPIO_MODE_AF_OD) },
     { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
 
-#include "genhdr/pins_af_const.h"
+    #include "genhdr/pins_af_const.h"
 };
 
 STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
@@ -596,7 +596,7 @@ const mp_obj_type_t pin_type = {
     .make_new = mp_pin_make_new,
     .call = pin_call,
     .protocol = &pin_pin_p,
-    .locals_dict = (mp_obj_dict_t*)&pin_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pin_locals_dict,
 };
 
 /// \moduleref pyb
@@ -670,5 +670,5 @@ const mp_obj_type_t pin_af_type = {
     { &mp_type_type },
     .name = MP_QSTR_PinAF,
     .print = pin_af_obj_print,
-    .locals_dict = (mp_obj_dict_t*)&pin_af_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pin_af_locals_dict,
 };

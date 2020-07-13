@@ -101,7 +101,7 @@ Methods
     nic.ifconfig(('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
 
 .. method:: WLAN.config('param')
-.. method:: WLAN.config(param=value, ...)
+            WLAN.config(param=value, ...)
 
    Get or set general network interface parameters. These methods allow to work
    with additional parameters beyond standard IP configuration (as dealt with by
@@ -117,7 +117,7 @@ Methods
     print(ap.config('channel'))
 
    Following are commonly supported parameters (availability of a specific parameter
-   depends on network technology type, driver, and `MicroPython port`).
+   depends on network technology type, driver, and :term:`MicroPython port`).
 
    =============  ===========
    Parameter      Description

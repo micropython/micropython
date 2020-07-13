@@ -82,11 +82,11 @@ struct mbedtls_aes_ctx_with_key {
 typedef struct _mp_obj_aes_t {
     mp_obj_base_t base;
     AES_CTX_IMPL ctx;
-    uint8_t block_mode: 6;
+    uint8_t block_mode : 6;
 #define AES_KEYTYPE_NONE 0
 #define AES_KEYTYPE_ENC  1
 #define AES_KEYTYPE_DEC  2
-    uint8_t key_type: 2;
+    uint8_t key_type : 2;
 } mp_obj_aes_t;
 
 static inline bool is_ctr_mode(int block_mode) {
@@ -99,7 +99,7 @@ static inline bool is_ctr_mode(int block_mode) {
 
 static inline struct ctr_params *ctr_params_from_aes(mp_obj_aes_t *o) {
     // ctr_params follows aes object struct
-    return (struct ctr_params*)&o[1];
+    return (struct ctr_params *)&o[1];
 }
 
 #if MICROPY_SSL_AXTLS
@@ -117,7 +117,7 @@ STATIC void aes_final_set_key_impl(AES_CTX_IMPL *ctx, bool encrypt) {
 STATIC void aes_process_ecb_impl(AES_CTX_IMPL *ctx, const uint8_t in[16], uint8_t out[16], bool encrypt) {
     memcpy(out, in, 16);
     // We assume that out (vstr.buf or given output buffer) is uint32_t aligned
-    uint32_t *p = (uint32_t*)out;
+    uint32_t *p = (uint32_t *)out;
     // axTLS likes it weird and complicated with byteswaps
     for (int i = 0; i < 4; i++) {
         p[i] = MP_HTOBE32(p[i]);
@@ -225,7 +225,7 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
             break;
 
         default:
-            mp_raise_ValueError("mode");
+            mp_raise_ValueError(MP_ERROR_TEXT("mode"));
     }
 
     mp_obj_aes_t *o = m_new_obj_var(mp_obj_aes_t, struct ctr_params, !!is_ctr_mode(block_mode));
@@ -237,7 +237,7 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
     mp_buffer_info_t keyinfo;
     mp_get_buffer_raise(args[0], &keyinfo, MP_BUFFER_READ);
     if (32 != keyinfo.len && 16 != keyinfo.len) {
-        mp_raise_ValueError("key");
+        mp_raise_ValueError(MP_ERROR_TEXT("key"));
     }
 
     mp_buffer_info_t ivinfo;
@@ -246,10 +246,10 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
         mp_get_buffer_raise(args[2], &ivinfo, MP_BUFFER_READ);
 
         if (16 != ivinfo.len) {
-            mp_raise_ValueError("IV");
+            mp_raise_ValueError(MP_ERROR_TEXT("IV"));
         }
     } else if (o->block_mode == UCRYPTOLIB_MODE_CBC || is_ctr_mode(o->block_mode)) {
-        mp_raise_ValueError("IV");
+        mp_raise_ValueError(MP_ERROR_TEXT("IV"));
     }
 
     if (is_ctr_mode(block_mode)) {
@@ -274,7 +274,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
     mp_get_buffer_raise(in_buf, &in_bufinfo, MP_BUFFER_READ);
 
     if (!is_ctr_mode(self->block_mode) && in_bufinfo.len % 16 != 0) {
-        mp_raise_ValueError("blksize % 16");
+        mp_raise_ValueError(MP_ERROR_TEXT("blksize % 16"));
     }
 
     vstr_t vstr;
@@ -284,12 +284,12 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
     if (out_buf != MP_OBJ_NULL) {
         mp_get_buffer_raise(out_buf, &out_bufinfo, MP_BUFFER_WRITE);
         if (out_bufinfo.len < in_bufinfo.len) {
-            mp_raise_ValueError("output too small");
+            mp_raise_ValueError(MP_ERROR_TEXT("output too small"));
         }
         out_buf_ptr = out_bufinfo.buf;
     } else {
         vstr_init_len(&vstr, in_bufinfo.len);
-        out_buf_ptr = (uint8_t*)vstr.buf;
+        out_buf_ptr = (uint8_t *)vstr.buf;
     }
 
     if (AES_KEYTYPE_NONE == self->key_type) {
@@ -301,7 +301,7 @@ STATIC mp_obj_t aes_process(size_t n_args, const mp_obj_t *args, bool encrypt) {
         if ((encrypt && self->key_type == AES_KEYTYPE_DEC) ||
             (!encrypt && self->key_type == AES_KEYTYPE_ENC)) {
 
-            mp_raise_ValueError("can't encrypt & decrypt");
+            mp_raise_ValueError(MP_ERROR_TEXT("can't encrypt & decrypt"));
         }
     }
 
@@ -353,26 +353,26 @@ STATIC const mp_obj_type_t ucryptolib_aes_type = {
     { &mp_type_type },
     .name = MP_QSTR_aes,
     .make_new = ucryptolib_aes_make_new,
-    .locals_dict = (void*)&ucryptolib_aes_locals_dict,
+    .locals_dict = (void *)&ucryptolib_aes_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t mp_module_ucryptolib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ucryptolib) },
     { MP_ROM_QSTR(MP_QSTR_aes), MP_ROM_PTR(&ucryptolib_aes_type) },
-#if MICROPY_PY_UCRYPTOLIB_CONSTS
+    #if MICROPY_PY_UCRYPTOLIB_CONSTS
     { MP_ROM_QSTR(MP_QSTR_MODE_ECB), MP_ROM_INT(UCRYPTOLIB_MODE_ECB) },
     { MP_ROM_QSTR(MP_QSTR_MODE_CBC), MP_ROM_INT(UCRYPTOLIB_MODE_CBC) },
     #if MICROPY_PY_UCRYPTOLIB_CTR
     { MP_ROM_QSTR(MP_QSTR_MODE_CTR), MP_ROM_INT(UCRYPTOLIB_MODE_CTR) },
     #endif
-#endif
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ucryptolib_globals, mp_module_ucryptolib_globals_table);
 
 const mp_obj_module_t mp_module_ucryptolib = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ucryptolib_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_ucryptolib_globals,
 };
 
-#endif //MICROPY_PY_UCRYPTOLIB
+#endif // MICROPY_PY_UCRYPTOLIB

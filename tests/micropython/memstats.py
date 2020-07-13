@@ -3,8 +3,8 @@
 import micropython
 
 # these functions are not always available
-if not hasattr(micropython, 'mem_total'):
-    print('SKIP')
+if not hasattr(micropython, "mem_total"):
+    print("SKIP")
 else:
     t = micropython.mem_total()
     c = micropython.mem_current()

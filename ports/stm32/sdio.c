@@ -125,7 +125,7 @@ void SDMMC1_IRQHandler(void) {
         #if defined(STM32H7)
         if (!sdmmc_dma) {
             while (sdmmc_buf_cur < sdmmc_buf_top && (SDMMC1->STA & SDMMC_STA_DPSMACT) && !(SDMMC1->STA & SDMMC_STA_RXFIFOE)) {
-                *(uint32_t*)sdmmc_buf_cur = SDMMC1->FIFO;
+                *(uint32_t *)sdmmc_buf_cur = SDMMC1->FIFO;
                 sdmmc_buf_cur += 4;
             }
         }
@@ -145,8 +145,8 @@ void SDMMC1_IRQHandler(void) {
                 | (sdmmc_dma << SDMMC_DCTRL_DMAEN_Pos)
                 #endif
                 | (!sdmmc_write) << SDMMC_DCTRL_DTDIR_Pos
-                | SDMMC_DCTRL_DTEN
-                ;
+                    | SDMMC_DCTRL_DTEN
+            ;
             if (!sdmmc_dma) {
                 SDMMC1->MASK |= SDMMC_MASK_TXFIFOHEIE;
             }
@@ -160,7 +160,7 @@ void SDMMC1_IRQHandler(void) {
         // check if there is some remaining data in RXFIFO
         if (!sdmmc_dma) {
             while (SDMMC1->STA & SDMMC_STA_RXDAVL) {
-                *(uint32_t*)sdmmc_buf_cur = SDMMC1->FIFO;
+                *(uint32_t *)sdmmc_buf_cur = SDMMC1->FIFO;
                 sdmmc_buf_cur += 4;
             }
         }
@@ -174,7 +174,7 @@ void SDMMC1_IRQHandler(void) {
         if (!sdmmc_dma && sdmmc_write) {
             // write up to 8 words to fifo
             for (size_t i = 8; i && sdmmc_buf_cur < sdmmc_buf_top; --i) {
-                SDMMC1->FIFO = *(uint32_t*)sdmmc_buf_cur;
+                SDMMC1->FIFO = *(uint32_t *)sdmmc_buf_cur;
                 sdmmc_buf_cur += 4;
             }
             if (sdmmc_buf_cur >= sdmmc_buf_top) {
@@ -186,7 +186,7 @@ void SDMMC1_IRQHandler(void) {
         if (!sdmmc_dma && !sdmmc_write) {
             // read up to 8 words from fifo
             for (size_t i = 8; i && sdmmc_buf_cur < sdmmc_buf_top; --i) {
-                *(uint32_t*)sdmmc_buf_cur = SDMMC1->FIFO;
+                *(uint32_t *)sdmmc_buf_cur = SDMMC1->FIFO;
                 sdmmc_buf_cur += 4;
             }
         }
@@ -336,7 +336,7 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
             | write << 6 // DIR mem-to-periph
             | 1 << 5 // PFCTRL periph is flow controller
             | 1 << 0 // EN
-            ;
+        ;
         #else
         SDMMC1->IDMABASE0 = (uint32_t)buf;
         SDMMC1->IDMACTRL = SDMMC_IDMA_IDMAEN;
@@ -360,8 +360,8 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
             | (dma << SDMMC_DCTRL_DMAEN_Pos)
             #endif
             | (!write) << SDMMC_DCTRL_DTDIR_Pos
-            | SDMMC_DCTRL_DTEN
-            ;
+                | SDMMC_DCTRL_DTEN
+        ;
     }
 
     SDMMC1->ARG = arg;
@@ -372,8 +372,8 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
     sdmmc_write = write;
     sdmmc_dma = dma;
     sdmmc_error = 0;
-    sdmmc_buf_cur = (uint8_t*)buf;
-    sdmmc_buf_top = (uint8_t*)buf + len;
+    sdmmc_buf_cur = (uint8_t *)buf;
+    sdmmc_buf_top = (uint8_t *)buf + len;
     SDMMC1->MASK = (SDMMC1->MASK & SDMMC_MASK_SDIOITIE) | SDMMC_MASK_CMDRENDIE | SDMMC_MASK_DATAENDIE | SDMMC_MASK_RXFIFOHFIE | 0x3f;
 
     // wait to complete transfer

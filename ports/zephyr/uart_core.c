@@ -36,23 +36,23 @@
 
 // Receive single character
 int mp_hal_stdin_rx_chr(void) {
-#ifdef CONFIG_CONSOLE_SUBSYS
+    #ifdef CONFIG_CONSOLE_SUBSYS
     return console_getchar();
-#else
+    #else
     return zephyr_getchar();
-#endif
+    #endif
 }
 
 // Send string of given length
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
-#ifdef CONFIG_CONSOLE_SUBSYS
+    #ifdef CONFIG_CONSOLE_SUBSYS
     while (len--) {
         char c = *str++;
         while (console_putchar(c) == -1) {
-            k_sleep(1);
+            k_msleep(1);
         }
     }
-#else
+    #else
     static struct device *uart_console_dev;
     if (uart_console_dev == NULL) {
         uart_console_dev = device_get_binding(CONFIG_UART_CONSOLE_ON_DEV_NAME);
@@ -61,5 +61,5 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     while (len--) {
         uart_poll_out(uart_console_dev, *str++);
     }
-#endif
+    #endif
 }

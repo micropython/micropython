@@ -1,11 +1,22 @@
-# Makefile directives for Apache mynewt nimble BLE component
+# Makefile directives for Apache Mynewt NimBLE component
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
 
-NIMBLE_LIB_DIR = lib/mynewt-nimble
+EXTMOD_SRC_C += extmod/nimble/modbluetooth_nimble.c
+
+CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE=1
+
 NIMBLE_EXTMOD_DIR = extmod/nimble
 
-SRC_LIB += $(addprefix $(NIMBLE_LIB_DIR)/, \
+# Use NimBLE from the submodule in lib/mynewt-nimble by default,
+# allowing a port to use their own system version (e.g. ESP32).
+MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY ?= 0
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY),0)
+
+NIMBLE_LIB_DIR = lib/mynewt-nimble
+
+LIB_SRC_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 	$(addprefix ext/tinycrypt/src/, \
 		aes_encrypt.c \
 		cmac_mode.c \
@@ -29,7 +40,6 @@ SRC_LIB += $(addprefix $(NIMBLE_LIB_DIR)/, \
 		ble_hs.c \
 		ble_hs_cfg.c \
 		ble_hs_conn.c \
-		ble_hs_dbg.c \
 		ble_hs_flow.c \
 		ble_hs_hci.c \
 		ble_hs_hci_cmd.c \
@@ -73,10 +83,8 @@ SRC_LIB += $(addprefix $(NIMBLE_LIB_DIR)/, \
 
 EXTMOD_SRC_C += $(addprefix $(NIMBLE_EXTMOD_DIR)/, \
 	nimble/npl_os.c \
-	nimble/hci_uart.c \
+	hal/hal_uart.c \
 	)
-
-CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE=1
 
 INC += -I$(TOP)/$(NIMBLE_EXTMOD_DIR)
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)
@@ -91,5 +99,7 @@ INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/uart/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/porting/nimble/include
 
 $(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-maybe-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format
+
+endif
 
 endif

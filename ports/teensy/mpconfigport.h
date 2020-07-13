@@ -73,24 +73,24 @@ typedef long mp_off_t;
 // to know the machine-specific values, see irq.h.
 
 #ifndef __disable_irq
-#define __disable_irq() __asm__ volatile("CPSID i");
+#define __disable_irq() __asm__ volatile ("CPSID i");
 #endif
 
-__attribute__(( always_inline )) static inline uint32_t __get_PRIMASK(void) {
+__attribute__((always_inline)) static inline uint32_t __get_PRIMASK(void) {
     uint32_t result;
     __asm volatile ("MRS %0, primask" : "=r" (result));
-    return(result);
+    return result;
 }
 
-__attribute__(( always_inline )) static inline void __set_PRIMASK(uint32_t priMask) {
+__attribute__((always_inline)) static inline void __set_PRIMASK(uint32_t priMask) {
     __asm volatile ("MSR primask, %0" : : "r" (priMask) : "memory");
 }
 
-__attribute__(( always_inline )) static inline void enable_irq(mp_uint_t state) {
+__attribute__((always_inline)) static inline void enable_irq(mp_uint_t state) {
     __set_PRIMASK(state);
 }
 
-__attribute__(( always_inline )) static inline mp_uint_t disable_irq(void) {
+__attribute__((always_inline)) static inline mp_uint_t disable_irq(void) {
     mp_uint_t state = __get_PRIMASK();
     __disable_irq();
     return state;

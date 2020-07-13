@@ -1,0 +1,7 @@
+MCU_SERIES = MIMXRT1021
+MCU_VARIANT = MIMXRT1021DAG5A
+
+JLINK_PATH ?= /media/RT1020-EVK/
+
+deploy: $(BUILD)/firmware.bin
+	cp $< $(JLINK_PATH)

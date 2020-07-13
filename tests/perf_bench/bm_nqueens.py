@@ -19,7 +19,7 @@ def permutations(iterable, r=None):
         for i in reversed(range(r)):
             cycles[i] -= 1
             if cycles[i] == 0:
-                indices[i:] = indices[i + 1:] + indices[i:i + 1]
+                indices[i:] = indices[i + 1 :] + indices[i : i + 1]
                 cycles[i] = n - i
             else:
                 j = cycles[i]
@@ -29,6 +29,7 @@ def permutations(iterable, r=None):
         else:
             return
 
+
 # From http://code.activestate.com/recipes/576647/
 def n_queens(queen_count):
     """N-Queens solver.
@@ -37,9 +38,9 @@ def n_queens(queen_count):
     """
     cols = range(queen_count)
     for vec in permutations(cols):
-        if (queen_count == len(set(vec[i] + i for i in cols))
-                        == len(set(vec[i] - i for i in cols))):
+        if queen_count == len(set(vec[i] + i for i in cols)) == len(set(vec[i] - i for i in cols)):
             yield vec
+
 
 ###########################################################################
 # Benchmark interface
@@ -51,12 +52,16 @@ bm_params = {
     (5000, 100): (1, 8),
 }
 
+
 def bm_setup(params):
     res = None
+
     def run():
         nonlocal res
         for _ in range(params[0]):
             res = len(list(n_queens(params[1])))
+
     def result():
         return params[0] * 10 ** (params[1] - 3), res
+
     return run, result

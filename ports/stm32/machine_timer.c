@@ -56,7 +56,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     if (args[ARG_freq].u_obj != mp_const_none) {
         // Frequency specified in Hz
         #if MICROPY_PY_BUILTINS_FLOAT
-        self->delta_ms = 1000 / mp_obj_get_float(args[ARG_freq].u_obj);
+        self->delta_ms = (uint32_t)(MICROPY_FLOAT_CONST(1000.0) / mp_obj_get_float(args[ARG_freq].u_obj));
         #else
         self->delta_ms = 1000 / mp_obj_get_int(args[ARG_freq].u_obj);
         #endif
@@ -87,7 +87,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         ++args;
     }
     if (id != -1) {
-        mp_raise_ValueError("Timer doesn't exist");
+        mp_raise_ValueError(MP_ERROR_TEXT("Timer doesn't exist"));
     }
 
     if (n_args > 0 || n_kw > 0) {
@@ -128,5 +128,5 @@ const mp_obj_type_t machine_timer_type = {
     .name = MP_QSTR_Timer,
     .print = machine_timer_print,
     .make_new = machine_timer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_timer_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_timer_locals_dict,
 };

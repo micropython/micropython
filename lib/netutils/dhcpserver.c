@@ -99,7 +99,7 @@ static int dhcp_socket_new_dgram(struct udp_pcb **udp, void *cb_data, udp_recv_f
     }
 
     // Register callback
-    udp_recv(*udp, cb_udp_recv, (void*)cb_data);
+    udp_recv(*udp, cb_udp_recv, (void *)cb_data);
 
     return 0; // success
 }
@@ -202,7 +202,7 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
     dhcp_msg.op = DHCPOFFER;
     memcpy(&dhcp_msg.yiaddr, &d->ip.addr, 4);
 
-    uint8_t *opt = (uint8_t*)&dhcp_msg.options;
+    uint8_t *opt = (uint8_t *)&dhcp_msg.options;
     opt += 4; // assume magic cookie: 99, 130, 83, 99
 
     switch (opt[2]) {
@@ -281,7 +281,7 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
     opt_write_u32(&opt, DHCP_OPT_DNS, DEFAULT_DNS); // can have mulitple addresses
     opt_write_u32(&opt, DHCP_OPT_IP_LEASE_TIME, DEFAULT_LEASE_TIME_S);
     *opt++ = DHCP_OPT_END;
-    dhcp_socket_sendto(&d->udp, &dhcp_msg, opt - (uint8_t*)&dhcp_msg, 0xffffffff, PORT_DHCP_CLIENT);
+    dhcp_socket_sendto(&d->udp, &dhcp_msg, opt - (uint8_t *)&dhcp_msg, 0xffffffff, PORT_DHCP_CLIENT);
 
 ignore_request:
     pbuf_free(p);

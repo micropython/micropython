@@ -45,7 +45,6 @@
 #include "systick.h"
 #include "prcm.h"
 #include "pin.h"
-#include "mpexception.h"
 #include "telnet.h"
 #include "pybuart.h"
 #include "utils.h"

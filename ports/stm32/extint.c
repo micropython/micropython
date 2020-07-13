@@ -207,10 +207,10 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         // get both the port number and line number.
         v_line = mp_obj_get_int(pin_obj);
         if (v_line < 16) {
-            mp_raise_msg_varg(&mp_type_ValueError, "ExtInt vector %d < 16, use a Pin object", v_line);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("ExtInt vector %d < 16, use a Pin object"), v_line);
         }
         if (v_line >= EXTI_NUM_VECTORS) {
-            mp_raise_msg_varg(&mp_type_ValueError, "ExtInt vector %d >= max of %d", v_line, EXTI_NUM_VECTORS);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("ExtInt vector %d >= max of %d"), v_line, EXTI_NUM_VECTORS);
         }
     } else {
         pin = pin_find(pin_obj);
@@ -222,17 +222,17 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         mode != GPIO_MODE_EVT_RISING &&
         mode != GPIO_MODE_EVT_FALLING &&
         mode != GPIO_MODE_EVT_RISING_FALLING) {
-        mp_raise_msg_varg(&mp_type_ValueError, "invalid ExtInt Mode: %d", mode);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid ExtInt Mode: %d"), mode);
     }
     if (pull != GPIO_NOPULL &&
         pull != GPIO_PULLUP &&
         pull != GPIO_PULLDOWN) {
-        mp_raise_msg_varg(&mp_type_ValueError, "invalid ExtInt Pull: %d", pull);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid ExtInt Pull: %d"), pull);
     }
 
     mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[v_line];
     if (!override_callback_obj && *cb != mp_const_none && callback_obj != mp_const_none) {
-        mp_raise_msg_varg(&mp_type_ValueError, "ExtInt vector %d is already in use", v_line);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("ExtInt vector %d is already in use"), v_line);
     }
 
     // We need to update callback atomically, so we disable the line
@@ -279,11 +279,11 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
     mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
     if (*cb != mp_const_none && MP_OBJ_FROM_PTR(pin) != pyb_extint_callback_arg[line]) {
         if (mp_obj_is_small_int(pyb_extint_callback_arg[line])) {
-            mp_raise_msg_varg(&mp_type_OSError, "ExtInt vector %d is already in use", line);
+            mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("ExtInt vector %d is already in use"), line);
         } else {
             const pin_obj_t *other_pin = MP_OBJ_TO_PTR(pyb_extint_callback_arg[line]);
             mp_raise_msg_varg(&mp_type_OSError,
-                "IRQ resource already taken by Pin('%q')", other_pin->name);
+                MP_ERROR_TEXT("IRQ resource already taken by Pin('%q')"), other_pin->name);
         }
     }
 
@@ -433,13 +433,13 @@ void extint_swint(uint line) {
         return;
     }
     // we need 0 to 1 transition to trigger the interrupt
-#if defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+    #if defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
     EXTI->SWIER1 &= ~(1 << line);
     EXTI->SWIER1 |= (1 << line);
-#else
+    #else
     EXTI->SWIER &= ~(1 << line);
     EXTI->SWIER |= (1 << line);
-#endif
+    #endif
 }
 
 void extint_trigger_mode(uint line, uint32_t mode) {
@@ -624,7 +624,7 @@ const mp_obj_type_t extint_type = {
     .name = MP_QSTR_ExtInt,
     .print = extint_obj_print,
     .make_new = extint_make_new,
-    .locals_dict = (mp_obj_dict_t*)&extint_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&extint_locals_dict,
 };
 
 void extint_init0(void) {
@@ -634,7 +634,7 @@ void extint_init0(void) {
         }
         MP_STATE_PORT(pyb_extint_callback)[i] = mp_const_none;
         pyb_extint_mode[i] = EXTI_Mode_Interrupt;
-   }
+    }
 }
 
 // Interrupt handler

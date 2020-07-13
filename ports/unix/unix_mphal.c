@@ -132,7 +132,7 @@ static int call_dupterm_read(size_t idx) {
             return -1;
         }
         nlr_pop();
-        return *(byte*)bufinfo.buf;
+        return *(byte *)bufinfo.buf;
     } else {
         // Temporarily disable dupterm to avoid infinite recursion
         mp_obj_t save_term = MP_STATE_VM(dupterm_objs[idx]);
@@ -147,13 +147,12 @@ static int call_dupterm_read(size_t idx) {
 #endif
 
 int mp_hal_stdin_rx_chr(void) {
-    unsigned char c;
-#if MICROPY_PY_OS_DUPTERM
+    #if MICROPY_PY_OS_DUPTERM
     // TODO only support dupterm one slot at the moment
     if (MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL) {
         int c;
         do {
-             c = call_dupterm_read(0);
+            c = call_dupterm_read(0);
         } while (c == -2);
         if (c == -1) {
             goto main_term;
@@ -162,29 +161,25 @@ int mp_hal_stdin_rx_chr(void) {
             c = '\r';
         }
         return c;
-    } else {
-        main_term:;
-#endif
-        MP_THREAD_GIL_EXIT();
-        int ret = read(0, &c, 1);
-        MP_THREAD_GIL_ENTER();
-        if (ret == 0) {
-            c = 4; // EOF, ctrl-D
-        } else if (c == '\n') {
-            c = '\r';
-        }
-        return c;
-#if MICROPY_PY_OS_DUPTERM
     }
-#endif
+main_term:;
+    #endif
+
+    unsigned char c;
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, read(STDIN_FILENO, &c, 1), {});
+    if (ret == 0) {
+        c = 4; // EOF, ctrl-D
+    } else if (c == '\n') {
+        c = '\r';
+    }
+    return c;
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    MP_THREAD_GIL_EXIT();
-    int ret = write(1, str, len);
-    MP_THREAD_GIL_ENTER();
+    ssize_t ret;
+    MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
     mp_uos_dupterm_tx_strn(str, len);
-    (void)ret; // to suppress compiler warning
 }
 
 // cooked is same as uncooked because the terminal does some postprocessing

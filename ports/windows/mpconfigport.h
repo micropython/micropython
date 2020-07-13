@@ -31,7 +31,7 @@
 #define MICROPY_USE_READLINE        (1)
 #endif
 
-#define MICROPY_ALLOC_PATH_MAX      (260) //see minwindef.h for msvc or limits.h for mingw
+#define MICROPY_ALLOC_PATH_MAX      (260) // see minwindef.h for msvc or limits.h for mingw
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
@@ -62,6 +62,7 @@
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
+#define MICROPY_VFS_POSIX_FILE      (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
@@ -133,20 +134,23 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE     (256)
 #define MICROPY_KBD_EXCEPTION       (1)
 
+#define mp_type_fileio mp_type_vfs_posix_fileio
+#define mp_type_textio mp_type_vfs_posix_textio
+
 #define MICROPY_PORT_INIT_FUNC      init()
 #define MICROPY_PORT_DEINIT_FUNC    deinit()
 
 // type definitions for the specific machine
 
-#if defined( __MINGW32__ ) && defined( __LP64__ )
+#if defined(__MINGW32__) && defined(__LP64__)
 typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
-#elif defined ( __MINGW32__ ) && defined( _WIN64 )
+#elif defined(__MINGW32__) && defined(_WIN64)
 #include <stdint.h>
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;
 #define MP_SSIZE_MAX __INT64_MAX__
-#elif defined ( _MSC_VER ) && defined( _WIN64 )
+#elif defined(_MSC_VER) && defined(_WIN64)
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;
 #else
@@ -155,6 +159,8 @@ typedef unsigned __int64 mp_uint_t;
 typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 #endif
+
+typedef long suseconds_t;
 
 // Just assume Windows is little-endian - mingw32 gcc doesn't
 // define standard endianness macros.
@@ -165,15 +171,6 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef long long mp_off_t;
 #else
 typedef long mp_off_t;
-#endif
-
-#if MICROPY_PY_OS_DUPTERM
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
-void mp_hal_dupterm_tx_strn(const char *str, size_t len);
-#else
-#include <unistd.h>
-#define MP_PLAT_PRINT_STRN(str, len) do { int ret = write(1, str, len); (void)ret; } while (0)
-#define mp_hal_dupterm_tx_strn(s, l)
 #endif
 
 #define MICROPY_PORT_BUILTINS \
@@ -211,7 +208,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 // Sanity check
 
-#if ( _MSC_VER < 1800 )
+#if (_MSC_VER < 1800)
     #error Can only build with Visual Studio 2013 toolset
 #endif
 
@@ -223,13 +220,21 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
-#define MICROPY_PORT_CONSTANTS      { "dummy", 0 } //can't have zero-sized array
+#define MICROPY_PORT_CONSTANTS      { "dummy", 0 } // can't have zero-sized array
 #ifdef _WIN64
 #define MP_SSIZE_MAX                _I64_MAX
 #else
 #define MP_SSIZE_MAX                _I32_MAX
 #endif
 
+// VC++ 12.0 fixes
+#if (_MSC_VER <= 1800)
+#define MICROPY_PY_MATH_ATAN2_FIX_INFNAN (1)
+#define MICROPY_PY_MATH_FMOD_FIX_INFNAN (1)
+#ifdef _WIN64
+#define MICROPY_PY_MATH_MODF_FIX_NEGZERO (1)
+#endif
+#endif
 
 // CL specific definitions
 
@@ -243,12 +248,12 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
 #ifdef _WIN64
 #define SSIZE_MAX                   _I64_MAX
-typedef __int64                     ssize_t;
+typedef __int64 ssize_t;
 #else
 #define SSIZE_MAX                   _I32_MAX
-typedef int                         ssize_t;
+typedef int ssize_t;
 #endif
-typedef mp_off_t                    off_t;
+typedef mp_off_t off_t;
 
 
 // Put static/global variables in sections with a known name
@@ -262,7 +267,7 @@ typedef mp_off_t                    off_t;
 
 // System headers (needed e.g. for nlr.h)
 
-#include <stddef.h> //for NULL
-#include <assert.h> //for assert
+#include <stddef.h> // for NULL
+#include <assert.h> // for assert
 
 #endif

@@ -50,7 +50,7 @@ STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         netif->ip_addr.addr >> 8 & 0xff,
         netif->ip_addr.addr >> 16 & 0xff,
         netif->ip_addr.addr >> 24
-    );
+        );
 }
 
 STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -100,7 +100,7 @@ STATIC mp_obj_t network_lan_status(size_t n_args, const mp_obj_t *args) {
         return MP_OBJ_NEW_SMALL_INT(eth_link_status(self->eth));
     }
 
-    mp_raise_ValueError("unknown status param");
+    mp_raise_ValueError(MP_ERROR_TEXT("unknown status param"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_lan_status_obj, 1, 2, network_lan_status);
 
@@ -110,7 +110,7 @@ STATIC mp_obj_t network_lan_config(size_t n_args, const mp_obj_t *args, mp_map_t
     if (kwargs->used == 0) {
         // Get config value
         if (n_args != 2) {
-            mp_raise_TypeError("must query one param");
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
         }
 
         switch (mp_obj_str_get_qstr(args[1])) {
@@ -118,12 +118,12 @@ STATIC mp_obj_t network_lan_config(size_t n_args, const mp_obj_t *args, mp_map_t
                 return mp_obj_new_bytes(&eth_netif(self->eth)->hwaddr[0], 6);
             }
             default:
-                mp_raise_ValueError("unknown config param");
+                mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
     } else {
         // Set config value(s)
         if (n_args != 1) {
-            mp_raise_TypeError("can't specify pos and kw args");
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
         }
 
         for (size_t i = 0; i < kwargs->alloc; ++i) {
@@ -135,7 +135,7 @@ STATIC mp_obj_t network_lan_config(size_t n_args, const mp_obj_t *args, mp_map_t
                         break;
                     }
                     default:
-                        mp_raise_ValueError("unknown config param");
+                        mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }
             }
         }
@@ -159,7 +159,7 @@ const mp_obj_type_t network_lan_type = {
     .name = MP_QSTR_LAN,
     .print = network_lan_print,
     .make_new = network_lan_make_new,
-    .locals_dict = (mp_obj_dict_t*)&network_lan_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&network_lan_locals_dict,
 };
 
 #endif // defined(MICROPY_HW_ETH_MDC)

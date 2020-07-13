@@ -188,7 +188,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             if (cr3 & USART_CR3_RTSE) {
                 mp_print_str(print, "RTS");
                 if (cr3 & USART_CR3_CTSE) {
-                   mp_print_str(print, "|");
+                    mp_print_str(print, "|");
                 }
             }
             if (cr3 & USART_CR3_CTSE) {
@@ -235,12 +235,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         mp_arg_val_t baudrate, bits, parity, stop, flow, timeout, timeout_char, rxbuf, read_buf_len;
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
-
-    // static UARTs are used for internal purposes and shouldn't be reconfigured
-    if (self->is_static) {
-        mp_raise_ValueError("UART is static and can't be init'd");
-    }
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
 
     // baudrate
     uint32_t baudrate = args.baudrate.u_int;
@@ -266,23 +261,33 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         bits = UART_WORDLENGTH_7B;
     #endif
     } else {
-        mp_raise_ValueError("unsupported combination of bits and parity");
+        mp_raise_ValueError(MP_ERROR_TEXT("unsupported combination of bits and parity"));
     }
 
     // stop bits
     uint32_t stop;
     switch (args.stop.u_int) {
-        case 1: stop = UART_STOPBITS_1; break;
-        default: stop = UART_STOPBITS_2; break;
+        case 1:
+            stop = UART_STOPBITS_1;
+            break;
+        default:
+            stop = UART_STOPBITS_2;
+            break;
     }
 
     // flow control
     uint32_t flow = args.flow.u_int;
 
+    // Save attach_to_repl setting because uart_init will disable it.
+    bool attach_to_repl = self->attached_to_repl;
+
     // init UART (if it fails, it's because the port doesn't exist)
     if (!uart_init(self, baudrate, bits, parity, stop, flow)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", self->uart_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), self->uart_id);
     }
+
+    // Restore attach_to_repl setting so UART still works if attached to dupterm.
+    uart_attach_to_repl(self, attach_to_repl);
 
     // set timeout
     self->timeout = args.timeout.u_int;
@@ -296,20 +301,28 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         self->timeout_char = min_timeout_char;
     }
 
-    // setup the read buffer
-    m_del(byte, self->read_buf, self->read_buf_len << self->char_width);
-    if (args.rxbuf.u_int >= 0) {
-        // rxbuf overrides legacy read_buf_len
-        args.read_buf_len.u_int = args.rxbuf.u_int;
-    }
-    if (args.read_buf_len.u_int <= 0) {
-        // no read buffer
-        uart_set_rxbuf(self, 0, NULL);
+    if (self->is_static) {
+        // Static UARTs have fixed memory for the rxbuf and can't be reconfigured.
+        if (args.rxbuf.u_int >= 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("UART is static and rxbuf can't be changed"));
+        }
+        uart_set_rxbuf(self, self->read_buf_len, self->read_buf);
     } else {
-        // read buffer using interrupts
-        size_t len = args.read_buf_len.u_int + 1; // +1 to adjust for usable length of buffer
-        uint8_t *buf = m_new(byte, len << self->char_width);
-        uart_set_rxbuf(self, len, buf);
+        // setup the read buffer
+        m_del(byte, self->read_buf, self->read_buf_len << self->char_width);
+        if (args.rxbuf.u_int >= 0) {
+            // rxbuf overrides legacy read_buf_len
+            args.read_buf_len.u_int = args.rxbuf.u_int;
+        }
+        if (args.read_buf_len.u_int <= 0) {
+            // no read buffer
+            uart_set_rxbuf(self, 0, NULL);
+        } else {
+            // read buffer using interrupts
+            size_t len = args.read_buf_len.u_int + 1; // +1 to adjust for usable length of buffer
+            uint8_t *buf = m_new(byte, len << self->char_width);
+            uart_set_rxbuf(self, len, buf);
+        }
     }
 
     // compute actual baudrate that was configured
@@ -323,7 +336,7 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const 
         baudrate_diff = baudrate - actual_baudrate;
     }
     if (20 * baudrate_diff > actual_baudrate) {
-        mp_raise_msg_varg(&mp_type_ValueError, "set baudrate %d is not within 5%% of desired value", actual_baudrate);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("set baudrate %d is not within 5%% of desired value"), actual_baudrate);
     }
 
     return mp_const_none;
@@ -394,12 +407,12 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
             uart_id = PYB_UART_10;
         #endif
         } else {
-            mp_raise_msg_varg(&mp_type_ValueError, "UART(%s) doesn't exist", port);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%s) doesn't exist"), port);
         }
     } else {
         uart_id = mp_obj_get_int(args[0]);
         if (!uart_exists(uart_id)) {
-            mp_raise_msg_varg(&mp_type_ValueError, "UART(%d) doesn't exist", uart_id);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) doesn't exist"), uart_id);
         }
     }
 
@@ -513,14 +526,14 @@ STATIC mp_obj_t pyb_uart_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         // Check the handler
         mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
         if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
-            mp_raise_ValueError("handler must be None or callable");
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
         }
 
         // Check the trigger
         mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
         mp_uint_t not_supported = trigger & ~mp_irq_allowed;
         if (trigger != 0 && not_supported) {
-            mp_raise_msg_varg(&mp_type_ValueError, "trigger 0x%08x unsupported", not_supported);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%08x unsupported"), not_supported);
         }
 
         // Reconfigure user IRQs
@@ -596,7 +609,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     for (;;) {
         int data = uart_rx_char(self);
         if (self->char_width == CHAR_WIDTH_9BIT) {
-            *(uint16_t*)buf = data;
+            *(uint16_t *)buf = data;
             buf += 2;
         } else {
             *buf++ = data;
@@ -669,5 +682,5 @@ const mp_obj_type_t pyb_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_uart_locals_dict,
 };

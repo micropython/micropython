@@ -100,22 +100,46 @@ const spi_t spi_obj[6] = {
 #if defined(STM32H7)
 // STM32H7 HAL requires SPI IRQs to be enabled and handled.
 #if defined(MICROPY_HW_SPI1_SCK)
-void SPI1_IRQHandler(void) { IRQ_ENTER(SPI1_IRQn); HAL_SPI_IRQHandler(&SPIHandle1); IRQ_EXIT(SPI1_IRQn); }
+void SPI1_IRQHandler(void) {
+    IRQ_ENTER(SPI1_IRQn);
+    HAL_SPI_IRQHandler(&SPIHandle1);
+    IRQ_EXIT(SPI1_IRQn);
+}
 #endif
 #if defined(MICROPY_HW_SPI2_SCK)
-void SPI2_IRQHandler(void) { IRQ_ENTER(SPI2_IRQn); HAL_SPI_IRQHandler(&SPIHandle2); IRQ_EXIT(SPI2_IRQn); }
+void SPI2_IRQHandler(void) {
+    IRQ_ENTER(SPI2_IRQn);
+    HAL_SPI_IRQHandler(&SPIHandle2);
+    IRQ_EXIT(SPI2_IRQn);
+}
 #endif
 #if defined(MICROPY_HW_SPI3_SCK)
-void SPI3_IRQHandler(void) { IRQ_ENTER(SPI3_IRQn); HAL_SPI_IRQHandler(&SPIHandle3); IRQ_EXIT(SPI3_IRQn); }
+void SPI3_IRQHandler(void) {
+    IRQ_ENTER(SPI3_IRQn);
+    HAL_SPI_IRQHandler(&SPIHandle3);
+    IRQ_EXIT(SPI3_IRQn);
+}
 #endif
 #if defined(MICROPY_HW_SPI4_SCK)
-void SPI4_IRQHandler(void) { IRQ_ENTER(SPI4_IRQn); HAL_SPI_IRQHandler(&SPIHandle4); IRQ_EXIT(SPI4_IRQn); }
+void SPI4_IRQHandler(void) {
+    IRQ_ENTER(SPI4_IRQn);
+    HAL_SPI_IRQHandler(&SPIHandle4);
+    IRQ_EXIT(SPI4_IRQn);
+}
 #endif
 #if defined(MICROPY_HW_SPI5_SCK)
-void SPI5_IRQHandler(void) { IRQ_ENTER(SPI5_IRQn); HAL_SPI_IRQHandler(&SPIHandle5); IRQ_EXIT(SPI5_IRQn); }
+void SPI5_IRQHandler(void) {
+    IRQ_ENTER(SPI5_IRQn);
+    HAL_SPI_IRQHandler(&SPIHandle5);
+    IRQ_EXIT(SPI5_IRQn);
+}
 #endif
 #if defined(MICROPY_HW_SPI6_SCK)
-void SPI6_IRQHandler(void) { IRQ_ENTER(SPI6_IRQn); HAL_SPI_IRQHandler(&SPIHandle6); IRQ_EXIT(SPI6_IRQn); }
+void SPI6_IRQHandler(void) {
+    IRQ_ENTER(SPI6_IRQn);
+    HAL_SPI_IRQHandler(&SPIHandle6);
+    IRQ_EXIT(SPI6_IRQn);
+}
 #endif
 #endif
 
@@ -172,7 +196,7 @@ int spi_find_index(mp_obj_t id) {
             return 6;
         #endif
         }
-        mp_raise_msg_varg(&mp_type_ValueError, "SPI(%s) doesn't exist", port);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%s) doesn't exist"), port);
     } else {
         // given an integer id
         int spi_id = mp_obj_get_int(id);
@@ -180,7 +204,7 @@ int spi_find_index(mp_obj_t id) {
             && spi_obj[spi_id - 1].spi != NULL) {
             return spi_id;
         }
-        mp_raise_msg_varg(&mp_type_ValueError, "SPI(%d) doesn't exist", spi_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
 }
 
@@ -227,14 +251,23 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
             // prescaler not given, so select one that yields at most the requested baudrate
             prescale = (spi_get_source_freq(spi) + baudrate - 1) / baudrate;
         }
-        if (prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
-        else if (prescale <= 4) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
-        else if (prescale <= 8) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
-        else if (prescale <= 16) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16; }
-        else if (prescale <= 32) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; }
-        else if (prescale <= 64) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64; }
-        else if (prescale <= 128) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128; }
-        else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; }
+        if (prescale <= 2) {
+            init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+        } else if (prescale <= 4) {
+            init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+        } else if (prescale <= 8) {
+            init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+        } else if (prescale <= 16) {
+            init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+        } else if (prescale <= 32) {
+            init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+        } else if (prescale <= 64) {
+            init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+        } else if (prescale <= 128) {
+            init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+        } else {
+            init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+        }
     }
 
     if (polarity != -1) {
@@ -378,9 +411,9 @@ void spi_init(const spi_t *self, bool enable_nss_pin) {
     #if defined(STM32H7)
     NVIC_SetPriority(irqn, IRQ_PRI_SPI);
     HAL_NVIC_EnableIRQ(irqn);
-    #else 
+    #else
     (void)irqn;
-    #endif 
+    #endif
 }
 
 void spi_deinit(const spi_t *spi_obj) {
@@ -462,7 +495,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
     if (dest == NULL) {
         // send only
         if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
-            status = HAL_SPI_Transmit(self->spi, (uint8_t*)src, len, timeout);
+            status = HAL_SPI_Transmit(self->spi, (uint8_t *)src, len, timeout);
         } else {
             DMA_HandleTypeDef tx_dma;
             dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
@@ -472,7 +505,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             uint32_t t_start = HAL_GetTick();
             do {
                 uint32_t l = MIN(len, 65535);
-                status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t*)src, l);
+                status = HAL_SPI_Transmit_DMA(self->spi, (uint8_t *)src, l);
                 if (status != HAL_OK) {
                     break;
                 }
@@ -523,7 +556,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
     } else {
         // send and receive
         if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
-            status = HAL_SPI_TransmitReceive(self->spi, (uint8_t*)src, dest, len, timeout);
+            status = HAL_SPI_TransmitReceive(self->spi, (uint8_t *)src, dest, len, timeout);
         } else {
             DMA_HandleTypeDef tx_dma, rx_dma;
             dma_init(&tx_dma, self->tx_dma_descr, DMA_MEMORY_TO_PERIPH, self->spi);
@@ -535,7 +568,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             uint32_t t_start = HAL_GetTick();
             do {
                 uint32_t l = MIN(len, 65535);
-                status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t*)src, dest, l);
+                status = HAL_SPI_TransmitReceive_DMA(self->spi, (uint8_t *)src, dest, l);
                 if (status != HAL_OK) {
                     break;
                 }
@@ -561,21 +594,32 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     SPI_HandleTypeDef *spi = spi_obj->spi;
 
     uint spi_num = 1; // default to SPI1
-    if (0) { }
+    if (0) {
+    }
     #if defined(SPI2)
-    else if (spi->Instance == SPI2) { spi_num = 2; }
+    else if (spi->Instance == SPI2) {
+        spi_num = 2;
+    }
     #endif
     #if defined(SPI3)
-    else if (spi->Instance == SPI3) { spi_num = 3; }
+    else if (spi->Instance == SPI3) {
+        spi_num = 3;
+    }
     #endif
     #if defined(SPI4)
-    else if (spi->Instance == SPI4) { spi_num = 4; }
+    else if (spi->Instance == SPI4) {
+        spi_num = 4;
+    }
     #endif
     #if defined(SPI5)
-    else if (spi->Instance == SPI5) { spi_num = 5; }
+    else if (spi->Instance == SPI5) {
+        spi_num = 5;
+    }
     #endif
     #if defined(SPI6)
-    else if (spi->Instance == SPI6) { spi_num = 6; }
+    else if (spi->Instance == SPI6) {
+        spi_num = 6;
+    }
     #endif
 
     mp_printf(print, "SPI(%u", spi_num);
@@ -610,7 +654,7 @@ const spi_t *spi_from_mp_obj(mp_obj_t o) {
         machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         return self->spi;
     } else {
-        mp_raise_TypeError("expecting an SPI object");
+        mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
     }
 }
 
@@ -618,7 +662,7 @@ const spi_t *spi_from_mp_obj(mp_obj_t o) {
 // Implementation of low-level SPI C protocol
 
 STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
-    spi_proto_cfg_t *self = (spi_proto_cfg_t*)self_in;
+    spi_proto_cfg_t *self = (spi_proto_cfg_t *)self_in;
 
     switch (cmd) {
         case MP_SPI_IOCTL_INIT:
@@ -641,7 +685,7 @@ STATIC int spi_proto_ioctl(void *self_in, uint32_t cmd) {
 }
 
 STATIC void spi_proto_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    spi_proto_cfg_t *self = (spi_proto_cfg_t*)self_in;
+    spi_proto_cfg_t *self = (spi_proto_cfg_t *)self_in;
     spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 

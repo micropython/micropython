@@ -69,7 +69,7 @@ STATIC MP_DEFINE_CONST_DICT(uos_module_globals, uos_module_globals_table);
 
 const mp_obj_module_t mp_module_uos = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&uos_module_globals,
+    .globals = (mp_obj_dict_t *)&uos_module_globals,
 };
 
 #endif // MICROPY_PY_UOS

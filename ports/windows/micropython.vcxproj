@@ -86,9 +86,9 @@
     <ClCompile Include="@(PyCoreSource)" />
     <ClCompile Include="@(PyExtModSource)" />
     <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
+    <ClCompile Include="$(PyBaseDir)lib\utils\gchelper_generic.c" />
     <ClCompile Include="$(PyBaseDir)ports\windows\*.c" />
     <ClCompile Include="$(PyBaseDir)ports\windows\msvc\*.c" />
-    <ClCompile Include="$(PyBaseDir)ports\unix\file.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\input.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\main.c"/>

@@ -109,6 +109,7 @@ SECTIONS
         *py/nlr*.o*(.literal* .text*)
         *py/obj*.o*(.literal* .text*)
         *py/opmethods.o*(.literal* .text*)
+        *py/pairheap*.o*(.literal* .text*)
         *py/parse*.o*(.literal* .text*)
         *py/profile*.o*(.literal* .text*)
         *py/qstr.o*(.literal* .text*)
@@ -169,6 +170,7 @@ SECTIONS
         *modlwip.o(.literal* .text*)
         *modsocket.o(.literal* .text*)
         *modonewire.o(.literal* .text*)
+        *esp_mphal.o(.literal* .text*)
 
         /* we put as much rodata as possible in this section */
         /* note that only rodata accessed as a machine word is allowed here */

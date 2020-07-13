@@ -65,13 +65,13 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     if (can_obj->can_id == PYB_CAN_1) {
         init->MessageRAMOffset = 0;
     } else {
-        init->MessageRAMOffset = 2560/2;
+        init->MessageRAMOffset = 2560 / 2;
     }
 
     init->StdFiltersNbr = 64; // 128 / 2
     init->ExtFiltersNbr = 0; // Not used
 
-    init->TxEventsNbr  = 16; // 32 / 2
+    init->TxEventsNbr = 16;  // 32 / 2
     init->RxBuffersNbr = 32; // 64 / 2
     init->TxBuffersNbr = 16; // 32 / 2
 
@@ -200,33 +200,45 @@ void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank) {
 
 int can_receive(FDCAN_HandleTypeDef *can, int fifo, FDCAN_RxHeaderTypeDef *hdr, uint8_t *data, uint32_t timeout_ms) {
     volatile uint32_t *rxf, *rxa;
+    uint32_t fl;
+
     if (fifo == FDCAN_RX_FIFO0) {
         rxf = &can->Instance->RXF0S;
         rxa = &can->Instance->RXF0A;
+        fl = FDCAN_RXF0S_F0FL;
     } else {
         rxf = &can->Instance->RXF1S;
         rxa = &can->Instance->RXF1A;
+        fl = FDCAN_RXF1S_F1FL;
     }
 
     // Wait for a message to become available, with timeout
     uint32_t start = HAL_GetTick();
-    while ((*rxf & 7) == 0) {
-        MICROPY_EVENT_POLL_HOOK
-        if (HAL_GetTick() - start >= timeout_ms) {
-            return -MP_ETIMEDOUT;
+    while ((*rxf & fl) == 0) {
+        if (timeout_ms != HAL_MAX_DELAY) {
+            if (HAL_GetTick() - start >= timeout_ms) {
+                return -MP_ETIMEDOUT;
+            }
         }
+        MICROPY_EVENT_POLL_HOOK
     }
 
     // Get pointer to incoming message
-    uint32_t index = (can->Instance->RXF0S & FDCAN_RXF0S_F0GI) >> 8;
-    uint32_t *address = (uint32_t*)(can->msgRam.RxFIFO0SA + (index * can->Init.RxFifo0ElmtSize * 4));
+    uint32_t index, *address;
+    if (fifo == FDCAN_RX_FIFO0) {
+        index = (*rxf & FDCAN_RXF0S_F0GI) >> FDCAN_RXF0S_F0GI_Pos;
+        address = (uint32_t *)(can->msgRam.RxFIFO0SA + (index * can->Init.RxFifo0ElmtSize * 4));
+    } else {
+        index = (*rxf & FDCAN_RXF1S_F1GI) >> FDCAN_RXF1S_F1GI_Pos;
+        address = (uint32_t *)(can->msgRam.RxFIFO1SA + (index * can->Init.RxFifo1ElmtSize * 4));
+    }
 
     // Parse header of message
     hdr->IdType = *address & FDCAN_ELEMENT_MASK_XTD;
-    if(hdr->IdType == FDCAN_STANDARD_ID) {
-      hdr->Identifier = (*address & FDCAN_ELEMENT_MASK_STDID) >> 18;
+    if (hdr->IdType == FDCAN_STANDARD_ID) {
+        hdr->Identifier = (*address & FDCAN_ELEMENT_MASK_STDID) >> 18;
     } else {
-      hdr->Identifier = *address & FDCAN_ELEMENT_MASK_EXTID;
+        hdr->Identifier = *address & FDCAN_ELEMENT_MASK_EXTID;
     }
     hdr->RxFrameType = *address & FDCAN_ELEMENT_MASK_RTR;
     hdr->ErrorStateIndicator = *address++ & FDCAN_ELEMENT_MASK_ESI;
@@ -238,9 +250,9 @@ int can_receive(FDCAN_HandleTypeDef *can, int fifo, FDCAN_RxHeaderTypeDef *hdr, 
     hdr->IsFilterMatchingFrame = (*address++ & FDCAN_ELEMENT_MASK_ANMF) >> 31;
 
     // Copy data
-    uint8_t *pdata = (uint8_t*)address;
-    for(uint32_t i = 0; i < 8; ++i) { // TODO use DLCtoBytes[hdr->DataLength] for length > 8
-      *data++ = *pdata++;
+    uint8_t *pdata = (uint8_t *)address;
+    for (uint32_t i = 0; i < 8; ++i) { // TODO use DLCtoBytes[hdr->DataLength] for length > 8
+        *data++ = *pdata++;
     }
 
     // Release (free) message from FIFO
@@ -268,7 +280,7 @@ STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
     switch (*state) {
         case RX_STATE_FIFO_EMPTY:
             __HAL_FDCAN_DISABLE_IT(&self->can,  (fifo_id == FDCAN_RX_FIFO0) ?
-                    FDCAN_IT_RX_FIFO0_NEW_MESSAGE : FDCAN_IT_RX_FIFO1_NEW_MESSAGE);
+                FDCAN_IT_RX_FIFO0_NEW_MESSAGE : FDCAN_IT_RX_FIFO1_NEW_MESSAGE);
             irq_reason = MP_OBJ_NEW_SMALL_INT(0);
             *state = RX_STATE_MESSAGE_PENDING;
             break;
@@ -280,9 +292,9 @@ STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
             break;
         case RX_STATE_FIFO_FULL:
             __HAL_FDCAN_DISABLE_IT(&self->can, (fifo_id == FDCAN_RX_FIFO0) ?
-                    FDCAN_IT_RX_FIFO0_MESSAGE_LOST : FDCAN_IT_RX_FIFO1_MESSAGE_LOST);
+                FDCAN_IT_RX_FIFO0_MESSAGE_LOST : FDCAN_IT_RX_FIFO1_MESSAGE_LOST);
             __HAL_FDCAN_CLEAR_FLAG(&self->can, (fifo_id == FDCAN_RX_FIFO0) ?
-                    FDCAN_FLAG_RX_FIFO0_MESSAGE_LOST : FDCAN_FLAG_RX_FIFO1_MESSAGE_LOST);
+                FDCAN_FLAG_RX_FIFO0_MESSAGE_LOST : FDCAN_FLAG_RX_FIFO1_MESSAGE_LOST);
             irq_reason = MP_OBJ_NEW_SMALL_INT(2);
             *state = RX_STATE_FIFO_OVERFLOW;
             break;

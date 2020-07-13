@@ -36,6 +36,8 @@
 #include "py/bc.h"
 #include "py/profile.h"
 
+// *FORMAT-OFF*
+
 #if 0
 #define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
 #else
@@ -340,7 +342,7 @@ dispatch_loop:
                     if (obj_shared == MP_OBJ_NULL) {
                         local_name_error: {
                             MARK_EXC_IP_SELECTIVE();
-                            mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment");
+                            mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, MP_ERROR_TEXT("local variable referenced before assignment"));
                             RAISE(obj);
                         }
                     }
@@ -1199,7 +1201,7 @@ unwind_return:
                         }
                     }
                     if (obj == MP_OBJ_NULL) {
-                        obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "no active exception to reraise");
+                        obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("no active exception to reraise"));
                     }
                     RAISE(obj);
                 }
@@ -1347,7 +1349,7 @@ yield:
 #endif
                 {
 
-                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "opcode");
+                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("opcode"));
                     nlr_pop();
                     code_state->state[0] = obj;
                     FRAME_LEAVE();
@@ -1364,18 +1366,23 @@ pending_exception_check:
                 #if MICROPY_ENABLE_SCHEDULER
                 // This is an inlined variant of mp_handle_pending
                 if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-                    MARK_EXC_IP_SELECTIVE();
                     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-                    mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                    if (obj != MP_OBJ_NULL) {
-                        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                        if (!mp_sched_num_pending()) {
-                            MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+                    // Re-check state is still pending now that we're in the atomic section.
+                    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+                        MARK_EXC_IP_SELECTIVE();
+                        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+                        if (obj != MP_OBJ_NULL) {
+                            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+                            if (!mp_sched_num_pending()) {
+                                MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+                            }
+                            MICROPY_END_ATOMIC_SECTION(atomic_state);
+                            RAISE(obj);
                         }
+                        mp_handle_pending_tail(atomic_state);
+                    } else {
                         MICROPY_END_ATOMIC_SECTION(atomic_state);
-                        RAISE(obj);
                     }
-                    mp_handle_pending_tail(atomic_state);
                 }
                 #else
                 // This is an inlined variant of mp_handle_pending

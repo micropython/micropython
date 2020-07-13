@@ -22,21 +22,30 @@ Supported features include:
 - Modules for HTTP, MQTT, many other formats and protocols via
   https://github.com/micropython/micropython-lib .
 
-Work-in-progress documentation is available at
-http://docs.micropython.org/en/latest/esp8266/ .
+Documentation is available at http://docs.micropython.org/en/latest/esp8266/quickref.html.
 
 Build instructions
 ------------------
 
-The tool chain required for the build is the OpenSource ESP SDK, which can be
-found at <https://github.com/pfalcon/esp-open-sdk>.  Clone this repository and
-run `make` in its directory to build and install the SDK locally.  Make sure
-to add toolchain bin directory to your PATH.  Read esp-open-sdk's README for
-additional important information on toolchain setup.
+You need the esp-open-sdk toolchain (which provides both the compiler and libraries), which
+you can obtain using one of the following two options:
+
+ - Use a Docker image with a pre-built toolchain (**recommended**).
+   To use this, install Docker, then prepend
+   `docker run --rm -v $HOME:$HOME -u $UID -w $PWD larsks/esp-open-sdk ` to the start
+   of the mpy-cross and firmware `make` commands below. This will run the commands using the
+   toolchain inside the container but using the files on your local filesystem.
+
+ - or, install the esp-open-sdk directly on your PC, which can be found at
+   <https://github.com/pfalcon/esp-open-sdk>. Clone this repository and
+   run `make` in its directory to build and install the SDK locally.  Make sure
+   to add toolchain bin directory to your PATH.  Read esp-open-sdk's README for
+   additional important information on toolchain setup.
+   If you use this approach, then the command below will work exactly.
 
 Add the external dependencies to the MicroPython repository checkout:
 ```bash
-$ git submodule update --init
+$ make -C ports/esp8266 submodules
 ```
 See the README in the repository root for more information about external
 dependencies.
@@ -46,12 +55,15 @@ built-in scripts to bytecode.  This can be done using:
 ```bash
 $ make -C mpy-cross
 ```
+(Prepend the Docker command if using Docker, see above)
 
 Then, to build MicroPython for the ESP8266, just run:
 ```bash
 $ cd ports/esp8266
 $ make
 ```
+(Prepend the Docker command if using Docker, see above)
+
 This will produce binary images in the `build-GENERIC/` subdirectory. If you
 install MicroPython to your module for the first time, or after installing any
 other firmware, you should erase flash completely:
@@ -59,23 +71,30 @@ other firmware, you should erase flash completely:
 $ esptool.py --port /dev/ttyXXX erase_flash
 ```
 
-Erase flash also as a troubleshooting measure, if a module doesn't behave as
-expected.
+You can install esptool.py either from your system package manager or from PyPi.
+
+Erasing the flash is also useful as a troubleshooting measure, if a module doesn't
+behave as expected.
 
 To flash MicroPython image to your ESP8266, use:
 ```bash
 $ make deploy
 ```
+(This should not be run inside Docker as it will need access to the serial port.)
+
 This will use the `esptool.py` script to download the images.  You must have
 your ESP module in the bootloader mode, and connected to a serial port on your PC.
 The default serial port is `/dev/ttyACM0`, flash mode is `qio` and flash size is
-`detect` (auto-detect based on Flash ID). To specify other values, use, eg (note
-that flash size is in megabits):
+`detect` (auto-detect based on Flash ID).
+
+To specify other values for `esptool.py`, use, e.g.:
 ```bash
 $ make PORT=/dev/ttyUSB0 FLASH_MODE=qio FLASH_SIZE=32m deploy
 ```
+(note that flash size is in megabits)
 
-The image produced is `build-GENERIC/firmware-combined.bin`, to be flashed at 0x00000.
+If you want to flash manually using `esptool.py` directly, the image produced is
+`build-GENERIC/firmware-combined.bin`, to be flashed at 0x00000.
 
 The default board definition is the directory `boards/GENERIC`.
 For a custom configuration you can define your own board in the directory `boards/`.

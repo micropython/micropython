@@ -41,15 +41,14 @@ STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
 STATIC uint8_t yasmarang_dat = 0;
 #endif
 
-STATIC uint32_t yasmarang(void)
-{
-   yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
-   yasmarang_pad = (yasmarang_pad<<3) + (yasmarang_pad>>29);
-   yasmarang_n = yasmarang_pad | 2;
-   yasmarang_d ^= (yasmarang_pad<<31) + (yasmarang_pad>>1);
-   yasmarang_dat ^= (char) yasmarang_pad ^ (yasmarang_d>>8) ^ 1;
+STATIC uint32_t yasmarang(void) {
+    yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
+    yasmarang_pad = (yasmarang_pad << 3) + (yasmarang_pad >> 29);
+    yasmarang_n = yasmarang_pad | 2;
+    yasmarang_d ^= (yasmarang_pad << 31) + (yasmarang_pad >> 1);
+    yasmarang_dat ^= (char)yasmarang_pad ^ (yasmarang_d >> 8) ^ 1;
 
-   return (yasmarang_pad^(yasmarang_d<<5)^(yasmarang_pad>>18)^(yasmarang_dat<<1));
+    return yasmarang_pad ^ (yasmarang_d << 5) ^ (yasmarang_pad >> 18) ^ (yasmarang_dat << 1);
 }  /* yasmarang */
 
 // End of Yasmarang
@@ -163,19 +162,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_urandom_choice_obj, mod_urandom_choice);
 
 // returns a number in the range [0..1) using Yasmarang to fill in the fraction bits
 STATIC mp_float_t yasmarang_float(void) {
-    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-    typedef uint64_t mp_float_int_t;
-    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-    typedef uint32_t mp_float_int_t;
-    #endif
-    union {
-        mp_float_t f;
-        #if MP_ENDIANNESS_LITTLE
-        struct { mp_float_int_t frc:MP_FLOAT_FRAC_BITS, exp:MP_FLOAT_EXP_BITS, sgn:1; } p;
-        #else
-        struct { mp_float_int_t sgn:1, exp:MP_FLOAT_EXP_BITS, frc:MP_FLOAT_FRAC_BITS; } p;
-        #endif
-    } u;
+    mp_float_union_t u;
     u.p.sgn = 0;
     u.p.exp = (1 << (MP_FLOAT_EXP_BITS - 1)) - 1;
     if (MP_FLOAT_FRAC_BITS <= 32) {
@@ -233,8 +220,8 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_urandom_globals, mp_module_urandom_globals
 
 const mp_obj_module_t mp_module_urandom = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_urandom_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_urandom_globals,
 };
 #endif
 
-#endif //MICROPY_PY_URANDOM
+#endif // MICROPY_PY_URANDOM

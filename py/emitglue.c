@@ -84,17 +84,17 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     mp_prof_extract_prelude(code, prelude);
     #endif
 
-#ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     #if !MICROPY_DEBUG_PRINTERS
     const size_t len = 0;
     #endif
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " flags=%x\n", code, len, (uint)scope_flags);
-#endif
-#if MICROPY_DEBUG_PRINTERS
+    #endif
+    #if MICROPY_DEBUG_PRINTERS
     if (mp_verbose_flag >= 2) {
         mp_bytecode_print(rc, code, len, const_table);
     }
-#endif
+    #endif
 }
 
 #if MICROPY_EMIT_MACHINE_CODE
@@ -120,28 +120,28 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->prelude_offset = prelude_offset;
     rc->n_obj = n_obj;
     rc->n_raw_code = n_raw_code;
-    rc->n_qstr= n_qstr;
+    rc->n_qstr = n_qstr;
     rc->qstr_link = qstr_link;
     #endif
 
-#ifdef DEBUG_PRINT
+    #ifdef DEBUG_PRINT
     DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, n_pos_args, (uint)scope_flags);
     for (mp_uint_t i = 0; i < fun_len; i++) {
         if (i > 0 && i % 16 == 0) {
             DEBUG_printf("\n");
         }
-        DEBUG_printf(" %02x", ((byte*)fun_data)[i]);
+        DEBUG_printf(" %02x", ((byte *)fun_data)[i]);
     }
     DEBUG_printf("\n");
 
-#ifdef WRITE_CODE
+    #ifdef WRITE_CODE
     FILE *fp_write_code = fopen("out-code", "wb");
     fwrite(fun_data, fun_len, 1, fp_write_code);
     fclose(fp_write_code);
-#endif
-#else
+    #endif
+    #else
     (void)fun_len;
-#endif
+    #endif
 }
 #endif
 
@@ -164,7 +164,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
             fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->fun_data, rc->const_table);
             // Check for a generator function, and if so change the type of the object
             if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
-                ((mp_obj_base_t*)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
+                ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
             }
             break;
         #endif
@@ -179,7 +179,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
             fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->fun_data, rc->const_table);
             // check for generator functions and if so change the type of the object
             if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
-                ((mp_obj_base_t*)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
+                ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
             }
 
             #if MICROPY_PY_SYS_SETTRACE

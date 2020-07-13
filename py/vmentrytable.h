@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+// *FORMAT-OFF*
+
 #if __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winitializer-overrides"

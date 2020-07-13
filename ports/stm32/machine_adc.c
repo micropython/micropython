@@ -132,8 +132,10 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #elif defined(STM32H7)
     ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
     ADC3_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
-    #elif defined(STM32L0) || defined(STM32WB)
+    #elif defined(STM32L0)
     ADC1_COMMON->CCR = 0; // ADCPR=PCLK/2
+    #elif defined(STM32WB)
+    ADC1_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos | 0 << ADC_CCR_CKMODE_Pos; // PRESC=1, MODE=ASYNC
     #endif
 
     #if defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
@@ -403,7 +405,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         #endif
         } else {
             // No ADC function on given pin
-            mp_raise_msg_varg(&mp_type_ValueError, "Pin(%q) does not have ADC capabilities", pin->name);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) does not have ADC capabilities"), pin->name);
         }
         channel = pin->adc_channel;
 
@@ -446,5 +448,5 @@ const mp_obj_type_t machine_adc_type = {
     .name = MP_QSTR_ADC,
     .print = machine_adc_print,
     .make_new = machine_adc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_adc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_adc_locals_dict,
 };

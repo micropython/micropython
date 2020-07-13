@@ -231,22 +231,22 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
             i2c_id = 4;
         #endif
         } else {
-            mp_raise_msg_varg(&mp_type_ValueError, "I2C(%s) doesn't exist", port);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%s) doesn't exist"), port);
         }
     } else {
         i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
         if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(machine_hard_i2c_obj)
             || machine_hard_i2c_obj[i2c_id - 1].base.type == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, "I2C(%d) doesn't exist", i2c_id);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
         }
     }
 
     // get static peripheral object
-    machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t*)&machine_hard_i2c_obj[i2c_id - 1];
+    machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t *)&machine_hard_i2c_obj[i2c_id - 1];
 
     // here we would check the scl/sda pins and configure them, but it's not implemented
     if (args[ARG_scl].u_obj != MP_OBJ_NULL || args[ARG_sda].u_obj != MP_OBJ_NULL) {
-        mp_raise_ValueError("explicit choice of scl/sda is not implemented");
+        mp_raise_ValueError(MP_ERROR_TEXT("explicit choice of scl/sda is not implemented"));
     }
 
     // initialise the I2C peripheral
@@ -272,7 +272,7 @@ STATIC const mp_obj_type_t machine_hard_i2c_type = {
     .print = machine_hard_i2c_print,
     .make_new = machine_hard_i2c_make_new,
     .protocol = &machine_hard_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
 };
 
 #endif // MICROPY_HW_ENABLE_HW_I2C

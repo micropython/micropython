@@ -62,12 +62,12 @@ pyb_uart_obj_t *pyb_uart_global_debug = NULL;
 
 // assumes Init parameters have been set up correctly
 bool uart_init2(pyb_uart_obj_t *uart_obj) {
-#if 0
+    #if 0
     USART_TypeDef *UARTx = NULL;
 
     uint32_t GPIO_Pin = 0;
-    uint8_t  GPIO_AF_UARTx = 0;
-    GPIO_TypeDef* GPIO_Port = NULL;
+    uint8_t GPIO_AF_UARTx = 0;
+    GPIO_TypeDef *GPIO_Port = NULL;
 
     switch (uart_obj->uart_id) {
         // USART1 is on PA9/PA10 (CK on PA8), PB6/PB7
@@ -75,13 +75,13 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
             UARTx = USART1;
             GPIO_AF_UARTx = GPIO_AF7_USART1;
 
-#if defined (PYBV4) || defined(PYBV10)
+            #if defined(PYBV4) || defined(PYBV10)
             GPIO_Port = GPIOB;
             GPIO_Pin = GPIO_PIN_6 | GPIO_PIN_7;
-#else
+            #else
             GPIO_Port = GPIOA;
             GPIO_Pin = GPIO_PIN_9 | GPIO_PIN_10;
-#endif
+            #endif
 
             __USART1_CLK_ENABLE();
             break;
@@ -102,13 +102,13 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
             UARTx = USART3;
             GPIO_AF_UARTx = GPIO_AF7_USART3;
 
-#if defined(PYBV3) || defined(PYBV4) | defined(PYBV10)
+            #if defined(PYBV3) || defined(PYBV4) | defined(PYBV10)
             GPIO_Port = GPIOB;
             GPIO_Pin = GPIO_PIN_10 | GPIO_PIN_11;
-#else
+            #else
             GPIO_Port = GPIOD;
             GPIO_Pin = GPIO_PIN_8 | GPIO_PIN_9;
-#endif
+            #endif
             __USART3_CLK_ENABLE();
             break;
 
@@ -152,12 +152,12 @@ bool uart_init2(pyb_uart_obj_t *uart_obj) {
     HAL_UART_Init(&uart_obj->uart);
 
     uart_obj->is_enabled = true;
-#endif
+    #endif
     return true;
 }
 
 bool uart_init(pyb_uart_obj_t *uart_obj, uint32_t baudrate) {
-#if 0
+    #if 0
     UART_HandleTypeDef *uh = &uart_obj->uart;
     memset(uh, 0, sizeof(*uh));
     uh->Init.BaudRate = baudrate;
@@ -167,47 +167,47 @@ bool uart_init(pyb_uart_obj_t *uart_obj, uint32_t baudrate) {
     uh->Init.Mode = UART_MODE_TX_RX;
     uh->Init.HwFlowCtl = UART_HWCONTROL_NONE;
     uh->Init.OverSampling = UART_OVERSAMPLING_16;
-#endif
+    #endif
     return uart_init2(uart_obj);
 }
 
 mp_uint_t uart_rx_any(pyb_uart_obj_t *uart_obj) {
-#if 0
+    #if 0
     return __HAL_UART_GET_FLAG(&uart_obj->uart, UART_FLAG_RXNE);
-#else
+    #else
     return 0;
-#endif
+    #endif
 }
 
 int uart_rx_char(pyb_uart_obj_t *uart_obj) {
     uint8_t ch;
-#if 0
+    #if 0
     if (HAL_UART_Receive(&uart_obj->uart, &ch, 1, 0) != HAL_OK) {
         ch = 0;
     }
-#else
+    #else
     ch = 'A';
-#endif
+    #endif
     return ch;
 }
 
 void uart_tx_char(pyb_uart_obj_t *uart_obj, int c) {
-#if 0
+    #if 0
     uint8_t ch = c;
     HAL_UART_Transmit(&uart_obj->uart, &ch, 1, 100000);
-#endif
+    #endif
 }
 
 void uart_tx_str(pyb_uart_obj_t *uart_obj, const char *str) {
-#if 0
-    HAL_UART_Transmit(&uart_obj->uart, (uint8_t*)str, strlen(str), 100000);
-#endif
+    #if 0
+    HAL_UART_Transmit(&uart_obj->uart, (uint8_t *)str, strlen(str), 100000);
+    #endif
 }
 
 void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
-#if 0
-    HAL_UART_Transmit(&uart_obj->uart, (uint8_t*)str, len, 100000);
-#endif
+    #if 0
+    HAL_UART_Transmit(&uart_obj->uart, (uint8_t *)str, len, 100000);
+    #endif
 }
 
 void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
@@ -227,7 +227,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     if (!self->is_enabled) {
         mp_printf(print, "UART(%lu)", self->uart_id);
     } else {
-#if 0
+        #if 0
         mp_printf(print, "UART(%lu, baudrate=%u, bits=%u, stop=%u",
             self->uart_id, self->uart.Init.BaudRate,
             self->uart.Init.WordLength == UART_WORDLENGTH_8B ? 8 : 9,
@@ -237,7 +237,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
         } else {
             mp_printf(print, ", parity=%u)", self->uart.Init.Parity == UART_PARITY_EVEN ? 0 : 1);
         }
-#endif
+        #endif
     }
 }
 
@@ -261,15 +261,19 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, uint n_args, const mp
     // parse args
     mp_arg_val_t vals[PYB_UART_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args, args, kw_args, PYB_UART_INIT_NUM_ARGS, pyb_uart_init_args, vals);
-#if 0
+    #if 0
     // set the UART configuration values
     memset(&self->uart, 0, sizeof(self->uart));
     UART_InitTypeDef *init = &self->uart.Init;
     init->BaudRate = vals[0].u_int;
     init->WordLength = vals[1].u_int == 8 ? UART_WORDLENGTH_8B : UART_WORDLENGTH_9B;
     switch (vals[2].u_int) {
-        case 1: init->StopBits = UART_STOPBITS_1; break;
-        default: init->StopBits = UART_STOPBITS_2; break;
+        case 1:
+            init->StopBits = UART_STOPBITS_1;
+            break;
+        default:
+            init->StopBits = UART_STOPBITS_2;
+            break;
     }
     if (vals[3].u_obj == mp_const_none) {
         init->Parity = UART_PARITY_NONE;
@@ -283,9 +287,9 @@ STATIC mp_obj_t pyb_uart_init_helper(pyb_uart_obj_t *self, uint n_args, const mp
 
     // init UART (if it fails, it's because the port doesn't exist)
     if (!uart_init2(self)) {
-        mp_raise_msg_varg(&mp_type_ValueError, "UART port %d does not exist", self->uart_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART port %d does not exist"), self->uart_id);
     }
-#endif
+    #endif
 
     return mp_const_none;
 }
@@ -315,11 +319,11 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, uint n_args, uint n
 
     // work out port
     o->uart_id = 0;
-#if 0
+    #if 0
     if (mp_obj_is_str(args[0])) {
         const char *port = mp_obj_str_get_str(args[0]);
         if (0) {
-#if defined(PYBV10)
+        #if defined(PYBV10)
         } else if (strcmp(port, "XA") == 0) {
             o->uart_id = PYB_UART_XA;
         } else if (strcmp(port, "XB") == 0) {
@@ -328,14 +332,14 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, uint n_args, uint n
             o->uart_id = PYB_UART_YA;
         } else if (strcmp(port, "YB") == 0) {
             o->uart_id = PYB_UART_YB;
-#endif
+        #endif
         } else {
-            mp_raise_msg_varg(&mp_type_ValueError, "UART port %s does not exist", port);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART port %s does not exist"), port);
         }
     } else {
         o->uart_id = mp_obj_get_int(args[0]);
     }
-#endif
+    #endif
 
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
@@ -355,7 +359,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_init_obj, 1, pyb_uart_init);
 /// \method deinit()
 /// Turn off the UART bus.
 STATIC mp_obj_t pyb_uart_deinit(mp_obj_t self_in) {
-    //pyb_uart_obj_t *self = self_in;
+    // pyb_uart_obj_t *self = self_in;
     // TODO
     return mp_const_none;
 }
@@ -395,7 +399,7 @@ STATIC mp_obj_t pyb_uart_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
     mp_arg_val_t vals[PYB_UART_SEND_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_UART_SEND_NUM_ARGS, pyb_uart_send_args, vals);
 
-#if 0
+    #if 0
     // get the buffer to send from
     mp_buffer_info_t bufinfo;
     uint8_t data[1];
@@ -406,11 +410,11 @@ STATIC mp_obj_t pyb_uart_send(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
-        mp_raise_msg_varg(&mp_type_Exception, "HAL_UART_Transmit failed with code %d", status);
+        mp_raise_msg_varg(&mp_type_Exception, MP_ERROR_TEXT("HAL_UART_Transmit failed with code %d"), status);
     }
-#else
+    #else
     (void)self;
-#endif
+    #endif
 
     return mp_const_none;
 }
@@ -439,7 +443,7 @@ STATIC mp_obj_t pyb_uart_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
 
     pyb_uart_obj_t *self = args[0];
 
-#if 0
+    #if 0
     // parse args
     mp_arg_val_t vals[PYB_UART_RECV_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, args + 1, kw_args, PYB_UART_RECV_NUM_ARGS, pyb_uart_recv_args, vals);
@@ -453,7 +457,7 @@ STATIC mp_obj_t pyb_uart_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
 
     if (status != HAL_OK) {
         // TODO really need a HardwareError object, or something
-        mp_raise_msg_varg(&mp_type_Exception, "HAL_UART_Receive failed with code %d", status);
+        mp_raise_msg_varg(&mp_type_Exception, MP_ERROR_TEXT("HAL_UART_Receive failed with code %d"), status);
     }
 
     // return the received data
@@ -462,10 +466,10 @@ STATIC mp_obj_t pyb_uart_recv(uint n_args, const mp_obj_t *args, mp_map_t *kw_ar
     } else {
         return mp_obj_str_builder_end(o_ret);
     }
-#else
+    #else
     (void)self;
     return mp_const_none;
-#endif
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_recv_obj, 1, pyb_uart_recv);
 

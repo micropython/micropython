@@ -22,8 +22,8 @@
 #include "libm.h"
 
 static const float
-pi     = 3.1415927410e+00, /* 0x40490fdb */
-pi_lo  = -8.7422776573e-08; /* 0xb3bbbd2e */
+pi     = 3.1415927410e+00f, /* 0x40490fdb */
+pi_lo  = -8.7422776573e-08f; /* 0xb3bbbd2e */
 
 float atan2f(float y, float x)
 {

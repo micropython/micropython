@@ -1,0 +1,8 @@
+None
+True
+sleep
+custom_handler ValueError(0, 1)
+sleep
+custom_handler ValueError(1, 2)
+custom_handler ValueError(2, 3)
+done

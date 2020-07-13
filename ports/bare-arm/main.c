@@ -44,11 +44,15 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 void nlr_jump_fail(void *val) {
-    while (1);
+    while (1) {
+        ;
+    }
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    while (1);
+    while (1) {
+        ;
+    }
 }
 
 #ifndef NDEBUG
@@ -71,26 +75,63 @@ int _fstat() {return 0;}
 int _isatty() {return 0;}
 */
 
-void *malloc(size_t n) {return NULL;}
-void *calloc(size_t nmemb, size_t size) {return NULL;}
-void *realloc(void *ptr, size_t size) {return NULL;}
-void free(void *p) {}
-int printf(const char *m, ...) {return 0;}
-void *memcpy(void *dest, const void *src, size_t n) {return NULL;}
-int memcmp(const void *s1, const void *s2, size_t n) {return 0;}
-void *memmove(void *dest, const void *src, size_t n) {return NULL;}
-void *memset(void *s, int c, size_t n) {return NULL;}
-int strcmp(const char *s1, const char* s2) {return 0;}
-int strncmp(const char *s1, const char* s2, size_t n) {return 0;}
-size_t strlen(const char *s) {return 0;}
-char *strcat(char *dest, const char *src) {return NULL;}
-char *strchr(const char *dest, int c) {return NULL;}
+void *malloc(size_t n) {
+    return NULL;
+}
+void *calloc(size_t nmemb, size_t size) {
+    return NULL;
+}
+void *realloc(void *ptr, size_t size) {
+    return NULL;
+}
+void free(void *p) {
+}
+int printf(const char *m, ...) {
+    return 0;
+}
+void *memcpy(void *dest, const void *src, size_t n) {
+    return NULL;
+}
+int memcmp(const void *s1, const void *s2, size_t n) {
+    return 0;
+}
+void *memmove(void *dest, const void *src, size_t n) {
+    return NULL;
+}
+void *memset(void *s, int c, size_t n) {
+    return NULL;
+}
+int strcmp(const char *s1, const char *s2) {
+    return 0;
+}
+int strncmp(const char *s1, const char *s2, size_t n) {
+    return 0;
+}
+size_t strlen(const char *s) {
+    return 0;
+}
+char *strcat(char *dest, const char *src) {
+    return NULL;
+}
+char *strchr(const char *dest, int c) {
+    return NULL;
+}
 #include <stdarg.h>
-int vprintf(const char *format, va_list ap) {return 0;}
-int vsnprintf(char *str,  size_t  size,  const  char  *format, va_list ap) {return 0;}
+int vprintf(const char *format, va_list ap) {
+    return 0;
+}
+int vsnprintf(char *str,  size_t size,  const char *format, va_list ap) {
+    return 0;
+}
 
 #undef putchar
-int putchar(int c) {return 0;}
-int puts(const char *s) {return 0;}
+int putchar(int c) {
+    return 0;
+}
+int puts(const char *s) {
+    return 0;
+}
 
-void _start(void) {main(0, NULL);}
+void _start(void) {
+    main(0, NULL);
+}

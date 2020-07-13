@@ -4,6 +4,7 @@ import micropython
 
 e = ValueError("error")
 
+
 def func():
     micropython.heap_lock()
     try:
@@ -18,6 +19,7 @@ def func():
     except Exception as e2:
         print(e2)
     micropython.heap_unlock()
+
 
 func()
 print("ok")

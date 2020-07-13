@@ -14,7 +14,7 @@ print(spi)
 spi = SPI(1, SPI.MASTER)
 spi = SPI(1, SPI.MASTER, baudrate=500000)
 spi = SPI(1, SPI.MASTER, 500000, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
-print(str(spi)[:28], str(spi)[49:]) # don't print baudrate/prescaler
+print(str(spi)[:28], str(spi)[49:])  # don't print baudrate/prescaler
 
 spi.init(SPI.SLAVE, phase=1)
 print(spi)

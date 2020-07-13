@@ -69,7 +69,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (args[ARG_sck].u_obj != MP_OBJ_NULL
         || args[ARG_mosi].u_obj != MP_OBJ_NULL
         || args[ARG_miso].u_obj != MP_OBJ_NULL) {
-        mp_raise_ValueError("explicit choice of sck/mosi/miso is not implemented");
+        mp_raise_ValueError(MP_ERROR_TEXT("explicit choice of sck/mosi/miso is not implemented"));
     }
 
     // set the SPI configuration values
@@ -95,7 +95,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
 }
 
 STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
+    machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
 
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
     static const mp_arg_t allowed_args[] = {
@@ -118,12 +118,12 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
 }
 
 STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
-    machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
+    machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
     spi_deinit(self->spi);
 }
 
 STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
-    machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
+    machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
     spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
@@ -139,5 +139,5 @@ const mp_obj_type_t machine_hard_spi_type = {
     .print = machine_hard_spi_print,
     .make_new = mp_machine_spi_make_new, // delegate to master constructor
     .protocol = &machine_hard_spi_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_spi_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };

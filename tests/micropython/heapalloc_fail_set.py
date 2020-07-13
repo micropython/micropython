@@ -6,9 +6,9 @@ import micropython
 x = 1
 micropython.heap_lock()
 try:
-    {x,}
+    {x}
 except MemoryError:
-    print('MemoryError: set create')
+    print("MemoryError: set create")
 micropython.heap_unlock()
 
 # set copy
@@ -17,5 +17,5 @@ micropython.heap_lock()
 try:
     s.copy()
 except MemoryError:
-    print('MemoryError: set copy')
+    print("MemoryError: set copy")
 micropython.heap_unlock()

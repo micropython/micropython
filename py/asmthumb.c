@@ -377,7 +377,7 @@ void asm_thumb_b_label(asm_thumb_t *as, uint label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         asm_thumb_op32(as, OP_BW_HI(rel), OP_BW_LO(rel));
     }
 }
@@ -396,7 +396,7 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
         }
     } else {
         // is a forwards jump, so need to assume it's large
-        large_jump:
+    large_jump:
         asm_thumb_op32(as, OP_BCC_W_HI(cond, rel), OP_BCC_W_LO(rel));
     }
 }

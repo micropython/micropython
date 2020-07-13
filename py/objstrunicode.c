@@ -113,7 +113,7 @@ STATIC mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 // Convert an index into a pointer to its lead byte. Out of bounds indexing will raise IndexError or
 // be capped to the first/last character of the string, depending on is_slice.
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
-                             mp_obj_t index, bool is_slice) {
+    mp_obj_t index, bool is_slice) {
     // All str functions also handle bytes objects, and they call str_index_to_ptr(),
     // so it must handle bytes.
     if (type == &mp_type_bytes) {
@@ -129,18 +129,17 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        mp_raise_msg_varg(&mp_type_TypeError, "string indices must be integers, not %s", mp_obj_get_type_str(index));
+        mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("string indices must be integers, not %s"), mp_obj_get_type_str(index));
     }
     const byte *s, *top = self_data + self_len;
-    if (i < 0)
-    {
+    if (i < 0) {
         // Negative indexing is performed by counting from the end of the string.
         for (s = top - 1; i; --s) {
             if (s < self_data) {
                 if (is_slice) {
                     return self_data;
                 }
-                mp_raise_msg(&mp_type_IndexError, "string index out of range");
+                mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("string index out of range"));
             }
             if (!UTF8_IS_CONT(*s)) {
                 ++i;
@@ -159,7 +158,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return top;
                 }
-                mp_raise_msg(&mp_type_IndexError, "string index out of range");
+                mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("string index out of range"));
             }
             // Then check completion
             if (i-- == 0) {
@@ -181,7 +180,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     GET_STR_DATA_LEN(self_in, self_data, self_len);
     if (value == MP_OBJ_SENTINEL) {
         // load
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_obj_t ostart, ostop, ostep;
             mp_obj_slice_t *slice = MP_OBJ_TO_PTR(index);
@@ -190,7 +189,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             ostep = slice->step;
 
             if (ostep != mp_const_none && ostep != MP_OBJ_NEW_SMALL_INT(1)) {
-                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
 
             const byte *pstart, *pstop;
@@ -211,7 +210,7 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
             }
             return mp_obj_new_str_of_type(type, (const byte *)pstart, pstop - pstart);
         }
-#endif
+        #endif
         const byte *s = str_index_to_ptr(type, self_data, self_len, index, false);
         int len = 1;
         if (UTF8_IS_NONASCII(*s)) {
@@ -220,16 +219,16 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
                 ++len;
             }
         }
-        return mp_obj_new_str_via_qstr((const char*)s, len); // This will create a one-character string
+        return mp_obj_new_str_via_qstr((const char *)s, len); // This will create a one-character string
     } else {
         return MP_OBJ_NULL; // op not supported
     }
 }
 
 STATIC const mp_rom_map_elem_t struni_locals_dict_table[] = {
-#if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_encode), MP_ROM_PTR(&str_encode_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&str_find_obj) },
     { MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&str_rfind_obj) },
     { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&str_index_obj) },
@@ -278,7 +277,7 @@ const mp_obj_type_t mp_type_str = {
     .subscr = str_subscr,
     .getiter = mp_obj_new_str_iterator,
     .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
-    .locals_dict = (mp_obj_dict_t*)&struni_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&struni_locals_dict,
 };
 
 /******************************************************************************/
@@ -297,7 +296,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     if (self->cur < len) {
         const byte *cur = str + self->cur;
         const byte *end = utf8_next_char(str + self->cur);
-        mp_obj_t o_out = mp_obj_new_str_via_qstr((const char*)cur, end - cur);
+        mp_obj_t o_out = mp_obj_new_str_via_qstr((const char *)cur, end - cur);
         self->cur += end - cur;
         return o_out;
     } else {
@@ -307,7 +306,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
 
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_str_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_obj_str_it_t *o = (mp_obj_str_it_t*)iter_buf;
+    mp_obj_str_it_t *o = (mp_obj_str_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = str_it_iternext;
     o->str = str;

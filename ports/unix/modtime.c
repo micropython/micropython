@@ -61,43 +61,43 @@ static inline int msec_sleep_tv(struct timeval *tv) {
 #endif
 
 #if defined(MP_CLOCKS_PER_SEC)
-#define CLOCK_DIV (MP_CLOCKS_PER_SEC / 1000.0F)
+#define CLOCK_DIV (MP_CLOCKS_PER_SEC / MICROPY_FLOAT_CONST(1000.0))
 #else
 #error Unsupported clock() implementation
 #endif
 
 STATIC mp_obj_t mod_time_time(void) {
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     gettimeofday(&tv, NULL);
     mp_float_t val = tv.tv_sec + (mp_float_t)tv.tv_usec / 1000000;
     return mp_obj_new_float(val);
-#else
+    #else
     return mp_obj_new_int((mp_int_t)time(NULL));
-#endif
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
 STATIC mp_obj_t mod_time_clock(void) {
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     // float cannot represent full range of int32 precisely, so we pre-divide
     // int to reduce resolution, and then actually do float division hoping
     // to preserve integer part resolution.
-    return mp_obj_new_float((float)(clock() / 1000) / CLOCK_DIV);
-#else
+    return mp_obj_new_float((clock() / 1000) / CLOCK_DIV);
+    #else
     return mp_obj_new_int((mp_int_t)clock());
-#endif
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
 STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
-#if MICROPY_PY_BUILTINS_FLOAT
+    #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
-    double ipart;
-    tv.tv_usec = round(modf(val, &ipart) * 1000000);
-    tv.tv_sec = ipart;
+    mp_float_t ipart;
+    tv.tv_usec = (time_t)MICROPY_FLOAT_C_FUN(round)(MICROPY_FLOAT_C_FUN(modf)(val, &ipart) * MICROPY_FLOAT_CONST(1000000.));
+    tv.tv_sec = (suseconds_t)ipart;
     int res;
     while (1) {
         MP_THREAD_GIL_EXIT();
@@ -110,18 +110,24 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
             break;
         }
         mp_handle_pending(true);
-        //printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
+        // printf("select: EINTR: %ld:%ld\n", tv.tv_sec, tv.tv_usec);
         #else
         break;
         #endif
     }
     RAISE_ERRNO(res, errno);
-#else
-    // TODO: Handle EINTR
-    MP_THREAD_GIL_EXIT();
-    sleep(mp_obj_get_int(arg));
-    MP_THREAD_GIL_ENTER();
-#endif
+    #else
+    int seconds = mp_obj_get_int(arg);
+    for (;;) {
+        MP_THREAD_GIL_EXIT();
+        seconds = sleep(seconds);
+        MP_THREAD_GIL_ENTER();
+        if (seconds == 0) {
+            break;
+        }
+        mp_handle_pending(true);
+    }
+    #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
@@ -168,7 +174,7 @@ STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
 
     // localtime generates a tuple of len 8. CPython uses 9, so we accept both.
     if (len < 8 || len > 9) {
-        mp_raise_TypeError("mktime needs a tuple of length 8 or 9");
+        mp_raise_TypeError(MP_ERROR_TEXT("mktime needs a tuple of length 8 or 9"));
     }
 
     struct tm time = {
@@ -186,7 +192,7 @@ STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
     }
     time_t ret = mktime(&time);
     if (ret == -1) {
-        mp_raise_msg(&mp_type_OverflowError, "invalid mktime usage");
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("invalid mktime usage"));
     }
     return mp_obj_new_int(ret);
 }
@@ -212,7 +218,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table
 
 const mp_obj_module_t mp_module_time = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_time_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
 
 #endif // MICROPY_PY_UTIME

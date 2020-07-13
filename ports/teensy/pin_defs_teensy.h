@@ -1,10 +1,10 @@
 enum {
-  PORT_A,
-  PORT_B,
-  PORT_C,
-  PORT_D,
-  PORT_E,
-  PORT_Z,
+    PORT_A,
+    PORT_B,
+    PORT_C,
+    PORT_D,
+    PORT_E,
+    PORT_Z,
 };
 
 enum {

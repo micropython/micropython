@@ -63,16 +63,16 @@ SRC_C = \
 	lib/tinyusb/src/common/tusb_fifo.c \
 	lib/tinyusb/src/device/usbd.c \
 	lib/tinyusb/src/device/usbd_control.c \
+	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	lib/tinyusb/src/tusb.c \
+	lib/utils/gchelper_native.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 
 ifeq ($(MCU_SERIES),SAMD21)
-SRC_C += lib/tinyusb/src/portable/microchip/samd21/dcd_samd21.c
 SRC_S = lib/utils/gchelper_m0.s
 else
-SRC_C += lib/tinyusb/src/portable/microchip/samd51/dcd_samd51.c
 SRC_S = lib/utils/gchelper_m3.s
 endif
 

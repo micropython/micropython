@@ -120,7 +120,7 @@ STATIC MP_DEFINE_CONST_DICT(thread_lock_locals_dict, thread_lock_locals_dict_tab
 STATIC const mp_obj_type_t mp_type_thread_lock = {
     { &mp_type_type },
     .name = MP_QSTR_lock,
-    .locals_dict = (mp_obj_dict_t*)&thread_lock_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&thread_lock_locals_dict,
 };
 
 /****************************************************************/
@@ -157,7 +157,7 @@ typedef struct _thread_entry_args_t {
 STATIC void *thread_entry(void *args_in) {
     // Execution begins here for a new thread.  We do not have the GIL.
 
-    thread_entry_args_t *args = (thread_entry_args_t*)args_in;
+    thread_entry_args_t *args = (thread_entry_args_t *)args_in;
 
     mp_state_thread_t ts;
     mp_thread_set_state(&ts);
@@ -193,7 +193,7 @@ STATIC void *thread_entry(void *args_in) {
     } else {
         // uncaught exception
         // check for SystemExit
-        mp_obj_base_t *exc = (mp_obj_base_t*)nlr.ret_val;
+        mp_obj_base_t *exc = (mp_obj_base_t *)nlr.ret_val;
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // swallow exception silently
         } else {
@@ -235,9 +235,9 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     } else {
         // positional and keyword arguments
         if (mp_obj_get_type(args[2]) != &mp_type_dict) {
-            mp_raise_TypeError("expecting a dict for keyword args");
+            mp_raise_TypeError(MP_ERROR_TEXT("expecting a dict for keyword args"));
         }
-        mp_map_t *map = &((mp_obj_dict_t*)MP_OBJ_TO_PTR(args[2]))->map;
+        mp_map_t *map = &((mp_obj_dict_t *)MP_OBJ_TO_PTR(args[2]))->map;
         th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len + 2 * map->used);
         th_args->n_kw = map->used;
         // copy across the keyword arguments
@@ -294,7 +294,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_thread_globals, mp_module_thread_globals_t
 
 const mp_obj_module_t mp_module_thread = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_thread_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_thread_globals,
 };
 
 #endif // MICROPY_PY_THREAD

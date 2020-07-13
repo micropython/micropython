@@ -59,12 +59,12 @@ mp_obj_t machine_adc_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
     mp_int_t chn = mp_obj_get_int(args[0]);
 
     switch (chn) {
-    case 0:
-        return &machine_adc_adc;
-    case 1:
-        return &machine_adc_vdd3;
-    default:
-        mp_raise_msg_varg(&mp_type_ValueError, "ADC(%d) doesn't exist", chn);
+        case 0:
+            return &machine_adc_adc;
+        case 1:
+            return &machine_adc_vdd3;
+        default:
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("ADC(%d) doesn't exist"), chn);
     }
 }
 
@@ -94,5 +94,5 @@ const mp_obj_type_t machine_adc_type = {
     .name = MP_QSTR_ADC,
     .print = machine_adc_print,
     .make_new = machine_adc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_adc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_adc_locals_dict,
 };

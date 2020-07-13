@@ -66,9 +66,9 @@ STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_
         } else {
             // object exists; update its flags
             if (or_flags) {
-                ((poll_obj_t*)MP_OBJ_TO_PTR(elem->value))->flags |= flags;
+                ((poll_obj_t *)MP_OBJ_TO_PTR(elem->value))->flags |= flags;
             } else {
-                ((poll_obj_t*)MP_OBJ_TO_PTR(elem->value))->flags = flags;
+                ((poll_obj_t *)MP_OBJ_TO_PTR(elem->value))->flags = flags;
             }
         }
     }
@@ -125,7 +125,7 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     if (n_args == 4) {
         if (args[3] != mp_const_none) {
             #if MICROPY_PY_BUILTINS_FLOAT
-            float timeout_f = mp_obj_get_float(args[3]);
+            float timeout_f = mp_obj_get_float_to_f(args[3]);
             if (timeout_f >= 0) {
                 timeout = (mp_uint_t)(timeout_f * 1000);
             }
@@ -161,13 +161,13 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
                 }
                 poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_map.table[i].value);
                 if (poll_obj->flags_ret & MP_STREAM_POLL_RD) {
-                    ((mp_obj_list_t*)MP_OBJ_TO_PTR(list_array[0]))->items[rwx_len[0]++] = poll_obj->obj;
+                    ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[0]))->items[rwx_len[0]++] = poll_obj->obj;
                 }
                 if (poll_obj->flags_ret & MP_STREAM_POLL_WR) {
-                    ((mp_obj_list_t*)MP_OBJ_TO_PTR(list_array[1]))->items[rwx_len[1]++] = poll_obj->obj;
+                    ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[1]))->items[rwx_len[1]++] = poll_obj->obj;
                 }
                 if ((poll_obj->flags_ret & ~(MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)) != 0) {
-                    ((mp_obj_list_t*)MP_OBJ_TO_PTR(list_array[2]))->items[rwx_len[2]++] = poll_obj->obj;
+                    ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[2]))->items[rwx_len[2]++] = poll_obj->obj;
                 }
             }
             mp_map_deinit(&poll_map);
@@ -220,7 +220,7 @@ STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmas
     if (elem == NULL) {
         mp_raise_OSError(MP_ENOENT);
     }
-    ((poll_obj_t*)MP_OBJ_TO_PTR(elem->value))->flags = mp_obj_get_int(eventmask_in);
+    ((poll_obj_t *)MP_OBJ_TO_PTR(elem->value))->flags = mp_obj_get_int(eventmask_in);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
@@ -345,7 +345,7 @@ STATIC const mp_obj_type_t mp_type_poll = {
     .name = MP_QSTR_poll,
     .getiter = mp_identity_getiter,
     .iternext = poll_iternext,
-    .locals_dict = (void*)&poll_locals_dict,
+    .locals_dict = (void *)&poll_locals_dict,
 };
 
 /// \function poll()
@@ -373,7 +373,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_select_globals, mp_module_select_globals_t
 
 const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_select_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
 
 #endif // MICROPY_PY_USELECT

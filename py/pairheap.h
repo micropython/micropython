@@ -35,6 +35,7 @@
 // Algorithmica 1:111-129, 1986.
 // https://www.cs.cmu.edu/~sleator/papers/pairing-heaps.pdf
 
+#include <assert.h>
 #include "py/obj.h"
 
 // This struct forms the nodes of the heap and is intended to be extended, by
@@ -50,7 +51,7 @@ typedef struct _mp_pairheap_t {
 } mp_pairheap_t;
 
 // This is the function for the less-than operation on nodes/elements.
-typedef int (*mp_pairheap_lt_t)(mp_pairheap_t*, mp_pairheap_t*);
+typedef int (*mp_pairheap_lt_t)(mp_pairheap_t *, mp_pairheap_t *);
 
 // Core functions.
 mp_pairheap_t *mp_pairheap_meld(mp_pairheap_lt_t lt, mp_pairheap_t *heap1, mp_pairheap_t *heap2);
@@ -61,6 +62,13 @@ mp_pairheap_t *mp_pairheap_delete(mp_pairheap_lt_t lt, mp_pairheap_t *heap, mp_p
 static inline mp_pairheap_t *mp_pairheap_new(mp_pairheap_lt_t lt) {
     (void)lt;
     return NULL;
+}
+
+// Initialise a single pairing-heap node so it is ready to push on to a heap.
+static inline void mp_pairheap_init_node(mp_pairheap_lt_t lt, mp_pairheap_t *node) {
+    (void)lt;
+    node->child = NULL;
+    node->next = NULL;
 }
 
 // Test if the heap is empty.
@@ -77,14 +85,16 @@ static inline mp_pairheap_t *mp_pairheap_peek(mp_pairheap_lt_t lt, mp_pairheap_t
 
 // Push new node onto existing heap.  Returns the new heap.
 static inline mp_pairheap_t *mp_pairheap_push(mp_pairheap_lt_t lt, mp_pairheap_t *heap, mp_pairheap_t *node) {
-    node->child = NULL;
-    node->next = NULL;
+    assert(node->child == NULL && node->next == NULL);
     return mp_pairheap_meld(lt, node, heap); // node is first to be stable
 }
 
 // Pop the top off the heap, which must not be empty.  Returns the new heap.
 static inline mp_pairheap_t *mp_pairheap_pop(mp_pairheap_lt_t lt, mp_pairheap_t *heap) {
-    return mp_pairheap_pairing(lt, heap->child);
+    assert(heap->next == NULL);
+    mp_pairheap_t *child = heap->child;
+    heap->child = NULL;
+    return mp_pairheap_pairing(lt, child);
 }
 
 #endif // MICROPY_INCLUDED_PY_PAIRHEAP_H

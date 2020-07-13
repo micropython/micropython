@@ -12,9 +12,9 @@ def test(peer_addr):
     try:
         s.connect(peer_addr)
     except OSError as er:
-        print(er.args[0] == 115) # 115 is EINPROGRESS
+        print(er.args[0] == 115)  # 115 is EINPROGRESS
     s.close()
 
 
 if __name__ == "__main__":
-    test(socket.getaddrinfo('micropython.org', 80)[0][-1])
+    test(socket.getaddrinfo("micropython.org", 80)[0][-1])

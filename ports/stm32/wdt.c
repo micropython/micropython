@@ -51,7 +51,7 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     mp_int_t id = args[ARG_id].u_int;
     if (id != 0) {
-        mp_raise_msg_varg(&mp_type_ValueError, "WDT(%d) doesn't exist", id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%d) doesn't exist"), id);
     }
 
     // timeout is in milliseconds
@@ -65,9 +65,9 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // convert milliseconds to ticks
     timeout *= 8; // 32kHz / 4 = 8 ticks per millisecond (approx)
     if (timeout <= 0) {
-        mp_raise_ValueError("WDT timeout too short");
+        mp_raise_ValueError(MP_ERROR_TEXT("WDT timeout too short"));
     } else if (timeout > 0xfff) {
-        mp_raise_ValueError("WDT timeout too long");
+        mp_raise_ValueError(MP_ERROR_TEXT("WDT timeout too long"));
     }
     timeout -= 1;
 
@@ -106,5 +106,5 @@ const mp_obj_type_t pyb_wdt_type = {
     { &mp_type_type },
     .name = MP_QSTR_WDT,
     .make_new = pyb_wdt_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_wdt_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_wdt_locals_dict,
 };

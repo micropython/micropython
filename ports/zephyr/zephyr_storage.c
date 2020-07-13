@@ -59,15 +59,15 @@ STATIC mp_obj_t zephyr_disk_access_make_new(const mp_obj_type_t *type, size_t n_
     self->pdrv = mp_obj_str_get_str(args[0]);
 
     if (disk_access_init(self->pdrv) != 0) {
-        mp_raise_ValueError("disk not found");
+        mp_raise_ValueError(MP_ERROR_TEXT("disk not found"));
     }
 
     if (disk_access_ioctl(self->pdrv, DISK_IOCTL_GET_SECTOR_SIZE, &self->block_size)) {
-        mp_raise_ValueError("unable to get sector size");
+        mp_raise_ValueError(MP_ERROR_TEXT("unable to get sector size"));
     }
 
     if (disk_access_ioctl(self->pdrv, DISK_IOCTL_GET_SECTOR_COUNT, &self->block_count)) {
-        mp_raise_ValueError("unable to get block count");
+        mp_raise_ValueError(MP_ERROR_TEXT("unable to get block count"));
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -134,7 +134,7 @@ const mp_obj_type_t zephyr_disk_access_type = {
     .name = MP_QSTR_DiskAccess,
     .print = zephyr_disk_access_print,
     .make_new = zephyr_disk_access_make_new,
-    .locals_dict = (mp_obj_dict_t*)&zephyr_disk_access_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&zephyr_disk_access_locals_dict,
 };
 #endif // CONFIG_DISK_ACCESS
 
@@ -162,11 +162,11 @@ STATIC mp_obj_t zephyr_flash_area_make_new(const mp_obj_type_t *type, size_t n_a
     self->block_size = mp_obj_get_int(args[1]);
 
     if (self->block_size <= 0) {
-        mp_raise_ValueError("invalid block size");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid block size"));
     }
 
     if (flash_area_open(self->id, &self->area) != 0) {
-        mp_raise_ValueError("unable to open flash area");
+        mp_raise_ValueError(MP_ERROR_TEXT("unable to open flash area"));
     }
 
     self->block_count = self->area->fa_size / self->block_size;
@@ -245,8 +245,8 @@ STATIC const mp_rom_map_elem_t zephyr_flash_area_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&zephyr_flash_area_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&zephyr_flash_area_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&zephyr_flash_area_ioctl_obj) },
-    #ifdef DT_FLASH_AREA_STORAGE_ID
-    { MP_ROM_QSTR(MP_QSTR_STORAGE), MP_ROM_INT(DT_FLASH_AREA_STORAGE_ID) },
+    #if FLASH_AREA_LABEL_EXISTS(storage)
+    { MP_ROM_QSTR(MP_QSTR_STORAGE), MP_ROM_INT(FLASH_AREA_ID(storage)) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(zephyr_flash_area_locals_dict, zephyr_flash_area_locals_dict_table);
@@ -256,6 +256,6 @@ const mp_obj_type_t zephyr_flash_area_type = {
     .name = MP_QSTR_FlashArea,
     .print = zephyr_flash_area_print,
     .make_new = zephyr_flash_area_make_new,
-    .locals_dict = (mp_obj_dict_t*)&zephyr_flash_area_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&zephyr_flash_area_locals_dict,
 };
 #endif // CONFIG_FLASH_MAP

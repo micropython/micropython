@@ -27,6 +27,8 @@ QSTR_DEFS = qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 QSTR_GLOBAL_REQUIREMENTS = $(SDKCONFIG_H)
 
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
 MICROPY_PY_BTREE = 1
@@ -52,13 +54,13 @@ SDKCONFIG_COMBINED = $(BUILD)/sdkconfig.combined
 SDKCONFIG_H = $(BUILD)/sdkconfig.h
 
 # The git hash of the currently supported ESP IDF version.
-# These correspond to v3.3.1 and v4.0-beta1.
-ESPIDF_SUPHASH_V3 := 143d26aa49df524e10fb8e41a71d12e731b9b71d
-ESPIDF_SUPHASH_V4 := 310beae373446ceb9a4ad9b36b5428d7fdf2705f
+# These correspond to v3.3.2 and v4.0.1.
+ESPIDF_SUPHASH_V3 := 9e70825d1e1cbf7988cf36981774300066580ea7
+ESPIDF_SUPHASH_V4 := 4c81978a3e2220674a432a588292a4c860eef27b
 
 define print_supported_git_hash
 $(info Supported git hash (v3.3): $(ESPIDF_SUPHASH_V3))
-$(info Supported git hash (v4.0-beta1) (experimental): $(ESPIDF_SUPHASH_V4))
+$(info Supported git hash (v4.0) (experimental): $(ESPIDF_SUPHASH_V4))
 endef
 
 # paths to ESP IDF and its components
@@ -118,7 +120,12 @@ endif
 MICROPY_PY_BLUETOOTH ?= 1
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 SDKCONFIG += boards/sdkconfig.ble
-MICROPY_BLUETOOTH_NIMBLE = 1
+
+# Use NimBLE on ESP32.
+MICROPY_BLUETOOTH_NIMBLE ?= 1
+# Use Nimble bindings, but ESP32 IDF provides the Nimble library.
+MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY = 1
+include $(TOP)/extmod/nimble/nimble.mk
 endif
 
 # include sdkconfig to get needed configuration values
@@ -244,10 +251,6 @@ INC_NEWLIB += -I$(ESPCOMP)/newlib/include
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE=1
-endif
 endif
 
 # these flags are common to C and C++ compilation
@@ -354,9 +357,8 @@ SRC_C = \
 	$(wildcard $(BOARD_DIR)/*.c) \
 	$(SRC_MOD)
 
-EXTMOD_SRC_C = $(addprefix extmod/,\
+EXTMOD_SRC_C += $(addprefix extmod/,\
 	modonewire.c \
-	modbluetooth_nimble.c \
 	)
 
 LIB_SRC_C = $(addprefix lib/,\
@@ -379,6 +381,9 @@ OBJ_MP += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
+
+# Only enable this for the MicroPython source: ignore warnings from esp-idf.
+$(OBJ_MP): CFLAGS += -Wdouble-promotion -Wfloat-conversion
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C)
@@ -510,7 +515,7 @@ ESPIDF_MBEDTLS_O = $(patsubst %.c,%.o,\
 ESPIDF_MDNS_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/mdns/*.c))
 
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
-$(BUILD)/$(ESPCOMP)/wpa_supplicant/%.o: CFLAGS += -DESP_SUPPLICANT -DIEEE8021X_EAPOL -DEAP_PEER_METHOD -DEAP_TLS -DEAP_TTLS -DEAP_PEAP -DEAP_MSCHAPv2 -DUSE_WPA2_TASK -DCONFIG_WPS2 -DCONFIG_WPS_PIN -DUSE_WPS_TASK -DESPRESSIF_USE -DESP32_WORKAROUND -DCONFIG_ECC -D__ets__ -Wno-strict-aliasing -I$(ESPCOMP)/wpa_supplicant/src -Wno-implicit-function-declaration
+$(BUILD)/$(ESPCOMP)/wpa_supplicant/%.o: CFLAGS += -DCONFIG_WPA3_SAE -DCONFIG_IEEE80211W -DESP_SUPPLICANT -DIEEE8021X_EAPOL -DEAP_PEER_METHOD -DEAP_TLS -DEAP_TTLS -DEAP_PEAP -DEAP_MSCHAPv2 -DUSE_WPA2_TASK -DCONFIG_WPS2 -DCONFIG_WPS_PIN -DUSE_WPS_TASK -DESPRESSIF_USE -DESP32_WORKAROUND -DCONFIG_ECC -D__ets__ -Wno-strict-aliasing -I$(ESPCOMP)/wpa_supplicant/src -Wno-implicit-function-declaration
 else
 $(BUILD)/$(ESPCOMP)/wpa_supplicant/%.o: CFLAGS += -DEMBEDDED_SUPP -DIEEE8021X_EAPOL -DEAP_PEER_METHOD -DEAP_MSCHAPv2 -DEAP_TTLS -DEAP_TLS -DEAP_PEAP -DUSE_WPA2_TASK -DCONFIG_WPS2 -DCONFIG_WPS_PIN -DUSE_WPS_TASK -DESPRESSIF_USE -DESP32_WORKAROUND -DALLOW_EVEN_MOD -D__ets__ -Wno-strict-aliasing
 endif
@@ -550,6 +555,7 @@ ESPIDF_BT_NIMBLE_O = $(patsubst %.c,%.o,\
 	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/nimble/src/*.c) \
 	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/porting/nimble/src/*.c) \
 	$(wildcard $(ESPCOMP)/bt/host/nimble/nimble/porting/npl/freertos/src/*.c) \
+	$(wildcard $(ESPCOMP)/bt/host/nimble/port/src/*.c) \
 	)
 endif
 
@@ -588,6 +594,7 @@ ESPIDF_BT_NIMBLE_O = $(patsubst %.c,%.o,\
 	$(wildcard $(ESPCOMP)/nimble/nimble/nimble/src/*.c) \
 	$(wildcard $(ESPCOMP)/nimble/nimble/porting/nimble/src/*.c) \
 	$(wildcard $(ESPCOMP)/nimble/nimble/porting/npl/freertos/src/*.c) \
+	$(wildcard $(ESPCOMP)/nimble/port/src/*.c) \
 	)
 endif
 endif

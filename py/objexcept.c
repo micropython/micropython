@@ -38,6 +38,16 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 
+#if MICROPY_ROM_TEXT_COMPRESSION && !defined(NO_QSTR)
+// Extract the MP_MAX_UNCOMPRESSED_TEXT_LEN macro from "genhdr/compressed.data.h".
+// Only need this if compression enabled and in a regular build (i.e. not during QSTR extraction).
+#define MP_MATCH_COMPRESSED(...) // Ignore
+#define MP_COMPRESSED_DATA(...) // Ignore
+#include "genhdr/compressed.data.h"
+#undef MP_MATCH_COMPRESSED
+#undef MP_COMPRESSED_DATA
+#endif
+
 // Number of items per traceback entry (file, line, block)
 #define TRACEBACK_ENTRY_LEN (3)
 
@@ -57,8 +67,9 @@
 #define EMG_BUF_TUPLE_OFFSET        (EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE)
 #define EMG_BUF_TUPLE_SIZE(n_args)  (sizeof(mp_obj_tuple_t) + n_args * sizeof(mp_obj_t))
 #define EMG_BUF_STR_OFFSET          (EMG_BUF_TUPLE_OFFSET + EMG_BUF_TUPLE_SIZE(1))
+#define EMG_BUF_STR_BUF_OFFSET      (EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t))
 
-#   if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
+#if MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE > 0
 #define mp_emergency_exception_buf_size MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
 
 void mp_init_emergency_exception_buf(void) {
@@ -100,6 +111,40 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 #endif
 #endif  // MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 
+STATIC void decompress_error_text_maybe(mp_obj_exception_t *o) {
+    #if MICROPY_ROM_TEXT_COMPRESSION
+    if (o->args->len == 1 && mp_obj_is_type(o->args->items[0], &mp_type_str)) {
+        mp_obj_str_t *o_str = MP_OBJ_TO_PTR(o->args->items[0]);
+        if (MP_IS_COMPRESSED_ROM_STRING(o_str->data)) {
+            byte *buf = m_new_maybe(byte, MP_MAX_UNCOMPRESSED_TEXT_LEN + 1);
+            if (!buf) {
+                #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
+                // Try and use the emergency exception buf if enough space is available.
+                buf = (byte *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_STR_BUF_OFFSET);
+                size_t avail = (uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size - buf;
+                if (avail < MP_MAX_UNCOMPRESSED_TEXT_LEN + 1) {
+                    // No way to decompress, fallback to no message text.
+                    o->args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
+                    return;
+                }
+                #else
+                o->args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
+                return;
+                #endif
+            }
+            mp_decompress_rom_string(buf, (mp_rom_error_text_t)o_str->data);
+            o_str->data = buf;
+            o_str->len = strlen((const char *)buf);
+            o_str->hash = 0;
+        }
+        // Lazily compute the string hash.
+        if (o_str->hash == 0) {
+            o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+        }
+    }
+    #endif
+}
+
 void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = MP_OBJ_TO_PTR(o_in);
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
@@ -111,6 +156,8 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
     if (k == PRINT_EXC) {
         mp_print_str(print, ": ");
     }
+
+    decompress_error_text_maybe(o);
 
     if (k == PRINT_STR || k == PRINT_EXC) {
         if (o->args == NULL || o->args->len == 0) {
@@ -131,6 +178,7 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
             return;
         }
     }
+
     mp_obj_tuple_print(print, MP_OBJ_FROM_PTR(o->args), kind);
 }
 
@@ -150,7 +198,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_obj_tuple_t *o_tuple;
     if (n_args == 0) {
         // No args, can use the empty tuple straightaway
-        o_tuple = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj;
+        o_tuple = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
     } else {
         // Try to allocate memory for the tuple containing the args
         o_tuple = m_new_obj_var_maybe(mp_obj_tuple_t, mp_obj_t, n_args);
@@ -161,14 +209,14 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
         // Otherwise we are free to use the whole buffer after the traceback data.
         if (o_tuple == NULL && mp_emergency_exception_buf_size >=
             EMG_BUF_TUPLE_OFFSET + EMG_BUF_TUPLE_SIZE(n_args)) {
-            o_tuple = (mp_obj_tuple_t*)
-                ((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_TUPLE_OFFSET);
+            o_tuple = (mp_obj_tuple_t *)
+                ((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_TUPLE_OFFSET);
         }
         #endif
 
         if (o_tuple == NULL) {
             // No memory for a tuple, fallback to an empty tuple
-            o_tuple = (mp_obj_tuple_t*)&mp_const_empty_tuple_obj;
+            o_tuple = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
         } else {
             // Have memory for a tuple so populate it
             o_tuple->base.type = &mp_type_tuple;
@@ -189,6 +237,7 @@ mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
     if (self->args->len == 0) {
         return mp_const_none;
     } else {
+        decompress_error_text_maybe(self);
         return self->args->items[0];
     }
 }
@@ -210,6 +259,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         return;
     }
     if (attr == MP_QSTR_args) {
+        decompress_error_text_maybe(self);
         dest[0] = MP_OBJ_FROM_PTR(self->args);
     } else if (self->base.type == &mp_type_StopIteration && attr == MP_QSTR_value) {
         dest[0] = mp_obj_exception_get_value(self_in);
@@ -223,6 +273,8 @@ const mp_obj_type_t mp_type_BaseException = {
     .make_new = mp_obj_exception_make_new,
     .attr = mp_obj_exception_attr,
 };
+
+// *FORMAT-OFF*
 
 // List of all exceptions, arranged as in the table at:
 // http://docs.python.org/3/library/exceptions.html
@@ -252,9 +304,6 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
     */
   MP_DEFINE_EXCEPTION(OSError, Exception)
-#if MICROPY_PY_BUILTINS_TIMEOUTERROR
-    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
-#endif
     /*
     MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
     MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
@@ -268,6 +317,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(NotADirectoryError, OSError)
     MP_DEFINE_EXCEPTION(PermissionError, OSError)
     MP_DEFINE_EXCEPTION(ProcessLookupError, OSError)
+    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
     MP_DEFINE_EXCEPTION(FileExistsError, OSError)
     MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
     MP_DEFINE_EXCEPTION(ReferenceError, Exception)
@@ -303,6 +353,8 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(ResourceWarning, Warning)
     */
 
+// *FORMAT-ON*
+
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
     return mp_obj_exception_make_new(exc_type, 0, 0, NULL);
@@ -319,7 +371,7 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
     return mp_obj_exception_make_new(exc_type, n_args, 0, args);
 }
 
-mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg) {
+mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
     // Check that the given type is an exception type
     assert(exc_type->make_new == mp_obj_exception_make_new);
 
@@ -332,7 +384,7 @@ mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg
     // traceback and 1-tuple.
     if (o_str == NULL
         && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t)) {
-        o_str = (mp_obj_str_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
+        o_str = (mp_obj_str_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf)
             + EMG_BUF_STR_OFFSET);
     }
     #endif
@@ -344,9 +396,13 @@ mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg
 
     // Create the string object and call mp_obj_exception_make_new to create the exception
     o_str->base.type = &mp_type_str;
-    o_str->len = strlen(msg);
-    o_str->data = (const byte*)msg;
+    o_str->len = strlen((const char *)msg);
+    o_str->data = (const byte *)msg;
+    #if MICROPY_ROM_TEXT_COMPRESSION
+    o_str->hash = 0; // will be computed only if string object is accessed
+    #else
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+    #endif
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
@@ -384,15 +440,15 @@ STATIC void exc_add_strn(void *data, const char *str, size_t len) {
     pr->len += len;
 }
 
-mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...) {
+mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    mp_obj_t exc = mp_obj_new_exception_msg_varg2(exc_type, fmt, args);
+    mp_obj_t exc = mp_obj_new_exception_msg_vlist(exc_type, fmt, args);
     va_end(args);
     return exc;
 }
 
-mp_obj_t mp_obj_new_exception_msg_varg2(const mp_obj_type_t *exc_type, const char *fmt, va_list args) {
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, va_list args) {
     assert(fmt != NULL);
 
     // Check that the given type is an exception type
@@ -400,7 +456,7 @@ mp_obj_t mp_obj_new_exception_msg_varg2(const mp_obj_type_t *exc_type, const cha
 
     // Try to allocate memory for the message
     mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
-    size_t o_str_alloc = strlen(fmt) + 1;
+    size_t o_str_alloc = strlen((const char *)fmt) + 1;
     byte *o_str_buf = m_new_maybe(byte, o_str_alloc);
 
     bool used_emg_buf = false;
@@ -411,29 +467,39 @@ mp_obj_t mp_obj_new_exception_msg_varg2(const mp_obj_type_t *exc_type, const cha
     if ((o_str == NULL || o_str_buf == NULL)
         && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t) + 16) {
         used_emg_buf = true;
-        o_str = (mp_obj_str_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
-            + EMG_BUF_STR_OFFSET);
-        o_str_buf = (byte*)&o_str[1];
-        o_str_alloc = (uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
-            + mp_emergency_exception_buf_size - o_str_buf;
+        o_str = (mp_obj_str_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_STR_OFFSET);
+        o_str_buf = (byte *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + EMG_BUF_STR_BUF_OFFSET);
+        o_str_alloc = (uint8_t *)MP_STATE_VM(mp_emergency_exception_buf) + mp_emergency_exception_buf_size - o_str_buf;
     }
     #endif
 
     if (o_str == NULL) {
-        // No memory for the string object so create the exception with no args
+        // No memory for the string object so create the exception with no args.
+        // The exception will only have a type and no message (compression is irrelevant).
         return mp_obj_exception_make_new(exc_type, 0, 0, NULL);
     }
 
     if (o_str_buf == NULL) {
         // No memory for the string buffer: assume that the fmt string is in ROM
-        // and use that data as the data of the string
+        // and use that data as the data of the string.
+        // The string will point directly to the compressed data -- will need to be decompressed
+        // prior to display (this case is identical to mp_obj_new_exception_msg above).
         o_str->len = o_str_alloc - 1; // will be equal to strlen(fmt)
-        o_str->data = (const byte*)fmt;
+        o_str->data = (const byte *)fmt;
     } else {
-        // We have some memory to format the string
+        // We have some memory to format the string.
+        // TODO: Optimise this to format-while-decompressing (and not require the temp stack space).
         struct _exc_printer_t exc_pr = {!used_emg_buf, o_str_alloc, 0, o_str_buf};
         mp_print_t print = {&exc_pr, exc_add_strn};
-        mp_vprintf(&print, fmt, args);
+        const char *fmt2 = (const char *)fmt;
+        #if MICROPY_ROM_TEXT_COMPRESSION
+        byte decompressed[MP_MAX_UNCOMPRESSED_TEXT_LEN];
+        if (MP_IS_COMPRESSED_ROM_STRING(fmt)) {
+            mp_decompress_rom_string(decompressed, fmt);
+            fmt2 = (const char *)decompressed;
+        }
+        #endif
+        mp_vprintf(&print, fmt2, args);
         exc_pr.buf[exc_pr.len] = '\0';
         o_str->len = exc_pr.len;
         o_str->data = exc_pr.buf;
@@ -441,7 +507,11 @@ mp_obj_t mp_obj_new_exception_msg_varg2(const mp_obj_type_t *exc_type, const cha
 
     // Create the string object and call mp_obj_exception_make_new to create the exception
     o_str->base.type = &mp_type_str;
+    #if MICROPY_ROM_TEXT_COMPRESSION
+    o_str->hash = 0; // will be computed only if string object is accessed
+    #else
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+    #endif
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
@@ -483,7 +553,7 @@ bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type) {
     if (mp_obj_is_native_exception_instance(self_in)) { \
         self = MP_OBJ_TO_PTR(self_in); \
     } else { \
-        self = MP_OBJ_TO_PTR(((mp_obj_instance_t*)MP_OBJ_TO_PTR(self_in))->subobj[0]); \
+        self = MP_OBJ_TO_PTR(((mp_obj_instance_t *)MP_OBJ_TO_PTR(self_in))->subobj[0]); \
     }
 
 void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
@@ -505,7 +575,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
             #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
             if (mp_emergency_exception_buf_size >= EMG_BUF_TRACEBACK_OFFSET + EMG_BUF_TRACEBACK_SIZE) {
                 // There is room in the emergency buffer for traceback data
-                size_t *tb = (size_t*)((uint8_t*)MP_STATE_VM(mp_emergency_exception_buf)
+                size_t *tb = (size_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf)
                     + EMG_BUF_TRACEBACK_OFFSET);
                 self->traceback_data = tb;
                 self->traceback_alloc = EMG_BUF_TRACEBACK_SIZE / sizeof(size_t);
@@ -524,7 +594,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
         self->traceback_len = 0;
     } else if (self->traceback_len + TRACEBACK_ENTRY_LEN > self->traceback_alloc) {
         #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-        if (self->traceback_data == (size_t*)MP_STATE_VM(mp_emergency_exception_buf)) {
+        if (self->traceback_data == (size_t *)MP_STATE_VM(mp_emergency_exception_buf)) {
             // Can't resize the emergency buffer
             return;
         }

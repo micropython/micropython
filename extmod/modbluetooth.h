@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Ayke van Laethem
- * Copyright (c) 2019 Jim Mussared
+ * Copyright (c) 2019-2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,14 +54,18 @@
 #endif
 
 // Common constants.
-#ifndef MP_BLUETOOTH_MAX_ATTR_SIZE
-#define MP_BLUETOOTH_MAX_ATTR_SIZE (20)
+#ifndef MP_BLUETOOTH_DEFAULT_ATTR_LEN
+#define MP_BLUETOOTH_DEFAULT_ATTR_LEN (20)
 #endif
+
+#define MP_BLUETOOTH_CCCB_LEN (2)
 
 // Advertisement packet lengths
 #define MP_BLUETOOTH_GAP_ADV_MAX_LEN (32)
 
+// These match the spec values for these flags so can be passed directly to the stack.
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ     (1 << 1)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_NO_RESPONSE (1 << 2)
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE    (1 << 3)
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY   (1 << 4)
 
@@ -84,48 +88,50 @@
 #define MP_BLUETOOTH_ADDR_RANDOM_PRIVATE_NON_RESOLVABLE (0x13) // Random private non-resolvable address. (NRF SD 0x03)
 
 // Event codes for the IRQ handler.
-// Can also be combined to pass to the trigger param to select which events you
-// are interested in.
-// Note this is currently stored in a uint16_t (in irq_trigger, and the event
-// arg to the irq handler), so one spare value remaining.
-#define MP_BLUETOOTH_IRQ_CENTRAL_CONNECT              (1 << 0)
-#define MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT           (1 << 1)
-#define MP_BLUETOOTH_IRQ_GATTS_WRITE                  (1 << 2)
-#define MP_BLUETOOTH_IRQ_GATTS_READ_REQUEST           (1 << 3)
-#define MP_BLUETOOTH_IRQ_SCAN_RESULT                  (1 << 4)
-#define MP_BLUETOOTH_IRQ_SCAN_COMPLETE                (1 << 5)
-#define MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT           (1 << 6)
-#define MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT        (1 << 7)
-#define MP_BLUETOOTH_IRQ_GATTC_SERVICE_RESULT         (1 << 8)
-#define MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_RESULT  (1 << 9)
-#define MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_RESULT      (1 << 10)
-#define MP_BLUETOOTH_IRQ_GATTC_READ_RESULT            (1 << 11)
-#define MP_BLUETOOTH_IRQ_GATTC_WRITE_STATUS           (1 << 12)
-#define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                 (1 << 13)
-#define MP_BLUETOOTH_IRQ_GATTC_INDICATE               (1 << 14)
-#define MP_BLUETOOTH_IRQ_ALL                          (0xffff)
+#define MP_BLUETOOTH_IRQ_CENTRAL_CONNECT                (1)
+#define MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT             (2)
+#define MP_BLUETOOTH_IRQ_GATTS_WRITE                    (3)
+#define MP_BLUETOOTH_IRQ_GATTS_READ_REQUEST             (4)
+#define MP_BLUETOOTH_IRQ_SCAN_RESULT                    (5)
+#define MP_BLUETOOTH_IRQ_SCAN_DONE                      (6)
+#define MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT             (7)
+#define MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT          (8)
+#define MP_BLUETOOTH_IRQ_GATTC_SERVICE_RESULT           (9)
+#define MP_BLUETOOTH_IRQ_GATTC_SERVICE_DONE             (10)
+#define MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_RESULT    (11)
+#define MP_BLUETOOTH_IRQ_GATTC_CHARACTERISTIC_DONE      (12)
+#define MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_RESULT        (13)
+#define MP_BLUETOOTH_IRQ_GATTC_DESCRIPTOR_DONE          (14)
+#define MP_BLUETOOTH_IRQ_GATTC_READ_RESULT              (15)
+#define MP_BLUETOOTH_IRQ_GATTC_READ_DONE                (16)
+#define MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE               (17)
+#define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                   (18)
+#define MP_BLUETOOTH_IRQ_GATTC_INDICATE                 (19)
 
 /*
 These aren't included in the module for space reasons, but can be used
 in your Python code if necessary.
 
 from micropython import const
-_IRQ_CENTRAL_CONNECT                 = const(1 << 0)
-_IRQ_CENTRAL_DISCONNECT              = const(1 << 1)
-_IRQ_GATTS_WRITE                     = const(1 << 2)
-_IRQ_GATTS_READ_REQUEST              = const(1 << 3)
-_IRQ_SCAN_RESULT                     = const(1 << 4)
-_IRQ_SCAN_COMPLETE                   = const(1 << 5)
-_IRQ_PERIPHERAL_CONNECT              = const(1 << 6)
-_IRQ_PERIPHERAL_DISCONNECT           = const(1 << 7)
-_IRQ_GATTC_SERVICE_RESULT            = const(1 << 8)
-_IRQ_GATTC_CHARACTERISTIC_RESULT     = const(1 << 9)
-_IRQ_GATTC_DESCRIPTOR_RESULT         = const(1 << 10)
-_IRQ_GATTC_READ_RESULT               = const(1 << 11)
-_IRQ_GATTC_WRITE_STATUS              = const(1 << 12)
-_IRQ_GATTC_NOTIFY                    = const(1 << 13)
-_IRQ_GATTC_INDICATE                  = const(1 << 14)
-_IRQ_ALL                             = const(0xffff)
+_IRQ_CENTRAL_CONNECT = const(1)
+_IRQ_CENTRAL_DISCONNECT = const(2)
+_IRQ_GATTS_WRITE = const(3)
+_IRQ_GATTS_READ_REQUEST = const(4)
+_IRQ_SCAN_RESULT = const(5)
+_IRQ_SCAN_DONE = const(6)
+_IRQ_PERIPHERAL_CONNECT = const(7)
+_IRQ_PERIPHERAL_DISCONNECT = const(8)
+_IRQ_GATTC_SERVICE_RESULT = const(9)
+_IRQ_GATTC_SERVICE_DONE = const(10)
+_IRQ_GATTC_CHARACTERISTIC_RESULT = const(11)
+_IRQ_GATTC_CHARACTERISTIC_DONE = const(12)
+_IRQ_GATTC_DESCRIPTOR_RESULT = const(13)
+_IRQ_GATTC_DESCRIPTOR_DONE = const(14)
+_IRQ_GATTC_READ_RESULT = const(15)
+_IRQ_GATTC_READ_DONE = const(16)
+_IRQ_GATTC_WRITE_DONE = const(17)
+_IRQ_GATTC_NOTIFY = const(18)
+_IRQ_GATTC_INDICATE = const(19)
 */
 
 // Common UUID type.
@@ -161,11 +167,15 @@ int mp_bluetooth_init(void);
 // Disables the Bluetooth stack. Is a no-op when not enabled.
 void mp_bluetooth_deinit(void);
 
-// Returns true when the Bluetooth stack is enabled.
-bool mp_bluetooth_is_enabled(void);
+// Returns true when the Bluetooth stack is active.
+bool mp_bluetooth_is_active(void);
 
 // Gets the MAC addr of this device in big-endian format.
 void mp_bluetooth_get_device_addr(uint8_t *addr);
+
+// Get or set the GAP device name that will be used by service 0x1800, characteristic 0x2a00.
+size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf);
+int mp_bluetooth_gap_set_device_name(const uint8_t *buf, size_t len);
 
 // Start advertisement. Will re-start advertisement when already enabled.
 // Returns errno on failure.
@@ -176,7 +186,7 @@ void mp_bluetooth_gap_advertise_stop(void);
 
 // Start adding services. Must be called before mp_bluetooth_register_service.
 int mp_bluetooth_gatts_register_service_begin(bool append);
-// // Add a service with the given list of characteristics to the queue to be registered.
+// Add a service with the given list of characteristics to the queue to be registered.
 // The value_handles won't be valid until after mp_bluetooth_register_service_end is called.
 int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint8_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint8_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics);
 // Register any queued services.
@@ -211,10 +221,10 @@ int mp_bluetooth_gap_scan_stop(void);
 int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms);
 
 // Find all primary services on the connected peripheral.
-int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle);
+int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle, const mp_obj_bluetooth_uuid_t *uuid);
 
 // Find all characteristics on the specified service on a connected peripheral.
-int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle);
+int mp_bluetooth_gattc_discover_characteristics(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, const mp_obj_bluetooth_uuid_t *uuid);
 
 // Find all descriptors on the specified characteristic on a connected peripheral.
 int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle);
@@ -230,7 +240,7 @@ int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const 
 // API implemented by modbluetooth (called by port-specific implementations):
 
 // Notify modbluetooth that a connection/disconnection event has occurred.
-void mp_bluetooth_gap_on_connected_disconnected(uint16_t event, uint16_t conn_handle, uint8_t addr_type, const uint8_t *addr);
+void mp_bluetooth_gap_on_connected_disconnected(uint8_t event, uint16_t conn_handle, uint8_t addr_type, const uint8_t *addr);
 
 // Call this when a characteristic is written to.
 void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle);
@@ -245,7 +255,7 @@ bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_han
 void mp_bluetooth_gap_on_scan_complete(void);
 
 // Notify modbluetooth of a scan result.
-void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, bool connectable, const int8_t rssi, const uint8_t *data, size_t data_len);
+void mp_bluetooth_gap_on_scan_result(uint8_t addr_type, const uint8_t *addr, uint8_t adv_type, const int8_t rssi, const uint8_t *data, size_t data_len);
 
 // Notify modbluetooth that a service was found (either by discover-all, or discover-by-uuid).
 void mp_bluetooth_gattc_on_primary_service_result(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, mp_obj_bluetooth_uuid_t *service_uuid);
@@ -256,15 +266,48 @@ void mp_bluetooth_gattc_on_characteristic_result(uint16_t conn_handle, uint16_t 
 // Notify modbluetooth that a descriptor was found.
 void mp_bluetooth_gattc_on_descriptor_result(uint16_t conn_handle, uint16_t handle, mp_obj_bluetooth_uuid_t *descriptor_uuid);
 
+// Notify modbluetooth that service, characteristic or descriptor discovery has finished.
+void mp_bluetooth_gattc_on_discover_complete(uint8_t event, uint16_t conn_handle, uint16_t status);
+
 // Notify modbluetooth that a read has completed with data (or notify/indicate data available, use `event` to disambiguate).
 // Note: these functions are to be called in a group protected by MICROPY_PY_BLUETOOTH_ENTER/EXIT.
 // _start returns the number of bytes to submit to the calls to _chunk, followed by a call to _end.
-size_t mp_bluetooth_gattc_on_data_available_start(uint16_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len);
+size_t mp_bluetooth_gattc_on_data_available_start(uint8_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len, mp_uint_t *atomic_state_out);
 void mp_bluetooth_gattc_on_data_available_chunk(const uint8_t *data, size_t data_len);
-void mp_bluetooth_gattc_on_data_available_end(void);
+void mp_bluetooth_gattc_on_data_available_end(mp_uint_t atomic_state);
 
-// Notify modbluetooth that a write has completed.
-void mp_bluetooth_gattc_on_write_status(uint16_t conn_handle, uint16_t value_handle, uint16_t status);
+// Notify modbluetooth that a read or write operation has completed.
+void mp_bluetooth_gattc_on_read_write_status(uint8_t event, uint16_t conn_handle, uint16_t value_handle, uint16_t status);
 #endif
+
+// For stacks that don't manage attribute value data (currently all of them), helpers
+// to store this in a map, keyed by value handle.
+
+typedef struct {
+    // Pointer to heap-allocated data.
+    uint8_t *data;
+    // Allocated size of data.
+    size_t data_alloc;
+    // Current bytes in use.
+    size_t data_len;
+    // Whether new writes append or replace existing data (default false).
+    bool append;
+} mp_bluetooth_gatts_db_entry_t;
+
+typedef mp_map_t *mp_gatts_db_t;
+
+STATIC inline void mp_bluetooth_gatts_db_create(mp_gatts_db_t *db) {
+    *db = m_new(mp_map_t, 1);
+}
+
+STATIC inline void mp_bluetooth_gatts_db_reset(mp_gatts_db_t db) {
+    mp_map_init(db, 0);
+}
+
+void mp_bluetooth_gatts_db_create_entry(mp_gatts_db_t db, uint16_t handle, size_t len);
+mp_bluetooth_gatts_db_entry_t *mp_bluetooth_gatts_db_lookup(mp_gatts_db_t db, uint16_t handle);
+int mp_bluetooth_gatts_db_read(mp_gatts_db_t db, uint16_t handle, uint8_t **value, size_t *value_len);
+int mp_bluetooth_gatts_db_write(mp_gatts_db_t db, uint16_t handle, const uint8_t *value, size_t value_len);
+int mp_bluetooth_gatts_db_resize(mp_gatts_db_t db, uint16_t handle, size_t len, bool append);
 
 #endif // MICROPY_INCLUDED_EXTMOD_MODBLUETOOTH_H

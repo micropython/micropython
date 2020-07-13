@@ -42,7 +42,7 @@
 
 // Location in RAM of bootloader state (just after the top of the stack)
 extern uint32_t _estack[];
-#define BL_STATE ((uint32_t*)&_estack)
+#define BL_STATE ((uint32_t *)&_estack)
 
 static inline void powerctrl_disable_hsi_if_unused(void) {
     #if !MICROPY_HW_CLK_USE_HSI && (defined(STM32F4) || defined(STM32F7) || defined(STM32H7))
@@ -74,7 +74,7 @@ static __attribute__((naked)) void branch_to_bootloader(uint32_t r0, uint32_t bl
         "msr msp, r2\n"         // get stack pointer
         "ldr r2, [r1, #4]\n"    // get address of destination
         "bx r2\n"               // branch to bootloader
-    );
+        );
 }
 
 void powerctrl_check_enter_bootloader(void) {
@@ -201,59 +201,99 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #endif
 
-#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB)
+#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
-    if (wanted_div <= 1) { return RCC_HCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_HCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_HCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
-    else if (wanted_div <= 16) { return RCC_HCLK_DIV16; }
-    else if (wanted_div <= 64) { return RCC_HCLK_DIV64; }
-    else if (wanted_div <= 128) { return RCC_HCLK_DIV128; }
-    else if (wanted_div <= 256) { return RCC_HCLK_DIV256; }
-    else { return RCC_HCLK_DIV512; }
+    if (wanted_div <= 1) {
+        return RCC_HCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_HCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_HCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_HCLK_DIV8;
+    } else if (wanted_div <= 16) {
+        return RCC_HCLK_DIV16;
+    } else if (wanted_div <= 64) {
+        return RCC_HCLK_DIV64;
+    } else if (wanted_div <= 128) {
+        return RCC_HCLK_DIV128;
+    } else if (wanted_div <= 256) {
+        return RCC_HCLK_DIV256;
+    } else {
+        return RCC_HCLK_DIV512;
+    }
     #else
-    if (wanted_div <= 1) { return RCC_SYSCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_SYSCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_SYSCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_SYSCLK_DIV8; }
-    else if (wanted_div <= 16) { return RCC_SYSCLK_DIV16; }
-    else if (wanted_div <= 64) { return RCC_SYSCLK_DIV64; }
-    else if (wanted_div <= 128) { return RCC_SYSCLK_DIV128; }
-    else if (wanted_div <= 256) { return RCC_SYSCLK_DIV256; }
-    else { return RCC_SYSCLK_DIV512; }
+    if (wanted_div <= 1) {
+        return RCC_SYSCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_SYSCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_SYSCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_SYSCLK_DIV8;
+    } else if (wanted_div <= 16) {
+        return RCC_SYSCLK_DIV16;
+    } else if (wanted_div <= 64) {
+        return RCC_SYSCLK_DIV64;
+    } else if (wanted_div <= 128) {
+        return RCC_SYSCLK_DIV128;
+    } else if (wanted_div <= 256) {
+        return RCC_SYSCLK_DIV256;
+    } else {
+        return RCC_SYSCLK_DIV512;
+    }
     #endif
 }
 
 STATIC uint32_t calc_apb1_div(uint32_t wanted_div) {
     #if defined(STM32H7)
-    if (wanted_div <= 1) { return RCC_APB1_DIV1; }
-    else if (wanted_div <= 2) { return RCC_APB1_DIV2; }
-    else if (wanted_div <= 4) { return RCC_APB1_DIV4; }
-    else if (wanted_div <= 8) { return RCC_APB1_DIV8; }
-    else { return RCC_APB1_DIV16; }
+    if (wanted_div <= 1) {
+        return RCC_APB1_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_APB1_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_APB1_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_APB1_DIV8;
+    } else {
+        return RCC_APB1_DIV16;
+    }
     #else
-    if (wanted_div <= 1) { return RCC_HCLK_DIV1; }
-    else if (wanted_div <= 2) { return RCC_HCLK_DIV2; }
-    else if (wanted_div <= 4) { return RCC_HCLK_DIV4; }
-    else if (wanted_div <= 8) { return RCC_HCLK_DIV8; }
-    else { return RCC_HCLK_DIV16; }
+    if (wanted_div <= 1) {
+        return RCC_HCLK_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_HCLK_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_HCLK_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_HCLK_DIV8;
+    } else {
+        return RCC_HCLK_DIV16;
+    }
     #endif
 }
 
 STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
     #if defined(STM32H7)
-    if (wanted_div <= 1) { return RCC_APB2_DIV1; }
-    else if (wanted_div <= 2) { return RCC_APB2_DIV2; }
-    else if (wanted_div <= 4) { return RCC_APB2_DIV4; }
-    else if (wanted_div <= 8) { return RCC_APB2_DIV8; }
-    else { return RCC_APB2_DIV16; }
+    if (wanted_div <= 1) {
+        return RCC_APB2_DIV1;
+    } else if (wanted_div <= 2) {
+        return RCC_APB2_DIV2;
+    } else if (wanted_div <= 4) {
+        return RCC_APB2_DIV4;
+    } else if (wanted_div <= 8) {
+        return RCC_APB2_DIV8;
+    } else {
+        return RCC_APB2_DIV16;
+    }
     #else
     return calc_apb1_div(wanted_div);
     #endif
 }
+
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
     // Return straightaway if the clocks are already at the desired frequency
@@ -326,7 +366,7 @@ set_clk:
     RCC_ClkInitStruct.APB1CLKDivider = calc_apb1_div(ahb / apb1);
     RCC_ClkInitStruct.APB2CLKDivider = calc_apb2_div(ahb / apb2);
     #if defined(STM32H7)
-    RCC_ClkInitStruct.SYSCLKDivider  = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
     RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
     #endif
@@ -417,7 +457,35 @@ set_clk:
     return 0;
 }
 
+#elif defined(STM32WB)
+
+int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
+    // For now it's not supported to change SYSCLK (only bus dividers).
+    if (sysclk != HAL_RCC_GetSysClockFreq()) {
+        return -MP_EINVAL;
+    }
+
+    // Return straightaway if the clocks are already at the desired frequency.
+    if (ahb == HAL_RCC_GetHCLKFreq()
+        && apb1 == HAL_RCC_GetPCLK1Freq()
+        && apb2 == HAL_RCC_GetPCLK2Freq()) {
+        return 0;
+    }
+
+    // Calculate and configure the bus clock dividers.
+    uint32_t cfgr = RCC->CFGR;
+    cfgr &= ~(7 << RCC_CFGR_PPRE2_Pos | 7 << RCC_CFGR_PPRE1_Pos | 0xf << RCC_CFGR_HPRE_Pos);
+    cfgr |= calc_ahb_div(sysclk / ahb);
+    cfgr |= calc_apb1_div(ahb / apb1);
+    cfgr |= calc_apb2_div(ahb / apb2) << (RCC_CFGR_PPRE2_Pos - RCC_CFGR_PPRE1_Pos);
+    RCC->CFGR = cfgr;
+
+    return 0;
+}
+
 #endif
+
+#endif // !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
 
 void powerctrl_enter_stop_mode(void) {
     // Disable IRQs so that the IRQ that wakes the device from stop mode is not
@@ -438,9 +506,9 @@ void powerctrl_enter_stop_mode(void) {
     HAL_PWREx_EnableFlashPowerDown();
     #endif
 
-    # if defined(STM32F7)
+    #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
-    # else
+    #else
     HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
     #endif
 

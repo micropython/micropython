@@ -49,7 +49,7 @@
 #include "drivers/cyw43/cyw43.h"
 #endif
 
-#if MICROPY_BLUETOOTH_NIMBLE
+#if MICROPY_PY_BLUETOOTH
 #include "extmod/modbluetooth.h"
 #endif
 
@@ -161,26 +161,6 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_main_obj, 1, pyb_main);
 
 #if MICROPY_HW_ENABLE_STORAGE
-STATIC int vfs_mount_and_chdir(mp_obj_t bdev, mp_obj_t mount_point) {
-    nlr_buf_t nlr;
-    mp_int_t ret = -MP_EIO;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t args[] = { bdev, mount_point };
-        mp_vfs_mount(2, args, (mp_map_t*)&mp_const_empty_map);
-        mp_vfs_chdir(mount_point);
-        ret = 0; // success
-        nlr_pop();
-    } else {
-        mp_obj_base_t *exc = nlr.ret_val;
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
-            mp_obj_t v = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
-            mp_obj_get_int_maybe(v, &ret); // get errno value
-            ret = -ret;
-        }
-    }
-    return ret;
-}
-
 // avoid inlining to avoid stack usage within main()
 MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     if (reset_mode == 3) {
@@ -203,7 +183,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     #if MICROPY_VFS_LFS1
     if (memcmp(&buf[40], "littlefs", 8) == 0) {
         // LFS1
-        lfs1_superblock_t *superblock = (void*)&buf[12];
+        lfs1_superblock_t *superblock = (void *)&buf[12];
         uint32_t block_size = lfs1_fromle32(superblock->d.block_size);
         uint32_t block_count = lfs1_fromle32(superblock->d.block_count);
         len = block_count * block_size;
@@ -213,7 +193,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     #if MICROPY_VFS_LFS2
     if (memcmp(&buf[8], "littlefs", 8) == 0) {
         // LFS2
-        lfs2_superblock_t *superblock = (void*)&buf[20];
+        lfs2_superblock_t *superblock = (void *)&buf[20];
         uint32_t block_size = lfs2_fromle32(superblock->block_size);
         uint32_t block_count = lfs2_fromle32(superblock->block_count);
         len = block_count * block_size;
@@ -230,14 +210,14 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 
     // Try to mount the flash on "/flash" and chdir to it for the boot-up directory.
     mp_obj_t mount_point = MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash);
-    int ret = vfs_mount_and_chdir(bdev, mount_point);
+    int ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
 
     if (ret == -MP_ENODEV && bdev == MP_OBJ_FROM_PTR(&pyb_flash_obj) && reset_mode != 3) {
         // No filesystem, bdev is still the default (so didn't detect a possibly corrupt littlefs),
         // and didn't already create a filesystem, so try to create a fresh one now.
         ret = factory_reset_create_filesystem();
         if (ret == 0) {
-            ret = vfs_mount_and_chdir(bdev, mount_point);
+            ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
         }
     }
 
@@ -280,7 +260,7 @@ STATIC bool init_sdcard_fs(void) {
                 // subsequent partitions are numbered by their index in the partition table
                 if (part_num == 2) {
                     vfs->str = "/sd2";
-                } else if (part_num == 2) {
+                } else if (part_num == 3) {
                     vfs->str = "/sd3";
                 } else {
                     vfs->str = "/sd4";
@@ -473,20 +453,20 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
     #endif
 
-    #if defined(STM32F4) ||  defined(STM32F7)
-        #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
-        // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
-        // which behaves more or less like normal SRAM.
-        __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
-        #elif defined(CCMDATARAM_BASE)
-        // enable the CCM RAM
-        __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
-        #endif
+    #if defined(STM32F4) || defined(STM32F7)
+    #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
+    // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
+    // which behaves more or less like normal SRAM.
+    __HAL_RCC_DTCMRAMEN_CLK_ENABLE();
+    #elif defined(CCMDATARAM_BASE)
+    // enable the CCM RAM
+    __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
+    #endif
     #elif defined(STM32H7)
-        // Enable D2 SRAM1/2/3 clocks.
-        __HAL_RCC_D2SRAM1_CLK_ENABLE();
-        __HAL_RCC_D2SRAM2_CLK_ENABLE();
-        __HAL_RCC_D2SRAM3_CLK_ENABLE();
+    // Enable D2 SRAM1/2/3 clocks.
+    __HAL_RCC_D2SRAM1_CLK_ENABLE();
+    __HAL_RCC_D2SRAM2_CLK_ENABLE();
+    __HAL_RCC_D2SRAM3_CLK_ENABLE();
     #endif
 
 
@@ -501,6 +481,7 @@ void stm32_main(uint32_t reset_mode) {
     #if MICROPY_HW_SDRAM_SIZE
     sdram_init();
     bool sdram_valid = true;
+    UNUSED(sdram_valid);
     #if MICROPY_HW_SDRAM_STARTUP_TEST
     sdram_valid = sdram_test(true);
     #endif
@@ -538,9 +519,9 @@ void stm32_main(uint32_t reset_mode) {
     #endif
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
     #endif
-    #if MICROPY_BLUETOOTH_NIMBLE
-    extern void mod_bluetooth_nimble_poll_wrapper(uint32_t ticks_ms);
-    systick_enable_dispatch(SYSTICK_DISPATCH_NIMBLE, mod_bluetooth_nimble_poll_wrapper);
+    #if MICROPY_PY_BLUETOOTH
+    extern void mp_bluetooth_hci_poll_wrapper(uint32_t ticks_ms);
+    systick_enable_dispatch(SYSTICK_DISPATCH_BLUETOOTH_HCI, mp_bluetooth_hci_poll_wrapper);
     #endif
 
     #if MICROPY_PY_NETWORK_CYW43
@@ -548,9 +529,9 @@ void stm32_main(uint32_t reset_mode) {
         cyw43_init(&cyw43_state);
         uint8_t buf[8];
         memcpy(&buf[0], "PYBD", 4);
-        mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char*)&buf[4]);
+        mp_hal_get_mac_ascii(MP_HAL_MAC_WLAN0, 8, 4, (char *)&buf[4]);
         cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
-        cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t*)"pybd0123");
+        cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t *)"pybd0123");
     }
     #endif
 
@@ -593,7 +574,7 @@ soft_reset:
     // to recover from limit hit.  (Limit is measured in bytes.)
     // Note: stack control relies on main thread being initialised above
     mp_stack_set_top(&_estack);
-    mp_stack_set_limit((char*)&_estack - (char*)&_sstack - 1024);
+    mp_stack_set_limit((char *)&_estack - (char *)&_sstack - 1024);
 
     // GC init
     gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
@@ -771,7 +752,7 @@ soft_reset_exit:
     #endif
 
     printf("MPY: soft reboot\n");
-    #if MICROPY_BLUETOOTH_NIMBLE
+    #if MICROPY_PY_BLUETOOTH
     mp_bluetooth_deinit();
     #endif
     #if MICROPY_PY_NETWORK

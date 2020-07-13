@@ -56,15 +56,20 @@ STATIC const mtp_obj_t touchpad_obj[] = {
 };
 
 STATIC mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
-        const mp_obj_t *args) {
+    const mp_obj_t *args) {
 
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
     gpio_num_t pin_id = machine_pin_get_id(args[0]);
     const mtp_obj_t *self = NULL;
     for (int i = 0; i < MP_ARRAY_SIZE(touchpad_obj); i++) {
-        if (pin_id == touchpad_obj[i].gpio_id) { self = &touchpad_obj[i]; break; }
+        if (pin_id == touchpad_obj[i].gpio_id) {
+            self = &touchpad_obj[i];
+            break;
+        }
     }
-    if (!self) mp_raise_ValueError("invalid pin for touchpad");
+    if (!self) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for touchpad"));
+    }
 
     static int initialized = 0;
     if (!initialized) {
@@ -73,16 +78,20 @@ STATIC mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         initialized = 1;
     }
     esp_err_t err = touch_pad_config(self->touchpad_id, 0);
-    if (err == ESP_OK) return MP_OBJ_FROM_PTR(self);
-    mp_raise_ValueError("Touch pad error");
+    if (err == ESP_OK) {
+        return MP_OBJ_FROM_PTR(self);
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("Touch pad error"));
 }
 
 STATIC mp_obj_t mtp_config(mp_obj_t self_in, mp_obj_t value_in) {
     mtp_obj_t *self = self_in;
     uint16_t value = mp_obj_get_int(value_in);
     esp_err_t err = touch_pad_config(self->touchpad_id, value);
-    if (err == ESP_OK) return mp_const_none;
-    mp_raise_ValueError("Touch pad error");
+    if (err == ESP_OK) {
+        return mp_const_none;
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("Touch pad error"));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mtp_config_obj, mtp_config);
 
@@ -90,8 +99,10 @@ STATIC mp_obj_t mtp_read(mp_obj_t self_in) {
     mtp_obj_t *self = self_in;
     uint16_t value;
     esp_err_t err = touch_pad_read(self->touchpad_id, &value);
-    if (err == ESP_OK) return MP_OBJ_NEW_SMALL_INT(value);
-    mp_raise_ValueError("Touch pad error");
+    if (err == ESP_OK) {
+        return MP_OBJ_NEW_SMALL_INT(value);
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("Touch pad error"));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mtp_read_obj, mtp_read);
 

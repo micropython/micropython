@@ -41,8 +41,8 @@ void soft_timer_deinit(void) {
 }
 
 STATIC int soft_timer_lt(mp_pairheap_t *n1, mp_pairheap_t *n2) {
-    soft_timer_entry_t *e1 = (soft_timer_entry_t*)n1;
-    soft_timer_entry_t *e2 = (soft_timer_entry_t*)n2;
+    soft_timer_entry_t *e1 = (soft_timer_entry_t *)n1;
+    soft_timer_entry_t *e2 = (soft_timer_entry_t *)n2;
     return TICKS_DIFF(e1->expiry_ms, e2->expiry_ms) < 0;
 }
 
@@ -63,11 +63,11 @@ void soft_timer_handler(void) {
     soft_timer_entry_t *heap = MP_STATE_PORT(soft_timer_heap);
     while (heap != NULL && TICKS_DIFF(heap->expiry_ms, ticks_ms) <= 0) {
         soft_timer_entry_t *entry = heap;
-        heap = (soft_timer_entry_t*)mp_pairheap_pop(soft_timer_lt, &heap->pairheap);
+        heap = (soft_timer_entry_t *)mp_pairheap_pop(soft_timer_lt, &heap->pairheap);
         mp_sched_schedule(entry->callback, MP_OBJ_FROM_PTR(entry));
         if (entry->mode == SOFT_TIMER_MODE_PERIODIC) {
             entry->expiry_ms += entry->delta_ms;
-            heap = (soft_timer_entry_t*)mp_pairheap_push(soft_timer_lt, &heap->pairheap, &entry->pairheap);
+            heap = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &heap->pairheap, &entry->pairheap);
         }
     }
     MP_STATE_PORT(soft_timer_heap) = heap;
@@ -81,8 +81,9 @@ void soft_timer_handler(void) {
 }
 
 void soft_timer_insert(soft_timer_entry_t *entry) {
+    mp_pairheap_init_node(soft_timer_lt, &entry->pairheap);
     uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-    MP_STATE_PORT(soft_timer_heap) = (soft_timer_entry_t*)mp_pairheap_push(soft_timer_lt, &MP_STATE_PORT(soft_timer_heap)->pairheap, &entry->pairheap);
+    MP_STATE_PORT(soft_timer_heap) = (soft_timer_entry_t *)mp_pairheap_push(soft_timer_lt, &MP_STATE_PORT(soft_timer_heap)->pairheap, &entry->pairheap);
     if (entry == MP_STATE_PORT(soft_timer_heap)) {
         // This new timer became the earliest one so set soft_timer_next
         soft_timer_schedule_systick(entry->expiry_ms);
@@ -92,6 +93,6 @@ void soft_timer_insert(soft_timer_entry_t *entry) {
 
 void soft_timer_remove(soft_timer_entry_t *entry) {
     uint32_t irq_state = raise_irq_pri(IRQ_PRI_PENDSV);
-    MP_STATE_PORT(soft_timer_heap) = (soft_timer_entry_t*)mp_pairheap_delete(soft_timer_lt, &MP_STATE_PORT(soft_timer_heap)->pairheap, &entry->pairheap);
+    MP_STATE_PORT(soft_timer_heap) = (soft_timer_entry_t *)mp_pairheap_delete(soft_timer_lt, &MP_STATE_PORT(soft_timer_heap)->pairheap, &entry->pairheap);
     restore_irq_pri(irq_state);
 }

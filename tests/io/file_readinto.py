@@ -7,8 +7,8 @@ print(f.readinto(b))
 print(b)
 
 # readinto() on writable file
-f = open('io/data/file1', 'ab')
+f = open("io/data/file1", "ab")
 try:
     f.readinto(bytearray(4))
 except OSError:
-    print('OSError')
+    print("OSError")

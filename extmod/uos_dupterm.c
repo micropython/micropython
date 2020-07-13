@@ -106,9 +106,9 @@ int mp_uos_dupterm_rx_chr(void) {
             mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
             if (errcode == 0 && out_sz != 0) {
                 return buf[0];
-             } else {
+            } else {
                 continue;
-             }
+            }
         }
         #endif
 
@@ -179,7 +179,7 @@ STATIC mp_obj_t mp_uos_dupterm(size_t n_args, const mp_obj_t *args) {
     }
 
     if (idx < 0 || idx >= MICROPY_PY_OS_DUPTERM) {
-        mp_raise_ValueError("invalid dupterm index");
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid dupterm index"));
     }
 
     mp_obj_t previous_obj = MP_STATE_VM(dupterm_objs[idx]);

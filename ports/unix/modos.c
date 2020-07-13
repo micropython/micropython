@@ -33,6 +33,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#ifdef _MSC_VER
+#include <direct.h> // For mkdir
+#endif
 #include "py/mpconfig.h"
 
 #include "py/runtime.h"
@@ -50,10 +53,8 @@ STATIC mp_obj_t mod_os_stat(mp_obj_t path_in) {
     struct stat sb;
     const char *path = mp_obj_str_get_str(path_in);
 
-    MP_THREAD_GIL_EXIT();
-    int res = stat(path, &sb);
-    MP_THREAD_GIL_ENTER();
-    RAISE_ERRNO(res, errno);
+    int res;
+    MP_HAL_RETRY_SYSCALL(res, stat(path, &sb), mp_raise_OSError(err));
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.st_mode);
@@ -92,10 +93,8 @@ STATIC mp_obj_t mod_os_statvfs(mp_obj_t path_in) {
     STRUCT_STATVFS sb;
     const char *path = mp_obj_str_get_str(path_in);
 
-    MP_THREAD_GIL_EXIT();
-    int res = STATVFS(path, &sb);
-    MP_THREAD_GIL_ENTER();
-    RAISE_ERRNO(res, errno);
+    int res;
+    MP_HAL_RETRY_SYSCALL(res, STATVFS(path, &sb), mp_raise_OSError(err));
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.f_bsize);
@@ -331,5 +330,5 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_os_globals, mp_module_os_globals_table);
 
 const mp_obj_module_t mp_module_os = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_os_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_os_globals,
 };

@@ -15,7 +15,7 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 
 # compiler settings
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+CFLAGS = $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 LDFLAGS = $(LDFLAGS_MOD) -lm $(LDFLAGS_EXTRA)
 
 # Debugging/Optimization
@@ -28,9 +28,9 @@ endif
 
 # source files
 SRC_C = \
+	lib/utils/gchelper_generic.c \
 	lib/utils/printf.c \
 	ports/unix/main.c \
-	ports/unix/file.c \
 	ports/unix/input.c \
 	ports/unix/modos.c \
 	ports/unix/modmachine.c \

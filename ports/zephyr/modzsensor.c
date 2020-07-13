@@ -44,7 +44,7 @@ STATIC mp_obj_t sensor_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     o->base.type = type;
     o->dev = device_get_binding(mp_obj_str_get_str(args[0]));
     if (o->dev == NULL) {
-        mp_raise_ValueError("dev not found");
+        mp_raise_ValueError(MP_ERROR_TEXT("dev not found"));
     }
     return MP_OBJ_FROM_PTR(o);
 }
@@ -110,14 +110,14 @@ STATIC const mp_obj_type_t sensor_type = {
     { &mp_type_type },
     .name = MP_QSTR_Sensor,
     .make_new = sensor_make_new,
-    .locals_dict = (void*)&sensor_locals_dict,
+    .locals_dict = (void *)&sensor_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zsensor) },
     { MP_ROM_QSTR(MP_QSTR_Sensor), MP_ROM_PTR(&sensor_type) },
 
-#define C(name) { MP_ROM_QSTR(MP_QSTR_ ## name), MP_ROM_INT(SENSOR_CHAN_ ## name) }
+#define C(name) { MP_ROM_QSTR(MP_QSTR_##name), MP_ROM_INT(SENSOR_CHAN_##name) }
     C(ACCEL_X),
     C(ACCEL_Y),
     C(ACCEL_Z),
@@ -140,7 +140,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_zsensor_globals, mp_module_zsensor_globals
 
 const mp_obj_module_t mp_module_zsensor = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_zsensor_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_zsensor_globals,
 };
 
-#endif //MICROPY_PY_UHASHLIB
+#endif // MICROPY_PY_UHASHLIB

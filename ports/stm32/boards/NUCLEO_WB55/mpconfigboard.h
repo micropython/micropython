@@ -10,7 +10,6 @@
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
-#define MICROPY_HW_ENABLE_ADC       (0)
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_HAS_SWITCH       (1)
 
@@ -34,7 +33,6 @@
 #define MICROPY_HW_I2C3_SDA         (pin_C1)    // Arduino A1, pin 30 on CN7
 
 // SPI buses
-#if 0 // TODO need working DMA
 #define MICROPY_HW_SPI1_NSS         (pin_A4)    // Arduino D10  pin 17 on CN10
 #define MICROPY_HW_SPI1_SCK         (pin_A5)    // Arduino D13, pin 11 on CN10
 #define MICROPY_HW_SPI1_MISO        (pin_A6)    // Arduino D12, pin 13 on CN10
@@ -43,7 +41,6 @@
 #define MICROPY_HW_SPI2_SCK         (pin_B13)   //              pin 30 on CN10
 #define MICROPY_HW_SPI2_MISO        (pin_B14)   //              pin 28 on CN10
 #define MICROPY_HW_SPI2_MOSI        (pin_B15)   //              pin 26 on CN10
-#endif
 
 // User switch; pressing the button makes the input go low
 #define MICROPY_HW_USRSW_PIN        (pin_C4)

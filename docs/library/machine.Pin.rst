@@ -216,6 +216,7 @@ Methods
      - ``hard`` if true a hardware interrupt is used. This reduces the delay
        between the pin change and the handler being called. Hard interrupt
        handlers may not allocate memory; see :ref:`isr_rules`.
+       Not all ports support this argument.
 
    This method returns a callback object.
 

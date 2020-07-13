@@ -48,7 +48,7 @@ typedef struct _machine_hard_i2c_obj_t {
 
 STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = self_in;
-    mp_printf(print, "%s", self->dev->config->name);
+    mp_printf(print, "%s", self->dev->name);
 }
 
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -68,19 +68,19 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     struct device *dev = device_get_binding(dev_name);
 
     if (dev == NULL) {
-        mp_raise_ValueError("device not found");
+        mp_raise_ValueError(MP_ERROR_TEXT("device not found"));
     }
 
     if ((args[ARG_scl].u_obj != MP_OBJ_NULL) || (args[ARG_sda].u_obj != MP_OBJ_NULL)) {
-        mp_raise_NotImplementedError("explicit choice of scl/sda is not implemented");
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of scl/sda is not implemented"));
     }
 
     if ((args[ARG_freq].u_obj != MP_OBJ_NULL)) {
-        mp_raise_NotImplementedError("explicit choice of freq is not implemented");
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of freq is not implemented"));
     }
 
     if ((args[ARG_timeout].u_obj != MP_OBJ_NULL)) {
-        mp_raise_NotImplementedError("explicit choice of timeout is not implemented");
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of timeout is not implemented"));
     }
 
     machine_hard_i2c_obj_t *self = m_new_obj(machine_hard_i2c_obj_t);
@@ -97,7 +97,7 @@ STATIC int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t add
     struct i2c_msg msg;
     int ret;
 
-    msg.buf = (u8_t*)buf;
+    msg.buf = (u8_t *)buf;
     msg.len = len;
     msg.flags = 0;
 
@@ -133,5 +133,5 @@ STATIC const mp_obj_type_t machine_hard_i2c_type = {
     .print = machine_hard_i2c_print,
     .make_new = machine_hard_i2c_make_new,
     .protocol = &machine_hard_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
 };
