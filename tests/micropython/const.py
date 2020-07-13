@@ -1,4 +1,5 @@
 # test constant optimisation
+# The result of this test(const.py.exp) will be matched only when MICROPY_COMP_CONST is enabled.
 
 from micropython import const
 
