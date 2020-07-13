@@ -32,8 +32,16 @@
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/stack.h"
 
-static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
+#if CIRCUITPY_BLEIO
+#include "supervisor/shared/bluetooth.h"
+#include "common-hal/_bleio/bonding.h"
+#endif
+
+#if CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
 
 #if CIRCUITPY_GAMEPAD
 #include "shared-module/gamepad/__init__.h"
@@ -41,6 +49,10 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
+#endif
+
+#if CIRCUITPY_NETWORK
+#include "shared-module/network/__init__.h"
 #endif
 
 #include "shared-bindings/microcontroller/__init__.h"
@@ -52,12 +64,42 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 #define WATCHDOG_EXCEPTION_CHECK() 0
 #endif
 
+static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
+
 static background_callback_t callback;
 
-extern void run_background_tasks(void);
+volatile uint64_t last_finished_tick = 0;
 
-void background_task_tick(void *unused) {
-    run_background_tasks();
+void supervisor_background_tasks(void *unused) {
+    port_start_background_task();
+
+    assert_heap_ok();
+
+    #if CIRCUITPY_DISPLAYIO
+    displayio_background();
+    #endif
+
+    #if CIRCUITPY_NETWORK
+    network_module_background();
+    #endif
+    filesystem_background();
+
+    #if CIRCUITPY_BLEIO
+    supervisor_bluetooth_background();
+    bonding_background();
+    #endif
+
+    port_background_task();
+
+    assert_heap_ok();
+
+    last_finished_tick = port_get_raw_ticks(NULL);
+
+    port_finish_background_task();
+}
+
+bool supervisor_background_tasks_ok(void) {
+    return port_get_raw_ticks(NULL) - last_finished_tick < 1024;
 }
 
 void supervisor_tick(void) {
@@ -77,7 +119,7 @@ void supervisor_tick(void) {
         #endif
     }
 #endif
-    background_callback_add(&callback, background_task_tick, NULL);
+    background_callback_add(&callback, supervisor_background_tasks, NULL);
 }
 
 uint64_t supervisor_ticks_ms64() {

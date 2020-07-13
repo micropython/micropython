@@ -64,7 +64,7 @@
 //    // last ms.
 //    current_us = 1000 - current_us;
 //    pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
-//    if (!background_tasks_ok() || self->errored_too_fast) {
+//    if (!supervisor_background_tasks_ok() || self->errored_too_fast) {
 //        self->errored_too_fast = true;
 //        common_hal_pulseio_pulsein_pause(self);
 //        return;

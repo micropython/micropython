@@ -101,8 +101,6 @@ void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
 
-    background_tasks_reset();
-
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
     mp_stack_ctrl_init();
