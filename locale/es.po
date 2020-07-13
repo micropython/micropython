@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 14:38-0500\n"
-"PO-Revision-Date: 2020-07-10 18:15+0000\n"
+"PO-Revision-Date: 2020-07-13 19:24+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -536,7 +536,7 @@ msgstr "No se puede especificar RTS o CTS en modo RS485"
 
 #: py/objslice.c
 msgid "Cannot subclass slice"
-msgstr "Cannot subclass slice"
+msgstr "No se puede manejar la partición en una subclase"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins."
@@ -1279,7 +1279,7 @@ msgstr "PWM duty_cycle debe ser entre 0 y 65535 inclusivo (16 bit resolution)"
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
-"La frecuencia de PWM  no se puede escribir variable_frequency es False en la "
+"La frecuencia de PWM no se puede escribir variable_frequency es False en la "
 "construcción."
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
@@ -1685,7 +1685,7 @@ msgstr "Error suave desconocido en dispositivo: %04x"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
-msgstr "Número incomparable de elementos en RHS (%d esperado,%d obtenido)"
+msgstr "Número incomparable de elementos en RHS (%d esperado,%d obtenido)."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid ""
@@ -1728,7 +1728,7 @@ msgstr "Tamaño de valor > max_length"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "funciones Viper actualmente no soportan más de 4 argumentos."
+msgstr "funciones Viper no soportan por el momento, más de 4 argumentos"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
@@ -2280,7 +2280,7 @@ msgid "end_x should be an int"
 msgstr "end_x debe ser un int"
 
 #: ports/nrf/common-hal/busio/UART.c
-#, c-format, fuzzy
+#, c-format
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lX"
 
@@ -2439,7 +2439,7 @@ msgstr "la función toma %d argumentos posicionales pero le fueron dados %d"
 
 #: shared-bindings/time/__init__.c
 msgid "function takes exactly 9 arguments"
-msgstr "la función toma exactamente 9 argumentos."
+msgstr "la función toma exactamente 9 argumentos"
 
 #: py/objgenerator.c
 msgid "generator already executing"
