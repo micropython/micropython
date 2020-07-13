@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-07 14:38-0500\n"
-"PO-Revision-Date: 2020-06-03 18:59+0000\n"
+"PO-Revision-Date: 2020-07-13 17:39+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: main.c
 msgid ""
@@ -68,7 +68,7 @@ msgstr "%d adresspinnar och %d RGB-pinnar indikerar en höjd av %d, inte %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q-fel: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -99,7 +99,7 @@ msgstr "%q måste vara en tuple av längd 2"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q pin invalid"
-msgstr ""
+msgstr "Pinne %q ogiltig"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -438,7 +438,7 @@ msgstr "Buffertlängd %d för stor. Den måste vara mindre än %d"
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr ""
+msgstr "Buffertlängd måste vara en multipel av 512"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -604,11 +604,11 @@ msgstr "Korrupt rå kod"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
-msgstr ""
+msgstr "Kan inte initiera GNSS"
 
 #: ports/cxd56/common-hal/sdioio/SDCard.c
 msgid "Could not initialize SDCard"
-msgstr ""
+msgstr "Kan inte initiera SD-kort"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -896,7 +896,7 @@ msgstr "Internt fel #%d"
 
 #: shared-bindings/sdioio/SDCard.c
 msgid "Invalid %q"
-msgstr ""
+msgstr "Ogiltig %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1113,7 +1113,7 @@ msgstr "Måste ange MISO- eller MOSI-pinne"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "Must provide SCK pin"
-msgstr ""
+msgstr "Måste ange SCK-pinne"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1417,7 +1417,7 @@ msgstr "Kör i säkert läge! Sparad kod körs inte.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
-msgstr ""
+msgstr "SD-kort CSD-format stöds inte"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
@@ -1489,7 +1489,7 @@ msgstr "Ange minst en UART-pinne"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
-msgstr ""
+msgstr "Systeminträdet måste vara gnss. SatellitSystem"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
@@ -2058,7 +2058,7 @@ msgstr "kan inte skicka icke-None värde till nystartad generator"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "can't set 512 block size"
-msgstr ""
+msgstr "kan inte sätta blockstorlek 512"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -2190,7 +2190,7 @@ msgstr "kan inte invertera Vandermonde-matris"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "couldn't determine SD card version"
-msgstr ""
+msgstr "kan inte avgöra SD-kortversion"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
@@ -2757,7 +2757,7 @@ msgstr "negativt skiftantal"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
-msgstr ""
+msgstr "inget SD-kort"
 
 #: py/vm.c
 msgid "no active exception to reraise"
@@ -2782,7 +2782,7 @@ msgstr "ingen reset-pinne tillgänglig"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
-msgstr ""
+msgstr "inget svar från SD-kort"
 
 #: py/runtime.c
 msgid "no such attribute"
@@ -3078,15 +3078,15 @@ msgstr "värdet för sleep måste vara positivt"
 
 #: extmod/ulab/code/ndarray.c
 msgid "slice step can't be zero"
-msgstr ""
+msgstr "segmentsteg kan inte vara noll"
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
-msgstr "segmentsteg får inte vara noll"
+msgstr "segmentsteg kan inte vara noll"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
-msgstr "värdet för konvertering till small int överskreds"
+msgstr "värdet för small int överskreds"
 
 #: main.c
 msgid "soft reboot\n"
@@ -3098,15 +3098,15 @@ msgstr "argumentet sort måste vara en ndarray"
 
 #: extmod/ulab/code/filter.c
 msgid "sos array must be of shape (n_section, 6)"
-msgstr ""
+msgstr "sos array måste ha form (n_section, 6)"
 
 #: extmod/ulab/code/filter.c
 msgid "sos[:, 3] should be all ones"
-msgstr ""
+msgstr "sos[:, 3] måste vara ettor"
 
 #: extmod/ulab/code/filter.c
 msgid "sosfilt requires iterable arguments"
-msgstr ""
+msgstr "sosfilt kräver iterable argument"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3195,11 +3195,11 @@ msgstr "timeout måste vara >= 0.0"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
-msgstr ""
+msgstr "timeout för v1-kort"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v2 card"
-msgstr ""
+msgstr "timeout för v2-kort"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -3400,15 +3400,15 @@ msgstr "noll steg"
 
 #: extmod/ulab/code/filter.c
 msgid "zi must be an ndarray"
-msgstr ""
+msgstr "zi måste vara en ndarray"
 
 #: extmod/ulab/code/filter.c
 msgid "zi must be of float type"
-msgstr ""
+msgstr "zi måste vara av typ float"
 
 #: extmod/ulab/code/filter.c
 msgid "zi must be of shape (n_section, 2)"
-msgstr ""
+msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "I2C operation not supported"
 #~ msgstr "I2C-åtgärd stöds inte"
