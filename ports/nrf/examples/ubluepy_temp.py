@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2017 Glenn Ruben Bakke
+# SPDX-FileCopyrightText: Copyright (c) 2017 Glenn Ruben Bakke
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

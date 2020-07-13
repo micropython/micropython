@@ -1,9 +1,9 @@
-# French translation.
-# Copyright (C) 2018
-# This file is distributed under the same license as the PACKAGE package.
-# Pierrick Couturier <arofarn@arofarn.info>, 2018.
-# Olivier Deveault <odeevee@outlook.com>
+# SPDX-FileCopyrightText: 2018 Pierrick Couturier <arofarn@arofarn.info>
+# SPDX-FileCopyrightText: 2018 Olivier Deveault <odeevee@outlook.com>
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
+
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
