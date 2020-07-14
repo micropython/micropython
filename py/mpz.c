@@ -443,8 +443,11 @@ STATIC size_t mpn_mul(mpz_dig_t *idig, mpz_dig_t *jdig, size_t jlen, mpz_dig_t *
             *id++ = carry;
         }
 
-        ilen = id - oidig;
+      ilen = id - oidig;
+      // check to prevent usb starvation
+      RUN_BACKGROUND_TASKS;
     }
+    
 
     return ilen;
 }
