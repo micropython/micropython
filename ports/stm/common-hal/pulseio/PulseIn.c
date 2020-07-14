@@ -133,7 +133,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     self->last_count = 0;
     self->last_overflow = 0;
 
-    if (HAL_TIM_Base_GetState(&tim_handle) == HAL_TIM_STATE_RESET) {
+    if (HAL_TIM_Base_GetState(&tim_handle) == HAL_TIM_STATE_RESET) { //TODO: there's no state yet
         // Find a suitable timer
         TIM_TypeDef * tim_instance = stm_peripherals_find_timer();
         stm_peripherals_timer_reserve(tim_instance);
