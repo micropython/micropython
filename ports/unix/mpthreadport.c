@@ -66,7 +66,6 @@ STATIC pthread_key_t tls_key;
 // Specifically for thread management, access to the linked list is one example.
 // But also, e.g. scheduler state.
 STATIC pthread_mutex_t thread_mutex;
-STATIC pthread_mutexattr_t thread_mutex_attr;
 STATIC thread_t *thread;
 
 // this is used to synchronise the signal handler of the thread
@@ -114,6 +113,7 @@ void mp_thread_init(void) {
 
     // Needs to be a recursive mutex to emulate the behavior of
     // BEGIN_ATOMIC_SECTION on bare metal.
+    pthread_mutexattr_t thread_mutex_attr;
     pthread_mutexattr_init(&thread_mutex_attr);
     pthread_mutexattr_settype(&thread_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&thread_mutex, &thread_mutex_attr);

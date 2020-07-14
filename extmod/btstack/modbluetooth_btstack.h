@@ -35,9 +35,6 @@
 
 typedef struct _mp_btstack_pending_op_t mp_btstack_pending_op_t;
 
-//typedef struct btstack_linked_item btstack_linked_item_t;
-//typedef btstack_linked_item_t * btstack_linked_list_t;
-
 typedef struct _mp_bluetooth_btstack_root_pointers_t {
     // This stores both the advertising data and the scan response data, concatenated together.
     uint8_t *adv_data;
