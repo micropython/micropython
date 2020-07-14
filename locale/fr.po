@@ -1,14 +1,14 @@
-# French translation.
-# Copyright (C) 2018
-# This file is distributed under the same license as the PACKAGE package.
-# Pierrick Couturier <arofarn@arofarn.info>, 2018.
-# Olivier Deveault <odeevee@outlook.com>
+# SPDX-FileCopyrightText: 2018 Pierrick Couturier <arofarn@arofarn.info>
+# SPDX-FileCopyrightText: 2018 Olivier Deveault <odeevee@outlook.com>
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
+
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-02 15:29+0200\n"
+"POT-Creation-Date: 2020-07-07 14:38-0500\n"
 "PO-Revision-Date: 2020-06-05 17:29+0000\n"
 "Last-Translator: aberwag <aberwag@gmail.com>\n"
 "Language: fr\n"
@@ -1120,6 +1120,10 @@ msgstr "Doit être une sous-classe de %q."
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "Doit fournir une broche MISO ou MOSI"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Must provide SCK pin"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Josef Gajdusek
  * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
@@ -102,7 +102,7 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp
 //|           * ``tm_month``: the month, range [1, 12]
 //|           * ``tm_mday``: the day of the month, range [1, 31]
 //|           * ``tm_hour``: the hour, range [0, 23]
-//|           * ``tm_minute``: the minute, range [0, 59]
+//|           * ``tm_min``: the minute, range [0, 59]
 //|           * ``tm_sec``: the second, range [0, 61]
 //|           * ``tm_wday``: the day of the week, range [0, 6], Monday is 0
 //|           * ``tm_yday``: the day of the year, range [1, 366], -1 indicates not known

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 # Reads in a text file, and performs the necessary escapes so that it
 # can be #included as a static string like:
 #    static const char string_from_textfile[] =

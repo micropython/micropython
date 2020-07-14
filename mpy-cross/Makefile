@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 # The following is a temporary hack to forefully undefine vars that might have
 # be defined by a calling Makefile (from recursive make).
 # TODO: Find a better way to be able to call this Makefile recursively.

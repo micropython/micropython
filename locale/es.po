@@ -1,14 +1,16 @@
-# Spanish translation.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# Carlos Diaz <carlos.santiago.diaz@gmail.com>, 2018.
-# Juan Biondi <juanernestobiondi@gmail.com>, 2018.
+# SPDX-FileCopyrightText: 2018 Carlos Diaz <carlos.santiago.diaz@gmail.com>
+# SPDX-FileCopyrightText: 2018 Juan Biondi <juanernestobiondi@gmail.com>
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+#, fuzzy
+
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-02 15:29+0200\n"
-"PO-Revision-Date: 2020-07-07 15:59+0000\n"
+"POT-Creation-Date: 2020-07-07 14:38-0500\n"
+"PO-Revision-Date: 2020-07-13 19:24+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -536,7 +538,7 @@ msgstr "No se puede especificar RTS o CTS en modo RS485"
 
 #: py/objslice.c
 msgid "Cannot subclass slice"
-msgstr "Cannot subclass slice"
+msgstr "No se puede manejar la partición en una subclase"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins."
@@ -576,7 +578,7 @@ msgstr "Iniciado de pin de reloj fallido."
 
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
-msgstr "Clock stretch demasiado largo "
+msgstr "Estirado de reloj demasiado largo"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
@@ -692,7 +694,7 @@ msgstr "Trozo de datos debe seguir fmt chunk"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
-msgstr "Data es muy grande para el paquete de advertisement."
+msgstr "Data es muy grande para el paquete de anuncio"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -746,7 +748,7 @@ msgstr "Se espera un %q"
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 msgid "Expected a Characteristic"
-msgstr "Se esperaba una Característica."
+msgstr "Se esperaba una Característica"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -776,7 +778,7 @@ msgstr "FFT se define solo para ndarrays"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
-msgstr "Fallo enviando comando"
+msgstr "Fallo enviando comando."
 
 #: ports/nrf/sd_mutex.c
 #, c-format
@@ -873,7 +875,7 @@ msgid ""
 "mpy-update for more info."
 msgstr ""
 "Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte "
-"http://adafru.it/mpy-update para más información"
+"http://adafru.it/mpy-update para más información."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -981,7 +983,7 @@ msgstr "Frecuencia suministrada no válida"
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
-msgstr "Acceso a memoria no válido"
+msgstr "Acceso a memoria no válido."
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -1065,7 +1067,7 @@ msgstr "LHS del agumento por palabra clave deberia ser un identificador"
 
 #: shared-module/displayio/Group.c
 msgid "Layer already in a group."
-msgstr "Layer ya pertenece a un grupo"
+msgstr "La capa ya pertenece a un grupo."
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
@@ -1110,11 +1112,15 @@ msgstr "Falta el pin MISO o MOSI"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
-msgstr "Debe de ser una subclase de %q"
+msgstr "Debe de ser una subclase de %q."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "Debe proporcionar un pin MISO o MOSI"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Must provide SCK pin"
+msgstr "Debes proveer un pin para SCK"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1235,7 +1241,7 @@ msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
 "El objeto se ha desinicializado y ya no se puede utilizar. Crea un nuevo "
-"objeto"
+"objeto."
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1264,7 +1270,7 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
-msgstr "El sobremuestreo debe ser un múltiplo de 8"
+msgstr "El sobremuestreo debe ser un múltiplo de 8."
 
 #: shared-bindings/pulseio/PWMOut.c
 msgid ""
@@ -1275,8 +1281,8 @@ msgstr "PWM duty_cycle debe ser entre 0 y 65535 inclusivo (16 bit resolution)"
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
-"PWM frecuencia no esta escrito cuando el variable_frequency es falso en "
-"construcion"
+"La frecuencia de PWM no se puede escribir variable_frequency es False en la "
+"construcción."
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
@@ -1461,7 +1467,7 @@ msgstr "Serializer está siendo utilizado"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
-msgstr "Slice y value tienen diferentes longitudes"
+msgstr "Slice y value tienen tamaños diferentes."
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
@@ -1653,7 +1659,7 @@ msgstr "No se pudo leer los datos de la paleta de colores"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
-msgstr "Imposible escribir en nvm"
+msgstr "Imposible escribir en nvm."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -1681,7 +1687,7 @@ msgstr "Error suave desconocido en dispositivo: %04x"
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
-msgstr "Número incomparable de elementos en RHS (%d esperado,%d obtenido)"
+msgstr "Número incomparable de elementos en RHS (%d esperado,%d obtenido)."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid ""
@@ -1724,7 +1730,7 @@ msgstr "Tamaño de valor > max_length"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
-msgstr "funciones Viper actualmente no soportan más de 4 argumentos."
+msgstr "funciones Viper no soportan por el momento, más de 4 argumentos"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
@@ -2278,7 +2284,7 @@ msgstr "end_x debe ser un int"
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
-msgstr "error = 0x%08lx"
+msgstr "error = 0x%08lX"
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -2435,7 +2441,7 @@ msgstr "la función toma %d argumentos posicionales pero le fueron dados %d"
 
 #: shared-bindings/time/__init__.c
 msgid "function takes exactly 9 arguments"
-msgstr "la función toma exactamente 9 argumentos."
+msgstr "la función toma exactamente 9 argumentos"
 
 #: py/objgenerator.c
 msgid "generator already executing"

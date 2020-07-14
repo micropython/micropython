@@ -199,12 +199,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         *New in CircuitPython 4.0:* No length parameter is permitted."""
 //|         ...
 //|
-
 //|     def readline(self, ) -> Any:
-//|         """Read a line, ending in a newline character.
+//|         """Read a line, ending in a newline character, or
+//|            return None if a timeout occurs sooner, or
+//|            return everything readable if no newline is found and timeout=0
 //|
 //|         :return: the line read
-//|         :rtype: int or None"""
+//|         :rtype: bytes or None"""
 //|         ...
 //|
 

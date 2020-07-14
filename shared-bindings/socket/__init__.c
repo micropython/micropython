@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  *               2018 Nick Moore for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
