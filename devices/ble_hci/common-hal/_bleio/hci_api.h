@@ -47,11 +47,13 @@ hci_result_t hci_le_create_conn(uint16_t scan_interval, uint16_t scan_window, ui
 
 hci_result_t hci_le_read_buffer_size(uint16_t *le_max_len, uint8_t *le_max_num);
 hci_result_t hci_le_read_maximum_advertising_data_length(uint16_t *max_adv_data_len);
+hci_result_t hci_le_read_local_supported_features(uint8_t features[8]);
 
 hci_result_t hci_le_set_advertising_data(uint8_t length, uint8_t data[]);
 hci_result_t hci_le_set_advertising_enable(uint8_t enable);
 hci_result_t hci_le_set_advertising_parameters(uint16_t min_interval, uint16_t max_interval, uint8_t type, uint8_t own_addr_type, bt_addr_le_t *direct_addr, uint8_t channel_map, uint8_t filter_policy);
 
+hci_result_t hci_le_set_extended_advertising_data(uint8_t handle, uint8_t op, uint8_t frag_pref, uint8_t len, uint8_t data[]);
 hci_result_t hci_le_set_extended_advertising_enable(uint8_t enable, uint8_t set_num, uint8_t handle[], uint16_t duration[], uint8_t max_ext_adv_evts[]);
 hci_result_t hci_le_set_extended_advertising_parameters(uint8_t handle, uint16_t props, uint32_t prim_min_interval, uint32_t prim_max_interval, uint8_t prim_channel_map, uint8_t own_addr_type, bt_addr_le_t *peer_addr, uint8_t filter_policy, int8_t tx_power, uint8_t prim_adv_phy, uint8_t sec_adv_max_skip, uint8_t sec_adv_phy, uint8_t sid, uint8_t scan_req_notify_enable);
 

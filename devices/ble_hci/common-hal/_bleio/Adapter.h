@@ -65,6 +65,7 @@ typedef struct _bleio_adapter_obj_t {
     uint16_t max_acl_buffer_len;
     uint16_t max_acl_num_buffers;
     uint16_t max_adv_data_len;
+    uint8_t features[8];        // Supported BLE features.
 
 } bleio_adapter_obj_t;
 

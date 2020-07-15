@@ -83,6 +83,8 @@ STATIC void check_enabled(bleio_adapter_obj_t *self) {
 //|         The `uart`, `rts`, and `cts` objects are used to
 //|         communicate with the HCI co-processor in HCI mode.
 //|
+//|         The `_bleio.adapter` object is enabled during this call.
+//|
 mp_obj_t bleio_adapter_hci_uart_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 #if CIRCUITPY_BLEIO_HCI
     bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -108,9 +110,9 @@ mp_obj_t bleio_adapter_hci_uart_init(mp_uint_t n_args, const mp_obj_t *pos_args,
         !MP_OBJ_IS_TYPE(cts, &digitalio_digitalinout_type)) {
         mp_raise_ValueError(translate("Expected a DigitalInOut"));
     }
-    check_enabled(self);
+
+    // Will enable the adapter.
     common_hal_bleio_adapter_hci_uart_init(self, uart, rts, cts);
-    common_hal_bleio_adapter_set_enabled(self, true);
 
     return mp_const_none;
 #else

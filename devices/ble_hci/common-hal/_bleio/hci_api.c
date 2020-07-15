@@ -628,9 +628,19 @@ hci_result_t hci_le_read_maximum_advertising_data_length(uint16_t *max_adv_data_
     if (result == HCI_OK) {
         struct bt_hci_rp_le_read_max_adv_data_len *response =
             (struct bt_hci_rp_le_read_max_adv_data_len *) cmd_response_data;
-        if (response->status == BT_HCI_ERR_SUCCESS) {
-            *max_adv_data_len = response->max_adv_data_len;
-        }
+        *max_adv_data_len = response->max_adv_data_len;
+    }
+
+    return result;
+}
+
+hci_result_t hci_le_read_local_supported_features(uint8_t features[8]) {
+    int result = send_command(BT_HCI_OP_LE_READ_LOCAL_FEATURES, 0, NULL);
+    if (result == HCI_OK) {
+        struct bt_hci_rp_le_read_local_features *response =
+            (struct bt_hci_rp_le_read_local_features *) cmd_response_data;
+        memcpy(features, response->features,
+               sizeof_field(struct bt_hci_rp_le_read_local_features, features));
     }
 
     return result;
@@ -648,6 +658,20 @@ hci_result_t hci_le_set_advertising_data(uint8_t len, uint8_t data[]) {
     // All data bytes are sent even if some are unused.
     return send_command(BT_HCI_OP_LE_SET_ADV_DATA, sizeof(params), &params);
 }
+
+hci_result_t hci_le_set_extended_advertising_data(uint8_t handle, uint8_t op, uint8_t frag_pref, uint8_t len, uint8_t data[]) {
+    const uint8_t max_len = sizeof_field(struct bt_hci_cp_le_set_ext_adv_data, data);
+    uint8_t valid_len = MIN(len, max_len);
+    struct bt_hci_cp_le_set_ext_adv_data params = {
+        .handle = handle,
+        .op = op,
+        .frag_pref = frag_pref,
+        .len = valid_len,
+    };
+    memcpy(params.data, data, valid_len);
+    return send_command(BT_HCI_OP_LE_SET_EXT_ADV_DATA, sizeof(params) - (max_len - valid_len), &params);
+}
+
 
 hci_result_t hci_le_set_scan_response_data(uint8_t len, uint8_t data[]) {
     struct bt_hci_cp_le_set_scan_rsp_data params = {

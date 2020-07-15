@@ -68,26 +68,6 @@
 #define BLE_SLAVE_LATENCY            0
 #define BLE_CONN_SUP_TIMEOUT         MSEC_TO_UNITS(4000, UNIT_10_MS)
 
-#ifndef BLEIO_VS_UUID_COUNT
-#define BLEIO_VS_UUID_COUNT 75
-#endif
-
-#ifndef BLEIO_HVN_TX_QUEUE_SIZE
-#define BLEIO_HVN_TX_QUEUE_SIZE 9
-#endif
-
-#ifndef BLEIO_CENTRAL_ROLE_COUNT
-#define BLEIO_CENTRAL_ROLE_COUNT 4
-#endif
-
-#ifndef BLEIO_PERIPH_ROLE_COUNT
-#define BLEIO_PERIPH_ROLE_COUNT 4
-#endif
-
-#ifndef BLEIO_ATTR_TAB_SIZE
-#define BLEIO_ATTR_TAB_SIZE (BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 5)
-#endif
-
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
 // STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
@@ -193,6 +173,11 @@ STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
 // Get various values and limits set by the adapter.
 STATIC void bleio_adapter_get_info(bleio_adapter_obj_t *self) {
 
+    // Get supported features.
+    if (hci_le_read_local_supported_features(self->features) != HCI_OK) {
+        mp_raise_bleio_BluetoothError(translate("Could not read BLE features"));
+    }
+
     // Get ACL buffer info.
     uint16_t le_max_len;
     uint8_t le_max_num;
@@ -212,26 +197,28 @@ STATIC void bleio_adapter_get_info(bleio_adapter_obj_t *self) {
         self->max_acl_num_buffers = acl_max_num;
     }
 
-    // Get max advertising length.
-    uint16_t max_adv_data_len;
-    if (hci_le_read_maximum_advertising_data_length(&max_adv_data_len) != HCI_OK) {
-        mp_raise_bleio_BluetoothError(translate("Could not get max advertising length"));
+    // Get max advertising length if extended advertising is supported.
+    if (BT_FEAT_LE_EXT_ADV(self->features)) {
+        uint16_t max_adv_data_len;
+        if (hci_le_read_maximum_advertising_data_length(&max_adv_data_len) != HCI_OK) {
+            mp_raise_bleio_BluetoothError(translate("Could not get max advertising length"));
+        }
+        self->max_adv_data_len = max_adv_data_len;
+    } else {
+        self->max_adv_data_len = 31;
     }
-    self->max_adv_data_len = max_adv_data_len;
 }
 
 void common_hal_bleio_adapter_hci_uart_init(bleio_adapter_obj_t *self, busio_uart_obj_t *uart, digitalio_digitalinout_obj_t *rts, digitalio_digitalinout_obj_t *cts) {
     self->hci_uart = uart;
     self->rts_digitalinout = rts;
     self->cts_digitalinout = cts;
+
+    // Advertising-related fields are initialized by common_hal_bleio_adapter_set_enabled().
     self->enabled = false;
-    self->now_advertising = false;
-    self->circuitpython_advertising = false;
-    self->extended_advertising = false;
-    self->advertising_timeout_msecs = 0;
 
+    common_hal_bleio_adapter_set_enabled(self, true);
     bleio_adapter_get_info(self);
-
     bleio_adapter_reset_name(self);
 }
 
@@ -243,15 +230,14 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         return;
     }
 
-    //FIX enable/disable HCI adapter, but don't reset it, since we don't know how.
     self->enabled = enabled;
-    if (!enabled) {
-        // Stop any current activity.
-        check_hci_error(hci_reset());
-        self->now_advertising = false;
-        self->extended_advertising = false;
-        self->circuitpython_advertising = false;
-    }
+
+    // Stop any current activity; reset to known state.
+    check_hci_error(hci_reset());
+    self->now_advertising = false;
+    self->extended_advertising = false;
+    self->circuitpython_advertising = false;
+    self->advertising_timeout_msecs = 0;
 }
 
 bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
@@ -506,6 +492,10 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         advertising_data_len > self->max_adv_data_len || scan_response_data_len > self->max_adv_data_len;
 
     if (extended) {
+        if (!BT_FEAT_LE_EXT_ADV(self->features)) {
+            mp_raise_bleio_BluetoothError(translate("Data length needs extended advertising, but this adapter does not support it"));
+        }
+
         uint16_t props = 0;
         if (connectable) {
             props |= BT_HCI_LE_ADV_PROP_CONN;
