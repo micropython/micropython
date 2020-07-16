@@ -26,6 +26,13 @@ else
 	include drivers/bluetooth/bluetooth_common.mk
 endif
 
+ifneq ($(BOOTLOADER),)
+	BOOTLOADER_UPPER = $(shell echo $(BOOTLOADER) | tr '[:lower:]' '[:upper:]')
+	# Use additional bootloader linker script
+	LD_FILES += boards/$(MCU_SUB_VARIANT)_$(BOOTLOADER)_$(BOOTLOADER_VERSION_MAJOR).$(BOOTLOADER_VERSION_MINOR).x.ld
+	CFLAGS += -DBOOTLOADER_$(BOOTLOADER_UPPER)_VERSION=$(BOOTLOADER_MAJOR)$(BOOTLOADER_MINOR)
+endif
+
 LD_FILES += boards/memory.ld boards/common.ld
 
 ifneq ($(LD_FILE),)
