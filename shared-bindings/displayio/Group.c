@@ -190,7 +190,7 @@ const mp_obj_property_t displayio_group_y_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def append(self, layer: layer) -> None:
+//|     def append(self, layer: Union[vectorio.Shape, Group, TileGrid]) -> None:
 //|         """Append a layer to the group. It will be drawn above other layers."""
 //|         ...
 //|
@@ -201,7 +201,7 @@ STATIC mp_obj_t displayio_group_obj_append(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_append_obj, displayio_group_obj_append);
 
-//|     def insert(self, index: int, layer: layer) -> None:
+//|     def insert(self, index: int, layer: Union[vectorio.Shape, Group, TileGrid]) -> None:
 //|         """Insert a layer into the group."""
 //|         ...
 //|
@@ -214,7 +214,7 @@ STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj,
 MP_DEFINE_CONST_FUN_OBJ_3(displayio_group_insert_obj, displayio_group_obj_insert);
 
 
-//|     def index(self, layer: layer) -> int:
+//|     def index(self, layer: Union[vectorio.Shape, Group, TileGrid]) -> int:
 //|         """Returns the index of the first copy of layer. Raises ValueError if not found."""
 //|         ...
 //|
@@ -228,7 +228,7 @@ STATIC mp_obj_t displayio_group_obj_index(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_index_obj, displayio_group_obj_index);
 
-//|     def pop(self, i: int = -1) -> group:
+//|     def pop(self, i: int = -1) -> Union[vectorio.Shape, Group, TileGrid]:
 //|         """Remove the ith item and return it."""
 //|         ...
 //|
@@ -251,7 +251,7 @@ STATIC mp_obj_t displayio_group_obj_pop(size_t n_args, const mp_obj_t *pos_args,
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_group_pop_obj, 1, displayio_group_obj_pop);
 
 
-//|     def remove(self, layer: layer) -> None:
+//|     def remove(self, layer: Union[vectorio.Shape, Group, TileGrid]) -> None:
 //|         """Remove the first copy of layer. Raises ValueError if it is not present."""
 //|         ...
 //|
@@ -280,7 +280,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|     def __getitem__(self, index: int) -> group:
+//|     def __getitem__(self, index: int) -> Union[vectorio.Shape, Group, TileGrid]:
 //|         """Returns the value at the given index.
 //|
 //|         This allows you to::
@@ -288,7 +288,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|           print(group[0])"""
 //|         ...
 //|
-//|     def __setitem__(self, index: int, value: group) -> None:
+//|     def __setitem__(self, index: int, value: Union[vectorio.Shape, Group, TileGrid]) -> None:
 //|         """Sets the value at the given index.
 //|
 //|         This allows you to::
@@ -296,7 +296,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|           group[0] = sprite"""
 //|         ...
 //|
-//|     def __delitem__(self, index: int) -> group:
+//|     def __delitem__(self, index: int) -> None:
 //|         """Deletes the value at the given index.
 //|
 //|         This allows you to::

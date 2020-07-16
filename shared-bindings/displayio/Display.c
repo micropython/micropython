@@ -395,7 +395,7 @@ const mp_obj_property_t displayio_display_rotation_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     bus: displayio = ...
+//|     bus: Union[ParallelBus, FourWire, I2CDisplay] = ...
 //|	    """The bus being used by the display"""
 //|
 //|

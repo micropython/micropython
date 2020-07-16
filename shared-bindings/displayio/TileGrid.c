@@ -289,7 +289,7 @@ const mp_obj_property_t displayio_tilegrid_transpose_xy_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     pixel_shader: pixel_shader = ...
+//|     pixel_shader: Union[ColorConverter, Palette] = ...
 //|     """The pixel shader of the tilegrid."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_pixel_shader(mp_obj_t self_in) {
