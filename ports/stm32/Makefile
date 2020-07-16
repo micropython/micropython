@@ -42,7 +42,9 @@ USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 DFU=$(TOP)/tools/dfu.py
 # may need to prefix dfu-util with sudo
+ifeq ($(shell uname -s),Linux)
 USE_PYDFU ?= 1
+endif
 PYDFU ?= $(TOP)/tools/pydfu.py
 DFU_UTIL ?= dfu-util
 BOOTLOADER_DFU_USB_VID ?= 0x0483
