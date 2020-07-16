@@ -429,6 +429,16 @@ extern const struct _mp_obj_module_t _eve_module;
 #define _EVE_MODULE
 #endif
 
+#if CIRCUITPY_MEMORYMONITOR
+extern const struct _mp_obj_module_t memorymonitor_module;
+#define MEMORYMONITOR_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_memorymonitor), (mp_obj_t)&memorymonitor_module },
+#define MEMORYMONITOR_ROOT_POINTERS mp_obj_t active_allocationsizes; \
+                                    mp_obj_t active_allocationalarms;
+#else
+#define MEMORYMONITOR_MODULE
+#define MEMORYMONITOR_ROOT_POINTERS
+#endif
+
 #if CIRCUITPY_MICROCONTROLLER
 extern const struct _mp_obj_module_t microcontroller_module;
 #define MICROCONTROLLER_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module },
@@ -708,6 +718,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     JSON_MODULE \
     MATH_MODULE \
     _EVE_MODULE \
+    MEMORYMONITOR_MODULE \
     MICROCONTROLLER_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
@@ -765,6 +776,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     mp_obj_t terminal_tilegrid_tiles; \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
+    MEMORYMONITOR_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
 
 void supervisor_run_background_tasks_if_tick(void);

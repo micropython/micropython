@@ -174,6 +174,9 @@ endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
 endif
+ifeq ($(CIRCUITPY_MEMORYMONITOR),1)
+SRC_PATTERNS += memorymonitor/%
+endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
 SRC_PATTERNS += microcontroller/%
 endif
@@ -398,6 +401,9 @@ SRC_SHARED_MODULE_ALL = \
 	gamepad/__init__.c \
 	gamepadshift/GamePadShift.c \
 	gamepadshift/__init__.c \
+	memorymonitor/__init__.c \
+	memorymonitor/AllocationAlarm.c \
+	memorymonitor/AllocationSize.c \
 	network/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
