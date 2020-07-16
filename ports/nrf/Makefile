@@ -446,6 +446,31 @@ deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
 sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(Q)$(OPENOCD) -f interface/cmsis-dap.cfg -f $(OPENOCD_TARGET) -c "init" -c "program $(SOFTDEV_HEX) verify reset" -c "exit"
 
+else ifeq ($(FLASHER), nrfutil)
+
+NRFUTIL_PORT ?= /dev/ttyACM0
+NRFUTIL_SD_REQ ?= 0x00
+
+ifeq ($(SD), s140)
+NRFUTIL_SD_REQ = 0xB6
+endif
+
+.PHONY: nrfutil_dfu_sd nrfutil_dfu_deploy
+.NOTPARALLEL: nrfutil_dfu_sd nrfutil_dfu_deploy
+
+# DFU both SD and app in case of target "sd"
+sd: nrfutil_dfu_sd nrfutil_dfu_deploy
+
+nrfutil_dfu_sd: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)hexmerge.py -o $(BUILD)/stripped_sd.hex --range=0x1000: $(SOFTDEV_HEX)
+	$(Q)nrfutil pkg generate --hw-version 52 --sd-req 0x00 --sd-id 0x00 --softdevice $(BUILD)/stripped_sd.hex $(BUILD)/stripped_sd.zip
+	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/stripped_sd.zip -p $(NRFUTIL_PORT) -t 0
+
+nrfutil_dfu_deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
+	$(Q)nrfutil pkg generate --hw-version 52 --sd-req $(NRFUTIL_SD_REQ) --application-version 1 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip
+	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
+
+deploy: nrfutil_dfu_deploy
 endif
 
 flash: deploy
