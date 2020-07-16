@@ -217,8 +217,8 @@ $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-id
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
-$(BUILD)/esp-idf/esp-idf/%.a: $(BUILD)/esp-idf/config/sdkconfig.h
-	ninja -C $(BUILD)/esp-idf esp-idf/$*.a
+#$(BUILD)/esp-idf/esp-idf/%.a: $(BUILD)/esp-idf/config/sdkconfig.h
+#	ninja -C $(BUILD)/esp-idf esp-idf/$*.a
 
 $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld: $(BUILD)/esp-idf/config/sdkconfig.h
 	ninja -C $(BUILD)/esp-idf esp-idf/esp32s2/esp32s2_out.ld
@@ -229,9 +229,6 @@ $(BUILD)/esp-idf/esp-idf/esp32s2/ld/esp32s2.project.ld: $(BUILD)/esp-idf/config/
 
 $(BUILD)/esp-idf/partition_table/partition-table.bin: $(BUILD)/esp-idf/config/sdkconfig.h
 	IDF_PATH=$(IDF_PATH) ninja -C $(BUILD)/esp-idf partition_table/partition-table.bin
-
-$(BUILD)/esp-idf/bootloader/bootloader.bin: $(BUILD)/esp-idf/config/sdkconfig.h
-	ninja -C $(BUILD)/esp-idf bootloader/bootloader.bin
 
 # run menuconfig
 menuconfig: $(BUILD)/esp-idf/config
@@ -260,7 +257,18 @@ FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
-$(BUILD)/firmware.elf: $(OBJ) | $(ESP_IDF_COMPONENTS_EXPANDED) $(ESP_AUTOGEN_LD)
+.PHONY: esp-idf-stamp
+esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
+	ninja -C $(BUILD)/esp-idf \
+		bootloader/bootloader.bin \
+		esp-idf/bootloader_support/libbootloader_support.a \
+		esp-idf/esp32s2/ld/esp32s2.project.ld \
+		esp-idf/esp_system/libesp_system.a \
+		esp-idf/freertos/libfreertos.a \
+		esp-idf/log/liblog.a \
+		esp-idf/xtensa/libxtensa.a
+
+$(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 	$(STEPECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(LDFLAGS) $^ $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) build-$(BOARD)/esp-idf/esp-idf/newlib/libnewlib.a -u newlib_include_pthread_impl
 	# $(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld
@@ -271,7 +279,7 @@ $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf
 #	$(Q)$(OBJCOPY) -O binary $^ $@
 #   $(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
 
-$(BUILD)/firmware.bin: $(BUILD)/esp-idf/partition_table/partition-table.bin $(BUILD)/esp-idf/bootloader/bootloader.bin $(BUILD)/circuitpython-firmware.bin
+$(BUILD)/firmware.bin: $(BUILD)/circuitpython-firmware.bin | esp-idf-stamp
 	$(Q)$(PYTHON) ../../tools/join_bins.py $@ 0x1000 $(BUILD)/esp-idf/bootloader/bootloader.bin 0x8000 $(BUILD)/esp-idf/partition_table/partition-table.bin 0x10000 $(BUILD)/circuitpython-firmware.bin
 
 $(BUILD)/firmware.uf2: $(BUILD)/circuitpython-firmware.bin
