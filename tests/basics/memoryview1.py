@@ -125,3 +125,9 @@ print(b'cd' == memoryview(b'abcdef')[2:4])
 print(b'cd' != memoryview(b'abcdef')[2:4])
 print(b'xy' == memoryview(b'abcdef')[2:4])
 print(b'xy' != memoryview(b'abcdef')[2:4])
+
+# shift right
+b = bytearray(b'0123456789')
+m = memoryview(b)
+m[1:] = m[:-1]
+print(m == b'0012345678')
