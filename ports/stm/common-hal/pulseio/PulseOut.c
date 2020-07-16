@@ -73,7 +73,6 @@ STATIC void start_timer(void) {
     tim_handle.Instance->CR1 |= TIM_CR1_CEN; // Resume timer
     tim_handle.Instance->CR1 |= TIM_CR1_URS; // Disable non-overflow interrupts
     __HAL_TIM_ENABLE_IT(&tim_handle, TIM_IT_UPDATE);
-
 }
 
 STATIC void pulseout_event_handler(void) {

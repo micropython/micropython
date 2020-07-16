@@ -67,7 +67,7 @@ static size_t irq_map[] = {
     NULL_IRQ,
     #endif
     #ifdef TIM6
-        #if !defined(DAC_BASE) || !defined(DAC1_BASE)
+        #if !defined(DAC_BASE) && !defined(DAC1_BASE)
         TIM6_IRQn,
         #else
         TIM6_DAC_IRQn,

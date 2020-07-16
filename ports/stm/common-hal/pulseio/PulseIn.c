@@ -102,7 +102,9 @@ void pulsein_reset(void) {
     }
     memset(_objs, 0, sizeof(_objs));
 
+    HAL_TIM_Base_DeInit(&tim_handle);
     tim_clock_disable(stm_peripherals_timer_get_index(tim_handle.Instance));
+    memset(&tim_handle, 0, sizeof(tim_handle));
     refcount = 0;
 }
 
@@ -133,21 +135,22 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     self->last_count = 0;
     self->last_overflow = 0;
 
-    if (HAL_TIM_Base_GetState(&tim_handle) == HAL_TIM_STATE_RESET) { //TODO: there's no state yet
+    if (HAL_TIM_Base_GetState(&tim_handle) == HAL_TIM_STATE_RESET) {
         // Find a suitable timer
         TIM_TypeDef * tim_instance = stm_peripherals_find_timer();
         stm_peripherals_timer_reserve(tim_instance);
 
-        // Calculate a 1ms period
+        // Set ticks to 1us
         uint32_t source = stm_peripherals_timer_get_source_freq(tim_instance);
-        uint32_t prescaler = source/1000000; // 1us intervals
+        uint32_t prescaler = source/1000000;
 
+        // Enable clocks and IRQ, set callback
         stm_peripherals_timer_preinit(tim_instance, 4, pulsein_timer_event_handler);
 
         // Set the new period
         tim_handle.Instance = tim_instance;
-        tim_handle.Init.Prescaler = prescaler; // divide down to 1mhz
-        tim_handle.Init.Period = 0xffff;
+        tim_handle.Init.Prescaler = prescaler - 1;
+        tim_handle.Init.Period = 0x10000 - 1; //65 ms period (maximum)
         HAL_TIM_Base_Init(&tim_handle);
 
         // Set registers manually
