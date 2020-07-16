@@ -61,3 +61,27 @@ try:
     memoryview(array.array('i'))[0:2] = b'1234'
 except ValueError:
     print('ValueError')
+
+# test shift left of bytearray
+b = bytearray(range(10))
+mv = memoryview(b)
+mv[1:] = mv[:-1]
+print(b)
+
+# test shift right of bytearray
+b = bytearray(range(10))
+mv = memoryview(b)
+mv[:-1] = mv[1:]
+print(b)
+
+# test shift left of array
+a = array.array('I', range(10))
+mv = memoryview(a)
+mv[1:] = mv[:-1]
+print(a)
+
+# test shift right of array
+a = array.array('I', range(10))
+mv = memoryview(a)
+mv[:-1] = mv[1:]
+print(a)
