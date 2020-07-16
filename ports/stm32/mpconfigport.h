@@ -120,6 +120,9 @@
 #define MICROPY_PY_MATH_ISCLOSE     (1)
 #define MICROPY_PY_MATH_FACTORIAL   (1)
 #define MICROPY_PY_CMATH            (1)
+#ifndef MICROPY_PY_FSTRING
+#define MICROPY_PY_FSTRING          (1)
+#endif
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_IO_IOBASE        (1)
 #define MICROPY_PY_IO_FILEIO        (MICROPY_VFS_FAT || MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
