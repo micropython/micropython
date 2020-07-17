@@ -603,6 +603,8 @@ int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
+    // TODO: catch BLE_GAP_EVENT_NOTIFY_TX to raise an event for completed
+    // indication transaction.
     return ble_hs_err_to_errno(ble_gattc_indicate(conn_handle, value_handle));
 }
 

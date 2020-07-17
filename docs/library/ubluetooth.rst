@@ -48,7 +48,8 @@ Configuration
     - ``'mac'``: Returns the device MAC address. If a device has a fixed address
       (e.g. PYBD) then it will be returned. Otherwise (e.g. ESP32) a random
       address will be generated when the BLE interface is made active.
-      Note: on some ports, accessing this value requires that the interface is
+
+      **Note:** on some ports, accessing this value requires that the interface is
       active (so that the MAC address can be queried from the controller).
 
     - ``'gap_name'``: Get/set the GAP device name used by service 0x1800,
@@ -71,12 +72,12 @@ Event Handling
     arguments, ``event`` (which will be one of the codes below) and ``data``
     (which is an event-specific tuple of values).
 
-    Note: the ``addr``, ``adv_data``, ``char_data``, ``notify_data``, and
-    ``uuid`` entries in the tuples are
-    references to data managed by the :mod:`ubluetooth` module (i.e. the same
-    instance will be re-used across multiple calls to the event handler). If
-    your program wants to use this data outside of the handler, then it must
-    copy them first, e.g. by using ``bytes(addr)`` or ``bluetooth.UUID(uuid)``.
+    **Note:** the ``addr``, ``adv_data``, ``char_data``, ``notify_data``, and
+    ``uuid`` entries in the tuples are references to data managed by the
+    :mod:`ubluetooth` module (i.e. the same instance will be re-used across
+    multiple calls to the event handler). If your program wants to use this
+    data outside of the handler, then it must copy them first, e.g. by using
+    ``bytes(addr)`` or ``bluetooth.UUID(uuid)``.
 
     An event handler showing all possible events::
 
@@ -189,7 +190,7 @@ Broadcaster Role (Advertiser)
     protocol (e.g. ``bytes``, ``bytearray``, ``str``). *adv_data* is included
     in all broadcasts, and *resp_data* is send in reply to an active scan.
 
-    Note: if *adv_data* (or *resp_data*) is ``None``, then the data passed
+    **Note:** if *adv_data* (or *resp_data*) is ``None``, then the data passed
     to the previous call to ``gap_advertise`` will be re-used. This allows a
     broadcaster to resume advertising with just ``gap_advertise(interval_us)``.
     To clear the advertising payload pass an empty ``bytes``, i.e. ``b''``.
@@ -280,8 +281,8 @@ writes from a central to a given characteristic, use
         ( (hr,), (tx, rx,), ) = bt.gatts_register_services(SERVICES)
 
     The three value handles (``hr``, ``tx``, ``rx``) can be used with
-    :meth:`gatts_read <BLE.gatts_read>`, :meth:`gatts_write <BLE.gatts_write>`,
-    and :meth:`gatts_notify <BLE.gatts_notify>`.
+    :meth:`gatts_read <BLE.gatts_read>`, :meth:`gatts_write <BLE.gatts_write>`, :meth:`gatts_notify <BLE.gatts_notify>`, and
+    :meth:`gatts_indicate <BLE.gatts_indicate>`.
 
     **Note:** Advertising must be stopped before registering services.
 
@@ -296,12 +297,24 @@ writes from a central to a given characteristic, use
 
 .. method:: BLE.gatts_notify(conn_handle, value_handle, [data])
 
-    Notifies a connected central that this value has changed and that it should
-    issue a read of the current value from this peripheral.
+    Sends a notification request to a connected central.
 
-    If *data* is specified, then the that value is sent to the central as part
-    of the notification, avoiding the need for a separate read request. Note
-    that this will not update the local value stored.
+    If *data* is specified, then that value is sent to the central as part of
+    the notification. The local value will not be modified.
+
+    Otherwise, if *data* is not specified, then the current local value (as
+    set with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
+
+.. method:: BLE.gatts_indicate(conn_handle, value_handle)
+
+    Sends an indication request to a connected central.
+
+    **Note:** This does not currently support sending a custom value, it will
+    always send the current local value (as set with :meth:`gatts_write
+    <BLE.gatts_write>`).
+
+    **Note:** This does not currently support generating an event for sucessful
+    acknowledgment of the indication.
 
 .. method:: BLE.gatts_set_buffer(value_handle, len, append=False, /)
 
