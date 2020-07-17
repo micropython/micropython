@@ -91,12 +91,10 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     self->write_perm = write_perm;
     self->descriptor_list = NULL;
 
-    //FIX
-    // const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
-    // if (max_length < 0 || max_length > max_length_max) {
-    //     mp_raise_ValueError_varg(translate("max_length must be 0-%d when fixed_length is %s"),
-    //                              max_length_max, fixed_length ? "True" : "False");
-    // }
+    const mp_int_t max_length_max = 512;
+    if (max_length < 0 || max_length > max_length_max) {
+        mp_raise_ValueError(translate("max_length must be <= 512"));
+    }
     self->max_length = max_length;
     self->fixed_length = fixed_length;
 

@@ -633,7 +633,12 @@ void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
     self->now_advertising = false;
     self->extended_advertising = false;
     self->circuitpython_advertising = false;
-    check_hci_error(hci_le_set_advertising_enable(BT_HCI_LE_ADV_DISABLE));
+    int result = hci_le_set_advertising_enable(BT_HCI_LE_ADV_DISABLE);
+    // OK if we're already stopped.
+    if (result != BT_HCI_ERR_CMD_DISALLOWED) {
+        check_hci_error(result);
+    }
+
     //TODO startup CircuitPython advertising again.
 }
 
@@ -704,4 +709,6 @@ void bleio_adapter_background(bleio_adapter_obj_t* adapter) {
         adapter->advertising_timeout_msecs = 0;
         common_hal_bleio_adapter_stop_advertising(adapter);
     }
+
+    hci_poll_for_incoming_pkt();
 }

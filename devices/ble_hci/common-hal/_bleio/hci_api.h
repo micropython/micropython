@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include "common-hal/_bleio/hci_include/hci.h"
+#include "common-hal/_bleio/hci_include/hci_err.h"
 
 // Incomplete forward declaration to get around mutually-dependent include files.
 typedef struct _bleio_adapter_obj_t bleio_adapter_obj_t;

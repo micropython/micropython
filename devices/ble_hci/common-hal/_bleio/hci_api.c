@@ -25,6 +25,7 @@
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "common-hal/_bleio/Adapter.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
 // HCI H4 protocol packet types: first byte in the packet.
 #define H4_CMD 0x01
@@ -61,44 +62,61 @@ STATIC uint8_t* cmd_response_data;
 
 //FIX STATIC uint8_t acl_pkt_buffer[ACL_PKT_BUFFER_SIZE];
 
+STATIC volatile bool hci_poll_in_progress = false;
+
 STATIC bool debug = true;
 
 // These are the headers of the full packets that are sent over the serial interface.
 // They all have a one-byte type-field at the front, one of the H4_xxx packet types.
 
 typedef struct __attribute__ ((packed)) {
-        uint8_t pkt_type;
-        uint16_t opcode;
-        uint8_t param_len;
-} h4_hci_cmd_hdr_t;
+    uint8_t pkt_type;
+    uint16_t opcode;
+    uint8_t param_len;
+    uint8_t params[];
+} h4_hci_cmd_pkt_t;
+
+#define ACLDATA_PB_FIRST_NON_FLUSH  0
+#define ACLDATA_HCI_PB_MIDDLE       1
+#define ACLDATA_PB_FIRST_FLUSH      2
+#define ACLDATA_PB_FULL             3
 
 typedef struct __attribute__ ((packed)) {
     uint8_t pkt_type;
-    uint16_t handle;
-    uint16_t total_data_len;
-    uint16_t acl_data_len;
-    uint16_t cid;
-}  h4_hci_acl_hdr_t;
+    uint16_t handle : 12;
+    uint8_t pb: 2;         // Packet boundary flag: ACLDATA_PB values.
+    uint8_t bc: 2;         // Broadcast flag: always 0b00 for BLE.
+    uint16_t data_len;     // Total data length, including acl_data header.
+    uint8_t data[];        // Data following the header
+}  h4_hci_acl_pkt_t;
+
+// L2CAP data, which is in h4_hci_acl_pkt_t.data
+typedef struct __attribute__ ((packed)) {
+    uint16_t l2cap_data_len;  // Length of acl_data. Does not include this header.
+    uint16_t cid;             // Channel ID.
+    uint8_t l2cap_data[];
+} l2cap_data_t;
+
 
 typedef struct __attribute__ ((packed)) {
     uint8_t pkt_type;
     uint8_t evt;
     uint8_t param_len;
-} h4_hci_evt_hdr_t;
+    uint8_t params[];
+} h4_hci_evt_pkt_t;
 
 
 STATIC void dump_cmd_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     if (debug) {
-        h4_hci_cmd_hdr_t *pkt = (h4_hci_cmd_hdr_t *) pkt_data;
+        h4_hci_cmd_pkt_t *pkt = (h4_hci_cmd_pkt_t *) pkt_data;
         mp_printf(&mp_plat_print,
                   "%s HCI COMMAND (%x) opcode: %04x, len: %d, data: ",
                   tx ? "TX->" : "RX<-",
                   pkt->pkt_type, pkt->opcode, pkt->param_len);
-        uint8_t i;
-        for (i = sizeof(h4_hci_cmd_hdr_t); i < pkt_len; i++) {
-            mp_printf(&mp_plat_print, "%02x ", pkt_data[i]);
+        for (size_t i = 0; i < pkt->param_len; i++) {
+            mp_printf(&mp_plat_print, "%02x ", pkt->params[i]);
         }
-        if (i != pkt->param_len + sizeof(h4_hci_cmd_hdr_t)) {
+        if (pkt_len != sizeof(h4_hci_cmd_pkt_t) + pkt->param_len) {
             mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
         }
         mp_printf(&mp_plat_print, "\n");
@@ -107,16 +125,16 @@ STATIC void dump_cmd_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
 
 STATIC void dump_acl_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     if (debug) {
-        h4_hci_acl_hdr_t *pkt = (h4_hci_acl_hdr_t *) pkt_data;
+        h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t *) pkt_data;
+        l2cap_data_t *l2cap = (l2cap_data_t *) pkt->data;
         mp_printf(&mp_plat_print,
-                  "%s HCI ACLDATA (%x) handle: %04x, total_data_len: %d, acl_data_len: %d,  cid: %04x,  data: ",
+                  "%s HCI ACLDATA (%x) handle: %04x, pb: %d, bc: %d, data_len: %d, l2cap_data_len: %d,  cid: %04x,  l2cap_data: ",
                   tx ? "TX->" : "RX<-",
-                  pkt->pkt_type, pkt->handle, pkt->total_data_len, pkt->acl_data_len, pkt->cid);
-        uint8_t i;
-        for (i = sizeof(h4_hci_acl_hdr_t); i < pkt_len; i++) {
-            mp_printf(&mp_plat_print, "%02x ", pkt_data[i]);
+                  pkt->pkt_type, pkt->handle, pkt->data_len, l2cap->l2cap_data_len, l2cap->cid);
+        for (size_t i = 0; i < l2cap->l2cap_data_len; i++) {
+            mp_printf(&mp_plat_print, "%02x ", l2cap->l2cap_data[i]);
         }
-        if (i != pkt->acl_data_len + sizeof(h4_hci_acl_hdr_t)) {
+        if (pkt_len != sizeof(h4_hci_acl_pkt_t) + pkt->data_len) {
             mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
         }
         mp_printf(&mp_plat_print, "\n");
@@ -125,16 +143,15 @@ STATIC void dump_acl_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
 
 STATIC void dump_evt_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     if (debug) {
-        h4_hci_evt_hdr_t *pkt = (h4_hci_evt_hdr_t *) pkt_data;
+        h4_hci_evt_pkt_t *pkt = (h4_hci_evt_pkt_t *) pkt_data;
         mp_printf(&mp_plat_print,
                   "%s HCI EVENT   (%x) evt: %02x,  param_len: %d,  data: ",
                   tx ? "TX->" : "RX<-",
                   pkt->pkt_type, pkt->evt, pkt->param_len);
-        uint8_t i;
-        for (i = sizeof(h4_hci_evt_hdr_t); i < pkt_len; i++) {
-            mp_printf(&mp_plat_print, "%02x ", pkt_data[i]);
+        for (size_t i = 0; i < pkt->param_len; i++) {
+            mp_printf(&mp_plat_print, "%02x ", pkt->params[i]);
         }
-        if (i != pkt->param_len + sizeof(h4_hci_evt_hdr_t)) {
+        if (pkt_len != sizeof(h4_hci_evt_pkt_t) + pkt->param_len) {
             mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
         }
         mp_printf(&mp_plat_print, "\n");
@@ -143,7 +160,7 @@ STATIC void dump_evt_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
 
 STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
     //FIX pkt_len is +1 than before, because it includes the pkt_type.
-    // h4_hci_acl_hdr_t *aclHdr = (h4_hci_acl_hdr_t*)pkt_data;
+    // h4_hci_acl_pkt_t *aclHdr = (h4_hci_acl_pkt_t*)pkt_data;
 
     // uint16_t aclFlags = (aclHdr->handle & 0xf000) >> 12;
 
@@ -202,15 +219,14 @@ STATIC void process_num_comp_pkts(uint16_t handle, uint16_t num_pkts) {
     }
 }
 
-STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
+STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
 {
-    h4_hci_evt_hdr_t *evt_hdr = (h4_hci_evt_hdr_t*) pkt;
-    // The data itself, after the header.
-    uint8_t *evt_data = pkt + sizeof(h4_hci_evt_hdr_t);
+    h4_hci_evt_pkt_t *pkt = (h4_hci_evt_pkt_t*) pkt_data;
 
-    switch (evt_hdr->evt) {
+    switch (pkt->evt) {
         case BT_HCI_EVT_DISCONN_COMPLETE: {
-            struct bt_hci_evt_disconn_complete *disconn_complete = (struct bt_hci_evt_disconn_complete*) evt_data;
+            struct bt_hci_evt_disconn_complete *disconn_complete =
+                (struct bt_hci_evt_disconn_complete*) pkt->params;
             (void) disconn_complete;
             //FIX
             // ATT.removeConnection(disconn_complete->handle, disconn_complete->reason);
@@ -226,7 +242,7 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
                 struct bt_hci_evt_cc_status cc_status;
             } __packed;
 
-            struct cmd_complete_with_status *evt = (struct cmd_complete_with_status *) evt_data;
+            struct cmd_complete_with_status *evt = (struct cmd_complete_with_status *) pkt->params;
 
             num_command_packets_allowed = evt->cmd_complete.ncmd;
 
@@ -235,15 +251,15 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
             cmd_response_status = evt->cc_status.status;
             // All the bytes following cmd_complete, -including- the status byte, which is
             // included in all the _bt_hci_rp_* structs.
-            cmd_response_data = &evt_data[sizeof_field(struct cmd_complete_with_status, cmd_complete)];
+            cmd_response_data = (uint8_t *) &evt->cc_status;
             // Includes status byte.
-            cmd_response_len = evt_hdr->param_len - sizeof_field(struct cmd_complete_with_status, cmd_complete);
+            cmd_response_len = pkt->param_len - sizeof_field(struct cmd_complete_with_status, cmd_complete);
 
             break;
         }
 
         case BT_HCI_EVT_CMD_STATUS: {
-            struct bt_hci_evt_cmd_status *evt = (struct bt_hci_evt_cmd_status *) evt_data;
+            struct bt_hci_evt_cmd_status *evt = (struct bt_hci_evt_cmd_status *) pkt->params;
 
             num_command_packets_allowed = evt->ncmd;
 
@@ -257,7 +273,8 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
         }
 
         case BT_HCI_EVT_NUM_COMPLETED_PACKETS: {
-            struct bt_hci_evt_num_completed_packets *evt = (struct bt_hci_evt_num_completed_packets *) evt_data;
+            struct bt_hci_evt_num_completed_packets *evt =
+                (struct bt_hci_evt_num_completed_packets *) pkt->params;
 
             // Start at zero-th pair: (conn handle, num completed packets).
             struct bt_hci_handle_count *handle_and_count = &(evt->h[0]);
@@ -269,15 +286,14 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
         }
 
         case BT_HCI_EVT_LE_META_EVENT: {
-            struct bt_hci_evt_le_meta_event *meta_evt = (struct bt_hci_evt_le_meta_event *) evt_data;
-            // Start of the encapsulated LE event.
-            uint8_t *le_evt = evt_data + sizeof (struct bt_hci_evt_le_meta_event);
+            struct bt_hci_evt_le_meta_event *meta_evt = (struct bt_hci_evt_le_meta_event *) pkt->params;
+            uint8_t *le_evt =  pkt->params + sizeof (struct bt_hci_evt_le_meta_event);
 
             if (meta_evt->subevent == BT_HCI_EVT_LE_CONN_COMPLETE) {
                 struct bt_hci_evt_le_conn_complete *le_conn_complete =
                     (struct bt_hci_evt_le_conn_complete *) le_evt;
 
-                if (le_conn_complete->status == 0x00) {
+                if (le_conn_complete->status == BT_HCI_ERR_SUCCESS) {
                     // ATT.addConnection(le_conn_complete->handle,
                     //                   le_conn_complete->role,
                     //                   le_conn_complete->peer_addr  //FIX struct
@@ -286,13 +302,6 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
                     //                   le_conn_complete->supv_timeout
                     //                   le_conn_complete->clock_accuracy);
 
-                    // L2CAPSignaling.addConnection(le_conn_complete->handle,
-                    //                              le_conn_complete->role,
-                    //                              le_conn_complete->peer_addr, //FIX struct
-                    //                              le_conn_complete->interval,
-                    //                              le_conn_complete->latency,
-                    //                              le_conn_complete->supv_timeout,
-                    //                              le_conn_complete->clock_accuracy);
                 }
             } else if (meta_evt->subevent == BT_HCI_EVT_LE_ADVERTISING_REPORT) {
                 struct bt_hci_evt_le_advertising_info *le_advertising_info =
@@ -319,9 +328,19 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt[])
 void hci_init(void) {
     rx_idx = 0;
     pending_pkt = 0;
+    hci_poll_in_progress = false;
 }
 
 hci_result_t hci_poll_for_incoming_pkt(void) {
+    if (hci_poll_in_progress) {
+        return HCI_OK;
+    }
+    common_hal_mcu_disable_interrupts();
+    if (!hci_poll_in_progress) {
+        hci_poll_in_progress = true;
+    }
+    common_hal_mcu_enable_interrupts();
+
     // Assert RTS low to say we're ready to read data.
     common_hal_digitalio_digitalinout_set_value(adapter->rts_digitalinout, false);
 
@@ -332,21 +351,22 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
     while (common_hal_busio_uart_rx_characters_available(adapter->hci_uart)) {
         common_hal_busio_uart_read(adapter->hci_uart, rx_buffer + rx_idx, 1, &errcode);
         if (errcode) {
+            hci_poll_in_progress = false;
             return HCI_READ_ERROR;
         }
         rx_idx++;
 
         switch (rx_buffer[0]) {
             case H4_ACL:
-                if (rx_idx > sizeof(h4_hci_acl_hdr_t) &&
-                    rx_idx >= sizeof(h4_hci_acl_hdr_t) + ((h4_hci_acl_hdr_t *) rx_buffer)->total_data_len) {
+                if (rx_idx > sizeof(h4_hci_acl_pkt_t) &&
+                    rx_idx >= sizeof(h4_hci_acl_pkt_t) + ((h4_hci_acl_pkt_t *) rx_buffer)->data_len) {
                     packet_is_complete = true;
                 }
                 break;
 
             case H4_EVT:
-                if (rx_idx > sizeof(h4_hci_evt_hdr_t) &&
-                    rx_idx >= sizeof(h4_hci_evt_hdr_t) + ((h4_hci_evt_hdr_t *) rx_buffer)->param_len) {
+                if (rx_idx > sizeof(h4_hci_evt_pkt_t) &&
+                    rx_idx >= sizeof(h4_hci_evt_pkt_t) + ((h4_hci_evt_pkt_t *) rx_buffer)->param_len) {
                     packet_is_complete = true;
                 }
                 break;
@@ -359,6 +379,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
     }
 
     if (!packet_is_complete) {
+        hci_poll_in_progress = false;
         return HCI_OK;
     }
 
@@ -391,6 +412,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
 
     common_hal_digitalio_digitalinout_set_value(adapter->rts_digitalinout, true);
 
+    hci_poll_in_progress = false;
     return HCI_OK;
 }
 
@@ -416,22 +438,22 @@ STATIC hci_result_t write_pkt(uint8_t *buffer, size_t len) {
 }
 
 STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* params) {
-    uint8_t tx_buffer[sizeof(h4_hci_cmd_hdr_t) + params_len];
+    uint8_t cmd_pkt_len = sizeof(h4_hci_cmd_pkt_t) + params_len;
+    uint8_t tx_buffer[cmd_pkt_len];
 
     // cmd header is at the beginning of tx_buffer
-    h4_hci_cmd_hdr_t *cmd_hdr = (h4_hci_cmd_hdr_t *) tx_buffer;
-    cmd_hdr->pkt_type = H4_CMD;
-    cmd_hdr->opcode = opcode;
-    cmd_hdr->param_len = params_len;
+    h4_hci_cmd_pkt_t *cmd_pkt = (h4_hci_cmd_pkt_t *) tx_buffer;
+    cmd_pkt->pkt_type = H4_CMD;
+    cmd_pkt->opcode = opcode;
+    cmd_pkt->param_len = params_len;
 
-    // Copy the params data into the space after the header.
-    memcpy(&tx_buffer[sizeof(h4_hci_cmd_hdr_t)], params, params_len);
+    memcpy(cmd_pkt->params, params, params_len);
 
     if (debug) {
         dump_cmd_pkt(true, sizeof(tx_buffer), tx_buffer);
     }
 
-    int result = write_pkt(tx_buffer, sizeof(h4_hci_cmd_hdr_t) + params_len);
+    int result = write_pkt(tx_buffer, cmd_pkt_len);
     if (result != HCI_OK) {
         return result;
     }
@@ -477,19 +499,20 @@ STATIC int __attribute__((unused)) send_acl_pkt(uint16_t handle, uint8_t cid, vo
     }
 
     // data_len does not include cid.
-    const size_t cid_len = sizeof_field(h4_hci_acl_hdr_t, cid);
+    const size_t cid_len = sizeof_field(l2cap_data_t, cid);
     // buf_len is size of entire packet including header.
-    const size_t buf_len = sizeof(h4_hci_acl_hdr_t) + cid_len + data_len;
+    const size_t buf_len = sizeof(h4_hci_acl_pkt_t) + cid_len + data_len;
     uint8_t tx_buffer[buf_len];
 
-    h4_hci_acl_hdr_t *acl_hdr = (h4_hci_acl_hdr_t *) tx_buffer;
-    acl_hdr->pkt_type = H4_ACL;
-    acl_hdr->handle = handle;
-    acl_hdr->total_data_len = (uint8_t)(cid_len + data_len);
-    acl_hdr->acl_data_len = (uint8_t) data_len;
-    acl_hdr->cid = cid;
+    h4_hci_acl_pkt_t *acl_pkt = (h4_hci_acl_pkt_t *) tx_buffer;
+    l2cap_data_t *l2cap = (l2cap_data_t *) acl_pkt->data;
+    acl_pkt->pkt_type = H4_ACL;
+    acl_pkt->handle = handle;
+    acl_pkt->data_len = (uint8_t)(cid_len + data_len);
+    l2cap->l2cap_data_len = (uint8_t) data_len;
+    l2cap->cid = cid;
 
-    memcpy(&tx_buffer[sizeof(h4_hci_acl_hdr_t)], data, data_len);
+    memcpy(&tx_buffer[sizeof(h4_hci_acl_pkt_t)], data, data_len);
 
     if (debug) {
         dump_acl_pkt(true, buf_len, tx_buffer);
