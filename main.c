@@ -493,6 +493,8 @@ void gc_collect(void) {
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
 
+    background_callback_gc_collect();
+
     #if CIRCUITPY_DISPLAYIO
     displayio_gc_collect();
     #endif

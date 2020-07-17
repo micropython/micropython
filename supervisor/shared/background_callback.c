@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/gc.h"
 #include "py/mpconfig.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/shared/tick.h"
@@ -104,4 +105,9 @@ void background_callback_reset() {
     callback_tail = NULL;
     in_background_callback = false;
     CALLBACK_CRITICAL_END;
+}
+
+void background_callback_gc_collect(void) {
+    background_callback_t *cb = (background_callback_t*)callback_head;
+    gc_collect_ptr(cb);
 }

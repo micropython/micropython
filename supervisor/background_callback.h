@@ -79,4 +79,9 @@ void background_callback_reset(void);
 void background_callback_begin_critical_section(void);
 void background_callback_end_critical_section(void);
 
+/*
+ * Background callbacks may stop objects from being collected
+ */
+void background_callback_gc_collect(void);
+
 #endif
