@@ -82,6 +82,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_make_new(const mp_obj_type_t *type,
 //|         ...
 //|
 STATIC mp_obj_t memorymonitor_allocationsize_obj___enter__(mp_obj_t self_in) {
+    common_hal_memorymonitor_allocationsize_clear(self_in);
     common_hal_memorymonitor_allocationsize_resume(self_in);
     return self_in;
 }
@@ -99,48 +100,13 @@ STATIC mp_obj_t memorymonitor_allocationsize_obj___exit__(size_t n_args, const m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(memorymonitor_allocationsize___exit___obj, 4, 4, memorymonitor_allocationsize_obj___exit__);
 
-//|     def pause(self) -> None:
-//|         """Pause allocation tracking"""
-//|         ...
-//|
-STATIC mp_obj_t memorymonitor_allocationsize_obj_pause(mp_obj_t self_in) {
-    memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    common_hal_memorymonitor_allocationsize_pause(self);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationsize_pause_obj, memorymonitor_allocationsize_obj_pause);
-
-//|     def resume(self) -> None:
-//|         """Resumes allocation tracking."""
-//|         ...
-//|
-STATIC mp_obj_t memorymonitor_allocationsize_obj_resume(mp_obj_t self_in) {
-    common_hal_memorymonitor_allocationsize_resume(self_in);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationsize_resume_obj, memorymonitor_allocationsize_obj_resume);
-
-//|     def clear(self) -> Any:
-//|         """Clears all captured pulses"""
-//|         ...
-//|
-STATIC mp_obj_t memorymonitor_allocationsize_obj_clear(mp_obj_t self_in) {
-    memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    common_hal_memorymonitor_allocationsize_clear(self);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationsize_clear_obj, memorymonitor_allocationsize_obj_clear);
-
-
 //|     bytes_per_block: int = ...
 //|     """Number of bytes per block"""
 //|
 STATIC mp_obj_t memorymonitor_allocationsize_obj_get_bytes_per_block(mp_obj_t self_in) {
     memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    return mp_obj_new_bool(common_hal_memorymonitor_allocationsize_get_bytes_per_block(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_memorymonitor_allocationsize_get_bytes_per_block(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationsize_get_bytes_per_block_obj, memorymonitor_allocationsize_obj_get_bytes_per_block);
 

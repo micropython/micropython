@@ -45,5 +45,6 @@ typedef struct _memorymonitor_allocationalarm_obj_t {
 } memorymonitor_allocationalarm_obj_t;
 
 void memorymonitor_allocationalarms_allocation(size_t block_count);
+void memorymonitor_allocationalarms_reset(void);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_MEMORYMONITOR_ALLOCATIONALARM_H

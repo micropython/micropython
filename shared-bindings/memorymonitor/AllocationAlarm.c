@@ -76,6 +76,8 @@ STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type
     return MP_OBJ_FROM_PTR(self);
 }
 
+// TODO: Add .countdown(count) to skip allocations and alarm on something after the first.
+
 //|     def __enter__(self) -> memorymonitor.AllocationAlarm:
 //|         """Enables the alarm."""
 //|         ...

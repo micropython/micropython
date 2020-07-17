@@ -34,7 +34,7 @@
 #include "supervisor/shared/safe_mode.h"
 
 #if CIRCUITPY_MEMORYMONITOR
-#include "shared-module/memorymonitor/AllocationSize.h"
+#include "shared-module/memorymonitor/__init__.h"
 #endif
 
 #if MICROPY_ENABLE_GC
@@ -658,7 +658,7 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
     #endif
 
     #if CIRCUITPY_MEMORYMONITOR
-    memorymonitor_allocationsizes_track_allocation(end_block - start_block + 1);
+    memorymonitor_track_allocation(end_block - start_block + 1);
     #endif
 
     return ret_ptr;
@@ -915,7 +915,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         #endif
 
         #if CIRCUITPY_MEMORYMONITOR
-        memorymonitor_allocationsizes_track_allocation(new_blocks);
+        memorymonitor_track_allocation(new_blocks);
         #endif
 
         return ptr_in;
@@ -948,7 +948,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         #endif
 
         #if CIRCUITPY_MEMORYMONITOR
-        memorymonitor_allocationsizes_track_allocation(new_blocks);
+        memorymonitor_track_allocation(new_blocks);
         #endif
 
         return ptr_in;

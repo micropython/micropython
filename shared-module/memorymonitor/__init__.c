@@ -32,3 +32,8 @@ void memorymonitor_track_allocation(size_t block_count) {
     memorymonitor_allocationalarms_allocation(block_count);
     memorymonitor_allocationsizes_track_allocation(block_count);
 }
+
+void memorymonitor_reset(void) {
+    memorymonitor_allocationalarms_reset();
+    memorymonitor_allocationsizes_reset();
+}

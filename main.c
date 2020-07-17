@@ -64,6 +64,10 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_MEMORYMONITOR
+#include "shared-module/memorymonitor/__init__.h"
+#endif
+
 #if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
 #endif
@@ -197,6 +201,9 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     // Turn off the display and flush the fileystem before the heap disappears.
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
+    #endif
+    #if CIRCUITPY_MEMORYMONITOR
+    memorymonitor_reset();
     #endif
     filesystem_flush();
     stop_mp();

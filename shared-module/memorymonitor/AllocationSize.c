@@ -85,3 +85,7 @@ void memorymonitor_allocationsizes_track_allocation(size_t block_count) {
         as = as->next;
     }
 }
+
+void memorymonitor_allocationsizes_reset(void) {
+    MP_STATE_VM(active_allocationsizes) = NULL;
+}

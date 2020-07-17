@@ -30,5 +30,6 @@
 #include <stddef.h>
 
 void memorymonitor_track_allocation(size_t block_count);
+void memorymonitor_reset(void);
 
 #endif  // MICROPY_INCLUDED_MEMORYMONITOR___INIT___H
