@@ -814,6 +814,8 @@ int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle) {
     size_t len = 0;
     mp_bluetooth_gatts_db_read(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, value_handle, &data, &len);
 
+    // TODO: Handle ATT_EVENT_HANDLE_VALUE_INDICATION_COMPLETE to generate acknowledgment event.
+
     // Attempt to send immediately, will copy buffer.
     MICROPY_PY_BLUETOOTH_ENTER
     int err = att_server_indicate(conn_handle, value_handle, data, len);
