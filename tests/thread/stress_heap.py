@@ -1,7 +1,9 @@
 # stress test for the heap by allocating lots of objects within threads
 # allocates about 5mb on the heap
 #
-# MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+# SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+#
+# SPDX-License-Identifier: MIT
 
 try:
     import utime as time

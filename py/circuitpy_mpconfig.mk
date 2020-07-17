@@ -3,7 +3,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Dan Halbert for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -44,9 +44,6 @@ CFLAGS += -DCIRCUITPY_AUDIOBUSIO=$(CIRCUITPY_AUDIOBUSIO)
 
 CIRCUITPY_AUDIOIO ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_AUDIOIO=$(CIRCUITPY_AUDIOIO)
-
-CIRCUITPY_AUDIOIO_COMPAT ?= $(CIRCUITPY_AUDIOIO)
-CFLAGS += -DCIRCUITPY_AUDIOIO_COMPAT=$(CIRCUITPY_AUDIOIO_COMPAT)
 
 CIRCUITPY_AUDIOPWMIO ?= 0
 CFLAGS += -DCIRCUITPY_AUDIOPWMIO=$(CIRCUITPY_AUDIOPWMIO)

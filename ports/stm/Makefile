@@ -2,8 +2,8 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Dan Halbert for Adafruit Industries
-# Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2019 Lucian Copeland for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -81,12 +81,12 @@ INC += -I../../supervisor/shared/usb
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-	CFLAGS += -ggdb
+	CFLAGS += -ggdb3
 	# You may want to enable these flags to make setting breakpoints easier.
 	CFLAGS += -fno-inline -fno-ipa-sra
 else
 	CFLAGS += -Os -DNDEBUG
-	CFLAGS += -ggdb
+	CFLAGS += -ggdb3
 	# TODO: Test with -flto
 	# CFLAGS += -flto
 endif
