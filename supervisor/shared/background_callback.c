@@ -108,6 +108,23 @@ void background_callback_reset() {
 }
 
 void background_callback_gc_collect(void) {
+    // We don't enter the callback critical section here.  We rely on
+    // gc_collect_ptr _NOT_ entering background callbacks, so it is not
+    // possible for the list to be cleared.
+    //
+    // However, it is possible for the list to be extended.  We make the
+    // minor assumption that no newly added callback is for a
+    // collectable object.  That is, we only plug the hole where an
+    // object becomes collectable AFTER it is added but before the
+    // callback is run, not the hole where an object was ALREADY
+    // collectable but adds a background task for itself.
+    //
+    // It's necessary to traverse the whole list here, as the callbacks
+    // themselves can be in non-gc memory, and some of the cb->data
+    // objects themselves might be in non-gc memory.
     background_callback_t *cb = (background_callback_t*)callback_head;
-    gc_collect_ptr(cb);
+    while(cb) {
+        gc_collect_ptr(cb->data);
+        cb = cb->next;
+    }
 }
