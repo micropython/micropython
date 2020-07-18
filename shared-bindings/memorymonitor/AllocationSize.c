@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@
 //|     def __init__(self):
 //|         """Tracks the number of allocations in power of two buckets.
 //|
-//|         It will have 32 16bit buckets to track allocation counts. It is total allocations
+//|         It will have 16 16bit buckets to track allocation counts. It is total allocations
 //|         meaning frees are ignored. Reallocated memory is counted twice, at allocation and when
 //|         reallocated with the larger size.
 //|
@@ -47,25 +47,20 @@
 //|         per block, typically 16. Bucket 2 will be less than or equal to 4 blocks. See
 //|         `bytes_per_block` to convert blocks to bytes.
 //|
-//|         Multiple AllocationSizes can be used to track different boundaries.
-//|
-//|         Active AllocationSizes will not be freed so make sure and pause before deleting.
+//|         Multiple AllocationSizes can be used to track different code boundaries.
 //|
 //|         Track allocations::
 //|
 //|           import memorymonitor
 //|
-//|           mm = memorymonitor.AllocationSizes()
-//|           print("hello world" * 3)
-//|           mm.pause()
-//|           for bucket in mm:
-//|               print("<", 2 ** bucket, mm[bucket])
+//|           mm = memorymonitor.AllocationSize()
+//|           with mm:
+//|             print("hello world" * 3)
 //|
-//|           # Clear the buckets
-//|           mm.clear()
+//|           for bucket, count in enumerate(mm):
+//|               print("<", 2 ** bucket, count)
 //|
-//|           # Resume allocation tracking
-//|           mm.resume()"""
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t memorymonitor_allocationsize_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -78,7 +73,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_make_new(const mp_obj_type_t *type,
 }
 
 //|     def __enter__(self, ) -> Any:
-//|         """No-op used by Context Managers."""
+//|         """Clears counts and resumes tracking."""
 //|         ...
 //|
 STATIC mp_obj_t memorymonitor_allocationsize_obj___enter__(mp_obj_t self_in) {
@@ -118,12 +113,12 @@ const mp_obj_property_t memorymonitor_allocationsize_bytes_per_block_obj = {
 };
 
 //|     def __len__(self, ) -> Any:
-//|         """Returns the current pulse length
+//|         """Returns the number of allocation buckets.
 //|
 //|         This allows you to::
 //|
-//|           pulses = pulseio.PulseIn(pin)
-//|           print(len(pulses))"""
+//|           mm = memorymonitor.AllocationSize()
+//|           print(len(mm))"""
 //|         ...
 //|
 STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
@@ -137,12 +132,12 @@ STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t
 }
 
 //|     def __getitem__(self, index: Any) -> Any:
-//|         """Returns the value at the given index or values in slice.
+//|         """Returns the allocation count for the given bucket.
 //|
 //|         This allows you to::
 //|
-//|           pulses = pulseio.PulseIn(pin)
-//|           print(pulses[0])"""
+//|           mm = memorymonitor.AllocationSize()
+//|           print(mm[0])"""
 //|         ...
 //|
 STATIC mp_obj_t memorymonitor_allocationsize_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {

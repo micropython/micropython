@@ -37,6 +37,10 @@ void common_hal_memorymonitor_allocationalarm_construct(memorymonitor_allocation
     self->previous = NULL;
 }
 
+void common_hal_memorymonitor_allocationalarm_set_ignore(memorymonitor_allocationalarm_obj_t* self, mp_int_t count) {
+    self->count = count;
+}
+
 void common_hal_memorymonitor_allocationalarm_pause(memorymonitor_allocationalarm_obj_t* self) {
     // Check to make sure we aren't already paused. We can be if we're exiting from an exception we
     // caused.
@@ -67,12 +71,16 @@ void memorymonitor_allocationalarms_allocation(size_t block_count) {
         // Hold onto next in case we remove the alarm from the list.
         memorymonitor_allocationalarm_obj_t* next = alarm->next;
         if (block_count >= alarm->minimum_block_count) {
-            // Uncomment the breakpoint below if you want to use a C debugger to figure out the C
-            // call stack for an allocation.
-            // asm("bkpt");
-            // Pause now because we may alert when throwing the exception too.
-            common_hal_memorymonitor_allocationalarm_pause(alarm);
-            alert_count++;
+            if (alarm->count > 0) {
+                alarm->count--;
+            } else {
+                // Uncomment the breakpoint below if you want to use a C debugger to figure out the C
+                // call stack for an allocation.
+                // asm("bkpt");
+                // Pause now because we may alert when throwing the exception too.
+                common_hal_memorymonitor_allocationalarm_pause(alarm);
+                alert_count++;
+            }
         }
         alarm = next;
     }

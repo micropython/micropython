@@ -39,6 +39,7 @@ typedef struct _memorymonitor_allocationalarm_obj_t memorymonitor_allocationalar
 typedef struct _memorymonitor_allocationalarm_obj_t {
     mp_obj_base_t base;
     size_t minimum_block_count;
+    mp_int_t count;
     // Store the location that points to us so we can remove ourselves.
     memorymonitor_allocationalarm_obj_t** previous;
     memorymonitor_allocationalarm_obj_t* next;

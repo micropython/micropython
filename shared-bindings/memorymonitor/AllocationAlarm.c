@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +76,27 @@ STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type
     return MP_OBJ_FROM_PTR(self);
 }
 
-// TODO: Add .countdown(count) to skip allocations and alarm on something after the first.
+//|     def ignore(self, count) -> AllocationAlarm:
+//|         """Sets the number of applicable allocations to ignore before raising the exception.
+//|            Automatically set back to zero at context exit.
+//|
+//|            Use it within a ``with`` block::
+//|
+//|              # Will not alarm because the bytearray allocation will be ignored.
+//|              with aa.ignore(2):
+//|                  x = bytearray(20)
+//|            """
+//|         ...
+//|
+STATIC mp_obj_t memorymonitor_allocationalarm_obj_ignore(mp_obj_t self_in, mp_obj_t count_obj) {
+    mp_int_t count = mp_obj_get_int(count_obj);
+    if (count < 0) {
+        mp_raise_ValueError_varg(translate("%q must be >= 0"), MP_QSTR_count);
+    }
+    common_hal_memorymonitor_allocationalarm_set_ignore(self_in, count);
+    return self_in;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(memorymonitor_allocationalarm_ignore_obj, memorymonitor_allocationalarm_obj_ignore);
 
 //|     def __enter__(self) -> memorymonitor.AllocationAlarm:
 //|         """Enables the alarm."""
@@ -95,6 +115,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationalarm___enter___obj, memorymon
 //|
 STATIC mp_obj_t memorymonitor_allocationalarm_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
+    common_hal_memorymonitor_allocationalarm_set_ignore(args[0], 0);
     common_hal_memorymonitor_allocationalarm_pause(args[0]);
     return mp_const_none;
 }
@@ -102,6 +123,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(memorymonitor_allocationalarm___exit_
 
 STATIC const mp_rom_map_elem_t memorymonitor_allocationalarm_locals_dict_table[] = {
     // Methods
+    { MP_ROM_QSTR(MP_QSTR_ignore), MP_ROM_PTR(&memorymonitor_allocationalarm_ignore_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&memorymonitor_allocationalarm___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&memorymonitor_allocationalarm___exit___obj) },
 };
