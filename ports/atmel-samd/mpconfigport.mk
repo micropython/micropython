@@ -54,8 +54,7 @@ CIRCUITPY_TOUCHIO_USE_NATIVE = 0
 # The ifndef's allow overriding in mpconfigboard.mk.
 
 ifndef CIRCUITPY_NETWORK
-CIRCUITPY_NETWORK = 1
-MICROPY_PY_WIZNET5K = 5500
+CIRCUITPY_NETWORK = 0
 endif
 
 ifndef CIRCUITPY_PS2IO
