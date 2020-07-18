@@ -1,3 +1,4 @@
+//  This file is derived from the ArduinoBLE library. Its header is below.
 /*
   This file is part of the ArduinoBLE library.
   Copyright (c) 2018 Arduino SA. All rights reserved.
@@ -39,7 +40,7 @@
 #define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
 
 #define RX_BUFFER_SIZE (3 + 255)
-#define ACL_PKT_BUFFER_SIZE (255)
+#define ACL_DATA_BUFFER_SIZE (255 + 1)
 
 #define CTS_TIMEOUT_MSECS (1000)
 #define RESPONSE_TIMEOUT_MSECS (1000)
@@ -60,7 +61,8 @@ STATIC uint8_t cmd_response_status;
 STATIC size_t cmd_response_len;
 STATIC uint8_t* cmd_response_data;
 
-//FIX STATIC uint8_t acl_pkt_buffer[ACL_PKT_BUFFER_SIZE];
+STATIC uint8_t acl_data_buffer[ACL_DATA_BUFFER_SIZE];
+STATIC size_t acl_data_len;
 
 STATIC volatile bool hci_poll_in_progress = false;
 
@@ -76,27 +78,28 @@ typedef struct __attribute__ ((packed)) {
     uint8_t params[];
 } h4_hci_cmd_pkt_t;
 
-#define ACLDATA_PB_FIRST_NON_FLUSH  0
-#define ACLDATA_HCI_PB_MIDDLE       1
-#define ACLDATA_PB_FIRST_FLUSH      2
-#define ACLDATA_PB_FULL             3
+#define ACL_DATA_PB_FIRST_NON_FLUSH  0
+#define ACL_DATA_PB_MIDDLE           1
+#define ACL_DATA_PB_FIRST_FLUSH      2
+#define ACL_DATA_PB_FULL             3
 
 typedef struct __attribute__ ((packed)) {
     uint8_t pkt_type;
     uint16_t handle : 12;
-    uint8_t pb: 2;         // Packet boundary flag: ACLDATA_PB values.
-    uint8_t bc: 2;         // Broadcast flag: always 0b00 for BLE.
-    uint16_t data_len;     // Total data length, including acl_data header.
-    uint8_t data[];        // Data following the header
+    uint8_t pb: 2;            // Packet boundary flag: ACL_DATA_PB values.
+    uint8_t bc: 2;            // Broadcast flag: always 0b00 for BLE.
+    uint16_t data_len;        // length of data[] in this packet.
+    uint8_t data[];
 }  h4_hci_acl_pkt_t;
 
-// L2CAP data, which is in h4_hci_acl_pkt_t.data
+// The ACL data in an h4_hci_acl_pkt_t may be fragmented across
+// multiple ACL_DATA packets, and need to be recombined.  This is the
+// structure of the combined packet or the first fragment.
 typedef struct __attribute__ ((packed)) {
-    uint16_t l2cap_data_len;  // Length of acl_data. Does not include this header.
-    uint16_t cid;             // Channel ID.
-    uint8_t l2cap_data[];
-} l2cap_data_t;
-
+    uint16_t acl_data_len;  // Length of acl_data. Does not include this header.
+    uint16_t cid;           // Channel ID.
+    uint8_t acl_data[];     // Length is acl_data_len of full packet.
+} acl_data_t;
 
 typedef struct __attribute__ ((packed)) {
     uint8_t pkt_type;
@@ -125,15 +128,31 @@ STATIC void dump_cmd_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
 
 STATIC void dump_acl_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     if (debug) {
+        // mp_printf(&mp_plat_print, "\\ PKT_DATA:  ");
+        // for (size_t i = 0; i < pkt_len; i++) {
+        //     mp_printf(&mp_plat_print, "%02x ", pkt_data[i]);
+        // }
+        // mp_printf(&mp_plat_print, "\n");
         h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t *) pkt_data;
-        l2cap_data_t *l2cap = (l2cap_data_t *) pkt->data;
         mp_printf(&mp_plat_print,
-                  "%s HCI ACLDATA (%x) handle: %04x, pb: %d, bc: %d, data_len: %d, l2cap_data_len: %d,  cid: %04x,  l2cap_data: ",
-                  tx ? "TX->" : "RX<-",
-                  pkt->pkt_type, pkt->handle, pkt->data_len, l2cap->l2cap_data_len, l2cap->cid);
-        for (size_t i = 0; i < l2cap->l2cap_data_len; i++) {
-            mp_printf(&mp_plat_print, "%02x ", l2cap->l2cap_data[i]);
+                  "%s HCI ACLDATA (%x) handle: %04x, pb: %d, bc: %d, data_len: %d, ",
+                  tx ? "TX->" : "RX<-", pkt->pkt_type, pkt->handle, pkt->pb, pkt->bc, pkt->data_len);
+
+        if (pkt->pb != ACL_DATA_PB_MIDDLE) {
+            // This is the start of a fragmented acl_data packet or is a full packet.
+            acl_data_t *acl = (acl_data_t *) pkt->data;
+            mp_printf(&mp_plat_print,
+                      "acl data_len: %d, cid: %04x, data: ",
+                      acl->acl_data_len, acl->cid);
+            for (size_t i = 0; i < acl->acl_data_len; i++) {
+                mp_printf(&mp_plat_print, "%02x ", acl->acl_data[i]);
+            }
+        } else {
+            for (size_t i = 0; i < pkt->data_len; i++) {
+                mp_printf(&mp_plat_print, "more data: %02x ", pkt->data[i]);
+            }
         }
+
         if (pkt_len != sizeof(h4_hci_acl_pkt_t) + pkt->data_len) {
             mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
         }
@@ -159,40 +178,27 @@ STATIC void dump_evt_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
 }
 
 STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
-    //FIX pkt_len is +1 than before, because it includes the pkt_type.
-    // h4_hci_acl_pkt_t *aclHdr = (h4_hci_acl_pkt_t*)pkt_data;
+    h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t*) pkt_data;
 
-    // uint16_t aclFlags = (aclHdr->handle & 0xf000) >> 12;
+    if (pkt->pb != ACL_DATA_PB_MIDDLE) {
+        // This is the start of a fragmented acl_data packet or is a full packet.
+        memcpy(acl_data_buffer, pkt->data, pkt->data_len);
+        acl_data_len = pkt->data_len;
+    } else {
+        // This is a middle or end fragment of acl data.
+        // Append to the accumulated data so far.
+        memcpy(&acl_data_buffer[acl_data_len], pkt->data, pkt->data_len);
+        acl_data_len += pkt->data_len;
+    }
 
-    // if ((aclHdr->data_len - 4) != aclHdr->len) {
-    //     // packet is fragmented
-    //     if (aclFlags != 0x01) {
-    //         // copy into ACL buffer
-    //         memcpy(acl_pkt_buffer, &rx_buffer[1], sizeof(HCIACLHdr) + aclHdr->data_len - 4);
-    //     } else {
-    //         // copy next chunk into the buffer
-    //         HCIACLHdr* aclBufferHeader = (HCIACLHdr*)acl_pkt_buffer;
-
-    //         memcpy(&acl_pkt_buffer[sizeof(HCIACLHdr) + aclBufferHeader->data_len - 4], &rx_buffer[1 + sizeof(aclHdr->handle) + sizeof(aclHdr->data_len)], aclHdr->data_len);
-
-    //         aclBufferHeader->data_len += aclHdr->data_len;
-    //         aclHdr = aclBufferHeader;
-    //     }
-    // }
-
-    // if ((aclHdr->data_len - 4) != aclHdr->len) {
-    //     // don't have the full packet yet
-    //     return;
-    // }
+    acl_data_t *acl_so_far = (acl_data_t *) acl_data_buffer;
+    if (acl_data_len != acl_so_far->acl_data_len) {
+        // We don't have the full packet yet.
+        return;
+    }
 
     // if (aclHdr->cid == ATT_CID) {
-    //     if (aclFlags == 0x01) {
-    //         // use buffered packet
-    //         ATT.handleData(aclHdr->handle & 0x0fff, aclHdr->len, &acl_pkt_buffer[sizeof(HCIACLHdr)]);
-    //     } else {
-    //         // use the rx buffer
-    //         ATT.handleData(aclHdr->handle & 0x0fff, aclHdr->len, &rx_buffer[1 + sizeof(HCIACLHdr)]);
-    //     }
+    //     ATT.handleData(aclHdr->handle & 0x0fff, aclHdr->len, &rx_buffer[1 + sizeof(HCIACLHdr)]);
     // } else if (aclHdr->cid == SIGNALING_CID) {
     //     L2CAPSignaling.handleData(aclHdr->handle & 0x0fff, aclHdr->len, &rx_buffer[1 + sizeof(HCIACLHdr)]);
     // } else {
@@ -321,6 +327,9 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
         }
 
         default:
+            if (debug) {
+                mp_printf(&mp_plat_print, "process_evt_pkt: Unknown event: %02x\n");
+            }
             break;
     }
 }
@@ -407,6 +416,9 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
             break;
 
         default:
+            if (debug) {
+                mp_printf(&mp_plat_print, "Unknown HCI packet type: %d\n", rx_buffer[0]);
+            }
             break;
     }
 
@@ -499,18 +511,18 @@ STATIC int __attribute__((unused)) send_acl_pkt(uint16_t handle, uint8_t cid, vo
     }
 
     // data_len does not include cid.
-    const size_t cid_len = sizeof_field(l2cap_data_t, cid);
+    const size_t cid_len = sizeof_field(acl_data_t, cid);
     // buf_len is size of entire packet including header.
     const size_t buf_len = sizeof(h4_hci_acl_pkt_t) + cid_len + data_len;
     uint8_t tx_buffer[buf_len];
 
     h4_hci_acl_pkt_t *acl_pkt = (h4_hci_acl_pkt_t *) tx_buffer;
-    l2cap_data_t *l2cap = (l2cap_data_t *) acl_pkt->data;
+    acl_data_t *acl_data = (acl_data_t *) acl_pkt->data;
     acl_pkt->pkt_type = H4_ACL;
     acl_pkt->handle = handle;
     acl_pkt->data_len = (uint8_t)(cid_len + data_len);
-    l2cap->l2cap_data_len = (uint8_t) data_len;
-    l2cap->cid = cid;
+    acl_data->acl_data_len = (uint8_t) data_len;
+    acl_data->cid = cid;
 
     memcpy(&tx_buffer[sizeof(h4_hci_acl_pkt_t)], data, data_len);
 
