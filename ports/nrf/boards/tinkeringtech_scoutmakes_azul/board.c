@@ -24,36 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/usb.h"
-#include "supervisor/shared/stack.h"
+#include "boards/board.h"
 
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
+void board_init(void) {
+}
 
-#if CIRCUITPY_AUDIOBUSIO
-#include "common-hal/audiobusio/I2SOut.h"
-#endif
+bool board_requests_safe_mode(void) {
+  return false;
+}
 
-#if CIRCUITPY_AUDIOPWMIO
-#include "common-hal/audiopwmio/PWMAudioOut.h"
-#endif
+void reset_board(void) {
 
-#if CIRCUITPY_BLEIO
-#include "supervisor/shared/bluetooth.h"
-#include "common-hal/_bleio/bonding.h"
-#endif
-
-void port_start_background_task(void) {}
-void port_finish_background_task(void) {}
-
-void port_background_task(void) {
-#if CIRCUITPY_AUDIOPWMIO
-    audiopwmout_background();
-#endif
-#if CIRCUITPY_AUDIOBUSIO
-    i2s_background();
-#endif
 }

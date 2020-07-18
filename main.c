@@ -45,6 +45,7 @@
 
 #include "background.h"
 #include "mpconfigboard.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
@@ -99,8 +100,6 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
-
-    background_tasks_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
@@ -160,6 +159,8 @@ void stop_mp(void) {
     MP_STATE_VM(vfs_mount_table) = vfs;
     MP_STATE_VM(vfs_cur) = vfs;
     #endif
+
+    background_callback_reset();
 
     gc_deinit();
 }
@@ -491,6 +492,8 @@ void gc_collect(void) {
     // This collects root pointers from the VFS mount table. Some of them may
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
+
+    background_callback_gc_collect();
 
     #if CIRCUITPY_DISPLAYIO
     displayio_gc_collect();

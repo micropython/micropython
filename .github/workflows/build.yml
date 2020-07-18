@@ -274,6 +274,7 @@ jobs:
         - "teensy41"
         - "teknikio_bluebird"
         - "thunderpack"
+        - "tinkeringtech_scoutmakes_azul"
         - "trellis_m4_express"
         - "trinket_m0"
         - "trinket_m0_haxpress"

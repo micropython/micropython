@@ -46,6 +46,7 @@
 #include "hpl_gclk_config.h"
 
 #include "shared-bindings/time/__init__.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
 
 #ifdef SAMD21
@@ -132,7 +133,7 @@ void frequencyin_interrupt_handler(uint8_t index) {
             }
 
             // Check if we've reached the upper limit of detection
-            if (!background_tasks_ok() || self->errored_too_fast) {
+            if (!supervisor_background_tasks_ok() || self->errored_too_fast) {
                 self->errored_too_fast = true;
                 frequencyin_emergency_cancel_capture(i);
             }
