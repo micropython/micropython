@@ -419,12 +419,12 @@ STATIC mp_obj_t buffer_finder(size_t n_args, const mp_obj_t *args, int direction
     }
 
     const byte *start = haystack_bufinfo.buf;
-    const byte *end = haystack_bufinfo.buf + haystack_bufinfo.len;
+    const byte *end = ((const byte*)haystack_bufinfo.buf) + haystack_bufinfo.len;
     if (n_args >= 3 && args[2] != mp_const_none) {
         start += mp_get_index(self_type, haystack_bufinfo.len, args[2], true);
     }
     if (n_args >= 4 && args[3] != mp_const_none) {
-        end = haystack_bufinfo.buf + mp_get_index(self_type, haystack_bufinfo.len, args[3], true);
+        end = ((const byte*)haystack_bufinfo.buf) + mp_get_index(self_type, haystack_bufinfo.len, args[3], true);
     }
 
     const byte *p = NULL;
