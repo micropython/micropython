@@ -29,6 +29,18 @@
 
 #include <mpconfigboard.h>
 
+#if defined(NRF51822)
+  #include "mpconfigdevice_nrf51822.h"
+#elif defined(NRF52832)
+  #include "mpconfigdevice_nrf52832.h"
+#elif defined(NRF52840)
+  #include "mpconfigdevice_nrf52840.h"
+#elif defined(NRF9160)
+  #include "mpconfigdevice_nrf9160.h"
+#else
+  #pragma error "Device not defined"
+#endif
+
 // options to control how MicroPython is built
 #ifndef MICROPY_VFS
 #define MICROPY_VFS                 (0)
