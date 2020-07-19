@@ -20,7 +20,7 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
     size_t len = 0;
     mp_obj_t *items;
     mp_obj_list_get(points_tuple_list, &len, &items);
-    VECTORIO_POLYGON_DEBUG("polygon_points_list len: %d\n", len);
+    VECTORIO_POLYGON_DEBUG(" self.len: %d, len: %d, ", self->len, len);
 
     if ( len < 3 ) {
         mp_raise_TypeError_varg(translate("Polygon needs at least 3 points"));
@@ -28,9 +28,11 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
 
     if ( self->len < 2*len ) {
         if ( self->points_list != NULL ) {
+            VECTORIO_POLYGON_DEBUG("free(%d), ", sizeof(self->points_list));
             gc_free( self->points_list );
         }
         self->points_list = gc_alloc( 2 * len * sizeof(int), false, false );
+        VECTORIO_POLYGON_DEBUG("alloc(%p, %d)", self->points_list, 2 * len * sizeof(int));
     }
     self->len = 2*len;
 
@@ -56,22 +58,35 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
 
 
 void common_hal_vectorio_polygon_construct(vectorio_polygon_t *self, mp_obj_t points_list) {
-    VECTORIO_POLYGON_DEBUG("%p polygon_construct\n", self);
+    VECTORIO_POLYGON_DEBUG("%p polygon_construct: ", self);
     self->points_list = NULL;
     self->len = 0;
     self->on_dirty.obj = NULL;
     _clobber_points_list( self, points_list );
+    VECTORIO_POLYGON_DEBUG("\n");
 }
 
 
 mp_obj_t common_hal_vectorio_polygon_get_points(vectorio_polygon_t *self) {
-    return self->points_list;
+    VECTORIO_POLYGON_DEBUG("%p common_hal_vectorio_polygon_get_points {len: %d, points_list: %p}\n", self, self->len, self->points_list);
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+
+    for (size_t i = 0; i < self->len; i += 2) {
+        mp_obj_t tuple[] = { mp_obj_new_int(self->points_list[i]), mp_obj_new_int(self->points_list[i+1]) };
+        mp_obj_list_append(
+            list,
+            mp_obj_new_tuple(2, tuple)
+        );
+    }
+    return list;
 }
 void common_hal_vectorio_polygon_set_points(vectorio_polygon_t *self, mp_obj_t points_list) {
+    VECTORIO_POLYGON_DEBUG("%p common_hal_vectorio_polygon_set_points: ", self);
     _clobber_points_list( self, points_list );
     if (self->on_dirty.obj != NULL) {
         self->on_dirty.event(self->on_dirty.obj);
     }
+    VECTORIO_POLYGON_DEBUG("\n");
 }
 
 void common_hal_vectorio_polygon_set_on_dirty(vectorio_polygon_t *self, vectorio_event_t notification) {
