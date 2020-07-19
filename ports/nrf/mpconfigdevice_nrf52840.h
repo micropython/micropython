@@ -35,3 +35,15 @@
 #endif
 
 // Board overridable feature configuration.
+
+#ifndef MICROPY_PY_ARRAY_SLICE_ASSIGN
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN      (1)
+#endif
+
+#ifndef MICROPY_PY_SYS_STDFILES
+#define MICROPY_PY_SYS_STDFILES            (1)
+#endif
+
+#ifndef MICROPY_PY_UBINASCII
+#define MICROPY_PY_UBINASCII               (1)
+#endif
