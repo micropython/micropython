@@ -118,16 +118,20 @@ Use the :mod:`time <utime>` module::
 Timers
 ------
 
-Virtual (RTOS-based) timers are supported. Use the :ref:`machine.Timer <machine.Timer>` class
-with timer ID of -1::
+The ESP32 port has four hardware timers. Use the :ref:`machine.Timer <machine.Timer>` class
+with a timer ID from 0 to 3 (inclusive)::
 
     from machine import Timer
 
-    tim = Timer(-1)
-    tim.init(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
-    tim.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(2))
+    tim0 = Timer(0)
+    tim0.init(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(0))
+
+    tim1 = Timer(1)
+    tim1.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(1))
 
 The period is in milliseconds.
+
+Virtual timers are not currently supported on this port.
 
 .. _Pins_and_GPIO:
 
@@ -172,7 +176,7 @@ PWM (pulse width modulation)
 
 PWM can be enabled on all output-enabled pins. The base frequency can
 range from 1Hz to 40MHz but there is a tradeoff; as the base frequency
-*increases* the duty resolution *decreases*. See 
+*increases* the duty resolution *decreases*. See
 `LED Control <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/ledc.html>`_
 for more details.
 Currently the duty cycle has to be in the range of 0-1023.
@@ -273,7 +277,7 @@ class::
 
 .. Warning::
    Currently *all* of ``sck``, ``mosi`` and ``miso`` *must* be specified when
-   initialising Software SPI. 
+   initialising Software SPI.
 
 Hardware SPI bus
 ----------------
@@ -445,11 +449,11 @@ Use the ``TouchPad`` class in the ``machine`` module::
     from machine import TouchPad, Pin
 
     t = TouchPad(Pin(14))
-    t.read()              # Returns a smaller number when touched 
+    t.read()              # Returns a smaller number when touched
 
 ``TouchPad.read`` returns a value relative to the capacitive variation. Small numbers (typically in
-the *tens*) are common when a pin is touched, larger numbers (above *one thousand*) when 
-no touch is present. However the values are *relative* and can vary depending on the board 
+the *tens*) are common when a pin is touched, larger numbers (above *one thousand*) when
+no touch is present. However the values are *relative* and can vary depending on the board
 and surrounding composition so some calibration may be required.
 
 There are ten capacitive touch-enabled pins that can be used on the ESP32: 0, 2, 4, 12, 13
