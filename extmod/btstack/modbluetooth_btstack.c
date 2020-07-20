@@ -70,6 +70,7 @@ STATIC int btstack_error_to_errno(int err) {
     }
 }
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(uint16_t uuid16, const uint8_t *uuid128) {
     mp_obj_bluetooth_uuid_t result;
     if (uuid16 != 0) {
@@ -82,6 +83,7 @@ STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(uint16_t uuid16, const uint8_t *uu
     }
     return result;
 }
+#endif
 
 // Notes on supporting background ops (e.g. an attempt to gatts_notify while
 // an existing notification is in progress):
@@ -286,16 +288,6 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         DEBUG_EVENT_printf("  --> btstack # conns changed\n");
     } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
         DEBUG_EVENT_printf("  --> hci vendor specific\n");
-    } else if (event_type == GAP_EVENT_ADVERTISING_REPORT) {
-        DEBUG_EVENT_printf("  --> gap advertising report\n");
-        bd_addr_t address;
-        gap_event_advertising_report_get_address(packet, address);
-        uint8_t adv_event_type = gap_event_advertising_report_get_advertising_event_type(packet);
-        uint8_t address_type = gap_event_advertising_report_get_address_type(packet);
-        int8_t rssi = gap_event_advertising_report_get_rssi(packet);
-        uint8_t length = gap_event_advertising_report_get_data_length(packet);
-        const uint8_t *data = gap_event_advertising_report_get_data(packet);
-        mp_bluetooth_gap_on_scan_result(address_type, address, adv_event_type, rssi, data, length);
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_EVENT_printf("  --> hci disconnect complete\n");
         uint16_t conn_handle = hci_event_disconnection_complete_get_connection_handle(packet);
@@ -311,6 +303,16 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         uint8_t addr[6] = {0};
         mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, 0xff, addr);
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+    } else if (event_type == GAP_EVENT_ADVERTISING_REPORT) {
+        DEBUG_EVENT_printf("  --> gap advertising report\n");
+        bd_addr_t address;
+        gap_event_advertising_report_get_address(packet, address);
+        uint8_t adv_event_type = gap_event_advertising_report_get_advertising_event_type(packet);
+        uint8_t address_type = gap_event_advertising_report_get_address_type(packet);
+        int8_t rssi = gap_event_advertising_report_get_rssi(packet);
+        uint8_t length = gap_event_advertising_report_get_data_length(packet);
+        const uint8_t *data = gap_event_advertising_report_get_data(packet);
+        mp_bluetooth_gap_on_scan_result(address_type, address, adv_event_type, rssi, data, length);
     } else if (event_type == GATT_EVENT_QUERY_COMPLETE) {
         uint16_t conn_handle = gatt_event_query_complete_get_handle(packet);
         uint16_t status = gatt_event_query_complete_get_att_status(packet);
