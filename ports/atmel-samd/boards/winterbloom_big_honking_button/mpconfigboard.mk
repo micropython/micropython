@@ -31,3 +31,7 @@ CIRCUITPY_PS2IO = 0
 CIRCUITPY_USB_HID = 0
 CIRCUITPY_USB_MIDI = 0
 CIRCUITPY_RTC = 0
+
+# Enable board-specific modules
+USER_C_MODULES = boards/winterbloom_big_honking_button/usermods
+CFLAGS += -DMODULE_BHB_ENABLED=1
