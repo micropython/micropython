@@ -44,10 +44,11 @@ typedef struct _mp_bluetooth_btstack_root_pointers_t {
     // Characteristic (and descriptor) value storage.
     mp_gatts_db_t gatts_db;
 
+    btstack_linked_list_t pending_ops;
+
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     // Registration for notify/indicate events.
     gatt_client_notification_t notification;
-    btstack_linked_list_t pending_ops;
     #endif
 } mp_bluetooth_btstack_root_pointers_t;
 

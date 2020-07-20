@@ -836,10 +836,12 @@ STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size
         // Note the int8_t got packed into the ringbuf as a uint8_t.
         data_tuple->items[j++] = MP_OBJ_NEW_SMALL_INT((int8_t)ringbuf_get(ringbuf));
     }
+    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     if (uuid) {
         ringbuf_get_uuid(ringbuf, uuid);
         data_tuple->items[j++] = MP_OBJ_FROM_PTR(uuid);
     }
+    #endif
     // The code that enqueues into the ringbuf should ensure that it doesn't
     // put more than bt->irq_data_data_alloc bytes into the ringbuf, because
     // that's what's available here in bt->irq_data_bytes.

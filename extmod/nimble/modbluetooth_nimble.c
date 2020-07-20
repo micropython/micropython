@@ -96,6 +96,13 @@ STATIC ble_uuid_t *create_nimble_uuid(const mp_obj_bluetooth_uuid_t *uuid, ble_u
     }
 }
 
+// modbluetooth (and the layers above it) work in BE for addresses, Nimble works in LE.
+STATIC void reverse_addr_byte_order(uint8_t *addr_out, const uint8_t *addr_in) {
+    for (int i = 0; i < 6; ++i) {
+        addr_out[i] = addr_in[5 - i];
+    }
+}
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(const ble_uuid_any_t *uuid) {
@@ -121,13 +128,6 @@ STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(const ble_uuid_any_t *uuid) {
             assert(false);
     }
     return result;
-}
-
-// modbluetooth (and the layers above it) work in BE for addresses, Nimble works in LE.
-STATIC void reverse_addr_byte_order(uint8_t *addr_out, const uint8_t *addr_in) {
-    for (int i = 0; i < 6; ++i) {
-        addr_out[i] = addr_in[5 - i];
-    }
 }
 
 STATIC ble_addr_t create_nimble_addr(uint8_t addr_type, const uint8_t *addr) {
