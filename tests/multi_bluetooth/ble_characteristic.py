@@ -17,12 +17,13 @@ _IRQ_GATTC_READ_DONE = const(16)
 _IRQ_GATTC_WRITE_DONE = const(17)
 _IRQ_GATTC_NOTIFY = const(18)
 _IRQ_GATTC_INDICATE = const(19)
+_IRQ_GATTS_INDICATE_DONE = const(20)
 
 SERVICE_UUID = bluetooth.UUID("A5A5A5A5-FFFF-9999-1111-5A5A5A5A5A5A")
 CHAR_UUID = bluetooth.UUID("00000000-1111-2222-3333-444444444444")
 CHAR = (
     CHAR_UUID,
-    bluetooth.FLAG_READ | bluetooth.FLAG_WRITE | bluetooth.FLAG_NOTIFY,
+    bluetooth.FLAG_READ | bluetooth.FLAG_WRITE | bluetooth.FLAG_NOTIFY | bluetooth.FLAG_INDICATE,
 )
 SERVICE = (
     SERVICE_UUID,
@@ -62,6 +63,8 @@ def irq(event, data):
         print("_IRQ_GATTC_NOTIFY", data[-1])
     elif event == _IRQ_GATTC_INDICATE:
         print("_IRQ_GATTC_INDICATE", data[-1])
+    elif event == _IRQ_GATTS_INDICATE_DONE:
+        print("_IRQ_GATTS_INDICATE_DONE", data[-1])
 
     if waiting_event is not None:
         if (isinstance(waiting_event, int) and event == waiting_event) or (
@@ -127,6 +130,9 @@ def instance0():
         ble.gatts_write(char_handle, "periph3")
         print("gatts_indicate")
         ble.gatts_indicate(conn_handle, char_handle)
+
+        # Wait for the indicate ack.
+        wait_for_event(_IRQ_GATTS_INDICATE_DONE, TIMEOUT_MS)
 
         # Wait for the central to disconnect.
         wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)

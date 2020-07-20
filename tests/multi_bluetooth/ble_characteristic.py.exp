@@ -9,6 +9,7 @@ gatts_notify
 _IRQ_GATTS_WRITE b'central2'
 gatts_write
 gatts_indicate
+_IRQ_GATTS_INDICATE_DONE 0
 _IRQ_CENTRAL_DISCONNECT
 --- instance1 ---
 gap_connect
