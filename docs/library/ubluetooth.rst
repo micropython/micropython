@@ -148,6 +148,10 @@ Event Handling
             elif event == _IRQ_GATTC_INDICATE:
                 # A peripheral has sent an indicate request.
                 conn_handle, value_handle, notify_data = data
+            elif event == _IRQ_GATTS_INDICATE_DONE:
+                # A central has acknowledged the indication.
+                # Note: Status will be zero on successful acknowledgment, implementation-specific value otherwise.
+                conn_handle, value_handle, status = data
 
 The event codes are::
 
@@ -171,6 +175,7 @@ The event codes are::
     _IRQ_GATTC_WRITE_DONE = const(17)
     _IRQ_GATTC_NOTIFY = const(18)
     _IRQ_GATTC_INDICATE = const(19)
+    _IRQ_GATTS_INDICATE_DONE = const(20)
 
 In order to save space in the firmware, these constants are not included on the
 :mod:`ubluetooth` module. Add the ones that you need from the list above to your
@@ -313,8 +318,8 @@ writes from a central to a given characteristic, use
     always send the current local value (as set with :meth:`gatts_write
     <BLE.gatts_write>`).
 
-    **Note:** This does not currently support generating an event for sucessful
-    acknowledgment of the indication.
+    On acknowledgment (or failure, e.g. timeout), the
+    ``_IRQ_GATTS_INDICATE_DONE`` event will be raised.
 
 .. method:: BLE.gatts_set_buffer(value_handle, len, append=False, /)
 
