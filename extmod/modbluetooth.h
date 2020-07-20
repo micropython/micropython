@@ -68,6 +68,7 @@
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_NO_RESPONSE (1 << 2)
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE    (1 << 3)
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY   (1 << 4)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_INDICATE (1 << 5)
 
 // For mp_bluetooth_gattc_write, the mode parameter
 #define MP_BLUETOOTH_WRITE_MODE_NO_RESPONSE     (0)
@@ -107,6 +108,7 @@
 #define MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE               (17)
 #define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                   (18)
 #define MP_BLUETOOTH_IRQ_GATTC_INDICATE                 (19)
+#define MP_BLUETOOTH_IRQ_GATTS_INDICATE_DONE            (20)
 
 /*
 These aren't included in the module for space reasons, but can be used
@@ -132,6 +134,7 @@ _IRQ_GATTC_READ_DONE = const(16)
 _IRQ_GATTC_WRITE_DONE = const(17)
 _IRQ_GATTC_NOTIFY = const(18)
 _IRQ_GATTC_INDICATE = const(19)
+_IRQ_GATTS_INDICATE_DONE = const(20)
 */
 
 // Common UUID type.
@@ -244,6 +247,9 @@ void mp_bluetooth_gap_on_connected_disconnected(uint8_t event, uint16_t conn_han
 
 // Call this when a characteristic is written to.
 void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle);
+
+// Call this when an acknowledgment is received for an indication.
+void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t value_handle, uint8_t status);
 
 #if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
 // Call this when a characteristic is read from. Return false to deny the read.

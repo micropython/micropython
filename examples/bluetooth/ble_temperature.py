@@ -13,13 +13,14 @@ from micropython import const
 
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)
+_IRQ_GATTS_INDICATE_DONE = const(20)
 
 # org.bluetooth.service.environmental_sensing
 _ENV_SENSE_UUID = bluetooth.UUID(0x181A)
 # org.bluetooth.characteristic.temperature
 _TEMP_CHAR = (
     bluetooth.UUID(0x2A6E),
-    bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,
+    bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY | bluetooth.FLAG_INDICATE,
 )
 _ENV_SENSE_SERVICE = (
     _ENV_SENSE_UUID,
@@ -52,15 +53,21 @@ class BLETemperature:
             self._connections.remove(conn_handle)
             # Start advertising again to allow a new connection.
             self._advertise()
+        elif event == _IRQ_GATTS_INDICATE_DONE:
+            conn_handle, value_handle, status, = data
 
-    def set_temperature(self, temp_deg_c, notify=False):
+    def set_temperature(self, temp_deg_c, notify=False, indicate=False):
         # Data is sint16 in degrees Celsius with a resolution of 0.01 degrees Celsius.
         # Write the local value, ready for a central to read.
         self._ble.gatts_write(self._handle, struct.pack("<h", int(temp_deg_c * 100)))
-        if notify:
+        if notify or indicate:
             for conn_handle in self._connections:
-                # Notify connected centrals to issue a read.
-                self._ble.gatts_notify(conn_handle, self._handle)
+                if notify:
+                    # Notify connected centrals.
+                    self._ble.gatts_notify(conn_handle, self._handle)
+                if indicate:
+                    # Indicate connected centrals.
+                    self._ble.gatts_indicate(conn_handle, self._handle)
 
     def _advertise(self, interval_us=500000):
         self._ble.gap_advertise(interval_us, adv_data=self._payload)
@@ -76,7 +83,7 @@ def demo():
     while True:
         # Write every second, notify every 10 seconds.
         i = (i + 1) % 10
-        temp.set_temperature(t, notify=i == 0)
+        temp.set_temperature(t, notify=i == 0, indicate=False)
         # Random walk the temperature.
         t += random.uniform(-0.5, 0.5)
         time.sleep_ms(1000)

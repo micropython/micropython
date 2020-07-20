@@ -238,6 +238,37 @@ STATIC mp_btstack_pending_op_t *btstack_finish_pending_operation(uint16_t op_typ
 }
 #endif
 
+// This needs to be separate to btstack_packet_handler otherwise we get
+// dual-delivery of the HCI_EVENT_LE_META event.
+STATIC void btstack_packet_handler_att_server(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+    (void)channel;
+    (void)size;
+    DEBUG_EVENT_printf("btstack_packet_handler_att_server(packet_type=%u, packet=%p)\n", packet_type, packet);
+    if (packet_type != HCI_EVENT_PACKET) {
+        return;
+    }
+
+    uint8_t event_type = hci_event_packet_get_type(packet);
+
+    if (event_type == ATT_EVENT_CONNECTED) {
+        DEBUG_EVENT_printf("  --> att connected\n");
+        // The ATT_EVENT_*CONNECTED events are fired for both peripheral and central role, with no way to tell which.
+        // So we use the HCI_EVENT_LE_META event directly in the main packet handler.
+    } else if (event_type == ATT_EVENT_DISCONNECTED) {
+        DEBUG_EVENT_printf("  --> att disconnected\n");
+    } else if (event_type == ATT_EVENT_HANDLE_VALUE_INDICATION_COMPLETE) {
+        DEBUG_EVENT_printf("  --> att indication complete\n");
+        uint16_t conn_handle = att_event_handle_value_indication_complete_get_conn_handle(packet);
+        uint16_t value_handle = att_event_handle_value_indication_complete_get_attribute_handle(packet);
+        uint8_t status = att_event_handle_value_indication_complete_get_status(packet);
+        mp_bluetooth_gatts_on_indicate_complete(conn_handle, value_handle, status);
+    } else if (event_type == HCI_EVENT_LE_META || event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
+        // Ignore, duplicated by att_server.c.
+    } else {
+        DEBUG_EVENT_printf("  --> hci att server event type: unknown (0x%02x)\n", event_type);
+    }
+}
+
 STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t irq) {
     DEBUG_EVENT_printf("btstack_packet_handler(packet_type=%u, packet=%p)\n", packet_type, packet);
     if (packet_type != HCI_EVENT_PACKET) {
@@ -245,11 +276,8 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
     }
 
     uint8_t event_type = hci_event_packet_get_type(packet);
-    if (event_type == ATT_EVENT_CONNECTED) {
-        DEBUG_EVENT_printf("  --> att connected\n");
-    } else if (event_type == ATT_EVENT_DISCONNECTED) {
-        DEBUG_EVENT_printf("  --> att disconnected\n");
-    } else if (event_type == HCI_EVENT_LE_META) {
+
+    if (event_type == HCI_EVENT_LE_META) {
         DEBUG_EVENT_printf("  --> hci le meta\n");
         if (hci_event_le_meta_get_subevent_code(packet) == HCI_SUBEVENT_LE_CONNECTION_COMPLETE) {
             uint16_t conn_handle = hci_subevent_le_connection_complete_get_connection_handle(packet);
@@ -277,7 +305,7 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
             mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
         }
     } else if (event_type == HCI_EVENT_TRANSPORT_PACKET_SENT) {
-        DEBUG_EVENT_printf("  --> hci transport packet set\n");
+        DEBUG_EVENT_printf("  --> hci transport packet sent\n");
     } else if (event_type == HCI_EVENT_COMMAND_COMPLETE) {
         DEBUG_EVENT_printf("  --> hci command complete\n");
     } else if (event_type == HCI_EVENT_COMMAND_STATUS) {
@@ -288,6 +316,8 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         DEBUG_EVENT_printf("  --> btstack # conns changed\n");
     } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
         DEBUG_EVENT_printf("  --> hci vendor specific\n");
+    } else if (event_type == GATT_EVENT_MTU) {
+        DEBUG_EVENT_printf("  --> hci MTU\n");
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_EVENT_printf("  --> hci disconnect complete\n");
         uint16_t conn_handle = hci_event_disconnection_complete_get_connection_handle(packet);
@@ -499,6 +529,9 @@ int mp_bluetooth_init(void) {
 
     // Register for HCI events.
     hci_add_event_handler(&hci_event_callback_registration);
+
+    // Register for ATT server events.
+    att_server_register_packet_handler(&btstack_packet_handler_att_server);
 
     // Set a timeout for HCI initialisation.
     btstack_run_loop_set_timer(&btstack_init_deinit_timeout, BTSTACK_INIT_DEINIT_TIMEOUT_MS);
@@ -816,7 +849,8 @@ int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle) {
     size_t len = 0;
     mp_bluetooth_gatts_db_read(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, value_handle, &data, &len);
 
-    // TODO: Handle ATT_EVENT_HANDLE_VALUE_INDICATION_COMPLETE to generate acknowledgment event.
+    // Indicate will raise ATT_EVENT_HANDLE_VALUE_INDICATION_COMPLETE when
+    // acknowledged (or timeout/error).
 
     // Attempt to send immediately, will copy buffer.
     MICROPY_PY_BLUETOOTH_ENTER
