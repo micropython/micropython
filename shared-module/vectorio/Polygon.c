@@ -69,7 +69,7 @@ void common_hal_vectorio_polygon_construct(vectorio_polygon_t *self, mp_obj_t po
 
 mp_obj_t common_hal_vectorio_polygon_get_points(vectorio_polygon_t *self) {
     VECTORIO_POLYGON_DEBUG("%p common_hal_vectorio_polygon_get_points {len: %d, points_list: %p}\n", self, self->len, self->points_list);
-    mp_obj_t list = mp_obj_new_list(0, NULL);
+    mp_obj_t list = mp_obj_new_list(self->len/2, NULL);
 
     for (size_t i = 0; i < self->len; i += 2) {
         mp_obj_t tuple[] = { mp_obj_new_int(self->points_list[i]), mp_obj_new_int(self->points_list[i+1]) };
