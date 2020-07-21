@@ -12,3 +12,5 @@ CIRCUITPY_FULL_BUILD = 0
 
 # Always use aggressive inlining
 CFLAGS_INLINE_LIMIT = 45
+
+SUPEROPT_GC = 0
