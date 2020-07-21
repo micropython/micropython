@@ -412,10 +412,7 @@ STATIC mp_obj_t buffer_finder(size_t n_args, const mp_obj_t *args, int direction
     mp_get_buffer_raise(args[1], &needle_bufinfo, MP_BUFFER_READ);
 
     if (mp_binary_get_size('@', needle_bufinfo.typecode, NULL) != 1) {
-        const qstr src_name = mp_obj_get_type(args[1])->name;
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            translate("'%q' object is not bytes-like"),
-            src_name));
+        mp_raise_TypeError(translate("a bytes-like object is required"));
     }
 
     const byte *start = haystack_bufinfo.buf;
@@ -447,6 +444,7 @@ STATIC mp_obj_t buffer_find(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(buffer_find_obj, 2, 4, buffer_find);
 
+#if MICROPY_CPYTHON_COMPAT
 STATIC mp_obj_t buffer_rfind(size_t n_args, const mp_obj_t *args) {
     return buffer_finder(n_args, args, -1, false);
 }
@@ -461,6 +459,7 @@ STATIC mp_obj_t buffer_rindex(size_t n_args, const mp_obj_t *args) {
     return buffer_finder(n_args, args, -1, true);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(buffer_rindex_obj, 2, 4, buffer_rindex);
+#endif
 
 #endif
 
@@ -646,11 +645,11 @@ STATIC const mp_rom_map_elem_t bytearray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&buffer_find_obj) },
+#if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&buffer_rfind_obj) },
     { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&buffer_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_rindex), MP_ROM_PTR(&buffer_rindex_obj) },
 
-#if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&array_decode_obj) },
 #endif
 };
