@@ -98,7 +98,7 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 }
 
 #if MICROPY_ENABLE_PYSTACK
-static size_t PLACE_IN_DTCM_BSS(_pystack)[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)];
+static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
 #endif
 
 void start_mp(supervisor_allocation* heap) {
@@ -130,7 +130,7 @@ void start_mp(supervisor_allocation* heap) {
     readline_init0();
 
     #if MICROPY_ENABLE_PYSTACK
-    mp_pystack_init(_pystack, _pystack + sizeof(_pystack));
+    mp_pystack_init(_pystack, _pystack + (sizeof(_pystack) / sizeof(size_t)));
     #endif
 
     #if MICROPY_ENABLE_GC
