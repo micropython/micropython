@@ -36,9 +36,9 @@
 //| """Memory monitoring helpers"""
 //|
 
-//| class AllocationException:
+//| class AllocationError:
 //|     def __init__(self, Exception: Any):
-//|         """Catch all exception for Bluetooth related errors."""
+//|         """Catchall exception for allocation related errors."""
 //|         ...
 MP_DEFINE_MEMORYMONITOR_EXCEPTION(AllocationError, Exception)
 

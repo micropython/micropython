@@ -38,7 +38,7 @@
 //|     def __init__(self):
 //|         """Tracks the number of allocations in power of two buckets.
 //|
-//|         It will have 16 16bit buckets to track allocation counts. It is total allocations
+//|         It will have 16 16-bit buckets to track allocation counts. It is total allocations
 //|         meaning frees are ignored. Reallocated memory is counted twice, at allocation and when
 //|         reallocated with the larger size.
 //|
