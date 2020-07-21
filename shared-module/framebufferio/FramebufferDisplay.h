@@ -55,6 +55,7 @@ typedef struct {
 void framebufferio_framebufferdisplay_background(framebufferio_framebufferdisplay_obj_t* self);
 void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self);
 void reset_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self);
+void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj_t* self);
 
 void framebufferio_framebufferdisplay_collect_ptrs(framebufferio_framebufferdisplay_obj_t* self);
 
