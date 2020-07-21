@@ -1,4 +1,4 @@
-# test waiting within "async for" aiter/anext functions
+# test waiting within "async for" __anext__ function
 
 import sys
 if sys.implementation.name == 'micropython':
@@ -21,9 +21,8 @@ class ARange:
         self.cur = 0
         self.high = high
 
-    async def __aiter__(self):
+    def __aiter__(self):
         print('aiter')
-        print('f returned:', await f(10))
         return self
 
     async def __anext__(self):
