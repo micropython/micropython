@@ -10,9 +10,5 @@ INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = NONE
 CIRCUITPY_FULL_BUILD = 0
 
-# Tweak inlining depending on language.
-ifeq ($(TRANSLATION), zh_Latn_pinyin)
+# Always use aggressive inlining
 CFLAGS_INLINE_LIMIT = 45
-else
-CFLAGS_INLINE_LIMIT = 70
-endif
