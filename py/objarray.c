@@ -400,7 +400,7 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_extend_obj, array_extend);
 #endif
 
-#if MICROPY_PY_BUILTINS_BYTEARRAY
+#if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_CPYTHON_COMPAT
 STATIC mp_obj_t buffer_finder(size_t n_args, const mp_obj_t *args, int direction, bool is_index) {
     mp_check_self(MP_OBJ_IS_TYPE(args[0], &mp_type_bytearray));
     const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
@@ -444,7 +444,6 @@ STATIC mp_obj_t buffer_find(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(buffer_find_obj, 2, 4, buffer_find);
 
-#if MICROPY_CPYTHON_COMPAT
 STATIC mp_obj_t buffer_rfind(size_t n_args, const mp_obj_t *args) {
     return buffer_finder(n_args, args, -1, false);
 }
@@ -459,8 +458,6 @@ STATIC mp_obj_t buffer_rindex(size_t n_args, const mp_obj_t *args) {
     return buffer_finder(n_args, args, -1, true);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(buffer_rindex_obj, 2, 4, buffer_rindex);
-#endif
-
 #endif
 
 STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
@@ -644,8 +641,8 @@ STATIC const mp_rom_map_elem_t bytearray_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&buffer_find_obj) },
 #if MICROPY_CPYTHON_COMPAT
+    { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&buffer_find_obj) },
     { MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&buffer_rfind_obj) },
     { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&buffer_index_obj) },
     { MP_ROM_QSTR(MP_QSTR_rindex), MP_ROM_PTR(&buffer_rindex_obj) },
