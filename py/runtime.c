@@ -1014,6 +1014,8 @@ STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) 
 // see http://docs.python.org/3/howto/descriptor.html
 // and also https://mail.python.org/pipermail/python-dev/2015-March/138950.html
 void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t member, mp_obj_t *dest) {
+    // clear dest[1] to indicate no special attribute found yet
+    dest[1] = MP_OBJ_NULL;
     if (mp_obj_is_obj(member)) {
         const mp_obj_type_t *m_type = ((mp_obj_base_t *)MP_OBJ_TO_PTR(member))->type;
         if (m_type->flags & MP_TYPE_FLAG_BINDS_SELF) {
