@@ -92,6 +92,9 @@ else
   CFLAGS += -flto -flto-partition=none
 endif
 
+ifdef OPTIMIZATION_LEVEL
+CFLAGS += -O$(OPTIMIZATION_LEVEL)
+endif
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 

@@ -83,6 +83,10 @@ else
   ### CFLAGS += -flto
 endif
 
+ifdef OPTIMIZATION_LEVEL
+CFLAGS += -O$(OPTIMIZATION_LEVEL)
+endif
+
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
 # TODO: check this

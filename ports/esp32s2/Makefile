@@ -109,6 +109,10 @@ else
   ### CFLAGS += -flto
 endif
 
+ifdef OPTIMIZATION_LEVEL
+CFLAGS += -O$(OPTIMIZATION_LEVEL)
+endif
+
 CFLAGS += $(INC) -Werror -Wall -mlongcalls -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
 LDFLAGS = $(CFLAGS) -Wl,-nostdlib  -Wl,-Map=$@.map -Wl,-cref

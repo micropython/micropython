@@ -123,6 +123,11 @@ CFLAGS += \
 	-fdata-sections \
 	-Wall \
 
+ifdef OPTIMIZATION_LEVEL
+CFLAGS += -O$(OPTIMIZATION_LEVEL)
+endif
+
+
 LIBM = "${shell "$(CC)" $(CFLAGS) -print-file-name=libm.a}"
 
 LIBGCC = "${shell "$(CC)" $(CFLAGS) -print-libgcc-file-name}"

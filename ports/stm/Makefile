@@ -91,6 +91,10 @@ else
 	# CFLAGS += -flto
 endif
 
+ifdef OPTIMIZATION_LEVEL
+CFLAGS += -O$(OPTIMIZATION_LEVEL)
+endif
+
 # MCU Series is defined by the HAL package and doesn't need to be specified here
 C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)
 

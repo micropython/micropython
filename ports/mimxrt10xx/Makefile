@@ -108,6 +108,10 @@ CFLAGS += \
 	-Os -g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage
 
+ifdef OPTIMIZATION_LEVEL
+CFLAGS += -O$(OPTIMIZATION_LEVEL)
+endif
+
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 
 LD_SCRIPT_FLAG := -Wl,-T,
