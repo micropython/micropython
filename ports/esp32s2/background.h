@@ -29,7 +29,4 @@
 
 #include <stdbool.h>
 
-void background_tasks_reset(void);
-void run_background_tasks(void);
-
 #endif  // MICROPY_INCLUDED_ESP32S2_BACKGROUND_H

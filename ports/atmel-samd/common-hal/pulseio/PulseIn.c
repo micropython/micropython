@@ -42,6 +42,7 @@
 #include "samd/timers.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
 
 // This timer is shared amongst all PulseIn objects as a higher resolution clock.
@@ -87,7 +88,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
     uint32_t current_count = tc->COUNT16.COUNT.reg;
 
     pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
-    if (!background_tasks_ok() || self->errored_too_fast) {
+    if (!supervisor_background_tasks_ok() || self->errored_too_fast) {
         self->errored_too_fast = true;
         common_hal_pulseio_pulsein_pause(self);
         return;
