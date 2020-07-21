@@ -37,7 +37,7 @@ typedef struct {
     mp_obj_base_t base;
 } digitalio_direction_obj_t;
 
-const mp_obj_type_t digitalio_direction_type;
+extern const mp_obj_type_t digitalio_direction_type;
 
 extern const digitalio_direction_obj_t digitalio_direction_input_obj;
 extern const digitalio_direction_obj_t digitalio_direction_output_obj;

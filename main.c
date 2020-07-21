@@ -331,6 +331,8 @@ bool run_code_py(safe_mode_t safe_mode) {
     }
 }
 
+FIL* boot_output_file;
+
 void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.

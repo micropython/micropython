@@ -29,7 +29,7 @@
 
 #include "shared-module/_pixelbuf/PixelBuf.h"
 
-const mp_obj_type_t pixelbuf_pixelbuf_type;
+extern const mp_obj_type_t pixelbuf_pixelbuf_type;
 
 void common_hal__pixelbuf_pixelbuf_construct(pixelbuf_pixelbuf_obj_t *self, size_t n,
     pixelbuf_byteorder_details_t* byteorder, mp_float_t brightness, bool auto_write, uint8_t* header,

@@ -35,7 +35,7 @@ typedef enum _digitalio_pull_t {
     PULL_DOWN
 } digitalio_pull_t;
 
-const mp_obj_type_t digitalio_pull_type;
+extern const mp_obj_type_t digitalio_pull_type;
 
 typedef struct {
     mp_obj_base_t base;
