@@ -14,3 +14,5 @@ EXTERNAL_FLASH_DEVICES = "GD25Q16C"
 # We use a CFLAGS define here because there are include order issues
 # if we try to include "mpconfigport.h" into nrfx_config.h .
 CFLAGS += -DCIRCUITPY_NRF_NUM_I2C=2
+
+OPTIMIZATION_LEVEL = 2

@@ -83,6 +83,7 @@ else
   ### CFLAGS += -flto
 endif
 
+# option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 ifdef OPTIMIZATION_LEVEL
 CFLAGS += -O$(OPTIMIZATION_LEVEL)
 endif

@@ -16,5 +16,4 @@ CIRCUITPY_GAMEPADSHIFT = 1
 CIRCUITPY_STAGE = 1
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pybadge
-
 OPTIMIZATION_LEVEL = 2

@@ -108,6 +108,7 @@ CFLAGS += \
 	-Os -g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage
 
+# option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 ifdef OPTIMIZATION_LEVEL
 CFLAGS += -O$(OPTIMIZATION_LEVEL)
 endif
