@@ -45,6 +45,7 @@ void reset_all_pins(void);
 void reset_pin_number(uint8_t pin_port, uint8_t pin_number);
 void claim_pin(const mcu_pin_obj_t* pin);
 bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number);
+bool pin_number_is_resettable(uint8_t pin_port, uint8_t pin_number)
 void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number);
 GPIO_TypeDef * pin_port(uint8_t pin_port);
 uint16_t pin_mask(uint8_t pin_number);

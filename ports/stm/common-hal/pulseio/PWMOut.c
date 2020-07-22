@@ -244,7 +244,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     //if reserved timer has no active channels, we can disable it
     if (!reserved_tim[self->tim->tim_index - 1]) {
         tim_frequencies[self->tim->tim_index - 1] = 0x00;
-        tim_clock_disable(1 << (self->tim->tim_index - 1));
+        stm_peripherals_timer_free(self->handle.Instance);
     }
 }
 

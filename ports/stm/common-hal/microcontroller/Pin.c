@@ -116,6 +116,10 @@ bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
     return !(claimed_pins[pin_port] & 1<<pin_number);
 }
 
+bool pin_number_is_resettable(uint8_t pin_port, uint8_t pin_number) {
+    return !(never_reset_pins[pin_port] & 1<<pin_number);
+}
+
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {

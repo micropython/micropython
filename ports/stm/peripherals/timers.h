@@ -24,14 +24,6 @@
  * THE SOFTWARE.
  */
 
-// typedef struct {
-//     TIM_TypeDef * timer;
-//     bool reserved;
-//     bool never_reset;
-//     void (*stm_timer_callback)(void);
-//     size_t irq;
-// } stm_timer_t;
-
 #include <stdint.h>
 #include "py/mphal.h"
 #include "peripherals/periph.h"

@@ -5,6 +5,5 @@ build-*/
 # Reference files
 #####################
 ref/
-_working*
 
 .gdb_history

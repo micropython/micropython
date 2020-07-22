@@ -152,7 +152,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
 
     refcount--;
     if (refcount == 0) {
-        tim_clock_disable(1<< stm_peripherals_timer_get_index(tim_handle.Instance));
+        stm_peripherals_timer_free(tim_handle.Instance);
     }
 }
 

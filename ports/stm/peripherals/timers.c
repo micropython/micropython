@@ -233,6 +233,7 @@ void stm_peripherals_timer_set_callback(void(*callback)(void), TIM_TypeDef * tim
 
 void stm_peripherals_timer_free(TIM_TypeDef * instance) {
     size_t tim_idx = stm_peripherals_timer_get_index(instance);
+    HAL_NVIC_DisableIRQ(irq_map[tim_idx]);
     stm_timer_callback[tim_idx] = NULL;
     tim_clock_disable(1 << tim_idx);
     stm_timer_reserved[tim_idx] = false;
