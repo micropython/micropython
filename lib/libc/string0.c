@@ -178,8 +178,10 @@ char *strncpy(char *s1, const char *s2, size_t n) {
      while (n > 0) {
          n--;
          if ((*dst++ = *src++) == '\0') {
-             /* If we get here, we found a null character at the end of s2 */
-             *dst = '\0';
+             /* If we get here, we found a null character at the end
+                of s2, so use memset to put null bytes at the end of
+                s1.  */
+             memset(dst, '\0', n);
              break;
          }
      }
