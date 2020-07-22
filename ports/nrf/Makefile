@@ -70,6 +70,7 @@ INC += -I./modules/ubluepy
 INC += -I./modules/music
 INC += -I./modules/ble
 INC += -I./modules/board
+INC += -I./modules/nrf
 INC += -I../../lib/mp-readline
 INC += -I./drivers/bluetooth
 INC += -I./drivers
@@ -305,6 +306,8 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	music/modmusic.c \
 	music/musictunes.c \
 	ble/modble.c \
+	nrf/modnrf.c \
+	nrf/flashbdev.c \
 	)
 
 # Custom micropython startup file with smaller interrupt vector table
