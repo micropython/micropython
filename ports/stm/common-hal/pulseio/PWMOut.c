@@ -33,7 +33,7 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include STM32_HAL_H
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "timers.h"
 

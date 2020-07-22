@@ -31,6 +31,7 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "timers.h"
 
@@ -174,7 +175,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     // Interrupt starts immediately
     assign_EXTI_Interrupt(self, pin->number);
     HAL_NVIC_EnableIRQ(self->irq);
-    claim_pin(pin);
+    common_hal_mcu_pin_claim(pin);
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
