@@ -44,12 +44,14 @@
 //|        microcontroller.nvm[0:3] = b\"\xcc\x10\x00\""""
 //|
 
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Not currently dynamically supported. Access the sole instance through `microcontroller.nvm`."""
 //|         ...
 //|
 
-//|     def __len__(self, ) -> Any:
+//|     def __bool__(self) -> bool: ...
+//|
+//|     def __len__(self) -> int:
 //|         """Return the length. This is used by (`len`)"""
 //|         ...
 //|

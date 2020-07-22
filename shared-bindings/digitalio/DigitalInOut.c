@@ -50,7 +50,7 @@
 //|     a pin, see the :py:class:`analogio.AnalogIn` and
 //|     :py:class:`analogio.AnalogOut` classes."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Create a new DigitalInOut object associated with the pin. Defaults to input
 //|         with no pull. Use :py:meth:`switch_to_input` and
 //|         :py:meth:`switch_to_output` to change the direction.
@@ -82,13 +82,13 @@ STATIC mp_obj_t digitalio_digitalinout_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_deinit_obj, digitalio_digitalinout_obj_deinit);
 
-//|     def __enter__(self, ) -> DigitalInOut:
+//|     def __enter__(self) -> DigitalInOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...

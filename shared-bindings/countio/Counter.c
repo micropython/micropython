@@ -13,7 +13,7 @@
 //|     """Counter will keep track of the number of falling edge transistions (pulses) on a
 //|        given pin"""
 //|
-//|     def __init__(self, pin_a):
+//|     def __init__(self, pin_a: microcontroller.Pin) -> None:
 //|         """Create a Counter object associated with the given pin. It tracks the number of
 //|            falling pulses relative when the object is constructed.
 //|

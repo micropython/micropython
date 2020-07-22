@@ -49,7 +49,7 @@
 //|     """
 //|
 
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Not currently dynamically supported. Access the sole instance through `microcontroller.watchdog`."""
 //|         ...
 //|

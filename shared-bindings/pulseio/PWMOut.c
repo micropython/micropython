@@ -38,7 +38,7 @@
 //| class PWMOut:
 //|     """Output a Pulse Width Modulated signal on a given pin."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, *, duty_cycle: int = 0, frequency: int = 500, variable_frequency: bool = False):
+//|     def __init__(self, pin: microcontroller.Pin, *, duty_cycle: int = 0, frequency: int = 500, variable_frequency: bool = False) -> None:
 //|         """Create a PWM object associated with the given pin. This allows you to
 //|         write PWM signals out on the given pin. Frequency is fixed after init
 //|         unless ``variable_frequency`` is True.
@@ -115,7 +115,7 @@ STATIC mp_obj_t pulseio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the PWMOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -132,13 +132,13 @@ STATIC void check_for_deinit(pulseio_pwmout_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> PWMOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -150,7 +150,7 @@ STATIC mp_obj_t pulseio_pwmout_obj___exit__(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pwmout___exit___obj, 4, 4, pulseio_pwmout_obj___exit__);
 
-//|     duty_cycle: Any = ...
+//|     duty_cycle: int = ...
 //|     """16 bit value that dictates how much of one cycle is high (1) versus low
 //|     (0). 0xffff will always be high, 0 will always be low and 0x7fff will
 //|     be half high and then half low.
@@ -186,7 +186,7 @@ const mp_obj_property_t pulseio_pwmout_duty_cycle_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     frequency: Any = ...
+//|     frequency: int = ...
 //|     """32 bit value that dictates the PWM frequency in Hertz (cycles per
 //|     second). Only writeable when constructed with ``variable_frequency=True``.
 //|
