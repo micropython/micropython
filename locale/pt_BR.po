@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-07 14:38-0500\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
 "PO-Revision-Date: 2020-07-09 17:23+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
@@ -110,6 +110,10 @@ msgstr "%q() recebe %d argumentos posicionais, porém %d foram informados"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' argumento(s) requerido(s)"
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -3186,7 +3190,7 @@ msgstr "struct: índice fora do intervalo"
 msgid "struct: no fields"
 msgstr "struct: sem campos"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "a substring não foi encontrada"
 

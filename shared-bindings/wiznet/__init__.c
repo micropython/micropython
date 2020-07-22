@@ -35,7 +35,12 @@
 
 #include "shared-module/network/__init__.h"
 
-//| """Support for WizNet hardware, including the WizNet 5500 Ethernet adaptor."""
+//| """Support for WizNet hardware, including the WizNet 5500 Ethernet adaptor.
+//|
+//|
+//| .. warning:: This module is disabled in 6.x and will removed in 7.x. Please use networking
+//|              libraries instead.
+//| """
 //|
 
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;

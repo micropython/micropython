@@ -190,9 +190,7 @@ void reset_displays(void) {
             common_hal_displayio_epaperdisplay_show(display, NULL);
 #if CIRCUITPY_FRAMEBUFFERIO
         } else if (displays[i].framebuffer_display.base.type == &framebufferio_framebufferdisplay_type) {
-            framebufferio_framebufferdisplay_obj_t* display = &displays[i].framebuffer_display;
-            display->auto_refresh = true;
-            common_hal_framebufferio_framebufferdisplay_show(display, NULL);
+            framebufferio_framebufferdisplay_reset(&displays[i].framebuffer_display);
 #endif
         }
     }

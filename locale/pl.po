@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-07 14:38-0500\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -104,6 +104,10 @@ msgstr "%q() bierze %d argumentów pozycyjnych, lecz podano %d"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' wymaga argumentu"
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -3110,7 +3114,7 @@ msgstr "struct: indeks poza zakresem"
 msgid "struct: no fields"
 msgstr "struct: brak pól"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "brak pod-łańcucha"
 

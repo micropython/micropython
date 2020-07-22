@@ -97,6 +97,10 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     }
 }
 
+#if MICROPY_ENABLE_PYSTACK
+static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
+#endif
+
 void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
@@ -124,6 +128,10 @@ void start_mp(supervisor_allocation* heap) {
 
     // Clear the readline history. It references the heap we're about to destroy.
     readline_init0();
+
+    #if MICROPY_ENABLE_PYSTACK
+    mp_pystack_init(_pystack, _pystack + (sizeof(_pystack) / sizeof(size_t)));
+    #endif
 
     #if MICROPY_ENABLE_GC
     gc_init(heap->ptr, heap->ptr + heap->length / 4);
