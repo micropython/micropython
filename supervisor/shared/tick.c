@@ -66,7 +66,7 @@
 
 static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 
-static background_callback_t callback;
+static background_callback_t tick_callback;
 
 volatile uint64_t last_finished_tick = 0;
 
@@ -119,7 +119,7 @@ void supervisor_tick(void) {
         #endif
     }
 #endif
-    background_callback_add(&callback, supervisor_background_tasks, NULL);
+    background_callback_add(&tick_callback, supervisor_background_tasks, NULL);
 }
 
 uint64_t supervisor_ticks_ms64() {

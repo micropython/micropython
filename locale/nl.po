@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-07 14:38-0500\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
 "PO-Revision-Date: 2020-07-13 17:39+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
@@ -110,6 +110,10 @@ msgstr "%q() verwacht %d positionele argumenten maar kreeg %d"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' argument vereist"
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -3162,7 +3166,7 @@ msgstr "struct: index buiten bereik"
 msgid "struct: no fields"
 msgstr "struct: geen velden"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "deelreeks niet gevonden"
 

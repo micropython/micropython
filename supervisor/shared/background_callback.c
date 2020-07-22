@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/gc.h"
 #include "py/mpconfig.h"
 #include "supervisor/background_callback.h"
@@ -101,6 +103,12 @@ void background_callback_end_critical_section() {
 
 void background_callback_reset() {
     CALLBACK_CRITICAL_BEGIN;
+    background_callback_t *cb = (background_callback_t*)callback_head;
+    while(cb) {
+        background_callback_t *next = cb->next;
+        memset(cb, 0, sizeof(*cb));
+        cb = next;
+    }
     callback_head = NULL;
     callback_tail = NULL;
     in_background_callback = false;

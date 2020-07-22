@@ -39,6 +39,9 @@
 
 //| """TCP, UDP and RAW socket support
 //|
+//| .. warning:: This module is disabled in 6.x and will removed in 7.x. Please use networking
+//|              libraries instead. (Native networking will provide a socket compatible class.)
+//|
 //| Create TCP, UDP and RAW sockets for communicating over the Internet."""
 //|
 

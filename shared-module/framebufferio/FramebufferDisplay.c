@@ -318,3 +318,8 @@ void framebufferio_framebufferdisplay_collect_ptrs(framebufferio_framebufferdisp
     gc_collect_ptr(self->framebuffer);
     displayio_display_core_collect_ptrs(&self->core);
 }
+
+void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj_t* self) {
+    common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, true);
+    common_hal_framebufferio_framebufferdisplay_show(self, NULL);
+}

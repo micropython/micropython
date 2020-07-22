@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-07 14:38-0500\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
 "PO-Revision-Date: 2020-06-05 17:29+0000\n"
 "Last-Translator: aberwag <aberwag@gmail.com>\n"
 "Language: fr\n"
@@ -114,6 +114,10 @@ msgstr "%q() prend %d arguments positionnels mais %d ont été donnés"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' argument requis"
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -3197,7 +3201,7 @@ msgstr "struct : index hors limites"
 msgid "struct: no fields"
 msgstr "struct : aucun champs"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "sous-chaîne non trouvée"
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-17 18:00-0700\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -108,6 +108,10 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "'%q' argument required"
+msgstr ""
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
 msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
@@ -3120,7 +3124,7 @@ msgstr ""
 msgid "struct: no fields"
 msgstr ""
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr ""
 

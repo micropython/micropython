@@ -119,6 +119,7 @@
 #define MICROPY_QSTR_BYTES_IN_HASH       (1)
 #define MICROPY_REPL_AUTO_INDENT         (1)
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
+#define MICROPY_ENABLE_PYSTACK           (1)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
 #ifndef MICROPY_USE_INTERNAL_PRINTF
@@ -795,6 +796,10 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #ifndef CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS
 #define CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS 1000
+#endif
+
+#ifndef CIRCUITPY_PYSTACK_SIZE
+#define CIRCUITPY_PYSTACK_SIZE 1024
 #endif
 
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
