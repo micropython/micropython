@@ -1,14 +1,12 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-02 15:29+0200\n"
-"PO-Revision-Date: 2020-07-02 20:42+0000\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
+"PO-Revision-Date: 2020-07-13 17:39+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -112,6 +110,10 @@ msgstr "%q() verwacht %d positionele argumenten maar kreeg %d"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' argument vereist"
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -1111,6 +1113,10 @@ msgstr "%q moet een subklasse zijn."
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "MISO of MOSI moeten worden gegeven"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Must provide SCK pin"
+msgstr "SCK pin moet opgegeven worden"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -3160,7 +3166,7 @@ msgstr "struct: index buiten bereik"
 msgid "struct: no fields"
 msgstr "struct: geen velden"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "deelreeks niet gevonden"
 

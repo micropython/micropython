@@ -49,20 +49,7 @@ static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_ar
 //|
 STATIC mp_obj_t vectorio_polygon_obj_get_points(mp_obj_t self_in) {
     vectorio_polygon_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t list = mp_obj_new_list(0, NULL);
-
-    size_t len = 0;
-    mp_obj_t *items;
-    mp_obj_list_get(common_hal_vectorio_polygon_get_points(self), &len, &items);
-
-    for (size_t i = 0; i < len; i += 2) {
-        mp_obj_t tuple[] = { items[i], items[i+1] };
-        mp_obj_list_append(
-            list,
-            mp_obj_new_tuple(2, tuple)
-        );
-    }
-    return list;
+    return common_hal_vectorio_polygon_get_points(self);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(vectorio_polygon_get_points_obj, vectorio_polygon_obj_get_points);
 

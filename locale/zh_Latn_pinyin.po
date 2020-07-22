@@ -1,13 +1,12 @@
-# Adafruit CircuitPython Chinese Hanyu Pinyin Translation
-# Copyright (C) 2019
-# This file is distributed under the same license as the CircuitPython package.
-# @hexthat#2155, 2019.
+# SPDX-FileCopyrightText: 2019 @hexthat#2155
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
 msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-02 15:29+0200\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -111,6 +110,10 @@ msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "xūyào '%q' cānshù"
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -1104,6 +1107,10 @@ msgstr "Bìxū shì %q zi lèi."
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "Bìxū tígōng MISO huò MOSI yǐn jiǎo"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Must provide SCK pin"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -3137,7 +3144,7 @@ msgstr "jiégòu: suǒyǐn chāochū fànwéi"
 msgid "struct: no fields"
 msgstr "jiégòu: méiyǒu zìduàn"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "wèi zhǎodào zi zìfú chuàn"
 

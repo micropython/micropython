@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  *               2018 Nick Moore for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,6 +38,9 @@
 #include "shared-module/network/__init__.h"
 
 //| """TCP, UDP and RAW socket support
+//|
+//| .. warning:: This module is disabled in 6.x and will removed in 7.x. Please use networking
+//|              libraries instead. (Native networking will provide a socket compatible class.)
 //|
 //| Create TCP, UDP and RAW sockets for communicating over the Internet."""
 //|

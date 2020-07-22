@@ -206,11 +206,10 @@ static void rtc_init(void) {
 safe_mode_t port_init(void) {
 #if defined(SAMD21)
 
-    // Set brownout detection to ~2.7V. Default from factory is 1.7V,
-    // which is too low for proper operation of external SPI flash chips (they are 2.7-3.6V).
+    // Set brownout detection.
     // Disable while changing level.
     SYSCTRL->BOD33.bit.ENABLE = 0;
-    SYSCTRL->BOD33.bit.LEVEL = 39;  // 2.77V with hysteresis off. Table 37.20 in datasheet.
+    SYSCTRL->BOD33.bit.LEVEL = SAMD21_BOD33_LEVEL;
     SYSCTRL->BOD33.bit.ENABLE = 1;
 
     #ifdef ENABLE_MICRO_TRACE_BUFFER
@@ -225,11 +224,10 @@ safe_mode_t port_init(void) {
 #endif
 
 #if defined(SAM_D5X_E5X)
-    // Set brownout detection to ~2.7V. Default from factory is 1.7V,
-    // which is too low for proper operation of external SPI flash chips (they are 2.7-3.6V).
+    // Set brownout detection.
     // Disable while changing level.
     SUPC->BOD33.bit.ENABLE = 0;
-    SUPC->BOD33.bit.LEVEL = 200;  // 2.7V: 1.5V + LEVEL * 6mV.
+    SUPC->BOD33.bit.LEVEL = SAMD5x_E5x_BOD33_LEVEL;
     SUPC->BOD33.bit.ENABLE = 1;
 
     // MPU (Memory Protection Unit) setup.

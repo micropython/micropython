@@ -313,12 +313,21 @@ void port_sleep_until_interrupt(void) {
         // instruction will returned as long as an interrupt is
         // available, even though the actual handler won't fire until
         // we re-enable interrupts.
-        common_hal_mcu_disable_interrupts();
+        //
+        // We do not use common_hal_mcu_disable_interrupts here because
+        // we truly require that interrupts be disabled, while
+        // common_hal_mcu_disable_interrupts actually just masks the
+        // interrupts that are not required to allow the softdevice to
+        // function (whether or not SD is enabled)
+        int nested = __get_PRIMASK();
+        __disable_irq();
         if (!tud_task_event_ready()) {
             __DSB();
             __WFI();
         }
-        common_hal_mcu_enable_interrupts();
+        if (!nested) {
+            __enable_irq();
+        }
     }
 }
 

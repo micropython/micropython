@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+
+SPDX-License-Identifier: MIT
+-->
+
 # Contributing
 Please note that this project is released with a
 [Contributor Code of Conduct](https://github.com/adafruit/circuitpython/blob/main/CODE_OF_CONDUCT.md).
