@@ -28,14 +28,16 @@
 #define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
+#include "driver/ledc.h"
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t channel;
+    ledc_timer_config_t tim_handle;
+    ledc_channel_config_t chan_handle;
+    uint16_t pin_number;
+    uint8_t duty_resolution;
     bool variable_frequency: 1;
-    uint16_t duty_cycle;
-    uint32_t frequency;
-    uint32_t period;
+    bool deinited: 1;
 } pulseio_pwmout_obj_t;
 
 void pwmout_reset(void);
