@@ -61,7 +61,7 @@
 
 //| class BluetoothError:
 //|     def __init__(self, Exception: Any):
-//|         """Catch all exception for Bluetooth related errors."""
+//|         """Catchall exception for Bluetooth related errors."""
 //|         ...
 MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
 
