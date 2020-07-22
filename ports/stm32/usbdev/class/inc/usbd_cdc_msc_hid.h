@@ -34,6 +34,9 @@
 #define MSC_MEDIA_PACKET            (2048) // was 8192; how low can it go whilst still working?
 #define HID_DATA_FS_MAX_PACKET_SIZE (64) // endpoint IN & OUT packet size
 
+// Maximum number of LUN that can be exposed on the MSC interface
+#define USBD_MSC_MAX_LUN (2)
+
 // Need to define here for BOT and SCSI layers
 #define MSC_IN_EP     (0x81)
 #define MSC_OUT_EP    (0x01)
@@ -78,8 +81,8 @@ typedef struct {
   uint8_t                  scsi_sense_head;
   uint8_t                  scsi_sense_tail;
   
-  uint16_t                 scsi_blk_size;
-  uint32_t                 scsi_blk_nbr;
+  uint16_t                 scsi_blk_size[USBD_MSC_MAX_LUN];
+  uint32_t                 scsi_blk_nbr[USBD_MSC_MAX_LUN];
   
   uint32_t                 scsi_blk_addr_in_blks;
   uint32_t                 scsi_blk_len;
