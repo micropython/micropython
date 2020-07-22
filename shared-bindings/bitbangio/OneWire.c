@@ -42,7 +42,7 @@
 //|
 //|     Protocol definition is here: https://www.maximintegrated.com/en/app-notes/index.mvp/id/126"""
 //|
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|
 //|         """Create a OneWire object associated with the given pin. The object
 //|         implements the lowest level timing-sensitive bits of the protocol.
@@ -78,7 +78,7 @@ STATIC mp_obj_t bitbangio_onewire_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialize the OneWire bus and release any hardware resources for reuse."""
 //|         ...
 //|
@@ -95,13 +95,13 @@ STATIC void check_for_deinit(bitbangio_onewire_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> OneWire:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -113,7 +113,7 @@ STATIC mp_obj_t bitbangio_onewire_obj___exit__(size_t n_args, const mp_obj_t *ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_onewire___exit___obj, 4, 4, bitbangio_onewire_obj___exit__);
 
-//|     def reset(self, ) -> Any:
+//|     def reset(self) -> bool:
 //|         """Reset the OneWire bus"""
 //|         ...
 //|
@@ -125,7 +125,7 @@ STATIC mp_obj_t bitbangio_onewire_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_onewire_reset_obj, bitbangio_onewire_obj_reset);
 
-//|     def read_bit(self, ) -> Any:
+//|     def read_bit(self) -> bool:
 //|         """Read in a bit
 //|
 //|         :returns: bit state read
@@ -140,7 +140,7 @@ STATIC mp_obj_t bitbangio_onewire_obj_read_bit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_onewire_read_bit_obj, bitbangio_onewire_obj_read_bit);
 
-//|     def write_bit(self, value: Any) -> Any:
+//|     def write_bit(self, value: bool) -> None:
 //|         """Write out a bit based on value."""
 //|         ...
 //|

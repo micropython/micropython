@@ -44,7 +44,7 @@
 //|     When we're the server, we ignore all connections besides the first to subscribe to
 //|     notifications."""
 //|
-//|     def __init__(self, characteristic: Characteristic, *, buffer_size: int):
+//|     def __init__(self, characteristic: Characteristic, *, buffer_size: int) -> None:
 //|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
 //|         add the newly-written bytes to a FIFO buffer.
 //|
@@ -93,7 +93,7 @@ STATIC void check_for_deinit(bleio_packet_buffer_obj_t *self) {
     }
 }
 
-//|     def readinto(self, buf: Any) -> Any:
+//|     def readinto(self, buf: WriteableBuffer) -> int:
 //|         """Reads a single BLE packet into the ``buf``. Raises an exception if the next packet is longer
 //|         than the given buffer. Use `packet_size` to read the maximum length of a single packet.
 //|
@@ -117,7 +117,7 @@ STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_o
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_buffer_readinto);
 
-//|     def write(self, data: Any, *, header: Any = None) -> Any:
+//|     def write(self, data: bytes, *, header: Optional[bytes] = None) -> int:
 //|         """Writes all bytes from data into the same outgoing packet. The bytes from header are included
 //|         before data when the pending packet is currently empty.
 //|
@@ -169,7 +169,7 @@ STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_packet_buffer_write_obj, 1, bleio_packet_buffer_write);
 
-//|     def deinit(self) -> Any:
+//|     def deinit(self) -> None:
 //|         """Disable permanently."""
 //|         ...
 STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
@@ -184,7 +184,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_bu
 //|     The name `packet_size` is deprecated and
 //|     will be removed in CircuitPython 6.0.0."""
 //|
-//|     incoming_packet_length: Any = ...
+//|     incoming_packet_length: int = ...
 //|     """Maximum length in bytes of a packet we are reading."""
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in) {

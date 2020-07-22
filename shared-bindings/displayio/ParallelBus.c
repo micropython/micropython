@@ -42,7 +42,7 @@
 //|     protocol may be refered to as 8080-I Series Parallel Interface in datasheets. It doesn't handle
 //|     display initialization."""
 //|
-//|     def __init__(self, *, data0: microcontroller.Pin, command: microcontroller.Pin, chip_select: microcontroller.Pin, write: microcontroller.Pin, read: microcontroller.Pin, reset: microcontroller.Pin):
+//|     def __init__(self, *, data0: microcontroller.Pin, command: microcontroller.Pin, chip_select: microcontroller.Pin, write: microcontroller.Pin, read: microcontroller.Pin, reset: microcontroller.Pin) -> None:
 //|         """Create a ParallelBus object associated with the given pins. The bus is inferred from data0
 //|         by implying the next 7 additional pins on a given GPIO port.
 //|
@@ -86,7 +86,7 @@ STATIC mp_obj_t displayio_parallelbus_make_new(const mp_obj_type_t *type, size_t
     return self;
 }
 
-//|     def reset(self, ) -> Any:
+//|     def reset(self) -> None:
 //|         """Performs a hardware reset via the reset pin. Raises an exception if called when no reset pin
 //|         is available."""
 //|         ...
@@ -102,7 +102,7 @@ STATIC mp_obj_t displayio_parallelbus_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_parallelbus_reset_obj, displayio_parallelbus_obj_reset);
 
-//|     def send(self, command: Any, data: Any) -> Any:
+//|     def send(self, command: int, data: ReadableBuffer) -> None:
 //|         """Sends the given command value followed by the full set of data. Display state, such as
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...

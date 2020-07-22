@@ -49,7 +49,7 @@
 //| class WIZNET5K:
 //|     """Wrapper for Wiznet 5500 Ethernet interface"""
 //|
-//|     def __init__(self, spi: busio.SPI, cs: microcontroller.Pin, rst: microcontroller.Pin, dhcp: bool = True):
+//|     def __init__(self, spi: busio.SPI, cs: microcontroller.Pin, rst: microcontroller.Pin, dhcp: bool = True) -> None:
 //|         """Create a new WIZNET5500 interface using the specified pins
 //|
 //|         :param ~busio.SPI spi: spi bus to use
@@ -84,7 +84,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, cons
     return ret;
 }
 
-//|     connected: Any = ...
+//|     connected: bool = ...
 //|     """(boolean, readonly) is this device physically connected?"""
 //|
 
@@ -101,7 +101,7 @@ const mp_obj_property_t wiznet5k_connected_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     dhcp: Any = ...
+//|     dhcp: bool = ...
 //|     """(boolean, readwrite) is DHCP active on this device?
 //|
 //|     * set to True to activate DHCP, False to turn it off"""
@@ -134,7 +134,7 @@ const mp_obj_property_t wiznet5k_dhcp_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def ifconfig(self, params: Any = None) -> Any:
+//|     def ifconfig(self, params: tuple = None) -> Optional[tuple]:
 //|         """Called without parameters, returns a tuple of
 //|         (ip_address, subnet_mask, gateway_address, dns_server)
 //|
