@@ -58,9 +58,8 @@
 //|   This object is the sole instance of `_bleio.Adapter`."""
 //|
 
-
 //| class BluetoothError(Exception):
-//|     """Catch all exception for Bluetooth related errors."""
+//|     """Catchall exception for Bluetooth related errors."""
 //|     ...
 MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
 
