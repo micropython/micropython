@@ -3,13 +3,12 @@
 # SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
 # SPDX-License-Identifier: MIT
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-17 18:03-0700\n"
-"PO-Revision-Date: 2020-07-13 19:24+0000\n"
+"PO-Revision-Date: 2020-07-22 20:48+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -117,7 +116,7 @@ msgstr "argumento '%q' requerido"
 
 #: py/objarray.c
 msgid "'%q' object is not bytes-like"
-msgstr ""
+msgstr "el objeto '%q' no es similar a bytes"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
