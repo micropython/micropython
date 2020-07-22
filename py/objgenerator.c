@@ -95,11 +95,13 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun, bool is_coroutine) {
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
+#if MICROPY_PY_ASYNC_AWAIT
     if (self->coroutine_generator) {
         mp_printf(print, "<coroutine object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
-    } else {
-        mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
+        return;
     }
+#endif
+    mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
@@ -202,10 +204,13 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
 }
 
 STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
+#if MICROPY_PY_ASYNC_AWAIT
+    // This translate is literally too much for m0 boards
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->coroutine_generator) {
         mp_raise_TypeError(translate("'coroutine' object is not an iterator"));
     }
+#endif
     return gen_resume_and_raise(self_in, mp_const_none, MP_OBJ_NULL);
 }
 
