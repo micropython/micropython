@@ -6,6 +6,8 @@ SOFTDEV_VERSION = 8.0.0
 ifneq ($(SD),)
 LD_FILES += boards/microbit/custom_nrf51822_s110_microbit.ld
 FROZEN_MANIFEST ?=
+else
+MICROPY_VFS_LFS2 = 1
 endif
 
 LD_FILES += boards/nrf51x22_256k_16k.ld

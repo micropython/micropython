@@ -17,3 +17,5 @@ endif
 LD_FILES += boards/nrf52840_1M_256k.ld
 
 NRF_DEFINES += -DNRF52840_XXAA
+
+MICROPY_VFS_LFS2 = 1
