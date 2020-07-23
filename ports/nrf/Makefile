@@ -52,6 +52,8 @@ ifeq ($(DEBUG), 0)
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 endif
 
+FROZEN_MANIFEST ?= modules/manifest.py
+
 # include py core make definitions
 include ../../py/py.mk
 
