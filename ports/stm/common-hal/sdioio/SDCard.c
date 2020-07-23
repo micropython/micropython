@@ -35,16 +35,6 @@
 #include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 
-#ifndef DEBUG_SDIO
-#define DEBUG_SDIO (0)
-#endif
-
-#if DEBUG_SDIO
-#define DEBUG_PRINT(...) ((void)mp_printf(&mp_plat_print, __VA_ARGS__))
-#else
-#define DEBUG_PRINT(...) ((void)0)
-#endif
-
 STATIC bool reserved_sdio[MP_ARRAY_SIZE(mcu_sdio_banks)];
 STATIC bool never_reset_sdio[MP_ARRAY_SIZE(mcu_sdio_banks)];
 
@@ -138,10 +128,7 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-    // /* GPIOC and GPIOD Periph clock enable */
-    // RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD | SD_DETECT_GPIO_CLK, ENABLE);
-
-    /* Configure data PC.08, PC.09, PC.10, PC.11 pins: D0, D1, D2, D3 pins */
+    /* Configure data pins */
     for (int i=0; i<num_data; i++) {
         GPIO_InitStruct.Pin = pin_mask(data[i]->number);
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -151,12 +138,12 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
         HAL_GPIO_Init(pin_port(data[i]->port), &GPIO_InitStruct);
     }
 
-    /* Configure PD.02 CMD line */
+    /* Configure command pin */
     GPIO_InitStruct.Alternate = self->command->altfn_index;
     GPIO_InitStruct.Pin = pin_mask(command->number);
     HAL_GPIO_Init(pin_port(command->port), &GPIO_InitStruct);
 
-    /* Configure PC.12 pin: CLK pin */
+    /* Configure clock */
     GPIO_InitStruct.Alternate = self->clock->altfn_index;
     GPIO_InitStruct.Pin = pin_mask(clock->number);
     HAL_GPIO_Init(pin_port(clock->port), &GPIO_InitStruct);
@@ -195,11 +182,9 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     self->num_data = 1;
     if (num_data == 4) {
         if ((r = HAL_SD_ConfigWideBusOperation(&self->handle, SDIO_BUS_WIDE_4B)) == HAL_SD_ERROR_NONE) {
-            DEBUG_PRINT("Switched bus to 4B mode\n");
             self->handle.Init.BusWide = SDIO_BUS_WIDE_4B;
             self->num_data = 4;
         } else {
-            DEBUG_PRINT("WideBus_Enable returned %r, leaving at 1B mode\n", (int)r);
         }
     }
 
@@ -216,11 +201,11 @@ uint32_t common_hal_sdioio_sdcard_get_count(sdioio_sdcard_obj_t *self) {
 }
 
 uint32_t common_hal_sdioio_sdcard_get_frequency(sdioio_sdcard_obj_t *self) {
-    return self->frequency; // self->frequency;
+    return self->frequency;
 }
 
 uint8_t common_hal_sdioio_sdcard_get_width(sdioio_sdcard_obj_t *self) {
-    return self->num_data; // self->width;
+    return self->num_data;
 }
 
 STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
@@ -243,13 +228,6 @@ STATIC void wait_write_complete(sdioio_sdcard_obj_t *self) {
     }
 }
 
-STATIC void debug_print_state(sdioio_sdcard_obj_t *self, const char *what) {
-#if DEBUG_SDIO
-    HAL_SD_CardStateTypedef st = HAL_SD_GetCardState(&self->handle);
-    DEBUG_PRINT("%s, st=0x%x State=0x%x ErrorCode=0x%x\n", what, (int)st, self->handle.State, self->handle.ErrorCode);
-#endif
-}
-
 STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
     if (common_hal_sdioio_sdcard_deinited(self)) {
         raise_deinited_error();
@@ -265,11 +243,8 @@ int common_hal_sdioio_sdcard_writeblocks(sdioio_sdcard_obj_t *self, uint32_t sta
     HAL_StatusTypeDef r = HAL_SD_WriteBlocks(&self->handle, bufinfo->buf, start_block, bufinfo->len / 512, 1000);
     common_hal_mcu_enable_interrupts();
     if (r != HAL_OK) {
-        debug_print_state(self, "after writeblocks error");
         return -EIO;
     }
-    // debug_print_state(self, "after writeblocks OK");
-    // debug_print_state(self, "after writeblocks complete");
     return 0;
 }
 
@@ -281,7 +256,6 @@ int common_hal_sdioio_sdcard_readblocks(sdioio_sdcard_obj_t *self, uint32_t star
     HAL_StatusTypeDef r = HAL_SD_ReadBlocks(&self->handle, bufinfo->buf, start_block, bufinfo->len / 512, 1000);
     common_hal_mcu_enable_interrupts();
     if (r != HAL_OK) {
-        debug_print_state(self, "after readblocks error");
         return -EIO;
     }
     return 0;
