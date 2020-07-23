@@ -232,9 +232,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 3, bitbangio_i2c_rea
 //|         :param int address: 7-bit device address
 //|         :param bytearray buffer: buffer containing the bytes to write
 //|         :param int start: Index to start writing from
-//|         :param int end: Index to read up to but not include
-//|         :param bool stop: If true, output an I2C stop condition after the buffer is written.
-//|                           Deprecated. Will be removed in 6.x and act as stop=True."""
+//|         :param int end: Index to read up to but not include"""
 //|         ...
 //|
 // Shared arg parsing for writeto and writeto_then_readfrom.
@@ -256,13 +254,12 @@ STATIC void writeto(bitbangio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer
 }
 
 STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_address, ARG_buffer, ARG_start, ARG_end, ARG_stop };
+    enum { ARG_address, ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_address,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
-        { MP_QSTR_stop,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
     bitbangio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
@@ -271,7 +268,7 @@ STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, m
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     writeto(self, args[ARG_address].u_int, args[ARG_buffer].u_obj, args[ARG_start].u_int,
-            args[ARG_end].u_int, args[ARG_stop].u_bool);
+            args[ARG_end].u_int, true);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_writeto);
