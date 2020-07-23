@@ -148,16 +148,6 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     GPIO_InitStruct.Pin = pin_mask(clock->number);
     HAL_GPIO_Init(pin_port(clock->port), &GPIO_InitStruct);
 
-// XXX hard coded pin
-#define SD_DETECT_PIN GPIO_PIN_12
-#define SD_DETECT_GPIO_PORT GPIOB
-
-    /*!< Configure SD_SPI_DETECT_PIN pin: SD Card detect pin */
-    GPIO_InitStruct.Pin = SD_DETECT_PIN;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(SD_DETECT_GPIO_PORT, &GPIO_InitStruct);
-
     __HAL_RCC_SDIO_CLK_ENABLE();
 
     self->handle.Init.ClockDiv = SDIO_TRANSFER_CLK_DIV;
