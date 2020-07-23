@@ -6,4 +6,6 @@ LD_FILES += boards/nrf51x22_256k_16k.ld
 
 ifneq ($(SD),)
 FROZEN_MANIFEST ?=
+else
+MICROPY_VFS_LFS2 = 1
 endif

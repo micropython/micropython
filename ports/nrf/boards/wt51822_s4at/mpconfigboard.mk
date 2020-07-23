@@ -8,4 +8,6 @@ CFLAGS += -DBLUETOOTH_LFCLK_RC
 
 ifneq ($(SD),)
 FROZEN_MANIFEST ?=
+else
+MICROPY_VFS_LFS2 = 1
 endif
