@@ -1,7 +1,7 @@
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
 
-const mp_rom_obj_tuple_t sdio_data_tuple = {
+STATIC const mp_rom_obj_tuple_t sdio_data_tuple = {
     {&mp_type_tuple},
     4,
     {
