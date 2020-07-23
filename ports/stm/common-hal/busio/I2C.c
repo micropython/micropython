@@ -112,7 +112,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         if (i2c_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
         } else {
-            mp_raise_ValueError(translate("Invalid I2C pin selection"));
+            mp_raise_ValueError_varg(translate("Invalid %q pin selection"), MP_QSTR_I2C);
         }
     }
 
