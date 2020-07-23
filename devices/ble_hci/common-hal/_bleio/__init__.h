@@ -29,7 +29,7 @@
 
 #include <stdbool.h>
 
-#include "hci_api.h"
+#include "hci.h"
 
 void bleio_background(void);
 void bleio_reset(void);

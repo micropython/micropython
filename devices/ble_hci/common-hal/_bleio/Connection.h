@@ -64,13 +64,16 @@ typedef struct {
     //REMOVE ble_gap_conn_params_t conn_params;
     volatile bool conn_params_updating;
     uint16_t mtu;
-    // Request that CCCD values for this conenction be saved, using sys_attr values.
+    // Request that CCCD values for this connection be saved, using sys_attr values.
     volatile bool do_bond_cccds;
     // Request that security key info for this connection be saved.
     volatile bool do_bond_keys;
     // Time of setting do_bond_ccds: we delay a bit to consolidate multiple CCCD changes
     // into one write. Time is currently in ticks_ms.
     uint64_t do_bond_cccds_request_time;
+    //FIX from att.c
+    uint8_t role;
+    bt_addr_le_t addr;
 } bleio_connection_internal_t;
 
 typedef struct {

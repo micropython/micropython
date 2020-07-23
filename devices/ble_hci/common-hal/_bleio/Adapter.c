@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "hci_api.h"
+#include "hci.h"
 
 #include "py/gc.h"
 #include "py/mphal.h"

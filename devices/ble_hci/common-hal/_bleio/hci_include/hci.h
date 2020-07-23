@@ -1,4 +1,5 @@
 // CircuitPython: Adapted from Zephyr include file.
+
 /* hci.h - Bluetooth Host Control Interface definitions */
 
 /*

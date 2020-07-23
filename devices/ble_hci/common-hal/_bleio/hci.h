@@ -17,8 +17,8 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_API_H
-#define MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_API_H
+#ifndef MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H
+#define MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H
 
 #include <stdint.h>
 
@@ -64,6 +64,7 @@ hci_result_t hci_le_set_scan_parameters(uint8_t scan_type, uint16_t interval, ui
 hci_result_t hci_le_set_scan_response_data(uint8_t length, uint8_t data[]);
 
 hci_result_t hci_poll_for_incoming_pkt(void);
+hci_result_t hci_poll_for_incoming_pkt_timeout(uint32_t timeout_msecs);
 
 hci_result_t hci_read_bd_addr(bt_addr_t *addr);
 hci_result_t hci_read_buffer_size(uint16_t *acl_max_len, uint8_t *sco_max_len, uint16_t *acl_max_num, uint16_t *sco_max_num);
@@ -72,6 +73,7 @@ hci_result_t hci_read_rssi(uint16_t handle, int *rssi);
 
 hci_result_t hci_reset(void);
 
+hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint8_t data_len, uint8_t *data);
 hci_result_t hci_set_evt_mask(uint64_t event_mask);
 
-#endif // MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_API_H
+#endif // MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H

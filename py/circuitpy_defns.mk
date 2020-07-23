@@ -318,8 +318,10 @@ SRC_COMMON_HAL_ALL = \
 	watchdog/__init__.c \
 
 ifeq ($(CIRCUITPY_BLEIO_HCI),1)
+# Helper code for _bleio HCI.
 SRC_C += \
-	common-hal/_bleio/hci_api.c \
+	common-hal/_bleio/att.c \
+	common-hal/_bleio/hci.c \
 
 endif
 

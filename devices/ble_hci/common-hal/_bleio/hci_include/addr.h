@@ -12,6 +12,7 @@
 #ifndef ZEPHYR_INCLUDE_BLUETOOTH_ADDR_H_
 #define ZEPHYR_INCLUDE_BLUETOOTH_ADDR_H_
 
+#include <stdbool.h>
 #include <string.h>
 
 /**

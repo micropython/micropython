@@ -13,13 +13,15 @@
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "hci_api.h"
+#include "att.h"
+#include "hci.h"
 
 #include "py/obj.h"
 
 // Zephyr include files to define HCI communication values and structs.
 #include "hci_include/hci.h"
 #include "hci_include/hci_err.h"
+#include "hci_include/l2cap_internal.h"
 
 #include <string.h>
 
@@ -28,45 +30,17 @@
 #include "common-hal/_bleio/Adapter.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
+
 // HCI H4 protocol packet types: first byte in the packet.
 #define H4_CMD 0x01
 #define H4_ACL 0x02
 #define H4_SCO 0x03
 #define H4_EVT 0x04
 
-//FIX replace
-#define ATT_CID       0x0004
-
-#define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
-
-#define RX_BUFFER_SIZE (3 + 255)
-#define ACL_DATA_BUFFER_SIZE (255 + 1)
-
 #define CTS_TIMEOUT_MSECS (1000)
 #define RESPONSE_TIMEOUT_MSECS (1000)
 
 #define adapter (&common_hal_bleio_adapter_obj)
-
-STATIC uint8_t rx_buffer[RX_BUFFER_SIZE];
-STATIC size_t rx_idx;
-
-STATIC size_t num_command_packets_allowed;
-STATIC size_t max_pkt;
-STATIC size_t pending_pkt;
-
-// Results from parsing a command response packet.
-STATIC bool cmd_response_received;
-STATIC uint16_t cmd_response_opcode;
-STATIC uint8_t cmd_response_status;
-STATIC size_t cmd_response_len;
-STATIC uint8_t* cmd_response_data;
-
-STATIC uint8_t acl_data_buffer[ACL_DATA_BUFFER_SIZE];
-STATIC size_t acl_data_len;
-
-STATIC volatile bool hci_poll_in_progress = false;
-
-STATIC bool debug = true;
 
 // These are the headers of the full packets that are sent over the serial interface.
 // They all have a one-byte type-field at the front, one of the H4_xxx packet types.
@@ -108,6 +82,36 @@ typedef struct __attribute__ ((packed)) {
     uint8_t params[];
 } h4_hci_evt_pkt_t;
 
+
+//////////////////////////////////////////////////////////////////////
+// Static storage:
+
+//FIX size
+#define RX_BUFFER_SIZE (3 + 255)
+#define ACL_DATA_BUFFER_SIZE (255)
+
+STATIC uint8_t rx_buffer[RX_BUFFER_SIZE];
+STATIC size_t rx_idx;
+
+STATIC uint8_t acl_data_buffer[ACL_DATA_BUFFER_SIZE];
+STATIC size_t acl_data_len;
+
+STATIC size_t num_command_packets_allowed;
+STATIC size_t max_pkt;
+STATIC size_t pending_pkt;
+
+// Results from parsing a command response packet.
+STATIC bool cmd_response_received;
+STATIC uint16_t cmd_response_opcode;
+STATIC uint8_t cmd_response_status;
+STATIC size_t cmd_response_len;
+STATIC uint8_t* cmd_response_data;
+
+STATIC volatile bool hci_poll_in_progress = false;
+
+STATIC bool debug = true;
+
+//////////////////////////////////////////////////////////////////////
 
 STATIC void dump_cmd_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     if (debug) {
@@ -191,15 +195,16 @@ STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
         acl_data_len += pkt->data_len;
     }
 
-    acl_data_t *acl_so_far = (acl_data_t *) acl_data_buffer;
-    if (acl_data_len != acl_so_far->acl_data_len) {
+    acl_data_t *acl = (acl_data_t *) &acl_data_buffer;
+    if (acl_data_len != acl->acl_data_len) {
         // We don't have the full packet yet.
         return;
     }
 
-    // if (aclHdr->cid == ATT_CID) {
-    //     ATT.handleData(aclHdr->handle & 0x0fff, aclHdr->len, &rx_buffer[1 + sizeof(HCIACLHdr)]);
-    // } else if (aclHdr->cid == SIGNALING_CID) {
+    if (acl->cid == BT_L2CAP_CID_ATT) {
+        att_process_data(pkt->handle, acl->acl_data_len, acl->acl_data);
+    }
+    // } else if (aclHdr->cid == BT_L2CAP_CID_LE_SIG) {
     //     L2CAPSignaling.handleData(aclHdr->handle & 0x0fff, aclHdr->len, &rx_buffer[1 + sizeof(HCIACLHdr)]);
     // } else {
     //     struct __attribute__ ((packed)) {
@@ -339,6 +344,20 @@ void hci_init(void) {
     pending_pkt = 0;
     hci_poll_in_progress = false;
 }
+
+hci_result_t hci_poll_for_incoming_pkt_timeout(uint32_t timeout_msecs) {
+    uint64_t start = supervisor_ticks_ms64();
+
+    hci_result_t result;
+
+    while (supervisor_ticks_ms64() -start < timeout_msecs) {
+        result = hci_poll_for_incoming_pkt();
+        RUN_BACKGROUND_TASKS;
+    }
+
+    return result;
+}
+
 
 hci_result_t hci_poll_for_incoming_pkt(void) {
     if (hci_poll_in_progress) {
@@ -500,8 +519,7 @@ STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* para
     return HCI_NO_RESPONSE;
 }
 
-//FIX remove unused
-STATIC int __attribute__((unused)) send_acl_pkt(uint16_t handle, uint8_t cid, void* data, uint8_t data_len) {
+hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint8_t data_len, uint8_t *data) {
     int result;
     while (pending_pkt >= max_pkt) {
         result = hci_poll_for_incoming_pkt();
@@ -510,7 +528,7 @@ STATIC int __attribute__((unused)) send_acl_pkt(uint16_t handle, uint8_t cid, vo
         }
     }
 
-    // data_len does not include cid.
+    // data_len does not include cid
     const size_t cid_len = sizeof_field(acl_data_t, cid);
     // buf_len is size of entire packet including header.
     const size_t buf_len = sizeof(h4_hci_acl_pkt_t) + cid_len + data_len;
