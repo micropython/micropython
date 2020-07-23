@@ -193,6 +193,12 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
 
     reserved_sdio[periph_index - 1] = true;
 
+    claim_pin(clock);
+    claim_pin(command);
+    for (int i=0; i<num_data; i++) {
+        claim_pin(data[i]);
+    }
+
     return;
 }
 
