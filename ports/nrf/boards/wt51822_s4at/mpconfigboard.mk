@@ -5,3 +5,7 @@ SOFTDEV_VERSION = 8.0.0
 LD_FILES += boards/nrf51x22_256k_16k.ld
 
 CFLAGS += -DBLUETOOTH_LFCLK_RC
+
+ifneq ($(SD),)
+FROZEN_MANIFEST ?=
+endif
