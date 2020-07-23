@@ -183,6 +183,10 @@
 #define MICROPY_PY_TIME_TICKS       (1)
 #endif
 
+#ifndef MICROPY_PY_NRF
+#define MICROPY_PY_NRF              (0)
+#endif
+
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
 
@@ -218,10 +222,17 @@ typedef long mp_off_t;
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t machine_module;
+extern const struct _mp_obj_module_t nrf_module;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
 extern const struct _mp_obj_module_t music_module;
+
+#if MICROPY_PY_NRF
+#define NRF_MODULE                          { MP_ROM_QSTR(MP_QSTR_nrf), MP_ROM_PTR(&nrf_module) },
+#else
+#define NRF_MODULE
+#endif
 
 #if MICROPY_PY_UBLUEPY
 #define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
@@ -261,6 +272,7 @@ extern const struct _mp_obj_module_t ble_module;
     MUSIC_MODULE \
     UBLUEPY_MODULE \
     MICROPY_BOARD_BUILTINS \
+    NRF_MODULE \
 
 
 #else
@@ -272,6 +284,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     MUSIC_MODULE \
     MICROPY_BOARD_BUILTINS \
+    NRF_MODULE \
 
 
 #endif // BLUETOOTH_SD
