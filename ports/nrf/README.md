@@ -116,6 +116,34 @@ For example:
 
      make BOARD=pca10040 MICROPY_VFS_FAT=1
 
+## Enable MICROPY_VFS_LFS1 or MICROPY_VFS_LFS2
+
+In order to enable `littlefs` as device flash filesystem, `MICROPY_VFS_LFS1`
+or `MICROPY_VFS_LFS2` can be set. This will be in addition of setting
+`MICROPY_VFS` in mpconfigport.h or mpconfigboard.h.
+
+For example:
+
+    make BOARD=pca10056 MICROPY_VFS_LFS2=1
+
+## Set file system size
+
+The size of the file system on the internal flash is configured by the linker
+script parameter `_fs_size`. This can either be overriden by the linker script
+or dynamically through the makefile. By seting a value to the `FS_SIZE`.
+The number will be passed directly to the linker scripts in order to calculate
+the start and end of the file system. Note that the parameter value must be in
+linker script syntax as it is passed directly.
+
+For example, if we want to override the default file system size set by the
+linker scripts to use 256K:
+
+    make BOARD=pca10056 MICROPY_VFS_LFS2=1 FS_SIZE=256K
+
+Also note that changing this size between builds might cause loss of files
+present from a previous firmware as it will format the file system due to a new
+location.
+
 ## Target Boards and Make Flags
 
 Target Board (BOARD) | Bluetooth Stack (SD)    | Bluetooth Support      | Bootloader     | Default Flash Util
