@@ -130,6 +130,10 @@ LDFLAGS = $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
 LDFLAGS += -mthumb -mabi=aapcs $(addprefix -T,$(LD_FILES)) -L boards/
 
+ifneq ($(FS_SIZE),)
+LDFLAGS += -Wl,'--defsym=_fs_size=$(FS_SIZE)'
+endif
+
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
 #ASMFLAGS += -g -gtabs+
