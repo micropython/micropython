@@ -45,7 +45,7 @@
 //|         ...
 //|
 
-//|     def add_to_service(self, service: Service, uuid: UUID, *, properties: int = 0, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length: int = 20, fixed_length: bool = False, initial_value: buf = None) -> Characteristic:
+//|     def add_to_service(self, service: Service, uuid: UUID, *, properties: int = 0, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length: int = 20, fixed_length: bool = False, initial_value: Optional[ReadableBuffer] = None) -> Characteristic:
 //|         """Create a new Characteristic object, and add it to this Service.
 //|
 //|         :param Service service: The service that will provide this characteristic

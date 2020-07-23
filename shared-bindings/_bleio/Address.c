@@ -128,7 +128,7 @@ const mp_obj_property_t bleio_address_type_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __eq__(self, other: Any) -> bool:
+//|     def __eq__(self, other: Address) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""
 //|         ...
 //|

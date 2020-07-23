@@ -49,7 +49,7 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the initialization sequence at minimum."""
 //|
-//|     def __init__(self, display_bus: displayio, init_sequence: buffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, set_vertical_scroll: int = 0, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: int = None, brightness: bool = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False, auto_refresh: bool = True, native_frames_per_second: int = 60) -> None:
+//|     def __init__(self, display_bus: Union[FourWire, ParallelBus], init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, set_vertical_scroll: int = 0, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: int = None, brightness: bool = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False, auto_refresh: bool = True, native_frames_per_second: int = 60) -> None:
 //|         r"""Create a Display object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
@@ -341,7 +341,6 @@ const mp_obj_property_t displayio_display_auto_brightness_obj = {
 //|     width: int = ...
 //|	    Gets the width of the board
 //|
-//|
 STATIC mp_obj_t displayio_display_obj_get_width(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
     return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_display_get_width(self));
@@ -357,7 +356,6 @@ const mp_obj_property_t displayio_display_width_obj = {
 
 //|     height: int = ...
 //|	    """Gets the height of the board"""
-//|
 //|
 STATIC mp_obj_t displayio_display_obj_get_height(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);

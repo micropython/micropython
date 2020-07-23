@@ -15,10 +15,8 @@
 // #define VECTORIO_POLYGON_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
 
-//| from typing import List, Tuple
-//|
 //| class Polygon:
-//|     def __init__(self, points: List[ Tuple[ x, y ], ... ] ) -> None:
+//|     def __init__(self, points: List[Tuple[int, int]]) -> None:
 //|         """Represents a closed shape by ordered vertices
 //|
 //|            :param points: Vertices for the polygon"""
@@ -44,7 +42,7 @@ static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_ar
 }
 
 
-//|     points: List[ Tuple[ x, y ], ... ] = ...
+//|     points: List[Tuple[int, int]] = ...
 //|     """Set a new look and shape for this polygon"""
 //|
 STATIC mp_obj_t vectorio_polygon_obj_get_points(mp_obj_t self_in) {

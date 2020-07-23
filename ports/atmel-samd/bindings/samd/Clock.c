@@ -30,7 +30,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-//| import typing
 //| class Clock:
 //|     """Identifies a clock on the microcontroller.
 //|
@@ -62,7 +61,7 @@ const mp_obj_property_t samd_clock_enabled_obj = {
     },
 };
 
-//|     parent: typing.Union(Clock | None) = ...
+//|     parent: Union[Clock, None] = ...
 //|     """Clock parent. (read-only)"""
 //|
 STATIC mp_obj_t samd_clock_get_parent(mp_obj_t self_in) {

@@ -168,7 +168,7 @@ const mp_obj_property_t gnss_timestamp_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     fix: gnss.PositionFix = ...
+//|     fix: PositionFix = ...
 //|     """Fix mode."""
 //|
 STATIC mp_obj_t gnss_obj_get_fix(mp_obj_t self_in) {

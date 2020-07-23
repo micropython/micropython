@@ -133,7 +133,7 @@ STATIC mp_obj_t mcu_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 
-//| nvm: Any = ...
+//| nvm: Optional[nvm.ByteArray] = ...
 //| """Available non-volatile memory.
 //| This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
 //|

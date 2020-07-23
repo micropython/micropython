@@ -211,7 +211,7 @@ const mp_obj_property_t audiomixer_mixer_voice_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def play(self, sample: Union[audiomixer.WaveFile, audiocore.RawSample, audiomixer.Mixer], *, voice: int = 0, loop: bool = False) -> None:
+//|     def play(self, sample: Union[audiocore.WaveFile, audiocore.RawSample, Mixer], *, voice: int = 0, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|

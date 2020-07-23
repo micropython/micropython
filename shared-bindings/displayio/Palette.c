@@ -36,12 +36,6 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-
-
-
-
-
-
 //| class Palette:
 //|     """Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to
 //|     save memory."""
@@ -70,7 +64,8 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def __bool__(self) -> bool: ...
+//|     def __bool__(self) -> bool:
+//|         ...
 //|
 //|     def __len__(self) -> int:
 //|         """Returns the number of colors in a Palette"""
@@ -86,7 +81,11 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|     def __setitem__(self, index: int, value: Union[int, ReadableBuffer]) -> Optional[int]:
+//|     def __getitem__(self, index: int) -> Optional[int]:
+//|         r"""Return the pixel color at the given index as an integer."""
+//|         ...
+//|
+//|     def __setitem__(self, index: int, value: Union[int, ReadableBuffer, Tuple[int, int, int]]) -> None:
 //|         r"""Sets the pixel color at the given index. The index should be an integer in the range 0 to color_count-1.
 //|
 //|         The value argument represents a color, and can be from 0x000000 to 0xFFFFFF (to represent an RGB value).
@@ -149,7 +148,8 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     return mp_const_none;
 }
 
-//|     def make_transparent(self, palette_index: int) -> None: ...
+//|     def make_transparent(self, palette_index: int) -> None:
+//|         ...
 //|
 STATIC mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);
@@ -163,7 +163,8 @@ STATIC mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_make_transparent_obj, displayio_palette_obj_make_transparent);
 
-//|     def make_opaque(self, palette_index: int) -> None: ...
+//|     def make_opaque(self, palette_index: int) -> None:
+//|         ...
 //|
 STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t palette_index_obj) {
     displayio_palette_t *self = MP_OBJ_TO_PTR(self_in);

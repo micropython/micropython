@@ -94,7 +94,7 @@ static framebufferio_framebufferdisplay_obj_t* native_display(mp_obj_t display_o
     return MP_OBJ_TO_PTR(native_display);
 }
 
-//|     def show(self, group: Group) -> None:
+//|     def show(self, group: displayio.Group) -> None:
 //|         """Switches to displaying the given group of layers. When group is None, the default
 //|         CircuitPython terminal will be shown.
 //|

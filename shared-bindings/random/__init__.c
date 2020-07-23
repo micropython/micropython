@@ -46,6 +46,9 @@
 //| .. warning:: Numbers from this module are not cryptographically strong! Use
 //|   bytes from `os.urandom` directly for true randomness."""
 //|
+//| from typing import TypeVar
+//| _T = TypeVar('_T')
+//|
 
 //| def seed(seed: int) -> None:
 //|     """Sets the starting seed of the random  number generation. Further calls to
@@ -129,7 +132,7 @@ STATIC mp_obj_t random_randint(mp_obj_t a_in, mp_obj_t b_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(random_randint_obj, random_randint);
 
-//| def choice(seq: list) -> Any:
+//| def choice(seq: Sequence[_T]) -> _T:
 //|     """Returns a randomly selected element from the given sequence. Raises
 //|     IndexError when the sequence is empty."""
 //|     ...

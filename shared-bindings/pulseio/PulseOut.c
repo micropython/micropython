@@ -41,7 +41,7 @@
 //|        pulsed signal consists of timed on and off periods. Unlike PWM, there is no set duration
 //|        for on and off pairs."""
 //|
-//|     def __init__(self, carrier: pulseio.PWMOut) -> None:
+//|     def __init__(self, carrier: PWMOut) -> None:
 //|         """Create a PulseOut object associated with the given PWMout object.
 //|
 //|         :param ~pulseio.PWMOut carrier: PWMOut that is set to output on the desired pin.

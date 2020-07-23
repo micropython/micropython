@@ -512,7 +512,7 @@ STATIC const mp_obj_type_t socket_type = {
     .locals_dict = (mp_obj_dict_t*)&socket_locals_dict,
 };
 
-//| def getaddrinfo(host: string, port: string) -> tuple:
+//| def getaddrinfo(host: str, port: int) -> tuple:
 //|     """Gets the address information for a hostname and port
 //|
 //|     Returns the appropriate family, socket type, socket protocol and

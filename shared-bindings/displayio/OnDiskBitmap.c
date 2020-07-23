@@ -69,7 +69,7 @@
 //|           while True:
 //|               pass"""
 //|
-//|     def __init__(self, file: file) -> None:
+//|     def __init__(self, file: typing.BinaryIO) -> None:
 //|         """Create an OnDiskBitmap object with the given file.
 //|
 //|         :param file file: The open bitmap file"""

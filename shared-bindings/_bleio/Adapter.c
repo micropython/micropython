@@ -135,7 +135,7 @@ const mp_obj_property_t bleio_adapter_name_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     def start_advertising(self, data: buf, *, scan_response: buf = None, connectable: bool = True, anonymous: bool = False, timeout: int = 0, interval: float = 0.1) -> None:
+//|     def start_advertising(self, data: ReadableBuffer, *, scan_response: Optional[ReadableBuffer] = None, connectable: bool = True, anonymous: bool = False, timeout: int = 0, interval: float = 0.1) -> None:
 //|         """Starts advertising until `stop_advertising` is called or if connectable, another device
 //|         connects to us.
 //|
@@ -215,7 +215,7 @@ STATIC mp_obj_t bleio_adapter_stop_advertising(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_advertising_obj, bleio_adapter_stop_advertising);
 
-//|     def start_scan(self, prefixes: sequence = b"", *, buffer_size: int = 512, extended: bool = False, timeout: float = None, interval: float = 0.1, window: float = 0.1, minimum_rssi: int = -80, active: bool = True) -> iterable:
+//|     def start_scan(self, prefixes: ReadableBuffer = b"", *, buffer_size: int = 512, extended: bool = False, timeout: float = None, interval: float = 0.1, window: float = 0.1, minimum_rssi: int = -80, active: bool = True) -> Iterable[ScanEntry]:
 //|         """Starts a BLE scan and returns an iterator of results. Advertisements and scan responses are
 //|         filtered and returned separately.
 //|
@@ -350,11 +350,11 @@ const mp_obj_property_t bleio_adapter_connections_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     def connect(self, address: Address, *, timeout: float/int) -> Connection:
+//|     def connect(self, address: Address, *, timeout: float) -> Connection:
 //|         """Attempts a connection to the device with the given address.
 //|
 //|         :param Address address: The address of the peripheral to connect to
-//|         :param float/int timeout: Try to connect for timeout seconds."""
+//|         :param float timeout: Try to connect for timeout seconds."""
 //|         ...
 //|
 STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

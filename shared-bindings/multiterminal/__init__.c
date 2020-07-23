@@ -37,7 +37,7 @@
 //| serial connection and the optional secondary connection."""
 //|
 
-//| def get_secondary_terminal() -> secondary_terminal:
+//| def get_secondary_terminal() -> Optional[typing.BinaryIO]:
 //|     """Returns the current secondary terminal."""
 //|     ...
 //|
@@ -46,7 +46,7 @@ STATIC mp_obj_t multiterminal_obj_get_secondary_terminal() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(multiterminal_get_secondary_terminal_obj, multiterminal_obj_get_secondary_terminal);
 
-//| def set_secondary_terminal(stream: stream) -> None:
+//| def set_secondary_terminal(stream: Optional[typing.BinaryIO]) -> None:
 //|     """Read additional input from the given stream and write out back to it.
 //|     This doesn't replace the core stream (usually UART or native USB) but is
 //|     mixed in instead.

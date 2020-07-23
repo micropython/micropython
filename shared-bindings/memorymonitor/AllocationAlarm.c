@@ -35,7 +35,7 @@
 
 //| class AllocationAlarm:
 //|
-//|     def __init__(self, *, minimum_block_count=1):
+//|     def __init__(self, *, minimum_block_count: int = 1) -> None:
 //|         """Throw an exception when an allocation of ``minimum_block_count`` or more blocks
 //|            occurs while active.
 //|
@@ -76,7 +76,7 @@ STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def ignore(self, count) -> AllocationAlarm:
+//|     def ignore(self, count: int) -> AllocationAlarm:
 //|         """Sets the number of applicable allocations to ignore before raising the exception.
 //|            Automatically set back to zero at context exit.
 //|
@@ -98,7 +98,7 @@ STATIC mp_obj_t memorymonitor_allocationalarm_obj_ignore(mp_obj_t self_in, mp_ob
 }
 MP_DEFINE_CONST_FUN_OBJ_2(memorymonitor_allocationalarm_ignore_obj, memorymonitor_allocationalarm_obj_ignore);
 
-//|     def __enter__(self) -> memorymonitor.AllocationAlarm:
+//|     def __enter__(self) -> AllocationAlarm:
 //|         """Enables the alarm."""
 //|         ...
 //|

@@ -107,13 +107,13 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
 }
 
 //|     def switch_to_output(self, value: bool = False, drive_mode: digitalio.DriveMode = digitalio.DriveMode.PUSH_PULL) -> None:
-//|           """Set the drive mode and value and then switch to writing out digital
-//|           values.
+//|         """Set the drive mode and value and then switch to writing out digital
+//|         values.
 //|
-//|           :param bool value: default value to set upon switching
-//|           :param ~digitalio.DriveMode drive_mode: drive mode for the output
-//|           """
-//|           ...
+//|         :param bool value: default value to set upon switching
+//|         :param ~digitalio.DriveMode drive_mode: drive mode for the output
+//|         """
+//|         ...
 //|
 STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_value, ARG_drive_mode };
@@ -228,7 +228,7 @@ const mp_obj_property_t digitalio_digitalio_direction_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     value: Bool = ...
+//|     value: bool = ...
 //|     """The digital logic level of the pin."""
 //|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_value(mp_obj_t self_in) {
