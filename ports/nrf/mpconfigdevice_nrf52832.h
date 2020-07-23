@@ -27,11 +27,11 @@
 // Board overridable build configuration.
 
 #ifndef MICROPY_MBFS
-#define MICROPY_MBFS                       (1)
+#define MICROPY_MBFS                       (0)
 #endif
 
 #ifndef MICROPY_VFS
-#define MICROPY_VFS                        (0)
+#define MICROPY_VFS                        (1)
 #endif
 
 // Board overridable feature configuration.
@@ -46,4 +46,20 @@
 
 #ifndef MICROPY_PY_UBINASCII
 #define MICROPY_PY_UBINASCII               (1)
+#endif
+
+// Board overridable port specific feature configuration.
+
+#ifndef MICROPY_PY_NRF
+#define MICROPY_PY_NRF                     (1)
+#endif
+
+// Board overridable hardware configuration.
+
+#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
+#endif
+
+#ifndef MICROPY_HW_BDEV_READBLOCKS_EXT
+#define MICROPY_HW_BDEV_READBLOCKS_EXT     (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 #endif

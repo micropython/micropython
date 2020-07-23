@@ -27,11 +27,19 @@
 // Board overridable build configuration.
 
 #ifndef MICROPY_MBFS
+#if defined(BLUETOOTH_SD)
 #define MICROPY_MBFS                       (1)
+#else
+#define MICROPY_MBFS                       (0)
+#endif
 #endif
 
 #ifndef MICROPY_VFS
+#if defined(BLUETOOTH_SD)
 #define MICROPY_VFS                        (0)
+#else
+#define MICROPY_VFS                        (1)
+#endif
 #endif
 
 // Board overridable feature configuration.
@@ -57,5 +65,33 @@
 #define MICROPY_PY_UBINASCII               (0)
 #else
 #define MICROPY_PY_UBINASCII               (1)
+#endif
+#endif
+
+// Board overridable port specific feature configuration.
+
+#ifndef MICROPY_PY_NRF
+#if defined(BLUETOOTH_SD)
+#define MICROPY_PY_NRF                     (0)
+#else
+#define MICROPY_PY_NRF                     (1)
+#endif
+#endif
+
+// Board overridable hardware configuration.
+
+#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#if defined(BLUETOOTH_SD)
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
+#else
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
+#endif
+#endif
+
+#ifndef MICROPY_HW_BDEV_READBLOCKS_EXT
+#if defined(BLUETOOTH_SD)
+#define MICROPY_HW_BDEV_READBLOCKS_EXT     (0)
+#else
+#define MICROPY_HW_BDEV_READBLOCKS_EXT     (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 #endif
 #endif
