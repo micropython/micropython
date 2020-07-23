@@ -24,8 +24,15 @@
  * THE SOFTWARE.
  */
 
+
 // qstrs specific to this port
 // *FORMAT-OFF*
+
+// Entries for sys.path
+Q(/flash)
+
+// For uos.sep
+Q(/)
 
 Q(a)
 Q(a#)
@@ -138,4 +145,3 @@ Q(r4:2)
 Q(r:1)
 Q(r:2)
 Q(r:3)
-
