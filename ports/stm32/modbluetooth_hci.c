@@ -162,6 +162,30 @@ int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
     return 0;
 }
 
+MP_WEAK int mp_bluetooth_hci_controller_init(void) {
+    return 0;
+}
+
+MP_WEAK int mp_bluetooth_hci_controller_activate(void) {
+    return 0;
+}
+
+MP_WEAK int mp_bluetooth_hci_controller_deactivate(void) {
+    return 0;
+}
+
+MP_WEAK int mp_bluetooth_hci_controller_sleep_maybe(void) {
+    return 0;
+}
+
+MP_WEAK bool mp_bluetooth_hci_controller_woken(void) {
+    return true;
+}
+
+MP_WEAK int mp_bluetooth_hci_controller_wakeup(void) {
+    return 0;
+}
+
 int mp_bluetooth_hci_uart_activate(void) {
     // Interrupt on RX chunk received (idle)
     // Trigger stack poll when this happens
