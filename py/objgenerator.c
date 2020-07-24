@@ -42,11 +42,13 @@
 typedef struct _mp_obj_gen_wrap_t {
     mp_obj_base_t base;
     mp_obj_t *fun;
+    bool coroutine_generator;
 } mp_obj_gen_wrap_t;
 
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
+    bool coroutine_generator;
     mp_code_state_t code_state;
 } mp_obj_gen_instance_t;
 
@@ -64,6 +66,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
         n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
     o->base.type = &mp_type_gen_instance;
 
+    o->coroutine_generator = self->coroutine_generator;
     o->globals = self_fun->globals;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = 0;
@@ -78,10 +81,11 @@ const mp_obj_type_t mp_type_gen_wrap = {
     .unary_op = mp_generic_unary_op,
 };
 
-mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
+mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun, bool is_coroutine) {
     mp_obj_gen_wrap_t *o = m_new_obj(mp_obj_gen_wrap_t);
     o->base.type = &mp_type_gen_wrap;
     o->fun = MP_OBJ_TO_PTR(fun);
+    o->coroutine_generator = is_coroutine;
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -91,6 +95,12 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun) {
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
+#if MICROPY_PY_ASYNC_AWAIT
+    if (self->coroutine_generator) {
+        mp_printf(print, "<coroutine object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
+        return;
+    }
+#endif
     mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
 }
 
@@ -194,6 +204,13 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
 }
 
 STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
+#if MICROPY_PY_ASYNC_AWAIT
+    // This translate is literally too much for m0 boards
+    mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->coroutine_generator) {
+        mp_raise_TypeError(translate("'coroutine' object is not an iterator"));
+    }
+#endif
     return gen_resume_and_raise(self_in, mp_const_none, MP_OBJ_NULL);
 }
 
