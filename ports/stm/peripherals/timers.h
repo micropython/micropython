@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,23 @@
  * THE SOFTWARE.
  */
 
-#include <stddef.h>
-
-#include "common-hal/rgbmatrix/RGBMatrix.h"
-#include "timers.h"
+#include <stdint.h>
+#include "py/mphal.h"
+#include "peripherals/periph.h"
 
 #include STM32_HAL_H
 
-extern void _PM_IRQ_HANDLER(void);
-
-void *common_hal_rgbmatrix_timer_allocate() {
-    TIM_TypeDef * timer = stm_peripherals_find_timer();
-    stm_peripherals_timer_reserve(timer);
-    return timer;
-}
-
-void common_hal_rgbmatrix_timer_enable(void* ptr) {
-    TIM_TypeDef *tim = (TIM_TypeDef*)ptr;
-    HAL_NVIC_EnableIRQ(stm_peripherals_timer_get_irqnum(tim));
-}
-
-void common_hal_rgbmatrix_timer_disable(void* ptr) {
-    TIM_TypeDef *tim = (TIM_TypeDef*)ptr;
-    tim->DIER &= ~TIM_DIER_UIE;
-}
-
-void common_hal_rgbmatrix_timer_free(void* ptr) {
-    TIM_TypeDef *tim = (TIM_TypeDef*)ptr;
-    stm_peripherals_timer_free(tim);
-    common_hal_rgbmatrix_timer_disable(ptr);
-}
+void tim_clock_enable(uint16_t mask);
+void tim_clock_disable(uint16_t mask);
+uint32_t stm_peripherals_timer_get_source_freq(TIM_TypeDef * timer);
+size_t stm_peripherals_timer_get_irqnum(TIM_TypeDef * instance);
+void timers_reset(void);
+TIM_TypeDef * stm_peripherals_find_timer(void);
+void stm_peripherals_timer_preinit(TIM_TypeDef * instance, uint8_t prio, void (*callback)(void));
+void stm_peripherals_timer_reserve(TIM_TypeDef * instance);
+void stm_peripherals_timer_free(TIM_TypeDef * instance);
+void stm_peripherals_timer_never_reset(TIM_TypeDef * instance);
+void stm_peripherals_timer_reset_ok(TIM_TypeDef * instance);
+bool stm_peripherals_timer_is_never_reset(TIM_TypeDef * instance);
+bool stm_peripherals_timer_is_reserved(TIM_TypeDef * instance);
+size_t stm_peripherals_timer_get_index(TIM_TypeDef * instance);

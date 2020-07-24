@@ -32,7 +32,7 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 // I2C timing specs for the H7 and F7
 // Configured for maximum possible clock settings for the family
@@ -161,8 +161,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (HAL_I2C_Init(&(self->handle)) != HAL_OK) {
         mp_raise_RuntimeError(translate("I2C Init Error"));
     }
-    claim_pin(sda);
-    claim_pin(scl);
+    common_hal_mcu_pin_claim(sda);
+    common_hal_mcu_pin_claim(scl);
 }
 
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
