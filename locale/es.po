@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-21 18:43-0700\n"
-"PO-Revision-Date: 2020-07-24 15:16+0000\n"
-"Last-Translator: dherrada <dylan.herrada@adafruit.com>\n"
+"PO-Revision-Date: 2020-07-24 21:12+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -245,7 +245,7 @@ msgstr "'continue' fuera de un bucle"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "el objeto 'coroutine' no es un iterador"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -382,7 +382,7 @@ msgstr "Como máximo %d %q se puede especificar (no %d)"
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Tratando de localizar %d bloques"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -1595,6 +1595,8 @@ msgstr ""
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+"El temporizador es utilizado para uso interno - declare los pines para PWM "
+"más temprano en el programa"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
