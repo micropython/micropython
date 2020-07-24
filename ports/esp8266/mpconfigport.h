@@ -186,6 +186,9 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     mp_obj_t pin_irq_handler[16]; \
     byte *uart0_rxbuf; \
 
+// We need an implementation of the log2 function which is not a macro
+#define MP_NEED_LOG2 (1)
+
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 

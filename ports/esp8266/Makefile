@@ -140,6 +140,14 @@ LIB_SRC_C = $(addprefix lib/,\
 	libm/atanf.c \
 	libm/atan2f.c \
 	libm/roundf.c \
+	libm/acoshf.c \
+	libm/asinhf.c \
+	libm/atanhf.c \
+	libm/log1pf.c \
+	libm/sf_erf.c \
+	libm/erf_lgamma.c \
+	libm/wf_lgamma.c \
+	libm/wf_tgamma.c \
 	mp-readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
