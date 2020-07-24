@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-17 18:03-0700\n"
+"POT-Creation-Date: 2020-07-21 18:43-0700\n"
 "PO-Revision-Date: 2020-06-05 17:29+0000\n"
 "Last-Translator: aberwag <aberwag@gmail.com>\n"
 "Language: fr\n"
@@ -243,6 +243,10 @@ msgstr "'break' en dehors d'une boucle"
 #: py/compile.c
 msgid "'continue' outside loop"
 msgstr "'continue' en dehors d'une boucle"
+
+#: py/objgenerator.c
+msgid "'coroutine' object is not an iterator"
+msgstr ""
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"

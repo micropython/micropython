@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-17 18:03-0700\n"
+"POT-Creation-Date: 2020-07-21 18:43-0700\n"
 "PO-Revision-Date: 2020-07-24 17:34+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
@@ -241,6 +241,10 @@ msgstr "'break' fora do loop"
 #: py/compile.c
 msgid "'continue' outside loop"
 msgstr "'continue' fora do loop"
+
+#: py/objgenerator.c
+msgid "'coroutine' object is not an iterator"
+msgstr ""
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
