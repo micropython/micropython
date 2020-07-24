@@ -91,8 +91,8 @@ void NUCLEO_H743ZI_board_early_init(void);
 #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
-// Ethernet via RMII (MDC define disabled for now until eth.c supports H7)
-//#define MICROPY_HW_ETH_MDC          (pin_C1)
+// Ethernet via RMII
+#define MICROPY_HW_ETH_MDC          (pin_C1)
 #define MICROPY_HW_ETH_MDIO         (pin_A2)
 #define MICROPY_HW_ETH_RMII_REF_CLK (pin_A1)
 #define MICROPY_HW_ETH_RMII_CRS_DV  (pin_A7)
