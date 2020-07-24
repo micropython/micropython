@@ -35,4 +35,3 @@ CFLAGS += -DSPIM3_BUFFER_SIZE=0 -DSOFTDEVICE_RAM_SIZE='(32*1024)' -DNRFX_SPIM3_E
 
 # Override optimization to keep binary small
 OPTIMIZATION_FLAGS = -Os
-

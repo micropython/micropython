@@ -17,4 +17,3 @@ CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_BITBANG_APA102 = 1
 # Override optimization to keep binary small
 OPTIMIZATION_FLAGS = -Os
-
