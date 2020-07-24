@@ -3717,8 +3717,8 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d "
 #~ "bpp given"
 #~ msgstr ""
-#~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:% "
-#~ "d bppdado"
+#~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:%d "
+#~ "bppdado"
 
 #, fuzzy
 #~ msgid "Only slices with step=1 (aka None) are supported"

@@ -2115,7 +2115,7 @@ msgstr ""
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
-msgstr "kan inte skapa instanser av '% q'"
+msgstr "kan inte skapa instanser av '%q'"
 
 #: py/objtype.c
 msgid "cannot create instance"

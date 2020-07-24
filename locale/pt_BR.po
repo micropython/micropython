@@ -3070,7 +3070,7 @@ msgstr "a anotação do retorno deve ser um identificador"
 
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
-msgstr "o retorno esperado era '%q', porém obteve '% q'"
+msgstr "o retorno esperado era '%q', porém obteve '%q'"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
