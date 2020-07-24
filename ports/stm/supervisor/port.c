@@ -227,7 +227,7 @@ void reset_port(void) {
     spi_reset();
     uart_reset();
 #endif
-#ifdef CIRCUITPY_SDIOIO
+#if CIRCUITPY_SDIOIO
     sdioio_reset();
 #endif
 #if CIRCUITPY_PULSEIO
