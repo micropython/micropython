@@ -324,7 +324,7 @@ msgstr "Todos os temporizadores para este pino estão em uso"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c
+#: ports/stm/peripherals/timers.c shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr "Todos os temporizadores em uso"
 
@@ -1372,11 +1372,7 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "O Pull não foi usado quando a direção for gerada."
 
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "PulseIn not supported on this chip"
-msgstr "O PulseIn não é compatível neste CI"
-
-#: ports/stm/common-hal/pulseio/PulseOut.c
+#: ports/stm/ref/pulseout-pre-timeralloc.c
 msgid "PulseOut not supported on this chip"
 msgstr "O PulseOut não é compatível neste CI"
 
@@ -1595,6 +1591,11 @@ msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 "O tempo limite é long demais: O comprimento máximo do tempo limite é de %d "
 "segundos"
+
+#: ports/stm/common-hal/pulseio/PWMOut.c
+msgid ""
+"Timer was reserved for internal use - declare PWM pins earlier in the program"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3462,6 +3463,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "O PulseIn não é compatível neste CI"
 
 #~ msgid "AP required"
 #~ msgstr "AP requerido"
