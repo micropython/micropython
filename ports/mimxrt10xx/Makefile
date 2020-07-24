@@ -105,13 +105,13 @@ CFLAGS += \
 	-DCPU_$(CHIP_VARIANT) \
 	-DDEBUG \
 	-DIMXRT10XX \
-	-Os -g3 -Wno-unused-parameter \
+	-g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage
 
+OPTIMIZATION_FLAGS ?= -O2
+
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
-ifdef OPTIMIZATION_LEVEL
-CFLAGS += -O$(OPTIMIZATION_LEVEL)
-endif
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 

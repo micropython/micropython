@@ -101,18 +101,18 @@ CFLAGS += -DSTACK_CANARY_VALUE=0xa5a5a5a5
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb
+  OPTIMIZATION_FLAGS ?= -Og
   # You may want to enable these flags to make setting breakpoints easier.
   # CFLAGS += -fno-inline -fno-ipa-sra
 else
-  CFLAGS += -Os -DNDEBUG -ggdb3
+  CFLAGS += -DNDEBUG -ggdb3
+  OPTIMIZATION_FLAGS ?= -O2
   # TODO: Test with -flto
   ### CFLAGS += -flto
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
-ifdef OPTIMIZATION_LEVEL
-CFLAGS += -O$(OPTIMIZATION_LEVEL)
-endif
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 CFLAGS += $(INC) -Werror -Wall -mlongcalls -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 

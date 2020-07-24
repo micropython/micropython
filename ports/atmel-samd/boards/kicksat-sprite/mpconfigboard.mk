@@ -18,3 +18,7 @@ CIRCUITPY_PS2IO = 0
 CIRCUITPY_AUDIOMP3 = 0
 
 CIRCUITPY_ULAB = 0
+
+# Override optimization to keep binary small
+OPTIMIZATION_FLAGS = -Os
+

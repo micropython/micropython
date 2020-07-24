@@ -85,16 +85,15 @@ ifeq ($(DEBUG), 1)
 	# You may want to enable these flags to make setting breakpoints easier.
 	CFLAGS += -fno-inline -fno-ipa-sra
 else
-	CFLAGS += -Os -DNDEBUG
+	CFLAGS += -DNDEBUG
+	OPTIMIZATION_FLAGS ?= -O2
 	CFLAGS += -ggdb3
 	# TODO: Test with -flto
 	# CFLAGS += -flto
 endif
 
-# option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
-ifdef OPTIMIZATION_LEVEL
-CFLAGS += -O$(OPTIMIZATION_LEVEL)
-endif
+# to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 # MCU Series is defined by the HAL package and doesn't need to be specified here
 C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)

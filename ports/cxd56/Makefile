@@ -107,7 +107,6 @@ CFLAGS += \
 	-Dmain=spresense_main \
 	-D_estack=__stack \
 	-c \
-	-Os \
 	-pipe \
 	-std=gnu11 \
 	-mcpu=cortex-m4 \
@@ -123,10 +122,10 @@ CFLAGS += \
 	-fdata-sections \
 	-Wall \
 
+OPTIMIZATION_FLAGS ?= -O2
+
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
-ifdef OPTIMIZATION_LEVEL
-CFLAGS += -O$(OPTIMIZATION_LEVEL)
-endif
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 
 LIBM = "${shell "$(CC)" $(CFLAGS) -print-file-name=libm.a}"

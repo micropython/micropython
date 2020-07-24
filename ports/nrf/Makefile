@@ -86,16 +86,16 @@ INC += -I../../supervisor/shared/usb
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  CFLAGS += -ggdb3 -Og
+  CFLAGS += -ggdb3 
+  OPTIMIZATION_FLAGS = -Og
 else
-  CFLAGS += -Os -DNDEBUG -ggdb3
+  OPTIMIZATION_FLAGS ?= -O2
+  CFLAGS += -DNDEBUG -ggdb3
   CFLAGS += -flto -flto-partition=none
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
-ifdef OPTIMIZATION_LEVEL
-CFLAGS += -O$(OPTIMIZATION_LEVEL)
-endif
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
