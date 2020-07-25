@@ -1,0 +1,10 @@
+--- instance0 ---
+server running
+close
+done
+--- instance1 ---
+b'ab'
+b''
+b'c'
+EOFError
+b''
