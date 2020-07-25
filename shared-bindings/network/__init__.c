@@ -40,11 +40,14 @@
 
 //| """Network Interface Management
 //|
+//| .. warning:: This module is disabled in 6.x and will removed in 7.x. Please use networking
+//|              libraries instead.
+//|
 //| This module provides a registry of configured NICs.
 //| It is used by the 'socket' module to look up a suitable
 //| NIC when a socket is created."""
 //|
-//| def route() -> Any:
+//| def route() -> list:
 //|     """Returns a list of all configured NICs."""
 //|     ...
 //|

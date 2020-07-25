@@ -44,7 +44,7 @@
 //|     `busio.SPI`, not `bitbangio.SPI`.  Usually an SDCard object is used
 //|     with ``storage.VfsFat`` to allow file I/O to an SD card."""
 //|
-//|     def __init__(bus:busio.SPI, cs=digitalio.DigitalInOut, baudrate=8000000):
+//|     def __init__(bus:busio.SPI, cs: digitalio.DigitalInOut=digitalio.DigitalInOut, baudrate: int=8000000) -> None:
 //|         """Construct an SPI SD Card object with the given properties
 //|
 //|         :param busio.SPI spi: The SPI bus

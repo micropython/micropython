@@ -39,7 +39,7 @@
 //|     Descriptors are attached to BLE characteristics and provide contextual
 //|     information about the characteristic."""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """There is no regular constructor for a Descriptor. A new local Descriptor can be created
 //|         and attached to a Characteristic by calling `add_to_characteristic()`.
 //|         Remote Descriptor objects are created by `Connection.discover_remote_services()`
@@ -132,7 +132,7 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_descriptor_add_to_characteristic_fun_obj, 3, bleio_descriptor_add_to_characteristic);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_descriptor_add_to_characteristic_obj, MP_ROM_PTR(&bleio_descriptor_add_to_characteristic_fun_obj));
 
-//|     uuid: Any = ...
+//|     uuid: UUID = ...
 //|     """The descriptor uuid. (read-only)"""
 //|
 STATIC mp_obj_t bleio_descriptor_get_uuid(mp_obj_t self_in) {
@@ -150,7 +150,7 @@ const mp_obj_property_t bleio_descriptor_uuid_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     characteristic: Any = ...
+//|     characteristic: Characteristic = ...
 //|     """The Characteristic this Descriptor is a part of."""
 //|
 STATIC mp_obj_t bleio_descriptor_get_characteristic(mp_obj_t self_in) {
@@ -167,7 +167,7 @@ const mp_obj_property_t bleio_descriptor_characteristic_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     value: Any = ...
+//|     value: WriteableBuffer = ...
 //|     """The value of this descriptor."""
 //|
 STATIC mp_obj_t bleio_descriptor_get_value(mp_obj_t self_in) {

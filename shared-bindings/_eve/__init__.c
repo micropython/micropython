@@ -58,7 +58,7 @@ STATIC mp_obj_t _register(mp_obj_t self, mp_obj_t o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(register_obj, _register);
 
-//| def flush(self, ) -> Any:
+//| def flush(self) -> None:
 //|     """Send any queued drawing commands directly to the hardware.
 //|
 //|     :param int width: The width of the grid in tiles, or 1 for sprites."""
@@ -70,7 +70,7 @@ STATIC mp_obj_t _flush(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(flush_obj, _flush);
 
-//| def cc(self, b: bytes) -> Any:
+//| def cc(self, b: bytes) -> None:
 //|     """Append bytes to the command FIFO.
 //|
 //|     :param bytes b: The bytes to add"""
@@ -86,7 +86,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(cc_obj, _cc);
 
 //{
 
-//| def AlphaFunc(self, func: int, ref: int) -> Any:
+//| def AlphaFunc(self, func: int, ref: int) -> None:
 //|     """Set the alpha test function
 //|
 //|     :param int func: specifies the test function, one of ``NEVER``, ``LESS``, ``LEQUAL``, ``GREATER``, ``GEQUAL``, ``EQUAL``, ``NOTEQUAL``, or ``ALWAYS``. Range 0-7. The initial value is ALWAYS(7)
@@ -104,7 +104,7 @@ STATIC mp_obj_t _alphafunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(alphafunc_obj, _alphafunc);
 
-//| def Begin(self, prim: int) -> Any:
+//| def Begin(self, prim: int) -> None:
 //|     """Begin drawing a graphics primitive
 //|
 //|     :param int prim: graphics primitive.
@@ -120,7 +120,7 @@ STATIC mp_obj_t _begin(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(begin_obj, _begin);
 
-//| def BitmapExtFormat(self, format: int) -> Any:
+//| def BitmapExtFormat(self, format: int) -> None:
 //|     """Set the bitmap format
 //|
 //|     :param int format: bitmap pixel format."""
@@ -134,7 +134,7 @@ STATIC mp_obj_t _bitmapextformat(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmapextformat_obj, _bitmapextformat);
 
-//| def BitmapHandle(self, handle: int) -> Any:
+//| def BitmapHandle(self, handle: int) -> None:
 //|     """Set the bitmap handle
 //|
 //|     :param int handle: bitmap handle. Range 0-31. The initial value is 0
@@ -150,7 +150,7 @@ STATIC mp_obj_t _bitmaphandle(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaphandle_obj, _bitmaphandle);
 
-//| def BitmapLayoutH(self, linestride: int, height: int) -> Any:
+//| def BitmapLayoutH(self, linestride: int, height: int) -> None:
 //|     """Set the source bitmap memory format and layout for the current handle. high bits for large bitmaps
 //|
 //|     :param int linestride: high part of bitmap line stride, in bytes. Range 0-7
@@ -166,7 +166,7 @@ STATIC mp_obj_t _bitmaplayouth(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaplayouth_obj, _bitmaplayouth);
 
-//| def BitmapLayout(self, format: int, linestride: int, height: int) -> Any:
+//| def BitmapLayout(self, format: int, linestride: int, height: int) -> None:
 //|     """Set the source bitmap memory format and layout for the current handle
 //|
 //|     :param int format: bitmap pixel format, or GLFORMAT to use BITMAP_EXT_FORMAT instead. Range 0-31
@@ -184,7 +184,7 @@ STATIC mp_obj_t _bitmaplayout(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmaplayout_obj, 4, 4, _bitmaplayout);
 
-//| def BitmapSizeH(self, width: int, height: int) -> Any:
+//| def BitmapSizeH(self, width: int, height: int) -> None:
 //|     """Set the screen drawing of bitmaps for the current handle. high bits for large bitmaps
 //|
 //|     :param int width: high part of drawn bitmap width, in pixels. Range 0-3
@@ -200,7 +200,7 @@ STATIC mp_obj_t _bitmapsizeh(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmapsizeh_obj, _bitmapsizeh);
 
-//| def BitmapSize(self, filter: int, wrapx: int, wrapy: int, width: int, height: int) -> Any:
+//| def BitmapSize(self, filter: int, wrapx: int, wrapy: int, width: int, height: int) -> None:
 //|     """Set the screen drawing of bitmaps for the current handle
 //|
 //|     :param int filter: bitmap filtering mode, one of ``NEAREST`` or ``BILINEAR``. Range 0-1
@@ -222,7 +222,7 @@ STATIC mp_obj_t _bitmapsize(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapsize_obj, 6, 6, _bitmapsize);
 
-//| def BitmapSource(self, addr: int) -> Any:
+//| def BitmapSource(self, addr: int) -> None:
 //|     """Set the source address for bitmap graphics
 //|
 //|     :param int addr: Bitmap start address, pixel-aligned. May be in SRAM or flash. Range 0-16777215"""
@@ -236,7 +236,7 @@ STATIC mp_obj_t _bitmapsource(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmapsource_obj, _bitmapsource);
 
-//| def BitmapSwizzle(self, r: int, g: int, b: int, a: int) -> Any:
+//| def BitmapSwizzle(self, r: int, g: int, b: int, a: int) -> None:
 //|     """Set the source for the r,g,b and a channels of a bitmap
 //|
 //|     :param int r: red component source channel. Range 0-7
@@ -256,7 +256,7 @@ STATIC mp_obj_t _bitmapswizzle(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitmapswizzle_obj, 5, 5, _bitmapswizzle);
 
-//| def BitmapTransformA(self, p: Any, v: int) -> Any:
+//| def BitmapTransformA(self, p: int, v: int) -> None:
 //|     """Set the :math:`a` component of the bitmap transform matrix
 //|
 //|     :param int p: precision control: 0 is 8.8, 1 is 1.15. Range 0-1. The initial value is 0
@@ -276,7 +276,7 @@ STATIC mp_obj_t _bitmaptransforma(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforma_obj, _bitmaptransforma);
 
-//| def BitmapTransformB(self, p: Any, v: int) -> Any:
+//| def BitmapTransformB(self, p: int, v: int) -> None:
 //|     """Set the :math:`b` component of the bitmap transform matrix
 //|
 //|     :param int p: precision control: 0 is 8.8, 1 is 1.15. Range 0-1. The initial value is 0
@@ -296,7 +296,7 @@ STATIC mp_obj_t _bitmaptransformb(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformb_obj, _bitmaptransformb);
 
-//| def BitmapTransformC(self, v: int) -> Any:
+//| def BitmapTransformC(self, v: int) -> None:
 //|     """Set the :math:`c` component of the bitmap transform matrix
 //|
 //|     :param int v: The :math:`c` component of the bitmap transform matrix, in signed 15.8 bit fixed-point form. Range 0-16777215. The initial value is 0
@@ -312,7 +312,7 @@ STATIC mp_obj_t _bitmaptransformc(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformc_obj, _bitmaptransformc);
 
-//| def BitmapTransformD(self, p: Any, v: int) -> Any:
+//| def BitmapTransformD(self, p: int, v: int) -> None:
 //|     """Set the :math:`d` component of the bitmap transform matrix
 //|
 //|     :param int p: precision control: 0 is 8.8, 1 is 1.15. Range 0-1. The initial value is 0
@@ -332,7 +332,7 @@ STATIC mp_obj_t _bitmaptransformd(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransformd_obj, _bitmaptransformd);
 
-//| def BitmapTransformE(self, p: Any, v: int) -> Any:
+//| def BitmapTransformE(self, p: int, v: int) -> None:
 //|     """Set the :math:`e` component of the bitmap transform matrix
 //|
 //|     :param int p: precision control: 0 is 8.8, 1 is 1.15. Range 0-1. The initial value is 0
@@ -352,7 +352,7 @@ STATIC mp_obj_t _bitmaptransforme(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(bitmaptransforme_obj, _bitmaptransforme);
 
-//| def BitmapTransformF(self, v: int) -> Any:
+//| def BitmapTransformF(self, v: int) -> None:
 //|     """Set the :math:`f` component of the bitmap transform matrix
 //|
 //|     :param int v: The :math:`f` component of the bitmap transform matrix, in signed 15.8 bit fixed-point form. Range 0-16777215. The initial value is 0
@@ -368,7 +368,7 @@ STATIC mp_obj_t _bitmaptransformf(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bitmaptransformf_obj, _bitmaptransformf);
 
-//| def BlendFunc(self, src: int, dst: int) -> Any:
+//| def BlendFunc(self, src: int, dst: int) -> None:
 //|     """Set pixel arithmetic
 //|
 //|     :param int src: specifies how the source blending factor is computed.  One of ``ZERO``, ``ONE``, ``SRC_ALPHA``, ``DST_ALPHA``, ``ONE_MINUS_SRC_ALPHA`` or ``ONE_MINUS_DST_ALPHA``. Range 0-7. The initial value is SRC_ALPHA(2)
@@ -386,7 +386,7 @@ STATIC mp_obj_t _blendfunc(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(blendfunc_obj, _blendfunc);
 
-//| def Call(self, dest: int) -> Any:
+//| def Call(self, dest: int) -> None:
 //|     """Execute a sequence of commands at another location in the display list
 //|
 //|     :param int dest: display list address. Range 0-65535"""
@@ -400,7 +400,7 @@ STATIC mp_obj_t _call(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(call_obj, _call);
 
-//| def Cell(self, cell: int) -> Any:
+//| def Cell(self, cell: int) -> None:
 //|     """Set the bitmap cell number for the vertex2f command
 //|
 //|     :param int cell: bitmap cell number. Range 0-127. The initial value is 0
@@ -416,7 +416,7 @@ STATIC mp_obj_t _cell(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cell_obj, _cell);
 
-//| def ClearColorA(self, alpha: int) -> Any:
+//| def ClearColorA(self, alpha: int) -> None:
 //|     """Set clear value for the alpha channel
 //|
 //|     :param int alpha: alpha value used when the color buffer is cleared. Range 0-255. The initial value is 0
@@ -432,7 +432,7 @@ STATIC mp_obj_t _clearcolora(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearcolora_obj, _clearcolora);
 
-//| def ClearColorRGB(self, red: int, green: int, blue: int) -> Any:
+//| def ClearColorRGB(self, red: int, green: int, blue: int) -> None:
 //|     """Set clear values for red, green and blue channels
 //|
 //|     :param int red: red value used when the color buffer is cleared. Range 0-255. The initial value is 0
@@ -452,7 +452,7 @@ STATIC mp_obj_t _clearcolorrgb(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clearcolorrgb_obj, 4, 4, _clearcolorrgb);
 
-//| def Clear(self, c: int, s: int, t: int) -> Any:
+//| def Clear(self, c: int, s: int, t: int) -> None:
 //|     """Clear buffers to preset values
 //|
 //|     :param int c: clear color buffer. Range 0-1
@@ -470,7 +470,7 @@ STATIC mp_obj_t _clear(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(clear_obj, 1, 4, _clear);
 
-//| def ClearStencil(self, s: int) -> Any:
+//| def ClearStencil(self, s: int) -> None:
 //|     """Set clear value for the stencil buffer
 //|
 //|     :param int s: value used when the stencil buffer is cleared. Range 0-255. The initial value is 0
@@ -486,7 +486,7 @@ STATIC mp_obj_t _clearstencil(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(clearstencil_obj, _clearstencil);
 
-//| def ClearTag(self, s: int) -> Any:
+//| def ClearTag(self, s: int) -> None:
 //|     """Set clear value for the tag buffer
 //|
 //|     :param int s: value used when the tag buffer is cleared. Range 0-255. The initial value is 0
@@ -501,7 +501,7 @@ STATIC mp_obj_t _cleartag(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cleartag_obj, _cleartag);
 
-//| def ColorA(self, alpha: int) -> Any:
+//| def ColorA(self, alpha: int) -> None:
 //|     """Set the current color alpha
 //|
 //|     :param int alpha: alpha for the current color. Range 0-255. The initial value is 255
@@ -517,7 +517,7 @@ STATIC mp_obj_t _colora(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(colora_obj, _colora);
 
-//| def ColorMask(self, r: int, g: int, b: int, a: int) -> Any:
+//| def ColorMask(self, r: int, g: int, b: int, a: int) -> None:
 //|     """Enable and disable writing of frame buffer color components
 //|
 //|     :param int r: allow updates to the frame buffer red component. Range 0-1. The initial value is 1
@@ -539,7 +539,7 @@ STATIC mp_obj_t _colormask(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colormask_obj, 5, 5, _colormask);
 
-//| def ColorRGB(self, red: int, green: int, blue: int) -> Any:
+//| def ColorRGB(self, red: int, green: int, blue: int) -> None:
 //|     """Set the drawing color
 //|
 //|     :param int red: red value for the current color. Range 0-255. The initial value is 255
@@ -559,9 +559,9 @@ STATIC mp_obj_t _colorrgb(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(colorrgb_obj, 4, 4, _colorrgb);
 
-//| def Display(self, ) -> Any: ...
-//| """End the display list"""
-//|
+//| def Display(self) -> None:
+//|     """End the display list"""
+//|     ...
 
 STATIC mp_obj_t _display(mp_obj_t self) {
 
@@ -570,7 +570,7 @@ STATIC mp_obj_t _display(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(display_obj, _display);
 
-//| def End(self, ) -> Any:
+//| def End(self) -> None:
 //|     """End drawing a graphics primitive
 //|
 //|     :meth:`Vertex2ii` and :meth:`Vertex2f` calls are ignored until the next :meth:`Begin`."""
@@ -584,7 +584,7 @@ STATIC mp_obj_t _end(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(end_obj, _end);
 
-//| def Jump(self, dest: int) -> Any:
+//| def Jump(self, dest: int) -> None:
 //|     """Execute commands at another location in the display list
 //|
 //|     :param int dest: display list address. Range 0-65535"""
@@ -598,7 +598,7 @@ STATIC mp_obj_t _jump(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(jump_obj, _jump);
 
-//| def LineWidth(self, width: int) -> Any:
+//| def LineWidth(self, width: int) -> None:
 //|     """Set the width of rasterized lines
 //|
 //|     :param int width: line width in :math:`1/16` pixel. Range 0-4095. The initial value is 16
@@ -614,7 +614,7 @@ STATIC mp_obj_t _linewidth(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(linewidth_obj, _linewidth);
 
-//| def Macro(self, m: int) -> Any:
+//| def Macro(self, m: int) -> None:
 //|     """Execute a single command from a macro register
 //|
 //|     :param int m: macro register to read. Range 0-1"""
@@ -628,7 +628,7 @@ STATIC mp_obj_t _macro(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(macro_obj, _macro);
 
-//| def Nop(self, ) -> Any:
+//| def Nop(self) -> None:
 //|     """No operation"""
 //|     ...
 //|
@@ -640,7 +640,7 @@ STATIC mp_obj_t _nop(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(nop_obj, _nop);
 
-//| def PaletteSource(self, addr: int) -> Any:
+//| def PaletteSource(self, addr: int) -> None:
 //|     """Set the base address of the palette
 //|
 //|     :param int addr: Address in graphics SRAM, 2-byte aligned. Range 0-4194303. The initial value is 0
@@ -656,7 +656,7 @@ STATIC mp_obj_t _palettesource(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(palettesource_obj, _palettesource);
 
-//| def PointSize(self, size: int) -> Any:
+//| def PointSize(self, size: int) -> None:
 //|     """Set the radius of rasterized points
 //|
 //|     :param int size: point radius in :math:`1/16` pixel. Range 0-8191. The initial value is 16
@@ -672,7 +672,7 @@ STATIC mp_obj_t _pointsize(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pointsize_obj, _pointsize);
 
-//| def RestoreContext(self, ) -> Any:
+//| def RestoreContext(self) -> None:
 //|     """Restore the current graphics context from the context stack"""
 //|     ...
 //|
@@ -684,7 +684,7 @@ STATIC mp_obj_t _restorecontext(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(restorecontext_obj, _restorecontext);
 
-//| def Return(self, ) -> Any:
+//| def Return(self) -> None:
 //|     """Return from a previous call command"""
 //|     ...
 //|
@@ -696,7 +696,7 @@ STATIC mp_obj_t _return(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(return_obj, _return);
 
-//| def SaveContext(self, ) -> Any:
+//| def SaveContext(self) -> None:
 //|     """Push the current graphics context on the context stack"""
 //|     ...
 //|
@@ -708,7 +708,7 @@ STATIC mp_obj_t _savecontext(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(savecontext_obj, _savecontext);
 
-//| def ScissorSize(self, width: int, height: int) -> Any:
+//| def ScissorSize(self, width: int, height: int) -> None:
 //|     """Set the size of the scissor clip rectangle
 //|
 //|     :param int width: The width of the scissor clip rectangle, in pixels. Range 0-4095. The initial value is hsize
@@ -726,7 +726,7 @@ STATIC mp_obj_t _scissorsize(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorsize_obj, _scissorsize);
 
-//| def ScissorXY(self, x: int, y: int) -> Any:
+//| def ScissorXY(self, x: int, y: int) -> None:
 //|     """Set the top left corner of the scissor clip rectangle
 //|
 //|     :param int x: The :math:`x` coordinate of the scissor clip rectangle, in pixels. Range 0-2047. The initial value is 0
@@ -744,7 +744,7 @@ STATIC mp_obj_t _scissorxy(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(scissorxy_obj, _scissorxy);
 
-//| def StencilFunc(self, func: int, ref: int, mask: int) -> Any:
+//| def StencilFunc(self, func: int, ref: int, mask: int) -> None:
 //|     """Set function and reference value for stencil testing
 //|
 //|     :param int func: specifies the test function, one of ``NEVER``, ``LESS``, ``LEQUAL``, ``GREATER``, ``GEQUAL``, ``EQUAL``, ``NOTEQUAL``, or ``ALWAYS``. Range 0-7. The initial value is ALWAYS(7)
@@ -764,7 +764,7 @@ STATIC mp_obj_t _stencilfunc(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stencilfunc_obj, 4, 4, _stencilfunc);
 
-//| def StencilMask(self, mask: int) -> Any:
+//| def StencilMask(self, mask: int) -> None:
 //|     """Control the writing of individual bits in the stencil planes
 //|
 //|     :param int mask: the mask used to enable writing stencil bits. Range 0-255. The initial value is 255
@@ -780,7 +780,7 @@ STATIC mp_obj_t _stencilmask(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(stencilmask_obj, _stencilmask);
 
-//| def StencilOp(self, sfail: int, spass: int) -> Any:
+//| def StencilOp(self, sfail: int, spass: int) -> None:
 //|     """Set stencil test actions
 //|
 //|     :param int sfail: specifies the action to take when the stencil test fails, one of ``KEEP``, ``ZERO``, ``REPLACE``, ``INCR``, ``INCR_WRAP``, ``DECR``, ``DECR_WRAP``, and ``INVERT``. Range 0-7. The initial value is KEEP(1)
@@ -798,7 +798,7 @@ STATIC mp_obj_t _stencilop(mp_obj_t self, mp_obj_t a0, mp_obj_t a1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(stencilop_obj, _stencilop);
 
-//| def TagMask(self, mask: int) -> Any:
+//| def TagMask(self, mask: int) -> None:
 //|     """Control the writing of the tag buffer
 //|
 //|     :param int mask: allow updates to the tag buffer. Range 0-1. The initial value is 1
@@ -814,7 +814,7 @@ STATIC mp_obj_t _tagmask(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(tagmask_obj, _tagmask);
 
-//| def Tag(self, s: int) -> Any:
+//| def Tag(self, s: int) -> None:
 //|     """Set the current tag value
 //|
 //|     :param int s: tag value. Range 0-255. The initial value is 255
@@ -830,7 +830,7 @@ STATIC mp_obj_t _tag(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(tag_obj, _tag);
 
-//| def VertexTranslateX(self, x: int) -> Any:
+//| def VertexTranslateX(self, x: int) -> None:
 //|     """Set the vertex transformation's x translation component
 //|
 //|     :param int x: signed x-coordinate in :math:`1/16` pixel. Range 0-131071. The initial value is 0
@@ -846,7 +846,7 @@ STATIC mp_obj_t _vertextranslatex(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatex_obj, _vertextranslatex);
 
-//| def VertexTranslateY(self, y: int) -> Any:
+//| def VertexTranslateY(self, y: int) -> None:
 //|     """Set the vertex transformation's y translation component
 //|
 //|     :param int y: signed y-coordinate in :math:`1/16` pixel. Range 0-131071. The initial value is 0
@@ -863,7 +863,7 @@ STATIC mp_obj_t _vertextranslatey(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertextranslatey_obj, _vertextranslatey);
 
-//| def VertexFormat(self, frac: int) -> Any:
+//| def VertexFormat(self, frac: int) -> None:
 //|     """Set the precision of vertex2f coordinates
 //|
 //|     :param int frac: Number of fractional bits in X,Y coordinates, 0-4. Range 0-7. The initial value is 4
@@ -879,7 +879,7 @@ STATIC mp_obj_t _vertexformat(mp_obj_t self, mp_obj_t a0) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vertexformat_obj, _vertexformat);
 
-//| def Vertex2ii(self, x: int, y: int, handle: int, cell: int) -> Any:
+//| def Vertex2ii(self, x: int, y: int, handle: int, cell: int) -> None:
 //|     """:param int x: x-coordinate in pixels. Range 0-511
 //|     :param int y: y-coordinate in pixels. Range 0-511
 //|     :param int handle: bitmap handle. Range 0-31
@@ -954,7 +954,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(vertex2ii_obj, 3, 5, _vertex2ii);
 
 // Hand-written functions {
 
-//| def Vertex2f(self, b: Any) -> Any:
+//| def Vertex2f(self, b: float) -> None:
 //|     """Draw a point.
 //|
 //|     :param float x: pixel x-coordinate
@@ -973,7 +973,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(vertex2f_obj, _vertex2f);
 #define ADD_X(self, x) \
     common_hal__eve_add(EVEHAL(self), sizeof(x), &(x));
 
-//| def cmd0(self, n: int) -> Any:
+//| def cmd0(self, n: int) -> None:
 //|     """Append the command word n to the FIFO
 //|
 //|     :param int n: The command code
@@ -990,7 +990,7 @@ STATIC mp_obj_t _cmd0(mp_obj_t self, mp_obj_t n) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cmd0_obj, _cmd0);
 
-//| def cmd(self, n: int, fmt: str, args: tuple) -> Any:
+//| def cmd(self, n: int, fmt: str, args: tuple) -> None:
 //|     """Append a command packet to the FIFO.
 //|
 //|     :param int n: The command code

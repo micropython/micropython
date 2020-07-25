@@ -64,6 +64,10 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_MEMORYMONITOR
+#include "shared-module/memorymonitor/__init__.h"
+#endif
+
 #if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
 #endif
@@ -97,6 +101,10 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     }
 }
 
+#if MICROPY_ENABLE_PYSTACK
+static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
+#endif
+
 void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
@@ -124,6 +132,10 @@ void start_mp(supervisor_allocation* heap) {
 
     // Clear the readline history. It references the heap we're about to destroy.
     readline_init0();
+
+    #if MICROPY_ENABLE_PYSTACK
+    mp_pystack_init(_pystack, _pystack + (sizeof(_pystack) / sizeof(size_t)));
+    #endif
 
     #if MICROPY_ENABLE_GC
     gc_init(heap->ptr, heap->ptr + heap->length / 4);
@@ -197,6 +209,9 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     // Turn off the display and flush the fileystem before the heap disappears.
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
+    #endif
+    #if CIRCUITPY_MEMORYMONITOR
+    memorymonitor_reset();
     #endif
     filesystem_flush();
     stop_mp();
@@ -315,6 +330,8 @@ bool run_code_py(safe_mode_t safe_mode) {
         tick_rgb_status_animation(&animation);
     }
 }
+
+FIL* boot_output_file;
 
 void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a

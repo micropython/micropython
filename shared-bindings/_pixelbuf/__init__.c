@@ -41,7 +41,7 @@
 //| Byteorders are configured with strings, such as "RGB" or "RGBD"."""
 // TODO: Pull in docs from pypixelbuf.
 
-//| def colorwheel(n: int) -> Any:
+//| def colorwheel(n: int) -> int:
 //|     """C implementation of the common wheel() function found in many examples.
 //|     Returns the colorwheel RGB value as an integer value for n (usable in :py:class:`PixelBuf`, neopixel, and dotstar)."""
 //|     ...

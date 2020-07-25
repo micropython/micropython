@@ -37,7 +37,7 @@
 //| .. warning:: The board module varies by board. The APIs documented here may or may not be
 //|              available on a specific board."""
 
-//| def I2C() -> Any:
+//| def I2C() -> busio.I2C:
 //|     """Returns the `busio.I2C` object for the board designated SDA and SCL pins. It is a singleton."""
 //|     ...
 //|
@@ -61,7 +61,7 @@ mp_obj_t board_i2c(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 
 
-//| def SPI() -> Any:
+//| def SPI() -> busio.SPI:
 //|     """Returns the `busio.SPI` object for the board designated SCK, MOSI and MISO pins. It is a
 //|     singleton."""
 //|     ...
@@ -85,7 +85,7 @@ mp_obj_t board_spi(void) {
 #endif
 MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
 
-//| def UART() -> Any:
+//| def UART() -> busio.UART:
 //|     """Returns the `busio.UART` object for the board designated TX and RX pins. It is a singleton.
 //|
 //|     The object created uses the default parameter values for `busio.UART`. If you need to set
