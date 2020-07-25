@@ -56,7 +56,7 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def play(self, sample: Union[audiocore.WaveFile, Mixer, audiocore.RawSample], *, loop: bool = False) -> None:
+//|     def play(self, sample: audiocore._AudioSample, *, loop: bool = False) -> None:
 //|         """Plays the sample once when ``loop=False``, and continuously when ``loop=True``.
 //|         Does not block. Use `playing` to block.
 //|
@@ -100,7 +100,7 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_stop(size_t n_args, const mp_obj_t *po
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_stop_obj, 1, audiomixer_mixervoice_obj_stop);
 
-//|     level: float = ...
+//|     level: float
 //|     """The volume level of a voice, as a floating point number between 0 and 1."""
 //|
 STATIC mp_obj_t audiomixer_mixervoice_obj_get_level(mp_obj_t self_in) {
@@ -136,7 +136,7 @@ const mp_obj_property_t audiomixer_mixervoice_level_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     playing: bool = ...
+//|     playing: bool
 //|     """True when this voice is being output. (read-only)"""
 //|
 

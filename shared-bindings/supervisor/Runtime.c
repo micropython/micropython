@@ -45,7 +45,7 @@
 //|         ...
 //|
 
-//|     serial_connected: bool = ...
+//|     serial_connected: bool
 //|     """Returns the USB serial communication status (read-only).
 //|
 //|     .. note::
@@ -73,7 +73,7 @@ const mp_obj_property_t supervisor_serial_connected_obj = {
 };
 
 
-//|     serial_bytes_available: int = ...
+//|     serial_bytes_available: int
 //|     """Returns the whether any bytes are available to read
 //|     on the USB serial input.  Allows for polling to see whether
 //|     to call the built-in input() or wait. (read-only)"""

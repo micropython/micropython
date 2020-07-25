@@ -89,7 +89,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_deinit_obj, watchdog_watchdogtimer_deinit);
 
-//|     timeout: float = ...
+//|     timeout: float
 //|     """The maximum number of seconds that can elapse between calls
 //|     to feed()"""
 //|
@@ -119,7 +119,7 @@ const mp_obj_property_t watchdog_watchdogtimer_timeout_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     mode: WatchDogMode = ...
+//|     mode: WatchDogMode
 //|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode`.
 //|
 //|     Setting a WatchDogMode activates the WatchDog::

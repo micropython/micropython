@@ -50,7 +50,7 @@
 //|   pixel_off = bytearray([0, 0, 0])
 //|   neopixel_write.neopixel_write(pin, pixel_off)"""
 //|
-//| def neopixel_write(digitalinout: digitalio.DigitalInOut, buf: bytearray) -> None:
+//| def neopixel_write(digitalinout: digitalio.DigitalInOut, buf: ReadableBuffer) -> None:
 //|     """Write buf out on the given DigitalInOut.
 //|
 //|     :param digitalinout: the DigitalInOut to output with

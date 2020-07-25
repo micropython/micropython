@@ -160,7 +160,7 @@ STATIC mp_obj_t sdioio_sdcard_count(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_count_obj, sdioio_sdcard_count);
 
-//|     def readblocks(self, start_block: int, buf: bytearray) -> None:
+//|     def readblocks(self, start_block: int, buf: WriteableBuffer) -> None:
 //|
 //|         """Read one or more blocks from the card
 //|
@@ -182,7 +182,7 @@ mp_obj_t sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_
 
 MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks);
 
-//|     def writeblocks(self, start_block: int, buf: bytearray) -> None:
+//|     def writeblocks(self, start_block: int, buf: WriteableBuffer) -> None:
 //|
 //|         """Write one or more blocks to the card
 //|
@@ -194,7 +194,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks
 mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     sdioio_sdcard_obj_t *self = (sdioio_sdcard_obj_t*)self_in;
     int result = common_hal_sdioio_sdcard_writeblocks(self, start_block, &bufinfo);
     if (result < 0) {

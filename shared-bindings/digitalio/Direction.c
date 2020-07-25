@@ -46,10 +46,10 @@
 //|         going."""
 //|         ...
 //|
-//|     INPUT: Direction = ...
+//|     INPUT: Direction
 //|     """Read digital data in"""
 //|
-//|     OUTPUT: Direction = ...
+//|     OUTPUT: Direction
 //|     """Write digital data out"""
 //|
 const mp_obj_type_t digitalio_direction_type;

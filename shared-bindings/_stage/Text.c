@@ -33,7 +33,7 @@
 //| class Text:
 //|     """Keep information about a single grid of text"""
 //|
-//|     def __init__(self, width: int, height: int, font: bytearray, palette: bytearray, chars: bytearray) -> None:
+//|     def __init__(self, width: int, height: int, font: ReadableBuffer, palette: ReadableBuffer, chars: ReadableBuffer) -> None:
 //|         """Keep internal information about a grid of text
 //|         in a format suitable for fast rendering
 //|         with the ``render()`` function.

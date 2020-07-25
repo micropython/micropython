@@ -31,10 +31,10 @@
 //|                 print("Longitude: {0:.6f} degrees".format(nav.longitude))"""
 //|
 
-//|     def __init__(self) -> None:
+//|     def __init__(self, system: Union[SatelliteSystem, List[SatelliteSystem]]) -> None:
 //|         """Turn on the GNSS.
 //|
-//|         :param gnss.SatelliteSystem system: satellite system to use"""
+//|         :param system: satellite system to use"""
 //|         ...
 //|
 STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -98,7 +98,7 @@ STATIC mp_obj_t gnss_obj_update(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_update_obj, gnss_obj_update);
 
-//|     latitude: float = ...
+//|     latitude: float
 //|     """Latitude of current position in degrees (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_latitude(mp_obj_t self_in) {
@@ -115,7 +115,7 @@ const mp_obj_property_t gnss_latitude_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     longitude: float = ...
+//|     longitude: float
 //|     """Longitude of current position in degrees (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_longitude(mp_obj_t self_in) {
@@ -132,7 +132,7 @@ const mp_obj_property_t gnss_longitude_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     altitude: float = ...
+//|     altitude: float
 //|     """Altitude of current position in meters (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_altitude(mp_obj_t self_in) {
@@ -149,7 +149,7 @@ const mp_obj_property_t gnss_altitude_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     timestamp: time.struct_time = ...
+//|     timestamp: time.struct_time
 //|     """Time when the position data was updated."""
 //|
 STATIC mp_obj_t gnss_obj_get_timestamp(mp_obj_t self_in) {
@@ -168,7 +168,7 @@ const mp_obj_property_t gnss_timestamp_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     fix: PositionFix = ...
+//|     fix: PositionFix
 //|     """Fix mode."""
 //|
 STATIC mp_obj_t gnss_obj_get_fix(mp_obj_t self_in) {

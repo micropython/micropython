@@ -141,7 +141,7 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_characteristic_add_to_service_obj, 
 
 
 
-//|     properties: int = ...
+//|     properties: int
 //|     """An int bitmask representing which properties are set, specified as bitwise or'ing of
 //|     of these possible values.
 //|     `BROADCAST`, `INDICATE`, `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`."""
@@ -160,7 +160,7 @@ const mp_obj_property_t bleio_characteristic_properties_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     uuid: Optional[UUID] = ...
+//|     uuid: Optional[UUID]
 //|     """The UUID of this characteristic. (read-only)
 //|
 //|     Will be ``None`` if the 128-bit UUID for this characteristic is not known."""
@@ -180,7 +180,7 @@ const mp_obj_property_t bleio_characteristic_uuid_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     value: bytearray = ...
+//|     value: bytearray
 //|     """The value of this characteristic."""
 //|
 STATIC mp_obj_t bleio_characteristic_get_value(mp_obj_t self_in) {
@@ -211,7 +211,7 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     descriptors: Descriptor = ...
+//|     descriptors: Descriptor
 //|     """A tuple of :py:class:`Descriptor` that describe this characteristic. (read-only)"""
 //|
 STATIC mp_obj_t bleio_characteristic_get_descriptors(mp_obj_t self_in) {
@@ -241,7 +241,7 @@ const mp_obj_property_t bleio_characteristic_descriptors_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     service: Service = ...
+//|     service: Service
 //|     """The Service this Characteristic is a part of."""
 //|
 STATIC mp_obj_t bleio_characteristic_get_service(mp_obj_t self_in) {
@@ -258,7 +258,7 @@ const mp_obj_property_t bleio_characteristic_service_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     def set_cccd(self, *, notify: bool = False, indicate: float = False) -> None:
+//|     def set_cccd(self, *, notify: bool = False, indicate: bool = False) -> None:
 //|         """Set the remote characteristic's CCCD to enable or disable notification and indication.
 //|
 //|         :param bool notify: True if Characteristic should receive notifications of remote writes
@@ -291,22 +291,22 @@ STATIC const mp_rom_map_elem_t bleio_characteristic_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_cccd),       MP_ROM_PTR(&bleio_characteristic_set_cccd_obj) },
 
     // Bitmask constants to represent properties
-//|     BROADCAST: int = ...
+//|     BROADCAST: int
 //|     """property: allowed in advertising packets"""
 //|
-//|     INDICATE: int = ...
+//|     INDICATE: int
 //|     """property: server will indicate to the client when the value is set and wait for a response"""
 //|
-//|     NOTIFY: int = ...
+//|     NOTIFY: int
 //|     """property: server will notify the client when the value is set"""
 //|
-//|     READ: int = ...
+//|     READ: int
 //|     """property: clients may read this characteristic"""
 //|
-//|     WRITE: int = ...
+//|     WRITE: int
 //|     """property: clients may write this characteristic; a response will be sent back"""
 //|
-//|     WRITE_NO_RESPONSE: int = ...
+//|     WRITE_NO_RESPONSE: int
 //|     """property: clients may write this characteristic; no response will be sent back"""
 //|
     { MP_ROM_QSTR(MP_QSTR_BROADCAST),         MP_ROM_INT(CHAR_PROP_BROADCAST) },

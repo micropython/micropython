@@ -39,7 +39,7 @@
 //| """Supervisor settings"""
 //|
 
-//| runtime: Runtime = ...
+//| runtime: Runtime
 //| """Runtime information, such as ``runtime.serial_connected``
 //| (USB serial connection status).
 //| This object is the sole instance of `supervisor.Runtime`."""

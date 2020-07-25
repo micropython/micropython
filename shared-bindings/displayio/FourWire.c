@@ -42,7 +42,7 @@
 //|     """Manage updating a display over SPI four wire protocol in the background while Python code runs.
 //|     It doesn't handle display initialization."""
 //|
-//|     def __init__(self, spi_bus: busio.SPI, *, command: microcontroller.Pin, chip_select: microcontroller.Pin, reset: microcontroller.Pin = None, baudrate: int = 24000000, polarity: int = 0, phase: int = 0) -> None:
+//|     def __init__(self, spi_bus: busio.SPI, *, command: microcontroller.Pin, chip_select: microcontroller.Pin, reset: Optional[microcontroller.Pin] = None, baudrate: int = 24000000, polarity: int = 0, phase: int = 0) -> None:
 //|         """Create a FourWire object associated with the given pins.
 //|
 //|         The SPI bus and pins are then in use by the display until `displayio.release_displays()` is

@@ -116,7 +116,7 @@ STATIC mp_obj_t rotaryio_incrementalencoder_obj___exit__(size_t n_args, const mp
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rotaryio_incrementalencoder___exit___obj, 4, 4, rotaryio_incrementalencoder_obj___exit__);
 
 
-//|     position: int = ...
+//|     position: int
 //|     """The current position in terms of pulses. The number of pulses per rotation is defined by the
 //|     specific hardware."""
 //|

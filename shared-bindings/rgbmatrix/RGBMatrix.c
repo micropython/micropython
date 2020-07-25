@@ -257,7 +257,7 @@ static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
     }
 }
 
-//|     brightness: float = ...
+//|     brightness: float
 //|     """In the current implementation, 0.0 turns the display off entirely
 //|     and any other value up to 1.0 turns the display on fully."""
 //|
@@ -301,7 +301,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_refresh_obj, rgbmatrix_rgbmatrix_refresh);
 
-//|     width: int = ...
+//|     width: int
 //|     """The width of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
@@ -317,7 +317,7 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: int = ...
+//|     height: int
 //|     """The height of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {

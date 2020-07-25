@@ -71,7 +71,7 @@
 //|         ...
 //|
 
-//|     enabled: bool = ...
+//|     enabled: bool
 //|     """State of the BLE adapter."""
 //|
 STATIC mp_obj_t bleio_adapter_get_enabled(mp_obj_t self) {
@@ -95,7 +95,7 @@ const mp_obj_property_t bleio_adapter_enabled_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     address: Address = ...
+//|     address: Address
 //|     """MAC address of the BLE adapter. (read-only)"""
 //|
 STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
@@ -111,7 +111,7 @@ const mp_obj_property_t bleio_adapter_address_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     name: str = ...
+//|     name: str
 //|     """name of the BLE adapter used once connected.
 //|     The name is "CIRCUITPY" + the last four hex digits of ``adapter.address``,
 //|     to make it easy to distinguish multiple CircuitPython boards."""
@@ -215,7 +215,7 @@ STATIC mp_obj_t bleio_adapter_stop_advertising(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_advertising_obj, bleio_adapter_stop_advertising);
 
-//|     def start_scan(self, prefixes: ReadableBuffer = b"", *, buffer_size: int = 512, extended: bool = False, timeout: float = None, interval: float = 0.1, window: float = 0.1, minimum_rssi: int = -80, active: bool = True) -> Iterable[ScanEntry]:
+//|     def start_scan(self, prefixes: ReadableBuffer = b"", *, buffer_size: int = 512, extended: bool = False, timeout: Optional[float] = None, interval: float = 0.1, window: float = 0.1, minimum_rssi: int = -80, active: bool = True) -> Iterable[ScanEntry]:
 //|         """Starts a BLE scan and returns an iterator of results. Advertisements and scan responses are
 //|         filtered and returned separately.
 //|
@@ -301,7 +301,7 @@ STATIC mp_obj_t bleio_adapter_stop_scan(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_scan_obj, bleio_adapter_stop_scan);
 
-//|     advertising: bool = ...
+//|     advertising: bool
 //|     """True when the adapter is currently advertising. (read-only)"""
 //|
 STATIC mp_obj_t bleio_adapter_get_advertising(mp_obj_t self) {
@@ -317,7 +317,7 @@ const mp_obj_property_t bleio_adapter_advertising_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     connected: bool = ...
+//|     connected: bool
 //|     """True when the adapter is connected to another device regardless of who initiated the
 //|     connection. (read-only)"""
 //|
@@ -334,7 +334,7 @@ const mp_obj_property_t bleio_adapter_connected_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     connections: tuple = ...
+//|     connections: tuple
 //|     """Tuple of active connections including those initiated through
 //|     :py:meth:`_bleio.Adapter.connect`. (read-only)"""
 //|

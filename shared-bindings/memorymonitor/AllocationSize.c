@@ -95,7 +95,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_obj___exit__(size_t n_args, const m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(memorymonitor_allocationsize___exit___obj, 4, 4, memorymonitor_allocationsize_obj___exit__);
 
-//|     bytes_per_block: int = ...
+//|     bytes_per_block: int
 //|     """Number of bytes per block"""
 //|
 STATIC mp_obj_t memorymonitor_allocationsize_obj_get_bytes_per_block(mp_obj_t self_in) {

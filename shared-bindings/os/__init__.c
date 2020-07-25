@@ -149,7 +149,7 @@ mp_obj_t os_stat(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
-//| def statvfs(path: str) -> Tuple[str, str, str, str, str, str, str, str, str, str]:
+//| def statvfs(path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|     """Get the status of a fileystem.
 //|
 //|     Returns a tuple with the filesystem information in the following order:

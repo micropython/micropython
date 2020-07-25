@@ -86,7 +86,7 @@ STATIC mp_obj_t countio_counter_obj___exit__(size_t n_args, const mp_obj_t *args
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(countio_counter___exit___obj, 4, 4, countio_counter_obj___exit__);
 
 
-//|     count: int = ...
+//|     count: int
 //|     """The current count in terms of pulses."""
 //|
 STATIC mp_obj_t countio_counter_obj_get_count(mp_obj_t self_in) {

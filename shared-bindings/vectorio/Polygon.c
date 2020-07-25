@@ -42,7 +42,7 @@ static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_ar
 }
 
 
-//|     points: List[Tuple[int, int]] = ...
+//|     points: List[Tuple[int, int]]
 //|     """Set a new look and shape for this polygon"""
 //|
 STATIC mp_obj_t vectorio_polygon_obj_get_points(mp_obj_t self_in) {

@@ -110,7 +110,7 @@ STATIC mp_obj_t pulseio_pulseout_obj___exit__(size_t n_args, const mp_obj_t *arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulseout___exit___obj, 4, 4, pulseio_pulseout_obj___exit__);
 
-//|     def send(self, pulses: array.array) -> None:
+//|     def send(self, pulses: ReadableBuffer) -> None:
 //|         """Pulse alternating on and off durations in microseconds starting with on.
 //|         ``pulses`` must be an `array.array` with data type 'H' for unsigned
 //|         halfword (two bytes).

@@ -39,7 +39,7 @@
 //|     def __init__(self) -> None:
 //|         """Identifies an IO pin on the microcontroller. They are fixed by the
 //|         hardware so they cannot be constructed on demand. Instead, use
-//|         `board` or `microcontroller.pin` to reference the desired pin."""
+//|         :mod:`board` or :mod:`microcontroller.pin` to reference the desired pin."""
 //|         ...
 //|
 

@@ -47,7 +47,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //| class PixelBuf:
 //|     """A fast RGB[W] pixel buffer for LED and similar devices."""
 //|
-//|     def __init__(self, size: int, *, byteorder: str = "BGR", brightness: float = 0, auto_write: bool = False, header: bytes = b"", trailer: bytes = b"") -> None:
+//|     def __init__(self, size: int, *, byteorder: str = "BGR", brightness: float = 0, auto_write: bool = False, header: ReadableBuffer = b"", trailer: ReadableBuffer = b"") -> None:
 //|         """Create a PixelBuf object of the specified size, byteorder, and bits per pixel.
 //|
 //|         When brightness is less than 1.0, a second buffer will be used to store the color values
@@ -152,7 +152,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
     }
 }
 
-//|     bpp: int = ...
+//|     bpp: int
 //|     """The number of bytes per pixel in the buffer (read-only)"""
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_bpp(mp_obj_t self_in) {
@@ -168,7 +168,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_bpp_obj = {
 };
 
 
-//|     brightness: float = ...
+//|     brightness: float
 //|     """Float value between 0 and 1.  Output brightness.
 //|
 //|     When brightness is less than 1.0, a second buffer will be used to store the color values
@@ -199,7 +199,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     auto_write: bool = ...
+//|     auto_write: bool
 //|     """Whether to automatically write the pixels after each update."""
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_auto_write(mp_obj_t self_in) {
@@ -221,7 +221,7 @@ const mp_obj_property_t pixelbuf_pixelbuf_auto_write_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     byteorder: str = ...
+//|     byteorder: str
 //|     """byteorder string for the buffer (read-only)"""
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_get_byteorder(mp_obj_t self_in) {

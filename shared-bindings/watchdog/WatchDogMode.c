@@ -32,12 +32,12 @@
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define the run mode of the watchdog timer."""
 //|
-//|     RAISE: WatchDogMode = ...
+//|     RAISE: WatchDogMode
 //|     """Raise an exception when the WatchDogTimer expires.
 //|
 //|     :type WatchDogMode:"""
 //|
-//|     RESET: WatchDogMode = ...
+//|     RESET: WatchDogMode
 //|     """Reset the system if the WatchDogTimer expires.
 //|
 //|     :type WatchDogMode:"""

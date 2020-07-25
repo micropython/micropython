@@ -12,7 +12,7 @@
 //| class AES:
 //|     """Encrypt and decrypt AES streams"""
 //|
-//|     def __init__(self, key: Optional[ReadableBuffer], mode: int = 0, iv: ReadableBuffer = None, segment_size: int = 8) -> None:
+//|     def __init__(self, key: ReadableBuffer, mode: int = 0, iv: Optional[ReadableBuffer] = None, segment_size: int = 8) -> None:
 //|         """Create a new AES state with the given key.
 //|
 //|            :param bytearray key: A 16-, 24-, or 32-byte key

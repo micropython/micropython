@@ -46,7 +46,7 @@ STATIC mp_obj_t multiterminal_obj_get_secondary_terminal() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(multiterminal_get_secondary_terminal_obj, multiterminal_obj_get_secondary_terminal);
 
-//| def set_secondary_terminal(stream: Optional[typing.BinaryIO]) -> None:
+//| def set_secondary_terminal(stream: typing.BinaryIO) -> None:
 //|     """Read additional input from the given stream and write out back to it.
 //|     This doesn't replace the core stream (usually UART or native USB) but is
 //|     mixed in instead.

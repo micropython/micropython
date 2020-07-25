@@ -10,13 +10,13 @@
 //|     def __init__(self) -> None:
 //|         """Enum-like class to define the position fix mode."""
 //|
-//|     INVALID: PositionFix = ...
+//|     INVALID: PositionFix
 //|     """No measurement."""
 //|
-//|     FIX_2D: PositionFix = ...
+//|     FIX_2D: PositionFix
 //|     """2D fix."""
 //|
-//|     FIX_3D: PositionFix = ...
+//|     FIX_3D: PositionFix
 //|     """3D fix."""
 //|
 const mp_obj_type_t gnss_positionfix_type;

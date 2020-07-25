@@ -196,7 +196,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_popleft(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_popleft_obj, pulseio_pulsein_obj_popleft);
 
-//|     maxlen: int = ...
+//|     maxlen: int
 //|     """The maximum length of the PulseIn. When len() is equal to maxlen,
 //|     it is unclear which pulses are active and which are idle."""
 //|
@@ -215,7 +215,7 @@ const mp_obj_property_t pulseio_pulsein_maxlen_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     paused: bool = ...
+//|     paused: bool
 //|     """True when pulse capture is paused as a result of :py:func:`pause` or an error during capture
 //|     such as a signal that is too fast."""
 //|
