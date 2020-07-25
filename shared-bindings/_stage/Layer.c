@@ -33,7 +33,7 @@
 //| class Layer:
 //|     """Keep information about a single layer of graphics"""
 //|
-//|     def __init__(self, width: int, height: int, graphic: bytearray, palette: bytearray, grid: bytearray):
+//|     def __init__(self, width: int, height: int, graphic: bytearray, palette: bytearray, grid: bytearray) -> None:
 //|         """Keep internal information about a layer of graphics (either a
 //|         ``Grid`` or a ``Sprite``) in a format suitable for fast rendering
 //|         with the ``render()`` function.
@@ -88,7 +88,7 @@ STATIC mp_obj_t layer_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def move(self, x: Any, y: Any) -> Any:
+//|     def move(self, x: int, y: int) -> None:
 //|         """Set the offset of the layer to the specified values."""
 //|         ...
 //|
@@ -100,7 +100,7 @@ STATIC mp_obj_t layer_move(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(layer_move_obj, layer_move);
 
-//|     def frame(self, frame: Any, rotation: Any) -> Any:
+//|     def frame(self, frame: int, rotation: int) -> None:
 //|         """Set the animation frame of the sprite, and optionally rotation its
 //|         graphic."""
 //|         ...

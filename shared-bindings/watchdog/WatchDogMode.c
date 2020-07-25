@@ -29,15 +29,15 @@
 //| class WatchDogMode:
 //|     """run state of the watchdog timer"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Enum-like class to define the run mode of the watchdog timer."""
 //|
-//|     RAISE: Any = ...
+//|     RAISE: watchdog.WatchDogMode = ...
 //|     """Raise an exception when the WatchDogTimer expires.
 //|
 //|     :type watchdog.WatchDogMode:"""
 //|
-//|     RESET: Any = ...
+//|     RESET: watchdog.WatchDogMode = ...
 //|     """Reset the system if the WatchDogTimer expires.
 //|
 //|     :type watchdog.WatchDogMode:"""

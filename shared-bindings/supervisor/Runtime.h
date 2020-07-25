@@ -31,7 +31,7 @@
 #include "py/obj.h"
 
 
-const mp_obj_type_t supervisor_runtime_type;
+extern const mp_obj_type_t supervisor_runtime_type;
 
 bool common_hal_get_serial_connected(void);
 

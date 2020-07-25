@@ -84,10 +84,15 @@ msgstr "%q indexen moeten integers zijn, niet %s"
 msgid "%q list must be a list"
 msgstr "%q lijst moet een lijst zijn"
 
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+msgid "%q must be >= 0"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
-#: shared-bindings/vectorio/Rectangle.c
+#: shared-bindings/displayio/Shape.c
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q moet >= 1 zijn"
 
@@ -325,6 +330,11 @@ msgstr "Alle timers zijn in gebruik"
 msgid "Already advertising."
 msgstr "Advertising is al bezig."
 
+#: shared-module/memorymonitor/AllocationAlarm.c
+#: shared-module/memorymonitor/AllocationSize.c
+msgid "Already running"
+msgstr ""
+
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
 msgstr "AnalogIn niet ondersteund door gegeven pin"
@@ -359,6 +369,11 @@ msgstr "Array waardes moet enkele bytes zijn."
 #: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
 msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#, c-format
+msgid "Attempt to allocate %d blocks"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -481,7 +496,9 @@ msgstr "Roep super().__init__() aan voor toegang native object."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Kan CCCD niet toewijzen aan lokaal Characteristic"
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr "Kan waardes niet verwijderen"
 
@@ -1385,6 +1402,7 @@ msgstr "RTS/CTS/RS485 Nog niet ondersteund door dit apparaat"
 msgid "Random number generation error"
 msgstr "Random number generatie fout"
 
+#: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
 msgstr "Alleen-lezen"
@@ -1469,7 +1487,9 @@ msgid "Slice and value different lengths."
 msgstr "Slice en waarde hebben verschillende lengtes."
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Slices niet ondersteund"
 

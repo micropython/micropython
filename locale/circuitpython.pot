@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-17 18:03-0700\n"
+"POT-Creation-Date: 2020-07-21 18:43-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -78,10 +78,15 @@ msgstr ""
 msgid "%q list must be a list"
 msgstr ""
 
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+msgid "%q must be >= 0"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
-#: shared-bindings/vectorio/Rectangle.c
+#: shared-bindings/displayio/Shape.c
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr ""
 
@@ -229,6 +234,10 @@ msgstr ""
 msgid "'continue' outside loop"
 msgstr ""
 
+#: py/objgenerator.c
+msgid "'coroutine' object is not an iterator"
+msgstr ""
+
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr ""
@@ -311,12 +320,17 @@ msgstr ""
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c
+#: ports/stm/peripherals/timers.c shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
+msgstr ""
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#: shared-module/memorymonitor/AllocationSize.c
+msgid "Already running"
 msgstr ""
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -352,6 +366,11 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
+msgstr ""
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#, c-format
+msgid "Attempt to allocate %d blocks"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -473,7 +492,9 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr ""
 
@@ -1315,11 +1336,7 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "PulseIn not supported on this chip"
-msgstr ""
-
-#: ports/stm/common-hal/pulseio/PulseOut.c
+#: ports/stm/ref/pulseout-pre-timeralloc.c
 msgid "PulseOut not supported on this chip"
 msgstr ""
 
@@ -1353,6 +1370,7 @@ msgstr ""
 msgid "Random number generation error"
 msgstr ""
 
+#: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
 msgstr ""
@@ -1437,7 +1455,9 @@ msgid "Slice and value different lengths."
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr ""
 
@@ -1523,6 +1543,11 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
+msgstr ""
+
+#: ports/stm/common-hal/pulseio/PWMOut.c
+msgid ""
+"Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c

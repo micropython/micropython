@@ -275,7 +275,7 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) build-$(BOARD)/esp-idf/esp-idf/newlib/libnewlib.a -u newlib_include_pthread_impl
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) build-$(BOARD)/esp-idf/esp-idf/newlib/libnewlib.a -u newlib_include_pthread_impl -Wl,--start-group $(LIBS) -Wl,--end-group
 	# $(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld
 
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf

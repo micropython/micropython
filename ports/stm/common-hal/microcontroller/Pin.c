@@ -89,6 +89,8 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
 
 void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
     never_reset_pins[pin_port] |= 1<<pin_number;
+    // Make sure never reset pins are also always claimed
+    claimed_pins[pin_port] |= 1<<pin_number;
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
@@ -99,15 +101,9 @@ void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
     reset_pin_number(pin->port, pin->number);
 }
 
-void claim_pin(const mcu_pin_obj_t* pin) {
+void claim_pin(uint8_t pin_port, uint8_t pin_number) {
     // Set bit in claimed_pins bitmask.
-    claimed_pins[pin->port] |= 1<<pin->number;
-
-    #ifdef MICROPY_HW_NEOPIXEL
-    if (pin == MICROPY_HW_NEOPIXEL) {
-        neopixel_in_use = true;
-    }
-    #endif
+    claimed_pins[pin_port] |= 1<<pin_number;
 }
 
 bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
@@ -137,7 +133,12 @@ uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t* pin) {
 }
 
 void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
-    claim_pin(pin);
+    claim_pin(pin->port, pin->number);
+    #ifdef MICROPY_HW_NEOPIXEL
+    if (pin == MICROPY_HW_NEOPIXEL) {
+        neopixel_in_use = true;
+    }
+    #endif
 }
 
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {

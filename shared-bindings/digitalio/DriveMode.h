@@ -38,7 +38,7 @@ typedef struct {
     mp_obj_base_t base;
 } digitalio_drive_mode_obj_t;
 
-const mp_obj_type_t digitalio_drive_mode_type;
+extern const mp_obj_type_t digitalio_drive_mode_type;
 
 extern const digitalio_drive_mode_obj_t digitalio_drive_mode_push_pull_obj;
 extern const digitalio_drive_mode_obj_t digitalio_drive_mode_open_drain_obj;

@@ -11,7 +11,7 @@
 
 //| class Circle:
 //|
-//|     def __init__(self, radius: int):
+//|     def __init__(self, radius: int) -> None:
 //|         """Circle is positioned on screen by its center point.
 //|
 //|            :param radius: The radius of the circle in pixels"""
