@@ -54,8 +54,8 @@ for board in build_boards:
             build_dir += "-{language}".format(language=language)
 
         make_result = subprocess.run(
-            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} BUILD={build}".format(
-                port = board_info["port"], language=language, board=board, build=build_dir),
+            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} BUILD={build} -j {cores}".format(
+                port = board_info["port"], language=language, board=board, build=build_dir, cores=cores),
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         build_duration = time.monotonic() - start_time
