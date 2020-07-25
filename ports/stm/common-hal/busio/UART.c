@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/UART.h"
 
 #include "mpconfigport.h"
@@ -224,10 +225,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 mp_raise_ValueError(translate("UART Buffer allocation error"));
             }
         }
-        claim_pin(rx);
+        common_hal_mcu_pin_claim(rx);
     }
     if (self->tx != NULL) {
-        claim_pin(tx);
+        common_hal_mcu_pin_claim(tx);
     }
     self->baudrate = baudrate;
     self->timeout_ms = timeout * 1000;

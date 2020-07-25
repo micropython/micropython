@@ -64,6 +64,10 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_MEMORYMONITOR
+#include "shared-module/memorymonitor/__init__.h"
+#endif
+
 #if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
 #endif
@@ -206,6 +210,9 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
     #endif
+    #if CIRCUITPY_MEMORYMONITOR
+    memorymonitor_reset();
+    #endif
     filesystem_flush();
     stop_mp();
     free_memory(heap);
@@ -323,6 +330,8 @@ bool run_code_py(safe_mode_t safe_mode) {
         tick_rgb_status_animation(&animation);
     }
 }
+
+FIL* boot_output_file;
 
 void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a

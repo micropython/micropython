@@ -8,7 +8,7 @@
 #include "supervisor/shared/translate.h"
 
 //| class Rectangle:
-//|     def __init__(self, width: int, height: int):
+//|     def __init__(self, width: int, height: int) -> None:
 //|         """Represents a rectangle by defining its bounds
 //|
 //|            :param width: The number of pixels wide

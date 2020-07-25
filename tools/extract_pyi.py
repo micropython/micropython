@@ -2,6 +2,10 @@
 #
 # SPDX-License-Identifier: MIT
 
+# Run with 'python tools/extract_pyi.py shared-bindings/ path/to/stub/dir
+# You can also test a specific library in shared-bindings by putting the path
+# to that directory instead
+
 import ast
 import os
 import re

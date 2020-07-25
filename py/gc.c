@@ -33,6 +33,10 @@
 
 #include "supervisor/shared/safe_mode.h"
 
+#if CIRCUITPY_MEMORYMONITOR
+#include "shared-module/memorymonitor/__init__.h"
+#endif
+
 #if MICROPY_ENABLE_GC
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -653,6 +657,10 @@ void *gc_alloc(size_t n_bytes, bool has_finaliser, bool long_lived) {
     gc_dump_alloc_table();
     #endif
 
+    #if CIRCUITPY_MEMORYMONITOR
+    memorymonitor_track_allocation(end_block - start_block + 1);
+    #endif
+
     return ret_ptr;
 }
 
@@ -906,6 +914,10 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         gc_log_change(block, new_blocks);
         #endif
 
+        #if CIRCUITPY_MEMORYMONITOR
+        memorymonitor_track_allocation(new_blocks);
+        #endif
+
         return ptr_in;
     }
 
@@ -933,6 +945,10 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 
         #ifdef LOG_HEAP_ACTIVITY
         gc_log_change(block, new_blocks);
+        #endif
+
+        #if CIRCUITPY_MEMORYMONITOR
+        memorymonitor_track_allocation(new_blocks);
         #endif
 
         return ptr_in;

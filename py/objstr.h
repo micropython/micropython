@@ -77,8 +77,8 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                              mp_obj_t index, bool is_slice);
 const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle, size_t nlen, int direction);
 
-const char nibble_to_hex_upper[16];
-const char nibble_to_hex_lower[16];
+extern const char nibble_to_hex_upper[16];
+extern const char nibble_to_hex_lower[16];
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj);

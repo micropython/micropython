@@ -20,7 +20,7 @@
 
 
 //| class VectorShape:
-//|     def __init__(self, shape: vectorio.Polygon, pixel_shader: displayio.Palette, x: int=0, y: int=0):
+//|     def __init__(self, shape: vectorio.Polygon, pixel_shader: displayio.Palette, x: int=0, y: int=0) -> None:
 //|         """Binds a vector shape to a location and pixel color
 //|
 //|            :param shape: The shape to draw.

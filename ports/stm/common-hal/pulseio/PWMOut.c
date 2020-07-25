@@ -33,39 +33,15 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include STM32_HAL_H
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
+
+#include "timers.h"
 
 #define ALL_CLOCKS 0xFFFF
 
 STATIC uint8_t reserved_tim[TIM_BANK_ARRAY_LEN];
 STATIC uint32_t tim_frequencies[TIM_BANK_ARRAY_LEN];
 STATIC bool never_reset_tim[TIM_BANK_ARRAY_LEN];
-
-STATIC void tim_clock_enable(uint16_t mask);
-STATIC void tim_clock_disable(uint16_t mask);
-
-// Get the frequency (in Hz) of the source clock for the given timer.
-// On STM32F405/407/415/417 there are 2 cases for how the clock freq is set.
-// If the APB prescaler is 1, then the timer clock is equal to its respective
-// APB clock.  Otherwise (APB prescaler > 1) the timer clock is twice its
-// respective APB clock.  See DM00031020 Rev 4, page 115.
-STATIC uint32_t timer_get_source_freq(uint32_t tim_id) {
-    uint32_t source, clk_div;
-    if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
-        // TIM{1,8,9,10,11} are on APB2
-        source = HAL_RCC_GetPCLK2Freq();
-        clk_div = RCC->CFGR & RCC_CFGR_PPRE2;
-    } else {
-        // TIM{2,3,4,5,6,7,12,13,14} are on APB1
-        source = HAL_RCC_GetPCLK1Freq();
-        clk_div = RCC->CFGR & RCC_CFGR_PPRE1;
-    }
-    if (clk_div != 0) {
-        // APB prescaler for this timer is > 1
-        source *= 2;
-    }
-    return source;
-}
 
 STATIC uint32_t timer_get_internal_duty(uint16_t duty, uint32_t period) {
     //duty cycle is duty/0xFFFF fraction x (number of pulses per period)
@@ -97,7 +73,6 @@ void pwmout_reset(void) {
             never_reset_mask |= 1 << i;
         }
     }
-    tim_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
 }
 
 pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
@@ -107,6 +82,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                                                     bool variable_frequency) {
     TIM_TypeDef * TIMx;
     uint8_t tim_num = MP_ARRAY_SIZE(mcu_tim_pin_list);
+    bool tim_taken_internal = false;
     bool tim_chan_taken = false;
     bool tim_taken_f_mismatch = false;
     bool var_freq_mismatch = false;
@@ -119,8 +95,13 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
         //if pin is same
         if (l_tim->pin == pin) {
-            //check if the timer has a channel active
+            //check if the timer has a channel active, or is reserved by main timer system
             if (reserved_tim[l_tim_index] != 0) {
+                // Timer has already been reserved by an internal module
+                if (stm_peripherals_timer_is_reserved(mcu_tim_banks[l_tim_index])) {
+                    tim_taken_internal = true;
+                    continue; //keep looking
+                }
                 //is it the same channel? (or all channels reserved by a var-freq)
                 if (reserved_tim[l_tim_index] & 1 << (l_tim_channel)) {
                     tim_chan_taken = true;
@@ -155,9 +136,12 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             reserved_tim[self->tim->tim_index - 1] |= 1 << (self->tim->channel_index - 1);
         }
         tim_frequencies[self->tim->tim_index - 1] = frequency;
+        stm_peripherals_timer_reserve(TIMx);
     } else { //no match found
         if (tim_chan_taken) {
             mp_raise_ValueError(translate("No more timers available on this pin."));
+        } else if (tim_taken_internal) {
+            mp_raise_ValueError(translate("Timer was reserved for internal use - declare PWM pins earlier in the program"));
         } else if (tim_taken_f_mismatch) {
             mp_raise_ValueError(translate("Frequency must match existing PWMOut using this timer"));
         } else if (var_freq_mismatch) {
@@ -182,8 +166,8 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     uint32_t prescaler = 0; //prescaler is 15 bit
     uint32_t period = 0; //period is 16 bit
-    timer_get_optimal_divisors(&period, &prescaler, frequency,
-                            timer_get_source_freq(self->tim->tim_index));
+    uint32_t source_freq = stm_peripherals_timer_get_source_freq(TIMx);
+    timer_get_optimal_divisors(&period, &prescaler, frequency, source_freq);
 
     //Timer init
     self->handle.Instance = TIMx;
@@ -260,7 +244,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     //if reserved timer has no active channels, we can disable it
     if (!reserved_tim[self->tim->tim_index - 1]) {
         tim_frequencies[self->tim->tim_index - 1] = 0x00;
-        tim_clock_disable(1 << (self->tim->tim_index - 1));
+        stm_peripherals_timer_free(self->handle.Instance);
     }
 }
 
@@ -282,8 +266,8 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
 
     uint32_t prescaler = 0;
     uint32_t period = 0;
-    timer_get_optimal_divisors(&period, &prescaler, frequency,
-                                timer_get_source_freq(self->tim->tim_index));
+    uint32_t source_freq = stm_peripherals_timer_get_source_freq(self->handle.Instance);
+    timer_get_optimal_divisors(&period, &prescaler, frequency, source_freq);
 
     //shut down
     HAL_TIM_PWM_Stop(&self->handle, self->channel);
@@ -317,132 +301,4 @@ uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
 
 bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self) {
     return self->variable_frequency;
-}
-
-STATIC void tim_clock_enable(uint16_t mask) {
-    #ifdef TIM1
-    if (mask & (1 << 0)) {
-        __HAL_RCC_TIM1_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM2
-    if (mask & (1 << 1)) {
-        __HAL_RCC_TIM2_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM3
-    if (mask & (1 << 2)) {
-        __HAL_RCC_TIM3_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM4
-    if (mask & (1 << 3)) {
-        __HAL_RCC_TIM4_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM5
-    if (mask & (1 << 4)) {
-        __HAL_RCC_TIM5_CLK_ENABLE();
-    }
-    #endif
-    //6 and 7 are reserved ADC timers
-    #ifdef TIM8
-    if (mask & (1 << 7)) {
-        __HAL_RCC_TIM8_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM9
-    if (mask & (1 << 8)) {
-        __HAL_RCC_TIM9_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM10
-    if (mask & (1 << 9)) {
-        __HAL_RCC_TIM10_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM11
-    if (mask & (1 << 10)) {
-        __HAL_RCC_TIM11_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM12
-    if (mask & (1 << 11)) {
-        __HAL_RCC_TIM12_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM13
-    if (mask & (1 << 12)) {
-        __HAL_RCC_TIM13_CLK_ENABLE();
-    }
-    #endif
-    #ifdef TIM14
-    if (mask & (1 << 13)) {
-        __HAL_RCC_TIM14_CLK_ENABLE();
-    }
-    #endif
-}
-
-STATIC void tim_clock_disable(uint16_t mask) {
-    #ifdef TIM1
-    if (mask & (1 << 0)) {
-        __HAL_RCC_TIM1_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM2
-    if (mask & (1 << 1)) {
-        __HAL_RCC_TIM2_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM3
-    if (mask & (1 << 2)) {
-        __HAL_RCC_TIM3_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM4
-    if (mask & (1 << 3)) {
-        __HAL_RCC_TIM4_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM5
-    if (mask & (1 << 4)) {
-        __HAL_RCC_TIM5_CLK_DISABLE();
-    }
-    #endif
-    //6 and 7 are reserved ADC timers
-    #ifdef TIM8
-    if (mask & (1 << 7)) {
-        __HAL_RCC_TIM8_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM9
-    if (mask & (1 << 8)) {
-        __HAL_RCC_TIM9_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM10
-    if (mask & (1 << 9)) {
-        __HAL_RCC_TIM10_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM11
-    if (mask & (1 << 10)) {
-        __HAL_RCC_TIM11_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM12
-    if (mask & (1 << 11)) {
-        __HAL_RCC_TIM12_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM13
-    if (mask & (1 << 12)) {
-        __HAL_RCC_TIM13_CLK_DISABLE();
-    }
-    #endif
-    #ifdef TIM14
-    if (mask & (1 << 13)) {
-        __HAL_RCC_TIM14_CLK_DISABLE();
-    }
-    #endif
 }

@@ -26,6 +26,7 @@
  */
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
@@ -46,7 +47,7 @@ void common_hal_digitalio_digitalinout_never_reset(
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(
         digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
 
-    claim_pin(pin);
+    common_hal_mcu_pin_claim(pin);
     self->pin = pin;
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};

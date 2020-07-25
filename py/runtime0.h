@@ -33,6 +33,7 @@
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
 #define MP_SCOPE_FLAG_GENERATOR    (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
+#define MP_SCOPE_FLAG_ASYNC        (0x10)
 
 // types for native (viper) function signature
 #define MP_NATIVE_TYPE_OBJ  (0x00)
