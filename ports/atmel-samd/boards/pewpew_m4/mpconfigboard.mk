@@ -46,3 +46,5 @@ CFLAGS_INLINE_LIMIT = 45
 else
 CFLAGS_INLINE_LIMIT = 70
 endif
+# Override optimization to keep binary small
+OPTIMIZATION_FLAGS = -Os

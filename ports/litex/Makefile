@@ -77,11 +77,16 @@ ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb
   # You may want to enable these flags to make setting breakpoints easier.
   CFLAGS += -fno-inline -fno-ipa-sra
+  OPTIMIZATION_FLAGS ?= -Og
 else
-  CFLAGS += -Os -DNDEBUG -ggdb3
+  CFLAGS += -DNDEBUG -ggdb3
+  OPTIMIZATION_FLAGS ?= -O2
   # TODO: Test with -flto
   ### CFLAGS += -flto
 endif
+
+# option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
