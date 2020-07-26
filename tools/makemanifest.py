@@ -25,6 +25,7 @@
 # THE SOFTWARE.
 
 from __future__ import print_function
+import errno
 import sys
 import os
 import subprocess
@@ -171,7 +172,7 @@ def mkdir(path):
         try:
             os.mkdir(cur_path)
         except OSError as er:
-            if er.args[0] == 17:  # file exists
+            if er.args[0] == errno.EEXIST:
                 pass
             else:
                 raise er
