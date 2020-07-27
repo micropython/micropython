@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-21 18:43-0700\n"
-"PO-Revision-Date: 2020-07-13 17:39+0000\n"
+"PO-Revision-Date: 2020-07-27 21:27+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -86,7 +86,7 @@ msgstr "%q lijst moet een lijst zijn"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q moet >= 0 zijn"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -118,7 +118,7 @@ msgstr "'%q' argument vereist"
 
 #: py/objarray.c
 msgid "'%q' object is not bytes-like"
-msgstr ""
+msgstr "'%q' object is niet bytes-achtig"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -242,7 +242,7 @@ msgstr "'continue' buiten de loop"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "'coroutine' object is geen iterator"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -337,7 +337,7 @@ msgstr "Advertising is al bezig."
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Wordt al uitgevoerd"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -377,7 +377,7 @@ msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Poging om %d blokken toe te wijzen"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -1589,6 +1589,8 @@ msgstr "Time-out is te lang. Maximale time-out lengte is %d seconden"
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+"Timer is gereserveerd voor intern gebruik - wijs PWM pins eerder in het "
+"programma toe"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
