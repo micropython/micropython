@@ -91,6 +91,10 @@
 //|         ...
 //|
 STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+#if !CIRCUITPY_AUDIOBUSIO_I2SOUT
+    mp_raise_NotImplementedError(translate("I2SOut not available"));
+    return NULL;                // Not reachable.
+#else
     enum { ARG_bit_clock, ARG_word_select, ARG_data, ARG_left_justified };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bit_clock, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -110,7 +114,10 @@ STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_a
     common_hal_audiobusio_i2sout_construct(self, bit_clock, word_select, data, args[ARG_left_justified].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
+#endif
 }
+
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
 
 //|     def deinit(self) -> None:
 //|         """Deinitialises the I2SOut and releases any hardware resources for reuse."""
@@ -120,6 +127,7 @@ STATIC mp_obj_t audiobusio_i2sout_deinit(mp_obj_t self_in) {
     audiobusio_i2sout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_audiobusio_i2sout_deinit(self);
     return mp_const_none;
+
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_deinit_obj, audiobusio_i2sout_deinit);
 
@@ -251,9 +259,11 @@ const mp_obj_property_t audiobusio_i2sout_paused_obj = {
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
+#endif // CIRCUITPY_AUDIOBUSIO_I2SOUT
 
 STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
     // Methods
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&audiobusio_i2sout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiobusio_i2sout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
@@ -266,6 +276,7 @@ STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
     // Properties
     { MP_ROM_QSTR(MP_QSTR_playing), MP_ROM_PTR(&audiobusio_i2sout_playing_obj) },
     { MP_ROM_QSTR(MP_QSTR_paused), MP_ROM_PTR(&audiobusio_i2sout_paused_obj) },
+#endif // CIRCUITPY_AUDIOBUSIO_I2SOUT
 };
 STATIC MP_DEFINE_CONST_DICT(audiobusio_i2sout_locals_dict, audiobusio_i2sout_locals_dict_table);
 

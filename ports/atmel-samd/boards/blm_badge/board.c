@@ -24,33 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+#include "boards/board.h"
+#include "supervisor/shared/board.h"
 
-#include "common-hal/microcontroller/Pin.h"
+void board_init(void) {
+}
 
-#include "audio_dma.h"
-#include "py/obj.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-// Some boards don't implement I2SOut, so suppress any routines from here.
-#if CIRCUITPY_AUDIOBUSIO_I2SOUT
-
-// We don't bit pack because we'll only have two at most. Its better to save code size instead.
-typedef struct {
-    mp_obj_base_t base;
-    bool left_justified;
-    const mcu_pin_obj_t *bit_clock;
-    const mcu_pin_obj_t *word_select;
-    const mcu_pin_obj_t *data;
-    uint8_t clock_unit;
-    uint8_t serializer;
-    uint8_t gclk;
-    bool playing;
-    audio_dma_t dma;
-} audiobusio_i2sout_obj_t;
-
-void i2sout_reset(void);
-
-#endif // CIRCUITPY_AUDIOBUSIO_I2SOUT
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H
+void reset_board(void) {
+    board_reset_user_neopixels();
+}

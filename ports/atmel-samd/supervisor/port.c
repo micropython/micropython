@@ -322,8 +322,10 @@ void reset_port(void) {
     audioout_reset();
 #endif
 #if CIRCUITPY_AUDIOBUSIO
-    i2sout_reset();
     //pdmin_reset();
+#endif
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+    i2sout_reset();
 #endif
 
 #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
