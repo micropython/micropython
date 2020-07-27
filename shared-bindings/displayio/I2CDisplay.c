@@ -42,7 +42,7 @@
 //|     """Manage updating a display over I2C in the background while Python code runs.
 //|     It doesn't handle display initialization."""
 //|
-//|     def __init__(self, i2c_bus: busio.I2C, *, device_address: int, reset: microcontroller.Pin = None) -> None:
+//|     def __init__(self, i2c_bus: busio.I2C, *, device_address: int, reset: Optional[microcontroller.Pin] = None) -> None:
 //|         """Create a I2CDisplay object associated with the given I2C bus and reset pin.
 //|
 //|         The I2C bus and pins are then in use by the display until `displayio.release_displays()` is

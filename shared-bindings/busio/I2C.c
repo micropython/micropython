@@ -126,13 +126,12 @@ static void check_lock(busio_i2c_obj_t *self) {
 }
 
 //|     def scan(self) -> list:
+//|         """Scan all I2C addresses between 0x08 and 0x77 inclusive and return a
+//|         list of those that respond.
 //|
-//|          """Scan all I2C addresses between 0x08 and 0x77 inclusive and return a
-//|          list of those that respond.
-//|
-//|          :return: List of device ids on the I2C bus
-//|          :rtype: list"""
-//|          ...
+//|         :return: List of device ids on the I2C bus
+//|         :rtype: list"""
+//|         ...
 //|
 STATIC mp_obj_t busio_i2c_scan(mp_obj_t self_in) {
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -176,20 +175,20 @@ STATIC mp_obj_t busio_i2c_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 
-//|     def readfrom_into(self, address: int, buffer: WriteableBuffer, *, start: int = 0, end: int = None) -> None:
-//|          """Read into ``buffer`` from the device selected by ``address``.
-//|          The number of bytes read will be the length of ``buffer``.
-//|          At least one byte must be read.
+//|     def readfrom_into(self, address: int, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
+//|         """Read into ``buffer`` from the device selected by ``address``.
+//|         The number of bytes read will be the length of ``buffer``.
+//|         At least one byte must be read.
 //|
-//|          If ``start`` or ``end`` is provided, then the buffer will be sliced
-//|          as if ``buffer[start:end]``. This will not cause an allocation like
-//|          ``buf[start:end]`` will so it saves memory.
+//|         If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|         as if ``buffer[start:end]``. This will not cause an allocation like
+//|         ``buf[start:end]`` will so it saves memory.
 //|
-//|          :param int address: 7-bit device address
-//|          :param bytearray buffer: buffer to write into
-//|          :param int start: Index to start writing at
-//|          :param int end: Index to write up to but not include. Defaults to ``len(buffer)``"""
-//|          ...
+//|         :param int address: 7-bit device address
+//|         :param bytearray buffer: buffer to write into
+//|         :param int start: Index to start writing at
+//|         :param int end: Index to write up to but not include. Defaults to ``len(buffer)``"""
+//|         ...
 //|
 // Shared arg parsing for readfrom_into and writeto_then_readfrom.
 STATIC void readfrom(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end) {
@@ -228,22 +227,22 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_into);
 
-//|     def writeto(self, address: int, buffer: ReadableBuffer, *, start: int = 0, end: int = None, stop: bool = True) -> None:
-//|          """Write the bytes from ``buffer`` to the device selected by ``address`` and
-//|          then transmit a stop bit.
+//|     def writeto(self, address: int, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None, stop: bool = True) -> None:
+//|         """Write the bytes from ``buffer`` to the device selected by ``address`` and
+//|         then transmit a stop bit.
 //|
-//|          If ``start`` or ``end`` is provided, then the buffer will be sliced
-//|          as if ``buffer[start:end]``. This will not cause an allocation like
-//|          ``buffer[start:end]`` will so it saves memory.
+//|         If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|         as if ``buffer[start:end]``. This will not cause an allocation like
+//|         ``buffer[start:end]`` will so it saves memory.
 //|
 //|         Writing a buffer or slice of length zero is permitted, as it can be used
-//|          to poll for the existence of a device.
+//|         to poll for the existence of a device.
 //|
-//|          :param int address: 7-bit device address
-//|          :param bytearray buffer: buffer containing the bytes to write
-//|          :param int start: Index to start writing from
-//|          :param int end: Index to read up to but not include. Defaults to ``len(buffer)``"""
-//|          ...
+//|         :param int address: 7-bit device address
+//|         :param bytearray buffer: buffer containing the bytes to write
+//|         :param int start: Index to start writing from
+//|         :param int end: Index to read up to but not include. Defaults to ``len(buffer)``"""
+//|         ...
 //|
 // Shared arg parsing for writeto and writeto_then_readfrom.
 STATIC void writeto(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end, bool stop) {
@@ -282,23 +281,23 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 
-//|     def writeto_then_readfrom(self, address: int, out_buffer: ReadableBuffer, in_buffer: WriteableBuffer, *, out_start: int = 0, out_end: int = None, in_start: int = 0, in_end: int = None) -> None:
-//|          """Write the bytes from ``out_buffer`` to the device selected by ``address``, generate no stop
-//|          bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
-//|          ``in_buffer`` can be the same buffer because they are used sequentially.
+//|     def writeto_then_readfrom(self, address: int, out_buffer: ReadableBuffer, in_buffer: WriteableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
+//|         """Write the bytes from ``out_buffer`` to the device selected by ``address``, generate no stop
+//|         bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
+//|         ``in_buffer`` can be the same buffer because they are used sequentially.
 //|
-//|         If ``start`` or ``end`` is provided, then the corresponding buffer will be sliced
-//|          as if ``buffer[start:end]``. This will not cause an allocation like ``buf[start:end]``
-//|          will so it saves memory.
+//|         if ``start`` or ``end`` is provided, then the corresponding buffer will be sliced
+//|         as if ``buffer[start:end]``. This will not cause an allocation like ``buf[start:end]``
+//|         will so it saves memory.
 //|
-//|          :param int address: 7-bit device address
-//|          :param bytearray out_buffer: buffer containing the bytes to write
-//|          :param bytearray in_buffer: buffer to write into
-//|          :param int out_start: Index to start writing from
-//|          :param int out_end: Index to read up to but not include. Defaults to ``len(buffer)``
-//|          :param int in_start: Index to start writing at
-//|          :param int in_end: Index to write up to but not include. Defaults to ``len(buffer)``"""
-//|          ...
+//|         :param int address: 7-bit device address
+//|         :param bytearray out_buffer: buffer containing the bytes to write
+//|         :param bytearray in_buffer: buffer to write into
+//|         :param int out_start: Index to start writing from
+//|         :param int out_end: Index to read up to but not include. Defaults to ``len(buffer)``
+//|         :param int in_start: Index to start writing at
+//|         :param int in_end: Index to write up to but not include. Defaults to ``len(buffer)``"""
+//|         ...
 //|
 STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };

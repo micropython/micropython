@@ -147,7 +147,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj___exit__(size_t n_args, const mp_obj_t *ar
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_i2sout___exit___obj, 4, 4, audiobusio_i2sout_obj___exit__);
 
 
-//|     def play(self, sample: Union[audiocore.WaveFile, audiocore.RawSample, audiomixer.Mixer], *, loop: bool = False) -> None:
+//|     def play(self, sample: audiocore._AudioSample, *, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|
@@ -186,7 +186,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_stop(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_stop_obj, audiobusio_i2sout_obj_stop);
 
-//|     playing: bool = ...
+//|     playing: bool
 //|     """True when the audio sample is being output. (read-only)"""
 //|
 STATIC mp_obj_t audiobusio_i2sout_obj_get_playing(mp_obj_t self_in) {
@@ -235,7 +235,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_resume(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiobusio_i2sout_resume_obj, audiobusio_i2sout_obj_resume);
 
-//|     paused: bool = ...
+//|     paused: bool
 //|     """True when playback is paused. (read-only)"""
 //|
 STATIC mp_obj_t audiobusio_i2sout_obj_get_paused(mp_obj_t self_in) {

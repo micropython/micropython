@@ -128,7 +128,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//|     def __init__(self, *, width: int, bit_depth: List[digitalio.DigitalInOut], rgb_pins: List[digitalio.DigitalInOut], addr_pins: List[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0) -> None:
+//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: List[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0) -> None:
 //|         """Create a RGBMatrix object with the given attributes.  The height of
 //|         the display is determined by the number of rgb and address pins:
 //|         len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4
@@ -257,7 +257,7 @@ static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
     }
 }
 
-//|     brightness: float = ...
+//|     brightness: float
 //|     """In the current implementation, 0.0 turns the display off entirely
 //|     and any other value up to 1.0 turns the display on fully."""
 //|
@@ -301,7 +301,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_refresh_obj, rgbmatrix_rgbmatrix_refresh);
 
-//|     width: int = ...
+//|     width: int
 //|     """The width of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
@@ -317,7 +317,7 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: int = ...
+//|     height: int
 //|     """The height of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {

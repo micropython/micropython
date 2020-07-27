@@ -46,7 +46,7 @@
 //|         ...
 //|
 
-//|     bitmap: displayio.Bitmap = ...
+//|     bitmap: displayio.Bitmap
 //|     """Bitmap containing all font glyphs starting with ASCII and followed by unicode. Use
 //|     `get_glyph` in most cases. This is useful for use with `displayio.TileGrid` and
 //|     `terminalio.Terminal`."""

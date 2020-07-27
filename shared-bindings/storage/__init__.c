@@ -43,7 +43,7 @@
 //| directly."""
 //|
 
-//| def mount(filesystem: VfsFat, mount_path: string, *, readonly: bool = False) -> None:
+//| def mount(filesystem: VfsFat, mount_path: str, *, readonly: bool = False) -> None:
 //|     """Mounts the given filesystem object at the given path.
 //|
 //|     This is the CircuitPython analog to the UNIX ``mount`` command.
@@ -80,7 +80,7 @@ mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(storage_mount_obj, 2, storage_mount);
 
-//| def umount(mount: Union[string, VfsFat]) -> None:
+//| def umount(mount: Union[str, VfsFat]) -> None:
 //|     """Unmounts the given filesystem object or if *mount* is a path, then unmount
 //|     the filesystem mounted at that location.
 //|
@@ -98,7 +98,7 @@ mp_obj_t storage_umount(mp_obj_t mnt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 
-//| def remount(mount_path: string, readonly: bool = False, *, disable_concurrent_write_protection: bool = False) -> None:
+//| def remount(mount_path: str, readonly: bool = False, *, disable_concurrent_write_protection: bool = False) -> None:
 //|     """Remounts the given path with new parameters.
 //|
 //|       :param bool readonly: True when the filesystem should be readonly to CircuitPython.
@@ -128,7 +128,7 @@ mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(storage_remount_obj, 1, storage_remount);
 
-//| def getmount(mount_path: string) -> VfsFat:
+//| def getmount(mount_path: str) -> VfsFat:
 //|     """Retrieves the mount object associated with the mount path"""
 //|     ...
 //|
@@ -168,43 +168,43 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_erase_filesystem), MP_ROM_PTR(&storage_erase_filesystem_obj) },
 
 //| class VfsFat:
-//|     def __init__(self, block_device: string) -> None:
+//|     def __init__(self, block_device: str) -> None:
 //|         """Create a new VfsFat filesystem around the given block device.
 //|
 //|         :param block_device: Block device the the filesystem lives on"""
 //|
-//|         label: string = ...
-//|         """The filesystem label, up to 11 case-insensitive bytes.  Note that
-//|         this property can only be set when the device is writable by the
-//|         microcontroller."""
-//|         ...
+//|     label: str
+//|     """The filesystem label, up to 11 case-insensitive bytes.  Note that
+//|     this property can only be set when the device is writable by the
+//|     microcontroller."""
+//|     ...
 //|
 //|     def mkfs(self) -> None:
 //|         """Format the block device, deleting any data that may have been there"""
 //|         ...
 //|
-//|     def open(self, path: string, mode: string) -> None:
+//|     def open(self, path: str, mode: str) -> None:
 //|         """Like builtin ``open()``"""
 //|         ...
 //|
-//|     def ilistdir(self, path: string) -> iterator:
+//|     def ilistdir(self, path: str) -> Iterator[Tuple[AnyStr, int, int, int]]:
 //|         """Return an iterator whose values describe files and folders within
 //|         ``path``"""
 //|         ...
 //|
-//|     def mkdir(self, path: string) -> None:
+//|     def mkdir(self, path: str) -> None:
 //|         """Like `os.mkdir`"""
 //|         ...
 //|
-//|     def rmdir(self, path: string) -> None:
+//|     def rmdir(self, path: str) -> None:
 //|         """Like `os.rmdir`"""
 //|         ...
 //|
-//|     def stat(self, path: string) -> string:
+//|     def stat(self, path: str) -> str:
 //|         """Like `os.stat`"""
 //|         ...
 //|
-//|     def statvfs(self, path: string) -> Tuple[string, string, string, string, string, string, string, string, string, string]:
+//|     def statvfs(self, path: str) -> Tuple[str, str, str, str, str, str, str, str, str, str]:
 //|         """Like `os.statvfs`"""
 //|         ...
 //|

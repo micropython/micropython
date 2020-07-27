@@ -36,7 +36,7 @@
 //| class GamePadShift:
 //|     """Scan buttons for presses through a shift register"""
 //|
-//|     def __init__(self, clock: DigitalInOut, data: DigitalInOut, latch: DigitalInOut) -> None:
+//|     def __init__(self, clock: digitalio.DigitalInOut, data: digitalio.DigitalInOut, latch: digitalio.DigitalInOut) -> None:
 //|         """Initializes button scanning routines.
 //|
 //|         The ``clock``, ``data`` and ``latch`` parameters are ``DigitalInOut``

@@ -73,7 +73,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(service);
 }
 
-//|     characteristics: Tuple[Characteristic, ...] = ...
+//|     characteristics: Tuple[Characteristic, ...]
 //|     """A tuple of :py:class:`Characteristic` designating the characteristics that are offered by
 //|     this service. (read-only)"""
 //|
@@ -92,7 +92,7 @@ const mp_obj_property_t bleio_service_characteristics_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     remote: bool = ...
+//|     remote: bool
 //|     """True if this is a service provided by a remote device. (read-only)"""
 //|
 STATIC mp_obj_t bleio_service_get_remote(mp_obj_t self_in) {
@@ -109,7 +109,7 @@ const mp_obj_property_t bleio_service_remote_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     secondary: bool = ...
+//|     secondary: bool
 //|     """True if this is a secondary service. (read-only)"""
 //|
 STATIC mp_obj_t bleio_service_get_secondary(mp_obj_t self_in) {
@@ -126,7 +126,7 @@ const mp_obj_property_t bleio_service_secondary_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     uuid: Optional[UUID] = ...
+//|     uuid: Optional[UUID]
 //|     """The UUID of this service. (read-only)
 //|
 //|     Will be ``None`` if the 128-bit UUID for this service is not known."""

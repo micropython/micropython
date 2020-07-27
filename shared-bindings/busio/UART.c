@@ -44,7 +44,7 @@
 
 //| class UART:
 //|     """A bidirectional serial protocol"""
-//|     def __init__(self, tx: microcontroller.Pin, rx: microcontroller.Pin, *, baudrate: int = 9600, bits: int = 8, parity: Parity = None, stop: int = 1, timeout: float = 1, receiver_buffer_size: int = 64) -> None:
+//|     def __init__(self, tx: microcontroller.Pin, rx: microcontroller.Pin, *, baudrate: int = 9600, bits: int = 8, parity: Optional[Parity] = None, stop: int = 1, timeout: float = 1, receiver_buffer_size: int = 64) -> None:
 //|         """A common bidirectional serial protocol that uses an an agreed upon speed
 //|         rather than a shared clock line.
 //|
@@ -263,7 +263,7 @@ STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t
     return ret;
 }
 
-//|     baudrate: int = ...
+//|     baudrate: int
 //|     """The current baudrate."""
 //|
 STATIC mp_obj_t busio_uart_obj_get_baudrate(mp_obj_t self_in) {
@@ -289,7 +289,7 @@ const mp_obj_property_t busio_uart_baudrate_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     in_waiting: int = ...
+//|     in_waiting: int
 //|     """The number of bytes in the input buffer, available to be read"""
 //|
 STATIC mp_obj_t busio_uart_obj_get_in_waiting(mp_obj_t self_in) {
@@ -306,7 +306,7 @@ const mp_obj_property_t busio_uart_in_waiting_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     timeout: float = ...
+//|     timeout: float
 //|     """The current timeout, in seconds (float)."""
 //|
 STATIC mp_obj_t busio_uart_obj_get_timeout(mp_obj_t self_in) {
@@ -349,10 +349,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_o
 //| class Parity:
 //|     """Enum-like class to define the parity used to verify correct data transfer."""
 //|
-//|     ODD: int = ...
+//|     ODD: int
 //|     """Total number of ones should be odd."""
 //|
-//|     EVEN: int = ...
+//|     EVEN: int
 //|     """Total number of ones should be even."""
 //|
 const mp_obj_type_t busio_uart_parity_type;

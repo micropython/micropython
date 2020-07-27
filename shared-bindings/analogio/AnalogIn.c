@@ -104,7 +104,7 @@ STATIC mp_obj_t analogio_analogin___exit__(size_t n_args, const mp_obj_t *args) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogin___exit___obj, 4, 4, analogio_analogin___exit__);
 
-//|     value: int = ...
+//|     value: int
 //|     """The value on the analog pin between 0 and 65535 inclusive (16-bit). (read-only)
 //|
 //|     Even if the underlying analog to digital converter (ADC) is lower
@@ -124,7 +124,7 @@ const mp_obj_property_t analogio_analogin_value_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     reference_voltage: Optional[float] = ...
+//|     reference_voltage: Optional[float]
 //|     """The maximum voltage measurable (also known as the reference voltage) as a
 //|     `float` in Volts."""
 //|

@@ -13,11 +13,12 @@ import sys
 import traceback
 
 import isort
+import black
 
 
-IMPORTS_IGNORE = frozenset({'int', 'float', 'bool', 'str', 'bytes', 'tuple', 'list', 'set', 'dict', 'bytearray', 'file', 'buffer'})
-IMPORTS_TYPING = frozenset({'Any', 'Optional', 'Union', 'Tuple', 'List', 'Sequence'})
-IMPORTS_TYPESHED = frozenset({'ReadableBuffer', 'WritableBuffer'})
+IMPORTS_IGNORE = frozenset({'int', 'float', 'bool', 'str', 'bytes', 'tuple', 'list', 'set', 'dict', 'bytearray', 'slice', 'file', 'buffer', 'range', 'array', 'struct_time'})
+IMPORTS_TYPING = frozenset({'Any', 'Optional', 'Union', 'Tuple', 'List', 'Sequence', 'Iterable', 'Iterator', 'overload'})
+IMPORTS_TYPESHED = frozenset({'ReadableBuffer', 'WriteableBuffer'})
 
 
 def is_any(node):
@@ -63,8 +64,9 @@ def extract_imports(tree):
                     typing.add(node.id)
                 elif node.id in IMPORTS_TYPESHED:
                     typeshed.add(node.id)
-                elif not node.id[0].isupper():
-                    modules.add(node.id)
+            if node_type == ast.Attribute:
+                if type(node.value) == ast.Name:
+                    modules.add(node.value.id)
 
     for node in ast.walk(tree):
         node_type = type(node)
@@ -72,6 +74,9 @@ def extract_imports(tree):
             collect_annotations(node.annotation)
         elif node_type == ast.FunctionDef:
             collect_annotations(node.returns)
+            for deco in node.decorator_list:
+                if deco.id in IMPORTS_TYPING:
+                    typing.add(deco.id)
 
     return {
         "modules": sorted(modules),
@@ -134,22 +139,21 @@ def convert_folder(top_level, stub_directory):
 
     # Add import statements
     import_lines = ["from __future__ import annotations"]
+    if imports["typing"]:
+        import_lines.append("from typing import " + ", ".join(imports["typing"]))
+    if imports["typeshed"]:
+        import_lines.append("from _typeshed import " + ", ".join(imports["typeshed"]))
     import_lines.extend(f"import {m}" for m in imports["modules"])
-    import_lines.append("from typing import " + ", ".join(imports["typing"]))
-    import_lines.append("from _typeshed import " + ", ".join(imports["typeshed"]))
     import_body = "\n".join(import_lines)
     m = re.match(r'(\s*""".*?""")', stub_contents, flags=re.DOTALL)
     if m:
         stub_contents = m.group(1) + "\n\n" + import_body + "\n\n" + stub_contents[m.end():]
     else:
         stub_contents = import_body + "\n\n" + stub_contents
-    stub_contents = isort.code(stub_contents)
 
-    # Adjust blank lines
-    stub_contents = re.sub(r"\n+class", "\n\n\nclass", stub_contents)
-    stub_contents = re.sub(r"\n+def", "\n\n\ndef", stub_contents)
-    stub_contents = re.sub(r"\n+^(\s+)def", lambda m: f"\n\n{m.group(1)}def", stub_contents, flags=re.M)
-    stub_contents = stub_contents.strip() + "\n"
+    # Code formatting
+    stub_contents = isort.code(stub_contents)
+    stub_contents = black.format_str(stub_contents, mode=black.FileMode(is_pyi=True))
 
     os.makedirs(stub_directory, exist_ok=True)
     with open(stub_filename, "w") as f:
