@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2013-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -516,6 +516,18 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
         fun_data = MP_PLAT_COMMIT_EXEC(fun_data, fun_data_len, opt_ri);
         #else
         if (prelude.scope_flags & MP_SCOPE_FLAG_VIPERRELOC) {
+            #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
+            // If native code needs relocations then it's not guaranteed that a pointer to
+            // the head of `buf` (containing the machine code) will be retained for the GC
+            // to trace.  This is because native functions can start inside `buf` and so
+            // it's possible that the only GC-reachable pointers are pointers inside `buf`.
+            // So put this `buf` on a list of reachable root pointers.
+            if (MP_STATE_PORT(track_reloc_code_list) == MP_OBJ_NULL) {
+                MP_STATE_PORT(track_reloc_code_list) = mp_obj_new_list(0, NULL);
+            }
+            mp_obj_list_append(MP_STATE_PORT(track_reloc_code_list), MP_OBJ_FROM_PTR(fun_data));
+            #endif
+            // Do the relocations.
             mp_native_relocate(&ri, fun_data, (uintptr_t)fun_data);
         }
         #endif
