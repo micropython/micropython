@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-21 18:43-0700\n"
+"POT-Creation-Date: 2020-07-24 19:58-0700\n"
 "PO-Revision-Date: 2020-06-16 18:24+0000\n"
 "Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language: de_DE\n"
@@ -115,10 +115,6 @@ msgstr "%q() nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
 msgid "'%q' argument required"
 msgstr "'%q' Argument erforderlich"
 
-#: py/objarray.c
-msgid "'%q' object is not bytes-like"
-msgstr ""
-
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
@@ -224,12 +220,12 @@ msgid "'align' requires 1 argument"
 msgstr "'align' erfordert genau ein Argument"
 
 #: py/compile.c
-msgid "'async for' or 'async with' outside async function"
-msgstr "'async for' oder 'async with' außerhalb der asynchronen Funktion"
-
-#: py/compile.c
 msgid "'await' outside function"
 msgstr "'await' außerhalb einer Funktion"
+
+#: py/compile.c
+msgid "'await', 'async for' or 'async with' outside async function"
+msgstr ""
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -1372,10 +1368,6 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "Pull wird nicht verwendet, wenn die Richtung output ist."
 
-#: ports/stm/ref/pulseout-pre-timeralloc.c
-msgid "PulseOut not supported on this chip"
-msgstr "PulseOut wird auf diesem Chip nicht unterstützt"
-
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
 msgstr "RNG DeInit-Fehler"
@@ -1836,7 +1828,7 @@ msgstr "__init__() sollte None zurückgeben, nicht '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "__new__ arg muss user-type sein"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c
+#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "ein Byte-ähnliches Objekt ist erforderlich"
 
@@ -3475,6 +3467,12 @@ msgstr ""
 #: extmod/ulab/code/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "'async for' or 'async with' outside async function"
+#~ msgstr "'async for' oder 'async with' außerhalb der asynchronen Funktion"
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseOut wird auf diesem Chip nicht unterstützt"
 
 #~ msgid "PulseIn not supported on this chip"
 #~ msgstr "PulseIn wird auf diesem Chip nicht unterstützt"

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-21 18:43-0700\n"
+"POT-Creation-Date: 2020-07-24 19:58-0700\n"
 "PO-Revision-Date: 2020-07-06 18:10+0000\n"
 "Last-Translator: oon arfiandwi <oon.arfiandwi@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -116,10 +116,6 @@ msgstr "%q() mengambil posisi argumen %d tapi %d yang diberikan"
 msgid "'%q' argument required"
 msgstr "'%q' argumen dibutuhkan"
 
-#: py/objarray.c
-msgid "'%q' object is not bytes-like"
-msgstr ""
-
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
@@ -225,12 +221,12 @@ msgid "'align' requires 1 argument"
 msgstr "'align' membutuhkan 1 argumen"
 
 #: py/compile.c
-msgid "'async for' or 'async with' outside async function"
-msgstr "'async for' atau 'async with' di luar fungsi async"
-
-#: py/compile.c
 msgid "'await' outside function"
 msgstr "'await' diluar fungsi"
+
+#: py/compile.c
+msgid "'await', 'async for' or 'async with' outside async function"
+msgstr ""
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -1362,10 +1358,6 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr ""
 
-#: ports/stm/ref/pulseout-pre-timeralloc.c
-msgid "PulseOut not supported on this chip"
-msgstr ""
-
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
 msgstr ""
@@ -1808,7 +1800,7 @@ msgstr ""
 msgid "__new__ arg must be a user-type"
 msgstr ""
 
-#: extmod/modubinascii.c extmod/moduhashlib.c
+#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "sebuah objek menyerupai byte (bytes-like) dibutuhkan"
 
@@ -3419,6 +3411,9 @@ msgstr ""
 #: extmod/ulab/code/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "'async for' or 'async with' outside async function"
+#~ msgstr "'async for' atau 'async with' di luar fungsi async"
 
 #~ msgid "AP required"
 #~ msgstr "AP dibutuhkan"
