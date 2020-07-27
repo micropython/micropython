@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-24 19:58-0700\n"
-"PO-Revision-Date: 2020-07-27 21:27+0000\n"
+"PO-Revision-Date: 2020-07-28 15:41+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -229,6 +229,8 @@ msgstr "'aguardar' fora da função"
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
 msgstr ""
+"'await', 'async for' (async para) ou 'async with' (async com) estão fora da "
+"função async"
 
 #: py/compile.c
 msgid "'break' outside loop"
