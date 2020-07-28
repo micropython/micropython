@@ -1,0 +1,13 @@
+test <class 'VfsLfs2'>
+mtime=True
+True True
+True
+True
+True
+mtime=False
+True
+True
+True
+mtime=True
+True
+True
