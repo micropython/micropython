@@ -43,8 +43,6 @@
 
 extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
-
-
 typedef struct _bleio_adapter_obj_t {
     mp_obj_base_t base;
     bleio_scanresults_obj_t *scan_results;

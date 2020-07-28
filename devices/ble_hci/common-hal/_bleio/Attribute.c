@@ -26,6 +26,10 @@
 
 #include "shared-bindings/_bleio/Attribute.h"
 
+// Return the type of the attribute
+bleio_attribute_type_uuid(mp_obj_t *attribute) {
+    if mp_is_o
+
 // Convert a _bleio security mode to a ble_gap_conn_sec_mode_t setting.
 // void bleio_attribute_gatts_set_security_mode(ble_gap_conn_sec_mode_t *perm, bleio_attribute_security_mode_t security_mode) {
 //     switch (security_mode) {
