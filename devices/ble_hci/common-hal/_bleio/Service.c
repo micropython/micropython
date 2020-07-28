@@ -44,6 +44,7 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
 
     uint32_t status;
     self->handle = bleio_adapter_add_attribute(
+        common_hal_bleio_adapter_obj,
         is_secondary ? BLE_TYPE_SECONDARY_SERVICE : BLE_TYPE_PRIMARY_SERVICE,
         uuid, &status);
     return status;
@@ -82,9 +83,10 @@ bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
 void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
                                                  bleio_characteristic_obj_t *characteristic,
                                                  mp_buffer_info_t *initial_value_bufinfo) {
-    common_hal_bleio_adapter_obj
+
     //FIX how it's done by ArduinoBLE when a service is added.
-  // uint16_t startHandle = attributeCount();
+    // uint16_t startHandle = attributeCount();
+    uint16_t start_handle bleio_adapter_num_attributes(common_hal_bleio_adapter_obj);
 
   // for (unsigned int i = 0; i < service->characteristicCount(); i++) {
   //   BLELocalCharacteristic* characteristic = service->characteristic(i);
