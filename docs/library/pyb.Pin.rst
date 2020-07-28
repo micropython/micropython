@@ -98,7 +98,7 @@ Class methods
 Methods
 -------
 
-.. method:: Pin.init(mode, pull=Pin.PULL_NONE, af=-1)
+.. method:: Pin.init(mode, pull=Pin.PULL_NONE, value=None, alt=-1)
 
    Initialise the pin:
 
@@ -117,8 +117,11 @@ Methods
         - ``Pin.PULL_UP`` - enable the pull-up resistor;
         - ``Pin.PULL_DOWN`` - enable the pull-down resistor.
 
-     - when mode is ``Pin.AF_PP`` or ``Pin.AF_OD``, then af can be the index or name
-       of one of the alternate functions associated with a pin.
+     - ``value`` if not None will set the port output value before enabling the pin.
+
+     - ``alt`` can be used when mode is ``Pin.AF_PP`` or ``Pin.AF_OD``to set the index or name
+       of one of the alternate functions associated with a pin. 
+       This arg was previously called ``af`` which can still be used if needed.
 
    Returns: ``None``.
 
