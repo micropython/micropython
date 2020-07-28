@@ -4,3 +4,4 @@ sphinxcontrib-svg2pdfconverter==0.1.0
 astroid
 sphinx-autoapi
 isort
+black
