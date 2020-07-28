@@ -270,6 +270,17 @@ ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 CFLAGS += -DMICROPY_ESP_IDF_4=1
 endif
 
+# Configure floating point support
+ifeq ($(MICROPY_FLOAT_IMPL),double)
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
+else
+ifeq ($(MICROPY_FLOAT_IMPL),none)
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_NONE
+else
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
+endif
+endif
+
 # this is what ESPIDF uses for c++ compilation
 CXXFLAGS = -std=gnu++11 $(CFLAGS_COMMON) $(INC) $(INC_ESPCOMP)
 
