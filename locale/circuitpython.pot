@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-24 19:58-0700\n"
+"POT-Creation-Date: 2020-07-28 14:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -859,6 +859,10 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
+msgstr ""
+
+#: shared-bindings/audiobusio/I2SOut.c
+msgid "I2SOut not available"
 msgstr ""
 
 #: shared-bindings/aesio/aes.c
