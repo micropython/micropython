@@ -41,6 +41,7 @@
 #include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PulseIn.h"
+#include "timers.h"
 #endif
 
 #include "clocks.h"
@@ -224,6 +225,7 @@ void reset_port(void) {
     uart_reset();
 #endif
 #if CIRCUITPY_PULSEIO
+    timers_reset();
     pwmout_reset();
     pulseout_reset();
     pulsein_reset();

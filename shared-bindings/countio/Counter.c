@@ -13,7 +13,7 @@
 //|     """Counter will keep track of the number of falling edge transistions (pulses) on a
 //|        given pin"""
 //|
-//|     def __init__(self, pin_a):
+//|     def __init__(self, pin_a: microcontroller.Pin) -> None:
 //|         """Create a Counter object associated with the given pin. It tracks the number of
 //|            falling pulses relative when the object is constructed.
 //|
@@ -53,7 +53,7 @@ STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self):
+//|     def deinit(self) -> None:
 //|         """Deinitializes the Counter and releases any hardware resources for reuse."""
 //|
 STATIC mp_obj_t countio_counter_deinit(mp_obj_t self_in) {
@@ -69,12 +69,12 @@ STATIC void check_for_deinit(countio_counter_obj_t *self) {
     }
 }
 
-//|     def __enter__(self):
+//|     def __enter__(self) -> Counter:
 //|         """No-op used by Context Managers."""
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self):
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|            :ref:`lifetime-and-contextmanagers` for more info."""
 //|
@@ -86,7 +86,7 @@ STATIC mp_obj_t countio_counter_obj___exit__(size_t n_args, const mp_obj_t *args
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(countio_counter___exit___obj, 4, 4, countio_counter_obj___exit__);
 
 
-//|     count: int = ...
+//|     count: int
 //|     """The current count in terms of pulses."""
 //|
 STATIC mp_obj_t countio_counter_obj_get_count(mp_obj_t self_in) {
@@ -113,7 +113,7 @@ const mp_obj_property_t countio_counter_count_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def reset(self):
+//|     def reset(self) -> None:
 //|         """Resets the count back to 0."""
 //|
 STATIC mp_obj_t countio_counter_reset(mp_obj_t self_in){

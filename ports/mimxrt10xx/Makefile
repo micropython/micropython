@@ -2,8 +2,8 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Dan Halbert for Adafruit Industries
-# Copyright (c) 2019 Artur Pacholec
+# SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2019 Artur Pacholec
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -105,8 +105,13 @@ CFLAGS += \
 	-DCPU_$(CHIP_VARIANT) \
 	-DDEBUG \
 	-DIMXRT10XX \
-	-Os -g3 -Wno-unused-parameter \
+	-g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage
+
+OPTIMIZATION_FLAGS ?= -O2
+
+# option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 

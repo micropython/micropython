@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1713,11 +1713,11 @@ STATIC void compile_yield_from(compiler_t *comp) {
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC bool compile_require_async_context(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int scope_flags = comp->scope_cur->scope_flags;
-    if(scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+    if(scope_flags & MP_SCOPE_FLAG_ASYNC) {
         return true;
     }
     compile_syntax_error(comp, (mp_parse_node_t)pns,
-        translate("'async for' or 'async with' outside async function"));
+        translate("'await', 'async for' or 'async with' outside async function"));
     return false;
 }
 
@@ -1890,7 +1890,7 @@ STATIC void compile_async_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // async def
         compile_funcdef(comp, pns0);
         scope_t *fscope = (scope_t*)pns0->nodes[4];
-        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
+        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_ASYNC;
     } else if (MP_PARSE_NODE_STRUCT_KIND(pns0) == PN_for_stmt) {
         // async for
         compile_async_for_stmt(comp, pns0);
@@ -2645,6 +2645,7 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
         compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'await' outside function"));
         return;
     }
+    compile_require_async_context(comp, pns);
     compile_atom_expr_normal(comp, pns);
     compile_yield_from(comp);
 }

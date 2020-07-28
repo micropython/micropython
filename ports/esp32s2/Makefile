@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -78,6 +78,7 @@ INC += -Iesp-idf/components/freertos/xtensa/include
 INC += -Iesp-idf/components/esp32s2/include
 INC += -Iesp-idf/components/xtensa/esp32s2/include
 INC += -Iesp-idf/components/esp_common/include
+INC += -Iesp-idf/components/esp_ringbuf/include
 INC += -Iesp-idf/components/esp_rom/include
 INC += -Iesp-idf/components/xtensa/include
 INC += -Iesp-idf/components/esp_timer/include
@@ -100,13 +101,18 @@ CFLAGS += -DSTACK_CANARY_VALUE=0xa5a5a5a5
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb
+  OPTIMIZATION_FLAGS ?= -Og
   # You may want to enable these flags to make setting breakpoints easier.
   # CFLAGS += -fno-inline -fno-ipa-sra
 else
-  CFLAGS += -Os -DNDEBUG -ggdb3
+  CFLAGS += -DNDEBUG -ggdb3
+  OPTIMIZATION_FLAGS ?= -O2
   # TODO: Test with -flto
   ### CFLAGS += -flto
 endif
+
+# option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 CFLAGS += $(INC) -Werror -Wall -mlongcalls -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT)
 
@@ -216,8 +222,8 @@ $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-id
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
-$(BUILD)/esp-idf/esp-idf/%.a: $(BUILD)/esp-idf/config/sdkconfig.h
-	ninja -C $(BUILD)/esp-idf esp-idf/$*.a
+#$(BUILD)/esp-idf/esp-idf/%.a: $(BUILD)/esp-idf/config/sdkconfig.h
+#	ninja -C $(BUILD)/esp-idf esp-idf/$*.a
 
 $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld: $(BUILD)/esp-idf/config/sdkconfig.h
 	ninja -C $(BUILD)/esp-idf esp-idf/esp32s2/esp32s2_out.ld
@@ -228,9 +234,6 @@ $(BUILD)/esp-idf/esp-idf/esp32s2/ld/esp32s2.project.ld: $(BUILD)/esp-idf/config/
 
 $(BUILD)/esp-idf/partition_table/partition-table.bin: $(BUILD)/esp-idf/config/sdkconfig.h
 	IDF_PATH=$(IDF_PATH) ninja -C $(BUILD)/esp-idf partition_table/partition-table.bin
-
-$(BUILD)/esp-idf/bootloader/bootloader.bin: $(BUILD)/esp-idf/config/sdkconfig.h
-	ninja -C $(BUILD)/esp-idf bootloader/bootloader.bin
 
 # run menuconfig
 menuconfig: $(BUILD)/esp-idf/config
@@ -257,11 +260,22 @@ ESP_AUTOGEN_LD = $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld $(BUILD)/esp-id
 
 FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
 
-all: $(BUILD)/firmware.bin
+all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
-$(BUILD)/firmware.elf: $(OBJ) | $(ESP_IDF_COMPONENTS_EXPANDED) $(ESP_AUTOGEN_LD)
+.PHONY: esp-idf-stamp
+esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
+	ninja -C $(BUILD)/esp-idf \
+		bootloader/bootloader.bin \
+		esp-idf/bootloader_support/libbootloader_support.a \
+		esp-idf/esp32s2/ld/esp32s2.project.ld \
+		esp-idf/esp_system/libesp_system.a \
+		esp-idf/freertos/libfreertos.a \
+		esp-idf/log/liblog.a \
+		esp-idf/xtensa/libxtensa.a
+
+$(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) build-$(BOARD)/esp-idf/esp-idf/newlib/libnewlib.a -u newlib_include_pthread_impl
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) build-$(BOARD)/esp-idf/esp-idf/newlib/libnewlib.a -u newlib_include_pthread_impl -Wl,--start-group $(LIBS) -Wl,--end-group
 	# $(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld
 
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf
@@ -270,11 +284,18 @@ $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf
 #	$(Q)$(OBJCOPY) -O binary $^ $@
 #   $(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
 
-$(BUILD)/firmware.bin: $(BUILD)/esp-idf/partition_table/partition-table.bin $(BUILD)/esp-idf/bootloader/bootloader.bin $(BUILD)/circuitpython-firmware.bin
+$(BUILD)/firmware.bin: $(BUILD)/circuitpython-firmware.bin | esp-idf-stamp
 	$(Q)$(PYTHON) ../../tools/join_bins.py $@ 0x1000 $(BUILD)/esp-idf/bootloader/bootloader.bin 0x8000 $(BUILD)/esp-idf/partition_table/partition-table.bin 0x10000 $(BUILD)/circuitpython-firmware.bin
 
+$(BUILD)/firmware.uf2: $(BUILD)/circuitpython-firmware.bin
+	$(STEPECHO) "Create $@"
+	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xbfdd4eee -b 0x0000 -c -o $@ $^
+
 flash: $(BUILD)/firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+
+flash-circuitpython-only: $(BUILD)/circuitpython-firmware.bin
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x10000 $^
 
 include $(TOP)/py/mkrules.mk
 

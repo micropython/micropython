@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -444,6 +444,10 @@ STATIC size_t mpn_mul(mpz_dig_t *idig, mpz_dig_t *jdig, size_t jlen, mpz_dig_t *
         }
 
         ilen = id - oidig;
+        // check to prevent usb starvation
+        #ifdef RUN_BACKGROUND_TASKS
+        RUN_BACKGROUND_TASKS;
+        #endif
     }
 
     return ilen;

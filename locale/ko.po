@@ -1,14 +1,12 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 글라파, 2019.
+# SPDX-FileCopyrightText: 2019 글라파
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
-#, fuzzy
+# SPDX-License-Identifier: MIT
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-25 11:44-0500\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,6 +58,10 @@ msgstr "%%c 전수(int)또는 캐릭터(char)필요합니다"
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q 사용 중입니다"
@@ -76,15 +78,24 @@ msgstr "%q 인덱스는 %s 가 아닌 정수 여야합니다"
 msgid "%q list must be a list"
 msgstr ""
 
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+msgid "%q must be >= 0"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
-#: shared-bindings/vectorio/Rectangle.c
+#: shared-bindings/displayio/Shape.c
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q 는 >=1이어야합니다"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q pin invalid"
 msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
@@ -97,6 +108,10 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "'%q' argument required"
+msgstr ""
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
 msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
@@ -309,6 +324,11 @@ msgstr "모든 타이머가 사용 중입니다"
 msgid "Already advertising."
 msgstr ""
 
+#: shared-module/memorymonitor/AllocationAlarm.c
+#: shared-module/memorymonitor/AllocationSize.c
+msgid "Already running"
+msgstr ""
+
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
 msgstr ""
@@ -340,8 +360,13 @@ msgstr ""
 msgid "Array values should be single bytes."
 msgstr ""
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
+msgstr ""
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#, c-format
+msgid "Attempt to allocate %d blocks"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -421,6 +446,11 @@ msgstr ""
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+msgid "Buffer length must be a multiple of 512"
+msgstr ""
+
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "잘못된 크기의 버퍼. >1 여야합니다"
@@ -460,7 +490,9 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr "값을 삭제할 수 없습니다"
 
@@ -579,6 +611,10 @@ msgstr ""
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
+msgstr ""
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
@@ -702,7 +738,8 @@ msgstr ""
 msgid "Error in regex"
 msgstr "Regex에 오류가 있습니다."
 
-#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -862,6 +899,10 @@ msgstr ""
 msgid "Internal error #%d"
 msgstr ""
 
+#: shared-bindings/sdioio/SDCard.c
+msgid "Invalid %q"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
@@ -969,7 +1010,8 @@ msgstr "오른쪽 채널 핀이 잘못되었습니다"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -1071,6 +1113,10 @@ msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
+msgstr ""
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Must provide SCK pin"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -1326,6 +1372,7 @@ msgstr ""
 msgid "Random number generation error"
 msgstr ""
 
+#: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
 msgstr ""
@@ -1360,6 +1407,10 @@ msgstr ""
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "SD card CSD format not supported"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
@@ -1406,7 +1457,9 @@ msgid "Slice and value different lengths."
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr ""
 
@@ -1984,6 +2037,10 @@ msgstr ""
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
 
+#: shared-module/sdcardio/SDCard.c
+msgid "can't set 512 block size"
+msgstr ""
+
 #: py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr ""
@@ -2108,6 +2165,10 @@ msgstr ""
 
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "couldn't determine SD card version"
 msgstr ""
 
 #: extmod/ulab/code/approx.c
@@ -2667,6 +2728,10 @@ msgstr ""
 msgid "negative shift count"
 msgstr ""
 
+#: shared-module/sdcardio/SDCard.c
+msgid "no SD card"
+msgstr ""
+
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr ""
@@ -2686,6 +2751,10 @@ msgstr ""
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no response from SD card"
 msgstr ""
 
 #: py/runtime.c
@@ -2977,6 +3046,10 @@ msgstr ""
 msgid "sleep length must be non-negative"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr ""
+
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
 msgstr ""
@@ -2991,6 +3064,18 @@ msgstr ""
 
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sosfilt requires iterable arguments"
 msgstr ""
 
 #: py/objstr.c
@@ -3042,7 +3127,7 @@ msgstr ""
 msgid "struct: no fields"
 msgstr ""
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr ""
 
@@ -3076,6 +3161,14 @@ msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v1 card"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v2 card"
 msgstr ""
 
 #: shared-bindings/time/__init__.c
@@ -3273,6 +3366,18 @@ msgstr ""
 
 #: py/objrange.c
 msgid "zero step"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of float type"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
 #~ msgid "Can't add services in Central mode"

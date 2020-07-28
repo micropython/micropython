@@ -39,6 +39,11 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
+//| _DisplayBus = Union[FourWire, ParallelBus, I2CDisplay]
+//| """:py:class:`FourWire`, :py:class:`ParallelBus` or :py:class:`I2CDisplay`"""
+//|
+
+//|
 //| class Display:
 //|     """Manage updating a display over a display bus
 //|
@@ -49,8 +54,8 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the initialization sequence at minimum."""
 //|
-//|     def __init__(self, display_bus: Any, init_sequence: buffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, set_vertical_scroll: int = 0, backlight_pin: microcontroller.Pin = None, brightness_command: int = None, brightness: bool = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False, auto_refresh: bool = True, native_frames_per_second: int = 60):
-//|         r"""Create a Display object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
+//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, set_vertical_scroll: int = 0, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False, auto_refresh: bool = True, native_frames_per_second: int = 60) -> None:
+//|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplay`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
 //|         command byte followed by a byte to determine the parameter count and if a delay is need after.
@@ -76,7 +81,7 @@
 //|         of the display to minimize tearing artifacts.
 //|
 //|         :param display_bus: The bus that the display is connected to
-//|         :type display_bus: displayio.FourWire or displayio.ParallelBus
+//|         :type display_bus: FourWire, ParallelBus or I2CDisplay
 //|         :param buffer init_sequence: Byte-packed initialization sequence.
 //|         :param int width: Width in pixels
 //|         :param int height: Height in pixels
@@ -96,7 +101,7 @@
 //|         :param int set_vertical_scroll: Command used to set the first row to show
 //|         :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
 //|         :param int brightness_command: Command to set display brightness. Usually available in OLED controllers.
-//|         :param bool brightness: Initial display brightness. This value is ignored if auto_brightness is True.
+//|         :param float brightness: Initial display brightness. This value is ignored if auto_brightness is True.
 //|         :param bool auto_brightness: If True, brightness is controlled via an ambient light sensor or other mechanism.
 //|         :param bool single_byte_bounds: Display column and row commands use single bytes
 //|         :param bool data_as_commands: Treat all init and boundary data as SPI commands. Certain displays require this.
@@ -188,7 +193,7 @@ static displayio_display_obj_t* native_display(mp_obj_t display_obj) {
     return MP_OBJ_TO_PTR(native_display);
 }
 
-//|     def show(self, group: Group) -> Any:
+//|     def show(self, group: Group) -> None:
 //|         """Switches to displaying the given group of layers. When group is None, the default
 //|         CircuitPython terminal will be shown.
 //|
@@ -210,7 +215,7 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1) -> Any:
+//|     def refresh(self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1) -> bool:
 //|         """When auto refresh is off, waits for the target frame rate and then refreshes the display,
 //|         returning True. If the call has taken too long since the last refresh call for the given
 //|         target frame rate, then the refresh returns False immediately without updating the screen to
@@ -245,7 +250,7 @@ STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_refresh_obj, 1, displayio_display_obj_refresh);
 
-//|     auto_refresh: Any = ...
+//|     auto_refresh: bool
 //|     """True when the display is refreshed automatically."""
 //|
 STATIC mp_obj_t displayio_display_obj_get_auto_refresh(mp_obj_t self_in) {
@@ -270,7 +275,7 @@ const mp_obj_property_t displayio_display_auto_refresh_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     brightness: Any = ...
+//|     brightness: float
 //|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
 //|     `auto_brightness` is True, the value of `brightness` will change automatically.
 //|     If `brightness` is set, `auto_brightness` will be disabled and will be set to False."""
@@ -307,7 +312,7 @@ const mp_obj_property_t displayio_display_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     auto_brightness: Any = ...
+//|     auto_brightness: bool
 //|     """True when the display brightness is adjusted automatically, based on an ambient
 //|     light sensor or other method. Note that some displays may have this set to True by default,
 //|     but not actually implement automatic brightness adjustment. `auto_brightness` is set to False
@@ -338,9 +343,8 @@ const mp_obj_property_t displayio_display_auto_brightness_obj = {
 
 
 
-//|     width: Any = ...
+//|     width: int
 //|	    Gets the width of the board
-//|
 //|
 STATIC mp_obj_t displayio_display_obj_get_width(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
@@ -355,9 +359,8 @@ const mp_obj_property_t displayio_display_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: Any = ...
+//|     height: int
 //|	    """Gets the height of the board"""
-//|
 //|
 STATIC mp_obj_t displayio_display_obj_get_height(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
@@ -372,7 +375,7 @@ const mp_obj_property_t displayio_display_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     rotation: Any = ...
+//|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
 //|
 STATIC mp_obj_t displayio_display_obj_get_rotation(mp_obj_t self_in) {
@@ -395,7 +398,7 @@ const mp_obj_property_t displayio_display_rotation_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     bus: Any = ...
+//|     bus: _DisplayBus
 //|	    """The bus being used by the display"""
 //|
 //|
@@ -413,7 +416,7 @@ const mp_obj_property_t displayio_display_bus_obj = {
 };
 
 
-//|     def fill_row(self, y: int, buffer: bytearray) -> Any:
+//|     def fill_row(self, y: int, buffer: WriteableBuffer) -> WriteableBuffer:
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area

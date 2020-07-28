@@ -13,6 +13,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 import json
 import logging
 import os

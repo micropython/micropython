@@ -29,6 +29,8 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hal_gpio.h"
 #include "lib/tinyusb/src/device/usbd.h"
+#include "supervisor/background_callback.h"
+#include "supervisor/usb.h"
 
 void init_usb_hardware(void) {
     #ifdef SAMD21
@@ -61,24 +63,24 @@ void init_usb_hardware(void) {
 
 #ifdef SAMD21
 void USB_Handler(void) {
-    tud_int_handler(0);
+    usb_irq_handler();
 }
 #endif
 
 #ifdef SAM_D5X_E5X
 void USB_0_Handler (void) {
-  tud_int_handler(0);
+    usb_irq_handler();
 }
 
 void USB_1_Handler (void) {
-  tud_int_handler(0);
+    usb_irq_handler();
 }
 
 void USB_2_Handler (void) {
-  tud_int_handler(0);
+    usb_irq_handler();
 }
 
 void USB_3_Handler (void) {
-  tud_int_handler(0);
+    usb_irq_handler();
 }
 #endif

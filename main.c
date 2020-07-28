@@ -45,6 +45,7 @@
 
 #include "background.h"
 #include "mpconfigboard.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
@@ -61,6 +62,10 @@
 
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
+#endif
+
+#if CIRCUITPY_MEMORYMONITOR
+#include "shared-module/memorymonitor/__init__.h"
 #endif
 
 #if CIRCUITPY_NETWORK
@@ -96,11 +101,13 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     }
 }
 
+#if MICROPY_ENABLE_PYSTACK
+static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
+#endif
+
 void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
-
-    background_tasks_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
@@ -125,6 +132,10 @@ void start_mp(supervisor_allocation* heap) {
 
     // Clear the readline history. It references the heap we're about to destroy.
     readline_init0();
+
+    #if MICROPY_ENABLE_PYSTACK
+    mp_pystack_init(_pystack, _pystack + (sizeof(_pystack) / sizeof(size_t)));
+    #endif
 
     #if MICROPY_ENABLE_GC
     gc_init(heap->ptr, heap->ptr + heap->length / 4);
@@ -161,6 +172,8 @@ void stop_mp(void) {
     MP_STATE_VM(vfs_cur) = vfs;
     #endif
 
+    background_callback_reset();
+
     gc_deinit();
 }
 
@@ -196,6 +209,9 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     // Turn off the display and flush the fileystem before the heap disappears.
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
+    #endif
+    #if CIRCUITPY_MEMORYMONITOR
+    memorymonitor_reset();
     #endif
     filesystem_flush();
     stop_mp();
@@ -314,6 +330,8 @@ bool run_code_py(safe_mode_t safe_mode) {
         tick_rgb_status_animation(&animation);
     }
 }
+
+FIL* boot_output_file;
 
 void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a
@@ -491,6 +509,8 @@ void gc_collect(void) {
     // This collects root pointers from the VFS mount table. Some of them may
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
+
+    background_callback_gc_collect();
 
     #if CIRCUITPY_DISPLAYIO
     displayio_gc_collect();

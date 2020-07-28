@@ -1,6 +1,8 @@
 # test hitting the function recursion limit within a thread
 #
-# MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+# SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+#
+# SPDX-License-Identifier: MIT
 
 import _thread
 

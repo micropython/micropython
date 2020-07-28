@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Josef Gajdusek
  * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *

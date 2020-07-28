@@ -28,11 +28,11 @@
 
 void never_reset_module_internal_pins(void) {
     // SPI Flash and RAM
-    never_reset_pin(&pin_GPIO26);
-    never_reset_pin(&pin_GPIO27);
-    never_reset_pin(&pin_GPIO28);
-    never_reset_pin(&pin_GPIO29);
-    never_reset_pin(&pin_GPIO30);
-    never_reset_pin(&pin_GPIO31);
-    never_reset_pin(&pin_GPIO32);
+    common_hal_never_reset_pin(&pin_GPIO26);
+    common_hal_never_reset_pin(&pin_GPIO27);
+    common_hal_never_reset_pin(&pin_GPIO28);
+    common_hal_never_reset_pin(&pin_GPIO29);
+    common_hal_never_reset_pin(&pin_GPIO30);
+    common_hal_never_reset_pin(&pin_GPIO31);
+    common_hal_never_reset_pin(&pin_GPIO32);
 }

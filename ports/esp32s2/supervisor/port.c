@@ -35,12 +35,12 @@
 #include "freertos/task.h"
 
 #include "common-hal/microcontroller/Pin.h"
+#include "common-hal/busio/I2C.h"
+#include "common-hal/busio/SPI.h"
+#include "common-hal/busio/UART.h"
+#include "common-hal/pulseio/PWMOut.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
-
-#include "esp_log.h"
-
-static const char* TAG = "CircuitPython";
 
 STATIC esp_timer_handle_t _tick_timer;
 
@@ -54,18 +54,25 @@ safe_mode_t port_init(void) {
     args.arg = NULL;
     args.dispatch_method = ESP_TIMER_TASK;
     args.name = "CircuitPython Tick";
-    esp_err_t result = esp_timer_create(&args, &_tick_timer);
-    if (result != ESP_OK) {
-        ESP_EARLY_LOGE(TAG, "Unable to create tick timer.");
-    }
+    esp_timer_create(&args, &_tick_timer);
     never_reset_module_internal_pins();
-    ESP_EARLY_LOGW(TAG, "port init done");
     return NO_SAFE_MODE;
 }
 
 void reset_port(void) {
-
     reset_all_pins();
+
+    // A larger delay so the idle task can run and do any IDF cleanup needed.
+    vTaskDelay(4);
+
+#if CIRCUITPY_PULSEIO
+    pwmout_reset();
+#endif
+#if CIRCUITPY_BUSIO
+    i2c_reset();
+    spi_reset();
+    uart_reset();
+#endif
 }
 
 void reset_to_bootloader(void) {
@@ -98,12 +105,8 @@ uint32_t *port_stack_get_top(void) {
 supervisor_allocation _fixed_stack;
 
 supervisor_allocation* port_fixed_stack(void) {
-
-    ESP_EARLY_LOGW(TAG, "port fixed stack");
     _fixed_stack.ptr = port_stack_get_limit();
-    ESP_EARLY_LOGW(TAG, "got limit %p", _fixed_stack.ptr);
     _fixed_stack.length = (port_stack_get_top() - port_stack_get_limit()) * sizeof(uint32_t);
-    ESP_EARLY_LOGW(TAG, "got length %d", _fixed_stack.length);
     return &_fixed_stack;
 }
 
@@ -128,10 +131,7 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
-    esp_err_t result = esp_timer_start_periodic(_tick_timer, 1000000 / 1024);
-    if (result != ESP_OK) {
-        ESP_EARLY_LOGE(TAG, "Unable to start tick timer.");
-    }
+    esp_timer_start_periodic(_tick_timer, 1000000 / 1024);
 }
 
 // Disable 1/1024 second tick.
@@ -142,14 +142,12 @@ void port_disable_tick(void) {
 TickType_t sleep_time_set;
 TickType_t sleep_time_duration;
 void port_interrupt_after_ticks(uint32_t ticks) {
-    // ESP_EARLY_LOGW(TAG, "after ticks");
     sleep_time_set = xTaskGetTickCount();
     sleep_time_duration = ticks / portTICK_PERIOD_MS;
     // esp_sleep_enable_timer_wakeup(uint64_t time_in_us)
 }
 
 void port_sleep_until_interrupt(void) {
-    // ESP_EARLY_LOGW(TAG, "sleep until");
     // FreeRTOS delay here maybe.
     // Light sleep shuts down BLE and wifi.
     // esp_light_sleep_start()
@@ -163,8 +161,5 @@ void port_sleep_until_interrupt(void) {
 // Wrap main in app_main that the IDF expects.
 extern void main(void);
 void app_main(void) {
-    ESP_EARLY_LOGW(TAG, "Hello from CircuitPython");
-    // ESP_LOGW(TAG, "Hello from CircuitPython");
-
     main();
 }

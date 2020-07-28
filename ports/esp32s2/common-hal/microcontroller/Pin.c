@@ -35,11 +35,14 @@
 STATIC uint32_t never_reset_pins[2];
 STATIC uint32_t in_use[2];
 
+bool apa102_mosi_in_use;
+bool apa102_sck_in_use;
+
 void never_reset_pin_number(gpio_num_t pin_number) {
     never_reset_pins[pin_number / 32] |= 1 << pin_number % 32;
 }
 
-void never_reset_pin(const mcu_pin_obj_t* pin) {
+void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
     never_reset_pin_number(pin->number);
 }
 
@@ -47,6 +50,10 @@ void never_reset_pin(const mcu_pin_obj_t* pin) {
 void reset_pin_number(gpio_num_t pin_number) {
     never_reset_pins[pin_number / 32] &= ~(1 << pin_number % 32);
     in_use[pin_number / 32] &= ~(1 << pin_number % 32);
+}
+
+void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    reset_pin_number(pin->number);
 }
 
 void reset_all_pins(void) {

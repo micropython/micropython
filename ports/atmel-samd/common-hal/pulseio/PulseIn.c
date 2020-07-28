@@ -42,6 +42,7 @@
 #include "samd/timers.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
 
 // This timer is shared amongst all PulseIn objects as a higher resolution clock.
@@ -87,7 +88,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
     uint32_t current_count = tc->COUNT16.COUNT.reg;
 
     pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
-    if (!background_tasks_ok() || self->errored_too_fast) {
+    if (!supervisor_background_tasks_ok() || self->errored_too_fast) {
         self->errored_too_fast = true;
         common_hal_pulseio_pulsein_pause(self);
         return;
@@ -125,6 +126,9 @@ void pulsein_interrupt_handler(uint8_t channel) {
 }
 
 void pulsein_reset() {
+#ifdef SAMD21
+    rtc_end_pulsein();
+#endif
     refcount = 0;
     pulsein_tc_index = 0xff;
     overflow_count = 0;
@@ -221,6 +225,10 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
 
     // Set config will enable the EIC.
     pulsein_set_config(self, true);
+#ifdef SAMD21
+    rtc_start_pulsein();
+#endif
+
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
@@ -231,6 +239,9 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
     if (common_hal_pulseio_pulsein_deinited(self)) {
         return;
     }
+#ifdef SAMD21
+    rtc_end_pulsein();
+#endif
     set_eic_handler(self->channel, EIC_HANDLER_NO_INTERRUPT);
     turn_off_eic_channel(self->channel);
     reset_pin_number(self->pin);

@@ -1,13 +1,12 @@
-# Adafruit CircuitPython Chinese Hanyu Pinyin Translation
-# Copyright (C) 2019
-# This file is distributed under the same license as the CircuitPython package.
-# @hexthat#2155, 2019.
+# SPDX-FileCopyrightText: 2019 @hexthat#2155
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
 msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-25 11:44-0500\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -65,6 +64,10 @@ msgstr "%%c xūyào zhěngshù huò char"
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q zhèngzài shǐyòng"
@@ -81,15 +84,24 @@ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 msgid "%q list must be a list"
 msgstr ""
 
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+msgid "%q must be >= 0"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
-#: shared-bindings/vectorio/Rectangle.c
+#: shared-bindings/displayio/Shape.c
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q bìxū dàyú huò děngyú 1"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q pin invalid"
 msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
@@ -103,6 +115,10 @@ msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "xūyào '%q' cānshù"
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -314,6 +330,11 @@ msgstr "Suǒyǒu jìshí qì shǐyòng"
 msgid "Already advertising."
 msgstr "Mùqián zhèngzài guǎngbò"
 
+#: shared-module/memorymonitor/AllocationAlarm.c
+#: shared-module/memorymonitor/AllocationSize.c
+msgid "Already running"
+msgstr ""
+
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
 msgstr "Gěi dìng de yǐn jiǎo bù zhīchí AnalogIn"
@@ -345,8 +366,13 @@ msgstr "Shùzǔ bìxū bāohán bàn zìshù (type 'H')"
 msgid "Array values should be single bytes."
 msgstr "Shùzǔ zhí yīnggāi shì dāngè zì jié."
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
+msgstr ""
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#, c-format
+msgid "Attempt to allocate %d blocks"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -426,6 +452,11 @@ msgstr "Huǎnchōng qū tài xiǎo"
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "Huǎnchōng qū chángdù%d tài dà. Tā bìxū xiǎoyú%d"
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+msgid "Buffer length must be a multiple of 512"
+msgstr ""
+
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
@@ -465,7 +496,9 @@ msgstr "Zài fǎngwèn běn jī wùjiàn zhīqián diàoyòng super().__init__()
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Wúfǎ jiāng CCCD shèzhì wéi běndì tèzhēng"
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr "Wúfǎ shānchú zhí"
 
@@ -586,6 +619,10 @@ msgstr "Sǔnhuài de yuánshǐ dàimǎ"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
+msgstr ""
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
@@ -709,7 +746,8 @@ msgstr "EXTINT píndào yǐjīng shǐyòng"
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
 
-#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -871,6 +909,10 @@ msgstr "Nèibù dìngyì cuòwù"
 msgid "Internal error #%d"
 msgstr ""
 
+#: shared-bindings/sdioio/SDCard.c
+msgid "Invalid %q"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
@@ -978,7 +1020,8 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -1081,6 +1124,10 @@ msgstr "Bìxū shì %q zi lèi."
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "Bìxū tígōng MISO huò MOSI yǐn jiǎo"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Must provide SCK pin"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1341,6 +1388,7 @@ msgstr ""
 msgid "Random number generation error"
 msgstr "Suíjī shù shēngchéng cuòwù"
 
+#: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
 msgstr "Zhǐ dú"
@@ -1376,6 +1424,10 @@ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ g
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "SD card CSD format not supported"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
@@ -1421,7 +1473,9 @@ msgid "Slice and value different lengths."
 msgstr "Qiēpiàn hé zhí bùtóng chángdù."
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Qiēpiàn bù shòu zhīchí"
 
@@ -2012,6 +2066,10 @@ msgstr "bùnéng bǎ tā rēng dào gāng qǐdòng de fā diànjī shàng"
 msgid "can't send non-None value to a just-started generator"
 msgstr "wúfǎ xiàng gānggāng qǐdòng de shēngchéng qì fāsòng fēi zhí"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "can't set 512 block size"
+msgstr ""
+
 #: py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "wúfǎ shèzhì shǔxìng"
@@ -2139,6 +2197,10 @@ msgstr ""
 
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "couldn't determine SD card version"
 msgstr ""
 
 #: extmod/ulab/code/approx.c
@@ -2701,6 +2763,10 @@ msgstr "méiyǒu fú diǎn zhīchí de xiāojí gōnglǜ"
 msgid "negative shift count"
 msgstr "fù zhuǎnyí jìshù"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "no SD card"
+msgstr ""
+
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "méiyǒu jīhuó de yìcháng lái chóngxīn píngjià"
@@ -2721,6 +2787,10 @@ msgstr "méiyǒu mókuài '%q'"
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
 msgstr "Méiyǒu kěyòng de fùwèi yǐn jiǎo"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no response from SD card"
+msgstr ""
 
 #: py/runtime.c
 msgid "no such attribute"
@@ -3013,6 +3083,10 @@ msgstr ""
 msgid "sleep length must be non-negative"
 msgstr "shuìmián chángdù bìxū shìfēi fùshù"
 
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr ""
+
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
 msgstr "qiēpiàn bù bùnéng wéi líng"
@@ -3027,6 +3101,18 @@ msgstr "ruǎn chóngqǐ\n"
 
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "sosfilt requires iterable arguments"
 msgstr ""
 
 #: py/objstr.c
@@ -3078,7 +3164,7 @@ msgstr "jiégòu: suǒyǐn chāochū fànwéi"
 msgid "struct: no fields"
 msgstr "jiégòu: méiyǒu zìduàn"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "wèi zhǎodào zi zìfú chuàn"
 
@@ -3113,6 +3199,14 @@ msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "chāoshí bìxū shì >= 0.0"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v1 card"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v2 card"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -3310,6 +3404,18 @@ msgstr "y zhí chāochū biānjiè"
 #: py/objrange.c
 msgid "zero step"
 msgstr "líng bù"
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of float type"
+msgstr ""
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of shape (n_section, 2)"
+msgstr ""
 
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "Dìzhǐ bùshì %d zì jié zhǎng, huòzhě géshì cuòwù"

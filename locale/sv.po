@@ -1,14 +1,12 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-25 11:44-0500\n"
-"PO-Revision-Date: 2020-06-03 18:59+0000\n"
+"POT-Creation-Date: 2020-07-17 18:03-0700\n"
+"PO-Revision-Date: 2020-07-13 17:39+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -16,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: main.c
 msgid ""
@@ -66,6 +64,10 @@ msgstr "%%c kräver int eller char"
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr "%d adresspinnar och %d RGB-pinnar indikerar en höjd av %d, inte %d"
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr "%q-fel: %d"
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q används redan"
@@ -82,16 +84,25 @@ msgstr "Indexet %q måste vara ett heltal, inte %s"
 msgid "%q list must be a list"
 msgstr "%q-listan måste vara en lista"
 
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+msgid "%q must be >= 0"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
-#: shared-bindings/vectorio/Rectangle.c
+#: shared-bindings/displayio/Shape.c
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q måste vara >= 1"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q måste vara en tuple av längd 2"
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q pin invalid"
+msgstr "Pinne %q ogiltig"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -104,6 +115,10 @@ msgstr "%q() kräver %d positionsargument men %d gavs"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' argument krävs"
+
+#: py/objarray.c
+msgid "'%q' object is not bytes-like"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -315,6 +330,11 @@ msgstr "Alla timers används"
 msgid "Already advertising."
 msgstr "Annonserar redan."
 
+#: shared-module/memorymonitor/AllocationAlarm.c
+#: shared-module/memorymonitor/AllocationSize.c
+msgid "Already running"
+msgstr ""
+
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
 msgstr "AnalogIn stöds inte på angiven pinne"
@@ -346,9 +366,14 @@ msgstr "Matrisen måste innehålla halfwords (typ \"H\")"
 msgid "Array values should be single bytes."
 msgstr "Matrisvärden ska bestå av enstaka bytes."
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
 msgstr "Högst %d %q kan anges (inte %d)"
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#, c-format
+msgid "Attempt to allocate %d blocks"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -427,6 +452,11 @@ msgstr "Bufferten är för liten"
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "Buffertlängd %d för stor. Den måste vara mindre än %d"
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+msgid "Buffer length must be a multiple of 512"
+msgstr "Buffertlängd måste vara en multipel av 512"
+
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Bufferten måste ha minst längd 1"
@@ -466,7 +496,9 @@ msgstr "Anropa super().__init__() innan du använder det ursprungliga objektet."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Kan inte ställa in CCCD på lokal karaktäristik"
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr "Kan inte radera värden"
 
@@ -591,7 +623,11 @@ msgstr "Korrupt rå kod"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
-msgstr ""
+msgstr "Kan inte initiera GNSS"
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
+msgstr "Kan inte initiera SD-kort"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -714,7 +750,8 @@ msgstr "EXTINT-kanalen används redan"
 msgid "Error in regex"
 msgstr "Fel i regex"
 
-#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -876,6 +913,10 @@ msgstr "Internt define-fel"
 msgid "Internal error #%d"
 msgstr "Internt fel #%d"
 
+#: shared-bindings/sdioio/SDCard.c
+msgid "Invalid %q"
+msgstr "Ogiltig %q"
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
@@ -983,7 +1024,8 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -1087,6 +1129,10 @@ msgstr "Måste vara en %q-subklass."
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "Måste ange MISO- eller MOSI-pinne"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Must provide SCK pin"
+msgstr "Måste ange SCK-pinne"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1352,6 +1398,7 @@ msgstr "RTS/CTS/RS485 Stöds ännu inte på den här enheten"
 msgid "Random number generation error"
 msgstr "Fel vid generering av slumptal"
 
+#: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
 msgstr "Skrivskyddad"
@@ -1387,6 +1434,10 @@ msgstr "Kör i säkert läge! Autoladdning är avstängd.\n"
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Kör i säkert läge! Sparad kod körs inte.\n"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "SD card CSD format not supported"
+msgstr "SD-kort CSD-format stöds inte"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
@@ -1432,7 +1483,9 @@ msgid "Slice and value different lengths."
 msgstr "Slice och värde har olika längd."
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Slice stöds inte"
 
@@ -1458,7 +1511,7 @@ msgstr "Ange minst en UART-pinne"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
-msgstr ""
+msgstr "Systeminträdet måste vara gnss. SatellitSystem"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
@@ -2025,6 +2078,10 @@ msgstr "kan inte 'pend throw' för nystartad generator"
 msgid "can't send non-None value to a just-started generator"
 msgstr "kan inte skicka icke-None värde till nystartad generator"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "can't set 512 block size"
+msgstr "kan inte sätta blockstorlek 512"
+
 #: py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "kan inte att ange attribut"
@@ -2152,6 +2209,10 @@ msgstr "Kan inte sända indatamatris från form"
 #: extmod/ulab/code/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr "kan inte invertera Vandermonde-matris"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "couldn't determine SD card version"
+msgstr "kan inte avgöra SD-kortversion"
 
 #: extmod/ulab/code/approx.c
 msgid "data must be iterable"
@@ -2716,6 +2777,10 @@ msgstr "negativ exponent utan stöd för flyttal"
 msgid "negative shift count"
 msgstr "negativt skiftantal"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "no SD card"
+msgstr "inget SD-kort"
+
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "ingen aktiv exception för reraise"
@@ -2736,6 +2801,10 @@ msgstr "ingen modul med namnet '%q'"
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
 msgstr "ingen reset-pinne tillgänglig"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no response from SD card"
+msgstr "inget svar från SD-kort"
 
 #: py/runtime.c
 msgid "no such attribute"
@@ -3029,13 +3098,17 @@ msgstr "storlek är enbart definierad ndarrays"
 msgid "sleep length must be non-negative"
 msgstr "värdet för sleep måste vara positivt"
 
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr "segmentsteg kan inte vara noll"
+
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
-msgstr "segmentsteg får inte vara noll"
+msgstr "segmentsteg kan inte vara noll"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
-msgstr "värdet för konvertering till small int överskreds"
+msgstr "värdet för small int överskreds"
 
 #: main.c
 msgid "soft reboot\n"
@@ -3044,6 +3117,18 @@ msgstr "mjuk omstart\n"
 #: extmod/ulab/code/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "argumentet sort måste vara en ndarray"
+
+#: extmod/ulab/code/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr "sos array måste ha form (n_section, 6)"
+
+#: extmod/ulab/code/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr "sos[:, 3] måste vara ettor"
+
+#: extmod/ulab/code/filter.c
+msgid "sosfilt requires iterable arguments"
+msgstr "sosfilt kräver iterable argument"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3094,7 +3179,7 @@ msgstr "struct: index utanför intervallet"
 msgid "struct: no fields"
 msgstr "struct: inga fält"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "det gick inte att hitta delsträng"
 
@@ -3129,6 +3214,14 @@ msgstr "timeout måste vara 0.0-100.0 sekunder"
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "timeout måste vara >= 0.0"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v1 card"
+msgstr "timeout för v1-kort"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v2 card"
+msgstr "timeout för v2-kort"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -3326,6 +3419,18 @@ msgstr "y-värde utanför intervall"
 #: py/objrange.c
 msgid "zero step"
 msgstr "noll steg"
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be an ndarray"
+msgstr "zi måste vara en ndarray"
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of float type"
+msgstr "zi måste vara av typ float"
+
+#: extmod/ulab/code/filter.c
+msgid "zi must be of shape (n_section, 2)"
+msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "I2C operation not supported"
 #~ msgstr "I2C-åtgärd stöds inte"

@@ -50,13 +50,10 @@ STATIC uint8_t validate_pin(mp_obj_t obj) {
 }
 
 STATIC void validate_pins(qstr what, uint8_t* pin_nos, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
-    mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq));
-    if (len > max_pins) {
-        mp_raise_ValueError_varg(translate("At most %d %q may be specified (not %d)"), max_pins, what, len);
-    }
-    *count_out = len;
-    for (mp_int_t i=0; i<len; i++) {
-        pin_nos[i] = validate_pin(mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+    mcu_pin_obj_t *pins[max_pins];
+    validate_list_is_free_pins(what, pins, max_pins, seq, count_out);
+    for (mp_int_t i=0; i<*count_out; i++) {
+        pin_nos[i] = common_hal_mcu_pin_number(pins[i]);
     }
 }
 
@@ -131,7 +128,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//|     def __init__(self, *, width: Any, bit_depth: Any, rgb_pins: Any, addr_pins: Any, clock_pin: Any, latch_pin: Any, output_enable_pin: Any, doublebuffer: Any = True, framebuffer: Any = None, height: Any = 0):
+//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: List[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0) -> None:
 //|         """Create a RGBMatrix object with the given attributes.  The height of
 //|         the display is determined by the number of rgb and address pins:
 //|         len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4
@@ -240,7 +237,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Free the resources (pins, timers, etc.) associated with this
 //|         rgbmatrix instance.  After deinitialization, no further operations
 //|         may be performed."""
@@ -260,7 +257,7 @@ static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
     }
 }
 
-//|     brightness: Any = ...
+//|     brightness: float
 //|     """In the current implementation, 0.0 turns the display off entirely
 //|     and any other value up to 1.0 turns the display on fully."""
 //|
@@ -291,9 +288,10 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def refresh(self) -> Any: ...
-//|     """Transmits the color data in the buffer to the pixels so that
-//|     they are shown."""
+//|     def refresh(self) -> None:
+//|         """Transmits the color data in the buffer to the pixels so that
+//|         they are shown."""
+//|         ...
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
@@ -303,7 +301,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_refresh_obj, rgbmatrix_rgbmatrix_refresh);
 
-//|     width: int = ...
+//|     width: int
 //|     """The width of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
@@ -319,7 +317,7 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: int = ...
+//|     height: int
 //|     """The height of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {

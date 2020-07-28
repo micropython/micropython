@@ -16,7 +16,7 @@ Board features:
   * Spresense is powered by Sony's CXD5602 microcontroller (ARM® Cortex®-M4F × 6
     cores), with a clock speed of 156 MHz.
 
-Currently, Spresense port does not support GNSS, Audio and Multicore.
+Currently, Spresense port does not support Audio and Multicore.
 
 Refer to [developer.sony.com/develop/spresense/](https://developer.sony.com/develop/spresense/)
 for further information about this board.
@@ -75,7 +75,7 @@ Bootloader information:
 
 * You have to accept the End User License Agreement to be able to download and use the Spresense bootloader binary.
 
-Download the spresense binaries zip archive from: [Spresense firmware v1-4-000](https://developer.sony.com/file/download/download-spresense-firmware-v1-4-000)
+Download the spresense binaries zip archive from: [Spresense firmware v2-0-000](https://developer.sony.com/file/download/download-spresense-firmware-v2-0-000)
 
 Extract spresense binaries in your PC to ports/spresense/spresense-exported-sdk/firmware/
 

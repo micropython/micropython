@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 import argparse
 
 import os
@@ -535,14 +539,14 @@ h_file.write("""\
 
 #include <stdint.h>
 
-const uint8_t usb_desc_dev[{device_length}];
+extern const uint8_t usb_desc_dev[{device_length}];
 // Make sure the control buffer is big enough to fit the descriptor.
 #define CFG_TUD_ENUM_BUFFER_SIZE {max_configuration_length}
-const uint8_t usb_desc_cfg[{configuration_length}];
-uint16_t usb_serial_number[{serial_number_length}];
-uint16_t const * const string_desc_arr [{string_descriptor_length}];
+extern const uint8_t usb_desc_cfg[{configuration_length}];
+extern uint16_t usb_serial_number[{serial_number_length}];
+extern uint16_t const * const string_desc_arr [{string_descriptor_length}];
 
-const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
+extern const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
 
 #define USB_HID_NUM_DEVICES {hid_num_devices}
 
