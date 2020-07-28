@@ -181,8 +181,6 @@ SECTIONS
         */frozen.o(.rodata.mp_frozen_sizes) /* frozen modules */
         */frozen.o(.rodata.mp_frozen_content) /* frozen modules */
 
-        *code/*.o*(.literal* .text*)   /* ulab module */
-        
         /* for -mforce-l32 */
         build-*/*.o(.rodata*)
 
