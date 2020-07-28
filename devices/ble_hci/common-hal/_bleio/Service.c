@@ -40,24 +40,18 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
     self->connection = NULL;
     self->is_secondary = is_secondary;
 
-    //FIX
-    // ble_uuid_t nordic_uuid;
-    // bleio_uuid_convert_to_nrf_ble_uuid(uuid, &nordic_uuid);
-
-    // uint8_t service_type = BLE_GATTS_SRVC_TYPE_PRIMARY;
-    // if (is_secondary) {
-    //     service_type = BLE_GATTS_SRVC_TYPE_SECONDARY;
-    // }
-
     vm_used_ble = true;
 
-    //FIX return sd_ble_gatts_service_add(service_type, &nordic_uuid, &self->handle);
-    return 0;
+    uint32_t status;
+    self->handle = bleio_adapter_add_attribute(
+        is_secondary ? BLE_TYPE_SECONDARY_SERVICE : BLE_TYPE_PRIMARY_SERVICE,
+        uuid, &status);
+    return status;
 }
 
 void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary) {
-    //FIX check_nrf_error(_common_hal_bleio_service_construct(self, uuid, is_secondary,
-    //                                                     mp_obj_new_list(0, NULL)));
+    check_hci_error(_common_hal_bleio_service_construct(self, uuid, is_secondary,
+                                                        mp_obj_new_list(0, NULL)));
 }
 
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection) {
@@ -88,6 +82,30 @@ bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self) {
 void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
                                                  bleio_characteristic_obj_t *characteristic,
                                                  mp_buffer_info_t *initial_value_bufinfo) {
+    common_hal_bleio_adapter_obj
+    //FIX how it's done by ArduinoBLE when a service is added.
+  // uint16_t startHandle = attributeCount();
+
+  // for (unsigned int i = 0; i < service->characteristicCount(); i++) {
+  //   BLELocalCharacteristic* characteristic = service->characteristic(i);
+
+  //   characteristic->retain();
+  //   _attributes.add(characteristic);
+  //   characteristic->setHandle(attributeCount());
+
+  //   // add the characteristic again to make space of the characteristic value handle
+  //   _attributes.add(characteristic);
+
+  //   for (unsigned int j = 0; j < characteristic->descriptorCount(); j++) {
+  //     BLELocalDescriptor* descriptor = characteristic->descriptor(j);
+
+  //     descriptor->retain();
+  //     _attributes.add(descriptor);
+  //     descriptor->setHandle(attributeCount());
+  //   }
+  // }
+
+  service->setHandles(startHandle, attributeCount());
     // ble_gatts_char_md_t char_md = {
     //     .char_props.broadcast      = (characteristic->props & CHAR_PROP_BROADCAST) ? 1 : 0,
     //     .char_props.read           = (characteristic->props & CHAR_PROP_READ) ? 1 : 0,
@@ -100,9 +118,6 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     // ble_gatts_attr_md_t cccd_md = {
     //     .vloc = BLE_GATTS_VLOC_STACK,
     // };
-
-    // ble_uuid_t char_uuid;
-    // bleio_uuid_convert_to_nrf_ble_uuid(characteristic->uuid, &char_uuid);
 
     // ble_gatts_attr_md_t char_attr_md = {
     //     .vloc = BLE_GATTS_VLOC_STACK,

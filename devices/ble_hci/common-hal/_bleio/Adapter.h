@@ -67,6 +67,9 @@ typedef struct _bleio_adapter_obj_t {
     uint16_t max_adv_data_len;
     uint8_t features[8];        // Supported BLE features.
 
+    // All the local attributes for this device. The index into the list
+    // corresponds to the handle.
+    mp_obj_list_t *attributes;
 } bleio_adapter_obj_t;
 
 void bleio_adapter_background(bleio_adapter_obj_t* adapter);

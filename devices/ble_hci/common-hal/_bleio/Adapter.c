@@ -238,6 +238,9 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     self->extended_advertising = false;
     self->circuitpython_advertising = false;
     self->advertising_timeout_msecs = 0;
+
+    // Reset list of known attributes.
+    self->attributes = mp_obj_new_list(0, NULL);
 }
 
 bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {

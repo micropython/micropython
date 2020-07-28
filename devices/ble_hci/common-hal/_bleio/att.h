@@ -39,7 +39,7 @@ bool att_disconnect_all(void);
 bool att_disconnect_from_address(bt_addr_le_t *addr);
 bool att_discover_attributes(bt_addr_le_t *addr, const char* service_uuid_filter);
 bool att_exchange_mtu(uint16_t conn_handle);
-bool att_handle_ind(uint16_t handle, const uint8_t* value, int length);
+bool att_handle_indicate(uint16_t handle, const uint8_t* value, int length);
 bool att_handle_is_connected(uint16_t handle);
 bool att_handle_notify(uint16_t handle, const uint8_t* value, int length);
 bool att_is_connected(void);
