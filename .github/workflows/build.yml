@@ -105,6 +105,18 @@ jobs:
         name: mpy-cross.static-x64-windows
         path: mpy-cross/mpy-cross.static.exe
 
+    - name: Upload mpy-cross builds to S3
+      run: |
+        "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1"
+        "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp mpy-cross/mpy-cross.static s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-amd64-linux-${{ env.CP_VERSION }} --no-progress --region us-east-1"
+        "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp mpy-cross/mpy-cross.static-mingw s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-mingw-${{ env.CP_VERSION }} --no-progress --region us-east-1"
+        "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
+
   mpy-cross-mac:
     runs-on: macos-10.15
     steps:
@@ -127,13 +139,22 @@ jobs:
         fetch-depth: 0
     - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
-      run: git describe --dirty --tags
+      run: |
+        git describe --dirty --tags
+        echo "::set-env name=CP_VERSION::$(git describe --dirty --tags)"
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v1.0.0
       with:
         name: mpy-cross-macos-catalina
         path: mpy-cross/mpy-cross
+    - name: Upload mpy-cross build to S3
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-catalina-${{ env.CP_VERSION }} --no-progress --region us-east-1"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
 
   build-arm:
     runs-on: ubuntu-18.04
