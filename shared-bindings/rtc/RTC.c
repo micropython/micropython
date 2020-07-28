@@ -53,7 +53,7 @@ STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, const
     return (mp_obj_t)&rtc_rtc_obj;
 }
 
-//|     datetime: time.struct_time = ...
+//|     datetime: time.struct_time
 //|     """The current date and time of the RTC as a `time.struct_time`.
 //|
 //|     This must be set to the current date and time whenever the board loses power::
@@ -94,7 +94,7 @@ const mp_obj_property_t rtc_rtc_datetime_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     calibration: int = ...
+//|     calibration: int
 //|     """The RTC calibration value as an `int`.
 //|
 //|     A positive value speeds up the clock and a negative value slows it down.

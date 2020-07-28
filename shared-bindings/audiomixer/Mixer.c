@@ -156,7 +156,7 @@ STATIC mp_obj_t audiomixer_mixer_obj___exit__(size_t n_args, const mp_obj_t *arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiomixer_mixer___exit___obj, 4, 4, audiomixer_mixer_obj___exit__);
 
-//|     playing: bool = ...
+//|     playing: bool
 //|     """True when any voice is being output. (read-only)"""
 //|
 STATIC mp_obj_t audiomixer_mixer_obj_get_playing(mp_obj_t self_in) {
@@ -173,7 +173,7 @@ const mp_obj_property_t audiomixer_mixer_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     sample_rate: int = ...
+//|     sample_rate: int
 //|     """32 bit value that dictates how quickly samples are played in Hertz (cycles per second)."""
 //|
 STATIC mp_obj_t audiomixer_mixer_obj_get_sample_rate(mp_obj_t self_in) {
@@ -190,7 +190,7 @@ const mp_obj_property_t audiomixer_mixer_sample_rate_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     voice: Tuple[MixerVoice, ...] = ...
+//|     voice: Tuple[MixerVoice, ...]
 //|     """A tuple of the mixer's `audiomixer.MixerVoice` object(s).
 //|
 //|     .. code-block:: python
@@ -211,7 +211,7 @@ const mp_obj_property_t audiomixer_mixer_voice_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def play(self, sample: Union[audiomixer.WaveFile, audiocore.RawSample, audiomixer.Mixer], *, voice: int = 0, loop: bool = False) -> None:
+//|     def play(self, sample: audiocore._AudioSample, *, voice: int = 0, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|

@@ -117,7 +117,7 @@ STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_o
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_packet_buffer_readinto_obj, bleio_packet_buffer_readinto);
 
-//|     def write(self, data: bytes, *, header: Optional[bytes] = None) -> int:
+//|     def write(self, data: ReadableBuffer, *, header: Optional[bytes] = None) -> int:
 //|         """Writes all bytes from data into the same outgoing packet. The bytes from header are included
 //|         before data when the pending packet is currently empty.
 //|
@@ -179,12 +179,12 @@ STATIC mp_obj_t bleio_packet_buffer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_deinit_obj, bleio_packet_buffer_deinit);
 
-//|     packet_size: int = ...
+//|     packet_size: int
 //|     """`packet_size` is the same as `incoming_packet_length`.
 //|     The name `packet_size` is deprecated and
 //|     will be removed in CircuitPython 6.0.0."""
 //|
-//|     incoming_packet_length: int = ...
+//|     incoming_packet_length: int
 //|     """Maximum length in bytes of a packet we are reading."""
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in) {
@@ -205,7 +205,7 @@ const mp_obj_property_t bleio_packet_buffer_incoming_packet_length_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     outgoing_packet_length: int = ...
+//|     outgoing_packet_length: int
 //|     """Maximum length in bytes of a packet we are writing."""
 //|
 STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in) {

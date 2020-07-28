@@ -100,7 +100,7 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|     def read(self, nbytes: int = None) -> Optional[bytes]:
+//|     def read(self, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read characters.  If ``nbytes`` is specified then read at most that many
 //|         bytes. Otherwise, read everything that arrives until the connection
 //|         times out. Providing the number of bytes expected is highly recommended
@@ -167,7 +167,7 @@ STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t r
     return ret;
 }
 
-//|     in_waiting: int = ...
+//|     in_waiting: int
 //|     """The number of bytes in the input buffer, available to be read"""
 //|
 STATIC mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in) {

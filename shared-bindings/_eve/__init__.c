@@ -70,7 +70,7 @@ STATIC mp_obj_t _flush(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(flush_obj, _flush);
 
-//| def cc(self, b: bytes) -> None:
+//| def cc(self, b: ReadableBuffer) -> None:
 //|     """Append bytes to the command FIFO.
 //|
 //|     :param bytes b: The bytes to add"""

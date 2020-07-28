@@ -50,7 +50,7 @@
 //|         ...
 //|
 
-//|     frequency: int = ...
+//|     frequency: int
 //|     """The CPU operating frequency in Hertz. (read-only)"""
 //|
 STATIC mp_obj_t mcu_processor_get_frequency(mp_obj_t self) {
@@ -67,7 +67,7 @@ const mp_obj_property_t mcu_processor_frequency_obj = {
     },
 };
 
-//|     temperature: Optional[float] = ...
+//|     temperature: Optional[float]
 //|     """The on-chip temperature, in Celsius, as a float. (read-only)
 //|
 //|     Is `None` if the temperature is not available."""
@@ -87,7 +87,7 @@ const mp_obj_property_t mcu_processor_temperature_obj = {
     },
 };
 
-//|     uid: bytearray = ...
+//|     uid: bytearray
 //|     """The unique id (aka serial number) of the chip as a `bytearray`. (read-only)"""
 //|
 STATIC mp_obj_t mcu_processor_get_uid(mp_obj_t self) {
@@ -106,7 +106,7 @@ const mp_obj_property_t mcu_processor_uid_obj = {
     },
 };
 
-//|     voltage: Optional[float] = ...
+//|     voltage: Optional[float]
 //|     """The input voltage to the microcontroller, as a float. (read-only)
 //|
 //|     Is `None` if the voltage is not available."""

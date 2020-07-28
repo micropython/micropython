@@ -212,7 +212,7 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
-//|     def send(self, bytes: bytes) -> int:
+//|     def send(self, bytes: ReadableBuffer) -> int:
 //|         """Send some bytes to the connected remote address.
 //|         Suits sockets of type SOCK_STREAM
 //|
@@ -312,7 +312,7 @@ STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
-//|     def sendto(self, bytes: bytes, address: tuple) -> int:
+//|     def sendto(self, bytes: ReadableBuffer, address: tuple) -> int:
 //|         """Send some bytes to a specific address.
 //|         Suits sockets of type SOCK_DGRAM
 //|
@@ -512,7 +512,7 @@ STATIC const mp_obj_type_t socket_type = {
     .locals_dict = (mp_obj_dict_t*)&socket_locals_dict,
 };
 
-//| def getaddrinfo(host: string, port: string) -> tuple:
+//| def getaddrinfo(host: str, port: int) -> tuple:
 //|     """Gets the address information for a hostname and port
 //|
 //|     Returns the appropriate family, socket type, socket protocol and

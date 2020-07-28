@@ -34,11 +34,11 @@
 //|         digital values in."""
 //|         ...
 //|
-//|     UP: Pull = ...
+//|     UP: Pull
 //|     """When the input line isn't being driven the pull up can pull the state
 //|     of the line high so it reads as true."""
 //|
-//|     DOWN: Pull = ...
+//|     DOWN: Pull
 //|     """When the input line isn't being driven the pull down can pull the
 //|     state of the line low so it reads as false."""
 //|

@@ -259,7 +259,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_obj___exit__(size_t n_args,
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cperipheral_i2c_peripheral_request___exit___obj, 4, 4, i2cperipheral_i2c_peripheral_request_obj___exit__);
 
-//|     address: int = ...
+//|     address: int
 //|     """The I2C address of the request."""
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_get_address(mp_obj_t self_in) {
@@ -269,7 +269,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_get_address(mp_obj_t self_i
 }
 MP_DEFINE_CONST_PROP_GET(i2cperipheral_i2c_peripheral_request_address_obj, i2cperipheral_i2c_peripheral_request_get_address);
 
-//|     is_read: bool = ...
+//|     is_read: bool
 //|     """The I2C main controller is reading from this peripheral."""
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_get_is_read(mp_obj_t self_in) {
@@ -279,7 +279,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_get_is_read(mp_obj_t self_i
 }
 MP_DEFINE_CONST_PROP_GET(i2cperipheral_i2c_peripheral_request_is_read_obj, i2cperipheral_i2c_peripheral_request_get_is_read);
 
-//|     is_restart: bool = ...
+//|     is_restart: bool
 //|     """Is Repeated Start Condition."""
 //|
 STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_get_is_restart(mp_obj_t self_in) {
@@ -349,7 +349,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_read(size_t n_args, const m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(i2cperipheral_i2c_peripheral_request_read_obj, 1, i2cperipheral_i2c_peripheral_request_read);
 
-//|     def write(self, buffer: bytearray) -> int:
+//|     def write(self, buffer: ReadableBuffer) -> int:
 //|         """Write the data contained in buffer.
 //|
 //|         :param buffer: Write out the data in this buffer

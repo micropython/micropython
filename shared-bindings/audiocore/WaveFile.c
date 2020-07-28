@@ -125,7 +125,7 @@ STATIC mp_obj_t audioio_wavefile_obj___exit__(size_t n_args, const mp_obj_t *arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_wavefile___exit___obj, 4, 4, audioio_wavefile_obj___exit__);
 
-//|     sample_rate: int = ...
+//|     sample_rate: int
 //|     """32 bit value that dictates how quickly samples are loaded into the DAC
 //|     in Hertz (cycles per second). When the sample is looped, this can change
 //|     the pitch output without changing the underlying sample."""
@@ -152,7 +152,7 @@ const mp_obj_property_t audioio_wavefile_sample_rate_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     bits_per_sample: int = ...
+//|     bits_per_sample: int
 //|     """Bits per sample. (read only)"""
 //|
 STATIC mp_obj_t audioio_wavefile_obj_get_bits_per_sample(mp_obj_t self_in) {
@@ -168,7 +168,7 @@ const mp_obj_property_t audioio_wavefile_bits_per_sample_obj = {
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
-//|     channel_count: int = ...
+//|     channel_count: int
 //|     """Number of audio channels. (read only)"""
 //|
 STATIC mp_obj_t audioio_wavefile_obj_get_channel_count(mp_obj_t self_in) {

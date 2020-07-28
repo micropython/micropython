@@ -35,7 +35,7 @@
 
 //| class AllocationSize:
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """Tracks the number of allocations in power of two buckets.
 //|
 //|         It will have 16 16-bit buckets to track allocation counts. It is total allocations
@@ -72,7 +72,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_make_new(const mp_obj_type_t *type,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> AllocationSize:
 //|         """Clears counts and resumes tracking."""
 //|         ...
 //|
@@ -83,7 +83,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_obj___enter__(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationsize___enter___obj, memorymonitor_allocationsize_obj___enter__);
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically pauses allocation tracking when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -95,7 +95,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_obj___exit__(size_t n_args, const m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(memorymonitor_allocationsize___exit___obj, 4, 4, memorymonitor_allocationsize_obj___exit__);
 
-//|     bytes_per_block: int = ...
+//|     bytes_per_block: int
 //|     """Number of bytes per block"""
 //|
 STATIC mp_obj_t memorymonitor_allocationsize_obj_get_bytes_per_block(mp_obj_t self_in) {
@@ -112,7 +112,7 @@ const mp_obj_property_t memorymonitor_allocationsize_bytes_per_block_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __len__(self, ) -> Any:
+//|     def __len__(self) -> int:
 //|         """Returns the number of allocation buckets.
 //|
 //|         This allows you to::
@@ -131,7 +131,7 @@ STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t
     }
 }
 
-//|     def __getitem__(self, index: Any) -> Any:
+//|     def __getitem__(self, index: int) -> Optional[int]:
 //|         """Returns the allocation count for the given bucket.
 //|
 //|         This allows you to::

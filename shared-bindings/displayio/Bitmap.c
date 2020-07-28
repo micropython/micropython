@@ -73,7 +73,7 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
 
     return MP_OBJ_FROM_PTR(self);
 }
-//|     width: int = ...
+//|     width: int
 //|     """Width of the bitmap. (read only)"""
 //|
 STATIC mp_obj_t displayio_bitmap_obj_get_width(mp_obj_t self_in) {
@@ -91,7 +91,7 @@ const mp_obj_property_t displayio_bitmap_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: int = ...
+//|     height: int
 //|     """Height of the bitmap. (read only)"""
 //|
 STATIC mp_obj_t displayio_bitmap_obj_get_height(mp_obj_t self_in) {

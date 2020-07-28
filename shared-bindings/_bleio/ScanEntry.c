@@ -70,7 +70,7 @@ STATIC mp_obj_t bleio_scanentry_matches(mp_uint_t n_args, const mp_obj_t *pos_ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanentry_matches_obj, 2, bleio_scanentry_matches);
 
-//|     address: Address = ...
+//|     address: Address
 //|     """The address of the device (read-only), of type `_bleio.Address`."""
 //|
 STATIC mp_obj_t bleio_scanentry_get_address(mp_obj_t self_in) {
@@ -86,7 +86,7 @@ const mp_obj_property_t bleio_scanentry_address_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     advertisement_bytes: bytes = ...
+//|     advertisement_bytes: bytes
 //|     """All the advertisement data present in the packet, returned as a ``bytes`` object. (read-only)"""
 //|
 STATIC mp_obj_t scanentry_get_advertisement_bytes(mp_obj_t self_in) {
@@ -102,7 +102,7 @@ const mp_obj_property_t bleio_scanentry_advertisement_bytes_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     rssi: int = ...
+//|     rssi: int
 //|     """The signal strength of the device at the time of the scan, in integer dBm. (read-only)"""
 //|
 STATIC mp_obj_t scanentry_get_rssi(mp_obj_t self_in) {
@@ -118,7 +118,7 @@ const mp_obj_property_t bleio_scanentry_rssi_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     connectable: bool = ...
+//|     connectable: bool
 //|     """True if the device can be connected to. (read-only)"""
 //|
 STATIC mp_obj_t scanentry_get_connectable(mp_obj_t self_in) {
@@ -134,7 +134,7 @@ const mp_obj_property_t bleio_scanentry_connectable_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     scan_response: bool = ...
+//|     scan_response: bool
 //|     """True if the entry was a scan response. (read-only)"""
 //|
 STATIC mp_obj_t scanentry_get_scan_response(mp_obj_t self_in) {

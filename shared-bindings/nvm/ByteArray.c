@@ -49,7 +49,8 @@
 //|         ...
 //|
 
-//|     def __bool__(self) -> bool: ...
+//|     def __bool__(self) -> bool:
+//|         ...
 //|
 //|     def __len__(self) -> int:
 //|         """Return the length. This is used by (`len`)"""
@@ -70,6 +71,18 @@ STATIC const mp_rom_map_elem_t nvm_bytearray_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(nvm_bytearray_locals_dict, nvm_bytearray_locals_dict_table);
 
+//|     @overload
+//|     def __getitem__(self, index: slice) -> bytearray: ...
+//|     def __getitem__(self, index: int) -> int:
+//|         """Returns the value at the given index."""
+//|         ...
+//|
+//|     @overload
+//|     def __setitem__(self, index: slice, value: ReadableBuffer) -> None: ...
+//|     def __setitem__(self, index: int, value: int) -> None:
+//|         """Set the value at the given index."""
+//|         ...
+//|
 STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item

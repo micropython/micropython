@@ -77,7 +77,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     address_bytes: bytes = ...
+//|     address_bytes: bytes
 //|     """The bytes that make up the device address (read-only).
 //|
 //|     Note that the ``bytes`` object returned is in little-endian order:
@@ -108,7 +108,7 @@ const mp_obj_property_t bleio_address_address_bytes_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     type: int = ...
+//|     type: int
 //|     """The address type (read-only).
 //|
 //|     One of the integer values: `PUBLIC`, `RANDOM_STATIC`, `RANDOM_PRIVATE_RESOLVABLE`,
@@ -128,7 +128,7 @@ const mp_obj_property_t bleio_address_type_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __eq__(self, other: Any) -> bool:
+//|     def __eq__(self, other: Address) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""
 //|         ...
 //|
@@ -187,17 +187,17 @@ STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
               buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
 }
 
-//|     PUBLIC: int = ...
+//|     PUBLIC: int
 //|     """A publicly known address, with a company ID (high 24 bits)and company-assigned part (low 24 bits)."""
 //|
-//|     RANDOM_STATIC: int = ...
+//|     RANDOM_STATIC: int
 //|     """A randomly generated address that does not change often. It may never change or may change after
 //|      a power cycle."""
 //|
-//|     RANDOM_PRIVATE_RESOLVABLE: int = ...
+//|     RANDOM_PRIVATE_RESOLVABLE: int
 //|     """An address that is usable when the peer knows the other device's secret Identity Resolving Key (IRK)."""
 //|
-//|     RANDOM_PRIVATE_NON_RESOLVABLE: int = ...
+//|     RANDOM_PRIVATE_NON_RESOLVABLE: int
 //|     """A randomly generated address that changes on every connection."""
 //|
 STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {

@@ -1713,11 +1713,11 @@ STATIC void compile_yield_from(compiler_t *comp) {
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC bool compile_require_async_context(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int scope_flags = comp->scope_cur->scope_flags;
-    if(scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+    if(scope_flags & MP_SCOPE_FLAG_ASYNC) {
         return true;
     }
     compile_syntax_error(comp, (mp_parse_node_t)pns,
-        translate("'async for' or 'async with' outside async function"));
+        translate("'await', 'async for' or 'async with' outside async function"));
     return false;
 }
 
@@ -2645,6 +2645,7 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
         compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'await' outside function"));
         return;
     }
+    compile_require_async_context(comp, pns);
     compile_atom_expr_normal(comp, pns);
     compile_yield_from(comp);
 }

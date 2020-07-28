@@ -37,7 +37,7 @@ static mp_obj_t vectorio_circle_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 
-//|     radius : int = ...
+//|     radius : int
 //|     """The radius of the circle in pixels."""
 //|
 STATIC mp_obj_t vectorio_circle_obj_get_radius(mp_obj_t self_in) {

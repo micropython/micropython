@@ -79,10 +79,10 @@ STATIC NORETURN void math_error(void) {
 #define log2(x) (log(x) * 1.442695040888963407354163704)
 #endif
 
-//| e: float = ...
+//| e: float
 //| """base of the natural logarithm"""
 //|
-//| pi: float = ...
+//| pi: float
 //| """the ratio of a circle's circumference to its diameter"""
 //|
 
@@ -126,7 +126,7 @@ STATIC NORETURN void math_error(void) {
 //|     """Return the absolute value of ``x``."""
 //|     ...
 //|
-//| def floor(x: float) -> float:
+//| def floor(x: float) -> int:
 //|     """Return an integer, being ``x`` rounded towards negative infinity."""
 //|     ...
 //|

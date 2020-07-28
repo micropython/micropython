@@ -34,10 +34,10 @@
 //|         digital values."""
 //|         ...
 //|
-//|     PUSH_PULL: DriveMode = ...
+//|     PUSH_PULL: DriveMode
 //|     """Output both high and low digital values"""
 //|
-//|     OPEN_DRAIN: DriveMode = ...
+//|     OPEN_DRAIN: DriveMode
 //|     """Output low digital values but go into high z for digital high. This is
 //|     useful for i2c and other protocols that share a digital line."""
 //|

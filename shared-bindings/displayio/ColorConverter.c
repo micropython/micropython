@@ -84,7 +84,7 @@ STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_convert_obj, displayio_colorconverter_obj_convert);
 
-//|     dither: bool = ...
+//|     dither: bool
 //|     """When true the color converter dithers the output by adding random noise when
 //|     truncating to display bitdepth"""
 //|

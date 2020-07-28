@@ -45,8 +45,31 @@
 //|         used internally by it. All user-visible interactions are done through
 //|         that library."""
 //|
-
-//|     def __init__(self, buffer: ReadableBuffer, rows: List[DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut], cols: List[DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut, DigitalInOut], buttons: DigitalInOut) -> None:
+//|     def __init__(
+//|         self,
+//|         buffer: ReadableBuffer,
+//|         rows: List[
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|         ],
+//|         cols: List[
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|             digitalio.DigitalInOut,
+//|         ],
+//|         buttons: digitalio.DigitalInOut,
+//|     ) -> None:
 //|         """Initializes matrix scanning routines.
 //|
 //|         The ``buffer`` is a 64 byte long ``bytearray`` that stores what should
