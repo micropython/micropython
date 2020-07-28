@@ -218,11 +218,9 @@ STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj,
     if ((size_t) MP_OBJ_SMALL_INT_VALUE(index_obj) == common_hal_displayio_group_get_len(self)){
         return displayio_group_obj_append(self_in, layer);
     }
-    
     size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);
     common_hal_displayio_group_insert(self, index, layer);
     return mp_const_none;
-    
 }
 MP_DEFINE_CONST_FUN_OBJ_3(displayio_group_insert_obj, displayio_group_obj_insert);
 
