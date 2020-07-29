@@ -323,13 +323,16 @@ audio_midi_interface = standard.InterfaceDescriptor(
         standard.EndpointDescriptor(
             description="MIDI data out to {}".format(args.interface_name),
             bEndpointAddress=args.midi_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT,
-            bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
+            bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
+            bInterval=0,
+            wMaxPacketSize=512 if args.highspeed else 64),
         midi.DataEndpointDescriptor(baAssocJack=[midi_in_jack_emb]),
         standard.EndpointDescriptor(
             description="MIDI data in from {}".format(args.interface_name),
             bEndpointAddress=args.midi_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
             bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
-            bInterval = 0x0),
+            bInterval = 0x0,
+            wMaxPacketSize=512 if args.highspeed else 64),
         midi.DataEndpointDescriptor(baAssocJack=[midi_out_jack_emb]),
     ])
 
@@ -544,15 +547,15 @@ h_file.write("""\
 #include <stdint.h>
 
 extern const uint8_t usb_desc_dev[{device_length}];
-// Make sure the control buffer is big enough to fit the descriptor.
-#define CFG_TUD_ENUM_BUFFER_SIZE {max_configuration_length}
 extern const uint8_t usb_desc_cfg[{configuration_length}];
 extern uint16_t usb_serial_number[{serial_number_length}];
 extern uint16_t const * const string_desc_arr [{string_descriptor_length}];
 
 extern const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
 
-#define USB_HID_NUM_DEVICES {hid_num_devices}
+#define CFG_TUSB_RHPORT0_MODE       ({rhport0_mode})
+
+#define USB_HID_NUM_DEVICES         {hid_num_devices}
 
 // Vendor name included in Inquiry response, max 8 bytes
 #define CFG_TUD_MSC_VENDOR          "{msc_vendor}"
@@ -567,6 +570,7 @@ extern const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
         max_configuration_length=max(hid_descriptor_length, descriptor_length),
         string_descriptor_length=len(pointers_to_strings),
         hid_report_descriptor_length=len(bytes(combined_hid_report_descriptor)),
+        rhport0_mode='OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED' if args.highspeed else 'OPT_MODE_DEVICE',
         hid_num_devices=len(args.hid_devices),
         msc_vendor=args.manufacturer[:8],
         msc_product=args.product[:16]))

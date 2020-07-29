@@ -47,8 +47,6 @@
 //--------------------------------------------------------------------+
 // COMMON CONFIGURATION
 //--------------------------------------------------------------------+
-#define CFG_TUSB_RHPORT0_MODE       OPT_MODE_DEVICE
-
 #ifndef CFG_TUSB_DEBUG
 #define CFG_TUSB_DEBUG              0
 #endif
