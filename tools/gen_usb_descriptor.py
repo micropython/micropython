@@ -23,6 +23,8 @@ ALL_HID_DEVICES_SET=frozenset(ALL_HID_DEVICES.split(','))
 DEFAULT_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,GAMEPAD'
 
 parser = argparse.ArgumentParser(description='Generate USB descriptors.')
+parser.add_argument('--highspeed', default=False, action='store_true',
+                    help='descriptor for highspeed device')
 parser.add_argument('--manufacturer', type=str,
                     help='manufacturer of the device')
 parser.add_argument('--product', type=str,
@@ -40,8 +42,6 @@ parser.add_argument('--hid_devices', type=lambda l: tuple(l.split(',')), default
 parser.add_argument('--interface_name', type=str,
                     help='The name/prefix to use in the interface descriptions',
                     default=DEFAULT_INTERFACE_NAME)
-parser.add_argument('--msc_max_packet_size', type=int, default=64,
-                    help='Max packet size for MSC')
 parser.add_argument('--no-renumber_endpoints', dest='renumber_endpoints', action='store_false',
                     help='use to not renumber endpoint')
 parser.add_argument('--cdc_ep_num_notification', type=int, default=0,
@@ -185,11 +185,15 @@ cdc_data_interface = standard.InterfaceDescriptor(
         standard.EndpointDescriptor(
             description="CDC data out",
             bEndpointAddress=args.cdc_ep_num_data_out | standard.EndpointDescriptor.DIRECTION_OUT,
-            bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
+            bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
+            bInterval=0,
+            wMaxPacketSize=512 if args.highspeed else 64),
         standard.EndpointDescriptor(
             description="CDC data in",
             bEndpointAddress=args.cdc_ep_num_data_in | standard.EndpointDescriptor.DIRECTION_IN,
-            bmAttributes=standard.EndpointDescriptor.TYPE_BULK),
+            bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
+            bInterval=0,
+            wMaxPacketSize=512 if args.highspeed else 64),
     ])
 
 cdc_interfaces = [cdc_comm_interface, cdc_data_interface]
@@ -207,13 +211,13 @@ msc_interfaces = [
                 bEndpointAddress=args.msc_ep_num_in | standard.EndpointDescriptor.DIRECTION_IN,
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0,
-                wMaxPacketSize=args.msc_max_packet_size),
+                wMaxPacketSize=512 if args.highspeed else 64),
             standard.EndpointDescriptor(
                 description="MSC out",
                 bEndpointAddress=(args.msc_ep_num_out | standard.EndpointDescriptor.DIRECTION_OUT),
                 bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
                 bInterval=0,
-                wMaxPacketSize=args.msc_max_packet_size)
+                wMaxPacketSize=512 if args.highspeed else 64),
         ]
     )
 ]
