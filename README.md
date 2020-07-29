@@ -65,22 +65,22 @@ SDL.init()
 
 disp_buf1 = lv.disp_buf_t()
 buf1_1 = bytearray(480*10)
-lv.disp_buf_init(disp_buf1,buf1_1, None, len(buf1_1)//4)
+disp_buf1.init(buf1_1, None, len(buf1_1)//4)
 disp_drv = lv.disp_drv_t()
-lv.disp_drv_init(disp_drv)
+disp_drv.init()
 disp_drv.buffer = disp_buf1
 disp_drv.flush_cb = SDL.monitor_flush
 disp_drv.hor_res = 480
 disp_drv.ver_res = 320
-lv.disp_drv_register(disp_drv)
+disp_drv.register()
 
 # Regsiter SDL mouse driver
 
 indev_drv = lv.indev_drv_t()
-lv.indev_drv_init(indev_drv) 
+indev_drv.init() 
 indev_drv.type = lv.INDEV_TYPE.POINTER;
 indev_drv.read_cb = SDL.mouse_read;
-lv.indev_drv_register(indev_drv);
+indev_drv.register();
 ```
 
 Here is an alternative example, for registering ILI9341 drivers on Micropython ESP32 port:
