@@ -163,8 +163,8 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
         // load
         return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_bitmap_get_pixel(self, x, y));
     } else {
-        mp_int_t value = mp_obj_get_int(value_obj);
-        if (value >= 1 << common_hal_displayio_bitmap_get_bits_per_value(self)) {
+        mp_uint_t value = (mp_uint_t)mp_obj_get_int(value_obj);
+        if ((value >> common_hal_displayio_bitmap_get_bits_per_value(self)) != 0) {
             mp_raise_ValueError(translate("pixel value requires too many bits"));
         }
         common_hal_displayio_bitmap_set_pixel(self, x, y, value);
@@ -179,8 +179,8 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) {
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t value = mp_obj_get_int(value_obj);
-    if (value >= 1 << common_hal_displayio_bitmap_get_bits_per_value(self)) {
+    mp_uint_t value = (mp_uint_t)mp_obj_get_int(value_obj);
+    if ((value >> common_hal_displayio_bitmap_get_bits_per_value(self)) != 0) {
             mp_raise_ValueError(translate("pixel value requires too many bits"));
     }
     common_hal_displayio_bitmap_fill(self, value);
