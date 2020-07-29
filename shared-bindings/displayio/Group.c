@@ -207,6 +207,9 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_append_obj, displayio_group_obj_append
 //|
 STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t layer) {
     displayio_group_t *self = native_group(self_in);
+    if ((size_t) MP_OBJ_SMALL_INT_VALUE(index_obj) == common_hal_displayio_group_get_len(self)){
+        return displayio_group_obj_append(self_in, layer);
+    }
     size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);
     common_hal_displayio_group_insert(self, index, layer);
     return mp_const_none;
