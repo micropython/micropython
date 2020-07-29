@@ -261,6 +261,9 @@ endif
 ifeq ($(CIRCUITPY_WATCHDOG),1)
 SRC_PATTERNS += watchdog/%
 endif
+ifeq ($(CIRCUITPY_WIFI),1)
+SRC_PATTERNS += wifi/%
+endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
@@ -333,6 +336,9 @@ SRC_COMMON_HAL_ALL = \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \
+	wifi/Network.c \
+	wifi/Radio.c \
+	wifi/__init__.c \
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 

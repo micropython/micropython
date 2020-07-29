@@ -29,4 +29,6 @@ CIRCUITPY_RANDOM = 0          # Requires OS
 CIRCUITPY_USB_MIDI = 0        # Requires USB
 CIRCUITPY_ULAB = 0            # No requirements, but takes extra flash
 
+CIRCUITPY_WIFI = 1
+
 CIRCUITPY_MODULE ?= none

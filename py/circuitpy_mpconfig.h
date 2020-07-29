@@ -683,6 +683,13 @@ extern const struct _mp_obj_module_t watchdog_module;
 #define WATCHDOG_MODULE
 #endif
 
+#if CIRCUITPY_WIFI
+extern const struct _mp_obj_module_t wifi_module;
+#define WIFI_MODULE { MP_ROM_QSTR(MP_QSTR_wifi), MP_ROM_PTR(&wifi_module) },
+#else
+#define WIFI_MODULE
+#endif
+
 // Define certain native modules with weak links so they can be replaced with Python
 // implementations. This list may grow over time.
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
@@ -759,6 +766,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     USB_MIDI_MODULE \
     USTACK_MODULE \
     WATCHDOG_MODULE \
+    WIFI_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.

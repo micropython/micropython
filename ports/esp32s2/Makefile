@@ -78,8 +78,11 @@ INC += -Iesp-idf/components/freertos/xtensa/include
 INC += -Iesp-idf/components/esp32s2/include
 INC += -Iesp-idf/components/xtensa/esp32s2/include
 INC += -Iesp-idf/components/esp_common/include
+INC += -Iesp-idf/components/esp_event/include
+INC += -Iesp-idf/components/esp_netif/include
 INC += -Iesp-idf/components/esp_ringbuf/include
 INC += -Iesp-idf/components/esp_rom/include
+INC += -Iesp-idf/components/esp_wifi/include
 INC += -Iesp-idf/components/xtensa/include
 INC += -Iesp-idf/components/esp_timer/include
 INC += -Iesp-idf/components/soc/include
@@ -129,7 +132,7 @@ LDFLAGS += -L$(BUILD)/esp-idf/esp-idf/esp32s2 \
            -Tesp32s2.rom.newlib-data.ld \
            -Tesp32s2.rom.newlib-funcs.ld \
            -Tesp32s2.rom.spiflash.ld
-LIBS := -lgcc -lc
+LIBS := -lgcc -lc -lstdc++
 
 #
 
@@ -238,20 +241,25 @@ $(BUILD)/esp-idf/partition_table/partition-table.bin: $(BUILD)/esp-idf/config/sd
 
 # run menuconfig
 menuconfig: $(BUILD)/esp-idf/config
-	ninja -C $(BUILD)/esp-idf menuconfig
-	diff --old-line-format= --unchanged-line-format= sdkconfig.defaults $(BUILD)/esp-idf/sdkconfig > boards/$(BOARD)/sdkconfig || true
+	$(Q)ninja -C $(BUILD)/esp-idf menuconfig
+	$(Q)diff --old-line-format= --unchanged-line-format= sdkconfig.defaults $(BUILD)/esp-idf/sdkconfig > boards/$(BOARD)/sdkconfig || true
 
 # qstr builds include headers so we need to make sure they are up to date
 $(HEADER_BUILD)/qstr.i.last: | $(BUILD)/esp-idf/config/sdkconfig.h
 
 # Order here matters
-ESP_IDF_COMPONENTS_LINK = freertos log esp_system esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf #
+ESP_IDF_COMPONENTS_LINK = freertos log esp_system esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash
 
 ESP_IDF_COMPONENTS_INCLUDE = driver freertos log soc
 
 INC += $(foreach component, $(ESP_IDF_COMPONENTS_INCLUDE), -Iesp-idf/components/$(component)/include)
 
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
+ESP_IDF_WIFI_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_WIFI_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
+
+MBEDTLS_COMPONENTS_LINK = crypto tls x509
+MBEDTLS_COMPONENTS_LINK_EXPANDED = $(foreach component, $(MBEDTLS_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/mbedtls/mbedtls/library/libmbed$(component).a)
+
 BINARY_BLOBS = esp-idf/components/xtensa/esp32s2/libhal.a
 BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a librtc.a libsmartconfig.a libphy.a
 BINARY_BLOBS += $(addprefix esp-idf/components/esp_wifi/lib/esp32s2/, $(BINARY_WIFI_BLOBS))
@@ -265,18 +273,23 @@ all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
 .PHONY: esp-idf-stamp
 esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
-	ninja -C $(BUILD)/esp-idf \
+	$(Q)ninja -C $(BUILD)/esp-idf \
 		bootloader/bootloader.bin \
 		esp-idf/bootloader_support/libbootloader_support.a \
 		esp-idf/esp32s2/ld/esp32s2.project.ld \
+		esp-idf/esp_event/libesp_event.a \
 		esp-idf/esp_system/libesp_system.a \
+		esp-idf/esp_wifi/libesp_wifi.a \
+		esp-idf/nvs_flash/libnvs_flash.a \
+		esp-idf/wpa_supplicant/libwpa_supplicant.a \
+		esp-idf/mbedtls/libmbedtls.a \
 		esp-idf/freertos/libfreertos.a \
 		esp-idf/log/liblog.a \
 		esp-idf/xtensa/libxtensa.a
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) build-$(BOARD)/esp-idf/esp-idf/newlib/libnewlib.a -u newlib_include_pthread_impl -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) build-$(BOARD)/esp-idf/esp-idf/newlib/libnewlib.a  -Wl,--end-group -u newlib_include_pthread_impl -Wl,--start-group $(LIBS) -Wl,--end-group build-$(BOARD)/esp-idf/esp-idf/pthread/libpthread.a  -u __cxx_fatal_exception
 	# $(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld
 
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf
