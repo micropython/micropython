@@ -30,6 +30,7 @@
 
 #include "extmod/vfs.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
@@ -159,6 +160,8 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
 }
 
 void common_hal_storage_erase_filesystem(void) {
+    usb_disconnect();
+    mp_hal_delay_ms(1000);
     filesystem_init(false, true); // Force a re-format.
     common_hal_mcu_reset();
     // We won't actually get here, since we're resetting.

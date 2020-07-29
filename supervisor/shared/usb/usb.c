@@ -74,6 +74,10 @@ void usb_init(void) {
 #endif
 }
 
+void usb_disconnect(void) {
+    tud_disconnect();
+}
+
 void usb_background(void) {
     if (usb_enabled()) {
         #if CFG_TUSB_OS == OPT_OS_NONE
