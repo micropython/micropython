@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-24 19:58-0700\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -780,7 +780,7 @@ msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
 msgid "Extended advertisements with scan response not supported."
 msgstr "Bù zhīchí dài yǒu sǎomiáo xiǎngyìng de kuòzhǎn guǎngbò."
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "FFT is defined for ndarrays only"
 msgstr ""
 
@@ -1818,7 +1818,7 @@ msgstr "dìzhǐ chāochū biānjiè"
 msgid "addresses is empty"
 msgstr "dìzhǐ wèi kōng"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "arctan2 is implemented for scalars and ndarrays only"
 msgstr ""
 
@@ -1826,13 +1826,17 @@ msgstr ""
 msgid "arg is an empty sequence"
 msgstr "cānshù shì yīgè kōng de xùliè"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr ""
 
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "cānshù lèixíng cuòwù"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "argument must be ndarray"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -1843,7 +1847,7 @@ msgstr "cānshù biānhào/lèixíng bù pǐpèi"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "cānshù yīnggāi shì '%q', 'bùshì '%q'"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "arguments must be ndarrays"
 msgstr ""
 
@@ -1851,7 +1855,7 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr "yòu cè xūyào shùzǔ/zì jié"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr ""
 
@@ -1859,15 +1863,15 @@ msgstr ""
 msgid "attributes not supported yet"
 msgstr "shǔxìng shàngwèi zhīchí"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be -1, 0, None, or 1"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be -1, 0, or 1"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be None, 0, or 1"
 msgstr ""
 
@@ -2176,15 +2180,15 @@ msgstr "chángshù bìxū shì yīgè zhěngshù"
 msgid "conversion to object"
 msgstr "zhuǎnhuàn wèi duìxiàng"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must be linear arrays"
 msgstr ""
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must be ndarrays"
 msgstr ""
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must not be empty"
 msgstr ""
 
@@ -2192,7 +2196,7 @@ msgstr ""
 msgid "could not broadast input array from shape"
 msgstr ""
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr ""
 
@@ -2200,15 +2204,15 @@ msgstr ""
 msgid "couldn't determine SD card version"
 msgstr ""
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
 msgstr ""
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "data must be of equal length"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "ddof must be smaller than length of data set"
 msgstr ""
 
@@ -2238,7 +2242,7 @@ msgstr "mùbiāo chángdù bìxū shì > = 0 de zhěngshù"
 msgid "dict update sequence has wrong length"
 msgstr "yǔfǎ gēngxīn xùliè de chángdù cuòwù"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "diff argument must be an ndarray"
 msgstr ""
 
@@ -2341,11 +2345,11 @@ msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
 msgid "filesystem must provide mount method"
 msgstr "wénjiàn xìtǒng bìxū tígōng guà zài fāngfǎ"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "first argument must be a callable"
 msgstr ""
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "first argument must be a function"
 msgstr ""
 
@@ -2353,7 +2357,7 @@ msgstr ""
 msgid "first argument must be an iterable"
 msgstr ""
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "first argument must be an ndarray"
 msgstr ""
 
@@ -2365,7 +2369,7 @@ msgstr "chāojí () de dì yī gè cānshù bìxū shì lèixíng"
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "flip argument must be an ndarray"
 msgstr ""
 
@@ -2398,11 +2402,11 @@ msgstr "hánshù yùjì zuìduō %d cānshù, huòdé %d"
 msgid "function got multiple values for argument '%q'"
 msgstr "hánshù huòdé cānshù '%q' de duōchóng zhí"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "function has the same sign at the ends of interval"
 msgstr ""
 
-#: extmod/ulab/code/compare.c
+#: extmod/ulab/code/compare/compare.c
 msgid "function is implemented for scalars and ndarrays only"
 msgstr ""
 
@@ -2488,7 +2492,7 @@ msgstr "suǒyǐn bìxū shì zhěngshù"
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "initial values must be iterable"
 msgstr ""
 
@@ -2496,35 +2500,35 @@ msgstr ""
 msgid "inline assembler must be a function"
 msgstr "nèi lián jíhé bìxū shì yīgè hánshù"
 
-#: extmod/ulab/code/create.c
+#: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
 msgstr ""
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
 msgstr ""
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
 msgstr ""
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr ""
 
@@ -2536,7 +2540,7 @@ msgstr "zhěngshù() cānshù 2 bìxū > = 2 qiě <= 36"
 msgid "integer required"
 msgstr "xūyào zhěngshù"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
 msgstr ""
 
@@ -2606,7 +2610,7 @@ msgstr "issubclass() cānshù 2 bìxū shì lèi de lèi huò yuán zǔ"
 msgid "iterables are not of the same length"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "iterations did not converge"
 msgstr ""
 
@@ -2671,11 +2675,11 @@ msgstr "dìtú huǎnchōng qū tài xiǎo"
 msgid "math domain error"
 msgstr "shùxué yù cuòwù"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix dimensions do not match"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr ""
 
@@ -2702,7 +2706,7 @@ msgstr "jìyì tǐ fēnpèi shībài, duī bèi suǒdìng"
 msgid "module not found"
 msgstr "zhǎo bù dào mókuài"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "more degrees of freedom than data points"
 msgstr ""
 
@@ -2726,7 +2730,7 @@ msgstr "bìxū tíchū duìxiàng"
 msgid "must use keyword argument for key function"
 msgstr "bìxū shǐyòng guānjiàn cí cānshù"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "n must be between 0, and 9"
 msgstr ""
 
@@ -2825,11 +2829,11 @@ msgstr "bùshì zì chuàn géshì huà guòchéng zhōng zhuǎnhuàn de suǒyǒ
 msgid "not enough arguments for format string"
 msgstr "géshì zìfú chuàn cān shǔ bùzú"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "number of arguments must be 2, or 3"
 msgstr ""
 
-#: extmod/ulab/code/create.c
+#: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr ""
 
@@ -2900,12 +2904,12 @@ msgstr "Jǐn zhīchí cǎiyàng lǜ = 16000"
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
 
-#: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
 msgstr ""
 
@@ -2997,7 +3001,7 @@ msgstr "duìliè yìchū"
 msgid "raw f-strings are not implemented"
 msgstr ""
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "real and imaginary parts must be of equal length"
 msgstr ""
 
@@ -3072,7 +3076,7 @@ msgstr "zhěngshù géshì shuōmíng fú 'c' bù yǔnxǔ shǐyòng fúhào"
 msgid "single '}' encountered in format string"
 msgstr "zài géshì zìfú chuàn zhōng yù dào de dāngè '}'"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "size is defined for ndarrays only"
 msgstr ""
 
@@ -3096,19 +3100,19 @@ msgstr "xiǎo zhěngshù yìchū"
 msgid "soft reboot\n"
 msgstr "ruǎn chóngqǐ\n"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
 msgstr ""
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "sos[:, 3] should be all ones"
 msgstr ""
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
@@ -3222,7 +3226,11 @@ msgstr ""
 msgid "too many values to unpack (expected %d)"
 msgstr "dǎkāi tài duō zhí (yùqí %d)"
 
-#: extmod/ulab/code/linalg.c py/objstr.c
+#: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays of equal length"
+msgstr ""
+
+#: extmod/ulab/code/linalg/linalg.c py/objstr.c
 msgid "tuple index out of range"
 msgstr "yuán zǔ suǒyǐn chāochū fànwéi"
 
@@ -3350,6 +3358,10 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 msgid "value_count must be > 0"
 msgstr "zhí jìshù bìxū wèi > 0"
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "vectors must have same lengths"
+msgstr ""
+
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
 msgstr ""
@@ -3358,7 +3370,7 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr "Chuāngkǒu bìxū shì <= jiàngé"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "wrong argument type"
 msgstr ""
 
@@ -3366,11 +3378,11 @@ msgstr ""
 msgid "wrong index type"
 msgstr ""
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
 msgstr ""
 
-#: py/objstr.c
+#: extmod/ulab/code/ulab_create.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "cānshù shù cuòwù"
 
@@ -3382,7 +3394,7 @@ msgstr "wúfǎ jiě bāo de zhí shù"
 msgid "wrong operand type"
 msgstr ""
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "wrong output type"
 msgstr ""
 
@@ -3402,15 +3414,15 @@ msgstr "y zhí chāochū biānjiè"
 msgid "zero step"
 msgstr "líng bù"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "zi must be an ndarray"
 msgstr ""
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "zi must be of float type"
 msgstr ""
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
