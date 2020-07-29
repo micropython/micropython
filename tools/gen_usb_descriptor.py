@@ -62,8 +62,8 @@ parser.add_argument('--midi_ep_num_out', type=int, default=0,
                     help='endpoint number of MIDI OUT')
 parser.add_argument('--midi_ep_num_in', type=int, default=0,
                     help='endpoint number of MIDI IN')
-parser.add_argument('--output_c_file', type=argparse.FileType('w'), required=True)
-parser.add_argument('--output_h_file', type=argparse.FileType('w'), required=True)
+parser.add_argument('--output_c_file', type=argparse.FileType('w', encoding='UTF-8'), required=True)
+parser.add_argument('--output_h_file', type=argparse.FileType('w', encoding='UTF-8'), required=True)
 
 args = parser.parse_args()
 
