@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-30 07:23-0500\n"
-"PO-Revision-Date: 2020-07-23 02:57+0000\n"
+"PO-Revision-Date: 2020-07-31 14:41+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -229,6 +229,8 @@ msgstr "'aguardar' fora da função"
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
 msgstr ""
+"'await', 'async for' (async para) ou 'async with' (async com) estão fora da "
+"função async"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -240,7 +242,7 @@ msgstr "'continue' fora do loop"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "O objeto 'corrotina' não é um iterador"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -886,7 +888,7 @@ msgstr "Erro de inicialização do I2C"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "O I2SOut não está disponível"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1596,6 +1598,8 @@ msgstr ""
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+"O temporizador foi reservado para uso interno - declare os pinos PWM no "
+"início do programa"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1872,7 +1876,7 @@ msgstr "argumento tem tipo errado"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr ""
+msgstr "o argumento deve ser um ndarray"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -3278,7 +3282,7 @@ msgstr "valores demais para descompactar (esperado %d)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "o trapz está definido para 1D arrays de igual tamanho"
 
 #: extmod/ulab/code/linalg/linalg.c py/objstr.c
 msgid "tuple index out of range"
@@ -3410,7 +3414,7 @@ msgstr "o value_count deve ser > 0"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "os vetores devem ter os mesmos comprimentos"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
