@@ -45,6 +45,7 @@ void init_usb_hardware(void);
 // Shared implementation.
 bool usb_enabled(void);
 void usb_init(void);
+void usb_disconnect(void);
 
 // Propagate plug/unplug events to the MSC logic.
 void usb_msc_mount(void);

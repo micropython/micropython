@@ -241,6 +241,7 @@ check-translate:
 stubs:
 	@mkdir -p circuitpython-stubs
 	@$(PYTHON) tools/extract_pyi.py shared-bindings/ $(STUBDIR)
+	@$(PYTHON) tools/extract_pyi.py extmod/ulab/code/ $(STUBDIR)/ulab
 	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
 	@$(PYTHON) setup.py -q sdist
 
