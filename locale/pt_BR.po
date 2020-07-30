@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-17 18:03-0700\n"
+"POT-Creation-Date: 2020-07-30 07:23-0500\n"
 "PO-Revision-Date: 2020-07-23 02:57+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
@@ -116,10 +116,6 @@ msgstr "%q() recebe %d argumentos posicionais, porém %d foram informados"
 msgid "'%q' argument required"
 msgstr "'%q' argumento(s) requerido(s)"
 
-#: py/objarray.c
-msgid "'%q' object is not bytes-like"
-msgstr "objetos '%q' não são bytes-like"
-
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
@@ -227,12 +223,12 @@ msgid "'align' requires 1 argument"
 msgstr "O 'align' exige 1 argumento"
 
 #: py/compile.c
-msgid "'async for' or 'async with' outside async function"
-msgstr "'assíncrono para' ou 'assíncrono com' função assíncrona externa"
-
-#: py/compile.c
 msgid "'await' outside function"
 msgstr "'aguardar' fora da função"
+
+#: py/compile.c
+msgid "'await', 'async for' or 'async with' outside async function"
+msgstr ""
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -241,6 +237,10 @@ msgstr "'break' fora do loop"
 #: py/compile.c
 msgid "'continue' outside loop"
 msgstr "'continue' fora do loop"
+
+#: py/objgenerator.c
+msgid "'coroutine' object is not an iterator"
+msgstr ""
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -324,7 +324,7 @@ msgstr "Todos os temporizadores para este pino estão em uso"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c
+#: ports/stm/peripherals/timers.c shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr "Todos os temporizadores em uso"
 
@@ -791,7 +791,7 @@ msgstr "Tupla esperada com comprimento %d, obteve %d"
 msgid "Extended advertisements with scan response not supported."
 msgstr "Anúncios estendidos não compatíveis com a resposta da varredura."
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "FFT is defined for ndarrays only"
 msgstr "O FFT é definido apenas para ndarrays"
 
@@ -883,6 +883,10 @@ msgstr "Operação I/O no arquivo fechado"
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
 msgstr "Erro de inicialização do I2C"
+
+#: shared-bindings/audiobusio/I2SOut.c
+msgid "I2SOut not available"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1372,14 +1376,6 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "O Pull não foi usado quando a direção for gerada."
 
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "PulseIn not supported on this chip"
-msgstr "O PulseIn não é compatível neste CI"
-
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid "PulseOut not supported on this chip"
-msgstr "O PulseOut não é compatível neste CI"
-
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
 msgstr "Erro DeInit RNG"
@@ -1595,6 +1591,11 @@ msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 "O tempo limite é long demais: O comprimento máximo do tempo limite é de %d "
 "segundos"
+
+#: ports/stm/common-hal/pulseio/PWMOut.c
+msgid ""
+"Timer was reserved for internal use - declare PWM pins earlier in the program"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1832,7 +1833,7 @@ msgstr "O __init__() deve retornar Nenhum, não '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "O argumento __new__ deve ser um tipo usuário"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c
+#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "é necessário objetos tipo bytes"
 
@@ -1853,7 +1854,7 @@ msgstr "endereço fora dos limites"
 msgid "addresses is empty"
 msgstr "os endereços estão vazios"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "arctan2 is implemented for scalars and ndarrays only"
 msgstr "O arctan2 está implementado apenas para escalares e ndarrays"
 
@@ -1861,13 +1862,17 @@ msgstr "O arctan2 está implementado apenas para escalares e ndarrays"
 msgid "arg is an empty sequence"
 msgstr "o arg é uma sequência vazia"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr "O argumento argsort deve ser um ndarray"
 
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "argumento tem tipo errado"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "argument must be ndarray"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -1878,7 +1883,7 @@ msgstr "o argumento num/tipos não combinam"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "o argumento deve ser um '%q' e não um '%q'"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "arguments must be ndarrays"
 msgstr "os argumentos devem ser ndarrays"
 
@@ -1886,7 +1891,7 @@ msgstr "os argumentos devem ser ndarrays"
 msgid "array/bytes required on right side"
 msgstr "matriz/bytes são necessários no lado direito"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr "tente obter argmin/argmax de uma sequência vazia"
 
@@ -1894,15 +1899,15 @@ msgstr "tente obter argmin/argmax de uma sequência vazia"
 msgid "attributes not supported yet"
 msgstr "atributos ainda não suportados"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be -1, 0, None, or 1"
 msgstr "o eixo deve ser -1, 0, Nenhum ou 1"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be -1, 0, or 1"
 msgstr "o eixo deve ser -1, 0 ou 1"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be None, 0, or 1"
 msgstr "o eixo deve ser Nenhum, 0 ou 1"
 
@@ -2215,15 +2220,15 @@ msgstr "constante deve ser um inteiro"
 msgid "conversion to object"
 msgstr "conversão para o objeto"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must be linear arrays"
 msgstr "os argumentos convolutivos devem ser matrizes lineares"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must be ndarrays"
 msgstr "os argumentos convolutivos devem ser ndarrays"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must not be empty"
 msgstr "os argumentos convolutivos não devem estar vazios"
 
@@ -2231,7 +2236,7 @@ msgstr "os argumentos convolutivos não devem estar vazios"
 msgid "could not broadast input array from shape"
 msgstr "não foi possível transmitir a matriz da entrada a partir da forma"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr "não foi possível inverter a matriz Vandermonde"
 
@@ -2239,15 +2244,15 @@ msgstr "não foi possível inverter a matriz Vandermonde"
 msgid "couldn't determine SD card version"
 msgstr "não foi possível determinar a versão do cartão SD"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
 msgstr "os dados devem ser iteráveis"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "data must be of equal length"
 msgstr "os dados devem ser de igual comprimento"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "ddof must be smaller than length of data set"
 msgstr "O ddof deve ser menor que o comprimento do conjunto dos dados"
 
@@ -2279,7 +2284,7 @@ msgstr "destination_length deve ser um int >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "sequência da atualização dict tem o comprimento errado"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "diff argument must be an ndarray"
 msgstr "O argumento diff deve ser um ndarray"
 
@@ -2382,11 +2387,11 @@ msgstr "o arquivo deve ser um arquivo aberto no modo byte"
 msgid "filesystem must provide mount method"
 msgstr "sistema de arquivos deve fornecer método de montagem"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "first argument must be a callable"
 msgstr "o primeiro argumento deve ser chamável"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "first argument must be a function"
 msgstr "o primeiro argumento deve ser uma função"
 
@@ -2394,7 +2399,7 @@ msgstr "o primeiro argumento deve ser uma função"
 msgid "first argument must be an iterable"
 msgstr "o primeiro argumento deve ser um iterável"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "first argument must be an ndarray"
 msgstr "o primeiro argumento deve ser um ndarray"
 
@@ -2406,7 +2411,7 @@ msgstr "o primeiro argumento para super() deve ser um tipo"
 msgid "flattening order must be either 'C', or 'F'"
 msgstr "a ordem do nivelamento deve ser 'C' ou 'F'"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "flip argument must be an ndarray"
 msgstr "o argumento flip deve ser um ndarray"
 
@@ -2439,11 +2444,11 @@ msgstr "função esperada na maioria dos %d argumentos, obteve %d"
 msgid "function got multiple values for argument '%q'"
 msgstr "A função obteve vários valores para o argumento '%q'"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "function has the same sign at the ends of interval"
 msgstr "a função tem o mesmo sinal nas extremidades do intervalo"
 
-#: extmod/ulab/code/compare.c
+#: extmod/ulab/code/compare/compare.c
 msgid "function is implemented for scalars and ndarrays only"
 msgstr "A função foi implementada apenas para escalares e ndarrays"
 
@@ -2529,7 +2534,7 @@ msgstr "os índices devem ser inteiros"
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "os índices devem ser números inteiros, fatias ou listas booleanas"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "initial values must be iterable"
 msgstr "os valores iniciais devem ser iteráveis"
 
@@ -2537,35 +2542,35 @@ msgstr "os valores iniciais devem ser iteráveis"
 msgid "inline assembler must be a function"
 msgstr "o assembler em linha deve ser uma função"
 
-#: extmod/ulab/code/create.c
+#: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
 msgstr "o argumento da entrada deve ser um número inteiro ou uma tupla de 2"
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
 msgstr "comprimento da matriz da entrada deve ter potência de 2"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
 msgstr "os dados da entrada devem ser iteráveis"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "a matriz da entrada é assimétrica"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr "a matriz da entrada é singular"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
 msgstr "a entrada deve ser uma matriz quadrada"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
 msgstr "A entrada deve ser tupla, lista, intervalo ou matriz"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr "os vetores da entrada devem ter o mesmo comprimento"
 
@@ -2577,7 +2582,7 @@ msgstr "int() arg 2 deve ser >= 2 e <= 36"
 msgid "integer required"
 msgstr "inteiro requerido"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
 msgstr "o interp é definido para matrizes 1D de igual comprimento"
 
@@ -2647,7 +2652,7 @@ msgstr "issubclass() arg 2 deve ser uma classe ou uma tupla de classes"
 msgid "iterables are not of the same length"
 msgstr "os iteráveis não têm o mesmo comprimento"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "iterations did not converge"
 msgstr "as iterações não convergiram"
 
@@ -2714,11 +2719,11 @@ msgstr "o mapa do buffer é muito pequeno"
 msgid "math domain error"
 msgstr "erro de domínio matemático"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix dimensions do not match"
 msgstr "as dimensões da matriz não coincidem"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "a matriz não é definitiva positiva"
 
@@ -2747,7 +2752,7 @@ msgstr ""
 msgid "module not found"
 msgstr "o módulo não foi encontrado"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "more degrees of freedom than data points"
 msgstr "mais graus de liberdade do que pontos de dados"
 
@@ -2771,7 +2776,7 @@ msgstr "deve levantar um objeto"
 msgid "must use keyword argument for key function"
 msgstr "deve usar o argumento da palavra-chave para a função da chave"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "n must be between 0, and 9"
 msgstr "n deve estar entre 0 e 9"
 
@@ -2869,11 +2874,11 @@ msgstr "nem todos os argumentos são convertidos durante a formatação da strin
 msgid "not enough arguments for format string"
 msgstr "argumentos insuficientes para o formato da string"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "number of arguments must be 2, or 3"
 msgstr "a quantidade dos argumentos deve ser 2 ou 3"
 
-#: extmod/ulab/code/create.c
+#: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr "a quantidade dos pontos deve ser pelo menos 2"
 
@@ -2945,12 +2950,12 @@ msgid "only slices with step=1 (aka None) are supported"
 msgstr ""
 "apenas fatias com a etapa=1 (também conhecida como Nenhuma) são compatíveis"
 
-#: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr "os operandos não puderam ser transmitidos juntos"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
 msgstr "a operação não foi implementada nos ndarrays"
 
@@ -3046,7 +3051,7 @@ msgstr "estouro de fila"
 msgid "raw f-strings are not implemented"
 msgstr "o f-strings bruto não estão implementados"
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "real and imaginary parts must be of equal length"
 msgstr "partes reais e imaginárias devem ter o mesmo comprimento"
 
@@ -3121,7 +3126,7 @@ msgstr "sinal não permitido com o especificador no formato inteiro 'c'"
 msgid "single '}' encountered in format string"
 msgstr "único '}' encontrado na string do formato"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "size is defined for ndarrays only"
 msgstr "o tamanho é definido apenas para os ndarrays"
 
@@ -3145,19 +3150,19 @@ msgstr "transbordamento int pequeno"
 msgid "soft reboot\n"
 msgstr "reinicialização soft\n"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "o argumento da classificação deve ser um ndarray"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
 msgstr "o sos da matriz deve estar na forma (n_section, 6)"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "sos[:, 3] should be all ones"
 msgstr "sos[:, 3] deve ser um em todos"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "sosfilt requires iterable arguments"
 msgstr "o sosfilt requer que os argumentos sejam iteráveis"
 
@@ -3271,7 +3276,11 @@ msgstr "índices demais"
 msgid "too many values to unpack (expected %d)"
 msgstr "valores demais para descompactar (esperado %d)"
 
-#: extmod/ulab/code/linalg.c py/objstr.c
+#: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays of equal length"
+msgstr ""
+
+#: extmod/ulab/code/linalg/linalg.c py/objstr.c
 msgid "tuple index out of range"
 msgstr "o índice da tupla está fora do intervalo"
 
@@ -3399,6 +3408,10 @@ msgstr "o valor deve caber em %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "o value_count deve ser > 0"
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "vectors must have same lengths"
+msgstr ""
+
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
 msgstr "o tempo limite do watchdog deve ser maior que 0"
@@ -3407,7 +3420,7 @@ msgstr "o tempo limite do watchdog deve ser maior que 0"
 msgid "window must be <= interval"
 msgstr "a janela deve ser <= intervalo"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "wrong argument type"
 msgstr "tipo do argumento errado"
 
@@ -3415,11 +3428,11 @@ msgstr "tipo do argumento errado"
 msgid "wrong index type"
 msgstr "tipo do índice errado"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
 msgstr "tipo da entrada incorreta"
 
-#: py/objstr.c
+#: extmod/ulab/code/ulab_create.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "quantidade errada dos argumentos"
 
@@ -3431,7 +3444,7 @@ msgstr "quantidade incorreta dos valores para descompressão"
 msgid "wrong operand type"
 msgstr "tipo do operando errado"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "wrong output type"
 msgstr "tipo da saída incorreta"
 
@@ -3451,17 +3464,29 @@ msgstr "o valor y está fora dos limites"
 msgid "zero step"
 msgstr "passo zero"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "zi must be an ndarray"
 msgstr "zi deve ser um ndarray"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "zi must be of float type"
 msgstr "zi deve ser de um tipo float"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "'%q' object is not bytes-like"
+#~ msgstr "objetos '%q' não são bytes-like"
+
+#~ msgid "'async for' or 'async with' outside async function"
+#~ msgstr "'assíncrono para' ou 'assíncrono com' função assíncrona externa"
+
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "O PulseIn não é compatível neste CI"
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "O PulseOut não é compatível neste CI"
 
 #~ msgid "AP required"
 #~ msgstr "AP requerido"
