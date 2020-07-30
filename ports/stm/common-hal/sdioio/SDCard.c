@@ -34,6 +34,7 @@
 #include "boards/board.h"
 #include "supervisor/shared/translate.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 STATIC bool reserved_sdio[MP_ARRAY_SIZE(mcu_sdio_banks)];
 STATIC bool never_reset_sdio[MP_ARRAY_SIZE(mcu_sdio_banks)];
