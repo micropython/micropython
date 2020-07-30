@@ -16,3 +16,6 @@ CFLAGS_BOARD = --param max-inline-insns-auto=15
 ifeq ($(TRANSLATION), zh_Latn_pinyin)
 CFLAGS_INLINE_LIMIT = 35
 endif
+ifeq ($(TRANSLATION), de_DE)
+CFLAGS_INLINE_LIMIT = 35
+endif
