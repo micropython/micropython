@@ -45,7 +45,7 @@ int mp_bluetooth_hci_controller_wakeup(void);
 // These are used by the stack bindings (e.g. nimble/hal_uart.c)
 // as well as potentially the driver (e.g. cywbt.c).
 extern uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
-extern pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
+extern pyb_uart_obj_t *mp_bluetooth_hci_uart_obj;
 
 int mp_bluetooth_hci_uart_init(uint32_t port);
 int mp_bluetooth_hci_uart_activate(void);

@@ -134,7 +134,7 @@ int mp_bluetooth_hci_uart_readchar(void) {
 #include "pendsv.h"
 #include "uart.h"
 
-pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
+pyb_uart_obj_t *mp_bluetooth_hci_uart_obj;
 
 static uint8_t hci_uart_rxbuf[512];
 
@@ -147,25 +147,28 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_uart_interrupt_obj, mp_uart_interrupt);
 
 int mp_bluetooth_hci_uart_init(uint32_t port) {
     // bits (8), stop (1), parity (none) and flow (rts/cts) are assumed to match MYNEWT_VAL_BLE_HCI_UART_ constants in syscfg.h.
-    mp_bluetooth_hci_uart_obj.base.type = &pyb_uart_type;
-    mp_bluetooth_hci_uart_obj.uart_id = port;
-    mp_bluetooth_hci_uart_obj.is_static = true;
-    mp_bluetooth_hci_uart_obj.timeout = 2;
-    mp_bluetooth_hci_uart_obj.timeout_char = 2;
-    MP_STATE_PORT(pyb_uart_obj_all)[mp_bluetooth_hci_uart_obj.uart_id - 1] = &mp_bluetooth_hci_uart_obj;
+
+    mp_obj_t args[2];
+    args[0] = MP_OBJ_NEW_SMALL_INT(port);
+    args[1] = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_BLE_UART_BAUDRATE);
+    mp_bluetooth_hci_uart_obj = pyb_uart_type.make_new(&pyb_uart_type, 2, 0, args);
+    mp_bluetooth_hci_uart_obj->is_static = true;
+    mp_bluetooth_hci_uart_obj->timeout = 2;
+    mp_bluetooth_hci_uart_obj->timeout_char = 2;
+    MP_STATE_PORT(pyb_uart_obj_all)[mp_bluetooth_hci_uart_obj->uart_id - 1] = mp_bluetooth_hci_uart_obj;
     return 0;
 }
 
 int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
-    uart_init(&mp_bluetooth_hci_uart_obj, baudrate, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, UART_HWCONTROL_RTS | UART_HWCONTROL_CTS);
-    uart_set_rxbuf(&mp_bluetooth_hci_uart_obj, sizeof(hci_uart_rxbuf), hci_uart_rxbuf);
+    uart_init(mp_bluetooth_hci_uart_obj, baudrate, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, UART_HWCONTROL_RTS | UART_HWCONTROL_CTS);
+    uart_set_rxbuf(mp_bluetooth_hci_uart_obj, sizeof(hci_uart_rxbuf), hci_uart_rxbuf);
     return 0;
 }
 
 int mp_bluetooth_hci_uart_activate(void) {
     // Interrupt on RX chunk received (idle)
     // Trigger stack poll when this happens
-    mp_obj_t uart_irq_fn = mp_load_attr(MP_OBJ_FROM_PTR(&mp_bluetooth_hci_uart_obj), MP_QSTR_irq);
+    mp_obj_t uart_irq_fn = mp_load_attr(MP_OBJ_FROM_PTR(mp_bluetooth_hci_uart_obj), MP_QSTR_irq);
     mp_obj_t uargs[] = {
         MP_OBJ_FROM_PTR(&mp_uart_interrupt_obj),
         MP_OBJ_NEW_SMALL_INT(UART_FLAG_IDLE),
@@ -181,15 +184,15 @@ int mp_bluetooth_hci_uart_activate(void) {
 
 int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     mp_bluetooth_hci_controller_wakeup();
-    uart_tx_strn(&mp_bluetooth_hci_uart_obj, (void *)buf, len);
+    uart_tx_strn(mp_bluetooth_hci_uart_obj, (void *)buf, len);
     return 0;
 }
 
 // This function expects the controller to be in the wake state via a previous call
 // to mp_bluetooth_hci_controller_woken.
 int mp_bluetooth_hci_uart_readchar(void) {
-    if (uart_rx_any(&mp_bluetooth_hci_uart_obj)) {
-        return uart_rx_char(&mp_bluetooth_hci_uart_obj);
+    if (uart_rx_any(mp_bluetooth_hci_uart_obj)) {
+        return uart_rx_char(mp_bluetooth_hci_uart_obj);
     } else {
         return -1;
     }

@@ -53,12 +53,12 @@ STATIC void cywbt_wait_cts_low(void) {
 }
 
 STATIC int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
-    uart_tx_strn(&mp_bluetooth_hci_uart_obj, (void*)buf, len);
+    uart_tx_strn(mp_bluetooth_hci_uart_obj, (void*)buf, len);
     for (int i = 0; i < 6; ++i) {
-        while (!uart_rx_any(&mp_bluetooth_hci_uart_obj)) {
+        while (!uart_rx_any(mp_bluetooth_hci_uart_obj)) {
             MICROPY_EVENT_POLL_HOOK
         }
-        buf[i] = uart_rx_char(&mp_bluetooth_hci_uart_obj);
+        buf[i] = uart_rx_char(mp_bluetooth_hci_uart_obj);
     }
 
     // expect a comand complete event (event 0x0e)
@@ -75,10 +75,10 @@ STATIC int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
 
     int sz = buf[2] - 3;
     for (int i = 0; i < sz; ++i) {
-        while (!uart_rx_any(&mp_bluetooth_hci_uart_obj)) {
+        while (!uart_rx_any(mp_bluetooth_hci_uart_obj)) {
             MICROPY_EVENT_POLL_HOOK
         }
-        buf[i] = uart_rx_char(&mp_bluetooth_hci_uart_obj);
+        buf[i] = uart_rx_char(mp_bluetooth_hci_uart_obj);
     }
 
     return 0;
