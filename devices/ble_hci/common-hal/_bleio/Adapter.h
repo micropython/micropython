@@ -68,8 +68,15 @@ typedef struct _bleio_adapter_obj_t {
     // All the local attributes for this device. The index into the list
     // corresponds to the handle.
     mp_obj_list_t *attributes;
+    // Handle for last added service. Characteristics can only be added immediately after
+    // the service they belong to. This vets that.
+    uint16_t last_added_service_handle;
+    uint16_t last_added_characteristic_handle;
 } bleio_adapter_obj_t;
 
+uint16_t bleio_adapter_add_attribute(bleio_adapter_obj_t *adapter, mp_obj_t *attribute);
+mp_obj_t* bleio_adapter_get_attribute(bleio_adapter_obj_t *adapter, uint16_t handle);
+uint16_t bleio_adapter_max_attribute_handle(bleio_adapter_obj_t *adapter);
 void bleio_adapter_background(bleio_adapter_obj_t* adapter);
 void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter);
 void bleio_adapter_reset(bleio_adapter_obj_t* adapter);

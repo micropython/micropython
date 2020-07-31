@@ -37,6 +37,7 @@ typedef int hci_result_t;
 #define HCI_WRITE_TIMEOUT (-3)
 #define HCI_READ_ERROR (-4)
 #define HCI_WRITE_ERROR (-5)
+#define HCI_ATT_ERROR (-6)
 
 void hci_init(void);
 

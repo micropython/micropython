@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,15 @@
 #define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ATTRIBUTE_H
 
 #include "shared-module/_bleio/Attribute.h"
+
+// Types returned by attribute table lookups. These are UUIDs.
+enum ble_attribute_type {
+  BLE_TYPE_UNKNOWN           = 0x0000,
+  BLE_TYPE_PRIMARY_SERVICE   = 0x2800,
+  BLE_TYPE_SECONDARY_SERVICE = 0x2801,
+  BLE_TYPE_CHARACTERISTIC    = 0x2803,
+  BLE_TYPE_DESCRIPTOR        = 0x2900
+};
 
 // typedef struct
 // {

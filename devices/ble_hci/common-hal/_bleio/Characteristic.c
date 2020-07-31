@@ -34,58 +34,10 @@
 
 #include "common-hal/_bleio/Adapter.h"
 
-// STATIC uint16_t characteristic_get_cccd(uint16_t cccd_handle, uint16_t conn_handle) {
-//     uint16_t cccd;
-//     // ble_gatts_value_t value = {
-//     //     .p_value = (uint8_t*) &cccd,
-//     //     .len = 2,
-//     // };
-
-//     // const uint32_t err_code = sd_ble_gatts_value_get(conn_handle, cccd_handle, &value);
-
-//     // if (err_code == BLE_ERROR_GATTS_SYS_ATTR_MISSING) {
-//     //     // CCCD is not set, so say that neither Notify nor Indicate is enabled.
-//     //     cccd = 0;
-//     // } else {
-//     //     check_nrf_error(err_code);
-//     // }
-
-//     return cccd;
-// }
-
-
-// STATIC void characteristic_gatts_notify_indicate(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo, uint16_t hvx_type) {
-//     uint16_t hvx_len = bufinfo->len;
-
-//     ble_gatts_hvx_params_t hvx_params = {
-//         .handle = handle,
-//         .type = hvx_type,
-//         .offset = 0,
-//         .p_len = &hvx_len,
-//         .p_data = bufinfo->buf,
-//     };
-
-//     while (1) {
-//         const uint32_t err_code = sd_ble_gatts_hvx(conn_handle, &hvx_params);
-//         if (err_code == NRF_SUCCESS) {
-//             break;
-//         }
-//         // TX buffer is full
-//         // We could wait for an event indicating the write is complete, but just retrying is easier.
-//         if (err_code == NRF_ERROR_RESOURCES) {
-//             RUN_BACKGROUND_TASKS;
-//             continue;
-//         }
-
-//         // Some real error has occurred.
-//         check_nrf_error(err_code);
-//     }
-// }
-
 void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service, uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
     self->service = service;
     self->uuid = uuid;
-    //FIX self->handle = BLE_GATT_HANDLE_INVALID;
+    self->handle = BLE_GATT_HANDLE_INVALID;
     self->props = props;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
@@ -153,30 +105,23 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
             // Always write the value locally even if no connections are active.
             // conn_handle is ignored for non-system attributes, so we use BLE_CONN_HANDLE_INVALID.
             common_hal_bleio_gatts_write(self->handle, BLE_CONN_HANDLE_INVALID, bufinfo);
-            // Check to see if we need to notify or indicate any active connections.
-            for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-                bleio_connection_internal_t *connection = &bleio_connections[i];
-                uint16_t conn_handle = connection->conn_handle;
-                if (conn_handle == BLE_CONN_HANDLE_INVALID) {
-                    continue;
-                }
+            // Notify or indicate all active connections.
+            uint16_t cccd = 0;
 
-                //FIX
-                // uint16_t cccd = 0;
+            const bool notify = self->props & CHAR_PROP_NOTIFY;
+            const bool indicate = self->props & CHAR_PROP_INDICATE;
+            // Read the CCCD value, if there is one.
+            if ((notify | indicate) && self->cccd_handle != BLE_GATT_HANDLE_INVALID) {
+                common_hal_bleio_gatts_read(self->cccd_handle, conn_handle, &cccd, sizeof(cccd));
+            }
 
-                // const bool notify = self->props & CHAR_PROP_NOTIFY;
-                // const bool indicate = self->props & CHAR_PROP_INDICATE;
-                // if (notify | indicate) {
-                //     cccd = characteristic_get_cccd(self->cccd_handle, conn_handle);
-                // }
+            // It's possible that both notify and indicate are set.
+            if (notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
+                att_notify(self->handle, bufinfo->buf, MIN(bufinfo->len, self->max_length));
+            }
+            if (indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
+                att_indicate(self->handle, bufinfo->buf, MIN(bufinfo->len, self->max_length));
 
-                // // It's possible that both notify and indicate are set.
-                // if (notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
-                //     characteristic_gatts_notify_indicate(self->handle, conn_handle, bufinfo, BLE_GATT_HVX_NOTIFICATION);
-                // }
-                // if (indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
-                //     characteristic_gatts_notify_indicate(self->handle, conn_handle, bufinfo, BLE_GATT_HVX_INDICATION);
-                // }
             }
         }
     }
@@ -191,35 +136,16 @@ bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties
 }
 
 void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *self, bleio_descriptor_obj_t *descriptor) {
-    //FIX
-    // ble_uuid_t desc_uuid;
-    // bleio_uuid_convert_to_nrf_ble_uuid(descriptor->uuid, &desc_uuid);
+    if (self->handle != common_hal_bleio_adapter_obj->last_added_characteristic_handle) {
+        mp_raise_bleio_BluetoothError(
+            translate("Descriptor can only be added to most recently added characteristic"));
+    }
 
-    // ble_gatts_attr_md_t desc_attr_md = {
-    //     // Data passed is not in a permanent location and should be copied.
-    //     .vloc = BLE_GATTS_VLOC_STACK,
-    //     .vlen = !descriptor->fixed_length,
-    // };
+    descriptor->handle = bleio_adapter_add_attribute(common_hal_bleio_adapter_obj, descriptor);
 
-    // bleio_attribute_gatts_set_security_mode(&desc_attr_md.read_perm, descriptor->read_perm);
-    // bleio_attribute_gatts_set_security_mode(&desc_attr_md.write_perm, descriptor->write_perm);
-
-    // mp_buffer_info_t desc_value_bufinfo;
-    // mp_get_buffer_raise(descriptor->value, &desc_value_bufinfo, MP_BUFFER_READ);
-
-    // ble_gatts_attr_t desc_attr = {
-    //     .p_uuid = &desc_uuid,
-    //     .p_attr_md = &desc_attr_md,
-    //     .init_len = desc_value_bufinfo.len,
-    //     .p_value = desc_value_bufinfo.buf,
-    //     .init_offs = 0,
-    //     .max_len = descriptor->max_length,
-    // };
-
-    // check_nrf_error(sd_ble_gatts_descriptor_add(self->handle, &desc_attr, &descriptor->handle));
-
-    // descriptor->next = self->descriptor_list;
-    // self->descriptor_list = descriptor;
+    // Link together all the descriptors for this characteristic.
+    descriptor->next = self->descriptor_list;
+    self->descriptor_list = descriptor;
 }
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
@@ -234,11 +160,12 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
     const uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
     common_hal_bleio_check_connected(conn_handle);
 
-    //FIX
-    // uint16_t cccd_value =
-    //     (notify ? BLE_GATT_HVX_NOTIFICATION : 0) |
-    //     (indicate ? BLE_GATT_HVX_INDICATION : 0);
+    uint16_t cccd_value =
+        (notify ? BLE_GATT_HVX_NOTIFICATION : 0) |
+        (indicate ? BLE_GATT_HVX_INDICATION : 0);
 
+    (void) cccd_value;
+    //FIX call att_something to set remote CCCD
     // ble_gattc_write_params_t write_params = {
     //     .write_op = BLE_GATT_OP_WRITE_REQ,
     //     .handle = self->cccd_handle,

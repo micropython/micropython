@@ -30,22 +30,15 @@
 
 #include "py/obj.h"
 #include "common-hal/_bleio/Adapter.h"
+#include "common-hal/_bleio/Attribute.h"
 #include "supervisor/shared/tick.h"
-
-enum ble_attribute_type {
-  BLE_TYPE_UNKNOWN           = 0x0000,
-  BLE_TYPE_PRIMARY_SERVICE   = 0x2800,
-  BLE_TYPE_SECONDARY_SERVICE = 0x2801,
-  BLE_TYPE_CHARACTERISTIC    = 0x2803,
-  BLE_TYPE_DESCRIPTOR        = 0x2900
-};
 
 STATIC uint16_t max_mtu = BT_ATT_DEFAULT_LE_MTU;  // 23
 STATIC unsigned long timeout = 5000;
 
 STATIC volatile bool confirm;
 
-STATIC uint16_t long_write_handle = 0x0000;
+STATIC uint16_t long_write_handle = BLE_GATT_HANDLE_INVALID;
 STATIC uint8_t* long_write_value = NULL;
 STATIC uint16_t long_write_value_length = 0;
 
@@ -123,7 +116,7 @@ STATIC void check_and_save_expected_rsp(uint16_t conn_handle, uint8_t opcode, ui
 void att_init(void) {
     max_mtu = BT_ATT_DEFAULT_LE_MTU;
     timeout = 5000;
-    long_write_handle = 0x0000;
+    long_write_handle = BLE_GATT_HANDLE_INVALID;
     long_write_value = NULL;
     long_write_value_length = 0;
 
@@ -225,12 +218,12 @@ bool att_disconnect_from_address(bt_addr_le_t *addr) {
 
 //                 reqStart_handle = rawService->end_handle + 1;
 
-//                 if (reqStart_handle == 0x0000) {
-//                     reqEnd_handle = 0x0000;
+//                 if (reqStart_handle == BLE_GATT_HANDLE_INVALID) {
+//                     reqEnd_handle = BLE_GATT_HANDLE_INVALID;
 //                 }
 //             }
 //         } else {
-//             reqEnd_handle = 0x0000;
+//             reqEnd_handle = BLE_GATT_HANDLE_INVALID;
 //         }
 //     }
 
@@ -498,7 +491,7 @@ void att_remove_connection(uint16_t handle, uint8_t reason) {
         //     }
         // }
 
-        long_write_handle = 0x0000;
+        long_write_handle = BLE_GATT_HANDLE_INVALID;
         long_write_value_length = 0;
     }
 
@@ -619,7 +612,7 @@ bool att_disconnect_all(void) {
 //     return BLEDevice();
 // }
 
-bool att_handle_notify(uint16_t handle, const uint8_t* value, int length) {
+bool att_notify(uint16_t handle, const uint8_t* value, int length) {
     int num_notifications = 0;
 
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
@@ -627,21 +620,20 @@ bool att_handle_notify(uint16_t handle, const uint8_t* value, int length) {
             continue;
         }
 
-        //FIX This seems fishy. Why just .mtu instead of .mtu + 1 for opcode
-        uint8_t notification[bleio_connections[i].mtu];
-        uint16_t notification_length = 0;
+        typedef struct notify_t __packed {
+            struct bt_att_hdr hdr;
+            struct bt_att_notify ntf;
+        };
 
-        notification[0] = BT_ATT_OP_NOTIFY;
-        notification_length++;
+        size_t allowed_length = MIN((uint16_t)(bleio_connections[i].mtu - sizeof(notify_t)), (uint16_t)length);
 
-        memcpy(&notification[1], &handle, sizeof(handle));
-        notification_length += sizeof(handle);
-
-        length = MIN((uint16_t)(bleio_connections[i].mtu - notification_length), (uint16_t)length);
-        memcpy(&notification[notification_length], value, length);
-        notification_length += length;
-
-        hci_send_acl_pkt(bleio_connections[i].conn_handle, BT_L2CAP_CID_ATT, notification_length, notification);
+        uint8_t notify_bytes[sizeof(cmd_s) + allowed_length];
+        notify_t *notify_p = (notify_t *) notify_bytes;
+        notify_p->hdr.code = BT_ATT_OP_NOTIFY;;
+        notify_p->ntf.handle = handle;
+        memcpy(notify_p->ntf.value, data, allowed_length);
+        hci_send_acl_pkt(bleio_connections[i].conn_handle, BT_L2CAP_CID_ATT,
+                         size_of(notify_bytes), notify_bytes);
 
         num_notifications++;
     }
@@ -649,7 +641,7 @@ bool att_handle_notify(uint16_t handle, const uint8_t* value, int length) {
     return (num_notifications > 0);
 }
 
-bool att_handle_indicate(uint16_t handle, const uint8_t* value, int length) {
+bool att_indicate(conn_handle, uint16_t handle, const uint8_t* value, int length) {
     int num_indications = 0;
 
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
@@ -657,22 +649,23 @@ bool att_handle_indicate(uint16_t handle, const uint8_t* value, int length) {
             continue;
         }
 
-        uint8_t indication[bleio_connections[i].mtu];
-        uint16_t indication_length = 0;
+        typedef struct indicate_t __packed {
+            struct bt_att_hdr hdr;
+            struct bt_att_indicate ind;
+        };
 
-        indication[0] = BT_ATT_OP_INDICATE;
-        indication_length++;
+        size_t allowed_length = MIN((uint16_t)(bleio_connections[i].mtu - sizeof(indicate_t)), (uint16_t)length);
 
-        memcpy(&indication[1], &handle, sizeof(handle));
-        indication_length += sizeof(handle);
-
-        length = MIN((uint16_t)(bleio_connections[i].mtu - indication_length), (uint16_t)length);
-        memcpy(&indication[indication_length], value, length);
-        indication_length += length;
+        uint8_t indicate_bytes[sizeof(cmd_s) + allowed_length];
+        struct indicate_s *indicate_p = (indicate_s *) indicate_bytes;
+        indicate_p->hdr.code = BT_ATT_OP_INDICATE;;
+        indicate_p->ind.handle = handle;
+        memcpy(indicate->ind.value, data, allowed_length);
 
         confirm = false;
 
-        hci_send_acl_pkt(bleio_connections[i].conn_handle, BT_L2CAP_CID_ATT, indication_length, indication);
+        hci_send_acl_pkt(bleio_connections[i].conn_handle, BT_L2CAP_CID_ATT,
+                         sizeof(indicate_bytes), indicate_bytes);
 
         while (!confirm) {
             hci_poll_for_incoming_pkt();
@@ -706,7 +699,7 @@ STATIC void process_error(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
 STATIC void process_mtu_req(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
     struct bt_att_exchange_mtu_req *req = (struct bt_att_exchange_mtu_req *) data;
     if (dlen != sizeof(req)) {
-        send_error(conn_handle, BT_ATT_OP_MTU_REQ, 0x0000, BT_ATT_ERR_INVALID_PDU);
+        send_error(conn_handle, BT_ATT_OP_MTU_REQ, BLE_GATT_HANDLE_INVALID, BT_ATT_ERR_INVALID_PDU);
         return;
     }
 
@@ -983,7 +976,7 @@ STATIC void process_read_or_read_blob_req(uint16_t conn_handle, uint16_t mtu, ui
 
     if (opcode == BT_ATT_OP_READ_REQ) {
         if (dlen != sizeof(struct bt_att_read_req)) {
-            send_error(conn_handle, BT_ATT_OP_READ_REQ, 0x0000, BT_ATT_ERR_INVALID_PDU);
+            send_error(conn_handle, BT_ATT_OP_READ_REQ, BLE_GATT_HANDLE_INVALID, BT_ATT_ERR_INVALID_PDU);
             return;
         }
 
@@ -993,7 +986,7 @@ STATIC void process_read_or_read_blob_req(uint16_t conn_handle, uint16_t mtu, ui
 
     } else {
         if (dlen != sizeof(struct bt_att_read_blob_req)) {
-            send_error(conn_handle, BT_ATT_OP_READ_BLOB_REQ, 0x0000, BT_ATT_ERR_INVALID_PDU);
+            send_error(conn_handle, BT_ATT_OP_READ_BLOB_REQ, BLE_GATT_HANDLE_INVALID, BT_ATT_ERR_INVALID_PDU);
             return;
         }
 
@@ -1234,7 +1227,7 @@ STATIC void process_write_req_or_cmd(uint16_t conn_handle, uint16_t mtu, uint8_t
 
     if (dlen < sizeof(struct bt_att_write_req)) {
         if (with_response) {
-            send_error(conn_handle, BT_ATT_OP_WRITE_REQ, 0x0000, BT_ATT_ERR_INVALID_PDU);
+            send_error(conn_handle, BT_ATT_OP_WRITE_REQ, BLE_GATT_HANDLE_INVALID, BT_ATT_ERR_INVALID_PDU);
         }
         return;
     }
@@ -1326,41 +1319,41 @@ STATIC void process_write_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]
 }
 
 STATIC void process_prepare_write_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
-    //FIX struct bt_att_prepare_write_req *req = (struct bt_att_prepare_write_req *) data;
+    FIX struct bt_att_prepare_write_req *req = (struct bt_att_prepare_write_req *) data;
 
     if (dlen < sizeof(struct bt_att_prepare_write_req)) {
-        send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, 0x0000, BT_ATT_ERR_INVALID_PDU);
+        send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, BLE_GATT_HANDLE_INVALID, BT_ATT_ERR_INVALID_PDU);
         return;
     }
 
-    // uint16_t handle = req->handle;
-    // uint16_t offset = req->offset;
+    uint16_t handle = req->handle;
+    uint16_t offset = req->offset;
 
-    // if ((uint16_t)(handle - 1) > GATT.attributeCount()) {
-    //     send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_ATTR_NOT_FOUND);
-    //     return;
-    // }
+    if (handle > bleio_adapter_max_attribute_handle(common_hal_bleio_adapter_obj)) {
+        send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_ATTR_NOT_FOUND);
+        return;
+    }
 
-    // BLELocalAttribute* attribute = GATT.attribute(handle - 1);
+    mp_obj_t *attribute = bleio_adapter_get_attribute(common_hal_bleio_adapter_obj, handle);
 
-    // if (attribute->type() != BLE_TYPE_CHARACTERISTIC) {
-    //     send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_ATTR_NOT_LONG);
-    //     return;
-    // }
+    if (!MP_OBJ_IS_TYPE(attribute, &bleio_characteristic_type)) {
+        send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_ATTR_NOT_LONG);
+        return;
+    }
 
-    // BLELocalCharacteristic* characteristic = (BLELocalCharacteristic*)attribute;
+    bleio_characteristic_obj_t* characteristic = MP_OBJ_TO_PTR(attribute);
 
-    // if (handle != characteristic->value_handle()) {
-    //     send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_ATTR_NOT_LONG);
-    //     return;
-    // }
+    if (handle != characteristic->value_handle) {
+        send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_ATTR_NOT_LONG);
+        return;
+    }
 
-    // if ((characteristic->properties() & BLEWrqite) == 0) {
-    //     send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_WRITE_NOT_PERM);
-    //     return;
-    // }
+    if (characteristic->props & CHAR_PROP_WRITE) {
+        send_error(conn_handle, BT_ATT_OP_PREPARE_WRITE_REQ, handle, BT_ATT_ERR_WRITE_NOT_PERM);
+        return;
+    }
 
-    // if (long_write_handle == 0) {
+    if (long_write_handle == BLE_GATT_HANDLE_INVALID)
     //     int valueSize = characteristic->valueSize();
 
     //     long_write_value = (uint8_t*)realloc(long_write_value, valueSize);
@@ -1398,7 +1391,7 @@ STATIC void process_exec_write_req(uint16_t conn_handle, uint16_t mtu, uint8_t d
     struct bt_att_exec_write_req *req = (struct bt_att_exec_write_req *) data;
 
     if (dlen != sizeof(struct bt_att_exec_write_req)) {
-        send_error(conn_handle, BT_ATT_OP_EXEC_WRITE_REQ, 0x0000, BT_ATT_ERR_INVALID_PDU);
+        send_error(conn_handle, BT_ATT_OP_EXEC_WRITE_REQ, BLE_GATT_HANDLE_INVALID, BT_ATT_ERR_INVALID_PDU);
         return;
     }
 
@@ -1413,7 +1406,7 @@ STATIC void process_exec_write_req(uint16_t conn_handle, uint16_t mtu, uint8_t d
         }
     }
 
-    long_write_handle = 0x0000;
+    long_write_handle = BLE_GATT_HANDLE_INVALID;
     long_write_value_length = 0;
 
     uint8_t response[mtu];
@@ -1515,33 +1508,35 @@ int att_read_req(uint16_t conn_handle, uint16_t handle, uint8_t response_buffer[
 }
 
 int att_write_req(uint16_t conn_handle, uint16_t handle, const uint8_t* data, uint8_t data_len, uint8_t response_buffer[]) {
-    struct __packed {
-        struct bt_att_hdr h;
-        struct bt_att_write_req r;
-    } req = { {
-            .code = BT_ATT_OP_WRITE_REQ,
-        }, {
-            .handle = handle,
-        }
+    typedef struct write_req_t __packed {
+        struct bt_att_hdr hdr;
+        struct bt_att_write_req req;
     };
-    memcpy(req.r.value, data, data_len);
 
-    return send_req_wait_for_rsp(conn_handle, sizeof(req) + data_len, (uint8_t *) &req, response_buffer);
+    uint8_t req_bytes[sizeof(write_req_t) + data_len];
+    struct write_req_t *write_req_P = (write_req_t *) req_bytes;
+    req_p->hdr.code = BT_ATT_OP_WRITE_REQ;
+    req_p->req.handle = handle;
+    memcpy(req_p->req.value, data, data_len);
+
+    memcpy(req.req.value, data, data_len);
+
+    return send_req_wait_for_rsp(conn_handle, sizeof(req_bytes), req, response_buffer);
 }
 
 void att_write_cmd(uint16_t conn_handle, uint16_t handle, const uint8_t* data, uint8_t data_len) {
-    struct __packed {
+    struct cmd_s __packed {
         struct bt_att_hdr h;
         struct bt_att_write_cmd r;
-    } req = { {
-            .code = BT_ATT_OP_WRITE_CMD,
-        }, {
-            .handle = handle,
-        }
     };
-    memcpy(req.r.value, data, data_len);
 
-    return send_req(conn_handle, sizeof(req) + data_len, (uint8_t *) &req);
+    uint8_t cmd_bytes[sizeof(cmd_s) + data_len];
+    struct cmd_s *cmd_p = (cmd_s *) cmd_bytes;
+    cmd_p->h.code = BT_ATT_OP_WRITE_CMD;
+    cmd_p->r.handle = handle;
+    memcpy(cmd_p->r.value, data, data_len);
+
+    return send_cmd(conn_handle, sizeof(cmd_bytes), cmd_bytes);
 }
 
 void att_process_data(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,7 +33,6 @@
 #include "shared-bindings/_bleio/Adapter.h"
 
 uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary, mp_obj_list_t * characteristic_list) {
-    self->handle = 0xFFFF;
     self->uuid = uuid;
     self->characteristic_list = characteristic_list;
     self->is_remote = false;
@@ -42,16 +41,18 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
 
     vm_used_ble = true;
 
-    self->handle = bleio_adapter_add_attribute(
-        common_hal_bleio_adapter_obj,
-        is_secondary ? BLE_TYPE_SECONDARY_SERVICE : BLE_TYPE_PRIMARY_SERVICE,
-        uuid, &status);
-    return status;
+    self->handle = bleio_adapter_add_attribute(common_hal_bleio_adapter_obj, self);
+    if (self->handle = BLE_GATT_HANDLE_INVALID) {
+        return 1;
+    }
+    return 0;
 }
 
 void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary) {
-    check_hci_error(_common_hal_bleio_service_construct(self, uuid, is_secondary,
-                                                        mp_obj_new_list(0, NULL)));
+    if (_common_hal_bleio_service_construct(self, uuid, is_secondary,
+                                            mp_obj_new_list(0, NULL)) != 0) {
+        mp_raise_RuntimeError(translate("Failed to add service"));
+    }
 }
 
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection) {
@@ -83,83 +84,36 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
                                                  bleio_characteristic_obj_t *characteristic,
                                                  mp_buffer_info_t *initial_value_bufinfo) {
 
-    //FIX how it's done by ArduinoBLE when a service is added.
-    // uint16_t startHandle = attributeCount();
-    uint16_t start_handle bleio_adapter_num_attributes(common_hal_bleio_adapter_obj);
+    if (self->handle != common_hal_bleio_adapter_obj->last_added_service_handle) {
+        mp_raise_bleio_BluetoothError(
+            translate("Characteristic can only be added to most recently added service"));
+    }
+    characteristic->decl_handle = bleio_adapter_add_attribute(common_hal_bleio_adapter_obj, characteristic);
+    // This is the value handle
+    characteristic->value_handle = bleio_adapter_add_attribute(common_hal_bleio_adapter_obj, characteristic);
 
-  // for (unsigned int i = 0; i < service->characteristicCount(); i++) {
-  //   BLELocalCharacteristic* characteristic = service->characteristic(i);
+    if (characteristic->props & (CHAR_PROP_NOTIFY | CHAR_PROP_INDICATE)) {
+        // We need a CCCD.
+        bleio_descriptor_obj_t *cccd = m_new_obj(bleio_descriptor_obj_t);
+        cccd->base.type = &bleio_descriptor_type;
+        cccd->read_perm = SECURITY_MODE_OPEN;
+        // Make CCCD write permission match characteristic read permission.
+        cccd->write_perm = characteristic->read_perm;
+        characteristic->cccd_handle = common_hal_bleio_characteristic_add_descriptor(characteristic, cccd);
+    }
 
-  //   characteristic->retain();
-  //   _attributes.add(characteristic);
-  //   characteristic->setHandle(attributeCount());
-
-  //   // add the characteristic again to make space of the characteristic value handle
-  //   _attributes.add(characteristic);
-
-  //   for (unsigned int j = 0; j < characteristic->descriptorCount(); j++) {
-  //     BLELocalDescriptor* descriptor = characteristic->descriptor(j);
-
-  //     descriptor->retain();
-  //     _attributes.add(descriptor);
-  //     descriptor->setHandle(attributeCount());
-  //   }
-  // }
-
-  service->setHandles(startHandle, attributeCount());
-    // ble_gatts_char_md_t char_md = {
-    //     .char_props.broadcast      = (characteristic->props & CHAR_PROP_BROADCAST) ? 1 : 0,
-    //     .char_props.read           = (characteristic->props & CHAR_PROP_READ) ? 1 : 0,
-    //     .char_props.write_wo_resp  = (characteristic->props & CHAR_PROP_WRITE_NO_RESPONSE) ? 1 : 0,
-    //     .char_props.write          = (characteristic->props & CHAR_PROP_WRITE) ? 1 : 0,
-    //     .char_props.notify         = (characteristic->props & CHAR_PROP_NOTIFY) ? 1 : 0,
-    //     .char_props.indicate       = (characteristic->props & CHAR_PROP_INDICATE) ? 1 : 0,
-    // };
-
-    // ble_gatts_attr_md_t cccd_md = {
-    //     .vloc = BLE_GATTS_VLOC_STACK,
-    // };
-
-    // ble_gatts_attr_md_t char_attr_md = {
-    //     .vloc = BLE_GATTS_VLOC_STACK,
-    //     .vlen = !characteristic->fixed_length,
-    // };
-
-    // if (char_md.char_props.notify || char_md.char_props.indicate) {
-    //     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cccd_md.read_perm);
-    //     // Make CCCD write permission match characteristic read permission.
-    //     bleio_attribute_gatts_set_security_mode(&cccd_md.write_perm, characteristic->read_perm);
-
-    //     char_md.p_cccd_md = &cccd_md;
-    // }
-
-    // bleio_attribute_gatts_set_security_mode(&char_attr_md.read_perm, characteristic->read_perm);
-    // bleio_attribute_gatts_set_security_mode(&char_attr_md.write_perm, characteristic->write_perm);
     // #if CIRCUITPY_VERBOSE_BLE
     // // Turn on read authorization so that we receive an event to print on every read.
     // char_attr_md.rd_auth = true;
     // #endif
 
-    // ble_gatts_attr_t char_attr = {
-    //     .p_uuid = &char_uuid,
-    //     .p_attr_md = &char_attr_md,
-    //     .init_len = 0,
-    //     .p_value = NULL,
-    //     .init_offs = 0,
-    //     .max_len = characteristic->max_length,
-    // };
+    // These are not supplied or available.
+    characteristic->user_desc_handle = BLE_GATT_HANDLE_INVALID;
+    characteristic->sccd_handle = BLE_GATT_HANDLE_INVALID;
 
-    // ble_gatts_char_handles_t char_handles;
-
-    // check_nrf_error(sd_ble_gatts_characteristic_add(self->handle, &char_md, &char_attr, &char_handles));
-
-    // characteristic->user_desc_handle = char_handles.user_desc_handle;
-    // characteristic->cccd_handle = char_handles.cccd_handle;
-    // characteristic->sccd_handle = char_handles.sccd_handle;
-    // characteristic->handle = char_handles.value_handle;
     // #if CIRCUITPY_VERBOSE_BLE
     // mp_printf(&mp_plat_print, "Char handle %x user %x cccd %x sccd %x\n", characteristic->handle, characteristic->user_desc_handle, characteristic->cccd_handle, characteristic->sccd_handle);
     // #endif
 
-    // mp_obj_list_append(self->characteristic_list, MP_OBJ_FROM_PTR(characteristic));
+    mp_obj_list_append(self->characteristic_list, MP_OBJ_FROM_PTR(characteristic));
 }

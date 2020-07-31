@@ -240,7 +240,12 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     self->advertising_timeout_msecs = 0;
 
     // Reset list of known attributes.
+    // Indices into the list are handles. Handle 0x0000 designates an invalid handle,
+    // so store None there to skip it.
     self->attributes = mp_obj_new_list(0, NULL);
+    bleio_adapter_add_attribute(mp_const_none);
+    self->last_added_service_handle = BLE_GATT_HANDLE_INVALID;
+    self->last_added_characteristic_handle = BLE_GATT_HANDLE_INVALID;
 }
 
 bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
@@ -682,6 +687,25 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
 void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
     //FIX bonding_erase_storage();
 }
+
+uint16_t bleio_adapter_add_attribute(bleio_adapter_obj_t *adapter, mp_obj_t *attribute) {
+    // The handle is the index of this attribute in the attributes list.
+    uint16_t handle = (uint16_t) adapter->attributes->len;
+    mp_obj_list_append(adapter->attributes, attribute);
+    return handle;
+}
+
+mp_obj_t* bleio_adapter_get_attribute(bleio_adapter_obj_t *adapter, uint16_t handle) {
+    if (handle == 0 || handle >= adapter->attributes->len) {
+        return mp_const_none;
+    }
+    return adapter->attributes->items[handle];
+}
+
+uint16_t bleio_adapter_max_attribute_handle(bleio_adapter_obj_t *adapter) {
+    return adapter->attributes->len - 1;
+}
+
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
     gc_collect_root((void**)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));

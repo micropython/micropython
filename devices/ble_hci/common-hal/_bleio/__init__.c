@@ -63,6 +63,10 @@ void check_hci_error(hci_result_t result) {
             mp_raise_bleio_BluetoothError(translate("Error writing to HCI adapter"));
             return;
 
+        case HCI_ATT_ERROR:
+            mp_raise_RuntimeError(translate("Error in ATT protocol code"));
+            return;
+
         default:
             // Should be an HCI status error, > 0.
             if (result > 0) {

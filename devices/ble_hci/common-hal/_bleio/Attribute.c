@@ -25,10 +25,24 @@
  */
 
 #include "shared-bindings/_bleio/Attribute.h"
+#include "shared-bindings/_bleio/Characteristic.h"
+#include "shared-bindings/_bleio/Descriptor.h"
+#include "shared-bindings/_bleio/Service.h"
 
-// Return the type of the attribute
-bleio_attribute_type_uuid(mp_obj_t *attribute) {
-    if mp_is_o
+// Return the type of the attribute.
+ble_attribute_type bleio_attribute_type_uuid(mp_obj_t *attribute) {
+    if (MP_OBJ_IS_TYPE(attribute, &bleio_characteristic_type)) {
+        return BLE_TYPE_CHARACTERISTIC;
+    }
+    if (MP_OBJ_IS_TYPE(attribute, &bleio_descriptor_type)) {
+        return BLE_TYPE_DESCRIPTOR;
+    }
+    if (MP_OBJ_IS_TYPE(attribute, &bleio_service_type)) {
+        bleio_service_obj_t *service = MP_OBJ_TO_PTR(attribute);
+        return service->is_secondary ? BLE_TYPE_SECONDARY_SERVICE : BLE_TYPE_PRIMARY_SERVICE;
+    }
+    return BLE_TYPE_UNKNOWN;
+}
 
 // Convert a _bleio security mode to a ble_gap_conn_sec_mode_t setting.
 // void bleio_attribute_gatts_set_security_mode(ble_gap_conn_sec_mode_t *perm, bleio_attribute_security_mode_t security_mode) {

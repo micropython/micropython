@@ -43,6 +43,7 @@ typedef struct _bleio_characteristic_obj {
     uint16_t max_length;
     bool fixed_length;
     uint16_t handle;
+    uint16_t value_handle; // Should be handle+1.
     bleio_characteristic_properties_t props;
     bleio_attribute_security_mode_t read_perm;
     bleio_attribute_security_mode_t write_perm;
