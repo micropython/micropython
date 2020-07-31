@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,22 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#include "rmt.h"
+#include "py/runtime.h"
 
-#define MICROPY_HW_BOARD_NAME       "Saola 1 w/Wrover"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+bool rmt_reserved_channels[RMT_CHANNEL_MAX];
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
+rmt_channel_t esp32s2_peripherals_find_and_reserve_rmt(void) {
+    for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
+        if (!rmt_reserved_channels[i]) {
+            rmt_reserved_channels[i] = true;
+            return i;
+        }
+    }
+    mp_raise_RuntimeError(translate("All timers in use"));
+    return false;
+}
 
-#define AUTORESET_DELAY_MS 500
+void esp32s2_peripherals_free_rmt(rmt_channel_t chan) {
+    rmt_reserved_channels[chan] = false;
+}
