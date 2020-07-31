@@ -109,7 +109,7 @@ bool common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebuffer
 }
 
 mp_float_t common_hal_framebufferio_framebufferdisplay_get_brightness(framebufferio_framebufferdisplay_obj_t* self) {
-    if (self->framebuffer_protocol->set_brightness) {
+    if (self->framebuffer_protocol->get_brightness) {
         return self->framebuffer_protocol->get_brightness(self->framebuffer);
     }
     return -1;
