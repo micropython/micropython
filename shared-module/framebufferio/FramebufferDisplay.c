@@ -147,6 +147,14 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
         return true;
     }
     uint16_t subrectangles = 1;
+
+    // If pixels are packed by row then rows are on byte boundaries
+    if (self->core.colorspace.depth < 8 && self->core.colorspace.pixels_in_byte_share_row) {
+        int div = 8 / self->core.colorspace.depth;
+        clipped.x1 = (clipped.x1 / div) * div;
+        clipped.x2 = ((clipped.x2 + div - 1) / div) * div;
+    }
+
     uint16_t rows_per_buffer = displayio_area_height(&clipped);
     uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->core.colorspace.depth;
     uint16_t pixels_per_buffer = displayio_area_size(&clipped);
@@ -187,6 +195,7 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
             .x2 = clipped.x2,
             .y2 = clipped.y1 + rows_per_buffer * (j + 1)
         };
+
         if (remaining_rows < rows_per_buffer) {
             subrectangle.y2 = subrectangle.y1 + remaining_rows;
         }
@@ -197,12 +206,15 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
 
         displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
 
-        // COULDDO: this arithmetic only supports multiple-of-8 bpp
-        uint8_t *dest = self->bufinfo.buf + (subrectangle.y1 * self->core.width + subrectangle.x1) * (self->core.colorspace.depth / 8);
+        uint8_t *buf = (uint8_t *)self->bufinfo.buf, *endbuf = buf + self->bufinfo.len;
+        (void)endbuf; // Hint to compiler that endbuf is "used" even if NDEBUG
+
+        uint8_t *dest = self->bufinfo.buf + (subrectangle.y1 * self->core.width + subrectangle.x1) * self->core.colorspace.depth / 8;
         uint8_t *src = (uint8_t*)buffer;
-        size_t rowsize = (subrectangle.x2 - subrectangle.x1) * (self->core.colorspace.depth / 8);
-        size_t rowstride = self->core.width * (self->core.colorspace.depth/8);
+        size_t rowsize = (subrectangle.x2 - subrectangle.x1) * self->core.colorspace.depth / 8;
+        size_t rowstride = self->core.width * self->core.colorspace.depth/8;
         for (uint16_t i = subrectangle.y1; i < subrectangle.y2; i++) {
+            assert(dest >= buf && dest < endbuf && dest+rowsize <= endbuf);
             memcpy(dest, src, rowsize);
             dest += rowstride;
             src += rowsize;
