@@ -309,6 +309,7 @@ void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
     common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, false);
     release_display_core(&self->core);
     self->framebuffer_protocol->deinit(self->framebuffer);
+    self->base.type = &mp_type_NoneType;
 }
 
 void reset_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
