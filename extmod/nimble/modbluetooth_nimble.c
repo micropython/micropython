@@ -673,7 +673,7 @@ int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_
         .window = MAX(BLE_HCI_SCAN_WINDOW_MIN, MIN(BLE_HCI_SCAN_WINDOW_MAX, window_us / BLE_HCI_SCAN_ITVL)),
         .filter_policy = BLE_HCI_CONN_FILT_NO_WL,
         .limited = 0,
-        .passive = active ? 0 : 1,
+        .passive = !active,
         .filter_duplicates = 0,
     };
     int err = ble_gap_disc(BLE_OWN_ADDR_PUBLIC, duration_ms, &discover_params, gap_scan_cb, NULL);
