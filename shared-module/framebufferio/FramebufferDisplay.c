@@ -219,12 +219,14 @@ STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t* self) {
     displayio_display_core_start_refresh(&self->core);
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
     const displayio_area_t* current_area = _get_refresh_areas(self);
-    while (current_area != NULL) {
-        _refresh_area(self, current_area);
-        current_area = current_area->next;
+    if (current_area) {
+        while (current_area != NULL) {
+            _refresh_area(self, current_area);
+            current_area = current_area->next;
+        }
+        self->framebuffer_protocol->swapbuffers(self->framebuffer);
     }
     displayio_display_core_finish_refresh(&self->core);
-    self->framebuffer_protocol->swapbuffers(self->framebuffer);
 }
 
 void common_hal_framebufferio_framebufferdisplay_set_rotation(framebufferio_framebufferdisplay_obj_t* self, int rotation){
