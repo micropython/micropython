@@ -51,7 +51,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 
     uint16_t ram_width = 0x100;
     uint16_t ram_height = 0x100;
-
+    uint16_t depth = self->framebuffer_protocol->get_color_depth(self->framebuffer);
     displayio_display_core_construct(
         &self->core,
         NULL,
@@ -62,12 +62,13 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         0,
         0,
         rotation,
-        self->framebuffer_protocol->get_color_depth(self->framebuffer),
-        false,
-        false,
+        depth,
+        (depth < 12), // grayscale
+        true, // pixels_in_byte_share_row
         self->framebuffer_protocol->get_bytes_per_cell(self->framebuffer),
-        false,
-        false);
+        true, // reverse_pixels_in_byte
+        false // reverse_bytes_in_word
+    );
 
     self->first_manual_refresh = !auto_refresh;
 
