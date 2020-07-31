@@ -204,7 +204,7 @@ Broadcaster Role (Advertiser)
 Observer Role (Scanner)
 -----------------------
 
-.. method:: BLE.gap_scan(duration_ms, [interval_us], [window_us])
+.. method:: BLE.gap_scan(duration_ms, [interval_us, [window_us, [active]]])
 
     Run a scan operation lasting for the specified duration (in **milli**\ seconds).
 
@@ -218,6 +218,10 @@ Observer Role (Scanner)
     interval and window are 1.28 seconds and 11.25 milliseconds respectively
     (background scanning).
 
+    Use *active* set to ``True`` to initiate an active scan instead of a passive
+    one (the default). Each discovered device will be automatically scanned and any
+    active scan response will be raised as an event as below.
+
     For each scan result the ``_IRQ_SCAN_RESULT`` event will be raised, with event
     data ``(addr_type, addr, adv_type, rssi, adv_data)``.  ``adv_type`` values correspond
     to the Bluetooth Specification:
@@ -226,7 +230,7 @@ Observer Role (Scanner)
         * 0x01 - ADV_DIRECT_IND - connectable directed advertising
         * 0x02 - ADV_SCAN_IND - scannable undirected advertising
         * 0x03 - ADV_NONCONN_IND - non-connectable undirected advertising
-        * 0x04 - SCAN_RSP - scan response
+        * 0x04 - SCAN_RSP - active scan response
 
     When scanning is stopped (either due to the duration finishing or when
     explicitly stopped), the ``_IRQ_SCAN_DONE`` event will be raised.
