@@ -39,14 +39,24 @@
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
 #include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
+
+#include "esp-idf/components/heap/include/esp_heap_caps.h"
+
+#include "esp_log.h"
+static const char *TAG = "cp port";
+
+#define HEAP_SIZE (96 * 1024)
 
 STATIC esp_timer_handle_t _tick_timer;
 
 void tick_timer_cb(void* arg) {
     supervisor_tick();
 }
+
+uint32_t* heap;
 
 safe_mode_t port_init(void) {
     esp_timer_create_args_t args;
@@ -55,6 +65,12 @@ safe_mode_t port_init(void) {
     args.dispatch_method = ESP_TIMER_TASK;
     args.name = "CircuitPython Tick";
     esp_timer_create(&args, &_tick_timer);
+
+    heap = malloc(HEAP_SIZE);
+    if (heap == NULL) {
+        heap_caps_print_heap_info(MALLOC_CAP_8BIT);
+        ESP_LOGE(TAG, "failed to allocate heap");
+    }
     never_reset_module_internal_pins();
     return NO_SAFE_MODE;
 }
@@ -73,6 +89,9 @@ void reset_port(void) {
     spi_reset();
     uart_reset();
 #endif
+#if CIRCUITPY_WIFI
+    wifi_reset();
+#endif
 }
 
 void reset_to_bootloader(void) {
@@ -81,14 +100,14 @@ void reset_to_bootloader(void) {
 void reset_cpu(void) {
 }
 
-uint32_t heap[64 / sizeof(uint32_t) * 1024];
-
 uint32_t *port_heap_get_bottom(void) {
+
+    ESP_EARLY_LOGI(TAG, "heap %x", heap);
     return heap;
 }
 
 uint32_t *port_heap_get_top(void) {
-    return heap + sizeof(heap) / sizeof(heap[0]);
+    return heap + (HEAP_SIZE / sizeof(uint32_t));
 }
 
 uint32_t *port_stack_get_limit(void) {
@@ -108,6 +127,13 @@ supervisor_allocation* port_fixed_stack(void) {
     _fixed_stack.ptr = port_stack_get_limit();
     _fixed_stack.length = (port_stack_get_top() - port_stack_get_limit()) * sizeof(uint32_t);
     return &_fixed_stack;
+}
+
+supervisor_allocation _fixed_heap;
+supervisor_allocation* port_fixed_heap(void) {
+    _fixed_heap.ptr = port_heap_get_bottom();
+    _fixed_heap.length = (port_heap_get_top() - port_heap_get_bottom()) * sizeof(uint32_t);
+    return &_fixed_heap;
 }
 
 // Place the word to save just after our BSS section that gets blanked.

@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +25,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_NETWORK_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_NETWORK_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_SCANNEDNETWORKS_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_SCANNEDNETWORKS_H
+
+#include <stdint.h>
 
 #include "py/obj.h"
+
+#include "FreeRTOS.h"
+#include "freertos/event_groups.h"
 
 #include "esp-idf/components/esp_wifi/include/esp_wifi_types.h"
 
 typedef struct {
     mp_obj_base_t base;
-    wifi_ap_record_t record;
-} wifi_network_obj_t;
+    uint8_t current_channel_index;
+    EventGroupHandle_t radio_event_group;
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_NETWORK_H
+    // Results from the last channel scan
+    wifi_ap_record_t* results;
+    uint16_t current_result;
+    uint16_t total_results;
+    uint16_t max_results;
+
+    // Limits on what channels to scan.
+    uint8_t start_channel;
+    uint8_t end_channel; // Inclusive
+
+    bool done;
+    bool scanning;
+} wifi_scannednetworks_obj_t;
+
+void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self);
+void wifi_scannednetworks_deinit(wifi_scannednetworks_obj_t *self);
+
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_SCANNEDNETWORKS_H

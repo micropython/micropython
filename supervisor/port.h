@@ -69,6 +69,8 @@ uint32_t *port_heap_get_bottom(void);
 // Get heap top address
 uint32_t *port_heap_get_top(void);
 
+supervisor_allocation* port_fixed_heap(void);
+
 // Save and retrieve a word from memory that is preserved over reset. Used for safe mode.
 void port_set_saved_word(uint32_t);
 uint32_t port_get_saved_word(void);

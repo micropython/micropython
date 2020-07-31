@@ -29,9 +29,21 @@
 
 #include "py/obj.h"
 
+#include "esp-idf/components/esp_event/include/esp_event.h"
+
+#include "shared-bindings/wifi/ScannedNetworks.h"
+
+// Event bits for the Radio event group.
+#define WIFI_SCAN_DONE_BIT BIT0
+
 typedef struct {
     mp_obj_base_t base;
-    // Stores no state currently.
+    esp_event_handler_instance_t handler_instance_all_wifi;
+    esp_event_handler_instance_t handler_instance_got_ip;
+    wifi_scannednetworks_obj_t *current_scan;
+    StaticEventGroup_t event_group;
+    EventGroupHandle_t event_group_handle;
+    bool started;
 } wifi_radio_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_RADIO_H

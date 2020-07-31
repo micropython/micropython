@@ -29,4 +29,6 @@
 
 #include "py/obj.h"
 
+void wifi_reset(void);
+
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI___INIT___H

@@ -338,6 +338,7 @@ SRC_COMMON_HAL_ALL = \
 	watchdog/__init__.c \
 	wifi/Network.c \
 	wifi/Radio.c \
+	wifi/ScannedNetworks.c \
 	wifi/__init__.c \
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))

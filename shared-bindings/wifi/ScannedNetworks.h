@@ -3,7 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +26,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_NETWORK_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_NETWORK_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_SCANNEDNETWORKS_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_SCANNEDNETWORKS_H
 
 #include "py/obj.h"
+#include "common-hal/wifi/ScannedNetworks.h"
 
-#include "esp-idf/components/esp_wifi/include/esp_wifi_types.h"
+extern const mp_obj_type_t wifi_scannednetworks_type;
 
-typedef struct {
-    mp_obj_base_t base;
-    wifi_ap_record_t record;
-} wifi_network_obj_t;
+mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_NETWORK_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_SCANNEDNETWORKS_H

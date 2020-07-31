@@ -78,8 +78,8 @@ const mp_obj_property_t wifi_radio_mac_address_obj = {
 };
 
 
-//|     def start_scanning_networks(self) -> Iterable[Network]:
-//|         """"""
+//|     def start_scanning_networks(self, *, start_channel=1, stop_channel=11) -> Iterable[Network]:
+//|         """Scans for available wifi networks over the given channel range. Make sure the channels are allowed in your country."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_start_scanning_networks(mp_obj_t self_in) {
