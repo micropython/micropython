@@ -32,6 +32,9 @@
 #include "py/runtime.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
 
+#include "esp_log.h"
+static const char *TAG = "cp iternext";
+
 //| class ScannedNetworks:
 //|     """Iterates over wifi `Network`s found while scanning. This object is always created
 //|     by a `wifi.Radio`: it has no user-visible constructor."""
@@ -43,6 +46,8 @@ STATIC mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {
     if (network != mp_const_none) {
         return network;
     }
+
+    ESP_EARLY_LOGI(TAG, "stop iteration");
     return MP_OBJ_STOP_ITERATION;
 }
 

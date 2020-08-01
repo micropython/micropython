@@ -38,10 +38,16 @@
 
 #include "esp-idf/components/esp_wifi/include/esp_wifi.h"
 
+#include "esp_log.h"
+static const char *TAG = "cp scannednetworks";
+
 static void wifi_scannednetworks_done(wifi_scannednetworks_obj_t *self) {
     self->done = true;
-    free(self->results);
-    self->results = NULL;
+    ESP_EARLY_LOGI(TAG, "free %x", self->results);
+    if (self->results != NULL) {
+        m_free(self->results);
+        self->results = NULL;
+    }
 }
 
 static bool wifi_scannednetworks_wait_for_scan(wifi_scannednetworks_obj_t *self) {
@@ -75,6 +81,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
             }
 
             esp_wifi_scan_get_ap_num(&self->total_results);
+            self->scanning = false;
             if (self->total_results > 0) {
                 break;
             }
@@ -83,6 +90,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
         }
         // We not have found any more results so we're done.
         if (self->done) {
+            ESP_LOGI(TAG, "return done");
             return mp_const_none;
         }
         // If we need more space than we have, realloc.
@@ -92,6 +100,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
                                                       self->max_results,
                                                       self->total_results,
                                                       true /* allow move */);
+            ESP_EARLY_LOGI(TAG, "alloc %x", results);
             if (results != NULL) {
                 self->results = results;
                 self->max_results = self->total_results;
@@ -128,7 +137,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
 static uint8_t scan_pattern[] = {6, 1, 11, 3, 9, 13, 2, 4, 8, 12, 5, 7, 10, 14};
 
 void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self) {
-    wifi_scan_config_t config;
+
     uint8_t next_channel = sizeof(scan_pattern);
     while (self->current_channel_index < sizeof(scan_pattern)) {
         next_channel = scan_pattern[self->current_channel_index];
@@ -137,11 +146,19 @@ void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self) {
             break;
         }
     }
-    if (next_channel == sizeof(scan_pattern) ||
-            esp_wifi_scan_start(&config, false) != ESP_OK) {
+    wifi_scan_config_t config = { 0 };
+    config.channel = next_channel;
+    if (next_channel == sizeof(scan_pattern)) {
+        ESP_LOGI(TAG, "scan done");
         wifi_scannednetworks_done(self);
     } else {
-        self->scanning = true;
+        esp_err_t result = esp_wifi_scan_start(&config, false);
+        if (result != ESP_OK) {
+            ESP_LOGI(TAG, "start failed 0x%x", result);
+            wifi_scannednetworks_done(self);
+        } else {
+            self->scanning = true;
+        }
     }
 }
 

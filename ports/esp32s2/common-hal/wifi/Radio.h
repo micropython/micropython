@@ -43,7 +43,11 @@ typedef struct {
     wifi_scannednetworks_obj_t *current_scan;
     StaticEventGroup_t event_group;
     EventGroupHandle_t event_group_handle;
+    wifi_config_t sta_config;
+    esp_netif_t *netif;
     bool started;
+    bool ap_mode;
+    bool sta_mode;
 } wifi_radio_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_RADIO_H

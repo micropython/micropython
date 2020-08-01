@@ -33,11 +33,13 @@ static const char *TAG = "cp wifi";
 
 #include "esp-idf/components/esp_wifi/include/esp_wifi.h"
 
+#include "esp-idf/components/heap/include/esp_heap_caps.h"
+
 wifi_radio_obj_t common_hal_wifi_radio_obj;
 
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data) {
-    ESP_LOGI(TAG, "event");
+    ESP_LOGI(TAG, "event %x", event_id);
     wifi_radio_obj_t* radio = arg;
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_SCAN_DONE) {
         xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
@@ -65,16 +67,20 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 static bool wifi_inited;
 
 void common_hal_wifi_init(void) {
-    ESP_LOGI(TAG, "init");
+    ESP_EARLY_LOGI(TAG, "init");
+    heap_caps_print_heap_info(MALLOC_CAP_8BIT);
     wifi_inited = true;
 	common_hal_wifi_radio_obj.base.type = &wifi_radio_type;
 
     ESP_ERROR_CHECK(esp_netif_init());
 
+    ESP_EARLY_LOGI(TAG, "create event loop");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_netif_create_default_wifi_sta();
 
+    ESP_EARLY_LOGI(TAG, "create wifi sta");
     wifi_radio_obj_t* self = &common_hal_wifi_radio_obj;
+    self->netif = esp_netif_create_default_wifi_sta();
+
     self->event_group_handle = xEventGroupCreateStatic(&self->event_group);
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
                                                         ESP_EVENT_ANY_ID,
@@ -88,6 +94,7 @@ void common_hal_wifi_init(void) {
                                                         self->handler_instance_got_ip));
 
 
+    ESP_EARLY_LOGI(TAG, "wifi init");
 	wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
 	esp_err_t result = esp_wifi_init(&config);
 	if (result == ESP_ERR_NO_MEM) {
@@ -95,6 +102,7 @@ void common_hal_wifi_init(void) {
 	} else if (result != ESP_OK) {
 		// handle this
 	}
+    ESP_EARLY_LOGI(TAG, "enable radio");
     common_hal_wifi_radio_set_enabled(self, true);
 }
 
@@ -111,5 +119,8 @@ void wifi_reset(void) {
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT,
                                                           IP_EVENT_STA_GOT_IP,
                                                           radio->handler_instance_got_ip));
-	esp_wifi_deinit();
+	ESP_ERROR_CHECK(esp_wifi_deinit());
+    esp_netif_destroy(radio->netif);
+    radio->netif = NULL;
+    ESP_ERROR_CHECK(esp_netif_deinit());
 }

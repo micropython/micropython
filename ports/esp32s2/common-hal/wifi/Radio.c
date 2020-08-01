@@ -31,18 +31,41 @@
 
 #include "esp-idf/components/esp_wifi/include/esp_wifi.h"
 
+#include "esp_log.h"
+static const char *TAG = "cp radio";
+
+static void start_station(wifi_radio_obj_t *self) {
+	if (self->sta_mode) {
+		return;
+	}
+	wifi_mode_t next_mode;
+	if (self->ap_mode) {
+		next_mode = WIFI_MODE_APSTA;
+	} else {
+		next_mode = WIFI_MODE_STA;
+	}
+	esp_wifi_set_mode(next_mode);
+
+	esp_wifi_set_config(WIFI_MODE_STA, &self->sta_config);
+}
+
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
 	return self->started;
 }
 
 void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
 	if (self->started && !enabled) {
-		esp_wifi_stop();
+    	ESP_LOGI(TAG, "stop");
+    	if (self->current_scan != NULL) {
+    		common_hal_wifi_radio_stop_scanning_networks(self);
+    	}
+		ESP_ERROR_CHECK(esp_wifi_stop());
 		self->started = false;
 		return;
 	}
 	if (!self->started && enabled) {
-		esp_wifi_start();
+    	ESP_LOGI(TAG, "start");
+		ESP_ERROR_CHECK(esp_wifi_start());
 		self->started = true;
 		return;
 	}
@@ -59,7 +82,9 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
 		mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
 	}
 	// check enabled
+	start_station(self);
 
+    ESP_LOGI(TAG, "start scan");
 	wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
 	self->current_scan = scan;
 	scan->base.type = &wifi_scannednetworks_type;
@@ -72,8 +97,10 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
 	// Free the memory used to store the found aps.
+    ESP_EARLY_LOGI(TAG, "stop scan");
 	wifi_scannednetworks_deinit(self->current_scan);
 	self->current_scan = NULL;
+    ESP_EARLY_LOGI(TAG, "stop scan done");
 }
 
 bool common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, mp_float_t timeout) {

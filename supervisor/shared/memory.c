@@ -31,6 +31,9 @@
 
 #include "supervisor/shared/display.h"
 
+#include "esp_log.h"
+static const char *TAG = "memory";
+
 #define CIRCUITPY_SUPERVISOR_ALLOC_COUNT (12)
 
 static supervisor_allocation allocations[CIRCUITPY_SUPERVISOR_ALLOC_COUNT];
@@ -39,6 +42,7 @@ uint32_t* low_address;
 uint32_t* high_address;
 
 void memory_init(void) {
+    ESP_LOGE(TAG, "memory init");
     low_address = port_heap_get_bottom();
     high_address = port_heap_get_top();
 }

@@ -48,7 +48,7 @@
 #include "esp_log.h"
 static const char *TAG = "cp port";
 
-#define HEAP_SIZE (96 * 1024)
+#define HEAP_SIZE (64 * 1024)
 
 STATIC esp_timer_handle_t _tick_timer;
 
@@ -92,6 +92,7 @@ void reset_port(void) {
 #if CIRCUITPY_WIFI
     wifi_reset();
 #endif
+    heap_caps_print_heap_info(MALLOC_CAP_8BIT);
 }
 
 void reset_to_bootloader(void) {
