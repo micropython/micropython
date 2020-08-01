@@ -138,6 +138,10 @@ void MP_FASTCODE(mp_hal_delay_ms)(uint32_t delay) {
     mp_hal_delay_us(delay * 1000);
 }
 
+uint64_t mp_hal_time_ns(void) {
+    return pyb_rtc_get_us_since_2000() * 1000ULL;
+}
+
 void ets_event_poll(void) {
     ets_loop_iter();
     mp_handle_pending(true);
