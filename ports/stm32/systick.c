@@ -36,6 +36,7 @@ extern __IO uint32_t uwTick;
 
 systick_dispatch_t systick_dispatch_table[SYSTICK_DISPATCH_NUM_SLOTS];
 
+
 void SysTick_Handler(void) {
     // Instead of calling HAL_IncTick we do the increment here of the counter.
     // This is purely for efficiency, since SysTick is called 1000 times per
@@ -47,6 +48,13 @@ void SysTick_Handler(void) {
     // the COUNTFLAG bit, which makes the logic in mp_hal_ticks_us
     // work properly.
     SysTick->CTRL;
+
+    #if MICROPY_ENABLE_PROFILER
+    // get SP and use it to get the return address from stack.
+    uint32_t *frame = __builtin_frame_address(0);
+    extern void gmon_systick(size_t pc);
+    gmon_systick(frame[10]);
+    #endif
 
     // Dispatch to any registered handlers in a cycle
     systick_dispatch_t f = systick_dispatch_table[uw_tick & (SYSTICK_DISPATCH_NUM_SLOTS - 1)];
