@@ -152,6 +152,7 @@ void mp_import_all(mp_obj_t module);
 
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list argptr);
 NORETURN void mp_raise_ValueError(const compressed_string_t *msg);
 NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_TypeError(const compressed_string_t *msg);

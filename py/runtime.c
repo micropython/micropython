@@ -1522,12 +1522,16 @@ NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_strin
     }
 }
 
+NORETURN void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list argptr) {
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, argptr);
+    nlr_raise(exception);
+}
+
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, argptr);
+    mp_raise_msg_vlist(exc_type, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_AttributeError(const compressed_string_t *msg) {
@@ -1549,9 +1553,8 @@ NORETURN void mp_raise_IndexError(const compressed_string_t *msg) {
 NORETURN void mp_raise_IndexError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_IndexError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_IndexError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_ValueError(const compressed_string_t *msg) {
@@ -1561,9 +1564,8 @@ NORETURN void mp_raise_ValueError(const compressed_string_t *msg) {
 NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_ValueError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_ValueError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_TypeError(const compressed_string_t *msg) {
@@ -1573,9 +1575,8 @@ NORETURN void mp_raise_TypeError(const compressed_string_t *msg) {
 NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_TypeError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_TypeError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_OSError(int errno_) {
@@ -1597,9 +1598,8 @@ NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
 NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_OSError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_OSError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {
@@ -1609,17 +1609,15 @@ NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {
 NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_NotImplementedError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_NotImplementedError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_OverflowError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_OverflowError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {
