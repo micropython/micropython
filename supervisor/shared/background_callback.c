@@ -70,10 +70,10 @@ void background_callback_add(background_callback_t *cb, background_callback_fun 
 
 static bool in_background_callback;
 void background_callback_run_all() {
-    last_background_tick = port_get_raw_ticks(NULL);
     if (!callback_head) {
         return;
     }
+    last_background_tick = port_get_raw_ticks(NULL);
     CALLBACK_CRITICAL_BEGIN;
     if (in_background_callback) {
         CALLBACK_CRITICAL_END;
