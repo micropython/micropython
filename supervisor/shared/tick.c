@@ -68,8 +68,6 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 
 static background_callback_t tick_callback;
 
-volatile uint64_t last_finished_tick = 0;
-
 void supervisor_background_tasks(void *unused) {
     port_start_background_task();
 
@@ -93,13 +91,11 @@ void supervisor_background_tasks(void *unused) {
 
     assert_heap_ok();
 
-    last_finished_tick = port_get_raw_ticks(NULL);
-
     port_finish_background_task();
 }
 
 bool supervisor_background_tasks_ok(void) {
-    return port_get_raw_ticks(NULL) - last_finished_tick < 1024;
+    return port_get_raw_ticks(NULL) - get_background_ticks() < 1024;
 }
 
 void supervisor_tick(void) {

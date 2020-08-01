@@ -73,6 +73,9 @@ uint32_t *port_heap_get_top(void);
 void port_set_saved_word(uint32_t);
 uint32_t port_get_saved_word(void);
 
+// Used to keep track of last time background was run
+uint64_t get_background_ticks(void);
+
 // Get the raw tick count since start up. A tick is 1/1024 of a second, a common low frequency
 // clock rate. If subticks is not NULL then the port will fill in the number of subticks where each
 // tick is 32 subticks (for a resolution of 1/32768 or 30.5ish microseconds.)

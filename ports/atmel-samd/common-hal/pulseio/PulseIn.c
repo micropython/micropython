@@ -88,9 +88,8 @@ void pulsein_interrupt_handler(uint8_t channel) {
     uint32_t current_count = tc->COUNT16.COUNT.reg;
 
     pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
-    if (!supervisor_background_tasks_ok() || self->errored_too_fast) {
-        self->errored_too_fast = true;
-        common_hal_pulseio_pulsein_pause(self);
+    if (!supervisor_background_tasks_ok() ) {
+        mp_raise_RuntimeError(translate("Input taking too long"));
         return;
     }
     if (self->first_edge) {
@@ -154,7 +153,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->start = 0;
     self->len = 0;
     self->first_edge = true;
-    self->errored_too_fast = false;
 
     if (refcount == 0) {
         // Find a spare timer.
@@ -263,9 +261,6 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
         uint16_t trigger_duration) {
     // Make sure we're paused.
     common_hal_pulseio_pulsein_pause(self);
-
-    // Reset erroring
-    self->errored_too_fast = false;
 
     // Send the trigger pulse.
     if (trigger_duration > 0) {
