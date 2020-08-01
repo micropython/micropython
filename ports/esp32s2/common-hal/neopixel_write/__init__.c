@@ -41,6 +41,7 @@
  */
 
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 #include "driver/rmt.h"
 #include "rmt.h"
@@ -102,7 +103,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     // Convert NS timings to ticks
     uint32_t counter_clk_hz = 0;
     if (rmt_get_counter_clock(config.channel, &counter_clk_hz) != ESP_OK) {
-        mp_raise_ValueError(translate("Could not retrieve clock"));
+        mp_raise_RuntimeError(translate("Could not retrieve clock"));
     }
     float ratio = (float)counter_clk_hz / 1e9;
     ws2812_t0h_ticks = (uint32_t)(ratio * WS2812_T0H_NS);
@@ -115,7 +116,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
     // Write and wait to finish
     if(rmt_write_sample(config.channel, pixels, (size_t)numBytes, true) != ESP_OK) {
-        mp_raise_ValueError(translate("Input/output error"));
+        mp_raise_RuntimeError(translate("Input/output error"));
     }
     rmt_wait_tx_done(config.channel, pdMS_TO_TICKS(100));
 
