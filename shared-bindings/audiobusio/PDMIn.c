@@ -210,7 +210,7 @@ STATIC mp_obj_t audiobusio_pdmin_obj_record(mp_obj_t self_obj, mp_obj_t destinat
 }
 MP_DEFINE_CONST_FUN_OBJ_3(audiobusio_pdmin_record_obj, audiobusio_pdmin_obj_record);
 
-//|     sample_rate: int = ...
+//|     sample_rate: int
 //|     """The actual sample_rate of the recording. This may not match the constructed
 //|     sample rate due to internal clock limitations."""
 //|

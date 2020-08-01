@@ -1713,11 +1713,11 @@ STATIC void compile_yield_from(compiler_t *comp) {
 #if MICROPY_PY_ASYNC_AWAIT
 STATIC bool compile_require_async_context(compiler_t *comp, mp_parse_node_struct_t *pns) {
     int scope_flags = comp->scope_cur->scope_flags;
-    if(scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+    if(scope_flags & MP_SCOPE_FLAG_ASYNC) {
         return true;
     }
     compile_syntax_error(comp, (mp_parse_node_t)pns,
-        translate("'async for' or 'async with' outside async function"));
+        translate("'await', 'async for' or 'async with' outside async function"));
     return false;
 }
 
@@ -1741,7 +1741,8 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     uint try_finally_label = comp_next_label(comp);
 
     compile_node(comp, pns->nodes[1]); // iterator
-    compile_await_object_method(comp, MP_QSTR___aiter__);
+    EMIT_ARG(load_method, MP_QSTR___aiter__, false);
+    EMIT_ARG(call_method, 0, 0, 0);
     compile_store_id(comp, context);
 
     START_BREAK_CONTINUE_BLOCK
@@ -2645,6 +2646,7 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
         compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'await' outside function"));
         return;
     }
+    compile_require_async_context(comp, pns);
     compile_atom_expr_normal(comp, pns);
     compile_yield_from(comp);
 }

@@ -84,12 +84,12 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     self->clock_pin = clock_pin; // PA10, PA20 -> SCK0, PB11 -> SCK1
     #ifdef SAMD21
         if (clock_pin == &pin_PA10
-        #ifdef PIN_PA20
+        #if defined(PIN_PA20) && !defined(IGNORE_PIN_PA20)
             || clock_pin == &pin_PA20
         #endif
             ) {
             self->clock_unit = 0;
-        #ifdef PIN_PB11
+        #if defined(PIN_PB11) && !defined(IGNORE_PIN_PB11)
         } else if (clock_pin == &pin_PB11) {
             self->clock_unit = 1;
         #endif
@@ -98,7 +98,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
         if (clock_pin == &pin_PA10 || clock_pin == &pin_PB16) {
             self->clock_unit = 0;
     } else if (clock_pin == &pin_PB12
-        #ifdef PIN_PB28
+        #if defined(PIN_PB28) && !defined(IGNORE_PIN_PB28)
         || data_pin == &pin_PB28) {
         #else
         ) {
@@ -112,14 +112,24 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     self->data_pin = data_pin; // PA07, PA19 -> SD0, PA08, PB16 -> SD1
 
     #ifdef SAMD21
-    if (data_pin == &pin_PA07 || data_pin == &pin_PA19) {
-        self->serializer = 0;
-    } else if (data_pin == &pin_PA08
-        #ifdef PIN_PB16
-        || data_pin == &pin_PB16) {
-        #else
-        ) {
+    if (false
+        #if defined(PIN_PA07) && !defined(IGNORE_PIN_PA07)
+        || data_pin == &pin_PA07
         #endif
+        #if defined(PIN_PA19) && !defined(IGNORE_PIN_PA19)
+        || data_pin == &pin_PA19
+        #endif
+        ) {
+        self->serializer = 0;
+    }
+    else if (false
+        #if defined(PIN_PA08) && !defined(IGNORE_PIN_PA08)
+        || data_pin == &pin_PA08
+        #endif
+        #if defined (PIN_PB16) && !defined(IGNORE_PIN_PB16)
+        || data_pin == &pin_PB16
+       #endif
+        ) {
         self->serializer = 1;
     #endif
     #ifdef SAM_D5X_E5X

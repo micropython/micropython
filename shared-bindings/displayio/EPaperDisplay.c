@@ -49,7 +49,7 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the startup and shutdown sequences at minimum."""
 //|
-//|     def __init__(self, display_bus: displayio, start_sequence: buffer, stop_sequence: buffer, *, width: int, height: int, ram_width: int, ram_height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, set_column_window_command: Optional[int] = None, set_row_window_command: Optional[int] = None, single_byte_bounds: bool = False, write_black_ram_command: int, black_bits_inverted: bool = False, write_color_ram_command: Optional[int] = None, color_bits_inverted: bool = False, highlight_color: int = 0x000000, refresh_display_command: int, refresh_time: float = 40, busy_pin: Optional[microcontroller.Pin] = None, busy_state: bool = True, seconds_per_frame: float = 180, always_toggle_chip_select: bool = False) -> None:
+//|     def __init__(self, display_bus: _DisplayBus, start_sequence: ReadableBuffer, stop_sequence: ReadableBuffer, *, width: int, height: int, ram_width: int, ram_height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, set_column_window_command: Optional[int] = None, set_row_window_command: Optional[int] = None, single_byte_bounds: bool = False, write_black_ram_command: int, black_bits_inverted: bool = False, write_color_ram_command: Optional[int] = None, color_bits_inverted: bool = False, highlight_color: int = 0x000000, refresh_display_command: int, refresh_time: float = 40, busy_pin: Optional[microcontroller.Pin] = None, busy_state: bool = True, seconds_per_frame: float = 180, always_toggle_chip_select: bool = False) -> None:
 //|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
 //|         The ``start_sequence`` and ``stop_sequence`` are bitpacked to minimize the ram impact. Every
@@ -205,7 +205,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_refresh(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_refresh_obj, displayio_epaperdisplay_obj_refresh);
 
-//|     time_to_refresh: float = ...
+//|     time_to_refresh: float
 //|     """Time, in fractional seconds, until the ePaper display can be refreshed."""
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_time_to_refresh(mp_obj_t self_in) {
@@ -221,7 +221,7 @@ const mp_obj_property_t displayio_epaperdisplay_time_to_refresh_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     width: int = ...
+//|     width: int
 //|     """Gets the width of the display in pixels"""
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_width(mp_obj_t self_in) {
@@ -237,7 +237,7 @@ const mp_obj_property_t displayio_epaperdisplay_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: int = ...
+//|     height: int
 //|	    """Gets the height of the display in pixels"""
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_height(mp_obj_t self_in) {
@@ -253,7 +253,7 @@ const mp_obj_property_t displayio_epaperdisplay_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     bus: displayio = ...
+//|     bus: _DisplayBus
 //|	    """The bus being used by the display"""
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_bus(mp_obj_t self_in) {

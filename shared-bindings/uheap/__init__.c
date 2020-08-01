@@ -34,7 +34,7 @@
 //| """Heap size analysis"""
 //|
 
-//| def info(object: Any) -> int:
+//| def info(object: object) -> int:
 //|     """Prints memory debugging info for the given object and returns the
 //|     estimated size."""
 //|     ...

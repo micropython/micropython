@@ -53,7 +53,7 @@
 //|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
 //|     and therefore the hardware.)"""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, MOSI: microcontroller.Pin = None, MISO: microcontroller.Pin = None) -> None:
+//|     def __init__(self, clock: microcontroller.Pin, MOSI: Optional[microcontroller.Pin] = None, MISO: Optional[microcontroller.Pin] = None) -> None:
 //|
 //|         """Construct an SPI object on the given pins.
 //|
@@ -153,7 +153,7 @@ STATIC void check_for_deinit(busio_spi_obj_t *self) {
 //|           or second (1). Rising or falling depends on clock polarity.
 //|         :param int bits: the number of bits per word
 //|
-//|        .. note:: On the SAMD21, it is possible to set the baudrate to 24 MHz, but that
+//|         .. note:: On the SAMD21, it is possible to set the baudrate to 24 MHz, but that
 //|            speed is not guaranteed to work. 12 MHz is the next available lower speed, and is
 //|            within spec for the SAMD21.
 //|
@@ -270,7 +270,7 @@ STATIC mp_obj_t busio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 
 
-//|     def readinto(self, buffer: bytearray, *, start: int = 0, end: Optional[int] = None, write_value: int = 0) -> None:
+//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None, write_value: int = 0) -> None:
 //|         """Read into ``buffer`` while writing ``write_value`` for each byte read.
 //|         The SPI object must be locked.
 //|         If the number of bytes to read is 0, nothing happens.
@@ -377,7 +377,7 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_readinto_obj, 2, busio_spi_write_readinto);
 
-//|     frequency: int = ...
+//|     frequency: int
 //|     """The actual SPI bus frequency. This may not match the frequency requested
 //|     due to internal limitations."""
 //|

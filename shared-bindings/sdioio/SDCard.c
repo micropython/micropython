@@ -49,7 +49,7 @@
 //|     25MHz.  Usually an SDCard object is used with ``storage.VfsFat``
 //|     to allow file I/O to an SD card."""
 //|
-//|     def __init__(*, clock: digitalio.DigitalInOut, command: digitalio.DigitalInOut, data: List[digitalio.DigitalInOut], frequency: int) -> None:
+//|     def __init__(self, clock: microcontroller.Pin, command: microcontroller.Pin, data: Sequence[microcontroller.Pin], frequency: int) -> None:
 //|         """Construct an SDIO SD Card object with the given properties
 //|
 //|         :param ~microcontroller.Pin clock: the pin to use for the clock.
@@ -109,7 +109,7 @@ STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
     }
 }
 
-//|     def configure(*, frequency: int=0, width: int=0) -> None:
+//|     def configure(self, frequency: int = 0, width: int = 0) -> None:
 //|         """Configures the SDIO bus.
 //|
 //|         :param int frequency: the desired clock rate in Hertz. The actual clock rate may be higher or lower due to the granularity of available clock settings.  Check the `frequency` attribute for the actual clock rate.
@@ -146,7 +146,7 @@ STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(sdioio_sdcard_configure_obj, 1, sdioio_sdcard_configure);
 
-//|     def count() -> int:
+//|     def count(self) -> int:
 //|         """Returns the total number of sectors
 //|
 //|         Due to technical limitations, this is a function and not a property.
@@ -160,7 +160,7 @@ STATIC mp_obj_t sdioio_sdcard_count(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_count_obj, sdioio_sdcard_count);
 
-//|     def readblocks(start_block: int, buf: bytearray) -> None:
+//|     def readblocks(self, start_block: int, buf: WriteableBuffer) -> None:
 //|
 //|         """Read one or more blocks from the card
 //|
@@ -182,7 +182,7 @@ mp_obj_t sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_
 
 MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks);
 
-//|     def writeblocks(start_block: int, buf: bytearray) -> None:
+//|     def writeblocks(self, start_block: int, buf: WriteableBuffer) -> None:
 //|
 //|         """Write one or more blocks to the card
 //|
@@ -194,7 +194,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks
 mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     sdioio_sdcard_obj_t *self = (sdioio_sdcard_obj_t*)self_in;
     int result = common_hal_sdioio_sdcard_writeblocks(self, start_block, &bufinfo);
     if (result < 0) {
@@ -244,7 +244,7 @@ const mp_obj_property_t sdioio_sdcard_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def deinit() -> None:
+//|     def deinit(self) -> None:
 //|         """Disable permanently.
 //|
 //|         :return: None"""

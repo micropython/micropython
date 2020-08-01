@@ -44,7 +44,7 @@
 //|     `busio.SPI`, not `bitbangio.SPI`.  Usually an SDCard object is used
 //|     with ``storage.VfsFat`` to allow file I/O to an SD card."""
 //|
-//|     def __init__(bus:busio.SPI, cs: digitalio.DigitalInOut=digitalio.DigitalInOut, baudrate: int=8000000) -> None:
+//|     def __init__(self, bus: busio.SPI, cs: microcontroller.Pin, baudrate: int = 8000000) -> None:
 //|         """Construct an SPI SD Card object with the given properties
 //|
 //|         :param busio.SPI spi: The SPI bus
@@ -94,7 +94,7 @@ STATIC mp_obj_t sdcardio_sdcard_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 
-//|     def count() -> int:
+//|     def count(self) -> int:
 //|         """Returns the total number of sectors
 //|
 //|         Due to technical limitations, this is a function and not a property.
@@ -107,7 +107,7 @@ mp_obj_t sdcardio_sdcard_count(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_count_obj, sdcardio_sdcard_count);
 
-//|     def deinit() -> None:
+//|     def deinit(self) -> None:
 //|         """Disable permanently.
 //|
 //|         :return: None"""
@@ -120,7 +120,7 @@ mp_obj_t sdcardio_sdcard_deinit(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_deinit_obj, sdcardio_sdcard_deinit);
 
 
-//|     def readblocks(start_block: int, buf: bytearray) -> None:
+//|     def readblocks(self, start_block: int, buf: WriteableBuffer) -> None:
 //|
 //|         """Read one or more blocks from the card
 //|
@@ -144,7 +144,7 @@ mp_obj_t sdcardio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, m
 
 MP_DEFINE_CONST_FUN_OBJ_3(sdcardio_sdcard_readblocks_obj, sdcardio_sdcard_readblocks);
 
-//|     def writeblocks(start_block: int, buf: bytearray) -> None:
+//|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
 //|
 //|         """Write one or more blocks to the card
 //|

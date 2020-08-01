@@ -43,25 +43,25 @@
 
 STATIC const mp_rom_map_elem_t bleio_attribute_locals_dict_table[] = {
 
-//|     NO_ACCESS: int = ...
+//|     NO_ACCESS: int
 //|     """security mode: access not allowed"""
 //|
-//|     OPEN: int = ...
+//|     OPEN: int
 //|     """security_mode: no security (link is not encrypted)"""
 //|
-//|     ENCRYPT_NO_MITM: int = ...
+//|     ENCRYPT_NO_MITM: int
 //|     """security_mode: unauthenticated encryption, without man-in-the-middle protection"""
 //|
-//|     ENCRYPT_WITH_MITM: int = ...
+//|     ENCRYPT_WITH_MITM: int
 //|     """security_mode: authenticated encryption, with man-in-the-middle protection"""
 //|
-//|     LESC_ENCRYPT_WITH_MITM: int = ...
+//|     LESC_ENCRYPT_WITH_MITM: int
 //|     """security_mode: LESC encryption, with man-in-the-middle protection"""
 //|
-//|     SIGNED_NO_MITM: int = ...
+//|     SIGNED_NO_MITM: int
 //|     """security_mode: unauthenticated data signing, without man-in-the-middle protection"""
 //|
-//|     SIGNED_WITH_MITM: int = ...
+//|     SIGNED_WITH_MITM: int
 //|     """security_mode: authenticated data signing, without man-in-the-middle protection"""
 //|
     { MP_ROM_QSTR(MP_QSTR_NO_ACCESS),              MP_ROM_INT(SECURITY_MODE_NO_ACCESS) },

@@ -48,7 +48,7 @@
 //| microcontroller. See `board` for board-specific pin mappings."""
 //|
 
-//| cpu: Processor = ...
+//| cpu: Processor
 //| """CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
 //| (clock frequency).
 //| This object is the sole instance of `microcontroller.Processor`."""
@@ -133,12 +133,18 @@ STATIC mp_obj_t mcu_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 
-//| nvm: Any = ...
+//| nvm: Optional[nvm.ByteArray]
 //| """Available non-volatile memory.
 //| This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
 //|
 //| :type: nvm.ByteArray or None"""
 //|
+
+//| watchdog: Optional[watchdog.WatchDogTimer]
+//| """Available watchdog timer.
+//| This object is the sole instance of `watchdog.WatchDogTimer` when available or ``None`` otherwise."""
+//|
+
 
 //| """:mod:`microcontroller.pin` --- Microcontroller pin names
 //| --------------------------------------------------------

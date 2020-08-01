@@ -78,7 +78,7 @@ INC += \
 CFLAGS += -Os -DNDEBUG
 
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -105,8 +105,13 @@ CFLAGS += \
 	-DCPU_$(CHIP_VARIANT) \
 	-DDEBUG \
 	-DIMXRT10XX \
-	-Os -g3 -Wno-unused-parameter \
+	-g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage
+
+OPTIMIZATION_FLAGS ?= -O2
+
+# option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 

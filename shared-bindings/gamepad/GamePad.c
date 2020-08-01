@@ -69,8 +69,17 @@
 //|                 buttons = pad.get_pressed()
 //|                 time.sleep(0.1)"""
 //|
-
-//|     def __init__(self, b1: DigitalInOut, b2: DigitalInOut, b3: DigitalInOut, b4: DigitalInOut, b5: DigitalInOut, b6: DigitalInOut, b7: DigitalInOut, b8: DigitalInOut) -> None:
+//|     def __init__(
+//|         self,
+//|         b1: digitalio.DigitalInOut,
+//|         b2: digitalio.DigitalInOut,
+//|         b3: digitalio.DigitalInOut,
+//|         b4: digitalio.DigitalInOut,
+//|         b5: digitalio.DigitalInOut,
+//|         b6: digitalio.DigitalInOut,
+//|         b7: digitalio.DigitalInOut,
+//|         b8: digitalio.DigitalInOut,
+//|     ) -> None:
 //|         """Initializes button scanning routines.
 //|
 //|         The ``b1``-``b8`` parameters are ``DigitalInOut`` objects, which
