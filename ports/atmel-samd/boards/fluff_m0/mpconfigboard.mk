@@ -14,5 +14,6 @@ SUPEROPT_GC = 0
 
 CFLAGS_BOARD = --param max-inline-insns-auto=15
 ifeq ($(TRANSLATION), zh_Latn_pinyin)
+RELEASE_NEEDS_CLEAN_BUILD = 1
 CFLAGS_INLINE_LIMIT = 35
 endif
