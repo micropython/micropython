@@ -160,6 +160,7 @@ NORETURN void mp_raise_AttributeError(const compressed_string_t *msg);
 NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
 NORETURN void mp_raise_ImportError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError(const compressed_string_t *msg);
+NORETURN void mp_raise_IndexError_varg(const compressed_string_t *msg, ...);
 NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str);
 NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg);

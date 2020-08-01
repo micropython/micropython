@@ -280,7 +280,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
 
     mp_obj_tuple_get(t, &len, &elem);
     if (len != 9) {
-        mp_raise_TypeError(translate("function takes exactly 9 arguments"));
+        mp_raise_TypeError_varg(translate("function takes %d positional arguments but %d were given"), 9);
     }
 
     if (mp_obj_get_int(elem[0]) < 2000) {

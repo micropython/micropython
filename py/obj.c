@@ -263,7 +263,7 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
             mp_raise_TypeError(translate("can't convert to int"));
         } else {
             mp_raise_TypeError_varg(
-                translate("can't convert %s to int"), mp_obj_get_type_str(arg));
+                translate("can't convert %s to %s"), mp_obj_get_type_str(arg), "int");
         }
     }
 }
@@ -326,7 +326,7 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
             mp_raise_TypeError(translate("can't convert to float"));
         } else {
             mp_raise_TypeError_varg(
-                translate("can't convert %s to float"), mp_obj_get_type_str(arg));
+                translate("can't convert %s to %s"), mp_obj_get_type_str(arg), "float");
         }
     }
 
@@ -359,7 +359,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
             mp_raise_TypeError(translate("can't convert to complex"));
         } else {
             mp_raise_TypeError_varg(
-                translate("can't convert %s to complex"), mp_obj_get_type_str(arg));
+                translate("can't convert %s to %s"), mp_obj_get_type_str(arg), "complex");
         }
     }
 }
