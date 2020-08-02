@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@
 //|     a pin, see the :py:class:`analogio.AnalogIn` and
 //|     :py:class:`analogio.AnalogOut` classes."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Create a new DigitalInOut object associated with the pin. Defaults to input
 //|         with no pull. Use :py:meth:`switch_to_input` and
 //|         :py:meth:`switch_to_output` to change the direction.
@@ -82,13 +82,13 @@ STATIC mp_obj_t digitalio_digitalinout_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_deinit_obj, digitalio_digitalinout_obj_deinit);
 
-//|     def __enter__(self, ) -> DigitalInOut:
+//|     def __enter__(self) -> DigitalInOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> None:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -106,14 +106,14 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
     }
 }
 
-//|     def switch_to_output(self, value: bool = False, drive_mode: digitalio.DriveMode = digitalio.DriveMode.PUSH_PULL) -> None:
-//|           """Set the drive mode and value and then switch to writing out digital
-//|           values.
+//|     def switch_to_output(self, value: bool = False, drive_mode: DriveMode = DriveMode.PUSH_PULL) -> None:
+//|         """Set the drive mode and value and then switch to writing out digital
+//|         values.
 //|
-//|           :param bool value: default value to set upon switching
-//|           :param ~digitalio.DriveMode drive_mode: drive mode for the output
-//|           """
-//|           ...
+//|         :param bool value: default value to set upon switching
+//|         :param ~digitalio.DriveMode drive_mode: drive mode for the output
+//|         """
+//|         ...
 //|
 STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_value, ARG_drive_mode };
@@ -139,7 +139,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_output_obj, 1, digitalio_digitalinout_switch_to_output);
 
-//|     def switch_to_input(self, pull: Pull = None) -> None:
+//|     def switch_to_input(self, pull: Optional[Pull] = None) -> None:
 //|         """Set the pull and then switch to read in digital values.
 //|
 //|         :param Pull pull: pull configuration for the input
@@ -179,7 +179,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_input(size_t n_args, const mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_input_obj, 1, digitalio_digitalinout_switch_to_input);
 
-//|     direction: Direction = ...
+//|     direction: Direction
 //|     """The direction of the pin.
 //|
 //|     Setting this will use the defaults from the corresponding
@@ -228,7 +228,7 @@ const mp_obj_property_t digitalio_digitalio_direction_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     value: Bool = ...
+//|     value: bool
 //|     """The digital logic level of the pin."""
 //|
 STATIC mp_obj_t digitalio_digitalinout_obj_get_value(mp_obj_t self_in) {
@@ -258,7 +258,7 @@ const mp_obj_property_t digitalio_digitalinout_value_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     drive_mode: DriveMode = ...
+//|     drive_mode: DriveMode
 //|     """The pin drive mode. One of:
 //|
 //|     - `digitalio.DriveMode.PUSH_PULL`
@@ -302,7 +302,7 @@ const mp_obj_property_t digitalio_digitalio_drive_mode_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     pull: Optional[Pull] = ...
+//|     pull: Optional[Pull]
 //|     """The pin pull direction. One of:
 //|
 //|     - `digitalio.Pull.UP`

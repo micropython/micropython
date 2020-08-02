@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Dan Halbert for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -174,6 +174,9 @@ endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
 endif
+ifeq ($(CIRCUITPY_MEMORYMONITOR),1)
+SRC_PATTERNS += memorymonitor/%
+endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
 SRC_PATTERNS += microcontroller/%
 endif
@@ -212,6 +215,12 @@ SRC_PATTERNS += rtc/%
 endif
 ifeq ($(CIRCUITPY_SAMD),1)
 SRC_PATTERNS += samd/%
+endif
+ifeq ($(CIRCUITPY_SDCARDIO),1)
+SRC_PATTERNS += sdcardio/%
+endif
+ifeq ($(CIRCUITPY_SDIOIO),1)
+SRC_PATTERNS += sdioio/%
 endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
@@ -311,6 +320,8 @@ SRC_COMMON_HAL_ALL = \
 	rotaryio/__init__.c \
 	rtc/RTC.c \
 	rtc/__init__.c \
+	sdioio/SDCard.c \
+	sdioio/__init__.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \
@@ -393,10 +404,15 @@ SRC_SHARED_MODULE_ALL = \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
+	sdcardio/SDCard.c \
+	sdcardio/__init__.c \
 	gamepad/GamePad.c \
 	gamepad/__init__.c \
 	gamepadshift/GamePadShift.c \
 	gamepadshift/__init__.c \
+	memorymonitor/__init__.c \
+	memorymonitor/AllocationAlarm.c \
+	memorymonitor/AllocationSize.c \
 	network/__init__.c \
 	os/__init__.c \
 	random/__init__.c \

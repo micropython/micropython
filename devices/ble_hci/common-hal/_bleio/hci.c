@@ -40,8 +40,6 @@
 #define CTS_TIMEOUT_MSECS (1000)
 #define RESPONSE_TIMEOUT_MSECS (1000)
 
-#define adapter (&common_hal_bleio_adapter_obj)
-
 // These are the headers of the full packets that are sent over the serial interface.
 // They all have a one-byte type-field at the front, one of the H4_xxx packet types.
 
@@ -370,14 +368,14 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
     common_hal_mcu_enable_interrupts();
 
     // Assert RTS low to say we're ready to read data.
-    common_hal_digitalio_digitalinout_set_value(adapter->rts_digitalinout, false);
+    common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, false);
 
     int errcode = 0;
     bool packet_is_complete = false;
 
     // Read bytes until we run out, or accumulate a complete packet.
-    while (common_hal_busio_uart_rx_characters_available(adapter->hci_uart)) {
-        common_hal_busio_uart_read(adapter->hci_uart, rx_buffer + rx_idx, 1, &errcode);
+    while (common_hal_busio_uart_rx_characters_available(common_hal_bleio_adapter_obj.hci_uart)) {
+        common_hal_busio_uart_read(common_hal_bleio_adapter_obj.hci_uart, rx_buffer + rx_idx, 1, &errcode);
         if (errcode) {
             hci_poll_in_progress = false;
             return HCI_READ_ERROR;
@@ -412,7 +410,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
     }
 
     // Stop incoming data while processing packet.
-    common_hal_digitalio_digitalinout_set_value(adapter->rts_digitalinout, true);
+    common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, true);
     size_t pkt_len = rx_idx;
     // Reset for next packet.
     rx_idx = 0;
@@ -441,7 +439,7 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
             break;
     }
 
-    common_hal_digitalio_digitalinout_set_value(adapter->rts_digitalinout, true);
+    common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, true);
 
     hci_poll_in_progress = false;
     return HCI_OK;
@@ -452,7 +450,7 @@ STATIC hci_result_t write_pkt(uint8_t *buffer, size_t len) {
     // Wait for CTS to go low before writing to HCI adapter.
     uint64_t start = supervisor_ticks_ms64();
 
-    while (common_hal_digitalio_digitalinout_get_value(adapter->cts_digitalinout)) {
+    while (common_hal_digitalio_digitalinout_get_value(common_hal_bleio_adapter_obj.cts_digitalinout)) {
         RUN_BACKGROUND_TASKS;
         if (supervisor_ticks_ms64() - start > CTS_TIMEOUT_MSECS) {
             return HCI_WRITE_TIMEOUT;
@@ -460,7 +458,7 @@ STATIC hci_result_t write_pkt(uint8_t *buffer, size_t len) {
     }
 
     int errcode = 0;
-    common_hal_busio_uart_write(adapter->hci_uart, buffer, len, &errcode);
+    common_hal_busio_uart_write(common_hal_bleio_adapter_obj.hci_uart, buffer, len, &errcode);
     if (errcode) {
         return HCI_WRITE_ERROR;
     }
@@ -551,7 +549,7 @@ hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint8_t data_len, ui
     pending_pkt++;
 
     int errcode = 0;
-    common_hal_busio_uart_write(adapter->hci_uart, tx_buffer, buf_len, &errcode);
+    common_hal_busio_uart_write(common_hal_bleio_adapter_obj.hci_uart, tx_buffer, buf_len, &errcode);
     if (errcode) {
         return HCI_WRITE_ERROR;
     }

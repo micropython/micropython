@@ -26,9 +26,13 @@
  */
 
 #include <math.h>
+#include <string.h>
+
 #include "common-hal/microcontroller/Processor.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
+
+#include "soc/efuse_reg.h"
 
 float common_hal_mcu_processor_get_temperature(void) {
     return NAN;
@@ -42,5 +46,23 @@ uint32_t common_hal_mcu_processor_get_frequency(void) {
     return 0;
 }
 
+STATIC uint8_t swap_nibbles(uint8_t v) {
+    return ((v << 4) | (v >> 4)) & 0xff;
+}
+
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
+    memset(raw_id, 0, COMMON_HAL_MCU_PROCESSOR_UID_LENGTH);
+
+    uint8_t *ptr = &raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH-1];
+    // MAC address contains 48 bits (6 bytes), 32 in the low order word
+    uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_0_REG);
+    *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
+    *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
+    *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
+    *ptr-- = swap_nibbles(mac_address_part & 0xff);
+
+    // and 16 in the high order word
+    mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_1_REG);
+    *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
+    *ptr-- = swap_nibbles(mac_address_part & 0xff);
 }

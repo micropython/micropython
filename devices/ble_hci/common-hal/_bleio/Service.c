@@ -26,7 +26,7 @@
  */
 
 #include "py/runtime.h"
-#include "common-hal/_bleio/__init__.h"
+#include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/Descriptor.h"
 #include "shared-bindings/_bleio/Service.h"
@@ -41,8 +41,8 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
 
     vm_used_ble = true;
 
-    self->handle = bleio_adapter_add_attribute(common_hal_bleio_adapter_obj, self);
-    if (self->handle = BLE_GATT_HANDLE_INVALID) {
+    self->handle = bleio_adapter_add_attribute(&common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(self));
+    if (self->handle == BLE_GATT_HANDLE_INVALID) {
         return 1;
     }
     return 0;
@@ -84,13 +84,15 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
                                                  bleio_characteristic_obj_t *characteristic,
                                                  mp_buffer_info_t *initial_value_bufinfo) {
 
-    if (self->handle != common_hal_bleio_adapter_obj->last_added_service_handle) {
+    if (self->handle != common_hal_bleio_adapter_obj.last_added_service_handle) {
         mp_raise_bleio_BluetoothError(
             translate("Characteristic can only be added to most recently added service"));
     }
-    characteristic->decl_handle = bleio_adapter_add_attribute(common_hal_bleio_adapter_obj, characteristic);
+    characteristic->decl_handle = bleio_adapter_add_attribute(
+        &common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(characteristic));
     // This is the value handle
-    characteristic->value_handle = bleio_adapter_add_attribute(common_hal_bleio_adapter_obj, characteristic);
+    characteristic->handle = bleio_adapter_add_attribute(
+        &common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(characteristic));
 
     if (characteristic->props & (CHAR_PROP_NOTIFY | CHAR_PROP_INDICATE)) {
         // We need a CCCD.
@@ -99,7 +101,12 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
         cccd->read_perm = SECURITY_MODE_OPEN;
         // Make CCCD write permission match characteristic read permission.
         cccd->write_perm = characteristic->read_perm;
-        characteristic->cccd_handle = common_hal_bleio_characteristic_add_descriptor(characteristic, cccd);
+
+        const uint16_t cccd_handle = bleio_adapter_add_attribute(
+            &common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(cccd));
+        cccd->handle = cccd_handle;
+        characteristic->cccd_handle = cccd_handle;
+        common_hal_bleio_characteristic_add_descriptor(characteristic, cccd);
     }
 
     // #if CIRCUITPY_VERBOSE_BLE

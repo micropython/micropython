@@ -60,7 +60,7 @@ STATIC mp_obj_t stack_size(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(stack_size_obj, stack_size);
 
-//| def stack_usage() -> Any:
+//| def stack_usage() -> int:
 //|     """Return how much stack is currently in use.
 //|     Same as micropython.stack_use(); duplicated here for convenience."""
 //|     ...

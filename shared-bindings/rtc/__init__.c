@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Noralf Trønnes
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ mp_obj_t rtc_get_time_source_time(void) {
     return struct_time_from_tm(&tm);
 }
 
-//| def set_time_source(rtc: Any) -> Any:
+//| def set_time_source(rtc: RTC) -> None:
 //|     """Sets the RTC time source used by :func:`time.localtime`.
 //|     The default is :class:`rtc.RTC`, but it's useful to use this to override the
 //|     time source for testing purposes. For example::

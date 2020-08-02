@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
 #define MP_SCOPE_FLAG_GENERATOR    (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
+#define MP_SCOPE_FLAG_ASYNC        (0x10)
 
 // types for native (viper) function signature
 #define MP_NATIVE_TYPE_OBJ  (0x00)

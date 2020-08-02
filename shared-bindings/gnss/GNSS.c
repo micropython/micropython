@@ -1,28 +1,6 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright 2020 Sony Semiconductor Solutions Corporation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// SPDX-FileCopyrightText: Sony Semiconductor Solutions Corporation
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/gnss/GNSS.h"
 #include "shared-bindings/time/__init__.h"
@@ -53,10 +31,10 @@
 //|                 print("Longitude: {0:.6f} degrees".format(nav.longitude))"""
 //|
 
-//|     def __init__(self, ):
+//|     def __init__(self, system: Union[SatelliteSystem, List[SatelliteSystem]]) -> None:
 //|         """Turn on the GNSS.
 //|
-//|         :param gnss.SatelliteSystem system: satellite system to use"""
+//|         :param system: satellite system to use"""
 //|         ...
 //|
 STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -90,7 +68,7 @@ STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, const mp
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Turn off the GNSS."""
 //|         ...
 //|
@@ -107,7 +85,7 @@ STATIC void check_for_deinit(gnss_obj_t *self) {
     }
 }
 
-//|     def update(self, ) -> Any:
+//|     def update(self) -> None:
 //|         """Update GNSS positioning information."""
 //|         ...
 //|
@@ -120,7 +98,7 @@ STATIC mp_obj_t gnss_obj_update(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_update_obj, gnss_obj_update);
 
-//|     latitude: Any = ...
+//|     latitude: float
 //|     """Latitude of current position in degrees (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_latitude(mp_obj_t self_in) {
@@ -137,7 +115,7 @@ const mp_obj_property_t gnss_latitude_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     longitude: Any = ...
+//|     longitude: float
 //|     """Longitude of current position in degrees (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_longitude(mp_obj_t self_in) {
@@ -154,7 +132,7 @@ const mp_obj_property_t gnss_longitude_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     altitude: Any = ...
+//|     altitude: float
 //|     """Altitude of current position in meters (float)."""
 //|
 STATIC mp_obj_t gnss_obj_get_altitude(mp_obj_t self_in) {
@@ -171,7 +149,7 @@ const mp_obj_property_t gnss_altitude_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     timestamp: Any = ...
+//|     timestamp: time.struct_time
 //|     """Time when the position data was updated."""
 //|
 STATIC mp_obj_t gnss_obj_get_timestamp(mp_obj_t self_in) {
@@ -190,7 +168,7 @@ const mp_obj_property_t gnss_timestamp_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     fix: Any = ...
+//|     fix: PositionFix
 //|     """Fix mode."""
 //|
 STATIC mp_obj_t gnss_obj_get_fix(mp_obj_t self_in) {

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 # This script renders a graph of the MicroPython heap at the given point it was dumped.
 # It takes three files, the binary dump of ram, the binary for CircuitPython and the linker map file.
 

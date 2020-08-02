@@ -341,7 +341,7 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     return status >= 0; // Status is number of chars read or an error code < 0.
 }
 
-bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
     if (len == 0) {
         return true;
     }
@@ -350,7 +350,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uin
         status = sercom_dma_transfer(self->spi_desc.dev.prvt, data_out, data_in, len);
     } else {
         struct spi_xfer xfer;
-        xfer.txbuf = data_out;
+        xfer.txbuf = (uint8_t*) data_out;
         xfer.rxbuf = data_in;
         xfer.size = len;
         status = spi_m_sync_transfer(&self->spi_desc, &xfer);

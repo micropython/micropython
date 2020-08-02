@@ -243,7 +243,7 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     // Indices into the list are handles. Handle 0x0000 designates an invalid handle,
     // so store None there to skip it.
     self->attributes = mp_obj_new_list(0, NULL);
-    bleio_adapter_add_attribute(mp_const_none);
+    bleio_adapter_add_attribute(self, mp_const_none);
     self->last_added_service_handle = BLE_GATT_HANDLE_INVALID;
     self->last_added_characteristic_handle = BLE_GATT_HANDLE_INVALID;
 }

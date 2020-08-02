@@ -270,7 +270,5 @@ void common_hal_bleio_gc_collect(void) {
 
 
 void bleio_background(void) {
-    supervisor_bluetooth_background();
     bleio_adapter_background(&common_hal_bleio_adapter_obj);
-    //FIX bonding_background();
 }

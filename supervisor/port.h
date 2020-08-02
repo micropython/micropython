@@ -91,4 +91,12 @@ void port_interrupt_after_ticks(uint32_t ticks);
 // Sleep the CPU until an interrupt is received.
 void port_sleep_until_interrupt(void);
 
+// Execute port specific actions during background tasks.
+void port_background_task(void);
+
+// Take port specific actions at the beginning and end of background tasks.
+// This is used e.g., to set a monitoring pin for debug purposes.  "Actual
+// work" should be done in port_background_task() instead.
+void port_start_background_task(void);
+void port_finish_background_task(void);
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

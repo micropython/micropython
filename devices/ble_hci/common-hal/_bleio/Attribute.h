@@ -30,13 +30,13 @@
 #include "shared-module/_bleio/Attribute.h"
 
 // Types returned by attribute table lookups. These are UUIDs.
-enum ble_attribute_type {
+typedef enum {
   BLE_TYPE_UNKNOWN           = 0x0000,
   BLE_TYPE_PRIMARY_SERVICE   = 0x2800,
   BLE_TYPE_SECONDARY_SERVICE = 0x2801,
   BLE_TYPE_CHARACTERISTIC    = 0x2803,
   BLE_TYPE_DESCRIPTOR        = 0x2900
-};
+} ble_attribute_type;
 
 // typedef struct
 // {

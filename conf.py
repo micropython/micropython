@@ -13,6 +13,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 import json
 import logging
 import os
@@ -391,12 +395,13 @@ TEMPLATE = """<html>
 def generate_redirects(app):
     path = os.path.join(app.srcdir, app.config.redirects_file)
     if not os.path.exists(path):
-        app.info("Could not find redirects file at '%s'" % path)
+        logging.error("Could not find redirects file at '%s'" % path)
         return
 
-    if not type(app.builder) == builders.StandaloneHTMLBuilder:
+    if not isinstance(app.builder, builders.StandaloneHTMLBuilder):
         logging.warn("The 'sphinxcontib-redirects' plugin is only supported "
-                 "by the 'html' builder. Skipping...")
+                 "by the 'html' builder and subclasses. Skipping...")
+        logging.warn(f"Builder is {app.builder.name} ({type(app.builder)})")
         return
 
     with open(path) as redirects:

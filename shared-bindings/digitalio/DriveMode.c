@@ -29,15 +29,15 @@
 //| class DriveMode:
 //|     """Defines the drive mode of a digital pin"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Enum-like class to define the drive mode used when outputting
 //|         digital values."""
 //|         ...
 //|
-//|     PUSH_PULL: Any = ...
+//|     PUSH_PULL: DriveMode
 //|     """Output both high and low digital values"""
 //|
-//|     OPEN_DRAIN: Any = ...
+//|     OPEN_DRAIN: DriveMode
 //|     """Output low digital values but go into high z for digital high. This is
 //|     useful for i2c and other protocols that share a digital line."""
 //|

@@ -46,7 +46,7 @@
 //|
 //|     FrequencyIn will not determine pulse width (use ``PulseIn``)."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, capture_period: int = 10):
+//|     def __init__(self, pin: microcontroller.Pin, capture_period: int = 10) -> None:
 //|         """Create a FrequencyIn object associated with the given pin.
 //|
 //|         :param ~microcontroller.Pin pin: Pin to read frequency from.
@@ -94,7 +94,7 @@ STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the FrequencyIn and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -111,13 +111,13 @@ STATIC void check_for_deinit(frequencyio_frequencyin_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> FrequencyIn:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -129,7 +129,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj___exit__(size_t n_args, const mp_obj
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(frequencyio_frequencyin___exit___obj, 4, 4, frequencyio_frequencyin_obj___exit__);
 
-//|     def pause(self, ) -> Any:
+//|     def pause(self) -> None:
 //|         """Pause frequency capture."""
 //|         ...
 //|
@@ -142,7 +142,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_pause_obj, frequencyio_frequencyin_obj_pause);
 
-//|     def resume(self, ) -> Any:
+//|     def resume(self) -> None:
 //|         """Resumes frequency capture."""
 //|         ...
 //|
@@ -155,7 +155,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_resume(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_resume_obj, frequencyio_frequencyin_obj_resume);
 
-//|     def clear(self, ) -> Any:
+//|     def clear(self) -> None:
 //|         """Clears the last detected frequency capture value."""
 //|         ...
 //|
@@ -169,7 +169,7 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_clear(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_clear_obj, frequencyio_frequencyin_obj_clear);
 
-//|     capture_period: Any = ...
+//|     capture_period: int
 //|     """The capture measurement period. Lower incoming frequencies will be measured
 //|     more accurately with longer capture periods. Higher frequencies are more
 //|     accurate with shorter capture periods.
@@ -201,7 +201,7 @@ const mp_obj_property_t frequencyio_frequencyin_capture_period_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __get__(self, index: Any) -> Any:
+//|     def __get__(self, index: int) -> int:
 //|         """Returns the value of the last frequency captured."""
 //|         ...
 //|

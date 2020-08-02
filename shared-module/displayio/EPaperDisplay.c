@@ -187,6 +187,7 @@ void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t* self)
     displayio_display_core_begin_transaction(&self->core);
     self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, &self->refresh_display_command, 1);
     displayio_display_core_end_transaction(&self->core);
+    supervisor_enable_tick();
     self->refreshing = true;
 
     displayio_display_core_finish_refresh(&self->core);
@@ -301,6 +302,7 @@ bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t* s
 
     if (self->refreshing && self->busy.base.type == &digitalio_digitalinout_type) {
         if (common_hal_digitalio_digitalinout_get_value(&self->busy) != self->busy_state) {
+            supervisor_disable_tick();
             self->refreshing = false;
             // Run stop sequence but don't wait for busy because busy is set when sleeping.
             send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);
@@ -342,6 +344,7 @@ void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self) {
             refresh_done = supervisor_ticks_ms64() - self->core.last_refresh > self->refresh_time;
         }
         if (refresh_done) {
+            supervisor_disable_tick();
             self->refreshing = false;
             // Run stop sequence but don't wait for busy because busy is set when sleeping.
             send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);
@@ -352,6 +355,7 @@ void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self) {
 void release_epaperdisplay(displayio_epaperdisplay_obj_t* self) {
     if (self->refreshing) {
         wait_for_busy(self);
+        supervisor_disable_tick();
         self->refreshing = false;
         // Run stop sequence but don't wait for busy because busy is set when sleeping.
         send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);

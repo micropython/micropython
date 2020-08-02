@@ -1,14 +1,12 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-25 11:44-0500\n"
-"PO-Revision-Date: 2020-06-03 18:59+0000\n"
+"POT-Creation-Date: 2020-07-30 07:23-0500\n"
+"PO-Revision-Date: 2020-07-13 17:39+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -16,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: main.c
 msgid ""
@@ -66,6 +64,10 @@ msgstr "%%c kräver int eller char"
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr "%d adresspinnar och %d RGB-pinnar indikerar en höjd av %d, inte %d"
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr "%q-fel: %d"
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q används redan"
@@ -82,16 +84,25 @@ msgstr "Indexet %q måste vara ett heltal, inte %s"
 msgid "%q list must be a list"
 msgstr "%q-listan måste vara en lista"
 
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+msgid "%q must be >= 0"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
-#: shared-bindings/vectorio/Rectangle.c
+#: shared-bindings/displayio/Shape.c
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q måste vara >= 1"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
 msgstr "%q måste vara en tuple av längd 2"
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q pin invalid"
+msgstr "Pinne %q ogiltig"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -210,12 +221,12 @@ msgid "'align' requires 1 argument"
 msgstr "'align' kräver 1 argument"
 
 #: py/compile.c
-msgid "'async for' or 'async with' outside async function"
-msgstr "'async for' eller 'async with' utanför async-funktion"
-
-#: py/compile.c
 msgid "'await' outside function"
 msgstr "'await' utanför funktion"
+
+#: py/compile.c
+msgid "'await', 'async for' or 'async with' outside async function"
+msgstr ""
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -224,6 +235,10 @@ msgstr "'break' utanför loop"
 #: py/compile.c
 msgid "'continue' outside loop"
 msgstr "'continue' utanför loop"
+
+#: py/objgenerator.c
+msgid "'coroutine' object is not an iterator"
+msgstr ""
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -307,13 +322,18 @@ msgstr "Alla timers för denna pinne är i bruk"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c
+#: ports/stm/peripherals/timers.c shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr "Alla timers används"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Annonserar redan."
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#: shared-module/memorymonitor/AllocationSize.c
+msgid "Already running"
+msgstr ""
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -346,9 +366,14 @@ msgstr "Matrisen måste innehålla halfwords (typ \"H\")"
 msgid "Array values should be single bytes."
 msgstr "Matrisvärden ska bestå av enstaka bytes."
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
 msgstr "Högst %d %q kan anges (inte %d)"
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#, c-format
+msgid "Attempt to allocate %d blocks"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -427,6 +452,11 @@ msgstr "Bufferten är för liten"
 msgid "Buffer length %d too big. It must be less than %d"
 msgstr "Buffertlängd %d för stor. Den måste vara mindre än %d"
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+msgid "Buffer length must be a multiple of 512"
+msgstr "Buffertlängd måste vara en multipel av 512"
+
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Bufferten måste ha minst längd 1"
@@ -466,7 +496,9 @@ msgstr "Anropa super().__init__() innan du använder det ursprungliga objektet."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Kan inte ställa in CCCD på lokal karaktäristik"
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr "Kan inte radera värden"
 
@@ -591,7 +623,11 @@ msgstr "Korrupt rå kod"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
-msgstr ""
+msgstr "Kan inte initiera GNSS"
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
+msgstr "Kan inte initiera SD-kort"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -714,7 +750,8 @@ msgstr "EXTINT-kanalen används redan"
 msgid "Error in regex"
 msgstr "Fel i regex"
 
-#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
+#: shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -747,7 +784,7 @@ msgstr "Förväntad tupel med längd %d, fick %d"
 msgid "Extended advertisements with scan response not supported."
 msgstr "Utökad annonsering i kombination med skanningssvar stöds inte."
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "FFT is defined for ndarrays only"
 msgstr "FFT är enbart definierade för ndarrays"
 
@@ -838,6 +875,10 @@ msgstr "I/O-operation på stängd fil"
 msgid "I2C Init Error"
 msgstr "I2C init-fel"
 
+#: shared-bindings/audiobusio/I2SOut.c
+msgid "I2SOut not available"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -875,6 +916,10 @@ msgstr "Internt define-fel"
 #, c-format
 msgid "Internal error #%d"
 msgstr "Internt fel #%d"
+
+#: shared-bindings/sdioio/SDCard.c
+msgid "Invalid %q"
+msgstr "Ogiltig %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -983,7 +1028,8 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
@@ -1087,6 +1133,10 @@ msgstr "Måste vara en %q-subklass."
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "Måste ange MISO- eller MOSI-pinne"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Must provide SCK pin"
+msgstr "Måste ange SCK-pinne"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1314,14 +1364,6 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "Pull används inte när riktningen är output."
 
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "PulseIn not supported on this chip"
-msgstr "PulseIn stöds inte av detta chip"
-
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid "PulseOut not supported on this chip"
-msgstr "PulseIn stöds inte av detta chip"
-
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
 msgstr "RNG DeInit-fel"
@@ -1352,6 +1394,7 @@ msgstr "RTS/CTS/RS485 Stöds ännu inte på den här enheten"
 msgid "Random number generation error"
 msgstr "Fel vid generering av slumptal"
 
+#: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
 msgstr "Skrivskyddad"
@@ -1387,6 +1430,10 @@ msgstr "Kör i säkert läge! Autoladdning är avstängd.\n"
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Kör i säkert läge! Sparad kod körs inte.\n"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "SD card CSD format not supported"
+msgstr "SD-kort CSD-format stöds inte"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
@@ -1432,7 +1479,9 @@ msgid "Slice and value different lengths."
 msgstr "Slice och värde har olika längd."
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Slice stöds inte"
 
@@ -1458,7 +1507,7 @@ msgstr "Ange minst en UART-pinne"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
-msgstr ""
+msgstr "Systeminträdet måste vara gnss. SatellitSystem"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
@@ -1527,6 +1576,11 @@ msgstr "Tile-bredd måste vara jämnt delbar med bredd på bitmap"
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Åtgärden tog för lång tid: Max väntetid är %d sekunder"
+
+#: ports/stm/common-hal/pulseio/PWMOut.c
+msgid ""
+"Timer was reserved for internal use - declare PWM pins earlier in the program"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1759,7 +1813,7 @@ msgstr "__init __ () ska returnera None, inte '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "__new__ arg måste vara en användartyp"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c
+#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "ett bytesliknande objekt krävs"
 
@@ -1780,7 +1834,7 @@ msgstr "adress utanför gränsen"
 msgid "addresses is empty"
 msgstr "adresserna är tomma"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "arctan2 is implemented for scalars and ndarrays only"
 msgstr "arctan2 är enbart implementerad för scalar och ndarray"
 
@@ -1788,13 +1842,17 @@ msgstr "arctan2 är enbart implementerad för scalar och ndarray"
 msgid "arg is an empty sequence"
 msgstr "arg är en tom sekvens"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr "argumentet argsort måste vara en ndarray"
 
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "argumentet har fel typ"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "argument must be ndarray"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -1805,7 +1863,7 @@ msgstr "argument antal/typ matchar inte"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "argumentet skall vara en '%q', inte en '%q'"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "arguments must be ndarrays"
 msgstr "argumenten måste vara ndarray"
 
@@ -1813,7 +1871,7 @@ msgstr "argumenten måste vara ndarray"
 msgid "array/bytes required on right side"
 msgstr "array/bytes krävs på höger sida"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr "försök att få argmin/argmax för en tom sekvens"
 
@@ -1821,15 +1879,15 @@ msgstr "försök att få argmin/argmax för en tom sekvens"
 msgid "attributes not supported yet"
 msgstr "attribut stöds inte än"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be -1, 0, None, or 1"
 msgstr "axis ska vara -1, 0, None eller 1"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be -1, 0, or 1"
 msgstr "axis ska vara -1, 0 eller 1"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be None, 0, or 1"
 msgstr "axis ska vara None, 0, eller 1"
 
@@ -2025,6 +2083,10 @@ msgstr "kan inte 'pend throw' för nystartad generator"
 msgid "can't send non-None value to a just-started generator"
 msgstr "kan inte skicka icke-None värde till nystartad generator"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "can't set 512 block size"
+msgstr "kan inte sätta blockstorlek 512"
+
 #: py/objnamedtuple.c
 msgid "can't set attribute"
 msgstr "kan inte att ange attribut"
@@ -2133,15 +2195,15 @@ msgstr "konstant måste vara ett heltal"
 msgid "conversion to object"
 msgstr "konvertering till objekt"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must be linear arrays"
 msgstr "Argumenten convolve måste vara linjära matriser"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must be ndarrays"
 msgstr "Argumenten convolve måste vara ndarray:er"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must not be empty"
 msgstr "Argumenten convolve kan inte vara tomma"
 
@@ -2149,19 +2211,23 @@ msgstr "Argumenten convolve kan inte vara tomma"
 msgid "could not broadast input array from shape"
 msgstr "Kan inte sända indatamatris från form"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr "kan inte invertera Vandermonde-matris"
 
-#: extmod/ulab/code/approx.c
+#: shared-module/sdcardio/SDCard.c
+msgid "couldn't determine SD card version"
+msgstr "kan inte avgöra SD-kortversion"
+
+#: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
 msgstr "data måste vara itererbar"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "data must be of equal length"
 msgstr "data måste vara av samma längd"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "ddof must be smaller than length of data set"
 msgstr "ddof måste vara mindre än längden på datauppsättningen"
 
@@ -2193,7 +2259,7 @@ msgstr "destination_length måste vara ett heltal >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "uppdateringssekvensen för dict har fel längd"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "diff argument must be an ndarray"
 msgstr "argumentet diff måste vara en ndarray"
 
@@ -2296,11 +2362,11 @@ msgstr "filen måste vara en fil som öppnats i byte-läge"
 msgid "filesystem must provide mount method"
 msgstr "filsystemet måste tillhandahålla mount-metod"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "first argument must be a callable"
 msgstr "första argumentet måste vara en callable"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "first argument must be a function"
 msgstr "första argumentet måste vara en funktion"
 
@@ -2308,7 +2374,7 @@ msgstr "första argumentet måste vara en funktion"
 msgid "first argument must be an iterable"
 msgstr "första argumentet måste vara en iterable"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "first argument must be an ndarray"
 msgstr "första argumentet måste vara en ndarray"
 
@@ -2320,7 +2386,7 @@ msgstr "första argumentet till super() måste vara typ"
 msgid "flattening order must be either 'C', or 'F'"
 msgstr "förenklingsordningen måste vara antingen \"C\" eller \"F\""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "flip argument must be an ndarray"
 msgstr "Argumentet flip måste vara en ndarray"
 
@@ -2353,11 +2419,11 @@ msgstr "funktionen förväntar som mest %d argument, fick %d"
 msgid "function got multiple values for argument '%q'"
 msgstr "funktionen fick flera värden för argumentet '%q'"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "function has the same sign at the ends of interval"
 msgstr "funktionen har samma teckenvärden vid slutet av intervall"
 
-#: extmod/ulab/code/compare.c
+#: extmod/ulab/code/compare/compare.c
 msgid "function is implemented for scalars and ndarrays only"
 msgstr "funktionen är endast implementerad för scalar och ndarray"
 
@@ -2443,7 +2509,7 @@ msgstr "index måste vara heltal"
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr "index måste vara heltal, slices, eller Boolean-listor"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "initial values must be iterable"
 msgstr "initialvärden måste vara iterable"
 
@@ -2451,35 +2517,35 @@ msgstr "initialvärden måste vara iterable"
 msgid "inline assembler must be a function"
 msgstr "inline assembler måste vara en funktion"
 
-#: extmod/ulab/code/create.c
+#: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
 msgstr "indataargumentet måste vara ett heltal eller en 2-tupel"
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
 msgstr "indataarraylängden måste vara en multipel av 2"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
 msgstr "indata måste vara en iterable"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "indatamatrisen är asymmetrisk"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr "indatamatrisen är singulär"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
 msgstr "indata måste vara kvadratmatris"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
 msgstr "indata måste vara tupel, lista, range, eller ndarray"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr "indatavektorer måste ha samma längd"
 
@@ -2491,7 +2557,7 @@ msgstr "int() arg 2 måste vara >= 2 och <= 36"
 msgid "integer required"
 msgstr "heltal krävs"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
 msgstr "interp är definierad för 1D-matriser med samma längd"
 
@@ -2561,7 +2627,7 @@ msgstr "issubclass() arg 2 måste vara en klass eller en tupel av klasser"
 msgid "iterables are not of the same length"
 msgstr "iterables är inte av samma längd"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "iterations did not converge"
 msgstr "iterations konvergerar inte"
 
@@ -2628,11 +2694,11 @@ msgstr "map-buffert för liten"
 msgid "math domain error"
 msgstr "matematikdomänfel"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix dimensions do not match"
 msgstr "matrisdimensioner matchar inte"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "matrisen är inte positiv bestämd"
 
@@ -2659,7 +2725,7 @@ msgstr "minnesallokeringen misslyckades, heapen är låst"
 msgid "module not found"
 msgstr "modulen hittades inte"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "more degrees of freedom than data points"
 msgstr "fler frihetsgrader än datapunkter"
 
@@ -2683,7 +2749,7 @@ msgstr "måste ge ett objekt"
 msgid "must use keyword argument for key function"
 msgstr "måste använda nyckelordsargument för nyckelfunktion"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "n must be between 0, and 9"
 msgstr "n måste vara mellan 0 och 9"
 
@@ -2716,6 +2782,10 @@ msgstr "negativ exponent utan stöd för flyttal"
 msgid "negative shift count"
 msgstr "negativt skiftantal"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "no SD card"
+msgstr "inget SD-kort"
+
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "ingen aktiv exception för reraise"
@@ -2736,6 +2806,10 @@ msgstr "ingen modul med namnet '%q'"
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
 msgstr "ingen reset-pinne tillgänglig"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no response from SD card"
+msgstr "inget svar från SD-kort"
 
 #: py/runtime.c
 msgid "no such attribute"
@@ -2773,11 +2847,11 @@ msgstr "inte alla argument omvandlade under strängformatering"
 msgid "not enough arguments for format string"
 msgstr "inte tillräckligt med argument för formatsträng"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "number of arguments must be 2, or 3"
 msgstr "antal argument måste vara 2 eller 3"
 
-#: extmod/ulab/code/create.c
+#: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr "antal punkter måste vara minst 2"
 
@@ -2848,12 +2922,12 @@ msgstr "enbart sample_rate=16000 stöds"
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "endast segment med steg=1 (aka Ingen) stöds"
 
-#: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr "operander kan inte sändas tillsammans"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
 msgstr "åtgärden är inte implementerad för ndarray:er"
 
@@ -2946,7 +3020,7 @@ msgstr "köstorlek överskreds"
 msgid "raw f-strings are not implemented"
 msgstr "råa f-strängar inte implementerade"
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "real and imaginary parts must be of equal length"
 msgstr "verkliga och imaginära delar måste ha samma längd"
 
@@ -3021,7 +3095,7 @@ msgstr "tecken tillåts inte med heltalsformatspecificeraren 'c'"
 msgid "single '}' encountered in format string"
 msgstr "Enkelt '}' påträffades i formatsträngen"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "size is defined for ndarrays only"
 msgstr "storlek är enbart definierad ndarrays"
 
@@ -3029,21 +3103,37 @@ msgstr "storlek är enbart definierad ndarrays"
 msgid "sleep length must be non-negative"
 msgstr "värdet för sleep måste vara positivt"
 
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr "segmentsteg kan inte vara noll"
+
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
-msgstr "segmentsteg får inte vara noll"
+msgstr "segmentsteg kan inte vara noll"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
-msgstr "värdet för konvertering till small int överskreds"
+msgstr "värdet för small int överskreds"
 
 #: main.c
 msgid "soft reboot\n"
 msgstr "mjuk omstart\n"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "argumentet sort måste vara en ndarray"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr "sos array måste ha form (n_section, 6)"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr "sos[:, 3] måste vara ettor"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "sosfilt requires iterable arguments"
+msgstr "sosfilt kräver iterable argument"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3094,7 +3184,7 @@ msgstr "struct: index utanför intervallet"
 msgid "struct: no fields"
 msgstr "struct: inga fält"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "det gick inte att hitta delsträng"
 
@@ -3130,6 +3220,14 @@ msgstr "timeout måste vara 0.0-100.0 sekunder"
 msgid "timeout must be >= 0.0"
 msgstr "timeout måste vara >= 0.0"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v1 card"
+msgstr "timeout för v1-kort"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v2 card"
+msgstr "timeout för v2-kort"
+
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
 msgstr "timestamp utom räckvidd för plattformens \"time_t\""
@@ -3147,7 +3245,11 @@ msgstr "för många index"
 msgid "too many values to unpack (expected %d)"
 msgstr "för många värden att packa upp (förväntat %d)"
 
-#: extmod/ulab/code/linalg.c py/objstr.c
+#: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays of equal length"
+msgstr ""
+
+#: extmod/ulab/code/linalg/linalg.c py/objstr.c
 msgid "tuple index out of range"
 msgstr "tupelindex utanför intervallet"
 
@@ -3275,6 +3377,10 @@ msgstr "värdet måste passa i %d byte(s)"
 msgid "value_count must be > 0"
 msgstr "value_count måste vara > 0"
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "vectors must have same lengths"
+msgstr ""
+
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
 msgstr "watchdog timeout måste vara större än 0"
@@ -3283,7 +3389,7 @@ msgstr "watchdog timeout måste vara större än 0"
 msgid "window must be <= interval"
 msgstr "window måste vara <= interval"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "wrong argument type"
 msgstr "fel typ av argument"
 
@@ -3291,11 +3397,11 @@ msgstr "fel typ av argument"
 msgid "wrong index type"
 msgstr "fel indextyp"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
 msgstr "fel indatatyp"
 
-#: py/objstr.c
+#: extmod/ulab/code/ulab_create.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "fel antal argument"
 
@@ -3307,7 +3413,7 @@ msgstr "fel antal värden för att packa upp"
 msgid "wrong operand type"
 msgstr "fel operandtyp"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "wrong output type"
 msgstr "fel utdatatyp"
 
@@ -3326,6 +3432,27 @@ msgstr "y-värde utanför intervall"
 #: py/objrange.c
 msgid "zero step"
 msgstr "noll steg"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "zi must be an ndarray"
+msgstr "zi måste vara en ndarray"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "zi must be of float type"
+msgstr "zi måste vara av typ float"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "zi must be of shape (n_section, 2)"
+msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "'async for' or 'async with' outside async function"
+#~ msgstr "'async for' eller 'async with' utanför async-funktion"
+
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "PulseIn stöds inte av detta chip"
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseIn stöds inte av detta chip"
 
 #~ msgid "I2C operation not supported"
 #~ msgstr "I2C-åtgärd stöds inte"

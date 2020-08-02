@@ -31,7 +31,7 @@
 
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
-#include "supervisor/shared/tick.h"
+#include "supervisor/background_callback.h"
 
 #include "py/mpstate.h"
 #include "py/runtime.h"
@@ -61,7 +61,6 @@ void audio_dma_free_channel(uint8_t channel) {
     assert(audio_dma_allocated[channel]);
     audio_dma_disable_channel(channel);
     audio_dma_allocated[channel] = false;
-    supervisor_disable_tick();
 }
 
 void audio_dma_disable_channel(uint8_t channel) {
@@ -73,7 +72,6 @@ void audio_dma_disable_channel(uint8_t channel) {
 void audio_dma_enable_channel(uint8_t channel) {
     if (channel >= AUDIO_DMA_CHANNEL_COUNT)
         return;
-    supervisor_enable_tick();
     dma_enable_channel(channel);
 }
 
@@ -259,6 +257,15 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
         dma->beat_size *= 2;
     }
 
+#ifdef SAM_D5X_E5X
+    int irq = dma->event_channel < 4 ? EVSYS_0_IRQn + dma->event_channel : EVSYS_4_IRQn;
+#else
+    int irq = EVSYS_IRQn;
+#endif
+
+    NVIC_DisableIRQ(irq);
+    NVIC_ClearPendingIRQ(irq);
+
     DmacDescriptor* first_descriptor = dma_descriptor(dma_channel);
     setup_audio_descriptor(first_descriptor, dma->beat_size, output_spacing, output_register_address);
     if (single_buffer) {
@@ -280,6 +287,8 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t* dma,
 
     dma_configure(dma_channel, dma_trigger_source, true);
     audio_dma_enable_channel(dma_channel);
+
+    NVIC_EnableIRQ(irq);
 
     return AUDIO_DMA_OK;
 }
@@ -321,9 +330,6 @@ void audio_dma_reset(void) {
     for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
         audio_dma_state[i] = NULL;
         audio_dma_pending[i] = false;
-        if (audio_dma_allocated[i]) {
-            supervisor_disable_tick();
-        }
         audio_dma_allocated[i] = false;
         audio_dma_disable_channel(i);
         dma_descriptor(i)->BTCTRL.bit.VALID = false;
@@ -343,29 +349,39 @@ bool audio_dma_get_playing(audio_dma_t* dma) {
     return (status & DMAC_CHINTFLAG_TERR) == 0;
 }
 
-// WARN(tannewt): DO NOT print from here. Printing calls background tasks such as this and causes a
-// stack overflow.
+// WARN(tannewt): DO NOT print from here, or anything it calls. Printing calls
+// background tasks such as this and causes a stack overflow.
+STATIC void dma_callback_fun(void *arg) {
+    audio_dma_t* dma = arg;
+    if (dma == NULL) {
+        return;
+    }
 
-void audio_dma_background(void) {
+    audio_dma_load_next_block(dma);
+}
+
+void evsyshandler_common(void) {
     for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
-        if (audio_dma_pending[i]) {
-            continue;
-        }
         audio_dma_t* dma = audio_dma_state[i];
         if (dma == NULL) {
             continue;
         }
-
         bool block_done = event_interrupt_active(dma->event_channel);
         if (!block_done) {
             continue;
         }
-
-        // audio_dma_load_next_block() can call Python code, which can call audio_dma_background()
-        // recursively at the next background processing time. So disallow recursive calls to here.
-        audio_dma_pending[i] = true;
-        audio_dma_load_next_block(dma);
-        audio_dma_pending[i] = false;
+        background_callback_add(&dma->callback, dma_callback_fun, (void*)dma);
     }
 }
+
+#ifdef SAM_D5X_E5X
+void EVSYS_0_Handler(void) { evsyshandler_common(); }
+void EVSYS_1_Handler(void) { evsyshandler_common(); }
+void EVSYS_2_Handler(void) { evsyshandler_common(); }
+void EVSYS_3_Handler(void) { evsyshandler_common(); }
+void EVSYS_4_Handler(void) { evsyshandler_common(); }
+#else
+void EVSYS_Handler(void) { evsyshandler_common(); }
+#endif
+
 #endif

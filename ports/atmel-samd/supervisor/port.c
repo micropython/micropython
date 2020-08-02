@@ -91,6 +91,23 @@
 #if CIRCUITPY_PEW
 #include "common-hal/_pew/PewPew.h"
 #endif
+volatile bool hold_interrupt = false;
+#ifdef SAMD21
+void rtc_start_pulsein(void) {
+    rtc_set_continuous();
+    hold_interrupt = true;
+}
+
+void rtc_end_pulsein(void) {
+    hold_interrupt = false;
+}
+
+void rtc_set_continuous(void) {
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+    RTC->MODE0.READREQ.reg = RTC_READREQ_RREQ | RTC_READREQ_RCONT | 0x0010;
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+}
+#endif
 
 extern volatile bool mp_msc_enabled;
 
@@ -189,11 +206,10 @@ static void rtc_init(void) {
 safe_mode_t port_init(void) {
 #if defined(SAMD21)
 
-    // Set brownout detection to ~2.7V. Default from factory is 1.7V,
-    // which is too low for proper operation of external SPI flash chips (they are 2.7-3.6V).
+    // Set brownout detection.
     // Disable while changing level.
     SYSCTRL->BOD33.bit.ENABLE = 0;
-    SYSCTRL->BOD33.bit.LEVEL = 39;  // 2.77V with hysteresis off. Table 37.20 in datasheet.
+    SYSCTRL->BOD33.bit.LEVEL = SAMD21_BOD33_LEVEL;
     SYSCTRL->BOD33.bit.ENABLE = 1;
 
     #ifdef ENABLE_MICRO_TRACE_BUFFER
@@ -208,11 +224,10 @@ safe_mode_t port_init(void) {
 #endif
 
 #if defined(SAM_D5X_E5X)
-    // Set brownout detection to ~2.7V. Default from factory is 1.7V,
-    // which is too low for proper operation of external SPI flash chips (they are 2.7-3.6V).
+    // Set brownout detection.
     // Disable while changing level.
     SUPC->BOD33.bit.ENABLE = 0;
-    SUPC->BOD33.bit.LEVEL = 200;  // 2.7V: 1.5V + LEVEL * 6mV.
+    SUPC->BOD33.bit.LEVEL = SAMD5x_E5x_BOD33_LEVEL;
     SUPC->BOD33.bit.ENABLE = 1;
 
     // MPU (Memory Protection Unit) setup.
@@ -307,8 +322,10 @@ void reset_port(void) {
     audioout_reset();
 #endif
 #if CIRCUITPY_AUDIOBUSIO
-    i2sout_reset();
     //pdmin_reset();
+#endif
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+    i2sout_reset();
 #endif
 
 #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
@@ -489,6 +506,11 @@ void port_interrupt_after_ticks(uint32_t ticks) {
         // We'll interrupt sooner with an overflow.
         return;
     }
+#ifdef SAMD21
+    if (hold_interrupt) {
+        return;
+    }
+#endif
     RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
     RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
@@ -503,7 +525,7 @@ void port_sleep_until_interrupt(void) {
     }
     #endif
     common_hal_mcu_disable_interrupts();
-    if (!tud_task_event_ready()) {
+    if (!tud_task_event_ready() && !hold_interrupt) {
         __DSB();
         __WFI();
     }

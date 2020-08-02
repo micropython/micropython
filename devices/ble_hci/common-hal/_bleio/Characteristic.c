@@ -33,10 +33,16 @@
 #include "shared-bindings/_bleio/Service.h"
 
 #include "common-hal/_bleio/Adapter.h"
+#include "common-hal/_bleio/att.h"
+
+#define CCCD_NOTIFY   0x1
+#define CCCD_INDICATE 0x2
+
 
 void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self, bleio_service_obj_t *service, uint16_t handle, bleio_uuid_obj_t *uuid, bleio_characteristic_properties_t props, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
     self->service = service;
     self->uuid = uuid;
+    self->decl_handle = BLE_GATT_HANDLE_INVALID;
     self->handle = BLE_GATT_HANDLE_INVALID;
     self->props = props;
     self->read_perm = read_perm;
@@ -112,14 +118,15 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
             const bool indicate = self->props & CHAR_PROP_INDICATE;
             // Read the CCCD value, if there is one.
             if ((notify | indicate) && self->cccd_handle != BLE_GATT_HANDLE_INVALID) {
-                common_hal_bleio_gatts_read(self->cccd_handle, conn_handle, &cccd, sizeof(cccd));
+                common_hal_bleio_gatts_read(self->cccd_handle, BLE_CONN_HANDLE_INVALID,
+                                            (uint8_t *) &cccd, sizeof(cccd));
             }
 
             // It's possible that both notify and indicate are set.
-            if (notify && (cccd & BLE_GATT_HVX_NOTIFICATION)) {
+            if (notify && (cccd & CCCD_NOTIFY)) {
                 att_notify(self->handle, bufinfo->buf, MIN(bufinfo->len, self->max_length));
             }
-            if (indicate && (cccd & BLE_GATT_HVX_INDICATION)) {
+            if (indicate && (cccd & CCCD_INDICATE)) {
                 att_indicate(self->handle, bufinfo->buf, MIN(bufinfo->len, self->max_length));
 
             }
@@ -136,12 +143,12 @@ bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties
 }
 
 void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *self, bleio_descriptor_obj_t *descriptor) {
-    if (self->handle != common_hal_bleio_adapter_obj->last_added_characteristic_handle) {
+    if (self->handle != common_hal_bleio_adapter_obj.last_added_characteristic_handle) {
         mp_raise_bleio_BluetoothError(
             translate("Descriptor can only be added to most recently added characteristic"));
     }
 
-    descriptor->handle = bleio_adapter_add_attribute(common_hal_bleio_adapter_obj, descriptor);
+    descriptor->handle = bleio_adapter_add_attribute(&common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(descriptor));
 
     // Link together all the descriptors for this characteristic.
     descriptor->next = self->descriptor_list;
@@ -161,8 +168,8 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
     common_hal_bleio_check_connected(conn_handle);
 
     uint16_t cccd_value =
-        (notify ? BLE_GATT_HVX_NOTIFICATION : 0) |
-        (indicate ? BLE_GATT_HVX_INDICATION : 0);
+        (notify ? CCCD_NOTIFY : 0) |
+        (indicate ? CCCD_INDICATE : 0);
 
     (void) cccd_value;
     //FIX call att_something to set remote CCCD

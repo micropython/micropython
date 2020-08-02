@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@
 //|                print("touched!")"""
 //|
 
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the TouchIn on the given pin.
 //|
 //|         :param ~microcontroller.Pin pin: the pin to read from"""
@@ -73,7 +73,7 @@ STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
     return (mp_obj_t) self;
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the TouchIn and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -90,13 +90,13 @@ STATIC void check_for_deinit(touchio_touchin_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> TouchIn:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -108,7 +108,7 @@ STATIC mp_obj_t touchio_touchin_obj___exit__(size_t n_args, const mp_obj_t *args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(touchio_touchin___exit___obj, 4, 4, touchio_touchin_obj___exit__);
 
-//|     value: Any = ...
+//|     value: bool
 //|     """Whether the touch pad is being touched or not. (read-only)
 //|
 //|     True when `raw_value` > `threshold`."""
@@ -128,7 +128,7 @@ const mp_obj_property_t touchio_touchin_value_obj = {
 };
 
 
-//|     raw_value: Any = ...
+//|     raw_value: int
 //|     """The raw touch measurement as an `int`. (read-only)"""
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_raw_value(mp_obj_t self_in) {
@@ -147,7 +147,7 @@ const mp_obj_property_t touchio_touchin_raw_value_obj = {
  };
 
 
-//|     threshold: Any = ...
+//|     threshold: Optional[int]
 //|     """Minimum `raw_value` needed to detect a touch (and for `value` to be `True`).
 //|
 //|     When the **TouchIn** object is created, an initial `raw_value` is read from the pin,

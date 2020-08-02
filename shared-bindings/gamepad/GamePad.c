@@ -69,8 +69,17 @@
 //|                 buttons = pad.get_pressed()
 //|                 time.sleep(0.1)"""
 //|
-
-//|     def __init__(self, b1: Any, b2: Any, b3: Any, b4: Any, b5: Any, b6: Any, b7: Any, b8: Any):
+//|     def __init__(
+//|         self,
+//|         b1: digitalio.DigitalInOut,
+//|         b2: digitalio.DigitalInOut,
+//|         b3: digitalio.DigitalInOut,
+//|         b4: digitalio.DigitalInOut,
+//|         b5: digitalio.DigitalInOut,
+//|         b6: digitalio.DigitalInOut,
+//|         b7: digitalio.DigitalInOut,
+//|         b8: digitalio.DigitalInOut,
+//|     ) -> None:
 //|         """Initializes button scanning routines.
 //|
 //|         The ``b1``-``b8`` parameters are ``DigitalInOut`` objects, which
@@ -114,7 +123,7 @@ STATIC mp_obj_t gamepad_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(gamepad_singleton);
 }
 
-//|     def get_pressed(self, ) -> Any:
+//|     def get_pressed(self) -> int:
 //|         """Get the status of buttons pressed since the last call and clear it.
 //|
 //|         Returns an 8-bit number, with bits that correspond to buttons,
@@ -133,7 +142,7 @@ STATIC mp_obj_t gamepad_get_pressed(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(gamepad_get_pressed_obj, gamepad_get_pressed);
 
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Disable button scanning."""
 //|         ...
 //|

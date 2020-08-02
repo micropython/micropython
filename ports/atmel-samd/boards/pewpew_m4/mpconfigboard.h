@@ -40,3 +40,5 @@
 #define IGNORE_PIN_PB09     1
 #define IGNORE_PIN_PB10     1
 #define IGNORE_PIN_PB11     1
+
+#define SAMD5x_E5x_BOD33_LEVEL (100)

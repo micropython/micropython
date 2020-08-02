@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Dan Halbert for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -87,24 +87,27 @@ INC += -I. \
 
 ifeq ($(CHIP_FAMILY), samd21)
 PERIPHERALS_CHIP_FAMILY=samd21
-CFLAGS += -Os -DNDEBUG
+OPTIMIZATION_FLAGS ?= -Os
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=128 -DCFG_TUD_MSC_BUFSIZE=512
 endif
 
 ifeq ($(CHIP_FAMILY), samd51)
 PERIPHERALS_CHIP_FAMILY=sam_d5x_e5x
-CFLAGS += -Os -DNDEBUG
+OPTIMIZATION_FLAGS ?= -O2
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD51 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
 
 ifeq ($(CHIP_FAMILY), same54)
 PERIPHERALS_CHIP_FAMILY=sam_d5x_e5x
-CFLAGS += -Os -DNDEBUG
+OPTIMIZATION_FLAGS ?= -O2
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD51 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
+
+# option to override default optimization level, set in boards/$(BOARD)/mpconfigboard.mk
+CFLAGS += $(OPTIMIZATION_FLAGS) -DNDEBUG
 
 $(echo PERIPHERALS_CHIP_FAMILY=$(PERIPHERALS_CHIP_FAMILY))
 #Debugging/Optimization
@@ -246,6 +249,14 @@ SRC_ASF += \
 
 endif
 
+ifeq ($(CIRCUITPY_SDIOIO),1)
+SRC_ASF += \
+	hal/src/hal_mci_sync.c \
+	hpl/sdhc/hpl_sdhc.c \
+
+$(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align
+endif
+
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
 SRC_C += \
@@ -290,6 +301,9 @@ SRC_C += \
 	supervisor/shared/memory.c \
 	timer_handler.c \
 
+ifeq ($(CIRCUITPY_SDIOIO),1)
+SRC_C += ports/atmel-samd/sd_mmc/sd_mmc.c
+endif
 
 ifeq ($(CIRCUITPY_NETWORK),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1
@@ -345,6 +359,10 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
+
+SRC_QSTR += $(HEADER_BUILD)/sdiodata.h
+$(HEADER_BUILD)/sdiodata.h: $(TOP)/tools/mksdiodata.py | $(HEADER_BUILD)
+	$(Q)$(PYTHON3) $< > $@
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 # Sources that only hold QSTRs after pre-processing.

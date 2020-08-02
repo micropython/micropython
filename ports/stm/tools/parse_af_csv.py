@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2020 Lucian Copeland for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,8 @@ def evaluate_tim(inper, inlist, altfn, pin):
 
     if inper[:3] == "TIM" and inper[5:7] == "CH" and inper[-1:] != 'N':
         inlist.append([inper[3:4],altfn,inper[-1:],pin])
+    elif inper[:3] == "TIM" and inper[6:8] == "CH" and inper[-1:] != 'N':
+        inlist.append([inper[3:5],altfn,inper[-1:],pin])
 
 # Open target file
 with open(sys.argv[1]) as csv_file:

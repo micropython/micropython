@@ -36,32 +36,32 @@
 //|     :py:class:`~Characteristic` and :py:class:`~Descriptor`,
 //|     but is not defined as a Python superclass of those classes."""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """You cannot create an instance of :py:class:`~_bleio.Attribute`."""
 //|         ...
 //|
 
 STATIC const mp_rom_map_elem_t bleio_attribute_locals_dict_table[] = {
 
-//|     NO_ACCESS: Any = ...
+//|     NO_ACCESS: int
 //|     """security mode: access not allowed"""
 //|
-//|     OPEN: Any = ...
+//|     OPEN: int
 //|     """security_mode: no security (link is not encrypted)"""
 //|
-//|     ENCRYPT_NO_MITM: Any = ...
+//|     ENCRYPT_NO_MITM: int
 //|     """security_mode: unauthenticated encryption, without man-in-the-middle protection"""
 //|
-//|     ENCRYPT_WITH_MITM: Any = ...
+//|     ENCRYPT_WITH_MITM: int
 //|     """security_mode: authenticated encryption, with man-in-the-middle protection"""
 //|
-//|     LESC_ENCRYPT_WITH_MITM: Any = ...
+//|     LESC_ENCRYPT_WITH_MITM: int
 //|     """security_mode: LESC encryption, with man-in-the-middle protection"""
 //|
-//|     SIGNED_NO_MITM: Any = ...
+//|     SIGNED_NO_MITM: int
 //|     """security_mode: unauthenticated data signing, without man-in-the-middle protection"""
 //|
-//|     SIGNED_WITH_MITM: Any = ...
+//|     SIGNED_WITH_MITM: int
 //|     """security_mode: authenticated data signing, without man-in-the-middle protection"""
 //|
     { MP_ROM_QSTR(MP_QSTR_NO_ACCESS),              MP_ROM_INT(SECURITY_MODE_NO_ACCESS) },

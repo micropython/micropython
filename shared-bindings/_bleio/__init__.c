@@ -58,11 +58,9 @@
 //|   This object is the sole instance of `_bleio.Adapter`."""
 //|
 
-
-//| class BluetoothError:
-//|     def __init__(self, Exception: Any):
-//|         """Catch all exception for Bluetooth related errors."""
-//|         ...
+//| class BluetoothError(Exception):
+//|     """Catchall exception for Bluetooth related errors."""
+//|     ...
 MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
 
 NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* fmt, ...) {
@@ -72,10 +70,9 @@ NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* fmt, ...)
     va_end(argptr);
     nlr_raise(exception);
 }
-//| class ConnectionError:
-//|     def __init__(self, BluetoothError: Any):
-//|         """Raised when a connection is unavailable."""
-//|         ...
+//| class ConnectionError(BluetoothError):
+//|     """Raised when a connection is unavailable."""
+//|     ...
 //|
 MP_DEFINE_BLEIO_EXCEPTION(ConnectionError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_ConnectionError(const compressed_string_t* fmt, ...) {
@@ -86,20 +83,18 @@ NORETURN void mp_raise_bleio_ConnectionError(const compressed_string_t* fmt, ...
     nlr_raise(exception);
 }
 
-//| class RoleError:
-//|     def __init__(self, BluetoothError: Any):
-//|         """Raised when a resource is used as the mismatched role. For example, if a local CCCD is
-//|         attempted to be set but they can only be set when remote."""
-//|         ...
+//| class RoleError(BluetoothError):
+//|     """Raised when a resource is used as the mismatched role. For example, if a local CCCD is
+//|     attempted to be set but they can only be set when remote."""
+//|     ...
 //|
 MP_DEFINE_BLEIO_EXCEPTION(RoleError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_RoleError(const compressed_string_t* msg) {
     mp_raise_msg(&mp_type_bleio_RoleError, msg);
 }
-//| class SecurityError:
-//|     def __init__(self, BluetoothError: Any):
-//|         """Raised when a security related error occurs."""
-//|         ...
+//| class SecurityError(BluetoothError):
+//|     """Raised when a security related error occurs."""
+//|     ...
 //|
 MP_DEFINE_BLEIO_EXCEPTION(SecurityError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* fmt, ...) {

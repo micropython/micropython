@@ -39,11 +39,11 @@
 //|        mouse.send_report()"""
 //|
 
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Not currently dynamically supported."""
 //|         ...
 //|
-//|     def send_report(self, buf: Any) -> Any:
+//|     def send_report(self, buf: ReadableBuffer) -> None:
 //|         """Send a HID report."""
 //|         ...
 //|
@@ -58,7 +58,7 @@ STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_report);
 
-//|     usage_page: Any = ...
+//|     usage_page: int
 //|     """The usage page of the device as an `int`. Can be thought of a category. (read-only)"""
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
@@ -74,7 +74,7 @@ const mp_obj_property_t usb_hid_device_usage_page_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     usage: Any = ...
+//|     usage: int
 //|     """The functionality of the device as an int. (read-only)
 //|
 //|     For example, Keyboard is 0x06 within the generic desktop usage page 0x01.

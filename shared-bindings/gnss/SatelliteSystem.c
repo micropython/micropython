@@ -1,61 +1,29 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright 2020 Sony Semiconductor Solutions Corporation
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// SPDX-FileCopyrightText: Sony Semiconductor Solutions Corporation
+//
+// SPDX-License-Identifier: MIT
 
 #include "shared-bindings/gnss/SatelliteSystem.h"
 
 //| class SatelliteSystem:
 //|     """Satellite system type"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Enum-like class to define the satellite system type."""
 //|
-//|     GPS: Any = ...
-//|     """Global Positioning System.
+//|     GPS: SatelliteSystem
+//|     """Global Positioning System."""
 //|
-//|     :type gnss.SatelliteSystem:"""
+//|     GLONASS: SatelliteSystem
+//|     """GLObal NAvigation Satellite System."""
 //|
-//|     GLONASS: Any = ...
-//|     """GLObal NAvigation Satellite System.
+//|     SBAS: SatelliteSystem
+//|     """Satellite Based Augmentation System."""
 //|
-//|     :type gnss.SatelliteSystem:"""
+//|     QZSS_L1CA: SatelliteSystem
+//|     """Quasi-Zenith Satellite System L1C/A."""
 //|
-//|     SBAS: Any = ...
-//|     """Satellite Based Augmentation System.
-//|
-//|     :type gnss.SatelliteSystem:"""
-//|
-//|     QZSS_L1CA: Any = ...
-//|     """Quasi-Zenith Satellite System L1C/A.
-//|
-//|     :type gnss.SatelliteSystem:"""
-//|
-//|     QZSS_L1S: Any = ...
-//|     """Quasi-Zenith Satellite System L1S.
-//|
-//|     :type gnss.SatelliteSystem:"""
+//|     QZSS_L1S: SatelliteSystem
+//|     """Quasi-Zenith Satellite System L1S."""
 //|
 const mp_obj_type_t gnss_satellitesystem_type;
 

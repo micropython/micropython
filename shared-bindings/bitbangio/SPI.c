@@ -51,7 +51,7 @@
 //|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
 //|     and therefore the hardware.)"""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, MOSI: microcontroller.Pin = None, MISO: microcontroller.Pin = None):
+//|     def __init__(self, clock: microcontroller.Pin, MOSI: Optional[microcontroller.Pin] = None, MISO: Optional[microcontroller.Pin] = None) -> None:
 //|         """Construct an SPI object on the given pins.
 //|
 //|         .. seealso:: Using this class directly requires careful lock management.
@@ -90,7 +90,7 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     return (mp_obj_t)self;
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Turn off the SPI bus."""
 //|         ...
 //|
@@ -107,13 +107,13 @@ STATIC void check_for_deinit(bitbangio_spi_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> SPI:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -132,7 +132,7 @@ static void check_lock(bitbangio_spi_obj_t *self) {
     }
 }
 
-//|     def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> Any:
+//|     def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> None:
 //|         """Configures the SPI bus. Only valid when locked.
 //|
 //|         :param int baudrate: the clock rate in Hertz
@@ -174,7 +174,7 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_configure_obj, 1, bitbangio_spi_configure);
 
-//|     def try_lock(self, ) -> Any:
+//|     def try_lock(self) -> bool:
 //|         """Attempts to grab the SPI lock. Returns True on success.
 //|
 //|         :return: True when lock has been grabbed
@@ -188,7 +188,7 @@ STATIC mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_try_lock_obj, bitbangio_spi_obj_try_lock);
 
-//|     def unlock(self, ) -> Any:
+//|     def unlock(self) -> None:
 //|         """Releases the SPI lock."""
 //|         ...
 //|
@@ -200,7 +200,7 @@ STATIC mp_obj_t bitbangio_spi_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 
-//|     def write(self, buf: Any) -> Any:
+//|     def write(self, buf: ReadableBuffer) -> None:
 //|         """Write the data contained in ``buf``. Requires the SPI being locked.
 //|         If the buffer is empty, nothing happens."""
 //|         ...
@@ -224,7 +224,7 @@ STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
 MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 
 
-//|     def readinto(self, buf: Any) -> Any:
+//|     def readinto(self, buf: WriteableBuffer) -> None:
 //|         """Read into the buffer specified by ``buf`` while writing zeroes.
 //|         Requires the SPI being locked.
 //|         If the number of bytes to read is 0, nothing happens."""
@@ -248,7 +248,7 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_spi_readinto);
 
-//|     def write_readinto(self, buffer_out: bytearray, buffer_in: bytearray, *, out_start: Any = 0, out_end: int = None, in_start: Any = 0, in_end: int = None) -> Any:
+//|     def write_readinto(self, buffer_out: ReadableBuffer, buffer_in: WriteableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
 //|         """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
 //|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
 //|         must be equal.
