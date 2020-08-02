@@ -62,4 +62,6 @@ import gc
 gc.collect()
 """
         )
+    with open("main.py", "w") as f:
+        f.write("# main.py -- put your code here!\r\n")
     return vfs
