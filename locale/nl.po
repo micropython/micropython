@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-30 07:23-0500\n"
-"PO-Revision-Date: 2020-07-13 17:39+0000\n"
+"PO-Revision-Date: 2020-08-02 20:41+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -86,7 +86,7 @@ msgstr "%q lijst moet een lijst zijn"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q moet >= 0 zijn"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -226,7 +226,7 @@ msgstr "'await' buiten de functie"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' of 'async with' buiten async functie"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -238,7 +238,7 @@ msgstr "'continue' buiten de loop"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "'coroutine' object is geen iterator"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -333,7 +333,7 @@ msgstr "Advertising is al bezig."
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Wordt al uitgevoerd"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -373,7 +373,7 @@ msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Poging om %d blokken toe te wijzen"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -879,7 +879,7 @@ msgstr "I2C Init Fout"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut is niet beschikbaar"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1585,6 +1585,8 @@ msgstr "Time-out is te lang. Maximale time-out lengte is %d seconden"
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+"Timer is gereserveerd voor intern gebruik - wijs PWM pins eerder in het "
+"programma toe"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1859,7 +1861,7 @@ msgstr "argument heeft onjuist type"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr ""
+msgstr "argument moet ndarray zijn"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2566,7 +2568,7 @@ msgstr "integer vereist"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
-msgstr "interp is gedefinieerd for eendimensionale arrays van gelijke lengte"
+msgstr "interp is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3254,7 +3256,7 @@ msgstr "te veel waarden om uit te pakken (%d verwacht)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "trapz is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 
 #: extmod/ulab/code/linalg/linalg.c py/objstr.c
 msgid "tuple index out of range"
@@ -3386,7 +3388,7 @@ msgstr "value_count moet groter dan 0 zijn"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "vectoren moeten van gelijke lengte zijn"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
