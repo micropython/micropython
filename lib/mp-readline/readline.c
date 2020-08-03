@@ -92,11 +92,20 @@ typedef struct _readline_t {
     int escape_seq;
     int hist_cur;
     size_t cursor_pos;
+    uint8_t utf8_cont_chars;
     char escape_seq_buf[1];
     const char *prompt;
 } readline_t;
 
 STATIC readline_t rl;
+
+int readline_count_cont_byte(char *start, char *end) {
+    int count = 0;
+    for (char *pos = start; pos < end; pos++) {
+        count += UTF8_IS_CONT(*pos);
+    }
+    return count;
+}
 
 int readline_process_char(int c) {
     size_t last_line_len = rl.line->len;
@@ -180,8 +189,7 @@ int readline_process_char(int c) {
                 #endif
 
                 // Check if we have moved into a UTF-8 continuation byte
-                while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos-nspace]) &&
-                        rl.cursor_pos-nspace > rl.orig_line_len) {
+                while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos-nspace])) {
                     nspace++;
                     cont_chars++;
                 }
@@ -223,27 +231,23 @@ int readline_process_char(int c) {
         }else if (c >= 128) {
             // utf-8 character
             if (c >= 0xc0 && c < 0xf8) {
-                // First Code Point
+                // Lead code point
                 vstr_ins_char(rl.line, rl.cursor_pos, c);
+                rl.utf8_cont_chars = 0;
             }else if (UTF8_IS_CONT(c)) {
-                char fcp = rl.line->buf[rl.cursor_pos];
-                if (fcp >= 0xc0 && fcp < 0xf8) {
-                    int need = (0xe5 >> ((fcp >> 3) & 0x6)) & 3; // From unicode.c L195
-                    cont_chars++;
-                    while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos+cont_chars]) &&
-                            rl.cursor_pos+cont_chars < rl.line->len && cont_chars < need) {
-                        cont_chars++;
-                    }
-                    vstr_ins_char(rl.line, rl.cursor_pos+cont_chars, c);
-                    if (cont_chars == need) {
+                char lcp = rl.line->buf[rl.cursor_pos];
+                // Check for valid lead code point
+                if (lcp >= 0xc0 && lcp < 0xf8) {
+                    rl.utf8_cont_chars += 1;
+                    vstr_ins_char(rl.line, rl.cursor_pos+rl.utf8_cont_chars, c);
+                    // set redraw parameters if we have the entire character
+                    uint8_t need = (0xe5 >> ((lcp >> 3) & 0x6)) & 3; // From unicode.c L195
+                    if (rl.utf8_cont_chars == need) {
                         redraw_from_cursor = true;
-                        redraw_step_forward = cont_chars+1;
+                        redraw_step_forward = rl.utf8_cont_chars+1;
+                        cont_chars = rl.utf8_cont_chars;
                     }
-                }else{
-                    //ignore, for now (invalid first code point)
                 }
-            }else {
-                // ignore, invalid
             }
         }
     } else if (rl.escape_seq == ESEQ_ESC) {
@@ -270,12 +274,8 @@ up_arrow_key:
 #endif
                 // up arrow
                 if (rl.hist_cur + 1 < (int)READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
-                    for (char *ch = rl.line->buf+rl.cursor_pos-1; ch > rl.line->buf+rl.orig_line_len; ch--) {
-                        // printf("char: %d\n", ch);
-                        if (UTF8_IS_CONT(*ch)) {
-                            cont_chars++;
-                        }
-                    }
+                    // Check for continuation characters through the cursor_pos
+                    cont_chars = readline_count_cont_byte(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // increase hist num
                     rl.hist_cur += 1;
                     // set line to history
@@ -292,12 +292,8 @@ down_arrow_key:
 #endif
                 // down arrow
                 if (rl.hist_cur >= 0) {
-                    for (char *ch = rl.line->buf+rl.cursor_pos-1; ch > rl.line->buf+rl.orig_line_len; ch--) {
-                        // printf("char: %d\n", ch);
-                        if (UTF8_IS_CONT(*ch)) {
-                            cont_chars++;
-                        }
-                    }
+                    // Check for continuation characters through the cursor_pos
+                    cont_chars = readline_count_cont_byte(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // decrease hist num
                     rl.hist_cur -= 1;
                     // set line to history
@@ -321,7 +317,6 @@ right_arrow_key:
                     while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos+redraw_step_forward]) &&
                             rl.cursor_pos+redraw_step_forward < rl.line->len) {
                         redraw_step_forward++;
-                        cont_chars++;
                     }
                 }
             } else if (c == 'D') {
@@ -332,8 +327,7 @@ left_arrow_key:
                 if (rl.cursor_pos > rl.orig_line_len) {
                     redraw_step_back = 1;
                     // Check if we have moved into a UTF-8 continuation byte
-                    while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos-redraw_step_back]) &&
-                            rl.cursor_pos-redraw_step_back > rl.orig_line_len) {
+                    while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos-redraw_step_back])) {
                         redraw_step_back++;
                         cont_chars++;
                     }
@@ -352,21 +346,9 @@ left_arrow_key:
         if (c == '~') {
             if (rl.escape_seq_buf[0] == '1' || rl.escape_seq_buf[0] == '7') {
 home_key:
-                for (char *ch = rl.line->buf+rl.cursor_pos-1; ch > rl.line->buf+rl.orig_line_len; ch--) {
-                    // printf("char: %d\n", ch);
-                    if (UTF8_IS_CONT(*ch)) {
-                        cont_chars++;
-                    }
-                }
                 redraw_step_back = rl.cursor_pos - rl.orig_line_len;
             } else if (rl.escape_seq_buf[0] == '4' || rl.escape_seq_buf[0] == '8') {
 end_key:
-                for (char *ch = rl.line->buf+rl.cursor_pos-1; ch > rl.line->buf+rl.orig_line_len; ch--) {
-                    // printf("char: %d\n", ch);
-                    if (UTF8_IS_CONT(*ch)) {
-                        cont_chars++;
-                    }
-                }
                 redraw_step_forward = rl.line->len - rl.cursor_pos;
             } else if (rl.escape_seq_buf[0] == '3') {
                 // delete
@@ -408,20 +390,8 @@ delete_key:
             // erase old chars
             mp_hal_erase_line_from_cursor(last_line_len - rl.cursor_pos);
         }
-        // Check if we have moved into a UTF-8 continuation byte
-        // while (rl.cursor_pos+redraw_step_forward < rl.line->len &&
-        //         UTF8_IS_CONT(rl.line->buf[rl.cursor_pos]) && rl.cursor_pos > 0) {
-        //     rl.cursor_pos--;
-        //     redraw_step_forward++;
-        // }
-
-        cont_chars = 0;
-        for (char *ch = rl.line->buf+rl.cursor_pos+redraw_step_forward; ch < rl.line->buf+rl.line->len; ch++) {
-            // printf("char: %d\n", ch);
-            if (UTF8_IS_CONT(*ch)) {
-                cont_chars++;
-            }
-        }
+        // Check for continuation characters from the new cursor_pos to the EOL
+        cont_chars = readline_count_cont_byte(rl.line->buf+rl.cursor_pos+redraw_step_forward, rl.line->buf+rl.line->len);
         // draw new chars
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
         // move cursor forward if needed (already moved forward by length of line, so move it back)
