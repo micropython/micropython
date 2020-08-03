@@ -77,6 +77,8 @@ static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
 }
 
 void pulsein_interrupt_handler(uint8_t channel) {
+    // turn off interrupts while in the handler
+    common_hal_mcu_disable_interrupts();
     // Grab the current time first.
     uint32_t current_overflow = overflow_count;
     Tc* tc = tc_insts[pulsein_tc_index];
@@ -89,6 +91,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
 
     pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
     if (!supervisor_background_tasks_ok() ) {
+        common_hal_mcu_enable_interrupts();
         mp_raise_RuntimeError(translate("Input taking too long"));
         return;
     }
@@ -122,6 +125,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
     }
     self->last_overflow = current_overflow;
     self->last_count = current_count;
+    common_hal_mcu_enable_interrupts();
 }
 
 void pulsein_reset() {
