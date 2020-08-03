@@ -96,7 +96,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         //if pin is same
         if (l_tim->pin == pin) {
             //check if the timer has a channel active, or is reserved by main timer system
-            if (reserved_tim[l_tim_index] != 0) {
+            if (l_tim_index < TIM_BANK_ARRAY_LEN && reserved_tim[l_tim_index] != 0) {
                 // Timer has already been reserved by an internal module
                 if (stm_peripherals_timer_is_reserved(mcu_tim_banks[l_tim_index])) {
                     tim_taken_internal = true;
