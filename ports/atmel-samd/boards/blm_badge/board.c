@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 hathach for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_USB_H
-#define MICROPY_INCLUDED_SUPERVISOR_USB_H
+#include "boards/board.h"
+#include "supervisor/shared/board.h"
 
-#include <stdbool.h>
+void board_init(void) {
+}
 
-// Ports must call this as frequently as they can in order to keep the USB
-// connection alive and responsive.  Normally this is called from background
-// tasks after the USB IRQ handler is executed, but in specific circumstances
-// it may be necessary to call it directly.
-void usb_background(void);
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-// Ports must call this from their particular USB IRQ handler
-void usb_irq_handler(void);
-
-// Only inits the USB peripheral clocks and pins. The peripheral will be initialized by
-// TinyUSB.
-void init_usb_hardware(void);
-
-// Shared implementation.
-bool usb_enabled(void);
-void usb_init(void);
-void usb_disconnect(void);
-
-// Propagate plug/unplug events to the MSC logic.
-void usb_msc_mount(void);
-void usb_msc_umount(void);
-bool usb_msc_ejected(void);
-
-#endif // MICROPY_INCLUDED_SUPERVISOR_USB_H
+void reset_board(void) {
+    board_reset_user_neopixels();
+}

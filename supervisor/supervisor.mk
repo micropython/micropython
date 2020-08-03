@@ -129,8 +129,8 @@ ifndef USB_HID_DEVICES
 USB_HID_DEVICES = "KEYBOARD,MOUSE,CONSUMER,GAMEPAD"
 endif
 
-ifndef USB_MSC_MAX_PACKET_SIZE
-USB_MSC_MAX_PACKET_SIZE = 64
+ifndef USB_HIGHSPEED
+USB_HIGHSPEED = 0
 endif
 
 ifndef USB_CDC_EP_NUM_NOTIFICATION
@@ -178,7 +178,6 @@ USB_DESCRIPTOR_ARGS = \
 	--interface_name $(USB_INTERFACE_NAME)\
 	--devices $(USB_DEVICES)\
 	--hid_devices $(USB_HID_DEVICES)\
-  --msc_max_packet_size $(USB_MSC_MAX_PACKET_SIZE)\
 	--cdc_ep_num_notification $(USB_CDC_EP_NUM_NOTIFICATION)\
 	--cdc_ep_num_data_out $(USB_CDC_EP_NUM_DATA_OUT)\
 	--cdc_ep_num_data_in $(USB_CDC_EP_NUM_DATA_IN)\
@@ -193,6 +192,10 @@ USB_DESCRIPTOR_ARGS = \
 
 ifeq ($(USB_RENUMBER_ENDPOINTS), 0)
 USB_DESCRIPTOR_ARGS += --no-renumber_endpoints
+endif
+
+ifeq ($(USB_HIGHSPEED), 1)
+USB_DESCRIPTOR_ARGS += --highspeed
 endif
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h

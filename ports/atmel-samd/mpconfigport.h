@@ -109,7 +109,7 @@
 #endif
 
 #ifndef CIRCUITPY_DEFAULT_STACK_SIZE
-#define CIRCUITPY_DEFAULT_STACK_SIZE                4096
+#define CIRCUITPY_DEFAULT_STACK_SIZE                3584
 #endif
 
 #ifndef SAMD21_BOD33_LEVEL
