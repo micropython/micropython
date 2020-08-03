@@ -40,9 +40,9 @@
 //|
 //|         :param int width: The width of the grid in tiles, or 1 for sprites.
 //|         :param int height: The height of the grid in tiles, or 1 for sprites.
-//|         :param bytearray font: The font data of the characters.
-//|         :param bytearray palette: The color palette to be used.
-//|         :param bytearray chars: The contents of the character grid.
+//|         :param ~_typing.ReadableBuffer font: The font data of the characters.
+//|         :param ~_typing.ReadableBuffer palette: The color palette to be used.
+//|         :param ~_typing.ReadableBuffer chars: The contents of the character grid.
 //|
 //|         This class is intended for internal use in the ``stage`` library and
 //|         it shouldn't be used on its own."""

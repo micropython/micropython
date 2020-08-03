@@ -211,11 +211,11 @@ const mp_obj_property_t audiomixer_mixer_voice_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def play(self, sample: audiocore._AudioSample, *, voice: int = 0, loop: bool = False) -> None:
+//|     def play(self, sample: _typing.AudioSample, *, voice: int = 0, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|
-//|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiomixer.Mixer`.
+//|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, `audiomixer.Mixer` or `audiomp3.MP3Decoder`.
 //|
 //|         The sample must match the Mixer's encoding settings given in the constructor."""
 //|         ...

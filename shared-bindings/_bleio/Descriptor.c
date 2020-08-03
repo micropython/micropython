@@ -46,7 +46,7 @@
 //|         as part of remote Characteristics in the remote Services that are discovered."""
 //|
 //|     @classmethod
-//|     def add_to_characteristic(characteristic: Characteristic, uuid: UUID, *, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length = 20, fixed_length: bool = False, initial_value: ReadableBuffer = b'') -> Descriptor:
+//|     def add_to_characteristic(cls, characteristic: Characteristic, uuid: UUID, *, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length: int = 20, fixed_length: bool = False, initial_value: ReadableBuffer = b'') -> Descriptor:
 //|         """Create a new Descriptor object, and add it to this Service.
 //|
 //|         :param Characteristic characteristic: The characteristic that will hold this descriptor
@@ -61,7 +61,7 @@
 //|            is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
 //|            number of data bytes that fit in a single BLE 4.x ATT packet.
 //|         :param bool fixed_length: True if the descriptor value is of fixed length.
-//|         :param buf initial_value: The initial value for this descriptor.
+//|         :param ~_typing.ReadableBuffer initial_value: The initial value for this descriptor.
 //|
 //|         :return: the new Descriptor."""
 //|         ...

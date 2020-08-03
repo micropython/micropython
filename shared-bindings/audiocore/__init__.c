@@ -38,13 +38,6 @@
 //| """Support for audio samples"""
 //|
 
-//| _AudioSample = Union[audiocore.WaveFile, audiocore.RawSample, audiomixer.Mixer, audiomp3.MP3Decoder]
-//| """An audio sample for playback with `audioio.AudioOut`, `audiobusio.I2SOut` or `audiopwmio.PWMAudioOut`.
-//|
-//| Supported sources are :py:class:`audiocore.WaveFile`, :py:class:`audiocore.RawSample`,
-//| :py:class:`audiomixer.Mixer` and :py:class:`audiomp3.MP3Decoder`."""
-//|
-
 STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_audiocore) },
     { MP_ROM_QSTR(MP_QSTR_RawSample), MP_ROM_PTR(&audioio_rawsample_type) },
