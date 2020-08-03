@@ -58,6 +58,14 @@ STATIC char *str_dup_maybe(const char *str) {
     return s2;
 }
 
+STATIC int count_cont_bytes(char *start, char *end) {
+    int count = 0;
+    for (char *pos = start; pos < end; pos++) {
+        count += UTF8_IS_CONT(*pos);
+    }
+    return count;
+}
+
 // By default assume terminal which implements VT100 commands...
 #ifndef MICROPY_HAL_HAS_VT100
 #define MICROPY_HAL_HAS_VT100 (1)
@@ -98,14 +106,6 @@ typedef struct _readline_t {
 } readline_t;
 
 STATIC readline_t rl;
-
-int readline_count_cont_byte(char *start, char *end) {
-    int count = 0;
-    for (char *pos = start; pos < end; pos++) {
-        count += UTF8_IS_CONT(*pos);
-    }
-    return count;
-}
 
 int readline_process_char(int c) {
     size_t last_line_len = rl.line->len;
@@ -275,7 +275,7 @@ up_arrow_key:
                 // up arrow
                 if (rl.hist_cur + 1 < (int)READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
                     // Check for continuation characters through the cursor_pos
-                    cont_chars = readline_count_cont_byte(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
+                    cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // increase hist num
                     rl.hist_cur += 1;
                     // set line to history
@@ -293,7 +293,7 @@ down_arrow_key:
                 // down arrow
                 if (rl.hist_cur >= 0) {
                     // Check for continuation characters through the cursor_pos
-                    cont_chars = readline_count_cont_byte(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
+                    cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // decrease hist num
                     rl.hist_cur -= 1;
                     // set line to history
@@ -391,7 +391,7 @@ delete_key:
             mp_hal_erase_line_from_cursor(last_line_len - rl.cursor_pos);
         }
         // Check for continuation characters from the new cursor_pos to the EOL
-        cont_chars = readline_count_cont_byte(rl.line->buf+rl.cursor_pos+redraw_step_forward, rl.line->buf+rl.line->len);
+        cont_chars = count_cont_bytes(rl.line->buf+rl.cursor_pos+redraw_step_forward, rl.line->buf+rl.line->len);
         // draw new chars
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
         // move cursor forward if needed (already moved forward by length of line, so move it back)
