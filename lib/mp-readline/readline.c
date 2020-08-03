@@ -222,32 +222,26 @@ int readline_process_char(int c) {
                 redraw_step_forward = compl_len;
             }
         #endif
-        } else if (32 <= c && c <= 126) {
+        } else if (32 <= c) {
             // printable character
-            vstr_ins_char(rl.line, rl.cursor_pos, c);
-            // set redraw parameters
-            redraw_from_cursor = true;
-            redraw_step_forward = 1;
-        }else if (c >= 128) {
-            // utf-8 character
-            if (c >= 0xc0 && c < 0xf8) {
-                // Lead code point
-                vstr_ins_char(rl.line, rl.cursor_pos, c);
+            char lcp = rl.line->buf[rl.cursor_pos];
+            uint8_t cont_need = 0;
+            if (!UTF8_IS_CONT(c)) {
+                // ASCII or Lead code point
                 rl.utf8_cont_chars = 0;
-            }else if (UTF8_IS_CONT(c)) {
-                char lcp = rl.line->buf[rl.cursor_pos];
-                // Check for valid lead code point
-                if (lcp >= 0xc0 && lcp < 0xf8) {
-                    rl.utf8_cont_chars += 1;
-                    vstr_ins_char(rl.line, rl.cursor_pos+rl.utf8_cont_chars, c);
-                    // set redraw parameters if we have the entire character
-                    uint8_t need = (0xe5 >> ((lcp >> 3) & 0x6)) & 3; // From unicode.c L195
-                    if (rl.utf8_cont_chars == need) {
-                        redraw_from_cursor = true;
-                        redraw_step_forward = rl.utf8_cont_chars+1;
-                        cont_chars = rl.utf8_cont_chars;
-                    }
-                }
+                lcp = c;
+            }else {
+                rl.utf8_cont_chars += 1;
+            }
+            if (lcp >= 0xc0 && lcp < 0xf8) {
+                cont_need = (0xe5 >> ((lcp >> 3) & 0x6)) & 3; // From unicode.c L195
+            }
+            vstr_ins_char(rl.line, rl.cursor_pos+rl.utf8_cont_chars, c);
+            // set redraw parameters if we have the entire character
+            if (rl.utf8_cont_chars == cont_need) {
+                redraw_from_cursor = true;
+                redraw_step_forward = rl.utf8_cont_chars+1;
+                cont_chars = rl.utf8_cont_chars;
             }
         }
     } else if (rl.escape_seq == ESEQ_ESC) {
@@ -274,7 +268,7 @@ up_arrow_key:
 #endif
                 // up arrow
                 if (rl.hist_cur + 1 < (int)READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
-                    // Check for continuation characters through the cursor_pos
+                    // Check for continuation characters
                     cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // increase hist num
                     rl.hist_cur += 1;
@@ -292,7 +286,7 @@ down_arrow_key:
 #endif
                 // down arrow
                 if (rl.hist_cur >= 0) {
-                    // Check for continuation characters through the cursor_pos
+                    // Check for continuation characters
                     cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // decrease hist num
                     rl.hist_cur -= 1;
@@ -390,7 +384,7 @@ delete_key:
             // erase old chars
             mp_hal_erase_line_from_cursor(last_line_len - rl.cursor_pos);
         }
-        // Check for continuation characters from the new cursor_pos to the EOL
+        // Check for continuation characters
         cont_chars = count_cont_bytes(rl.line->buf+rl.cursor_pos+redraw_step_forward, rl.line->buf+rl.line->len);
         // draw new chars
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
