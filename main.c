@@ -181,7 +181,7 @@ void stop_mp(void) {
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
-const char* first_existing_file_in_list(const char ** filenames) {
+const char* first_existing_file_in_list(const char * const * filenames) {
     for (int i = 0; filenames[i] != (char*)""; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat == MP_IMPORT_STAT_FILE) {
@@ -191,7 +191,7 @@ const char* first_existing_file_in_list(const char ** filenames) {
     return NULL;
 }
 
-bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
+bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result) {
     const char* filename = first_existing_file_in_list(filenames);
     if (filename == NULL) {
         return false;
@@ -256,9 +256,9 @@ bool run_code_py(safe_mode_t safe_mode) {
     } else {
         new_status_color(MAIN_RUNNING);
 
-        static const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        static const char * const supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
-        static const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
+        static const char * const double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
                                                     "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
         #endif
 
@@ -343,7 +343,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
-        static const char *boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+        static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
 
         new_status_color(BOOT_RUNNING);
 
