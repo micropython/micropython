@@ -264,7 +264,7 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
         return mp_obj_int_get_checked(arg);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError(translate("can't convert to int"));
+            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_int);
         } else {
             mp_raise_TypeError_varg(
                 translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_int);
@@ -327,7 +327,7 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError(translate("can't convert to float"));
+            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_float);
         } else {
             mp_raise_TypeError_varg(
                 translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_float);
@@ -360,7 +360,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
         mp_obj_complex_get(arg, real, imag);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError(translate("can't convert to complex"));
+            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_complex);
         } else {
             mp_raise_TypeError_varg(
                 translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_complex);
