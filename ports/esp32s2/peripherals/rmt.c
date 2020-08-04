@@ -42,4 +42,5 @@ rmt_channel_t esp32s2_peripherals_find_and_reserve_rmt(void) {
 
 void esp32s2_peripherals_free_rmt(rmt_channel_t chan) {
     rmt_reserved_channels[chan] = false;
+    rmt_driver_uninstall(chan);
 }

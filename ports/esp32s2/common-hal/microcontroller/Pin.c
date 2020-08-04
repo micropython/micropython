@@ -98,6 +98,10 @@ void claim_pin(const mcu_pin_obj_t* pin) {
     #endif
 }
 
+void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
+    claim_pin(pin);
+}
+
 bool pin_number_is_free(gpio_num_t pin_number) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin_number == MICROPY_HW_NEOPIXEL->number) {
