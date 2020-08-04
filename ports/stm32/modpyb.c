@@ -30,7 +30,9 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "lib/utils/pyexec.h"
+#if MICROPY_HW_ENABLE_DHT
 #include "drivers/dht/dht.h"
+#endif
 #include "stm32_it.h"
 #include "irq.h"
 #include "led.h"
@@ -164,8 +166,10 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     #endif
 
+#if MICROPY_HW_ENABLE_DHT
     // This function is not intended to be public and may be moved elsewhere
     { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
+#endif
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&pyb_timer_type) },
 

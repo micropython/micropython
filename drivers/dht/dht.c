@@ -1,3 +1,4 @@
+#ifdef MICROPY_HW_ENABLE_DHT
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
@@ -87,3 +88,5 @@ timeout:
     mp_raise_OSError(MP_ETIMEDOUT);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(dht_readinto_obj, dht_readinto);
+
+#endif

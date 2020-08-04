@@ -224,3 +224,9 @@
 #endif
 
 #define MICROPY_HW_USES_BOOTLOADER (MICROPY_HW_VTOR != 0x08000000)
+
+// drivers/dht ... a specific enviro sensor of some sort
+#ifndef MICROPY_HW_ENABLE_DHT
+#define MICROPY_HW_ENABLE_DHT        (1)
+#endif
+
