@@ -330,7 +330,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self,
     }
     if (index < 0 || index >= self->len) {
         common_hal_mcu_enable_interrupts();
-        mp_raise_IndexError(translate("index out of range"));
+        mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_PulseIn);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     common_hal_mcu_enable_interrupts();

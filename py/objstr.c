@@ -1076,7 +1076,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 }
                 field_name = str_to_int(field_name, field_name_top, &index);
                 if ((uint)index >= n_args - 1) {
-                    mp_raise_IndexError(translate("tuple index out of range"));
+                    mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_tuple);
                 }
                 arg = args[index + 1];
                 *arg_i = -1;
@@ -1104,7 +1104,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 }
             }
             if ((uint)*arg_i >= n_args - 1) {
-                mp_raise_IndexError(translate("tuple index out of range"));
+                mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_tuple);
             }
             arg = args[(*arg_i) + 1];
             (*arg_i)++;
