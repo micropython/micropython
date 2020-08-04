@@ -145,6 +145,7 @@ pio2_3t =  6.1232342629e-17; /* 0x248d3132 */
 		return -1;
 	    }
 	}
+#if CIRCUITPY_FULL_BUILD
 	if(ix<=0x43490f80) { /* |x| ~<= 2^7*(pi/2), medium size */
 	    t  = fabsf(x);
 	    n  = (__int32_t) (t*invpio2+half);
@@ -180,6 +181,11 @@ pio2_3t =  6.1232342629e-17; /* 0x248d3132 */
 	    if(hx<0) 	{y[0] = -y[0]; y[1] = -y[1]; return -n;}
 	    else	 return n;
 	}
+#else
+        // Suppress "defined but not used" diagnostics
+        (void) j; (void) fn; (void) r; (void) t; (void) w; (void) pio2_3t;
+        (void) pio2_3; (void) invpio2; (void)half; (void)npio2_hw;
+#endif
     /*
      * all other (large) arguments
      */
