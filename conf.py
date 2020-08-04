@@ -17,7 +17,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-import json
 import logging
 import os
 import subprocess
@@ -25,6 +24,9 @@ import sys
 import urllib.parse
 
 import recommonmark
+from sphinx.transforms import SphinxTransform
+from docutils import nodes
+from sphinx import addnodes
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -84,6 +86,7 @@ autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circ
 autoapi_add_toctree_entry = False
 autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members', 'show-module-summary']
 autoapi_template_dir = 'docs/autoapi/templates'
+autoapi_python_class_content = "both"
 autoapi_python_use_implicit_namespaces = True
 autoapi_root = "shared-bindings"
 
@@ -423,7 +426,38 @@ def generate_redirects(app):
             with open(redirected_filename, 'w') as f:
                 f.write(TEMPLATE % urllib.parse.quote(to_path, '#/'))
 
+
+class CoreModuleTransform(SphinxTransform):
+    default_priority = 870
+
+    def _convert_first_paragraph_into_title(self):
+        title = self.document.next_node(nodes.title)
+        paragraph = self.document.next_node(nodes.paragraph)
+        if not title or not paragraph:
+            return
+        if isinstance(paragraph[0], nodes.paragraph):
+            paragraph = paragraph[0]
+        if all(isinstance(child, nodes.Text) for child in paragraph.children):
+            for child in paragraph.children:
+                title.append(nodes.Text(" \u2013 "))
+                title.append(child)
+            paragraph.parent.remove(paragraph)
+
+    def _enable_linking_to_nonclass_targets(self):
+        for desc in self.document.traverse(addnodes.desc):
+            for xref in desc.traverse(addnodes.pending_xref):
+                if xref.attributes.get("reftype") == "class":
+                    xref.attributes.pop("refspecific", None)
+
+    def apply(self, **kwargs):
+        docname = self.env.docname
+        if docname.startswith(autoapi_root) and docname.endswith("/index"):
+            self._convert_first_paragraph_into_title()
+            self._enable_linking_to_nonclass_targets()
+
+
 def setup(app):
     app.add_css_file("customstyle.css")
     app.add_config_value('redirects_file', 'redirects', 'env')
     app.connect('builder-inited', generate_redirects)
+    app.add_transform(CoreModuleTransform)
