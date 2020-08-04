@@ -27,6 +27,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "mpconfigport.h"
+
+// Some boards don't implement I2SOut, so suppress any routines from here.
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+
 #include "extmod/vfs_fat.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
@@ -382,3 +387,5 @@ bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
     }
     return still_playing;
 }
+
+#endif // CIRCUITPY_AUDIOBUSIO_I2SOUT

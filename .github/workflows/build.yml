@@ -172,6 +172,7 @@ jobs:
         - "bast_pro_mini_m0"
         - "bdmicro_vina_m0"
         - "bless_dev_board_multi_sensor"
+        - "blm_badge"
         - "capablerobot_usbhub"
         - "catwan_usbstick"
         - "circuitbrains_basic_m0"
@@ -420,7 +421,7 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20200523
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20200801
     - name: Install IDF tools
       run: |
         $IDF_PATH/tools/idf_tools.py --non-interactive install required
