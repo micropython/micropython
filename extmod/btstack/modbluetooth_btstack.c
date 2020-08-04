@@ -31,9 +31,12 @@
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
 
 #include "extmod/btstack/modbluetooth_btstack.h"
+#include "extmod/btstack/btstack_tlv_mpy.h"
 #include "extmod/modbluetooth.h"
 
 #include "lib/btstack/src/btstack.h"
+#include "lib/btstack/src/ble/le_device_db_tlv.h"
+#include "lib/btstack/src/classic/btstack_link_key_db_tlv.h"
 
 #define DEBUG_printf(...) // printf("btstack: " __VA_ARGS__)
 
@@ -52,6 +55,9 @@ STATIC const uint32_t BTSTACK_INIT_DEINIT_TIMEOUT_MS = 15000;
 STATIC const uint16_t BTSTACK_GAP_DEVICE_NAME_HANDLE = 3;
 
 volatile int mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
+
+static const btstack_tlv_t * tlv_impl;
+static btstack_tlv_mpy_t   tlv_context;
 
 #define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
 
@@ -676,6 +682,17 @@ int mp_bluetooth_init(void) {
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     gatt_client_init();
+    #endif
+
+    #ifdef MICROPY_PY_BLUETOOTH_BOND_FILE
+    tlv_impl = btstack_tlv_mpy_init_instance(&tlv_context, MICROPY_PY_BLUETOOTH_BOND_FILE);
+    btstack_tlv_set_instance(tlv_impl, &tlv_context);
+    #ifdef ENABLE_CLASSIC
+    hci_set_link_key_db(btstack_link_key_db_tlv_get_instance(tlv_impl, &tlv_context));
+    #endif
+    #ifdef ENABLE_BLE
+    le_device_db_tlv_configure(tlv_impl, &tlv_context);
+    #endif
     #endif
 
     // Register for HCI events.

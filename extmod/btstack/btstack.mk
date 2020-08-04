@@ -8,11 +8,17 @@ MICROPY_BLUETOOTH_BTSTACK_ENABLE_CLASSIC ?= 0
 BTSTACK_EXTMOD_DIR = extmod/btstack
 
 EXTMOD_SRC_C += extmod/btstack/modbluetooth_btstack.c
-EXTMOD_SRC_C += extmod/btstack/le_device_db_fs.c
+EXTMOD_SRC_C += extmod/btstack/btstack_tlv_mpy.c
 
 INC += -I$(TOP)/$(BTSTACK_EXTMOD_DIR)
 
 CFLAGS_MOD += -DMICROPY_BLUETOOTH_BTSTACK=1
+ifneq ("$(MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING)", "")
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING=$(MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING)
+endif
+ifneq ("$(MICROPY_PY_BLUETOOTH_MAX_ATT_DB_SIZE)", "")
+CFLAGS_MOD += -DMAX_ATT_DB_SIZE=$(MICROPY_PY_BLUETOOTH_MAX_ATT_DB_SIZE)
+endif
 
 BTSTACK_DIR = $(TOP)/lib/btstack
 
@@ -33,7 +39,6 @@ SRC_BTSTACK = \
 	$(addprefix lib/btstack/src/, $(SRC_FILES)) \
 	$(addprefix lib/btstack/src/ble/, $(SRC_BLE_FILES)) \
 	lib/btstack/platform/embedded/btstack_run_loop_embedded.c \
-	lib/btstack/platform/posix/btstack_tlv_posix.c \
 	lib/btstack/3rd-party/rijndael/rijndael.c \
 	lib/btstack/3rd-party/micro-ecc/uECC.c
 

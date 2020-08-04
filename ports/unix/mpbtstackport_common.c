@@ -36,9 +36,9 @@
 #include "lib/btstack/platform/embedded/btstack_run_loop_embedded.h"
 #include "lib/btstack/platform/embedded/hal_cpu.h"
 #include "lib/btstack/platform/embedded/hal_time_ms.h"
-#include "lib/btstack/platform/posix/btstack_tlv_posix.h"
 
 #include "extmod/btstack/modbluetooth_btstack.h"
+#include "extmod/btstack/btstack_tlv_mpy.h"
 
 #include "mpbtstackport.h"
 
@@ -51,7 +51,7 @@ STATIC bool using_static_address = false;
 #define TLV_DB_PATH_POSTFIX ".tlv"
 static char tlv_db_path[100];
 static const btstack_tlv_t * tlv_impl;
-static btstack_tlv_posix_t   tlv_context;
+static btstack_tlv_mpy_t   tlv_context;
 
 STATIC btstack_packet_callback_registration_t hci_event_callback_registration;
 
@@ -93,7 +93,7 @@ STATIC void packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packe
             strcpy(tlv_db_path, TLV_DB_PATH_PREFIX);
             strcat(tlv_db_path, bd_addr_to_str(local_addr));
             strcat(tlv_db_path, TLV_DB_PATH_POSTFIX);
-            tlv_impl = btstack_tlv_posix_init_instance(&tlv_context, tlv_db_path);
+            tlv_impl = btstack_tlv_mpy_init_instance(&tlv_context, tlv_db_path);
             btstack_tlv_set_instance(tlv_impl, &tlv_context);
 #ifdef ENABLE_CLASSIC
             hci_set_link_key_db(btstack_link_key_db_tlv_get_instance(tlv_impl, &tlv_context));
