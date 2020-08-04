@@ -57,10 +57,6 @@ mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     }
 }
 
-qstr mp_obj_get_type_qstr(mp_const_obj_t o_in) {
-    return mp_obj_get_type(o_in)->name;
-}
-
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
     return qstr_str(mp_obj_get_type_qstr(o_in));
 }
