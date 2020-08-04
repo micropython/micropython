@@ -201,7 +201,7 @@ void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
 //    if (self->len == 0) {
-//        mp_raise_IndexError_varg(translate("pop from empty %s"), "PulseIn");
+//        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
 //    }
 //    common_hal_mcu_disable_interrupts();
 //    uint16_t value = self->buffer[self->start];
