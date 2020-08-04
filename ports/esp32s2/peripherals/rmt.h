@@ -31,6 +31,7 @@
 #include "driver/rmt.h"
 #include <stdint.h>
 
+void esp32s2_peripherals_rmt_reset(void);
 rmt_channel_t esp32s2_peripherals_find_and_reserve_rmt(void);
 void esp32s2_peripherals_free_rmt(rmt_channel_t chan);
 

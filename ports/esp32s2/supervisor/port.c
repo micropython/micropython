@@ -42,6 +42,8 @@
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 
+#include "rmt.h"
+
 STATIC esp_timer_handle_t _tick_timer;
 
 void tick_timer_cb(void* arg) {
@@ -66,6 +68,7 @@ void reset_port(void) {
     vTaskDelay(4);
 
 #if CIRCUITPY_PULSEIO
+    esp32s2_peripherals_rmt_reset();
     pwmout_reset();
 #endif
 #if CIRCUITPY_BUSIO

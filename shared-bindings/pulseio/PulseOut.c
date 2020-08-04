@@ -64,19 +64,33 @@
 //|           pulse.send(pulses)"""
 //|         ...
 //|
-STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
-    mp_obj_t carrier_obj = args[0];
+STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
-    if (!MP_OBJ_IS_TYPE(carrier_obj, &pulseio_pwmout_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), pulseio_pwmout_type.name);
-    }
-
-    // create Pulse object from the given pin
     pulseio_pulseout_obj_t *self = m_new_obj(pulseio_pulseout_obj_t);
     self->base.type = &pulseio_pulseout_type;
 
+    #ifndef CPY_PULSEOUT_USES_DIGITALIO
+    // Most ports pass a PWMOut
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
+    mp_obj_t carrier_obj = args[0];
+    if (!MP_OBJ_IS_TYPE(carrier_obj, &pulseio_pwmout_type)) {
+        mp_raise_TypeError_varg(translate("Expected a %q"), pulseio_pwmout_type.name);
+    }
     common_hal_pulseio_pulseout_construct(self, (pulseio_pwmout_obj_t *)MP_OBJ_TO_PTR(carrier_obj));
+    #else
+    // ESP32-S2 Special Case
+    enum { ARG_pin, ARG_frequency};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 38000} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    const mcu_pin_obj_t* pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+
+    common_hal_pulseio_pulseout_construct(self, pin, args[ARG_frequency].u_int);
+    #endif
 
     return MP_OBJ_FROM_PTR(self);
 }
