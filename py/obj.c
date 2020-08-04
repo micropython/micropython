@@ -381,7 +381,7 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
             mp_raise_TypeError(translate("expected tuple/list"));
         } else {
             mp_raise_TypeError_varg(
-                translate("object '%s' is not a tuple or list"), mp_obj_get_type_str(o));
+                translate("object '%q' is not a tuple or list"), mp_obj_get_type_qstr(o));
         }
     }
 }
@@ -410,8 +410,8 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
             mp_raise_TypeError(translate("indices must be integers"));
         } else {
             mp_raise_TypeError_varg(
-                translate("%q indices must be integers, not %s"),
-                type->name, mp_obj_get_type_str(index));
+                translate("%q indices must be integers, not %q"),
+                type->name, mp_obj_get_type_qstr(index));
         }
     }
 
@@ -465,7 +465,7 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
             mp_raise_TypeError(translate("object has no len"));
         } else {
             mp_raise_TypeError_varg(
-                translate("object of type '%s' has no len()"), mp_obj_get_type_str(o_in));
+                translate("object of type '%q' has no len()"), mp_obj_get_type_qstr(o_in));
         }
     } else {
         return len;
@@ -508,21 +508,21 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
             mp_raise_TypeError(translate("object does not support item deletion"));
         } else {
             mp_raise_TypeError_varg(
-                translate("'%s' object does not support item deletion"), mp_obj_get_type_str(base));
+                translate("'%q' object does not support item deletion"), mp_obj_get_type_qstr(base));
         }
     } else if (value == MP_OBJ_SENTINEL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError(translate("object is not subscriptable"));
         } else {
             mp_raise_TypeError_varg(
-                translate("'%s' object is not subscriptable"), mp_obj_get_type_str(base));
+                translate("'%q' object is not subscriptable"), mp_obj_get_type_qstr(base));
         }
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError(translate("object does not support item assignment"));
         } else {
             mp_raise_TypeError_varg(
-                translate("'%s' object does not support item assignment"), mp_obj_get_type_str(base));
+                translate("'%q' object does not support item assignment"), mp_obj_get_type_qstr(base));
         }
     }
 }
