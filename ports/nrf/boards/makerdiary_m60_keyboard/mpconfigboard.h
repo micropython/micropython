@@ -40,6 +40,7 @@
 #define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(1, 12)
 #define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(1, 11)
 #define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(1, 13)
+#define MICROPY_QSPI_OFF_WHEN_SLEEP
 
 #define BOARD_HAS_CRYSTAL 1
 

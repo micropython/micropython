@@ -295,6 +295,19 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
 void port_sleep_until_interrupt(void) {
+#if defined(MICROPY_QSPI_CS) && defined(MICROPY_QSPI_OFF_WHEN_SLEEP)
+    // Turn off QSPI when USB is disconnected
+    if (NRF_QSPI->ENABLE && !(NRF_POWER->USBREGSTATUS & POWER_USBREGSTATUS_VBUSDETECT_Msk)) {
+        // Keep CS high when QSPI is diabled
+        nrf_gpio_cfg_output(MICROPY_QSPI_CS);
+        nrf_gpio_pin_write(MICROPY_QSPI_CS, 1);
+
+        *(volatile uint32_t *)0x40029010 = 1;
+        *(volatile uint32_t *)0x40029054 = 1;
+        NRF_QSPI->ENABLE = 0;
+    }
+#endif
+
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (NVIC_GetPendingIRQ(FPU_IRQn)) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));
