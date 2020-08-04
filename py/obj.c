@@ -57,8 +57,12 @@ mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
     }
 }
 
+qstr mp_obj_get_type_qstr(mp_const_obj_t o_in) {
+    return mp_obj_get_type(o_in)->name;
+}
+
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
-    return qstr_str(mp_obj_get_type(o_in)->name);
+    return qstr_str(mp_obj_get_type_qstr(o_in));
 }
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
@@ -263,7 +267,7 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
             mp_raise_TypeError(translate("can't convert to int"));
         } else {
             mp_raise_TypeError_varg(
-                translate("can't convert %s to %s"), mp_obj_get_type_str(arg), "int");
+                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_int);
         }
     }
 }
@@ -326,7 +330,7 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
             mp_raise_TypeError(translate("can't convert to float"));
         } else {
             mp_raise_TypeError_varg(
-                translate("can't convert %s to %s"), mp_obj_get_type_str(arg), "float");
+                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_float);
         }
     }
 
@@ -359,7 +363,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
             mp_raise_TypeError(translate("can't convert to complex"));
         } else {
             mp_raise_TypeError_varg(
-                translate("can't convert %s to %s"), mp_obj_get_type_str(arg), "complex");
+                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_complex);
         }
     }
 }

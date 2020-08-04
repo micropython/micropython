@@ -141,9 +141,9 @@ STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     int cl = fpclassify(val);
     if (cl == FP_INFINITE) {
-        mp_raise_OverflowError_varg(translate("can't convert %s to %s"), "inf", "int");
+        mp_raise_OverflowError_varg(translate("can't convert %q to %q"), MP_QSTR_inf, MP_QSTR_int);
     } else if (cl == FP_NAN) {
-        mp_raise_ValueError_varg(translate("can't convert %s to %s"), "NaN", "int");
+        mp_raise_ValueError_varg(translate("can't convert %q to %q"), MP_QSTR_NaN, MP_QSTR_int);
     } else {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
         if (icl == MP_FP_CLASS_FIT_SMALLINT) {
