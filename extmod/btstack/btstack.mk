@@ -8,7 +8,7 @@ MICROPY_BLUETOOTH_BTSTACK_ENABLE_CLASSIC ?= 0
 BTSTACK_EXTMOD_DIR = extmod/btstack
 
 EXTMOD_SRC_C += extmod/btstack/modbluetooth_btstack.c
-EXTMOD_SRC_C += extmod/btstack/btstack_tlv_mpy.c
+EXTMOD_SRC_C += extmod/btstack/le_device_db_fs.c
 
 INC += -I$(TOP)/$(BTSTACK_EXTMOD_DIR)
 
@@ -25,7 +25,6 @@ BTSTACK_DIR = $(TOP)/lib/btstack
 ifneq ($(wildcard $(BTSTACK_DIR)/src),)
 
 include $(BTSTACK_DIR)/src/Makefile.inc
-include $(BTSTACK_DIR)/src/ble/Makefile.inc
 
 INC += -I$(BTSTACK_DIR)/src
 INC += -I$(BTSTACK_DIR)/3rd-party/bluedroid/decoder/include
@@ -35,12 +34,22 @@ INC += -I$(BTSTACK_DIR)/3rd-party/micro-ecc
 INC += -I$(BTSTACK_DIR)/3rd-party/rijndael
 INC += -I$(BTSTACK_DIR)/3rd-party/yxml
 
+SRC_BLE_FILES = \
+    ancs_client.c \
+    att_db.c \
+    att_db_util.c \
+    att_dispatch.c \
+    att_server.c \
+    gatt_client.c \
+    sm.c
+
 SRC_BTSTACK = \
 	$(addprefix lib/btstack/src/, $(SRC_FILES)) \
 	$(addprefix lib/btstack/src/ble/, $(SRC_BLE_FILES)) \
 	lib/btstack/platform/embedded/btstack_run_loop_embedded.c \
 	lib/btstack/3rd-party/rijndael/rijndael.c \
 	lib/btstack/3rd-party/micro-ecc/uECC.c
+
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
