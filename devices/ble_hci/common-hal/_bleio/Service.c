@@ -42,6 +42,8 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
     vm_used_ble = true;
 
     self->handle = bleio_adapter_add_attribute(&common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(self));
+    self->start_handle = self->handle;
+    self->end_handle = self->handle;
     if (self->handle == BLE_GATT_HANDLE_INVALID) {
         return 1;
     }
@@ -90,9 +92,11 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     }
     characteristic->decl_handle = bleio_adapter_add_attribute(
         &common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(characteristic));
-    // This is the value handle
+    // This is the value handle.
     characteristic->handle = bleio_adapter_add_attribute(
         &common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(characteristic));
+
+    self->end_handle = characteristic->handle;
 
     if (characteristic->props & (CHAR_PROP_NOTIFY | CHAR_PROP_INDICATE)) {
         // We need a CCCD.
@@ -107,6 +111,8 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
         cccd->handle = cccd_handle;
         characteristic->cccd_handle = cccd_handle;
         common_hal_bleio_characteristic_add_descriptor(characteristic, cccd);
+
+        self->end_handle = cccd_handle;
     }
 
     // #if CIRCUITPY_VERBOSE_BLE

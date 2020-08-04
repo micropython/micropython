@@ -38,6 +38,8 @@
 #include "shared-bindings/_bleio/UUID.h"
 #include "supervisor/shared/bluetooth.h"
 
+bool vm_used_ble;
+
 void check_hci_error(hci_result_t result) {
     switch (result) {
         case HCI_OK:
@@ -110,6 +112,8 @@ void check_hci_error(hci_result_t result) {
 
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
+    bleio_hci_reset();
+
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
         return;
     }

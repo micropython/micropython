@@ -116,7 +116,7 @@ STATIC void check_and_save_expected_rsp(uint16_t conn_handle, uint8_t opcode, ui
     }
 }
 
-void att_init(void) {
+void bleio_att_reset(void) {
     max_mtu = BT_ATT_DEFAULT_LE_MTU;
     timeout = 5000;
     long_write_handle = BLE_GATT_HANDLE_INVALID;
@@ -884,6 +884,8 @@ void process_read_by_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen,
     struct bt_att_read_group_req *req = (struct bt_att_read_group_req *) data;
     uint16_t type_uuid = req->uuid[0] | (req->uuid[1] << 8);
 
+    // We only support returning services for BT_ATT_OP_READ_GROUP_REQ, which is typically used
+    // for service discovery.
     if (dlen != sizeof(struct bt_att_read_group_req) + sizeof(type_uuid) ||
         (type_uuid != BLE_TYPE_PRIMARY_SERVICE &&
          type_uuid != BLE_TYPE_SECONDARY_SERVICE)) {
@@ -897,7 +899,7 @@ void process_read_by_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen,
     } rsp_t;
 
     uint8_t rsp_bytes[mtu];
-    rsp_t *rsp = (rsp_t *) &rsp_bytes;
+    rsp_t *rsp = (rsp_t *) rsp_bytes;
     rsp->h.code = BT_ATT_OP_READ_GROUP_RSP;
     rsp->r.len = 0;
 
@@ -907,13 +909,22 @@ void process_read_by_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen,
     bool no_data = true;
 
     // All the data chunks must have uuid's that are the same size.
-    // Keep track fo the first one to make sure.
+    // Keep track of the first one to make sure.
     size_t sizeof_first_service_uuid = 0;
+
+    // Size of a single bt_att_group_data chunk. Start with the intial size, and
+    // add the uuid size in the loop below.
+    size_t data_length = sizeof(struct bt_att_group_data);
+
     const uint16_t max_attribute_handle = bleio_adapter_max_attribute_handle(&common_hal_bleio_adapter_obj);
     for (uint16_t handle = req->start_handle;
          handle <= max_attribute_handle && handle <= req->end_handle;
          handle++) {
-        no_data = false;
+
+        if (rsp_length + data_length > mtu) {
+            // The next possible bt_att_group_data chunk won't fit. The response is full.
+            break;
+        }
 
         mp_obj_t *attribute_obj = bleio_adapter_get_attribute(&common_hal_bleio_adapter_obj, handle);
         if (type_uuid != bleio_attribute_type_uuid(attribute_obj)) {
@@ -925,33 +936,28 @@ void process_read_by_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen,
 
         // Is this a 16-bit or a 128-bit uuid? It must match in size with any previous attribute
         // in this transmission.
-        const uint8_t sizeof_service_uuid = common_hal_bleio_uuid_get_size(service->uuid) / 8;
+        const uint32_t sizeof_service_uuid = common_hal_bleio_uuid_get_size(service->uuid) / 8;
         if (sizeof_first_service_uuid == 0) {
             sizeof_first_service_uuid = sizeof_service_uuid;
+            data_length += sizeof_service_uuid;
         } else if (sizeof_first_service_uuid != sizeof_service_uuid) {
-            // Mismatched sizes. Transmit just what we have so far in this batch.
+            // Mismatched sizes, which can't be in the same batch.
+            // Transmit just what we have so far in this batch.
             break;
         }
 
-        // Size of bt_att_group_data chunk with uuid.
-        const uint16_t data_length = sizeof(struct bt_att_group_data) + sizeof_service_uuid;
-
-        if (rsp_length + data_length > mtu) {
-            // No room for another bt_att_group_data chunk.
-            break;
-        }
 
         // Pass the length of ONE bt_att_group_data chunk. There may be multiple ones in this transmission.
         rsp->r.len = data_length;
 
-        uint8_t group_data_bytes[data_length];
-        struct bt_att_group_data *group_data = (struct bt_att_group_data *) group_data_bytes;
+        struct bt_att_group_data *group_data = (struct bt_att_group_data *) &rsp_bytes[rsp_length];
 
         group_data->start_handle = service->start_handle;
         group_data->end_handle = service->end_handle;
         common_hal_bleio_uuid_pack_into(service->uuid, group_data->value);
 
         rsp_length += data_length;
+        no_data = false;
     }
 
     if (no_data) {

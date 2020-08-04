@@ -149,6 +149,8 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
     }
 
     descriptor->handle = bleio_adapter_add_attribute(&common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(descriptor));
+    // Include this desriptor in the service handles range.
+    self->service->end_handle = descriptor->handle;
 
     // Link together all the descriptors for this characteristic.
     descriptor->next = self->descriptor_list;

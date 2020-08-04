@@ -43,7 +43,7 @@ typedef struct bleio_service_obj {
     // A local service doesn't know the connection.
     mp_obj_t connection;
     mp_obj_list_t *characteristic_list;
-    // Range of attribute handles of this remote service.
+    // Range of attribute handles of this service.
     uint16_t start_handle;
     uint16_t end_handle;
     struct bleio_service_obj* next;

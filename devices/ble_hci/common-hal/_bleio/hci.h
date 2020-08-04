@@ -39,7 +39,7 @@ typedef int hci_result_t;
 #define HCI_WRITE_ERROR (-5)
 #define HCI_ATT_ERROR (-6)
 
-void hci_init(void);
+void bleio_hci_reset(void);
 
 hci_result_t hci_disconnect(uint16_t handle);
 

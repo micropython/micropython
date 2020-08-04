@@ -272,18 +272,20 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
     }
 }
 
-void hci_init(void) {
+void bleio_hci_reset(void) {
     rx_idx = 0;
     pending_pkt = 0;
     hci_poll_in_progress = false;
+
+    bleio_att_reset();
 }
 
 hci_result_t hci_poll_for_incoming_pkt_timeout(uint32_t timeout_msecs) {
     uint64_t start = supervisor_ticks_ms64();
 
-    hci_result_t result;
+    hci_result_t result = HCI_OK;
 
-    while (supervisor_ticks_ms64() -start < timeout_msecs) {
+    while (supervisor_ticks_ms64() - start < timeout_msecs) {
         result = hci_poll_for_incoming_pkt();
         RUN_BACKGROUND_TASKS;
     }
