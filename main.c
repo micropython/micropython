@@ -257,20 +257,24 @@ bool run_code_py(safe_mode_t safe_mode) {
         new_status_color(MAIN_RUNNING);
 
         static const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        #if CIRCUITPY_FULL_BUILD
         static const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
                                                     "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
+        #endif
 
         stack_resize();
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
         start_mp(heap);
         found_main = maybe_run_list(supported_filenames, &result);
+        #if CIRCUITPY_FULL_BUILD
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
             if (found_main) {
                 serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
+        #endif
         cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
