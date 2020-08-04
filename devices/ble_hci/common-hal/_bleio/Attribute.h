@@ -36,7 +36,7 @@ typedef enum {
   BLE_TYPE_SECONDARY_SERVICE = 0x2801,
   BLE_TYPE_CHARACTERISTIC    = 0x2803,
   BLE_TYPE_DESCRIPTOR        = 0x2900
-} ble_attribute_type;
+} ble_attribute_type_uuid;
 
 // typedef struct
 // {
@@ -45,6 +45,6 @@ typedef enum {
 
 // } ble_gap_conn_sec_mode_t;
 
-// extern void bleio_attribute_gatts_set_security_mode(ble_gap_conn_sec_mode_t *perm, bleio_attribute_security_mode_t security_mode);
+ble_attribute_type_uuid bleio_attribute_type_uuid(mp_obj_t *attribute);
 
 #endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ATTRIBUTE_H

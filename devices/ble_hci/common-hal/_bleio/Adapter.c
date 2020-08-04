@@ -43,6 +43,8 @@
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Address.h"
+#include "shared-bindings/_bleio/Characteristic.h"
+#include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/nvm/ByteArray.h"
 #include "shared-bindings/_bleio/Connection.h"
 #include "shared-bindings/_bleio/ScanEntry.h"
@@ -69,6 +71,12 @@
 #define BLE_CONN_SUP_TIMEOUT         MSEC_TO_UNITS(4000, UNIT_10_MS)
 
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
+
+STATIC void check_enabled(bleio_adapter_obj_t *adapter) {
+    if (!common_hal_bleio_adapter_get_enabled(adapter)) {
+        mp_raise_bleio_BluetoothError(translate("Adapter not enabled"));
+    }
+}
 
 // STATIC bool adapter_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 //     bleio_adapter_obj_t *self = (bleio_adapter_obj_t*)self_in;
@@ -232,6 +240,14 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
 
     self->enabled = enabled;
 
+    // We must poll for input from the HCI adapter.
+    // TODO Can we instead trigger an interrupt on UART input traffic?
+    if (enabled) {
+        supervisor_enable_tick();
+    } else {
+        supervisor_disable_tick();
+    }
+
     // Stop any current activity; reset to known state.
     check_hci_error(hci_reset());
     self->now_advertising = false;
@@ -253,6 +269,8 @@ bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
 }
 
 bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *self) {
+    check_enabled(self);
+
     bt_addr_t addr;
     check_hci_error(hci_read_bd_addr(&addr));
 
@@ -306,6 +324,8 @@ void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char* na
 // }
 
 mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
+    check_enabled(self);
+
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
             mp_raise_bleio_BluetoothError(translate("Scan already in progess. Stop with stop_scan."));
@@ -350,6 +370,8 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
 }
 
 void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self) {
+    check_enabled(self);
+
     check_hci_error(hci_le_set_scan_enable(BT_HCI_LE_SCAN_DISABLE, BT_HCI_LE_SCAN_FILTER_DUP_DISABLE));
     shared_module_bleio_scanresults_set_done(self->scan_results, true);
     self->scan_results = NULL;
@@ -384,6 +406,8 @@ void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self) {
 // }
 
 mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout) {
+
+    check_enabled(self);
 
     // ble_gap_addr_t addr;
 
@@ -482,6 +506,8 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
 // }
 
 uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, float interval, uint8_t *advertising_data, uint16_t advertising_data_len, uint8_t *scan_response_data, uint16_t scan_response_data_len) {
+    check_enabled(self);
+
     if (self->now_advertising) {
         if (self->circuitpython_advertising) {
             common_hal_bleio_adapter_stop_advertising(self);
@@ -603,6 +629,8 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
 }
 
 void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool connectable, bool anonymous, uint32_t timeout, mp_float_t interval, mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo) {
+    check_enabled(self);
+
     // interval value has already been validated.
 
     check_data_fit(advertising_data_bufinfo->len, connectable);
@@ -638,6 +666,8 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
 }
 
 void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
+    check_enabled(self);
+
     self->now_advertising = false;
     self->extended_advertising = false;
     self->circuitpython_advertising = false;
@@ -651,10 +681,14 @@ void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
 }
 
 bool common_hal_bleio_adapter_get_advertising(bleio_adapter_obj_t *self) {
+    check_enabled(self);
+
     return self->now_advertising;
 }
 
 bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self) {
+    check_enabled(self);
+
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
         if (connection->conn_handle != BLE_CONN_HANDLE_INVALID) {
@@ -665,6 +699,8 @@ bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self) {
 }
 
 mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
+    check_enabled(self);
+
     if (self->connection_objs != NULL) {
         return self->connection_objs;
     }
@@ -685,17 +721,31 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
 }
 
 void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
+    check_enabled(self);
+
     //FIX bonding_erase_storage();
 }
 
 uint16_t bleio_adapter_add_attribute(bleio_adapter_obj_t *adapter, mp_obj_t *attribute) {
+    check_enabled(adapter);
+
     // The handle is the index of this attribute in the attributes list.
     uint16_t handle = (uint16_t) adapter->attributes->len;
     mp_obj_list_append(adapter->attributes, attribute);
+
+    if (MP_OBJ_IS_TYPE(attribute, &bleio_service_type)) {
+        adapter->last_added_service_handle = handle;
+    }
+    if (MP_OBJ_IS_TYPE(attribute, &bleio_characteristic_type)) {
+        adapter->last_added_characteristic_handle = handle;
+    }
+
     return handle;
 }
 
 mp_obj_t* bleio_adapter_get_attribute(bleio_adapter_obj_t *adapter, uint16_t handle) {
+    check_enabled(adapter);
+
     if (handle == 0 || handle >= adapter->attributes->len) {
         return mp_const_none;
     }
@@ -703,6 +753,8 @@ mp_obj_t* bleio_adapter_get_attribute(bleio_adapter_obj_t *adapter, uint16_t han
 }
 
 uint16_t bleio_adapter_max_attribute_handle(bleio_adapter_obj_t *adapter) {
+    check_enabled(adapter);
+
     return adapter->attributes->len - 1;
 }
 
@@ -713,6 +765,10 @@ void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
 }
 
 void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
+    if (!common_hal_bleio_adapter_get_enabled(adapter)) {
+        return;
+    }
+
     common_hal_bleio_adapter_stop_scan(adapter);
     if (adapter->now_advertising) {
         common_hal_bleio_adapter_stop_advertising(adapter);
@@ -731,6 +787,10 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
 }
 
 void bleio_adapter_background(bleio_adapter_obj_t* adapter) {
+    if (!common_hal_bleio_adapter_get_enabled(adapter)) {
+        return;
+    }
+
     if (adapter->advertising_timeout_msecs > 0 &&
         supervisor_ticks_ms64() - adapter->advertising_start_ticks > adapter->advertising_timeout_msecs) {
         adapter->advertising_timeout_msecs = 0;

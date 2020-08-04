@@ -95,7 +95,6 @@ STATIC uint8_t acl_data_buffer[ACL_DATA_BUFFER_SIZE];
 STATIC size_t acl_data_len;
 
 STATIC size_t num_command_packets_allowed;
-STATIC size_t max_pkt;
 STATIC size_t pending_pkt;
 
 // Results from parsing a command response packet.
@@ -107,77 +106,13 @@ STATIC uint8_t* cmd_response_data;
 
 STATIC volatile bool hci_poll_in_progress = false;
 
-STATIC bool debug = true;
+#define DEBUG_HCI 1
 
 //////////////////////////////////////////////////////////////////////
 
-STATIC void dump_cmd_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
-    if (debug) {
-        h4_hci_cmd_pkt_t *pkt = (h4_hci_cmd_pkt_t *) pkt_data;
-        mp_printf(&mp_plat_print,
-                  "%s HCI COMMAND (%x) opcode: %04x, len: %d, data: ",
-                  tx ? "TX->" : "RX<-",
-                  pkt->pkt_type, pkt->opcode, pkt->param_len);
-        for (size_t i = 0; i < pkt->param_len; i++) {
-            mp_printf(&mp_plat_print, "%02x ", pkt->params[i]);
-        }
-        if (pkt_len != sizeof(h4_hci_cmd_pkt_t) + pkt->param_len) {
-            mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
-        }
-        mp_printf(&mp_plat_print, "\n");
-    }
-}
-
-STATIC void dump_acl_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
-    if (debug) {
-        // mp_printf(&mp_plat_print, "\\ PKT_DATA:  ");
-        // for (size_t i = 0; i < pkt_len; i++) {
-        //     mp_printf(&mp_plat_print, "%02x ", pkt_data[i]);
-        // }
-        // mp_printf(&mp_plat_print, "\n");
-        h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t *) pkt_data;
-        mp_printf(&mp_plat_print,
-                  "%s HCI ACLDATA (%x) handle: %04x, pb: %d, bc: %d, data_len: %d, ",
-                  tx ? "TX->" : "RX<-", pkt->pkt_type, pkt->handle, pkt->pb, pkt->bc, pkt->data_len);
-
-        if (pkt->pb != ACL_DATA_PB_MIDDLE) {
-            // This is the start of a fragmented acl_data packet or is a full packet.
-            acl_data_t *acl = (acl_data_t *) pkt->data;
-            mp_printf(&mp_plat_print,
-                      "acl data_len: %d, cid: %04x, data: ",
-                      acl->acl_data_len, acl->cid);
-            for (size_t i = 0; i < acl->acl_data_len; i++) {
-                mp_printf(&mp_plat_print, "%02x ", acl->acl_data[i]);
-            }
-        } else {
-            for (size_t i = 0; i < pkt->data_len; i++) {
-                mp_printf(&mp_plat_print, "more data: %02x ", pkt->data[i]);
-            }
-        }
-
-        if (pkt_len != sizeof(h4_hci_acl_pkt_t) + pkt->data_len) {
-            mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
-        }
-        mp_printf(&mp_plat_print, "\n");
-    }
-}
-
-STATIC void dump_evt_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
-    if (debug) {
-        h4_hci_evt_pkt_t *pkt = (h4_hci_evt_pkt_t *) pkt_data;
-        mp_printf(&mp_plat_print,
-                  "%s HCI EVENT   (%x) evt: %02x,  param_len: %d,  data: ",
-                  tx ? "TX->" : "RX<-",
-                  pkt->pkt_type, pkt->evt, pkt->param_len);
-        for (size_t i = 0; i < pkt->param_len; i++) {
-            mp_printf(&mp_plat_print, "%02x ", pkt->params[i]);
-        }
-        if (pkt_len != sizeof(h4_hci_evt_pkt_t) + pkt->param_len) {
-            mp_printf(&mp_plat_print, "  LENGTH MISMATCH");
-        }
-        mp_printf(&mp_plat_print, "\n");
-    }
-}
+#if DEBUG_HCI
+#include "hci_debug.c"
+#endif // DEBUG_HCI
 
 STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
     h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t*) pkt_data;
@@ -194,7 +129,7 @@ STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
     }
 
     acl_data_t *acl = (acl_data_t *) &acl_data_buffer;
-    if (acl_data_len != acl->acl_data_len) {
+    if (acl_data_len != sizeof(acl) + acl->acl_data_len) {
         // We don't have the full packet yet.
         return;
     }
@@ -330,9 +265,9 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
         }
 
         default:
-            if (debug) {
-                mp_printf(&mp_plat_print, "process_evt_pkt: Unknown event: %02x\n");
-            }
+#if DEBUG_HCI
+            mp_printf(&mp_plat_print, "process_evt_pkt: Unknown event: %02x\n");
+#endif
             break;
     }
 }
@@ -374,7 +309,8 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
     bool packet_is_complete = false;
 
     // Read bytes until we run out, or accumulate a complete packet.
-    while (common_hal_busio_uart_rx_characters_available(common_hal_bleio_adapter_obj.hci_uart)) {
+    while (!packet_is_complete &&
+           common_hal_busio_uart_rx_characters_available(common_hal_bleio_adapter_obj.hci_uart)) {
         common_hal_busio_uart_read(common_hal_bleio_adapter_obj.hci_uart, rx_buffer + rx_idx, 1, &errcode);
         if (errcode) {
             hci_poll_in_progress = false;
@@ -417,25 +353,25 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
 
     switch (rx_buffer[0]) {
         case H4_ACL:
-            if (debug) {
-                dump_acl_pkt(false, pkt_len, rx_buffer);
-            }
+#if DEBUG_HCI
+            dump_acl_pkt(false, pkt_len, rx_buffer);
+#endif
 
             process_acl_data_pkt(pkt_len, rx_buffer);
             break;
 
         case H4_EVT:
-            if (debug) {
-                dump_evt_pkt(false, pkt_len, rx_buffer);
-            }
+#if DEBUG_HCI
+            dump_evt_pkt(false, pkt_len, rx_buffer);
+#endif
 
             process_evt_pkt(pkt_len, rx_buffer);
             break;
 
         default:
-            if (debug) {
-                mp_printf(&mp_plat_print, "Unknown HCI packet type: %d\n", rx_buffer[0]);
-            }
+#if DEBUG_HCI
+            mp_printf(&mp_plat_print, "Unknown HCI packet type: %d\n", rx_buffer[0]);
+#endif
             break;
     }
 
@@ -478,9 +414,9 @@ STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* para
 
     memcpy(cmd_pkt->params, params, params_len);
 
-    if (debug) {
+#if DEBUG_HCI
         dump_cmd_pkt(true, sizeof(tx_buffer), tx_buffer);
-    }
+#endif
 
     int result = write_pkt(tx_buffer, cmd_pkt_len);
     if (result != HCI_OK) {
@@ -519,32 +455,31 @@ STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* para
 
 hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint8_t data_len, uint8_t *data) {
     int result;
-    while (pending_pkt >= max_pkt) {
+    while (pending_pkt >= common_hal_bleio_adapter_obj.max_acl_num_buffers) {
         result = hci_poll_for_incoming_pkt();
         if (result != HCI_OK) {
             return result;
         }
     }
 
-    // data_len does not include cid
-    const size_t cid_len = sizeof_field(acl_data_t, cid);
     // buf_len is size of entire packet including header.
-    const size_t buf_len = sizeof(h4_hci_acl_pkt_t) + cid_len + data_len;
+    const size_t buf_len = sizeof(h4_hci_acl_pkt_t) + sizeof(acl_data_t) + data_len;
     uint8_t tx_buffer[buf_len];
 
     h4_hci_acl_pkt_t *acl_pkt = (h4_hci_acl_pkt_t *) tx_buffer;
     acl_data_t *acl_data = (acl_data_t *) acl_pkt->data;
     acl_pkt->pkt_type = H4_ACL;
     acl_pkt->handle = handle;
-    acl_pkt->data_len = (uint8_t)(cid_len + data_len);
-    acl_data->acl_data_len = (uint8_t) data_len;
+    acl_pkt->pb = ACL_DATA_PB_FIRST_FLUSH;
+    acl_pkt->data_len = (uint8_t)(sizeof(acl_data_t) + data_len);
+    acl_data->acl_data_len = data_len;
     acl_data->cid = cid;
 
-    memcpy(&tx_buffer[sizeof(h4_hci_acl_pkt_t)], data, data_len);
+    memcpy(&acl_data->acl_data, data, data_len);
 
-    if (debug) {
+#if DEBUG_HCI
         dump_acl_pkt(true, buf_len, tx_buffer);
-    }
+#endif
 
     pending_pkt++;
 

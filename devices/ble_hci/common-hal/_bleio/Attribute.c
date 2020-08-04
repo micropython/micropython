@@ -30,7 +30,7 @@
 #include "shared-bindings/_bleio/Service.h"
 
 // Return the type of the attribute.
-ble_attribute_type bleio_attribute_type_uuid(mp_obj_t *attribute) {
+ble_attribute_type_uuid bleio_attribute_type_uuid(mp_obj_t *attribute) {
     if (MP_OBJ_IS_TYPE(attribute, &bleio_characteristic_type)) {
         return BLE_TYPE_CHARACTERISTIC;
     }
