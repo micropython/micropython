@@ -234,7 +234,8 @@ bool run_code_py(safe_mode_t safe_mode) {
         if (autoreload_is_enabled()) {
             serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
         } else if (safe_mode != NO_SAFE_MODE) {
-            serial_write_compressed(translate("Running in safe mode! Auto-reload is off.\n"));
+            serial_write_compressed(translate("Running in safe mode! "));
+            serial_write_compressed(translate("Auto-reload is off.\n"));
         } else if (!autoreload_is_enabled()) {
             serial_write_compressed(translate("Auto-reload is off.\n"));
         }
@@ -250,7 +251,8 @@ bool run_code_py(safe_mode_t safe_mode) {
     bool found_main = false;
 
     if (safe_mode != NO_SAFE_MODE) {
-        serial_write_compressed(translate("Running in safe mode! Not running saved code.\n"));
+        serial_write_compressed(translate("Running in safe mode! "));
+        serial_write_compressed(translate("Not running saved code.\n"));
     } else {
         new_status_color(MAIN_RUNNING);
 
