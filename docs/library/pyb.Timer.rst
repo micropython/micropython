@@ -62,7 +62,7 @@ Constructors
 Methods
 -------
 
-.. method:: Timer.init(\*, freq, prescaler, period)
+.. method:: Timer.init(\*, freq, prescaler, period, brk)
 
    Initialise the timer.  Initialisation must be either by frequency (in Hz)
    or by prescaler and period::
@@ -107,7 +107,12 @@ Methods
        measures ticks of ``source_freq`` divided by ``div`` clock ticks.
        ``deadtime`` is only available on timers 1 and 8.
 
-    You must either specify freq or both of period and prescaler.
+     - `brk` - specifies if the break mode is used to kill the output of
+        the PWM when the BRK_IN input is asserted. The polarity set how the
+        BRK_IN input is triggered. It can be set to `BRK_OFF`, `BRK_LOW`
+        and `BRK_HIGH`.
+
+   You must either specify freq or both of period and prescaler.
 
 .. method:: Timer.deinit()
 
