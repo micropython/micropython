@@ -117,7 +117,7 @@ git_describe = subprocess.run(
 )
 if git_describe.returncode == 0:
     git_version = re.search(
-        r"^\d(?:\.\d){0,2}(?:\-(?:alpha|beta)\.\d+){0,1}",
+        r"^\d(?:\.\d){0,2}(?:\-(?:alpha|beta|rc)\.\d+){0,1}",
         str(git_describe.stdout)
     )
     if git_version:
