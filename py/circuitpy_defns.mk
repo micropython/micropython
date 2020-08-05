@@ -168,6 +168,9 @@ endif
 ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
 SRC_PATTERNS += i2cperipheral/%
 endif
+ifeq ($(CIRCUITPY_IPADDRESS),1)
+SRC_PATTERNS += ipaddress/%
+endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
 endif
@@ -408,6 +411,8 @@ SRC_SHARED_MODULE_ALL = \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
+	ipaddress/IPv4Address.c \
+	ipaddress/__init__.c \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
 	gamepad/GamePad.c \

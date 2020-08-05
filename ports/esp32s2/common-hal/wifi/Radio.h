@@ -35,6 +35,8 @@
 
 // Event bits for the Radio event group.
 #define WIFI_SCAN_DONE_BIT BIT0
+#define WIFI_CONNECTED_BIT BIT1
+#define WIFI_DISCONNECTED_BIT BIT2
 
 typedef struct {
     mp_obj_base_t base;

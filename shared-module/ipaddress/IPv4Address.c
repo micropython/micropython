@@ -24,21 +24,16 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/wifi/Network.h"
-
-#include <string.h>
-
 #include "py/obj.h"
 
-mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self) {
-    const char* cstr = (const char*) self->record.ssid;
-	return mp_obj_new_str(cstr, strlen(cstr));
+#include "shared-bindings/ipaddress/__init__.h"
+#include "shared-bindings/ipaddress/IPv4Address.h"
+
+
+void common_hal_ipaddress_ipv4address_construct(ipaddress_ipv4address_obj_t* self, uint8_t* buf, size_t len) {
+    self->ip_bytes = mp_obj_new_bytes(buf, len);
 }
 
-mp_obj_t common_hal_wifi_network_get_rssi(wifi_network_obj_t *self) {
-    return mp_obj_new_int(self->record.rssi);
-}
-
-mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self) {
-    return mp_obj_new_int(self->record.primary);
+mp_obj_t common_hal_ipaddress_ipv4address_get_packed(ipaddress_ipv4address_obj_t* self) {
+    return self->ip_bytes;
 }

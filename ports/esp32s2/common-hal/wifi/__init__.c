@@ -41,9 +41,32 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data) {
     ESP_LOGI(TAG, "event %x", event_id);
     wifi_radio_obj_t* radio = arg;
-    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_SCAN_DONE) {
-        xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
+    if (event_base == WIFI_EVENT) {
+        if (event_id == WIFI_EVENT_SCAN_DONE) {
+            ESP_LOGI(TAG, "scan done");
+            xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
+        } else if (event_id == WIFI_EVENT_STA_START) {
+            ESP_LOGI(TAG, "station start");
+
+        } else if (event_id == WIFI_EVENT_STA_STOP) {
+            ESP_LOGI(TAG, "station stop");
+
+        } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
+            ESP_LOGI(TAG, "connected to ap");
+        } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
+            ESP_LOGI(TAG, "disconnected");
+            wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
+            ESP_LOGI(TAG, "reason %d", d->reason);
+            if (event_id != WIFI_REASON_ASSOC_LEAVE) {
+                // reconnect
+            }
+            xEventGroupSetBits(radio->event_group_handle, WIFI_DISCONNECTED_BIT);
+        } else if (event_id == WIFI_EVENT_STA_AUTHMODE_CHANGE) {
+            ESP_LOGI(TAG, "auth change");
+
+        }
     }
+
     //     esp_wifi_connect();
     // if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
     //     esp_wifi_connect();
@@ -56,12 +79,13 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     //         xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
     //     }
     //     ESP_LOGI(TAG,"connect to the AP fail");
-    // } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-    //     ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-    //     ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
-    //     s_retry_num = 0;
-    //     xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
-    // }
+    // } else
+    if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
+        // s_retry_num = 0;
+        xEventGroupSetBits(radio->event_group_handle, WIFI_CONNECTED_BIT);
+    }
 }
 
 static bool wifi_inited;

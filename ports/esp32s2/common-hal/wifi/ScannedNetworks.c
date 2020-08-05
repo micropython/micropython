@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "lib/utils/interrupt_char.h"
+#include "py/gc.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/wifi/__init__.h"
@@ -45,7 +46,10 @@ static void wifi_scannednetworks_done(wifi_scannednetworks_obj_t *self) {
     self->done = true;
     ESP_EARLY_LOGI(TAG, "free %x", self->results);
     if (self->results != NULL) {
-        m_free(self->results);
+        // Check to see if the heap is still active. If not, it'll be freed automatically.
+        if (gc_alloc_possible()) {
+            m_free(self->results);
+        }
         self->results = NULL;
     }
 }
@@ -137,7 +141,6 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
 static uint8_t scan_pattern[] = {6, 1, 11, 3, 9, 13, 2, 4, 8, 12, 5, 7, 10, 14};
 
 void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self) {
-
     uint8_t next_channel = sizeof(scan_pattern);
     while (self->current_channel_index < sizeof(scan_pattern)) {
         next_channel = scan_pattern[self->current_channel_index];

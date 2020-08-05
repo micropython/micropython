@@ -36,5 +36,7 @@
 const mp_obj_type_t wifi_network_type;
 
 extern mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self);
+extern mp_obj_t common_hal_wifi_network_get_rssi(wifi_network_obj_t *self);
+extern mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H

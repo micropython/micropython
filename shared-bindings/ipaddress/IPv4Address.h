@@ -24,21 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/wifi/Network.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_IPADDRESS_IPV4ADDRESS_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_IPADDRESS_IPV4ADDRESS_H
 
-#include <string.h>
+#include "shared-module/ipaddress/IPv4Address.h"
 
-#include "py/obj.h"
+extern const mp_obj_type_t ipaddress_ipv4address_type;
 
-mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self) {
-    const char* cstr = (const char*) self->record.ssid;
-	return mp_obj_new_str(cstr, strlen(cstr));
-}
+mp_obj_t common_hal_ipaddress_new_ipv4address(mp_int_t value);
+void common_hal_ipaddress_ipv4address_construct(ipaddress_ipv4address_obj_t* self, uint8_t* buf, size_t len);
+mp_obj_t common_hal_ipaddress_ipv4address_get_packed(ipaddress_ipv4address_obj_t* self);
 
-mp_obj_t common_hal_wifi_network_get_rssi(wifi_network_obj_t *self) {
-    return mp_obj_new_int(self->record.rssi);
-}
-
-mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self) {
-    return mp_obj_new_int(self->record.primary);
-}
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_IPADDRESS_IPV4ADDRESS_H

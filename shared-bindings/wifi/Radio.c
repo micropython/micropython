@@ -102,16 +102,18 @@ STATIC mp_obj_t wifi_radio_stop_scanning_networks(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_scanning_networks_obj, wifi_radio_stop_scanning_networks);
 
-//|     def connect(self, ssid: ReadableBuffer, password: ReadableBuffer = b"", *, timeout: Optional[float] = None) -> bool:
-//|         """"""
+//|     def connect(self, ssid: ReadableBuffer, password: ReadableBuffer = b"", *, channel: Optional[int] = 0, timeout: Optional[float] = None) -> bool:
+//|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
+//|            automatically once one connection succeeds."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_timeout };
+    enum { ARG_ssid, ARG_password, ARG_channel, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_timeout,  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_channel, MP_ARG_KW_ONLY |  MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -136,22 +138,22 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
         mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
     }
 
-    return mp_obj_new_bool(common_hal_wifi_radio_connect(self, ssid.buf, ssid.len, password.buf, password.len, timeout));
+    return mp_obj_new_bool(common_hal_wifi_radio_connect(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, timeout));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_connect_obj, 1, wifi_radio_connect);
 
-//|     ip_address: Optional[ipaddress.IPAddress]
-//|     """IP Address of the radio when connected to an access point. None otherwise."""
+//|     ipv4_address: Optional[ipaddress.IPv4Address]
+//|     """IP v4 Address of the radio when connected to an access point. None otherwise."""
 //|
-STATIC mp_obj_t wifi_radio_get_ip_address(mp_obj_t self) {
-    return common_hal_wifi_radio_get_ip_address(self);
+STATIC mp_obj_t wifi_radio_get_ipv4_address(mp_obj_t self) {
+    return common_hal_wifi_radio_get_ipv4_address(self);
 
 }
-MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ip_address_obj, wifi_radio_get_ip_address);
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_address_obj, wifi_radio_get_ipv4_address);
 
-const mp_obj_property_t wifi_radio_ip_address_obj = {
+const mp_obj_property_t wifi_radio_ipv4_address_obj = {
     .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_ip_address_obj,
+    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_address_obj,
                (mp_obj_t)&mp_const_none_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
@@ -179,7 +181,7 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&wifi_radio_connect_obj) },
     // { MP_ROM_QSTR(MP_QSTR_connect_to_enterprise),    MP_ROM_PTR(&wifi_radio_connect_to_enterprise_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_ip_address),    MP_ROM_PTR(&wifi_radio_ip_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipv4_address),    MP_ROM_PTR(&wifi_radio_ipv4_address_obj) },
 
     // { MP_ROM_QSTR(MP_QSTR_access_point_active),   MP_ROM_PTR(&wifi_radio_access_point_active_obj) },
     // { MP_ROM_QSTR(MP_QSTR_start_access_point), MP_ROM_PTR(&wifi_radio_start_access_point_obj) },

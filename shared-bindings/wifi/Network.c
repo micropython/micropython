@@ -42,7 +42,7 @@
 //|
 
 //|     ssid: str
-//|     """True when the wifi network is enabled."""
+//|     """String id of the network"""
 //|
 STATIC mp_obj_t wifi_network_get_ssid(mp_obj_t self) {
     return common_hal_wifi_network_get_ssid(self);
@@ -57,8 +57,45 @@ const mp_obj_property_t wifi_network_ssid_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+
+//|     rssi: int
+//|     """Signal strength of the network"""
+//|
+STATIC mp_obj_t wifi_network_get_rssi(mp_obj_t self) {
+    return common_hal_wifi_network_get_rssi(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_rssi_obj, wifi_network_get_rssi);
+
+const mp_obj_property_t wifi_network_rssi_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_network_get_rssi_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+
+//|     channel: int
+//|     """Channel number the network is operating on"""
+//|
+STATIC mp_obj_t wifi_network_get_channel(mp_obj_t self) {
+    return common_hal_wifi_network_get_channel(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_channel_obj, wifi_network_get_channel);
+
+const mp_obj_property_t wifi_network_channel_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_network_get_channel_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+
 STATIC const mp_rom_map_elem_t wifi_network_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ssid), MP_ROM_PTR(&wifi_network_ssid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rssi), MP_ROM_PTR(&wifi_network_rssi_obj) },
+    { MP_ROM_QSTR(MP_QSTR_channel), MP_ROM_PTR(&wifi_network_channel_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wifi_network_locals_dict, wifi_network_locals_dict_table);

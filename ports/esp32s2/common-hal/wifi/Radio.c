@@ -26,7 +26,11 @@
 
 #include "shared-bindings/wifi/Radio.h"
 
+#include <string.h>
+
+#include "lib/utils/interrupt_char.h"
 #include "py/runtime.h"
+#include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
 
 #include "esp-idf/components/esp_wifi/include/esp_wifi.h"
@@ -103,16 +107,51 @@ void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
     ESP_EARLY_LOGI(TAG, "stop scan done");
 }
 
-bool common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, mp_float_t timeout) {
+bool common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout) {
 	// check enabled
-	wifi_config_t config;
-	esp_err_t result = esp_wifi_set_config(ESP_IF_WIFI_STA, &config);
+	wifi_config_t* config = &self->sta_config;
+	memcpy(&config->sta.ssid, ssid, ssid_len);
+	config->sta.ssid[ssid_len] = 0;
+	if (password_len > 0) {
+		memcpy(&config->sta.password, password, password_len);
+	}
+	config->sta.password[password_len] = 0;
+	config->sta.channel = channel;
+    ESP_EARLY_LOGI(TAG, "connecting to %s", config->sta.ssid);
+	esp_err_t result = esp_wifi_set_config(ESP_IF_WIFI_STA, config);
+	if (result != ESP_OK) {
+    	ESP_EARLY_LOGI(TAG, "config fail %d", result);
+	}
 	result = esp_wifi_connect();
-	return result == ESP_OK;
+	if (result != ESP_OK) {
+    	ESP_EARLY_LOGI(TAG, "connect fail %d", result);
+	}
+
+	EventBits_t bits;
+    do {
+        RUN_BACKGROUND_TASKS;
+        bits = xEventGroupWaitBits(self->event_group_handle,
+            WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT,
+            pdTRUE,
+            pdTRUE,
+            0);
+    } while ((bits & (WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT)) == 0 && !mp_hal_is_interrupted());
+    if ((bits & WIFI_DISCONNECTED_BIT) != 0) {
+    	return false;
+    }
+	return true;
 }
 
-mp_obj_t common_hal_wifi_radio_get_ip_address(wifi_radio_obj_t *self) {
-	return mp_const_none;
+mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
+	if (!esp_netif_is_netif_up(self->netif)) {
+		return mp_const_none;
+	}
+	esp_netif_ip_info_t ip_info;
+	esp_err_t result = esp_netif_get_ip_info(self->netif, &ip_info);
+	if (result != ESP_OK) {
+    	ESP_EARLY_LOGI(TAG, "get ip fail %d", result);
+	}
+	return common_hal_ipaddress_new_ipv4address(ip_info.ip.addr);
 }
 
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address) {

@@ -24,21 +24,13 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/wifi/Network.h"
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_IPADDRESS___INIT___H
+#define MICROPY_INCLUDED_SHARED_MODULE_IPADDRESS___INIT___H
 
-#include <string.h>
+#include <stdint.h>
 
 #include "py/obj.h"
 
-mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self) {
-    const char* cstr = (const char*) self->record.ssid;
-	return mp_obj_new_str(cstr, strlen(cstr));
-}
+mp_obj_t common_hal_ipaddress_new_ipv4(uint32_t value);
 
-mp_obj_t common_hal_wifi_network_get_rssi(wifi_network_obj_t *self) {
-    return mp_obj_new_int(self->record.rssi);
-}
-
-mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self) {
-    return mp_obj_new_int(self->record.primary);
-}
+#endif // MICROPY_INCLUDED_SHARED_MODULE_IPADDRESS___INIT___H

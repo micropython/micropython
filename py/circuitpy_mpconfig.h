@@ -420,6 +420,13 @@ extern const struct _mp_obj_module_t i2cperipheral_module;
 #define I2CPERIPHERAL_MODULE
 #endif
 
+#if CIRCUITPY_IPADDRESS
+extern const struct _mp_obj_module_t ipaddress_module;
+#define IPADDRESS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_ipaddress), (mp_obj_t)&ipaddress_module },
+#else
+#define IPADDRESS_MODULE
+#endif
+
 #if CIRCUITPY_MATH
 extern const struct _mp_obj_module_t math_module;
 #define MATH_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module },
