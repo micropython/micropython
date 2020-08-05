@@ -44,6 +44,7 @@
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/port.h"
 
 // This timer is shared amongst all PulseIn objects as a higher resolution clock.
 static uint8_t refcount = 0;
@@ -77,7 +78,7 @@ static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
 }
 
 void pulsein_interrupt_handler(uint8_t channel) {
-    // turn off interrupts while in the handler
+    // Turn off interrupts while in handler
     common_hal_mcu_disable_interrupts();
     // Grab the current time first.
     uint32_t current_overflow = overflow_count;
@@ -90,10 +91,8 @@ void pulsein_interrupt_handler(uint8_t channel) {
     uint32_t current_count = tc->COUNT16.COUNT.reg;
 
     pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
-    if (!supervisor_background_tasks_ok() ) {
-        common_hal_mcu_enable_interrupts();
-        mp_raise_RuntimeError(translate("Input taking too long"));
-        return;
+    if (self->len == 0) {
+        update_background_ticks();
     }
     if (self->first_edge) {
         self->first_edge = false;
@@ -122,6 +121,11 @@ void pulsein_interrupt_handler(uint8_t channel) {
         } else {
             self->start++;
         }
+    }
+    if (!supervisor_background_tasks_ok() ) {
+        common_hal_mcu_enable_interrupts();
+        mp_raise_RuntimeError(translate("Input taking too long"));
+        return;
     }
     self->last_overflow = current_overflow;
     self->last_count = current_count;
@@ -304,7 +308,6 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     self->start = (self->start + 1) % self->maxlen;
     self->len--;
     common_hal_mcu_enable_interrupts();
-
     return value;
 }
 
