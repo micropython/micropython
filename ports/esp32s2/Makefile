@@ -128,6 +128,7 @@ LDFLAGS += -L$(BUILD)/esp-idf/esp-idf/esp32s2 \
            -Tesp32s2.peripherals.ld \
            -Lesp-idf/components/esp_rom/esp32s2/ld \
            -Tesp32s2.rom.ld \
+           -Tesp32s2.rom.api.ld \
            -Tesp32s2.rom.libgcc.ld \
            -Tesp32s2.rom.newlib-data.ld \
            -Tesp32s2.rom.newlib-funcs.ld \
@@ -248,7 +249,7 @@ menuconfig: $(BUILD)/esp-idf/config
 $(HEADER_BUILD)/qstr.i.last: | $(BUILD)/esp-idf/config/sdkconfig.h
 
 # Order here matters
-ESP_IDF_COMPONENTS_LINK = freertos log esp_system esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip
+ESP_IDF_COMPONENTS_LINK = freertos log esp_system esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp_rom
 
 ESP_IDF_COMPONENTS_INCLUDE = driver freertos log soc
 
@@ -279,6 +280,7 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 		esp-idf/esp32s2/ld/esp32s2.project.ld \
 		esp-idf/esp_event/libesp_event.a \
 		esp-idf/esp_netif/libesp_netif.a \
+		esp-idf/esp_rom/libesp_rom.a \
 		esp-idf/esp_system/libesp_system.a \
 		esp-idf/esp_wifi/libesp_wifi.a \
 		esp-idf/lwip/liblwip.a \
