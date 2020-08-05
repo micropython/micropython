@@ -388,10 +388,11 @@ void ble_npl_time_delay(ble_npl_time_t ticks) {
 
 uint32_t ble_npl_hw_enter_critical(void) {
     DEBUG_CRIT_printf("ble_npl_hw_enter_critical()\n");
-    return raise_irq_pri(15);
+    MICROPY_PY_BLUETOOTH_ENTER;
+    return atomic_state;
 }
 
-void ble_npl_hw_exit_critical(uint32_t ctx) {
-    DEBUG_CRIT_printf("ble_npl_hw_exit_critical(%u)\n", (uint)ctx);
-    restore_irq_pri(ctx);
+void ble_npl_hw_exit_critical(uint32_t atomic_state) {
+    DEBUG_CRIT_printf("ble_npl_hw_exit_critical(%u)\n", (uint)atomic_state);
+    MICROPY_PY_BLUETOOTH_EXIT;
 }
