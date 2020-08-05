@@ -39,7 +39,7 @@
 #include "supervisor/shared/external_flash/qspi_flash.h"
 
 #if defined(MICROPY_QSPI_OFF_WHEN_SLEEP)
-#define QSPI_ENABLE qspi_enable
+#define QSPI_ENABLE() qspi_enable()
 
 static void qspi_enable(void)
 {
@@ -62,7 +62,7 @@ static void qspi_enable(void)
 }
 
 #else
-#define QSPI_ENABLE()
+#define QSPI_ENABLE() ((void)0)
 #endif
 
 bool spi_flash_command(uint8_t command) {

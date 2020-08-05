@@ -302,7 +302,8 @@ void port_sleep_until_interrupt(void) {
         nrf_gpio_cfg_output(MICROPY_QSPI_CS);
         nrf_gpio_pin_write(MICROPY_QSPI_CS, 1);
 
-        *(volatile uint32_t *)0x40029010 = 1;
+        // Workaround to disable QSPI according to nRF52840 Revision 1 Errata V1.4 - 3.8
+        NRF_QSPI->TASKS_DEACTIVATE = 1;
         *(volatile uint32_t *)0x40029054 = 1;
         NRF_QSPI->ENABLE = 0;
     }
