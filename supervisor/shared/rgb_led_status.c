@@ -387,20 +387,22 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
     if (!status->ok) {
         status->total_exception_cycle = EXCEPTION_TYPE_LENGTH_MS * 3 + LINE_NUMBER_TOGGLE_LENGTH * status->digit_sum + LINE_NUMBER_TOGGLE_LENGTH * num_places;
     }
-    if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_IndentationError)) {
-        status->exception_color = INDENTATION_ERROR;
-    } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_SyntaxError)) {
-        status->exception_color = SYNTAX_ERROR;
-    } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_NameError)) {
-        status->exception_color = NAME_ERROR;
-    } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_OSError)) {
-        status->exception_color = OS_ERROR;
-    } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_ValueError)) {
-        status->exception_color = VALUE_ERROR;
-    } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_MpyError)) {
-        status->exception_color = MPY_ERROR;
-    } else {
-        status->exception_color = OTHER_ERROR;
+    if (result->exception_type) {
+        if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_IndentationError)) {
+            status->exception_color = INDENTATION_ERROR;
+        } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_SyntaxError)) {
+            status->exception_color = SYNTAX_ERROR;
+        } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_NameError)) {
+            status->exception_color = NAME_ERROR;
+        } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_OSError)) {
+            status->exception_color = OS_ERROR;
+        } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_ValueError)) {
+            status->exception_color = VALUE_ERROR;
+        } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_MpyError)) {
+            status->exception_color = MPY_ERROR;
+        } else {
+            status->exception_color = OTHER_ERROR;
+        }
     }
     #endif
 }

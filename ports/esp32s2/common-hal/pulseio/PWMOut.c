@@ -32,6 +32,7 @@
 
 #define INDEX_EMPTY 0xFF
 
+STATIC bool not_first_reset = false;
 STATIC uint32_t reserved_timer_freq[LEDC_TIMER_MAX];
 STATIC uint8_t reserved_channels[LEDC_CHANNEL_MAX];
 STATIC bool never_reset_tim[LEDC_TIMER_MAX];
@@ -39,7 +40,7 @@ STATIC bool never_reset_chan[LEDC_CHANNEL_MAX];
 
 void pwmout_reset(void) {
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++ ) {
-        if (reserved_channels[i] != INDEX_EMPTY) {
+        if (reserved_channels[i] != INDEX_EMPTY && not_first_reset) {
             ledc_stop(LEDC_LOW_SPEED_MODE, i, 0);
         }
         if (!never_reset_chan[i]) {
@@ -54,6 +55,7 @@ void pwmout_reset(void) {
             reserved_timer_freq[i] = 0;
         }
     }
+    not_first_reset = true;
 }
 
 pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
