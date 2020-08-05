@@ -39,7 +39,7 @@
 #include "mpbthciport.h"
 #include "mpbtstackport.h"
 
-#define HCI_TRACE (0)
+#define HCI_TRACE (MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING > 2)
 #define COL_OFF "\033[0m"
 #define COL_GREEN "\033[0;32m"
 #define COL_BLUE "\033[0;34m"

@@ -34,14 +34,20 @@
 #include "extmod/modbluetooth.h"
 #include "extmod/nimble/modbluetooth_nimble.h"
 
-#define DEBUG_OS_printf(...) // printf(__VA_ARGS__)
-#define DEBUG_MALLOC_printf(...) // printf(__VA_ARGS__)
-#define DEBUG_EVENT_printf(...) // printf(__VA_ARGS__)
-#define DEBUG_MUTEX_printf(...) // printf(__VA_ARGS__)
-#define DEBUG_SEM_printf(...) // printf(__VA_ARGS__)
-#define DEBUG_CALLOUT_printf(...) // printf(__VA_ARGS__)
-#define DEBUG_TIME_printf(...) // printf(__VA_ARGS__)
-#define DEBUG_CRIT_printf(...) // printf(__VA_ARGS__)
+#if MICROPY_PY_BLUETOOTH_DIAGNOSTIC_LOGGING > 1
+#define DEBUG_printf(...) printf("nimble " __VA_ARGS__)
+#else
+#define DEBUG_printf(...)
+#endif
+
+#define DEBUG_OS_printf(...) DEBUG_printf("os: " __VA_ARGS__)
+#define DEBUG_MALLOC_printf(...) DEBUG_printf("malloc: " __VA_ARGS__)
+#define DEBUG_EVENT_printf(...) DEBUG_printf("event: " __VA_ARGS__)
+#define DEBUG_MUTEX_printf(...) DEBUG_printf("mutex: " __VA_ARGS__)
+#define DEBUG_SEM_printf(...) DEBUG_printf("sem: " __VA_ARGS__)
+#define DEBUG_CALLOUT_printf(...) DEBUG_printf("callout: " __VA_ARGS__)
+#define DEBUG_TIME_printf(...) DEBUG_printf("time: " __VA_ARGS__)
+#define DEBUG_CRIT_printf(...) DEBUG_printf("crit: " __VA_ARGS__)
 
 bool ble_npl_os_started(void) {
     DEBUG_OS_printf("ble_npl_os_started\n");
