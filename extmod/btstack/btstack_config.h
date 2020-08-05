@@ -37,7 +37,9 @@
 // #define NVM_NUM_DEVICE_DB_ENTRIES 16
 
 // We don't give btstack a malloc, so use a fixed-size ATT DB.
-#define MAX_ATT_DB_SIZE 512
+#ifndef MAX_ATT_DB_SIZE
+#define MAX_ATT_DB_SIZE 1024
+#endif
 
 // BTstack HAL configuration
 #define HAVE_EMBEDDED_TIME_MS
