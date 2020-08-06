@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-07-30 07:23-0500\n"
-"PO-Revision-Date: 2020-07-22 20:48+0000\n"
+"PO-Revision-Date: 2020-08-07 15:06+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -89,7 +89,7 @@ msgstr "%q lista debe ser una lista"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q debe ser >= 0"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -229,7 +229,7 @@ msgstr "'await' fuera de la función"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' o 'async with' fuera de la función async"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -241,7 +241,7 @@ msgstr "'continue' fuera de un bucle"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "el objeto 'coroutine' no es un iterador"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -338,7 +338,7 @@ msgstr "Ya se encuentra publicando."
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Ya está ejecutando"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -378,7 +378,7 @@ msgstr "Como máximo %d %q se puede especificar (no %d)"
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Tratando de soliciar %d bloques"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -885,7 +885,7 @@ msgstr "Error de inicio de I2C"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut no disponible"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1591,6 +1591,8 @@ msgstr ""
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+"Temporizador declarado para uso interno - declare los pines de PWM más "
+"temprano en el programa"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1866,7 +1868,7 @@ msgstr "el argumento tiene un tipo erroneo"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr ""
+msgstr "el argumento debe ser ndarray"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -3266,7 +3268,7 @@ msgstr "demasiados valores para descomprimir (%d esperado)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "trapz está definido para arreglos 1D de tamaño igual"
 
 #: extmod/ulab/code/linalg/linalg.c py/objstr.c
 msgid "tuple index out of range"
@@ -3398,7 +3400,7 @@ msgstr "value_count debe ser > 0"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "los vectores deben tener el mismo tamaño"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
