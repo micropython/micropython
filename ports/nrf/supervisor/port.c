@@ -65,6 +65,10 @@
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
+#if defined(MICROPY_QSPI_CS) && defined(MICROPY_QSPI_OFF_WHEN_SLEEP)
+extern void qspi_disable(void);
+#endif
+
 static void power_warning_handler(void) {
     reset_into_safe_mode(BROWNOUT);
 }
@@ -296,17 +300,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
 void port_sleep_until_interrupt(void) {
 #if defined(MICROPY_QSPI_CS) && defined(MICROPY_QSPI_OFF_WHEN_SLEEP)
-    // Turn off QSPI when USB is disconnected
-    if (NRF_QSPI->ENABLE && !(NRF_POWER->USBREGSTATUS & POWER_USBREGSTATUS_VBUSDETECT_Msk)) {
-        // Keep CS high when QSPI is diabled
-        nrf_gpio_cfg_output(MICROPY_QSPI_CS);
-        nrf_gpio_pin_write(MICROPY_QSPI_CS, 1);
-
-        // Workaround to disable QSPI according to nRF52840 Revision 1 Errata V1.4 - 3.8
-        NRF_QSPI->TASKS_DEACTIVATE = 1;
-        *(volatile uint32_t *)0x40029054 = 1;
-        NRF_QSPI->ENABLE = 0;
-    }
+    qspi_disable();
 #endif
 
     // Clear the FPU interrupt because it can prevent us from sleeping.
