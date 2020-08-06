@@ -156,7 +156,8 @@ STATIC const displayio_area_t* _get_refresh_areas(framebufferio_framebufferdispl
     return NULL;
 }
 
-STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const displayio_area_t* area) {
+#define MARK_ROW_DIRTY(r) (dirty_row_bitmask[r/8] = (1 << (r & 7)))
+STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const displayio_area_t* area, uint8_t *dirty_row_bitmask) {
     uint16_t buffer_size = 128; // In uint32_ts
 
     displayio_area_t clipped;
@@ -235,6 +236,7 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
 
         for (uint16_t i = subrectangle.y1; i < subrectangle.y2; i++) {
             assert(dest >= buf && dest < endbuf && dest+rowsize <= endbuf);
+            MARK_ROW_DIRTY(i);
             memcpy(dest, src, rowsize);
             dest += rowstride;
             src += rowsize;
@@ -251,12 +253,14 @@ STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t* self) {
     displayio_display_core_start_refresh(&self->core);
     const displayio_area_t* current_area = _get_refresh_areas(self);
     if (current_area) {
+        uint8_t dirty_row_bitmask[(self->core.height + 7) / 8];
+        memset(dirty_row_bitmask, 0, sizeof(dirty_row_bitmask));
         self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
         while (current_area != NULL) {
-            _refresh_area(self, current_area);
+            _refresh_area(self, current_area, dirty_row_bitmask);
             current_area = current_area->next;
         }
-        self->framebuffer_protocol->swapbuffers(self->framebuffer);
+        self->framebuffer_protocol->swapbuffers(self->framebuffer, dirty_row_bitmask);
     }
     displayio_display_core_finish_refresh(&self->core);
 }

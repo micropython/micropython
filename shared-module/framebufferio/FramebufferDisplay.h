@@ -79,7 +79,7 @@ typedef int (*framebuffer_get_width_fun)(mp_obj_t);
 typedef mp_float_t (*framebuffer_get_brightness_fun)(mp_obj_t);
 typedef void (*framebuffer_deinit_fun)(mp_obj_t);
 typedef void (*framebuffer_get_bufinfo_fun)(mp_obj_t, mp_buffer_info_t *bufinfo);
-typedef void (*framebuffer_swapbuffers_fun)(mp_obj_t);
+typedef void (*framebuffer_swapbuffers_fun)(mp_obj_t, uint8_t *dirty_row_bitmask);
 
 typedef struct _framebuffer_p_t {
     MP_PROTOCOL_HEAD // MP_QSTR_protocol_framebuffer
