@@ -79,6 +79,13 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     if (self->row_stride == 0) {
         self->row_stride = self->core.width * self->core.colorspace.depth/8;
     }
+
+    self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
+    size_t framebuffer_size = self->first_pixel_offset + self->row_stride * self->core.height;
+    if (self->bufinfo.len < framebuffer_size) {
+        mp_raise_IndexError_varg(translate("Framebuffer requires %d bytes"), framebuffer_size);
+    }
+
     self->first_manual_refresh = !auto_refresh;
 
     self->native_frames_per_second = self->framebuffer_protocol->get_native_frames_per_second(self->framebuffer);
