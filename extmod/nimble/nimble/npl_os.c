@@ -209,21 +209,28 @@ void ble_npl_event_set_arg(struct ble_npl_event *ev, void *arg) {
 /******************************************************************************/
 // MUTEX
 
+// TODO: requires threading to be enabled. Likely not soft-reboot safe?
+
 ble_npl_error_t ble_npl_mutex_init(struct ble_npl_mutex *mu) {
     DEBUG_MUTEX_printf("ble_npl_mutex_init(%p)\n", mu);
-    mu->locked = 0;
+    mp_thread_mutex_init(&mu->m);
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_mutex_pend(struct ble_npl_mutex *mu, ble_npl_time_t timeout) {
+    ble_npl_error_t ret = BLE_NPL_TIMEOUT;
+    if (mp_thread_mutex_lock(&mu->m, timeout)) {
+        mu->locked = true;
+        ret = BLE_NPL_OK;
+    }
     DEBUG_MUTEX_printf("ble_npl_mutex_pend(%p, %u) locked=%u\n", mu, (uint)timeout, (uint)mu->locked);
-    mu->locked = 1;
-    return BLE_NPL_OK;
+    return ret;
 }
 
 ble_npl_error_t ble_npl_mutex_release(struct ble_npl_mutex *mu) {
     DEBUG_MUTEX_printf("ble_npl_mutex_release(%p) locked=%u\n", mu, (uint)mu->locked);
-    mu->locked = 0;
+    mp_thread_mutex_unlock(&mu->m);
+    mu->locked = false;
     return BLE_NPL_OK;
 }
 

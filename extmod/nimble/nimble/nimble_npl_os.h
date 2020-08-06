@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H
 
 #include <stdint.h>
+#include "py/mpthread.h"
 
 #define BLE_NPL_OS_ALIGNMENT (4)
 #define BLE_NPL_TIME_FOREVER (0xffffffff)
@@ -57,6 +58,7 @@ struct ble_npl_callout {
 
 struct ble_npl_mutex {
     volatile uint8_t locked;
+    mp_thread_mutex_t m;
 };
 
 struct ble_npl_sem {
