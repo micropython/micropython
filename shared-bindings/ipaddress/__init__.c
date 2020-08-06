@@ -25,6 +25,8 @@
  */
 
 #include "py/objexcept.h"
+#include "py/objstr.h"
+#include "py/parsenum.h"
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/__init__.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
@@ -42,7 +44,32 @@
 
 STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
     mp_int_t value;
-    if (!mp_obj_get_int_maybe(ip_in, &value)) {
+    if (mp_obj_get_int_maybe(ip_in, &value)) {
+        // We're done.
+    } else if (MP_OBJ_IS_STR(ip_in)) {
+        GET_STR_DATA_LEN(ip_in, str_data, str_len);
+        size_t period_count = 0;
+        size_t period_index[4] = {0, 0, 0, str_len};
+        for (size_t i = 0; i < str_len; i++) {
+            if (str_data[i] == '.') {
+                if (period_count < 3) {
+                    period_index[period_count] = i;
+                }
+                period_count++;
+            }
+        }
+        if (period_count > 3) {
+            mp_raise_ValueError(translate("Not a valid IP string."));
+        }
+
+        size_t last_period = 0;
+        for (size_t i = 0; i < 4; i++) {
+            mp_obj_t octet = mp_parse_num_integer((const char*) str_data + last_period, period_index[i] - last_period, 10, NULL);
+            last_period = period_index[i] + 1;
+            value |= MP_OBJ_SMALL_INT_VALUE(octet) << (24 - i * 8);
+
+        }
+    } else {
         mp_raise_ValueError(translate("Only raw int supported for ip."));
     }
 

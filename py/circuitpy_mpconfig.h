@@ -741,6 +741,7 @@ extern const struct _mp_obj_module_t wifi_module;
     GAMEPADSHIFT_MODULE \
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \
+    IPADDRESS_MODULE \
     JSON_MODULE \
     MATH_MODULE \
     _EVE_MODULE \
