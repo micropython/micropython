@@ -2632,6 +2632,12 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
         EMIT_ARG(yield, MP_EMIT_YIELD_VALUE);
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_yield_arg_from)) {
         pns = (mp_parse_node_struct_t*)pns->nodes[0];
+#if MICROPY_PY_ASYNC_AWAIT
+        if(comp->scope_cur->scope_flags & MP_SCOPE_FLAG_ASYNC) {
+            compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'yield from' inside async function"));
+            return;
+        }
+#endif
         compile_node(comp, pns->nodes[0]);
         compile_yield_from(comp);
     } else {
@@ -2648,7 +2654,8 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
     }
     compile_require_async_context(comp, pns);
     compile_atom_expr_normal(comp, pns);
-    compile_yield_from(comp);
+
+    compile_await_object_method(comp, MP_QSTR___await__);
 }
 #endif
 
