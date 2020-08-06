@@ -40,6 +40,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#define fb_getter_default(method, default_value) \
+    (self->framebuffer_protocol->method \
+        ? self->framebuffer_protocol->method(self->framebuffer) \
+        : (default_value))
+
 void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t* self,
         mp_obj_t framebuffer,
         uint16_t rotation,
@@ -51,7 +56,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 
     uint16_t ram_width = 0x100;
     uint16_t ram_height = 0x100;
-    uint16_t depth = self->framebuffer_protocol->get_color_depth(self->framebuffer);
+    uint16_t depth = fb_getter_default(get_color_depth, 16);
     displayio_display_core_construct(
         &self->core,
         NULL,
@@ -63,19 +68,15 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         0,
         rotation,
         depth,
-        (depth < 12), // grayscale
-        true, // pixels_in_byte_share_row
-        self->framebuffer_protocol->get_bytes_per_cell(self->framebuffer),
-        true, // reverse_pixels_in_byte
-        false // reverse_bytes_in_word
+        fb_getter_default(get_grayscale, (depth < 8)),
+        fb_getter_default(get_pixels_in_byte_share_row, false),
+        fb_getter_default(get_bytes_per_cell, 2),
+        fb_getter_default(get_reverse_pixels_in_byte, false),
+        fb_getter_default(get_reverse_pixels_in_word, false)
     );
 
-    self->first_pixel_offset = self->framebuffer_protocol->get_first_pixel_offset
-        ? self->framebuffer_protocol->get_first_pixel_offset(self->framebuffer)
-        : 0;
-    self->row_stride = self->framebuffer_protocol->get_row_stride
-        ? self->framebuffer_protocol->get_row_stride(self->framebuffer)
-        : 0;
+    self->first_pixel_offset = fb_getter_default(get_first_pixel_offset, 0);
+    self->row_stride = fb_getter_default(get_row_stride, 0);
     if (self->row_stride == 0) {
         self->row_stride = self->core.width * self->core.colorspace.depth/8;
     }
@@ -88,7 +89,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 
     self->first_manual_refresh = !auto_refresh;
 
-    self->native_frames_per_second = self->framebuffer_protocol->get_native_frames_per_second(self->framebuffer);
+    self->native_frames_per_second = fb_getter_default(get_native_frames_per_second, 60);
     self->native_ms_per_frame = 1000 / self->native_frames_per_second;
 
     supervisor_start_terminal(self->core.width, self->core.height);
