@@ -48,6 +48,7 @@ typedef struct {
     uint64_t last_refresh_call;
     uint16_t native_frames_per_second;
     uint16_t native_ms_per_frame;
+    uint16_t first_pixel_offset, row_stride;
     bool auto_refresh;
     bool first_manual_refresh;
 } framebufferio_framebufferdisplay_obj_t;
@@ -70,6 +71,8 @@ typedef bool (*framebuffer_set_auto_brightness_fun)(mp_obj_t, bool);
 typedef bool (*framebuffer_get_auto_brightness_fun)(mp_obj_t);
 typedef int (*framebuffer_get_width_fun)(mp_obj_t);
 typedef int (*framebuffer_get_height_fun)(mp_obj_t);
+typedef int (*framebuffer_get_row_stride_fun)(mp_obj_t);
+typedef int (*framebuffer_get_first_pixel_offset_fun)(mp_obj_t);
 typedef int (*framebuffer_get_color_depth_fun)(mp_obj_t);
 typedef int (*framebuffer_get_bytes_per_cell_fun)(mp_obj_t);
 typedef int (*framebuffer_get_native_frames_per_second_fun)(mp_obj_t);
@@ -86,6 +89,8 @@ typedef struct _framebuffer_p_t {
     framebuffer_get_native_frames_per_second_fun get_native_frames_per_second;
     framebuffer_get_brightness_fun get_brightness;
     framebuffer_set_brightness_fun set_brightness;
+    framebuffer_get_row_stride_fun get_row_stride;
+    framebuffer_get_first_pixel_offset_fun get_first_pixel_offset;
     framebuffer_get_auto_brightness_fun get_auto_brightness;
     framebuffer_set_auto_brightness_fun set_auto_brightness;
 } framebuffer_p_t;

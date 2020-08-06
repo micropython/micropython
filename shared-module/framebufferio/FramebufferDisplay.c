@@ -70,6 +70,15 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         false // reverse_bytes_in_word
     );
 
+    self->first_pixel_offset = self->framebuffer_protocol->get_first_pixel_offset
+        ? self->framebuffer_protocol->get_first_pixel_offset(self->framebuffer)
+        : 0;
+    self->row_stride = self->framebuffer_protocol->get_row_stride
+        ? self->framebuffer_protocol->get_row_stride(self->framebuffer)
+        : 0;
+    if (self->row_stride == 0) {
+        self->row_stride = self->core.width * self->core.colorspace.depth/8;
+    }
     self->first_manual_refresh = !auto_refresh;
 
     self->native_frames_per_second = self->framebuffer_protocol->get_native_frames_per_second(self->framebuffer);
@@ -209,11 +218,13 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
 
         uint8_t *buf = (uint8_t *)self->bufinfo.buf, *endbuf = buf + self->bufinfo.len;
         (void)endbuf; // Hint to compiler that endbuf is "used" even if NDEBUG
+        buf += self->first_pixel_offset;
 
-        uint8_t *dest = self->bufinfo.buf + (subrectangle.y1 * self->core.width + subrectangle.x1) * self->core.colorspace.depth / 8;
+        size_t rowstride = self->row_stride;
+        uint8_t *dest = buf + subrectangle.y1 * rowstride + subrectangle.x1 * self->core.colorspace.depth / 8;
         uint8_t *src = (uint8_t*)buffer;
         size_t rowsize = (subrectangle.x2 - subrectangle.x1) * self->core.colorspace.depth / 8;
-        size_t rowstride = self->core.width * self->core.colorspace.depth/8;
+
         for (uint16_t i = subrectangle.y1; i < subrectangle.y2; i++) {
             assert(dest >= buf && dest < endbuf && dest+rowsize <= endbuf);
             memcpy(dest, src, rowsize);
@@ -230,9 +241,9 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
 
 STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t* self) {
     displayio_display_core_start_refresh(&self->core);
-    self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
     const displayio_area_t* current_area = _get_refresh_areas(self);
     if (current_area) {
+        self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
         while (current_area != NULL) {
             _refresh_area(self, current_area);
             current_area = current_area->next;
