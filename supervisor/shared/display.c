@@ -38,6 +38,11 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_SHARPDISPLAY
+#include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
+#include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
+#endif
+
 extern size_t blinka_bitmap_data[];
 extern displayio_bitmap_t blinka_bitmap;
 extern displayio_group_t circuitpython_splash;
@@ -116,14 +121,20 @@ void supervisor_display_move_memory(void) {
         grid->inline_tiles = false;
     }
     MP_STATE_VM(terminal_tilegrid_tiles) = NULL;
-    #if CIRCUITPY_RGBMATRIX
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
-            rgbmatrix_rgbmatrix_obj_t * pm = &displays[i].rgbmatrix;
+        #if CIRCUITPY_RGBMATRIX
+            if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
+                rgbmatrix_rgbmatrix_obj_t * pm = &displays[i].rgbmatrix;
                 common_hal_rgbmatrix_rgbmatrix_reconstruct(pm, NULL);
-        }
+            }
+        #endif
+        #if CIRCUITPY_SHARPDISPLAY
+            if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
+                sharpdisplay_framebuffer_obj_t * sharp = &displays[i].sharpdisplay;
+                common_hal_sharpdisplay_framebuffer_reconstruct(sharp);
+            }
+        #endif
     }
-    #endif
     #endif
 }
 

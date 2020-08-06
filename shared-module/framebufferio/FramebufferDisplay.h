@@ -55,7 +55,6 @@ typedef struct {
 
 void framebufferio_framebufferdisplay_background(framebufferio_framebufferdisplay_obj_t* self);
 void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self);
-void reset_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self);
 void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj_t* self);
 
 void framebufferio_framebufferdisplay_collect_ptrs(framebufferio_framebufferdisplay_obj_t* self);
@@ -73,7 +72,7 @@ typedef int (*framebuffer_get_first_pixel_offset_fun)(mp_obj_t);
 typedef int (*framebuffer_get_grayscale_fun)(mp_obj_t);
 typedef int (*framebuffer_get_height_fun)(mp_obj_t);
 typedef int (*framebuffer_get_native_frames_per_second_fun)(mp_obj_t);
-typedef int (*framebuffer_get_pixels_in_byte_share_row_fun)(mp_obj_t);
+typedef bool (*framebuffer_get_pixels_in_byte_share_row_fun)(mp_obj_t);
 typedef int (*framebuffer_get_row_stride_fun)(mp_obj_t);
 typedef int (*framebuffer_get_width_fun)(mp_obj_t);
 typedef mp_float_t (*framebuffer_get_brightness_fun)(mp_obj_t);

@@ -156,7 +156,7 @@ STATIC const displayio_area_t* _get_refresh_areas(framebufferio_framebufferdispl
     return NULL;
 }
 
-#define MARK_ROW_DIRTY(r) (dirty_row_bitmask[r/8] = (1 << (r & 7)))
+#define MARK_ROW_DIRTY(r) (dirty_row_bitmask[r/8] |= (1 << (r & 7)))
 STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const displayio_area_t* area, uint8_t *dirty_row_bitmask) {
     uint16_t buffer_size = 128; // In uint32_ts
 
@@ -250,6 +250,10 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
 }
 
 STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t* self) {
+    self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
+    if(!self->bufinfo.buf) {
+        return;
+    }
     displayio_display_core_start_refresh(&self->core);
     const displayio_area_t* current_area = _get_refresh_areas(self);
     if (current_area) {
@@ -348,17 +352,18 @@ void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
     self->base.type = &mp_type_NoneType;
 }
 
-void reset_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
-    common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, true);
-    common_hal_framebufferio_framebufferdisplay_show(self, NULL);
-}
-
 void framebufferio_framebufferdisplay_collect_ptrs(framebufferio_framebufferdisplay_obj_t* self) {
     gc_collect_ptr(self->framebuffer);
     displayio_display_core_collect_ptrs(&self->core);
 }
 
 void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj_t* self) {
-    common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, true);
-    common_hal_framebufferio_framebufferdisplay_show(self, NULL);
+    mp_obj_type_t *fb_type = mp_obj_get_type(self->framebuffer);
+    if(fb_type != NULL && fb_type != &mp_type_NoneType) {
+        common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, true);
+        common_hal_framebufferio_framebufferdisplay_show(self, NULL);
+        self->core.full_refresh = true;
+    } else {
+        release_framebufferdisplay(self);
+    }
 }
