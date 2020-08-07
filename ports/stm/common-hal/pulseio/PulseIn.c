@@ -249,7 +249,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_
     }
     if (index < 0 || index >= self->len) {
         HAL_NVIC_EnableIRQ(self->irq);
-        mp_raise_IndexError(translate("index out of range"));
+        mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_PulseIn);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     HAL_NVIC_EnableIRQ(self->irq);
@@ -258,7 +258,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     if (self->len == 0) {
-        mp_raise_IndexError(translate("pop from an empty PulseIn"));
+        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
     }
     HAL_NVIC_DisableIRQ(self->irq);
     uint16_t value = self->buffer[self->start];
