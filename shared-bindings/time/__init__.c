@@ -93,7 +93,7 @@ mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp
 }
 
 //| class struct_time:
-//|     def __init__(self, time_tuple: tuple) -> None:
+//|     def __init__(self, time_tuple: Tuple[int, int, int, int, int, int, int, int, int]) -> None:
 //|         """Structure used to capture a date and time. Note that it takes a tuple!
 //|
 //|         :param tuple time_tuple: Tuple of time info: ``(tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)``
