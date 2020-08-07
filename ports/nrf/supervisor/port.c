@@ -65,7 +65,7 @@
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
-#if defined(MICROPY_QSPI_CS) && defined(MICROPY_QSPI_OFF_WHEN_SLEEP)
+#if defined(MICROPY_QSPI_CS)
 extern void qspi_disable(void);
 #endif
 
@@ -299,7 +299,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
 void port_sleep_until_interrupt(void) {
-#if defined(MICROPY_QSPI_CS) && defined(MICROPY_QSPI_OFF_WHEN_SLEEP)
+#if defined(MICROPY_QSPI_CS)
     qspi_disable();
 #endif
 

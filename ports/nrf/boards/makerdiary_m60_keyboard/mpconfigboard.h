@@ -30,7 +30,7 @@
 #define MICROPY_HW_BOARD_NAME       "Makerdiary M60 Keyboard"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
-// not use the RGB LEDs to save energy
+// RGB LEDs use PWM peripheral, avoid using them to save energy
 // #define CP_RGB_STATUS_R             (&pin_P0_30)
 // #define CP_RGB_STATUS_G             (&pin_P0_29)
 // #define CP_RGB_STATUS_B             (&pin_P0_31)
@@ -41,7 +41,6 @@
 #define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(1, 12)
 #define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(1, 11)
 #define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(1, 13)
-#define MICROPY_QSPI_OFF_WHEN_SLEEP
 
 #define BOARD_HAS_CRYSTAL 1
 
