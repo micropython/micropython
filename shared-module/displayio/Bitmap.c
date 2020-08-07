@@ -115,6 +115,10 @@ void common_hal_displayio_bitmap_insert(displayio_bitmap_t *self, int16_t x, int
         mp_raise_RuntimeError(translate("Read-only object"));
     }
 
+    // If this value is encountered in the source bitmap, it will not be copied (for text glyphs)
+    // This should be added as an optional parameter, and if it is `None`, then all pixels are copied
+    uint32_t skip_value=0;
+
     //// check for zero width, this would be a single pixel
     // if (x1_source == x2_source) || (y1_source == y2_source) {
     //     return 0
@@ -140,9 +144,11 @@ void common_hal_displayio_bitmap_insert(displayio_bitmap_t *self, int16_t x, int
     // simplest version - use internal functions for get/set pixels
     for (uint16_t i=0; i<= (x2-x1) ; i++) {
         for (uint16_t j=0; j<= (y2-y1) ; j++){
-            uint16_t value = common_hal_displayio_bitmap_get_pixel(source, x1+i, y1+j);
-            if ( (x+i >= 0) && (y+j >= 0) && (x+i <= self->width-1) && (y+j <= self->height-1) ){
-                common_hal_displayio_bitmap_set_pixel(self, x+i, y+j, value);
+            uint32_t value = common_hal_displayio_bitmap_get_pixel(source, x1+i, y1+j);
+            if (value != skip_value) {
+                if ( (x+i >= 0) && (y+j >= 0) && (x+i <= self->width-1) && (y+j <= self->height-1) ){
+                    common_hal_displayio_bitmap_set_pixel(self, x+i, y+j, value);
+                }
             }
         }
     }
