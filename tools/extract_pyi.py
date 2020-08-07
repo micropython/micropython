@@ -45,7 +45,10 @@ def find_stub_issues(tree):
             if isinstance(node.value, ast.Constant) and node.value.value == Ellipsis:
                 yield ("WARN", f"Unnecessary Ellipsis assignment (= ...) on line {node.lineno}.")
         elif isinstance(node, ast.arguments):
-            for arg_node in (node.args + node.posonlyargs + node.kwonlyargs):
+            allargs = list(node.args + node.kwonlyargs)
+            if sys.version_info >= (3, 8):
+                allargs.extend(node.posonlyargs)
+            for arg_node in allargs:
                 if not is_typed(arg_node.annotation) and (arg_node.arg != "self" and arg_node.arg != "cls"):
                     yield ("WARN", f"Missing argument type: {arg_node.arg} on line {arg_node.lineno}")
             if node.vararg and not is_typed(node.vararg.annotation, allow_any=True):
