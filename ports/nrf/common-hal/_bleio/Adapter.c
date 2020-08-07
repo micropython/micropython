@@ -386,6 +386,15 @@ bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *s
     return address;
 }
 
+uint32_t common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_address_obj_t *address)
+{
+    ble_gap_addr_t local_address;
+    local_address.addr_type = address->type;
+    const char *data = mp_obj_str_get_str(address->bytes);
+    memcpy(local_address.addr, data, NUM_BLEIO_ADDRESS_BYTES);
+    return sd_ble_gap_addr_set(&local_address);
+}
+
 mp_obj_str_t* common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
     uint16_t len = 0;
     sd_ble_gap_device_name_get(NULL, &len);
