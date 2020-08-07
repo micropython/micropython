@@ -245,6 +245,10 @@ stubs:
 	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
 	@$(PYTHON) setup.py -q sdist
 
+.PHONY: check-stubs
+check-stubs: stubs
+	MYPYPATH=$(STUBDIR) mypy --strict $(STUBDIR)
+
 update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
 	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done

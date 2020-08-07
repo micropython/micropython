@@ -133,7 +133,7 @@ STATIC mp_obj_t ps2io_ps2_obj_popleft(mp_obj_t self_in) {
 
     int b = common_hal_ps2io_ps2_popleft(self);
     if (b < 0) {
-        mp_raise_IndexError(translate("Pop from an empty Ps2 buffer"));
+        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_Ps2_space_buffer);
     }
     return MP_OBJ_NEW_SMALL_INT(b);
 }

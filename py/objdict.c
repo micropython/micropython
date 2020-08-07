@@ -313,7 +313,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     size_t cur = 0;
     mp_map_elem_t *next = dict_iter_next(self, &cur);
     if (next == NULL) {
-        mp_raise_msg(&mp_type_KeyError, translate("popitem(): dictionary is empty"));
+        mp_raise_msg_varg(&mp_type_KeyError, translate("pop from empty %q"), MP_QSTR_dict);
     }
     self->map.used--;
     mp_obj_t items[] = {next->key, next->value};

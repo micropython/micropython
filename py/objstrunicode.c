@@ -151,7 +151,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     if (MP_OBJ_IS_SMALL_INT(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        mp_raise_TypeError_varg(translate("string indices must be integers, not %s"), mp_obj_get_type_str(index));
+        mp_raise_TypeError_varg(translate("string indices must be integers, not %q"), mp_obj_get_type_qstr(index));
     }
     const byte *s, *top = self_data + self_len;
     if (i < 0)
@@ -162,7 +162,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return self_data;
                 }
-                mp_raise_IndexError(translate("string index out of range"));
+                mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_str);
             }
             if (!UTF8_IS_CONT(*s)) {
                 ++i;
@@ -181,7 +181,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return top;
                 }
-                mp_raise_IndexError(translate("string index out of range"));
+                mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_str);
             }
             // Then check completion
             if (i-- == 0) {

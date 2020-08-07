@@ -151,9 +151,13 @@ void print_safe_mode_message(safe_mode_t reason) {
             case GC_ALLOC_OUTSIDE_VM:
                 serial_write_compressed(translate("Attempted heap allocation when MicroPython VM not running."));
                 break;
+#ifdef SOFTDEVICE_PRESENT
+            // defined in ports/nrf/bluetooth/bluetooth_common.mk
+            // will print "Unknown reason" if somehow encountered on other ports
             case NORDIC_SOFT_DEVICE_ASSERT:
                 serial_write_compressed(translate("Nordic Soft Device failure assertion."));
                 break;
+#endif
             case FLASH_WRITE_FAIL:
                 serial_write_compressed(translate("Failed to write internal flash."));
                 break;

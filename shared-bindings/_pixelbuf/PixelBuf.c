@@ -58,12 +58,12 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|         brightness (0.0-1.0) and will enable a Dotstar compatible 1st byte for each
 //|         pixel.
 //|
-//|         :param ~int size: Number of pixels
-//|         :param ~str byteorder: Byte order string (such as "RGB", "RGBW" or "PBGR")
-//|         :param ~float brightness: Brightness (0 to 1.0, default 1.0)
-//|         :param ~bool auto_write: Whether to automatically write pixels (Default False)
-//|         :param bytes header: Sequence of bytes to always send before pixel values.
-//|         :param bytes trailer: Sequence of bytes to always send after pixel values."""
+//|         :param int size: Number of pixels
+//|         :param str byteorder: Byte order string (such as "RGB", "RGBW" or "PBGR")
+//|         :param float brightness: Brightness (0 to 1.0, default 1.0)
+//|         :param bool auto_write: Whether to automatically write pixels (Default False)
+//|         :param ~_typing.ReadableBuffer header: Sequence of bytes to always send before pixel values.
+//|         :param ~_typing.ReadableBuffer trailer: Sequence of bytes to always send after pixel values."""
 //|         ...
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -257,7 +257,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_show(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_show_obj, pixelbuf_pixelbuf_show);
 
-//|     def fill(self, color: Union[int, Tuple[int, int, int]]) -> None:
+//|     def fill(self, color: Union[int, Tuple[int, int, int], Tuple[int, int, int, float]]) -> None:
 //|         """Fills the given pixelbuf with the given color."""
 //|         ...
 //|
@@ -270,18 +270,20 @@ STATIC mp_obj_t pixelbuf_pixelbuf_fill(mp_obj_t self_in, mp_obj_t value) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_fill);
 
 //|     @overload
-//|     def __getitem__(self, index: slice) -> Tuple[Tuple, ...]: ...
-//|     def __getitem__(self, index: int) -> Tuple:
+//|     def __getitem__(self, index: slice) -> Union[Tuple[Tuple[int, int, int], ...], Tuple[Tuple[int, int, int, float], ...]]: ...
+//|     @overload
+//|     def __getitem__(self, index: int) -> Union[Tuple[int, int, int], Tuple[int, int, int, float]]:
 //|         """Returns the pixel value at the given index as a tuple of (Red, Green, Blue[, White]) values
 //|         between 0 and 255.  When in PWM (DotStar) mode, the 4th tuple value is a float of the pixel
 //|         intensity from 0-1.0."""
 //|         ...
 //|
 //|     @overload
-//|     def __setitem__(self, index: slice, value: Tuple[Union[int, Tuple, List], ...]) -> None: ...
+//|     def __setitem__(self, index: slice, value: Tuple[Union[int, Tuple[float, ...], List[float]], ...]) -> None: ...
 //|     @overload
-//|     def __setitem__(self, index: slice, value: List[Union[int, Tuple, List]]) -> None: ...
-//|     def __setitem__(self, index: int, value: Union[int, Tuple, List]) -> None:
+//|     def __setitem__(self, index: slice, value: List[Union[int, Tuple[float, ...], List[float]]]) -> None: ...
+//|     @overload
+//|     def __setitem__(self, index: int, value: Union[int, Tuple[float, ...], List[float]]) -> None:
 //|         """Sets the pixel value at the given index.  Value can either be a tuple or integer.  Tuples are
 //|         The individual (Red, Green, Blue[, White]) values between 0 and 255.  If given an integer, the
 //|         red, green and blue values are packed into the lower three bytes (0xRRGGBB).

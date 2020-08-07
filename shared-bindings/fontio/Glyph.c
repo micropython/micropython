@@ -39,7 +39,7 @@
 //|                  dx: int,
 //|                  dy: int,
 //|                  shift_x: int,
-//|                  shift_y: int):
+//|                  shift_y: int) -> None:
 //|         """Named tuple used to capture a single glyph and its attributes.
 //|
 //|         :param bitmap: the bitmap including the glyph

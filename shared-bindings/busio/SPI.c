@@ -232,7 +232,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_unlock_obj, busio_spi_obj_unlock);
 //|         """Write the data contained in ``buffer``. The SPI object must be locked.
 //|         If the buffer is empty, nothing happens.
 //|
-//|         :param bytearray buffer: Write out the data in this buffer
+//|         :param ~_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
 //|         ...
@@ -275,7 +275,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 2, busio_spi_write);
 //|         The SPI object must be locked.
 //|         If the number of bytes to read is 0, nothing happens.
 //|
-//|         :param bytearray buffer: Read data into this buffer
+//|         :param ~_typing.WriteableBuffer buffer: Read data into this buffer
 //|         :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
 //|         :param int write_value: Value to write while reading. (Usually ignored.)"""
@@ -314,15 +314,15 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_readinto_obj, 2, busio_spi_readinto);
 
-//|     def write_readinto(self, buffer_out: ReadableBuffer, buffer_in: ReadableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
+//|     def write_readinto(self, buffer_out: ReadableBuffer, buffer_in: WriteableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
 //|         """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
 //|         The SPI object must be locked.
 //|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
 //|         must be equal.
 //|         If buffer slice lengths are both 0, nothing happens.
 //|
-//|         :param bytearray buffer_out: Write out the data in this buffer
-//|         :param bytearray buffer_in: Read data into this buffer
+//|         :param ~_typing.ReadableBuffer buffer_out: Write out the data in this buffer
+//|         :param ~_typing.WriteableBuffer buffer_in: Read data into this buffer
 //|         :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
 //|         :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
 //|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
