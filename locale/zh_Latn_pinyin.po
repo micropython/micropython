@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
+"POT-Creation-Date: 2020-08-04 18:42-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -72,13 +72,17 @@ msgstr ""
 msgid "%q in use"
 msgstr "%q zhèngzài shǐyòng"
 
-#: py/obj.c
+#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
+#: py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q suǒyǐn chāochū fànwéi"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
+msgid "%q indices must be integers, not %q"
+msgstr ""
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -115,6 +119,42 @@ msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "xūyào '%q' cānshù"
+
+#: py/runtime.c
+msgid "'%q' object cannot assign attribute '%q'"
+msgstr ""
+
+#: py/proto.c
+msgid "'%q' object does not support '%q'"
+msgstr ""
+
+#: py/obj.c
+msgid "'%q' object does not support item assignment"
+msgstr ""
+
+#: py/obj.c
+msgid "'%q' object does not support item deletion"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%q' object has no attribute '%q'"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%q' object is not an iterator"
+msgstr ""
+
+#: py/objtype.c py/runtime.c
+msgid "'%q' object is not callable"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%q' object is not iterable"
+msgstr ""
+
+#: py/obj.c
+msgid "'%q' object is not subscriptable"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -165,48 +205,6 @@ msgstr "'%s' zhěngshù %d bùzài fànwéi nèi %d.%d"
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' zhěngshù 0x%x bù shìyòng yú yǎn mǎ 0x%x"
-
-#: py/runtime.c
-msgid "'%s' object cannot assign attribute '%q'"
-msgstr ""
-
-#: py/proto.c
-msgid "'%s' object does not support '%q'"
-msgstr "'%s' duì xiàng bù zhīchí '%q'"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object does not support item assignment"
-msgstr "'%s' duìxiàng bù zhīchí xiàngmù fēnpèi"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object does not support item deletion"
-msgstr "'%s' duìxiàng bù zhīchí shānchú xiàngmù"
-
-#: py/runtime.c
-msgid "'%s' object has no attribute '%q'"
-msgstr "'%s' duìxiàng méiyǒu shǔxìng '%q'"
-
-#: py/runtime.c
-#, c-format
-msgid "'%s' object is not an iterator"
-msgstr "'%s' duìxiàng bùshì yīgè diédài qì"
-
-#: py/objtype.c py/runtime.c
-#, c-format
-msgid "'%s' object is not callable"
-msgstr "'%s' duìxiàng wúfǎ diàoyòng"
-
-#: py/runtime.c
-#, c-format
-msgid "'%s' object is not iterable"
-msgstr "'%s' duìxiàng bùnéng diédài"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object is not subscriptable"
-msgstr "'%s' duìxiàng bùnéng fēnshù"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
@@ -1247,6 +1245,10 @@ msgstr "Wèi liánjiē"
 msgid "Not playing"
 msgstr "Wèi bòfàng"
 
+#: main.c
+msgid "Not running saved code.\n"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -1338,10 +1340,6 @@ msgstr "Zài wénjiàn xìtǒng shàng tiānjiā rènhé mókuài\n"
 msgid "Polygon needs at least 3 points"
 msgstr ""
 
-#: shared-bindings/ps2io/Ps2.c
-msgid "Pop from an empty Ps2 buffer"
-msgstr "Cóng kōng de Ps2 huǎnchōng qū dànchū"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Qiánzhuì huǎnchōng qū bìxū zài duī shàng"
@@ -1414,12 +1412,8 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Xíng xiàng bìxū shì digitalio.DigitalInOut"
 
 #: main.c
-msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ guānbì.\n"
-
-#: main.c
-msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
+msgid "Running in safe mode! "
+msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -1793,9 +1787,8 @@ msgid "__init__() should return None"
 msgstr "__init__() fǎnhuí  not"
 
 #: py/objtype.c
-#, c-format
-msgid "__init__() should return None, not '%s'"
-msgstr "__Init__() yīnggāi fǎnhuí not, ér bùshì '%s'"
+msgid "__init__() should return None, not '%q'"
+msgstr ""
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -1948,7 +1941,7 @@ msgstr "zì jié > 8 wèi"
 msgid "bytes value out of range"
 msgstr "zì jié zhí chāochū fànwéi"
 
-#: ports/atmel-samd/bindings/samd/Clock.c
+#: ports/atmel-samd/bindings/samd/Clock.c ports/atmel-samd/common-hal/rtc/RTC.c
 msgid "calibration is out of range"
 msgstr "jiàozhǔn fànwéi chāochū fànwéi"
 
@@ -1980,48 +1973,17 @@ msgstr "wúfǎ tiānjiā tèshū fāngfǎ dào zi fēnlèi lèi"
 msgid "can't assign to expression"
 msgstr "bùnéng fēnpèi dào biǎodá shì"
 
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to complex"
-msgstr "wúfǎ zhuǎnhuàn%s dào fùzá"
-
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to float"
-msgstr "wúfǎ zhuǎnhuàn %s dào fú diǎn xíng biànliàng"
-
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to int"
-msgstr "wúfǎ zhuǎnhuàn%s dào int"
+#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+msgid "can't convert %q to %q"
+msgstr ""
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "wúfǎ jiāng '%q' duìxiàng zhuǎnhuàn wèi %q yǐn hán"
 
-#: py/objint.c
-msgid "can't convert NaN to int"
-msgstr "wúfǎ jiāng dǎoháng zhuǎnhuàn wèi int"
-
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
-msgid "can't convert address to int"
-msgstr "wúfǎ jiāng dìzhǐ zhuǎnhuàn wèi int"
-
-#: py/objint.c
-msgid "can't convert inf to int"
-msgstr "bùnéng jiāng inf zhuǎnhuàn wèi int"
-
 #: py/obj.c
-msgid "can't convert to complex"
-msgstr "bùnéng zhuǎnhuàn wèi fùzá"
-
-#: py/obj.c
-msgid "can't convert to float"
-msgstr "bùnéng zhuǎnhuàn wèi fú diǎn"
-
-#: py/obj.c
-msgid "can't convert to int"
-msgstr "bùnéng zhuǎnhuàn wèi int"
+msgid "can't convert to %q"
+msgstr ""
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2432,7 +2394,7 @@ msgstr "hánshù quēshǎo suǒ xū guānjiàn zì cānshù '%q'"
 msgid "function missing required positional argument #%d"
 msgstr "hánshù quēshǎo suǒ xū de wèizhì cānshù #%d"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c shared-bindings/time/__init__.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "hánshù xūyào %d gè wèizhì cānshù, dàn %d bèi gěi chū"
@@ -2481,10 +2443,7 @@ msgstr "bù zhèngquè de tiánchōng"
 msgid "index is out of bounds"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c
+#: py/obj.c
 msgid "index out of range"
 msgstr "suǒyǐn chāochū fànwéi"
 
@@ -2842,9 +2801,8 @@ msgid "number of points must be at least 2"
 msgstr ""
 
 #: py/obj.c
-#, c-format
-msgid "object '%s' is not a tuple or list"
-msgstr "duìxiàng '%s' bùshì yuán zǔ huò lièbiǎo"
+msgid "object '%q' is not a tuple or list"
+msgstr ""
 
 #: py/obj.c
 msgid "object does not support item assignment"
@@ -2879,9 +2837,8 @@ msgid "object not iterable"
 msgstr "duìxiàng bùnéng diédài"
 
 #: py/obj.c
-#, c-format
-msgid "object of type '%s' has no len()"
-msgstr "lèixíng '%s' de duìxiàng méiyǒu chángdù"
+msgid "object of type '%q' has no len()"
+msgstr ""
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -2973,21 +2930,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "pop from an empty PulseIn"
-msgstr "cóng kōng de PulseIn dànchū dànchū"
-
-#: py/objset.c
-msgid "pop from an empty set"
-msgstr "cóng kōng jí dànchū"
-
-#: py/objlist.c
-msgid "pop from empty list"
-msgstr "cóng kōng lièbiǎo zhòng dànchū"
-
-#: py/objdict.c
-msgid "popitem(): dictionary is empty"
-msgstr "dànchū xiàngmù (): Zìdiǎn wèi kōng"
+#: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
+#: shared-bindings/ps2io/Ps2.c
+msgid "pop from empty %q"
+msgstr ""
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -3145,13 +3091,8 @@ msgid "stream operation not supported"
 msgstr "bù zhīchí liú cāozuò"
 
 #: py/objstrunicode.c
-msgid "string index out of range"
-msgstr "zìfú chuàn suǒyǐn chāochū fànwéi"
-
-#: py/objstrunicode.c
-#, c-format
-msgid "string indices must be integers, not %s"
-msgstr "zìfú chuàn zhǐshù bìxū shì zhěngshù, ér bùshì %s"
+msgid "string indices must be integers, not %q"
+msgstr ""
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3160,10 +3101,6 @@ msgstr "zìfú chuàn bù zhīchí; shǐyòng zì jié huò zì jié zǔ"
 #: extmod/moductypes.c
 msgid "struct: cannot index"
 msgstr "jiégòu: bùnéng suǒyǐn"
-
-#: extmod/moductypes.c
-msgid "struct: index out of range"
-msgstr "jiégòu: suǒyǐn chāochū fànwéi"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -3234,7 +3171,7 @@ msgstr "dǎkāi tài duō zhí (yùqí %d)"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c py/objstr.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
 msgstr "yuán zǔ suǒyǐn chāochū fànwéi"
 
@@ -3301,9 +3238,8 @@ msgid "unknown conversion specifier %c"
 msgstr "wèizhī de zhuǎnhuàn biāozhù %c"
 
 #: py/objstr.c
-#, fuzzy, c-format
-msgid "unknown format code '%c' for object of type '%s'"
-msgstr "lèixíng '%s' duìxiàng wèizhī de géshì dàimǎ '%c'"
+msgid "unknown format code '%c' for object of type '%q'"
+msgstr ""
 
 #: py/compile.c
 msgid "unknown type"
@@ -3342,16 +3278,16 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "bù zhīchí de géshì zìfú '%c' (0x%x) suǒyǐn %d"
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%s'"
-msgstr "bù zhīchí de lèixíng %q: '%s'"
+msgid "unsupported type for %q: '%q'"
+msgstr ""
 
 #: py/runtime.c
 msgid "unsupported type for operator"
 msgstr "bù zhīchí de cāozuò zhě lèixíng"
 
 #: py/runtime.c
-msgid "unsupported types for %q: '%s', '%s'"
-msgstr "bù zhīchí de lèixíng wèi %q: '%s', '%s'"
+msgid "unsupported types for %q: '%q', '%q'"
+msgstr ""
 
 #: py/objint.c
 #, c-format
@@ -3429,6 +3365,109 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
+
+#~ msgid "'%s' object does not support '%q'"
+#~ msgstr "'%s' duì xiàng bù zhīchí '%q'"
+
+#~ msgid "'%s' object does not support item assignment"
+#~ msgstr "'%s' duìxiàng bù zhīchí xiàngmù fēnpèi"
+
+#~ msgid "'%s' object does not support item deletion"
+#~ msgstr "'%s' duìxiàng bù zhīchí shānchú xiàngmù"
+
+#~ msgid "'%s' object has no attribute '%q'"
+#~ msgstr "'%s' duìxiàng méiyǒu shǔxìng '%q'"
+
+#~ msgid "'%s' object is not an iterator"
+#~ msgstr "'%s' duìxiàng bùshì yīgè diédài qì"
+
+#~ msgid "'%s' object is not callable"
+#~ msgstr "'%s' duìxiàng wúfǎ diàoyòng"
+
+#~ msgid "'%s' object is not iterable"
+#~ msgstr "'%s' duìxiàng bùnéng diédài"
+
+#~ msgid "'%s' object is not subscriptable"
+#~ msgstr "'%s' duìxiàng bùnéng fēnshù"
+
+#~ msgid "Pop from an empty Ps2 buffer"
+#~ msgstr "Cóng kōng de Ps2 huǎnchōng qū dànchū"
+
+#~ msgid "Running in safe mode! Auto-reload is off.\n"
+#~ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ guānbì.\n"
+
+#~ msgid "Running in safe mode! Not running saved code.\n"
+#~ msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
+
+#~ msgid "__init__() should return None, not '%s'"
+#~ msgstr "__Init__() yīnggāi fǎnhuí not, ér bùshì '%s'"
+
+#~ msgid "can't convert %s to complex"
+#~ msgstr "wúfǎ zhuǎnhuàn%s dào fùzá"
+
+#~ msgid "can't convert %s to float"
+#~ msgstr "wúfǎ zhuǎnhuàn %s dào fú diǎn xíng biànliàng"
+
+#~ msgid "can't convert %s to int"
+#~ msgstr "wúfǎ zhuǎnhuàn%s dào int"
+
+#~ msgid "can't convert NaN to int"
+#~ msgstr "wúfǎ jiāng dǎoháng zhuǎnhuàn wèi int"
+
+#~ msgid "can't convert address to int"
+#~ msgstr "wúfǎ jiāng dìzhǐ zhuǎnhuàn wèi int"
+
+#~ msgid "can't convert inf to int"
+#~ msgstr "bùnéng jiāng inf zhuǎnhuàn wèi int"
+
+#~ msgid "can't convert to complex"
+#~ msgstr "bùnéng zhuǎnhuàn wèi fùzá"
+
+#~ msgid "can't convert to float"
+#~ msgstr "bùnéng zhuǎnhuàn wèi fú diǎn"
+
+#~ msgid "can't convert to int"
+#~ msgstr "bùnéng zhuǎnhuàn wèi int"
+
+#~ msgid "object '%s' is not a tuple or list"
+#~ msgstr "duìxiàng '%s' bùshì yuán zǔ huò lièbiǎo"
+
+#~ msgid "object of type '%s' has no len()"
+#~ msgstr "lèixíng '%s' de duìxiàng méiyǒu chángdù"
+
+#~ msgid "pop from an empty PulseIn"
+#~ msgstr "cóng kōng de PulseIn dànchū dànchū"
+
+#~ msgid "pop from an empty set"
+#~ msgstr "cóng kōng jí dànchū"
+
+#~ msgid "pop from empty list"
+#~ msgstr "cóng kōng lièbiǎo zhòng dànchū"
+
+#~ msgid "popitem(): dictionary is empty"
+#~ msgstr "dànchū xiàngmù (): Zìdiǎn wèi kōng"
+
+#~ msgid "string index out of range"
+#~ msgstr "zìfú chuàn suǒyǐn chāochū fànwéi"
+
+#~ msgid "string indices must be integers, not %s"
+#~ msgstr "zìfú chuàn zhǐshù bìxū shì zhěngshù, ér bùshì %s"
+
+#~ msgid "struct: index out of range"
+#~ msgstr "jiégòu: suǒyǐn chāochū fànwéi"
+
+#, fuzzy
+#~ msgid "unknown format code '%c' for object of type '%s'"
+#~ msgstr "lèixíng '%s' duìxiàng wèizhī de géshì dàimǎ '%c'"
+
+#~ msgid "unsupported type for %q: '%s'"
+#~ msgstr "bù zhīchí de lèixíng %q: '%s'"
+
+#~ msgid "unsupported types for %q: '%s', '%s'"
+#~ msgstr "bù zhīchí de lèixíng wèi %q: '%s', '%s'"
 
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "Dìzhǐ bùshì %d zì jié zhǎng, huòzhě géshì cuòwù"
