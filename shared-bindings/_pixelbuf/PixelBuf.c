@@ -333,9 +333,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             size_t num_items = mp_obj_get_int(mp_obj_len(value));
             
             if (num_items != slice_len && num_items != (slice_len * common_hal__pixelbuf_pixelbuf_get_bpp(self_in))) {
-                mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d or %d, got %d)."),
-                                                   slice_len, slice_len * common_hal__pixelbuf_pixelbuf_get_bpp(self_in),
-                                                   num_items);
+                mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
             }
 
             common_hal__pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, value, num_items != slice_len);
