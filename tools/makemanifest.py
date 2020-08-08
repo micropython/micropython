@@ -288,7 +288,8 @@ def main():
                     + ["-o", outfile, "-s", script, "-O{}".format(opt), infile]
                 )
                 if res != 0:
-                    print("error compiling {}: {}".format(infile, out))
+                    print("error compiling {}:".format(infile))
+                    sys.stdout.buffer.write(out)
                     raise SystemExit(1)
                 ts_outfile = get_timestamp(outfile)
             mpy_files.append(outfile)
