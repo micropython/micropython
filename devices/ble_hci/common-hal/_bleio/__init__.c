@@ -38,6 +38,9 @@
 #include "shared-bindings/_bleio/UUID.h"
 #include "supervisor/shared/bluetooth.h"
 
+// UUID shared by all cccd's.
+bleio_uuid_obj_t cccd_uuid;
+
 bool vm_used_ble;
 
 void check_hci_error(hci_result_t result) {
@@ -112,6 +115,10 @@ void check_hci_error(hci_result_t result) {
 
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
+    // Create a UUID object for all CCCD's.
+    cccd_uuid.base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(&cccd_uuid, BLE_TYPE_CCCD, NULL);
+
     bleio_hci_reset();
 
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
@@ -123,6 +130,7 @@ void bleio_reset() {
         return;
     }
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, false);
+
     //FIX bonding_reset();
     supervisor_start_bluetooth();
 }

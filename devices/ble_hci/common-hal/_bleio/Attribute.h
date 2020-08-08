@@ -28,23 +28,23 @@
 #define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ATTRIBUTE_H
 
 #include "shared-module/_bleio/Attribute.h"
+#include "shared-bindings/_bleio/UUID.h"
 
 // Types returned by attribute table lookups. These are UUIDs.
 typedef enum {
-  BLE_TYPE_UNKNOWN           = 0x0000,
-  BLE_TYPE_PRIMARY_SERVICE   = 0x2800,
-  BLE_TYPE_SECONDARY_SERVICE = 0x2801,
-  BLE_TYPE_CHARACTERISTIC    = 0x2803,
-  BLE_TYPE_DESCRIPTOR        = 0x2900
+  BLE_TYPE_UNKNOWN               = 0x0000,
+  BLE_TYPE_SERVICE_PRIMARY       = 0x2800,
+  BLE_TYPE_SERVICE_SECONDARY     = 0x2801,
+  BLE_TYPE_SERVICE_INCLUDE       = 0x2802,  // not yet implemented by us
+  BLE_TYPE_CHARACTERISTIC        = 0x2803,
+  BLE_TYPE_CHAR_EXTENDED_PROPS   = 0x2900,  // not yet implemented by us
+  BLE_TYPE_CHAR_USER_DESC        = 0x2901,  // not yet implemented by us
+  BLE_TYPE_CCCD                  = 0x2902,
+  BLE_TYPE_SCCD                  = 0x2903,  // not yet implemented by us
+  BLE_TYPE_CHAR_PRESENTATION_FMT = 0x2904,  // not yet implemented by us
+  BLE_TYPE_CHAR_AGGREGATE_FMT    = 0x2905,  // not yet implemented by us
 } ble_attribute_type_uuid;
 
-// typedef struct
-// {
-//   uint8_t sm : 4;                     /**< Security Mode (1 or 2), 0 for no permissions at all. */
-//   uint8_t lv : 4;                     /**< Level (1, 2, 3 or 4), 0 for no permissions at all. */
-
-// } ble_gap_conn_sec_mode_t;
-
-ble_attribute_type_uuid bleio_attribute_type_uuid(mp_obj_t *attribute);
+bleio_uuid_obj_t *bleio_attribute_get_uuid(mp_obj_t *attribute);
 
 #endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_ATTRIBUTE_H

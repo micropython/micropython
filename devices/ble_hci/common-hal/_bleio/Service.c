@@ -99,20 +99,30 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     self->end_handle = characteristic->handle;
 
     if (characteristic->props & (CHAR_PROP_NOTIFY | CHAR_PROP_INDICATE)) {
-        // We need a CCCD.
+        // We need a CCCD if this characteristic is doing notify or indicate.
         bleio_descriptor_obj_t *cccd = m_new_obj(bleio_descriptor_obj_t);
         cccd->base.type = &bleio_descriptor_type;
-        cccd->read_perm = SECURITY_MODE_OPEN;
-        // Make CCCD write permission match characteristic read permission.
-        cccd->write_perm = characteristic->read_perm;
 
-        const uint16_t cccd_handle = bleio_adapter_add_attribute(
-            &common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(cccd));
-        cccd->handle = cccd_handle;
-        characteristic->cccd_handle = cccd_handle;
+        uint16_t zero = 0;
+        mp_buffer_info_t zero_cccd = {
+            .buf = &zero,
+            .len = sizeof(zero),
+        };
+
+        common_hal_bleio_descriptor_construct(
+            cccd,
+            characteristic,
+            &cccd_uuid,                // 0x2902
+            SECURITY_MODE_OPEN,        // CCCD read perm
+            characteristic->read_perm, // Make CCCD write perm match characteristic read perm.
+            2,                         // 2 bytes
+            true,                      // fixed length
+            &zero_cccd                 // Initial value is 0.
+            );
+
+        // Adds CCCD to attribute table, and also extends self->end_handle to include the CCCD.
         common_hal_bleio_characteristic_add_descriptor(characteristic, cccd);
-
-        self->end_handle = cccd_handle;
+        characteristic->cccd_handle = cccd->handle;
     }
 
     // #if CIRCUITPY_VERBOSE_BLE

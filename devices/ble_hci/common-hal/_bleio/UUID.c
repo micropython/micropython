@@ -36,7 +36,7 @@
 // If uuid128 is NULL, this is a Bluetooth SIG 16-bit UUID.
 // If uuid128 is not NULL, it's a 128-bit (16-byte) UUID, with bytes 12 and 13 zero'd out, where
 // the 16-bit part goes. Those 16 bits are passed in uuid16.
-void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, uint32_t uuid16, const uint8_t uuid128[16]) {
+void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, mp_int_t uuid16, const uint8_t uuid128[16]) {
     self->size = uuid128 == NULL ? 16 : 128;
     self->uuid16 = uuid16;
     if (uuid128) {

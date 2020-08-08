@@ -29,6 +29,8 @@
 
 #include <stdbool.h>
 
+#include "shared-bindings/_bleio/UUID.h"
+
 #include "hci.h"
 
 void bleio_background(void);
@@ -58,5 +60,8 @@ void check_sec_status(uint8_t sec_status);
 
 // Track if the user code modified the BLE state to know if we need to undo it on reload.
 extern bool vm_used_ble;
+
+// UUID shared by all CCCD's.
+extern bleio_uuid_obj_t cccd_uuid;
 
 #endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
