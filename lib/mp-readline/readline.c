@@ -58,10 +58,12 @@ STATIC char *str_dup_maybe(const char *str) {
     return s2;
 }
 
-STATIC int count_cont_bytes(char *start, char *end) {
+STATIC size_t count_cont_bytes(char *start, char *end) {
     int count = 0;
     for (char *pos = start; pos < end; pos++) {
-        count += UTF8_IS_CONT(*pos);
+        if(UTF8_IS_CONT(*pos)) {
+            count++;
+        }
     }
     return count;
 }
@@ -108,7 +110,7 @@ typedef struct _readline_t {
 STATIC readline_t rl;
 
 int readline_process_char(int c) {
-    size_t last_line_len = rl.line->len;
+    size_t last_line_len = utf8_charlen((byte *)rl.line->buf, rl.line->len);
     int cont_chars = 0;
     int redraw_step_back = 0;
     bool redraw_from_cursor = false;
@@ -380,7 +382,7 @@ delete_key:
         rl.cursor_pos -= redraw_step_back;
     }
     if (redraw_from_cursor) {
-        if (rl.line->len < last_line_len) {
+        if (utf8_charlen((byte *)rl.line->buf, rl.line->len) < last_line_len) {
             // erase old chars
             mp_hal_erase_line_from_cursor(last_line_len - rl.cursor_pos);
         }
