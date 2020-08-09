@@ -82,15 +82,11 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             uint32_t n = len - i;
             uint32_t n2 = tud_cdc_write(str + i, n);
             if (n2 < n) {
-                while (!tud_cdc_write_flush()) {
-                    __WFI();
-                }
+                (void)tud_cdc_write_flush();
             }
             i += n2;
         }
-        while (!tud_cdc_write_flush()) {
-            __WFI();
-        }
+        (void)tud_cdc_write_flush();
     }
     while (len--) {
         while (!(USARTx->USART.INTFLAG.bit.DRE)) {

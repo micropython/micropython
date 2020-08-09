@@ -136,11 +136,11 @@ static void cdc_task(void)
                chars++;
             } else {
                chars = 0;
-               tud_cdc_write_flush();
+               (void)tud_cdc_write_flush();
             }
         }
 
-        tud_cdc_write_flush();
+        (void)tud_cdc_write_flush();
     }
 }
 

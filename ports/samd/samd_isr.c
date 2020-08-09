@@ -109,7 +109,7 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,
     0,
     #if defined(MCU_SAMD21)
-    USB_Handler_wrapper, // line 7
+    USB_Handler, // line 7
     #else
     0,
     #endif
@@ -186,10 +186,10 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,
     0,
     #if defined(MCU_SAMD51)
-    &USB_0_Handler_wrapper, // line 80
-    &USB_1_Handler_wrapper,
-    &USB_2_Handler_wrapper,
-    &USB_3_Handler_wrapper,
+    &USB_0_Handler, // line 80
+    &USB_1_Handler,
+    &USB_2_Handler,
+    &USB_3_Handler,
     #else
     0,
     0,
