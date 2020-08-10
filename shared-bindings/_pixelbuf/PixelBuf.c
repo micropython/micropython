@@ -331,7 +331,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             #if MICROPY_PY_ARRAY_SLICE_ASSIGN
 
             size_t num_items = mp_obj_get_int(mp_obj_len(value));
-            
+
             if (num_items != slice_len && num_items != (slice_len * common_hal__pixelbuf_pixelbuf_get_bpp(self_in))) {
                 mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
             }

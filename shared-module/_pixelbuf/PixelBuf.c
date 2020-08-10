@@ -139,7 +139,7 @@ uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
         return mp_obj_get_int_truncated(obj);
     } else if (mp_obj_is_float(obj)) {
         return (uint8_t)mp_obj_get_float(obj);
-    } 
+    }
     mp_raise_TypeError_varg(
             translate("can't convert %q to %q"), mp_obj_get_type_qstr(obj), MP_QSTR_int);
 }
