@@ -309,6 +309,16 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
 
         size_t length = common_hal__pixelbuf_pixelbuf_get_len(self_in);
         mp_seq_get_fast_slice_indexes(length, index_in, &slice);
+        static mp_obj_tuple_t flat_item_tuple = {
+            .base = {&mp_type_tuple},
+            .len = 0,
+            .items = {
+                mp_const_none,
+                mp_const_none,
+                mp_const_none,
+                mp_const_none,
+            }
+        };
 
         size_t slice_len;
         if (slice.step > 0) {
@@ -335,8 +345,8 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             if (num_items != slice_len && num_items != (slice_len * common_hal__pixelbuf_pixelbuf_get_bpp(self_in))) {
                 mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
             }
-
-            common_hal__pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, value, num_items != slice_len);
+            common_hal__pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, value,
+                num_items != slice_len ? &flat_item_tuple : mp_const_none);
             return mp_const_none;
             #else
             return MP_OBJ_NULL; // op not supported

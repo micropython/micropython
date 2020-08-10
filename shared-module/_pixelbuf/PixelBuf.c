@@ -230,22 +230,21 @@ void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t* self, size_t index, mp_obj_t v
     _pixelbuf_set_pixel_color(self, index, r, g, b, w);
 }
 
-void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t* values, bool flattened) {
+void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t* values,
+    mp_obj_tuple_t *flatten_to)
+{
     pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(values, &iter_buf);
     mp_obj_t item;
     size_t i = 0;
-    mp_obj_tuple_t *tuple;
-    uint bpp = self->bytes_per_pixel;
-    if (flattened) {
-        tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(bpp, NULL));
-    }
+    bool flattened = flatten_to != mp_const_none;
+    if (flattened) flatten_to->len = self->bytes_per_pixel;
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         if (flattened) {
-            tuple->items[i % bpp] = item;
-            if (++i % bpp == 0) {
-                _pixelbuf_set_pixel(self, start, tuple);
+            flatten_to->items[i % self->bytes_per_pixel] = item;
+            if (++i % self->bytes_per_pixel == 0) {
+                _pixelbuf_set_pixel(self, start, flatten_to);
                 start+=step;
             }
         } else {
