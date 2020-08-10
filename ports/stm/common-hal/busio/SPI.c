@@ -169,7 +169,7 @@ STATIC int check_pins(busio_spi_obj_t *self,
     if (spi_taken) {
         mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
     } else {
-        mp_raise_ValueError(translate("Invalid SPI pin selection"));
+        mp_raise_ValueError_varg(translate("Invalid %q pin selection"), MP_QSTR_SPI);
     }
 }
 

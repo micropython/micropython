@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-04 18:42-0500\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
 "PO-Revision-Date: 2020-06-16 18:24+0000\n"
 "Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language: de_DE\n"
@@ -71,17 +71,13 @@ msgstr ""
 msgid "%q in use"
 msgstr "%q in Benutzung"
 
-#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
-#: py/objstrunicode.c
+#: py/obj.c
 msgid "%q index out of range"
 msgstr "Der Index %q befindet sich außerhalb des Bereiches"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %q"
-msgstr ""
+msgid "%q indices must be integers, not %s"
+msgstr "%q Indizes müssen Integer sein, nicht %s"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -118,42 +114,6 @@ msgstr "%q() nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' Argument erforderlich"
-
-#: py/runtime.c
-msgid "'%q' object cannot assign attribute '%q'"
-msgstr ""
-
-#: py/proto.c
-msgid "'%q' object does not support '%q'"
-msgstr ""
-
-#: py/obj.c
-msgid "'%q' object does not support item assignment"
-msgstr ""
-
-#: py/obj.c
-msgid "'%q' object does not support item deletion"
-msgstr ""
-
-#: py/runtime.c
-msgid "'%q' object has no attribute '%q'"
-msgstr ""
-
-#: py/runtime.c
-msgid "'%q' object is not an iterator"
-msgstr ""
-
-#: py/objtype.c py/runtime.c
-msgid "'%q' object is not callable"
-msgstr ""
-
-#: py/runtime.c
-msgid "'%q' object is not iterable"
-msgstr ""
-
-#: py/obj.c
-msgid "'%q' object is not subscriptable"
-msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -204,6 +164,48 @@ msgstr "'%s' integer %d ist nicht im Bereich %d..%d"
 #, c-format
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' Integer 0x%x passt nicht in Maske 0x%x"
+
+#: py/runtime.c
+msgid "'%s' object cannot assign attribute '%q'"
+msgstr "Das Objekt '%s' kann das Attribut '%q' nicht zuweisen"
+
+#: py/proto.c
+msgid "'%s' object does not support '%q'"
+msgstr "Das Objekt '%s' unterstützt '%q' nicht"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object does not support item assignment"
+msgstr "'%s' Objekt unterstützt keine Zuweisung von Elementen"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object does not support item deletion"
+msgstr "'%s' Objekt unterstützt das Löschen von Elementen nicht"
+
+#: py/runtime.c
+msgid "'%s' object has no attribute '%q'"
+msgstr "'%s' Objekt hat kein Attribut '%q'"
+
+#: py/runtime.c
+#, c-format
+msgid "'%s' object is not an iterator"
+msgstr "'%s' Objekt ist kein Iterator"
+
+#: py/objtype.c py/runtime.c
+#, c-format
+msgid "'%s' object is not callable"
+msgstr "'%s' object ist nicht aufrufbar"
+
+#: py/runtime.c
+#, c-format
+msgid "'%s' object is not iterable"
+msgstr "'%s' Objekt nicht iterierbar"
+
+#: py/obj.c
+#, c-format
+msgid "'%s' object is not subscriptable"
+msgstr "'%s' Objekt hat keine '__getitem__'-Methode (not subscriptable)"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
@@ -880,10 +882,6 @@ msgstr "Lese/Schreibe-operation an geschlossener Datei"
 msgid "I2C Init Error"
 msgstr "I2C-Init-Fehler"
 
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr ""
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -1258,10 +1256,6 @@ msgstr "Nicht verbunden"
 msgid "Not playing"
 msgstr "Spielt nicht ab"
 
-#: main.c
-msgid "Not running saved code.\n"
-msgstr ""
-
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -1356,6 +1350,10 @@ msgstr "und alle Module im Dateisystem \n"
 msgid "Polygon needs at least 3 points"
 msgstr "Polygone brauchen mindestens 3 Punkte"
 
+#: shared-bindings/ps2io/Ps2.c
+msgid "Pop from an empty Ps2 buffer"
+msgstr "Pop aus einem leeren Ps2-Puffer"
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Der Präfixbuffer muss sich auf dem Heap befinden"
@@ -1430,8 +1428,12 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Zeileneintrag muss ein digitalio.DigitalInOut sein"
 
 #: main.c
-msgid "Running in safe mode! "
-msgstr ""
+msgid "Running in safe mode! Auto-reload is off.\n"
+msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
+
+#: main.c
+msgid "Running in safe mode! Not running saved code.\n"
+msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -1818,8 +1820,9 @@ msgid "__init__() should return None"
 msgstr "__init__() sollte None zurückgeben"
 
 #: py/objtype.c
-msgid "__init__() should return None, not '%q'"
-msgstr ""
+#, c-format
+msgid "__init__() should return None, not '%s'"
+msgstr "__init__() sollte None zurückgeben, nicht '%s'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -1972,7 +1975,7 @@ msgstr "bytes mit mehr als 8 bits werden nicht unterstützt"
 msgid "bytes value out of range"
 msgstr "Byte-Wert außerhalb des Bereichs"
 
-#: ports/atmel-samd/bindings/samd/Clock.c ports/atmel-samd/common-hal/rtc/RTC.c
+#: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is out of range"
 msgstr "Kalibrierung ist außerhalb der Reichweite"
 
@@ -2006,17 +2009,48 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr "kann keinem Ausdruck zuweisen"
 
-#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
-msgid "can't convert %q to %q"
-msgstr ""
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to complex"
+msgstr "kann %s nicht nach complex konvertieren"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
+msgstr "kann %s nicht nach float konvertieren"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to int"
+msgstr "kann %s nicht nach int konvertieren"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "Kann '%q' Objekt nicht implizit nach %q konvertieren"
 
+#: py/objint.c
+msgid "can't convert NaN to int"
+msgstr "kann NaN nicht nach int konvertieren"
+
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
+msgid "can't convert address to int"
+msgstr "kann Adresse nicht in int konvertieren"
+
+#: py/objint.c
+msgid "can't convert inf to int"
+msgstr "kann inf nicht nach int konvertieren"
+
 #: py/obj.c
-msgid "can't convert to %q"
-msgstr ""
+msgid "can't convert to complex"
+msgstr "kann nicht nach complex konvertieren"
+
+#: py/obj.c
+msgid "can't convert to float"
+msgstr "kann nicht nach float konvertieren"
+
+#: py/obj.c
+msgid "can't convert to int"
+msgstr "kann nicht nach int konvertieren"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2434,7 +2468,7 @@ msgstr "Funktion vermisst benötigtes Keyword-Argumente '%q'"
 msgid "function missing required positional argument #%d"
 msgstr "Funktion vermisst benötigtes Argumente ohne Keyword #%d"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c shared-bindings/time/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
@@ -2484,7 +2518,10 @@ msgstr "padding ist inkorrekt"
 msgid "index is out of bounds"
 msgstr "Index ist außerhalb der Grenzen"
 
-#: py/obj.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index außerhalb der Reichweite"
 
@@ -2847,8 +2884,9 @@ msgid "number of points must be at least 2"
 msgstr "Die Anzahl der Punkte muss mindestens 2 betragen"
 
 #: py/obj.c
-msgid "object '%q' is not a tuple or list"
-msgstr ""
+#, c-format
+msgid "object '%s' is not a tuple or list"
+msgstr "Objekt '%s' ist weder tupel noch list"
 
 #: py/obj.c
 msgid "object does not support item assignment"
@@ -2883,8 +2921,9 @@ msgid "object not iterable"
 msgstr "Objekt nicht iterierbar"
 
 #: py/obj.c
-msgid "object of type '%q' has no len()"
-msgstr ""
+#, c-format
+msgid "object of type '%s' has no len()"
+msgstr "Objekt vom Typ '%s' hat keine len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -2979,10 +3018,21 @@ msgstr "Polygon kann nur in einem übergeordneten Element registriert werden"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
-#: shared-bindings/ps2io/Ps2.c
-msgid "pop from empty %q"
-msgstr ""
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "pop from an empty PulseIn"
+msgstr "pop von einem leeren PulseIn"
+
+#: py/objset.c
+msgid "pop from an empty set"
+msgstr "pop von einer leeren Menge (set)"
+
+#: py/objlist.c
+msgid "pop from empty list"
+msgstr "pop von einer leeren Liste"
+
+#: py/objdict.c
+msgid "popitem(): dictionary is empty"
+msgstr "popitem(): dictionary ist leer"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -3140,8 +3190,13 @@ msgid "stream operation not supported"
 msgstr "stream operation ist nicht unterstützt"
 
 #: py/objstrunicode.c
-msgid "string indices must be integers, not %q"
-msgstr ""
+msgid "string index out of range"
+msgstr "String index außerhalb des Bereiches"
+
+#: py/objstrunicode.c
+#, c-format
+msgid "string indices must be integers, not %s"
+msgstr "String indizes müssen Integer sein, nicht %s"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3151,6 +3206,10 @@ msgstr ""
 #: extmod/moductypes.c
 msgid "struct: cannot index"
 msgstr "struct: kann nicht indexieren"
+
+#: extmod/moductypes.c
+msgid "struct: index out of range"
+msgstr "struct: index außerhalb gültigen Bereichs"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -3221,7 +3280,7 @@ msgstr "zu viele Werte zum Auspacken (erwartet %d)"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/linalg/linalg.c py/objstr.c
 msgid "tuple index out of range"
 msgstr "Tupelindex außerhalb des Bereichs"
 
@@ -3292,8 +3351,9 @@ msgid "unknown conversion specifier %c"
 msgstr "unbekannter Konvertierungs specifier %c"
 
 #: py/objstr.c
-msgid "unknown format code '%c' for object of type '%q'"
-msgstr ""
+#, c-format
+msgid "unknown format code '%c' for object of type '%s'"
+msgstr "unbekannter Formatcode '%c' für Objekt vom Typ '%s'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3332,16 +3392,16 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "nicht unterstütztes Formatzeichen '%c' (0x%x) bei Index %d"
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%q'"
-msgstr ""
+msgid "unsupported type for %q: '%s'"
+msgstr "nicht unterstützter Type für %q: '%s'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
 msgstr "nicht unterstützter Typ für Operator"
 
 #: py/runtime.c
-msgid "unsupported types for %q: '%q', '%q'"
-msgstr ""
+msgid "unsupported types for %q: '%s', '%s'"
+msgstr "nicht unterstützte Typen für %q: '%s', '%s'"
 
 #: py/objint.c
 #, c-format
@@ -3420,119 +3480,14 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "%q Indizes müssen Integer sein, nicht %s"
-
-#~ msgid "'%s' object cannot assign attribute '%q'"
-#~ msgstr "Das Objekt '%s' kann das Attribut '%q' nicht zuweisen"
-
-#~ msgid "'%s' object does not support '%q'"
-#~ msgstr "Das Objekt '%s' unterstützt '%q' nicht"
-
-#~ msgid "'%s' object does not support item assignment"
-#~ msgstr "'%s' Objekt unterstützt keine Zuweisung von Elementen"
-
-#~ msgid "'%s' object does not support item deletion"
-#~ msgstr "'%s' Objekt unterstützt das Löschen von Elementen nicht"
-
-#~ msgid "'%s' object has no attribute '%q'"
-#~ msgstr "'%s' Objekt hat kein Attribut '%q'"
-
-#~ msgid "'%s' object is not an iterator"
-#~ msgstr "'%s' Objekt ist kein Iterator"
-
-#~ msgid "'%s' object is not callable"
-#~ msgstr "'%s' object ist nicht aufrufbar"
-
-#~ msgid "'%s' object is not iterable"
-#~ msgstr "'%s' Objekt nicht iterierbar"
-
-#~ msgid "'%s' object is not subscriptable"
-#~ msgstr "'%s' Objekt hat keine '__getitem__'-Methode (not subscriptable)"
-
-#~ msgid "Pop from an empty Ps2 buffer"
-#~ msgstr "Pop aus einem leeren Ps2-Puffer"
-
-#~ msgid "Running in safe mode! Auto-reload is off.\n"
-#~ msgstr "Sicherheitsmodus aktiv! Automatisches Neuladen ist deaktiviert.\n"
-
-#~ msgid "Running in safe mode! Not running saved code.\n"
-#~ msgstr "Sicherheitsmodus aktiv! Gespeicherter Code wird nicht ausgeführt\n"
-
-#~ msgid "__init__() should return None, not '%s'"
-#~ msgstr "__init__() sollte None zurückgeben, nicht '%s'"
-
-#~ msgid "can't convert %s to complex"
-#~ msgstr "kann %s nicht nach complex konvertieren"
-
-#~ msgid "can't convert %s to float"
-#~ msgstr "kann %s nicht nach float konvertieren"
-
-#~ msgid "can't convert %s to int"
-#~ msgstr "kann %s nicht nach int konvertieren"
-
-#~ msgid "can't convert NaN to int"
-#~ msgstr "kann NaN nicht nach int konvertieren"
-
-#~ msgid "can't convert address to int"
-#~ msgstr "kann Adresse nicht in int konvertieren"
-
-#~ msgid "can't convert inf to int"
-#~ msgstr "kann inf nicht nach int konvertieren"
-
-#~ msgid "can't convert to complex"
-#~ msgstr "kann nicht nach complex konvertieren"
-
-#~ msgid "can't convert to float"
-#~ msgstr "kann nicht nach float konvertieren"
-
-#~ msgid "can't convert to int"
-#~ msgstr "kann nicht nach int konvertieren"
-
-#~ msgid "object '%s' is not a tuple or list"
-#~ msgstr "Objekt '%s' ist weder tupel noch list"
-
-#~ msgid "object of type '%s' has no len()"
-#~ msgstr "Objekt vom Typ '%s' hat keine len()"
-
-#~ msgid "pop from an empty PulseIn"
-#~ msgstr "pop von einem leeren PulseIn"
-
-#~ msgid "pop from an empty set"
-#~ msgstr "pop von einer leeren Menge (set)"
-
-#~ msgid "pop from empty list"
-#~ msgstr "pop von einer leeren Liste"
-
-#~ msgid "popitem(): dictionary is empty"
-#~ msgstr "popitem(): dictionary ist leer"
-
-#~ msgid "string index out of range"
-#~ msgstr "String index außerhalb des Bereiches"
-
-#~ msgid "string indices must be integers, not %s"
-#~ msgstr "String indizes müssen Integer sein, nicht %s"
-
-#~ msgid "struct: index out of range"
-#~ msgstr "struct: index außerhalb gültigen Bereichs"
-
-#~ msgid "unknown format code '%c' for object of type '%s'"
-#~ msgstr "unbekannter Formatcode '%c' für Objekt vom Typ '%s'"
-
-#~ msgid "unsupported type for %q: '%s'"
-#~ msgstr "nicht unterstützter Type für %q: '%s'"
-
-#~ msgid "unsupported types for %q: '%s', '%s'"
-#~ msgstr "nicht unterstützte Typen für %q: '%s', '%s'"
-
 #~ msgid "'async for' or 'async with' outside async function"
 #~ msgstr "'async for' oder 'async with' außerhalb der asynchronen Funktion"
 
-#~ msgid "PulseIn not supported on this chip"
-#~ msgstr "PulseIn wird auf diesem Chip nicht unterstützt"
-
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut wird auf diesem Chip nicht unterstützt"
+
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "PulseIn wird auf diesem Chip nicht unterstützt"
 
 #~ msgid "AP required"
 #~ msgstr "AP erforderlich"

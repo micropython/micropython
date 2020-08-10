@@ -58,7 +58,7 @@ STATIC USART_TypeDef * assign_uart_or_throw(busio_uart_obj_t* self, bool pin_eva
         if (uart_taken) {
             mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
         } else {
-            mp_raise_ValueError(translate("Invalid UART pin selection"));
+            mp_raise_ValueError_varg(translate("Invalid %q pin selection"), MP_QSTR_UART);
         }
     }
 }
