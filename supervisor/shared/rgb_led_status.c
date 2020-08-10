@@ -366,6 +366,11 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
     status->safe_mode = safe_mode;
     status->found_main = found_main;
     status->total_exception_cycle = 0;
+    status->ok = result->return_code != PYEXEC_EXCEPTION;
+    if (status->ok) {
+        // If this isn't an exception, skip exception sorting and handling
+        return;
+    }
     status->ones = result->exception_line % 10;
     status->ones += status->ones > 0 ? 1 : 0;
     status->tens = (result->exception_line / 10) % 10;
@@ -383,7 +388,6 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
         }
         line /= 10;
     }
-    status->ok = result->return_code != PYEXEC_EXCEPTION;
     if (!status->ok) {
         status->total_exception_cycle = EXCEPTION_TYPE_LENGTH_MS * 3 + LINE_NUMBER_TOGGLE_LENGTH * status->digit_sum + LINE_NUMBER_TOGGLE_LENGTH * num_places;
     }
