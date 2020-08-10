@@ -104,7 +104,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
         cccd->base.type = &bleio_descriptor_type;
 
         uint16_t zero = 0;
-        mp_buffer_info_t zero_cccd = {
+        mp_buffer_info_t zero_cccd_value = {
             .buf = &zero,
             .len = sizeof(zero),
         };
@@ -117,7 +117,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
             characteristic->read_perm, // Make CCCD write perm match characteristic read perm.
             2,                         // 2 bytes
             true,                      // fixed length
-            &zero_cccd                 // Initial value is 0.
+            &zero_cccd_value           // Initial value is 0.
             );
 
         // Adds CCCD to attribute table, and also extends self->end_handle to include the CCCD.

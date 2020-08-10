@@ -117,7 +117,7 @@ void check_hci_error(hci_result_t result) {
 void bleio_reset() {
     // Create a UUID object for all CCCD's.
     cccd_uuid.base.type = &bleio_uuid_type;
-    common_hal_bleio_uuid_construct(&cccd_uuid, BLE_TYPE_CCCD, NULL);
+    common_hal_bleio_uuid_construct(&cccd_uuid, BLE_UUID_CCCD, NULL);
 
     bleio_hci_reset();
 

@@ -32,8 +32,6 @@
 
 void bleio_att_reset(void);
 
-//FIX BLEDevice att_central(void);
-//FIX BLERemoteDevice* att_device(uint8_t address_type, const uint8_t address[6]);
 //FIX void att_set_event_handler(BLEDeviceEvent event, BLEDeviceEventHandler eventHandler);
 bool att_address_is_connected(bt_addr_le_t *addr);
 bool att_connect_to_address(bt_addr_le_t *addr);

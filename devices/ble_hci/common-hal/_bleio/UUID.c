@@ -68,3 +68,8 @@ void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t* buf) {
         common_hal_bleio_uuid_get_uuid128(self, buf);
     }
 }
+
+// Return a uui16 only if this is a standard uuid. Otherwise return BLE_UUID_UNKNOWN.
+uint16_t bleio_uuid_get_uuid16_or_unknown(bleio_uuid_obj_t *uuid) {
+    return uuid->size == 16 ? uuid->uuid16 : BLE_UUID_UNKNOWN;
+}
