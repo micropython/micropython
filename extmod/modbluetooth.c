@@ -750,6 +750,14 @@ STATIC mp_obj_t bluetooth_ble_gattc_write(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_write_obj, 4, 5, bluetooth_ble_gattc_write);
 
+STATIC mp_obj_t bluetooth_ble_gattc_subscribe(mp_obj_t self_in, mp_obj_t conn_handle_in, mp_obj_t value_handle_in) {
+    (void)self_in;
+    mp_int_t conn_handle = mp_obj_get_int(conn_handle_in);
+    mp_int_t value_handle = mp_obj_get_int(value_handle_in);
+    return bluetooth_handle_errno(mp_bluetooth_gattc_subscribe(conn_handle, value_handle));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_gattc_subscribe_obj, bluetooth_ble_gattc_subscribe);
+
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 // ----------------------------------------------------------------------------
@@ -782,6 +790,7 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_descriptors), MP_ROM_PTR(&bluetooth_ble_gattc_discover_descriptors_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_read), MP_ROM_PTR(&bluetooth_ble_gattc_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_write), MP_ROM_PTR(&bluetooth_ble_gattc_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gattc_subscribe), MP_ROM_PTR(&bluetooth_ble_gattc_subscribe_obj) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_ble_locals_dict, bluetooth_ble_locals_dict_table);

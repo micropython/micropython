@@ -895,6 +895,18 @@ int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const 
     return ble_hs_err_to_errno(err);
 }
 
+// Initiate read of a value from the remote peripheral.
+int mp_bluetooth_gattc_subscribe(uint16_t conn_handle, uint16_t value_handle) {
+    if (!mp_bluetooth_is_active()) {
+        return ERRNO_BLUETOOTH_NOT_ACTIVE;
+    }
+
+    /* Enable notifications */
+    struct os_mbuf *om = ble_hs_mbuf_from_flat((uint8_t[]) {0x01, 0x00}, 2);
+    
+    return ble_hs_err_to_errno(ble_gattc_write(conn_handle, value_handle, om, NULL, NULL));
+}
+
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
