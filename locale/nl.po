@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-04 18:42-0500\n"
-"PO-Revision-Date: 2020-08-02 20:41+0000\n"
+"PO-Revision-Date: 2020-08-10 19:59+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -82,7 +82,7 @@ msgstr "%q index buiten bereik"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %q"
-msgstr ""
+msgstr "%q indices moeten integers zijn, geen %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -122,39 +122,39 @@ msgstr "'%q' argument vereist"
 
 #: py/runtime.c
 msgid "'%q' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "'%q' object kan attribuut ' %q' niet toewijzen"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "'%q' object ondersteunt geen '%q'"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
-msgstr ""
+msgstr "'%q' object ondersteunt toewijzing van items niet"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr ""
+msgstr "'%q' object ondersteunt verwijderen van items niet"
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
-msgstr ""
+msgstr "'%q' object heeft geen attribuut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "'%q' object is geen iterator"
 
 #: py/objtype.c py/runtime.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "'%q' object is niet aanroepbaar"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
+msgstr "'%q' object is niet itereerbaar"
 
 #: py/obj.c
 msgid "'%q' object is not subscriptable"
-msgstr ""
+msgstr "kan niet abonneren op '%q' object"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -1253,7 +1253,7 @@ msgstr "Wordt niet afgespeeld"
 
 #: main.c
 msgid "Not running saved code.\n"
-msgstr ""
+msgstr "Opgeslagen code wordt niet uitgevoerd.\n"
 
 #: shared-bindings/util.c
 msgid ""
@@ -1427,7 +1427,7 @@ msgstr "Rij invoeging moet digitalio.DigitalInOut zijn"
 
 #: main.c
 msgid "Running in safe mode! "
-msgstr ""
+msgstr "Veilige modus wordt uitgevoerd! "
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -1809,7 +1809,7 @@ msgstr "__init __ () zou None moeten retourneren"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
-msgstr ""
+msgstr "__init__() moet None teruggeven, niet '%q'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -1997,7 +1997,7 @@ msgstr "kan niet toewijzen aan expressie"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert %q to %q"
-msgstr ""
+msgstr "kan %q niet naar %q converteren"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2005,7 +2005,7 @@ msgstr "kan '%q' object niet omzetten naar %q impliciet"
 
 #: py/obj.c
 msgid "can't convert to %q"
-msgstr ""
+msgstr "kan niet naar %q converteren"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2825,7 +2825,7 @@ msgstr "aantal punten moet minimaal 2 zijn"
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
-msgstr ""
+msgstr "object '%q' is geen tuple of lijst"
 
 #: py/obj.c
 msgid "object does not support item assignment"
@@ -2861,7 +2861,7 @@ msgstr "object niet itereerbaar"
 
 #: py/obj.c
 msgid "object of type '%q' has no len()"
-msgstr ""
+msgstr "object van type '%q' heeft geen len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -2957,7 +2957,7 @@ msgstr ""
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
-msgstr ""
+msgstr "pop van een lege %q"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -3116,7 +3116,7 @@ msgstr "stream operatie niet ondersteund"
 
 #: py/objstrunicode.c
 msgid "string indices must be integers, not %q"
-msgstr ""
+msgstr "string indices moeten integers zijn, geen %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3263,7 +3263,7 @@ msgstr "onbekende conversiespecificatie %c"
 
 #: py/objstr.c
 msgid "unknown format code '%c' for object of type '%q'"
-msgstr ""
+msgstr "onbekende formaatcode '%c' voor object van type '%q'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3303,7 +3303,7 @@ msgstr "niet ondersteund formaatkarakter '%c' (0x%x) op index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%q'"
-msgstr ""
+msgstr "niet ondersteund type voor %q: '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -3311,7 +3311,7 @@ msgstr "niet ondersteund type voor operator"
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%q', '%q'"
-msgstr ""
+msgstr "niet ondersteunde types voor %q: '%q', '%q'"
 
 #: py/objint.c
 #, c-format
