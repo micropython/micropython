@@ -12,8 +12,6 @@ USB_SERIAL_NUMBER_LENGTH = 12
 # Longints can be implemented as mpz, as longlong, or not
 LONGINT_IMPL = MPZ
 
-CIRCUITPY_NEOPIXEL_WRITE = 1
-
 # These modules are implemented in ports/<port>/common-hal:
 CIRCUITPY_ANALOGIO = 0
 CIRCUITPY_NVM = 0
