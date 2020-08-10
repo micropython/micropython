@@ -105,6 +105,37 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
     return 0;
 }
 
+void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16_t y, displayio_bitmap_t *source,  
+                                        int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
+    // Copy complete "source" bitmap into "self" bitmap at location x,y in the "self"
+    // Add a boolean to determine if all values are copied, or only if non-zero
+    // Default is copy all values, but for text glyphs this should copy only non-zero values
+
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only object"));
+    }
+
+    // If this value is encountered in the source bitmap, it will not be copied (for text glyphs)
+    // This should be added as an optional parameter, and if it is `None`, then all pixels are copied
+    uint32_t skip_value=0;
+
+    // simplest version - use internal functions for get/set pixels
+    for (uint16_t i=0; i<= (x2-x1) ; i++) {
+        if ( (x+i >= 0) && (x+i < self->width) ) {
+            for (uint16_t j=0; j<= (y2-y1) ; j++){
+                if ((y+j >= 0) && (y+j < self->height) ) {
+                    uint32_t value = common_hal_displayio_bitmap_get_pixel(source, x1+i, y1+j);
+                    if ( (value != skip_value) ) { 
+                            common_hal_displayio_bitmap_set_pixel(self, x+i, y+j, value);
+                    }
+                }
+            }
+        }
+    }
+   
+}
+
+
 void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
     if (self->read_only) {
         mp_raise_RuntimeError(translate("Read-only object"));
