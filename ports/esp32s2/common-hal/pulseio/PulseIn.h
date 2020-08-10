@@ -30,13 +30,18 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
+#include "driver/rmt.h"
+#include "rmt.h"
 
 typedef struct {
     mp_obj_base_t base;
 
     const mcu_pin_obj_t* pin;
+    rmt_channel_t channel;
     bool idle_state;
     bool paused;
+
+    RingbufHandle_t buf_handle;
     volatile bool first_edge;
 
     uint16_t* buffer;
@@ -49,5 +54,6 @@ typedef struct {
 } pulseio_pulsein_obj_t;
 
 void pulsein_reset(void);
+void pulsein_background(void);
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PULSEIN_H

@@ -30,6 +30,7 @@
 bool rmt_reserved_channels[RMT_CHANNEL_MAX];
 
 void esp32s2_peripherals_rmt_reset(void) {
+    mp_printf(&mp_plat_print, "RMT Reset called\n");
     for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
         if (rmt_reserved_channels[i]) {
             esp32s2_peripherals_free_rmt(i);
