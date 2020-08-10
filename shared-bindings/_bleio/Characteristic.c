@@ -63,7 +63,7 @@
 //|          is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
 //|          number of data bytes that fit in a single BLE 4.x ATT packet.
 //|         :param bool fixed_length: True if the characteristic value is of fixed length.
-//|         :param buf initial_value: The initial value for this characteristic. If not given, will be
+//|         :param ~_typing.ReadableBuffer initial_value: The initial value for this characteristic. If not given, will be
 //|          filled with zeros.
 //|
 //|         :return: the new Characteristic."""

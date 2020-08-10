@@ -60,9 +60,9 @@
 //|         begin a new command definition.
 //|
 //|         :param display_bus: The bus that the display is connected to
-//|         :type display_bus: displayio.FourWire or displayio.ParallelBus
-//|         :param buffer start_sequence: Byte-packed initialization sequence.
-//|         :param buffer stop_sequence: Byte-packed initialization sequence.
+//|         :type _DisplayBus: displayio.FourWire or displayio.ParallelBus
+//|         :param ~_typing.ReadableBuffer start_sequence: Byte-packed initialization sequence.
+//|         :param ~_typing.ReadableBuffer stop_sequence: Byte-packed initialization sequence.
 //|         :param int width: Width in pixels
 //|         :param int height: Height in pixels
 //|         :param int ram_width: RAM width in pixels
@@ -238,7 +238,7 @@ const mp_obj_property_t displayio_epaperdisplay_width_obj = {
 };
 
 //|     height: int
-//|	    """Gets the height of the display in pixels"""
+//|     """Gets the height of the display in pixels"""
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_height(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);
@@ -254,7 +254,7 @@ const mp_obj_property_t displayio_epaperdisplay_height_obj = {
 };
 
 //|     bus: _DisplayBus
-//|	    """The bus being used by the display"""
+//|     """The bus being used by the display"""
 //|
 STATIC mp_obj_t displayio_epaperdisplay_obj_get_bus(mp_obj_t self_in) {
     displayio_epaperdisplay_obj_t *self = native_display(self_in);

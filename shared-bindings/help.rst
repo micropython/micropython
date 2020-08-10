@@ -22,7 +22,7 @@
    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
    THE SOFTWARE.
 
-:func:`help` - Built-in method to provide helpful information
+:func:`help` -- Built-in method to provide helpful information
 ==============================================================
 
 .. function:: help(object=None)

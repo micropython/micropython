@@ -44,7 +44,7 @@
 //|         first sample will be for channel 1, the second sample will be for channel two, the third for
 //|         channel 1 and so on.
 //|
-//|         :param ReadableBuffer buffer: A buffer with samples
+//|         :param ~_typing.ReadableBuffer buffer: A buffer with samples
 //|         :param int channel_count: The number of channels in the buffer
 //|         :param int sample_rate: The desired playback sample rate
 //|
