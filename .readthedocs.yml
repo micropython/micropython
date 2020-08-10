@@ -8,6 +8,10 @@
 
 version: 2
 
+submodules:
+    include:
+        - extmod/ulab
+
 python:
     version: 3
     install:
