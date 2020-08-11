@@ -31,10 +31,6 @@
 
 #include "py/obj.h"
 
-#include "lwip/api.h"
-
 mp_obj_t common_hal_ipaddress_new_ipv4(uint32_t value);
-
-void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t* esp_ip_address);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_IPADDRESS___INIT___H

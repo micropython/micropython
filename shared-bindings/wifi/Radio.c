@@ -180,7 +180,7 @@ STATIC mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     mp_int_t time_ms = common_hal_wifi_radio_ping(self, args[ARG_ip].u_obj, timeout);
 
-    return mp_obj_new_float(time_ms / 1000);
+    return mp_obj_new_float(time_ms / 1000.0);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_ping_obj, 1, wifi_radio_ping);
 

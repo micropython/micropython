@@ -29,6 +29,10 @@
 
 #include "py/obj.h"
 
+#include "lwip/api.h"
+
 void wifi_reset(void);
+
+void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t* esp_ip_address);
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI___INIT___H

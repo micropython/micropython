@@ -43,8 +43,8 @@
 //|
 
 STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
-    mp_int_t value;
-    if (mp_obj_get_int_maybe(ip_in, &value)) {
+    uint32_t value;
+    if (mp_obj_get_int_maybe(ip_in, (mp_int_t*) &value)) {
         // We're done.
     } else if (MP_OBJ_IS_STR(ip_in)) {
         GET_STR_DATA_LEN(ip_in, str_data, str_len);
@@ -63,11 +63,12 @@ STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
         }
 
         size_t last_period = 0;
+        value = 0;
         for (size_t i = 0; i < 4; i++) {
             mp_obj_t octet = mp_parse_num_integer((const char*) str_data + last_period, period_index[i] - last_period, 10, NULL);
             last_period = period_index[i] + 1;
-            value |= MP_OBJ_SMALL_INT_VALUE(octet) << (24 - i * 8);
-
+            mp_int_t int_octet = MP_OBJ_SMALL_INT_VALUE(octet);
+            value |= int_octet << (i * 8);
         }
     } else {
         mp_raise_ValueError(translate("Only raw int supported for ip."));

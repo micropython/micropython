@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include "common-hal/wifi/__init__.h"
+
+#include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/Radio.h"
 
 #include "py/runtime.h"
@@ -147,4 +150,15 @@ void wifi_reset(void) {
     esp_netif_destroy(radio->netif);
     radio->netif = NULL;
     ESP_ERROR_CHECK(esp_netif_deinit());
+}
+
+void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t* esp_ip_address) {
+    if (!MP_OBJ_IS_TYPE(ip_address, &ipaddress_ipv4address_type)) {
+        mp_raise_ValueError(translate("Only IPv4 addresses supported"));
+    }
+    mp_obj_t packed = common_hal_ipaddress_ipv4address_get_packed(ip_address);
+    size_t len;
+    const char* bytes = mp_obj_str_get_data(packed, &len);
+
+    IP_ADDR4(esp_ip_address, bytes[0], bytes[1], bytes[2], bytes[3]);
 }

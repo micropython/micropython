@@ -28,6 +28,7 @@
 
 #include <string.h>
 
+#include "common-hal/wifi/__init__.h"
 #include "lib/utils/interrupt_char.h"
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"

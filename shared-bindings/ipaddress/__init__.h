@@ -29,6 +29,6 @@
 
 #include "shared-module/ipaddress/__init__.h"
 
-mp_obj_t common_hal_ipaddress_new_ipv4address(mp_int_t value);
+mp_obj_t common_hal_ipaddress_new_ipv4address(uint32_t value);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_IPADDRESS___INIT___H
