@@ -573,11 +573,19 @@ extern const struct _mp_obj_module_t sdioio_module;
 #define SDIOIO_MODULE
 #endif
 
+
 #if CIRCUITPY_SHARPDISPLAY
 extern const struct _mp_obj_module_t sharpdisplay_module;
 #define SHARPDISPLAY_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_sharpdisplay),(mp_obj_t)&sharpdisplay_module },
 #else
 #define SHARPDISPLAY_MODULE
+#endif
+
+#if CIRCUITPY_SOCKETPOOL
+extern const struct _mp_obj_module_t socketpool_module;
+#define SOCKETPOOL_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_socketpool), (mp_obj_t)&socketpool_module },
+#else
+#define SOCKETPOOL_MODULE
 #endif
 
 #if CIRCUITPY_STAGE
@@ -764,6 +772,7 @@ extern const struct _mp_obj_module_t wifi_module;
     SDCARDIO_MODULE \
     SDIOIO_MODULE \
     SHARPDISPLAY_MODULE \
+    SOCKETPOOL_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \

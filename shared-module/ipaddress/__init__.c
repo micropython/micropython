@@ -33,3 +33,8 @@ mp_obj_t common_hal_ipaddress_new_ipv4address(mp_int_t value) {
     common_hal_ipaddress_ipv4address_construct(self, (uint8_t*) &value, 4);
     return self;
 }
+
+
+void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t* esp_ip_address) {
+    // FIX THIS TOMORROW!
+}

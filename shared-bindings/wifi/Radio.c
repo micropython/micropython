@@ -158,18 +158,31 @@ const mp_obj_property_t wifi_radio_ipv4_address_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     def ping(self, ip) -> int:
-//|         """Ping an IP to test connectivity. Returns echo time in milliseconds."""
+//|     def ping(self, ip, *, timeout: float = 0.5) -> float:
+//|         """Ping an IP to test connectivity. Returns echo time in seconds."""
 //|         ...
 //|
-STATIC mp_obj_t wifi_radio_ping(mp_obj_t self_in, mp_obj_t ip_address) {
-    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_ip, ARG_timeout };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_ip, MP_ARG_REQUIRED | MP_ARG_OBJ, },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
 
-    common_hal_wifi_radio_ping(self, ip_address);
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    return mp_const_none;
+    mp_float_t timeout = 0.5;
+    if (args[ARG_timeout].u_obj != mp_const_none) {
+        timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
+    }
+
+    mp_int_t time_ms = common_hal_wifi_radio_ping(self, args[ARG_ip].u_obj, timeout);
+
+    return mp_obj_new_float(time_ms / 1000);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_ping_obj, wifi_radio_ping);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_ping_obj, 1, wifi_radio_ping);
 
 STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&wifi_radio_enabled_obj) },

@@ -228,6 +228,9 @@ endif
 ifeq ($(CIRCUITPY_SHARPDISPLAY),1)
 SRC_PATTERNS += sharpdisplay/%
 endif
+ifeq ($(CIRCUITPY_SOCKETPOOL),1)
+SRC_PATTERNS += socketpool/%
+endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
 endif

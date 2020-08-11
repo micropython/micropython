@@ -32,8 +32,10 @@
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
+#include "shared-module/ipaddress/__init__.h"
 
 #include "esp-idf/components/esp_wifi/include/esp_wifi.h"
+#include "esp-idf/components/lwip/include/apps/ping/ping_sock.h"
 
 #include "esp_log.h"
 static const char *TAG = "cp radio";
@@ -154,6 +156,29 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
 	return common_hal_ipaddress_new_ipv4address(ip_info.ip.addr);
 }
 
-mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address) {
-	return 0;
+mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {
+    esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
+    ipaddress_ipaddress_to_esp_idf(ip_address, &ping_config.target_addr);
+    ping_config.count = 1;
+
+    size_t timeout_ms = timeout * 1000;
+
+    esp_ping_handle_t ping;
+    esp_ping_new_session(&ping_config, NULL, &ping);
+    esp_ping_start(ping);
+
+    uint32_t received = 0;
+    uint32_t total_time_ms = 0;
+    while (received == 0 && total_time_ms < timeout_ms) {
+    	RUN_BACKGROUND_TASKS;
+    	esp_ping_get_profile(ping, ESP_PING_PROF_DURATION, &total_time_ms, sizeof(total_time_ms));
+	    esp_ping_get_profile(ping, ESP_PING_PROF_REPLY, &received, sizeof(received));
+    }
+	uint32_t elapsed_time = 0xffffffff;
+    if (received > 0) {
+	    esp_ping_get_profile(ping, ESP_PING_PROF_TIMEGAP, &elapsed_time, sizeof(elapsed_time));
+    }
+    esp_ping_delete_session(ping);
+
+	return elapsed_time;
 }
