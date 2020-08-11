@@ -1032,7 +1032,7 @@ int att_read_group_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end
         struct bt_att_hdr h;
         struct bt_att_read_group_req r;
     } req = { {
-            .code = BT_ATT_OP_ERROR_RSP,
+            .code = BT_ATT_OP_READ_GROUP_REQ,
         }, {
             .start_handle = start_handle,
             .end_handle = end_handle,
@@ -1410,7 +1410,7 @@ STATIC void process_write_req_or_cmd(uint16_t conn_handle, uint16_t mtu, uint8_t
     if (with_response) {
         // There's no data in the response. We just indicate the write happened.
         struct bt_att_hdr rsp = {
-            .code = BT_ATT_OP_READ_REQ,
+            .code = BT_ATT_OP_WRITE_RSP,
         };
 
         hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, sizeof(rsp), (uint8_t *) &rsp);
