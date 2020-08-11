@@ -46,7 +46,6 @@ typedef struct bleio_service_obj {
     // Range of attribute handles of this remote service.
     uint16_t start_handle;
     uint16_t end_handle;
-    struct bleio_service_obj* next;
 } bleio_service_obj_t;
 
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection);

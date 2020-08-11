@@ -47,7 +47,8 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     self->props = props;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
-    self->descriptor_list = NULL;
+    self->descriptor_linked_list = mp_obj_new_list(0, NULL);
+    self->watchers_list = mp_obj_new_list(0, NULL);
 
     const mp_int_t max_length_max = 512;
     if (max_length < 0 || max_length > max_length_max) {
@@ -67,8 +68,8 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     }
 }
 
-bleio_descriptor_obj_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self) {
-    return self->descriptor_list;
+bleio_descriptor_obj_t *common_hal_bleio_characteristic_get_descriptor_linked_list(bleio_characteristic_obj_t *self) {
+    return self->descriptor_linked_list;
 }
 
 bleio_service_obj_t *common_hal_bleio_characteristic_get_service(bleio_characteristic_obj_t *self) {
@@ -153,8 +154,8 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
     self->service->end_handle = descriptor->handle;
 
     // Link together all the descriptors for this characteristic.
-    descriptor->next = self->descriptor_list;
-    self->descriptor_list = descriptor;
+    descriptor->next = self->descriptor_linked_list;
+    self->descriptor_linked_list = descriptor;
 }
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
@@ -200,4 +201,21 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
     //     check_nrf_error(err_code);
     // }
 
+}
+
+bool bleio_characteristic_set_local_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
+    if (self->fixed_length && bufinfo->len != self->max_length) {
+        return false;
+    }
+    if (bufinfo->len > self->max_length) {
+        bool
+    }
+
+    mp_buffer_info_t char_bufinfo;
+    if (!mp_get_buffer(characteristic->value, &bufinfo, MP_BUFFER_WRITE)) {
+        return false;
+    }
+    memcpy(&char_bufinfo->buf, bufinfo->buf, bufinfo->len);
+
+    for (size_t i; i < characteristic->set_callbacks.
 }

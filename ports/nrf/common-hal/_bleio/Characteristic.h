@@ -46,7 +46,7 @@ typedef struct _bleio_characteristic_obj {
     bleio_characteristic_properties_t props;
     bleio_attribute_security_mode_t read_perm;
     bleio_attribute_security_mode_t write_perm;
-    bleio_descriptor_obj_t *descriptor_list;
+    mp_obj_list_t *descriptor_list;
     uint16_t user_desc_handle;
     uint16_t cccd_handle;
     uint16_t sccd_handle;

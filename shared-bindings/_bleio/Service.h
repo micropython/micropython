@@ -41,11 +41,9 @@ extern uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, b
 extern void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary);
 extern void common_hal_bleio_service_from_remote_service(bleio_service_obj_t *self, bleio_connection_obj_t* connection, bleio_uuid_obj_t *uuid, bool is_secondary);
 extern bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self);
-extern mp_obj_list_t *common_hal_bleio_service_get_characteristic_list(bleio_service_obj_t *self);
+extern mp_obj_tuple_t *common_hal_bleio_service_get_characteristics(bleio_service_obj_t *self);
 extern bool common_hal_bleio_service_get_is_remote(bleio_service_obj_t *self);
 extern bool common_hal_bleio_service_get_is_secondary(bleio_service_obj_t *self);
 extern void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self, bleio_characteristic_obj_t *characteristic, mp_buffer_info_t *initial_value_bufinfo);
-
-mp_obj_tuple_t* service_linked_list_to_tuple(bleio_service_obj_t * services);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SERVICE_H

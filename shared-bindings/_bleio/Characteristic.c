@@ -212,26 +212,14 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
 };
 
 //|     descriptors: Descriptor
-//|     """A tuple of :py:class:`Descriptor` that describe this characteristic. (read-only)"""
+//|     """A tuple of :py:class:`Descriptor` objects related to this characteristic. (read-only)"""
 //|
 STATIC mp_obj_t bleio_characteristic_get_descriptors(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Return list as a tuple so user won't be able to change it.
-    bleio_descriptor_obj_t *descriptors = common_hal_bleio_characteristic_get_descriptor_list(self);
-    bleio_descriptor_obj_t *head = descriptors;
-    size_t len = 0;
-    while (head != NULL) {
-        len++;
-        head = head->next;
-    }
-    mp_obj_tuple_t * t = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
-    head = descriptors;
-    for (size_t i = len - 1; i >= 0; i--) {
-        t->items[i] = MP_OBJ_FROM_PTR(head);
-        head = head->next;
-    }
-    return MP_OBJ_FROM_PTR(t);
+    return MP_OBJ_FROM_PTR(common_hal_bleio_characteristic_get_descriptors(self));
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_descriptors_obj, bleio_characteristic_get_descriptors);
 
 const mp_obj_property_t bleio_characteristic_descriptors_obj = {

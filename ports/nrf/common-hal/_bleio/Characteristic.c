@@ -90,7 +90,7 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     self->props = props;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
-    self->descriptor_list = NULL;
+    self->descriptor_list = mp_obj_new_list(0, NULL);
 
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
@@ -111,8 +111,8 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     }
 }
 
-bleio_descriptor_obj_t *common_hal_bleio_characteristic_get_descriptor_list(bleio_characteristic_obj_t *self) {
-    return self->descriptor_list;
+mp_obj_tuple_t *common_hal_bleio_characteristic_get_descriptors(bleio_characteristic_obj_t *self) {
+    return mp_obj_new_tuple(self->descriptor_list->len, self->descriptor_list->items);
 }
 
 bleio_service_obj_t *common_hal_bleio_characteristic_get_service(bleio_characteristic_obj_t *self) {
@@ -218,8 +218,8 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
 
     check_nrf_error(sd_ble_gatts_descriptor_add(self->handle, &desc_attr, &descriptor->handle));
 
-    descriptor->next = self->descriptor_list;
-    self->descriptor_list = descriptor;
+    mp_obj_list_append(MP_OBJ_FROM_PTR(self->descriptor_list),
+                       MP_OBJ_FROM_PTR(descriptor));
 }
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {

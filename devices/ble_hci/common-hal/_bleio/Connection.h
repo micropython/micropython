@@ -50,7 +50,7 @@ typedef struct {
     uint16_t conn_handle;
     bool is_central;
     // Remote services discovered when this peripheral is acting as a client.
-    bleio_service_obj_t *remote_service_list;
+    bleio_service_obj_t *remote_service_linked_list;
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
     // there are tricks to get the SD to notice (see DevZone - TBS).

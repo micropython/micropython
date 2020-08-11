@@ -63,7 +63,6 @@ NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* msg, ...);
 void common_hal_bleio_check_connected(uint16_t conn_handle);
 
 uint16_t common_hal_bleio_device_get_conn_handle(mp_obj_t device);
-mp_obj_list_t *common_hal_bleio_device_get_remote_service_list(mp_obj_t device);
 void common_hal_bleio_device_discover_remote_services(mp_obj_t device, mp_obj_t service_uuids_whitelist);
 
 size_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle, uint8_t* buf, size_t len);

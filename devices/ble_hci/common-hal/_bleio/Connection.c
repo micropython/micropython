@@ -319,7 +319,7 @@ static volatile bool m_discovery_successful;
 // }
 
 void bleio_connection_clear(bleio_connection_internal_t *self) {
-    self->remote_service_list = NULL;
+    self->remote_service_linked_list = NULL;
 
     //FIX self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->pair_status = PAIR_NOT_PAIRED;
@@ -449,7 +449,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 // }
 
 // STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *response, bleio_connection_internal_t* connection) {
-//     bleio_service_obj_t* tail = connection->remote_service_list;
+//     bleio_service_obj_t* tail = connection->remote_service_linked_list;
 
 //     for (size_t i = 0; i < response->count; ++i) {
 //         ble_gattc_service_t *gattc_service = &response->services[i];
@@ -482,7 +482,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //         tail = service;
 //     }
 
-//     connection->remote_service_list = tail;
+//     connection->remote_service_linked_list = tail;
 
 //     if (response->count > 0) {
 //         m_discovery_successful = true;
@@ -581,7 +581,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //             GATT_MAX_DATA_LENGTH, false, mp_const_empty_bytes);
 //         descriptor->handle = gattc_desc->handle;
 
-//         mp_obj_list_append(m_desc_discovery_characteristic->descriptor_list, MP_OBJ_FROM_PTR(descriptor));
+//         mp_obj_list_append(m_desc_discovery_characteristic->descriptor_linked_list, MP_OBJ_FROM_PTR(descriptor));
 //     }
 
 //     if (response->count > 0) {
@@ -622,7 +622,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //     ble_drv_add_event_handler(discovery_on_ble_evt, self);
 
 //     // Start over with an empty list.
-//     self->remote_service_list = NULL;
+//     self->remote_service_linked_list = NULL;
 
 //     if (service_uuids_whitelist == mp_const_none) {
 //         // List of service UUID's not given, so discover all available services.
@@ -634,7 +634,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 
 //             // Get the most recently discovered service, and then ask for services
 //             // whose handles start after the last attribute handle inside that service.
-//             const bleio_service_obj_t *service = self->remote_service_list;
+//             const bleio_service_obj_t *service = self->remote_service_linked_list;
 //             next_service_start_handle = service->end_handle + 1;
 //         }
 //     } else {
@@ -658,7 +658,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //     }
 
 
-//     bleio_service_obj_t *service = self->remote_service_list;
+//     bleio_service_obj_t *service = self->remote_service_linked_list;
 //     while (service != NULL) {
 //         // Skip the service if it had an unknown (unregistered) UUID.
 //         if (service->uuid == NULL) {
@@ -707,14 +707,14 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 
 //             // Stop when we go past the end of the range of handles for this service or
 //             // discovery call returns nothing.
-//             // discover_next_descriptors() appends to the descriptor_list.
+//             // discover_next_descriptors() appends to the descriptor_linked_list.
 //             while (next_desc_start_handle <= service->end_handle &&
 //                    next_desc_start_handle <= next_desc_end_handle &&
 //                    discover_next_descriptors(self, characteristic,
 //                                              next_desc_start_handle, next_desc_end_handle)) {
 //                 // Get the most recently discovered descriptor, and then ask for descriptors
 //                 // whose handles start after that descriptor's handle.
-//                 const bleio_descriptor_obj_t *descriptor = characteristic->descriptor_list;
+//                 const bleio_descriptor_obj_t *descriptor = characteristic->descriptor_linked_list;
 //                 next_desc_start_handle = descriptor->handle + 1;
 //             }
 //         }
@@ -730,8 +730,8 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_conne
     //FIX discover_remote_services(self->connection, service_uuids_whitelist);
     bleio_connection_ensure_connected(self);
     // Convert to a tuple and then clear the list so the callee will take ownership.
-    mp_obj_tuple_t *services_tuple = service_linked_list_to_tuple(self->connection->remote_service_list);
-    self->connection->remote_service_list = NULL;
+    mp_obj_tuple_t *services_tuple = service_linked_list_to_tuple(self->connection->remote_service_linked_list);
+    self->connection->remote_service_linked_list = NULL;
 
     return services_tuple;
 }

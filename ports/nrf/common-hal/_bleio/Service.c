@@ -73,8 +73,8 @@ bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self) {
     return self->uuid;
 }
 
-mp_obj_list_t *common_hal_bleio_service_get_characteristic_list(bleio_service_obj_t *self) {
-    return self->characteristic_list;
+mp_obj_tuple_t *common_hal_bleio_service_get_characteristics(bleio_service_obj_t *self) {
+    return mp_obj_new_tuple(self->characteristic_list->len, self->characteristic_list->items);
 }
 
 bool common_hal_bleio_service_get_is_remote(bleio_service_obj_t *self) {
