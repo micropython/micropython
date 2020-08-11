@@ -24,3 +24,6 @@
  * THE SOFTWARE.
  */
 
+// Entries for sys.path
+Q(/flash)
+Q(/flash/lib)
