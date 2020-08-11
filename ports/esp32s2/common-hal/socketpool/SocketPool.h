@@ -24,30 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "py/objexcept.h"
-#include "py/objstr.h"
-#include "py/parsenum.h"
-#include "py/runtime.h"
-#include "shared-bindings/socketpool/__init__.h"
-#include "shared-bindings/socketpool/Socket.h"
-#include "shared-bindings/socketpool/SocketPool.h"
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL_SOCKETPOOL_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL_SOCKETPOOL_H
 
-//| """
-//| The `ipaddress` module provides types for IP addresses. It is a subset of CPython's ipaddress
-//| module.
-//| """
-//|
+typedef struct {
+    mp_obj_base_t base;
+} socketpool_socketpool_obj_t;
 
-STATIC const mp_rom_map_elem_t socketpool_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_socketpool) },
-
-    { MP_ROM_QSTR(MP_QSTR_SocketPool), MP_ROM_PTR(&socketpool_socketpool_type) },
-    { MP_ROM_QSTR(MP_QSTR_Socket), MP_ROM_PTR(&socketpool_socket_type) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(socketpool_globals, socketpool_globals_table);
-
-const mp_obj_module_t socketpool_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&socketpool_globals,
-};
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL_SOCKETPOOL_H

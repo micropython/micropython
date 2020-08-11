@@ -337,6 +337,9 @@ SRC_COMMON_HAL_ALL = \
 	rtc/__init__.c \
 	sdioio/SDCard.c \
 	sdioio/__init__.c \
+	socketpool/__init__.c \
+	socketpool/SocketPool.c \
+	socketpool/Socket.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \
