@@ -201,7 +201,7 @@ void spi_flash_init(void) {
         .irq_priority = 7,
     };
 
-#if EXTERNAL_FLASH_QSPI_DUAL
+#if defined(EXTERNAL_FLASH_QSPI_DUAL)
     qspi_cfg.pins.io1_pin = MICROPY_QSPI_DATA1;
     qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ2O;
     qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP2O;
