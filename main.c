@@ -282,7 +282,7 @@ bool run_code_py(safe_mode_t safe_mode) {
         }
     }
 
-    // Wait for connection or character.
+    // Display a different completion message if the user has no USB attached (cannot save files)
     if (!serial_connected_at_start) {
         serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
     }

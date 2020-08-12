@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,27 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#ifndef MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_SDIO_H
+#define MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_SDIO_H
 
-#define MICROPY_HW_BOARD_NAME       "Saola 1 w/Wrover"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#include "common-hal/microcontroller/Pin.h"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
+#include "peripherals/periph.h"
 
-#define AUTORESET_DELAY_MS 500
+#include "py/obj.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    SD_HandleTypeDef handle;
+    uint8_t num_data:3, state_programming:1;
+    bool has_lock;
+    const mcu_periph_obj_t *command;
+    const mcu_periph_obj_t *clock;
+    const mcu_periph_obj_t *data[4];
+    uint32_t frequency;
+    uint32_t capacity;
+} sdioio_sdcard_obj_t;
+
+void sdioio_reset(void);
+
+#endif // MICROPY_INCLUDED_STM32_COMMON_HAL_BUSIO_SDIO_H

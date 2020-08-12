@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +24,14 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_RMT_H
+#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_RMT_H
 
-#define MICROPY_HW_BOARD_NAME       "Saola 1 w/Wrover"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#include "py/mphal.h"
+#include "driver/rmt.h"
+#include <stdint.h>
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
+rmt_channel_t esp32s2_peripherals_find_and_reserve_rmt(void);
+void esp32s2_peripherals_free_rmt(rmt_channel_t chan);
 
-#define AUTORESET_DELAY_MS 500
+#endif
