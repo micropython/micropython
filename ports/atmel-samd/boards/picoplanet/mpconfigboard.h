@@ -1,8 +1,6 @@
 #define MICROPY_HW_BOARD_NAME "PicoPlanet"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
-
-
 #define MICROPY_PORT_A        (PORT_PA00 | PORT_PA01)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
@@ -38,9 +36,7 @@
 //#define CP_RGB_STATUS_R (&pin_PA06)
 //#define CP_RGB_STATUS_G (&pin_PA05)
 //#define CP_RGB_STATUS_B (&pin_PA07)
-//#define CP_RGB_STATUS_INVERTED_PWM 
-//#define CP_RGB_STATUS_LED    
+//#define CP_RGB_STATUS_INVERTED_PWM
+//#define CP_RGB_STATUS_LED
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA06)
-
-
