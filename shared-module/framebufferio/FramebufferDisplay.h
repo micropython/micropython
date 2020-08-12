@@ -48,7 +48,8 @@ typedef struct {
     uint64_t last_refresh_call;
     uint16_t native_frames_per_second;
     uint16_t native_ms_per_frame;
-    uint16_t first_pixel_offset, row_stride;
+    uint16_t first_pixel_offset;
+    uint16_t row_stride;
     bool auto_refresh;
     bool first_manual_refresh;
 } framebufferio_framebufferdisplay_obj_t;
