@@ -1008,10 +1008,14 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
-    return mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle, value, value_len);
-}
+    int ret = mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle, value, value_len);
 
-// TODO: Could use ble_gatts_chr_updated to send to all subscribed centrals.
+    // Send notification/indication to any connected devices that have
+    // subscribed to this characteristic.
+    ble_gatts_chr_updated(value_handle);
+
+    return ret;
+}
 
 int mp_bluetooth_gatts_notify(uint16_t conn_handle, uint16_t value_handle) {
     if (!mp_bluetooth_is_active()) {
