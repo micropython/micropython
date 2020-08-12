@@ -270,14 +270,21 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
             mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT, event->disconnect.conn.conn_handle, event->disconnect.conn.peer_id_addr.type, addr);
             break;
 
-        case BLE_GAP_EVENT_NOTIFY_TX: {
+        case BLE_GAP_EVENT_NOTIFY_TX:
             DEBUG_printf("gap_event_cb: notify_tx: %d %d\n", event->notify_tx.indication, event->notify_tx.status);
             // This event corresponds to either a sent notify/indicate (status == 0), or an indication confirmation (status != 0).
             if (event->notify_tx.indication && event->notify_tx.status != 0) {
                 // Map "done/ack" to 0, otherwise pass the status directly.
                 mp_bluetooth_gatts_on_indicate_complete(event->notify_tx.conn_handle, event->notify_tx.attr_handle, event->notify_tx.status == BLE_HS_EDONE ? 0 : event->notify_tx.status);
             }
-        }
+            break;
+
+        case BLE_GAP_EVENT_SUBSCRIBE:
+            DEBUG_printf("gap_event_cb: subscribe: attr=%d reason=%d prev_sub=%d cur_sub=%d prev_ind=%d cur_ind=%d\n",
+                event->subscribe.attr_handle, event->subscribe.reason, event->subscribe.prev_notify, event->subscribe.cur_notify,
+                event->subscribe.prev_indicate, event->subscribe.cur_indicate);
+            // A central has subscribed to us.
+            break;
     }
 
     return 0;
@@ -714,10 +721,14 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
-    return mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle, value, value_len);
-}
+    int ret = mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle, value, value_len);
 
-// TODO: Could use ble_gatts_chr_updated to send to all subscribed centrals.
+    // Send notification/indication to any connected devices that have
+    // subscribed to this characteristic.
+    ble_gatts_chr_updated(value_handle);
+
+    return ret;
+}
 
 int mp_bluetooth_gatts_notify(uint16_t conn_handle, uint16_t value_handle) {
     if (!mp_bluetooth_is_active()) {
