@@ -100,8 +100,6 @@ CFLAGS += $(OPTIMIZATION_FLAGS)
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
 # Undo some warnings.
-## nrfx uses undefined preprocessor variables quite casually, so we can't do warning checks for these.
-#CFLAGS += -Wno-undef
 # nrfx does casts that increase alignment requirements.
 CFLAGS += -Wno-cast-align
 
@@ -240,6 +238,9 @@ endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
+# nrfx uses undefined preprocessor variables quite casually, so we can't do
+# warning checks for these.  Happily, we've confined the offenders to the NRFX
+# source files themselves.
 $(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o)): CFLAGS += -Wno-undef
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
