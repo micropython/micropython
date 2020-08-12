@@ -183,8 +183,6 @@ void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebuffer_ob
     uint8_t *data = self->bufinfo.buf;
     data[0] ^= SHARPMEM_BIT_VCOM_LSB;
 
-#define PARTIAL_UPDATES (1)
-#if PARTIAL_UPDATES
     common_hal_busio_spi_write(self->bus, data++, 1);
 
     // output each changed row
@@ -198,9 +196,6 @@ void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebuffer_ob
 
     // output a trailing zero
     common_hal_busio_spi_write(self->bus, data, 1);
-#else
-    common_hal_busio_spi_write(self->bus, data, self->bufinfo.len);
-#endif
 
     // set chip select low
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
