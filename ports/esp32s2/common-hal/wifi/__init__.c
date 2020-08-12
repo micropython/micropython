@@ -113,12 +113,12 @@ void common_hal_wifi_init(void) {
                                                         ESP_EVENT_ANY_ID,
                                                         &event_handler,
                                                         self,
-                                                        self->handler_instance_all_wifi));
+                                                        &self->handler_instance_all_wifi));
     ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
                                                         IP_EVENT_STA_GOT_IP,
                                                         &event_handler,
                                                         self,
-                                                        self->handler_instance_got_ip));
+                                                        &self->handler_instance_got_ip));
 
 
     ESP_EARLY_LOGI(TAG, "wifi init");

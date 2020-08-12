@@ -85,6 +85,8 @@ INC += -Iesp-idf/components/esp_rom/include
 INC += -Iesp-idf/components/esp_wifi/include
 INC += -Iesp-idf/components/xtensa/include
 INC += -Iesp-idf/components/esp_timer/include
+INC += -Iesp-idf/components/mbedtls/mbedtls/include
+INC += -Iesp-idf/components/mbedtls/port/include/
 INC += -Iesp-idf/components/newlib/platform_include
 INC += -Iesp-idf/components/lwip/lwip/src/include
 INC += -Iesp-idf/components/lwip/port/esp32/include
@@ -253,7 +255,7 @@ menuconfig: $(BUILD)/esp-idf/config
 $(HEADER_BUILD)/qstr.i.last: | $(BUILD)/esp-idf/config/sdkconfig.h
 
 # Order here matters
-ESP_IDF_COMPONENTS_LINK = freertos log esp_system esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp_rom
+ESP_IDF_COMPONENTS_LINK = freertos log esp_system esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp_rom esp-tls
 
 ESP_IDF_COMPONENTS_INCLUDE = driver freertos log soc
 
@@ -281,6 +283,7 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 	$(Q)ninja -C $(BUILD)/esp-idf \
 		bootloader/bootloader.bin \
 		esp-idf/bootloader_support/libbootloader_support.a \
+		esp-idf/esp-tls/libesp-tls.a \
 		esp-idf/esp32s2/ld/esp32s2.project.ld \
 		esp-idf/esp_event/libesp_event.a \
 		esp-idf/esp_netif/libesp_netif.a \

@@ -24,30 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL___INIT___H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL___INIT___H
 
-#include "common-hal/socketpool/SocketPool.h"
 
-#include "shared-bindings/socketpool/Socket.h"
-
-extern const mp_obj_type_t socketpool_socketpool_type;
-
-typedef enum {
-    SOCKETPOOL_SOCK_STREAM,
-    SOCKETPOOL_SOCK_DGRAM,
-    SOCKETPOOL_SOCK_RAW
-} socketpool_socketpool_sock_t;
-
-typedef enum {
-    SOCKETPOOL_AF_INET,
-    SOCKETPOOL_AF_INET6
-} socketpool_socketpool_addressfamily_t;
-
-socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_t* self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type);
-
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t* self,
-    const char* host);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL___INIT___H

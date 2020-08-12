@@ -24,30 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
+#include "shared-bindings/socketpool/SocketPool.h"
 
-#include "common-hal/socketpool/SocketPool.h"
+#include "py/runtime.h"
 
-#include "shared-bindings/socketpool/Socket.h"
+#include "esp-idf/components/lwip/lwip/src/include/lwip/netdb.h"
 
-extern const mp_obj_type_t socketpool_socketpool_type;
+socketpool_socket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,
+    socketpool_socket_obj_t* socket, bool server_side, const char* server_hostname) {
 
-typedef enum {
-    SOCKETPOOL_SOCK_STREAM,
-    SOCKETPOOL_SOCK_DGRAM,
-    SOCKETPOOL_SOCK_RAW
-} socketpool_socketpool_sock_t;
 
-typedef enum {
-    SOCKETPOOL_AF_INET,
-    SOCKETPOOL_AF_INET6
-} socketpool_socketpool_addressfamily_t;
-
-socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_t* self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type);
-
-mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t* self,
-    const char* host);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
+    // Should we store server hostname on the socket in case connect is called with an ip?
+    return socket;
+}

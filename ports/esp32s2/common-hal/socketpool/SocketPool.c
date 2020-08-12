@@ -23,3 +23,77 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#include "shared-bindings/socketpool/SocketPool.h"
+
+#include "py/runtime.h"
+
+#include "esp-idf/components/lwip/lwip/src/include/lwip/netdb.h"
+
+socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_t* self,
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
+
+    int addr_family;
+    int ipproto;
+    if (family == SOCKETPOOL_AF_INET) {
+        addr_family = AF_INET;
+        ipproto = IPPROTO_IP;
+    } else { // INET6
+        addr_family = AF_INET6;
+        ipproto = IPPROTO_IPV6;
+    }
+
+    int socket_type;
+    if (type == SOCKETPOOL_SOCK_STREAM) {
+        socket_type = SOCK_STREAM;
+    } else if (type == SOCKETPOOL_SOCK_DGRAM) {
+        socket_type = SOCK_DGRAM;
+    } else { // SOCKETPOOL_SOCK_RAW
+        socket_type = SOCK_RAW;
+    }
+
+    int socknum = -1;
+    esp_tls_t* tcp_handle = NULL;
+    if (socket_type == SOCK_DGRAM || socket_type == SOCK_RAW) {
+        socknum = lwip_socket(addr_family, socket_type, ipproto);
+    } else {
+        tcp_handle = esp_tls_init();
+    }
+    if (socknum < 0 && tcp_handle == NULL) {
+        mp_raise_RuntimeError(translate("Out of sockets"));
+    }
+
+    socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
+    sock->base.type = &socketpool_socket_type;
+    sock->num = socknum;
+    sock->tcp = tcp_handle;
+    sock->ssl_context = NULL;
+    sock->pool = self;
+    return sock;
+}
+
+
+mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t* self,
+    const char* host) {
+
+    const struct addrinfo hints = {
+        .ai_family = AF_INET,
+        .ai_socktype = SOCK_STREAM,
+    };
+    struct addrinfo *res;
+    int err = getaddrinfo(host, NULL, &hints, &res);
+    if (err != 0 || res == NULL) {
+        return mp_const_none;
+    }
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
+    struct in_addr *addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
+    #pragma GCC diagnostic pop
+    char ip_str[IP4ADDR_STRLEN_MAX];
+    inet_ntoa_r(*addr, ip_str, IP4ADDR_STRLEN_MAX);
+    mp_obj_t ip_obj = mp_obj_new_str(ip_str, strlen(ip_str));
+    freeaddrinfo(res);
+
+    return ip_obj;
+}

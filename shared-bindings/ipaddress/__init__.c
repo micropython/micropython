@@ -37,6 +37,45 @@
 //| """
 //|
 
+
+bool ipaddress_parse_ipv4address(const char* str_data, size_t str_len, uint32_t* ip_out) {
+    size_t period_count = 0;
+    size_t period_index[4] = {0, 0, 0, str_len};
+    for (size_t i = 0; i < str_len; i++) {
+        if (str_data[i] == '.') {
+            if (period_count < 3) {
+                period_index[period_count] = i;
+            }
+            period_count++;
+        }
+    }
+    if (period_count > 3) {
+        return false;
+    }
+
+    size_t last_period = 0;
+    if (ip_out != NULL) {
+        *ip_out = 0;
+    }
+    for (size_t i = 0; i < 4; i++) {
+        // Catch exceptions thrown by mp_parse_num_integer
+        nlr_buf_t nlr;
+        mp_obj_t octet;
+        if (nlr_push(&nlr) == 0) {
+            octet = mp_parse_num_integer((const char*) str_data + last_period, period_index[i] - last_period, 10, NULL);
+            nlr_pop();
+        } else {
+            return false;
+        }
+        last_period = period_index[i] + 1;
+        if (ip_out != NULL) {
+            mp_int_t int_octet = MP_OBJ_SMALL_INT_VALUE(octet);
+            *ip_out |= int_octet << (i * 8);
+        }
+    }
+    return true;
+}
+
 //| def ip_address(obj: Union[int]) -> IPv4Address:
 //|     """Return a corresponding IP address object or raise ValueError if not possible."""
 //|     ...
@@ -48,27 +87,8 @@ STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
         // We're done.
     } else if (MP_OBJ_IS_STR(ip_in)) {
         GET_STR_DATA_LEN(ip_in, str_data, str_len);
-        size_t period_count = 0;
-        size_t period_index[4] = {0, 0, 0, str_len};
-        for (size_t i = 0; i < str_len; i++) {
-            if (str_data[i] == '.') {
-                if (period_count < 3) {
-                    period_index[period_count] = i;
-                }
-                period_count++;
-            }
-        }
-        if (period_count > 3) {
+        if (!ipaddress_parse_ipv4address((const char*) str_data, str_len, &value)) {
             mp_raise_ValueError(translate("Not a valid IP string."));
-        }
-
-        size_t last_period = 0;
-        value = 0;
-        for (size_t i = 0; i < 4; i++) {
-            mp_obj_t octet = mp_parse_num_integer((const char*) str_data + last_period, period_index[i] - last_period, 10, NULL);
-            last_period = period_index[i] + 1;
-            mp_int_t int_octet = MP_OBJ_SMALL_INT_VALUE(octet);
-            value |= int_octet << (i * 8);
         }
     } else {
         mp_raise_ValueError(translate("Only raw int supported for ip."));

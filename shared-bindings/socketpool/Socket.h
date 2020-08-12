@@ -31,8 +31,9 @@
 
 extern const mp_obj_type_t socketpool_socket_type;
 
-// mp_obj_t common_hal_ipaddress_new_ipv4address(uint32_t value);
-// void common_hal_ipaddress_ipv4address_construct(ipaddress_ipv4address_obj_t* self, uint8_t* buf, size_t len);
-// mp_obj_t common_hal_ipaddress_ipv4address_get_packed(ipaddress_ipv4address_obj_t* self);
+void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_uint_t timeout_ms);
+bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const char* host, size_t hostlen, mp_int_t port);
+mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);
+mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H

@@ -3,8 +3,7 @@
 # bootloader.bin         0x1000
 # partition table        0x8000, 0xC00
 otadata,  data, ota,     0xd000,  0x2000,
-ota_0,    0,    ota_0,  0x10000,  0x100000,
-ota_1,    0,    ota_1, 0x110000,  0x100000,
-phy_init, data, phy,   0x210000,  0x1000,
-nvs,      data, nvs,   0x211000,  0x6000,
-user_fs,  data, fat,   0x217000,  0x1e9000,
+ota_0,    0,    ota_0,  0x10000,  0x120000,
+ota_1,    0,    ota_1, 0x130000,  0x120000,
+phy_init, data, phy,   0x250000,  0x1000,
+user_fs,  data, fat,   0x251000,  0x1af000,

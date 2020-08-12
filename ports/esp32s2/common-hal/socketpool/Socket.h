@@ -29,8 +29,17 @@
 
 #include "py/obj.h"
 
+#include "common-hal/socketpool/SocketPool.h"
+
+#include "esp-idf/components/esp-tls/esp_tls.h"
+
 typedef struct {
     mp_obj_base_t base;
+    int num;
+    esp_tls_t* tcp;
+    esp_tls_cfg_t* ssl_context;
+    socketpool_socketpool_obj_t* pool;
+    mp_uint_t timeout_ms;
 } socketpool_socket_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL_SOCKET_H

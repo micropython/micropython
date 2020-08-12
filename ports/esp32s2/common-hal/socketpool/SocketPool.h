@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL_SOCKETPOOL_H
 #define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SOCKETPOOL_SOCKETPOOL_H
 
+#include "py/obj.h"
+
 typedef struct {
     mp_obj_base_t base;
 } socketpool_socketpool_obj_t;
