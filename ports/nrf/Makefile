@@ -73,11 +73,11 @@ INC += -I$(BUILD)
 INC += -I$(BUILD)/genhdr
 INC += -I./../../lib/cmsis/inc
 INC += -I./boards/$(BOARD)
-INC += -I./nrfx
-INC += -I./nrfx/hal
-INC += -I./nrfx/mdk
-INC += -I./nrfx/drivers/include
-INC += -I./nrfx/drivers/src
+INC += -isystem ./nrfx
+INC += -isystem ./nrfx/hal
+INC += -isystem ./nrfx/mdk
+INC += -isystem ./nrfx/drivers/include
+INC += -isystem ./nrfx/drivers/src
 INC += -I./bluetooth
 INC += -I./peripherals
 INC += -I../../lib/mp-readline
@@ -100,8 +100,6 @@ CFLAGS += $(OPTIMIZATION_FLAGS)
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
 # Undo some warnings.
-# nrfx uses undefined preprocessor variables quite casually, so we can't do warning checks for these.
-CFLAGS += -Wno-undef
 # nrfx does casts that increase alignment requirements.
 CFLAGS += -Wno-cast-align
 
@@ -239,6 +237,11 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
+
+# nrfx uses undefined preprocessor variables quite casually, so we can't do
+# warning checks for these.  Happily, we've confined the offenders to the NRFX
+# source files themselves.
+$(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o)): CFLAGS += -Wno-undef
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os

@@ -222,6 +222,9 @@ endif
 ifeq ($(CIRCUITPY_SDIOIO),1)
 SRC_PATTERNS += sdioio/%
 endif
+ifeq ($(CIRCUITPY_SHARPDISPLAY),1)
+SRC_PATTERNS += sharpdisplay/%
+endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
 endif
@@ -409,6 +412,8 @@ SRC_SHARED_MODULE_ALL = \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
+	sharpdisplay/SharpMemoryFramebuffer.c \
+	sharpdisplay/__init__.c \
 	socket/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
