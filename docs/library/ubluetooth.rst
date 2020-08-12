@@ -73,6 +73,9 @@ Configuration
       example scan results) and the ability for a central role to receive
       larger characteristic values.
 
+    - ``'mtu'``: Set only. Allows configuring the default max MTU used for 
+      subsequent new connections.
+
 Event Handling
 --------------
 
@@ -162,6 +165,9 @@ Event Handling
                 # A central has acknowledged the indication.
                 # Note: Status will be zero on successful acknowledgment, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
+            elif event == _IRQ_GATTS_MTU_UPDATE:
+                # Connection MTU has been negotiated.
+                conn_handle, mtu_length = data
 
 The event codes are::
 
@@ -186,6 +192,7 @@ The event codes are::
     _IRQ_GATTC_NOTIFY = const(18)
     _IRQ_GATTC_INDICATE = const(19)
     _IRQ_GATTS_INDICATE_DONE = const(20)
+    _IRQ_GATTS_MTU_UPDATE = const(21)
 
 In order to save space in the firmware, these constants are not included on the
 :mod:`ubluetooth` module. Add the ones that you need from the list above to your

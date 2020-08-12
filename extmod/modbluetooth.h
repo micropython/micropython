@@ -100,6 +100,7 @@
 #define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                   (18)
 #define MP_BLUETOOTH_IRQ_GATTC_INDICATE                 (19)
 #define MP_BLUETOOTH_IRQ_GATTS_INDICATE_DONE            (20)
+#define MP_BLUETOOTH_IRQ_GATTS_MTU_UPDATE               (21)
 
 #define MP_BLUETOOTH_ADDRESS_MODE_PUBLIC (0)
 #define MP_BLUETOOTH_ADDRESS_MODE_RANDOM (1)
@@ -131,6 +132,7 @@ _IRQ_GATTC_WRITE_DONE = const(17)
 _IRQ_GATTC_NOTIFY = const(18)
 _IRQ_GATTC_INDICATE = const(19)
 _IRQ_GATTS_INDICATE_DONE = const(20)
+_IRQ_GATTS_MTU_UPDATE = const(21)
 */
 
 // Common UUID type.
@@ -178,6 +180,12 @@ void mp_bluetooth_set_address_mode(uint8_t addr_mode);
 // Get or set the GAP device name that will be used by service 0x1800, characteristic 0x2a00.
 size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf);
 int mp_bluetooth_gap_set_device_name(const uint8_t *buf, size_t len);
+
+// Request MTU for a connection
+int mp_bluetooth_gap_set_mtu(int conn_handle, int len);
+
+// Set the preferred / max MTU to be used on subsequent
+int mp_bluetooth_gap_set_default_mtu(int len);
 
 // Start advertisement. Will re-start advertisement when already enabled.
 // Returns errno on failure.
@@ -254,6 +262,9 @@ void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t valu
 // Call this when a characteristic is read from. Return false to deny the read.
 bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle);
 #endif
+
+// Call this when MTU setting have changed.
+void mp_bluetooth_gatts_on_mtu_update(uint16_t conn_handle, uint16_t value);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 // Notify modbluetooth that scan has finished, either timeout, manually, or by some other action (e.g. connecting).

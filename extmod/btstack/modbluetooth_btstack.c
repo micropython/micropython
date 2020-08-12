@@ -264,6 +264,11 @@ STATIC void btstack_packet_handler_att_server(uint8_t packet_type, uint16_t chan
         uint16_t value_handle = att_event_handle_value_indication_complete_get_attribute_handle(packet);
         uint8_t status = att_event_handle_value_indication_complete_get_status(packet);
         mp_bluetooth_gatts_on_indicate_complete(conn_handle, value_handle, status);
+    } else if (event_type == ATT_EVENT_MTU_EXCHANGE_COMPLETE || event_type == GATT_EVENT_MTU) {
+        uint16_t conn_handle = gatt_event_mtu_get_handle(packet);
+        uint16_t mtu = gatt_event_mtu_get_MTU(packet);
+        DEBUG_printf("  --> att MTU: %d\n", mtu);
+        mp_bluetooth_gatts_on_mtu_update(conn_handle, mtu);
     } else if (event_type == HCI_EVENT_LE_META || event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         // Ignore, duplicated by att_server.c.
     } else {
@@ -340,7 +345,10 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
     } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
         DEBUG_printf("  --> hci vendor specific\n");
     } else if (event_type == GATT_EVENT_MTU) {
-        DEBUG_printf("  --> hci MTU\n");
+        uint16_t conn_handle = gatt_event_mtu_get_handle(packet);
+        uint16_t mtu = gatt_event_mtu_get_MTU(packet);
+        DEBUG_printf("  --> gatt MTU: %d\n", mtu);
+        mp_bluetooth_gatts_on_mtu_update(conn_handle, mtu);
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_printf("  --> hci disconnect complete\n");
         uint16_t conn_handle = hci_event_disconnection_complete_get_connection_handle(packet);
@@ -355,6 +363,7 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         }
         uint8_t addr[6] = {0};
         mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, 0xff, addr);
+
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     } else if (event_type == GAP_EVENT_ADVERTISING_REPORT) {
         DEBUG_printf("  --> gap advertising report\n");
@@ -764,6 +773,20 @@ size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf) {
 
 int mp_bluetooth_gap_set_device_name(const uint8_t *buf, size_t len) {
     return mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, BTSTACK_GAP_DEVICE_NAME_HANDLE, buf, len);
+}
+
+int mp_bluetooth_gap_set_default_mtu(int len) {
+    l2cap_set_max_le_mtu(len);
+    return 0;
+}
+
+int mp_bluetooth_gap_set_mtu(int con_handle, int len) {
+    int current = l2cap_max_le_mtu();
+    l2cap_set_max_le_mtu(len);
+    gatt_client_mtu_enable_auto_negotiation(false);
+    gatt_client_send_mtu_negotiation(&btstack_packet_handler_att_server, con_handle);
+    l2cap_set_max_le_mtu(current);
+    return 0;
 }
 
 int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
