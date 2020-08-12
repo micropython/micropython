@@ -39,6 +39,7 @@
 #endif
 
 #if CIRCUITPY_SHARPDISPLAY
+#include "shared-module/displayio/__init__.h"
 #include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif

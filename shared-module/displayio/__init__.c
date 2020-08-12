@@ -107,7 +107,7 @@ void common_hal_displayio_release_displays(void) {
             common_hal_displayio_i2cdisplay_deinit(&displays[i].i2cdisplay_bus);
         } else if (bus_type == &displayio_parallelbus_type) {
             common_hal_displayio_parallelbus_deinit(&displays[i].parallel_bus);
-#if CIRCUITPY_FRAMEBUFFERIO
+#if CIRCUITPY_RGBMATRIX
         } else if (bus_type == &rgbmatrix_RGBMatrix_type) {
             common_hal_rgbmatrix_rgbmatrix_deinit(&displays[i].rgbmatrix);
 #endif
@@ -222,7 +222,7 @@ void displayio_gc_collect(void) {
         }
 #endif
 #if CIRCUITPY_SHARPDISPLAY
-        if (displays[i].rgbmatrix.base.type == &sharpdisplay_framebuffer_type) {
+        if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
             common_hal_sharpdisplay_framebuffer_collect_ptrs(&displays[i].sharpdisplay);
         }
 #endif
