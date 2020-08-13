@@ -172,7 +172,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     return mp_const_none;
 }
 
-//|     def blit(self, x: int, y: int, source_bitmap: bitmap, x1: int, y1: int, x2: int, y2: int, skip_index: int) -> Any:
+//|     def blit(self, x: int, y: int, source_bitmap: bitmap, *, x1: int, y1: int, x2: int, y2: int, skip_index: int) -> Any:
 //|         """Inserts the source_bitmap region defined by rectangular boundaries
 //|         (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
 //|         :param int x: Horizontal pixel location in bitmap where source_bitmap upper-left
@@ -193,9 +193,9 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT},
         {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_source, MP_ARG_REQUIRED | MP_ARG_OBJ},
-        {MP_QSTR_x1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        {MP_QSTR_y1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_x1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = 0} },
+        {MP_QSTR_y1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = 0} },
         {MP_QSTR_x2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->width
         {MP_QSTR_y2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->height
         {MP_QSTR_skip_index, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj=mp_const_none} },
@@ -203,51 +203,42 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]); //*******
+    displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     int16_t x = args[ARG_x].u_int;
     int16_t y = args[ARG_y].u_int;
 
     displayio_bitmap_t *source = MP_OBJ_TO_PTR(args[ARG_source].u_obj);
 
-    int16_t x1, y1;
-    // if x1 or y1 is None, then set as the zero-point of the bitmap
-    if ( args[ARG_x1].u_obj == mp_const_none ) {
-        x1 = 0;
-    } else {
-        x1 = mp_obj_get_int(args[ARG_x1].u_obj);
+    // ensure that the target bitmap (self) has at least as many `bits_per_value` as the source
+    if (self->bits_per_value < source->bits_per_value) {
+        mp_raise_ValueError(translate("Cannot blit: source palette too large."));
     }
-    //int16_t y1;
-    if ( args[ARG_y1].u_obj == mp_const_none ) {
-        y1 = 0;
-    } else {
-        y1 = mp_obj_get_int(args[ARG_y1].u_obj);
-    }
-   
-    int16_t x2, y2;
+
+    int16_t x1, y1, x2, y2;
     // if x2 or y2 is None, then set as the maximum size of the source bitmap
     if ( args[ARG_x2].u_obj == mp_const_none ) {
-        x2 = source->width-1;
+        x2 = source->width;
     } else {
         x2 = mp_obj_get_int(args[ARG_x2].u_obj);
     }
     //int16_t y2;
     if ( args[ARG_y2].u_obj == mp_const_none ) {
-        y2 = source->height-1;
+        y2 = source->height;
     } else {
         y2 = mp_obj_get_int(args[ARG_y2].u_obj);
     }
 
 
     // Check x,y are within self (target) bitmap boundary
-    if ( (x < 0) || (y < 0) || (x >= self->width) || (y >= self->height) ) {
+    if ( (x < 0) || (y < 0) || (x > self->width) || (y > self->height) ) {
             mp_raise_ValueError(translate("(x,y): out of range of target bitmap"));
     }
     // Check x1,y1,x2,y2 are within source bitmap boundary
-    if ( (x1 < 0) || (x1 >= source->width)  || 
-        (y1 < 0) || (y1 >= source->height) || 
-        (x2 < 0) || (x2 >= source->width)  ||
-        (y2 < 0) || (y2 >= source->height) ) {
+    if ( (x1 < 0) || (x1 > source->width)  || 
+        (y1 < 0) || (y1 > source->height) || 
+        (x2 < 0) || (x2 > source->width)  ||
+        (y2 < 0) || (y2 > source->height) ) {
             mp_raise_ValueError(translate("(x1,y1) or (x2,y2): out of range of source bitmap"));
     }
     
@@ -272,7 +263,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     } else {
         skip_index = mp_obj_get_int(args[ARG_skip_index].u_obj);
         skip_index_none = false;
-    }
+    }    
 
     common_hal_displayio_bitmap_blit(self, x, y, source, x1, y1, x2, y2, skip_index, skip_index_none);
 

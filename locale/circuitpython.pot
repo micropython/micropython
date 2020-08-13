@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-14 09:36-0400\n"
+"POT-Creation-Date: 2020-08-14 13:10-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -82,6 +82,8 @@ msgstr ""
 msgid "%q list must be a list"
 msgstr ""
 
+#: shared-bindings/memorymonitor/AllocationAlarm 3.c
+#: shared-bindings/memorymonitor/AllocationAlarm 4.c
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr ""
@@ -89,6 +91,8 @@ msgstr ""
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/Shape.c
+#: shared-bindings/memorymonitor/AllocationAlarm 3.c
+#: shared-bindings/memorymonitor/AllocationAlarm 4.c
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
@@ -252,6 +256,14 @@ msgstr ""
 msgid "'yield' outside function"
 msgstr ""
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "(x,y): out of range of target bitmap"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "(x1,y1) or (x2,y2): out of range of source bitmap"
+msgstr ""
+
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr ""
@@ -306,6 +318,7 @@ msgstr ""
 msgid "All timers for this pin are in use"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/_pew/PewPew 2.c
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
@@ -322,7 +335,11 @@ msgstr ""
 msgid "Already advertising."
 msgstr ""
 
+#: shared-module/memorymonitor/AllocationAlarm 3.c
+#: shared-module/memorymonitor/AllocationAlarm 4.c
 #: shared-module/memorymonitor/AllocationAlarm.c
+#: shared-module/memorymonitor/AllocationSize 3.c
+#: shared-module/memorymonitor/AllocationSize 4.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
 msgstr ""
@@ -362,6 +379,8 @@ msgstr ""
 msgid "At most %d %q may be specified (not %d)"
 msgstr ""
 
+#: shared-module/memorymonitor/AllocationAlarm 3.c
+#: shared-module/memorymonitor/AllocationAlarm 4.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
@@ -491,6 +510,12 @@ msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
+msgid "Cannot blit: source palette too large."
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/memorymonitor/AllocationSize 3.c
+#: shared-bindings/memorymonitor/AllocationSize 4.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -1014,6 +1039,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral 2.c
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
@@ -1370,6 +1396,8 @@ msgstr ""
 msgid "Random number generation error"
 msgstr ""
 
+#: shared-bindings/memorymonitor/AllocationSize 3.c
+#: shared-bindings/memorymonitor/AllocationSize 4.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1462,6 +1490,8 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/memorymonitor/AllocationSize 3.c
+#: shared-bindings/memorymonitor/AllocationSize 4.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
@@ -1791,10 +1821,14 @@ msgstr ""
 msgid "address %08x is not aligned to %d bytes"
 msgstr ""
 
+#: shared-bindings/i2cperipheral/I2CPeripheral 3.c
+#: shared-bindings/i2cperipheral/I2CPeripheral 4.c
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr ""
 
+#: shared-bindings/i2cperipheral/I2CPeripheral 3.c
+#: shared-bindings/i2cperipheral/I2CPeripheral 4.c
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr ""
@@ -1957,7 +1991,9 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral 3.c
+#: shared-bindings/i2cperipheral/I2CPeripheral 4.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert %q to %q"
 msgstr ""
 

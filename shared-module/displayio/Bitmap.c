@@ -118,9 +118,9 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
     }
 
     // simplest version - use internal functions for get/set pixels
-    for (int16_t i=0; i<= (x2-x1) ; i++) {
+    for (int16_t i=0; i < (x2-x1) ; i++) {
         if ( (x+i >= 0) && (x+i < self->width) ) {
-            for (int16_t j=0; j<= (y2-y1) ; j++){
+            for (int16_t j=0; j < (y2-y1) ; j++){
                 if ((y+j >= 0) && (y+j < self->height) ) {
                     uint32_t value = common_hal_displayio_bitmap_get_pixel(source, x1+i, y1+j);
                     if ( (skip_index_none) || (value != skip_index) ) { // write if skip_value_none is True
