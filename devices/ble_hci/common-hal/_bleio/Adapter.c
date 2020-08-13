@@ -268,20 +268,22 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         supervisor_disable_tick();
     }
 
-    // Stop any current activity; reset to known state.
+    // Enabling or disabling: stop any current activity; reset to known state.
     check_hci_error(hci_reset());
     self->now_advertising = false;
     self->extended_advertising = false;
     self->circuitpython_advertising = false;
     self->advertising_timeout_msecs = 0;
 
-    // Reset list of known attributes.
-    // Indices into the list are handles. Handle 0x0000 designates an invalid handle,
-    // so store None there to skip it.
-    self->attributes = mp_obj_new_list(0, NULL);
-    bleio_adapter_add_attribute(self, mp_const_none);
-    self->last_added_service_handle = BLE_GATT_HANDLE_INVALID;
-    self->last_added_characteristic_handle = BLE_GATT_HANDLE_INVALID;
+    if (enabled) {
+        // Reset list of known attributes.
+        // Indices into the list are handles. Handle 0x0000 designates an invalid handle,
+        // so store None there to skip it.
+        self->attributes = mp_obj_new_list(0, NULL);
+        bleio_adapter_add_attribute(self, mp_const_none);
+        self->last_added_service_handle = BLE_GATT_HANDLE_INVALID;
+        self->last_added_characteristic_handle = BLE_GATT_HANDLE_INVALID;
+    }
 }
 
 bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
@@ -392,9 +394,11 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
 void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self) {
     check_enabled(self);
 
-    check_hci_error(hci_le_set_scan_enable(BT_HCI_LE_SCAN_DISABLE, BT_HCI_LE_SCAN_FILTER_DUP_DISABLE));
-    shared_module_bleio_scanresults_set_done(self->scan_results, true);
-    self->scan_results = NULL;
+    // If not already scanning, no problem.
+    if (hci_le_set_scan_enable(BT_HCI_LE_SCAN_DISABLE, BT_HCI_LE_SCAN_FILTER_DUP_DISABLE) == HCI_OK) {
+        shared_module_bleio_scanresults_set_done(self->scan_results, true);
+        self->scan_results = NULL;
+    }
 }
 
 // typedef struct {
@@ -782,14 +786,13 @@ void bleio_adapter_gc_collect(bleio_adapter_obj_t* adapter) {
 }
 
 void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
+
     if (!common_hal_bleio_adapter_get_enabled(adapter)) {
         return;
     }
 
-    common_hal_bleio_adapter_stop_scan(adapter);
-    if (adapter->now_advertising) {
-        common_hal_bleio_adapter_stop_advertising(adapter);
-    }
+    // Adapter will be reset.
+    common_hal_bleio_adapter_set_enabled(adapter, false);
 
     adapter->connection_objs = NULL;
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
@@ -801,6 +804,7 @@ void bleio_adapter_reset(bleio_adapter_obj_t* adapter) {
         }
         connection->connection_obj = mp_const_none;
     }
+
 }
 
 void bleio_adapter_background(bleio_adapter_obj_t* adapter) {
