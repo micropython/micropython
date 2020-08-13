@@ -64,8 +64,6 @@ typedef struct __packed {
     uint8_t uuid[0];  // 2 or 16 bytes
 } characteristic_declaration_t;
 
-//FIX BLEDeviceEventHandler event_handlers[2];
-
 STATIC uint8_t bleio_properties_to_ble_spec_properties(uint8_t bleio_properties) {
     uint8_t ble_spec_properties = 0;
     if (bleio_properties & CHAR_PROP_BROADCAST) {
@@ -220,21 +218,16 @@ bool att_connect_to_address(bt_addr_le_t *addr) {
     return is_connected;
 }
 
-bool att_disconnect_from_address(bt_addr_le_t *addr) {
-    uint16_t conn_handle = att_conn_handle(addr);
-    if (conn_handle == 0xffff) {
+bool att_disconnect(uint16_t conn_handle) {
+    if (conn_handle == BLE_CONN_HANDLE_INVALID) {
         return false;
     }
 
     hci_disconnect(conn_handle);
-
     hci_poll_for_incoming_pkt_timeout(timeout);
 
-    if (!att_handle_is_connected(conn_handle)) {
-        return true;
-    }
-
-    return false;
+    // Confirm we're now disconnected.
+    return !att_handle_is_connected(conn_handle);
 }
 
 //FIX
@@ -512,10 +505,6 @@ void att_add_connection(uint16_t handle, uint8_t role, bt_addr_le_t *peer_addr, 
     bleio_connections[peer_index].role = role;
     bleio_connections[peer_index].mtu = BT_ATT_DEFAULT_LE_MTU;
     memcpy(&bleio_connections[peer_index].addr, peer_addr, sizeof(bleio_connections[peer_index].addr));
-
-    //FIX if (event_handlers[BLEConnected]) {
-    //     event_handlers[BLEConnected](BLEDevice(peer_bdaddr_type, peer_bdaddr));
-    // }
 }
 
 
@@ -563,11 +552,6 @@ void att_remove_connection(uint16_t handle, uint8_t reason) {
         long_write_handle = BLE_GATT_HANDLE_INVALID;
         long_write_value_length = 0;
     }
-
-    //FIX
-    // if (event_handlers[BLEDisconnected]) {
-    //     event_handlers[BLEDisconnected](bleDevice);
-    // }
 
     bleio_connections[peer_index].conn_handle = 0xffff;
     bleio_connections[peer_index].role = 0x00;
@@ -630,7 +614,7 @@ bool att_disconnect_all(void) {
             continue;
         }
 
-        if (hci_disconnect(bleio_connections[i].conn_handle) != 0) {
+        if (att_disconnect(bleio_connections[i].conn_handle) != 0) {
             continue;
         }
 
@@ -1391,7 +1375,8 @@ STATIC void process_write_req_or_cmd(uint16_t conn_handle, uint16_t mtu, uint8_t
             return;
         }
 
-        common_hal_bleio_characteristic_set_value(characteristic, &bufinfo);
+        // Just change the local value. Don't fire off notifications, etc.
+        bleio_characteristic_set_local_value(characteristic, &bufinfo);
 
     } else if (MP_OBJ_IS_TYPE(attribute_obj, &bleio_descriptor_type)) {
         bleio_descriptor_obj_t *descriptor = MP_OBJ_TO_PTR(attribute_obj);
@@ -1403,7 +1388,6 @@ STATIC void process_write_req_or_cmd(uint16_t conn_handle, uint16_t mtu, uint8_t
             return;
         }
 
-        //FIX need to set up event handlers, etc.?
         common_hal_bleio_descriptor_set_value(descriptor, &bufinfo);
     }
 
@@ -1593,14 +1577,6 @@ bool att_exchange_mtu(uint16_t conn_handle) {
     return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *) &req, response_buffer);
 }
 
-
-
-//FIX void att_set_event_handler(BLEDeviceEvent event, BLEDeviceEventHandler event_handler) {
-//     if (event < (sizeof(event_handlers) / (sizeof(event_handlers[0])))) {
-//         event_handlers[event] = event_handler;
-//     }
-// }
-
 int att_read_req(uint16_t conn_handle, uint16_t handle, uint8_t response_buffer[]) {
     struct __packed {
         struct bt_att_hdr h;
@@ -1642,7 +1618,7 @@ void att_write_cmd(uint16_t conn_handle, uint16_t handle, const uint8_t* data, u
     cmd->r.handle = handle;
     memcpy(cmd->r.value, data, data_len);
 
-    return send_req(conn_handle, sizeof(cmd_bytes), cmd_bytes);
+    send_req(conn_handle, sizeof(cmd_bytes), cmd_bytes);
 }
 
 void att_process_data(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
@@ -1737,4 +1713,77 @@ void att_process_data(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
             send_error(conn_handle, opcode, 0x00, BT_ATT_ERR_NOT_SUPPORTED);
             break;
     }
+}
+
+//FIX Do we need all of these?
+void check_att_err(uint8_t err) {
+    const compressed_string_t *msg = NULL;
+    switch (err) {
+        case 0:
+            return;
+        case BT_ATT_ERR_INVALID_HANDLE:
+            msg = translate("Invalid handle");
+            break;
+        case BT_ATT_ERR_READ_NOT_PERMITTED:
+            msg = translate("Read not permitted");
+            break;
+        case BT_ATT_ERR_WRITE_NOT_PERMITTED:
+            msg = translate("Write not permitted");
+            break;
+        case BT_ATT_ERR_INVALID_PDU:
+            msg = translate("Invalid PDU");
+            break;
+        case BT_ATT_ERR_NOT_SUPPORTED:
+            msg = translate("Not supported");
+            break;
+        case BT_ATT_ERR_INVALID_OFFSET:
+            msg = translate("Invalid offset");
+            break;
+        case BT_ATT_ERR_PREPARE_QUEUE_FULL:
+            msg = translate("Prepare queue full");
+            break;
+        case BT_ATT_ERR_ATTRIBUTE_NOT_FOUND:
+            msg = translate("Attribute not found");
+            break;
+        case BT_ATT_ERR_ATTRIBUTE_NOT_LONG:
+            msg = translate("Attribute not long");
+            break;
+        case BT_ATT_ERR_ENCRYPTION_KEY_SIZE:
+            msg = translate("Encryption key size");
+        case BT_ATT_ERR_INVALID_ATTRIBUTE_LEN:
+            msg = translate("Invalid attribute length");
+            break;
+        case BT_ATT_ERR_UNLIKELY:
+            msg = translate("Unlikely");
+            break;
+        case BT_ATT_ERR_UNSUPPORTED_GROUP_TYPE:
+            msg = translate("Unsupported group type");
+            break;
+        case BT_ATT_ERR_INSUFFICIENT_RESOURCES:
+            msg = translate("Insufficient resources");
+            break;
+        case BT_ATT_ERR_DB_OUT_OF_SYNC:
+            msg = translate("DB out of sync");
+            break;
+        case BT_ATT_ERR_VALUE_NOT_ALLOWED:
+            msg = translate("Value not allowed");
+            break;
+    }
+    if (msg) {
+        mp_raise_bleio_BluetoothError(msg);
+    }
+
+    switch (err) {
+        case BT_ATT_ERR_AUTHENTICATION:
+            msg = translate("Insufficient authentication");
+            break;
+        case BT_ATT_ERR_INSUFFICIENT_ENCRYPTION:
+            msg = translate("Insufficient encryption");
+            break;
+    }
+    if (msg) {
+        mp_raise_bleio_SecurityError(msg);
+    }
+
+    mp_raise_bleio_BluetoothError(translate("Unknown ATT error: 0x%02x"), err);
 }

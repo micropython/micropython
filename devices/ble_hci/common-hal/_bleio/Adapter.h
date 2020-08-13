@@ -56,6 +56,13 @@ typedef struct _bleio_adapter_obj_t {
     bool circuitpython_advertising;
     bool enabled;
 
+    // HCI adapter version info.
+    uint8_t hci_version;
+    uint8_t lmp_version;
+    uint16_t hci_revision;
+    uint16_t manufacturer;
+    uint16_t lmp_subversion;
+
     // Used to monitor advertising timeout for legacy avertising.
     uint64_t advertising_start_ticks;
     uint64_t advertising_timeout_msecs;  // If zero, do not check.

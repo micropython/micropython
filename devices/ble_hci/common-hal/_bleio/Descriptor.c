@@ -39,6 +39,7 @@ void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_c
     self->handle = BLE_GATT_HANDLE_INVALID;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
+    self->value = mp_obj_new_bytes(initial_value_bufinfo->buf, initial_value_bufinfo->len);
 
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
@@ -62,11 +63,20 @@ bleio_characteristic_obj_t *common_hal_bleio_descriptor_get_characteristic(bleio
 size_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self, uint8_t* buf, size_t len) {
     // Do GATT operations only if this descriptor has been registered
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
-        uint16_t conn_handle = bleio_connection_get_conn_handle(self->characteristic->service->connection);
         if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
-            return common_hal_bleio_gattc_read(self->handle, conn_handle, buf, len);
+            //uint16_t conn_handle = bleio_connection_get_conn_handle(self->characteristic->service->connection);
+            //FIX have att_read_req fill in a buffer
+            //uint8_t rsp[MAX(len, 512)];
+            //return att_read_req(conn_handle, self->handle, rsp, len);
+            return 0;
         } else {
-            return common_hal_bleio_gatts_read(self->handle, conn_handle, buf, len);
+            mp_buffer_info_t bufinfo;
+            if (!mp_get_buffer(self->value, &bufinfo, MP_BUFFER_READ)) {
+                return 0;
+            }
+            size_t actual_length = MIN(len, bufinfo.len);
+            memcpy(buf, bufinfo.buf, actual_length);
+            return actual_length;
         }
     }
 
@@ -85,13 +95,20 @@ void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buff
 
     // Do GATT operations only if this descriptor has been registered.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {
-        uint16_t conn_handle = bleio_connection_get_conn_handle(self->characteristic->service->connection);
         if (common_hal_bleio_service_get_is_remote(self->characteristic->service)) {
-            // false means WRITE_REQ, not write-no-response
-            common_hal_bleio_gattc_write(self->handle, conn_handle, bufinfo, false);
+            //FIX
+            // uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
+            // att_write_req(conn_handle, self->handle, bufinfo->buf, bufinfo->len, rsp);
         } else {
-            common_hal_bleio_gatts_write(self->handle, conn_handle, bufinfo);
+            // Always write the value locally even if no connections are active.
+            if (self->fixed_length && bufinfo->len != self->max_length) {
+                return;
+            }
+            if (bufinfo->len > self->max_length) {
+                return;
+            }
+
+            self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
         }
     }
-
 }

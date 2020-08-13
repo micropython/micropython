@@ -27,6 +27,8 @@
 
 #include "shared-bindings/_bleio/Connection.h"
 
+#include "att.h"
+
 #include <string.h>
 #include <stdio.h>
 
@@ -319,10 +321,11 @@ static volatile bool m_discovery_successful;
 // }
 
 void bleio_connection_clear(bleio_connection_internal_t *self) {
-    self->remote_service_linked_list = NULL;
+    mp_obj_list_clear(MP_OBJ_FROM_PTR(self->remote_service_list));
 
-    //FIX self->conn_handle = BLE_CONN_HANDLE_INVALID;
+    self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->pair_status = PAIR_NOT_PAIRED;
+    self->is_central = false;
     //FIX bonding_clear_keys(&self->bonding_keys);
 }
 
@@ -337,12 +340,11 @@ bool common_hal_bleio_connection_get_connected(bleio_connection_obj_t *self) {
     if (self->connection == NULL) {
         return false;
     }
-    return false;
-    //FIX return self->connection->conn_handle != BLE_CONN_HANDLE_INVALID;
+    return self->connection->conn_handle != BLE_CONN_HANDLE_INVALID;
 }
 
 void common_hal_bleio_connection_disconnect(bleio_connection_internal_t *self) {
-    //FIX sd_ble_gap_disconnect(self->conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+    hci_disconnect(self->conn_handle);
 }
 
 void common_hal_bleio_connection_pair(bleio_connection_internal_t *self, bool bond) {
@@ -369,8 +371,7 @@ mp_float_t common_hal_bleio_connection_get_connection_interval(bleio_connection_
 
 // Return the current negotiated MTU length, minus overhead.
 mp_int_t common_hal_bleio_connection_get_max_packet_length(bleio_connection_internal_t *self) {
-    /// FIX return (self->mtu == 0 ? BLE_GATT_ATT_MTU_DEFAULT : self->mtu) - 3;
-    return 0;
+    return (self->mtu == 0 ? BT_ATT_DEFAULT_LE_MTU : self->mtu) - 3;
 }
 
 void common_hal_bleio_connection_set_connection_interval(bleio_connection_internal_t *self, mp_float_t new_interval) {
@@ -449,8 +450,6 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 // }
 
 // STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *response, bleio_connection_internal_t* connection) {
-//     bleio_service_obj_t* tail = connection->remote_service_linked_list;
-
 //     for (size_t i = 0; i < response->count; ++i) {
 //         ble_gattc_service_t *gattc_service = &response->services[i];
 
@@ -477,13 +476,11 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //             // For now, just set the UUID to NULL.
 //             service->uuid = NULL;
 //         }
-
-//         service->next = tail;
-//         tail = service;
+//
+//         mp_obj_list_append(MP_OBJ_FROM_PTR(connection->remote_service_list),
+//                            MP_OBJ_FROM_PTR(service));
 //     }
-
-//     connection->remote_service_linked_list = tail;
-
+//
 //     if (response->count > 0) {
 //         m_discovery_successful = true;
 //     }
@@ -525,7 +522,8 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //             GATT_MAX_DATA_LENGTH, false,   // max_length, fixed_length: values may not matter for gattc
 //             NULL);
 
-//         mp_obj_list_append(m_char_discovery_service->characteristic_list, MP_OBJ_FROM_PTR(characteristic));
+//         mp_obj_list_append(MP_OBJ_FROM_PTR(m_char_discovery_service->characteristic_list),
+//                            MP_OBJ_FROM_PTR(characteristic));
 //     }
 
 //     if (response->count > 0) {
@@ -581,7 +579,8 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //             GATT_MAX_DATA_LENGTH, false, mp_const_empty_bytes);
 //         descriptor->handle = gattc_desc->handle;
 
-//         mp_obj_list_append(m_desc_discovery_characteristic->descriptor_linked_list, MP_OBJ_FROM_PTR(descriptor));
+//         mp_obj_list_append(MP_OBJ_FROM_PTR(m_desc_discovery_characteristic->descriptor_list),
+//                            MP_OBJ_FROM_PTR(descriptor));
 //     }
 
 //     if (response->count > 0) {
@@ -622,7 +621,8 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //     ble_drv_add_event_handler(discovery_on_ble_evt, self);
 
 //     // Start over with an empty list.
-//     self->remote_service_linked_list = NULL;
+//     self->remote_service_list = mp_obj_new_list(0, NULL);
+
 
 //     if (service_uuids_whitelist == mp_const_none) {
 //         // List of service UUID's not given, so discover all available services.
@@ -634,7 +634,9 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 
 //             // Get the most recently discovered service, and then ask for services
 //             // whose handles start after the last attribute handle inside that service.
-//             const bleio_service_obj_t *service = self->remote_service_linked_list;
+//             // There must be at least one if discover_next_services() returned true.
+//             const bleio_service_obj_t *service =
+//                 self->remote_service_list->items[self->remote_service_list->len - 1];
 //             next_service_start_handle = service->end_handle + 1;
 //         }
 //     } else {
@@ -658,11 +660,10 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //     }
 
 
-//     bleio_service_obj_t *service = self->remote_service_linked_list;
-//     while (service != NULL) {
+//     for (size_t i = 0; i < self->remote_service_list->len; i++) {
+//         bleio_service_obj_t *service = MP_OBJ_TO_PTR(self->remote_service_list->items[i]);
 //         // Skip the service if it had an unknown (unregistered) UUID.
 //         if (service->uuid == NULL) {
-//             service = service->next;
 //             continue;
 //         }
 
@@ -714,11 +715,12 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //                                              next_desc_start_handle, next_desc_end_handle)) {
 //                 // Get the most recently discovered descriptor, and then ask for descriptors
 //                 // whose handles start after that descriptor's handle.
-//                 const bleio_descriptor_obj_t *descriptor = characteristic->descriptor_linked_list;
+//                 // There must be at least one if discover_next_descriptors() returned true.
+//                 const bleio_descriptor_obj_t *descriptor =
+//                     characteristic->descriptor_list->items[characteristic->descriptor_list->len - 1];
 //                 next_desc_start_handle = descriptor->handle + 1;
 //             }
 //         }
-//         service = service->next;
 //     }
 
 //     // This event handler is no longer needed.
@@ -730,10 +732,11 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_conne
     //FIX discover_remote_services(self->connection, service_uuids_whitelist);
     bleio_connection_ensure_connected(self);
     // Convert to a tuple and then clear the list so the callee will take ownership.
-    mp_obj_tuple_t *services_tuple = service_linked_list_to_tuple(self->connection->remote_service_linked_list);
-    self->connection->remote_service_linked_list = NULL;
-
-    return services_tuple;
+     mp_obj_tuple_t *services_tuple =
+         mp_obj_new_tuple(self->connection->remote_service_list->len,
+                          self->connection->remote_service_list->items);
+     mp_obj_list_clear(MP_OBJ_FROM_PTR(self->connection->remote_service_list));
+     return services_tuple;
 }
 
 uint16_t bleio_connection_get_conn_handle(bleio_connection_obj_t *self) {
@@ -757,13 +760,13 @@ mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t* interna
 
 // Find the connection that uses the given conn_handle. Return NULL if not found.
 bleio_connection_internal_t *bleio_conn_handle_to_connection(uint16_t conn_handle) {
-    //FIX bleio_connection_internal_t *connection;
-    // for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-    //     connection = &bleio_connections[i];
-    //     if (connection->conn_handle == conn_handle) {
-    //         return connection;
-    //     }
-    // }
+    bleio_connection_internal_t *connection;
+    for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+        connection = &bleio_connections[i];
+        if (connection->conn_handle == conn_handle) {
+            return connection;
+        }
+    }
 
     return NULL;
 }

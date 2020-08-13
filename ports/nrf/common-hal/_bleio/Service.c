@@ -124,11 +124,14 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     char_attr_md.rd_auth = true;
     #endif
 
+    mp_buffer_info_t char_value_bufinfo;
+    mp_get_buffer_raise(characteristic->initial_value, &char_value_bufinfo, MP_BUFFER_READ);
+
     ble_gatts_attr_t char_attr = {
         .p_uuid = &char_uuid,
         .p_attr_md = &char_attr_md,
-        .init_len = 0,
-        .p_value = NULL,
+        .init_len = char_value_bufinfo.len,
+        .p_value = char_value_bufinfo.buf,
         .init_offs = 0,
         .max_len = characteristic->max_length,
     };

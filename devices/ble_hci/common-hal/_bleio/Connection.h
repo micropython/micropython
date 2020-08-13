@@ -50,7 +50,7 @@ typedef struct {
     uint16_t conn_handle;
     bool is_central;
     // Remote services discovered when this peripheral is acting as a client.
-    bleio_service_obj_t *remote_service_linked_list;
+    mp_obj_list_t *remote_service_list;
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
     // there are tricks to get the SD to notice (see DevZone - TBS).
@@ -60,7 +60,6 @@ typedef struct {
     volatile pair_status_t pair_status;
     uint8_t sec_status; // Internal security status.
     mp_obj_t connection_obj;
-    //REMOVE ble_drv_evt_handler_entry_t handler_entry;
     //REMOVE ble_gap_conn_params_t conn_params;
     volatile bool conn_params_updating;
     uint16_t mtu;

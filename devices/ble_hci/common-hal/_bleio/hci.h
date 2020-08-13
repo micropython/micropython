@@ -75,6 +75,6 @@ hci_result_t hci_read_rssi(uint16_t handle, int *rssi);
 hci_result_t hci_reset(void);
 
 hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint8_t data_len, uint8_t *data);
-hci_result_t hci_set_evt_mask(uint64_t event_mask);
+hci_result_t hci_set_event_mask(uint64_t event_mask);
 
 #endif // MICROPY_INCLUDED_DEVICES_BLE_HCI_COMMON_HAL_BLEIO_HCI_H

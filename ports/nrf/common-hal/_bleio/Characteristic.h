@@ -39,7 +39,7 @@ typedef struct _bleio_characteristic_obj {
     // Will be MP_OBJ_NULL before being assigned to a Service.
     bleio_service_obj_t *service;
     bleio_uuid_obj_t *uuid;
-    mp_obj_t value;
+    mp_obj_t initial_value;
     uint16_t max_length;
     bool fixed_length;
     uint16_t handle;

@@ -40,8 +40,8 @@ typedef struct _bleio_characteristic_obj {
     bleio_service_obj_t *service;
     bleio_uuid_obj_t *uuid;
     mp_obj_t value;
-    mp_obj_list_t watcher_list;
-    mp_obj_list_t descriptor_linked_list;
+    mp_obj_t observer;
+    mp_obj_list_t *descriptor_list;
     uint16_t max_length;
     bool fixed_length;
     uint16_t decl_handle;
@@ -50,9 +50,14 @@ typedef struct _bleio_characteristic_obj {
     bleio_attribute_security_mode_t read_perm;
     bleio_attribute_security_mode_t write_perm;
     bleio_descriptor_obj_t *descriptor_linked_list;
-    uint16_t user_desc_handle;
-    uint16_t cccd_handle;
-    uint16_t sccd_handle;
+    bleio_descriptor_obj_t *user_desc;
+    bleio_descriptor_obj_t *cccd;
+    bleio_descriptor_obj_t *sccd;
 } bleio_characteristic_obj_t;
+
+bool bleio_characteristic_set_local_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo);
+
+void bleio_characteristic_set_observer(bleio_characteristic_obj_t *self, mp_obj_t observer);
+void bleio_characteristic_clear_observer(bleio_characteristic_obj_t *self);
 
 #endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTIC_H

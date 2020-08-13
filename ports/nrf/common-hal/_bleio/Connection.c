@@ -523,7 +523,7 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
             characteristic, m_char_discovery_service, gattc_char->handle_value, uuid,
             props, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,
             GATT_MAX_DATA_LENGTH, false,   // max_length, fixed_length: values may not matter for gattc
-            NULL);
+            mp_const_empty_bytes);
 
         mp_obj_list_append(MP_OBJ_FROM_PTR(m_char_discovery_service->characteristic_list),
                            MP_OBJ_FROM_PTR(characteristic));

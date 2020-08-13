@@ -39,6 +39,7 @@ void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_c
     self->handle = BLE_GATT_HANDLE_INVALID;
     self->read_perm = read_perm;
     self->write_perm = write_perm;
+    self->initial_value = mp_obj_new_bytes(initial_value_bufinfo->buf, initial_value_bufinfo->len);
 
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
@@ -47,8 +48,6 @@ void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_c
     }
     self->max_length = max_length;
     self->fixed_length = fixed_length;
-
-    common_hal_bleio_descriptor_set_value(self, initial_value_bufinfo);
 }
 
 bleio_uuid_obj_t *common_hal_bleio_descriptor_get_uuid(bleio_descriptor_obj_t *self) {
@@ -80,8 +79,6 @@ void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buff
     if (bufinfo->len > self->max_length) {
         mp_raise_ValueError(translate("Value length > max_length"));
     }
-
-    self->value = mp_obj_new_bytes(bufinfo->buf, bufinfo->len);
 
     // Do GATT operations only if this descriptor has been registered.
     if (self->handle != BLE_GATT_HANDLE_INVALID) {

@@ -172,15 +172,14 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
             struct bt_hci_evt_disconn_complete *disconn_complete =
                 (struct bt_hci_evt_disconn_complete*) pkt->params;
             (void) disconn_complete;
-            //FIX
-            // ATT.removeConnection(disconn_complete->handle, disconn_complete->reason);
-            // L2CAPSignaling.removeConnection(disconn_complete->handle, disconn_complete->reason);
+
+            att_remove_connection(disconn_complete->handle, disconn_complete->reason);
+            //FIX L2CAPSignaling.removeConnection(disconn_complete->handle, disconn_complete->reason);
             hci_le_set_advertising_enable(0x01);
             break;
         }
 
         case BT_HCI_EVT_CMD_COMPLETE: {
-
             struct cmd_complete_with_status {
                 struct bt_hci_evt_cmd_complete cmd_complete;
                 struct bt_hci_evt_cc_status cc_status;
@@ -238,19 +237,21 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
                     (struct bt_hci_evt_le_conn_complete *) le_evt;
 
                 if (le_conn_complete->status == BT_HCI_ERR_SUCCESS) {
-                    // ATT.addConnection(le_conn_complete->handle,
-                    //                   le_conn_complete->role,
-                    //                   le_conn_complete->peer_addr  //FIX struct
-                    //                   le_conn_complete->interval,
-                    //                   le_conn_complete->latency,
-                    //                   le_conn_complete->supv_timeout
-                    //                   le_conn_complete->clock_accuracy);
+                    att_add_connection(
+                        le_conn_complete->handle,
+                        le_conn_complete->role,
+                        &le_conn_complete->peer_addr,
+                        le_conn_complete->interval,
+                        le_conn_complete->latency,
+                        le_conn_complete->supv_timeout,
+                        le_conn_complete->clock_accuracy);
 
                 }
             } else if (meta_evt->subevent == BT_HCI_EVT_LE_ADVERTISING_REPORT) {
                 struct bt_hci_evt_le_advertising_info *le_advertising_info =
                     (struct bt_hci_evt_le_advertising_info *) le_evt;
-                if (le_advertising_info->evt_type == BT_HCI_ADV_DIRECT_IND) {  //FIX handle kind of advertising
+                if (le_advertising_info->evt_type == BT_HCI_ADV_DIRECT_IND) {
+                    //FIX
                     // last byte is RSSI
                     // GAP.handleLeAdvertisingReport(leAdvertisingReport->type,
                     //                               leAdvertisingReport->peerBdaddrType,
@@ -538,7 +539,7 @@ hci_result_t hci_read_rssi(uint16_t handle, int *rssi) {
     return result;
 }
 
-hci_result_t hci_set_evt_mask(uint64_t event_mask) {
+hci_result_t hci_set_event_mask(uint64_t event_mask) {
     return send_command(BT_HCI_OP_SET_EVENT_MASK, sizeof(event_mask), &event_mask);
 }
 

@@ -60,6 +60,8 @@
 #define UNIT_1_25_MS  (1250)
 #define UNIT_10_MS    (10000)
 
+#define MAX_ADVERTISEMENT_SIZE (31)
+
 // TODO make this settable from Python.
 #define DEFAULT_TX_POWER 0  // 0 dBm
 #define MAX_ANONYMOUS_ADV_TIMEOUT_SECS (60*15)
@@ -179,12 +181,30 @@ STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
 }
 
 // Get various values and limits set by the adapter.
-STATIC void bleio_adapter_get_info(bleio_adapter_obj_t *self) {
+// Set event mask.
+STATIC void bleio_adapter_setup(bleio_adapter_obj_t *self) {
 
+    // Get version information.
+    if (hci_read_local_version(&self->hci_version, &self->hci_revision, &self->lmp_version,
+                               &self->manufacturer, &self->lmp_subversion) != HCI_OK) {
+        mp_raise_bleio_BluetoothError(translate("Could not read HCI version"));
+    }
     // Get supported features.
     if (hci_le_read_local_supported_features(self->features) != HCI_OK) {
         mp_raise_bleio_BluetoothError(translate("Could not read BLE features"));
     }
+
+    // Enabled desired events.
+    // Most importantly, includes:
+    // BT_EVT_MASK_LE_META_EVENT                BT_EVT_BIT(61)
+    if (hci_set_event_mask(0x3FFFFFFFFFFFFFFF) != HCI_OK) {
+        mp_raise_bleio_BluetoothError(translate("Could not set event mask"));
+    }
+    // The default events for LE are:
+    // BT_EVT_MASK_LE_CONN_COMPLETE,  BT_EVT_MASK_LE_ADVERTISING_REPORT,
+    // BT_EVT_MASK_LE_CONN_UPDATE_COMPLETE, BT_EVT_MASK_LE_REMOTE_FEAT_COMPLETE
+    // BT_EVT_MASK_LE_LTK_REQUEST.
+    // That's all we need right now, so we don't bother to set the LE event mask.
 
     // Get ACL buffer info.
     uint16_t le_max_len;
@@ -213,7 +233,7 @@ STATIC void bleio_adapter_get_info(bleio_adapter_obj_t *self) {
         }
         self->max_adv_data_len = max_adv_data_len;
     } else {
-        self->max_adv_data_len = 31;
+        self->max_adv_data_len = MAX_ADVERTISEMENT_SIZE;
     }
 }
 
@@ -226,7 +246,7 @@ void common_hal_bleio_adapter_hci_uart_init(bleio_adapter_obj_t *self, busio_uar
     self->enabled = false;
 
     common_hal_bleio_adapter_set_enabled(self, true);
-    bleio_adapter_get_info(self);
+    bleio_adapter_setup(self);
     bleio_adapter_reset_name(self);
 }
 
@@ -477,14 +497,10 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     return mp_const_none;
 }
 
-// The nRF SD 6.1.0 can only do one concurrent advertisement so share the advertising handle.
-//FIX uint8_t adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
-
 STATIC void check_data_fit(size_t data_len, bool connectable) {
-    //FIX  if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED ||
-    //     (connectable && data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_CONNECTABLE_MAX_SUPPORTED)) {
-    //     mp_raise_ValueError(translate("Data too large for advertisement packet"));
-    // }
+    if (data_len > MAX_ADVERTISEMENT_SIZE) {
+        mp_raise_ValueError(translate("Data too large for advertisement packet"));
+    }
 }
 
 // STATIC bool advertising_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
@@ -604,8 +620,9 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
                 0x00            // filter policy: no filter
                 ));
 
-        // The HCI commands expect 31 octets, even though the actual data length may be shorter.
-        uint8_t full_data[31] = { 0 };
+        // The HCI commands expect MAX_ADVERTISEMENT_SIZE (31)octets,
+        // even though the actual data length may be shorter.
+        uint8_t full_data[MAX_ADVERTISEMENT_SIZE] = { 0 };
         memcpy(full_data, advertising_data, MIN(sizeof(full_data), advertising_data_len));
         check_hci_error(hci_le_set_advertising_data(advertising_data_len, full_data));
         memset(full_data, 0, sizeof(full_data));
@@ -636,7 +653,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     check_data_fit(advertising_data_bufinfo->len, connectable);
     check_data_fit(scan_response_data_bufinfo->len, connectable);
 
-    if (advertising_data_bufinfo->len > 31 && scan_response_data_bufinfo->len > 0) {
+    if (advertising_data_bufinfo->len > MAX_ADVERTISEMENT_SIZE && scan_response_data_bufinfo->len > 0) {
         mp_raise_bleio_BluetoothError(translate("Extended advertisements with scan response not supported."));
     }
 

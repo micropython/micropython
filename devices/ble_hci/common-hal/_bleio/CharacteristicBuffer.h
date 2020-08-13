@@ -38,4 +38,6 @@ typedef struct {
     ringbuf_t ringbuf;
 } bleio_characteristic_buffer_obj_t;
 
+void bleio_characteristic_buffer_update(bleio_characteristic_buffer_obj_t *self, mp_buffer_info_t *bufinfo);
+
 #endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_CHARACTERISTICBUFFER_H

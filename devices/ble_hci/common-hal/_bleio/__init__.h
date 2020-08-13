@@ -31,6 +31,7 @@
 
 #include "shared-bindings/_bleio/UUID.h"
 
+#include "att.h"
 #include "hci.h"
 
 void bleio_background(void);
@@ -44,7 +45,7 @@ typedef struct {
 
 // We assume variable length data.
 // 20 bytes max (23 - 3).
-#define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
+#define GATT_MAX_DATA_LENGTH (BT_ATT_DEFAULT_LE_MTU - 3)
 
 //FIX
 #define BLE_GATT_HANDLE_INVALID 0x0000

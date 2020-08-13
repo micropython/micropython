@@ -70,8 +70,8 @@ bleio_uuid_obj_t *common_hal_bleio_service_get_uuid(bleio_service_obj_t *self) {
     return self->uuid;
 }
 
-mp_obj_list_t *common_hal_bleio_service_get_characteristic_list(bleio_service_obj_t *self) {
-    return self->characteristic_list;
+mp_obj_tuple_t *common_hal_bleio_service_get_characteristics(bleio_service_obj_t *self) {
+    return mp_obj_new_tuple(self->characteristic_list->len, self->characteristic_list->items);
 }
 
 bool common_hal_bleio_service_get_is_remote(bleio_service_obj_t *self) {
@@ -122,21 +122,8 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
 
         // Adds CCCD to attribute table, and also extends self->end_handle to include the CCCD.
         common_hal_bleio_characteristic_add_descriptor(characteristic, cccd);
-        characteristic->cccd_handle = cccd->handle;
+        characteristic->cccd = cccd;
     }
-
-    // #if CIRCUITPY_VERBOSE_BLE
-    // // Turn on read authorization so that we receive an event to print on every read.
-    // char_attr_md.rd_auth = true;
-    // #endif
-
-    // These are not supplied or available.
-    characteristic->user_desc_handle = BLE_GATT_HANDLE_INVALID;
-    characteristic->sccd_handle = BLE_GATT_HANDLE_INVALID;
-
-    // #if CIRCUITPY_VERBOSE_BLE
-    // mp_printf(&mp_plat_print, "Char handle %x user %x cccd %x sccd %x\n", characteristic->handle, characteristic->user_desc_handle, characteristic->cccd_handle, characteristic->sccd_handle);
-    // #endif
 
     mp_obj_list_append(self->characteristic_list, MP_OBJ_FROM_PTR(characteristic));
 }

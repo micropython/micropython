@@ -37,44 +37,13 @@
 #include "common-hal/_bleio/CharacteristicBuffer.h"
 
 // Push all the data onto the ring buffer. When the buffer is full, new bytes will be dropped.
-// STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *data, uint16_t len) {
-//     uint8_t is_nested_critical_region;
-//     sd_nvic_critical_region_enter(&is_nested_critical_region);
-//     ringbuf_put_n(&self->ringbuf, data, len);
-//     sd_nvic_critical_region_exit(is_nested_critical_region);
-// }
+STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *data, uint16_t len) {
+    ringbuf_put_n(&self->ringbuf, data, len);
+}
 
-// STATIC bool characteristic_buffer_on_ble_evt(ble_evt_t *ble_evt, void *param) {
-//     bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *) param;
-//     switch (ble_evt->header.evt_id) {
-//         case BLE_GATTS_EVT_WRITE: {
-//             // A client wrote to this server characteristic.
-
-//             ble_gatts_evt_write_t *evt_write = &ble_evt->evt.gatts_evt.params.write;
-//             // Event handle must match the handle for my characteristic.
-//             if (evt_write->handle == self->characteristic->handle) {
-//                 write_to_ringbuf(self, evt_write->data, evt_write->len);
-//             }
-//             break;
-//         }
-
-//         case BLE_GATTC_EVT_HVX: {
-//             // A remote service wrote to this characteristic.
-
-//             ble_gattc_evt_hvx_t* evt_hvx = &ble_evt->evt.gattc_evt.params.hvx;
-//             // Must be a notification, and event handle must match the handle for my characteristic.
-//             if (evt_hvx->type == BLE_GATT_HVX_NOTIFICATION &&
-//                 evt_hvx->handle == self->characteristic->handle) {
-//                 write_to_ringbuf(self, evt_hvx->data, evt_hvx->len);
-//             }
-//             break;
-//         }
-//         default:
-//             return false;
-//             break;
-//     }
-//     return true;
-// }
+void bleio_characteristic_buffer_update(bleio_characteristic_buffer_obj_t *self, mp_buffer_info_t *bufinfo) {
+    write_to_ringbuf(self, bufinfo->buf, bufinfo->len);
+}
 
 // Assumes that timeout and buffer_size have been validated before call.
 void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
@@ -88,8 +57,7 @@ void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffe
     // true means long-lived, so it won't be moved.
     ringbuf_alloc(&self->ringbuf, buffer_size, true);
 
-    // FIX ble_drv_add_event_handler(characteristic_buffer_on_ble_evt, self);
-
+    bleio_characteristic_set_observer(characteristic, self);
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self, uint8_t *data, size_t len, int *errcode) {
@@ -104,32 +72,17 @@ uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer
         }
     }
 
-    // Copy received data. Lock out write interrupt handler while copying.
-    // FIX uint8_t is_nested_critical_region;
-    // FIX sd_nvic_critical_region_enter(&is_nested_critical_region);
-
     uint32_t num_bytes_read = ringbuf_get_n(&self->ringbuf, data, len);
-
-    // Writes now OK.
-    // FIX sd_nvic_critical_region_exit(is_nested_critical_region);
-
     return num_bytes_read;
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_rx_characters_available(bleio_characteristic_buffer_obj_t *self) {
-    //FIX uint8_t is_nested_critical_region;
-    //FIX sd_nvic_critical_region_enter(&is_nested_critical_region);
     uint16_t count = ringbuf_num_filled(&self->ringbuf);
-    //FIX sd_nvic_critical_region_exit(is_nested_critical_region);
     return count;
 }
 
 void common_hal_bleio_characteristic_buffer_clear_rx_buffer(bleio_characteristic_buffer_obj_t *self) {
-    // prevent conflict with uart irq
-    //FIX uint8_t is_nested_critical_region;
-    //FIX sd_nvic_critical_region_enter(&is_nested_critical_region);
     ringbuf_clear(&self->ringbuf);
-    //FIX sd_nvic_critical_region_exit(is_nested_critical_region);
 }
 
 bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer_obj_t *self) {
@@ -138,7 +91,7 @@ bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer
 
 void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self) {
     if (!common_hal_bleio_characteristic_buffer_deinited(self)) {
-        //FIX ble_drv_remove_event_handler(characteristic_buffer_on_ble_evt, self);
+        bleio_characteristic_clear_observer(self->characteristic);
     }
 }
 
