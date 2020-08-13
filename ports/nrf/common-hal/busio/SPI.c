@@ -34,6 +34,22 @@
 #include "nrfx_spim.h"
 #include "nrf_gpio.h"
 
+#ifndef NRFX_SPIM3_ENABLED
+#define NRFX_SPIM3_ENABLED (0)
+#endif
+
+#ifndef NRFX_SPIM2_ENABLED
+#define NRFX_SPIM2_ENABLED (0)
+#endif
+
+#ifndef NRFX_SPIM1_ENABLED
+#define NRFX_SPIM1_ENABLED (0)
+#endif
+
+#ifndef NRFX_SPIM0_ENABLED
+#define NRFX_SPIM0_ENABLED (0)
+#endif
+
 // These are in order from highest available frequency to lowest (32MHz first, then 8MHz).
 STATIC spim_peripheral_t spim_peripherals[] = {
 #if NRFX_CHECK(NRFX_SPIM3_ENABLED)

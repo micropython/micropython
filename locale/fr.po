@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
-"PO-Revision-Date: 2020-06-05 17:29+0000\n"
-"Last-Translator: aberwag <aberwag@gmail.com>\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
+"PO-Revision-Date: 2020-07-27 21:27+0000\n"
+"Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.1-dev\n"
+"X-Generator: Weblate 4.2-dev\n"
 
 #: main.c
 msgid ""
@@ -70,7 +70,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "Échec de %q : %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -90,7 +90,7 @@ msgstr "La liste %q doit être une liste"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q doit être >= 0"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -106,7 +106,7 @@ msgstr "%q doit être un tuple de longueur 2"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q pin invalid"
-msgstr ""
+msgstr "PIN %q invalide"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -242,7 +242,7 @@ msgstr "'continue' en dehors d'une boucle"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "L'objet « coroutine » n'est pas un itérateur"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -337,7 +337,7 @@ msgstr "S'annonce déjà."
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Déjà en cours d'exécution"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -378,7 +378,7 @@ msgstr "Au plus %d %q peut être spécifié (pas %d)"
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Tentative d'allocation de %d blocs"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -462,7 +462,7 @@ msgstr "La longueur du tampon %d est trop grande. Il doit être inférieur à %d
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr ""
+msgstr "La longueur de la mémoire tampon doit être un multiple de 512"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -633,11 +633,11 @@ msgstr "Code brut corrompu"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
-msgstr ""
+msgstr "Impossible d'initialiser GNSS"
 
 #: ports/cxd56/common-hal/sdioio/SDCard.c
 msgid "Could not initialize SDCard"
-msgstr ""
+msgstr "Impossible d'initialiser la carte SD"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
@@ -887,10 +887,6 @@ msgstr "opération d'E/S sur un fichier fermé"
 msgid "I2C Init Error"
 msgstr "Erreur d'initialisation I2C"
 
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr ""
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -931,7 +927,7 @@ msgstr "Erreur interne #%d"
 
 #: shared-bindings/sdioio/SDCard.c
 msgid "Invalid %q"
-msgstr ""
+msgstr "%q invalide"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1147,7 +1143,7 @@ msgstr "Doit fournir une broche MISO ou MOSI"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "Must provide SCK pin"
-msgstr ""
+msgstr "Vous devez fournir un code PIN SCK"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1446,7 +1442,7 @@ msgstr "Mode sans-échec ! Le code sauvegardé n'est pas éxecuté.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
-msgstr ""
+msgstr "Le format de carte SD CSD n'est pas pris en charge"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
@@ -1520,7 +1516,7 @@ msgstr "Fournissez au moins une broche UART"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
-msgstr ""
+msgstr "L'entrée du système doit être gnss.SatelliteSystem"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
@@ -2113,7 +2109,7 @@ msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "can't set 512 block size"
-msgstr ""
+msgstr "impossible de définir une taille de bloc de 512"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -2250,7 +2246,7 @@ msgstr "n'a pas pu inverser la matrice Vandermonde"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "couldn't determine SD card version"
-msgstr ""
+msgstr "impossible de déterminer la version de la carte SD"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
@@ -2821,7 +2817,7 @@ msgstr "compte de décalage négatif"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
-msgstr ""
+msgstr "pas de carte SD"
 
 #: py/vm.c
 msgid "no active exception to reraise"
@@ -2846,7 +2842,7 @@ msgstr "pas de broche de réinitialisation disponible"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
-msgstr ""
+msgstr "pas de réponse de la carte SD"
 
 #: py/runtime.c
 msgid "no such attribute"
@@ -3490,11 +3486,11 @@ msgstr ""
 #~ msgid "'async for' or 'async with' outside async function"
 #~ msgstr "'async for' ou 'async with' sans fonction asynchrone extérieure"
 
-#~ msgid "PulseIn not supported on this chip"
-#~ msgstr "PulseIn non pris en charge sur cette puce"
-
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut non pris en charge sur cette puce"
+
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "PulseIn non pris en charge sur cette puce"
 
 #~ msgid "AP required"
 #~ msgstr "'AP' requis"

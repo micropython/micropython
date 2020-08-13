@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
 "PO-Revision-Date: 2020-06-16 18:24+0000\n"
 "Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language: de_DE\n"
@@ -881,10 +881,6 @@ msgstr "Lese/Schreibe-operation an geschlossener Datei"
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
 msgstr "I2C-Init-Fehler"
-
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -3487,11 +3483,11 @@ msgstr ""
 #~ msgid "'async for' or 'async with' outside async function"
 #~ msgstr "'async for' oder 'async with' außerhalb der asynchronen Funktion"
 
-#~ msgid "PulseIn not supported on this chip"
-#~ msgstr "PulseIn wird auf diesem Chip nicht unterstützt"
-
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut wird auf diesem Chip nicht unterstützt"
+
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "PulseIn wird auf diesem Chip nicht unterstützt"
 
 #~ msgid "AP required"
 #~ msgstr "AP erforderlich"

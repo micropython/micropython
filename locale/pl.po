@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -861,10 +861,6 @@ msgstr "Operacja I/O na zamkniętym pliku"
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
-msgstr ""
-
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
 msgstr ""
 
 #: shared-bindings/aesio/aes.c

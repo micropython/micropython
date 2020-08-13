@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -870,10 +870,6 @@ msgstr "Wénjiàn shàng de I/ O cāozuò"
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
 msgstr "I2C chūshǐhuà cuòwù"
-
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format

@@ -352,7 +352,8 @@ STATIC void rgbmatrix_rgbmatrix_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *
 
 // These version exists so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
-STATIC void rgbmatrix_rgbmatrix_swapbuffers(mp_obj_t self_in) {
+STATIC void rgbmatrix_rgbmatrix_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
+    (void)dirty_row_bitmap;
     common_hal_rgbmatrix_rgbmatrix_refresh(self_in);
 }
 

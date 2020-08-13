@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -871,10 +871,6 @@ msgstr "I/O operasyon sa saradong file"
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
-msgstr ""
-
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
 msgstr ""
 
 #: shared-bindings/aesio/aes.c
@@ -2055,7 +2051,7 @@ msgstr "hindi puede ang maraming *x"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
-msgstr "hindi maaaring ma-convert ang ' %q' sa 'bool'"
+msgstr "hindi maaaring ma-convert ang '% qt' sa 'bool'"
 
 #: py/emitnative.c
 msgid "can't load from '%q'"

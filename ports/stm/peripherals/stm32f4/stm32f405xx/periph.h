@@ -61,4 +61,15 @@ extern const mcu_periph_obj_t mcu_uart_rx_list[UART_RX_ARRAY_LEN];
 TIM_TypeDef * mcu_tim_banks[TIM_BANK_ARRAY_LEN];
 const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN];
 
+//SDIO
+extern SDIO_TypeDef * mcu_sdio_banks[1];
+
+extern const mcu_periph_obj_t mcu_sdio_clock_list[1];
+extern const mcu_periph_obj_t mcu_sdio_command_list[1];
+extern const mcu_periph_obj_t mcu_sdio_data0_list[1];
+extern const mcu_periph_obj_t mcu_sdio_data1_list[1];
+extern const mcu_periph_obj_t mcu_sdio_data2_list[1];
+extern const mcu_periph_obj_t mcu_sdio_data3_list[1];
+
+
 #endif // MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F405XX_PERIPH_H

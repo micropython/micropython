@@ -253,6 +253,7 @@ jobs:
         - "pca10100"
         - "pewpew10"
         - "pewpew_m4"
+        - "picoplanet"
         - "pirkey_m0"
         - "pitaya_go"
         - "pyb_nano_v2"

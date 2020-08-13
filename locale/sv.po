@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
-"PO-Revision-Date: 2020-08-05 20:32+0000\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
+"PO-Revision-Date: 2020-07-25 20:58+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -226,7 +226,7 @@ msgstr "'await' utanför funktion"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr "'await', 'async for' eller 'async with' utanför async-funktion"
+msgstr ""
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -874,10 +874,6 @@ msgstr "I/O-operation på stängd fil"
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
 msgstr "I2C init-fel"
-
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr "I2SOut är inte tillgängligt"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1854,7 +1850,7 @@ msgstr "argumentet har fel typ"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr "argumentet måste vara ndarray"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2119,7 +2115,7 @@ msgstr ""
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
-msgstr "kan inte skapa instanser av '%q'"
+msgstr "kan inte skapa instanser av '% q'"
 
 #: py/objtype.c
 msgid "cannot create instance"
@@ -3249,7 +3245,7 @@ msgstr "för många värden att packa upp (förväntat %d)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr "interp är definierad för 1D-matriser med samma längd"
+msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c py/objstr.c
 msgid "tuple index out of range"
@@ -3381,7 +3377,7 @@ msgstr "value_count måste vara > 0"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr "vektorer måste ha samma längd"
+msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
@@ -3447,13 +3443,16 @@ msgstr "zi måste vara av typ float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
 
+#~ msgid "'%q' object is not bytes-like"
+#~ msgstr "%q-objektet är inte byte-lik"
+
 #~ msgid "'async for' or 'async with' outside async function"
 #~ msgstr "'async for' eller 'async with' utanför async-funktion"
 
-#~ msgid "PulseIn not supported on this chip"
+#~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseIn stöds inte av detta chip"
 
-#~ msgid "PulseOut not supported on this chip"
+#~ msgid "PulseIn not supported on this chip"
 #~ msgstr "PulseIn stöds inte av detta chip"
 
 #~ msgid "I2C operation not supported"

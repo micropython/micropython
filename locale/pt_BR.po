@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
-"PO-Revision-Date: 2020-07-31 14:41+0000\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
+"PO-Revision-Date: 2020-07-28 15:41+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -885,10 +885,6 @@ msgstr "Operação I/O no arquivo fechado"
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
 msgstr "Erro de inicialização do I2C"
-
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr "O I2SOut não está disponível"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1876,7 +1872,7 @@ msgstr "argumento tem tipo errado"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr "o argumento deve ser um ndarray"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -3074,7 +3070,7 @@ msgstr "a anotação do retorno deve ser um identificador"
 
 #: py/emitnative.c
 msgid "return expected '%q' but got '%q'"
-msgstr "o retorno esperado era '%q', porém obteve '%q'"
+msgstr "o retorno esperado era '%q', porém obteve '% q'"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -3282,7 +3278,7 @@ msgstr "valores demais para descompactar (esperado %d)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr "o trapz está definido para 1D arrays de igual tamanho"
+msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c py/objstr.c
 msgid "tuple index out of range"
@@ -3414,7 +3410,7 @@ msgstr "o value_count deve ser > 0"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr "os vetores devem ter os mesmos comprimentos"
+msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
@@ -3486,11 +3482,11 @@ msgstr "zi deve estar na forma (n_section, 2)"
 #~ msgid "'async for' or 'async with' outside async function"
 #~ msgstr "'assíncrono para' ou 'assíncrono com' função assíncrona externa"
 
-#~ msgid "PulseIn not supported on this chip"
-#~ msgstr "O PulseIn não é compatível neste CI"
-
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "O PulseOut não é compatível neste CI"
+
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "O PulseIn não é compatível neste CI"
 
 #~ msgid "AP required"
 #~ msgstr "AP requerido"

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
-"PO-Revision-Date: 2020-07-22 20:48+0000\n"
+"POT-Creation-Date: 2020-07-28 16:57-0500\n"
+"PO-Revision-Date: 2020-07-24 21:12+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -89,7 +89,7 @@ msgstr "%q lista debe ser una lista"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q debe ser >= 0"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -241,7 +241,7 @@ msgstr "'continue' fuera de un bucle"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "el objeto 'coroutine' no es un iterador"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -338,7 +338,7 @@ msgstr "Ya se encuentra publicando."
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Ya está en ejecución"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -378,7 +378,7 @@ msgstr "Como máximo %d %q se puede especificar (no %d)"
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Tratando de localizar %d bloques"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -882,10 +882,6 @@ msgstr "Operación I/O en archivo cerrado"
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C Init Error"
 msgstr "Error de inicio de I2C"
-
-#: shared-bindings/audiobusio/I2SOut.c
-msgid "I2SOut not available"
-msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1591,6 +1587,8 @@ msgstr ""
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+"El temporizador es utilizado para uso interno - declare los pines para PWM "
+"más temprano en el programa"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3470,11 +3468,11 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgid "'async for' or 'async with' outside async function"
 #~ msgstr "'async for' o 'async with' fuera de la función async"
 
-#~ msgid "PulseIn not supported on this chip"
-#~ msgstr "PulseIn no es compatible con este chip"
-
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut no es compatible con este chip"
+
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "PulseIn no es compatible con este chip"
 
 #~ msgid "AP required"
 #~ msgstr "AP requerido"
@@ -3719,8 +3717,8 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d "
 #~ "bpp given"
 #~ msgstr ""
-#~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:%d "
-#~ "bppdado"
+#~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:% "
+#~ "d bppdado"
 
 #, fuzzy
 #~ msgid "Only slices with step=1 (aka None) are supported"
