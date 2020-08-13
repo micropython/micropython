@@ -588,6 +588,13 @@ extern const struct _mp_obj_module_t socketpool_module;
 #define SOCKETPOOL_MODULE
 #endif
 
+#if CIRCUITPY_SSL
+extern const struct _mp_obj_module_t ssl_module;
+#define SSL_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_ssl), (mp_obj_t)&ssl_module },
+#else
+#define SSL_MODULE
+#endif
+
 #if CIRCUITPY_STAGE
 extern const struct _mp_obj_module_t stage_module;
 #define STAGE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module },
@@ -773,6 +780,7 @@ extern const struct _mp_obj_module_t wifi_module;
     SDIOIO_MODULE \
     SHARPDISPLAY_MODULE \
     SOCKETPOOL_MODULE \
+    SSL_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \

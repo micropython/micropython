@@ -24,16 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLCONTEXT_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLCONTEXT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H
 
-#include "py/obj.h"
+#include "common-hal/ssl/SSLContext.h"
 
-#include "esp-idf/components/esp-tls/esp_tls.h"
+#include "shared-bindings/socketpool/Socket.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    esp_tls_cfg_t ssl_config;
-} ssl_sslcontext_obj_t;
+extern const mp_obj_type_t ssl_sslcontext_type;
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSL_CONTEXT_H
+// typedef enum {
+//     SOCKETPOOL_SOCK_STREAM,
+//     SOCKETPOOL_SOCK_DGRAM,
+//     SOCKETPOOL_SOCK_RAW
+// } socketpool_socketpool_sock_t;
+
+// typedef enum {
+//     SOCKETPOOL_AF_INET,
+//     SOCKETPOOL_AF_INET6
+// } socketpool_socketpool_addressfamily_t;
+
+void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t* self);
+
+socketpool_socket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,
+    socketpool_socket_obj_t* sock, bool server_side, const char* server_hostname);
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H

@@ -24,16 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLCONTEXT_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLCONTEXT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SSL___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_SSL___INIT___H
 
-#include "py/obj.h"
+#include "common-hal/ssl/SSLContext.h"
 
-#include "esp-idf/components/esp-tls/esp_tls.h"
+void common_hal_ssl_create_default_context(ssl_sslcontext_obj_t* self);
 
-typedef struct {
-    mp_obj_base_t base;
-    esp_tls_cfg_t ssl_config;
-} ssl_sslcontext_obj_t;
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSL_CONTEXT_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SSL___INIT___H

@@ -48,7 +48,7 @@
 #include "esp_log.h"
 static const char *TAG = "cp port";
 
-#define HEAP_SIZE (64 * 1024)
+#define HEAP_SIZE (48 * 1024)
 
 STATIC esp_timer_handle_t _tick_timer;
 

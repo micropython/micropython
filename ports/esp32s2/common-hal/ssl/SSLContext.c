@@ -24,16 +24,18 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/socketpool/SocketPool.h"
+#include "shared-bindings/ssl/SSLContext.h"
 
 #include "py/runtime.h"
 
-#include "esp-idf/components/lwip/lwip/src/include/lwip/netdb.h"
+void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t* self) {
+
+}
 
 socketpool_socket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,
     socketpool_socket_obj_t* socket, bool server_side, const char* server_hostname) {
 
-
+    socket->ssl_context = self;
     // Should we store server hostname on the socket in case connect is called with an ip?
     return socket;
 }

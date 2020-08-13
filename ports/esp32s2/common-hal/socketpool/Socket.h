@@ -30,6 +30,7 @@
 #include "py/obj.h"
 
 #include "common-hal/socketpool/SocketPool.h"
+#include "common-hal/ssl/SSLContext.h"
 
 #include "esp-idf/components/esp-tls/esp_tls.h"
 
@@ -37,7 +38,7 @@ typedef struct {
     mp_obj_base_t base;
     int num;
     esp_tls_t* tcp;
-    esp_tls_cfg_t* ssl_context;
+    ssl_sslcontext_obj_t* ssl_context;
     socketpool_socketpool_obj_t* pool;
     mp_uint_t timeout_ms;
 } socketpool_socket_obj_t;

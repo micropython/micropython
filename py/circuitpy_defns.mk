@@ -231,6 +231,9 @@ endif
 ifeq ($(CIRCUITPY_SOCKETPOOL),1)
 SRC_PATTERNS += socketpool/%
 endif
+ifeq ($(CIRCUITPY_SSL),1)
+SRC_PATTERNS += ssl/%
+endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
 endif
@@ -340,6 +343,8 @@ SRC_COMMON_HAL_ALL = \
 	socketpool/__init__.c \
 	socketpool/SocketPool.c \
 	socketpool/Socket.c \
+	ssl/__init__.c \
+	ssl/SSLContext.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \

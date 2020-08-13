@@ -39,7 +39,11 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const c
     // should become more and more common. Therefore, we optimize for the TLS case.
 
     ESP_LOGI(TAG, "connecting to %s:%d %p", host, port, self->ssl_context);
-    int result = esp_tls_conn_new_sync(host, hostlen, port, self->ssl_context, self->tcp);
+    esp_tls_cfg_t* tls_config = NULL;
+    if (self->ssl_context != NULL) {
+        tls_config = &self->ssl_context->ssl_config;
+    }
+    int result = esp_tls_conn_new_sync(host, hostlen, port, tls_config, self->tcp);
     ESP_LOGI(TAG, "result %d", result);
     return result >= 0;
 }
