@@ -45,12 +45,22 @@ Configuration
 
     Currently supported values are:
 
-    - ``'mac'``: Returns the device MAC address. If a device has a fixed address
-      (e.g. PYBD) then it will be returned. Otherwise (e.g. ESP32) a random
-      address will be generated when the BLE interface is made active.
+    - ``'mac'``: The current address in use, depending on the current address mode.
+      This returns a tuple of ``(addr_type, addr)``.
 
-      **Note:** on some ports, accessing this value requires that the interface is
-      active (so that the MAC address can be queried from the controller).
+      See :meth:`gatts_write <BLE.gap_scan>` for details about address type.
+
+      This may only be queried while the interface is currently active.
+
+    - ``'addr_mode'``: Sets the address mode. Values can be:
+
+        * 0x00 - PUBLIC - Use the controller's public address.
+        * 0x01 - RANDOM - Use a generated static address.
+        * 0x02 - RPA - Use resolvable private addresses.
+        * 0x03 - NRPA - Use non-resolvable private addresses.
+
+      By default the interface mode will use a PUBLIC address if available, otherwise
+      it will use a RANDOM address.
 
     - ``'gap_name'``: Get/set the GAP device name used by service 0x1800,
       characteristic 0x2a00.  This can be set at any time and changed multiple
@@ -219,8 +229,13 @@ Observer Role (Scanner)
     (background scanning).
 
     For each scan result the ``_IRQ_SCAN_RESULT`` event will be raised, with event
-    data ``(addr_type, addr, adv_type, rssi, adv_data)``.  ``adv_type`` values correspond
-    to the Bluetooth Specification:
+    data ``(addr_type, addr, adv_type, rssi, adv_data)``.
+
+    ``addr_type`` values indicate public or random addresses:
+        * 0x00 - PUBLIC
+        * 0x01 - RANDOM (either static, RPA, or NRPA, the type is encoded in the address itself)
+
+    ``adv_type`` values correspond to the Bluetooth Specification:
 
         * 0x00 - ADV_IND - connectable and scannable undirected advertising
         * 0x01 - ADV_DIRECT_IND - connectable directed advertising
@@ -341,6 +356,8 @@ Central Role (GATT Client)
 .. method:: BLE.gap_connect(addr_type, addr, scan_duration_ms=2000, /)
 
     Connect to a peripheral.
+
+    See :meth:`gatts_write <BLE.gap_scan>` for details about address types.
 
     On success, the ``_IRQ_PERIPHERAL_CONNECT`` event will be raised.
 
