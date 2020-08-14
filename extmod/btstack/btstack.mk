@@ -31,8 +31,16 @@ SRC_BTSTACK = \
 	lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
+	$(error Cannot specifiy both MICROPY_BLUETOOTH_BTSTACK_USB and MICROPY_BLUETOOTH_BTSTACK_H4)
+endif
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
 SRC_BTSTACK += \
 	lib/btstack/platform/libusb/hci_transport_h2_libusb.c
+
+CFLAGS_MOD += -DMICROPY_BLUETOOTH_BTSTACK_USB=1
 
 CFLAGS  += $(shell pkg-config libusb-1.0 --cflags)
 LDFLAGS += $(shell pkg-config libusb-1.0 --libs)
