@@ -47,9 +47,11 @@ ifdef DEBUG
 COPT ?= -O0
 else
 COPT ?= -Os
-COPT += -fdata-sections -ffunction-sections
 COPT += -DNDEBUG
 endif
+
+# Remove unused sections.
+COPT += -fdata-sections -ffunction-sections
 
 # Always enable symbols -- They're occasionally useful, and don't make it into the
 # final .bin/.hex/.dfu so the extra size doesn't matter.
