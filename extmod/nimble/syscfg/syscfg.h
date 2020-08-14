@@ -2,12 +2,14 @@
 #define MICROPY_INCLUDED_EXTMOD_NIMBLE_SYSCFG_H
 
 #include "py/mphal.h"
-#include "uart.h"
+
+#include "mpnimbleport.h"
 
 void *nimble_malloc(size_t size);
 void nimble_free(void *ptr);
 void *nimble_realloc(void *ptr, size_t size);
 
+// Redirect NimBLE malloc to the GC heap.
 #define malloc(size) nimble_malloc(size)
 #define free(ptr) nimble_free(ptr)
 #define realloc(ptr, size) nimble_realloc(ptr, size)
@@ -88,6 +90,7 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_BLE_GATT_WRITE_NO_RSP (MYNEWT_VAL_BLE_ROLE_CENTRAL)
 #define MYNEWT_VAL_BLE_GATT_WRITE_RELIABLE (MYNEWT_VAL_BLE_ROLE_CENTRAL)
 #define MYNEWT_VAL_BLE_HOST (1)
+#define MYNEWT_VAL_BLE_HS_AUTO_START (1)
 #define MYNEWT_VAL_BLE_HS_DEBUG (0)
 #define MYNEWT_VAL_BLE_HS_FLOW_CTRL (0)
 #define MYNEWT_VAL_BLE_HS_FLOW_CTRL_ITVL (1000)
