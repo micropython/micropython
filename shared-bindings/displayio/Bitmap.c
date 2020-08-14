@@ -182,8 +182,8 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 //|         :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
 //|         : param int x1: Minimum x-value for rectangular bounding box to be copied from the source bitmap
 //|         : param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
-//|         : param int x2: Maximum x-value for rectangular bounding box to be copied from the source bitmap
-//|         : param int y2: Maximum y-value for rectangular bounding box to be copied from the source bitmap
+//|         : param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
+//|         : param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
 //|         : param int skip_index: bitmap palette index in the source that will not be copied,
 //|             set `None` to copy all pixels"""
 //|         ...
@@ -195,8 +195,8 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
         {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT},
         {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT},
         {MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
-        {MP_QSTR_x1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = 0} },
-        {MP_QSTR_y1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = 0} },
+        {MP_QSTR_x1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        {MP_QSTR_y1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         {MP_QSTR_x2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->width
         {MP_QSTR_y2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->height
         {MP_QSTR_skip_index, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj=mp_const_none} },
@@ -216,7 +216,9 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
         mp_raise_ValueError(translate("Cannot blit: source palette too large."));
     }
 
-    int16_t x1, y1, x2, y2;
+    int16_t x1 = args[ARG_x1].u_int;
+    int16_t y1 = args[ARG_y1].u_int;
+    int16_t x2, y2;
     // if x2 or y2 is None, then set as the maximum size of the source bitmap
     if ( args[ARG_x2].u_obj == mp_const_none ) {
         x2 = source->width;
