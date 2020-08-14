@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_LIB_UTILS_MPIRQ_H
 #define MICROPY_INCLUDED_LIB_UTILS_MPIRQ_H
 
-#include "py/obj.h"
+#include "py/runtime.h"
 
 /******************************************************************************
  DEFINE CONSTANTS
