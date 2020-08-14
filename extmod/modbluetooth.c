@@ -308,9 +308,11 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                 return mp_obj_new_bytes(buf, len);
             }
             case MP_QSTR_mac: {
+                uint8_t addr_type;
                 uint8_t addr[6];
-                mp_bluetooth_get_device_addr(addr);
-                return mp_obj_new_bytes(addr, MP_ARRAY_SIZE(addr));
+                mp_bluetooth_get_current_address(&addr_type, addr);
+                mp_obj_t items[] = { MP_OBJ_NEW_SMALL_INT(addr_type), mp_obj_new_bytes(addr, MP_ARRAY_SIZE(addr)) };
+                return mp_obj_new_tuple(2, items);
             }
             case MP_QSTR_rxbuf:
                 return mp_obj_new_int(self->ringbuf.size);
@@ -364,6 +366,11 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                         // Free old buffers
                         m_del(uint8_t, old_ringbuf_buf, old_ringbuf_alloc);
                         m_del(uint8_t, old_irq_data_buf, old_irq_data_alloc);
+                        break;
+                    }
+                    case MP_QSTR_addr_mode: {
+                        mp_int_t addr_mode = mp_obj_get_int(e->value);
+                        mp_bluetooth_set_address_mode(addr_mode);
                         break;
                     }
                     default:

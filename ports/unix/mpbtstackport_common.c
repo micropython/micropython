@@ -93,7 +93,4 @@ void mp_bluetooth_btstack_port_init(void) {
     #endif
 }
 
-void mp_hal_get_mac(int idx, uint8_t buf[6]) {
-}
-
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK

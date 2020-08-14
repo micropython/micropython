@@ -50,6 +50,8 @@
 
 #define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
 
+STATIC uint8_t nimble_address_mode = BLE_OWN_ADDR_RANDOM;
+
 // Any BLE_HS_xxx code not in this table will default to MP_EIO.
 STATIC int8_t ble_hs_err_to_errno_table[] = {
     [BLE_HS_EAGAIN] = MP_EAGAIN,
@@ -148,9 +150,26 @@ STATIC void reset_cb(int reason) {
     (void)reason;
 }
 
+STATIC bool has_public_address(void) {
+    return ble_hs_id_copy_addr(BLE_ADDR_PUBLIC, NULL, NULL) == 0;
+}
+
+STATIC void set_random_address(bool nrpa) {
+    int rc;
+    (void)rc;
+    DEBUG_printf("sync_cb: Generating random static address\n");
+    ble_addr_t addr;
+    rc = ble_hs_id_gen_rnd(nrpa ? 1 : 0, &addr);
+    assert(rc == 0);
+    rc = ble_hs_id_set_rnd(addr.val);
+    assert(rc == 0);
+    rc = ble_hs_util_ensure_addr(1);
+    assert(rc == 0);
+}
+
 STATIC void sync_cb(void) {
     int rc;
-    ble_addr_t addr;
+    (void)rc;
 
     DEBUG_printf("sync_cb: state=%d\n", mp_bluetooth_nimble_ble_state);
 
@@ -158,25 +177,11 @@ STATIC void sync_cb(void) {
         return;
     }
 
-    rc = ble_hs_util_ensure_addr(0); // prefer public address
-    if (rc != 0) {
-        // https://mynewt.apache.org/latest/tutorials/ble/eddystone.html#configure-the-nimble-stack-with-an-address
-        #if MICROPY_PY_BLUETOOTH_RANDOM_ADDR
-        rc = ble_hs_id_gen_rnd(1, &addr);
-        assert(rc == 0);
-        rc = ble_hs_id_set_rnd(addr.val);
-        assert(rc == 0);
-        #else
-        uint8_t addr_be[6];
-        mp_hal_get_mac(MP_HAL_MAC_BDADDR, addr_be);
-        reverse_addr_byte_order(addr.val, addr_be);
-        // ble_hs_id_set_pub(addr.val);
-        rc = ble_hs_id_set_rnd(addr.val);
-        assert(rc == 0);
-        #endif
-
-        rc = ble_hs_util_ensure_addr(0); // prefer public address
-        assert(rc == 0);
+    if (has_public_address()) {
+        nimble_address_mode = BLE_OWN_ADDR_PUBLIC;
+    } else {
+        nimble_address_mode = BLE_OWN_ADDR_RANDOM;
+        set_random_address(false);
     }
 
     if (MP_BLUETOOTH_DEFAULT_ATTR_LEN > 20) {
@@ -412,19 +417,65 @@ bool mp_bluetooth_is_active(void) {
     return mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE;
 }
 
-void mp_bluetooth_get_device_addr(uint8_t *addr) {
-    #if MICROPY_PY_BLUETOOTH_RANDOM_ADDR
+void mp_bluetooth_get_current_address(uint8_t *addr_type, uint8_t *addr) {
+    if (!mp_bluetooth_is_active()) {
+        mp_raise_OSError(ERRNO_BLUETOOTH_NOT_ACTIVE);
+    }
+
     uint8_t addr_le[6];
-    int rc = ble_hs_id_copy_addr(BLE_ADDR_RANDOM, addr_le, NULL);
+
+    switch (nimble_address_mode) {
+        case BLE_OWN_ADDR_PUBLIC:
+            *addr_type = BLE_ADDR_PUBLIC;
+            break;
+        case BLE_OWN_ADDR_RANDOM:
+            *addr_type = BLE_ADDR_RANDOM;
+            break;
+        case BLE_OWN_ADDR_RPA_PUBLIC_DEFAULT:
+        case BLE_OWN_ADDR_RPA_RANDOM_DEFAULT:
+        default:
+            // TODO: If RPA/NRPA in use, get the current value.
+            // Is this even possible in NimBLE?
+            mp_raise_OSError(MP_EINVAL);
+    }
+
+    int rc = ble_hs_id_copy_addr(*addr_type, addr_le, NULL);
     if (rc != 0) {
-        // Even with MICROPY_PY_BLUETOOTH_RANDOM_ADDR enabled the public address may
-        // be used instead, in which case there is no random address.
-        ble_hs_id_copy_addr(BLE_ADDR_PUBLIC, addr_le, NULL);
+        mp_raise_OSError(MP_EINVAL);
     }
     reverse_addr_byte_order(addr, addr_le);
-    #else
-    mp_hal_get_mac(MP_HAL_MAC_BDADDR, addr);
-    #endif
+}
+
+void mp_bluetooth_set_address_mode(uint8_t addr_mode) {
+    switch (addr_mode) {
+        case MP_BLUETOOTH_ADDRESS_MODE_PUBLIC:
+            if (!has_public_address()) {
+                // No public address available.
+                mp_raise_OSError(MP_EINVAL);
+            }
+            nimble_address_mode = BLE_OWN_ADDR_PUBLIC;
+            break;
+        case MP_BLUETOOTH_ADDRESS_MODE_RANDOM:
+            // Generate an static random address.
+            set_random_address(false);
+            nimble_address_mode = BLE_OWN_ADDR_RANDOM;
+            break;
+        case MP_BLUETOOTH_ADDRESS_MODE_RPA:
+            if (has_public_address()) {
+                nimble_address_mode = BLE_OWN_ADDR_RPA_PUBLIC_DEFAULT;
+            } else {
+                // Generate an static random address to use as the identity address.
+                set_random_address(false);
+                nimble_address_mode = BLE_OWN_ADDR_RPA_RANDOM_DEFAULT;
+            }
+            break;
+        case MP_BLUETOOTH_ADDRESS_MODE_NRPA:
+            // Generate an NRPA.
+            set_random_address(true);
+            // In NimBLE, NRPA is treated like a static random address that happens to be an NRPA.
+            nimble_address_mode = BLE_OWN_ADDR_RANDOM;
+            break;
+    }
 }
 
 size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf) {
@@ -473,19 +524,7 @@ int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, cons
         .channel_map = 7, // all 3 channels.
     };
 
-    ret = ble_gap_adv_start(BLE_OWN_ADDR_PUBLIC, NULL, BLE_HS_FOREVER, &adv_params, gap_event_cb, NULL);
-    if (ret == 0) {
-        return 0;
-    }
-    ret = ble_gap_adv_start(BLE_OWN_ADDR_RPA_PUBLIC_DEFAULT, NULL, BLE_HS_FOREVER, &adv_params, gap_event_cb, NULL);
-    if (ret == 0) {
-        return 0;
-    }
-    ret = ble_gap_adv_start(BLE_OWN_ADDR_RPA_RANDOM_DEFAULT, NULL, BLE_HS_FOREVER, &adv_params, gap_event_cb, NULL);
-    if (ret == 0) {
-        return 0;
-    }
-    ret = ble_gap_adv_start(BLE_OWN_ADDR_RANDOM, NULL, BLE_HS_FOREVER, &adv_params, gap_event_cb, NULL);
+    ret = ble_gap_adv_start(nimble_address_mode, NULL, BLE_HS_FOREVER, &adv_params, gap_event_cb, NULL);
     if (ret == 0) {
         return 0;
     }
@@ -756,7 +795,7 @@ int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_
         .passive = active_scan ? 0 : 1,
         .filter_duplicates = 0,
     };
-    int err = ble_gap_disc(BLE_OWN_ADDR_PUBLIC, duration_ms, &discover_params, gap_scan_cb, NULL);
+    int err = ble_gap_disc(nimble_address_mode, duration_ms, &discover_params, gap_scan_cb, NULL);
     return ble_hs_err_to_errno(err);
 }
 
@@ -847,7 +886,7 @@ int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, 
     };
 
     ble_addr_t addr_nimble = create_nimble_addr(addr_type, addr);
-    int err = ble_gap_connect(BLE_OWN_ADDR_PUBLIC, &addr_nimble, duration_ms, &params, &peripheral_gap_event_cb, NULL);
+    int err = ble_gap_connect(nimble_address_mode, &addr_nimble, duration_ms, &params, &peripheral_gap_event_cb, NULL);
     return ble_hs_err_to_errno(err);
 }
 

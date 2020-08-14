@@ -271,6 +271,14 @@ STATIC void btstack_packet_handler_att_server(uint8_t packet_type, uint16_t chan
     }
 }
 
+#if MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+// During startup, the controller (e.g. Zephyr) might give us a static address that we can use.
+STATIC uint8_t controller_static_addr[6] = {0};
+STATIC bool controller_static_addr_available = false;
+
+STATIC const uint8_t read_static_address_command_complete_prefix[] = { 0x0e, 0x1b, 0x01, 0x09, 0xfc };
+#endif
+
 STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t irq) {
     DEBUG_printf("btstack_packet_handler(packet_type=%u, packet=%p)\n", packet_type, packet);
     if (packet_type != HCI_EVENT_PACKET) {
@@ -313,6 +321,13 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         DEBUG_printf("  --> hci transport packet sent\n");
     } else if (event_type == HCI_EVENT_COMMAND_COMPLETE) {
         DEBUG_printf("  --> hci command complete\n");
+        #if MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+        if (memcmp(packet, read_static_address_command_complete_prefix, sizeof(read_static_address_command_complete_prefix)) == 0) {
+            DEBUG_printf("  --> static address available\n");
+            reverse_48(&packet[7], controller_static_addr);
+            controller_static_addr_available = true;
+        }
+        #endif // MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
     } else if (event_type == HCI_EVENT_COMMAND_STATUS) {
         DEBUG_printf("  --> hci command status\n");
     } else if (event_type == HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS) {
@@ -493,6 +508,60 @@ STATIC void btstack_init_deinit_timeout_handler(btstack_timer_source_t *ds) {
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_TIMEOUT;
 }
 
+STATIC void btstack_static_address_ready(void *arg) {
+    DEBUG_printf("btstack_static_address_ready.\n");
+    *(volatile bool *)arg = true;
+}
+
+STATIC bool set_public_address(void) {
+    bd_addr_t local_addr;
+    gap_local_bd_addr(local_addr);
+    bd_addr_t null_addr = {0};
+    if (memcmp(local_addr, null_addr, 6) == 0) {
+        DEBUG_printf("set_public_address: No public address available.\n");
+        return false;
+    }
+    DEBUG_printf("set_public_address: Using controller's public address.\n");
+    gap_random_address_set_mode(GAP_RANDOM_ADDRESS_TYPE_OFF);
+    return true;
+}
+
+STATIC void set_random_address(void) {
+    #if MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+    if (controller_static_addr_available) {
+        DEBUG_printf("set_random_address: Using static address supplied by controller.\n");
+        gap_random_address_set(controller_static_addr);
+    } else
+    #endif // MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+    {
+        DEBUG_printf("set_random_address: Generating random static address.\n");
+        btstack_crypto_random_t sm_crypto_random_request;
+        bd_addr_t static_addr;
+        volatile bool ready = false;
+        btstack_crypto_random_generate(&sm_crypto_random_request, static_addr, 6, &btstack_static_address_ready, (void *)&ready);
+        while (!ready) {
+            MICROPY_EVENT_POLL_HOOK
+        }
+        DEBUG_printf("set_random_address: Address generated.\n");
+        gap_random_address_set(static_addr);
+    }
+
+    // Wait for the controller to accept this address.
+    while (true) {
+        uint8_t addr_type;
+        bd_addr_t addr;
+        gap_le_get_own_address(&addr_type, addr);
+
+        bd_addr_t null_addr = {0};
+        if (memcmp(addr, null_addr, 6) != 0) {
+            break;
+        }
+
+        MICROPY_EVENT_POLL_HOOK
+    }
+    DEBUG_printf("set_random_address: Address loaded by controller\n");
+}
+
 int mp_bluetooth_init(void) {
     DEBUG_printf("mp_bluetooth_init\n");
 
@@ -504,6 +573,10 @@ int mp_bluetooth_init(void) {
     mp_bluetooth_deinit();
 
     btstack_memory_init();
+
+    #if MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
+    controller_static_addr_available = false;
+    #endif
 
     MP_STATE_PORT(bluetooth_btstack_root_pointers) = m_new0(mp_bluetooth_btstack_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db);
@@ -563,7 +636,21 @@ int mp_bluetooth_init(void) {
 
         // Clean up.
         MP_STATE_PORT(bluetooth_btstack_root_pointers) = NULL;
+
         return MP_ETIMEDOUT;
+    }
+
+    DEBUG_printf("mp_bluetooth_init: stack startup complete\n");
+
+    // At this point if the controller has its own public address, btstack will know this.
+    // However, if this is not available, then attempt to get a static address:
+    //  - For a Zephyr controller on nRF, a static address will be available during startup.
+    //  - Otherwise we ask the controller to generate a static address for us.
+    // In either case, calling gap_random_address_set will set the mode to STATIC, and then
+    // immediately set the address on the controller. We then wait until this address becomes available.
+
+    if (!set_public_address()) {
+        set_random_address();
     }
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
@@ -612,8 +699,39 @@ bool mp_bluetooth_is_active(void) {
     return mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
 }
 
-void mp_bluetooth_get_device_addr(uint8_t *addr) {
-    mp_hal_get_mac(MP_HAL_MAC_BDADDR, addr);
+void mp_bluetooth_get_current_address(uint8_t *addr_type, uint8_t *addr) {
+    if (!mp_bluetooth_is_active()) {
+        mp_raise_OSError(ERRNO_BLUETOOTH_NOT_ACTIVE);
+    }
+
+    DEBUG_printf("mp_bluetooth_get_current_address\n");
+    gap_le_get_own_address(addr_type, addr);
+}
+
+void mp_bluetooth_set_address_mode(uint8_t addr_mode) {
+    if (!mp_bluetooth_is_active()) {
+        mp_raise_OSError(ERRNO_BLUETOOTH_NOT_ACTIVE);
+    }
+
+    switch (addr_mode) {
+        case MP_BLUETOOTH_ADDRESS_MODE_PUBLIC: {
+            DEBUG_printf("mp_bluetooth_set_address_mode: public\n");
+            if (!set_public_address()) {
+                // No public address available.
+                mp_raise_OSError(MP_EINVAL);
+            }
+            break;
+        }
+        case MP_BLUETOOTH_ADDRESS_MODE_RANDOM: {
+            DEBUG_printf("mp_bluetooth_set_address_mode: random\n");
+            set_random_address();
+            break;
+        }
+        case MP_BLUETOOTH_ADDRESS_MODE_RPA:
+        case MP_BLUETOOTH_ADDRESS_MODE_NRPA:
+            // Not yet supported.
+            mp_raise_OSError(MP_EINVAL);
+    }
 }
 
 size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf) {
