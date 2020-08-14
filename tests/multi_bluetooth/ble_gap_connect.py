@@ -76,7 +76,7 @@ def instance1():
     try:
         # Connect to peripheral and then disconnect.
         print("gap_connect")
-        ble.gap_connect(0, BDADDR)
+        ble.gap_connect(*BDADDR)
         if not wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS):
             return
         print("gap_disconnect:", ble.gap_disconnect(waiting_data[0]))
@@ -88,7 +88,7 @@ def instance1():
 
         # Connect to peripheral and then let the peripheral disconnect us.
         print("gap_connect")
-        ble.gap_connect(0, BDADDR)
+        ble.gap_connect(*BDADDR)
         if not wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS):
             return
         wait_for_event(_IRQ_PERIPHERAL_DISCONNECT, TIMEOUT_MS)

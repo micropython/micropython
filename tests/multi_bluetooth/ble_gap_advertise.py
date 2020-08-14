@@ -36,7 +36,7 @@ def instance1():
     def irq(ev, data):
         nonlocal finished, adv_types, adv_data
         if ev == _IRQ_SCAN_RESULT:
-            if data[1] == BDADDR:
+            if data[0] == BDADDR[0] and data[1] == BDADDR[1]:
                 adv_types.add(data[2])
                 if adv_data is None:
                     adv_data = bytes(data[4])
