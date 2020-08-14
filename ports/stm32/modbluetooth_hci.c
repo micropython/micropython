@@ -135,6 +135,7 @@ int mp_bluetooth_hci_uart_readchar(void) {
 #include "uart.h"
 
 pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
+mp_irq_obj_t mp_bluetooth_hci_uart_irq_obj;
 
 static uint8_t hci_uart_rxbuf[512];
 
@@ -163,15 +164,14 @@ int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
 }
 
 int mp_bluetooth_hci_uart_activate(void) {
-    // Interrupt on RX chunk received (idle)
-    // Trigger stack poll when this happens
-    mp_obj_t uart_irq_fn = mp_load_attr(MP_OBJ_FROM_PTR(&mp_bluetooth_hci_uart_obj), MP_QSTR_irq);
-    mp_obj_t uargs[] = {
-        MP_OBJ_FROM_PTR(&mp_uart_interrupt_obj),
-        MP_OBJ_NEW_SMALL_INT(UART_FLAG_IDLE),
-        mp_const_true,
-    };
-    mp_call_function_n_kw(uart_irq_fn, 3, 0, uargs);
+    // Add IRQ handler for IDLE (i.e. packet finished).
+    uart_irq_config(&mp_bluetooth_hci_uart_obj, false);
+    mp_irq_init(&mp_bluetooth_hci_uart_irq_obj, &uart_irq_methods, MP_OBJ_FROM_PTR(&mp_bluetooth_hci_uart_obj));
+    mp_bluetooth_hci_uart_obj.mp_irq_obj = &mp_bluetooth_hci_uart_irq_obj;
+    mp_bluetooth_hci_uart_obj.mp_irq_trigger = UART_FLAG_IDLE;
+    mp_bluetooth_hci_uart_irq_obj.handler = MP_OBJ_FROM_PTR(&mp_uart_interrupt_obj);
+    mp_bluetooth_hci_uart_irq_obj.ishard = true;
+    uart_irq_config(&mp_bluetooth_hci_uart_obj, true);
 
     mp_bluetooth_hci_controller_init();
     mp_bluetooth_hci_controller_activate();
