@@ -42,6 +42,7 @@ extern bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self);
 extern void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled);
 extern bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self);
 extern bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *self);
+extern bool common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_address_obj_t *address);
 
 extern mp_obj_str_t* common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self);
 extern void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char* name);
