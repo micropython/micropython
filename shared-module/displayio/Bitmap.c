@@ -129,7 +129,6 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
             }
         }
     }
-   
 }
 
 
