@@ -184,7 +184,8 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 //|         : param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
 //|         : param int x2: Maximum x-value for rectangular bounding box to be copied from the source bitmap
 //|         : param int y2: Maximum y-value for rectangular bounding box to be copied from the source bitmap
-//|         : param int skip_index: bitmap palette index in the source that will not be copied, set `None` to copy all pixels
+//|         : param int skip_index: bitmap palette index in the source that will not be copied,
+//|             set `None` to copy all pixels"""
 //|         ...
 //|
 
@@ -229,19 +230,17 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
         y2 = mp_obj_get_int(args[ARG_y2].u_obj);
     }
 
-
     // Check x,y are within self (target) bitmap boundary
     if ( (x < 0) || (y < 0) || (x > self->width) || (y > self->height) ) {
             mp_raise_ValueError(translate("(x,y): out of range of target bitmap"));
     }
     // Check x1,y1,x2,y2 are within source bitmap boundary
-    if ( (x1 < 0) || (x1 > source->width)  || 
-        (y1 < 0) || (y1 > source->height) || 
+    if ( (x1 < 0) || (x1 > source->width)  ||
+        (y1 < 0) || (y1 > source->height) ||
         (x2 < 0) || (x2 > source->width)  ||
         (y2 < 0) || (y2 > source->height) ) {
             mp_raise_ValueError(translate("(x1,y1) or (x2,y2): out of range of source bitmap"));
     }
-    
     // Ensure x1 < x2 and y1 < y2
     if (x1 > x2) {
         int16_t temp=x2;
@@ -254,7 +253,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
         y1=temp;
     }
 
-    uint32_t skip_index; 
+    uint32_t skip_index;
     bool skip_index_none; // flag whether skip_value was None
 
     if (args[ARG_skip_index].u_obj == mp_const_none ) {
@@ -263,7 +262,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     } else {
         skip_index = mp_obj_get_int(args[ARG_skip_index].u_obj);
         skip_index_none = false;
-    }    
+    }
 
     common_hal_displayio_bitmap_blit(self, x, y, source, x1, y1, x2, y2, skip_index, skip_index_none);
 

@@ -110,7 +110,7 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
     // Copy complete "source" bitmap into "self" bitmap at location x,y in the "self"
     // Add a boolean to determine if all values are copied, or only if non-zero
     // 
-    // If skip_value is encountered in the source bitmap, it will not be copied.  
+    // If skip_value is encountered in the source bitmap, it will not be copied.
     // If skip_value is `None`, then all pixels are copied.
 
     if (self->read_only) {
