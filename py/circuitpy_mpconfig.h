@@ -363,6 +363,13 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define TERMINALIO_MODULE
 #endif
 
+#if CIRCUITPY_ESPIDF
+extern const struct _mp_obj_module_t espidf_module;
+#define ESPIDF_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_espidf),(mp_obj_t)&espidf_module },
+#else
+#define ESPIDF_MODULE
+#endif
+
 #if CIRCUITPY_FRAMEBUFFERIO
 extern const struct _mp_obj_module_t framebufferio_module;
 #define FRAMEBUFFERIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_framebufferio), (mp_obj_t)&framebufferio_module },
@@ -750,6 +757,7 @@ extern const struct _mp_obj_module_t wifi_module;
       TERMINALIO_MODULE \
       VECTORIO_MODULE \
     ERRNO_MODULE \
+    ESPIDF_MODULE \
     FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \

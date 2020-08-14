@@ -25,5 +25,6 @@ CIRCUITPY_RTC = 0
 CIRCUITPY_NVM = 0
 CIRCUITPY_USB_MIDI = 0 # We don't have enough endpoints to include MIDI.
 CIRCUITPY_WIFI = 1
+CIRCUITPY_ESPIDF = 1
 
 CIRCUITPY_MODULE ?= none
