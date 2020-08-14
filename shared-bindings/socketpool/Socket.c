@@ -155,32 +155,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket___exit___obj, 4, 4,
 //|         """Closes this Socket and makes its resources available to its SocketPool."""
 //|
 STATIC mp_obj_t socketpool_socket_close(mp_obj_t self_in) {
-    // mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    // // create new socket object
-    // // starts with empty NIC so that finaliser doesn't run close() method if accept() fails
-    // mod_network_socket_obj_t *socket2 = m_new_obj_with_finaliser(mod_network_socket_obj_t);
-    // socket2->base.type = &socket_type;
-    // socket2->nic = MP_OBJ_NULL;
-    // socket2->nic_type = NULL;
-
-    // // accept incoming connection
-    // uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
-    // mp_uint_t port;
-    // int _errno;
-    // if (self->nic_type->accept(self, socket2, ip, &port, &_errno) != 0) {
-    //     mp_raise_OSError(_errno);
-    // }
-
-    // // new socket has valid state, so set the NIC to the same as parent
-    // socket2->nic = self->nic;
-    // socket2->nic_type = self->nic_type;
-
-    // // make the return value
-    // mp_obj_tuple_t *client = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
-    // client->items[0] = MP_OBJ_FROM_PTR(socket2);
-    // client->items[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
-
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_socketpool_socket_close(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_close_obj, socketpool_socket_close);

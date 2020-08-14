@@ -35,5 +35,6 @@ void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_u
 bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const char* host, size_t hostlen, mp_int_t port);
 mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);
+void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H
