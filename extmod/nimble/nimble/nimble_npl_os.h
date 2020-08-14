@@ -61,6 +61,7 @@ struct ble_npl_callout {
 
 struct ble_npl_mutex {
     volatile uint8_t locked;
+    volatile uint32_t atomic_state;
 };
 
 struct ble_npl_sem {

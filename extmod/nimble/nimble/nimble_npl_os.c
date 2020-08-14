@@ -249,21 +249,62 @@ void ble_npl_event_set_arg(struct ble_npl_event *ev, void *arg) {
 /******************************************************************************/
 // MUTEX
 
+// This is what MICROPY_BEGIN_ATOMIC_SECTION returns on Unix (i.e. we don't
+// need to preserve the atomic state to unlock).
+#define ATOMIC_STATE_MUTEX_NOT_HELD 0xffffffff
+
 ble_npl_error_t ble_npl_mutex_init(struct ble_npl_mutex *mu) {
     DEBUG_MUTEX_printf("ble_npl_mutex_init(%p)\n", mu);
     mu->locked = 0;
+    mu->atomic_state = ATOMIC_STATE_MUTEX_NOT_HELD;
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_mutex_pend(struct ble_npl_mutex *mu, ble_npl_time_t timeout) {
-    DEBUG_MUTEX_printf("ble_npl_mutex_pend(%p, %u) locked=%u\n", mu, (uint)timeout, (uint)mu->locked);
-    mu->locked = 1;
+    DEBUG_MUTEX_printf("ble_npl_mutex_pend(%p, %u) locked=%u irq=%d\n", mu, (uint)timeout, (uint)mu->locked);
+
+    // This is a recursive mutex which we implement on top of the IRQ priority
+    // scheme. Unfortunately we have a single piece of global storage, where
+    // enter/exit critical needs an "atomic state".
+
+    // There are two different acquirers, either running in a VM thread (i.e.
+    // a direct Python call into NimBLE), or in the NimBLE task (i.e. polling
+    // or UART RX).
+
+    // On STM32 the NimBLE task runs in PENDSV, so cannot be interrupted by a VM thread.
+    // Therefore we only need to ensure that a VM thread that acquires a currently-unlocked mutex
+    // now raises the priority (thus preventing context switches to other VM threads and
+    // the PENDSV irq). If the mutex is already locked, then it must have been acquired
+    // by us.
+
+    // On Unix, the critical section is completely recursive and doesn't require us to manage
+    // state so we just acquire and release every time.
+
+    // TODO: The "volatile" on locked/atomic_state isn't enough to protect against memory re-ordering.
+
+    // First acquirer of this mutex always enters the critical section, unless
+    // we're on Unix where it happens every time.
+    if (mu->atomic_state == ATOMIC_STATE_MUTEX_NOT_HELD) {
+        mu->atomic_state = mp_bluetooth_nimble_hci_uart_enter_critical();
+    }
+
+    ++mu->locked;
+
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_mutex_release(struct ble_npl_mutex *mu) {
-    DEBUG_MUTEX_printf("ble_npl_mutex_release(%p) locked=%u\n", mu, (uint)mu->locked);
-    mu->locked = 0;
+    DEBUG_MUTEX_printf("ble_npl_mutex_release(%p) locked=%u irq=%d\n", mu, (uint)mu->locked);
+    assert(mu->locked > 0);
+
+    --mu->locked;
+
+    // Only exit the critical section for the final release, unless we're on Unix.
+    if (mu->locked == 0 || mu->atomic_state == ATOMIC_STATE_MUTEX_NOT_HELD) {
+        mp_bluetooth_nimble_hci_uart_exit_critical(mu->atomic_state);
+        mu->atomic_state = ATOMIC_STATE_MUTEX_NOT_HELD;
+    }
+
     return BLE_NPL_OK;
 }
 
