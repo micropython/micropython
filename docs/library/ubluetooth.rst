@@ -204,7 +204,7 @@ Broadcaster Role (Advertiser)
 Observer Role (Scanner)
 -----------------------
 
-.. method:: BLE.gap_scan(duration_ms, [interval_us], [window_us])
+.. method:: BLE.gap_scan(duration_ms, [interval_us], [window_us], [active])
 
     Run a scan operation lasting for the specified duration (in **milli**\ seconds).
 
@@ -219,8 +219,8 @@ Observer Role (Scanner)
     (background scanning).
 
     For each scan result the ``_IRQ_SCAN_RESULT`` event will be raised, with event
-    data ``(addr_type, addr, adv_type, rssi, adv_data)``.  ``adv_type`` values correspond
-    to the Bluetooth Specification:
+    data ``(addr_type, addr, adv_type, rssi, adv_data)``.  
+    ``adv_type`` values correspond to the Bluetooth Specification:
 
         * 0x00 - ADV_IND - connectable and scannable undirected advertising
         * 0x01 - ADV_DIRECT_IND - connectable directed advertising
@@ -228,6 +228,8 @@ Observer Role (Scanner)
         * 0x03 - ADV_NONCONN_IND - non-connectable undirected advertising
         * 0x04 - SCAN_RSP - scan response
 
+    ``active`` can be set ``True`` if you want to receive scan responses in the results.
+    
     When scanning is stopped (either due to the duration finishing or when
     explicitly stopped), the ``_IRQ_SCAN_DONE`` event will be raised.
 
