@@ -32,15 +32,21 @@
 // Requires rmt.c void esp32s2_peripherals_reset_all(void) to reset
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                           const mcu_pin_obj_t* pin,
-                                           uint32_t frequency) {
+                                            const pulseio_pwmout_obj_t* carrier,
+                                            const mcu_pin_obj_t* pin,
+                                            uint32_t frequency,
+                                            uint16_t duty_cycle) {
+    if (carrier || !pin || !frequency) {
+        mp_raise_NotImplementedError(translate("Port does not accept PWM carrier. \
+                                    Pass a pin, frequency and duty cycle instead"));
+    }
 
     rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
 
     // Configure Channel
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin->number, channel);
     config.tx_config.carrier_en = true;
-    config.tx_config.carrier_duty_percent = 50;
+    config.tx_config.carrier_duty_percent = (duty_cycle * 100) / (1<<16);
     config.tx_config.carrier_freq_hz = frequency;
     config.clk_div = 80;
 

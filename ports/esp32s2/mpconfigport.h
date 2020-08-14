@@ -36,8 +36,6 @@
 
 #include "py/circuitpy_mpconfig.h"
 
-#define CPY_PULSEOUT_USES_DIGITALIO     (1)
-
 #define MICROPY_PORT_ROOT_POINTERS \
 	CIRCUITPY_COMMON_ROOT_POINTERS
 #define MICROPY_NLR_SETJMP              (1)

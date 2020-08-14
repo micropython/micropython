@@ -42,15 +42,12 @@ typedef struct {
     bool paused;
 
     RingbufHandle_t buf_handle;
-    volatile bool first_edge;
 
     uint16_t* buffer;
     uint16_t maxlen;
 
     volatile uint16_t start;
     volatile uint16_t len;
-    volatile uint32_t last_overflow;
-    volatile uint16_t last_count;
 } pulseio_pulsein_obj_t;
 
 void pulsein_reset(void);
