@@ -105,7 +105,9 @@ STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_address_obj, bleio_adapter_get_address);
 
 STATIC mp_obj_t bleio_adapter_set_address(mp_obj_t self, mp_obj_t new_address) {
-    common_hal_bleio_adapter_set_address(self, new_address);
+    if (!common_hal_bleio_adapter_set_address(self, new_address)) {
+        mp_raise_bleio_BluetoothError(translate("Could not set address"));
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(bleio_adapter_set_address_obj, bleio_adapter_set_address);
