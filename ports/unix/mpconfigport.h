@@ -309,9 +309,11 @@ void mp_unix_mark_exec(void);
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
+#if MICROPY_PY_BLUETOOTH
+#if MICROPY_BLUETOOTH_BTSTACK
 struct _mp_bluetooth_btstack_root_pointers_t;
 #define MICROPY_BLUETOOTH_ROOT_POINTERS struct _mp_bluetooth_btstack_root_pointers_t *bluetooth_btstack_root_pointers;
+#endif
 #else
 #define MICROPY_BLUETOOTH_ROOT_POINTERS
 #endif

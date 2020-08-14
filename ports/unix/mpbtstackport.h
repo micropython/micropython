@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
-#define MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
 
-// Extensions to extmod/modbluetooth_hci.h specific to NimBLE.
+#ifndef MICROPY_INCLUDED_UNIX_BTSTACK_PORT_H
+#define MICROPY_INCLUDED_UNIX_BTSTACK_PORT_H
 
-#include "extmod/nimble/hal/hal_uart.h"
+#define MICROPY_HW_BLE_UART_ID (0)
+#define MICROPY_HW_BLE_UART_BAUDRATE (1000000)
 
-// Helpers called from ports.
-void mp_bluetooth_nimble_hci_uart_process(void);
+bool mp_bluetooth_hci_poll(void);
 
-// Must be provided by the port.
-void mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg);
-void mp_bluetooth_nimble_hci_uart_tx_strn(const char *str, uint len);
+#if MICROPY_BLUETOOTH_BTSTACK_USB
+void mp_bluetooth_btstack_port_init_usb(void);
+#endif
 
-#endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
+#endif // MICROPY_INCLUDED_UNIX_BTSTACK_PORT_H

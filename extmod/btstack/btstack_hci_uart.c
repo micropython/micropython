@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Damien P. George
+ * Copyright (c) 2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +32,14 @@
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
 
 #include "lib/btstack/src/btstack.h"
-#include "lib/btstack/platform/embedded/btstack_run_loop_embedded.h"
-#include "lib/btstack/platform/embedded/hal_cpu.h"
-#include "lib/btstack/platform/embedded/hal_time_ms.h"
 
-#include "extmod/modbluetooth_hci.h"
-#include "extmod/btstack/modbluetooth_btstack.h"
+#include "extmod/mpbthci.h"
+#include "extmod/btstack/btstack_hci_uart.h"
+
+#include "mpbtstackport.h"
+
+// Implements a btstack btstack_uart_block_t on top of the mphciuart.h
+// interface to an HCI UART provided by the port.
 
 // We pass the bytes directly to the UART during a send, but then notify btstack in the next poll.
 STATIC bool send_done;
@@ -48,42 +51,29 @@ STATIC size_t recv_len;
 STATIC size_t recv_idx;
 STATIC void (*recv_handler)(void);
 
-// The IRQ functionality in btstack_run_loop_embedded.c is not used, so the
-// following three functions are empty.
-
-void hal_cpu_disable_irqs(void) {
-}
-
-void hal_cpu_enable_irqs(void) {
-}
-
-void hal_cpu_enable_irqs_and_sleep(void) {
-}
-
-uint32_t hal_time_ms(void) {
-    return mp_hal_ticks_ms();
-}
-
 STATIC int btstack_uart_init(const btstack_uart_config_t *uart_config) {
+    (void)uart_config;
+
     send_done = false;
     recv_len = 0;
     recv_idx = 0;
     recv_handler = NULL;
     send_handler = NULL;
 
-    // Set up the UART periperhal.
-    mp_bluetooth_hci_uart_init(MICROPY_HW_BLE_UART_ID);
+    // Set up the UART peripheral, attach IRQ and power up the HCI controller.
+    // We haven't been told the baud rate yet, so defer that until btstack_uart_set_baudrate.
+    mp_bluetooth_hci_uart_init(MICROPY_HW_BLE_UART_ID, 0);
+    mp_bluetooth_hci_controller_init();
 
     return 0;
 }
 
 STATIC int btstack_uart_open(void) {
-    // Attach IRQ and power up the HCI controller.
-    mp_bluetooth_hci_uart_activate();
     return 0;
 }
 
 STATIC int btstack_uart_close(void) {
+    mp_bluetooth_hci_controller_deinit();
     return 0;
 }
 
@@ -101,10 +91,12 @@ STATIC int btstack_uart_set_baudrate(uint32_t baudrate) {
 }
 
 STATIC int btstack_uart_set_parity(int parity) {
+    (void)parity;
     return 0;
 }
 
 STATIC int btstack_uart_set_flowcontrol(int flowcontrol) {
+    (void)flowcontrol;
     return 0;
 }
 
@@ -123,14 +115,16 @@ STATIC int btstack_uart_get_supported_sleep_modes(void) {
 }
 
 STATIC void btstack_uart_set_sleep(btstack_uart_sleep_mode_t sleep_mode) {
+    (void)sleep_mode;
     // printf("btstack_uart_set_sleep %u\n", sleep_mode);
 }
 
 STATIC void btstack_uart_set_wakeup_handler(void (*wakeup_handler)(void)) {
+    (void)wakeup_handler;
     // printf("btstack_uart_set_wakeup_handler\n");
 }
 
-STATIC const btstack_uart_block_t btstack_uart_block = {
+const btstack_uart_block_t mp_bluetooth_btstack_hci_uart_block = {
     &btstack_uart_init,
     &btstack_uart_open,
     &btstack_uart_close,
@@ -146,15 +140,9 @@ STATIC const btstack_uart_block_t btstack_uart_block = {
     &btstack_uart_set_wakeup_handler,
 };
 
-STATIC const hci_transport_config_uart_t hci_transport_config_uart = {
-    HCI_TRANSPORT_CONFIG_UART,
-    MICROPY_HW_BLE_UART_BAUDRATE,
-    3000000,
-    0,
-    NULL,
-};
+void mp_bluetooth_btstack_hci_uart_process(void) {
+    bool host_wake = mp_bluetooth_hci_controller_woken();
 
-STATIC void btstack_uart_process(void) {
     if (send_done) {
         // If we'd done a TX in the last interval, notify btstack that it's complete.
         send_done = false;
@@ -176,48 +164,10 @@ STATIC void btstack_uart_process(void) {
             }
         }
     }
-}
 
-void mp_bluetooth_hci_poll(void) {
-    if (mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_OFF) {
-        return;
-    }
-
-    // Process uart data.
-    bool host_wake = mp_bluetooth_hci_controller_woken();
-    btstack_uart_process();
     if (host_wake) {
         mp_bluetooth_hci_controller_sleep_maybe();
     }
-
-    // Call the BTstack run loop.
-    btstack_run_loop_embedded_execute_once();
-}
-
-void mp_bluetooth_btstack_port_init(void) {
-    static bool run_loop_init = false;
-    if (!run_loop_init) {
-        run_loop_init = true;
-        btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
-    } else {
-        btstack_run_loop_embedded_get_instance()->init();
-    }
-
-    // hci_dump_open(NULL, HCI_DUMP_STDOUT);
-    const hci_transport_t *transport = hci_transport_h4_instance(&btstack_uart_block);
-    hci_init(transport, &hci_transport_config_uart);
-
-    // TODO: Probably not necessary for BCM (we have our own firmware loader),
-    // but might be worth investigating for other controllers in the future.
-    // hci_set_chipset(btstack_chipset_bcm_instance());
-}
-
-void mp_bluetooth_btstack_port_deinit(void) {
-    hci_power_control(HCI_POWER_OFF);
-}
-
-void mp_bluetooth_btstack_port_start(void) {
-    hci_power_control(HCI_POWER_ON);
 }
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK

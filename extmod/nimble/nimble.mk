@@ -2,15 +2,18 @@
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
 
-EXTMOD_SRC_C += extmod/nimble/modbluetooth_nimble.c
+EXTMOD_DIR = extmod
+NIMBLE_EXTMOD_DIR = $(EXTMOD_DIR)/nimble
+
+EXTMOD_SRC_C += $(NIMBLE_EXTMOD_DIR)/modbluetooth_nimble.c
 
 CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE=1
-
-NIMBLE_EXTMOD_DIR = extmod/nimble
 
 # Use NimBLE from the submodule in lib/mynewt-nimble by default,
 # allowing a port to use their own system version (e.g. ESP32).
 MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY ?= 0
+
+CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=$(MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY)
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY),0)
 
@@ -82,7 +85,7 @@ LIB_SRC_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 	)
 
 EXTMOD_SRC_C += $(addprefix $(NIMBLE_EXTMOD_DIR)/, \
-	nimble/npl_os.c \
+	nimble/nimble_npl_os.c \
 	hal/hal_uart.c \
 	)
 
@@ -98,7 +101,7 @@ INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/uart/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/porting/nimble/include
 
-$(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-maybe-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format
+$(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-maybe-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format -Wno-sign-compare
 
 endif
 

@@ -38,6 +38,17 @@ CFLAGS  += $(shell pkg-config libusb-1.0 --cflags)
 LDFLAGS += $(shell pkg-config libusb-1.0 --libs)
 endif
 
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
+SRC_BTSTACK += \
+	lib/btstack/src/hci_transport_h4.c \
+	lib/btstack/chipset/zephyr/btstack_chipset_zephyr.c
+
+EXTMOD_SRC_C += \
+	extmod/btstack/btstack_hci_uart.c \
+
+CFLAGS_MOD += -DMICROPY_BLUETOOTH_BTSTACK_H4=1
+endif
+
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_ENABLE_CLASSIC),1)
 include $(BTSTACK_DIR)/src/classic/Makefile.inc
 SRC_BTSTACK += \

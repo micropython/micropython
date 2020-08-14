@@ -298,6 +298,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 
 #if MICROPY_BLUETOOTH_NIMBLE
 struct _mp_bluetooth_nimble_root_pointers_t;
+struct _mp_bluetooth_nimble_malloc_t;
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE void **bluetooth_nimble_memory; struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
 #else
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
@@ -410,14 +411,20 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_THREAD_YIELD()
 #endif
 
-// The LwIP interface must run at a raised IRQ priority
-#define MICROPY_PY_LWIP_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_LWIP_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_LWIP_EXIT    restore_irq_pri(atomic_state);
+// For regular code that wants to prevent "background tasks" from running.
+// These background tasks (LWIP, Bluetooth) run in PENDSV context.
+#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
 
-// Bluetooth calls must run at a raised IRQ priority
-#define MICROPY_PY_BLUETOOTH_ENTER MICROPY_PY_LWIP_ENTER
-#define MICROPY_PY_BLUETOOTH_EXIT MICROPY_PY_LWIP_EXIT
+// Prevent the "LWIP task" from running.
+#define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER
+#define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
+#define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
+
+// Prevent the "Bluetooth task" from running (either NimBLE or btstack).
+#define MICROPY_PY_BLUETOOTH_ENTER MICROPY_PY_PENDSV_ENTER
+#define MICROPY_PY_BLUETOOTH_EXIT  MICROPY_PY_PENDSV_EXIT
 
 // We need an implementation of the log2 function which is not a macro
 #define MP_NEED_LOG2 (1)

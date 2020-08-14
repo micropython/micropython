@@ -480,7 +480,7 @@ endif
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 
-SRC_C += modbluetooth_hci.c
+SRC_C += mpbthciport.c
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
@@ -490,12 +490,13 @@ endif
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
 include $(TOP)/extmod/nimble/nimble.mk
-SRC_C += nimble.c
+SRC_C += mpnimbleport.c
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 include $(TOP)/extmod/btstack/btstack.mk
-SRC_C += btstack.c
+SRC_C += mpbtstackport.c
 endif
 
 ifeq ($(MICROPY_PY_NETWORK_CYW43),1)

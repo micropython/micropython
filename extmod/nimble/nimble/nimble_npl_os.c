@@ -29,16 +29,18 @@
 #include "py/runtime.h"
 #include "nimble/ble.h"
 #include "nimble/nimble_npl.h"
-#include "nimble/nimble_hci_uart.h"
+#include "extmod/nimble/hal/hal_uart.h"
 
-#define DEBUG_OS_printf(...) //printf(__VA_ARGS__)
-#define DEBUG_MALLOC_printf(...) //printf(__VA_ARGS__)
-#define DEBUG_EVENT_printf(...) //printf(__VA_ARGS__)
-#define DEBUG_MUTEX_printf(...) //printf(__VA_ARGS__)
-#define DEBUG_SEM_printf(...) //printf(__VA_ARGS__)
-#define DEBUG_CALLOUT_printf(...) //printf(__VA_ARGS__)
-#define DEBUG_TIME_printf(...) //printf(__VA_ARGS__)
-#define DEBUG_CRIT_printf(...) //printf(__VA_ARGS__)
+#include "extmod/modbluetooth.h"
+
+#define DEBUG_OS_printf(...) // printf(__VA_ARGS__)
+#define DEBUG_MALLOC_printf(...) // printf(__VA_ARGS__)
+#define DEBUG_EVENT_printf(...) // printf(__VA_ARGS__)
+#define DEBUG_MUTEX_printf(...) // printf(__VA_ARGS__)
+#define DEBUG_SEM_printf(...) // printf(__VA_ARGS__)
+#define DEBUG_CALLOUT_printf(...) // printf(__VA_ARGS__)
+#define DEBUG_TIME_printf(...) // printf(__VA_ARGS__)
+#define DEBUG_CRIT_printf(...) // printf(__VA_ARGS__)
 
 bool ble_npl_os_started(void) {
     DEBUG_OS_printf("ble_npl_os_started\n");
@@ -138,7 +140,7 @@ int nimble_sprintf(char *str, const char *fmt, ...) {
 
 struct ble_npl_eventq *global_eventq = NULL;
 
-void os_eventq_run_all(void) {
+void mp_bluetooth_nimble_os_eventq_run_all(void) {
     for (struct ble_npl_eventq *evq = global_eventq; evq != NULL; evq = evq->nextq) {
         while (evq->head != NULL) {
             struct ble_npl_event *ev = evq->head;
@@ -238,23 +240,39 @@ ble_npl_error_t ble_npl_sem_init(struct ble_npl_sem *sem, uint16_t tokens) {
 
 ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout) {
     DEBUG_SEM_printf("ble_npl_sem_pend(%p, %u) count=%u\n", sem, (uint)timeout, (uint)sem->count);
+
+    // This is called by NimBLE to synchronously wait for an HCI ACK. The
+    // corresponding ble_npl_sem_release is called directly by the UART rx
+    // handler (i.e. hal_uart_rx_cb in extmod/nimble/hal/hal_uart.c).
+
+    // So this implementation just polls the UART until either the semaphore
+    // is released, or the timeout occurs.
+
     if (sem->count == 0) {
         uint32_t t0 = mp_hal_ticks_ms();
         while (sem->count == 0 && mp_hal_ticks_ms() - t0 < timeout) {
-            // This function may be called at thread-level, so execute
-            // mp_bluetooth_nimble_hci_uart_process at raised priority.
+            // This can be called either from code running in NimBLE's "task"
+            // (i.e. PENDSV) or directly by application code, so for the
+            // latter case, prevent the "task" from running while we poll the
+            // UART directly.
             MICROPY_PY_BLUETOOTH_ENTER
             mp_bluetooth_nimble_hci_uart_process();
             MICROPY_PY_BLUETOOTH_EXIT
+
             if (sem->count != 0) {
                 break;
             }
-            __WFI();
+
+            // Because we're polling, might as well wait for a UART IRQ indicating
+            // more data available.
+            mp_bluetooth_nimble_hci_uart_wfi();
         }
+
         if (sem->count == 0) {
-            printf("timeout\n");
+            printf("NimBLE: HCI ACK timeout\n");
             return BLE_NPL_TIMEOUT;
         }
+
         DEBUG_SEM_printf("got response in %u ms\n", (int)(mp_hal_ticks_ms() - t0));
     }
     sem->count -= 1;
@@ -277,7 +295,7 @@ uint16_t ble_npl_sem_get_count(struct ble_npl_sem *sem) {
 
 static struct ble_npl_callout *global_callout = NULL;
 
-void os_callout_process(void) {
+void mp_bluetooth_nimble_os_callout_process(void) {
     uint32_t tnow = mp_hal_ticks_ms();
     for (struct ble_npl_callout *c = global_callout; c != NULL; c = c->nextc) {
         if (!c->active) {
@@ -386,12 +404,24 @@ void ble_npl_time_delay(ble_npl_time_t ticks) {
 /******************************************************************************/
 // CRITICAL
 
+// This is used anywhere NimBLE modifies global data structures.
+// We need to protect between:
+//  - A MicroPython VM thread.
+//  - The NimBLE "task" (e.g. PENDSV on STM32, pthread on Unix).
+// On STM32, by disabling PENDSV, we ensure that either:
+//  - If we're in the NimBLE task, we're exclusive anyway.
+//  - If we're in a VM thread, we can't be interrupted by the NimBLE task, or switched to another thread.
+// On Unix, there's a global mutex.
+
+// TODO: Both ports currently use MICROPY_PY_BLUETOOTH_ENTER in their implementation,
+// maybe this doesn't need to be port-specific?
+
 uint32_t ble_npl_hw_enter_critical(void) {
     DEBUG_CRIT_printf("ble_npl_hw_enter_critical()\n");
-    return raise_irq_pri(15);
+    return mp_bluetooth_nimble_hci_uart_enter_critical();
 }
 
 void ble_npl_hw_exit_critical(uint32_t ctx) {
     DEBUG_CRIT_printf("ble_npl_hw_exit_critical(%u)\n", (uint)ctx);
-    restore_irq_pri(ctx);
+    mp_bluetooth_nimble_hci_uart_exit_critical(ctx);
 }

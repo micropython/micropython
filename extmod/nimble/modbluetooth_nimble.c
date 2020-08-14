@@ -33,6 +33,7 @@
 
 #include "extmod/nimble/modbluetooth_nimble.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/mpbthci.h"
 
 #include "host/ble_hs.h"
 #include "host/util/util.h"
@@ -64,10 +65,11 @@ STATIC int8_t ble_hs_err_to_errno_table[] = {
 };
 
 STATIC int ble_hs_err_to_errno(int err) {
+    DEBUG_printf("ble_hs_err_to_errno: %d\n", err);
     if (!err) {
         return 0;
     }
-    if (0 <= err && err < MP_ARRAY_SIZE(ble_hs_err_to_errno_table) && ble_hs_err_to_errno_table[err]) {
+    if (err >= 0 && (unsigned)err < MP_ARRAY_SIZE(ble_hs_err_to_errno_table) && ble_hs_err_to_errno_table[err]) {
         return ble_hs_err_to_errno_table[err];
     } else {
         return MP_EIO;
@@ -149,6 +151,12 @@ STATIC void reset_cb(int reason) {
 STATIC void sync_cb(void) {
     int rc;
     ble_addr_t addr;
+
+    DEBUG_printf("sync_cb: state=%d\n", mp_bluetooth_nimble_ble_state);
+
+    if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
+        return;
+    }
 
     rc = ble_hs_util_ensure_addr(0); // prefer public address
     if (rc != 0) {
@@ -264,10 +272,66 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
     return 0;
 }
 
+#if !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
+
+// On ports such as ESP32 where we only implement the bindings, then
+// the port must provide these functions.
+// But for STM32 / Unix-H4, we provide a default implementation of the
+// port-specific functionality.
+// TODO: In the future if a port ever needs to customise these functions
+// then investigate using MP_WEAK or splitting them out to another .c file.
+
+#include "transport/uart/ble_hci_uart.h"
+
+void mp_bluetooth_nimble_port_hci_init(void) {
+    DEBUG_printf("mp_bluetooth_nimble_port_hci_init (nimble default)\n");
+    // This calls mp_bluetooth_hci_uart_init (via ble_hci_uart_init --> hal_uart_config --> mp_bluetooth_hci_uart_init).
+    ble_hci_uart_init();
+    mp_bluetooth_hci_controller_init();
+}
+
+void mp_bluetooth_nimble_port_hci_deinit(void) {
+    DEBUG_printf("mp_bluetooth_nimble_port_hci_deinit (nimble default)\n");
+    mp_bluetooth_hci_controller_deinit();
+    mp_bluetooth_hci_uart_deinit();
+}
+
+void mp_bluetooth_nimble_port_start(void) {
+    DEBUG_printf("mp_bluetooth_nimble_port_start (nimble default)\n");
+    // By default, assume port is already running its own background task (e.g. SysTick on STM32).
+    // ESP32 runs a FreeRTOS task, Unix has a thread.
+}
+
+// Called when the host stop procedure has completed.
+STATIC void ble_hs_shutdown_stop_cb(int status, void *arg) {
+    (void)status;
+    (void)arg;
+    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF;
+}
+
+STATIC struct ble_hs_stop_listener ble_hs_shutdown_stop_listener;
+
+void mp_bluetooth_nimble_port_shutdown(void) {
+    DEBUG_printf("mp_bluetooth_nimble_port_shutdown (nimble default)\n");
+    // By default, just call ble_hs_stop directly and wait for the stack to stop.
+
+    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_STOPPING;
+
+    ble_hs_stop(&ble_hs_shutdown_stop_listener, ble_hs_shutdown_stop_cb, NULL);
+
+    while (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
+        MICROPY_EVENT_POLL_HOOK
+    }
+}
+
+#endif // !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
+
 int mp_bluetooth_init(void) {
     DEBUG_printf("mp_bluetooth_init\n");
     // Clean up if necessary.
     mp_bluetooth_deinit();
+
+    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_STARTING;
 
     ble_hs_cfg.reset_cb = reset_cb;
     ble_hs_cfg.sync_cb = sync_cb;
@@ -277,33 +341,37 @@ int mp_bluetooth_init(void) {
     MP_STATE_PORT(bluetooth_nimble_root_pointers) = m_new0(mp_bluetooth_nimble_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
 
-    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_STARTING;
+    #if !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
+    // Dereference any previous NimBLE mallocs.
+    MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
+    #endif
 
-    mp_bluetooth_nimble_port_preinit();
+    // Allow port (ESP32) to override NimBLE's HCI init.
+    // Otherwise default implementation above calls ble_hci_uart_init().
+    mp_bluetooth_nimble_port_hci_init();
+
+    // Initialise NimBLE memory and data structures.
     nimble_port_init();
-    mp_bluetooth_nimble_port_postinit();
 
     // By default, just register the default gap/gatt service.
     ble_svc_gap_init();
     ble_svc_gatt_init();
 
+    // Make sure that the HCI UART and event handling task is running.
     mp_bluetooth_nimble_port_start();
+
+    // Static initialization is complete, can start processing events.
+    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC;
 
     // Wait for sync callback
     while (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
         MICROPY_EVENT_POLL_HOOK
     }
+
     DEBUG_printf("mp_bluetooth_init: ready\n");
 
     return 0;
 }
-
-// Called when the host stop procedure has completed.
-STATIC void ble_hs_shutdown_stop_cb(int status, void *arg) {
-    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF;
-}
-
-STATIC struct ble_hs_stop_listener ble_hs_shutdown_stop_listener;
 
 void mp_bluetooth_deinit(void) {
     DEBUG_printf("mp_bluetooth_deinit\n");
@@ -311,22 +379,32 @@ void mp_bluetooth_deinit(void) {
         return;
     }
 
-    mp_bluetooth_gap_advertise_stop();
-    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
-    mp_bluetooth_gap_scan_stop();
-    #endif
+    // Must call ble_hs_stop() in a port-specific way to stop the background
+    // task. Default implementation provided above.
+    if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
+        mp_bluetooth_gap_advertise_stop();
+        #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+        mp_bluetooth_gap_scan_stop();
+        #endif
 
-    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_STOPPING;
+        DEBUG_printf("mp_bluetooth_deinit: starting port shutdown\n");
 
-    ble_hs_stop(&ble_hs_shutdown_stop_listener, ble_hs_shutdown_stop_cb, NULL);
-
-    while (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_bluetooth_nimble_port_shutdown();
+        assert(mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF);
+    } else {
+        mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF;
     }
 
-    mp_bluetooth_nimble_port_deinit();
+    // Shutdown the HCI controller.
+    mp_bluetooth_nimble_port_hci_deinit();
 
     MP_STATE_PORT(bluetooth_nimble_root_pointers) = NULL;
+
+    #if !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
+    // Dereference any previous NimBLE mallocs.
+    MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
+    #endif
+
     DEBUG_printf("mp_bluetooth_deinit: shut down\n");
 }
 
@@ -485,7 +563,7 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
 
     if (!append) {
         // Unref any previous service definitions.
-        for (int i = 0; i < MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services; ++i) {
+        for (size_t i = 0; i < MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services; ++i) {
             MP_STATE_PORT(bluetooth_nimble_root_pointers)->services[i] = NULL;
         }
         MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services = 0;

@@ -53,6 +53,8 @@ STATIC const uint16_t BTSTACK_GAP_DEVICE_NAME_HANDLE = 3;
 
 volatile int mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
 
+#define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
+
 STATIC int btstack_error_to_errno(int err) {
     DEBUG_printf("  --> btstack error: %d\n", err);
     if (err == ERROR_CODE_SUCCESS) {
@@ -300,6 +302,9 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         if (state == HCI_STATE_WORKING) {
             // Signal that initialisation has completed.
             mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_ACTIVE;
+        } else if (state == HCI_STATE_HALTING) {
+            // Signal that de-initialisation has begun.
+            mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_HALTING;
         } else if (state == HCI_STATE_OFF) {
             // Signal that de-initialisation has completed.
             mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
