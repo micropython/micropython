@@ -83,6 +83,11 @@ void mp_bluetooth_btstack_port_init(void) {
 
     // hci_dump_open(NULL, HCI_DUMP_STDOUT);
 
+    #if MICROPY_BLUETOOTH_BTSTACK_H4
+    void mp_bluetooth_btstack_port_init_h4(void);
+    mp_bluetooth_btstack_port_init_h4();
+    #endif
+
     #if MICROPY_BLUETOOTH_BTSTACK_USB
     void mp_bluetooth_btstack_port_init_usb(void);
     mp_bluetooth_btstack_port_init_usb();
