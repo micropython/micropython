@@ -56,14 +56,6 @@ STATIC const mp_rom_map_elem_t ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_create_default_context), MP_ROM_PTR(&ssl_create_default_context_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_SSLContext), MP_ROM_PTR(&ssl_sslcontext_type) },
-
-    // class constants
-    // { MP_ROM_QSTR(MP_QSTR_AF_INET), MP_ROM_INT(SOCKETPOOL_AF_INET) },
-    // { MP_ROM_QSTR(MP_QSTR_AF_INET6), MP_ROM_INT(SOCKETPOOL_AF_INET6) },
-
-    // { MP_ROM_QSTR(MP_QSTR_SOCK_STREAM), MP_ROM_INT(SOCKETPOOL_SOCK_STREAM) },
-    // { MP_ROM_QSTR(MP_QSTR_SOCK_DGRAM), MP_ROM_INT(SOCKETPOOL_SOCK_DGRAM) },
-    // { MP_ROM_QSTR(MP_QSTR_SOCK_RAW), MP_ROM_INT(SOCKETPOOL_SOCK_RAW) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(ssl_globals, ssl_globals_table);

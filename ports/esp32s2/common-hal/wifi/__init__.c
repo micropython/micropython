@@ -31,9 +31,6 @@
 
 #include "py/runtime.h"
 
-#include "esp_log.h"
-static const char *TAG = "cp wifi";
-
 #include "esp-idf/components/esp_wifi/include/esp_wifi.h"
 
 #include "esp-idf/components/heap/include/esp_heap_caps.h"
@@ -42,31 +39,20 @@ wifi_radio_obj_t common_hal_wifi_radio_obj;
 
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data) {
-    ESP_LOGI(TAG, "event %x", event_id);
     wifi_radio_obj_t* radio = arg;
     if (event_base == WIFI_EVENT) {
         if (event_id == WIFI_EVENT_SCAN_DONE) {
-            ESP_LOGI(TAG, "scan done");
             xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
         } else if (event_id == WIFI_EVENT_STA_START) {
-            ESP_LOGI(TAG, "station start");
-
         } else if (event_id == WIFI_EVENT_STA_STOP) {
-            ESP_LOGI(TAG, "station stop");
-
         } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
-            ESP_LOGI(TAG, "connected to ap");
         } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
-            ESP_LOGI(TAG, "disconnected");
-            wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
-            ESP_LOGI(TAG, "reason %d", d->reason);
+            // wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
             if (event_id != WIFI_REASON_ASSOC_LEAVE) {
                 // reconnect
             }
             xEventGroupSetBits(radio->event_group_handle, WIFI_DISCONNECTED_BIT);
         } else if (event_id == WIFI_EVENT_STA_AUTHMODE_CHANGE) {
-            ESP_LOGI(TAG, "auth change");
-
         }
     }
 
@@ -84,9 +70,6 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     //     ESP_LOGI(TAG,"connect to the AP fail");
     // } else
     if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
-        // s_retry_num = 0;
         xEventGroupSetBits(radio->event_group_handle, WIFI_CONNECTED_BIT);
     }
 }
@@ -94,17 +77,12 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 static bool wifi_inited;
 
 void common_hal_wifi_init(void) {
-    ESP_EARLY_LOGI(TAG, "init");
-    heap_caps_print_heap_info(MALLOC_CAP_8BIT);
     wifi_inited = true;
 	common_hal_wifi_radio_obj.base.type = &wifi_radio_type;
 
     ESP_ERROR_CHECK(esp_netif_init());
-
-    ESP_EARLY_LOGI(TAG, "create event loop");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    ESP_EARLY_LOGI(TAG, "create wifi sta");
     wifi_radio_obj_t* self = &common_hal_wifi_radio_obj;
     self->netif = esp_netif_create_default_wifi_sta();
 
@@ -120,8 +98,6 @@ void common_hal_wifi_init(void) {
                                                         self,
                                                         &self->handler_instance_got_ip));
 
-
-    ESP_EARLY_LOGI(TAG, "wifi init");
 	wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
 	esp_err_t result = esp_wifi_init(&config);
 	if (result == ESP_ERR_NO_MEM) {
@@ -129,12 +105,10 @@ void common_hal_wifi_init(void) {
 	} else if (result != ESP_OK) {
 		// handle this
 	}
-    ESP_EARLY_LOGI(TAG, "enable radio");
     common_hal_wifi_radio_set_enabled(self, true);
 }
 
 void wifi_reset(void) {
-    ESP_LOGI(TAG, "reset");
     if (!wifi_inited) {
         return;
     }

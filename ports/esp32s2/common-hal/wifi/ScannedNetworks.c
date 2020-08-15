@@ -39,12 +39,8 @@
 
 #include "esp-idf/components/esp_wifi/include/esp_wifi.h"
 
-#include "esp_log.h"
-static const char *TAG = "cp scannednetworks";
-
 static void wifi_scannednetworks_done(wifi_scannednetworks_obj_t *self) {
     self->done = true;
-    ESP_EARLY_LOGI(TAG, "free %x", self->results);
     if (self->results != NULL) {
         // Check to see if the heap is still active. If not, it'll be freed automatically.
         if (gc_alloc_possible()) {
@@ -94,7 +90,6 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
         }
         // We not have found any more results so we're done.
         if (self->done) {
-            ESP_LOGI(TAG, "return done");
             return mp_const_none;
         }
         // If we need more space than we have, realloc.
@@ -104,7 +99,6 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
                                                       self->max_results,
                                                       self->total_results,
                                                       true /* allow move */);
-            ESP_EARLY_LOGI(TAG, "alloc %x", results);
             if (results != NULL) {
                 self->results = results;
                 self->max_results = self->total_results;
@@ -152,12 +146,10 @@ void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self) {
     wifi_scan_config_t config = { 0 };
     config.channel = next_channel;
     if (next_channel == sizeof(scan_pattern)) {
-        ESP_LOGI(TAG, "scan done");
         wifi_scannednetworks_done(self);
     } else {
         esp_err_t result = esp_wifi_scan_start(&config, false);
         if (result != ESP_OK) {
-            ESP_LOGI(TAG, "start failed 0x%x", result);
             wifi_scannednetworks_done(self);
         } else {
             self->scanning = true;

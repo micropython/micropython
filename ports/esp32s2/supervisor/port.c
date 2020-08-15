@@ -45,9 +45,6 @@
 
 #include "esp-idf/components/heap/include/esp_heap_caps.h"
 
-#include "esp_log.h"
-static const char *TAG = "cp port";
-
 #define HEAP_SIZE (48 * 1024)
 
 STATIC esp_timer_handle_t _tick_timer;
@@ -67,10 +64,6 @@ safe_mode_t port_init(void) {
     esp_timer_create(&args, &_tick_timer);
 
     heap = malloc(HEAP_SIZE);
-    if (heap == NULL) {
-        heap_caps_print_heap_info(MALLOC_CAP_8BIT);
-        ESP_LOGE(TAG, "failed to allocate heap");
-    }
     never_reset_module_internal_pins();
     return NO_SAFE_MODE;
 }
@@ -92,7 +85,6 @@ void reset_port(void) {
 #if CIRCUITPY_WIFI
     wifi_reset();
 #endif
-    heap_caps_print_heap_info(MALLOC_CAP_8BIT);
 }
 
 void reset_to_bootloader(void) {
@@ -102,8 +94,6 @@ void reset_cpu(void) {
 }
 
 uint32_t *port_heap_get_bottom(void) {
-
-    ESP_EARLY_LOGI(TAG, "heap %x", heap);
     return heap;
 }
 

@@ -33,8 +33,8 @@
 #include "shared-bindings/socketpool/SocketPool.h"
 
 //| """
-//| The `ipaddress` module provides types for IP addresses. It is a subset of CPython's ipaddress
-//| module.
+//| The `socketpool` module provides sockets through a pool. The pools themselves
+//| act like CPython's `socket` module.
 //| """
 //|
 

@@ -26,9 +26,6 @@
 
 #include "shared-bindings/socketpool/Socket.h"
 
-#include "esp_log.h"
-static const char *TAG = "socket";
-
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_uint_t timeout_ms) {
     self->timeout_ms = timeout_ms;
 }
@@ -38,20 +35,17 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const c
     // NULL and should still work. This makes regular TCP connections more memory expensive but TLS
     // should become more and more common. Therefore, we optimize for the TLS case.
 
-    ESP_LOGI(TAG, "connecting to %s:%d %p", host, port, self->ssl_context);
     esp_tls_cfg_t* tls_config = NULL;
     if (self->ssl_context != NULL) {
         tls_config = &self->ssl_context->ssl_config;
     }
     int result = esp_tls_conn_new_sync(host, hostlen, port, tls_config, self->tcp);
-    ESP_LOGI(TAG, "result %d", result);
     return result >= 0;
 }
 
 mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len) {
     size_t sent = esp_tls_conn_write(self->tcp, buf, len);
 
-    ESP_LOGI(TAG, "sent %d bytes", sent);
     if (sent < 0) {
         // raise an error
     }
@@ -61,7 +55,6 @@ mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len) {
     size_t received = esp_tls_conn_read(self->tcp, (void*) buf, len);
 
-    ESP_LOGI(TAG, "received %d bytes", received);
     if (received == 0) {
         // socket closed
     }
