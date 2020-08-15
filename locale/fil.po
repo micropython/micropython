@@ -2051,7 +2051,7 @@ msgstr "hindi puede ang maraming *x"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
-msgstr "hindi maaaring ma-convert ang '% qt' sa 'bool'"
+msgstr "hindi maaaring ma-convert ang ' %q' sa 'bool'"
 
 #: py/emitnative.c
 msgid "can't load from '%q'"

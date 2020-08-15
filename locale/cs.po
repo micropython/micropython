@@ -44,11 +44,11 @@ msgstr ""
 
 #: py/obj.c
 msgid "  File \"%q\""
-msgstr "  Soubor \"% q\""
+msgstr "  Soubor \"%q\""
 
 #: py/obj.c
 msgid "  File \"%q\", line %d"
-msgstr "  Soubor \"% q\", řádek% d"
+msgstr "  Soubor \"%q\", řádek %d"
 
 #: main.c
 msgid " output:\n"
@@ -57,7 +57,7 @@ msgstr " výstup:\n"
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr "%% c vyžaduje int nebo char"
+msgstr "%%c vyžaduje int nebo char"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -78,11 +78,11 @@ msgstr "%q index je mimo rozsah"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
-msgstr "Indexy% q musí být celá čísla, nikoli% s"
+msgstr "Indexy %q musí být celá čísla, nikoli %s"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
-msgstr "Seznam% q musí být seznam"
+msgstr "Seznam %q musí být seznam"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
@@ -94,11 +94,11 @@ msgstr ""
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
-msgstr "% q musí být > = 1"
+msgstr " %q musí být > = 1"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
-msgstr "% q musí být n-tice délky 2"
+msgstr " %q musí být n-tice délky 2"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q pin invalid"
@@ -106,7 +106,7 @@ msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
-msgstr "% q by měl být int"
+msgstr " %q by měl být int"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
