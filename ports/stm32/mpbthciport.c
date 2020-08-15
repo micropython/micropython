@@ -142,8 +142,9 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     mp_bluetooth_hci_uart_obj.base.type = &pyb_uart_type;
     mp_bluetooth_hci_uart_obj.uart_id = port;
     mp_bluetooth_hci_uart_obj.is_static = true;
-    mp_bluetooth_hci_uart_obj.timeout = 2;
-    mp_bluetooth_hci_uart_obj.timeout_char = 2;
+    // We don't want to block indefinitely, but expect flow control is doing its job.
+    mp_bluetooth_hci_uart_obj.timeout = 200;
+    mp_bluetooth_hci_uart_obj.timeout_char = 200;
     MP_STATE_PORT(pyb_uart_obj_all)[mp_bluetooth_hci_uart_obj.uart_id - 1] = &mp_bluetooth_hci_uart_obj;
 
     // This also initialises the UART.
@@ -184,7 +185,11 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     // DEBUG_printf("mp_bluetooth_hci_uart_write (stm32)\n");
 
     mp_bluetooth_hci_controller_wakeup();
-    uart_tx_strn(&mp_bluetooth_hci_uart_obj, (void *)buf, len);
+    int errcode;
+    uart_tx_data(&mp_bluetooth_hci_uart_obj, (void *)buf, len, &errcode);
+    if (errcode != 0) {
+        printf("\nmp_bluetooth_hci_uart_write: failed to write to UART %d\n", errcode);
+    }
     return 0;
 }
 
