@@ -93,7 +93,9 @@ size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *sel
             if (!mp_get_buffer(self->value, &bufinfo, MP_BUFFER_READ)) {
                 return 0;
             }
-            memcpy(buf, bufinfo.buf, MIN(len, bufinfo.len));
+            const size_t actual_length = MIN(len, bufinfo.len);
+            memcpy(buf, bufinfo.buf, actual_length);
+            return actual_length;
         }
     }
 

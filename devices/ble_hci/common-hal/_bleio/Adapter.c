@@ -346,6 +346,8 @@ void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char* na
 // }
 
 mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t* prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
+    // TODO
+    mp_raise_NotImplementedError(NULL);
     check_enabled(self);
 
     if (self->scan_results != NULL) {
@@ -392,6 +394,8 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
 }
 
 void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self) {
+    // TODO
+    mp_raise_NotImplementedError(NULL);
     check_enabled(self);
 
     // If not already scanning, no problem.
@@ -430,6 +434,8 @@ void common_hal_bleio_adapter_stop_scan(bleio_adapter_obj_t *self) {
 // }
 
 mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout) {
+    // TODO
+    mp_raise_NotImplementedError(NULL);
 
     check_enabled(self);
 
@@ -742,6 +748,8 @@ mp_obj_t common_hal_bleio_adapter_get_connections(bleio_adapter_obj_t *self) {
 }
 
 void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
+    // TODO
+    mp_raise_NotImplementedError(NULL);
     check_enabled(self);
 
     //FIX bonding_erase_storage();

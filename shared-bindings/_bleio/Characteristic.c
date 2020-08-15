@@ -109,11 +109,14 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     const bleio_attribute_security_mode_t write_perm = args[ARG_write_perm].u_int;
     common_hal_bleio_attribute_security_mode_check_valid(write_perm);
 
-    const mp_int_t max_length = args[ARG_max_length].u_int;
+    const mp_int_t max_length_int = args[ARG_max_length].u_int;
+    if (max_length_int <= 0) {
+        mp_raise_ValueError(translate("max_length must be > 0"));
+    }
+    const size_t max_length = (size_t) max_length_int;
     const bool fixed_length =  args[ARG_fixed_length].u_bool;
     mp_obj_t initial_value = args[ARG_initial_value].u_obj;
 
-    // Length will be validated in common_hal.
     mp_buffer_info_t initial_value_bufinfo;
     if (initial_value == mp_const_none) {
         if (fixed_length && max_length > 0) {
@@ -122,7 +125,12 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
             initial_value = mp_const_empty_bytes;
         }
     }
+
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
+    if (initial_value_bufinfo.len > max_length ||
+        (fixed_length && initial_value_bufinfo.len != max_length)) {
+            mp_raise_ValueError(translate("initial_value length is wrong"));
+    }
 
     bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
     characteristic->base.type = &bleio_characteristic_type;
