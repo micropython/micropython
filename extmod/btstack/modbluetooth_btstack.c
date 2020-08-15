@@ -825,24 +825,37 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
 }
 
 STATIC uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t offset, uint8_t *buffer, uint16_t buffer_size) {
+    // Should return data length, 0 for error, or -1 for delayed response.
+    // For more details search "*att_read_callback*" in micropython/lib/btstack/doc/manual/docs/profiles.md
     (void)connection_handle;
-    DEBUG_printf("btstack: att_read_callback (handle: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, offset, buffer, buffer_size);
+    DEBUG_printf("att_read_callback (handle: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, offset, buffer, buffer_size);
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, att_handle);
     if (!entry) {
-        DEBUG_printf("btstack: att_read_callback handle not found\n");
-        return 0; // TODO: Find status code for not-found.
+        DEBUG_printf("att_read_callback handle not found\n");
+        return 0;
     }
 
-    return att_read_callback_handle_blob(entry->data, entry->data_len, offset, buffer, buffer_size);
+    #if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
+    // Allow Python code to override value (by using gatts_write), or deny (by returning false) the read.
+    if ((buffer == NULL) && (buffer_size == 0)) {
+        if (!mp_bluetooth_gatts_on_read_request(connection_handle, att_handle)) {
+            DEBUG_printf("att_read_callback: read request denied\n");
+            return 0;
+        }
+    }
+    #endif
+
+    uint16_t ret = att_read_callback_handle_blob(entry->data, entry->data_len, offset, buffer, buffer_size);
+    return ret;
 }
 
 STATIC int att_write_callback(hci_con_handle_t connection_handle, uint16_t att_handle, uint16_t transaction_mode, uint16_t offset, uint8_t *buffer, uint16_t buffer_size) {
     (void)offset;
     (void)transaction_mode;
-    DEBUG_printf("btstack: att_write_callback (handle: %u, mode: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, transaction_mode, offset, buffer, buffer_size);
+    DEBUG_printf("att_write_callback (handle: %u, mode: %u, offset: %u, buffer: %p, size: %u)\n", att_handle, transaction_mode, offset, buffer, buffer_size);
     mp_bluetooth_gatts_db_entry_t *entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, att_handle);
     if (!entry) {
-        DEBUG_printf("btstack: att_write_callback handle not found\n");
+        DEBUG_printf("att_write_callback handle not found\n");
         return 0; // TODO: Find status code for not-found.
     }
 
