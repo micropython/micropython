@@ -12,6 +12,9 @@ submodules:
     include:
         - extmod/ulab
 
+formats:
+  - pdf
+
 python:
     version: 3
     install:
