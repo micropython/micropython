@@ -638,6 +638,33 @@ STATIC mp_obj_t bluetooth_ble_gap_scan(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_scan_obj, 1, 5, bluetooth_ble_gap_scan);
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
+STATIC mp_obj_t bluetooth_ble_gap_pair(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    #ifdef MICROPY_PY_BLUETOOTH_BOND_FILE
+    #define BOND_DEFAULT 1
+    #else
+    #define BOND_DEFAULT 0
+    #endif
+    enum { ARG_conn_handle, ARG_bond, ARG_mitm, ARG_lesc, /*ARG_pin*/ };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_conn_handle, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_bond,  MP_ARG_BOOL, {.u_bool = BOND_DEFAULT} },
+        { MP_QSTR_mitm,  MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_lesc,  MP_ARG_BOOL, {.u_bool = true} },
+        // { MP_QSTR_pin, MP_ARG_INT, {.u_int = -1} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_int_t conn_handle = args[ARG_conn_handle].u_int;
+    bool bond = args[ARG_bond].u_bool;
+    bool mitm = args[ARG_mitm].u_bool;
+    bool lesc = args[ARG_lesc].u_bool;
+    // mp_int_t pin = args[ARG_pin].u_int;
+
+    return bluetooth_handle_errno(mp_bluetooth_gap_pair(conn_handle, bond, mitm, lesc));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_ble_gap_pair_obj, 1, bluetooth_ble_gap_pair);
+
 STATIC mp_obj_t bluetooth_ble_gap_disconnect(mp_obj_t self_in, mp_obj_t conn_handle_in) {
     (void)self_in;
     uint16_t conn_handle = mp_obj_get_int(conn_handle_in);
@@ -799,6 +826,7 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     { MP_ROM_QSTR(MP_QSTR_gap_connect), MP_ROM_PTR(&bluetooth_ble_gap_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_gap_scan), MP_ROM_PTR(&bluetooth_ble_gap_scan_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gap_pair), MP_ROM_PTR(&bluetooth_ble_gap_pair_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_gap_disconnect), MP_ROM_PTR(&bluetooth_ble_gap_disconnect_obj) },
     // GATT Server (i.e. peripheral/advertiser role)

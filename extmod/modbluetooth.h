@@ -216,6 +216,9 @@ int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle);
 // Append-mode means that remote writes will append and local reads will clear after reading.
 int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append);
 
+// Initial pairing/bonding
+int mp_bluetooth_gap_pair(int conn_handle, bool bond, bool mitm, bool lesc);
+
 // Disconnect from a central or peripheral.
 int mp_bluetooth_gap_disconnect(uint16_t conn_handle);
 

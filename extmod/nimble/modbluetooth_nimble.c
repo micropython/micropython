@@ -724,6 +724,13 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
     return 0;
 }
 
+int mp_bluetooth_gap_pair(int conn_handle, bool bond, bool mitm, bool lesc) {
+    ble_hs_cfg.sm_bonding = bond;
+    ble_hs_cfg.sm_mitm = mitm;
+    ble_hs_cfg.sm_sc = lesc;
+    return ble_gap_security_initiate(conn_handle);
+}
+
 int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
