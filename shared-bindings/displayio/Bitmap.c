@@ -176,16 +176,16 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 //|         """Inserts the source_bitmap region defined by rectangular boundaries
 //|         (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
 //|         :param int x: Horizontal pixel location in bitmap where source_bitmap upper-left
-//|             corner will be placed
+//|         corner will be placed
 //|         :param int y: Vertical pixel location in bitmap where source_bitmap upper-left
-//|             corner will be placed
+//|         corner will be placed
 //|         :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
-//|         : param int x1: Minimum x-value for rectangular bounding box to be copied from the source bitmap
-//|         : param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
-//|         : param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
-//|         : param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
-//|         : param int skip_index: bitmap palette index in the source that will not be copied,
-//|             set `None` to copy all pixels"""
+//|         :param int x1: Minimum x-value for rectangular bounding box to be copied from the source bitmap
+//|         :param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
+//|         :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
+//|         :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
+//|         :param int skip_index: bitmap palette index in the source that will not be copied,
+//|         set `None` to copy all pixels"""
 //|         ...
 //|
 
