@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-04 18:42-0500\n"
+"POT-Creation-Date: 2020-08-14 09:36-0400\n"
 "PO-Revision-Date: 2020-08-10 16:59+0000\n"
 "Last-Translator: Taku Fukada <naninunenor@gmail.com>\n"
 "Language-Team: none\n"
@@ -117,7 +117,9 @@ msgstr "%qはint型でなければなりません"
 #: py/bc.c py/objnamedtuple.c
 #, fuzzy
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr "%q() は %d個の位置引数 (positional arguments) を受け取りますが、%d 個しか与えられていません"
+msgstr ""
+"%q() は %d個の位置引数 (positional arguments) を受け取りますが、%d 個しか与え"
+"られていません"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
@@ -388,7 +390,9 @@ msgstr "オートリロードはオフです。\n"
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr "オートリロードが有効です。ファイルをUSB経由で保存するだけで実行できます。REPLに入ると無効化します。\n"
+msgstr ""
+"オートリロードが有効です。ファイルをUSB経由で保存するだけで実行できます。REPL"
+"に入ると無効化します。\n"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -456,6 +460,10 @@ msgstr "バッファ長 %d は大きすぎます。%d 以下でなければな�
 msgid "Buffer length must be a multiple of 512"
 msgstr "バッファ長は512の倍数でなければなりません"
 
+#: ports/stm/common-hal/sdioio/SDCard.c
+msgid "Buffer must be a multiple of 512 bytes"
+msgstr ""
+
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "バッファ長は少なくとも1以上でなければなりません"
@@ -489,7 +497,9 @@ msgstr "CBCブロックは16バイトの整数倍でなければなりません"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr "ネイティブオブジェクトにアクセスする前に super().__init__() を呼び出してください。"
+msgstr ""
+"ネイティブオブジェクトにアクセスする前に super().__init__() を呼び出してくだ"
+"さい。"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -577,7 +587,9 @@ msgstr "CircuitPythonのコアコードが激しくクラッシュしました�
 msgid ""
 "CircuitPython is in safe mode because you pressed the reset button during "
 "boot. Press again to exit safe mode.\n"
-msgstr "起動中にリセットボタンを押したためCircuitPythonはセーフモードにいます。もう一度押すとセーフモードを終了します。\n"
+msgstr ""
+"起動中にリセットボタンを押したためCircuitPythonはセーフモードにいます。もう一"
+"度押すとセーフモードを終了します。\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -645,6 +657,10 @@ msgstr "タイマーを再初期化できませんでした"
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not restart PWM"
 msgstr "PWMを再スタートできませんでした"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Could not set address"
+msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not start PWM"
@@ -828,13 +844,19 @@ msgstr "内部フラッシュの書き込みに失敗しました。"
 msgid "File exists"
 msgstr "ファイルが存在します。"
 
+#: shared-module/framebufferio/FramebufferDisplay.c
+#, c-format
+msgid "Framebuffer requires %d bytes"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
-msgstr "周波数は、このタイマーを使っている既存のPWMOutと一致しなければなりません"
+msgstr ""
+"周波数は、このタイマーを使っている既存のPWMOutと一致しなければなりません"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
@@ -852,7 +874,7 @@ msgid "Group full"
 msgstr "グループが一杯です"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr "ハードウェアビジー。代替のピンを試してください"
 
@@ -882,8 +904,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"非互換の .mpy ファイルです。すべての .mpy ファイルをアップデートしてください。詳細は http://adafru.it/mpy-update "
-"を参照。"
+"非互換の .mpy ファイルです。すべての .mpy ファイルをアップデートしてくださ"
+"い。詳細は http://adafru.it/mpy-update を参照。"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -919,6 +941,11 @@ msgstr "不正な %q"
 msgid "Invalid %q pin"
 msgstr "不正な %q ピン"
 
+#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+msgid "Invalid %q pin selection"
+msgstr ""
+
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "不正なADCユニット値"
@@ -931,23 +958,11 @@ msgstr "不正なBMPファイル"
 msgid "Invalid DAC pin supplied"
 msgstr "無効なDACピンが与えられました"
 
-#: ports/stm/common-hal/busio/I2C.c
-msgid "Invalid I2C pin selection"
-msgstr "I2Cピンの選択が不正です"
-
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c
 #: ports/cxd56/common-hal/pulseio/PWMOut.c
 #: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "無効なPWM周波数です"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Invalid SPI pin selection"
-msgstr "SPIピンの選択が不正です"
-
-#: ports/stm/common-hal/busio/UART.c
-msgid "Invalid UART pin selection"
-msgstr "UARTピンの選択が不正です"
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
@@ -1251,7 +1266,9 @@ msgstr "保存されたコードは実行していません。\n"
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
-msgstr "オブジェクトは解体済みでもう使われていません。新たなオブジェクトを作成してください。"
+msgstr ""
+"オブジェクトは解体済みでもう使われていません。新たなオブジェクトを作成してく"
+"ださい。"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1281,12 +1298,15 @@ msgstr "オーバーサンプルは8の倍数でなければなりません。"
 #: shared-bindings/pulseio/PWMOut.c
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-msgstr "PWMの duty_cycle 値は 0 から 65535 の間でなければなりません（16ビット解像度）"
+msgstr ""
+"PWMの duty_cycle 値は 0 から 65535 の間でなければなりません（16ビット解像度）"
 
 #: shared-bindings/pulseio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
-msgstr "PWM周波数は、生成時の variable_frequency が False の場合、書き換えられません。"
+msgstr ""
+"PWM周波数は、生成時の variable_frequency が False の場合、書き換えられませ"
+"ん。"
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
@@ -1418,6 +1438,16 @@ msgstr "SDカードのCSDフォーマットはサポートされていません"
 msgid "SDA or SCL needs a pull up"
 msgstr "SDAとSCLはプルアップが必要です"
 
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, c-format
+msgid "SDIO GetCardInfo Error %d"
+msgstr ""
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, c-format
+msgid "SDIO Init Error %d"
+msgstr ""
+
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
 msgstr "SPI初期化エラー"
@@ -1503,7 +1533,9 @@ msgstr ""
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode.\n"
-msgstr "`microcontroller` モジュールが使われてセーフモードで起動しました。セーフモードを抜けるにはリセットを押します。\n"
+msgstr ""
+"`microcontroller` モジュールが使われてセーフモードで起動しました。セーフモー"
+"ドを抜けるにはリセットを押します。\n"
 
 #: supervisor/shared/safe_mode.c
 #, fuzzy
@@ -1512,8 +1544,9 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"マイクロコントローラの電力が降下しました。電源が回路全体が求める十分な電力を供給できることを確認してリセットを押してください（CIRCUITPYを取り出し"
-"た後）。\n"
+"マイクロコントローラの電力が降下しました。電源が回路全体が求める十分な電力を"
+"供給できることを確認してリセットを押してください（CIRCUITPYを取り出した"
+"後）。\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -1616,7 +1649,8 @@ msgstr "UUIDの整数値は0から0xffffの間でなければなりません"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr "UUID文字列が 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' の形式になっていません"
+msgstr ""
+"UUID文字列が 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' の形式になっていません"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
@@ -1736,7 +1770,8 @@ msgstr "WatchDogTimerは現在動作していません"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-msgstr "WatchDogTimer.mode は一度 WatchDogMode.RESET に設定されると変更できません"
+msgstr ""
+"WatchDogTimer.mode は一度 WatchDogMode.RESET に設定されると変更できません"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
@@ -2436,7 +2471,8 @@ msgstr "インデクスは整数でなければなりません"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
-msgstr "インデクスは、整数、スライス、boolのリストのいずれかでなければなりません"
+msgstr ""
+"インデクスは、整数、スライス、boolのリストのいずれかでなければなりません"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "initial values must be iterable"
@@ -2975,7 +3011,9 @@ msgstr "rsplit(None,n)"
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
-msgstr "sample_source バッファは、bytearray または 'h', 'H', 'b', 'B'型のarrayでなければなりません"
+msgstr ""
+"sample_source バッファは、bytearray または 'h', 'H', 'b', 'B'型のarrayでなけ"
+"ればなりません"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
@@ -3344,3 +3382,12 @@ msgstr "zi はfloat型でなければなりません"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Invalid I2C pin selection"
+#~ msgstr "I2Cピンの選択が不正です"
+
+#~ msgid "Invalid SPI pin selection"
+#~ msgstr "SPIピンの選択が不正です"
+
+#~ msgid "Invalid UART pin selection"
+#~ msgstr "UARTピンの選択が不正です"
