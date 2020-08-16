@@ -291,20 +291,34 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
 
     if (event_type == HCI_EVENT_LE_META) {
         DEBUG_printf("  --> hci le meta\n");
-        if (hci_event_le_meta_get_subevent_code(packet) == HCI_SUBEVENT_LE_CONNECTION_COMPLETE) {
-            uint16_t conn_handle = hci_subevent_le_connection_complete_get_connection_handle(packet);
-            uint8_t addr_type = hci_subevent_le_connection_complete_get_peer_address_type(packet);
-            bd_addr_t addr;
-            hci_subevent_le_connection_complete_get_peer_address(packet, addr);
-            uint16_t irq_event;
-            if (hci_subevent_le_connection_complete_get_role(packet) == 0) {
-                // Master role.
-                irq_event = MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT;
-            } else {
-                // Slave role.
-                irq_event = MP_BLUETOOTH_IRQ_CENTRAL_CONNECT;
+        switch (hci_event_le_meta_get_subevent_code(packet)) {
+            case HCI_SUBEVENT_LE_CONNECTION_COMPLETE: {
+                uint16_t conn_handle = hci_subevent_le_connection_complete_get_connection_handle(packet);
+                uint8_t addr_type = hci_subevent_le_connection_complete_get_peer_address_type(packet);
+                bd_addr_t addr;
+                hci_subevent_le_connection_complete_get_peer_address(packet, addr);
+                uint16_t irq_event;
+                if (hci_subevent_le_connection_complete_get_role(packet) == 0) {
+                    // Master role.
+                    irq_event = MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT;
+                } else {
+                    // Slave role.
+                    irq_event = MP_BLUETOOTH_IRQ_CENTRAL_CONNECT;
+                }
+                mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, addr_type, addr);
+                break;
             }
-            mp_bluetooth_gap_on_connected_disconnected(irq_event, conn_handle, addr_type, addr);
+            case HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE: {
+                // print connection parameters (without using float operations)
+                int con_handle = hci_subevent_le_connection_update_complete_get_connection_handle(packet);
+                int conn_interval = hci_subevent_le_connection_update_complete_get_conn_interval(packet);
+                int latency = hci_subevent_le_connection_update_complete_get_conn_latency(packet);
+                int timeout = hci_subevent_le_connection_update_complete_get_supervision_timeout(packet);
+                DEBUG_printf("- LE Connection %04x: connection update - connection interval %u.%02u ms, latency %u\n",
+                    con_handle, conn_interval * 125 / 100, 25 * (conn_interval & 3), latency);
+                mp_bluetooth_gatts_on_conn_update(con_handle, conn_interval, latency, timeout);
+                break;
+            }
         }
     } else if (event_type == BTSTACK_EVENT_STATE) {
         uint8_t state = btstack_event_state_get_state(packet);
@@ -1100,6 +1114,11 @@ int mp_bluetooth_gatts_indicate(uint16_t conn_handle, uint16_t value_handle) {
 int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append) {
     DEBUG_printf("mp_bluetooth_gatts_set_buffer\n");
     return mp_bluetooth_gatts_db_resize(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, value_handle, len, append);
+}
+
+int mp_bluetooth_gap_pair(int conn_handle, bool bond, bool mitm, bool lesc) {
+    DEBUG_printf("TODO mp_bluetooth_gap_pair\n");
+    return 0;
 }
 
 int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {

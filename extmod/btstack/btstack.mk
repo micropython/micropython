@@ -9,6 +9,7 @@ BTSTACK_EXTMOD_DIR = extmod/btstack
 
 EXTMOD_SRC_C += extmod/btstack/modbluetooth_btstack.c
 EXTMOD_SRC_C += extmod/btstack/le_device_db_fs.c
+EXTMOD_SRC_C += extmod/mphciport.c
 
 INC += -I$(TOP)/$(BTSTACK_EXTMOD_DIR)
 
