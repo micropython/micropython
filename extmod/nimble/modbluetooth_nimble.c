@@ -157,10 +157,22 @@ STATIC bool has_public_address(void) {
 STATIC void set_random_address(bool nrpa) {
     int rc;
     (void)rc;
-    DEBUG_printf("sync_cb: Generating random static address\n");
     ble_addr_t addr;
-    rc = ble_hs_id_gen_rnd(nrpa ? 1 : 0, &addr);
-    assert(rc == 0);
+    #if MICROPY_BLUETOOTH_USE_MP_HAL_GET_MAC_STATIC_ADDRESS
+    if (!nrpa) {
+        DEBUG_printf("set_random_address: Generating static address using mp_hal_get_mac\n");
+        uint8_t hal_mac_addr[6];
+        mp_hal_get_mac(MP_HAL_MAC_BDADDR, hal_mac_addr);
+        addr = create_nimble_addr(BLE_ADDR_RANDOM, hal_mac_addr);
+        // Mark it as STATIC (not RPA or NRPA).
+        addr.val[5] |= 0xc0;
+    } else
+    #endif
+    {
+        DEBUG_printf("set_random_address: Generating random static address\n");
+        rc = ble_hs_id_gen_rnd(nrpa ? 1 : 0, &addr);
+        assert(rc == 0);
+    }
     rc = ble_hs_id_set_rnd(addr.val);
     assert(rc == 0);
     rc = ble_hs_util_ensure_addr(1);

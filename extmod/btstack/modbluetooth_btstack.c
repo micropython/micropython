@@ -508,10 +508,12 @@ STATIC void btstack_init_deinit_timeout_handler(btstack_timer_source_t *ds) {
     mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_TIMEOUT;
 }
 
+#if !MICROPY_BLUETOOTH_USE_MP_HAL_GET_MAC_STATIC_ADDRESS
 STATIC void btstack_static_address_ready(void *arg) {
     DEBUG_printf("btstack_static_address_ready.\n");
     *(volatile bool *)arg = true;
 }
+#endif
 
 STATIC bool set_public_address(void) {
     bd_addr_t local_addr;
@@ -534,14 +536,27 @@ STATIC void set_random_address(void) {
     } else
     #endif // MICROPY_BLUETOOTH_BTSTACK_ZEPHYR_STATIC_ADDRESS
     {
+        bd_addr_t static_addr;
+
+        #if MICROPY_BLUETOOTH_USE_MP_HAL_GET_MAC_STATIC_ADDRESS
+
+        DEBUG_printf("set_random_address: Generating static address using mp_hal_get_mac\n");
+        mp_hal_get_mac(MP_HAL_MAC_BDADDR, static_addr);
+        // Mark it as STATIC (not RPA or NRPA).
+        static_addr[0] |= 0xc0;
+
+        #else
+
         DEBUG_printf("set_random_address: Generating random static address.\n");
         btstack_crypto_random_t sm_crypto_random_request;
-        bd_addr_t static_addr;
         volatile bool ready = false;
         btstack_crypto_random_generate(&sm_crypto_random_request, static_addr, 6, &btstack_static_address_ready, (void *)&ready);
         while (!ready) {
             MICROPY_EVENT_POLL_HOOK
         }
+
+        #endif // MICROPY_BLUETOOTH_USE_MP_HAL_GET_MAC_STATIC_ADDRESS
+
         DEBUG_printf("set_random_address: Address generated.\n");
         gap_random_address_set(static_addr);
     }
