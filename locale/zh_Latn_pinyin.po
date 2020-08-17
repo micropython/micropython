@@ -1337,9 +1337,9 @@ msgid ""
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
 msgstr ""
-“Chājiǎo měi gè yuánsù shǐyòng%d gè zì jié, zhè bǐ lǐxiǎng de%d xiāohào gèng duō”
-“zì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì gěi “
-“gòuzào hánshù”
+"Chājiǎo měi gè yuánsù shǐyòng%d gè zì jié, zhè bǐ lǐxiǎng de%d xiāohào gèng duō"
+"zì jié. Rúguǒ wúfǎ bìmiǎn, qǐng jiāng allow_inefficient = True chuándì gěi"
+"gòuzào hánshù"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
