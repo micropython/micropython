@@ -26,14 +26,15 @@
  */
 
 #include "py/binary.h"
+#include "py/gc.h"
 #include "py/misc.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/obj.h"
-#include "py/objstr.h"
 #include "py/objarray.h"
+#include "py/objstr.h"
 #include "py/qstr.h"
 #include "py/runtime.h"
-#include "py/mphal.h"
 #include "extmod/modbluetooth.h"
 #include <string.h>
 
@@ -66,6 +67,9 @@ typedef struct {
     mp_obj_str_t irq_data_data;
     mp_obj_bluetooth_uuid_t irq_data_uuid;
     ringbuf_t ringbuf;
+    #if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
+    mp_obj_t irq_read_request_data_tuple;
+    #endif
 } mp_obj_bluetooth_ble_t;
 
 // TODO: this seems like it could be generic?
@@ -251,6 +255,11 @@ STATIC mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
 
         // Pre-allocate the event data tuple to prevent needing to allocate in the IRQ handler.
         o->irq_data_tuple = mp_obj_new_tuple(MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN, NULL);
+
+        #if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
+        // Pre-allocate a separate data tuple for the read request "hard" irq.
+        o->irq_read_request_data_tuple = mp_obj_new_tuple(2, NULL);
+        #endif
 
         // Pre-allocated buffers for address, payload and uuid.
         o->irq_data_addr.base.type = &mp_type_bytes;
@@ -1139,12 +1148,22 @@ void mp_bluetooth_gattc_on_read_write_status(uint8_t event, uint16_t conn_handle
 bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle) {
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     if (o->irq_handler != mp_const_none) {
-        // Use pre-allocated tuple because this is a hard IRQ.
-        mp_obj_tuple_t *data = MP_OBJ_TO_PTR(o->irq_data_tuple);
+        // When executing code within a handler we must lock the scheduler to
+        // prevent any scheduled callbacks from running, and lock the GC to
+        // prevent any memory allocations.
+        mp_sched_lock();
+        gc_lock();
+
+        // Use pre-allocated tuple distinct to the one used by the "soft" IRQs.
+        mp_obj_tuple_t *data = MP_OBJ_TO_PTR(o->irq_read_request_data_tuple);
         data->items[0] = MP_OBJ_NEW_SMALL_INT(conn_handle);
         data->items[1] = MP_OBJ_NEW_SMALL_INT(value_handle);
         data->len = 2;
-        mp_obj_t irq_ret = mp_call_function_2_protected(o->irq_handler, MP_OBJ_NEW_SMALL_INT(MP_BLUETOOTH_IRQ_GATTS_READ_REQUEST), o->irq_data_tuple);
+        mp_obj_t irq_ret = mp_call_function_2_protected(o->irq_handler, MP_OBJ_NEW_SMALL_INT(MP_BLUETOOTH_IRQ_GATTS_READ_REQUEST), o->irq_read_request_data_tuple);
+
+        gc_unlock();
+        mp_sched_unlock();
+
         // If the IRQ handler explicitly returned false, then deny the read. Otherwise if it returns None/True, allow it.
         return irq_ret != MP_OBJ_NULL && (irq_ret == mp_const_none || mp_obj_is_true(irq_ret));
     } else {
