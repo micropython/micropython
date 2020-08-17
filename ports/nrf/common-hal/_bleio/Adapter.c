@@ -483,8 +483,8 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
     err_code = sd_ble_gap_scan_start(&scan_params, sd_data);
 
     if (err_code != NRF_SUCCESS) {
-        self->scan_results = NULL;
         ble_drv_remove_event_handler(scan_on_ble_evt, self->scan_results);
+        self->scan_results = NULL;
         check_nrf_error(err_code);
     }
 
