@@ -33,7 +33,7 @@
 
 // --- Configuration of NimBLE data structures --------------------------------
 
-#define BLE_NPL_OS_ALIGNMENT (4)
+#define BLE_NPL_OS_ALIGNMENT (sizeof(uintptr_t))
 #define BLE_NPL_TIME_FOREVER (0xffffffff)
 
 typedef uint32_t ble_npl_time_t;
