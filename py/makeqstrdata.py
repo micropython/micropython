@@ -259,8 +259,6 @@ def compress(encoding_table, decompressed, encoded_length_bits, len_translation_
                 current_bit -= 1
     if current_bit != 7:
         current_byte += 1
-    if current_byte > len(decompressed):
-        print("Note: compression increased length", repr(decompressed), len(decompressed), current_byte, file=sys.stderr)
     return enc[:current_byte]
 
 def qstr_escape(qst):
