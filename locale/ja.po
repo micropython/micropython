@@ -388,7 +388,9 @@ msgstr "オートリロードはオフです。\n"
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr "オートリロードがオンです。ファイルをUSB経由で保存するだけで実行できます。REPLに入ると無効化します。\n"
+msgstr ""
+"オートリロードがオンです。ファイルをUSB経由で保存するだけで実行できます。REPL"
+"に入ると無効化します。\n"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -493,7 +495,9 @@ msgstr "CBCブロックは16バイトの整数倍でなければなりません"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr "ネイティブオブジェクトにアクセスする前にsuper().__init__()を呼び出してください"
+msgstr ""
+"ネイティブオブジェクトにアクセスする前にsuper().__init__()を呼び出してくださ"
+"い"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -897,7 +901,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"非互換の.mpyファイルです。全ての.mpyファイルをアップデートしてください。詳細は http://adafru.it/mpy-update を参照"
+"非互換の.mpyファイルです。全ての.mpyファイルをアップデートしてください。詳細"
+"は http://adafru.it/mpy-update を参照"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1258,7 +1263,9 @@ msgstr "保存されたコードは実行していません。\n"
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
-msgstr "オブジェクトは解体済みでもう使われていません。新たなオブジェクトを作成してください"
+msgstr ""
+"オブジェクトは解体済みでもう使われていません。新たなオブジェクトを作成してく"
+"ださい"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1982,6 +1989,7 @@ msgid "can't assign to expression"
 msgstr ""
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -3182,10 +3190,6 @@ msgstr ""
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "タプル/リストの長さが正しくありません"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c

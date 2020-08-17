@@ -1996,6 +1996,7 @@ msgid "can't assign to expression"
 msgstr "impossibile assegnare all'espressione"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -3215,10 +3216,6 @@ msgstr "indice della tupla fuori intervallo"
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tupla/lista ha la lunghezza sbagliata"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c

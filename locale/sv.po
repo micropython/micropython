@@ -2004,6 +2004,7 @@ msgid "can't assign to expression"
 msgstr "kan inte tilldela uttryck"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -3212,10 +3213,6 @@ msgstr "tupelindex utanför intervallet"
 msgid "tuple/list has wrong length"
 msgstr "tupel/lista har fel längd"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr "tupel/lista krävs för RHS"
-
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
@@ -3398,6 +3395,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "tupel/lista krävs för RHS"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "Indexet %q måste vara ett heltal, inte %s"
