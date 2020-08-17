@@ -32,6 +32,7 @@
 #include "py/obj.h"
 #include "py/objtuple.h"
 
+#include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/Connection.h"
 #include "shared-bindings/_bleio/ScanResults.h"
 #include "shared-bindings/busio/UART.h"
@@ -66,6 +67,11 @@ typedef struct _bleio_adapter_obj_t {
     // Used to monitor advertising timeout for legacy avertising.
     uint64_t advertising_start_ticks;
     uint64_t advertising_timeout_msecs;  // If zero, do not check.
+
+    // Generic services characteristics.
+    bleio_characteristic_obj_t *device_name_characteristic;
+    bleio_characteristic_obj_t *appearance_characteristic;
+    bleio_characteristic_obj_t * service_changed_characteristic;
 
     uint16_t max_acl_buffer_len;
     uint16_t max_acl_num_buffers;

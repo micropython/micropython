@@ -74,6 +74,114 @@
 
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
+STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
+    // Create Generic Access UUID, Service, and Characteristics.
+
+    // Generic Access Service setup.
+
+    bleio_uuid_obj_t *generic_access_service_uuid = m_new_obj(bleio_uuid_obj_t);
+    generic_access_service_uuid->base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(generic_access_service_uuid, 0x1800, NULL);
+
+    bleio_uuid_obj_t *device_name_characteristic_uuid = m_new_obj(bleio_uuid_obj_t);
+    device_name_characteristic_uuid->base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(device_name_characteristic_uuid, 0x2A00, NULL);
+
+    bleio_uuid_obj_t *appearance_characteristic_uuid = m_new_obj(bleio_uuid_obj_t);
+    appearance_characteristic_uuid->base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(appearance_characteristic_uuid, 0x2A01, NULL);
+
+    // Not implemented:
+    // Peripheral Preferred Connection Parameters
+    // Central Address Resolution
+
+    bleio_service_obj_t *generic_access_service = m_new_obj(bleio_service_obj_t);
+    generic_access_service->base.type = &bleio_service_type;
+    common_hal_bleio_service_construct(generic_access_service, generic_access_service_uuid, false);
+
+    adapter->device_name_characteristic = m_new_obj(bleio_characteristic_obj_t);
+    adapter->device_name_characteristic->base.type = &bleio_characteristic_type;
+
+    char generic_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 'n', 'n', 'n', 'n' };
+    mp_buffer_info_t generic_name_bufinfo = {
+        .buf = generic_name,
+        .len = sizeof(generic_name),
+    };
+
+    // Will be added to service by constructor.
+    common_hal_bleio_characteristic_construct(
+        adapter->device_name_characteristic,
+        generic_access_service,
+        BLE_GATT_HANDLE_INVALID,
+        device_name_characteristic_uuid,
+        CHAR_PROP_READ,
+        SECURITY_MODE_OPEN,
+        SECURITY_MODE_NO_ACCESS,
+        248,                    // max length, from Bluetooth spec
+        false,                  // not fixed length
+        &generic_name_bufinfo
+        );
+
+    uint16_t zero_16 = 0;
+    mp_buffer_info_t zero_16_value = {
+        .buf = &zero_16,
+        .len = sizeof(zero_16),
+    };
+
+    adapter->appearance_characteristic = m_new_obj(bleio_characteristic_obj_t);
+    adapter->appearance_characteristic->base.type = &bleio_characteristic_type;
+
+    common_hal_bleio_characteristic_construct(
+        adapter->appearance_characteristic,
+        generic_access_service,
+        BLE_GATT_HANDLE_INVALID,
+        appearance_characteristic_uuid,
+        CHAR_PROP_READ,
+        SECURITY_MODE_OPEN,
+        SECURITY_MODE_NO_ACCESS,
+        2,                      // max length, from Bluetooth spec
+        true,                  // fixed length
+        &zero_16_value
+        );
+
+    // Generic Attribute Service setup.
+
+    bleio_uuid_obj_t *generic_attribute_service_uuid = m_new_obj(bleio_uuid_obj_t);
+    generic_attribute_service_uuid->base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(generic_attribute_service_uuid, 0x1801, NULL);
+
+    bleio_uuid_obj_t *service_changed_characteristic_uuid = m_new_obj(bleio_uuid_obj_t);
+    service_changed_characteristic_uuid->base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(service_changed_characteristic_uuid, 0x2A05, NULL);
+
+    bleio_service_obj_t *generic_attribute_service = m_new_obj(bleio_service_obj_t);
+    generic_attribute_service->base.type = &bleio_service_type;
+    common_hal_bleio_service_construct(generic_attribute_service, generic_attribute_service_uuid, false);
+
+    adapter->service_changed_characteristic = m_new_obj(bleio_characteristic_obj_t);
+    adapter->service_changed_characteristic->base.type = &bleio_characteristic_type;
+
+    uint32_t zero_32 = 0;
+    mp_buffer_info_t zero_32_value = {
+        .buf = &zero_32,
+        .len = sizeof(zero_32),
+    };
+
+    common_hal_bleio_characteristic_construct(
+        adapter->service_changed_characteristic,
+        generic_attribute_service,
+        BLE_GATT_HANDLE_INVALID,
+        service_changed_characteristic_uuid,
+        CHAR_PROP_INDICATE,
+        SECURITY_MODE_OPEN,
+        SECURITY_MODE_NO_ACCESS,
+        4,                     // max length, from Bluetooth spec
+        true,                  // fixed length
+        &zero_32_value
+        );
+}
+
+
 STATIC void check_enabled(bleio_adapter_obj_t *adapter) {
     if (!common_hal_bleio_adapter_get_enabled(adapter)) {
         mp_raise_bleio_BluetoothError(translate("Adapter not enabled"));
@@ -163,10 +271,13 @@ STATIC void check_enabled(bleio_adapter_obj_t *adapter) {
 //     return true;
 // }
 
-char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0 , 0};
+char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0};
 
-STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
-    uint8_t len = sizeof(default_ble_name) - 1;
+// Get various values and limits set by the adapter.
+// Set event mask.
+STATIC void bleio_adapter_hci_init(bleio_adapter_obj_t *self) {
+
+    const size_t len = sizeof(default_ble_name);
 
     bt_addr_t addr;
     check_hci_error(hci_read_bd_addr(&addr));
@@ -175,14 +286,7 @@ STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
     default_ble_name[len - 3] = nibble_to_hex_lower[addr.val[1] & 0xf];
     default_ble_name[len - 2] = nibble_to_hex_lower[addr.val[0] >> 4 & 0xf];
     default_ble_name[len - 1] = nibble_to_hex_lower[addr.val[0] & 0xf];
-    default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
-
-    common_hal_bleio_adapter_set_name(self, (char*) default_ble_name);
-}
-
-// Get various values and limits set by the adapter.
-// Set event mask.
-STATIC void bleio_adapter_setup(bleio_adapter_obj_t *self) {
+    self->name = mp_obj_new_str(default_ble_name, len);
 
     // Get version information.
     if (hci_read_local_version(&self->hci_version, &self->hci_revision, &self->lmp_version,
@@ -246,8 +350,8 @@ void common_hal_bleio_adapter_hci_uart_init(bleio_adapter_obj_t *self, busio_uar
     self->enabled = false;
 
     common_hal_bleio_adapter_set_enabled(self, true);
-    bleio_adapter_setup(self);
-    bleio_adapter_reset_name(self);
+    bleio_adapter_hci_init(self);
+    common_hal_bleio_adapter_set_name(self, default_ble_name);
 }
 
 void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled) {
@@ -281,8 +385,7 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         // so store None there to skip it.
         self->attributes = mp_obj_new_list(0, NULL);
         bleio_adapter_add_attribute(self, mp_const_none);
-        self->last_added_service_handle = BLE_GATT_HANDLE_INVALID;
-        self->last_added_characteristic_handle = BLE_GATT_HANDLE_INVALID;
+        add_generic_services(self);
     }
 }
 
@@ -309,6 +412,9 @@ mp_obj_str_t* common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
 
 void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char* name) {
     self->name = mp_obj_new_str(name, strlen(name));
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(self->name, &bufinfo, MP_BUFFER_READ);
+    bleio_characteristic_set_local_value(self->device_name_characteristic, &bufinfo);
 }
 
 
@@ -637,7 +743,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         check_hci_error(hci_le_set_advertising_data(advertising_data_len, full_data));
         memset(full_data, 0, sizeof(full_data));
         if (scan_response_data_len > 0) {
-            memcpy(full_data, advertising_data, MIN(sizeof(full_data), scan_response_data_len));
+            memcpy(full_data, scan_response_data, MIN(sizeof(full_data), scan_response_data_len));
             check_hci_error(hci_le_set_scan_response_data(scan_response_data_len, full_data));
         }
 
