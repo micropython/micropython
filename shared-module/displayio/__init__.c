@@ -26,7 +26,7 @@
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
-#if CIRCUITPY_RGBMATRIX || CIRCUITPY_SHARPDISPLAY
+#if CIRCUITPY_RGBMATRIX
 STATIC bool any_display_uses_this_framebuffer(mp_obj_base_t *obj) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display_base.type == &framebufferio_framebufferdisplay_type) {
