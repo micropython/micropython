@@ -99,7 +99,7 @@ void serial_write_substring(const char* text, uint32_t length) {
     if (length == 0) {
         return;
     }
-#if CIRCUITPY_DISPLAYIO
+#if CIRCUITPY_TERMINALIO
     int errcode;
     common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t*) text, length, &errcode);
 #endif

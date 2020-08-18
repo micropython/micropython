@@ -347,16 +347,20 @@ extern const struct _mp_obj_module_t displayio_module;
 extern const struct _mp_obj_module_t fontio_module;
 extern const struct _mp_obj_module_t terminalio_module;
 #define DISPLAYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
-#define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
-#define TERMINALIO_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
 #ifndef CIRCUITPY_DISPLAY_LIMIT
 #define CIRCUITPY_DISPLAY_LIMIT (1)
 #endif
 #else
 #define DISPLAYIO_MODULE
+#define CIRCUITPY_DISPLAY_LIMIT (0)
+#endif
+
+#if CIRCUITPY_DISPLAYIO && CIRCUITPY_TERMINALIO
+#define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
+#define TERMINALIO_MODULE   { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
+#else
 #define FONTIO_MODULE
 #define TERMINALIO_MODULE
-#define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
 #if CIRCUITPY_FRAMEBUFFERIO
