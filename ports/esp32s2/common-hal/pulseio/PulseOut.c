@@ -86,6 +86,6 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
 
     rmt_write_items(self->channel, items, length, true);
     while (rmt_wait_tx_done(self->channel, 0) != ESP_OK) {
-        RUN_BACKGROUND_TASKS();
+        RUN_BACKGROUND_TASKS;
     }
 }
