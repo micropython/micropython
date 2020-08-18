@@ -102,10 +102,6 @@ def translate(translation_file, i18ns):
 
 def compute_huffman_coding(translations, qstrs, compression_filename):
     all_strings = [x[1] for x in translations]
-
-    # go through each qstr and print it out
-    for _, _, qstr in qstrs.values():
-        all_strings.append(qstr)
     all_strings_concat = "".join(all_strings)
     counts = collections.Counter(all_strings_concat)
     cb = huffman.codebook(counts.items())
