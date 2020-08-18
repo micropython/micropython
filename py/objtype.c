@@ -193,7 +193,7 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data  *lookup, const mp_obj_
                 printf("mp_obj_class_lookup: Returning: ");
                 mp_obj_print(lookup->dest[0], PRINT_REPR); printf(" ");
                 // Don't try to repr() lookup->dest[1], as we can be called recursively
-                printf("<%s @%p>\n", mp_obj_get_type_str(lookup->dest[1]), lookup->dest[1]);
+                printf("<%q @%p>\n", mp_obj_get_type_qstr(lookup->dest[1]), lookup->dest[1]);
 #endif
                 return;
             }
@@ -285,7 +285,7 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     }
 
     // TODO: CPython prints fully-qualified type name
-    mp_printf(print, "<%s object at %p>", mp_obj_get_type_str(self_in), self);
+    mp_printf(print, "<%q object at %p>", mp_obj_get_type_qstr(self_in), self);
 }
 
 mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -376,8 +376,8 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, cons
             if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
                 mp_raise_TypeError(translate("__init__() should return None"));
             } else {
-                mp_raise_TypeError_varg(translate("__init__() should return None, not '%s'"),
-                    mp_obj_get_type_str(init_ret));
+                mp_raise_TypeError_varg(translate("__init__() should return None, not '%q'"),
+                    mp_obj_get_type_qstr(init_ret));
             }
         }
 
@@ -891,8 +891,8 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError(translate("object not callable"));
         } else {
-            mp_raise_TypeError_varg(translate("'%s' object is not callable"),
-                mp_obj_get_type_str(self_in));
+            mp_raise_TypeError_varg(translate("'%q' object is not callable"),
+                mp_obj_get_type_qstr(self_in));
         }
     }
     mp_obj_instance_t *self = MP_OBJ_TO_PTR(self_in);

@@ -40,11 +40,11 @@
 //|     be 8 bit unsigned or 16 bit signed. If a buffer is provided, it will be used instead of allocating
 //|     an internal buffer."""
 //|
-//|     def __init__(self, file: typing.BinaryIO, buffer: ReadableBuffer) -> None:
+//|     def __init__(self, file: typing.BinaryIO, buffer: WriteableBuffer) -> None:
 //|         """Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|         :param typing.BinaryIO file: Already opened wave file
-//|         :param bytearray buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two 512 byte buffers are allocated internally.
+//|         :param ~_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two 512 byte buffers are allocated internally.
 //|
 //|
 //|         Playing a wave file from flash::

@@ -368,7 +368,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        mp_raise_msg(&mp_type_KeyError, translate("pop from an empty set"));
+        mp_raise_msg_varg(&mp_type_KeyError, translate("pop from empty %q"), MP_QSTR_set);
     }
     return obj;
 }

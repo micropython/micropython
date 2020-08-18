@@ -81,8 +81,8 @@
 //|         of the display to minimize tearing artifacts.
 //|
 //|         :param display_bus: The bus that the display is connected to
-//|         :type display_bus: FourWire, ParallelBus or I2CDisplay
-//|         :param buffer init_sequence: Byte-packed initialization sequence.
+//|         :type _DisplayBus: FourWire, ParallelBus or I2CDisplay
+//|         :param ~_typing.ReadableBuffer init_sequence: Byte-packed initialization sequence.
 //|         :param int width: Width in pixels
 //|         :param int height: Height in pixels
 //|         :param int colstart: The index if the first visible column
@@ -344,7 +344,7 @@ const mp_obj_property_t displayio_display_auto_brightness_obj = {
 
 
 //|     width: int
-//|	    Gets the width of the board
+//|     """Gets the width of the board"""
 //|
 STATIC mp_obj_t displayio_display_obj_get_width(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
@@ -360,7 +360,7 @@ const mp_obj_property_t displayio_display_width_obj = {
 };
 
 //|     height: int
-//|	    """Gets the height of the board"""
+//|     """Gets the height of the board"""
 //|
 STATIC mp_obj_t displayio_display_obj_get_height(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
@@ -399,7 +399,7 @@ const mp_obj_property_t displayio_display_rotation_obj = {
 };
 
 //|     bus: _DisplayBus
-//|	    """The bus being used by the display"""
+//|     """The bus being used by the display"""
 //|
 //|
 STATIC mp_obj_t displayio_display_obj_get_bus(mp_obj_t self_in) {
@@ -420,7 +420,7 @@ const mp_obj_property_t displayio_display_bus_obj = {
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area
-//|         :param bytearray buffer: The buffer in which to place the pixel data"""
+//|         :param ~_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
 //|         ...
 //|
 STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

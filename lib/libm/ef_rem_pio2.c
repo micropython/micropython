@@ -35,9 +35,9 @@
  * Table of constants for 2/pi, 396 Hex digits (476 decimal) of 2/pi
  */
 #ifdef __STDC__
-static const __int32_t two_over_pi[] = {
+static const __uint8_t two_over_pi[] = {
 #else
-static __int32_t two_over_pi[] = {
+static __uint8_t two_over_pi[] = {
 #endif
 0xA2, 0xF9, 0x83, 0x6E, 0x4E, 0x44, 0x15, 0x29, 0xFC,
 0x27, 0x57, 0xD1, 0xF5, 0x34, 0xDD, 0xC0, 0xDB, 0x62,
@@ -145,6 +145,7 @@ pio2_3t =  6.1232342629e-17; /* 0x248d3132 */
 		return -1;
 	    }
 	}
+#if CIRCUITPY_FULL_BUILD
 	if(ix<=0x43490f80) { /* |x| ~<= 2^7*(pi/2), medium size */
 	    t  = fabsf(x);
 	    n  = (__int32_t) (t*invpio2+half);
@@ -180,6 +181,11 @@ pio2_3t =  6.1232342629e-17; /* 0x248d3132 */
 	    if(hx<0) 	{y[0] = -y[0]; y[1] = -y[1]; return -n;}
 	    else	 return n;
 	}
+#else
+        // Suppress "defined but not used" diagnostics
+        (void) j; (void) fn; (void) r; (void) t; (void) w; (void) pio2_3t;
+        (void) pio2_3; (void) invpio2; (void)half; (void)npio2_hw;
+#endif
     /*
      * all other (large) arguments
      */

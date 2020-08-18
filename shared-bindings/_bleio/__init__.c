@@ -41,7 +41,8 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-//| """
+//| """Bluetooth Low Energy (BLE) communication
+//|
 //| The `_bleio` module provides necessary low-level functionality for communicating
 //| using Bluetooth Low Energy (BLE). The '_' prefix indicates this module is meant
 //| for internal use by libraries but not by the end user. Its API may change incompatibly
@@ -50,12 +51,12 @@
 //| `adafruit_ble <https://circuitpython.readthedocs.io/projects/ble/en/latest/>`_
 //| CircuitPython library instead, which builds on `_bleio`, and
 //| provides higher-level convenience functionality, including predefined beacons, clients,
-//| servers.
+//| servers."""
 //|
-//| .. attribute:: adapter
-//|
-//|   BLE Adapter used to manage device discovery and connections.
-//|   This object is the sole instance of `_bleio.Adapter`."""
+
+//| adapter: Adapter
+//| """BLE Adapter used to manage device discovery and connections.
+//| This object is the sole instance of `_bleio.Adapter`."""
 //|
 
 //| class BluetoothError(Exception):

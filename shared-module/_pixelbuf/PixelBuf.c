@@ -132,6 +132,18 @@ void common_hal__pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_float_t b
     }
 }
 
+uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
+    if (MP_OBJ_IS_SMALL_INT(obj)) {
+        return MP_OBJ_SMALL_INT_VALUE(obj);
+    } else if (MP_OBJ_IS_INT(obj)) {
+        return mp_obj_get_int_truncated(obj);
+    } else if (mp_obj_is_float(obj)) {
+        return (uint8_t)mp_obj_get_float(obj);
+    }
+    mp_raise_TypeError_varg(
+            translate("can't convert %q to %q"), mp_obj_get_type_qstr(obj), MP_QSTR_int);
+}
+
 void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t* self, mp_obj_t color, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* w) {
     pixelbuf_byteorder_details_t *byteorder = &self->byteorder;
     // w is shared between white in NeoPixels and brightness in dotstars (so that DotStars can have
@@ -142,8 +154,8 @@ void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t* self, mp_obj_t color, uint8_
         *w = 0;
     }
 
-    if (MP_OBJ_IS_INT(color)) {
-        mp_int_t value = mp_obj_get_int_truncated(color);
+    if (MP_OBJ_IS_INT(color) || mp_obj_is_float(color)) {
+        mp_int_t value = MP_OBJ_IS_INT(color) ? mp_obj_get_int_truncated(color) : mp_obj_get_float(color);
         *r = value >> 16 & 0xff;
         *g = (value >> 8) & 0xff;
         *b = value & 0xff;
@@ -155,9 +167,9 @@ void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t* self, mp_obj_t color, uint8_
             mp_raise_ValueError_varg(translate("Expected tuple of length %d, got %d"), byteorder->bpp, len);
         }
 
-        *r = mp_obj_get_int_truncated(items[PIXEL_R]);
-        *g = mp_obj_get_int_truncated(items[PIXEL_G]);
-        *b = mp_obj_get_int_truncated(items[PIXEL_B]);
+        *r = _pixelbuf_get_as_uint8(items[PIXEL_R]);
+        *g = _pixelbuf_get_as_uint8(items[PIXEL_G]);
+        *b = _pixelbuf_get_as_uint8(items[PIXEL_B]);
         if (len > 3) {
             if (mp_obj_is_float(items[PIXEL_W])) {
                 *w = 255 * mp_obj_get_float(items[PIXEL_W]);
@@ -218,16 +230,34 @@ void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t* self, size_t index, mp_obj_t v
     _pixelbuf_set_pixel_color(self, index, r, g, b, w);
 }
 
-void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t* values) {
+void common_hal__pixelbuf_pixelbuf_set_pixels(mp_obj_t self_in, size_t start, mp_int_t step, size_t slice_len, mp_obj_t* values,
+    mp_obj_tuple_t *flatten_to)
+{
     pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);
-    for (size_t i = 0; i < slice_len; i++) {
-        _pixelbuf_set_pixel(self, start, values[i]);
-        start+=step;
+    mp_obj_iter_buf_t iter_buf;
+    mp_obj_t iterable = mp_getiter(values, &iter_buf);
+    mp_obj_t item;
+    size_t i = 0;
+    bool flattened = flatten_to != mp_const_none;
+    if (flattened) flatten_to->len = self->bytes_per_pixel;
+    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+        if (flattened) {
+            flatten_to->items[i % self->bytes_per_pixel] = item;
+            if (++i % self->bytes_per_pixel == 0) {
+                _pixelbuf_set_pixel(self, start, flatten_to);
+                start+=step;
+            }
+        } else {
+            _pixelbuf_set_pixel(self, start, item);
+            start+=step;
+        }
     }
     if (self->auto_write) {
         common_hal__pixelbuf_pixelbuf_show(self_in);
     }
 }
+
+
 
 void common_hal__pixelbuf_pixelbuf_set_pixel(mp_obj_t self_in, size_t index, mp_obj_t value) {
     pixelbuf_pixelbuf_obj_t* self = native_pixelbuf(self_in);

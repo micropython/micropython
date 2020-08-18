@@ -61,7 +61,6 @@ f.load_glyphs(set(ord(c) for c in all_characters))
 # Get each glyph.
 for c in set(all_characters):
     if ord(c) not in f._glyphs:
-        print("Font missing character:", c, ord(c))
         filtered_characters = filtered_characters.replace(c, "")
         continue
     g = f.get_glyph(ord(c))
