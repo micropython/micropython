@@ -124,12 +124,12 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     if (path != NULL) {
         strcpy(uart_device_name, path);
     }
-    DEBUG_printf("Using HCI UART: %s\n", uart_device_name);
+    DEBUG_printf("mp_bluetooth_hci_uart_init: Using HCI UART: %s\n", uart_device_name);
 
     int flags = O_RDWR | O_NOCTTY | O_NONBLOCK;
     uart_fd = open(uart_device_name, flags);
     if (uart_fd == -1) {
-        DEBUG_printf("Unable to open port %s", uart_device_name);
+        printf("mp_bluetooth_hci_uart_init: Unable to open port %s\n", uart_device_name);
         return -1;
     }
 

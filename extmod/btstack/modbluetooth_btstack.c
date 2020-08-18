@@ -317,6 +317,9 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
             // Signal that de-initialisation has completed.
             mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
         }
+    } else if (event_type == BTSTACK_EVENT_POWERON_FAILED) {
+        // Signal that initialisation has failed.
+        mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
     } else if (event_type == HCI_EVENT_TRANSPORT_PACKET_SENT) {
         DEBUG_printf("  --> hci transport packet sent\n");
     } else if (event_type == HCI_EVENT_COMMAND_COMPLETE) {
@@ -644,6 +647,8 @@ int mp_bluetooth_init(void) {
     if (mp_bluetooth_btstack_state != MP_BLUETOOTH_BTSTACK_STATE_ACTIVE) {
         DEBUG_printf("mp_bluetooth_init: stack startup timed out\n");
 
+        bool timeout = mp_bluetooth_btstack_state == MP_BLUETOOTH_BTSTACK_STATE_TIMEOUT;
+
         // Required to stop the polling loop.
         mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
         // Attempt a shutdown (may not do anything).
@@ -652,7 +657,7 @@ int mp_bluetooth_init(void) {
         // Clean up.
         MP_STATE_PORT(bluetooth_btstack_root_pointers) = NULL;
 
-        return MP_ETIMEDOUT;
+        return timeout ? MP_ETIMEDOUT : MP_EINVAL;
     }
 
     DEBUG_printf("mp_bluetooth_init: stack startup complete\n");

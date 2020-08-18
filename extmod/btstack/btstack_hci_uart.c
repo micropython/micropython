@@ -50,6 +50,7 @@ STATIC uint8_t *recv_buf;
 STATIC size_t recv_len;
 STATIC size_t recv_idx;
 STATIC void (*recv_handler)(void);
+STATIC bool init_success = false;
 
 STATIC int btstack_uart_init(const btstack_uart_config_t *uart_config) {
     (void)uart_config;
@@ -62,14 +63,21 @@ STATIC int btstack_uart_init(const btstack_uart_config_t *uart_config) {
 
     // Set up the UART peripheral, attach IRQ and power up the HCI controller.
     // We haven't been told the baud rate yet, so defer that until btstack_uart_set_baudrate.
-    mp_bluetooth_hci_uart_init(MICROPY_HW_BLE_UART_ID, 0);
-    mp_bluetooth_hci_controller_init();
+    if (mp_bluetooth_hci_uart_init(MICROPY_HW_BLE_UART_ID, 0)) {
+        init_success = false;
+        return -1;
+    }
+    if (mp_bluetooth_hci_controller_init()) {
+        init_success = false;
+        return -1;
+    }
 
+    init_success = true;
     return 0;
 }
 
 STATIC int btstack_uart_open(void) {
-    return 0;
+    return init_success ? 0 : 1;
 }
 
 STATIC int btstack_uart_close(void) {
