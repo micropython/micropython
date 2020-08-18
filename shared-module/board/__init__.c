@@ -164,8 +164,8 @@ void reset_board_busses(void) {
             break;
         }
         #endif
-    #endif
     }
+    #endif
     if (!display_using_spi) {
         spi_singleton = NULL;
     }
