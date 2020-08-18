@@ -105,6 +105,9 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
 
     // Find a free RMT Channel and configure it
     rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
+    if (channel == RMT_CHANNEL_MAX) {
+        mp_raise_RuntimeError(translate("All timers in use"));
+    }
     rmt_config_t config = RMT_DEFAULT_CONFIG_RX(pin->number, channel);
     config.rx_config.filter_en = true;
     config.rx_config.idle_threshold = 30000; // 30*3=90ms idle required to register a sequence

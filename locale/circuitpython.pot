@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-17 10:10-0400\n"
+"POT-Creation-Date: 2020-08-18 11:19-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1334,7 +1334,7 @@ msgstr ""
 #: ports/stm/common-hal/pulseio/PulseOut.c
 msgid ""
 "Port does not accept pins or frequency.                                     "
-"Construct and pass a PWM Carrier instead"
+"Construct and pass a PWMOut Carrier instead"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c

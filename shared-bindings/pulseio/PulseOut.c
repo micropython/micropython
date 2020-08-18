@@ -71,11 +71,11 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
 
     mp_obj_t carrier_obj = pos_args[0];
     if (MP_OBJ_IS_TYPE(carrier_obj, &pulseio_pwmout_type)) {
-        // PWM Carrier
+        // Use a PWMOut Carrier
         mp_arg_check_num(n_args, kw_args, 1, 1, false);
         common_hal_pulseio_pulseout_construct(self, (pulseio_pwmout_obj_t *)MP_OBJ_TO_PTR(carrier_obj), NULL, 0, 0);
     } else {
-        // Pin and Frequency
+        // Use a Pin, frequency, and duty cycle
         enum { ARG_pin, ARG_frequency};
         static const mp_arg_t allowed_args[] = {
             { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },

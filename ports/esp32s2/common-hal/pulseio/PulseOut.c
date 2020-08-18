@@ -42,6 +42,9 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
     }
 
     rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
+    if (channel == RMT_CHANNEL_MAX) {
+        mp_raise_RuntimeError(translate("All timers in use"));
+    }
 
     // Configure Channel
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin->number, channel);
@@ -82,5 +85,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
     }
 
     rmt_write_items(self->channel, items, length, true);
-    rmt_wait_tx_done(self->channel, pdMS_TO_TICKS(100));
+    while (rmt_wait_tx_done(self->channel, 0) != ESP_OK) {
+        RUN_BACKGROUND_TASKS();
+    }
 }
