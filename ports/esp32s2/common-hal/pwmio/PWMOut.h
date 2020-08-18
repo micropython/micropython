@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
-
-#include <nuttx/timers/pwm.h>
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PWMIO_PWMOUT_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PWMIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-
-#include "py/obj.h"
+#include "driver/ledc.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    struct pwm_info_s info;
-    bool variable_frequency;
-    int8_t number;
-} pulseio_pwmout_obj_t;
+    ledc_timer_config_t tim_handle;
+    ledc_channel_config_t chan_handle;
+    uint16_t pin_number;
+    uint8_t duty_resolution;
+    bool variable_frequency: 1;
+    bool deinited: 1;
+} pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);
-void pwmout_start(uint8_t pwm_num);
-void pwmout_stop(uint8_t pwm_num);
 
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PWMIO_PWMOUT_H

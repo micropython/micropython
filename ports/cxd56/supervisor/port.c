@@ -41,7 +41,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/busio/UART.h"
 
 safe_mode_t port_init(void) {
@@ -67,6 +67,8 @@ void reset_port(void) {
 #endif
 #if CIRCUITPY_PULSEIO
     pulseout_reset();
+#endif
+#if CIRCUITPY_PWMIO
     pwmout_reset();
 #endif
 #if CIRCUITPY_BUSIO

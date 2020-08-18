@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,37 +24,26 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/pulseio/PulseOut.h"
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_PWMIO_PWMOUT_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_PWMIO_PWMOUT_H
 
-#include "shared-bindings/pwmio/PWMOut.h"
-#include "py/runtime.h"
+#include "nrfx_pwm.h"
+#include "py/obj.h"
 
-// STATIC void turn_on(pulseio_pulseout_obj_t *pulseout) {
-// }
+typedef struct {
+    mp_obj_base_t base;
+    NRF_PWM_Type* pwm;
+    uint8_t pin_number;
+    uint8_t channel: 7;
+    bool variable_frequency: 1;
+    uint16_t duty_cycle;
+    uint32_t frequency;
+} pwmio_pwmout_obj_t;
 
-// STATIC void turn_off(pulseio_pulseout_obj_t *pulseout) {
-// }
+void pwmout_reset(void);
+NRF_PWM_Type *pwmout_allocate(uint16_t countertop, nrf_pwm_clk_t base_clock,
+    bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out,
+    IRQn_Type *irq);
+void pwmout_free_channel(NRF_PWM_Type *pwm, int8_t channel);
 
-// STATIC void start_timer(void) {
-// }
-
-// STATIC void pulseout_event_handler(void) {
-// }
-
-void pulseout_reset() {
-}
-
-void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                           const pwmio_pwmout_obj_t* carrier) {
-    mp_raise_NotImplementedError(translate("PulseOut not supported on this chip"));
-}
-
-bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
-    return false;
-}
-
-void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
-}
-
-void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
-}
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_PWMIO_PWMOUT_H

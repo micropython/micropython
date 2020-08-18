@@ -198,11 +198,14 @@ endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_PATTERNS += rgbmatrix/%
 endif
+ifeq ($(CIRCUITPY_PS2IO),1)
+SRC_PATTERNS += ps2io/%
+endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
 SRC_PATTERNS += pulseio/%
 endif
-ifeq ($(CIRCUITPY_PS2IO),1)
-SRC_PATTERNS += ps2io/%
+ifeq ($(CIRCUITPY_PWMIO),1)
+SRC_PATTERNS += pwmio/%
 endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
@@ -316,10 +319,11 @@ SRC_COMMON_HAL_ALL = \
 	os/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
-	pulseio/PWMOut.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
+	pwmio/PWMOut.c \
+	pwmio/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
 	rotaryio/IncrementalEncoder.c \

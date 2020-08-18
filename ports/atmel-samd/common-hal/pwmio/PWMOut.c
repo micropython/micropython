@@ -28,8 +28,8 @@
 #include <stdint.h>
 
 #include "py/runtime.h"
-#include "common-hal/pulseio/PWMOut.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "timer_handler.h"
 
@@ -78,13 +78,13 @@ void timer_reset_ok(int index, bool is_tc) {
 }
 
 
-void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     timer_never_reset(self->timer->index, self->timer->is_tc);
 
     never_reset_pin_number(self->pin->number);
 }
 
-void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
     timer_reset_ok(self->timer->index, self->timer->is_tc);
 }
 
@@ -137,7 +137,7 @@ bool channel_ok(const pin_timer_t* t) {
             t->is_tc;
 }
 
-pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
                                                     const mcu_pin_obj_t* pin,
                                                     uint16_t duty,
                                                     uint32_t frequency,
@@ -296,16 +296,16 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_E + mux_position);
 
-    common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
+    common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
     return PWMOUT_OK;
 }
 
-bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
     return self->pin == NULL;
 }
 
-void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
-    if (common_hal_pulseio_pwmout_deinited(self)) {
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
+    if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
     const pin_timer_t* t = self->timer;
@@ -331,7 +331,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     self->pin = NULL;
 }
 
-extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
+extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty) {
     // Store the unadjusted duty cycle. It turns out the the process of adjusting and calculating
     // the duty cycle here and reading it back is lossy - the value will decay over time.
     // Track it here so that if frequency is changed we can use this value to recalculate the
@@ -373,7 +373,7 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
     }
 }
 
-uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
     const pin_timer_t* t = self->timer;
     if (t->is_tc) {
         Tc* tc = tc_insts[t->index];
@@ -411,7 +411,7 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
 }
 
 
-void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self,
                                               uint32_t frequency) {
     if (frequency == 0 || frequency > 6000000) {
         mp_raise_ValueError(translate("Invalid PWM frequency"));
@@ -466,10 +466,10 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
         #endif
     }
 
-    common_hal_pulseio_pwmout_set_duty_cycle(self, self->duty_cycle);
+    common_hal_pwmio_pwmout_set_duty_cycle(self, self->duty_cycle);
 }
 
-uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
     uint32_t system_clock = common_hal_mcu_processor_get_frequency();
     const pin_timer_t* t = self->timer;
     uint8_t divisor;
@@ -484,6 +484,6 @@ uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
     return (system_clock / prescaler[divisor]) / (top + 1);
 }
 
-bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t* self) {
     return self->variable_frequency;
 }

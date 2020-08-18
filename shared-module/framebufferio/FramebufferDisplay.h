@@ -33,7 +33,6 @@
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/displayio/Group.h"
-#include "shared-bindings/pulseio/PWMOut.h"
 
 #include "shared-module/displayio/area.h"
 #include "shared-module/displayio/display_core.h"

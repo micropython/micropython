@@ -30,7 +30,7 @@
 
 #include "py/runtime.h"
 
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 
 typedef struct {
     const char* devpath;
@@ -46,7 +46,7 @@ STATIC pwmout_dev_t pwmout_dev[] = {
     {"/dev/pwm3", &pin_PWM3, -1, true}
 };
 
-pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t *self,
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t duty, uint32_t frequency,
     bool variable_frequency) {
     self->number = -1;
@@ -85,8 +85,8 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t *self,
     return PWMOUT_OK;
 }
 
-void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t *self) {
-    if (common_hal_pulseio_pwmout_deinited(self)) {
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
+    if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
 
@@ -98,21 +98,21 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t *self) {
     self->pin = NULL;
 }
 
-bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t *self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
     return pwmout_dev[self->number].fd < 0;
 }
 
-void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t *self, uint16_t duty) {
+void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t duty) {
     self->info.duty = duty;
 
     ioctl(pwmout_dev[self->number].fd, PWMIOC_SETCHARACTERISTICS, (unsigned long)((uintptr_t)&self->info));
 }
 
-uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t *self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t *self) {
     return self->info.duty;
 }
 
-void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t *self, uint32_t frequency) {
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t frequency) {
     self->info.frequency = frequency;
 
     if (ioctl(pwmout_dev[self->number].fd, PWMIOC_SETCHARACTERISTICS, (unsigned long)((uintptr_t)&self->info)) < 0) {
@@ -120,21 +120,21 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t *self, uint32_
     }
 }
 
-uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t *self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
     return self->info.frequency;
 }
 
-bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t *self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
 }
 
-void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     never_reset_pin_number(self->pin->number);
 
     pwmout_dev[self->number].reset = false;
 }
 
-void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
     pwmout_dev[self->number].reset = true;
 }
 

@@ -38,7 +38,7 @@
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 
@@ -65,7 +65,7 @@ void reset_port(void) {
     // A larger delay so the idle task can run and do any IDF cleanup needed.
     vTaskDelay(4);
 
-#if CIRCUITPY_PULSEIO
+#if CIRCUITPY_PWMIO
     pwmout_reset();
 #endif
 #if CIRCUITPY_BUSIO

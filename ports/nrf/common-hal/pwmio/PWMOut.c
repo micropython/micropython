@@ -28,8 +28,8 @@
 #include "nrf.h"
 
 #include "py/runtime.h"
-#include "common-hal/pulseio/PWMOut.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "supervisor/shared/translate.h"
 
 #include "nrf_gpio.h"
@@ -63,7 +63,7 @@ STATIC int pwm_idx(NRF_PWM_Type *pwm) {
     return -1;
 }
 
-void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
         NRF_PWM_Type* pwm = pwms[i];
         if (pwm == self->pwm) {
@@ -74,7 +74,7 @@ void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
     never_reset_pin_number(self->pin_number);
 }
 
-void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
     for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
         NRF_PWM_Type* pwm = pwms[i];
         if (pwm == self->pwm) {
@@ -204,7 +204,7 @@ void pwmout_free_channel(NRF_PWM_Type *pwm, int8_t channel) {
     nrf_pwm_disable(pwm);
 }
 
-pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
                                                     const mcu_pin_obj_t* pin,
                                                     uint16_t duty,
                                                     uint32_t frequency,
@@ -251,16 +251,16 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
     nrf_pwm_enable(self->pwm);
 
-    common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
+    common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
     return PWMOUT_OK;
 }
 
-bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
     return self->pwm == NULL;
 }
 
-void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
-    if (common_hal_pulseio_pwmout_deinited(self)) {
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
+    if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
 
@@ -275,7 +275,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     self->pin_number = NO_PIN;
 }
 
-void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty_cycle) {
+void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty_cycle) {
     self->duty_cycle = duty_cycle;
 
     uint16_t* p_value = ((uint16_t*)self->pwm->SEQ[0].PTR) + self->channel;
@@ -284,11 +284,11 @@ void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16
     self->pwm->TASKS_SEQSTART[0] = 1;
 }
 
-uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
     return self->duty_cycle;
 }
 
-void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency) {
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t frequency) {
     // COUNTERTOP is 3..32767, so highest available frequency is PWM_MAX_FREQ / 3.
     uint16_t countertop;
     nrf_pwm_clk_t base_clock;
@@ -300,13 +300,13 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
     nrf_pwm_configure(self->pwm, base_clock, NRF_PWM_MODE_UP, countertop);
     // Set the duty cycle again, because it depends on COUNTERTOP, which probably changed.
     // Setting the duty cycle will also do a SEQSTART.
-    common_hal_pulseio_pwmout_set_duty_cycle(self, self->duty_cycle);
+    common_hal_pwmio_pwmout_set_duty_cycle(self, self->duty_cycle);
 }
 
-uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
     return self->frequency;
 }
 
-bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t* self) {
     return self->variable_frequency;
 }

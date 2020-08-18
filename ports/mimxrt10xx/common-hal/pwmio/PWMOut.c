@@ -29,8 +29,8 @@
 #include <stdint.h>
 
 #include "py/runtime.h"
-#include "common-hal/pulseio/PWMOut.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
 #include "fsl_pwm.h"
@@ -64,7 +64,7 @@
 //
 //static uint8_t never_reset_tc_or_tcc[TC_INST_NUM + TCC_INST_NUM];
 
-void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
 //    if (self->timer->is_tc) {
 //        never_reset_tc_or_tcc[self->timer->index] += 1;
 //    } else {
@@ -74,7 +74,7 @@ void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
 //    never_reset_pin_number(self->pin->number);
 }
 
-void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
 //    if (self->timer->is_tc) {
 //        never_reset_tc_or_tcc[self->timer->index] -= 1;
 //    } else {
@@ -133,7 +133,7 @@ void pwmout_reset(void) {
 
 #define PWM_SRC_CLK_FREQ CLOCK_GetFreq(kCLOCK_IpgClk)
 
-pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t *self,
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
                                                     const mcu_pin_obj_t *pin,
                                                     uint16_t duty,
                                                     uint32_t frequency,
@@ -359,17 +359,17 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t *self,
 //
 //    gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_E + mux_position);
 
-    common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
+    common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
 
     return PWMOUT_OK;
 }
 
-bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
     return self->pin == NULL;
 }
 
-void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
-    if (common_hal_pulseio_pwmout_deinited(self)) {
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
+    if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
 
@@ -396,7 +396,7 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     self->pin = NULL;
 }
 
-void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t *self, uint16_t duty) {
+void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t duty) {
     PWM_UpdatePwmDutycycle(PWM1, self->pwm->submodule, self->pwm->channel, kPWM_SignedCenterAligned, duty);
 
 //    const pin_timer_t* t = self->timer;
@@ -433,7 +433,7 @@ void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t *self, uint16
 //    }
 }
 
-uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
     return 0;
 //    const pin_timer_t* t = self->timer;
 //    if (t->is_tc) {
@@ -471,7 +471,7 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
 //    }
 }
 
-void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self,
                                               uint32_t frequency) {
 //    if (frequency == 0 || frequency > 6000000) {
 //        mp_raise_ValueError(translate("Invalid PWM frequency"));
@@ -492,7 +492,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
 //            break;
 //        }
 //    }
-//    uint16_t old_duty = common_hal_pulseio_pwmout_get_duty_cycle(self);
+//    uint16_t old_duty = common_hal_pwmio_pwmout_get_duty_cycle(self);
 //    if (t->is_tc) {
 //        Tc* tc = tc_insts[t->index];
 //        uint8_t old_divisor = tc->COUNT16.CTRLA.bit.PRESCALER;
@@ -527,10 +527,10 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
 //        #endif
 //    }
 
-//    common_hal_pulseio_pwmout_set_duty_cycle(self, old_duty);
+//    common_hal_pwmio_pwmout_set_duty_cycle(self, old_duty);
 }
 
-uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
 //    uint32_t system_clock = common_hal_mcu_processor_get_frequency();
 //    const pin_timer_t* t = self->timer;
 //    uint8_t divisor;
@@ -546,6 +546,6 @@ uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
     return 0;
 }
 
-bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t* self) {
     return self->variable_frequency;
 }

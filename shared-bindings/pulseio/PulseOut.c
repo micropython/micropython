@@ -32,7 +32,7 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseOut.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
@@ -41,19 +41,20 @@
 //|        pulsed signal consists of timed on and off periods. Unlike PWM, there is no set duration
 //|        for on and off pairs."""
 //|
-//|     def __init__(self, carrier: PWMOut) -> None:
+//|     def __init__(self, carrier: pwmio.PWMOut) -> None:
 //|         """Create a PulseOut object associated with the given PWMout object.
 //|
-//|         :param ~pulseio.PWMOut carrier: PWMOut that is set to output on the desired pin.
+//|         :param ~pwmio.PWMOut carrier: PWMOut that is set to output on the desired pin.
 //|
 //|         Send a short series of pulses::
 //|
 //|           import array
 //|           import pulseio
+//|           import pwmio
 //|           import board
 //|
 //|           # 50% duty cycle at 38kHz.
-//|           pwm = pulseio.PWMOut(board.D13, frequency=38000, duty_cycle=32768)
+//|           pwm = pwmio.PWMOut(board.D13, frequency=38000, duty_cycle=32768)
 //|           pulse = pulseio.PulseOut(pwm)
 //|           #                             on   off     on    off    on
 //|           pulses = array.array('H', [65000, 1000, 65000, 65000, 1000])
@@ -68,15 +69,15 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
     mp_obj_t carrier_obj = args[0];
 
-    if (!MP_OBJ_IS_TYPE(carrier_obj, &pulseio_pwmout_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), pulseio_pwmout_type.name);
+    if (!MP_OBJ_IS_TYPE(carrier_obj, &pwmio_pwmout_type)) {
+        mp_raise_TypeError_varg(translate("Expected a %q"), pwmio_pwmout_type.name);
     }
 
     // create Pulse object from the given pin
     pulseio_pulseout_obj_t *self = m_new_obj(pulseio_pulseout_obj_t);
     self->base.type = &pulseio_pulseout_type;
 
-    common_hal_pulseio_pulseout_construct(self, (pulseio_pwmout_obj_t *)MP_OBJ_TO_PTR(carrier_obj));
+    common_hal_pulseio_pulseout_construct(self, (pwmio_pwmout_obj_t *)MP_OBJ_TO_PTR(carrier_obj));
 
     return MP_OBJ_FROM_PTR(self);
 }

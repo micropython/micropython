@@ -25,8 +25,8 @@
  */
 #include <math.h>
 
-#include "common-hal/pulseio/PWMOut.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "py/runtime.h"
 #include "driver/ledc.h"
 
@@ -58,7 +58,7 @@ void pwmout_reset(void) {
     not_first_reset = true;
 }
 
-pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
                                                     const mcu_pin_obj_t* pin,
                                                     uint16_t duty,
                                                     uint32_t frequency,
@@ -140,27 +140,27 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     claim_pin(pin);
 
     // Set initial duty
-    common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
+    common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
 
     return PWMOUT_OK;
 }
 
-void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     never_reset_tim[self->tim_handle.timer_num] = true;
     never_reset_chan[self->chan_handle.channel] = true;
 }
 
-void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
     never_reset_tim[self->tim_handle.timer_num] = false;
     never_reset_chan[self->chan_handle.channel] = false;
 }
 
-bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
     return self->deinited == true;
 }
 
-void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
-    if (common_hal_pulseio_pwmout_deinited(self)) {
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
+    if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
 
@@ -186,23 +186,23 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     self->deinited = true;
 }
 
-void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
+void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty) {
     ledc_set_duty(LEDC_LOW_SPEED_MODE, self->chan_handle.channel, duty >> (16 - self->duty_resolution));
     ledc_update_duty(LEDC_LOW_SPEED_MODE, self->chan_handle.channel);
 }
 
-uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
     return ledc_get_duty(LEDC_LOW_SPEED_MODE, self->chan_handle.channel) << (16 - self->duty_resolution);
 }
 
-void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency) {
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t frequency) {
     ledc_set_freq(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num, frequency);
 }
 
-uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
     return ledc_get_freq(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num);
 }
 
-bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t* self) {
     return self->variable_frequency;
 }

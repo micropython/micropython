@@ -38,9 +38,13 @@
 #include "common-hal/busio/UART.h"
 #endif
 #if CIRCUITPY_PULSEIO
-#include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PulseIn.h"
+#endif
+#if CIRCUITPY_PWMIO
+#include "common-hal/pwmio/PWMOut.h"
+#endif
+#if CIRCUITPY_PULSEIO || CIRCUITPY_PWMIO
 #include "timers.h"
 #endif
 #if CIRCUITPY_SDIOIO
@@ -230,11 +234,15 @@ void reset_port(void) {
 #if CIRCUITPY_SDIOIO
     sdioio_reset();
 #endif
-#if CIRCUITPY_PULSEIO
+#if CIRCUITPY_PULSEIO || CIRCUITPY_PWMIO
     timers_reset();
-    pwmout_reset();
+#endif
+#if CIRCUITPY_PULSEIO
     pulseout_reset();
     pulsein_reset();
+#endif
+#if CIRCUITPY_PWMIO
+    pwmout_reset();
 #endif
 }
 
