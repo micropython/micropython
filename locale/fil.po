@@ -1991,6 +1991,7 @@ msgid "can't assign to expression"
 msgstr "hindi ma i-assign sa expression"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -3208,10 +3209,6 @@ msgstr "indeks ng tuple wala sa sakop"
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "mali ang haba ng tuple/list"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c

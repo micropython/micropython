@@ -2023,6 +2023,7 @@ msgid "can't assign to expression"
 msgstr "kann keinem Ausdruck zuweisen"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -3245,10 +3246,6 @@ msgstr "Tupelindex außerhalb des Bereichs"
 msgid "tuple/list has wrong length"
 msgstr "tupel/list hat falsche Länge"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr "Tupel / Liste auf RHS erforderlich"
-
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
@@ -3435,6 +3432,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "Tupel / Liste auf RHS erforderlich"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q Indizes müssen Integer sein, nicht %s"

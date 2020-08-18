@@ -1965,6 +1965,7 @@ msgid "can't assign to expression"
 msgstr "przypisanie do wyrażenia"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -3165,10 +3166,6 @@ msgstr "indeks krotki poza zakresem"
 msgid "tuple/list has wrong length"
 msgstr "krotka/lista ma złą długość"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr "wymagana krotka/lista po prawej stronie"
-
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
@@ -3351,6 +3348,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "wymagana krotka/lista po prawej stronie"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q indeks musi być liczbą całkowitą, a nie %s"

@@ -2019,6 +2019,7 @@ msgid "can't assign to expression"
 msgstr "kan niet toewijzen aan expressie"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan %q niet naar %q converteren"
 
@@ -3226,10 +3227,6 @@ msgstr "tuple index buiten bereik"
 msgid "tuple/list has wrong length"
 msgstr "tuple of lijst heeft onjuiste lengte"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr "tuple of lijst vereist op RHS"
-
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
@@ -3412,6 +3409,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "tuple of lijst vereist op RHS"
 
 #~ msgid "Invalid SPI pin selection"
 #~ msgstr "Ongeldige SPI pin selectie"

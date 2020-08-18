@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-14 09:36-0400\n"
-"PO-Revision-Date: 2020-07-24 21:12+0000\n"
+"PO-Revision-Date: 2020-08-17 21:11+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -85,7 +85,7 @@ msgstr "%q indice fuera de rango"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %q"
-msgstr ""
+msgstr "índices %q deben ser enteros, no %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -125,39 +125,39 @@ msgstr "argumento '%q' requerido"
 
 #: py/runtime.c
 msgid "'%q' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "el objeto '%q' no puede asignar el atributo '%q'"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "objeto '%q' no tiene capacidad '%q'"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
-msgstr ""
+msgstr "objeto '%q' no tiene capacidad de asignado de artículo"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr ""
+msgstr "objeto '%q' no tiene capacidad de borrado de artículo"
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
-msgstr ""
+msgstr "objeto '%q' no tiene atributo '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "objeto '%q' no es un iterador"
 
 #: py/objtype.c py/runtime.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "objeto '%q' no es llamable"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
+msgstr "objeto '%q' no es iterable"
 
 #: py/obj.c
 msgid "'%q' object is not subscriptable"
-msgstr ""
+msgstr "objeto '%q' no es subscribible"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -227,7 +227,7 @@ msgstr "'await' fuera de la función"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' o 'async with' fuera de la función async"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -464,7 +464,7 @@ msgstr "El tamaño del búfer debe ser múltiplo de 512"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr ""
+msgstr "Búfer deber ser un múltiplo de 512 bytes"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -664,7 +664,7 @@ msgstr "No se pudo reiniciar el PWM"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
-msgstr ""
+msgstr "No se puede definir la dirección"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not start PWM"
@@ -851,7 +851,7 @@ msgstr "El archivo ya existe"
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
-msgstr ""
+msgstr "Framebuffer requiere %d bytes"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
@@ -896,7 +896,7 @@ msgstr "Error de inicio de I2C"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut no disponible"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -948,7 +948,7 @@ msgstr "Pin %q inválido"
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
-msgstr ""
+msgstr "selección inválida de pin %q"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
@@ -1265,7 +1265,7 @@ msgstr "No reproduciendo"
 
 #: main.c
 msgid "Not running saved code.\n"
-msgstr ""
+msgstr "No ejecutando el código almacenado.\n"
 
 #: shared-bindings/util.c
 msgid ""
@@ -1436,7 +1436,7 @@ msgstr "La entrada de la fila debe ser digitalio.DigitalInOut"
 
 #: main.c
 msgid "Running in safe mode! "
-msgstr ""
+msgstr "¡Corriendo en modo seguro! "
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -1450,12 +1450,12 @@ msgstr "SDA o SCL necesitan una pull up"
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
-msgstr ""
+msgstr "Error SDIO GetCardInfo %d"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO Init Error %d"
-msgstr ""
+msgstr "Error de iniciado de SDIO %d"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
@@ -1832,7 +1832,7 @@ msgstr "__init__() deberia devolver None"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
-msgstr ""
+msgstr "__init__() debe retornar None, no '%q'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -1877,7 +1877,7 @@ msgstr "el argumento tiene un tipo erroneo"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr ""
+msgstr "argumento debe ser ndarray"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2018,8 +2018,9 @@ msgid "can't assign to expression"
 msgstr "no se puede asignar a la expresión"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
-msgstr ""
+msgstr "no puede convertir %q a %q"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2027,7 +2028,7 @@ msgstr "no se puede convertir el objeto '%q' a %q implícitamente"
 
 #: py/obj.c
 msgid "can't convert to %q"
-msgstr ""
+msgstr "no puede convertir a %q"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2853,7 +2854,7 @@ msgstr "el número de puntos debe ser al menos 2"
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
-msgstr ""
+msgstr "objeto '%q' no es tupla o lista"
 
 #: py/obj.c
 msgid "object does not support item assignment"
@@ -2889,7 +2890,7 @@ msgstr "objeto no iterable"
 
 #: py/obj.c
 msgid "object of type '%q' has no len()"
-msgstr ""
+msgstr "objeto de tipo '%q' no tiene len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -2984,7 +2985,7 @@ msgstr "el polígono solo se puede registrar en uno de los padres"
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
-msgstr ""
+msgstr "pop desde %q vacía"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -3143,7 +3144,7 @@ msgstr "operación stream no soportada"
 
 #: py/objstrunicode.c
 msgid "string indices must be integers, not %q"
-msgstr ""
+msgstr "índices de cadena deben ser enteros, no %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3221,7 +3222,7 @@ msgstr "demasiados valores para descomprimir (%d esperado)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "trapz está definido para arreglos 1D de igual tamaño"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
@@ -3230,10 +3231,6 @@ msgstr "tuple index fuera de rango"
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tupla/lista tiene una longitud incorrecta"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr "tuple/lista se require en RHS"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
@@ -3291,7 +3288,7 @@ msgstr "especificador de conversión %c desconocido"
 
 #: py/objstr.c
 msgid "unknown format code '%c' for object of type '%q'"
-msgstr ""
+msgstr "formato de código desconocicdo '%c' para objeto de tipo '%q'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3331,7 +3328,7 @@ msgstr "carácter no soportado '%c' (0x%x) en índice %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%q'"
-msgstr ""
+msgstr "tipo no soportado para %q: '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -3339,7 +3336,7 @@ msgstr "tipo de operador no soportado"
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%q', '%q'"
-msgstr ""
+msgstr "tipos no soportados para %q: '%q', '%q'"
 
 #: py/objint.c
 #, c-format
@@ -3352,7 +3349,7 @@ msgstr "value_count debe ser > 0"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "los vectores deben tener el mismo tamaño"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
@@ -3417,6 +3414,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "tuple/lista se require en RHS"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q indices deben ser enteros, no %s"

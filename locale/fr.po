@@ -2026,6 +2026,7 @@ msgid "can't assign to expression"
 msgstr "ne peut pas assigner à une expression"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -3252,10 +3253,6 @@ msgstr "index du tuple hors gamme"
 msgid "tuple/list has wrong length"
 msgstr "tuple/liste a une mauvaise longueur"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr "tuple ou liste requis en partie droite"
-
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
 msgid "tx and rx cannot both be None"
@@ -3438,6 +3435,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "tuple ou liste requis en partie droite"
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "les indices %q doivent être des entiers, pas %s"
