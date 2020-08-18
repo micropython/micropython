@@ -48,11 +48,7 @@ void check_hci_error(hci_result_t result) {
         case HCI_OK:
             return;
 
-        case HCI_NO_RESPONSE:
-            mp_raise_bleio_BluetoothError(translate("No HCI command response received"));
-            return;
-
-        case HCI_READ_TIMEOUT:
+        case HCI_RESPONSE_TIMEOUT:
             mp_raise_bleio_BluetoothError(translate("Timeout waiting for HCI response"));
             return;
 

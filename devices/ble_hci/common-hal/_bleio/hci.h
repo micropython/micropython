@@ -32,12 +32,11 @@ typedef struct _bleio_adapter_obj_t bleio_adapter_obj_t;
 // or is it > 0 and is an HCI command status value (see hci_include/hci_err.h)
 typedef int hci_result_t;
 #define HCI_OK (0)
-#define HCI_NO_RESPONSE (-1)
-#define HCI_READ_TIMEOUT (-2)
-#define HCI_WRITE_TIMEOUT (-3)
-#define HCI_READ_ERROR (-4)
-#define HCI_WRITE_ERROR (-5)
-#define HCI_ATT_ERROR (-6)
+#define HCI_RESPONSE_TIMEOUT (-1)
+#define HCI_WRITE_TIMEOUT (-2)
+#define HCI_READ_ERROR (-3)
+#define HCI_WRITE_ERROR (-4)
+#define HCI_ATT_ERROR (-5)
 
 void bleio_hci_reset(void);
 
@@ -65,7 +64,6 @@ hci_result_t hci_le_set_scan_parameters(uint8_t scan_type, uint16_t interval, ui
 hci_result_t hci_le_set_scan_response_data(uint8_t length, uint8_t data[]);
 
 hci_result_t hci_poll_for_incoming_pkt(void);
-hci_result_t hci_poll_for_incoming_pkt_timeout(uint32_t timeout_msecs);
 
 hci_result_t hci_read_bd_addr(bt_addr_t *addr);
 hci_result_t hci_read_buffer_size(uint16_t *acl_max_len, uint8_t *sco_max_len, uint16_t *acl_max_num, uint16_t *sco_max_num);

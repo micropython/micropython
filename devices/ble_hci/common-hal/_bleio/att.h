@@ -49,7 +49,7 @@ uint16_t att_conn_handle(bt_addr_le_t *addr);
 uint16_t att_mtu(uint16_t handle);
 void att_add_connection(uint16_t handle, uint8_t role, bt_addr_le_t *peer_addr, uint16_t interval, uint16_t latency, uint16_t supervision_timeout, uint8_t master_clock_accuracy);
 void att_process_data(uint16_t conn_handle, uint8_t dlen, uint8_t data[]);
-void att_remove_connection(uint16_t handle, uint8_t reason);
+void att_remove_connection(uint16_t conn_handle, uint8_t reason);
 void att_set_max_mtu(uint16_t max_mtu);
 void att_set_timeout(unsigned long timeout);
 void att_write_cmd(uint16_t conn_handle, uint16_t handle, const uint8_t* data, uint8_t data_len);

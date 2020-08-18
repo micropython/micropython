@@ -224,7 +224,6 @@ bool att_disconnect(uint16_t conn_handle) {
     }
 
     hci_disconnect(conn_handle);
-    hci_poll_for_incoming_pkt_timeout(timeout);
 
     // Confirm we're now disconnected.
     return !att_handle_is_connected(conn_handle);
@@ -508,13 +507,13 @@ void att_add_connection(uint16_t handle, uint8_t role, bt_addr_le_t *peer_addr, 
 }
 
 
-void att_remove_connection(uint16_t handle, uint8_t reason) {
+void att_remove_connection(uint16_t conn_handle, uint8_t reason) {
     (void) reason;
     int peer_index = -1;
     int peer_count = 0;
 
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-        if (bleio_connections[i].conn_handle == handle) {
+        if (bleio_connections[i].conn_handle == conn_handle) {
             peer_index = i;
         }
 
@@ -532,7 +531,7 @@ void att_remove_connection(uint16_t handle, uint8_t reason) {
 
         // Clear CCCD values on disconnect.
         size_t max_attribute_handle = bleio_adapter_max_attribute_handle(&common_hal_bleio_adapter_obj);
-        for (size_t i = 1; handle <= max_attribute_handle; i++) {
+        for (size_t handle = 1; handle <= max_attribute_handle; handle++) {
             mp_obj_t attribute_obj = bleio_adapter_get_attribute(&common_hal_bleio_adapter_obj, handle);
 
             uint16_t zero = 0;

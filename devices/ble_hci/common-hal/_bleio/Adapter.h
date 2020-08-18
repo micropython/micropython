@@ -88,6 +88,7 @@ typedef struct _bleio_adapter_obj_t {
 } bleio_adapter_obj_t;
 
 uint16_t bleio_adapter_add_attribute(bleio_adapter_obj_t *adapter, mp_obj_t *attribute);
+void bleio_adapter_advertising_was_stopped(bleio_adapter_obj_t *self);
 mp_obj_t* bleio_adapter_get_attribute(bleio_adapter_obj_t *adapter, uint16_t handle);
 uint16_t bleio_adapter_max_attribute_handle(bleio_adapter_obj_t *adapter);
 void bleio_adapter_background(bleio_adapter_obj_t* adapter);

@@ -175,7 +175,6 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
 
             att_remove_connection(disconn_complete->handle, disconn_complete->reason);
             //FIX L2CAPSignaling.removeConnection(disconn_complete->handle, disconn_complete->reason);
-            hci_le_set_advertising_enable(0x01);
             break;
         }
 
@@ -233,6 +232,12 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
             uint8_t *le_evt =  pkt->params + sizeof (struct bt_hci_evt_le_meta_event);
 
             if (meta_evt->subevent == BT_HCI_EVT_LE_CONN_COMPLETE) {
+                // Advertising stops when connection occurs.
+                // We don't tell the adapter to stop, because stopping advertising
+                // when it's already stopped seems to exercise a bug in the ESP32 HCI code:
+                // It doesn't return a response.
+                bleio_adapter_advertising_was_stopped(&common_hal_bleio_adapter_obj);
+
                 struct bt_hci_evt_le_conn_complete *le_conn_complete =
                     (struct bt_hci_evt_le_conn_complete *) le_evt;
 
@@ -281,29 +286,11 @@ void bleio_hci_reset(void) {
     bleio_att_reset();
 }
 
-hci_result_t hci_poll_for_incoming_pkt_timeout(uint32_t timeout_msecs) {
-    uint64_t start = supervisor_ticks_ms64();
-
-    hci_result_t result = HCI_OK;
-
-    while (supervisor_ticks_ms64() - start < timeout_msecs) {
-        result = hci_poll_for_incoming_pkt();
-        RUN_BACKGROUND_TASKS;
-    }
-
-    return result;
-}
-
-
 hci_result_t hci_poll_for_incoming_pkt(void) {
     if (hci_poll_in_progress) {
         return HCI_OK;
     }
-    common_hal_mcu_disable_interrupts();
-    if (!hci_poll_in_progress) {
-        hci_poll_in_progress = true;
-    }
-    common_hal_mcu_enable_interrupts();
+    hci_poll_in_progress = true;
 
     // Assert RTS low to say we're ready to read data.
     common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, false);
@@ -431,7 +418,7 @@ STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* para
     // Wait for a response. Note that other packets may be received that are not
     // command responses.
     uint64_t start = supervisor_ticks_ms64();
-    while (1) {
+    while (supervisor_ticks_ms64() - start < RESPONSE_TIMEOUT_MSECS) {
         result = hci_poll_for_incoming_pkt();
         if (result != HCI_OK) {
             // I/O error.
@@ -442,18 +429,14 @@ STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* para
             // If this is definitely a response to the command that was sent,
             // return the status value, which will will be
             // BT_HCI_ERR_SUCCESS (0x00) if the command succeeded,
-            // or a BT_HCI_ERR_x value (> 0x00) if there ws a problem.
+            // or a BT_HCI_ERR_x value (> 0x00) if there was a problem.
             return cmd_response_status;
-        }
-
-        if (supervisor_ticks_ms64() - start > RESPONSE_TIMEOUT_MSECS) {
-            return HCI_READ_TIMEOUT;
         }
         RUN_BACKGROUND_TASKS;
     }
 
     // No I/O error, but no response sent back in time.
-    return HCI_NO_RESPONSE;
+    return HCI_RESPONSE_TIMEOUT;
 }
 
 hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint8_t data_len, uint8_t *data) {
@@ -528,11 +511,6 @@ hci_result_t hci_read_rssi(uint16_t handle, int *rssi) {
     int result = send_command(BT_HCI_OP_READ_RSSI, sizeof(handle), &handle);
     if (result == HCI_OK) {
         struct bt_hci_rp_read_rssi *response = (struct bt_hci_rp_read_rssi *) cmd_response_data;
-        if (response->handle != handle) {
-            // Handle doesn't match.
-            return HCI_NO_RESPONSE;
-        }
-
         *rssi = response->rssi;
     }
 
