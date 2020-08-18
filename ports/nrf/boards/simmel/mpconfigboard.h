@@ -45,6 +45,9 @@
 #define BOOTLOADER_SIZE                 (0x4000)  // 12 kiB
 #define CIRCUITPY_BLE_CONFIG_SIZE       (12*1024)
 
+#define DEFAULT_I2C_BUS_SCL         (&pin_P0_08)
+#define DEFAULT_I2C_BUS_SDA         (&pin_P1_09)
+
 // Reduce nRF SoftRadio memory usage
 #define BLEIO_VS_UUID_COUNT 10
 #define BLEIO_HVN_TX_QUEUE_SIZE 2
