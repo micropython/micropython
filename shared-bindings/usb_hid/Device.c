@@ -58,7 +58,7 @@ STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_report);
 
-//|report: bytes
+//|     report: bytes
 //|     """The HID OUT report as a `bytes`. (read-only)"""
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_report(mp_obj_t self_in) {
