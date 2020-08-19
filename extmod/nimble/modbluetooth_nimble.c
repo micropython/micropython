@@ -183,6 +183,12 @@ STATIC void sync_cb(void) {
     int rc;
     (void)rc;
 
+    DEBUG_printf("sync_cb: state=%d\n", mp_bluetooth_nimble_ble_state);
+
+    if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
+        return;
+    }
+
     if (has_public_address()) {
         nimble_address_mode = BLE_OWN_ADDR_PUBLIC;
     } else {
@@ -390,14 +396,16 @@ void mp_bluetooth_deinit(void) {
         return;
     }
 
-    mp_bluetooth_gap_advertise_stop();
-    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
-    mp_bluetooth_gap_scan_stop();
-    #endif
-
     // Must call ble_hs_stop() in a port-specific way to stop the background
     // task. Default implementation provided above.
     if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
+        mp_bluetooth_gap_advertise_stop();
+        #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+        mp_bluetooth_gap_scan_stop();
+        #endif
+
+        DEBUG_printf("trying port shutdown\n");
+
         mp_bluetooth_nimble_port_shutdown();
         assert(mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF);
     } else {
