@@ -105,6 +105,10 @@ STATIC int configure_uart(void) {
     // Apply immediately.
     if (tcsetattr(uart_fd, TCSANOW, &toptions) < 0) {
         DEBUG_printf("Couldn't set term attributes");
+
+        close(uart_fd);
+        uart_fd = -1;
+
         return -1;
     }
 
@@ -149,6 +153,10 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
 int mp_bluetooth_hci_uart_deinit(void) {
     DEBUG_printf("mp_bluetooth_hci_uart_deinit\n");
 
+    if (uart_fd == -1) {
+        return 0;
+    }
+
     // Wait for the poll loop to terminate when the state is set to OFF.
     pthread_join(hci_poll_thread_id, NULL);
 
@@ -168,6 +176,10 @@ int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
 int mp_bluetooth_hci_uart_readchar(void) {
     // DEBUG_printf("mp_bluetooth_hci_uart_readchar\n");
 
+    if (uart_fd == -1) {
+        return -1;
+    }
+
     uint8_t c;
     ssize_t bytes_read = read(uart_fd, &c, 1);
 
@@ -183,6 +195,10 @@ int mp_bluetooth_hci_uart_readchar(void) {
 
 int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     // DEBUG_printf("mp_bluetooth_hci_uart_write\n");
+
+    if (uart_fd == -1) {
+        return 0;
+    }
 
     #if DEBUG_HCI_DUMP
     printf("[% 8ld] TX: %02x", mp_hal_ticks_ms(), buf[0]);

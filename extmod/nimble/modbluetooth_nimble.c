@@ -52,6 +52,9 @@
 
 STATIC uint8_t nimble_address_mode = BLE_OWN_ADDR_RANDOM;
 
+#define NIMBLE_STARTUP_TIMEOUT 2000
+STATIC struct ble_npl_sem startup_sem;
+
 // Any BLE_HS_xxx code not in this table will default to MP_EIO.
 STATIC int8_t ble_hs_err_to_errno_table[] = {
     [BLE_HS_EAGAIN] = MP_EAGAIN,
@@ -206,6 +209,8 @@ STATIC void sync_cb(void) {
     ble_svc_gap_device_name_set(MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME);
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE;
+
+    ble_npl_sem_release(&startup_sem);
 }
 
 STATIC void gatts_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg) {
@@ -355,6 +360,8 @@ int mp_bluetooth_init(void) {
     ble_hs_cfg.gatts_register_cb = gatts_register_cb;
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
+    ble_npl_sem_init(&startup_sem, 0);
+
     MP_STATE_PORT(bluetooth_nimble_root_pointers) = m_new0(mp_bluetooth_nimble_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
 
@@ -370,20 +377,27 @@ int mp_bluetooth_init(void) {
     // Initialise NimBLE memory and data structures.
     nimble_port_init();
 
-    // By default, just register the default gap/gatt service.
-    ble_svc_gap_init();
-    ble_svc_gatt_init();
-
     // Make sure that the HCI UART and event handling task is running.
     mp_bluetooth_nimble_port_start();
 
     // Static initialization is complete, can start processing events.
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC;
 
-    // Wait for sync callback
-    while (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
-        MICROPY_EVENT_POLL_HOOK
+    ble_npl_sem_pend(&startup_sem, NIMBLE_STARTUP_TIMEOUT);
+
+    if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
+        mp_bluetooth_deinit();
+        return MP_ETIMEDOUT;
     }
+
+    // By default, just register the default gap/gatt service.
+    ble_svc_gap_init();
+    ble_svc_gatt_init();
+    // The preceeding two calls allocate service definitions on the heap,
+    // then we must now call gatts_start to register those services
+    // and free the heap memory.
+    // Otherwise it will be realloc'ed on the next stack startup.
+    ble_gatts_start();
 
     DEBUG_printf("mp_bluetooth_init: ready\n");
 
