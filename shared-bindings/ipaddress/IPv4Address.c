@@ -25,22 +25,24 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/ipaddress/IPv4Address.h"
+
 #include <string.h>
 #include <stdio.h>
 
 #include "py/objproperty.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
-#include "shared-bindings/ipaddress/IPv4Address.h"
+#include "shared-bindings/ipaddress/__init__.h"
 
 //| class IPv4Address:
 //|     """Encapsulates an IPv4 address."""
 //|
 
-//|     def __init__(self, address: Union[str, int]) -> None:
-//|         """Create a new Address object encapsulating the address value.
+//|     def __init__(self, address: Union[str, bytes]) -> None:
+//|         """Create a new IPv4Address object encapsulating the address value.
 //|
-//|            The value itself can be one of:"""
+//|            The value itself can either be bytes or a string formatted address.""
 //|         ...
 //|
 STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -52,17 +54,33 @@ STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    const mp_obj_t address = args[ARG_address].u_obj;
+
+    uint32_t value;
+    uint8_t* buf = NULL;
+    if (mp_obj_get_int_maybe(address, (mp_int_t*) &value)) {
+        // We're done.
+        buf = (uint8_t*) value;
+    } else if (MP_OBJ_IS_STR(address)) {
+        GET_STR_DATA_LEN(address, str_data, str_len);
+        if (!ipaddress_parse_ipv4address((const char*) str_data, str_len, &value)) {
+            mp_raise_ValueError(translate("Not a valid IP string."));
+        }
+    } else {
+        mp_buffer_info_t buf_info;
+        if (mp_get_buffer(address, &buf_info, MP_BUFFER_READ)) {
+            if (buf_info.len != 4) {
+                mp_raise_ValueError_varg(translate("Address must be %d bytes long"), 4);
+            }
+            buf = buf_info.buf;
+        }
+    }
+
+
     ipaddress_ipv4address_obj_t *self = m_new_obj(ipaddress_ipv4address_obj_t);
     self->base.type = &ipaddress_ipv4address_type;
 
-    const mp_obj_t address = args[ARG_address].u_obj;
-    mp_buffer_info_t buf_info;
-    mp_get_buffer_raise(address, &buf_info, MP_BUFFER_READ);
-    if (buf_info.len != 4) {
-        mp_raise_ValueError_varg(translate("Address must be %d bytes long"), 4);
-    }
-
-    common_hal_ipaddress_ipv4address_construct(self, buf_info.buf, buf_info.len);
+    common_hal_ipaddress_ipv4address_construct(self, buf, 4);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -108,7 +126,7 @@ const mp_obj_property_t ipaddress_ipv4address_version_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __eq__(self, other: Address) -> bool:
+//|     def __eq__(self, other: IPv4Address) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""
 //|         ...
 //|
@@ -133,7 +151,7 @@ STATIC mp_obj_t ipaddress_ipv4address_binary_op(mp_binary_op_t op, mp_obj_t lhs_
 }
 
 //|     def __hash__(self) -> int:
-//|         """Returns a hash for the Address data."""
+//|         """Returns a hash for the IPv4Address data."""
 //|         ...
 //|
 STATIC mp_obj_t ipaddress_ipv4address_unary_op(mp_unary_op_t op, mp_obj_t self_in) {

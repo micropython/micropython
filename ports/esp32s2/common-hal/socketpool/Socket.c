@@ -26,6 +26,9 @@
 
 #include "shared-bindings/socketpool/Socket.h"
 
+#include "py/mperrno.h"
+#include "py/runtime.h"
+
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_uint_t timeout_ms) {
     self->timeout_ms = timeout_ms;
 }
@@ -40,14 +43,26 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const c
         tls_config = &self->ssl_context->ssl_config;
     }
     int result = esp_tls_conn_new_sync(host, hostlen, port, tls_config, self->tcp);
-    return result >= 0;
+    self->connected = result >= 0;
+    if (result < 0) {
+        int esp_tls_code;
+        esp_tls_get_and_clear_last_error(self->tcp->error_handle, &esp_tls_code, NULL);
+
+        // mp_raise_espidf_MemoryError
+        mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d"), esp_tls_code);
+    }
+    return self->connected;
+}
+
+bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t* self) {
+    return self->connected;
 }
 
 mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len) {
     size_t sent = esp_tls_conn_write(self->tcp, buf, len);
 
     if (sent < 0) {
-        // raise an error
+        mp_raise_OSError(MP_ENOTCONN);
     }
     return sent;
 }
@@ -57,14 +72,18 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
 
     if (received == 0) {
         // socket closed
+        common_hal_socketpool_socket_close(self);
     }
     if (received < 0) {
-        // raise an error
+        mp_raise_BrokenPipeError();
     }
     return received;
 }
 
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
+    if (self->connected) {
+        self->connected = false;
+    }
     if (self->tcp != NULL) {
         int status = esp_tls_conn_destroy(self->tcp);
 
@@ -73,4 +92,8 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
         }
         self->tcp = NULL;
     }
+}
+
+bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t* self) {
+    return self->tcp == NULL;
 }

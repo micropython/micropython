@@ -37,6 +37,7 @@
 typedef struct {
     mp_obj_base_t base;
     int num;
+    bool connected;
     esp_tls_t* tcp;
     ssl_sslcontext_obj_t* ssl_context;
     socketpool_socketpool_obj_t* pool;

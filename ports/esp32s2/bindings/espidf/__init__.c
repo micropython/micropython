@@ -27,6 +27,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include "bindings/espidf/__init__.h"
+
 #include "esp-idf/components/heap/include/esp_heap_caps.h"
 
 //| """Direct access to a few ESP-IDF details. This module *should not* include any functionality
@@ -63,12 +65,41 @@ STATIC mp_obj_t espidf_heap_caps_get_largest_free_block(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_largest_free_block_obj, espidf_heap_caps_get_largest_free_block);
 
+//| class MemoryError(MemoryError):
+//|     """Raised when an ESP IDF memory allocation fails."""
+//|     ...
+//|
+NORETURN void mp_raise_espidf_MemoryError(void) {
+    nlr_raise(mp_obj_new_exception(&mp_type_espidf_MemoryError));
+}
+
+void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+    mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
+    bool is_subclass = kind & PRINT_EXC_SUBCLASS;
+    if (!is_subclass && (k == PRINT_EXC)) {
+        mp_print_str(print, qstr_str(MP_OBJ_QSTR_VALUE(MP_QSTR_espidf)));
+        mp_print_str(print, ".");
+    }
+    mp_obj_exception_print(print, o_in, kind);
+}
+
+const mp_obj_type_t mp_type_espidf_MemoryError = {
+    { &mp_type_type },
+    .name = MP_QSTR_MemoryError,
+    .print = espidf_exception_print,
+    .make_new = mp_obj_exception_make_new,
+    .attr = mp_obj_exception_attr,
+    .parent = &mp_type_MemoryError,
+};
+
 STATIC const mp_rom_map_elem_t espidf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_espidf) },
 
     { MP_ROM_QSTR(MP_QSTR_heap_caps_get_total_size), MP_ROM_PTR(&espidf_heap_caps_get_total_size_obj)},
     { MP_ROM_QSTR(MP_QSTR_heap_caps_get_free_size), MP_ROM_PTR(&espidf_heap_caps_get_free_size_obj)},
     { MP_ROM_QSTR(MP_QSTR_heap_caps_get_largest_free_block), MP_ROM_PTR(&espidf_heap_caps_get_largest_free_block_obj)},
+
+    { MP_ROM_QSTR(MP_QSTR_MemoryError),      MP_ROM_PTR(&mp_type_espidf_MemoryError) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(espidf_module_globals, espidf_module_globals_table);

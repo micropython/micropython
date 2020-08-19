@@ -166,6 +166,7 @@ NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str);
 NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg);
 NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_BrokenPipeError(void);
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg);
 NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...);

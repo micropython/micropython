@@ -57,7 +57,7 @@
 //|
 STATIC mp_obj_t socketpool_socket___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    // common_hal_pulseio_pwmout_deinit(args[0]);
+    common_hal_socketpool_socket_close(args[0]);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket___exit___obj, 4, 4, socketpool_socket___exit__);
@@ -197,15 +197,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_connect_obj, socketpool_socke
 
 STATIC mp_obj_t socketpool_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // if (self->nic == MP_OBJ_NULL) {
-    //     // not connected
-    //     mp_raise_OSError(MP_EPIPE);
-    // }
+    if (common_hal_socketpool_socket_get_closed(self)) {
+        // Bad file number.
+        mp_raise_OSError(MP_EBADF);
+    }
+    if (!common_hal_socketpool_socket_get_connected(self)) {
+        mp_raise_BrokenPipeError();
+    }
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
     mp_int_t ret = common_hal_socketpool_socket_send(self, bufinfo.buf, bufinfo.len);
     if (ret == -1) {
-        mp_raise_OSError(0);
+        mp_raise_BrokenPipeError();
     }
     return mp_obj_new_int_from_uint(ret);
 }
@@ -241,10 +244,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_send_obj, socketpool_socket_s
 
 STATIC mp_obj_t socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    // if (self->nic == MP_OBJ_NULL) {
-    //     // not connected
-    //     mp_raise_OSError(MP_ENOTCONN);
-    // }
+    if (common_hal_socketpool_socket_get_closed(self)) {
+        // Bad file number.
+        mp_raise_OSError(MP_EBADF);
+    }
+    if (!common_hal_socketpool_socket_get_connected(self)) {
+        // not connected
+        mp_raise_OSError(MP_ENOTCONN);
+    }
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
     mp_int_t len = bufinfo.len;

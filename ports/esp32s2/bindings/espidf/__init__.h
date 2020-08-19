@@ -24,19 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H
+#ifndef MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
+#define MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
 
-#include "common-hal/socketpool/Socket.h"
+extern const mp_obj_type_t mp_type_espidf_MemoryError;
 
-extern const mp_obj_type_t socketpool_socket_type;
+NORETURN void mp_raise_espidf_MemoryError(void);
 
-void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_uint_t timeout_ms);
-bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const char* host, size_t hostlen, mp_int_t port);
-mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);
-mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);
-void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self);
-bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t* self);
-bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t* self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H
+#endif  // MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H

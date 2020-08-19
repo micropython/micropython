@@ -27,8 +27,18 @@
 #include "shared-bindings/socketpool/SocketPool.h"
 
 #include "py/runtime.h"
+#include "shared-bindings/wifi/__init__.h"
 
 #include "esp-idf/components/lwip/lwip/src/include/lwip/netdb.h"
+
+#include "bindings/espidf/__init__.h"
+
+
+void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t* self, mp_obj_t radio) {
+    if (radio != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
+        mp_raise_ValueError(translate("SocketPool can only be used with wifi.radio."));
+    }
+}
 
 socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_t* self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
@@ -52,12 +62,21 @@ socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_
         socket_type = SOCK_RAW;
     }
 
+    if (socket_type == SOCK_DGRAM || socket_type == SOCK_RAW ||
+            addr_family == AF_INET6 || ipproto == IPPROTO_IPV6) {
+        mp_raise_NotImplementedError(translate("Only IPv4 SOCK_STREAM sockets supported."));
+    }
+
     int socknum = -1;
     esp_tls_t* tcp_handle = NULL;
     if (socket_type == SOCK_DGRAM || socket_type == SOCK_RAW) {
-        socknum = lwip_socket(addr_family, socket_type, ipproto);
+        // socknum = lwip_socket(addr_family, socket_type, ipproto);
     } else {
         tcp_handle = esp_tls_init();
+
+        if (tcp_handle == NULL) {
+            mp_raise_espidf_MemoryError();
+        }
     }
     if (socknum < 0 && tcp_handle == NULL) {
         mp_raise_RuntimeError(translate("Out of sockets"));

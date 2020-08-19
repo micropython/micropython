@@ -33,17 +33,6 @@
 
 extern const mp_obj_type_t ssl_sslcontext_type;
 
-// typedef enum {
-//     SOCKETPOOL_SOCK_STREAM,
-//     SOCKETPOOL_SOCK_DGRAM,
-//     SOCKETPOOL_SOCK_RAW
-// } socketpool_socketpool_sock_t;
-
-// typedef enum {
-//     SOCKETPOOL_AF_INET,
-//     SOCKETPOOL_AF_INET6
-// } socketpool_socketpool_addressfamily_t;
-
 void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t* self);
 
 socketpool_socket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,

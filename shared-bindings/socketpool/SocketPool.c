@@ -38,15 +38,21 @@
 #include "shared-bindings/socketpool/SocketPool.h"
 
 //| class SocketPool:
+//|     """A pool of socket resources available for the given radio. Only one
+//|        SocketPool can be created for each radio.
+//|
+//|        SocketPool should be used in place of CPython's socket which provides
+//|        a pool of sockets provided by the underlying OS."""
 //|
 
 STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 0, 4, false);
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     socketpool_socketpool_obj_t *s = m_new_obj_with_finaliser(socketpool_socketpool_obj_t);
     s->base.type = &socketpool_socketpool_type;
+    mp_obj_t radio = args[1];
 
-    // common_hal_socketpool_socketpool_construct(s, );
+    common_hal_socketpool_socketpool_construct(s, radio);
 
     return MP_OBJ_FROM_PTR(s);
 }

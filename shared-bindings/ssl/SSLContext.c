@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
- *               2018 Nick Moore for Adafruit Industries
+ * SPDX-FileCopyrightText: Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +35,9 @@
 #include "shared-bindings/ssl/SSLContext.h"
 
 //| class SSLContext:
+//|     """Settings related to SSL that can be applied to a socket by wrapping it.
+//|        This is useful to provide SSL certificates to specific connections
+//|        rather than all of them."""
 //|
 
 STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
