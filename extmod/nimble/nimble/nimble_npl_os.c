@@ -32,6 +32,7 @@
 #include "extmod/nimble/hal/hal_uart.h"
 
 #include "extmod/modbluetooth.h"
+#include "extmod/nimble/modbluetooth_nimble.h"
 
 #define DEBUG_OS_printf(...) // printf(__VA_ARGS__)
 #define DEBUG_MALLOC_printf(...) // printf(__VA_ARGS__)
@@ -180,7 +181,8 @@ struct ble_npl_eventq *global_eventq = NULL;
 
 void mp_bluetooth_nimble_os_eventq_run_all(void) {
     for (struct ble_npl_eventq *evq = global_eventq; evq != NULL; evq = evq->nextq) {
-        while (evq->head != NULL) {
+        int n = 0;
+        while (evq->head != NULL && mp_bluetooth_nimble_ble_state > MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
             struct ble_npl_event *ev = evq->head;
             evq->head = ev->next;
             if (ev->next) {
@@ -191,6 +193,13 @@ void mp_bluetooth_nimble_os_eventq_run_all(void) {
             DEBUG_EVENT_printf("event_run(%p)\n", ev);
             ev->fn(ev);
             DEBUG_EVENT_printf("event_run(%p) done\n", ev);
+
+            if (++n > 3) {
+                // Limit to running 3 tasks per queue.
+                // Some tasks (such as reset) can enqueue themselves
+                // making this an infinite loop (while in PENDSV).
+                break;
+            }
         }
     }
 }
@@ -348,11 +357,11 @@ ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout
         }
 
         if (sem->count == 0) {
-            printf("NimBLE: HCI ACK timeout\n");
+            DEBUG_SEM_printf("ble_npl_sem_pend: semaphore timeout\n");
             return BLE_NPL_TIMEOUT;
         }
 
-        DEBUG_SEM_printf("got response in %u ms\n", (int)(mp_hal_ticks_ms() - t0));
+        DEBUG_SEM_printf("ble_npl_sem_pend: acquired in %u ms\n", (int)(mp_hal_ticks_ms() - t0));
     }
     sem->count -= 1;
     return BLE_NPL_OK;
