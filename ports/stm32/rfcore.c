@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +35,10 @@
 
 #if defined(STM32WB)
 
+#include "stm32wbxx_ll_ipcc.h"
+
+#define DEBUG_printf(...) // printf("rfcore: " __VA_ARGS__)
+
 // Define to 1 to print traces of HCI packets
 #define HCI_TRACE (0)
 
@@ -61,23 +66,88 @@ typedef struct _parse_hci_info_t {
     bool was_hci_reset_evt;
 } parse_hci_info_t;
 
-static volatile uint32_t ipcc_mem_dev_info_tab[8];
-static volatile uint32_t ipcc_mem_ble_tab[4];
-static volatile uint32_t ipcc_mem_sys_tab[2];
-static volatile uint32_t ipcc_mem_memmgr_tab[7];
+// Version
+// [0:3]   = Build - 0: Untracked - 15:Released - x: Tracked version
+// [4:7]   = branch - 0: Mass Market - x: ...
+// [8:15]  = Subversion
+// [16:23] = Version minor
+// [24:31] = Version major
 
-static volatile uint32_t ipcc_mem_sys_cmd_buf[272 / 4];
-static volatile tl_list_node_t ipcc_mem_sys_queue;
+// Memory Size
+// [0:7]   = Flash ( Number of 4k sector)
+// [8:15]  = Reserved ( Shall be set to 0 - may be used as flash extension )
+// [16:23] = SRAM2b ( Number of 1k sector)
+// [24:31] = SRAM2a ( Number of 1k sector)
 
-static volatile tl_list_node_t ipcc_mem_memmgr_free_buf_queue;
-static volatile uint32_t ipcc_mem_memmgr_ble_spare_evt_buf[272 / 4];
-static volatile uint32_t ipcc_mem_memmgr_sys_spare_evt_buf[272 / 4];
-static volatile uint32_t ipcc_mem_memmgr_evt_pool[6 * 272 / 4];
+typedef struct __attribute__((packed)) _ipcc_device_info_table_t {
+    uint32_t safeboot_version;
+    uint32_t fus_version;
+    uint32_t fus_memorysize;
+    uint32_t fus_info;
+    uint32_t fw_version;
+    uint32_t fw_memorysize;
+    uint32_t fw_infostack;
+    uint32_t fw_reserved;
+} ipcc_device_info_table_t;
 
-static volatile uint32_t ipcc_mem_ble_cmd_buf[272 / 4];
-static volatile uint32_t ipcc_mem_ble_cs_buf[272 / 4];
-static volatile tl_list_node_t ipcc_mem_ble_evt_queue;
-static volatile uint32_t ipcc_mem_ble_hci_acl_data_buf[272 / 4];
+typedef struct __attribute__((packed)) _ipcc_ble_table_t {
+    uint8_t *pcmd_buffer;
+    uint8_t *pcs_buffer;
+    tl_list_node_t *pevt_queue;
+    uint8_t *phci_acl_data_buffer;
+} ipcc_ble_table_t;
+
+// msg
+// [0:7]  = cmd/evt
+// [8:31] = Reserved
+typedef struct __attribute__((packed)) _ipcc_sys_table_t {
+    uint8_t *pcmd_buffer;
+    tl_list_node_t *sys_queue;
+} ipcc_sys_table_t;
+
+typedef struct __attribute__((packed)) _ipcc_mem_manager_table_t {
+    uint8_t *spare_ble_buffer;
+    uint8_t *spare_sys_buffer;
+    uint8_t *blepool;
+    uint32_t blepoolsize;
+    tl_list_node_t *pevt_free_buffer_queue;
+    uint8_t *traces_evt_pool;
+    uint32_t tracespoolsize;
+} ipcc_mem_manager_table_t;
+
+typedef struct __attribute__((packed)) _ipcc_ref_table_t {
+    ipcc_device_info_table_t *p_device_info_table;
+    ipcc_ble_table_t *p_ble_table;
+    void *p_thread_table;
+    ipcc_sys_table_t *p_sys_table;
+    ipcc_mem_manager_table_t *p_mem_manager_table;
+    void *p_traces_table;
+    void *p_mac_802_15_4_table;
+    void *p_zigbee_table;
+    void *p_lld_tests_table;
+    void *p_lld_ble_table;
+} ipcc_ref_table_t;
+
+// The stm32wb55xg.ld script puts .bss.ipcc_mem_* into SRAM2A and .bss_ipcc_membuf_* into SRAM2B.
+// It also leaves 64 bytes at the start of SRAM2A for the ref table.
+
+STATIC ipcc_device_info_table_t ipcc_mem_dev_info_tab; // mem1
+STATIC ipcc_ble_table_t ipcc_mem_ble_tab; // mem1
+STATIC ipcc_sys_table_t ipcc_mem_sys_tab; // mem1
+STATIC ipcc_mem_manager_table_t ipcc_mem_memmgr_tab; // mem1
+
+STATIC uint8_t ipcc_membuf_sys_cmd_buf[272];  // mem2
+STATIC tl_list_node_t ipcc_mem_sys_queue; // mem1
+
+STATIC tl_list_node_t ipcc_mem_memmgr_free_buf_queue; // mem1
+STATIC uint8_t ipcc_membuf_memmgr_ble_spare_evt_buf[272]; // mem2
+STATIC uint8_t ipcc_membuf_memmgr_sys_spare_evt_buf[272]; // mem2
+STATIC uint8_t ipcc_membuf_memmgr_evt_pool[6 * 272];  // mem2
+
+STATIC uint8_t ipcc_membuf_ble_cmd_buf[272]; // mem2
+STATIC uint8_t ipcc_membuf_ble_cs_buf[272]; // mem2
+STATIC tl_list_node_t ipcc_mem_ble_evt_queue; // mem1
+STATIC uint8_t ipcc_membuf_ble_hci_acl_data_buf[272]; // mem2
 
 /******************************************************************************/
 // Transport layer linked list
@@ -105,21 +175,21 @@ STATIC void tl_list_append(volatile tl_list_node_t *head, volatile tl_list_node_
 /******************************************************************************/
 // IPCC interface
 
-STATIC uint32_t get_ipccdba(void) {
-    return *(uint32_t *)(OPTION_BYTE_BASE + 0x68) & 0x3fff;
-}
-
-STATIC volatile void **get_buffer_table(void) {
-    return (volatile void **)(SRAM2A_BASE + get_ipccdba());
+STATIC volatile ipcc_ref_table_t *get_buffer_table(void) {
+    // The IPCCDBA option bytes must not be changed without
+    // making a corresponding change to the linker script.
+    return (volatile ipcc_ref_table_t *)(SRAM2A_BASE + LL_FLASH_GetIPCCBufferAddr() * 4);
 }
 
 void ipcc_init(uint32_t irq_pri) {
+    DEBUG_printf("ipcc_init\n");
+
     // Setup buffer table pointers
-    volatile void **tab = get_buffer_table();
-    tab[0] = &ipcc_mem_dev_info_tab[0];
-    tab[1] = &ipcc_mem_ble_tab[0];
-    tab[3] = &ipcc_mem_sys_tab[0];
-    tab[4] = &ipcc_mem_memmgr_tab[0];
+    volatile ipcc_ref_table_t *tab = get_buffer_table();
+    tab->p_device_info_table = &ipcc_mem_dev_info_tab;
+    tab->p_ble_table = &ipcc_mem_ble_tab;
+    tab->p_sys_table = &ipcc_mem_sys_tab;
+    tab->p_mem_manager_table = &ipcc_mem_memmgr_tab;
 
     // Start IPCC peripheral
     __HAL_RCC_IPCC_CLK_ENABLE();
@@ -130,32 +200,34 @@ void ipcc_init(uint32_t irq_pri) {
     NVIC_SetPriority(IPCC_C1_RX_IRQn, irq_pri);
     HAL_NVIC_EnableIRQ(IPCC_C1_RX_IRQn);
 
-    // Device info table will be populated by FUS/WS
+    // Device info table will be populated by FUS/WS on CPU2 boot.
 
     // Populate system table
     tl_list_init(&ipcc_mem_sys_queue);
-    ipcc_mem_sys_tab[0] = (uint32_t)&ipcc_mem_sys_cmd_buf[0];
-    ipcc_mem_sys_tab[1] = (uint32_t)&ipcc_mem_sys_queue;
+    ipcc_mem_sys_tab.pcmd_buffer = ipcc_membuf_sys_cmd_buf;
+    ipcc_mem_sys_tab.sys_queue = &ipcc_mem_sys_queue;
 
     // Populate memory manager table
     tl_list_init(&ipcc_mem_memmgr_free_buf_queue);
-    ipcc_mem_memmgr_tab[0] = (uint32_t)&ipcc_mem_memmgr_ble_spare_evt_buf[0];
-    ipcc_mem_memmgr_tab[1] = (uint32_t)&ipcc_mem_memmgr_sys_spare_evt_buf[0];
-    ipcc_mem_memmgr_tab[2] = (uint32_t)&ipcc_mem_memmgr_evt_pool[0];
-    ipcc_mem_memmgr_tab[3] = sizeof(ipcc_mem_memmgr_evt_pool);
-    ipcc_mem_memmgr_tab[4] = (uint32_t)&ipcc_mem_memmgr_free_buf_queue;
-    ipcc_mem_memmgr_tab[5] = 0;
-    ipcc_mem_memmgr_tab[6] = 0;
+    ipcc_mem_memmgr_tab.spare_ble_buffer = ipcc_membuf_memmgr_ble_spare_evt_buf;
+    ipcc_mem_memmgr_tab.spare_sys_buffer = ipcc_membuf_memmgr_sys_spare_evt_buf;
+    ipcc_mem_memmgr_tab.blepool = ipcc_membuf_memmgr_evt_pool;
+    ipcc_mem_memmgr_tab.blepoolsize = sizeof(ipcc_membuf_memmgr_evt_pool);
+    ipcc_mem_memmgr_tab.pevt_free_buffer_queue = &ipcc_mem_memmgr_free_buf_queue;
+    ipcc_mem_memmgr_tab.traces_evt_pool = NULL;
+    ipcc_mem_memmgr_tab.tracespoolsize = 0;
 
     // Populate BLE table
     tl_list_init(&ipcc_mem_ble_evt_queue);
-    ipcc_mem_ble_tab[0] = (uint32_t)&ipcc_mem_ble_cmd_buf[0];
-    ipcc_mem_ble_tab[1] = (uint32_t)&ipcc_mem_ble_cs_buf[0];
-    ipcc_mem_ble_tab[2] = (uint32_t)&ipcc_mem_ble_evt_queue;
-    ipcc_mem_ble_tab[3] = (uint32_t)&ipcc_mem_ble_hci_acl_data_buf[0];
+    ipcc_mem_ble_tab.pcmd_buffer = ipcc_membuf_ble_cmd_buf;
+    ipcc_mem_ble_tab.pcs_buffer = ipcc_membuf_ble_cs_buf;
+    ipcc_mem_ble_tab.pevt_queue = &ipcc_mem_ble_evt_queue;
+    ipcc_mem_ble_tab.phci_acl_data_buffer = ipcc_membuf_ble_hci_acl_data_buf;
 }
 
 STATIC int ipcc_wait_ack(unsigned int ch, uint32_t timeout_ms) {
+    DEBUG_printf("ipcc_wait_ack\n");
+
     uint32_t t0 = mp_hal_ticks_ms();
     while (IPCC->C1TOC2SR & ch) {
         if (mp_hal_ticks_ms() - t0 > timeout_ms) {
@@ -168,6 +240,8 @@ STATIC int ipcc_wait_ack(unsigned int ch, uint32_t timeout_ms) {
 }
 
 STATIC int ipcc_wait_msg(unsigned int ch, uint32_t timeout_ms) {
+    DEBUG_printf("ipcc_wait_msg\n");
+
     uint32_t t0 = mp_hal_ticks_ms();
     while (!(IPCC->C2TOC1SR & ch)) {
         if (mp_hal_ticks_ms() - t0 > timeout_ms) {
@@ -254,8 +328,8 @@ STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_h
         while (cur != head) {
             tl_parse_hci_msg((uint8_t *)cur->body, parse);
             volatile tl_list_node_t *next = tl_list_unlink(cur);
-            if ((void *)&ipcc_mem_memmgr_evt_pool[0] <= (void *)cur
-                && (void *)cur < (void *)&ipcc_mem_memmgr_evt_pool[MP_ARRAY_SIZE(ipcc_mem_memmgr_evt_pool)]) {
+            if ((void *)&ipcc_membuf_memmgr_evt_pool[0] <= (void *)cur
+                && (void *)cur < (void *)&ipcc_membuf_memmgr_evt_pool[MP_ARRAY_SIZE(ipcc_membuf_memmgr_evt_pool)]) {
                 // Place memory back in free pool
                 tl_list_append(&ipcc_mem_memmgr_free_buf_queue, cur);
                 free = true;
@@ -291,12 +365,12 @@ STATIC void tl_sys_wait_resp(const uint8_t *buf, unsigned int ch) {
 }
 
 STATIC void tl_sys_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf) {
-    tl_hci_cmd((uint8_t *)&ipcc_mem_sys_cmd_buf, IPCC_CH_SYS, 0x10, opcode, len, buf);
-    tl_sys_wait_resp((uint8_t *)&ipcc_mem_sys_cmd_buf, IPCC_CH_SYS);
+    tl_hci_cmd((uint8_t *)&ipcc_membuf_sys_cmd_buf, IPCC_CH_SYS, 0x10, opcode, len, buf);
+    tl_sys_wait_resp((uint8_t *)&ipcc_membuf_sys_cmd_buf, IPCC_CH_SYS);
 }
 
 STATIC void tl_ble_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf) {
-    tl_hci_cmd((uint8_t *)&ipcc_mem_ble_cmd_buf[0], IPCC_CH_BLE, 0x01, opcode, len, buf);
+    tl_hci_cmd((uint8_t *)&ipcc_membuf_ble_cmd_buf[0], IPCC_CH_BLE, 0x01, opcode, len, buf);
     ipcc_wait_msg(IPCC_CH_BLE, 250);
     tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, NULL);
 }
@@ -305,6 +379,8 @@ STATIC void tl_ble_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf)
 // RF core interface
 
 void rfcore_init(void) {
+    DEBUG_printf("rfcore_init\n");
+
     // Ensure LSE is running
     rtc_init_finalise();
 
@@ -361,6 +437,8 @@ static const struct {
 };
 
 void rfcore_ble_init(void) {
+    DEBUG_printf("rfcore_ble_init\n");
+
     // Clear any outstanding messages from ipcc_init
     tl_check_msg(&ipcc_mem_sys_queue, IPCC_CH_SYS, NULL);
     tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, NULL);
@@ -371,6 +449,8 @@ void rfcore_ble_init(void) {
 }
 
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
+    DEBUG_printf("rfcore_ble_hci_cmd\n");
+
     #if HCI_TRACE
     printf("[% 8d] HCI_CMD(%02x", mp_hal_ticks_ms(), src[0]);
     for (int i = 1; i < len; ++i) {
@@ -382,10 +462,10 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     tl_list_node_t *n;
     uint32_t ch;
     if (src[0] == 0x01) {
-        n = (tl_list_node_t *)&ipcc_mem_ble_cmd_buf[0];
+        n = (tl_list_node_t *)&ipcc_membuf_ble_cmd_buf[0];
         ch = IPCC_CH_BLE;
     } else if (src[0] == 0x02) {
-        n = (tl_list_node_t *)&ipcc_mem_ble_hci_acl_data_buf[0];
+        n = (tl_list_node_t *)&ipcc_membuf_ble_hci_acl_data_buf[0];
         ch = IPCC_CH_HCI_ACL;
     } else {
         printf("** UNEXPECTED HCI HDR: 0x%02x **\n", src[0]);
