@@ -46,7 +46,7 @@ class LexerError(Exception):
 
 class Lexer:
     re_io_reg = r"__IO uint(?P<bits>8|16|32)_t +(?P<reg>[A-Z0-9]+)"
-    re_comment = r"(?P<comment>[A-Za-z0-9 \-/_()&]+)"
+    re_comment = r"(?P<comment>[A-Za-z0-9 \-/_()&:]+)"
     re_addr_offset = r"Address offset: (?P<offset>0x[0-9A-Z]{2,3})"
     regexs = (
         (
@@ -78,16 +78,16 @@ class Lexer:
         (
             "IO reg",
             re.compile(
-                re_io_reg + r"; */\*!< *" + re_comment + r", +" + re_addr_offset + r" *\*/"
+                re_io_reg + r" *; */\*!< *" + re_comment + r",? +" + re_addr_offset + r" *\*/"
             ),
         ),
         (
             "IO reg array",
             re.compile(
                 re_io_reg
-                + r"\[(?P<array>[2-8])\]; */\*!< *"
+                + r"\[(?P<array>[2-8])\] *; */\*!< *"
                 + re_comment
-                + r", +"
+                + r",? +"
                 + re_addr_offset
                 + r"-(0x[0-9A-Z]{2,3}) *\*/"
             ),
@@ -160,7 +160,11 @@ def parse_file(filename):
             if m[0] == "}":
                 pass
             elif m[0] == "} TypeDef":
-                reg_defs[m[1].groupdict()["id"]] = regs
+                d = m[1].groupdict()
+                n = d["id"]
+                g = d["global"]
+                if n not in reg_defs or not g:
+                    reg_defs[n] = regs
             else:
                 raise LexerError(lexer.line_number)
 
@@ -298,6 +302,7 @@ def main():
         "USART",
         "WWDG",
         "RNG",
+        "IPCC",
     ):
         if reg in reg_defs:
             print_regs(reg, reg_defs[reg], needed_qstrs, needed_mpzs)
