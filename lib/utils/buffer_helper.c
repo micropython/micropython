@@ -26,10 +26,10 @@
 
 #include "lib/utils/buffer_helper.h"
 
-void normalize_buffer_bounds(int32_t* start, int32_t end, uint32_t* length) {
+void normalize_buffer_bounds(int32_t* start, int32_t end, size_t* length) {
     if (end < 0) {
         end += *length;
-    } else if (((uint32_t) end) > *length) {
+    } else if (((size_t) end) > *length) {
         end = *length;
     }
     if (*start < 0) {

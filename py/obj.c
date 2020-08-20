@@ -33,10 +33,13 @@
 #include "py/objtype.h"
 #include "py/objint.h"
 #include "py/objstr.h"
+#include "py/qstr.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
+#include "supervisor/linker.h"
+#include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate.h"
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
@@ -61,6 +64,9 @@ const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
     MP_STACK_CHECK();
+    #ifdef RUN_BACKGROUND_TASKS
+    RUN_BACKGROUND_TASKS;
+    #endif
 #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
@@ -81,24 +87,24 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 
 // helper function to print an exception with traceback
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
-    if (mp_obj_is_exception_instance(exc)) {
+    if (mp_obj_is_exception_instance(exc) && stack_ok()) {
         size_t n, *values;
         mp_obj_exception_get_traceback(exc, &n, &values);
         if (n > 0) {
             assert(n % 3 == 0);
             // Decompress the format strings
             const compressed_string_t* traceback = translate("Traceback (most recent call last):\n");
-            char decompressed[traceback->length];
+            char decompressed[decompress_length(traceback)];
             decompress(traceback, decompressed);
 #if MICROPY_ENABLE_SOURCE_LINE
             const compressed_string_t* frame = translate("  File \"%q\", line %d");
 #else
             const compressed_string_t* frame = translate("  File \"%q\"");
 #endif
-            char decompressed_frame[frame->length];
+            char decompressed_frame[decompress_length(frame)];
             decompress(frame, decompressed_frame);
             const compressed_string_t* block_fmt = translate(", in %q\n");
-            char decompressed_block[block_fmt->length];
+            char decompressed_block[decompress_length(block_fmt)];
             decompress(block_fmt, decompressed_block);
 
             // Print the traceback
@@ -123,7 +129,7 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
     mp_print_str(print, "\n");
 }
 
-bool mp_obj_is_true(mp_obj_t arg) {
+bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
     if (arg == mp_const_false) {
         return 0;
     } else if (arg == mp_const_true) {
@@ -484,12 +490,14 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
 
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     mp_obj_type_t *type = mp_obj_get_type(base);
+
     if (type->subscr != NULL) {
         mp_obj_t ret = type->subscr(base, index, value);
+        // May have called port specific C code. Make sure it didn't mess up the heap.
+        assert_heap_ok();
         if (ret != MP_OBJ_NULL) {
             return ret;
         }
-        // TODO: call base classes here?
     }
     if (value == MP_OBJ_NULL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
@@ -525,6 +533,36 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
 mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     return self;
+}
+
+typedef struct {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    mp_obj_t obj;
+    mp_int_t cur;
+} mp_obj_generic_it_t;
+
+STATIC mp_obj_t generic_it_iternext(mp_obj_t self_in) {
+    mp_obj_generic_it_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_type_t *type = mp_obj_get_type(self->obj);
+    mp_obj_t current_length = type->unary_op(MP_UNARY_OP_LEN, self->obj);
+    if (self->cur < MP_OBJ_SMALL_INT_VALUE(current_length)) {
+        mp_obj_t o_out = type->subscr(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL);
+        self->cur += 1;
+        return o_out;
+    } else {
+        return MP_OBJ_STOP_ITERATION;
+    }
+}
+
+mp_obj_t mp_obj_new_generic_iterator(mp_obj_t obj, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_generic_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_generic_it_t *o = (mp_obj_generic_it_t*)iter_buf;
+    o->base.type = &mp_type_polymorph_iter;
+    o->iternext = generic_it_iternext;
+    o->obj = obj;
+    o->cur = 0;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {

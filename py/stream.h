@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_PY_STREAM_H
 
 #include "py/obj.h"
+#include "py/proto.h"
 #include "py/mperrno.h"
 
 #define MP_STREAM_ERROR ((mp_uint_t)-1)
@@ -64,12 +65,14 @@ struct mp_stream_seek_t {
 
 // Stream protocol
 typedef struct _mp_stream_p_t {
+    MP_PROTOCOL_HEAD
     // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
     // are implementation-dependent, but will be exposed to user, e.g. via exception).
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*write)(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode);
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
     mp_uint_t is_text : 1; // default is bytes, set this for text stream
+    bool pyserial_compatibility: 1;  // adjust API to match pyserial more closely
 } mp_stream_p_t;
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_read_obj);
@@ -92,7 +95,7 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj);
 
 // Object is assumed to have a non-NULL stream protocol with valid r/w/ioctl methods
 static inline const mp_stream_p_t *mp_get_stream(mp_const_obj_t self) {
-    return (const mp_stream_p_t*)((const mp_obj_base_t*)MP_OBJ_TO_PTR(self))->type->protocol;
+    return mp_proto_get(MP_QSTR_protocol_stream, self);
 }
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags);
@@ -112,6 +115,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
+mp_obj_t mp_stream_flush(mp_obj_t self);
 
 #if MICROPY_STREAMS_POSIX_API
 // Functions with POSIX-compatible signatures

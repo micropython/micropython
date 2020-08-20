@@ -31,11 +31,13 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 
+#include "supervisor/shared/tick.h"
+
 #include "shared-bindings/random/__init__.h"
 
 #include "shared-module/network/__init__.h"
 
-// mod_network_nic_list needs to be declared in mpconfigport.h 
+// mod_network_nic_list needs to be declared in mpconfigport.h
 
 
 void network_module_init(void) {
@@ -43,17 +45,23 @@ void network_module_init(void) {
 }
 
 void network_module_deinit(void) {
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
+        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
+        if (nic_type->deinit != NULL) nic_type->deinit(nic);
+    }
+    mp_obj_list_set_len(&MP_STATE_PORT(mod_network_nic_list), 0);
 }
 
 void network_module_background(void) {
     static uint32_t next_tick = 0;
-    uint32_t this_tick = ticks_ms;
+    uint32_t this_tick = supervisor_ticks_ms32();
     if (this_tick < next_tick) return;
     next_tick = this_tick + 1000;
 
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
         mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
-        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic); 
+        mod_network_nic_type_t *nic_type = (mod_network_nic_type_t*)mp_obj_get_type(nic);
         if (nic_type->timer_tick != NULL) nic_type->timer_tick(nic);
     }
 }
@@ -92,4 +100,8 @@ void network_module_create_random_mac_address(uint8_t *mac) {
     mac[3] = (uint8_t)(rb2 >> 16);
     mac[4] = (uint8_t)(rb2 >> 8);
     mac[5] = (uint8_t)(rb2);
+}
+
+uint16_t network_module_create_random_source_tcp_port(void) {
+    return 0xc000 | shared_modules_random_getrandbits(14);
 }

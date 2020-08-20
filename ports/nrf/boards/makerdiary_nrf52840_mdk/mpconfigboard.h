@@ -31,7 +31,6 @@
 
 #define MICROPY_HW_BOARD_NAME       "MakerDiary nRF52840 MDK"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "MakerDiary52840MDK"
 
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(1, 5)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(1, 4)
@@ -39,15 +38,6 @@
 #define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(1, 1)
 #define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(1, 3)
 #define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(1, 8)
-
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
-
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code
-#define PORT_HEAP_SIZE              (128 * 1024)
-// TODO #define CIRCUITPY_INTERNAL_NVM_SIZE 8192
-
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 #define BOARD_HAS_CRYSTAL 0
 

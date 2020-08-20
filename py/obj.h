@@ -338,6 +338,13 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 #define MP_DEFINE_CONST_STATICMETHOD_OBJ(obj_name, fun_name) const mp_rom_obj_static_class_method_t obj_name = {{&mp_type_staticmethod}, fun_name}
 #define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_rom_obj_static_class_method_t obj_name = {{&mp_type_classmethod}, fun_name}
 
+// Declare a module as a builtin, processed by makemoduledefs.py
+// param module_name: MP_QSTR_<module name>
+// param obj_module: mp_obj_module_t instance
+// prarm enabled_define: used as `#if (enabled_define) around entry`
+
+#define MP_REGISTER_MODULE(module_name, obj_module, enabled_define)
+
 // Underlying map/hash table implementation (not dict object or map function)
 
 typedef struct _mp_map_elem_t {
@@ -432,7 +439,7 @@ typedef struct _mp_obj_iter_buf_t {
 #define MP_OBJ_ITER_BUF_NSLOTS ((sizeof(mp_obj_iter_buf_t) + sizeof(mp_obj_t) - 1) / sizeof(mp_obj_t))
 
 typedef void (*mp_print_fun_t)(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind);
-typedef mp_obj_t (*mp_make_new_fun_t)(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+typedef mp_obj_t (*mp_make_new_fun_t)(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
 typedef mp_obj_t (*mp_unary_op_fun_t)(mp_unary_op_t op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(mp_binary_op_t op, mp_obj_t, mp_obj_t);
@@ -592,6 +599,7 @@ extern const mp_obj_type_t mp_type_ReloadException;
 extern const mp_obj_type_t mp_type_KeyError;
 extern const mp_obj_type_t mp_type_LookupError;
 extern const mp_obj_type_t mp_type_MemoryError;
+extern const mp_obj_type_t mp_type_MpyError;
 extern const mp_obj_type_t mp_type_NameError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_OSError;
@@ -639,7 +647,9 @@ mp_obj_t mp_obj_new_str(const char* data, size_t len);
 mp_obj_t mp_obj_new_str_via_qstr(const char* data, size_t len);
 mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte* data, size_t len);
+mp_obj_t mp_obj_new_bytes_of_zeros(size_t len);
 mp_obj_t mp_obj_new_bytearray(size_t n, void *items);
+mp_obj_t mp_obj_new_bytearray_of_zeros(size_t n);
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
@@ -659,6 +669,7 @@ mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items);
 mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items);
+mp_obj_t mp_obj_new_list_from_iter(mp_obj_t iterable);
 mp_obj_t mp_obj_new_dict(size_t n_args);
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items);
 mp_obj_t mp_obj_new_slice(mp_obj_t start, mp_obj_t stop, mp_obj_t step);
@@ -670,7 +681,7 @@ mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items);
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
 const char *mp_obj_get_type_str(mp_const_obj_t o_in);
 bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo); // arguments should be type objects
-mp_obj_t mp_instance_cast_to_native_base(mp_const_obj_t self_in, mp_const_obj_t native_type);
+mp_obj_t mp_instance_cast_to_native_base(mp_obj_t self_in, mp_const_obj_t native_type);
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
@@ -719,7 +730,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values);
 mp_obj_t mp_obj_exception_get_traceback_obj(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
-mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
 void mp_init_emergency_exception_buf(void);
 
@@ -754,6 +765,7 @@ void mp_obj_tuple_del(mp_obj_t self_in);
 mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
+mp_obj_t mp_obj_list_clear(mp_obj_t self_in);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
 void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
@@ -810,6 +822,10 @@ mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
 mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
 
+// Generic iterator that uses unary op and subscr to iterate over a native type. It will be slower
+// than a custom iterator but applies broadly.
+mp_obj_t mp_obj_new_generic_iterator(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
+
 // module
 typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
@@ -842,7 +858,10 @@ typedef struct {
     mp_uint_t stop;
     mp_int_t step;
 } mp_bound_slice_t;
+void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *result);
 
+// Compute the new length of a sequence and ensure an exception is thrown on overflow.
+size_t mp_seq_multiply_len(size_t item_sz, size_t len);
 void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times, void *dest);
 #if MICROPY_PY_BUILTINS_SLICE
 bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes);

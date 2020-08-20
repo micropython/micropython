@@ -34,11 +34,32 @@
 #include "lib/oofatfs/ff.h"
 #include "py/mpstate.h"
 
+#include "supervisor/filesystem.h"
 #include "supervisor/shared/autoreload.h"
 
 #define MSC_FLASH_BLOCK_SIZE    512
 
-static bool ejected[1];
+static bool ejected[1] = {true};
+
+void usb_msc_mount(void) {
+    // Reset the ejection tracking every time we're plugged into USB. This allows for us to battery
+    // power the device, eject, unplug and plug it back in to get the drive.
+    for (uint8_t i = 0; i < sizeof(ejected); i++) {
+        ejected[i] = false;
+    }
+}
+
+void usb_msc_umount(void) {
+
+}
+
+bool usb_msc_ejected(void) {
+    bool all_ejected = true;
+    for (uint8_t i = 0; i < sizeof(ejected); i++) {
+        all_ejected &= ejected[i];
+    }
+    return all_ejected;
+}
 
 // The root FS is always at the end of the list.
 static fs_user_mount_t* get_vfs(int lun) {
@@ -58,57 +79,16 @@ static fs_user_mount_t* get_vfs(int lun) {
 }
 
 // Callback invoked when received an SCSI command not in built-in list below
-// - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, MODE_SENSE6, REQUEST_SENSE
+// - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, TEST_UNIT_READY, START_STOP_UNIT, MODE_SENSE6, REQUEST_SENSE
 // - READ10 and WRITE10 have their own callbacks
 int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, uint16_t bufsize) {
     const void* response = NULL;
     int32_t resplen = 0;
 
     switch ( scsi_cmd[0] ) {
-        case SCSI_CMD_TEST_UNIT_READY:
-            // Command that host uses to check our readiness before sending other commands
-            resplen = 0;
-            if (lun > 1) {
-                resplen = -1;
-            } else {
-                fs_user_mount_t* current_mount = get_vfs(lun);
-                if (current_mount == NULL) {
-                    resplen = -1;
-                }
-                if (ejected[lun]) {
-                    resplen = -1;
-                }
-            }
-        break;
-
         case SCSI_CMD_PREVENT_ALLOW_MEDIUM_REMOVAL:
             // Host is about to read/write etc ... better not to disconnect disk
             resplen = 0;
-        break;
-
-        case SCSI_CMD_START_STOP_UNIT:
-        {
-            // Host try to eject/safe remove/poweroff us. We could safely disconnect with disk storage, or go into lower power
-            const scsi_start_stop_unit_t* start_stop = (const scsi_start_stop_unit_t*) scsi_cmd;
-            // Start bit = 0 : low power mode, if load_eject = 1 : unmount disk storage as well
-            // Start bit = 1 : Ready mode, if load_eject = 1 : mount disk storage
-            resplen = 0;
-            if (start_stop->load_eject == 1) {
-                if (lun > 1) {
-                    resplen = -1;
-                } else {
-                    fs_user_mount_t* current_mount = get_vfs(lun);
-                    if (current_mount == NULL) {
-                        resplen = -1;
-                    }
-                    if (disk_ioctl(current_mount, CTRL_SYNC, NULL) != RES_OK) {
-                        resplen = -1;
-                    } else {
-                        ejected[lun] = true;
-                    }
-                }
-            }
-        }
         break;
 
         default:
@@ -126,7 +106,7 @@ int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, 
     }
 
     // copy response to stack's buffer if any
-    if ( response && resplen ) {
+    if ( response && (resplen > 0) ) {
         memcpy(buffer, response, resplen);
     }
 
@@ -148,8 +128,7 @@ bool tud_msc_is_writable_cb(uint8_t lun) {
     if (vfs == NULL) {
         return false;
     }
-    if (vfs->writeblocks[0] == MP_OBJ_NULL ||
-        (vfs->flags & FSUSER_USB_WRITABLE) == 0) {
+    if (vfs->writeblocks[0] == MP_OBJ_NULL || !filesystem_is_writable_by_usb(vfs)) {
         return false;
     }
     return true;
@@ -205,4 +184,70 @@ void tud_msc_write10_complete_cb (uint8_t lun) {
 
     // This write is complete, start the autoreload clock.
     autoreload_start();
+}
+
+// Invoked when received SCSI_CMD_INQUIRY
+// Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
+void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) {
+    (void) lun;
+
+    memcpy(vendor_id  , CFG_TUD_MSC_VENDOR     , strlen(CFG_TUD_MSC_VENDOR));
+    memcpy(product_id , CFG_TUD_MSC_PRODUCT    , strlen(CFG_TUD_MSC_PRODUCT));
+    memcpy(product_rev, CFG_TUD_MSC_PRODUCT_REV, strlen(CFG_TUD_MSC_PRODUCT_REV));
+}
+
+// Invoked when received Test Unit Ready command.
+// return true allowing host to read/write this LUN e.g SD card inserted
+bool tud_msc_test_unit_ready_cb(uint8_t lun) {
+    if (lun > 1) {
+        return false;
+    }
+
+    fs_user_mount_t* current_mount = get_vfs(lun);
+    if (current_mount == NULL) {
+        return false;
+    }
+    if (ejected[lun]) {
+        // Set 0x3a for media not present.
+        tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3A, 0x00);
+        return false;
+    }
+
+    return true;
+}
+
+// Invoked when received Start Stop Unit command
+// - Start = 0 : stopped power mode, if load_eject = 1 : unload disk storage
+// - Start = 1 : active mode, if load_eject = 1 : load disk storage
+bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) {
+    if (lun > 1) {
+        return false;
+    }
+    fs_user_mount_t* current_mount = get_vfs(lun);
+    if (current_mount == NULL) {
+        return false;
+    }
+    if (load_eject) {
+        if (!start) {
+            // Eject but first flush.
+            if (disk_ioctl(current_mount, CTRL_SYNC, NULL) != RES_OK) {
+                return false;
+            } else {
+                ejected[lun] = true;
+            }
+        } else {
+            // We can only load if it hasn't been ejected.
+            return !ejected[lun];
+        }
+    } else {
+        if (!start) {
+            // Stop the unit but don't eject.
+            if (disk_ioctl(current_mount, CTRL_SYNC, NULL) != RES_OK) {
+                return false;
+            }
+        }
+        // Always start the unit, even if ejected. Whether media is present is a separate check.
+    }
+
+    return true;
 }

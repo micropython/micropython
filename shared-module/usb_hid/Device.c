@@ -25,11 +25,12 @@
  */
 
 #include <string.h>
-#include "tick.h"
+
 #include "py/runtime.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "shared-module/usb_hid/Device.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/shared/tick.h"
 #include "tusb.h"
 
 uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
@@ -46,41 +47,49 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t* 
     }
 
     // Wait until interface is ready, timeout = 2 seconds
-    uint64_t end_ticks = ticks_ms + 2000;
-    while ( (ticks_ms < end_ticks) && !tud_hid_generic_ready() ) { }
+    uint64_t end_ticks = supervisor_ticks_ms64() + 2000;
+    while ( (supervisor_ticks_ms64() < end_ticks) && !tud_hid_ready() ) {
+        RUN_BACKGROUND_TASKS;
+    }
 
-    if ( !tud_hid_generic_ready() ) {
+    if ( !tud_hid_ready() ) {
         mp_raise_msg(&mp_type_OSError,  translate("USB Busy"));
     }
 
     memcpy(self->report_buffer, report, len);
 
-    if ( !tud_hid_generic_report(self->report_id, self->report_buffer, len) ) {
+    if ( !tud_hid_report(self->report_id, self->report_buffer, len) ) {
         mp_raise_msg(&mp_type_OSError, translate("USB Error"));
     }
 }
 
+static usb_hid_device_obj_t* get_hid_device(uint8_t report_id) {
+    for (uint8_t i = 0; i < USB_HID_NUM_DEVICES; i++) {
+        if (usb_hid_devices[i].report_id == report_id) {
+            return &usb_hid_devices[i];
+        }
+    }
+    return NULL;
+}
+
 // Callbacks invoked when receive Get_Report request through control endpoint
-uint16_t tud_hid_generic_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
+uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen) {
     // only support Input Report
     if ( report_type != HID_REPORT_TYPE_INPUT ) return 0;
 
-    // index is ID-1
-    uint8_t idx =  ( report_id ? (report_id-1) : 0 );
-
     // fill buffer with current report
-    memcpy(buffer, usb_hid_devices[idx].report_buffer, reqlen);
+    memcpy(buffer, get_hid_device(report_id)->report_buffer, reqlen);
     return reqlen;
 }
 
 // Callbacks invoked when receive Set_Report request through control endpoint
-void tud_hid_generic_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
-    // index is ID-1
-    uint8_t idx =  ( report_id ? (report_id-1) : 0 );
+void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
+    usb_hid_device_obj_t* hid_device = get_hid_device(report_id);
 
     if ( report_type == HID_REPORT_TYPE_OUTPUT ) {
         // Check if it is Keyboard device
-        if ( (usb_hid_devices[idx].usage_page == HID_USAGE_PAGE_DESKTOP) && (usb_hid_devices[idx].usage == HID_USAGE_DESKTOP_KEYBOARD) ) {
+        if (hid_device->usage_page == HID_USAGE_PAGE_DESKTOP &&
+                hid_device->usage == HID_USAGE_DESKTOP_KEYBOARD) {
             // This is LED indicator (CapsLock, NumLock)
             // TODO Light up some LED here
         }

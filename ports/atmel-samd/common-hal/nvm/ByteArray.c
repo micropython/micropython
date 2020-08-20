@@ -28,6 +28,8 @@
 
 #include "hal_flash.h"
 
+#include "supervisor/shared/stack.h"
+
 #include <stdint.h>
 #include <string.h>
 
@@ -41,8 +43,9 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
     // whenever we need it instead of storing it long term.
     struct flash_descriptor desc;
     desc.dev.hw = NVMCTRL;
-    flash_write(&desc, (uint32_t) self->start_address + start_index, values, len);
-    return true;
+    bool status = flash_write(&desc, (uint32_t) self->start_address + start_index, values, len) == ERR_NONE;
+    assert_heap_ok();
+    return status;
 }
 
 // NVM memory is memory mapped so reading it is easy.

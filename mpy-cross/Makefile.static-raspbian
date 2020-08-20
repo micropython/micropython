@@ -1,0 +1,8 @@
+PROG=mpy-cross.static-raspbian
+BUILD=build-static-raspbian
+STATIC_BUILD=1
+
+CROSS_COMPILE = pitools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-
+include mpy-cross.mk
+
+$(shell [ -d pitools ] || git clone --progress --verbose https://github.com/raspberrypi/tools.git --depth=1 pitools)

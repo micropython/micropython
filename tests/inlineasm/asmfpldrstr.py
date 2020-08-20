@@ -9,4 +9,3 @@ def arrayadd(r0):
 z = array.array("f", [2, 4, 10])
 arrayadd(z)
 print(z[2])
-

@@ -775,13 +775,22 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, int name_len, mp_parse_
     qstr attr = MP_PARSE_NODE_LEAF_ARG(name_nodes[1]);
     if (attr == MP_QSTR_bytecode) {
         *emit_options = MP_EMIT_OPT_BYTECODE;
-#if MICROPY_EMIT_NATIVE
+    // @micropython.native decorator.
     } else if (attr == MP_QSTR_native) {
+        // Different from MicroPython: native doesn't raise SyntaxError if native support isn't
+        // compiled, it just passes through the function unmodified.
+        #if MICROPY_EMIT_NATIVE
         *emit_options = MP_EMIT_OPT_NATIVE_PYTHON;
+        #else
+        return true;
+        #endif
+    #if MICROPY_EMIT_NATIVE
+    // @micropython.viper decorator.
     } else if (attr == MP_QSTR_viper) {
         *emit_options = MP_EMIT_OPT_VIPER;
-#endif
+    #endif
     #if MICROPY_EMIT_INLINE_ASM
+    // @micropython.asm_thumb decorator.
     } else if (attr == ASM_DECORATOR_QSTR) {
         *emit_options = MP_EMIT_OPT_ASM;
     #endif
@@ -1702,6 +1711,16 @@ STATIC void compile_yield_from(compiler_t *comp) {
 }
 
 #if MICROPY_PY_ASYNC_AWAIT
+STATIC bool compile_require_async_context(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    int scope_flags = comp->scope_cur->scope_flags;
+    if(scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+        return true;
+    }
+    compile_syntax_error(comp, (mp_parse_node_t)pns,
+        translate("'async for' or 'async with' outside async function"));
+    return false;
+}
+
 STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
     EMIT_ARG(load_method, method, false);
     EMIT_ARG(call_method, 0, 0, 0);
@@ -1710,6 +1729,10 @@ STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
 
 STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
+
+    if(!compile_require_async_context(comp, pns)) {
+        return;
+    }
 
     qstr context = MP_PARSE_NODE_LEAF_ARG(pns->nodes[1]);
     uint while_else_label = comp_next_label(comp);
@@ -1848,6 +1871,9 @@ STATIC void compile_async_with_stmt_helper(compiler_t *comp, int n, mp_parse_nod
 }
 
 STATIC void compile_async_with_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
+    if(!compile_require_async_context(comp, pns)) {
+        return;
+    }
     // get the nodes for the pre-bit of the with (the a as b, c as d, ... bit)
     mp_parse_node_t *nodes;
     int n = mp_parse_node_extract_list(&pns->nodes[0], PN_with_stmt_list, &nodes);
@@ -3207,7 +3233,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             }
             if (pass > MP_PASS_SCOPE) {
                 mp_int_t bytesize = MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]);
-                for (uint j = 1; j < n_args; j++) {
+                for (int j = 1; j < n_args; j++) {
                     if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[j])) {
                         compile_syntax_error(comp, nodes[i], translate("'data' requires integer arguments"));
                         return;

@@ -35,16 +35,10 @@
 #include "shared-bindings/busio/OneWire.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/busio/UART.h"
-#include "shared-bindings/busio/__init__.h"
 
 #include "py/runtime.h"
 
-//| :mod:`busio` --- Hardware accelerated behavior
-//| =================================================
-//|
-//| .. module:: busio
-//|   :synopsis: Hardware accelerated behavior
-//|   :platform: SAMD21
+//| """Hardware accelerated external bus access
 //|
 //| The `busio` module contains classes to support a variety of serial
 //| protocols.
@@ -54,16 +48,6 @@
 //| hardware support is available on a subset of pins but not those provided,
 //| then a RuntimeError will be raised. Use the `bitbangio` module to explicitly
 //| bitbang a serial protocol on any general purpose pins.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     I2C
-//|     OneWire
-//|     SPI
-//|     UART
 //|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
@@ -82,7 +66,7 @@
 //| This example will initialize the the device, run
 //| :py:meth:`~busio.I2C.scan` and then :py:meth:`~busio.I2C.deinit` the
 //| hardware. The last step is optional because CircuitPython automatically
-//| resets hardware after a program finishes.
+//| resets hardware after a program finishes."""
 //|
 
 STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {

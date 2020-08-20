@@ -29,63 +29,97 @@
 
 #include "shared-bindings/neopixel_write/__init__.h"
 
-#include "tick.h"
+#include "supervisor/port.h"
 
 #ifdef SAMD51
 #include "hri/hri_cmcc_d51.h"
 #include "hri/hri_nvmctrl_d51.h"
-
-// This magical macro makes sure the delay isn't optimized out and is the
-// minimal three instructions.
-#define delay_cycles(cycles) \
-{ \
-    uint32_t t; \
-    asm volatile ( \
-        "movs %[t], %[c]\n\t" \
-        "loop%=:\n\t" \
-        "subs	%[t], #1\n\t" \
-        "bne.n  loop%=" : [t] "=r"(t) : [c] "I" (cycles)); \
-    }
 #endif
 
-// Ensure this code is compiled with -Os. Any other optimization level may change the timing of it
-// and break neopixels.
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
+__attribute__((naked,noinline,aligned(16)))
+static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMask,
+                                      const uint8_t *ptr, int numBytes);
 
-uint64_t next_start_tick_ms = 0;
-uint32_t next_start_tick_us = 1000;
+static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMask,
+                                      const uint8_t *ptr, int numBytes) {
+    asm volatile("        push    {r4, r5, r6, lr};"
+                 "        add     r3, r2, r3;"
+                 "loopLoad:"
+                 "        ldrb r5, [r2, #0];" // r5 := *ptr
+                 "        add  r2, #1;"       // ptr++
+                 "        movs    r4, #128;"  // r4-mask, 0x80
+                 "loopBit:"
+                 "        str r1, [r0, #4];"                    // set
+                 #ifdef SAMD21
+                 "        movs r6, #3; d2: sub r6, #1; bne d2;" // delay 3
+                 #endif
+                 #ifdef SAMD51
+                 "        movs r6, #3; d2: subs r6, #1; bne d2;" // delay 3
+                 #endif
+                 "        tst r4, r5;"                          // mask&r5
+                 "        bne skipclr;"
+                 "        str r1, [r0, #0];" // clr
+                 "skipclr:"
+                 #ifdef SAMD21
+                 "        movs r6, #6; d0: sub r6, #1; bne d0;" // delay 6
+                 #endif
+                 #ifdef SAMD51
+                 "        movs r6, #6; d0: subs r6, #1; bne d0;" // delay 6
+                 #endif
+                 "        str r1, [r0, #0];"   // clr (possibly again, doesn't matter)
+                 #ifdef SAMD21
+                 "        asr     r4, r4, #1;" // mask >>= 1
+                 #endif
+                 #ifdef SAMD51
+                 "        asrs     r4, r4, #1;" // mask >>= 1
+                 #endif
+                 "        beq     nextbyte;"
+                 "        uxtb    r4, r4;"
+                 #ifdef SAMD21
+                 "        movs r6, #2; d1: sub r6, #1; bne d1;" // delay 2
+                 #endif
+                 #ifdef SAMD51
+                 "        movs r6, #2; d1: subs r6, #1; bne d1;" // delay 2
+                 #endif
+                 "        b       loopBit;"
+                 "nextbyte:"
+                 "        cmp r2, r3;"
+                 "        bcs neopixel_stop;"
+                 "        b loopLoad;"
+                 "neopixel_stop:"
+                 "        pop {r4, r5, r6, pc};"
+                 "");
+}
+
+uint64_t next_start_raw_ticks = 0;
 
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // This is adapted directly from the Adafruit NeoPixel library SAMD21G18A code:
     // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
-    uint8_t  *ptr, *end, p, bitMask;
+    // and the asm version from https://github.com/microsoft/uf2-samdx1/blob/master/inc/neopixel.h
     uint32_t  pinMask;
     PortGroup* port;
 
-    // This must be called while interrupts are on in case we're waiting for a
-    // future ms tick.
-    wait_until(next_start_tick_ms, next_start_tick_us);
+    // Wait to make sure we don't append onto the last transmission. This should only be a tick or
+    // two.
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
 
     // Turn off interrupts of any kind during timing-sensitive code.
     mp_hal_disable_all_interrupts();
 
 
-    #ifdef SAMD21
-    // Make sure the NVM cache is consistently timed.
-    NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_DETERMINISTIC_Val;
-    #endif
-
     #ifdef SAMD51
     // When this routine is positioned at certain addresses, the timing logic
     // below can be too fast by about 2.5x. This is some kind of (un)fortunate code
-    // positiong with respect to a cache line.
+    // positioning with respect to a cache line.
     // Theoretically we should turn on off the CMCC caches and the
     // NVM caches to ensure consistent timing. Testing shows the the NVMCTRL
     // cache disabling seems to make the difference. But turn both off to make sure.
     // It's difficult to test because additions to the code before the timing loop
-    // below change instruction placement. Testing was done by adding cache changes
-    // below the loop (so only the first time through is wrong).
+    // below change instruction placement. (though this should be less true now that
+    // the main code is in the cache-aligned function neopixel_send_buffer_core)
+    // Testing was done by adding cache changes below the loop (so only the
+    // first time through is wrong).
     //
     // Turn off instruction, data, and NVM caches to force consistent timing.
     // Invalidate existing cache entries.
@@ -93,78 +127,13 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     hri_cmcc_write_MAINT0_reg(CMCC, CMCC_MAINT0_INVALL);
     hri_nvmctrl_set_CTRLA_CACHEDIS0_bit(NVMCTRL);
     hri_nvmctrl_set_CTRLA_CACHEDIS1_bit(NVMCTRL);
-   #endif
+    #endif
 
     uint32_t pin = digitalinout->pin->number;
     port    =  &PORT->Group[GPIO_PORT(pin)];  // Convert GPIO # to port register
     pinMask =  (1UL << (pin % 32));  // From port_pin_set_output_level ASF code.
-    ptr     =  pixels;
-    end     =  ptr + numBytes;
-    p       = *ptr++;
-    bitMask =  0x80;
-
-    volatile uint32_t *set = &(port->OUTSET.reg),
-                      *clr = &(port->OUTCLR.reg);
-
-    for(;;) {
-        *set = pinMask;
-        // This is the time where the line is always high regardless of the bit.
-        // For the SK6812 its 0.3us +- 0.15us
-        #ifdef SAMD21
-        asm("nop; nop;");
-        #endif
-        #ifdef SAMD51
-        delay_cycles(2);
-        #endif
-        if((p & bitMask) != 0) {
-            // This is the high delay unique to a one bit.
-            // For the SK6812 its 0.3us
-            #ifdef SAMD21
-            asm("nop; nop; nop; nop; nop; nop; nop;");
-            #endif
-            #ifdef SAMD51
-            delay_cycles(3);
-            #endif
-            *clr = pinMask;
-        } else {
-            *clr = pinMask;
-            // This is the low delay unique to a zero bit.
-            // For the SK6812 its 0.3us
-            #ifdef SAMD21
-            asm("nop; nop;");
-            #endif
-            #ifdef SAMD51
-            delay_cycles(2);
-            #endif
-        }
-        if((bitMask >>= 1) != 0) {
-            // This is the delay between bits in a byte and is the 1 code low
-            // level time from the datasheet.
-            // For the SK6812 its 0.6us +- 0.15us
-            #ifdef SAMD21
-            asm("nop; nop; nop; nop; nop;");
-            #endif
-            #ifdef SAMD51
-            delay_cycles(4);
-            #endif
-        } else {
-            if(ptr >= end) break;
-            p       = *ptr++;
-            bitMask = 0x80;
-            // This is the delay between bytes. It's similar to the other branch
-            // in the if statement except its tuned to account for the time the
-            // above operations take.
-            // For the SK6812 its 0.6us +- 0.15us
-            #ifdef SAMD51
-            delay_cycles(3);
-            #endif
-        }
-    }
-
-    #ifdef SAMD21
-    // Speed up! (But inconsistent timing.)
-    NVMCTRL->CTRLB.bit.READMODE = NVMCTRL_CTRLB_READMODE_NO_MISS_PENALTY_Val;
-    #endif
+    volatile uint32_t *clr = &(port->OUTCLR.reg);
+    neopixel_send_buffer_core(clr, pinMask, pixels, numBytes);
 
     #ifdef SAMD51
     // Turn instruction, data, and NVM caches back on.
@@ -174,19 +143,10 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
 
     #endif
 
-    // ticks_ms may be out of date at this point because we stopped the
-    // interrupt. We'll risk it anyway.
-    current_tick(&next_start_tick_ms, &next_start_tick_us);
-    if (next_start_tick_us < 100) {
-        next_start_tick_ms += 1;
-        next_start_tick_us = 100 - next_start_tick_us;
-    } else {
-        next_start_tick_us -= 100;
-    }
+    // Update the next start.
+    next_start_raw_ticks = port_get_raw_ticks(NULL) + 4;
 
     // Turn on interrupts after timing-sensitive code.
     mp_hal_enable_all_interrupts();
 
 }
-
-#pragma GCC pop_options

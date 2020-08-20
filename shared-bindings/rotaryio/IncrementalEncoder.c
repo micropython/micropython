@@ -34,55 +34,43 @@
 #include "shared-bindings/rotaryio/IncrementalEncoder.h"
 #include "shared-bindings/util.h"
 
-//| .. currentmodule:: rotaryio
+//| class IncrementalEncoder:
+//|     """IncrementalEncoder determines the relative rotational position based on two series of pulses."""
 //|
-//| :class:`IncrementalEncoder` -- Track the relative position of an incremental encoder
-//| ====================================================================================
+//|     def __init__(self, pin_a: microcontroller.Pin, pin_b: microcontroller.Pin):
+//|         """Create an IncrementalEncoder object associated with the given pins. It tracks the positional
+//|         state of an incremental rotary encoder (also known as a quadrature encoder.) Position is
+//|         relative to the position when the object is contructed.
 //|
-//| IncrementalEncoder determines the relative rotational position based on two series of pulses.
+//|         :param ~microcontroller.Pin pin_a: First pin to read pulses from.
+//|         :param ~microcontroller.Pin pin_b: Second pin to read pulses from.
 //|
-//| .. class:: IncrementalEncoder(pin_a, pin_b)
+//|         For example::
 //|
-//|   Create an IncrementalEncoder object associated with the given pins. It tracks the positional
-//|   state of an incremental rotary encoder (also known as a quadrature encoder.) Position is
-//|   relative to the position when the object is contructed.
+//|           import rotaryio
+//|           import time
+//|           from board import *
 //|
-//|   :param ~microcontroller.Pin pin_a: First pin to read pulses from.
-//|   :param ~microcontroller.Pin pin_b: Second pin to read pulses from.
+//|           enc = rotaryio.IncrementalEncoder(D1, D2)
+//|           last_position = None
+//|           while True:
+//|               position = enc.position
+//|               if last_position == None or position != last_position:
+//|                   print(position)
+//|               last_position = position"""
+//|         ...
 //|
-//|   For example::
-//|
-//|     import rotaryio
-//|     import time
-//|     from board import *
-//|
-//|     enc = rotaryio.IncrementalEncoder(D1, D2)
-//|     last_position = None
-//|     while True:
-//|         position = enc.position
-//|         if last_position == None or position != last_position:
-//|             print(position)
-//|         last_position = position
-//|
-STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 2, 2, true);
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
+STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pin_a, ARG_pin_b };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin_a, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_pin_b, MP_ARG_REQUIRED | MP_ARG_OBJ },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    assert_pin(args[ARG_pin_a].u_obj, false);
-    const mcu_pin_obj_t* pin_a = MP_OBJ_TO_PTR(args[ARG_pin_a].u_obj);
-    assert_pin_free(pin_a);
-
-    assert_pin(args[ARG_pin_b].u_obj, false);
-    const mcu_pin_obj_t* pin_b = MP_OBJ_TO_PTR(args[ARG_pin_b].u_obj);
-    assert_pin_free(pin_b);
+    const mcu_pin_obj_t* pin_a = validate_obj_is_free_pin(args[ARG_pin_a].u_obj);
+    const mcu_pin_obj_t* pin_b = validate_obj_is_free_pin(args[ARG_pin_b].u_obj);
 
     rotaryio_incrementalencoder_obj_t *self = m_new_obj(rotaryio_incrementalencoder_obj_t);
     self->base.type = &rotaryio_incrementalencoder_type;
@@ -92,9 +80,9 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitializes the IncrementalEncoder and releases any hardware resources for reuse.
+//|     def deinit(self, ) -> Any:
+//|         """Deinitializes the IncrementalEncoder and releases any hardware resources for reuse."""
+//|         ...
 //|
 STATIC mp_obj_t rotaryio_incrementalencoder_deinit(mp_obj_t self_in) {
     rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -103,16 +91,22 @@ STATIC mp_obj_t rotaryio_incrementalencoder_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rotaryio_incrementalencoder_deinit_obj, rotaryio_incrementalencoder_deinit);
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+STATIC void check_for_deinit(rotaryio_incrementalencoder_obj_t *self) {
+    if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self, ) -> Any:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t rotaryio_incrementalencoder_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -122,14 +116,13 @@ STATIC mp_obj_t rotaryio_incrementalencoder_obj___exit__(size_t n_args, const mp
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rotaryio_incrementalencoder___exit___obj, 4, 4, rotaryio_incrementalencoder_obj___exit__);
 
 
-//|   .. attribute:: position
-//|
-//|     The current position in terms of pulses. The number of pulses per rotation is defined by the
-//|     specific hardware.
+//|     position: Any = ...
+//|     """The current position in terms of pulses. The number of pulses per rotation is defined by the
+//|     specific hardware."""
 //|
 STATIC mp_obj_t rotaryio_incrementalencoder_obj_get_position(mp_obj_t self_in) {
     rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_rotaryio_incrementalencoder_deinited(self));
+    check_for_deinit(self);
 
     return mp_obj_new_int(common_hal_rotaryio_incrementalencoder_get_position(self));
 }
@@ -137,7 +130,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(rotaryio_incrementalencoder_get_position_obj, rotaryio
 
 STATIC mp_obj_t rotaryio_incrementalencoder_obj_set_position(mp_obj_t self_in, mp_obj_t new_position) {
     rotaryio_incrementalencoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_rotaryio_incrementalencoder_deinited(self));
+    check_for_deinit(self);
 
     common_hal_rotaryio_incrementalencoder_set_position(self, mp_obj_get_int(new_position));
     return mp_const_none;

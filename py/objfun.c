@@ -34,6 +34,8 @@
 #include "py/bc.h"
 #include "py/stackctrl.h"
 
+#include "supervisor/linker.h"
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #else // don't print debugging info
@@ -52,7 +54,7 @@ STATIC mp_obj_t fun_builtin_0_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
     (void)args;
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_0));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    mp_arg_check_num_kw_array(n_args, n_kw, 0, 0, false);
     return self->fun._0();
 }
 
@@ -66,7 +68,7 @@ const mp_obj_type_t mp_type_fun_builtin_0 = {
 STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_1));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num_kw_array(n_args, n_kw, 1, 1, false);
     return self->fun._1(args[0]);
 }
 
@@ -80,7 +82,7 @@ const mp_obj_type_t mp_type_fun_builtin_1 = {
 STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_2));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+    mp_arg_check_num_kw_array(n_args, n_kw, 2, 2, false);
     return self->fun._2(args[0], args[1]);
 }
 
@@ -94,7 +96,7 @@ const mp_obj_type_t mp_type_fun_builtin_2 = {
 STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(MP_OBJ_IS_TYPE(self_in, &mp_type_fun_builtin_3));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_check_num(n_args, n_kw, 3, 3, false);
+    mp_arg_check_num_kw_array(n_args, n_kw, 3, 3, false);
     return self->fun._3(args[0], args[1], args[2]);
 }
 
@@ -110,7 +112,7 @@ STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_builtin_var_t *self = MP_OBJ_TO_PTR(self_in);
 
     // check number of arguments
-    mp_arg_check_num(n_args, n_kw, self->n_args_min, self->n_args_max, self->is_kw);
+    mp_arg_check_num_kw_array(n_args, n_kw, self->n_args_min, self->n_args_max, self->is_kw);
 
     if (self->is_kw) {
         // function allows keywords
@@ -249,7 +251,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
 }
 #endif
 
-STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
 
     DEBUG_printf("Input n_args: " UINT_FMT ", n_kw: " UINT_FMT "\n", n_args, n_kw);
@@ -436,7 +438,7 @@ typedef mp_uint_t (*viper_fun_4_t)(mp_uint_t, mp_uint_t, mp_uint_t, mp_uint_t);
 STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_viper_t *self = self_in;
 
-    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
+    mp_arg_check_num_kw_array(n_args, n_kw, self->n_args, self->n_args, false);
 
     void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
 
@@ -546,7 +548,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
 STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_obj_fun_asm_t *self = self_in;
 
-    mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
+    mp_arg_check_num_kw_array(n_args, n_kw, self->n_args, self->n_args, false);
 
     void *fun = MICROPY_MAKE_POINTER_CALLABLE(self->fun_data);
 

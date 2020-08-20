@@ -25,4 +25,3 @@ $(BUILD)/memzip-files.c: $(shell find ${MEMZIP_DIR} -type f)
     @$(ECHO) "Creating $@"
     $(Q)$(PYTHON) $(MAKE_MEMZIP) --zip-file $(BUILD)/memzip-files.zip --c-file $@ $(MEMZIP_DIR)
 ```
-

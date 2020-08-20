@@ -31,6 +31,7 @@
 #include "common-hal/pulseio/PWMOut.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "timer_handler.h"
 
 #include "atmel_start_pins.h"
 #include "hal/utils/include/utils_repeat_macro.h"
@@ -58,6 +59,35 @@ uint8_t tcc_channels[3];   // Set by pwmout_reset() to {0xf0, 0xfc, 0xfc} initia
 uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 0xfc} initially.
 #endif
 
+static uint8_t never_reset_tc_or_tcc[TC_INST_NUM + TCC_INST_NUM];
+
+STATIC void timer_refcount(int index, bool is_tc, int increment) {
+    if (is_tc) {
+        never_reset_tc_or_tcc[index] += increment;
+    } else {
+        never_reset_tc_or_tcc[TC_INST_NUM + index] += increment;
+    }
+}
+
+void timer_never_reset(int index, bool is_tc) {
+    timer_refcount(index, is_tc, 1);
+}
+
+void timer_reset_ok(int index, bool is_tc) {
+    timer_refcount(index, is_tc, -1);
+}
+
+
+void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+    timer_never_reset(self->timer->index, self->timer->is_tc);
+
+    never_reset_pin_number(self->pin->number);
+}
+
+void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+    timer_reset_ok(self->timer->index, self->timer->is_tc);
+}
+
 void pwmout_reset(void) {
     // Reset all timers
     for (int i = 0; i < TCC_INST_NUM; i++) {
@@ -66,6 +96,9 @@ void pwmout_reset(void) {
     }
     Tcc *tccs[TCC_INST_NUM] = TCC_INSTS;
     for (int i = 0; i < TCC_INST_NUM; i++) {
+        if (never_reset_tc_or_tcc[TC_INST_NUM + i] > 0) {
+            continue;
+        }
         // Disable the module before resetting it.
         if (tccs[i]->CTRLA.bit.ENABLE == 1) {
             tccs[i]->CTRLA.bit.ENABLE = 0;
@@ -78,9 +111,14 @@ void pwmout_reset(void) {
         }
         tcc_channels[i] = mask;
         tccs[i]->CTRLA.bit.SWRST = 1;
+        while (tccs[i]->CTRLA.bit.SWRST == 1) {
+        }
     }
     Tc *tcs[TC_INST_NUM] = TC_INSTS;
     for (int i = 0; i < TC_INST_NUM; i++) {
+        if (never_reset_tc_or_tcc[i] > 0) {
+            continue;
+        }
         tcs[i]->COUNT16.CTRLA.bit.SWRST = 1;
         while (tcs[i]->COUNT16.CTRLA.bit.SWRST == 1) {
         }
@@ -99,13 +137,14 @@ bool channel_ok(const pin_timer_t* t) {
             t->is_tc;
 }
 
-void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
-                                          const mcu_pin_obj_t* pin,
-                                          uint16_t duty,
-                                          uint32_t frequency,
-                                          bool variable_frequency) {
+pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
+                                                    const mcu_pin_obj_t* pin,
+                                                    uint16_t duty,
+                                                    uint32_t frequency,
+                                                    bool variable_frequency) {
     self->pin = pin;
     self->variable_frequency = variable_frequency;
+    self->duty_cycle = duty;
 
     if (pin->timer[0].index >= TC_INST_NUM &&
         pin->timer[1].index >= TCC_INST_NUM
@@ -113,11 +152,11 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         && pin->timer[2].index >= TCC_INST_NUM
 #endif
         ) {
-        mp_raise_ValueError(translate("Invalid pin"));
+        return PWMOUT_INVALID_PIN;
     }
 
     if (frequency == 0 || frequency > 6000000) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        return PWMOUT_INVALID_FREQUENCY;
     }
 
     // Figure out which timer we are using.
@@ -142,7 +181,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                     mux_position = j;
                     // Claim channel.
                     tcc_channels[timer->index] |= (1 << tcc_channel(timer));
-
+                    tcc_refcount[timer->index]++;
                 }
             }
         }
@@ -184,11 +223,9 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
 
         if (timer == NULL) {
             if (found) {
-                mp_raise_ValueError(translate("All timers for this pin are in use"));
-            } else {
-                mp_raise_RuntimeError(translate("All timers in use"));
+                return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
             }
-            return;
+            return PWMOUT_ALL_TIMERS_IN_USE;
         }
 
         uint8_t resolution = 0;
@@ -210,6 +247,7 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
             }
         }
 
+        set_timer_handler(timer->is_tc, timer->index, TC_HANDLER_NO_INTERRUPT);
         // We use the zeroeth clock on either port to go full speed.
         turn_on_clocks(timer->is_tc, timer->index, 0);
 
@@ -259,10 +297,11 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_E + mux_position);
 
     common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
+    return PWMOUT_OK;
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
-    return self->pin == mp_const_none;
+    return self->pin == NULL;
 }
 
 void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
@@ -289,10 +328,17 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
         }
     }
     reset_pin_number(self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
 
 extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
+    // Store the unadjusted duty cycle. It turns out the the process of adjusting and calculating
+    // the duty cycle here and reading it back is lossy - the value will decay over time.
+    // Track it here so that if frequency is changed we can use this value to recalculate the
+    // proper duty cycle.
+    // See https://github.com/adafruit/circuitpython/issues/2086 for more details
+    self->duty_cycle = duty;
+
     const pin_timer_t* t = self->timer;
     if (t->is_tc) {
         uint16_t adjusted_duty = tc_periods[t->index] * duty / 0xffff;
@@ -301,32 +347,29 @@ extern void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self,
         #endif
         #ifdef SAMD51
         Tc* tc = tc_insts[t->index];
-        while (tc->COUNT16.SYNCBUSY.bit.CC1 != 0) {
-            // Wait for a previous value to be written. This can wait up to one period so we do
-            // other stuff in the meantime.
-            #ifdef MICROPY_VM_HOOK_LOOP
-                MICROPY_VM_HOOK_LOOP
-            #endif
-        }
+        while (tc->COUNT16.SYNCBUSY.bit.CC1 != 0) {}
         tc->COUNT16.CCBUF[1].reg = adjusted_duty;
         #endif
     } else {
         uint32_t adjusted_duty = ((uint64_t) tcc_periods[t->index]) * duty / 0xffff;
         uint8_t channel = tcc_channel(t);
         Tcc* tcc = tcc_insts[t->index];
-        while ((tcc->SYNCBUSY.vec.CC & (1 << channel)) != 0) {
-            // Wait for a previous value to be written. This can wait up to one period so we do
-            // other stuff in the meantime.
-            #ifdef MICROPY_VM_HOOK_LOOP
-                MICROPY_VM_HOOK_LOOP
-            #endif
-        }
+
+        // Write into the CC buffer register, which will be transferred to the
+        // CC register on an UPDATE (when period is finished).
+        // Do clock domain syncing as necessary.
+
+        while (tcc->SYNCBUSY.reg != 0) {}
+
+        // Lock out double-buffering while updating the CCB value.
+        tcc->CTRLBSET.bit.LUPD = 1;
         #ifdef SAMD21
         tcc->CCB[channel].reg = adjusted_duty;
         #endif
         #ifdef SAMD51
         tcc->CCBUF[channel].reg = adjusted_duty;
         #endif
+        tcc->CTRLBCLR.bit.LUPD = 1;
     }
 }
 
@@ -341,7 +384,12 @@ uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
         Tcc* tcc = tcc_insts[t->index];
         uint8_t channel = tcc_channel(t);
         uint32_t cv = 0;
+
+        while (tcc->SYNCBUSY.bit.CTRLB) {}
+
         #ifdef SAMD21
+        // If CCBV (CCB valid) is set, the CCB value hasn't yet been copied
+        // to the CC value.
         if ((tcc->STATUS.vec.CCBV & (1 << channel)) != 0) {
             cv = tcc->CCB[channel].reg;
         } else {
@@ -384,7 +432,6 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
             break;
         }
     }
-    uint16_t old_duty = common_hal_pulseio_pwmout_get_duty_cycle(self);
     if (t->is_tc) {
         Tc* tc = tc_insts[t->index];
         uint8_t old_divisor = tc->COUNT16.CTRLA.bit.PRESCALER;
@@ -398,9 +445,7 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
         tc->COUNT16.CC[0].reg = new_top;
         #endif
         #ifdef SAMD51
-        while (tc->COUNT16.SYNCBUSY.reg != 0) {
-            /* Wait for sync */
-        }
+        while (tc->COUNT16.SYNCBUSY.reg != 0) {}
         tc->COUNT16.CCBUF[0].reg = new_top;
         #endif
     } else {
@@ -411,19 +456,17 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self,
             tcc->CTRLA.bit.PRESCALER = new_divisor;
             tcc_set_enable(tcc, true);
         }
+        while (tcc->SYNCBUSY.reg != 0) {}
         tcc_periods[t->index] = new_top;
         #ifdef SAMD21
         tcc->PERB.bit.PERB = new_top;
         #endif
         #ifdef SAMD51
-        while (tcc->SYNCBUSY.reg != 0) {
-            /* Wait for sync */
-        }
         tcc->PERBUF.bit.PERBUF = new_top;
         #endif
     }
 
-    common_hal_pulseio_pwmout_set_duty_cycle(self, old_duty);
+    common_hal_pulseio_pwmout_set_duty_cycle(self, self->duty_cycle);
 }
 
 uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {

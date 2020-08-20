@@ -35,27 +35,9 @@
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pulseio/PWMOut.h"
 
-//| :mod:`pulseio` --- Support for pulse based protocols
-//| =====================================================
-//|
-//| .. module:: pulseio
-//|   :synopsis: Support for pulse based protocols
-//|   :platform: SAMD21, ESP8266
+//| """Support for pulse based protocols
 //|
 //| The `pulseio` module contains classes to provide access to basic pulse IO.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     PulseIn
-//|     PulseOut
-//|     PWMOut
-//|
-
-//| .. warning:: This module is not available in some SAMD21 builds. See the
-//|   :ref:`module-support-matrix` for more info.
 //|
 
 //| All classes change hardware state and should be deinitialized when they
@@ -77,7 +59,7 @@
 //| :py:data:`~pulseio.PWMOut.duty_cycle`, and then sleep 0.1 seconds.
 //| CircuitPython will automatically turn off the PWM when it resets all
 //| hardware after program completion. Use ``deinit()`` or a ``with`` statement
-//| to do it yourself.
+//| to do it yourself."""
 //|
 
 STATIC const mp_rom_map_elem_t pulseio_module_globals_table[] = {

@@ -37,20 +37,23 @@ extern const mp_obj_type_t digitalio_digitalinout_type;
 
 typedef enum {
     DIGITALINOUT_OK,
-    DIGITALINOUT_PIN_BUSY
+    DIGITALINOUT_PIN_BUSY,
+    DIGITALINOUT_INPUT_ONLY
 } digitalinout_result_t;
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(digitalio_digitalinout_obj_t* self, const mcu_pin_obj_t* pin);
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self);
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t* self);
 void common_hal_digitalio_digitalinout_switch_to_input(digitalio_digitalinout_obj_t* self, digitalio_pull_t pull);
-void common_hal_digitalio_digitalinout_switch_to_output(digitalio_digitalinout_obj_t* self, bool value, digitalio_drive_mode_t drive_mode);
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(digitalio_digitalinout_obj_t* self, bool value, digitalio_drive_mode_t drive_mode);
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(digitalio_digitalinout_obj_t* self);
 void common_hal_digitalio_digitalinout_set_value(digitalio_digitalinout_obj_t* self, bool value);
 bool common_hal_digitalio_digitalinout_get_value(digitalio_digitalinout_obj_t* self);
-void common_hal_digitalio_digitalinout_set_drive_mode(digitalio_digitalinout_obj_t* self, digitalio_drive_mode_t drive_mode);
+digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(digitalio_digitalinout_obj_t* self, digitalio_drive_mode_t drive_mode);
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(digitalio_digitalinout_obj_t* self);
 void common_hal_digitalio_digitalinout_set_pull(digitalio_digitalinout_obj_t* self, digitalio_pull_t pull);
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(digitalio_digitalinout_obj_t* self);
+void common_hal_digitalio_digitalinout_never_reset(digitalio_digitalinout_obj_t *self);
+digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H

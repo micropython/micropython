@@ -8,5 +8,3 @@ int __signbitd(double x)
 	} y = { x };
 	return y.i>>63;
 }
-
-

@@ -12,4 +12,3 @@ def sqrt_test(r0, r1):
     vmov(r0, s31)
 
 print(sqrt_test(256, 10))
-

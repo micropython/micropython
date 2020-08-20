@@ -90,8 +90,8 @@ STATIC mp_import_stat_t mp_vfs_posix_import_stat(void *self_in, const char *path
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     mp_obj_vfs_posix_t *vfs = m_new_obj(mp_obj_vfs_posix_t);
     vfs->base.type = type;
@@ -350,6 +350,7 @@ STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_locals_dict, vfs_posix_locals_dict_table);
 
 STATIC const mp_vfs_proto_t vfs_posix_proto = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_vfs)
     .import_stat = mp_vfs_posix_import_stat,
 };
 

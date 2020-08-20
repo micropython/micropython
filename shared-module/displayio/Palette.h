@@ -33,14 +33,51 @@
 #include "py/obj.h"
 
 typedef struct {
+    uint8_t depth;
+    uint8_t bytes_per_cell;
+    uint8_t tricolor_hue;
+    uint8_t tricolor_luma;
+    bool grayscale;
+    bool tricolor;
+    bool pixels_in_byte_share_row;
+    bool reverse_pixels_in_byte;
+    bool reverse_bytes_in_word;
+    bool dither;
+} _displayio_colorspace_t;
+
+typedef struct {
+    uint32_t rgb888;
+    uint16_t rgb565;
+    uint8_t luma;
+    uint8_t hue;
+    uint8_t chroma;
+    bool transparent; // This may have additional bits added later for blending.
+} _displayio_color_t;
+
+typedef struct {
+    uint32_t pixel;
+    uint16_t x;
+    uint16_t y;
+    uint8_t tile;
+    uint16_t tile_x;
+    uint16_t tile_y;
+} displayio_input_pixel_t;
+
+typedef struct {
+    uint32_t pixel;
+    bool opaque;
+} displayio_output_pixel_t;
+
+typedef struct {
     mp_obj_base_t base;
-    uint32_t* opaque;
-    uint32_t* colors;
-    uint8_t color_count;
+    _displayio_color_t* colors;
+    uint32_t color_count;
     bool needs_refresh;
 } displayio_palette_t;
 
-bool displayio_palette_get_color(displayio_palette_t *palette, uint32_t palette_index, uint16_t* color);
+// Returns false if color fetch did not succeed (out of range or transparent).
+// Returns true if color is opaque, and sets color.
+bool displayio_palette_get_color(displayio_palette_t *palette, const _displayio_colorspace_t* colorspace, uint32_t palette_index, uint32_t* color);
 bool displayio_palette_needs_refresh(displayio_palette_t *self);
 void displayio_palette_finish_refresh(displayio_palette_t *self);
 

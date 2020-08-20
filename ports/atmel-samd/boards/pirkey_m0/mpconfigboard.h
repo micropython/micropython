@@ -4,18 +4,9 @@
 #define MICROPY_HW_APA102_MOSI   (&pin_PA00)
 #define MICROPY_HW_APA102_SCK    (&pin_PA01)
 
-// #define CIRCUITPY_BITBANG_APA102
-
 #define MICROPY_PORT_A        (PORT_PA00 | PORT_PA01 | PORT_PA24 | PORT_PA25)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
-
-#define CIRCUITPY_INTERNAL_NVM_SIZE  0
-
-// A number of modules are removed for pIRKey to make room for frozen libraries.
-#define PIRKEY_M0 (1)
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
 
 #define IGNORE_PIN_PA02     1
 #define IGNORE_PIN_PA03     1

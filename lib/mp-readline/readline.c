@@ -206,7 +206,7 @@ int readline_process_char(int c) {
                 redraw_step_forward = compl_len;
             }
         #endif
-        } else if (32 <= c && c <= 126) {
+         } else if (32 <= c ) {
             // printable character
             vstr_ins_char(rl.line, rl.cursor_pos, c);
             // set redraw parameters

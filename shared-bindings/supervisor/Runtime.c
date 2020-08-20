@@ -29,38 +29,30 @@
 #include "shared-bindings/supervisor/Runtime.h"
 
 //TODO: add USB, REPL to description once they're operational
-//| .. currentmodule:: supervisor
+//| class Runtime:
+//|     """Current status of runtime objects.
 //|
-//| :class:`Runtime` --- Supervisor Runtime information
-//| ----------------------------------------------------
+//|     Usage::
 //|
-//| Get current status of runtime objects.
-//|
-//| Usage::
-//|
-//|    import supervisor
-//|    if supervisor.runtime.serial_connected:
-//|        print("Hello World!")
+//|        import supervisor
+//|        if supervisor.runtime.serial_connected:
+//|            print("Hello World!")"""
 //|
 
-//| .. class:: Runtime()
-//|
-//|     You cannot create an instance of `supervisor.Runtime`.
-//|     Use `supervisor.runtime` to access the sole instance available.
+//|     def __init__(self, ):
+//|         """You cannot create an instance of `supervisor.Runtime`.
+//|         Use `supervisor.runtime` to access the sole instance available."""
+//|         ...
 //|
 
-//|     .. attribute:: runtime.serial_connected
-//|
-//|         Returns the USB serial communication status (read-only).
+//|     serial_connected: bool = ...
+//|     """Returns the USB serial communication status (read-only).
 //|
 //|     .. note::
 //|
 //|         SAMD: Will return ``True`` if the USB serial connection
 //|         has been established at any point.  Will not reset if
-//|         USB is disconnected but power remains (e.g. battery connected)
-//|
-//|         Feather52 (nRF52832): Currently returns ``True`` regardless
-//|         of USB connection status.
+//|         USB is disconnected but power remains (e.g. battery connected)"""
 //|
 
 STATIC mp_obj_t supervisor_get_serial_connected(mp_obj_t self){
@@ -81,11 +73,10 @@ const mp_obj_property_t supervisor_serial_connected_obj = {
 };
 
 
-//|     .. attribute:: runtime.serial_bytes_available
-//|
-//|         Returns the whether any bytes are available to read
-//|         on the USB serial input.  Allows for polling to see whether
-//|         to call the built-in input() or wait. (read-only)
+//|     serial_bytes_available: int = ...
+//|     """Returns the whether any bytes are available to read
+//|     on the USB serial input.  Allows for polling to see whether
+//|     to call the built-in input() or wait. (read-only)"""
 //|
 STATIC mp_obj_t supervisor_get_serial_bytes_available(mp_obj_t self){
     if (!common_hal_get_serial_bytes_available()) {

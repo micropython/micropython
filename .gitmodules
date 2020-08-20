@@ -5,9 +5,6 @@
 [submodule "lib/libffi"]
 	path = lib/libffi
 	url = https://github.com/atgreen/libffi
-[submodule "lib/lwip"]
-	path = lib/lwip
-	url = https://git.savannah.gnu.org/r/lwip.git
 [submodule "lib/berkeley-db-1.xx"]
 	path = lib/berkeley-db-1.xx
 	url = https://github.com/pfalcon/berkeley-db-1.xx
@@ -32,10 +29,6 @@
 [submodule "tools/python-semver"]
 	path = tools/python-semver
 	url = https://github.com/k-bx/python-semver.git
-[submodule "lib/stm32lib"]
-	path = lib/stm32lib
-	url = https://github.com/micropython/stm32lib
-	branch = work-F4-1.13.1+F7-1.5.0+L4-1.3.0
 [submodule "atmel-samd/asf4"]
 	path = ports/atmel-samd/asf4
 	url = https://github.com/adafruit/asf4.git
@@ -78,11 +71,75 @@
 	url = https://github.com/adafruit/nrfx.git
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
-	url = https://github.com/tannewt/tinyusb.git
-	branch = develop
+	url = https://github.com/hathach/tinyusb.git
+	branch = master
+	fetchRecurseSubmodules = false
 [submodule "tools/huffman"]
 	path = tools/huffman
 	url = https://github.com/tannewt/huffman.git
 [submodule "tools/adabot"]
 	path = tools/adabot
 	url = https://github.com/adafruit/adabot.git
+[submodule "tools/bitmap_font"]
+	path = tools/bitmap_font
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BitmapFont.git
+[submodule "tools/Tecate-bitmap-fonts"]
+	path = tools/Tecate-bitmap-fonts
+	url = https://github.com/Tecate/bitmap-fonts.git
+[submodule "frozen/pew-pewpew-standalone-10.x"]
+	path = frozen/pew-pewpew-standalone-10.x
+	url = https://github.com/pewpew-game/pew-pewpew-standalone-10.x.git
+[submodule "frozen/circuitpython-stage"]
+	path = frozen/circuitpython-stage
+	url = https://github.com/python-ugame/circuitpython-stage.git
+[submodule "ports/cxd56/spresense-exported-sdk"]
+	path = ports/cxd56/spresense-exported-sdk
+	url = https://github.com/sonydevworld/spresense-exported-sdk.git
+[submodule "frozen/Adafruit_CircuitPython_SD"]
+	path = frozen/Adafruit_CircuitPython_SD
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SD.git
+[submodule "lib/mp3"]
+	path = lib/mp3
+	url = https://github.com/adafruit/Adafruit_MP3
+[submodule "ports/mimxrt10xx/sdk"]
+	path = ports/mimxrt10xx/sdk
+	url = https://github.com/adafruit/MIMXRT10xx_SDK
+[submodule "frozen/Adafruit_CircuitPython_Register"]
+	path = frozen/Adafruit_CircuitPython_Register
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Register.git
+[submodule "extmod/ulab"]
+	path = extmod/ulab
+	url = https://github.com/v923z/micropython-ulab
+[submodule "frozen/Adafruit_CircuitPython_ESP32SPI"]
+	path = frozen/Adafruit_CircuitPython_ESP32SPI
+	url = https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI
+[submodule "frozen/Adafruit_CircuitPython_Requests"]
+	path = frozen/Adafruit_CircuitPython_Requests
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Requests
+[submodule "ports/stm/st_driver"]
+	path = ports/stm/st_driver
+	url = https://github.com/hathach/st_driver.git
+[submodule "lib/protomatter"]
+	path = lib/protomatter
+	url = https://github.com/adafruit/Adafruit_Protomatter
+[submodule "frozen/Adafruit_CircuitPython_LSM6DS"]
+	path = frozen/Adafruit_CircuitPython_LSM6DS
+	url = https://github.com/adafruit/Adafruit_CircuitPython_LSM6DS
+[submodule "frozen/Adafruit_CircuitPython_FocalTouch"]
+	path = frozen/Adafruit_CircuitPython_FocalTouch
+	url = https://github.com/adafruit/Adafruit_CircuitPython_FocalTouch
+[submodule "frozen/Adafruit_CircuitPython_DS3231"]
+	path = frozen/Adafruit_CircuitPython_DS3231
+	url = https://github.com/adafruit/Adafruit_CircuitPython_DS3231
+[submodule "frozen/Adafruit_CircuitPython_DRV2605"]
+	path = frozen/Adafruit_CircuitPython_DRV2605
+	url = https://github.com/adafruit/Adafruit_CircuitPython_DRV2605
+[submodule "frozen/Adafruit_CircuitPython_BLE"]
+	path = frozen/Adafruit_CircuitPython_BLE
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BLE
+[submodule "frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center"]
+	path = frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center
+	url = https://github.com/adafruit/Adafruit_CircuitPython_BLE_Apple_Notification_Center
+[submodule "ports/esp32s2/esp-idf"]
+	path = ports/esp32s2/esp-idf
+	url = https://github.com/tannewt/esp-idf.git

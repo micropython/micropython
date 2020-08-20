@@ -109,14 +109,14 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t vfs_posix_file_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t vfs_posix_file_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
         { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_r)} },
     };
 
     mp_arg_val_t arg_vals[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
+    mp_arg_parse_all(n_args, args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
     return mp_vfs_posix_file_open(type, arg_vals[0].u_obj, arg_vals[1].u_obj);
 }
 
@@ -220,6 +220,7 @@ STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
 #if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t fileio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = vfs_posix_file_read,
     .write = vfs_posix_file_write,
     .ioctl = vfs_posix_file_ioctl,
@@ -238,6 +239,7 @@ const mp_obj_type_t mp_type_vfs_posix_fileio = {
 #endif
 
 STATIC const mp_stream_p_t textio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = vfs_posix_file_read,
     .write = vfs_posix_file_write,
     .ioctl = vfs_posix_file_ioctl,

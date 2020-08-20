@@ -103,8 +103,8 @@ STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     #endif
 }
 
-STATIC mp_obj_t set_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+STATIC mp_obj_t set_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     switch (n_args) {
         case 0: {
@@ -299,7 +299,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (is_set_or_frozenset(self_in)) {
         self = MP_OBJ_TO_PTR(self_in);
     } else {
-        self = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, 0, &self_in));
+        self = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, &self_in, NULL));
         cleanup_self = true;
     }
 
@@ -308,7 +308,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (is_set_or_frozenset(other_in)) {
         other = MP_OBJ_TO_PTR(other_in);
     } else {
-        other = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, 0, &other_in));
+        other = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, &other_in, NULL));
         cleanup_other = true;
     }
     mp_obj_t out = mp_const_true;

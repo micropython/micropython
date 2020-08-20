@@ -8,4 +8,3 @@ def getBASEPRI():
 
 print(getBASEPRI())
 print(getIPSR())
-

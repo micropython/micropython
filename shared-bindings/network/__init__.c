@@ -36,22 +36,17 @@
 
 #include "shared-bindings/network/__init__.h"
 
-#if MICROPY_PY_NETWORK
+#if CIRCUITPY_NETWORK
 
-//| :mod:`network` --- Network Interface Management
-//| ===============================================
-//|
-//| .. module:: network
-//|   :synopsis: Network Interface Management
-//|   :platform: SAMD
+//| """Network Interface Management
 //|
 //| This module provides a registry of configured NICs.
 //| It is used by the 'socket' module to look up a suitable
-//| NIC when a socket is created.
+//| NIC when a socket is created."""
 //|
-//| .. function:: route
-//|
-//|   Returns a list of all configured NICs.
+//| def route() -> Any:
+//|     """Returns a list of all configured NICs."""
+//|     ...
 //|
 
 STATIC mp_obj_t network_route(void) {
@@ -71,4 +66,4 @@ const mp_obj_module_t network_module = {
     .globals = (mp_obj_dict_t*)&mp_module_network_globals,
 };
 
-#endif  // MICROPY_PY_NETWORK
+#endif  // CIRCUITPY_NETWORK

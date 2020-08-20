@@ -31,17 +31,23 @@
 #include <stdint.h>
 
 #include "py/obj.h"
+#include "shared-module/displayio/area.h"
 
 typedef struct {
     mp_obj_base_t base;
     uint16_t width;
     uint16_t height;
-    uint32_t* data;
-    uint16_t stride; // words
+    size_t* data;
+    uint16_t stride; // size_t's
     uint8_t bits_per_value;
     uint8_t x_shift;
-    uint8_t x_mask;
+    size_t x_mask;
+    displayio_area_t dirty_area;
     uint16_t bitmask;
+    bool read_only;
 } displayio_bitmap_t;
+
+void displayio_bitmap_finish_refresh(displayio_bitmap_t *self);
+displayio_area_t* displayio_bitmap_get_refresh_areas(displayio_bitmap_t *self, displayio_area_t* tail);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_BITMAP_H

@@ -1,7 +1,5 @@
 #include "shared-bindings/board/__init__.h"
 
-#include "board_busses.h"
-
 // This mapping only includes functional names because pins broken
 // out on connectors are labeled with their MCU name available from
 // microcontroller.pin.

@@ -29,6 +29,6 @@
 
 void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte* end_p, size_t n_args, const mp_obj_t *args);
 mp_uint_t shared_modules_struct_calcsize(mp_obj_t fmt_in);
-mp_obj_tuple_t * shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byte *end_p);
+mp_obj_tuple_t * shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byte *end_p, bool exact_size);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_RANDOM___INIT___H

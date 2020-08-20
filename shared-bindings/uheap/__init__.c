@@ -31,17 +31,13 @@
 
 #include "shared-bindings/uheap/__init__.h"
 
-//| :mod:`uheap` --- Heap size analysis
-//| ================================================================
-//|
-//| .. module:: uheap
-//|   :synopsis: Heap size analysis
+//| """Heap size analysis"""
 //|
 
-//| .. method:: info(object)
-//|
-//|   Prints memory debugging info for the given object and returns the
-//|   estimated size.
+//| def info(object: Any) -> Any:
+//|     """Prints memory debugging info for the given object and returns the
+//|     estimated size."""
+//|     ...
 //|
 STATIC mp_obj_t uheap_info(mp_obj_t obj) {
     uint32_t size = shared_module_uheap_info(obj);

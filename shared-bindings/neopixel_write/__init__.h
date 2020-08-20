@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef SAMD_NEOPIXEL_WRITE_H
-#define SAMD_NEOPIXEL_WRITE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -34,4 +34,4 @@
 
 extern void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* gpio, uint8_t *pixels, uint32_t numBytes);
 
-#endif
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H

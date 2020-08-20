@@ -1,16 +1,12 @@
 #define MICROPY_HW_BOARD_NAME "Meow Meow"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
+#define MICROPY_HW_LED_STATUS   (&pin_PB23)
+
 // These are pins not to reset.
 #define MICROPY_PORT_A        (0)
 #define MICROPY_PORT_B        (0)
 #define MICROPY_PORT_C        (0)
-
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 0
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - 0x010000)
 
 #define CALIBRATE_CRYSTALLESS 1
 

@@ -23,11 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "external_flash.h"
+#include "supervisor/shared/external_flash/external_flash.h"
 
 #include <stdint.h>
 #include <string.h>
-
+#include "supervisor/flash.h"
 #include "supervisor/spi_flash_api.h"
 #include "supervisor/shared/external_flash/common_commands.h"
 #include "extmod/vfs.h"
@@ -57,9 +57,13 @@ static supervisor_allocation* supervisor_cache = NULL;
 
 // Wait until both the write enable and write in progress bits have cleared.
 static bool wait_for_flash_ready(void) {
-    uint8_t read_status_response[1] = {0x00};
     bool ok = true;
     // Both the write enable and write in progress bits should be low.
+    if (flash_device->no_ready_bit){
+        // For NVM without a ready bit in status register
+        return ok;
+    }
+    uint8_t read_status_response[1] = {0x00};
     do {
         ok = spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
     } while (ok && (read_status_response[0] & 0x3) != 0);
@@ -91,15 +95,18 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
     }
     // Don't bother writing if the data is all 1s. Thats equivalent to the flash
     // state after an erase.
-    bool all_ones = true;
-    for (uint16_t i = 0; i < data_length; i++) {
-        if (data[i] != 0xff) {
-            all_ones = false;
-            break;
+    if (!flash_device->no_erase_cmd){
+        // Only do this if the device has an erase command
+        bool all_ones = true;
+        for (uint16_t i = 0; i < data_length; i++) {
+            if (data[i] != 0xff) {
+                all_ones = false;
+                break;
+            }
         }
-    }
-    if (all_ones) {
-        return true;
+        if (all_ones) {
+            return true;
+        }
     }
 
     for (uint32_t bytes_written = 0;
@@ -120,6 +127,10 @@ static bool write_flash(uint32_t address, const uint8_t* data, uint32_t data_len
 static bool page_erased(uint32_t sector_address) {
     // Check the first few bytes to catch the common case where there is data
     // without using a bunch of memory.
+    if (flash_device->no_erase_cmd){
+        // skip this if device doesn't have an erase command.
+        return true;
+    }
     uint8_t short_buffer[4];
     if (read_flash(sector_address, short_buffer, 4)) {
         for (uint16_t i = 0; i < 4; i++) {
@@ -150,10 +161,16 @@ static bool page_erased(uint32_t sector_address) {
 static bool erase_sector(uint32_t sector_address) {
     // Before we erase the sector we need to wait for any writes to finish and
     // and then enable the write again.
+    if (flash_device->no_erase_cmd){
+        // skip this if device doesn't have an erase command.
+        return true;
+    }
     if (!wait_for_flash_ready() || !write_enable()) {
         return false;
     }
-
+    if (flash_device->no_erase_cmd) {
+        return true;
+    }
     spi_flash_sector_command(CMD_SECTOR_ERASE, sector_address);
     return true;
 }
@@ -191,25 +208,33 @@ void supervisor_flash_init(void) {
 
     spi_flash_init();
 
+#ifdef EXTERNAL_FLASH_NO_JEDEC
+    // For NVM that don't have JEDEC response
+    spi_flash_command(CMD_WAKE);
+    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+        const external_flash_device* possible_device = &possible_devices[i];
+        flash_device = possible_device;
+        break;
+    }
+#else
     // The response will be 0xff if the flash needs more time to start up.
     uint8_t jedec_id_response[3] = {0xff, 0xff, 0xff};
     while (jedec_id_response[0] == 0xff) {
         spi_flash_read_command(CMD_READ_JEDEC_ID, jedec_id_response, 3);
     }
-
-    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
-        const external_flash_device* possible_device = &possible_devices[i];
-        if (jedec_id_response[0] == possible_device->manufacturer_id &&
-            jedec_id_response[1] == possible_device->memory_type &&
-            jedec_id_response[2] == possible_device->capacity) {
-            flash_device = possible_device;
-            break;
+        for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+            const external_flash_device* possible_device = &possible_devices[i];
+            if (jedec_id_response[0] == possible_device->manufacturer_id &&
+                jedec_id_response[1] == possible_device->memory_type &&
+                jedec_id_response[2] == possible_device->capacity) {
+                flash_device = possible_device;
+                break;
+            }
         }
-    }
-
-    if (flash_device == NULL) {
-        return;
-    }
+#endif
+        if (flash_device == NULL) {
+            return;
+        }
 
     // We don't know what state the flash is in so wait for any remaining writes and then reset.
     uint8_t read_status_response[1] = {0x00};
@@ -217,14 +242,17 @@ void supervisor_flash_init(void) {
     do {
         spi_flash_read_command(CMD_READ_STATUS, read_status_response, 1);
     } while ((read_status_response[0] & 0x1) != 0);
-    // The suspended write/erase bit should be low.
-    do {
-        spi_flash_read_command(CMD_READ_STATUS2, read_status_response, 1);
-    } while ((read_status_response[0] & 0x80) != 0);
+    if (!flash_device->single_status_byte) {
+        // The suspended write/erase bit should be low.
+        do {
+            spi_flash_read_command(CMD_READ_STATUS2, read_status_response, 1);
+        } while ((read_status_response[0] & 0x80) != 0);
+    }
 
-
-    spi_flash_command(CMD_ENABLE_RESET);
-    spi_flash_command(CMD_RESET);
+    if (!(flash_device->no_reset_cmd)){
+        spi_flash_command(CMD_ENABLE_RESET);
+        spi_flash_command(CMD_RESET);
+    }
 
     // Wait 30us for the reset
     common_hal_mcu_delay_us(30);
@@ -272,6 +300,9 @@ uint32_t supervisor_flash_get_block_count(void) {
 // Flush the cache that was written to the scratch portion of flash. Only used
 // when ram is tight.
 static bool flush_scratch_flash(void) {
+    if (current_sector == NO_SECTOR_LOADED) {
+        return true;
+    }
     // First, copy out any blocks that we haven't touched from the sector we've
     // cached.
     bool copy_to_scratch_ok = true;
@@ -321,6 +352,10 @@ static bool allocate_ram_cache(void) {
         return true;
     }
 
+    if (MP_STATE_MEM(gc_pool_start) == 0) {
+        return false;
+    }
+
     MP_STATE_VM(flash_ram_cache) = m_malloc_maybe(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
     if (MP_STATE_VM(flash_ram_cache) == NULL) {
         return false;
@@ -360,9 +395,25 @@ static bool allocate_ram_cache(void) {
     return success;
 }
 
+static void release_ram_cache(void) {
+    if (supervisor_cache != NULL) {
+        free_memory(supervisor_cache);
+        supervisor_cache = NULL;
+    } else if (MP_STATE_MEM(gc_pool_start)) {
+        m_free(MP_STATE_VM(flash_ram_cache));
+    }
+    MP_STATE_VM(flash_ram_cache) = NULL;
+}
+
 // Flush the cached sector from ram onto the flash. We'll free the cache unless
 // keep_cache is true.
 static bool flush_ram_cache(bool keep_cache) {
+    if (current_sector == NO_SECTOR_LOADED) {
+        if (!keep_cache) {
+            release_ram_cache();
+        }
+        return true;
+    }
     // First, copy out any blocks that we haven't touched from the sector
     // we've cached. If we don't do this we'll erase the data during the sector
     // erase below.
@@ -396,29 +447,21 @@ static bool flush_ram_cache(bool keep_cache) {
             write_flash(current_sector + (i * pages_per_block + j) * SPI_FLASH_PAGE_SIZE,
                         MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j],
                         SPI_FLASH_PAGE_SIZE);
-            if (!keep_cache && supervisor_cache == NULL) {
+            if (!keep_cache && supervisor_cache == NULL && MP_STATE_MEM(gc_pool_start)) {
                 m_free(MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j]);
             }
         }
     }
     // We're done with the cache for now so give it back.
     if (!keep_cache) {
-        if (supervisor_cache != NULL) {
-            free_memory(supervisor_cache);
-            supervisor_cache = NULL;
-        } else {
-            m_free(MP_STATE_VM(flash_ram_cache));
-        }
-        MP_STATE_VM(flash_ram_cache) = NULL;
+        release_ram_cache();
     }
     return true;
 }
 
 // Delegates to the correct flash flush method depending on the existing cache.
+// TODO Don't blink the status indicator if we don't actually do any writing (hard to tell right now).
 static void spi_flash_flush_keep_cache(bool keep_cache) {
-    if (current_sector == NO_SECTOR_LOADED) {
-        return;
-    }
     #ifdef MICROPY_HW_LED_MSC
         port_pin_set_output_level(MICROPY_HW_LED_MSC, true);
     #endif
@@ -436,9 +479,11 @@ static void spi_flash_flush_keep_cache(bool keep_cache) {
     #endif
 }
 
-// External flash function used. If called externally we assume we won't need
-// the cache after.
-void supervisor_flash_flush(void) {
+void supervisor_external_flash_flush(void) {
+    spi_flash_flush_keep_cache(true);
+}
+
+void supervisor_flash_release_cache(void) {
     spi_flash_flush_keep_cache(false);
 }
 
@@ -502,7 +547,7 @@ bool external_flash_write_block(const uint8_t *data, uint32_t block) {
             return write_flash(address, data, FILESYSTEM_BLOCK_SIZE);
         }
         if (current_sector != NO_SECTOR_LOADED) {
-            spi_flash_flush_keep_cache(true);
+            supervisor_flash_flush();
         }
         if (MP_STATE_VM(flash_ram_cache) == NULL && !allocate_ram_cache()) {
             erase_sector(flash_device->total_size - SPI_FLASH_ERASE_SIZE);

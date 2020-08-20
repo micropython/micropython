@@ -26,20 +26,10 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "GamePad.h"
+#include "shared-bindings/gamepad/GamePad.h"
+#include "shared-bindings/util.h"
 
-
-//| :mod:`gamepad` --- Button handling
-//| ==================================
-//|
-//| .. module:: gamepad
-//|   :synopsis: Button handling
-//|   :platform: SAMD21
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     GamePad
+//| """Button handling in the background"""
 //|
 STATIC const mp_rom_map_elem_t gamepad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gamepad) },

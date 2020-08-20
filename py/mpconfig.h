@@ -45,6 +45,11 @@
 #include <mpconfigport.h>
 #endif
 
+// Is this a CircuitPython build?
+#ifndef CIRCUITPY
+#define CIRCUITPY 0
+#endif
+
 // Any options not explicitly set in mpconfigport.h will get default
 // values below.
 
@@ -239,6 +244,14 @@
 #define alloca(x) m_malloc(x)
 #endif
 
+// Number of atb indices to cache. Allocations of fewer blocks will be faster
+// because the search will be accelerated by the index cache. This only applies
+// to short lived allocations because we assume the long lived allocations are
+// contiguous.
+#ifndef MICROPY_ATB_INDICES
+#define MICROPY_ATB_INDICES (8)
+#endif
+
 /*****************************************************************************/
 /* MicroPython emitters                                                     */
 
@@ -362,6 +375,11 @@
 // Costs about 80 bytes (Thumb2) and saves 2 bytes of bytecode for each use
 #ifndef MICROPY_COMP_RETURN_IF_EXPR
 #define MICROPY_COMP_RETURN_IF_EXPR (0)
+#endif
+
+// Whether to include parsing of f-string literals
+#ifndef MICROPY_COMP_FSTRING_LITERAL
+#define MICROPY_COMP_FSTRING_LITERAL (1)
 #endif
 
 /*****************************************************************************/
@@ -1160,8 +1178,24 @@ typedef double mp_float_t;
 #define MICROPY_PY_UJSON (0)
 #endif
 
+#ifndef CIRCUITPY_ULAB
+#define CIRCUITPY_ULAB (0)
+#endif
+
 #ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE (0)
+#endif
+
+#ifndef MICROPY_PY_URE_MATCH_GROUPS
+#define MICROPY_PY_URE_MATCH_GROUPS (0)
+#endif
+
+#ifndef MICROPY_PY_URE_MATCH_SPAN_START_END
+#define MICROPY_PY_URE_MATCH_SPAN_START_END (0)
+#endif
+
+#ifndef MICROPY_PY_URE_SUB
+#define MICROPY_PY_URE_SUB (0)
 #endif
 
 #ifndef MICROPY_PY_UHEAPQ
@@ -1421,6 +1455,15 @@ typedef double mp_float_t;
 // Condition is likely to be false, to help branch prediction
 #ifndef MP_UNLIKELY
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
+#endif
+
+// To annotate that code is unreachable
+#ifndef MP_UNREACHABLE
+#if defined(__GNUC__)
+#define MP_UNREACHABLE __builtin_unreachable();
+#else
+#define MP_UNREACHABLE for (;;);
+#endif
 #endif
 
 #ifndef MP_HTOBE16

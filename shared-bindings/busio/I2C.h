@@ -69,4 +69,7 @@ extern uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addres
 extern uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t address,
                                             uint8_t * data, size_t len);
 
+// This is used by the supervisor to claim I2C devices indefinitely.
+extern void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_H

@@ -93,6 +93,16 @@ int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_
     }
 }
 
+int get_available_socket(wiznet5k_obj_t *wiz) {
+    for (uint8_t sn = 0; sn < _WIZCHIP_SOCK_NUM_; sn++) {
+        if ((wiz->socket_used & (1 << sn)) == 0) {
+            wiz->socket_used |= (1 << sn);
+            return sn;
+        }
+    }
+    return -1;
+}
+
 int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     if (socket->u_param.domain != MOD_NETWORK_AF_INET) {
         *_errno = MP_EAFNOSUPPORT;
@@ -107,13 +117,7 @@ int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
 
     if (socket->u_param.fileno == -1) {
         // get first unused socket number
-        for (mp_uint_t sn = 0; sn < _WIZCHIP_SOCK_NUM_; sn++) {
-            if ((wiznet5k_obj.socket_used & (1 << sn)) == 0) {
-                wiznet5k_obj.socket_used |= (1 << sn);
-                socket->u_param.fileno = sn;
-                break;
-            }
-        }
+        socket->u_param.fileno = get_available_socket(&wiznet5k_obj);
         if (socket->u_param.fileno == -1) {
             // too many open sockets
             *_errno = MP_EMFILE;
@@ -199,8 +203,12 @@ int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_socket_
 }
 
 int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
+    uint16_t src_port = network_module_create_random_source_tcp_port();
+    // make sure same outgoing port number can't be in use by two different sockets.
+    src_port = (src_port & ~(_WIZCHIP_SOCK_NUM_ - 1)) | socket->u_param.fileno;
+
     // use "bind" function to open the socket in client mode
-    if (wiznet5k_socket_bind(socket, ip, 0, _errno) != 0) {
+    if (wiznet5k_socket_bind(socket, NULL, src_port, _errno) != 0) {
         return -1;
     }
 
@@ -318,45 +326,67 @@ int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, m
 }
 
 void wiznet5k_socket_timer_tick(mod_network_socket_obj_t *socket) {
-    if (wiznet5k_obj.dhcp_active) {
+    if (wiznet5k_obj.dhcp_socket >= 0) {
         DHCP_time_handler();
         DHCP_run();
     }
 }
 
-void wiznet5k_start_dhcp(void) {
+int wiznet5k_start_dhcp(void) {
+    // XXX this should throw an error if DHCP fails
     static DHCP_INIT_BUFFER_TYPE dhcp_buf[DHCP_INIT_BUFFER_SIZE];
 
-    if (!wiznet5k_obj.dhcp_active) {
+    if (wiznet5k_obj.dhcp_socket < 0) {
         // Set up the socket to listen on UDP 68 before calling DHCP_init
-        WIZCHIP_EXPORT(socket)(0, MOD_NETWORK_SOCK_DGRAM, DHCP_CLIENT_PORT, 0);
-        DHCP_init(0, dhcp_buf);
-        wiznet5k_obj.dhcp_active = 1;
+        wiznet5k_obj.dhcp_socket = get_available_socket(&wiznet5k_obj);
+        if (wiznet5k_obj.dhcp_socket < 0) return MP_EMFILE;
+
+        WIZCHIP_EXPORT(socket)(wiznet5k_obj.dhcp_socket, MOD_NETWORK_SOCK_DGRAM, DHCP_CLIENT_PORT, 0);
+        DHCP_init(wiznet5k_obj.dhcp_socket, dhcp_buf);
     }
+    return 0;
 }
 
-void wiznet5k_stop_dhcp(void) {
-    if (wiznet5k_obj.dhcp_active) {
-        wiznet5k_obj.dhcp_active = 0;
+int wiznet5k_stop_dhcp(void) {
+    if (wiznet5k_obj.dhcp_socket >= 0) {
         DHCP_stop();
-        WIZCHIP_EXPORT(close)(0);
+        WIZCHIP_EXPORT(close)(wiznet5k_obj.dhcp_socket);
+        wiznet5k_obj.socket_used &= ~(1 << wiznet5k_obj.dhcp_socket);
+        wiznet5k_obj.dhcp_socket = -1;
     }
+    return 0;
 }
 
 bool wiznet5k_check_dhcp(void) {
-    return wiznet5k_obj.dhcp_active;
+    return wiznet5k_obj.dhcp_socket >= 0;
+}
+
+void wiznet5k_reset(void) {
+    if (wiznet5k_obj.rst.pin) {
+        // hardware reset if using RST pin
+        common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 0);
+        mp_hal_delay_us(10); // datasheet says 2us
+        common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 1);
+        mp_hal_delay_ms(150); // datasheet says 150ms
+    } else {
+        // otherwise, software reset
+        wizchip_sw_reset();
+    }
+}
+
+void wiznet5k_socket_deinit(mod_network_socket_obj_t *socket) {
+    wiznet5k_reset();
 }
 
 /// Create and return a WIZNET5K object.
-mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
+mp_obj_t wiznet5k_create(busio_spi_obj_t *spi_in, const mcu_pin_obj_t *cs_in, const mcu_pin_obj_t *rst_in) {
 
     // init the wiznet5k object
     wiznet5k_obj.base.type = (mp_obj_type_t*)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
-    wiznet5k_obj.spi = MP_OBJ_TO_PTR(spi_in);
-    common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.cs, cs_in);
-    common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.rst, rst_in);
+    wiznet5k_obj.spi = spi_in;
     wiznet5k_obj.socket_used = 0;
+    wiznet5k_obj.dhcp_socket = -1;
 
     /*!< SPI configuration */
     // XXX probably should check if the provided SPI is already configured, and
@@ -369,13 +399,11 @@ mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
         8 // 8 BITS
     );
 
+    common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.cs, cs_in);
     common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.cs, 1, DRIVE_MODE_PUSH_PULL);
-    common_hal_digitalio_digitalinout_switch_to_output(&wiznet5k_obj.rst, 1, DRIVE_MODE_PUSH_PULL); 
 
-    common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 0);
-    mp_hal_delay_us(10); // datasheet says 2us
-    common_hal_digitalio_digitalinout_set_value(&wiznet5k_obj.rst, 1);
-    mp_hal_delay_ms(160); // datasheet says 150ms
+    if (rst_in) common_hal_digitalio_digitalinout_construct(&wiznet5k_obj.rst, rst_in);
+    wiznet5k_reset();
 
     reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);
     reg_wizchip_cs_cbfunc(wiz_cs_select, wiz_cs_deselect);
@@ -393,8 +421,6 @@ mp_obj_t wiznet5k_create(mp_obj_t spi_in, mp_obj_t cs_in, mp_obj_t rst_in) {
 
     // seems we need a small delay after init
     mp_hal_delay_ms(250);
-
-    wiznet5k_start_dhcp();
 
     // register with network module
     network_module_register_nic(&wiznet5k_obj);

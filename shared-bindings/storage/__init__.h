@@ -33,7 +33,7 @@
 void common_hal_storage_mount(mp_obj_t vfs_obj, const char* path, bool readonly);
 void common_hal_storage_umount_path(const char* path);
 void common_hal_storage_umount_object(mp_obj_t vfs_obj);
-void common_hal_storage_remount(const char* path, bool readonly);
+void common_hal_storage_remount(const char* path, bool readonly, bool disable_concurrent_write_protection);
 mp_obj_t common_hal_storage_getmount(const char* path);
 void common_hal_storage_erase_filesystem(void);
 

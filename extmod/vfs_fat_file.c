@@ -28,12 +28,14 @@
 #if MICROPY_VFS && MICROPY_VFS_FAT
 
 #include <stdio.h>
+#include <string.h>
 
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
+#include "supervisor/filesystem.h"
 
 // this table converts from FRESULT to POSIX errno
 const byte fresult_to_errno_table[20] = {
@@ -186,16 +188,36 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
                 break;
         }
     }
+    assert(vfs != NULL);
+    if ((mode & FA_WRITE) != 0 && !filesystem_is_writable_by_python(vfs)) {
+        mp_raise_OSError(MP_EROFS);
+    }
 
     pyb_file_obj_t *o = m_new_obj_with_finaliser(pyb_file_obj_t);
     o->base.type = type;
 
     const char *fname = mp_obj_str_get_str(args[0].u_obj);
-    assert(vfs != NULL);
     FRESULT res = f_open(&vfs->fatfs, &o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_errno_str(fresult_to_errno_table[res], args[0].u_obj);
+    }
+    // If we're reading, turn on fast seek.
+    if (mode == FA_READ) {
+        // one call to determine how much space we need.
+        DWORD temp_table[2];
+        temp_table[0] = 2;
+        o->fp.cltbl = temp_table;
+        f_lseek(&o->fp, CREATE_LINKMAP);
+        DWORD size = (temp_table[0] + 1) * 2;
+        o->fp.cltbl = m_malloc_maybe(size * sizeof(DWORD), false);
+        if (o->fp.cltbl != NULL) {
+            o->fp.cltbl[0] = size;
+            res = f_lseek(&o->fp, CREATE_LINKMAP);
+            if (res != FR_OK) {
+                o->fp.cltbl = NULL;
+            }
+        }
     }
 
     // for 'a' mode, we must begin at the end of the file
@@ -206,9 +228,9 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t file_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t file_obj_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
+    mp_arg_parse_all(n_args, args, kw_args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
     return file_open(NULL, type, arg_vals);
 }
 
@@ -233,6 +255,7 @@ STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
 #if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t fileio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = file_obj_read,
     .write = file_obj_write,
     .ioctl = file_obj_ioctl,
@@ -251,6 +274,7 @@ const mp_obj_type_t mp_type_vfs_fat_fileio = {
 #endif
 
 STATIC const mp_stream_p_t textio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = file_obj_read,
     .write = file_obj_write,
     .ioctl = file_obj_ioctl,

@@ -247,7 +247,7 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_btree_t *self = mp_instance_cast_to_native_base(self_in, &btree_type);
     if (value == MP_OBJ_NULL) {
         // delete
         DBT key;

@@ -24,8 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "tick.h"
+#include "py/objstr.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "shared-module/usb_midi/__init__.h"
 #include "supervisor/port.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
@@ -42,21 +43,17 @@ void load_serial_number(void) {
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
 
-    const char nibble_to_hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                                    'A', 'B', 'C', 'D', 'E', 'F'};
     for (int i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
         for (int j = 0; j < 2; j++) {
             uint8_t nibble = (raw_id[i] >> (j * 4)) & 0xf;
             // Strings are UTF-16-LE encoded.
-            usb_serial_number[1 + i * 2 + j] = nibble_to_hex[nibble];
+            usb_serial_number[1 + i * 2 + j] = nibble_to_hex_upper[nibble];
         }
     }
 }
 
-bool _usb_enabled = false;
-
 bool usb_enabled(void) {
-    return _usb_enabled;
+    return tusb_inited();
 }
 
 void usb_init(void) {
@@ -64,18 +61,23 @@ void usb_init(void) {
     load_serial_number();
 
     tusb_init();
-    _usb_enabled = true;
 
 #if MICROPY_KBD_EXCEPTION
     // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() callback will be invoked when Ctrl+C is received
     // This callback always got invoked regardless of mp_interrupt_char value since we only set it once here
     tud_cdc_set_wanted_char(CHAR_CTRL_C);
 #endif
+
+#if CIRCUITPY_USB_MIDI
+    usb_midi_init();
+#endif
 }
 
 void usb_background(void) {
     if (usb_enabled()) {
-        tusb_task();
+        #if CFG_TUSB_OS == OPT_OS_NONE
+        tud_task();
+        #endif
         tud_cdc_write_flush();
     }
 }
@@ -86,19 +88,23 @@ void usb_background(void) {
 
 // Invoked when device is mounted
 void tud_mount_cb(void) {
+    usb_msc_mount();
 }
 
 // Invoked when device is unmounted
 void tud_umount_cb(void) {
+    usb_msc_umount();
 }
 
-uint32_t tusb_hal_millis(void) {
-    uint64_t ms;
-    uint32_t us;
-    current_tick(&ms, &us);
-    return (uint32_t) ms;
+// Invoked when usb bus is suspended
+// remote_wakeup_en : if host allows us to perform remote wakeup
+// USB Specs: Within 7ms, device must draw an average current less than 2.5 mA from bus
+void tud_suspend_cb(bool remote_wakeup_en) {
 }
 
+// Invoked when usb bus is resumed
+void tud_resume_cb(void) {
+}
 
 // Invoked when cdc when line state changed e.g connected/disconnected
 // Use to reset to DFU when disconnect with 1200 bps

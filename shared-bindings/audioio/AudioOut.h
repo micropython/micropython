@@ -29,7 +29,7 @@
 
 #include "common-hal/audioio/AudioOut.h"
 #include "common-hal/microcontroller/Pin.h"
-#include "shared-bindings/audioio/RawSample.h"
+#include "shared-bindings/audiocore/RawSample.h"
 
 extern const mp_obj_type_t audioio_audioout_type;
 

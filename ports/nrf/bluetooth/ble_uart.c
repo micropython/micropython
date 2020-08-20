@@ -3,8 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Glenn Ruben Bakke
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2017 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,13 +34,13 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "lib/utils/interrupt_char.h"
-#include "shared-bindings/bleio/Adapter.h"
-#include "shared-bindings/bleio/Characteristic.h"
-#include "shared-bindings/bleio/Device.h"
-#include "shared-bindings/bleio/Service.h"
-#include "shared-bindings/bleio/UUID.h"
+#include "shared-bindings/_bleio/Adapter.h"
+#include "shared-bindings/_bleio/Characteristic.h"
+#include "shared-bindings/_bleio/Device.h"
+#include "shared-bindings/_bleio/Service.h"
+#include "shared-bindings/_bleio/UUID.h"
 
-#if (MICROPY_PY_BLE_NUS == 1)
+#if CIRCUITPY_SERIAL_BLE
 
 static const char default_name[] = "CP-REPL"; // max 8 chars or uuid won't fit in adv data
 static const char NUS_UUID[] = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
@@ -137,9 +138,7 @@ void ble_uart_init(void) {
     m_cccd_enabled = false;
 
     while (!m_cccd_enabled) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
+        RUN_BACKGROUND_TASKS;
     }
 }
 
@@ -149,9 +148,7 @@ bool ble_uart_connected(void) {
 
 char ble_uart_rx_chr(void) {
     while (isBufferEmpty(&m_rx_ring_buffer)) {
-#ifdef MICROPY_VM_HOOK_LOOP
-    MICROPY_VM_HOOK_LOOP
-#endif
+        RUN_BACKGROUND_TASKS;
     }
 
     uint8_t byte;
@@ -193,4 +190,4 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     }
 }
 
-#endif // MICROPY_PY_BLE_NUS
+#endif // CIRCUITPY_SERIAL_BLE

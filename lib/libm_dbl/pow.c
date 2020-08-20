@@ -125,13 +125,13 @@ double pow(double x, double y)
 		else if (iy >= 0x3ff00000) {
 			k = (iy>>20) - 0x3ff;  /* exponent */
 			if (k > 20) {
-				uint32_t j = ly>>(52-k);
-				if ((j<<(52-k)) == ly)
-					yisint = 2 - (j&1);
+				uint32_t j2 = ly>>(52-k);
+				if ((j2<<(52-k)) == ly)
+					yisint = 2 - (j2&1);
 			} else if (ly == 0) {
-				uint32_t j = iy>>(20-k);
-				if ((j<<(20-k)) == iy)
-					yisint = 2 - (j&1);
+				uint32_t j2 = iy>>(20-k);
+				if ((j2<<(20-k)) == (uint32_t)iy)
+					yisint = 2 - (j2&1);
 			}
 		}
 	}

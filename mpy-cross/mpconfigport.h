@@ -128,7 +128,7 @@
   X(ENOTEMPTY) \
   X(EILSEQ)
 #endif
-  
+
 // type definitions for the specific machine
 
 #ifdef __LP64__

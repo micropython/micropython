@@ -43,6 +43,7 @@
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 
+#include "background.h"
 #include "mpconfigboard.h"
 #include "supervisor/cpu.h"
 #include "supervisor/memory.h"
@@ -51,12 +52,28 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
 
-#ifdef MICROPY_PY_NETWORK
+#include "boards/board.h"
+
+#if CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
+
+#if CIRCUITPY_NETWORK
 #include "shared-module/network/__init__.h"
+#endif
+
+#if CIRCUITPY_BOARD
+#include "shared-module/board/__init__.h"
+#endif
+
+#if CIRCUITPY_BLEIO
+#include "shared-bindings/_bleio/__init__.h"
+#include "supervisor/shared/bluetooth.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -83,15 +100,23 @@ void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
 
+    background_tasks_reset();
+
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
     mp_stack_ctrl_init();
-    mp_stack_set_limit(stack_alloc->length - 1024);
+
+    if (stack_alloc != NULL) {
+        mp_stack_set_limit(stack_alloc->length - 1024);
+    }
+
 
 #if MICROPY_MAX_STACK_USAGE
     // _ezero (same as _ebss) is an int, so start 4 bytes above it.
-    mp_stack_set_bottom(stack_alloc->ptr);
-    mp_stack_fill_with_sentinel();
+    if (stack_alloc != NULL) {
+        mp_stack_set_bottom(stack_alloc->ptr);
+        mp_stack_fill_with_sentinel();
+    }
 #endif
 
     // Sync the file systems in case any used RAM from the GC to cache. As soon
@@ -115,15 +140,28 @@ void start_mp(supervisor_allocation* heap) {
 
     mp_obj_list_init(mp_sys_argv, 0);
 
-    #if MICROPY_PY_NETWORK
+    #if CIRCUITPY_NETWORK
     network_module_init();
     #endif
 }
 
 void stop_mp(void) {
-    #if MICROPY_PY_NETWORK
+    #if CIRCUITPY_NETWORK
     network_module_deinit();
     #endif
+
+    #if MICROPY_VFS
+    mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
+
+    // Unmount all heap allocated vfs mounts.
+    while (gc_nbytes(vfs) > 0) {
+        vfs = vfs->next;
+    }
+    MP_STATE_VM(vfs_mount_table) = vfs;
+    MP_STATE_VM(vfs_cur) = vfs;
+    #endif
+
+    gc_deinit();
 }
 
 #define STRING_LIST(...) {__VA_ARGS__, ""}
@@ -140,12 +178,6 @@ const char* first_existing_file_in_list(const char ** filenames) {
     return NULL;
 }
 
-void write_compressed(const compressed_string_t* compressed) {
-    char decompressed[compressed->length];
-    decompress(compressed, decompressed);
-    serial_write(decompressed);
-}
-
 bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
     const char* filename = first_existing_file_in_list(filenames);
     if (filename == NULL) {
@@ -153,24 +185,42 @@ bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
     }
     mp_hal_stdout_tx_str(filename);
     const compressed_string_t* compressed = translate(" output:\n");
-    char decompressed[compressed->length];
+    char decompressed[decompress_length(compressed)];
     decompress(compressed, decompressed);
     mp_hal_stdout_tx_str(decompressed);
     pyexec_file(filename, exec_result);
     return true;
 }
 
+void cleanup_after_vm(supervisor_allocation* heap) {
+    // Turn off the display and flush the fileystem before the heap disappears.
+    #if CIRCUITPY_DISPLAYIO
+    reset_displays();
+    #endif
+    filesystem_flush();
+    stop_mp();
+    free_memory(heap);
+    supervisor_move_memory();
+
+    reset_port();
+    #if CIRCUITPY_BOARD
+    reset_board_busses();
+    #endif
+    reset_board();
+    reset_status_led();
+}
+
 bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
-    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+    #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
     if (serial_connected_at_start) {
         serial_write("\n");
         if (autoreload_is_enabled()) {
-            write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
+            serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
         } else if (safe_mode != NO_SAFE_MODE) {
-            write_compressed(translate("Running in safe mode! Auto-reload is off.\n"));
+            serial_write_compressed(translate("Running in safe mode! Auto-reload is off.\n"));
         } else if (!autoreload_is_enabled()) {
-            write_compressed(translate("Auto-reload is off.\n"));
+            serial_write_compressed(translate("Auto-reload is off.\n"));
         }
     }
     #endif
@@ -184,12 +234,12 @@ bool run_code_py(safe_mode_t safe_mode) {
     bool found_main = false;
 
     if (safe_mode != NO_SAFE_MODE) {
-        write_compressed(translate("Running in safe mode! Not running saved code.\n"));
+        serial_write_compressed(translate("Running in safe mode! Not running saved code.\n"));
     } else {
         new_status_color(MAIN_RUNNING);
 
-        const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
-        const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
+        static const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        static const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
                                                     "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
 
         stack_resize();
@@ -200,15 +250,10 @@ bool run_code_py(safe_mode_t safe_mode) {
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
             if (found_main) {
-                write_compressed(translate("WARNING: Your code filename has two extensions\n"));
+                serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
-        stop_mp();
-        free_memory(heap);
-
-        reset_port();
-        reset_board();
-        reset_status_led();
+        cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             return reload_requested;
@@ -216,14 +261,20 @@ bool run_code_py(safe_mode_t safe_mode) {
     }
 
     // Wait for connection or character.
+    if (!serial_connected_at_start) {
+        serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
+    }
+
     bool serial_connected_before_animation = false;
+    #if CIRCUITPY_DISPLAYIO
+    bool refreshed_epaper_display = false;
+    #endif
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
         if (reload_requested) {
+            reload_requested = false;
             return true;
         }
 
@@ -239,42 +290,26 @@ bool run_code_py(safe_mode_t safe_mode) {
 
             if (!serial_connected_at_start) {
                 if (autoreload_is_enabled()) {
-                    write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
+                    serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
                 } else {
-                    write_compressed(translate("Auto-reload is off.\n"));
+                    serial_write_compressed(translate("Auto-reload is off.\n"));
                 }
             }
-            // Output a user safe mode string if its set.
-            #ifdef BOARD_USER_SAFE_MODE
-            if (safe_mode == USER_SAFE_MODE) {
-                serial_write("\n");
-                write_compressed(translate("You requested starting safe mode by "));
-                serial_write(BOARD_USER_SAFE_MODE_ACTION);
-                serial_write("\n");
-                write_compressed(translate("To exit, please reset the board without "));
-                serial_write(BOARD_USER_SAFE_MODE_ACTION);
-                serial_write("\n");
-            } else
-            #endif
-            if (safe_mode != NO_SAFE_MODE) {
-                serial_write("\n");
-                write_compressed(translate("You are running in safe mode which means something really bad happened.\n"));
-                if (safe_mode == HARD_CRASH) {
-                    write_compressed(translate("Looks like our core CircuitPython code crashed hard. Whoops!\n"));
-                    write_compressed(translate("Please file an issue here with the contents of your CIRCUITPY drive:\n"));
-                    serial_write("https://github.com/adafruit/circuitpython/issues\n");
-                } else if (safe_mode == BROWNOUT) {
-                    write_compressed(translate("The microcontroller's power dipped. Please make sure your power supply provides\n"));
-                    write_compressed(translate("enough power for the whole circuit and press reset (after ejecting CIRCUITPY).\n"));
-                }
-            }
+            print_safe_mode_message(safe_mode);
             serial_write("\n");
-            write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
+            serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
         }
         if (serial_connected_before_animation && !serial_connected()) {
             serial_connected_at_start = false;
         }
         serial_connected_before_animation = serial_connected();
+
+        // Refresh the ePaper display if we have one. That way it'll show an error message.
+        #if CIRCUITPY_DISPLAYIO
+        if (!refreshed_epaper_display) {
+            refreshed_epaper_display = maybe_refresh_epaperdisplay();
+        }
+        #endif
 
         tick_rgb_status_animation(&animation);
     }
@@ -324,12 +359,12 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
             mp_hal_delay_ms(1500);
 
             // USB isn't up, so we can write the file.
-            filesystem_writable_by_python(true);
+            filesystem_set_internal_writable_by_usb(false);
             f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
 
             // Switch the filesystem back to non-writable by Python now instead of later,
             // since boot.py might change it back to writable.
-            filesystem_writable_by_python(false);
+            filesystem_set_internal_writable_by_usb(true);
 
             // Write version info to boot_out.txt.
             mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
@@ -354,12 +389,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         boot_output_file = NULL;
         #endif
 
-        // Reset to remove any state that boot.py setup. It should only be used to
-        // change internal state that's not in the heap.
-        reset_port();
-        reset_board();
-        stop_mp();
-        free_memory(heap);
+        cleanup_after_vm(heap);
     }
 }
 
@@ -376,10 +406,7 @@ int run_repl(void) {
     } else {
         exit_code = pyexec_friendly_repl();
     }
-    reset_port();
-    reset_board();
-    stop_mp();
-    free_memory(heap);
+    cleanup_after_vm(heap);
     autoreload_resume();
     return exit_code;
 }
@@ -394,12 +421,23 @@ int __attribute__((used)) main(void) {
     init_status_leds();
     rgb_led_status_init();
 
+    // Wait briefly to give a reset window where we'll enter safe mode after the reset.
+    if (safe_mode == NO_SAFE_MODE) {
+        safe_mode = wait_for_safe_mode_reset();
+    }
+
     stack_init();
 
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's
     // no SPI flash filesystem, and we might erase the existing one.
     filesystem_init(safe_mode == NO_SAFE_MODE, false);
+
+    // displays init after filesystem, since they could share the flash SPI
+    board_init();
+
+    // Start the debug serial
+    serial_early_init();
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
@@ -410,12 +448,17 @@ int __attribute__((used)) main(void) {
 
     // By default our internal flash is readonly to local python code and
     // writable over USB. Set it here so that boot.py can change it.
-    filesystem_writable_by_python(false);
+    filesystem_set_internal_concurrent_write_protection(true);
+    filesystem_set_internal_writable_by_usb(true);
 
     run_boot_py(safe_mode);
 
     // Start serial and HID after giving boot.py a chance to tweak behavior.
     serial_init();
+
+    #if CIRCUITPY_BLEIO
+    supervisor_start_bluetooth();
+    #endif
 
     // Boot script is finished, so now go into REPL/main mode.
     int exit_code = PYEXEC_FORCED_EXIT;
@@ -427,7 +470,7 @@ int __attribute__((used)) main(void) {
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
-                write_compressed(translate("soft reboot\n"));
+                serial_write_compressed(translate("soft reboot\n"));
             }
             first_run = false;
             skip_repl = run_code_py(safe_mode);
@@ -448,19 +491,28 @@ void gc_collect(void) {
     // This collects root pointers from the VFS mount table. Some of them may
     // have lost their references in the VM even though they are mounted.
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
+
+    #if CIRCUITPY_DISPLAYIO
+    displayio_gc_collect();
+    #endif
+
+    #if CIRCUITPY_BLEIO
+    common_hal_bleio_gc_collect();
+    #endif
+
     // This naively collects all object references from an approximate stack
     // range.
-    gc_collect_root((void**)sp, ((uint32_t)&_estack - sp) / sizeof(uint32_t));
+    gc_collect_root((void**)sp, ((uint32_t)port_stack_get_top() - sp) / sizeof(uint32_t));
     gc_collect_end();
 }
 
 void NORETURN nlr_jump_fail(void *val) {
-    HardFault_Handler();
+    reset_into_safe_mode(MICROPY_NLR_JUMP_FAIL);
     while (true) {}
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    HardFault_Handler();
+    reset_into_safe_mode(MICROPY_FATAL_ERROR);
     while (true) {}
 }
 

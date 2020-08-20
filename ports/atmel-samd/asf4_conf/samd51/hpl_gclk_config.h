@@ -1,8 +1,9 @@
 // Circuit Python SAMD51 clock tree:
-// DFLL48M (with USBCRM on to sync with external USB ref) -> GCLK1, GCLK5
+// DFLL48M (with USBCRM on to sync with external USB ref) -> GCLK1, GCLK5, GCLK6
 //   GCLK1 (48MHz) -> 48 MHz peripherals
-//   GCLK5 (48 MHz divided down to 2 MHz) -> DPLL0, DAC peripherals
+//   GCLK5 (48 MHz divided down to 2 MHz) -> DPLL0
 //     DPLL0 (multiplied up to 120 MHz) -> GCLK0, GCLK4 (output for monitoring)
+//   GCLK6 (48 MHz divided down to 12 MHz) -> DAC
 
 // We'd like to use XOSC32K as a ref for DFLL48M on boards with a 32kHz crystal,
 // but haven't figured that out yet.
@@ -472,7 +473,7 @@
 // <i> Indicates whether generic clock 6 configuration is enabled or not
 // <id> enable_gclk_gen_6
 #ifndef CONF_GCLK_GENERATOR_6_CONFIG
-#define CONF_GCLK_GENERATOR_6_CONFIG 0
+#define CONF_GCLK_GENERATOR_6_CONFIG 1
 #endif
 
 // <h> Generic Clock Generator Control
@@ -488,7 +489,7 @@
 // <i> This defines the clock source for generic clock generator 6
 // <id> gclk_gen_6_oscillator
 #ifndef CONF_GCLK_GEN_6_SOURCE
-#define CONF_GCLK_GEN_6_SOURCE GCLK_GENCTRL_SRC_XOSC1
+#define CONF_GCLK_GEN_6_SOURCE GCLK_GENCTRL_SRC_DFLL
 #endif
 
 // <q> Run in Standby
@@ -523,14 +524,14 @@
 // <i> Indicates whether Improve Duty Cycle is enabled or not
 // <id> gclk_arch_gen_6_idc
 #ifndef CONF_GCLK_GEN_6_IDC
-#define CONF_GCLK_GEN_6_IDC 0
+#define CONF_GCLK_GEN_6_IDC 1
 #endif
 
 // <q> Generic Clock Generator Enable
 // <i> Indicates whether Generic Clock Generator Enable is enabled or not
 // <id> gclk_arch_gen_6_enable
 #ifndef CONF_GCLK_GEN_6_GENEN
-#define CONF_GCLK_GEN_6_GENEN 0
+#define CONF_GCLK_GEN_6_GENEN 1
 #endif
 // </h>
 
@@ -538,7 +539,7 @@
 //<o> Generic clock generator 6 division <0x0000-0xFFFF>
 // <id> gclk_gen_6_div
 #ifndef CONF_GCLK_GEN_6_DIV
-#define CONF_GCLK_GEN_6_DIV 1
+#define CONF_GCLK_GEN_6_DIV 4
 #endif
 // </h>
 // </e>

@@ -28,30 +28,19 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/displayio/Display.h"
 #include "shared-module/_stage/__init__.h"
+#include "shared-module/displayio/display_core.h"
 #include "Layer.h"
 #include "Text.h"
 
-//| :mod:`_stage` --- C-level helpers for animation of sprites on a stage
-//| =====================================================================
-//|
-//| .. module:: _stage
-//|   :synopsis: C-level helpers for animation of sprites on a stage
-//|   :platform: SAMD21
+//| """C-level helpers for animation of sprites on a stage
 //|
 //| The `_stage` module contains native code to speed-up the ```stage`` Library
-//| <https://github.com/python-ugame/circuitpython-stage>`_.
-//| Libraries
+//| <https://github.com/python-ugame/circuitpython-stage>`_."""
 //|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Layer
-//|     Text
-//|
-//| .. function:: render(x0, y0, x1, y1, layers, buffer, spi)
-//|
-//|     Render and send to the display a fragment of the screen.
+//| def render(x0: int, y0: int, x1: int, y1: int, layers: list, buffer: bytearray, display: displayio.Display, scale: int, background: int) -> Any:
+//|     """Render and send to the display a fragment of the screen.
 //|
 //|     :param int x0: Left edge of the fragment.
 //|     :param int y0: Top edge of the fragment.
@@ -59,17 +48,17 @@
 //|     :param int y1: Bottom edge of the fragment.
 //|     :param list layers: A list of the :py:class:`~_stage.Layer` objects.
 //|     :param bytearray buffer: A buffer to use for rendering.
-//|     :param ~busio.SPI spi: The SPI bus to use.
+//|     :param ~displayio.Display display: The display to use.
+//|     :param int scale: How many times should the image be scaled up.
+//|     :param int background: What color to display when nothing is there.
 //|
-//|     Note that this function only sends the raw pixel data. Setting up
-//|     the display for receiving it and handling the chip-select and
-//|     data-command pins has to be done outside of it.
 //|     There are also no sanity checks, outside of the basic overflow
 //|     checking. The caller is responsible for making the passed parameters
 //|     valid.
 //|
 //|     This function is intended for internal use in the ``stage`` library
-//|     and all the necessary checks are performed there.
+//|     and all the necessary checks are performed there."""
+//|
 STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     uint16_t x0 = mp_obj_get_int(args[0]);
     uint16_t y0 = mp_obj_get_int(args[1]);
@@ -85,16 +74,27 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     uint16_t *buffer = bufinfo.buf;
     size_t buffer_size = bufinfo.len / 2; // 16-bit indexing
 
-    busio_spi_obj_t *spi = MP_OBJ_TO_PTR(args[6]);
-
-    if (!render_stage(x0, y0, x1, y1, layers, layers_size,
-            buffer, buffer_size, spi)) {
-        mp_raise_OSError(MP_EIO);
+    mp_obj_t native_display = mp_instance_cast_to_native_base(args[6],
+        &displayio_display_type);
+    if (!MP_OBJ_IS_TYPE(native_display, &displayio_display_type)) {
+        mp_raise_TypeError(translate("argument num/types mismatch"));
     }
+    displayio_display_obj_t *display = MP_OBJ_TO_PTR(native_display);
+    uint8_t scale = 1;
+    if (n_args > 7) {
+        scale = mp_obj_get_int(args[7]);
+    }
+    uint16_t background = 0;
+    if (n_args > 8) {
+        background = mp_obj_get_int(args[8]);
+    }
+
+    render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size,
+                 display, scale, background);
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stage_render_obj, 7, 7, stage_render);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stage_render_obj, 7, 8, stage_render);
 
 
 STATIC const mp_rom_map_elem_t stage_module_globals_table[] = {

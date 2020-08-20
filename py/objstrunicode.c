@@ -112,6 +112,26 @@ STATIC mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
+size_t str_offset_to_index(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
+                           size_t offset) {
+    if (offset > self_len) {
+        mp_raise_ValueError(translate("offset out of bounds"));
+    }
+
+    if (type == &mp_type_bytes) {
+        return offset;
+    }
+
+    size_t index_val = 0;
+    const byte *s = self_data;
+    for (size_t i = 0; i < offset; i++, s++) {
+        if (!UTF8_IS_CONT(*s)) {
+            ++index_val;
+        }
+    }
+    return index_val;
+}
+
 // Convert an index into a pointer to its lead byte. Out of bounds indexing will raise IndexError or
 // be capped to the first/last character of the string, depending on is_slice.
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,

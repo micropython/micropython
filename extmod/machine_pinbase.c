@@ -45,11 +45,11 @@ STATIC const mp_pinbase_t pinbase_singleton = {
     .base = { &machine_pinbase_type },
 };
 
-STATIC mp_obj_t pinbase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pinbase_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type;
     (void)n_args;
-    (void)n_kw;
     (void)args;
+    (void)kw_args;
     return MP_OBJ_FROM_PTR(&pinbase_singleton);
 }
 
@@ -74,6 +74,7 @@ mp_uint_t pinbase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *err
 }
 
 STATIC const mp_pin_p_t pinbase_pin_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_pin)
     .ioctl = pinbase_ioctl,
 };
 

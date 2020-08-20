@@ -126,7 +126,7 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     }
 
     // If the mounted object has the VFS protocol, call its import_stat helper
-    const mp_vfs_proto_t *proto = mp_obj_get_type(vfs->obj)->protocol;
+    const mp_vfs_proto_t *proto = (mp_vfs_proto_t*)mp_proto_get(MP_QSTR_protocol_vfs, vfs->obj);
     if (proto != NULL) {
         return proto->import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
@@ -176,7 +176,7 @@ mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args
         // auto-detect the filesystem and create the corresponding VFS entity.
         // (At the moment we only support FAT filesystems.)
         #if MICROPY_VFS_FAT
-        vfs_obj = mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &vfs_obj);
+        vfs_obj = mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, &vfs_obj, NULL);
         #endif
     }
 

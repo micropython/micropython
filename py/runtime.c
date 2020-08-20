@@ -29,12 +29,12 @@
 #include <string.h>
 #include <assert.h>
 
+
 #include "extmod/vfs.h"
 
-// #include "py/mpstate.h"
-// #include "py/nlr.h"
 #include "py/parsenum.h"
 #include "py/compile.h"
+#include "py/mperrno.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objtype.h"
@@ -131,31 +131,6 @@ void mp_init(void) {
            sizeof(MP_STATE_VM(fs_user_mount)) - MICROPY_FATFS_NUM_PERSISTENT);
     #endif
 
-    #if MICROPY_VFS
-    #if MICROPY_FATFS_NUM_PERSISTENT > 0
-    // We preserve the last MICROPY_FATFS_NUM_PERSISTENT mounts because newer
-    // mounts are put at the front of the list.
-    mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
-    // Count how many mounts we have.
-    uint8_t count = 0;
-    while (vfs != NULL) {
-        vfs = vfs->next;
-        count++;
-    }
-    // Find the vfs MICROPY_FATFS_NUM_PERSISTENT mounts from the end.
-    vfs = MP_STATE_VM(vfs_mount_table);
-    for (uint8_t j = 0; j < count - MICROPY_FATFS_NUM_PERSISTENT; j++) {
-        vfs = vfs->next;
-    }
-    MP_STATE_VM(vfs_mount_table) = vfs;
-    MP_STATE_VM(vfs_cur) = vfs;
-    #else
-    // initialise the VFS sub-system
-    MP_STATE_VM(vfs_cur) = NULL;
-    MP_STATE_VM(vfs_mount_table) = NULL;
-    #endif
-    #endif
-
     #if MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif
@@ -227,7 +202,7 @@ mp_obj_t mp_load_build_class(void) {
     return MP_OBJ_FROM_PTR(&mp_builtin___build_class___obj);
 }
 
-void mp_store_name(qstr qst, mp_obj_t obj) {
+void PLACE_IN_ITCM(mp_store_name)(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qst), obj);
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst), obj);
 }
@@ -238,7 +213,7 @@ void mp_delete_name(qstr qst) {
     mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
-void mp_store_global(qstr qst, mp_obj_t obj) {
+void PLACE_IN_ITCM(mp_store_global)(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qst), obj);
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst), obj);
 }
@@ -310,7 +285,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
     }
 }
 
-mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+mp_obj_t PLACE_IN_ITCM(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     DEBUG_OP_printf("binary " UINT_FMT " %q %p %p\n", op, mp_binary_op_method_name[op], lhs, rhs);
 
     // TODO correctly distinguish inplace operators for mutable objects
@@ -668,7 +643,7 @@ mp_obj_t mp_call_method_n_kw(size_t n_args, size_t n_kw, const mp_obj_t *args) {
 #if !MICROPY_STACKLESS
 STATIC
 #endif
-void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args) {
+void PLACE_IN_ITCM(mp_call_prepare_args_n_kw_var)(bool have_self, size_t n_args_n_kw, const mp_obj_t *args, mp_call_args_t *out_args) {
     mp_obj_t fun = *args++;
     mp_obj_t self = MP_OBJ_NULL;
     if (have_self) {
@@ -1197,7 +1172,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
         mp_raise_AttributeError(translate("no such attribute"));
     } else {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-            translate("'%s' object has no attribute '%q'"),
+            translate("'%s' object cannot assign attribute '%q'"),
             mp_obj_get_type_str(base), attr));
     }
 }
@@ -1599,9 +1574,48 @@ NORETURN void mp_raise_OSError(int errno_) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_)));
 }
 
+NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg) {
+    mp_raise_msg(&mp_type_OSError, msg);
+}
+
+NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
+    mp_obj_t args[2] = {
+        MP_OBJ_NEW_SMALL_INT(errno_),
+        str,
+    };
+    nlr_raise(mp_obj_new_exception_args(&mp_type_OSError, 2, args));
+}
+
+NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_OSError, fmt, argptr);
+    va_end(argptr);
+    nlr_raise(exception);
+}
 
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
+}
+
+NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_NotImplementedError, fmt, argptr);
+    va_end(argptr);
+    nlr_raise(exception);
+}
+
+NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_OverflowError, fmt, argptr);
+    va_end(argptr);
+    nlr_raise(exception);
+}
+
+NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {
+    mp_raise_msg(&mp_type_MpyError, msg);
 }
 
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK

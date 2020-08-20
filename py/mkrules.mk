@@ -20,12 +20,12 @@ endif
 # can be located. By following this scheme, it allows a single build rule
 # to be used to compile all .c files.
 
-vpath %.S . $(TOP)
+vpath %.S . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.S
 	$(STEPECHO) "CC $<"
 	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
-vpath %.s . $(TOP)
+vpath %.s . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.s
 	$(STEPECHO) "AS $<"
 	$(Q)$(AS) -o $@ $<
@@ -42,7 +42,7 @@ $(Q)$(CC) $(CFLAGS) -c -MD -o $@ $<
   $(RM) -f $(@:.o=.d)
 endef
 
-vpath %.c . $(TOP)
+vpath %.c . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
@@ -56,7 +56,7 @@ $(BUILD)/%.o: %.c
 
 QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
 
-vpath %.c . $(TOP)
+vpath %.c . $(TOP) $(USER_C_MODULES)
 
 $(BUILD)/%.pp: %.c
 	$(STEPECHO) "PreProcess $<"
@@ -145,7 +145,7 @@ $(PROG): $(OBJ)
 # Do not pass COPT here - it's *C* compiler optimizations. For example,
 # we may want to compile using Thumb, but link with non-Thumb libc.
 	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
-ifndef DEBUG
+ifdef STRIP_CIRCUITPYTHON
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
 endif
 	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG)

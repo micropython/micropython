@@ -1,4 +1,4 @@
-# Makefile for Sphinx documentation
+# Top-level Makefile for documentation builds and miscellaneous tasks.
 #
 
 # You can set these variables from the command line.
@@ -17,6 +17,13 @@ CONFDIR      = .
 FORCE         = -E
 VERBOSE       = -v
 
+# path to generated type stubs
+STUBDIR       = circuitpython-stubs
+# Run "make VALIDATE= stubs" to avoid validating generated stub files
+VALIDATE      = -v
+# path to pypi source distributions
+DISTDIR       = dist
+
 # Make sure you have Sphinx installed, then set the SPHINXBUILD environment variable to point to the
 # full path of the '$(SPHINXBUILD)' executable. Alternatively you can add the directory with the
 # executable to your PATH. If you don't have Sphinx installed, grab it from http://sphinx-doc.org/)
@@ -29,7 +36,9 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(BASEOPTS)
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(BASEOPTS)
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
+TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/mimxrt10xx ports/nrf ports/stm py shared-bindings shared-module supervisor
+
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext stubs
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -58,8 +67,10 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+	rm -rf autoapi
+	rm -rf $(STUBDIR) $(DISTDIR) *.egg-info
 
-html:
+html: stubs
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -191,13 +202,44 @@ pseudoxml:
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
 # phony target so we always run
+.PHONY: all-source
 all-source:
 
 locale/circuitpython.pot: all-source
-	find . -iname "*.c" | xargs xgettext -L C --keyword=translate -F -o circuitpython.pot -p locale
+	find $(TRANSLATE_SOURCES) -iname "*.c" -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
 
+# Historically, `make translate` updated the .pot file and ran msgmerge.
+# However, this was a frequent source of merge conflicts.  Weblate can perform
+# msgmerge, so make translate merely update the translation template file.
+.PHONY: translate
 translate: locale/circuitpython.pot
-	for po in $(shell ls locale/*.po); do msgmerge -U -F $$po locale/circuitpython.pot; done
 
-check-translate: locale/circuitpython.pot $(wildcard locale/*.po)
-	$(PYTHON) tools/check_translations.py $^
+# Note that normally we rely on weblate to perform msgmerge.  This reduces the
+# chance of a merge conflict between developer changes (that only add and
+# remove source strings) and weblate changes (that only add and remove
+# translated strings from po files).  However, in case this is legitimately
+# needed we preserve a rule to do it.
+.PHONY: msgmerge
+msgmerge:
+	for po in $(shell ls locale/*.po); do msgmerge -U $$po -s --no-fuzzy-matching --add-location=file locale/circuitpython.pot; done
+
+merge-translate:
+	git merge HEAD 1>&2 2> /dev/null; test $$? -eq 128
+	rm locale/*~ || true
+	git checkout --theirs -- locale/*
+	make translate
+
+.PHONY: check-translate
+check-translate:
+	find $(TRANSLATE_SOURCES) -iname "*.c" -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot.tmp -p locale
+	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
+
+stubs:
+	@mkdir -p circuitpython-stubs
+	@$(PYTHON) tools/extract_pyi.py shared-bindings/ $(STUBDIR)
+	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
+	@$(PYTHON) setup.py -q sdist
+
+update-frozen-libraries:
+	@echo "Updating all frozen libraries to latest tagged version."
+	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done

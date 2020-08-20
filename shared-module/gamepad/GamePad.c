@@ -24,27 +24,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-
 #include "py/mpstate.h"
-#include "__init__.h"
-#include "GamePad.h"
-
-#include "shared-bindings/digitalio/Pull.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-bindings/util.h"
+#include "shared-bindings/gamepad/GamePad.h"
+#include "supervisor/shared/tick.h"
 
-
-void gamepad_init(size_t n_pins, const mp_obj_t* pins) {
-    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
+void common_hal_gamepad_gamepad_init(gamepad_obj_t *gamepad,
+                  const mp_obj_t pins[], size_t n_pins) {
     for (size_t i = 0; i < 8; ++i) {
-        gamepad_singleton->pins[i] = NULL;
+        gamepad->pins[i] = NULL;
     }
-    gamepad_singleton->pulls = 0;
+    gamepad->pulls = 0;
     for (size_t i = 0; i < n_pins; ++i) {
         digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(pins[i]);
-        digitalio_direction_t direction = common_hal_digitalio_digitalinout_get_direction(pin);
-        if (direction != DIRECTION_INPUT) {
+        if (common_hal_digitalio_digitalinout_get_direction(pin) !=
+            DIRECTION_INPUT) {
             common_hal_digitalio_digitalinout_switch_to_input(pin, PULL_UP);
         }
         digitalio_pull_t pull = common_hal_digitalio_digitalinout_get_pull(pin);
@@ -52,9 +46,14 @@ void gamepad_init(size_t n_pins, const mp_obj_t* pins) {
             common_hal_digitalio_digitalinout_set_pull(pin, PULL_UP);
         }
         if (pull != PULL_DOWN) {
-            gamepad_singleton->pulls |= 1 << i;
+            gamepad->pulls |= 1 << i;
         }
-        gamepad_singleton->pins[i] = pin;
+        gamepad->pins[i] = pin;
     }
-    gamepad_singleton->last = 0;
+    gamepad->last = 0;
+}
+
+void common_hal_gamepad_gamepad_deinit(gamepad_obj_t *self) {
+    MP_STATE_VM(gamepad_singleton) = NULL;
+    supervisor_disable_tick();
 }

@@ -25,7 +25,9 @@
  */
 
 #include "py/mphal.h"
+#include "py/mpstate.h"
 #include "shared-bindings/neopixel_write/__init__.h"
+#include "supervisor/port.h"
 #include "nrf_pwm.h"
 
 // https://github.com/adafruit/Adafruit_NeoPixel/blob/master/Adafruit_NeoPixel.cpp
@@ -63,7 +65,7 @@
 //
 // If there is no device available an alternative cycle-counter
 // implementation is tried.
-// The nRF52832 runs with a fixed clock of 64Mhz. The alternative
+// The nRF52840 runs with a fixed clock of 64Mhz. The alternative
 // implementation is the same as the one used for the Teensy 3.0/1/2 but
 // with the Nordic SDK HAL & registers syntax.
 // The number of cycles was hand picked and is guaranteed to be 100%
@@ -84,7 +86,7 @@ static NRF_PWM_Type* find_free_pwm (void) {
 #endif
     };
 
-    for ( int device = 0; device < ARRAY_SIZE(PWM); device++ ) {
+    for ( size_t device = 0; device < ARRAY_SIZE(PWM); device++ ) {
         if ( (PWM[device]->ENABLE == 0) &&
              (PWM[device]->PSEL.OUT[0] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[1] & PWM_PSEL_OUT_CONNECT_Msk) &&
              (PWM[device]->PSEL.OUT[2] & PWM_PSEL_OUT_CONNECT_Msk) && (PWM[device]->PSEL.OUT[3] & PWM_PSEL_OUT_CONNECT_Msk) ) {
@@ -95,9 +97,18 @@ static NRF_PWM_Type* find_free_pwm (void) {
     return NULL;
 }
 
+static size_t pixels_pattern_heap_size = 0;
+// Called during reset_port() to free the pattern buffer
+void neopixel_write_reset(void) {
+    MP_STATE_VM(pixels_pattern_heap) = NULL;
+    pixels_pattern_heap_size = 0;
+}
+
+uint64_t next_start_raw_ticks = 0;
+
 void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // To support both the SoftDevice + Neopixels we use the EasyDMA
-    // feature from the NRF25. However this technique implies to
+    // feature from the NRF52. However this technique implies to
     // generate a pattern and store it on the memory. The actual
     // memory used in bytes corresponds to the following formula:
     //              totalMem = numBytes*8*2+(2*2)
@@ -106,42 +117,83 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     //
     // If there is not enough memory, we will fall back to cycle counter
     // using DWT
-    uint32_t pattern_size = numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t);
-    uint16_t* pixels_pattern = NULL;
-    bool pattern_on_heap = false;
 
-    // Use the stack to store 1 pixels worth of PWM data for the status led. uint32_t to ensure alignment.
-    uint32_t one_pixel[8 * sizeof(uint16_t) + 1];
+#define PATTERN_SIZE(numBytes) (numBytes * 8 * sizeof(uint16_t) + 2 * sizeof(uint16_t))
+// Allocate PWM space for up to STACK_PIXELS on the stack, to avoid malloc'ing.
+// We may need to write to the status neopixel or to Circuit Playground NeoPixels
+// when we cannot malloc, between VM instantiations.
+// We need space for at least 10 pixels for Circuit Playground, but let's choose 24
+// to handle larger NeoPixel rings without malloc'ing.
+#define STACK_PIXELS 24
+    uint32_t pattern_size = PATTERN_SIZE(numBytes);
+    uint16_t* pixels_pattern = NULL;
+
+    // Use the stack to store STACK_PIXEL's worth of PWM data. uint32_t to ensure alignment.
+    // It is 3*STACK_PIXELS to handle RGB.
+    // PATTERN_SIZE is a multiple of 4, so we don't need round up to make sure one_pixel is large enough.
+    uint32_t stack_pixels[PATTERN_SIZE(3 * STACK_PIXELS) / sizeof(uint32_t)];
 
     NRF_PWM_Type* pwm = find_free_pwm();
 
     // only malloc if there is PWM device available
     if ( pwm != NULL ) {
-        if (numBytes == 4) {
-            pixels_pattern = (uint16_t *) one_pixel;
+        if (pattern_size <= sizeof(stack_pixels)) {
+            pixels_pattern = (uint16_t *) stack_pixels;
         } else {
-            pixels_pattern = (uint16_t *) m_malloc_maybe(pattern_size, false);
-            pattern_on_heap = true;
+            uint8_t sd_en = 0;
+            (void) sd_softdevice_is_enabled(&sd_en);
+
+            if (pixels_pattern_heap_size < pattern_size) {
+                // Current heap buffer is too small.
+                if (MP_STATE_VM(pixels_pattern_heap)) {
+                    // Old pixels_pattern_heap will be gc'd; don't free it.
+                    pixels_pattern = NULL;
+                    pixels_pattern_heap_size = 0;
+                }
+
+                // realloc routines fall back to a plain malloc if the incoming ptr is NULL.
+                if (sd_en) {
+                    // If the soft device is enabled then we must use PWM to
+                    // transmit. This takes a bunch of memory to do so raise an
+                    // exception if we can't.
+                    MP_STATE_VM(pixels_pattern_heap) =
+                        (uint16_t *) m_realloc(MP_STATE_VM(pixels_pattern_heap), pattern_size);
+                } else {
+                    // Might return NULL.
+                    MP_STATE_VM(pixels_pattern_heap) =
+                        // true means move if necessary.
+                        (uint16_t *) m_realloc_maybe(MP_STATE_VM(pixels_pattern_heap), pattern_size, true);
+                }
+                if (MP_STATE_VM(pixels_pattern_heap)) {
+                    pixels_pattern_heap_size = pattern_size;
+                }
+            }
+            // Might be NULL, which means we failed to allocate.
+            pixels_pattern = MP_STATE_VM(pixels_pattern_heap);
         }
     }
 
+    // Wait to make sure we don't append onto the last transmission. This should only be a tick or
+    // two.
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
+
     // Use the identified device to choose the implementation
-    // If a PWM device is available use DMA
+    // If a PWM device is available and we have a buffer, use DMA.
     if ( (pixels_pattern != NULL) && (pwm != NULL) ) {
         uint16_t pos = 0;  // bit position
 
         for ( uint16_t n = 0; n < numBytes; n++ ) {
             uint8_t pix = pixels[n];
 
-            for ( uint8_t mask = 0x80, i = 0; mask > 0; mask >>= 1, i++ ) {
+            for ( uint8_t mask = 0x80; mask > 0; mask >>= 1 ) {
                 pixels_pattern[pos] = (pix & mask) ? MAGIC_T1H : MAGIC_T0H;
                 pos++;
             }
         }
 
         // Zero padding to indicate the end of sequence
-        pixels_pattern[++pos] = 0 | (0x8000);  // Seq end
-        pixels_pattern[++pos] = 0 | (0x8000);  // Seq end
+        pixels_pattern[pos++] = 0 | (0x8000);  // Seq end
+        pixels_pattern[pos++] = 0 | (0x8000);  // Seq end
 
         // Set the wave mode to count UP
         // Set the PWM to use the 16MHz clock
@@ -187,9 +239,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
         // But we have to wait for the flag to be set.
         while ( !nrf_pwm_event_check(pwm, NRF_PWM_EVENT_SEQEND0) ) {
-#ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-#endif
+            RUN_BACKGROUND_TASKS;
         }
 
         // Before leave we clear the flag for the event.
@@ -201,10 +251,6 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         // TODO: Check if disabling the device causes performance issues.
         nrf_pwm_disable(pwm);
         nrf_pwm_pins_set(pwm, (uint32_t[]) {0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL, 0xFFFFFFFFUL} );
-
-        if (pattern_on_heap) {
-            m_free(pixels_pattern);
-        }
 
     } // End of DMA implementation
     // ---------------------------------------------------------------------
@@ -274,4 +320,7 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
         // Enable interrupts again
         __enable_irq();
     }
+
+    // Update the next start.
+    next_start_raw_ticks = port_get_raw_ticks(NULL) + 4;
 }

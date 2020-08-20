@@ -5,6 +5,8 @@
 
 // This is for Rev B which is green and has the SD card slot at the edge of the board.
 
+#define MICROPY_HW_LED_STATUS   (&pin_PB01)
+
 #define MICROPY_HW_LED_TX   &(pin_PC30)
 #define MICROPY_HW_LED_RX   &(pin_PC31)
 
@@ -18,14 +20,6 @@
 // NeoPixel pin, RX LED, TX LED
 #define MICROPY_PORT_C ( PORT_PC24 | PORT_PC30 | PORT_PC31 )
 #define MICROPY_PORT_D (0)
-
-#define AUTORESET_DELAY_MS 500
-
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code
-#define CIRCUITPY_INTERNAL_NVM_SIZE 8192
-
-#define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 #define BOARD_HAS_CRYSTAL 1
 
@@ -42,5 +36,3 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
-
-#define CIRCUITPY_I2CSLAVE

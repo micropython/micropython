@@ -33,18 +33,14 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: microcontroller
+//| class Pin:
+//|     """Identifies an IO pin on the microcontroller."""
 //|
-//| :class:`Pin` --- Pin reference
-//| ------------------------------------------
-//|
-//| Identifies an IO pin on the microcontroller.
-//|
-//| .. class:: Pin
-//|
-//|    Identifies an IO pin on the microcontroller. They are fixed by the
-//|    hardware so they cannot be constructed on demand. Instead, use
-//|    `board` or `microcontroller.pin` to reference the desired pin.
+//|     def __init__(self, ):
+//|         """Identifies an IO pin on the microcontroller. They are fixed by the
+//|         hardware so they cannot be constructed on demand. Instead, use
+//|         `board` or `microcontroller.pin` to reference the desired pin."""
+//|         ...
 //|
 
 static void get_pin_name(const mcu_pin_obj_t *self, qstr* package, qstr* module, qstr* name) {
@@ -84,10 +80,35 @@ const mp_obj_type_t mcu_pin_type = {
     .print = mcu_pin_print
 };
 
-void assert_pin(mp_obj_t obj, bool none_ok) {
-    if ((obj != mp_const_none || !none_ok) && !MP_OBJ_IS_TYPE(obj, &mcu_pin_type)) {
+mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj) {
+    if (!MP_OBJ_IS_TYPE(obj, &mcu_pin_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), mcu_pin_type.name);
     }
+    return MP_OBJ_TO_PTR(obj);
+}
+
+// Validate that the obj is a pin or None. Return an mcu_pin_obj_t* or NULL, correspondingly.
+mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj) {
+    if (obj == mp_const_none) {
+        return NULL;
+    }
+    return validate_obj_is_pin(obj);
+}
+
+mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj) {
+    mcu_pin_obj_t *pin = validate_obj_is_pin(obj);
+    assert_pin_free(pin);
+    return pin;
+}
+
+// Validate that the obj is a free pin or None. Return an mcu_pin_obj_t* or NULL, correspondingly.
+mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj) {
+    if (obj == mp_const_none) {
+        return NULL;
+    }
+    mcu_pin_obj_t *pin = validate_obj_is_pin(obj);
+    assert_pin_free(pin);
+    return pin;
 }
 
 void assert_pin_free(const mcu_pin_obj_t* pin) {

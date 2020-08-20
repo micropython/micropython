@@ -10,6 +10,29 @@
 #define EMIT(at, byte) (code ? (code[at] = byte) : (at))
 #define PC (prog->bytelen)
 
+
+static char unescape(char c) {
+    switch (c) {
+        case 'a':
+            return '\a';
+        case 'b':
+            return '\b';
+        case 'f':
+            return '\f';
+        case 'n':
+            return '\n';
+        case 'r':
+            return '\r';
+        case 'v':
+            return '\v';
+        case 'x':
+            return '\\';
+        default:
+            return c;
+    }
+}
+
+
 static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
 {
     char *code = sizecode ? NULL : prog->insts;
@@ -22,13 +45,16 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
         case '\\':
             re++;
             if (!*re) return NULL; // Trailing backslash
+            term = PC;
             if ((*re | 0x20) == 'd' || (*re | 0x20) == 's' || (*re | 0x20) == 'w') {
-                term = PC;
                 EMIT(PC++, NamedClass);
                 EMIT(PC++, *re);
-                prog->len++;
-                break;
+            } else {
+                EMIT(PC++, Char);
+                EMIT(PC++, unescape(*re));
             }
+            prog->len++;
+            break;
         default:
             term = PC;
             EMIT(PC++, Char);
@@ -54,11 +80,21 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             prog->len++;
             for (cnt = 0; *re != ']'; re++, cnt++) {
                 if (!*re) return NULL;
-                EMIT(PC++, *re);
+                if (*re == '\\') {
+                    re += 1;
+                    EMIT(PC++, unescape(*re));
+                } else {
+                    EMIT(PC++, *re);
+                }
                 if (re[1] == '-' && re[2] != ']') {
                     re += 2;
                 }
-                EMIT(PC++, *re);
+                if (*re == '\\') {
+                    re += 1;
+                    EMIT(PC++, unescape(*re));
+                } else {
+                    EMIT(PC++, *re);
+                }
             }
             EMIT(term + 1, cnt);
             break;

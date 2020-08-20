@@ -27,7 +27,10 @@
 #include "stack.h"
 
 #include "py/mpconfig.h"
+#include "py/runtime.h"
 #include "supervisor/cpu.h"
+#include "supervisor/port.h"
+#include "supervisor/shared/safe_mode.h"
 
 extern uint32_t _estack;
 
@@ -38,17 +41,34 @@ supervisor_allocation* stack_alloc = NULL;
 #define EXCEPTION_STACK_SIZE 1024
 
 void allocate_stack(void) {
-    mp_uint_t regs[10];
-    mp_uint_t sp = cpu_get_regs_and_sp(regs);
 
-    mp_uint_t c_size = (uint32_t) &_estack - sp;
-
-    stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true);
-    if (stack_alloc == NULL) {
-        stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true);
-        current_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
+    if (port_fixed_stack() != NULL) {
+        stack_alloc = port_fixed_stack();
+        current_stack_size = stack_alloc->length;
     } else {
-        current_stack_size = next_stack_size;
+        mp_uint_t regs[10];
+        mp_uint_t sp = cpu_get_regs_and_sp(regs);
+
+        mp_uint_t c_size = (uint32_t) port_stack_get_top() - sp;
+        stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true);
+        if (stack_alloc == NULL) {
+            stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true);
+            current_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
+        } else {
+            current_stack_size = next_stack_size;
+        }
+    }
+
+    *stack_alloc->ptr = STACK_CANARY_VALUE;
+}
+
+inline bool stack_ok(void) {
+    return stack_alloc == NULL || *stack_alloc->ptr == STACK_CANARY_VALUE;
+}
+
+inline void assert_heap_ok(void) {
+    if (!stack_ok()) {
+        reset_into_safe_mode(HEAP_OVERWRITTEN);
     }
 }
 
@@ -57,7 +77,11 @@ void stack_init(void) {
 }
 
 void stack_resize(void) {
+    if (stack_alloc == NULL) {
+        return;
+    }
     if (next_stack_size == current_stack_size) {
+        *stack_alloc->ptr = STACK_CANARY_VALUE;
         return;
     }
     free_memory(stack_alloc);

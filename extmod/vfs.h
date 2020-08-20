@@ -28,6 +28,7 @@
 
 #include "py/lexer.h"
 #include "py/obj.h"
+#include "py/proto.h"
 
 // return values of mp_vfs_lookup_path
 // ROOT is 0 so that the default current directory is the root directory
@@ -47,6 +48,7 @@
 
 // At the moment the VFS protocol just has import_stat, but could be extended to other methods
 typedef struct _mp_vfs_proto_t {
+    MP_PROTOCOL_HEAD
     mp_import_stat_t (*import_stat)(void *self, const char *path);
 } mp_vfs_proto_t;
 

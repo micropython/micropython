@@ -117,6 +117,13 @@ extern const mp_obj_module_t mp_module_websocket;
 extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
+extern const mp_obj_module_t ulab_user_cmodule;
+extern mp_obj_module_t ulab_fft_module;
+extern mp_obj_module_t ulab_filter_module;
+extern mp_obj_module_t ulab_linalg_module;
+extern mp_obj_module_t ulab_numerical_module;
+extern mp_obj_module_t ulab_poly_module;
+
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 

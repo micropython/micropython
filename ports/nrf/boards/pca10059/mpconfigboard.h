@@ -26,7 +26,5 @@
 
 #define MICROPY_HW_BOARD_NAME       "PCA10059 nRF52840 Dongle"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
-#define MICROPY_PY_SYS_PLATFORM     "nRF52840-DK"
 
-#define PORT_HEAP_SIZE              (128 * 1024)
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+#define MICROPY_HW_LED_STATUS          (&pin_P0_06)

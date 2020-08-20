@@ -46,11 +46,11 @@ STATIC const mp_obj_type_t mp_type_iobase;
 
 STATIC mp_obj_base_t iobase_singleton = {&mp_type_iobase};
 
-STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type;
     (void)n_args;
-    (void)n_kw;
     (void)args;
+    (void)kw_args;
     return MP_OBJ_FROM_PTR(&iobase_singleton);
 }
 
@@ -90,6 +90,7 @@ STATIC mp_uint_t iobase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, in
 }
 
 STATIC const mp_stream_p_t iobase_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = iobase_read,
     .write = iobase_write,
     .ioctl = iobase_ioctl,
@@ -113,8 +114,8 @@ typedef struct _mp_obj_bufwriter_t {
     byte buf[0];
 } mp_obj_bufwriter_t;
 
-STATIC mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+STATIC mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 2, 2, false);
     size_t alloc = mp_obj_get_int(args[1]);
     mp_obj_bufwriter_t *o = m_new_obj_var(mp_obj_bufwriter_t, byte, alloc);
     o->base.type = type;
@@ -185,6 +186,7 @@ STATIC const mp_rom_map_elem_t bufwriter_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(bufwriter_locals_dict, bufwriter_locals_dict_table);
 
 STATIC const mp_stream_p_t bufwriter_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .write = bufwriter_write,
 };
 

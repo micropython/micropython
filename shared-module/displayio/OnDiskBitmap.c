@@ -38,13 +38,13 @@ static uint32_t read_word(uint16_t* bmp_header, uint16_t index) {
 void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self, pyb_file_obj_t* file) {
     // Load the wave
     self->file = file;
-    uint16_t bmp_header[24];
+    uint16_t bmp_header[69];
     f_rewind(&self->file->fp);
     UINT bytes_read;
-    if (f_read(&self->file->fp, bmp_header, 48, &bytes_read) != FR_OK) {
+    if (f_read(&self->file->fp, bmp_header, 138, &bytes_read) != FR_OK) {
         mp_raise_OSError(MP_EIO);
     }
-    if (bytes_read != 48 ||
+    if (bytes_read != 138 ||
         memcmp(bmp_header, "BM", 2) != 0) {
         mp_raise_ValueError(translate("Invalid BMP file"));
     }
@@ -53,25 +53,67 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     self->data_offset = read_word(bmp_header, 5);
 
     uint32_t header_size = read_word(bmp_header, 7);
-    uint32_t compression = read_word(bmp_header, 15);
-    if (!(header_size == 12 || header_size == 40 || header_size == 108 || header_size == 124) ||
-        !(compression == 0)) {
-        mp_raise_ValueError_varg(translate("Only Windows format, uncompressed BMP supported %d"), header_size);
-    }
-    // TODO(tannewt): Support bitfield compressed colors since RGB565 can be produced by the GIMP.
     uint16_t bits_per_pixel = bmp_header[14];
-    if (bits_per_pixel < 24) {
-        mp_raise_ValueError_varg(translate("Only true color (24 bpp or higher) BMP supported %x"), bits_per_pixel);
-    }
-    self->bytes_per_pixel = bits_per_pixel / 8;
+    uint32_t compression = read_word(bmp_header, 15);
+    uint32_t number_of_colors = read_word(bmp_header, 23);
+
+    bool indexed = ((bits_per_pixel <= 8) && (number_of_colors != 0));
+    self->bitfield_compressed  = (compression == 3);
+    self->bits_per_pixel = bits_per_pixel;
     self->width = read_word(bmp_header, 9);
     self->height = read_word(bmp_header, 11);
-    uint32_t byte_width = self->width * self->bytes_per_pixel;
-    self->stride = byte_width;
-    // Rows are word aligned.
-    if (self->stride % 4 != 0) {
-        self->stride += 4 - self->stride % 4;
+
+    if (bits_per_pixel == 16){
+        if (((header_size >= 56)) || (self->bitfield_compressed)) {
+            self->r_bitmask = read_word(bmp_header, 27);
+            self->g_bitmask = read_word(bmp_header, 29);
+            self->b_bitmask = read_word(bmp_header, 31);
+
+        } else { // no compression or short header means 5:5:5
+            self->r_bitmask = 0x7c00;
+            self->g_bitmask = 0x3e0;
+            self->b_bitmask = 0x1f;
+        }
+    } else if (indexed && self->bits_per_pixel != 1) {
+        uint16_t palette_size = number_of_colors * sizeof(uint32_t);
+        uint16_t palette_offset = 0xe + header_size;
+
+        self->palette_data = m_malloc(palette_size, false);
+
+        f_rewind(&self->file->fp);
+        f_lseek(&self->file->fp, palette_offset);
+
+        UINT palette_bytes_read;
+        if (f_read(&self->file->fp, self->palette_data, palette_size, &palette_bytes_read) != FR_OK) {
+            mp_raise_OSError(MP_EIO);
+        }
+        if (palette_bytes_read != palette_size) {
+            mp_raise_ValueError(translate("Unable to read color palette data"));
+        }
+    } else if (!(header_size == 12 || header_size == 40 || header_size == 108 || header_size == 124)) {
+        mp_raise_ValueError_varg(translate("Only Windows format, uncompressed BMP supported: given header size is %d"), header_size);
     }
+
+    if (bits_per_pixel == 8 && number_of_colors == 0) {
+        mp_raise_ValueError_varg(translate("Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: %d bpp given"), bits_per_pixel);
+    }
+
+    uint8_t bytes_per_pixel = (self->bits_per_pixel / 8)  ? (self->bits_per_pixel /8) : 1;
+    uint8_t pixels_per_byte = 8 / self->bits_per_pixel;
+    if (pixels_per_byte == 0){
+        self->stride = (self->width * bytes_per_pixel);
+        // Rows are word aligned.
+        if (self->stride % 4 != 0) {
+            self->stride += 4 - self->stride % 4;
+        }
+    } else {
+        uint32_t bit_stride = self->width * self->bits_per_pixel;
+        if (bit_stride % 32 != 0) {
+            bit_stride += 32 - bit_stride % 32;
+        }
+        self->stride = (bit_stride / 8);
+    }
+
 }
 
 
@@ -80,14 +122,63 @@ uint32_t common_hal_displayio_ondiskbitmap_get_pixel(displayio_ondiskbitmap_t *s
     if (x < 0 || x >= self->width || y < 0 || y >= self->height) {
         return 0;
     }
-    uint32_t location = self->data_offset + (self->height - y) * self->stride + x * self->bytes_per_pixel;
+
+    uint32_t location;
+    uint8_t bytes_per_pixel = (self->bits_per_pixel / 8)  ? (self->bits_per_pixel /8) : 1;
+    uint8_t pixels_per_byte = 8 / self->bits_per_pixel;
+    if (pixels_per_byte == 0){
+        location = self->data_offset + (self->height - y - 1) * self->stride + x * bytes_per_pixel;
+    } else {
+        location = self->data_offset + (self->height - y - 1) * self->stride + x / pixels_per_byte;
+    }
     // We don't cache here because the underlying FS caches sectors.
     f_lseek(&self->file->fp, location);
     UINT bytes_read;
-    uint32_t pixel = 0;
-    uint32_t result = f_read(&self->file->fp, &pixel, self->bytes_per_pixel, &bytes_read);
+    uint32_t pixel_data = 0;
+    uint32_t result = f_read(&self->file->fp, &pixel_data, bytes_per_pixel, &bytes_read);
     if (result == FR_OK) {
-        return pixel;
+        uint32_t tmp = 0;
+        uint8_t red;
+        uint8_t green;
+        uint8_t blue;
+        if (bytes_per_pixel == 1) {
+            uint8_t offset = (x % pixels_per_byte) * self->bits_per_pixel;
+            uint8_t mask = (1 << self->bits_per_pixel) - 1;
+
+            uint8_t index = (pixel_data >> ((8 - self->bits_per_pixel) - offset)) & mask;
+            if (self->bits_per_pixel == 1) {
+                if (index == 1) {
+                    return 0xFFFFFF;
+                } else {
+                    return 0x000000;
+                }
+            }
+            return self->palette_data[index];
+        } else if (bytes_per_pixel == 2) {
+            if (self->g_bitmask == 0x07e0) { // 565
+                red =((pixel_data & self->r_bitmask) >>11);
+                green = ((pixel_data & self->g_bitmask) >>5);
+                blue = ((pixel_data & self->b_bitmask) >> 0);
+            } else { // 555
+                red =((pixel_data & self->r_bitmask) >>10);
+                green = ((pixel_data & self->g_bitmask) >>4);
+                blue = ((pixel_data & self->b_bitmask) >> 0);
+            }
+            tmp = (red << 19 | green << 10 | blue << 3);
+            return tmp;
+        } else if ((bytes_per_pixel == 4) && (self->bitfield_compressed)) {
+            return pixel_data & 0x00FFFFFF;
+        } else {
+            return pixel_data;
+        }
     }
     return 0;
+}
+
+uint16_t common_hal_displayio_ondiskbitmap_get_height(displayio_ondiskbitmap_t *self) {
+    return self->height;
+}
+
+uint16_t common_hal_displayio_ondiskbitmap_get_width(displayio_ondiskbitmap_t *self) {
+    return self->width;
 }

@@ -37,6 +37,8 @@ typedef struct _mp_obj_instance_t {
     // TODO maybe cache __getattr__ and __setattr__ for efficient lookup of them
 } mp_obj_instance_t;
 
+void mp_obj_assert_native_inited(mp_obj_t native_object);
+
 #if MICROPY_CPYTHON_COMPAT
 // this is needed for object.__new__
 mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *cls, const mp_obj_type_t **native_base);
@@ -49,6 +51,6 @@ mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
 #define mp_obj_is_instance_type(type) ((type)->make_new == mp_obj_instance_make_new)
 #define mp_obj_is_native_type(type) ((type)->make_new != mp_obj_instance_make_new)
 // this needs to be exposed for the above macros to work correctly
-mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 
 #endif // MICROPY_INCLUDED_PY_OBJTYPE_H

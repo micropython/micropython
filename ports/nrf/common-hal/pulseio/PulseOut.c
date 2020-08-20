@@ -102,10 +102,7 @@ void pulseout_reset() {
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
                                            const pulseio_pwmout_obj_t* carrier) {
     if (refcount == 0) {
-        timer = nrf_peripherals_allocate_timer();
-        if (timer == NULL) {
-            mp_raise_RuntimeError(translate("All timers in use"));
-        }
+        timer = nrf_peripherals_allocate_timer_or_throw();
     }
     refcount++;
 
@@ -155,9 +152,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
     while(pulse_array_index < length) {
         // Do other things while we wait. The interrupts will handle sending the
         // signal.
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 
     nrfx_timer_disable(timer);

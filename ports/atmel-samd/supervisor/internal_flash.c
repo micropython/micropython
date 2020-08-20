@@ -41,6 +41,7 @@
 #endif
 #include "hal/include/hal_flash.h"
 
+#include "supervisor/flash.h"
 #include "supervisor/shared/rgb_led_status.h"
 
 static struct flash_descriptor supervisor_flash_desc;
@@ -73,7 +74,10 @@ uint32_t supervisor_flash_get_block_count(void) {
     return INTERNAL_FLASH_PART1_NUM_BLOCKS;
 }
 
-void supervisor_flash_flush(void) {
+void port_internal_flash_flush(void) {
+}
+
+void supervisor_flash_release_cache(void) {
 }
 
 void flash_flush(void) {
@@ -83,7 +87,7 @@ void flash_flush(void) {
 static int32_t convert_block_to_flash_addr(uint32_t block) {
     if (0 <= block && block < INTERNAL_FLASH_PART1_NUM_BLOCKS) {
         // a block in partition 1
-        return INTERNAL_FLASH_MEM_SEG1_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
+        return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR + block * FILESYSTEM_BLOCK_SIZE;
     }
     // bad block
     return -1;

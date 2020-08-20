@@ -143,20 +143,19 @@ mp_obj_t common_hal_storage_getmount(const char *mount_path) {
     return storage_object_from_path(mount_path);
 }
 
-void common_hal_storage_remount(const char *mount_path, bool readonly) {
+void common_hal_storage_remount(const char *mount_path, bool readonly, bool disable_concurrent_write_protection) {
     if (strcmp(mount_path, "/") != 0) {
         mp_raise_OSError(MP_EINVAL);
     }
 
     #ifdef USB_AVAILABLE
-    // TODO(dhalbert): is this is a good enough check? It checks for
-    // CDC enabled. There is no "MSC enabled" check.
-    if (usb_enabled()) {
+    if (!usb_msc_ejected()) {
         mp_raise_RuntimeError(translate("Cannot remount '/' when USB is active."));
     }
     #endif
 
-    supervisor_flash_set_usb_writable(readonly);
+    filesystem_set_internal_writable_by_usb(readonly);
+    filesystem_set_internal_concurrent_write_protection(!disable_concurrent_write_protection);
 }
 
 void common_hal_storage_erase_filesystem(void) {

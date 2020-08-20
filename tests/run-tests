@@ -385,6 +385,7 @@ def run_tests(pyb, tests, args, base_path=".", num_threads=1):
         skip_tests.add('stress/gc_trace.py') # requires yield
         skip_tests.add('stress/recursive_gen.py') # requires yield
         skip_tests.add('extmod/vfs_userfs.py') # because native doesn't properly handle globals across different modules
+        skip_tests.add('../extmod/ulab/tests/argminmax.py') # requires yield
 
     def run_one_test(test_file):
         test_file = test_file.replace('\\', '/')
@@ -579,7 +580,7 @@ the last matching regex is used:
                 # run PC tests
                 test_dirs = (
                     'basics', 'micropython', 'float', 'import', 'io', 'misc',
-                    'stress', 'unicode', 'extmod', 'unix', 'cmdline',
+                    'stress', 'unicode', 'extmod', '../extmod/ulab/tests', 'unix', 'cmdline',
                 )
         else:
             # run tests from these directories

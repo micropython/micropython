@@ -149,8 +149,20 @@ SRC_C = \
 	alloc.c \
 	coverage.c \
 	fatfs_port.c \
+	supervisor/stub/filesystem.c \
+	supervisor/stub/safe_mode.c \
+	supervisor/stub/serial.c \
+	supervisor/stub/stack.c \
 	supervisor/shared/translate.c \
 	$(SRC_MOD)
+
+PY_EXTMOD_O_BASENAME += \
+	extmod/machine_mem.o \
+	extmod/machine_pinbase.o \
+	extmod/machine_signal.o \
+	extmod/machine_pulse.o \
+	extmod/machine_i2c.o \
+	extmod/machine_spi.o
 
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \
@@ -245,7 +257,7 @@ coverage:
 	$(MAKE) \
 	    COPT="-O0" CFLAGS_EXTRA='$(CFLAGS_EXTRA) -DMP_CONFIGFILE="<mpconfigport_coverage.h>" \
 	    -fprofile-arcs -ftest-coverage \
-	    -Wdouble-promotion -Wformat -Wmissing-declarations -Wmissing-prototypes -Wsign-compare \
+	    -Wformat -Wmissing-declarations -Wmissing-prototypes -Wsign-compare \
 	    -Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
 	    -DMICROPY_UNIX_COVERAGE' \
 	    LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' \
@@ -264,6 +276,18 @@ coverage_test: coverage
 
 coverage_clean:
 	$(MAKE) V=2 BUILD=build-coverage PROG=micropython_coverage clean
+
+# build an interpreter for fuzzing
+fuzz:
+	$(MAKE) \
+	    CC=afl-clang-fast DEBUG=1 \
+	    CFLAGS_EXTRA='$(CFLAGS_EXTRA) -ffunction-sections' \
+	    LDFLAGS_EXTRA='$(LDFLAGS_EXTRA)' \
+	    BUILD=build-fuzz PROG=micropython_fuzz
+
+fuzz_clean:
+	$(MAKE) V=2 BUILD=build-fuzz PROG=micropython_fuzz clean
+
 
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.

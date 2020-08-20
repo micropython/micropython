@@ -29,6 +29,7 @@
 
 #include "py/objtuple.h"
 #include "py/runtime.h"
+#include "py/objtype.h"
 
 #include "supervisor/shared/translate.h"
 
@@ -59,10 +60,10 @@ void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     }
 }
 
-STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_obj_tuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
 
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     switch (n_args) {
         case 0:
@@ -160,7 +161,8 @@ mp_obj_t mp_obj_tuple_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             if (n <= 0) {
                 return mp_const_empty_tuple;
             }
-            mp_obj_tuple_t *s = MP_OBJ_TO_PTR(mp_obj_new_tuple(o->len * n, NULL));
+            size_t new_len = mp_seq_multiply_len(o->len, n);
+            mp_obj_tuple_t *s = MP_OBJ_TO_PTR(mp_obj_new_tuple(new_len, NULL));
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return MP_OBJ_FROM_PTR(s);
         }
@@ -180,6 +182,11 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) {
         // load
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
+        // when called with a native type (eg namedtuple) using mp_obj_tuple_subscr, get the native self
+        if (self->base.type->subscr != &mp_obj_tuple_subscr) {
+            self = mp_instance_cast_to_native_base(self_in, &mp_type_tuple);
+        }
+
 #if MICROPY_PY_BUILTINS_SLICE
         if (MP_OBJ_IS_TYPE(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
@@ -250,7 +257,8 @@ mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items) {
 }
 
 void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_tuple));
+    // type check is done on getiter method to allow tuple, namedtuple, attrtuple
+    mp_check_self(mp_obj_get_type(self_in)->getiter == mp_obj_tuple_getiter);
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     *len = self->len;
     *items = &self->items[0];

@@ -38,48 +38,44 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: touchio
+//| class TouchIn:
+//|     """Read the state of a capacitive touch sensor
 //|
-//| :class:`TouchIn` -- Read the state of a capacitive touch sensor
-//| ===================================================================
+//|     Usage::
 //|
-//| Usage::
+//|        import touchio
+//|        from board import *
 //|
-//|    import touchio
-//|    from board import *
-//|
-//|    touch = touchio.TouchIn(A1)
-//|    while True:
-//|        if touch.value:
-//|            print("touched!")
+//|        touch = touchio.TouchIn(A1)
+//|        while True:
+//|            if touch.value:
+//|                print("touched!")"""
 //|
 
-//| .. class:: TouchIn(pin)
+//|     def __init__(self, pin: microcontroller.Pin):
+//|         """Use the TouchIn on the given pin.
 //|
-//|   Use the TouchIn on the given pin.
-//|
-//|   :param ~microcontroller.Pin pin: the pin to read from
+//|         :param ~microcontroller.Pin pin: the pin to read from"""
+//|         ...
 //|
 STATIC mp_obj_t touchio_touchin_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+        mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check number of arguments
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     // 1st argument is the pin
-    mp_obj_t pin_obj = args[0];
-    assert_pin(pin_obj, false);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
 
     touchio_touchin_obj_t *self = m_new_obj(touchio_touchin_obj_t);
     self->base.type = &touchio_touchin_type;
-    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
     common_hal_touchio_touchin_construct(self, pin);
 
     return (mp_obj_t) self;
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitialises the TouchIn and releases any hardware resources for reuse.
+//|     def deinit(self, ) -> Any:
+//|         """Deinitialises the TouchIn and releases any hardware resources for reuse."""
+//|         ...
 //|
 STATIC mp_obj_t touchio_touchin_deinit(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -88,16 +84,22 @@ STATIC mp_obj_t touchio_touchin_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_deinit_obj, touchio_touchin_deinit);
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+STATIC void check_for_deinit(touchio_touchin_obj_t *self) {
+    if (common_hal_touchio_touchin_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self, ) -> Any:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t touchio_touchin_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -106,15 +108,14 @@ STATIC mp_obj_t touchio_touchin_obj___exit__(size_t n_args, const mp_obj_t *args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(touchio_touchin___exit___obj, 4, 4, touchio_touchin_obj___exit__);
 
-//|   .. attribute:: value
+//|     value: Any = ...
+//|     """Whether the touch pad is being touched or not. (read-only)
 //|
-//|     Whether the touch pad is being touched or not. (read-only)
-//|
-//|     True when `raw_value` > `threshold`.
+//|     True when `raw_value` > `threshold`."""
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_value(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    check_for_deinit(self);
     return mp_obj_new_bool(common_hal_touchio_touchin_get_value(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_value_obj, touchio_touchin_obj_get_value);
@@ -127,13 +128,12 @@ const mp_obj_property_t touchio_touchin_value_obj = {
 };
 
 
-//|   .. attribute:: raw_value
-//|
-//|     The raw touch measurement as an `int`. (read-only)
+//|     raw_value: Any = ...
+//|     """The raw touch measurement as an `int`. (read-only)"""
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_raw_value(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_raw_value(self));
 }
 
@@ -147,18 +147,17 @@ const mp_obj_property_t touchio_touchin_raw_value_obj = {
  };
 
 
-//|   .. attribute:: threshold
-//|
-//|     Minimum `raw_value` needed to detect a touch (and for `value` to be `True`).
+//|     threshold: Any = ...
+//|     """Minimum `raw_value` needed to detect a touch (and for `value` to be `True`).
 //|
 //|     When the **TouchIn** object is created, an initial `raw_value` is read from the pin,
 //|     and then `threshold` is set to be 100 + that value.
 //|
-//|     You can adjust `threshold` to make the pin more or less sensitive.
+//|     You can adjust `threshold` to make the pin more or less sensitive."""
 //|
 STATIC mp_obj_t touchio_touchin_obj_get_threshold(mp_obj_t self_in) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_touchio_touchin_get_threshold(self));
 }
 
@@ -166,7 +165,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_threshold_obj, touchio_touchin_obj
 
 STATIC mp_obj_t touchio_touchin_obj_set_threshold(mp_obj_t self_in, mp_obj_t threshold_obj) {
     touchio_touchin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_touchio_touchin_deinited(self));
+    check_for_deinit(self);
     uint32_t new_threshold = mp_obj_get_int(threshold_obj);
     if (new_threshold < 0 || new_threshold > UINT16_MAX) {
         // I would use MP_STRINGIFY(UINT16_MAX), but that prints "0xffff" instead of 65536.

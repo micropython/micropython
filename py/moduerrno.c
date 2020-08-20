@@ -84,7 +84,11 @@ STATIC const mp_obj_dict_t errorcode_dict = {
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_uerrno_globals_table[] = {
+#if CIRCUITPY
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_errno) },
+#else
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uerrno) },
+#endif
     #if MICROPY_PY_UERRNO_ERRORCODE
     { MP_ROM_QSTR(MP_QSTR_errorcode), MP_ROM_PTR(&errorcode_dict) },
     #endif
@@ -151,9 +155,10 @@ const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
         case EEXIST: desc = translate("File exists"); break;
         case ENODEV: desc = translate("Unsupported operation"); break;
         case EINVAL: desc = translate("Invalid argument"); break;
+        case ENOSPC: desc = translate("No space left on device"); break;
         case EROFS:  desc = translate("Read-only filesystem"); break;
     }
-    if (desc != NULL && desc->length <= len) {
+    if (desc != NULL && decompress_length(desc) <= len) {
         decompress(desc, buf);
         return buf;
     }

@@ -36,48 +36,43 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/util.h"
 
-//| .. currentmodule:: analogio
+//| class AnalogIn:
+//|     """Read analog voltage levels
 //|
-//| :class:`AnalogIn` -- read analog voltage
-//| ============================================
+//|     Usage::
 //|
-//| Usage::
+//|        import analogio
+//|        from board import *
 //|
-//|    import analogio
-//|    from board import *
-//|
-//|    adc = analogio.AnalogIn(A1)
-//|    val = adc.value
+//|        adc = analogio.AnalogIn(A1)
+//|        val = adc.value"""
 //|
 
-//| .. class:: AnalogIn(pin)
+//|     def __init__(self, pin: microcontroller.Pin):
+//|         """Use the AnalogIn on the given pin. The reference voltage varies by
+//|         platform so use ``reference_voltage`` to read the configured setting.
 //|
-//|   Use the AnalogIn on the given pin. The reference voltage varies by
-//|   platform so use ``reference_voltage`` to read the configured setting.
-//|
-//|   :param ~microcontroller.Pin pin: the pin to read from
+//|         :param ~microcontroller.Pin pin: the pin to read from"""
+//|         ...
 //|
 STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+        mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check number of arguments
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     // 1st argument is the pin
-    mp_obj_t pin_obj = args[0];
-    assert_pin(pin_obj, false);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
 
     analogio_analogin_obj_t *self = m_new_obj(analogio_analogin_obj_t);
     self->base.type = &analogio_analogin_type;
-    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
-    assert_pin_free(pin);
     common_hal_analogio_analogin_construct(self, pin);
 
-    return (mp_obj_t) self;
+    return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Turn off the AnalogIn and release the pin for other use.
+//|     def deinit(self, ) -> Any:
+//|         """Turn off the AnalogIn and release the pin for other use."""
+//|         ...
 //|
 STATIC mp_obj_t analogio_analogin_deinit(mp_obj_t self_in) {
    analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -86,16 +81,21 @@ STATIC mp_obj_t analogio_analogin_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_deinit_obj, analogio_analogin_deinit);
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+STATIC void check_for_deinit(analogio_analogin_obj_t *self) {
+    if (common_hal_analogio_analogin_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self, ) -> Any:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t analogio_analogin___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -104,16 +104,15 @@ STATIC mp_obj_t analogio_analogin___exit__(size_t n_args, const mp_obj_t *args) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogin___exit___obj, 4, 4, analogio_analogin___exit__);
 
-//|   .. attribute:: value
-//|
-//|     The value on the analog pin between 0 and 65535 inclusive (16-bit). (read-only)
+//|     value: Any = ...
+//|     """The value on the analog pin between 0 and 65535 inclusive (16-bit). (read-only)
 //|
 //|     Even if the underlying analog to digital converter (ADC) is lower
-//|     resolution, the value is 16-bit.
+//|     resolution, the value is 16-bit."""
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_value(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_analogio_analogin_deinited(self));
+    check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_analogio_analogin_get_value(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_value_obj, analogio_analogin_obj_get_value);
@@ -125,15 +124,20 @@ const mp_obj_property_t analogio_analogin_value_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: reference_voltage
-//|
-//|     The maximum voltage measurable (also known as the reference voltage) as a
-//|     `float` in Volts.
+//|     reference_voltage: Any = ...
+//|     """The maximum voltage measurable (also known as the reference voltage) as a
+//|     `float` in Volts."""
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    raise_error_if_deinited(common_hal_analogio_analogin_deinited(self));
-    return mp_obj_new_float(common_hal_analogio_analogin_get_reference_voltage(self));
+    check_for_deinit(self);
+
+    float reference_voltage = common_hal_analogio_analogin_get_reference_voltage(self);
+    if (reference_voltage <= 0.0f) {
+        return mp_const_none;
+    } else {
+        return mp_obj_new_float(reference_voltage);
+    }
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_reference_voltage_obj,
                           analogio_analogin_obj_get_reference_voltage);

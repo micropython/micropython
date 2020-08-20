@@ -36,44 +36,41 @@
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/translate.h"
 
-void MP_WEAK common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
-    mp_raise_NotImplementedError(translate("RTC is not supported on this board"));
-}
-
-void MP_WEAK common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
-    mp_raise_NotImplementedError(translate("RTC is not supported on this board"));
-}
-
-int MP_WEAK common_hal_rtc_get_calibration(void) {
-    return 0;
-}
-
-void MP_WEAK common_hal_rtc_set_calibration(int calibration) {
-    mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
-}
-
 const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 
-//| .. currentmodule:: rtc
+//| class RTC:
+//|     """Real Time Clock"""
 //|
-//| :class:`RTC` --- Real Time Clock
-//| --------------------------------
+//|     def __init__(self, ):
+//|         """This class represents the onboard Real Time Clock. It is a singleton and will always return the same instance."""
+//|         ...
 //|
-//| .. class:: RTC()
-//|
-//|   This class represents the onboard Real Time Clock. It is a singleton and will always return the same instance.
-//|
-STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // No arguments
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    mp_arg_check_num(n_args, kw_args, 0, 0, false);
 
     // return constant object
     return (mp_obj_t)&rtc_rtc_obj;
 }
 
-//|   .. attribute:: datetime
+//|     datetime: time.struct_time = ...
+//|     """The current date and time of the RTC as a `time.struct_time`.
 //|
-//|       The date and time of the RTC.
+//|     This must be set to the current date and time whenever the board loses power::
+//|
+//|       import rtc
+//|       import time
+//|
+//|       r = rtc.RTC()
+//|       r.datetime = time.struct_time((2019, 5, 29, 15, 14, 15, 0, -1, -1))
+//|
+//|
+//|     Once set, the RTC will automatically update this value as time passes. You can read this
+//|     property to get a snapshot of the current time::
+//|
+//|       current_time = r.datetime
+//|       print(current_time)
+//|       # struct_time(tm_year=2019, tm_month=5, ...)"""
 //|
 STATIC mp_obj_t rtc_rtc_obj_get_datetime(mp_obj_t self_in) {
     timeutils_struct_time_t tm;
@@ -97,11 +94,11 @@ const mp_obj_property_t rtc_rtc_datetime_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: calibration
+//|     calibration: int = ...
+//|     """The RTC calibration value as an `int`.
 //|
-//|     The RTC calibration value.
 //|     A positive value speeds up the clock and a negative value slows it down.
-//|     Range and value is hardware specific, but one step is often approx. 1 ppm.
+//|     Range and value is hardware specific, but one step is often approximately 1 ppm."""
 //|
 STATIC mp_obj_t rtc_rtc_obj_get_calibration(mp_obj_t self_in) {
     int calibration = common_hal_rtc_get_calibration();

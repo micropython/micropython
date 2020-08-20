@@ -49,10 +49,14 @@
 //--------------------------------------------------------------------+
 #define CFG_TUSB_RHPORT0_MODE       OPT_MODE_DEVICE
 
+#ifndef CFG_TUSB_DEBUG
 #define CFG_TUSB_DEBUG              0
+#endif
 
 /*------------- RTOS -------------*/
+#ifndef CFG_TUSB_OS
 #define CFG_TUSB_OS                 OPT_OS_NONE
+#endif
 //#define CFG_TUD_TASK_QUEUE_SZ     16
 //#define CFG_TUD_TASK_PRIO         0
 //#define CFG_TUD_TASK_STACK_SZ     150
@@ -74,7 +78,8 @@
 //------------- CLASS -------------//
 #define CFG_TUD_CDC                 1
 #define CFG_TUD_MSC                 1
-#define CFG_TUD_HID                 1
+#define CFG_TUD_HID                 CIRCUITPY_USB_HID
+#define CFG_TUD_MIDI                CIRCUITPY_USB_MIDI
 #define CFG_TUD_CUSTOM_CLASS        0
 
 /*------------------------------------------------------------------*/
@@ -106,7 +111,7 @@
 // USB RAM PLACEMENT
 //--------------------------------------------------------------------+
 #define CFG_TUSB_ATTR_USBRAM
-#define CFG_TUSB_MEM_ALIGN          ATTR_ALIGNED(4)
+#define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(4)))
 
 
 #ifdef __cplusplus

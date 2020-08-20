@@ -29,6 +29,22 @@
 
 #include "py/obj.h"
 
-// Nothing now.
+typedef enum {
+    DISPLAY_COMMAND,
+    DISPLAY_DATA
+} display_byte_type_t;
+
+typedef enum {
+    CHIP_SELECT_UNTOUCHED,
+    CHIP_SELECT_TOGGLE_EVERY_BYTE
+} display_chip_select_behavior_t;
+
+typedef bool (*display_bus_bus_reset)(mp_obj_t bus);
+typedef bool (*display_bus_bus_free)(mp_obj_t bus);
+typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
+typedef void (*display_bus_send)(mp_obj_t bus, display_byte_type_t byte_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length);
+typedef void (*display_bus_end_transaction)(mp_obj_t bus);
+
+void common_hal_displayio_release_displays(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO___INIT___H

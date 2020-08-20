@@ -30,29 +30,16 @@
 
 #include "bindings/samd/Clock.h"
 
-//| :mod:`samd` --- SAMD implementation settings
-//| =================================================
-//|
-//| .. module:: samd
-//|   :synopsis: SAMD implementation settings
-//|   :platform: SAMD21
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Clock
-//|
+//| """SAMD implementation settings"""
 
-//| :mod:`samd.clock` --- samd clock names
+//| """:mod:`samd.clock` --- samd clock names
 //| --------------------------------------------------------
 //|
 //| .. module:: samd.clock
 //|   :synopsis: samd clock names
 //|   :platform: SAMD21
 //|
-//| References to clocks as named by the microcontroller
+//| References to clocks as named by the microcontroller"""
 //|
 const mp_obj_module_t samd_clock_module = {
     .base = { &mp_type_module },

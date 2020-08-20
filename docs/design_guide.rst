@@ -60,6 +60,7 @@ For example, a user can then use ``deinit()```::
 
     import digitalio
     import board
+    import time
 
     led = digitalio.DigitalInOut(board.D13)
     led.direction = digitalio.Direction.OUTPUT
@@ -79,6 +80,7 @@ Alternatively, using a ``with`` statement ensures that the hardware is deinitial
 
     import digitalio
     import board
+    import time
 
     with digitalio.DigitalInOut(board.D13) as led:
         led.direction = digitalio.Direction.OUTPUT
@@ -474,6 +476,8 @@ properties.
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``distance``          | float                 | centimeters                                                             |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
+| ``proximity``         | int                   | non-unit-specifc proximity values (monotonic but not actual distance)   |
++-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``light``             | float                 | non-unit-specific light levels (should be monotonic but is not lux)     |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``lux``               | float                 | SI lux                                                                  |
@@ -499,6 +503,10 @@ properties.
 | ``value``             | bool                  | Digital logic                                                           |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 | ``value``             | int                   | 16-bit Analog value, unit-less                                          |
++-----------------------+-----------------------+-------------------------------------------------------------------------+
+| ``weight``            | float                 | grams (g)                                                               |
++-----------------------+-----------------------+-------------------------------------------------------------------------+
+| ``sound_level``       | float                 | non-unit-specific sound level (monotonic but not actual decibels)       |
 +-----------------------+-----------------------+-------------------------------------------------------------------------+
 
 Adding native modules

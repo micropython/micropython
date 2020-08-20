@@ -36,33 +36,38 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: displayio
+//| class ColorConverter:
+//|     """Converts one color format to another."""
 //|
-//| :class:`ColorConverter` -- Converts one color format to another
-//| =========================================================================================
+//|     def __init__(self, *, dither: bool = False):
+//|         """Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
+//|         currently.
+//|         :param bool dither: Adds random noise to dither the output image"""
+//|         ...
 //|
-//| Converts one color format to another.
-//|
-//| .. warning:: This will be changed before 4.0.0. Consider it very experimental.
-//|
-//| .. class:: ColorConverter()
-//|
-//|   Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
-//|   currently.
-//|
+
 // TODO(tannewt): Add support for other color formats.
 //|
-STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, 0, true);
+STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_dither};
+
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     displayio_colorconverter_t *self = m_new_obj(displayio_colorconverter_t);
     self->base.type = &displayio_colorconverter_type;
-    common_hal_displayio_colorconverter_construct(self);
+
+    common_hal_displayio_colorconverter_construct(self, args[ARG_dither].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: convert(color)
+//|     def convert(self, color: Any) -> Any:
+//|         """Converts the given RGB888 color to RGB565"""
+//|         ...
 //|
 STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
@@ -71,14 +76,43 @@ STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t 
     if (!mp_obj_get_int_maybe(color_obj, &color)) {
         mp_raise_ValueError(translate("color should be an int"));
     }
-    uint16_t output_color;
-    common_hal_displayio_colorconverter_convert(self, color, &output_color);
+    _displayio_colorspace_t colorspace;
+    colorspace.depth = 16;
+    uint32_t output_color;
+    common_hal_displayio_colorconverter_convert(self, &colorspace, color, &output_color);
     return MP_OBJ_NEW_SMALL_INT(output_color);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_convert_obj, displayio_colorconverter_obj_convert);
 
+//|     dither: Any = ...
+//|     """When true the color converter dithers the output by adding random noise when
+//|     truncating to display bitdepth"""
+//|
+STATIC mp_obj_t displayio_colorconverter_obj_get_dither(mp_obj_t self_in) {
+    displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(common_hal_displayio_colorconverter_get_dither(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_colorconverter_get_dither_obj, displayio_colorconverter_obj_get_dither);
+
+STATIC mp_obj_t displayio_colorconverter_obj_set_dither(mp_obj_t self_in, mp_obj_t dither) {
+    displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_displayio_colorconverter_set_dither(self, mp_obj_is_true(dither));
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_set_dither_obj, displayio_colorconverter_obj_set_dither);
+
+const mp_obj_property_t displayio_colorconverter_dither_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_colorconverter_get_dither_obj,
+              (mp_obj_t)&displayio_colorconverter_set_dither_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t displayio_colorconverter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_convert), MP_ROM_PTR(&displayio_colorconverter_convert_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&displayio_colorconverter_dither_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_colorconverter_locals_dict, displayio_colorconverter_locals_dict_table);
 

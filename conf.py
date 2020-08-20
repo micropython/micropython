@@ -13,10 +13,12 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+import json
 import sys
 import os
 
-from recommonmark.parser import CommonMarkParser
+import recommonmark
+import subprocess
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -24,7 +26,19 @@ from recommonmark.parser import CommonMarkParser
 sys.path.insert(0, os.path.abspath('docs'))
 sys.path.insert(0, os.path.abspath('.'))
 
+import shared_bindings_matrix
+
 master_doc = 'docs/index'
+
+# Grab the JSON values to use while building the module support matrix
+# in 'shared-bindings/index.rst'
+
+#modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
+modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
+
+html_context = {
+    'support_matrix': modules_support_matrix
+}
 
 # -- General configuration ------------------------------------------------
 
@@ -37,19 +51,34 @@ needs_sphinx = '1.3'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinxcontrib.rsvgconverter',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-    'sphinx.ext.coverage'
+    'sphinx.ext.coverage',
+    'rstjinja',
+    'recommonmark',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
 
 # The suffix of source filenames.
-source_suffix = ['.rst', '.md', '.c', '.h']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
-source_parsers = {'.md': CommonMarkParser,
-                  '.c': "c2rst.CStrip", '.h': "c2rst.CStrip"}
+subprocess.check_output(["make", "stubs"])
+extensions.append('autoapi.extension')
+
+autoapi_type = 'python'
+# Uncomment this if debugging autoapi
+autoapi_keep_files = True
+autoapi_dirs = [os.path.join('circuitpython-stubs', x) for x in os.listdir('circuitpython-stubs')]
+autoapi_add_toctree_entry = False
+autoapi_options = ['members', 'undoc-members', 'private-members', 'show-inheritance', 'special-members', 'show-module-summary']
+autoapi_template_dir = 'docs/autoapi/templates'
+autoapi_python_use_implicit_namespaces = True
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -59,7 +88,7 @@ source_parsers = {'.md': CommonMarkParser,
 
 # General information about the project.
 project = 'Adafruit CircuitPython'
-copyright = '2014-2018, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
+copyright = '2014-2020, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
 
 # These are overwritten on ReadTheDocs.
 # The version info for the project you're documenting, acts as replacement for
@@ -83,8 +112,10 @@ version = release = '0.0.0'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ["**/build*",
+                    ".git",
                     ".venv",
                     ".direnv",
+                    "docs/autoapi",
                     "docs/README.md",
                     "drivers",
                     "examples",
@@ -105,32 +136,25 @@ exclude_patterns = ["**/build*",
                     "ports/atmel-samd/peripherals",
                     "ports/atmel-samd/QTouch",
                     "ports/atmel-samd/tools",
-                    "ports/bare-arm",
-                    "ports/cc3200",
-                    "ports/cc3200/FreeRTOS",
-                    "ports/cc3200/hal",
-                    "ports/esp32",
-                    "ports/esp8266/boards",
-                    "ports/esp8266/common-hal",
-                    "ports/esp8266/modules",
+                    "ports/cxd56/mkspk",
+                    "ports/cxd56/spresense-exported-sdk",
+                    "ports/esp32s2/esp-idf",
+                    "ports/esp32s2/peripherals",
+                    "ports/litex/hw",
                     "ports/minimal",
+                    "ports/mimxrt10xx/peripherals",
+                    "ports/mimxrt10xx/sdk",
                     "ports/nrf/device",
                     "ports/nrf/bluetooth",
                     "ports/nrf/modules",
                     "ports/nrf/nrfx",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
-                    "ports/pic16bit",
-                    "ports/qemu-arm",
-                    "ports/stm32",
-                    "ports/stm32/hal",
-                    "ports/stm32/cmsis",
-                    "ports/stm32/usbdev",
-                    "ports/stm32/usbhost",
-                    "ports/teensy",
+                    "ports/stm/st_driver",
+                    "ports/stm/packages",
+                    "ports/stm/peripherals",
+                    "ports/stm/ref",
                     "ports/unix",
-                    "ports/windows",
-                    "ports/zephyr",
                     "py",
                     "shared-bindings/util.*",
                     "shared-module",
@@ -284,7 +308,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   (master_doc, 'CircuitPython.tex', 'CircuitPython Documentation',
-   'Damien P. George, Paul Sokolovsky, and contributors', 'manual'),
+   'CircuitPython Contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -314,7 +338,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'CircuitPython', 'CircuitPython Documentation',
-     ['Damien P. George, Paul Sokolovsky, and contributors'], 1),
+     ['CircuitPython contributors'], 1),
 ]
 
 # If true, show URL addresses after external links.
@@ -328,7 +352,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   (master_doc, 'CircuitPython', 'CircuitPython Documentation',
-   'Damien P. George, Paul Sokolovsky, and contributors', 'CircuitPython', 'One line description of project.',
+   'CircuitPython contributors', 'CircuitPython', 'Python for Microcontrollers.',
    'Miscellaneous'),
 ]
 
@@ -349,3 +373,6 @@ texinfo_documents = [
 intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
                        "bus_device": ('https://circuitpython.readthedocs.io/projects/busdevice/en/latest/', None),
                        "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}
+
+def setup(app):
+    app.add_css_file("customstyle.css")

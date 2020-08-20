@@ -30,76 +30,47 @@
 #include <hal_init.h>
 #include <hpl_gclk_base.h>
 #include <hpl_pm_base.h>
-#include <hal_calendar.h>
 
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "lib/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/translate.h"
 
-static struct calendar_descriptor calendar;
-
-void rtc_init(void) {
-#ifdef SAMD21
-    _gclk_enable_channel(RTC_GCLK_ID, CONF_GCLK_RTC_SRC);
-#endif
-#ifdef SAMD51
-    hri_mclk_set_APBAMASK_RTC_bit(MCLK);
-#endif
-    calendar_init(&calendar, RTC);
-    calendar_set_baseyear(&calendar, 2000);
-    calendar_enable(&calendar);
-}
+// This is the time in seconds since 2000 that the RTC was started.
+// TODO: Change the offset to ticks so that it can be a subsecond adjustment.
+static uint32_t rtc_offset = 0;
 
 void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
-    struct calendar_date_time datetime;
-    calendar_get_date_time(&calendar, &datetime);
-
-    tm->tm_year = datetime.date.year;
-    tm->tm_mon  = datetime.date.month;
-    tm->tm_mday = datetime.date.day;
-    tm->tm_hour = datetime.time.hour;
-    tm->tm_min  = datetime.time.min;
-    tm->tm_sec  = datetime.time.sec;
+    uint64_t ticks_s = port_get_raw_ticks(NULL) / 1024;
+    timeutils_seconds_since_2000_to_struct_time(rtc_offset + ticks_s, tm);
 }
 
 void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
-    // Reset prescaler to increase initial precision. Otherwise we can be up to 1 second off already.
-    uint32_t freqcorr = hri_rtcmode0_read_FREQCORR_reg(calendar.device.hw);
-    calendar_deinit(&calendar);
-    rtc_init();
-    hri_rtcmode0_write_FREQCORR_reg(calendar.device.hw, freqcorr);
-
-    struct calendar_date date = {
-        .year = tm->tm_year,
-        .month = tm->tm_mon,
-        .day = tm->tm_mday,
-    };
-    calendar_set_date(&calendar, &date);
-
-    struct calendar_time time = {
-        .hour = tm->tm_hour,
-        .min = tm->tm_min,
-        .sec = tm->tm_sec,
-    };
-    calendar_set_time(&calendar, &time);
+    uint64_t ticks_s = port_get_raw_ticks(NULL) / 1024;
+    uint32_t epoch_s = timeutils_seconds_since_2000(
+        tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec
+    );
+    rtc_offset = epoch_s - ticks_s;
 }
 
 // A positive value speeds up the clock by removing clock cycles.
 int common_hal_rtc_get_calibration(void) {
-    int calibration = hri_rtcmode0_read_FREQCORR_VALUE_bf(calendar.device.hw);
+    int calibration = hri_rtcmode0_read_FREQCORR_VALUE_bf(RTC);
 
-    if (!hri_rtcmode0_get_FREQCORR_SIGN_bit(calendar.device.hw))
+    if (!hri_rtcmode0_get_FREQCORR_SIGN_bit(RTC)) {
         calibration = -calibration;
+    }
 
     return calibration;
 }
 
 void common_hal_rtc_set_calibration(int calibration) {
-    if (calibration > 127 || calibration < -127)
+    if (calibration > 127 || calibration < -127) {
         mp_raise_ValueError(translate("calibration value out of range +/-127"));
+    }
 
-    hri_rtcmode0_write_FREQCORR_SIGN_bit(calendar.device.hw, calibration < 0 ? 0 : 1);
-    hri_rtcmode0_write_FREQCORR_VALUE_bf(calendar.device.hw, abs(calibration));
+    hri_rtcmode0_write_FREQCORR_SIGN_bit(RTC, calibration < 0 ? 0 : 1);
+    hri_rtcmode0_write_FREQCORR_VALUE_bf(RTC, abs(calibration));
 }

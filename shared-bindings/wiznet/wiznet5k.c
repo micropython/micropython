@@ -41,34 +41,51 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "shared-module/network/__init__.h"
 #include "shared-module/wiznet/wiznet5k.h"
 
-//| .. currentmodule:: wiznet
-//| 
-//| :class:`WIZNET5K` -- wrapper for Wiznet 5500 Ethernet interface
-//| ===============================================================
+//| class WIZNET5K:
+//|     """Wrapper for Wiznet 5500 Ethernet interface"""
 //|
-//| .. class:: WIZNET5K(spi, cs, rst)
+//|     def __init__(self, spi: busio.SPI, cs: microcontroller.Pin, rst: microcontroller.Pin, dhcp: bool = True):
+//|         """Create a new WIZNET5500 interface using the specified pins
 //|
-//|   Create a new WIZNET5500 interface using the specified pins
-//|   
-//|   :param spi: spi bus to use
-//|   :param cs: pin to use for Chip Select
-//|   :param rst: pin to sue for Reset 
+//|         :param ~busio.SPI spi: spi bus to use
+//|         :param ~microcontroller.Pin cs: pin to use for Chip Select
+//|         :param ~microcontroller.Pin rst: pin to use for Reset (optional)
+//|         :param bool dhcp: boolean flag, whether to start DHCP automatically (optional, keyword only, default True)
+//|
+//|         * The reset pin is optional: if supplied it is used to reset the
+//|           wiznet board before initialization.
+//|         * The SPI bus will be initialized appropriately by this library.
+//|         * At present, the WIZNET5K object is a singleton, so only one WizNet
+//|           interface is supported at a time."""
+//|         ...
 //|
 
-STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    // check arguments
-    mp_arg_check_num(n_args, n_kw, 3, 3, false);
+STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_spi, ARG_cs, ARG_rst, ARG_dhcp };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_spi, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_cs, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_rst, MP_ARG_OBJ, { .u_obj = mp_const_none } },
+        { MP_QSTR_dhcp, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = true } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    // TODO check type of ARG_spi?
+    const mcu_pin_obj_t *cs = validate_obj_is_free_pin(args[ARG_cs].u_obj);
+    const mcu_pin_obj_t *rst = validate_obj_is_free_pin_or_none(args[ARG_rst].u_obj);
 
-    return wiznet5k_create(args[0], args[1], args[2]);
+    mp_obj_t ret = wiznet5k_create(args[ARG_spi].u_obj, cs, rst);
+    if (args[ARG_dhcp].u_bool) wiznet5k_start_dhcp();
+    return ret;
 }
 
-//| .. attribute:: connected
-//|
-//|   is this device physically connected?
+//|     connected: Any = ...
+//|     """(boolean, readonly) is this device physically connected?"""
 //|
 
 STATIC mp_obj_t wiznet5k_connected_get_value(mp_obj_t self_in) {
@@ -84,9 +101,10 @@ const mp_obj_property_t wiznet5k_connected_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//| .. attribute:: dhcp
+//|     dhcp: Any = ...
+//|     """(boolean, readwrite) is DHCP active on this device?
 //|
-//|   is DHCP active on this device? (set to true to activate DHCP, false to turn it off)
+//|     * set to True to activate DHCP, False to turn it off"""
 //|
 
 STATIC mp_obj_t wiznet5k_dhcp_get_value(mp_obj_t self_in) {
@@ -99,9 +117,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_dhcp_get_value_obj, wiznet5k_dhcp_get_
 STATIC mp_obj_t wiznet5k_dhcp_set_value(mp_obj_t self_in, mp_obj_t value) {
     (void)self_in;
     if (mp_obj_is_true(value)) {
-        wiznet5k_start_dhcp();
+        int ret = wiznet5k_start_dhcp();
+        if (ret) mp_raise_OSError(ret);
     } else {
-        wiznet5k_stop_dhcp();
+        int ret = wiznet5k_stop_dhcp();
+        if (ret) mp_raise_OSError(ret);
     }
     return mp_const_none;
 }
@@ -114,12 +134,13 @@ const mp_obj_property_t wiznet5k_dhcp_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//| .. method:: ifconfig(...)
+//|     def ifconfig(self, params: Any = None) -> Any:
+//|         """Called without parameters, returns a tuple of
+//|         (ip_address, subnet_mask, gateway_address, dns_server)
 //|
-//|   Called without parameters, returns a tuple of
-//|   (ip_address, subnet_mask, gateway_address, dns_server)
-//|
-//|   Or can be called with the same tuple to set those parameters.
+//|         Or can be called with the same tuple to set those parameters.
+//|         Setting ifconfig parameters turns DHCP off, if it was on."""
+//|         ...
 //|
 
 STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
@@ -136,6 +157,7 @@ STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_tuple(4, tuple);
     } else {
         // set
+        wiznet5k_stop_dhcp();
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
         netutils_parse_ipv4_addr(items[0], netinfo.ip, NETUTILS_BIG);
@@ -178,6 +200,7 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
     .settimeout = wiznet5k_socket_settimeout,
     .ioctl = wiznet5k_socket_ioctl,
     .timer_tick = wiznet5k_socket_timer_tick,
+    .deinit = wiznet5k_socket_deinit,
 };
 
 #endif // MICROPY_PY_WIZNET5K

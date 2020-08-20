@@ -49,27 +49,22 @@ STATIC mp_obj_t mp_obj_new_i2cslave_i2c_slave_request(i2cslave_i2c_slave_obj_t *
     return (mp_obj_t)self;
 }
 
-//| .. currentmodule:: i2cslave
+//| class I2CSlave:
+//|     """Two wire serial protocol slave"""
 //|
-//| :class:`I2CSlave` --- Two wire serial protocol slave
-//| ----------------------------------------------------
+//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, addresses: tuple, smbus: bool = False):
+//|         """I2C is a two-wire protocol for communicating between devices.
+//|         This implements the slave side.
 //|
-//| .. class:: I2CSlave(scl, sda, addresses, smbus=False)
+//|         :param ~microcontroller.Pin scl: The clock pin
+//|         :param ~microcontroller.Pin sda: The data pin
+//|         :param tuple addresses: The I2C addresses to respond to (how many is hw dependent).
+//|         :param bool smbus: Use SMBUS timings if the hardware supports it"""
+//|         ...
 //|
-//|   I2C is a two-wire protocol for communicating between devices.
-//|   This implements the slave side.
-//|
-//|   :param ~microcontroller.Pin scl: The clock pin
-//|   :param ~microcontroller.Pin sda: The data pin
-//|   :param tuple addresses: The I2C addresses to respond to (how many is hw dependent).
-//|   :param bool smbus: Use SMBUS timings if the hardware supports it
-//|
-STATIC mp_obj_t i2cslave_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
-    mp_arg_check_num(n_args, n_kw, 0, MP_OBJ_FUN_ARGS_MAX, true);
+STATIC mp_obj_t i2cslave_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     i2cslave_i2c_slave_obj_t *self = m_new_obj(i2cslave_i2c_slave_obj_t);
     self->base.type = &i2cslave_i2c_slave_type;
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, pos_args + n_args);
     enum { ARG_scl, ARG_sda, ARG_addresses, ARG_smbus };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -78,14 +73,10 @@ STATIC mp_obj_t i2cslave_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_
         { MP_QSTR_smbus, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    assert_pin(args[ARG_scl].u_obj, false);
-    assert_pin(args[ARG_sda].u_obj, false);
-    const mcu_pin_obj_t* scl = MP_OBJ_TO_PTR(args[ARG_scl].u_obj);
-    assert_pin_free(scl);
-    const mcu_pin_obj_t* sda = MP_OBJ_TO_PTR(args[ARG_sda].u_obj);
-    assert_pin_free(sda);
+    const mcu_pin_obj_t* scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
+    const mcu_pin_obj_t* sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
 
     mp_obj_iter_buf_t iter_buf;
     mp_obj_t iterable = mp_getiter(args[ARG_addresses].u_obj, &iter_buf);
@@ -111,9 +102,9 @@ STATIC mp_obj_t i2cslave_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_
     return (mp_obj_t)self;
 }
 
-//|   .. method:: deinit()
-//|
-//|     Releases control of the underlying hardware so other classes can use it.
+//|     def deinit(self, ) -> Any:
+//|         """Releases control of the underlying hardware so other classes can use it."""
+//|         ...
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_obj_deinit(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cslave_i2c_slave_type));
@@ -123,16 +114,16 @@ STATIC mp_obj_t i2cslave_i2c_slave_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(i2cslave_i2c_slave_deinit_obj, i2cslave_i2c_slave_obj_deinit);
 
-//|   .. method:: __enter__()
-//|
-//|     No-op used in Context Managers.
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used in Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|     Automatically deinitializes the hardware on context exit. See
-//|     :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self, ) -> Any:
+//|         """Automatically deinitializes the hardware on context exit. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_obj___exit__(size_t n_args, const mp_obj_t *args) {
     mp_check_self(MP_OBJ_IS_TYPE(args[0], &i2cslave_i2c_slave_type));
@@ -142,18 +133,19 @@ STATIC mp_obj_t i2cslave_i2c_slave_obj___exit__(size_t n_args, const mp_obj_t *a
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cslave_i2c_slave___exit___obj, 4, 4, i2cslave_i2c_slave_obj___exit__);
 
-//|   .. method:: request(timeout=-1)
+//|     def request(self, timeout: float = -1) -> Any:
+//|         """Wait for an I2C request from a master.
 //|
-//|      Wait for an I2C request from a master.
-//|
-//|      :param float timeout: Timeout in seconds. Zero means wait forever, a negative value means check once
-//|      :return: I2C Slave Request or None if timeout=-1 and there's no request
-//|      :rtype: ~i2cslave.I2CSlaveRequest
+//|         :param float timeout: Timeout in seconds. Zero means wait forever, a negative value means check once
+//|         :return: I2C Slave Request or None if timeout=-1 and there's no request
+//|         :rtype: ~i2cslave.I2CSlaveRequest"""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_check_self(MP_OBJ_IS_TYPE(pos_args[0], &i2cslave_i2c_slave_type));
     i2cslave_i2c_slave_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    raise_error_if_deinited(common_hal_i2cslave_i2c_slave_deinited(self));
+    if(common_hal_i2cslave_i2c_slave_deinited(self)) {
+        raise_deinited_error();
+    }
     enum { ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_timeout,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
@@ -183,7 +175,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request(size_t n_args, const mp_obj_t *pos_ar
         bool is_read;
         bool is_restart;
 
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             return mp_const_none;
         }
@@ -233,34 +225,31 @@ const mp_obj_type_t i2cslave_i2c_slave_type = {
    .locals_dict = (mp_obj_dict_t*)&i2cslave_i2c_slave_locals_dict,
 };
 
-
-//| :class:`I2CSlaveRequest` --- I2C Slave Request
-//| ----------------------------------------------
+//| class I2CSlaveRequest:
 //|
-//| .. class:: I2CSlaveRequest(slave, address, is_read, is_restart)
+//|     def __init__(self, slave: i2cslave.I2CSlave, address: int, is_read: bool, is_restart: bool):
+//|         """I2C transfer request from a master.
+//|         This cannot be instantiated directly, but is returned by :py:meth:`I2CSlave.request`.
 //|
-//|   I2C transfer request from a master.
-//|   This cannot be instantiated directly, but is returned by :py:meth:`I2CSlave.request`.
+//|         :param slave: The I2C Slave receiving this request
+//|         :param address: I2C address
+//|         :param is_read: I2C Master read request
+//|         :param is_restart: Repeated Start Condition"""
 //|
-//|   :param ~i2cslave.I2CSlave slave: The I2C Slave receiving this request
-//|   :param int address: I2C address
-//|   :param bool is_read: I2C Master read request
-//|   :param bool is_restart: Repeated Start Condition
-//|
-STATIC mp_obj_t i2cslave_i2c_slave_request_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 4, 4, false);
+STATIC mp_obj_t i2cslave_i2c_slave_request_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 4, 4, false);
     return mp_obj_new_i2cslave_i2c_slave_request(args[0], mp_obj_get_int(args[1]), mp_obj_is_true(args[2]), mp_obj_is_true(args[3]));
 }
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used in Context Managers.
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used in Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Close the request.
+//|     def __exit__(self, ) -> Any:
+//|         """Close the request."""
+//|         ...
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_obj___exit__(size_t n_args, const mp_obj_t *args) {
     mp_check_self(MP_OBJ_IS_TYPE(args[0], &i2cslave_i2c_slave_request_type));
@@ -270,9 +259,8 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_obj___exit__(size_t n_args, const mp_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(i2cslave_i2c_slave_request___exit___obj, 4, 4, i2cslave_i2c_slave_request_obj___exit__);
 
-//|   .. attribute:: address
-//|
-//|      The I2C address of the request.
+//|     address: int = ...
+//|     """The I2C address of the request."""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_get_address(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cslave_i2c_slave_request_type));
@@ -281,9 +269,8 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_get_address(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_PROP_GET(i2cslave_i2c_slave_request_address_obj, i2cslave_i2c_slave_request_get_address);
 
-//|   .. attribute:: is_read
-//|
-//|      The I2C master is reading from the device.
+//|     is_read: bool = ...
+//|     """The I2C master is reading from the device."""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_get_is_read(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cslave_i2c_slave_request_type));
@@ -292,9 +279,8 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_get_is_read(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_PROP_GET(i2cslave_i2c_slave_request_is_read_obj, i2cslave_i2c_slave_request_get_is_read);
 
-//|   .. attribute:: is_restart
-//|
-//|      Is Repeated Start Condition.
+//|     is_restart: bool = ...
+//|     """Is Repeated Start Condition."""
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_get_is_restart(mp_obj_t self_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cslave_i2c_slave_request_type));
@@ -303,15 +289,14 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_get_is_restart(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_PROP_GET(i2cslave_i2c_slave_request_is_restart_obj, i2cslave_i2c_slave_request_get_is_restart);
 
-//|   .. method:: read(n=-1, ack=True)
+//|     def read(self, n: int = -1, ack: bool = True) -> bytearray:
+//|         """Read data.
+//|         If ack=False, the caller is responsible for calling :py:meth:`I2CSlaveRequest.ack`.
 //|
-//|      Read data.
-//|      If ack=False, the caller is responsible for calling :py:meth:`I2CSlaveRequest.ack`.
-//|
-//|      :param int n: Number of bytes to read (negative means all)
-//|      :param bool ack: Whether or not to send an ACK after the n'th byte
-//|      :return: Bytes read
-//|      :rtype: bytearray
+//|         :param n: Number of bytes to read (negative means all)
+//|         :param ack: Whether or not to send an ACK after the n'th byte
+//|         :return: Bytes read"""
+//|         ...
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_check_self(MP_OBJ_IS_TYPE(pos_args[0], &i2cslave_i2c_slave_request_type));
@@ -338,7 +323,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_read(size_t n_args, const mp_obj_t *p
     uint8_t *buffer = NULL;
     uint64_t timeout_end = common_hal_time_monotonic() + 10 * 1000;
     while (common_hal_time_monotonic() < timeout_end) {
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             break;
         }
@@ -364,12 +349,12 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_read(size_t n_args, const mp_obj_t *p
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(i2cslave_i2c_slave_request_read_obj, 1, i2cslave_i2c_slave_request_read);
 
-//|   .. method:: write(buffer)
+//|     def write(self, buffer: bytearray) -> int:
+//|         """Write the data contained in buffer.
 //|
-//|      Write the data contained in buffer.
-//|
-//|      :param bytearray buffer: Write out the data in this buffer
-//|      :return: Number of bytes written
+//|         :param buffer: Write out the data in this buffer
+//|         :return: Number of bytes written"""
+//|         ...
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_write(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_check_self(MP_OBJ_IS_TYPE(self_in, &i2cslave_i2c_slave_request_type));
@@ -383,7 +368,7 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_write(mp_obj_t self_in, mp_obj_t buf_
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
 
     for (size_t i = 0; i < bufinfo.len; i++) {
-        MICROPY_VM_HOOK_LOOP
+        RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             break;
         }
@@ -398,12 +383,12 @@ STATIC mp_obj_t i2cslave_i2c_slave_request_write(mp_obj_t self_in, mp_obj_t buf_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(i2cslave_i2c_slave_request_write_obj, i2cslave_i2c_slave_request_write);
 
-//|   .. method:: ack(ack=True)
+//|     def ack(self, ack: bool = True) -> Any:
+//|         """Acknowledge or Not Acknowledge last byte received.
+//|         Use together with :py:meth:`I2CSlaveRequest.read` ack=False.
 //|
-//|      Acknowledge or Not Acknowledge last byte received.
-//|      Use together with :py:meth:`I2CSlaveRequest.read` ack=False.
-//|
-//|      :param bool ack: Whether to send an ACK or NACK
+//|         :param ack: Whether to send an ACK or NACK"""
+//|         ...
 //|
 STATIC mp_obj_t i2cslave_i2c_slave_request_ack(uint n_args, const mp_obj_t *args) {
     mp_check_self(MP_OBJ_IS_TYPE(args[0], &i2cslave_i2c_slave_request_type));

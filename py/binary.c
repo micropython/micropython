@@ -49,7 +49,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
     switch (struct_type) {
         case '<': case '>':
             switch (val_type) {
-                case 'b': case 'B':
+                case 'b': case 'B': case 'x':
                     size = 1; break;
                 case 'h': case 'H':
                     size = 2; break;
@@ -79,7 +79,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, mp_uint_t *palign) {
             // particular (or any) ABI.
             switch (val_type) {
                 case BYTEARRAY_TYPECODE:
-                case 'b': case 'B':
+                case 'b': case 'B': case 'x':
                     align = size = 1; break;
                 case 'h': case 'H':
                     align = alignof(short);
@@ -126,6 +126,7 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
             break;
         case BYTEARRAY_TYPECODE:
         case 'B':
+        case 'x':   // value will be discarded
             val = ((unsigned char*)p)[index];
             break;
         case 'h':
@@ -183,7 +184,7 @@ long long mp_binary_get_int(mp_uint_t size, bool is_signed, bool big_endian, con
         val = -1;
     }
     for (uint i = 0; i < size; i++) {
-        val <<= 8;
+        val *= 256;
         val |= *src;
         src += delta;
     }
@@ -303,15 +304,20 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
             break;
         }
 #endif
-        default:
+        default: {
+            bool signed_type = is_signed(val_type);
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
+                // It's a longint.
+                mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
                 mp_obj_int_to_bytes_impl(val_in, struct_type == '>', size, p);
                 return;
             } else
             #endif
             {
                 val = mp_obj_get_int(val_in);
+                // Small int checking is separate, to be fast.
+                mp_small_int_buffer_overflow_check(val, size, signed_type);
                 // zero/sign extend if needed
                 if (BYTES_PER_WORD < 8 && size > sizeof(val)) {
                     int c = (is_signed(val_type) && (mp_int_t)val < 0) ? 0xff : 0x00;
@@ -321,6 +327,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
                     }
                 }
             }
+        }
     }
 
     mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
@@ -342,16 +349,24 @@ void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t v
             ((mp_obj_t*)p)[index] = val_in;
             break;
 #endif
-        default:
+        default: {
+            size_t size = mp_binary_get_size('@', typecode, NULL);
+            bool signed_type = is_signed(typecode);
+
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (MP_OBJ_IS_TYPE(val_in, &mp_type_int)) {
-                size_t size = mp_binary_get_size('@', typecode, NULL);
+                // It's a long int.
+                mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
                 mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,
                     size, (uint8_t*)p + index * size);
                 return;
             }
             #endif
-            mp_binary_set_val_array_from_int(typecode, p, index, mp_obj_get_int(val_in));
+            mp_int_t val = mp_obj_get_int(val_in);
+            // Small int checking is separate, to be fast.
+            mp_small_int_buffer_overflow_check(val, size, signed_type);
+            mp_binary_set_val_array_from_int(typecode, p, index, val);
+        }
     }
 }
 
@@ -364,6 +379,8 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, m
         case 'B':
             ((unsigned char*)p)[index] = val;
             break;
+        case 'x':
+            ((unsigned char*)p)[index] = 0;
         case 'h':
             ((short*)p)[index] = val;
             break;

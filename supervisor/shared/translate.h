@@ -29,13 +29,41 @@
 
 #include <stdint.h>
 
+// The format of the compressed data is:
+// - the size of the uncompressed string in UTF-8 bytes, encoded as a
+//   (compress_max_length_bits)-bit number.  compress_max_length_bits is
+//   computed during dictionary generation time, and happens to be 8
+//   for all current platforms.  However, it'll probably end up being
+//   9 in some translations sometime in the future.  This length excludes
+//   the trailing NUL, though notably decompress_length includes it.
+//
+// - followed by the huffman encoding of the individual UTF-16 code
+//   points that make up the string.  The trailing "\0" is not
+//   represented by a huffman code, but is implied by the length.
+//   (building the huffman encoding on UTF-16 code points gave better
+//   compression than building it on UTF-8 bytes)
+//
+// The "data" / "tail" construct is so that the struct's last member is a
+// "flexible array".  However, the _only_ member is not permitted to be
+// a flexible member, so we have to declare the first byte as a separte
+// member of the structure.
+//
+// For translations where length needs 8 bits, this saves about 1.5
+// bytes per string on average compared to a structure of {uint16_t,
+// flexible array}, but is also future-proofed against strings with
+// UTF-8 length above 256, with a savings of about 1.375 bytes per
+// string.
 typedef struct {
-    uint16_t length;
-    const uint8_t data[];
+    uint8_t data;
+    const uint8_t tail[];
 } compressed_string_t;
 
+// Return the compressed, translated version of a source string
+// Usually, due to LTO, this is optimized into a load of a constant
+// pointer.
 const compressed_string_t* translate(const char* c);
-
+void serial_write_compressed(const compressed_string_t* compressed);
 char* decompress(const compressed_string_t* compressed, char* decompressed);
+uint16_t decompress_length(const compressed_string_t* compressed);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H

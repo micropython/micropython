@@ -1,8 +1,7 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit CircuitPlayground Express with Crickit libraries"
 #define MICROPY_HW_MCU_NAME "samd21g18"
 
-// No framebuf on CRICKit version to save space.
-#define MICROPY_PY_FRAMEBUF         (0)
+#define MICROPY_HW_LED_STATUS   (&pin_PA17)
 
 // Don't allow touch on A0 (PA02), because it's connected to the speaker.
 #define PA02_NO_TOUCH       (true)
@@ -23,16 +22,15 @@
 
 #define SPEAKER_ENABLE_PIN    (&pin_PA30)
 
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
-
 #define CALIBRATE_CRYSTALLESS 1
+
+#define USER_NEOPIXELS_PIN      (&pin_PB23)
 
 // Explanation of how a user got into safe mode.
 #define BOARD_USER_SAFE_MODE_ACTION "pressing both buttons at start up"
+
+// Increase stack size slightly due to CPX library import nesting
+#define CIRCUITPY_DEFAULT_STACK_SIZE  (4760) // divisible by 8
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB03)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB02)

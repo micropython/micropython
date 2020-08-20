@@ -61,6 +61,12 @@ extern bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_o
 // Return actual SPI bus frequency.
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t* self);
 
+// Return SPI bus phase.
+uint8_t common_hal_busio_spi_get_phase(busio_spi_obj_t* self);
+
+// Return SPI bus polarity.
+uint8_t common_hal_busio_spi_get_polarity(busio_spi_obj_t* self);
+
 // This is used by the supervisor to claim SPI devices indefinitely.
 extern void common_hal_busio_spi_never_reset(busio_spi_obj_t *self);
 

@@ -17,7 +17,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -30,7 +30,7 @@
 #ifdef __STDC__
 static const int init_jk[] = {4,7,9}; /* initial value for jk */
 #else
-static int init_jk[] = {4,7,9}; 
+static int init_jk[] = {4,7,9};
 #endif
 
 #ifdef __STDC__
@@ -52,9 +52,9 @@ static float PIo2[] = {
 };
 
 #ifdef __STDC__
-static const float			
+static const float
 #else
-static float			
+static float
 #endif
 zero   = 0.0,
 one    = 1.0,
@@ -62,9 +62,9 @@ two8   =  2.5600000000e+02, /* 0x43800000 */
 twon8  =  3.9062500000e-03; /* 0x3b800000 */
 
 #ifdef __STDC__
-	int __kernel_rem_pio2f(float *x, float *y, int e0, int nx, int prec, const __int32_t *ipio2) 
+	int __kernel_rem_pio2f(float *x, float *y, int e0, int nx, int prec, const __int32_t *ipio2)
 #else
-	int __kernel_rem_pio2f(x,y,e0,nx,prec,ipio2) 	
+	int __kernel_rem_pio2f(x,y,e0,nx,prec,ipio2)
 	float x[], y[]; int e0,nx,prec; __int32_t ipio2[];
 #endif
 {
@@ -109,7 +109,7 @@ recompute:
 	    i  = (iq[jz-1]>>(8-q0)); n += i;
 	    iq[jz-1] -= i<<(8-q0);
 	    ih = iq[jz-1]>>(7-q0);
-	} 
+	}
 	else if(q0==0) ih = iq[jz-1]>>8;
 	else if(z>=(float)0.5) ih=2;
 
@@ -141,7 +141,7 @@ recompute:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 	if(z==zero) {
-#pragma GCC diagnostic pop           
+#pragma GCC diagnostic pop
 	    j = 0;
 	    for (i=jz-1;i>=jk;i--) j |= iq[i];
 	    if(j==0) { /* need recomputation */
@@ -166,7 +166,7 @@ recompute:
 	    while(iq[jz]==0) { jz--; q0-=8;}
 	} else { /* break z into 8-bit if necessary */
 	    z = scalbnf(z,-(int)q0);
-	    if(z>=two8) { 
+	    if(z>=two8) {
 		fw = (float)((__int32_t)(twon8*z));
 		iq[jz] = (__int32_t)(z-two8*fw);
 		jz += 1; q0 += 8;
@@ -191,29 +191,29 @@ recompute:
 	    case 0:
 		fw = 0.0;
 		for (i=jz;i>=0;i--) fw += fq[i];
-		y[0] = (ih==0)? fw: -fw; 
+		y[0] = (ih==0)? fw: -fw;
 		break;
 	    case 1:
 	    case 2:
 		fw = 0.0;
-		for (i=jz;i>=0;i--) fw += fq[i]; 
-		y[0] = (ih==0)? fw: -fw; 
+		for (i=jz;i>=0;i--) fw += fq[i];
+		y[0] = (ih==0)? fw: -fw;
 		fw = fq[0]-fw;
 		for (i=1;i<=jz;i++) fw += fq[i];
-		y[1] = (ih==0)? fw: -fw; 
+		y[1] = (ih==0)? fw: -fw;
 		break;
 	    case 3:	/* painful */
 		for (i=jz;i>0;i--) {
-		    fw      = fq[i-1]+fq[i]; 
+		    fw      = fq[i-1]+fq[i];
 		    fq[i]  += fq[i-1]-fw;
 		    fq[i-1] = fw;
 		}
 		for (i=jz;i>1;i--) {
-		    fw      = fq[i-1]+fq[i]; 
+		    fw      = fq[i-1]+fq[i];
 		    fq[i]  += fq[i-1]-fw;
 		    fq[i-1] = fw;
 		}
-		for (fw=0.0,i=jz;i>=2;i--) fw += fq[i]; 
+		for (fw=0.0,i=jz;i>=2;i--) fw += fq[i];
 		if(ih==0) {
 		    y[0] =  fq[0]; y[1] =  fq[1]; y[2] =  fw;
 		} else {

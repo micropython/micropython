@@ -31,27 +31,14 @@
 #include "shared-bindings/usb_hid/__init__.h"
 #include "shared-bindings/usb_hid/Device.h"
 
-//| :mod:`usb_hid` --- USB Human Interface Device
-//| ===========================================================
+//| """USB Human Interface Device
 //|
-//| .. module:: usb_hid
-//|   :synopsis: USB Human Interface Device
-//|   :platform: SAMD21
-//|
-//| The `usb_hid` module allows you to output data as a HID device.
+//| The `usb_hid` module allows you to output data as a HID device."""
 //|
 
-//| .. attribute:: usb_hid.devices
+//| usb_hid.devices: Any = ...
+//| """Tuple of all active HID device interfaces."""
 //|
-//|   Tuple of all active HID device interfaces.
-//|
-
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Device
 STATIC const mp_rom_map_elem_t usb_hid_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid) },
     { MP_ROM_QSTR(MP_QSTR_devices), MP_ROM_PTR(&common_hal_usb_hid_devices) },

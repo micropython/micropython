@@ -1,0 +1,5 @@
+PROG=mpy-cross.static
+BUILD=build-static
+STATIC_BUILD=1
+
+include mpy-cross.mk

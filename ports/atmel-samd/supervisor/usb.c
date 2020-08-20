@@ -28,6 +28,7 @@
 #include "hpl/pm/hpl_pm_base.h"
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hal_gpio.h"
+#include "lib/tinyusb/src/device/usbd.h"
 
 void init_usb_hardware(void) {
     #ifdef SAMD21
@@ -57,3 +58,27 @@ void init_usb_hardware(void) {
     gpio_set_pin_function(PIN_PA25, PINMUX_PA25H_USB_DP);
     #endif
 }
+
+#ifdef SAMD21
+void USB_Handler(void) {
+    tud_int_handler(0);
+}
+#endif
+
+#ifdef SAMD51
+void USB_0_Handler (void) {
+  tud_int_handler(0);
+}
+
+void USB_1_Handler (void) {
+  tud_int_handler(0);
+}
+
+void USB_2_Handler (void) {
+  tud_int_handler(0);
+}
+
+void USB_3_Handler (void) {
+  tud_int_handler(0);
+}
+#endif

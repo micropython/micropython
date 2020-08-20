@@ -26,49 +26,33 @@
 #ifndef MICROPY_INCLUDED_PY_RINGBUF_H
 #define MICROPY_INCLUDED_PY_RINGBUF_H
 
+#include "py/gc.h"
+
 #include <stdint.h>
 
 typedef struct _ringbuf_t {
     uint8_t *buf;
-    uint16_t size;
-    uint16_t iget;
-    uint16_t iput;
+    // Allocated size; capacity is one less. Don't reference this directly.
+    uint32_t size;
+    uint32_t iget;
+    uint32_t iput;
 } ringbuf_t;
+
+// Note that the capacity of the buffer is N-1!
 
 // Static initialization:
 // byte buf_array[N];
 // ringbuf_t buf = {buf_array, sizeof(buf_array)};
 
-// Dynamic initialization. This creates root pointer!
-#define ringbuf_alloc(r, sz) \
-{ \
-    (r)->buf = m_new(uint8_t, sz); \
-    (r)->size = sz; \
-    (r)->iget = (r)->iput = 0; \
-}
-
-static inline int ringbuf_get(ringbuf_t *r) {
-    if (r->iget == r->iput) {
-        return -1;
-    }
-    uint8_t v = r->buf[r->iget++];
-    if (r->iget >= r->size) {
-        r->iget = 0;
-    }
-    return v;
-}
-
-static inline int ringbuf_put(ringbuf_t *r, uint8_t v) {
-    uint32_t iput_new = r->iput + 1;
-    if (iput_new >= r->size) {
-        iput_new = 0;
-    }
-    if (iput_new == r->iget) {
-        return -1;
-    }
-    r->buf[r->iput] = v;
-    r->iput = iput_new;
-    return 0;
-}
+bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived);
+void ringbuf_free(ringbuf_t *r);
+size_t ringbuf_capacity(ringbuf_t *r);
+int ringbuf_get(ringbuf_t *r);
+int ringbuf_put(ringbuf_t *r, uint8_t v);
+void ringbuf_clear(ringbuf_t *r);
+size_t ringbuf_num_empty(ringbuf_t *r);
+size_t ringbuf_num_filled(ringbuf_t *r);
+size_t ringbuf_put_n(ringbuf_t* r, uint8_t* buf, size_t bufsize);
+size_t ringbuf_get_n(ringbuf_t* r, uint8_t* buf, size_t bufsize);
 
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H

@@ -27,34 +27,41 @@
 #include <stdbool.h>
 
 #include "py/mpstate.h"
-#include "__init__.h"
-#include "GamePad.h"
+#include "shared-bindings/gamepad/__init__.h"
+#include "shared-bindings/gamepad/GamePad.h"
+#include "supervisor/shared/tick.h"
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
 
 void gamepad_tick(void) {
-    gamepad_obj_t* gamepad_singleton = MP_STATE_VM(gamepad_singleton);
-    if (!gamepad_singleton) {
+    uint8_t current = 0;
+    uint8_t bit = 1;
+
+    void* singleton = MP_STATE_VM(gamepad_singleton);
+    if (singleton == NULL || !MP_OBJ_IS_TYPE(MP_OBJ_FROM_PTR(singleton), &gamepad_type)) {
         return;
     }
-    uint8_t gamepad_current = 0;
-    uint8_t bit = 1;
+
+    gamepad_obj_t *self = MP_OBJ_TO_PTR(singleton);
     for (int i = 0; i < 8; ++i) {
-        digitalio_digitalinout_obj_t* pin = gamepad_singleton->pins[i];
+        digitalio_digitalinout_obj_t* pin = self->pins[i];
         if (!pin) {
             break;
         }
         if (common_hal_digitalio_digitalinout_get_value(pin)) {
-            gamepad_current |= bit;
+            current |= bit;
         }
         bit <<= 1;
     }
-    gamepad_current ^= gamepad_singleton->pulls;
-    gamepad_singleton->pressed |= gamepad_singleton->last & gamepad_current;
-    gamepad_singleton->last = gamepad_current;
+    current ^= self->pulls;
+    self->pressed |= self->last & current;
+    self->last = current;
 }
 
 void gamepad_reset(void) {
+    if (MP_STATE_VM(gamepad_singleton)) {
+        supervisor_disable_tick();
+    }
     MP_STATE_VM(gamepad_singleton) = NULL;
 }

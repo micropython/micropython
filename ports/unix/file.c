@@ -205,9 +205,9 @@ STATIC mp_obj_t fdfile_open(const mp_obj_type_t *type, mp_arg_val_t *args) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t fdfile_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fdfile_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
+    mp_arg_parse_all(n_args, args, kw_args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
     return fdfile_open(type, arg_vals);
 }
 
@@ -230,6 +230,7 @@ STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
 
 #if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t fileio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = fdfile_read,
     .write = fdfile_write,
     .ioctl = fdfile_ioctl,
@@ -248,6 +249,7 @@ const mp_obj_type_t mp_type_fileio = {
 #endif
 
 STATIC const mp_stream_p_t textio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = fdfile_read,
     .write = fdfile_write,
     .ioctl = fdfile_ioctl,

@@ -122,8 +122,8 @@ STATIC NORETURN void syntax_error(void) {
     mp_raise_TypeError(translate("syntax error in uctypes descriptor"));
 }
 
-STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, 3, false);
+STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 2, 3, false);
     mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
     o->base.type = type;
     o->addr = (void*)(uintptr_t)mp_obj_int_get_truncated(args[0]);
@@ -518,8 +518,8 @@ STATIC void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
-    mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_obj_t value) {
+    mp_obj_uctypes_struct_t *self = mp_instance_cast_to_native_base(base_in, &uctypes_struct_type);
 
     if (value == MP_OBJ_NULL) {
         // delete

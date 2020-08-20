@@ -78,12 +78,12 @@ Not all of these functions and types are turned on in all CircuitPython ports, f
 
    .. classmethod:: from_bytes(bytes, byteorder)
 
-      In CircuitPython, `byteorder` parameter must be positional (this is
+      In CircuitPython, ``byteorder`` parameter must be positional (this is
       compatible with CPython).
 
    .. method:: to_bytes(size, byteorder)
 
-      In CircuitPython, `byteorder` parameter must be positional (this is
+      In CircuitPython, ``byteorder`` parameter must be positional (this is
       compatible with CPython).
 
 .. function:: isinstance()
@@ -182,7 +182,7 @@ Exceptions
 
 .. exception:: OSError
 
-    |see_cpython| `OSError`. CircuitPython doesn't implement the ``errno``
+    |see_cpython| :py:class:`cpython:OSError`. CircuitPython doesn't implement the ``errno``
     attribute, instead use the standard way to access exception arguments:
     ``exc.args[0]``.
 
@@ -198,11 +198,11 @@ Exceptions
 
 .. exception:: SystemExit
 
-    |see_cpython| :py:class:`python:SystemExit`.
+    |see_cpython| :py:class:`cpython:SystemExit`.
 
 .. exception:: TypeError
 
-    |see_cpython| :py:class:`python:TypeError`.
+    |see_cpython| :py:class:`cpython:TypeError`.
 
 .. exception:: ValueError
 

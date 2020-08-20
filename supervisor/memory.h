@@ -39,13 +39,26 @@ typedef struct {
     uint32_t length; // in bytes
 } supervisor_allocation;
 
+
+
 void memory_init(void);
 void free_memory(supervisor_allocation* allocation);
+supervisor_allocation* allocation_from_ptr(void *ptr);
 supervisor_allocation* allocate_remaining_memory(void);
 
 // Allocate a piece of a given length in bytes. If high_address is true then it should be allocated
 // at a lower address from the top of the stack. Otherwise, addresses will increase starting after
 // statically allocated memory.
 supervisor_allocation* allocate_memory(uint32_t length, bool high_address);
+
+static inline uint16_t align32_size(uint16_t size) {
+    if (size % 4 != 0) {
+        return (size & 0xfffc) + 0x4;
+    }
+    return size;
+}
+
+// Called after the heap is freed in case the supervisor wants to save some values.
+void supervisor_move_memory(void);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_MEMORY_H

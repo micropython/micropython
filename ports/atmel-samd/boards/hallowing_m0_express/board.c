@@ -26,10 +26,11 @@
 
 #include "boards/board.h"
 
+#include "shared-bindings/board/__init__.h"
 #include "shared-bindings/displayio/FourWire.h"
+#include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
-
-#include "tick.h"
+#include "shared-bindings/busio/SPI.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -68,47 +69,48 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    board_display_obj.base.type = &displayio_fourwire_type;
-    common_hal_displayio_fourwire_construct(&board_display_obj,
-        &pin_PB23, // Clock
-        &pin_PB22, // Data
+    displayio_fourwire_obj_t* bus = &displays[0].fourwire_bus;
+    bus->base.type = &displayio_fourwire_type;
+    busio_spi_obj_t *spi = common_hal_board_create_spi();
+    common_hal_displayio_fourwire_construct(bus,
+        spi,
         &pin_PA28, // Command or data
         &pin_PA01, // Chip select
         &pin_PA27, // Reset
+        12000000, // Baudrate
+        0, // Polarity
+        0); // Phase
+
+    displayio_display_obj_t* display = &displays[0].display;
+    display->base.type = &displayio_display_type;
+    common_hal_displayio_display_construct(display,
+        bus,
         128, // Width
         128, // Height
         2, // column start
-        0, // row start
+        1, // row start
+        0, // rotation
         16, // Color depth
+        false, // Grayscale
+        false, // Pixels in a byte share a row. Only used for depth < 8
+        1, // bytes per cell. Only valid for depths < 8
+        false, // reverse_pixels_in_byte. Only valid for depths < 8
+        true, // reverse_pixels_in_word
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
-        MIPI_COMMAND_WRITE_MEMORY_START); // Write memory command
-
-    uint32_t i = 0;
-    common_hal_displayio_fourwire_begin_transaction(&board_display_obj);
-    while (i < sizeof(display_init_sequence)) {
-        uint8_t *cmd = display_init_sequence + i;
-        uint8_t data_size = *(cmd + 1);
-        bool delay = (data_size & DELAY) != 0;
-        data_size &= ~DELAY;
-        uint8_t *data = cmd + 2;
-        common_hal_displayio_fourwire_send(&board_display_obj, true, cmd, 1);
-        common_hal_displayio_fourwire_send(&board_display_obj, false, data, data_size);
-        if (delay) {
-            data_size++;
-            uint16_t delay_length_ms = *(cmd + 1 + data_size);
-            if (delay_length_ms == 255) {
-                delay_length_ms = 500;
-            }
-            uint64_t start = ticks_ms;
-            while (ticks_ms - start < delay_length_ms) {}
-        } else {
-            uint64_t start = ticks_ms;
-            while (ticks_ms - start < 10) {}
-        }
-        i += 2 + data_size;
-    }
-    common_hal_displayio_fourwire_end_transaction(&board_display_obj);
+        MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
+        0x37, // set vertical scroll command
+        display_init_sequence,
+        sizeof(display_init_sequence),
+        &pin_PA00,
+        NO_BRIGHTNESS_COMMAND,
+        1.0f, // brightness (ignored)
+        true, // auto_brightness
+        false, // single_byte_bounds
+        false, // data_as_commands
+        true, // auto_refresh
+        60, // native_frames_per_second
+        true); // backlight_on_high
 }
 
 bool board_requests_safe_mode(void) {
@@ -116,5 +118,4 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-    common_hal_displayio_fourwire_show(&board_display_obj, NULL);
 }

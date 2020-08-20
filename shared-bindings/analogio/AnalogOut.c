@@ -36,46 +36,39 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: analogio
+//| class AnalogOut:
+//|     """Output analog values (a specific voltage).
 //|
-//| :class:`AnalogOut` -- output analog voltage
-//| ============================================
+//|     Example usage::
 //|
-//| The AnalogOut is used to output analog values (a specific voltage).
+//|         import analogio
+//|         from microcontroller import pin
 //|
-//| Example usage::
+//|        dac = analogio.AnalogOut(pin.PA02)          # output on pin PA02
+//|         dac.value = 32768                           # makes PA02 1.65V"""
 //|
-//|     import analogio
-//|     from microcontroller import pin
+//|     def __init__(self, pin: microcontroller.Pin):
+//|         """Use the AnalogOut on the given pin.
 //|
-//|     dac = analogio.AnalogOut(pin.PA02)          # output on pin PA02
-//|     dac.value = 32768                           # makes PA02 1.65V
+//|         :param ~microcontroller.Pin pin: the pin to output to"""
+//|         ...
 //|
-
-//| .. class:: AnalogOut(pin)
-//|
-//|   Use the AnalogOut on the given pin.
-//|
-//|   :param ~microcontroller.Pin pin: the pin to output to
-//|
-STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
-    assert_pin(args[0], false);
-    const mcu_pin_obj_t *pin = MP_OBJ_TO_PTR(args[0]);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
 
     analogio_analogout_obj_t *self = m_new_obj(analogio_analogout_obj_t);
     self->base.type = &analogio_analogout_type;
-    assert_pin_free(pin);
     common_hal_analogio_analogout_construct(self, pin);
 
-    return self;
+    return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|     Turn off the AnalogOut and release the pin for other use.
+//|     def deinit(self, ) -> Any:
+//|         """Turn off the AnalogOut and release the pin for other use."""
+//|         ...
 //|
 STATIC mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
     analogio_analogout_obj_t *self = self_in;
@@ -86,16 +79,16 @@ STATIC mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogout_deinit);
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self, ) -> Any:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self, ) -> Any:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -104,15 +97,17 @@ STATIC mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4, analogio_analogout___exit__);
 
-//|   .. attribute:: value
-//|
-//|     The value on the analog pin between 0 and 65535 inclusive (16-bit). (write-only)
+//|     value: Any = ...
+//|     """The value on the analog pin between 0 and 65535 inclusive (16-bit). (write-only)
 //|
 //|     Even if the underlying digital to analog converter (DAC) is lower
-//|     resolution, the value is 16-bit.
+//|     resolution, the value is 16-bit."""
+//|
 STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t value) {
    analogio_analogout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-   raise_error_if_deinited(common_hal_analogio_analogout_deinited(self));
+   if (common_hal_analogio_analogout_deinited(self)) {
+       raise_deinited_error();
+   }
    uint32_t v = mp_obj_get_int(value);
    if (v >= (1 << 16)) {
        mp_raise_ValueError(translate("AnalogOut is only 16 bits. Value must be less than 65536."));

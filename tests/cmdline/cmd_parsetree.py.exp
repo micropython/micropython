@@ -1,6 +1,6 @@
 ----------------
 [   4] rule(1) (n=9)
-         tok(4)
+         tok(10)
 [   4]   rule(22) (n=4)
            id(i)
 [   4]     rule(44) (n=1)
@@ -9,7 +9,7 @@
            NULL
 [   6]   rule(5) (n=2)
            id(a)
-           tok(14)
+           tok(20)
 [   7]   rule(5) (n=2)
            id(b)
            str(str)

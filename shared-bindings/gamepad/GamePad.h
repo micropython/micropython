@@ -28,6 +28,11 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD_GAMEPAD_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD_GAMEPAD_H
 
+#include "shared-module/gamepad/GamePad.h"
+
 extern const mp_obj_type_t gamepad_type;
+
+void common_hal_gamepad_gamepad_init(gamepad_obj_t *gamepad, const mp_obj_t pins[], size_t n_pins);
+void common_hal_gamepad_gamepad_deinit(gamepad_obj_t *gamepad);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPAD_GAMEPAD_H

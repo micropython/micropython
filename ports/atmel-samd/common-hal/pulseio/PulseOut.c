@@ -37,6 +37,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "supervisor/shared/translate.h"
+#include "timer_handler.h"
 
 // This timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.
@@ -112,6 +113,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
 
         pulseout_tc_index = index;
 
+        set_timer_handler(true, index, TC_HANDLER_PULSEOUT);
         // We use GCLK0 for SAMD21 and GCLK1 for SAMD51 because they both run at 48mhz making our
         // math the same across the boards.
         #ifdef SAMD21
@@ -196,9 +198,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
     while(pulse_index < length) {
         // Do other things while we wait. The interrupts will handle sending the
         // signal.
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 
     tc->COUNT16.CTRLBSET.reg = TC_CTRLBSET_CMD_STOP;

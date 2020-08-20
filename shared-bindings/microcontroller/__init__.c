@@ -42,41 +42,26 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-//| :mod:`microcontroller` --- Pin references and cpu functionality
-//| ================================================================
-//|
-//| .. module:: microcontroller
-//|   :synopsis: Pin references and core functionality
-//|   :platform: SAMD21, ESP8266
+//| """Pin references and cpu functionality
 //|
 //| The `microcontroller` module defines the pins from the perspective of the
-//| microcontroller. See `board` for board-specific pin mappings.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Pin
-//|     Processor
-//|     RunMode
+//| microcontroller. See `board` for board-specific pin mappings."""
 //|
 
-//| .. attribute:: cpu
-//|
-//|   CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
-//|   (clock frequency).
-//|   This object is the sole instance of `microcontroller.Processor`.
+//| cpu: Processor = ...
+//| """CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
+//| (clock frequency).
+//| This object is the sole instance of `microcontroller.Processor`."""
 //|
 
-//| .. method:: delay_us(delay)
-//|
-//|   Dedicated delay method used for very short delays. **Do not** do long delays
-//|   because this stops all other functions from completing. Think of this as an empty
-//|   ``while`` loop that runs for the specified ``(delay)`` time. If you have other
-//|   code or peripherals (e.g audio recording) that require specific timing or
-//|   processing while you are waiting, explore a different avenue such as using
-//|   `time.sleep()`.
+//| def delay_us(delay: Any) -> Any:
+//|     """Dedicated delay method used for very short delays. **Do not** do long delays
+//|     because this stops all other functions from completing. Think of this as an empty
+//|     ``while`` loop that runs for the specified ``(delay)`` time. If you have other
+//|     code or peripherals (e.g audio recording) that require specific timing or
+//|     processing while you are waiting, explore a different avenue such as using
+//|     `time.sleep()`."""
+//|     ...
 //|
 STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
     uint32_t delay = mp_obj_get_int(delay_obj);
@@ -87,9 +72,9 @@ STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_delay_us_obj, mcu_delay_us);
 
-//| .. method:: disable_interrupts()
-//|
-//|   Disable all interrupts. Be very careful, this can stall everything.
+//| def disable_interrupts() -> Any:
+//|     """Disable all interrupts. Be very careful, this can stall everything."""
+//|     ...
 //|
 STATIC mp_obj_t mcu_disable_interrupts(void) {
     common_hal_mcu_disable_interrupts();
@@ -97,9 +82,9 @@ STATIC mp_obj_t mcu_disable_interrupts(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_disable_interrupts_obj, mcu_disable_interrupts);
 
-//| .. method:: enable_interrupts()
-//|
-//|   Enable the interrupts that were enabled at the last disable.
+//| def enable_interrupts() -> Any:
+//|     """Enable the interrupts that were enabled at the last disable."""
+//|     ...
 //|
 STATIC mp_obj_t mcu_enable_interrupts(void) {
     common_hal_mcu_enable_interrupts();
@@ -107,12 +92,12 @@ STATIC mp_obj_t mcu_enable_interrupts(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupts);
 
-//| .. method:: on_next_reset(run_mode)
+//| def on_next_reset(run_mode: microcontroller.RunMode) -> Any:
+//|     """Configure the run mode used the next time the microcontroller is reset but
+//|     not powered down.
 //|
-//|   Configure the run mode used the next time the microcontroller is reset but
-//|   not powered down.
-//|
-//|   :param ~microcontroller.RunMode run_mode: The next run mode
+//|     :param ~microcontroller.RunMode run_mode: The next run mode"""
+//|     ...
 //|
 STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     mcu_runmode_t run_mode;
@@ -132,14 +117,14 @@ STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
 
-//| .. method:: reset()
+//| def reset() -> Any:
+//|     """Reset the microcontroller. After reset, the microcontroller will enter the
+//|     run mode last set by `on_next_reset`.
 //|
-//|   Reset the microcontroller. After reset, the microcontroller will enter the
-//|   run mode last set by `on_next_reset`.
-//|
-//|   .. warning:: This may result in file system corruption when connected to a
-//|     host computer. Be very careful when calling this! Make sure the device
-//|     "Safely removed" on Windows or "ejected" on Mac OSX and Linux.
+//|     .. warning:: This may result in file system corruption when connected to a
+//|       host computer. Be very careful when calling this! Make sure the device
+//|       "Safely removed" on Windows or "ejected" on Mac OSX and Linux."""
+//|     ...
 //|
 STATIC mp_obj_t mcu_reset(void) {
     common_hal_mcu_reset();
@@ -148,20 +133,21 @@ STATIC mp_obj_t mcu_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 
-//| .. attribute:: nvm
+//| nvm: Any = ...
+//| """Available non-volatile memory.
+//| This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
 //|
-//|   Available non-volatile memory.
-//|   This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
+//| :type: nvm.ByteArray or None"""
 //|
 
-//| :mod:`microcontroller.pin` --- Microcontroller pin names
+//| """:mod:`microcontroller.pin` --- Microcontroller pin names
 //| --------------------------------------------------------
 //|
 //| .. module:: microcontroller.pin
 //|   :synopsis: Microcontroller pin names
 //|   :platform: SAMD21
 //|
-//| References to pins as named by the microcontroller
+//| References to pins as named by the microcontroller"""
 //|
 const mp_obj_module_t mcu_pin_module = {
     .base = { &mp_type_module },
@@ -180,6 +166,11 @@ STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&common_hal_mcu_nvm_obj) },
     #else
     { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&mp_const_none_obj) },
+    #endif
+    #if CIRCUITPY_WATCHDOG
+    { MP_ROM_QSTR(MP_QSTR_watchdog),  MP_ROM_PTR(&common_hal_mcu_watchdogtimer_obj) },
+    #else
+    { MP_ROM_QSTR(MP_QSTR_watchdog),  MP_ROM_PTR(&mp_const_none_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_RunMode),  MP_ROM_PTR(&mcu_runmode_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin),  MP_ROM_PTR(&mcu_pin_type) },

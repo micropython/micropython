@@ -186,8 +186,8 @@ STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
     return o;
 }
 
-STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    (void)n_kw; // TODO check n_kw==0
+STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    (void)kw_args; // TODO check kw_args->used == 0
 
     mp_uint_t sz = 16;
     bool initdata = false;
@@ -240,6 +240,7 @@ STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(stringio_locals_dict, stringio_locals_dict_table);
 
 STATIC const mp_stream_p_t stringio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stringio_read,
     .write = stringio_write,
     .ioctl = stringio_ioctl,
@@ -247,6 +248,7 @@ STATIC const mp_stream_p_t stringio_stream_p = {
 };
 
 STATIC const mp_stream_p_t bytesio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stringio_read,
     .write = stringio_write,
     .ioctl = stringio_ioctl,

@@ -49,7 +49,6 @@
 #include "samd/dma.h"
 
 #include "audio_dma.h"
-#include "tick.h"
 
 #define OVERSAMPLING 64
 #define SAMPLES_PER_BUFFER 32
@@ -74,6 +73,7 @@ void pdmin_reset(void) {
     I2S->CTRLA.reg = I2S_CTRLA_SWRST;
 }
 
+// Caller validates that pins are free.
 void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
                                            const mcu_pin_obj_t* clock_pin,
                                            const mcu_pin_obj_t* data_pin,
@@ -106,7 +106,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
             self->clock_unit = 1;
     #endif
     } else {
-        mp_raise_ValueError(translate("Invalid clock pin"));
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_clock);
     }
 
     self->data_pin = data_pin; // PA07, PA19 -> SD0, PA08, PB16 -> SD1
@@ -127,7 +127,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
         self->serializer = 1;
     #endif
     } else {
-        mp_raise_ValueError(translate("Invalid data pin"));
+        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_data);
     }
 
     if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != OVERSAMPLING) {
@@ -157,8 +157,6 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
     #ifdef SAMD21
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_G
     #endif
-    assert_pin_free(clock_pin);
-    assert_pin_free(data_pin);
 
     uint32_t clock_divisor = (uint32_t) roundf( 48000000.0f / sample_rate / oversample);
     float mic_clock_freq = 48000000.0f / clock_divisor;
@@ -219,7 +217,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
 }
 
 bool common_hal_audiobusio_pdmin_deinited(audiobusio_pdmin_obj_t* self) {
-    return self->clock_pin == mp_const_none;
+    return self->clock_pin == NULL;
 }
 
 void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
@@ -237,8 +235,8 @@ void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t* self) {
 
     reset_pin_number(self->clock_pin->number);
     reset_pin_number(self->data_pin->number);
-    self->clock_pin = mp_const_none;
-    self->data_pin = mp_const_none;
+    self->clock_pin = NULL;
+    self->data_pin = NULL;
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t* self) {
@@ -355,7 +353,7 @@ static uint16_t filter_sample(uint32_t pdm_samples[4]) {
 // output_buffer_length is the number of slots, not the number of bytes.
 uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* self,
         uint16_t* output_buffer, uint32_t output_buffer_length) {
-    uint8_t dma_channel = find_free_audio_dma_channel();
+    uint8_t dma_channel = audio_dma_allocate_channel();
     uint8_t event_channel = find_sync_event_channel();
     if (event_channel >= EVSYS_SYNCH_NUM) {
         mp_raise_RuntimeError(translate("All sync event channels in use"));
@@ -385,7 +383,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
     init_event_channel_interrupt(event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
     // Turn on serializer now to get it in sync with DMA.
     i2s_set_serializer_enable(self->serializer, true);
-    dma_enable_channel(dma_channel);
+    audio_dma_enable_channel(dma_channel);
 
     // Record
     uint32_t buffers_processed = 0;
@@ -408,9 +406,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
         // If wait_counts exceeds the max count, buffer has probably stopped filling;
         // DMA may have missed an I2S trigger event.
         while (!event_interrupt_active(event_channel) && ++wait_counts < MAX_WAIT_COUNTS) {
-            #ifdef MICROPY_VM_HOOK_LOOP
-                MICROPY_VM_HOOK_LOOP
-            #endif
+            RUN_BACKGROUND_TASKS;
         }
 
         // The mic is running all the time, so we don't need to wait the usual 10msec or 100msec
@@ -466,7 +462,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
     }
 
     disable_event_channel(event_channel);
-    dma_disable_channel(dma_channel);
+    audio_dma_free_channel(dma_channel);
     // Turn off serializer, but leave clock on, to avoid mic startup delay.
     i2s_set_serializer_enable(self->serializer, false);
 

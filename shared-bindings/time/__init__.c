@@ -36,24 +36,19 @@
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| :mod:`time` --- time and timing related functions
-//| ========================================================
-//|
-//| .. module:: time
-//|   :synopsis: time and timing related functions
-//|   :platform: SAMD21
+//| """time and timing related functions
 //|
 //| The `time` module is a strict subset of the CPython `cpython:time` module. So, code
 //| written in MicroPython will work in CPython but not necessarily the other
-//| way around.
+//| way around."""
 //|
-//| .. method:: monotonic()
+//| def monotonic() -> Any:
+//|     """Returns an always increasing value of time with an unknown reference
+//|     point. Only use it to compare against other values from `monotonic`.
 //|
-//|   Returns an always increasing value of time with an unknown reference
-//|   point. Only use it to compare against other values from `monotonic`.
-//|
-//|   :return: the current monotonic time
-//|   :rtype: float
+//|     :return: the current monotonic time
+//|     :rtype: float"""
+//|     ...
 //|
 STATIC mp_obj_t time_monotonic(void) {
     uint64_t time64 = common_hal_time_monotonic();
@@ -62,52 +57,57 @@ STATIC mp_obj_t time_monotonic(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 
-//| .. method:: sleep(seconds)
+//| def sleep(seconds: float) -> Any:
+//|     """Sleep for a given number of seconds.
 //|
-//|   Sleep for a given number of seconds.
-//|
-//|   :param float seconds: the time to sleep in fractional seconds
+//|     :param float seconds: the time to sleep in fractional seconds"""
+//|     ...
 //|
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     #if MICROPY_PY_BUILTINS_FLOAT
-    float seconds = mp_obj_get_float(seconds_o);
+    mp_float_t seconds = mp_obj_get_float(seconds_o);
+    mp_float_t msecs = 1000.0f * seconds + 0.5f;
     #else
-    int seconds = mp_obj_get_int(seconds_o);
+    mp_int_t seconds = mp_obj_get_int(seconds_o);
+    mp_int_t msecs = 1000 * seconds;
     #endif
     if (seconds < 0) {
         mp_raise_ValueError(translate("sleep length must be non-negative"));
     }
-    common_hal_time_delay_ms(1000 * seconds);
+    common_hal_time_delay_ms(msecs);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 
 #if MICROPY_PY_COLLECTIONS
-mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    if (n_args != 1) {
-        mp_raise_TypeError(translate("time.struct_time() takes exactly 1 argument"));
+mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    if (n_args != 1 || (kw_args != NULL && kw_args->used > 0)) {
+        return namedtuple_make_new(type, n_args, args, kw_args);
     }
-    if (!MP_OBJ_IS_TYPE(args[0], &mp_type_tuple) || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
+    if (mp_obj_get_type(args[0])->getiter != mp_obj_tuple_getiter || ((mp_obj_tuple_t*) MP_OBJ_TO_PTR(args[0]))->len != 9) {
         mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
     }
 
     mp_obj_tuple_t* tuple = MP_OBJ_TO_PTR(args[0]);
-    return namedtuple_make_new(type, 9, 0, tuple->items);
+    return namedtuple_make_new(type, 9, tuple->items, NULL);
 }
 
-//| .. class:: struct_time((tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst))
+//| class struct_time:
+//|     def __init__(self, time_tuple: Any):
+//|         """Structure used to capture a date and time. Note that it takes a tuple!
 //|
-//|   Structure used to capture a date and time. Note that it takes a tuple!
+//|         :param tuple time_tuple: Tuple of time info: ``(tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec, tm_wday, tm_yday, tm_isdst)``
 //|
-//|   :param int tm_year: the year, 2017 for example
-//|   :param int tm_mon: the month, range [1, 12]
-//|   :param int tm_mday: the day of the month, range [1, 31]
-//|   :param int tm_hour: the hour, range [0, 23]
-//|   :param int tm_min: the minute, range [0, 59]
-//|   :param int tm_sec: the second, range [0, 61]
-//|   :param int tm_wday: the day of the week, range [0, 6], Monday is 0
-//|   :param int tm_yday: the day of the year, range [1, 366], -1 indicates not known
-//|   :param int tm_isdst: 1 when in daylight savings, 0 when not, -1 if unknown.
+//|           * ``tm_year``: the year, 2017 for example
+//|           * ``tm_month``: the month, range [1, 12]
+//|           * ``tm_mday``: the day of the month, range [1, 31]
+//|           * ``tm_hour``: the hour, range [0, 23]
+//|           * ``tm_minute``: the minute, range [0, 59]
+//|           * ``tm_sec``: the second, range [0, 61]
+//|           * ``tm_wday``: the day of the week, range [0, 6], Monday is 0
+//|           * ``tm_yday``: the day of the year, range [1, 366], -1 indicates not known
+//|           * ``tm_isdst``: 1 when in daylight savings, 0 when not, -1 if unknown."""
+//|         ...
 //|
 const mp_obj_namedtuple_type_t struct_time_type_obj = {
     .base = {
@@ -158,7 +158,7 @@ mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm) {
         mp_obj_new_int(-1), // tm_isdst is not supported
     };
 
-    return namedtuple_make_new((const mp_obj_type_t*)&struct_time_type_obj, 9, 0, elems);
+    return namedtuple_make_new((const mp_obj_type_t*)&struct_time_type_obj, 9, elems, NULL);
 };
 
 void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
@@ -184,18 +184,26 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     tm->tm_yday = mp_obj_get_int(elems[7]);
     // elems[8] tm_isdst is not supported
 }
+#if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+// Function to return a NotImplementedError on platforms that don't
+// support long integers
+STATIC mp_obj_t time_not_implemented(void) {
+    mp_raise_NotImplementedError(translate("No long integer support"));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(time_not_implemented_obj, time_not_implemented);
+#endif
 
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
     mp_raise_RuntimeError(translate("RTC is not supported on this board"));
 }
 
-//| .. method:: time()
+//| def time() -> Any:
+//|     """Return the current time in seconds since since Jan 1, 1970.
 //|
-//|   Return the current time in seconds since since Jan 1, 1970.
-//|
-//|   :return: the current time
-//|   :rtype: int
+//|     :return: the current time
+//|     :rtype: int"""
+//|     ...
 //|
 STATIC mp_obj_t time_time(void) {
     timeutils_struct_time_t tm;
@@ -206,37 +214,44 @@ STATIC mp_obj_t time_time(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
-//| .. method:: monotonic_ns()
+//| def monotonic_ns() -> Any:
+//|     """Return the time of the specified clock clk_id in nanoseconds.
 //|
-//|   Return the time of the specified clock clk_id in nanoseconds.
-//|
-//|   :return: the current time
-//|   :rtype: int
+//|     :return: the current time
+//|     :rtype: int"""
+//|     ...
 //|
 STATIC mp_obj_t time_monotonic_ns(void) {
-    uint64_t time64 = common_hal_time_monotonic() * 1000000llu;
+    uint64_t time64 = common_hal_time_monotonic_ns();
     return mp_obj_new_int_from_ll((long long) time64);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_ns_obj, time_monotonic_ns);
 
-//| .. method:: localtime([secs])
+//| def localtime(secs: Any) -> Any:
+//|     """Convert a time expressed in seconds since Jan 1, 1970 to a struct_time in
+//|     local time. If secs is not provided or None, the current time as returned
+//|     by time() is used.
+//|     The earliest date for which it can generate a time is Jan 1, 2000.
 //|
-//|   Convert a time expressed in seconds since Jan 1, 1970 to a struct_time in
-//|   local time. If secs is not provided or None, the current time as returned
-//|   by time() is used.
-//|   The earliest date for which it can generate a time is Jan 1, 2000.
-//|
-//|   :return: the current time
-//|   :rtype: time.struct_time
+//|     :return: the current time
+//|     :rtype: time.struct_time"""
+//|     ...
 //|
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         return rtc_get_time_source_time();
     }
 
-    mp_int_t secs = mp_obj_int_get_checked(args[0]);
-    if (secs < EPOCH1970_EPOCH2000_DIFF_SECS)
+    mp_obj_t arg = args[0];
+    if (mp_obj_is_float(arg)) {
+        arg = mp_obj_new_int_from_float(mp_obj_get_float(arg));
+    }
+
+    mp_int_t secs = mp_obj_get_int(arg);
+
+    if (secs < EPOCH1970_EPOCH2000_DIFF_SECS) {
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+    }
 
     timeutils_struct_time_t tm;
     timeutils_seconds_since_epoch_to_struct_time(secs, &tm);
@@ -245,15 +260,15 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(time_localtime_obj, 0, 1, time_localtime);
 
-//| .. method:: mktime(t)
+//| def mktime(t: Any) -> Any:
+//|     """This is the inverse function of localtime(). Its argument is the
+//|     struct_time or full 9-tuple (since the dst flag is needed; use -1 as the
+//|     dst flag if it is unknown) which expresses the time in local time, not UTC.
+//|     The earliest date for which it can generate a time is Jan 1, 2000.
 //|
-//|   This is the inverse function of localtime(). Its argument is the
-//|   struct_time or full 9-tuple (since the dst flag is needed; use -1 as the
-//|   dst flag if it is unknown) which expresses the time in local time, not UTC.
-//|   The earliest date for which it can generate a time is Jan 1, 2000.
-//|
-//|   :return: seconds
-//|   :rtype: int
+//|     :return: seconds
+//|     :rtype: int"""
+//|     ...
 //|
 STATIC mp_obj_t time_mktime(mp_obj_t t) {
     mp_obj_t *elem;
@@ -268,8 +283,9 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
         mp_raise_TypeError(translate("function takes exactly 9 arguments"));
     }
 
-    if (mp_obj_get_int(elem[0]) < 2000)
+    if (mp_obj_get_int(elem[0]) < 2000) {
         mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+    }
 
     mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
                                       mp_obj_get_int(elem[3]), mp_obj_get_int(elem[4]), mp_obj_get_int(elem[5]));
@@ -294,6 +310,12 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
     { MP_ROM_QSTR(MP_QSTR_monotonic_ns), MP_ROM_PTR(&time_monotonic_ns_obj) },
+    #endif
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_not_implemented_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_not_implemented_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_not_implemented_obj) },
+    { MP_ROM_QSTR(MP_QSTR_monotonic_ns), MP_ROM_PTR(&time_not_implemented_obj) },
     #endif
 };
 

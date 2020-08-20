@@ -1,4 +1,4 @@
-# tests that differ when running under Python 3.4 vs 3.5/3.6
+# tests that differ when running under Python 3.4 vs 3.5/3.6/3.7
 
 try:
     exec
@@ -36,3 +36,7 @@ test_syntax("del ()") # can't delete empty tuple (in 3.6 we can)
 import sys
 print(sys.version[:3])
 print(sys.version_info[0], sys.version_info[1])
+
+# from basics/exception1.py
+# in 3.7 no comma is printed if there is only 1 arg (in 3.4-3.6 one is printed)
+print(repr(IndexError("foo")))

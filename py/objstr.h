@@ -61,7 +61,7 @@ const byte *mp_obj_str_get_data_no_check(mp_obj_t self_in, size_t *len);
     else { str_len = ((mp_obj_str_t*)MP_OBJ_TO_PTR(str_obj_in))->len; str_data = ((mp_obj_str_t*)MP_OBJ_TO_PTR(str_obj_in))->data; }
 #endif
 
-mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str_len);
 mp_obj_t mp_obj_str_format(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 mp_obj_t mp_obj_str_split(size_t n_args, const mp_obj_t *args);
@@ -71,9 +71,14 @@ mp_obj_t mp_obj_new_str_of_type(const mp_obj_type_t *type, const byte* data, siz
 mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in);
 mp_int_t mp_obj_str_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
+size_t str_offset_to_index(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
+                           size_t offset);
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
                              mp_obj_t index, bool is_slice);
 const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle, size_t nlen, int direction);
+
+const char nibble_to_hex_upper[16];
+const char nibble_to_hex_lower[16];
 
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(str_find_obj);

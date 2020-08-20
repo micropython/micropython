@@ -36,6 +36,8 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
 
+#include "common-hal/busio/SPI.h" // for never_reset_sercom
+
 // Number of times to try to send packet if failed.
 #define ATTEMPTS 2
 
@@ -67,10 +69,6 @@ Sercom *samd_i2c_get_sercom(const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda,
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
-    #ifdef PIRKEY_M0
-    mp_raise_NotImplementedError(translate("Not enough pins available"));
-    return;
-    #endif
     uint8_t sercom_index;
     uint32_t sda_pinmux, scl_pinmux;
     Sercom* sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
@@ -78,6 +76,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         mp_raise_ValueError(translate("Invalid pins"));
     }
 
+#if CIRCUITPY_REQUIRE_I2C_PULLUPS
     // Test that the pins are in a high state. (Hopefully indicating they are pulled up.)
     gpio_set_pin_function(sda->number, GPIO_PIN_FUNCTION_OFF);
     gpio_set_pin_function(scl->number, GPIO_PIN_FUNCTION_OFF);
@@ -100,6 +99,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         reset_pin_number(scl->number);
         mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
     }
+#endif
+
     gpio_set_pin_function(sda->number, sda_pinmux);
     gpio_set_pin_function(scl->number, scl_pinmux);
 
@@ -118,6 +119,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
+        common_hal_busio_i2c_deinit(self);
         mp_raise_ValueError(translate("Unsupported baudrate"));
     }
 
@@ -228,4 +230,11 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         return MP_ENODEV;
     }
     return MP_EIO;
+}
+
+void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
+    never_reset_sercom(self->i2c_desc.device.hw);
+
+    never_reset_pin_number(self->scl_pin);
+    never_reset_pin_number(self->sda_pin);
 }

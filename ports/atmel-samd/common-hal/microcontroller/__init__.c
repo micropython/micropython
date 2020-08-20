@@ -35,6 +35,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/translate.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
@@ -62,13 +63,7 @@ void common_hal_mcu_enable_interrupts(void) {
     __enable_irq();
 }
 
-extern uint32_t _ezero;
-
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    // Set up the defaults.
-    _bootloader_dbl_tap = DBL_TAP_MAGIC_QUICK_BOOT;
-    _ezero = CIRCUITPY_CANARY_WORD;
-
     if (runmode == RUNMODE_BOOTLOADER) {
         if (!bootloader_available()) {
             mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present."));
@@ -76,8 +71,12 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
         // Pretend to be the first of the two reset presses needed to enter the
         // bootloader. That way one reset will end in the bootloader.
         _bootloader_dbl_tap = DBL_TAP_MAGIC;
-    } else if (runmode == RUNMODE_SAFE_MODE) {
-        _ezero = CIRCUITPY_SOFTWARE_SAFE_MODE;
+    } else {
+        // Set up the default.
+        _bootloader_dbl_tap = DBL_TAP_MAGIC_QUICK_BOOT;
+    }
+    if (runmode == RUNMODE_SAFE_MODE) {
+        safe_mode_on_next_reset(PROGRAMMATIC_SAFE_MODE);
     }
 }
 
@@ -93,7 +92,6 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
     },
 };
 
-// NVM is only available on Express boards for now.
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
 // The singleton nvm.ByteArray object.
 const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
@@ -101,7 +99,7 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
         .type = &nvm_bytearray_type,
     },
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
-    .start_address = (uint8_t*) (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE)
+    .start_address = (uint8_t*) (CIRCUITPY_INTERNAL_NVM_START_ADDR)
 };
 #endif
 
@@ -251,6 +249,18 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
 #endif
 #if defined(PIN_PB17) && !defined(IGNORE_PIN_PB17)
     { MP_ROM_QSTR(MP_QSTR_PB17), MP_ROM_PTR(&pin_PB17) },
+#endif
+#if defined(PIN_PB18) && !defined(IGNORE_PIN_PB18)
+    { MP_ROM_QSTR(MP_QSTR_PB18), MP_ROM_PTR(&pin_PB18) },
+#endif
+#if defined(PIN_PB19) && !defined(IGNORE_PIN_PB19)
+    { MP_ROM_QSTR(MP_QSTR_PB19), MP_ROM_PTR(&pin_PB19) },
+#endif
+#if defined(PIN_PB20) && !defined(IGNORE_PIN_PB20)
+    { MP_ROM_QSTR(MP_QSTR_PB20), MP_ROM_PTR(&pin_PB20) },
+#endif
+#if defined(PIN_PB21) && !defined(IGNORE_PIN_PB21)
+    { MP_ROM_QSTR(MP_QSTR_PB21), MP_ROM_PTR(&pin_PB21) },
 #endif
 #if defined(PIN_PB22) && !defined(IGNORE_PIN_PB22)
     { MP_ROM_QSTR(MP_QSTR_PB22), MP_ROM_PTR(&pin_PB22) },

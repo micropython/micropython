@@ -34,14 +34,14 @@
 #include "shared-bindings/touchio/TouchIn.h"
 #include "supervisor/shared/translate.h"
 
+// Native touchio only exists for SAMD21
 #ifdef SAMD21
+
 #include "hpl/pm/hpl_pm_base.h"
-#endif
 
 #include "samd/clocks.h"
 #include "samd/pins.h"
 
-#include "tick.h"
 #include "adafruit_ptc.h"
 
 bool touch_enabled = false;
@@ -51,9 +51,7 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 
     while (!adafruit_ptc_is_conversion_finished(PTC)) {
         // wait
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
+        RUN_BACKGROUND_TASKS;
     }
 
     return adafruit_ptc_get_conversion_result(PTC);
@@ -67,7 +65,6 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     claim_pin(pin);
 
     // Turn on the PTC if its not in use. We won't turn it off until reset.
-    #ifdef SAMD21
     if ((( Ptc *) PTC)->CTRLA.bit.ENABLE == 0) {
         // We run the PTC at 8mhz so divide the 48mhz clock by 6.
         uint8_t gclk = find_free_gclk(6);
@@ -96,7 +93,6 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     // but for touches using fruit or other objects, the difference is much less.
 
     self->threshold = get_raw_reading(self) + 100;
-    #endif
 }
 
 bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t* self) {
@@ -141,3 +137,5 @@ uint16_t common_hal_touchio_touchin_get_threshold(touchio_touchin_obj_t *self) {
 void common_hal_touchio_touchin_set_threshold(touchio_touchin_obj_t *self, uint16_t new_threshold) {
     self->threshold = new_threshold;
 }
+
+#endif // SAMD21

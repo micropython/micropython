@@ -1,19 +1,28 @@
-LD_FILE = boards/samd21x18-bootloader-external-flash-crystalless.ld
 USB_VID = 0x239A
 USB_PID = 0x8019
 USB_PRODUCT = "CircuitPlayground Express with Crickit libraries"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
-SPI_FLASH_FILESYSTEM = 1
-EXTERNAL_FLASH_DEVICE_COUNT = 2
-EXTERNAL_FLASH_DEVICES = "S25FL216K, GD25Q16C"
-# Turn off longints for Crickit build to make room for additional frozen libs.
-LONGINT_IMPL = NONE
-
 CHIP_VARIANT = SAMD21G18A
 CHIP_FAMILY = samd21
 
-CFLAGS_INLINE_LIMIT = 55
+SPI_FLASH_FILESYSTEM = 1
+EXTERNAL_FLASH_DEVICE_COUNT = 2
+EXTERNAL_FLASH_DEVICES = "S25FL216K, GD25Q16C"
+
+# Turn off features and optimizations for Crickit build to make room for additional frozen libs.
+LONGINT_IMPL = NONE
+CIRCUITPY_BITBANGIO = 0
+CIRCUITPY_DISPLAYIO = 0
+CIRCUITPY_FREQUENCYIO = 0
+CIRCUITPY_I2CSLAVE = 0
+CIRCUITPY_PIXELBUF = 1
+CIRCUITPY_ROTARYIO = 0
+CIRCUITPY_RTC = 0
+
+SUPEROPT_GC = 0
+CFLAGS_INLINE_LIMIT = 50
+
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice

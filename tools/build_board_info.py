@@ -12,30 +12,59 @@ from sh.contrib import git
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-SUPPORTED_PORTS = ["nrf", "esp8266", "atmel-samd"]
+SUPPORTED_PORTS = ["atmel-samd", "cxd56", "esp32s2", "litex", "mimxrt10xx", "nrf", "stm"]
 
 BIN = ('bin',)
 UF2 = ('uf2',)
 BIN_UF2 = ('bin', 'uf2')
 HEX = ('hex',)
+HEX_UF2 = ('hex', 'uf2')
+SPK = ('spk',)
+DFU = ('dfu',)
+BIN_DFU = ('bin', 'dfu')
+
+# Example:
+# https://downloads.circuitpython.org/bin/trinket_m0/en_US/adafruit-circuitpython-trinket_m0-en_US-5.0.0-rc.0.uf2
+DOWNLOAD_BASE_URL = "https://downloads.circuitpython.org/bin"
 
 # Default extensions
 extension_by_port = {
-    "nrf": BIN,
-    "esp8266": BIN,
+    "nrf": UF2,
     "atmel-samd": UF2,
+    "stm": BIN,
+    "cxd56": SPK,
+    "mimxrt10xx": HEX_UF2,
+    "litex": DFU,
+    "esp32s2": BIN
 }
 
 # Per board overrides
 extension_by_board = {
-    "feather_nrf52832": BIN,
-    "arduino_mkr1300": BIN,
-    "arduino_zero": BIN,
+    # samd
+    "arduino_mkr1300": BIN_UF2,
+    "arduino_mkrzero": BIN_UF2,
+    "arduino_nano_33_iot": BIN_UF2,
+    "arduino_zero": BIN_UF2,
     "feather_m0_adalogger": BIN_UF2,
     "feather_m0_basic": BIN_UF2,
-    "feather_m0_rfm69": BIN,
-    "feather_m0_rfm9x": BIN,
-    "makerdiary_nrf52840_mdk": HEX
+    "feather_m0_rfm69": BIN_UF2,
+    "feather_m0_rfm9x": BIN_UF2,
+    "uchip": BIN_UF2,
+
+    # nRF52840 dev kits that may not have UF2 bootloaders,
+    "makerdiary_nrf52840_mdk": HEX,
+    "makerdiary_nrf52840_mdk_usb_dongle": HEX_UF2,
+    "pca10056": BIN_UF2,
+    "pca10059": BIN_UF2,
+    "electronut_labs_blip": HEX
+}
+
+aliases_by_board = {
+    "circuitplayground_express": ["circuitplayground_express_4h", "circuitplayground_express_digikey_pycon2019"],
+    "pybadge": ["edgebadge"],
+    "pyportal": ["pyportal_pynt"],
+    "gemma_m0": ["gemma_m0_pycon2018"],
+    "pewpew10": ["pewpew13"]
 }
 
 def get_languages():
@@ -55,22 +84,30 @@ def get_board_mapping():
                 board_id = board_path.name
                 extensions = extension_by_port[port]
                 extensions = extension_by_board.get(board_path.name, extensions)
-                boards[board_id] = {"port": port, "extensions": extensions, "download_count": 0}
+                aliases = aliases_by_board.get(board_path.name, [])
+                boards[board_id] = {"port": port,
+                                    "extensions": extensions,
+                                    "download_count": 0,
+                                    "aliases": aliases}
+                for alias in aliases:
+                    boards[alias] = {"port": port,
+                                     "extensions": extensions,
+                                     "download_count": 0,
+                                     "alias": True,
+                                     "aliases": []}
     return boards
 
 def get_version_info():
     version = None
     sha = git("rev-parse", "--short", "HEAD").stdout.decode("utf-8")
     try:
-        version = git("describe", "--tags", "--exact-match").stdout.decode("utf-8")
+        version = git("describe", "--tags", "--exact-match").stdout.decode("utf-8").strip()
     except sh.ErrorReturnCode_128:
         # No exact match
         pass
 
-    if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
-        sha = os.environ["TRAVIS_COMMIT"]
-        if os.environ["TRAVIS_PULL_REQUEST"] != "false":
-            sha = os.environ["TRAVIS_PULL_REQUEST_SHA"]
+    if "GITHUB_SHA" in os.environ:
+        sha = os.environ["GITHUB_SHA"]
 
     if not version:
         version="{}-{}".format(date.today().strftime("%Y%m%d"), sha[:7])
@@ -92,14 +129,26 @@ def get_current_info():
     response = response.json()
 
     git_info = commit_sha, response["sha"]
-    return git_info, json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+    current_list = json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+    current_info = {}
+    for info in current_list:
+        current_info[info["id"]] = info
+    return git_info, current_info
 
-def create_pr(changes, updated, git_info):
+def create_pr(changes, updated, git_info, user):
     commit_sha, original_blob_sha = git_info
     branch_name = "new_release_" + changes["new_release"]
 
-    updated = json.dumps(updated, sort_keys=True, indent=4).encode("utf-8") + b"\n"
-    print(updated.decode("utf-8"))
+    # Convert the dictionary to a list of boards. Liquid templates only handle arrays.
+    updated_list = []
+    all_ids = sorted(updated.keys())
+    for id in all_ids:
+        info = updated[id]
+        info["id"] = id
+        updated_list.append(info)
+
+    updated = json.dumps(updated_list, sort_keys=True, indent=4).encode("utf-8") + b"\n"
+    #print(updated.decode("utf-8"))
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
     if changes["new_boards"]:
@@ -107,7 +156,7 @@ def create_pr(changes, updated, git_info):
     languages = ""
     if changes["new_languages"]:
         languages = "New languages:\n* " + "\n* ".join(changes["new_languages"])
-    message = "Automated website update for release {} by AdaBot.\n\n{}\n\n{}\n".format(
+    message = "Automated website update for release {} by Blinka.\n\n{}\n\n{}\n".format(
         changes["new_release"],
         boards,
         languages
@@ -117,7 +166,7 @@ def create_pr(changes, updated, git_info):
         "ref": "refs/heads/" + branch_name,
         "sha": commit_sha
     }
-    response = github.post("/repos/adafruit-adabot/circuitpython-org/git/refs", json=create_branch)
+    response = github.post("/repos/{}/circuitpython-org/git/refs".format(user), json=create_branch)
     if not response.ok and response.json()["message"] != "Reference already exists":
         print("unable to create branch")
         print(response.text)
@@ -130,14 +179,14 @@ def create_pr(changes, updated, git_info):
         "branch": branch_name
     }
 
-    response = github.put("/repos/adafruit-adabot/circuitpython-org/contents/_data/files.json", json=update_file)
+    response = github.put("/repos/{}/circuitpython-org/contents/_data/files.json".format(user), json=update_file)
     if not response.ok:
         print("unable to post new file")
         print(response.text)
         return
     pr_info = {
         "title": pr_title,
-        "head": "adafruit-adabot:" + branch_name,
+        "head": user + ":" + branch_name,
         "base": "master",
         "body": message,
         "maintainer_can_modify": True
@@ -158,21 +207,27 @@ def update_downloads(boards, release):
 
     assets = response.json()["assets"]
     for asset in assets:
-        boards[asset["name"].split("-")[2]]["download_count"] += asset["download_count"]
+        board_name = asset["name"].split("-")[2]
+        if board_name not in boards:
+            continue
+        boards[board_name]["download_count"] += asset["download_count"]
 
 
 def print_active_user():
     response = github.get("/user")
     if response.ok:
-        print("Logged in as {}".format(response.json()["login"]))
+        user = response.json()["login"]
+        print("Logged in as {}".format(user))
+        return user
     else:
         print("Not logged in")
+    return None
 
 def generate_download_info():
     boards = {}
     errors = []
 
-    new_tag = os.environ["TRAVIS_TAG"]
+    new_tag = os.environ["RELEASE_TAG"]
 
     changes = {
         "new_release": new_tag,
@@ -180,7 +235,7 @@ def generate_download_info():
         "new_languages": []
     }
 
-    print_active_user()
+    user = print_active_user()
 
     sha, this_version = get_version_info()
 
@@ -204,7 +259,6 @@ def generate_download_info():
 
     board_mapping = get_board_mapping()
 
-    print(previous_releases)
     for release in previous_releases:
         update_downloads(board_mapping, release)
 
@@ -212,35 +266,46 @@ def generate_download_info():
         board_path = os.path.join("../ports", port, "boards")
         for board_path in os.scandir(board_path):
             if board_path.is_dir():
-                board_files = os.listdir(board_path)
+                board_files = os.listdir(board_path.path)
                 board_id = board_path.name
                 board_info = board_mapping[board_id]
 
-                if board_id not in current_info:
-                    changes["new_boards"].append(board_id)
-                    current_info[board_id] = {"downloads": 0,
-                                              "versions": []}
+                for alias in [board_id] + board_info["aliases"]:
+                    alias_info = board_mapping[alias]
+                    if alias not in current_info:
+                        changes["new_boards"].append(alias)
+                        current_info[alias] = {"downloads": 0,
+                                                "versions": []}
 
-                new_version = {
-                    "stable": new_stable,
-                    "version": new_tag,
-                    "files": {}
-                }
-                for language in languages:
-                    files = []
-                    new_version["files"][language] = files
-                    for extension in board_info["extensions"]:
-                        files.append("https://github.com/adafruit/circuitpython/releases/download/{tag}/adafruit-circuitpython-{board}-{language}-{tag}.{extension}".format(tag=new_tag, board=board_id, language=language, extension=extension))
-                current_info[board_id]["downloads"] = board_info["download_count"]
-                current_info[board_id]["versions"].append(new_version)
+                    new_version = {
+                        "stable": new_stable,
+                        "version": new_tag,
+                        "files": {}
+                    }
+                    for language in languages:
+                        files = []
+                        new_version["files"][language] = files
+                        for extension in board_info["extensions"]:
+                            files.append(
+                                "{base_url}/{alias}/{language}/adafruit-circuitpython-{alias}-{language}-{tag}.{extension}"
+                                .format(
+                                    base_url=DOWNLOAD_BASE_URL,
+                                    tag=new_tag,
+                                    alias=alias,
+                                    language=language,
+                                    extension=extension))
+                    current_info[alias]["downloads"] = alias_info["download_count"]
+                    current_info[alias]["versions"].append(new_version)
 
     changes["new_languages"] = set(languages) - previous_languages
 
-    if changes["new_languages"]:
-        create_pr(changes, current_info, git_info)
+    if changes["new_release"] and user:
+        create_pr(changes, current_info, git_info, user)
+    else:
+        print("No new release to update")
 
 if __name__ == "__main__":
-    if "TRAVIS_TAG" in os.environ and os.environ["TRAVIS_TAG"]:
+    if "RELEASE_TAG" in os.environ and os.environ["RELEASE_TAG"]:
         generate_download_info()
     else:
         print("skipping website update because this isn't a tag")

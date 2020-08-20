@@ -35,29 +35,26 @@
 #include "shared-bindings/storage/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| :mod:`storage` --- storage management
-//| ========================================================
-//|
-//| .. module:: storage
-//|   :synopsis: storage management
-//|   :platform: SAMD21, SAMD51
+//| """Storage management
 //|
 //| The `storage` provides storage management functionality such as mounting and
 //| unmounting which is typically handled by the operating system hosting Python.
 //| CircuitPython does not have an OS, so this module provides this functionality
-//| directly.
+//| directly."""
 //|
 
-//| .. function:: mount(filesystem, mount_path, \*, readonly=False)
+//| def mount(filesystem: Any, mount_path: Any, *, readonly: bool = False) -> Any:
+//|     """Mounts the given filesystem object at the given path.
 //|
-//|   Mounts the given filesystem object at the given path.
+//|     This is the CircuitPython analog to the UNIX ``mount`` command.
 //|
-//|   This is the CircuitPython analog to the UNIX ``mount`` command.
+//|     :param bool readonly: True when the filesystem should be readonly to CircuitPython."""
+//|     ...
 //|
 mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_readonly };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_false} },
+        { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // parse args
@@ -77,18 +74,18 @@ mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
         mp_raise_ValueError(translate("filesystem must provide mount method"));
     }
 
-    common_hal_storage_mount(vfs_obj, mnt_str, mp_obj_is_true(args[ARG_readonly].u_obj));
+    common_hal_storage_mount(vfs_obj, mnt_str, args[ARG_readonly].u_bool);
 
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(storage_mount_obj, 2, storage_mount);
 
-//| .. function:: umount(mount)
+//| def umount(mount: Any) -> Any:
+//|     """Unmounts the given filesystem object or if *mount* is a path, then unmount
+//|     the filesystem mounted at that location.
 //|
-//|   Unmounts the given filesystem object or if *mount* is a path, then unmount
-//|   the filesystem mounted at that location.
-//|
-//|   This is the CircuitPython analog to the UNIX ``umount`` command.
+//|     This is the CircuitPython analog to the UNIX ``umount`` command."""
+//|     ...
 //|
 mp_obj_t storage_umount(mp_obj_t mnt_in) {
     if (MP_OBJ_IS_STR(mnt_in)) {
@@ -101,14 +98,21 @@ mp_obj_t storage_umount(mp_obj_t mnt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 
-//| .. function:: remount(mount_path, readonly=False)
+//| def remount(mount_path: Any, readonly: bool = False, *, disable_concurrent_write_protection: bool = False) -> Any:
+//|     """Remounts the given path with new parameters.
 //|
-//|   Remounts the given path with new parameters.
+//|       :param bool readonly: True when the filesystem should be readonly to CircuitPython.
+//|       :param bool disable_concurrent_write_protection: When True, the check that makes sure the
+//|         underlying filesystem data is written by one computer is disabled. Disabling the protection
+//|         allows CircuitPython and a host to write to the same filesystem with the risk that the
+//|         filesystem will be corrupted."""
+//|     ...
 //|
 mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_readonly };
+    enum { ARG_readonly, ARG_disable_concurrent_write_protection };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_readonly, MP_ARG_BOOL | MP_ARG_REQUIRED, {.u_bool = false} },
+        { MP_QSTR_readonly, MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_disable_concurrent_write_protection, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
     // get the mount point
@@ -118,34 +122,35 @@ mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    common_hal_storage_remount(mnt_str, args[ARG_readonly].u_bool);
+    common_hal_storage_remount(mnt_str, args[ARG_readonly].u_bool, args[ARG_disable_concurrent_write_protection].u_bool);
 
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(storage_remount_obj, 1, storage_remount);
 
-//| .. function:: getmount(mount_path)
-//|
-//|   Retrieves the mount object associated with the mount path
+//| def getmount(mount_path: Any) -> Any:
+//|     """Retrieves the mount object associated with the mount path"""
+//|     ...
 //|
 mp_obj_t storage_getmount(const mp_obj_t mnt_in) {
     return common_hal_storage_getmount(mp_obj_str_get_str(mnt_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
 
-//| .. function:: erase_filesystem()
+//| def erase_filesystem() -> Any:
+//|     """Erase and re-create the ``CIRCUITPY`` filesystem.
 //|
-//|   Erase and re-create the ``CIRCUITPY`` filesystem.
+//|     On boards that present USB-visible ``CIRCUITPY`` drive (e.g., SAMD21 and SAMD51),
+//|     then call `microcontroller.reset()` to restart CircuitPython and have the
+//|     host computer remount CIRCUITPY.
 //|
-//|   On boards that present USB-visible ``CIRCUITPY`` drive (e.g., SAMD21 and SAMD51),
-//|   then call `microcontroller.reset()` to restart CircuitPython and have the
-//|   host computer remount CIRCUITPY.
+//|     This function can be called from the REPL when ``CIRCUITPY``
+//|     has become corrupted.
 //|
-//|   This function can be called from the REPL when ``CIRCUITPY``
-//|   has become corrupted.
+//|     .. warning:: All the data on ``CIRCUITPY`` will be lost, and
+//|          CircuitPython will restart on certain boards."""
+//|     ...
 //|
-//|   .. warning:: All the data on ``CIRCUITPY`` will be lost, and
-//|        CircuitPython will restart on certain boards.
 
 mp_obj_t storage_erase_filesystem(void) {
     common_hal_storage_erase_filesystem();
@@ -162,55 +167,55 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getmount), MP_ROM_PTR(&storage_getmount_obj) },
     { MP_ROM_QSTR(MP_QSTR_erase_filesystem), MP_ROM_PTR(&storage_erase_filesystem_obj) },
 
-    //| .. class:: VfsFat(block_device)
-    //|
-    //|   Create a new VfsFat filesystem around the given block device.
-    //|
-    //|   :param block_device: Block device the the filesystem lives on
-    //|
-    //|   .. attribute:: label
-    //|
-    //|     The filesystem label, up to 11 case-insensitive bytes.  Note that
-    //|     this property can only be set when the device is writable by the
-    //|     microcontroller.
-    //|
-    //|   .. method:: mkfs
-    //|
-    //|     Format the block device, deleting any data that may have been there
-    //|
-    //|   .. method:: open(path, mode)
-    //|
-    //|     Like builtin ``open()``
-    //|
-    //|   .. method:: ilistdir([path])
-    //|
-    //|     Return an iterator whose values describe files and folders within
-    //|     ``path``
-    //|
-    //|   .. method:: mkdir(path)
-    //|
-    //|     Like `os.mkdir`
-    //|
-    //|   .. method:: rmdir(path)
-    //|
-    //|     Like `os.rmdir`
-    //|
-    //|   .. method:: stat(path)
-    //|
-    //|     Like `os.stat`
-    //|
-    //|   .. method:: statvfs(path)
-    //|
-    //|     Like `os.statvfs`
-    //|
-    //|   .. method:: mount(readonly, mkfs)
-    //|
-    //|     Don't call this directly, call `storage.mount`.
-    //|
-    //|   .. method:: umount
-    //|
-    //|     Don't call this directly, call `storage.umount`.
-    //|
+//| class VfsFat:
+//|     def __init__(self, block_device: Any):
+//|         """Create a new VfsFat filesystem around the given block device.
+//|
+//|         :param block_device: Block device the the filesystem lives on"""
+//|
+//|         label: Any = ...
+//|         """The filesystem label, up to 11 case-insensitive bytes.  Note that
+//|         this property can only be set when the device is writable by the
+//|         microcontroller."""
+//|         ...
+//|
+//|     def mkfs(self) -> Any:
+//|         """Format the block device, deleting any data that may have been there"""
+//|         ...
+//|
+//|     def open(self, path: Any, mode: Any) -> Any:
+//|         """Like builtin ``open()``"""
+//|         ...
+//|
+//|     def ilistdir(self, path: Any) -> Any:
+//|         """Return an iterator whose values describe files and folders within
+//|         ``path``"""
+//|         ...
+//|
+//|     def mkdir(self, path: Any) -> Any:
+//|         """Like `os.mkdir`"""
+//|         ...
+//|
+//|     def rmdir(self, path: Any) -> Any:
+//|         """Like `os.rmdir`"""
+//|         ...
+//|
+//|     def stat(self, path: Any) -> Any:
+//|         """Like `os.stat`"""
+//|         ...
+//|
+//|     def statvfs(self, path: Any) -> Any:
+//|         """Like `os.statvfs`"""
+//|         ...
+//|
+//|     def mount(self, readonly: Any, mkfs: Any) -> Any:
+//|         """Don't call this directly, call `storage.mount`."""
+//|         ...
+//|
+//|     def umount(self) -> Any:
+//|         """Don't call this directly, call `storage.umount`."""
+//|         ...
+//|
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
 };
 

@@ -1,12 +1,19 @@
 Supported Ports
 ==============================
 
-Adafruit's CircuitPython currently has limited support with a focus on supporting the Atmel SAMD
-and ESP8266.
+CircuitPython supports a number of microcontroller families. Support quality for each varies
+depending on the active contributors for each port.
+
+Adafruit sponsored developers are actively contributing to atmel-samd, mimxrt10xx, nrf and stm
+ports. They also maintain the other ports in order to ensure the boards build. Additional testing
+is limited.
 
 .. toctree::
     :maxdepth: 2
 
     ../ports/atmel-samd/README
-    ../ports/esp8266/README
+    ../ports/cxd56/README
+    ../ports/litex/README
+    ../ports/mimxrt10xx/README
     ../ports/nrf/README
+    ../ports/stm/README

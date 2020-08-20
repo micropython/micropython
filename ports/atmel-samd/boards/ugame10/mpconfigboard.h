@@ -13,16 +13,32 @@
 
 #define CALIBRATE_CRYSTALLESS 1
 
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
+#define DEFAULT_SPI_BUS_SCK (&pin_PA07)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA11)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PA06)
 
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
-
-#define EXTRA_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module }
+#define IGNORE_PIN_PB00     1
+#define IGNORE_PIN_PB01     1
+#define IGNORE_PIN_PB02     1
+#define IGNORE_PIN_PB03     1
+#define IGNORE_PIN_PB04     1
+#define IGNORE_PIN_PB05     1
+#define IGNORE_PIN_PB06     1
+#define IGNORE_PIN_PB07     1
+#define IGNORE_PIN_PB08     1
+#define IGNORE_PIN_PB09     1
+#define IGNORE_PIN_PB10     1
+#define IGNORE_PIN_PB11     1
+#define IGNORE_PIN_PB12     1
+#define IGNORE_PIN_PB13     1
+#define IGNORE_PIN_PB14     1
+#define IGNORE_PIN_PB15     1
+#define IGNORE_PIN_PB16     1
+#define IGNORE_PIN_PB17     1
+#define IGNORE_PIN_PB22     1
+#define IGNORE_PIN_PB23     1
+#define IGNORE_PIN_PB30     1
+#define IGNORE_PIN_PB31     1
 
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1

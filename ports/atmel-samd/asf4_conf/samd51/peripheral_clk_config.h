@@ -73,7 +73,7 @@
 // <id> dac_gclk_selection
 // <i> Select the clock source for DAC.
 #ifndef CONF_GCLK_DAC_SRC
-#define CONF_GCLK_DAC_SRC GCLK_PCHCTRL_GEN_GCLK5_Val
+#define CONF_GCLK_DAC_SRC GCLK_PCHCTRL_GEN_GCLK6_Val
 #endif
 
 /**

@@ -36,6 +36,11 @@ void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t wi
 
 void common_hal_displayio_bitmap_load_row(displayio_bitmap_t *self, uint16_t y, uint8_t* data,
                                           uint16_t len);
+uint16_t common_hal_displayio_bitmap_get_height(displayio_bitmap_t *self);
+uint16_t common_hal_displayio_bitmap_get_width(displayio_bitmap_t *self);
+uint32_t common_hal_displayio_bitmap_get_bits_per_value(displayio_bitmap_t *self);
+void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *bitmap, int16_t x, int16_t y, uint32_t value);
 uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *bitmap, int16_t x, int16_t y);
+void common_hal_displayio_bitmap_fill(displayio_bitmap_t *bitmap, uint32_t value);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_BITMAP_H

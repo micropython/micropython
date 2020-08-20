@@ -1,6 +1,7 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Feather RadioFruit Zigbee"
 #define MICROPY_HW_MCU_NAME "samr21g18"
 
+#define MICROPY_HW_LED_STATUS   (&pin_PA27)
 #define MICROPY_HW_NEOPIXEL (&pin_PA22)
 
 #define SPI_FLASH_MOSI_PIN          &pin_PA31
@@ -12,12 +13,6 @@
 #define MICROPY_PORT_A        (PORT_PA22)
 #define MICROPY_PORT_B        ( 0 )
 #define MICROPY_PORT_C        ( 0 )
-
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 #define BOARD_HAS_CRYSTAL 1
 

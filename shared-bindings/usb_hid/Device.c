@@ -27,32 +27,25 @@
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
 
-//| .. currentmodule:: usb_hid
+//| class Device:
+//|     """HID Device
 //|
-//| :class:`Device` -- HID Device
-//| ============================================
+//|     Usage::
 //|
-//| Usage::
+//|        import usb_hid
 //|
-//|    import usb_hid
+//|        mouse = usb_hid.devices[0]
 //|
-//|    mouse = usb_hid.devices[0]
-//|
-//|    mouse.send_report()
+//|        mouse.send_report()"""
 //|
 
-//| .. class:: Device()
+//|     def __init__(self, ):
+//|         """Not currently dynamically supported."""
+//|         ...
 //|
-//|   Not currently dynamically supported.
-//|
-STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
-    return mp_const_none;
-}
-
-//|   .. method:: send_report(buf)
-//|
-//|     Send a HID report.
+//|     def send_report(self, buf: Any) -> Any:
+//|         """Send a HID report."""
+//|         ...
 //|
 STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -65,9 +58,8 @@ STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_report);
 
-//|   .. attribute:: usage_page
-//|
-//|     The usage page of the device as an `int`. Can be thought of a category. (read-only)
+//|     usage_page: Any = ...
+//|     """The usage page of the device as an `int`. Can be thought of a category. (read-only)"""
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -82,12 +74,11 @@ const mp_obj_property_t usb_hid_device_usage_page_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: usage
-//|
-//|     The functionality of the device as an int. (read-only)
+//|     usage: Any = ...
+//|     """The functionality of the device as an int. (read-only)
 //|
 //|     For example, Keyboard is 0x06 within the generic desktop usage page 0x01.
-//|     Mouse is 0x02 within the same usage page.
+//|     Mouse is 0x02 within the same usage page."""
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -114,6 +105,5 @@ STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_di
 const mp_obj_type_t usb_hid_device_type = {
     { &mp_type_type },
     .name = MP_QSTR_Device,
-    .make_new = usb_hid_device_make_new,
     .locals_dict = (mp_obj_t)&usb_hid_device_locals_dict,
 };

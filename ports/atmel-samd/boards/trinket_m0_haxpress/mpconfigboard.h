@@ -2,6 +2,7 @@
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
 // Rev B - Black
+#define MICROPY_HW_LED_STATUS   (&pin_PA10)
 // #define MICROPY_HW_APA102_MOSI   (&pin_PA00)
 // #define MICROPY_HW_APA102_SCK    (&pin_PA01)
 
@@ -16,12 +17,6 @@
 #define MICROPY_PORT_C        (0)
 
 #define CALIBRATE_CRYSTALLESS 1
-
-// If you change this, then make sure to update the linker scripts as well to
-// make sure you don't overwrite code.
-#define CIRCUITPY_INTERNAL_NVM_SIZE 256
-
-#define BOARD_FLASH_SIZE (0x00040000 - 0x2000 - CIRCUITPY_INTERNAL_NVM_SIZE)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA09)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA08)

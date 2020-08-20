@@ -89,6 +89,9 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             }
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
+            if (input_kind == MP_PARSE_FILE_INPUT) {
+                mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+            }
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
             module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, exec_flags & EXEC_FLAG_IS_REPL);
             // Clear the parse tree because it has a heap pointer we don't need anymore.
@@ -128,7 +131,9 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
         } else {
-            mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+            if ((mp_obj_t) nlr.ret_val != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
+                mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
+            }
             ret = PYEXEC_EXCEPTION;
         }
     }

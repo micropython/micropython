@@ -34,12 +34,46 @@
 #include "genhdr/compression.generated.h"
 #endif
 
+#include "supervisor/serial.h"
+
+void serial_write_compressed(const compressed_string_t* compressed) {
+    char decompressed[decompress_length(compressed)];
+    decompress(compressed, decompressed);
+    serial_write(decompressed);
+}
+
+STATIC int put_utf8(char *buf, int u) {
+    if(u <= 0x7f) {
+        *buf = u;
+        return 1;
+    } else if(u <= 0x07ff) {
+        *buf++ = 0b11000000 | (u >> 6);
+        *buf   = 0b10000000 | (u & 0b00111111);
+        return 2;
+    } else { // u <= 0xffff)
+        *buf++ = 0b11000000 | (u >> 12);
+        *buf   = 0b10000000 | ((u >> 6) & 0b00111111);
+        *buf   = 0b10000000 | (u & 0b00111111);
+        return 3;
+    }
+}
+
+uint16_t decompress_length(const compressed_string_t* compressed) {
+    if (compress_max_length_bits <= 8) {
+        return 1 + (compressed->data >> (8 - compress_max_length_bits));
+    } else {
+        return 1 + ((compressed->data * 256 + compressed->tail[0]) >> (16 - compress_max_length_bits));
+    }
+}
+
 char* decompress(const compressed_string_t* compressed, char* decompressed) {
-    uint8_t this_byte = 0;
-    uint8_t this_bit = 7;
-    uint8_t b = compressed->data[this_byte];
+    uint8_t this_byte = compress_max_length_bits / 8;
+    uint8_t this_bit = 7 - compress_max_length_bits % 8;
+    uint8_t b = (&compressed->data)[this_byte];
+    uint16_t length = decompress_length(compressed);
+
     // Stop one early because the last byte is always NULL.
-    for (uint16_t i = 0; i < compressed->length - 1; i++) {
+    for (uint16_t i = 0; i < length - 1;) {
         uint32_t bits = 0;
         uint8_t bit_length = 0;
         uint32_t max_code = lengths[0];
@@ -54,7 +88,7 @@ char* decompress(const compressed_string_t* compressed, char* decompressed) {
             if (this_bit == 0) {
                 this_bit = 7;
                 this_byte += 1;
-                b = compressed->data[this_byte]; // This may read past the end but its never used.
+                b = (&compressed->data)[this_byte]; // This may read past the end but its never used.
             } else {
                 this_bit -= 1;
             }
@@ -64,17 +98,17 @@ char* decompress(const compressed_string_t* compressed, char* decompressed) {
             max_code = (max_code << 1) + lengths[bit_length];
             searched_length += lengths[bit_length];
         }
-        decompressed[i] = values[searched_length + bits - max_code];
+        i += put_utf8(decompressed + i, values[searched_length + bits - max_code]);
     }
 
-    decompressed[compressed->length-1] = '\0';
+    decompressed[length-1] = '\0';
     return decompressed;
 }
 
 inline __attribute__((always_inline)) const compressed_string_t* translate(const char* original) {
     #ifndef NO_QSTR
     #define QDEF(id, str)
-    #define TRANSLATION(id, len, compressed...) if (strcmp(original, id) == 0) { static const compressed_string_t v = {.length = len, .data = compressed}; return &v; } else
+    #define TRANSLATION(id, firstbyte, ...) if (strcmp(original, id) == 0) { static const compressed_string_t v = { .data = firstbyte, .tail = { __VA_ARGS__ } }; return &v; } else
     #include "genhdr/qstrdefs.generated.h"
     #undef TRANSLATION
     #undef QDEF

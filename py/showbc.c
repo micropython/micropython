@@ -185,7 +185,7 @@ const byte *mp_bytecode_print_str(const byte *ip) {
                 num--;
             }
             do {
-                num = (num << 7) | (*ip & 0x7f);
+                num = (num * 128) | (*ip & 0x7f);
             } while ((*ip++ & 0x80) != 0);
             printf("LOAD_CONST_SMALL_INT " INT_FMT, num);
             break;

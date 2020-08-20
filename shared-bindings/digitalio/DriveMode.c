@@ -26,24 +26,20 @@
 
 #include "shared-bindings/digitalio/DriveMode.h"
 
-//| .. currentmodule:: digitalio
+//| class DriveMode:
+//|     """Defines the drive mode of a digital pin"""
 //|
-//| :class:`DriveMode` -- defines the drive mode of a digital pin
-//| =============================================================
+//|     def __init__(self, ):
+//|         """Enum-like class to define the drive mode used when outputting
+//|         digital values."""
+//|         ...
 //|
-//| .. class:: digitalio.DriveMode
+//|     PUSH_PULL: Any = ...
+//|     """Output both high and low digital values"""
 //|
-//|     Enum-like class to define the drive mode used when outputting
-//|     digital values.
-//|
-//|     .. data:: PUSH_PULL
-//|
-//|       Output both high and low digital values
-//|
-//|     .. data:: OPEN_DRAIN
-//|
-//|       Output low digital values but go into high z for digital high. This is
-//|       useful for i2c and other protocols that share a digital line.
+//|     OPEN_DRAIN: Any = ...
+//|     """Output low digital values but go into high z for digital high. This is
+//|     useful for i2c and other protocols that share a digital line."""
 //|
 const mp_obj_type_t digitalio_drive_mode_type;
 

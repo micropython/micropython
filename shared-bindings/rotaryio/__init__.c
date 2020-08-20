@@ -33,33 +33,19 @@
 #include "shared-bindings/rotaryio/__init__.h"
 #include "shared-bindings/rotaryio/IncrementalEncoder.h"
 
-//| :mod:`rotaryio` --- Support for reading rotation sensors
-//| ========================================================
-//|
-//| .. module:: rotaryio
-//|   :synopsis: Support for reading rotation sensors
-//|   :platform: SAMD
+//| """Support for reading rotation sensors
 //|
 //| The `rotaryio` module contains classes to read different rotation encoding schemes. See
 //| `Wikipedia's Rotary Encoder page <https://en.wikipedia.org/wiki/Rotary_encoder>`_ for more
 //| background.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     IncrementalEncoder
-//|
 
-//| .. warning:: This module is not available in some SAMD21 (aka M0) builds. See the
-//|   :ref:`module-support-matrix` for more info.
+//| .. warning:: This module is not available in some SAMD21 (aka M0) builds. See the :ref:`module-support-matrix` for more info.
 //|
 
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
-//| :ref:`lifetime-and-contextmanagers` for more info.
+//| :ref:`lifetime-and-contextmanagers` for more info."""
 //|
 
 STATIC const mp_rom_map_elem_t rotaryio_module_globals_table[] = {

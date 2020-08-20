@@ -116,7 +116,7 @@ index 77d2945..dae0644 100644
 @@ -55,10 +55,8 @@ void msec_sleep_tv(struct timeval *tv) {
  #define MP_CLOCKS_PER_SEC CLOCKS_PER_SEC
  #endif
- 
+
 -#if defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000000) // POSIX
 -#define CLOCK_DIV 1000.0
 -#elif defined(MP_CLOCKS_PER_SEC) && (MP_CLOCKS_PER_SEC == 1000) // WIN32

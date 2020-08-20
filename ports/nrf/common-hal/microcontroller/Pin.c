@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
 
 #include "nrf_gpio.h"
 #include "py/mphal.h"
@@ -47,13 +48,26 @@ bool speaker_enable_in_use;
 STATIC uint32_t claimed_pins[GPIO_COUNT];
 STATIC uint32_t never_reset_pins[GPIO_COUNT];
 
+STATIC void reset_speaker_enable_pin(void) {
+#ifdef SPEAKER_ENABLE_PIN
+    speaker_enable_in_use = false;
+    nrf_gpio_cfg(SPEAKER_ENABLE_PIN->number,
+                 NRF_GPIO_PIN_DIR_OUTPUT,
+                 NRF_GPIO_PIN_INPUT_DISCONNECT,
+                 NRF_GPIO_PIN_NOPULL,
+                 NRF_GPIO_PIN_H0H1,
+                 NRF_GPIO_PIN_NOSENSE);
+    nrf_gpio_pin_write(SPEAKER_ENABLE_PIN->number, false);
+#endif
+}
+
 void reset_all_pins(void) {
     for (size_t i = 0; i < GPIO_COUNT; i++) {
         claimed_pins[i] = never_reset_pins[i];
     }
 
     for (uint32_t pin = 0; pin < NUMBER_OF_PINS; ++pin) {
-        if (!(never_reset_pins[nrf_pin_port(pin)] & (1 << nrf_relative_pin_number(pin)))) {
+        if ((never_reset_pins[nrf_pin_port(pin)] & (1 << nrf_relative_pin_number(pin))) != 0) {
             continue;
         }
         nrf_gpio_cfg_default(pin);
@@ -68,10 +82,7 @@ void reset_all_pins(void) {
     #endif
 
     // After configuring SWD because it may be shared.
-    #ifdef SPEAKER_ENABLE_PIN
-    speaker_enable_in_use = false;
-    // TODO set pin to out and turn off.
-    #endif
+    reset_speaker_enable_pin();
 }
 
 // Mark pin as free and return it to a quiescent state.
@@ -91,8 +102,8 @@ void reset_pin_number(uint8_t pin_number) {
     }
     #endif
     #ifdef MICROPY_HW_APA102_MOSI
-    if (pin == MICROPY_HW_APA102_MOSI->number ||
-        pin == MICROPY_HW_APA102_SCK->number) {
+    if (pin_number == MICROPY_HW_APA102_MOSI->number ||
+        pin_number == MICROPY_HW_APA102_SCK->number) {
         apa102_mosi_in_use = apa102_mosi_in_use && pin_number != MICROPY_HW_APA102_MOSI->number;
         apa102_sck_in_use = apa102_sck_in_use && pin_number != MICROPY_HW_APA102_SCK->number;
         if (!apa102_sck_in_use && !apa102_mosi_in_use) {
@@ -104,10 +115,7 @@ void reset_pin_number(uint8_t pin_number) {
 
     #ifdef SPEAKER_ENABLE_PIN
     if (pin_number == SPEAKER_ENABLE_PIN->number) {
-        speaker_enable_in_use = false;
-        common_hal_digitalio_digitalinout_switch_to_output(
-        nrf_gpio_pin_dir_set(pin_number, NRF_GPIO_PIN_DIR_OUTPUT);
-        nrf_gpio_pin_write(pin_number, false);
+        reset_speaker_enable_pin();
     }
     #endif
 }
@@ -115,6 +123,14 @@ void reset_pin_number(uint8_t pin_number) {
 
 void never_reset_pin_number(uint8_t pin_number) {
     never_reset_pins[nrf_pin_port(pin_number)] |= 1 << nrf_relative_pin_number(pin_number);
+}
+
+void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
+    never_reset_pin_number(pin->number);
+}
+
+void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    reset_pin_number(pin->number);
 }
 
 void claim_pin(const mcu_pin_obj_t* pin) {
@@ -142,6 +158,11 @@ void claim_pin(const mcu_pin_obj_t* pin) {
     #endif
 }
 
+
+bool pin_number_is_free(uint8_t pin_number) {
+    return !(claimed_pins[nrf_pin_port(pin_number)] & (1 << nrf_relative_pin_number(pin_number)));
+}
+
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
@@ -163,5 +184,27 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     }
     #endif
 
-    return !(claimed_pins[nrf_pin_port(pin->number)] & (1 << nrf_relative_pin_number(pin->number)));
+    #ifdef NRF52840
+    // If NFC pins are enabled for NFC, don't allow them to be used for GPIO.
+    if (((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) ==
+         (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) &&
+        (pin->number == 9 || pin->number == 10)) {
+        return false;
+    }
+    #endif
+
+    return pin_number_is_free(pin->number);
+
+}
+
+uint8_t common_hal_mcu_pin_number(const mcu_pin_obj_t* pin) {
+    return pin->number;
+}
+
+void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
+    claim_pin(pin);
+}
+
+void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
+    reset_pin_number(pin_no);
 }

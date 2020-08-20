@@ -45,25 +45,9 @@
 #include "mpconfigboard.h"
 #include "mphalport.h"
 #include "reset.h"
-#include "tick.h"
+#include "supervisor/shared/tick.h"
 
 extern uint32_t common_hal_mcu_processor_get_frequency(void);
-
-void mp_hal_delay_ms(mp_uint_t delay) {
-    uint64_t start_tick = ticks_ms;
-    uint64_t duration = 0;
-    while (duration < delay) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
-        // Check to see if we've been CTRL-Ced by autoreload or the user.
-        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
-            break;
-        }
-        duration = (ticks_ms - start_tick);
-        // TODO(tannewt): Go to sleep for a little while while we wait.
-    }
-}
 
 // Use mp_hal_delay_us() for timing of less than 1ms.
 // Do a simple timing loop to wait for a certain number of microseconds.

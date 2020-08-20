@@ -323,3 +323,6 @@ void mp_unix_mark_exec(void);
 // For debugging purposes, make printf() available to any source file.
 #include <stdio.h>
 #endif
+
+#define MICROPY_PY_BUILTINS_HELP (1)
+#define MICROPY_PY_BUILTINS_HELP_MODULES (1)

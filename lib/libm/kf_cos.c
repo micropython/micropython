@@ -17,7 +17,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -25,9 +25,9 @@
 #include "fdlibm.h"
 
 #ifdef __STDC__
-static const float 
+static const float
 #else
-static float 
+static float
 #endif
 one =  1.0000000000e+00, /* 0x3f800000 */
 C1  =  4.1666667908e-02, /* 0x3d2aaaab */
@@ -53,7 +53,7 @@ C6  = -1.1359647598e-11; /* 0xad47d74e */
 	}
 	z  = x*x;
 	r  = z*(C1+z*(C2+z*(C3+z*(C4+z*(C5+z*C6)))));
-	if(ix < 0x3e99999a) 			/* if |x| < 0.3 */ 
+	if(ix < 0x3e99999a) 			/* if |x| < 0.3 */
 	    return one - ((float)0.5*z - (z*r - x*y));
 	else {
 	    if(ix > 0x3f480000) {		/* x > 0.78125 */

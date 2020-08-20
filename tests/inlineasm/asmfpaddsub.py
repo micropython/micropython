@@ -12,4 +12,3 @@ def add_sub(r0, r1, r2):
     vmov(r0, s31)
 
 print(add_sub(100, 20, 30))
-

@@ -26,45 +26,70 @@
 
 #include "shared-bindings/displayio/Palette.h"
 
+#include "shared-module/displayio/ColorConverter.h"
+
 void common_hal_displayio_palette_construct(displayio_palette_t* self, uint16_t color_count) {
     self->color_count = color_count;
-    self->colors = (uint32_t *) m_malloc(color_count * sizeof(uint16_t), false);
-    uint32_t opaque_byte_count = color_count / 8;
-    if (color_count % 8 > 0) {
-        opaque_byte_count += 1;
-    }
-    self->opaque = (uint32_t *) m_malloc(opaque_byte_count, false);
+    self->colors = (_displayio_color_t *) m_malloc(color_count * sizeof(_displayio_color_t), false);
 }
 
 void common_hal_displayio_palette_make_opaque(displayio_palette_t* self, uint32_t palette_index) {
-    self->opaque[palette_index / 32] &= ~(0x1 << (palette_index % 32));
+    self->colors[palette_index].transparent = false;
 }
 
 void common_hal_displayio_palette_make_transparent(displayio_palette_t* self, uint32_t palette_index) {
-    self->opaque[palette_index / 32] |= (0x1 << (palette_index % 32));
+    self->colors[palette_index].transparent = true;
+}
+
+uint32_t common_hal_displayio_palette_get_len(displayio_palette_t* self) {
+    return self->color_count;
 }
 
 void common_hal_displayio_palette_set_color(displayio_palette_t* self, uint32_t palette_index, uint32_t color) {
-    uint32_t shift = (palette_index % 2) * 16;
-    uint32_t masked = self->colors[palette_index / 2] & ~(0xffff << shift);
-    uint32_t b5 = (color >> 19);
-    uint32_t g6 = (color >> 10) & 0x3f;
-    uint32_t r5 = (color >> 3) & 0x1f;
-    uint32_t packed = r5 << 11 | g6 << 5 | b5;
-    // swap bytes
-    packed = __builtin_bswap16(packed);
-    self->colors[palette_index / 2] = masked | packed << shift;
+    if (self->colors[palette_index].rgb888 == color) {
+        return;
+    }
+    self->colors[palette_index].rgb888 = color;
+    self->colors[palette_index].luma = displayio_colorconverter_compute_luma(color);
+    self->colors[palette_index].rgb565 = displayio_colorconverter_compute_rgb565(color);
+
+    uint8_t chroma = displayio_colorconverter_compute_chroma(color);
+    self->colors[palette_index].chroma = chroma;
+    self->colors[palette_index].hue = displayio_colorconverter_compute_hue(color);
     self->needs_refresh = true;
 }
 
-bool displayio_palette_get_color(displayio_palette_t *self, uint32_t palette_index, uint16_t* color) {
-    if (palette_index > self->color_count) {
-        return false;
+uint32_t common_hal_displayio_palette_get_color(displayio_palette_t* self, uint32_t palette_index) {
+    return self->colors[palette_index].rgb888;
+}
+
+bool displayio_palette_get_color(displayio_palette_t *self, const _displayio_colorspace_t* colorspace, uint32_t palette_index, uint32_t* color) {
+    if (palette_index > self->color_count || self->colors[palette_index].transparent) {
+        return false; // returns opaque
     }
-    if ((self->opaque[palette_index / 32] & (0x1 << (palette_index % 32))) != 0) {
-        return false;
+
+    if (colorspace->tricolor) {
+        uint8_t luma = self->colors[palette_index].luma;
+        *color = luma >> (8 - colorspace->depth);
+        // Chroma 0 means the color is a gray and has no hue so never color based on it.
+        if (self->colors[palette_index].chroma  <= 16) {
+            if (!colorspace->grayscale) {
+                *color = 0;
+            }
+            return true;
+        }
+        uint8_t pixel_hue = self->colors[palette_index].hue;
+        displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, luma, color);
+    } else if (colorspace->grayscale) {
+        *color = self->colors[palette_index].luma >> (8 - colorspace->depth);
+    } else {
+        uint16_t packed = self->colors[palette_index].rgb565;
+        if (colorspace->reverse_bytes_in_word) {
+            // swap bytes
+            packed = __builtin_bswap16(packed);
+        }
+        *color = packed;
     }
-    *color = (self->colors[palette_index / 2] >> (16 * (palette_index % 2))) & 0xffff;
 
     return true;
 }

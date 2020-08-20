@@ -55,4 +55,3 @@ assert hex(S.arr6[0]) == "0xaabbccdd"
 
 print(S.arr6[0] == S.arr8[0].l)
 assert S.arr6[0] == S.arr8[0].l
-

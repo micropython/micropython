@@ -19,7 +19,7 @@ def get_device_names(scan_entries):
 def find_device_by_name(name):
     s = Scanner()
     scan_res = s.scan(100)
-    
+
     device_names = get_device_names(scan_res)
     for dev in device_names:
         if name == dev[1]:
@@ -30,9 +30,9 @@ def find_device_by_name(name):
 # ...     print("address:", res.addr())
 # ...     print("address type:", res.addr_type())
 # ...     print("rssi:", res.rssi())
-# ...     
-# ...     
-# ... 
+# ...
+# ...
+# ...
 # address: c2:73:61:89:24:45
 # address type: 1
 # rssi: -26

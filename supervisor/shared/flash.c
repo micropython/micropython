@@ -28,38 +28,19 @@
 #include "extmod/vfs_fat.h"
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
+#include "supervisor/shared/tick.h"
 
 #define VFS_INDEX 0
 
 #define PART1_START_BLOCK (0x1)
 
-void supervisor_flash_set_usb_writable(bool usb_writable) {
-    mp_vfs_mount_t* current_mount = MP_STATE_VM(vfs_mount_table);
-    for (uint8_t i = 0; current_mount != NULL; i++) {
-        if (i == VFS_INDEX) {
-            break;
-        }
-        current_mount = current_mount->next;
-    }
-    if (current_mount == NULL) {
-        return;
-    }
-    fs_user_mount_t *vfs = (fs_user_mount_t *) current_mount->obj;
-
-    if (usb_writable) {
-        vfs->flags |= FSUSER_USB_WRITABLE;
-    } else {
-        vfs->flags &= ~FSUSER_USB_WRITABLE;
-    }
-}
-
 // there is a singleton Flash object
 const mp_obj_type_t supervisor_flash_type;
 STATIC const mp_obj_base_t supervisor_flash_obj = {&supervisor_flash_type};
 
-STATIC mp_obj_t supervisor_flash_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t supervisor_flash_obj_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check arguments
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    mp_arg_check_num(n_args, kw_args, 0, 0, false);
 
     // return singleton object
     return (mp_obj_t)&supervisor_flash_obj;
@@ -130,6 +111,8 @@ mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_bloc
     return supervisor_flash_read_blocks(dest, block_num - PART1_START_BLOCK, num_blocks);
 }
 
+volatile bool filesystem_dirty = false;
+
 mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
         if (num_blocks > 1) {
@@ -138,8 +121,26 @@ mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t nu
         // can't write MBR, but pretend we did
         return 0;
     } else {
+        if (!filesystem_dirty) {
+            // Turn on ticks so that we can flush after a period of time elapses.
+            supervisor_enable_tick();
+            filesystem_dirty = true;
+        }
         return supervisor_flash_write_blocks(src, block_num - PART1_START_BLOCK, num_blocks);
     }
+}
+
+void supervisor_flash_flush(void) {
+    #if INTERNAL_FLASH_FILESYSTEM
+    port_internal_flash_flush();
+    #else
+    supervisor_external_flash_flush();
+    #endif
+    // Turn off ticks now that our filesystem has been flushed.
+    if (filesystem_dirty) {
+        supervisor_disable_tick();
+    }
+    filesystem_dirty = false;
 }
 
 STATIC mp_obj_t supervisor_flash_obj_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {

@@ -59,8 +59,8 @@ for i in range(len(user_files)):
     mod = 'mod%u' % i
     try:
         __import__(mod)
-    except ValueError as er:
-        print(mod, 'ValueError', er)
+    except Exception as e:
+        print(mod, type(e).__name__, e)
 
 # unmount and undo path addition
 uos.umount('/userfs')

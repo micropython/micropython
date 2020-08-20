@@ -69,8 +69,8 @@ STATIC int read_src_stream(TINF_DATA *data) {
     return c;
 }
 
-STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 2, false);
+STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 2, false);
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
     mp_obj_decompio_t *o = m_new_obj(mp_obj_decompio_t);
     o->base.type = type;
@@ -134,6 +134,7 @@ STATIC const mp_rom_map_elem_t decompio_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(decompio_locals_dict, decompio_locals_dict_table);
 
 STATIC const mp_stream_p_t decompio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = decompio_read,
 };
 

@@ -55,30 +55,65 @@ STATIC NRF_PWM_Type* pwms[] = {
 
 STATIC uint16_t pwm_seq[MP_ARRAY_SIZE(pwms)][CHANNELS_PER_PWM];
 
-void pwmout_reset(void) {
-    for(int i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+static uint8_t never_reset_pwm[MP_ARRAY_SIZE(pwms)];
+
+STATIC int pwm_idx(NRF_PWM_Type *pwm) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++)
+        if(pwms[i] == pwm) return i;
+    return -1;
+}
+
+void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
         NRF_PWM_Type* pwm = pwms[i];
-
-        pwm->ENABLE          = 0;
-        pwm->MODE            = PWM_MODE_UPDOWN_Up;
-        pwm->DECODER         = PWM_DECODER_LOAD_Individual;
-        pwm->LOOP            = 0;
-        pwm->PRESCALER       = PWM_PRESCALER_PRESCALER_DIV_1; // default is 500 hz
-        pwm->COUNTERTOP      = (PWM_MAX_FREQ/500);                // default is 500 hz
-
-        pwm->SEQ[0].PTR      = (uint32_t) pwm_seq[i];
-        pwm->SEQ[0].CNT      = CHANNELS_PER_PWM; // default mode is Individual --> count must be 4
-        pwm->SEQ[0].REFRESH  = 0;
-        pwm->SEQ[0].ENDDELAY = 0;
-
-        pwm->SEQ[1].PTR      = 0;
-        pwm->SEQ[1].CNT      = 0;
-        pwm->SEQ[1].REFRESH  = 0;
-        pwm->SEQ[1].ENDDELAY = 0;
-
-        for(int ch =0; ch < CHANNELS_PER_PWM; ch++) {
-            pwm_seq[i][ch] = (1 << 15); // polarity = 0
+        if (pwm == self->pwm) {
+            never_reset_pwm[i] += 1;
         }
+    }
+
+    never_reset_pin_number(self->pin_number);
+}
+
+void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+        NRF_PWM_Type* pwm = pwms[i];
+        if (pwm == self->pwm) {
+            never_reset_pwm[i] -= 1;
+        }
+    }
+}
+
+void reset_single_pwmout(uint8_t i) {
+    NRF_PWM_Type* pwm = pwms[i];
+
+    pwm->ENABLE          = 0;
+    pwm->MODE            = PWM_MODE_UPDOWN_Up;
+    pwm->DECODER         = PWM_DECODER_LOAD_Individual;
+    pwm->LOOP            = 0;
+    pwm->PRESCALER       = PWM_PRESCALER_PRESCALER_DIV_1; // default is 500 hz
+    pwm->COUNTERTOP      = (PWM_MAX_FREQ/500);                // default is 500 hz
+
+    pwm->SEQ[0].PTR      = (uint32_t) pwm_seq[i];
+    pwm->SEQ[0].CNT      = CHANNELS_PER_PWM; // default mode is Individual --> count must be 4
+    pwm->SEQ[0].REFRESH  = 0;
+    pwm->SEQ[0].ENDDELAY = 0;
+
+    pwm->SEQ[1].PTR      = 0;
+    pwm->SEQ[1].CNT      = 0;
+    pwm->SEQ[1].REFRESH  = 0;
+    pwm->SEQ[1].ENDDELAY = 0;
+
+    for(int ch =0; ch < CHANNELS_PER_PWM; ch++) {
+        pwm_seq[i][ch] = (1 << 15); // polarity = 0
+    }
+}
+
+void pwmout_reset(void) {
+    for(size_t i=0; i < MP_ARRAY_SIZE(pwms); i++) {
+        if (never_reset_pwm[i] > 0) {
+            continue;
+        }
+        reset_single_pwmout(i);
     }
 }
 
@@ -104,29 +139,15 @@ bool convert_frequency(uint32_t frequency, uint16_t *countertop, nrf_pwm_clk_t *
     return false;
 }
 
-void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
-                                         const mcu_pin_obj_t* pin,
-                                         uint16_t duty,
-                                         uint32_t frequency,
-                                         bool variable_frequency) {
+// We store these in an array because we cannot compute them.
+static IRQn_Type pwm_irqs[4] = {PWM0_IRQn, PWM1_IRQn, PWM2_IRQn, PWM3_IRQn};
 
-    // We don't use the nrfx driver here because we want to dynamically allocate channels
-    // as needed in an already-enabled PWM.
-
-    uint16_t countertop;
-    nrf_pwm_clk_t base_clock;
-    if (frequency == 0 || !convert_frequency(frequency, &countertop, &base_clock)) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
-    }
-
-    self->pwm = NULL;
-    self->channel = CHANNELS_PER_PWM;    // out-of-range value.
-    bool pwm_already_in_use;
-    NRF_PWM_Type* pwm;
-
-    for (size_t i = 0 ; i < MP_ARRAY_SIZE(pwms); i++) {
-        pwm = pwms[i];
-        pwm_already_in_use = pwm->ENABLE & SPIM_ENABLE_ENABLE_Msk;
+NRF_PWM_Type *pwmout_allocate(uint16_t countertop, nrf_pwm_clk_t base_clock,
+        bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out,
+        IRQn_Type* irq) {
+    for (size_t pwm_index = 0; pwm_index < MP_ARRAY_SIZE(pwms); pwm_index++) {
+        NRF_PWM_Type *pwm = pwms[pwm_index];
+        bool pwm_already_in_use = pwm->ENABLE & PWM_ENABLE_ENABLE_Msk;
         if (pwm_already_in_use) {
             if (variable_frequency) {
                 // Variable frequency requires exclusive use of a PWM, so try the next one.
@@ -139,28 +160,75 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
                 for (size_t chan = 0; chan < CHANNELS_PER_PWM; chan++) {
                     if (pwm->PSEL.OUT[chan] == 0xFFFFFFFF) {
                         // Channel is free.
-                        self->pwm = pwm;
-                        self->channel = chan;
-                        break;
+                        if (channel_out) {
+                            *channel_out = chan;
+                        }
+                        if (pwm_already_in_use_out) {
+                            *pwm_already_in_use_out = pwm_already_in_use;
+                        }
+                        if (irq) {
+                            *irq = pwm_irqs[pwm_index];
+                        }
+                        return pwm;
                     }
-                }
-                // Did we find a channel? If not, loop and check the next pwm.
-                if (self->pwm != NULL) {
-                    break;
                 }
             }
         } else {
             // PWM not yet in use, so we can start to use it. Use channel 0.
-            self->pwm = pwm;
-            self->channel = 0;
-            break;
+            if (channel_out) {
+                *channel_out = 0;
+            }
+            if (pwm_already_in_use_out) {
+                *pwm_already_in_use_out = pwm_already_in_use;
+            }
+            if (irq) {
+                *irq = pwm_irqs[pwm_index];
+            }
+            return pwm;
+        }
+    }
+    return NULL;
+}
+
+void pwmout_free_channel(NRF_PWM_Type *pwm, int8_t channel) {
+    // Disconnect pin from channel.
+    pwm->PSEL.OUT[channel] = 0xFFFFFFFF;
+
+    for(int i=0; i < CHANNELS_PER_PWM; i++) {
+        if (pwm->PSEL.OUT[i] != 0xFFFFFFFF) {
+            // Some channel is still being used, so don't disable.
+            return;
         }
     }
 
-    if (self->pwm == NULL) {
-        mp_raise_ValueError(translate("All PWM peripherals are in use"));
+    nrf_pwm_disable(pwm);
+}
+
+pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
+                                                    const mcu_pin_obj_t* pin,
+                                                    uint16_t duty,
+                                                    uint32_t frequency,
+                                                    bool variable_frequency) {
+
+    // We don't use the nrfx driver here because we want to dynamically allocate channels
+    // as needed in an already-enabled PWM.
+
+    uint16_t countertop;
+    nrf_pwm_clk_t base_clock;
+    if (frequency == 0 || !convert_frequency(frequency, &countertop, &base_clock)) {
+        return PWMOUT_INVALID_FREQUENCY;
     }
 
+    int8_t channel;
+    bool pwm_already_in_use;
+    self->pwm = pwmout_allocate(countertop, base_clock, variable_frequency,
+        &channel, &pwm_already_in_use, NULL);
+
+    if (self->pwm == NULL) {
+        return PWMOUT_ALL_TIMERS_IN_USE;
+    }
+
+    self->channel = channel;
     self->pin_number = pin->number;
     claim_pin(pin);
 
@@ -171,18 +239,20 @@ void common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     nrf_gpio_cfg_output(self->pin_number);
 
     // disable before mapping pin channel
-    nrf_pwm_disable(pwm);
+    nrf_pwm_disable(self->pwm);
 
     if (!pwm_already_in_use) {
-        nrf_pwm_configure(pwm, base_clock, NRF_PWM_MODE_UP, countertop);
+        reset_single_pwmout(pwm_idx(self->pwm));
+        nrf_pwm_configure(self->pwm, base_clock, NRF_PWM_MODE_UP, countertop);
     }
 
     // Connect channel to pin, without disturbing other channels.
-    pwm->PSEL.OUT[self->channel] = pin->number;
+    self->pwm->PSEL.OUT[self->channel] = pin->number;
 
-    nrf_pwm_enable(pwm);
+    nrf_pwm_enable(self->pwm);
 
     common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
+    return PWMOUT_OK;
 }
 
 bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
@@ -199,17 +269,10 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     NRF_PWM_Type* pwm = self->pwm;
     self->pwm = NULL;
 
-    // Disconnect pin from channel.
-    pwm->PSEL.OUT[self->channel] = 0xFFFFFFFF;
+    pwmout_free_channel(pwm, self->channel);
 
-    for(int i=0; i < CHANNELS_PER_PWM; i++) {
-        if (self->pwm->PSEL.OUT[i] != 0xFFFFFFFF) {
-            // Some channel is still being used, so don't disable.
-            return;
-        }
-    }
-
-    nrf_pwm_disable(pwm);
+    reset_pin_number(self->pin_number);
+    self->pin_number = NO_PIN;
 }
 
 void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty_cycle) {

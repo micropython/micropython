@@ -26,6 +26,10 @@
 
 #include "supervisor/serial.h"
 
+void serial_early_init(void) {
+
+}
+
 void serial_init(void) {
 
 }
@@ -43,4 +47,5 @@ bool serial_bytes_available(void) {
 }
 
 void serial_write(const char* text) {
+    (void) text;
 }

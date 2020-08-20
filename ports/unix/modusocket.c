@@ -325,9 +325,9 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
-STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
-    (void)n_kw;
+    (void)kw_args;
 
     int family = AF_INET;
     int type = SOCK_STREAM;
@@ -374,6 +374,7 @@ STATIC const mp_rom_map_elem_t usocket_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(usocket_locals_dict, usocket_locals_dict_table);
 
 STATIC const mp_stream_p_t usocket_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = socket_read,
     .write = socket_write,
     .ioctl = socket_ioctl,

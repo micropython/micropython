@@ -287,14 +287,14 @@ STATIC void machine_i2c_obj_init_helper(machine_i2c_obj_t *self, size_t n_args, 
     mp_hal_i2c_init(self, args[ARG_freq].u_int);
 }
 
-STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     // check the id argument, if given
     if (n_args > 0) {
         if (args[0] != MP_OBJ_NEW_SMALL_INT(-1)) {
             #if defined(MICROPY_PY_MACHINE_I2C_MAKE_NEW)
             // dispatch to port-specific constructor
-            extern mp_obj_t MICROPY_PY_MACHINE_I2C_MAKE_NEW(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args);
-            return MICROPY_PY_MACHINE_I2C_MAKE_NEW(type, n_args, n_kw, args);
+            extern mp_obj_t MICROPY_PY_MACHINE_I2C_MAKE_NEW(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args);
+            return MICROPY_PY_MACHINE_I2C_MAKE_NEW(type, n_args, args, kw_args);
             #else
             mp_raise_ValueError(translate("invalid I2C peripheral"));
             #endif
@@ -306,9 +306,7 @@ STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, s
     // create new soft I2C object
     machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
     self->base.type = &machine_i2c_type;
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    machine_i2c_obj_init_helper(self, n_args, args, &kw_args);
+    machine_i2c_obj_init_helper(self, n_args, args, kw_args);
     return (mp_obj_t)self;
 }
 
@@ -320,7 +318,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_init_obj, 1, machine_i2c_obj_init);
 
 STATIC mp_obj_t machine_i2c_scan(mp_obj_t self_in) {
     mp_obj_base_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
     mp_obj_t list = mp_obj_new_list(0, NULL);
     // 7-bit addresses 0b0000xxx and 0b1111xxx are reserved
     for (int addr = 0x08; addr < 0x78; ++addr) {
@@ -335,7 +333,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_scan_obj, machine_i2c_scan);
 
 STATIC mp_obj_t machine_i2c_start(mp_obj_t self_in) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
     if (i2c_p->start == NULL) {
         mp_raise_msg(&mp_type_OSError, translate("I2C operation not supported"));
     }
@@ -349,7 +347,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_start_obj, machine_i2c_start);
 
 STATIC mp_obj_t machine_i2c_stop(mp_obj_t self_in) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
     if (i2c_p->stop == NULL) {
         mp_raise_msg(&mp_type_OSError, translate("I2C operation not supported"));
     }
@@ -363,7 +361,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_stop_obj, machine_i2c_stop);
 
 STATIC mp_obj_t machine_i2c_readinto(size_t n_args, const mp_obj_t *args) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
     if (i2c_p->read == NULL) {
         mp_raise_msg(&mp_type_OSError, translate("I2C operation not supported"));
     }
@@ -387,7 +385,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_readinto_obj, 2, 3, machine_i2c_
 
 STATIC mp_obj_t machine_i2c_write(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
     if (i2c_p->write == NULL) {
         mp_raise_msg(&mp_type_OSError, translate("I2C operation not supported"));
     }
@@ -409,7 +407,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(machine_i2c_write_obj, machine_i2c_write);
 
 STATIC mp_obj_t machine_i2c_readfrom(size_t n_args, const mp_obj_t *args) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
     mp_int_t addr = mp_obj_get_int(args[1]);
     vstr_t vstr;
     vstr_init_len(&vstr, mp_obj_get_int(args[2]));
@@ -424,7 +422,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_readfrom_obj, 3, 4, machine_i2c_
 
 STATIC mp_obj_t machine_i2c_readfrom_into(size_t n_args, const mp_obj_t *args) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
     mp_int_t addr = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
@@ -439,7 +437,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_readfrom_into_obj, 3, 4, machine
 
 STATIC mp_obj_t machine_i2c_writeto(size_t n_args, const mp_obj_t *args) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
     mp_int_t addr = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
@@ -455,7 +453,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_i2c_writeto_obj, 3, 4, machin
 
 STATIC int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t addrsize, uint8_t *buf, size_t len) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
     uint8_t memaddr_buf[4];
     size_t memaddr_len = 0;
     for (int16_t i = addrsize - 8; i >= 0; i -= 8) {
@@ -475,7 +473,7 @@ STATIC int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t a
 
 STATIC int write_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t addrsize, const uint8_t *buf, size_t len) {
     mp_obj_base_t *self = (mp_obj_base_t*)MP_OBJ_TO_PTR(self_in);
-    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)self->type->protocol;
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t*)mp_proto_get(self, QSTR_protocol_i2c);
 
     // need some memory to create the buffer to send; try to use stack if possible
     uint8_t buf2_stack[MAX_MEMADDR_SIZE + BUF_STACK_SIZE];
@@ -623,6 +621,7 @@ int mp_machine_soft_i2c_write(mp_obj_base_t *self_in, const uint8_t *src, size_t
 }
 
 STATIC const mp_machine_i2c_p_t mp_machine_soft_i2c_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_i2c)
     .start = (int(*)(mp_obj_base_t*))mp_hal_i2c_start,
     .stop = (int(*)(mp_obj_base_t*))mp_hal_i2c_stop,
     .read = mp_machine_soft_i2c_read,

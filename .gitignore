@@ -12,6 +12,9 @@
 
 # Packages
 ############
+dist/
+*.egg-info
+.eggs
 
 # Logs and Databases
 ######################
@@ -25,6 +28,7 @@
 ######################
 build/
 bin/
+circuitpython-stubs/
 
 # Test failure outputs
 ######################
@@ -48,6 +52,7 @@ _build
 # Generated rst files
 ######################
 genrst/
+/autoapi/
 
 # ctags and similar
 ###################
@@ -62,7 +67,11 @@ TAGS
 *~
 
 *.DS_Store
+**/*.DS_Store
+*.icloud
 
 # POEdit mo files
 ####################
 *.mo
+
+.vscode

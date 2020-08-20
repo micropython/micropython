@@ -5,6 +5,7 @@
 .. include:: ../templates/unsupported_in_circuitpython.inc
 
 .. module:: network
+   :noindex:
    :synopsis: network configuration
 
 This module provides network drivers and routing configuration. To use this
@@ -246,7 +247,7 @@ Methods
     nic.ifconfig(('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
 
 .. method:: wlan.config('param')
-.. method:: wlan.config(param=value, ...)
+            wlan.config(param=value, ...)
 
    Get or set general network interface parameters. These methods allow to work
    with additional parameters beyond standard IP configuration (as dealt with by

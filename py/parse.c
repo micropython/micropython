@@ -477,6 +477,9 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     mp_parse_node_t pn;
     mp_lexer_t *lex = parser->lexer;
     if (lex->tok_kind == MP_TOKEN_NAME) {
+        if(lex->vstr.len >= (1 << (8 * MICROPY_QSTR_BYTES_IN_LEN))) {
+            mp_raise_msg(&mp_type_SyntaxError, translate("Name too long"));
+        }
         qstr id = qstr_from_strn(lex->vstr.buf, lex->vstr.len);
         #if MICROPY_COMP_CONST
         // if name is a standalone identifier, look it up in the table of dynamic constants
@@ -921,6 +924,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     backtrack = false;
                 }
                 for (; i < n; ++i) {
+                    //printf("--> inside for @L924\n");
                     uint16_t kind = rule_arg[i] & RULE_ARG_KIND_MASK;
                     if (kind == RULE_ARG_TOK) {
                         if (lex->tok_kind == (rule_arg[i] & RULE_ARG_ARG_MASK)) {
@@ -1165,15 +1169,57 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         ) {
     syntax_error:;
         mp_obj_t exc;
-        if (lex->tok_kind == MP_TOKEN_INDENT) {
-            exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                translate("unexpected indent"));
-        } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
-            exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                translate("unindent does not match any outer indentation level"));
-        } else {
-            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                translate("invalid syntax"));
+        switch(lex->tok_kind) {
+            case MP_TOKEN_INDENT:
+                exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+                    translate("unexpected indent"));
+                break;
+            case MP_TOKEN_DEDENT_MISMATCH:
+                exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+                    translate("unindent does not match any outer indentation level"));
+                break;
+#if MICROPY_COMP_FSTRING_LITERAL
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+            case MP_TOKEN_FSTRING_BACKSLASH:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    translate("f-string expression part cannot include a backslash"));
+                break;
+            case MP_TOKEN_FSTRING_COMMENT:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    translate("f-string expression part cannot include a '#'"));
+                break;
+            case MP_TOKEN_FSTRING_UNCLOSED:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    translate("f-string: expecting '}'"));
+                break;
+            case MP_TOKEN_FSTRING_UNOPENED:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    translate("f-string: single '}' is not allowed"));
+                break;
+            case MP_TOKEN_FSTRING_EMPTY_EXP:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    translate("f-string: empty expression not allowed"));
+                break;
+            case MP_TOKEN_FSTRING_RAW:
+                exc = mp_obj_new_exception_msg(&mp_type_NotImplementedError,
+                    translate("raw f-strings are not implemented"));
+                break;
+#else
+            case MP_TOKEN_FSTRING_BACKSLASH:
+            case MP_TOKEN_FSTRING_COMMENT:
+            case MP_TOKEN_FSTRING_UNCLOSED:
+            case MP_TOKEN_FSTRING_UNOPENED:
+            case MP_TOKEN_FSTRING_EMPTY_EXP:
+            case MP_TOKEN_FSTRING_RAW:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    translate("malformed f-string"));
+                break;
+#endif
+#endif
+            default:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    translate("invalid syntax"));
+                break;
         }
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this

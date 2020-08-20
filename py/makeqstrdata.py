@@ -1,7 +1,10 @@
 """
 Process raw qstr file and output qstr data with length, hash and data bytes.
 
-This script works with Python 2.6, 2.7, 3.3 and 3.4.
+This script works with Python 2.7, 3.3 and 3.4.
+
+For documentation about the format of compressed translated strings, see
+supervisor/shared/translate.h
 """
 
 from __future__ import print_function
@@ -103,14 +106,10 @@ def compute_huffman_coding(translations, qstrs, compression_filename):
     # go through each qstr and print it out
     for _, _, qstr in qstrs.values():
         all_strings.append(qstr)
-    all_strings_concat = "".join(all_strings).encode("utf-8")
+    all_strings_concat = "".join(all_strings)
     counts = collections.Counter(all_strings_concat)
-    # add other values
-    for i in range(256):
-        if i not in counts:
-            counts[i] = 0
     cb = huffman.codebook(counts.items())
-    values = bytearray()
+    values = []
     length_count = {}
     renumbered = 0
     last_l = None
@@ -124,30 +123,49 @@ def compute_huffman_coding(translations, qstrs, compression_filename):
         if last_l:
             renumbered <<= (l - last_l)
         canonical[ch] = '{0:0{width}b}'.format(renumbered, width=l)
-        if chr(ch) in C_ESCAPES:
-            s = C_ESCAPES[chr(ch)]
-        else:
-            s = chr(ch)
-        print("//", ch, s, counts[ch], canonical[ch], renumbered)
+        s = C_ESCAPES.get(ch, ch)
+        print("//", ord(ch), s, counts[ch], canonical[ch], renumbered)
         renumbered += 1
         last_l = l
     lengths = bytearray()
-    for i in range(1, max(length_count) + 1):
+    print("// length count", length_count)
+    for i in range(1, max(length_count) + 2):
         lengths.append(length_count.get(i, 0))
+    print("// values", values, "lengths", len(lengths), lengths)
+    print("// estimated total memory size", len(lengths) + 2*len(values) + sum(len(cb[u]) for u in all_strings_concat))
     print("//", values, lengths)
+    values_type = "uint16_t" if max(ord(u) for u in values) > 255 else "uint8_t"
+    max_translation_encoded_length = max(len(translation.encode("utf-8")) for original,translation in translations)
     with open(compression_filename, "w") as f:
         f.write("const uint8_t lengths[] = {{ {} }};\n".format(", ".join(map(str, lengths))))
-        f.write("const uint8_t values[256] = {{ {} }};\n".format(", ".join(map(str, values))))
+        f.write("const {} values[] = {{ {} }};\n".format(values_type, ", ".join(str(ord(u)) for u in values)))
+        f.write("#define compress_max_length_bits ({})\n".format(max_translation_encoded_length.bit_length()))
     return values, lengths
 
-def decompress(encoding_table, length, encoded):
+def decompress(encoding_table, encoded, encoded_length_bits):
     values, lengths = encoding_table
-    #print(l, encoded)
-    dec = bytearray(length)
+    dec = []
     this_byte = 0
     this_bit = 7
     b = encoded[this_byte]
-    for i in range(length):
+    bits = 0
+    for i in range(encoded_length_bits):
+        bits <<= 1
+        if 0x80 & b:
+            bits |= 1
+
+        b <<= 1
+        if this_bit == 0:
+            this_bit = 7
+            this_byte += 1
+            if this_byte < len(encoded):
+                b = encoded[this_byte]
+        else:
+            this_bit -= 1
+    length = bits
+
+    i = 0
+    while i < length:
         bits = 0
         bit_length = 0
         max_code = lengths[0]
@@ -173,18 +191,32 @@ def decompress(encoding_table, length, encoded):
             searched_length += lengths[bit_length]
 
         v = values[searched_length + bits - max_code]
-        dec[i] = v
-    return dec
+        i += len(v.encode('utf-8'))
+        dec.append(v)
+    return ''.join(dec)
 
-def compress(encoding_table, decompressed):
-    if not isinstance(decompressed, bytes):
+def compress(encoding_table, decompressed, encoded_length_bits, len_translation_encoded):
+    if not isinstance(decompressed, str):
         raise TypeError()
     values, lengths = encoding_table
-    enc = bytearray(len(decompressed))
+    enc = bytearray(len(decompressed) * 3)
     #print(decompressed)
     #print(lengths)
     current_bit = 7
     current_byte = 0
+
+    code = len_translation_encoded
+    bits = encoded_length_bits+1
+    for i in range(bits - 1, 0, -1):
+        if len_translation_encoded & (1 << (i - 1)):
+            enc[current_byte] |= 1 << current_bit
+        if current_bit == 0:
+            current_bit = 7
+            #print("packed {0:0{width}b}".format(enc[current_byte], width=8))
+            current_byte += 1
+        else:
+            current_bit -= 1
+
     for c in decompressed:
         #print()
         #print("char", c, values.index(c))
@@ -227,6 +259,8 @@ def compress(encoding_table, decompressed):
                 current_bit -= 1
     if current_bit != 7:
         current_byte += 1
+    if current_byte > len(decompressed):
+        print("Note: compression increased length", repr(decompressed), len(decompressed), current_byte, file=sys.stderr)
     return enc[:current_byte]
 
 def qstr_escape(qst):
@@ -343,14 +377,17 @@ def print_qstr_data(encoding_table, qcfgs, qstrs, i18ns):
 
     total_text_size = 0
     total_text_compressed_size = 0
+    max_translation_encoded_length = max(len(translation.encode("utf-8")) for original, translation in i18ns)
+    encoded_length_bits = max_translation_encoded_length.bit_length()
     for original, translation in i18ns:
         translation_encoded = translation.encode("utf-8")
-        compressed = compress(encoding_table, translation_encoded)
+        compressed = compress(encoding_table, translation, encoded_length_bits, len(translation_encoded))
         total_text_compressed_size += len(compressed)
-        decompressed = decompress(encoding_table, len(translation_encoded), compressed).decode("utf-8")
+        decompressed = decompress(encoding_table, compressed, encoded_length_bits)
+        assert decompressed == translation
         for c in C_ESCAPES:
             decompressed = decompressed.replace(c, C_ESCAPES[c])
-        print("TRANSLATION(\"{}\", {}, {{ {} }}) // {}".format(original, len(translation_encoded)+1, ", ".join(["0x{:02x}".format(x) for x in compressed]), decompressed))
+        print("TRANSLATION(\"{}\", {}) // {}".format(original, ", ".join(["{:d}".format(x) for x in compressed]), decompressed))
         total_text_size += len(translation.encode("utf-8"))
 
     print()
@@ -386,6 +423,7 @@ if __name__ == "__main__":
 
     qcfgs, qstrs, i18ns = parse_input_headers(args.infiles)
     if args.translation:
+        i18ns = sorted(i18ns)
         translations = translate(args.translation, i18ns)
         encoding_table = compute_huffman_coding(translations, qstrs, args.compression_filename)
         print_qstr_data(encoding_table, qcfgs, qstrs, translations)

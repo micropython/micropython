@@ -53,12 +53,12 @@ STATIC const sys_stdio_obj_t stdio_buffer_obj;
 #endif
 
 void stdio_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    sys_stdio_obj_t *self = self_in;
+    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<io.FileIO %d>", self->fd);
 }
 
 STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    sys_stdio_obj_t *self = self_in;
+    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->fd == STDIO_FD_IN) {
         for (uint i = 0; i < size; i++) {
             int c = mp_hal_stdin_rx_chr();
@@ -75,12 +75,25 @@ STATIC mp_uint_t stdio_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *er
 }
 
 STATIC mp_uint_t stdio_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    sys_stdio_obj_t *self = self_in;
+    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->fd == STDIO_FD_OUT || self->fd == STDIO_FD_ERR) {
         mp_hal_stdout_tx_strn_cooked(buf, size);
         return size;
     } else {
         *errcode = MP_EPERM;
+        return MP_STREAM_ERROR;
+    }
+}
+
+STATIC mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    sys_stdio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    (void) self;
+
+    // For now, pretend we actually flush the stdio stream.
+    if (request == MP_STREAM_FLUSH) {
+        return 0;
+    } else {
+        *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
     }
 }
@@ -110,8 +123,10 @@ STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);
 
 STATIC const mp_stream_p_t stdio_obj_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stdio_read,
     .write = stdio_write,
+    .ioctl = stdio_ioctl,
     .is_text = true,
 };
 
@@ -144,6 +159,7 @@ STATIC mp_uint_t stdio_buffer_write(mp_obj_t self_in, const void *buf, mp_uint_t
 }
 
 STATIC const mp_stream_p_t stdio_buffer_obj_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stdio_buffer_read,
     .write = stdio_buffer_write,
     .is_text = false,

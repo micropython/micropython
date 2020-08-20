@@ -73,7 +73,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
 }
 
 bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t *self) {
-    return self->pin == mp_const_none;
+    return self->pin == NULL;
 }
 
 void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
@@ -81,7 +81,7 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
         return;
     }
     reset_pin_number(self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
 
 void analogin_reset() {

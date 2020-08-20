@@ -13,7 +13,7 @@ correct port. GDB is usually :3333 and JLink is :2331.
 Now, run gdb from your port directory:
 
 ```
-arm-none-eabi-gdb -x ../tools/output_gc_until_repl.txt build-metro_m0_express/firmware.elf
+arm-none-eabi-gdb -x ../../tools/output_gc_until_repl.txt build-metro_m0_express/firmware.elf
 ```
 
 This will take a little time while it breaks, backtraces and continues for every

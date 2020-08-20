@@ -49,7 +49,7 @@ void mp_keyboard_interrupt(void) {
 
 // Check to see if we've been CTRL-C'ed by autoreload or the user.
 bool mp_hal_is_interrupted(void) {
-    return MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+    return MP_STATE_VM(mp_pending_exception) != NULL;
 }
 
 #endif

@@ -33,12 +33,6 @@
 
 #include "py/mpconfig.h"
 
-#ifdef CIRCUITPY_DISPLAYIO
-#include "common-hal/displayio/FourWire.h"
-
-extern displayio_fourwire_obj_t board_display_obj;
-#endif
-
 // Initializes board related state once on start up.
 void board_init(void);
 
