@@ -144,7 +144,7 @@ int readline_process_char(int c) {
             goto right_arrow_key;
         } else if (c == CHAR_CTRL_K) {
             // CTRL-K is kill from cursor to end-of-line, inclusive
-            vstr_cut_tail_bytes(rl.line, last_line_len - rl.cursor_pos);
+            vstr_cut_tail_bytes(rl.line, rl.line->len - rl.cursor_pos);
             // set redraw parameters
             redraw_from_cursor = true;
         } else if (c == CHAR_CTRL_N) {
@@ -155,6 +155,7 @@ int readline_process_char(int c) {
             goto up_arrow_key;
         } else if (c == CHAR_CTRL_U) {
             // CTRL-U is kill from beginning-of-line up to cursor
+            cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
             vstr_cut_out_bytes(rl.line, rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
             // set redraw parameters
             redraw_step_back = rl.cursor_pos - rl.orig_line_len;
@@ -342,6 +343,7 @@ left_arrow_key:
         if (c == '~') {
             if (rl.escape_seq_buf[0] == '1' || rl.escape_seq_buf[0] == '7') {
 home_key:
+                cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                 redraw_step_back = rl.cursor_pos - rl.orig_line_len;
             } else if (rl.escape_seq_buf[0] == '4' || rl.escape_seq_buf[0] == '8') {
 end_key:
@@ -352,7 +354,12 @@ end_key:
 delete_key:
 #endif
                 if (rl.cursor_pos < rl.line->len) {
-                    vstr_cut_out_bytes(rl.line, rl.cursor_pos, 1);
+                    size_t len = 1;
+                    while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos+len]) &&
+                            rl.cursor_pos+len < rl.line->len) {
+                        len++;
+                    }
+                    vstr_cut_out_bytes(rl.line, rl.cursor_pos, len);
                     redraw_from_cursor = true;
                 }
             } else {
