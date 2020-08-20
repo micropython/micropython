@@ -22,6 +22,7 @@ async def main():
     t1 = asyncio.create_task(task(1, -0.01))
     t2 = asyncio.create_task(task(2, 0.1))
     t3 = asyncio.create_task(task(3, 0.2))
+    t3 = asyncio.create_task(task(4, -100))
     await asyncio.sleep(0.5)
     t1.cancel()
     t2.cancel()
