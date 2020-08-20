@@ -48,6 +48,7 @@ void update_background_ticks(void) {
 }
 
 void background_callback_add_core(background_callback_t *cb) {
+    last_background_tick = port_get_raw_ticks(NULL);
     CALLBACK_CRITICAL_BEGIN;
     if (cb->prev || callback_head == cb) {
         CALLBACK_CRITICAL_END;
@@ -77,7 +78,6 @@ void background_callback_run_all() {
     if (!callback_head) {
         return;
     }
-    last_background_tick = port_get_raw_ticks(NULL);
     CALLBACK_CRITICAL_BEGIN;
     if (in_background_callback) {
         CALLBACK_CRITICAL_END;

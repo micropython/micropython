@@ -91,9 +91,6 @@ void pulsein_interrupt_handler(uint8_t channel) {
     uint32_t current_count = tc->COUNT16.COUNT.reg;
 
     pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
-    if (self->len == 0) {
-        update_background_ticks();
-    }
     if (self->first_edge) {
         self->first_edge = false;
         pulsein_set_config(self, false);
@@ -115,17 +112,14 @@ void pulsein_interrupt_handler(uint8_t channel) {
         }
 
         uint16_t i = (self->start + self->len) % self->maxlen;
-        self->buffer[i] = duration;
-        if (self->len < self->maxlen) {
+        if (self->len <= self->maxlen) {
             self->len++;
         } else {
-            self->start++;
+            self->errored_too_fast = true;
+            common_hal_mcu_enable_interrupts();
+            return;
         }
-    }
-    if (!supervisor_background_tasks_ok() ) {
-        common_hal_mcu_enable_interrupts();
-        mp_raise_RuntimeError(translate("Input taking too long"));
-        return;
+        self->buffer[i] = duration;
     }
     self->last_overflow = current_overflow;
     self->last_count = current_count;
@@ -161,6 +155,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self,
     self->start = 0;
     self->len = 0;
     self->first_edge = true;
+    self->errored_too_fast = false;
 
     if (refcount == 0) {
         // Find a spare timer.
@@ -302,6 +297,10 @@ void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     if (self->len == 0) {
         mp_raise_IndexError(translate("pop from an empty PulseIn"));
+    }
+    if (self->errored_too_fast) {
+      self->errored_too_fast = false;
+      mp_raise_RuntimeError(translate("Input taking too long"));
     }
     common_hal_mcu_disable_interrupts();
     uint16_t value = self->buffer[self->start];
