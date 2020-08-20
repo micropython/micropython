@@ -93,6 +93,9 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
     // Reserve channel
     uint8_t number = digitalinout->pin->number;
     rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
+    if (channel == RMT_CHANNEL_MAX) {
+        mp_raise_RuntimeError(translate("All timers in use"));
+    }
 
     // Configure Channel
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(number, channel);
