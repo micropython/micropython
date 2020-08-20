@@ -38,6 +38,9 @@
 #include "esp-idf/components/esp_wifi/include/esp_wifi.h"
 #include "esp-idf/components/lwip/include/apps/ping/ping_sock.h"
 
+#include "esp_log.h"
+static const char* TAG = "radio";
+
 static void start_station(wifi_radio_obj_t *self) {
     if (self->sta_mode) {
         return;
@@ -160,6 +163,8 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
     uint32_t elapsed_time = 0xffffffff;
     if (received > 0) {
         esp_ping_get_profile(ping, ESP_PING_PROF_TIMEGAP, &elapsed_time, sizeof(elapsed_time));
+    } else {
+        ESP_EARLY_LOGW(TAG, "received none - time %d timeout %d", total_time_ms, timeout_ms);
     }
     esp_ping_delete_session(ping);
 

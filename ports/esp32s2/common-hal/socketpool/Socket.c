@@ -26,8 +26,13 @@
 
 #include "shared-bindings/socketpool/Socket.h"
 
+#include "lib/utils/interrupt_char.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
+#include "supervisor/shared/tick.h"
+
+#include "esp_log.h"
+static const char* TAG = "socket";
 
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_uint_t timeout_ms) {
     self->timeout_ms = timeout_ms;
@@ -43,13 +48,15 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const c
         tls_config = &self->ssl_context->ssl_config;
     }
     int result = esp_tls_conn_new_sync(host, hostlen, port, tls_config, self->tcp);
+    ESP_EARLY_LOGW(TAG, "connect result %d", result);
     self->connected = result >= 0;
     if (result < 0) {
         int esp_tls_code;
-        esp_tls_get_and_clear_last_error(self->tcp->error_handle, &esp_tls_code, NULL);
+        int flags;
+        esp_err_t err = esp_tls_get_and_clear_last_error(self->tcp->error_handle, &esp_tls_code, &flags);
 
         // mp_raise_espidf_MemoryError
-        mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d"), esp_tls_code);
+        mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x"), esp_tls_code, flags, err);
     }
     return self->connected;
 }
@@ -68,19 +75,44 @@ mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const
 }
 
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len) {
-    size_t received = esp_tls_conn_read(self->tcp, (void*) buf, len);
+    size_t received = 0;
+    ssize_t last_read = 1;
+    uint64_t start_ticks = supervisor_ticks_ms64();
+    while (received < len &&
+           last_read > 0 &&
+           (self->timeout_ms == 0 || supervisor_ticks_ms64() - start_ticks <= self->timeout_ms) &&
+           !mp_hal_is_interrupted()) {
+        RUN_BACKGROUND_TASKS;
+        size_t available = esp_tls_get_bytes_avail(self->tcp);
+        ESP_EARLY_LOGW(TAG, "available %d", available);
+        size_t remaining = len - received;
+        if (available > remaining) {
+            available = remaining;
+        }
+        if (true || available > 0) {
+            if (available == 0) {
+                available = len - received;
+            }
+            last_read = esp_tls_conn_read(self->tcp, (void*) buf + received, available);
+            ESP_EARLY_LOGW(TAG, "read %d out of %d", last_read, available);
+            received += last_read;
+        }
+    }
 
-    if (received == 0) {
+    if (last_read == 0) {
         // socket closed
+        ESP_EARLY_LOGW(TAG, "receive close %d %d", received, len);
         common_hal_socketpool_socket_close(self);
     }
-    if (received < 0) {
+    if (last_read < 0) {
+        // ESP_EARLY_LOGI(TAG, "received %d", received);
         mp_raise_BrokenPipeError();
     }
     return received;
 }
 
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
+    // ESP_EARLY_LOGW(TAG, "close");
     if (self->connected) {
         self->connected = false;
     }
@@ -95,5 +127,6 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
 }
 
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t* self) {
+    // ESP_EARLY_LOGW(TAG, "tcp %p", self->tcp);
     return self->tcp == NULL;
 }

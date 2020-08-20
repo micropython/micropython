@@ -37,6 +37,9 @@
 
 wifi_radio_obj_t common_hal_wifi_radio_obj;
 
+#include "esp_log.h"
+static const char* TAG = "wifi";
+
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data) {
     wifi_radio_obj_t* radio = arg;
@@ -46,11 +49,15 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         } else if (event_id == WIFI_EVENT_STA_START) {
         } else if (event_id == WIFI_EVENT_STA_STOP) {
         } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
+            ESP_EARLY_LOGW(TAG, "connected");
         } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
-            // wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
-            if (event_id != WIFI_REASON_ASSOC_LEAVE) {
+            ESP_EARLY_LOGW(TAG, "disconnected");
+            wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
+            uint8_t reason = d->reason;
+            if (reason != WIFI_REASON_ASSOC_LEAVE) {
                 // reconnect
             }
+            ESP_EARLY_LOGW(TAG, "reason %d 0x%02x", reason, reason);
             xEventGroupSetBits(radio->event_group_handle, WIFI_DISCONNECTED_BIT);
         } else if (event_id == WIFI_EVENT_STA_AUTHMODE_CHANGE) {
         }
@@ -70,6 +77,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     //     ESP_LOGI(TAG,"connect to the AP fail");
     // } else
     if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        ESP_EARLY_LOGW(TAG, "got ip");
         xEventGroupSetBits(radio->event_group_handle, WIFI_CONNECTED_BIT);
     }
 }

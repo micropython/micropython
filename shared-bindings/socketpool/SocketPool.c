@@ -37,6 +37,9 @@
 #include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 
+#include "esp_log.h"
+static const char* TAG = "socketpool binding";
+
 //| class SocketPool:
 //|     """A pool of socket resources available for the given radio. Only one
 //|        SocketPool can be created for each radio.
@@ -119,6 +122,7 @@ STATIC mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t 
     }
 
     if (ip_str == mp_const_none) {
+        ESP_EARLY_LOGW(TAG, "no ip str");
         mp_raise_OSError(0);
     }
 

@@ -159,7 +159,8 @@ const mp_obj_property_t wifi_radio_ipv4_address_obj = {
 };
 
 //|     def ping(self, ip, *, timeout: float = 0.5) -> float:
-//|         """Ping an IP to test connectivity. Returns echo time in seconds."""
+//|         """Ping an IP to test connectivity. Returns echo time in seconds.
+//|            Returns None when it times out."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -179,6 +180,9 @@ STATIC mp_obj_t wifi_radio_ping(size_t n_args, const mp_obj_t *pos_args, mp_map_
     }
 
     mp_int_t time_ms = common_hal_wifi_radio_ping(self, args[ARG_ip].u_obj, timeout);
+    if (time_ms == -1) {
+        return mp_const_none;
+    }
 
     return mp_obj_new_float(time_ms / 1000.0);
 }
