@@ -336,6 +336,13 @@ extern const struct _mp_obj_module_t camera_module;
 #define CAMERA_MODULE
 #endif
 
+#if CIRCUITPY_CANIO
+extern const struct _mp_obj_module_t canio_module;
+#define CANIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__canio), (mp_obj_t)&canio_module },
+#else
+#define CANIO_MODULE
+#endif
+
 #if CIRCUITPY_COUNTIO
 extern const struct _mp_obj_module_t countio_module;
 #define COUNTIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_countio), (mp_obj_t)&countio_module },
@@ -766,6 +773,7 @@ extern const struct _mp_obj_module_t wifi_module;
     BOARD_MODULE \
     BUSIO_MODULE \
     CAMERA_MODULE \
+    CANIO_MODULE \
     COUNTIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \

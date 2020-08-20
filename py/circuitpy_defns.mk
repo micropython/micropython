@@ -142,6 +142,9 @@ endif
 ifeq ($(CIRCUITPY_CAMERA),1)
 SRC_PATTERNS += camera/%
 endif
+ifeq ($(CIRCUITPY_CANIO),1)
+SRC_PATTERNS += _canio/%
+endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
@@ -315,6 +318,9 @@ SRC_COMMON_HAL_ALL = \
 	busio/__init__.c \
 	camera/__init__.c \
 	camera/Camera.c \
+	_canio/CAN.c \
+	_canio/Listener.c \
+	_canio/__init__.c \
 	countio/Counter.c \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
@@ -384,6 +390,7 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Address.c \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
+	_canio/Match.c \
 	_eve/__init__.c \
 	camera/ImageFormat.c \
 	digitalio/Direction.c \
@@ -402,6 +409,8 @@ SRC_SHARED_MODULE_ALL = \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_bleio/ScanResults.c \
+	_canio/Match.c \
+	_canio/Message.c \
 	_eve/__init__.c \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \

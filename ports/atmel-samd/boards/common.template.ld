@@ -51,6 +51,7 @@ SECTIONS
     {
         . = ALIGN(4);
         _srelocate = .;        /* create a global symbol at data start; used by startup code in order to initialize the .data section in RAM */
+        . = ALIGN(4);
         *(.ramfunc)
         *(.ramfunc*)
         *(.data)           /* .data sections */
@@ -61,11 +62,15 @@ SECTIONS
     } >RAM
 
     /* Uninitialized data section */
-    .bss :
+    .bss (NOLOAD) :
     {
         . = ALIGN(4);
         _sbss = .;
         _szero = .;         /* define a global symbol at bss start; used by startup code */
+        /* Data accessed by the CAN peripheral must be in the first 64kB RAM */
+        _scanram = .;
+        *(.canram)
+        _ecanram = .;
         *(.bss)
         *(.bss*)
         *(COMMON)
