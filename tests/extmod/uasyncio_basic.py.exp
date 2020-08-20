@@ -2,4 +2,5 @@ start
 after sleep
 short
 long
-took 20 40
+negative
+took 20 40 0
