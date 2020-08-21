@@ -55,6 +55,7 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG),1)
 CFLAGS += -O0 -ggdb
+LDFLAGS += --gc-sections
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections
@@ -95,6 +96,7 @@ SRC_C = \
 	$(BOARD_DIR)/flash_config.c \
 	$(BOARD_DIR)/pins.c \
 	machine_led.c \
+	machine_pin.c \
 	modutime.c \
 	modmachine.c \
 	mphalport.c \
@@ -114,6 +116,7 @@ SRC_S = lib/utils/gchelper_m3.s \
 # List of sources for qstr extraction
 SRC_QSTR += \
 	machine_led.c \
+	machine_pin.c \
 	modutime.c \
 	modmachine.c \
 	pin.c \

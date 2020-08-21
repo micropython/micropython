@@ -44,7 +44,7 @@ const machine_led_obj_t machine_led_obj[NUM_LEDS] = {
 void led_init(void) {
     // Turn off LEDs and initialize
     for (mp_int_t led = 0; led < NUM_LEDS; led++) {
-        const pin_obj_t *led_pin = machine_led_obj[led].led_pin;
+        const machine_pin_obj_t *led_pin = machine_led_obj[led].led_pin;
 
         gpio_pin_config_t pin_config = {
             .outputLogic = 1U,
@@ -67,7 +67,7 @@ void led_state(machine_led_t led, int state) {
         return;
     }
 
-    const pin_obj_t *led_pin = machine_led_obj[led - 1].led_pin;
+    const machine_pin_obj_t *led_pin = machine_led_obj[led - 1].led_pin;
 
     if (state == 0) {
         // turn LED off
@@ -83,7 +83,7 @@ void led_toggle(machine_led_t led) {
         return;
     }
 
-    const pin_obj_t *led_pin = machine_led_obj[led - 1].led_pin;
+    const machine_pin_obj_t *led_pin = machine_led_obj[led - 1].led_pin;
     mp_hal_pin_toggle(led_pin);
 }
 

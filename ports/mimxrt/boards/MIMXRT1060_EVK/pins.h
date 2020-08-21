@@ -27,4 +27,8 @@
 // NOTE: pins.h shall only be included in in pin.h
 // hence no include guards are needed since they will be provided by pin.h
 
-extern pin_obj_t GPIO_AD_B0_09;
+#ifndef MICROPY_INCLUDED_MIMXRT_PIN_H
+#error "pins.h must be included ONLY once inside of pin.h"
+#endif
+
+extern machine_pin_obj_t GPIO_AD_B0_09;

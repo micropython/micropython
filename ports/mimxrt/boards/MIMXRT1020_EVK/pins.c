@@ -26,8 +26,8 @@
 
 #include "pin.h"
 
-static pin_af_obj_t GPIO_AD_B0_05_af[] = {
+static machine_pin_af_obj_t GPIO_AD_B0_05_af[] = {
     PIN_AF(GPIO1_IO05, PIN_AF_MODE_ALT5, GPIO1, 0x10B0U),
 };
 
-pin_obj_t GPIO_AD_B0_05 = PIN(GPIO_AD_B0_05, GPIO1, 5, GPIO_AD_B0_05_af);
+machine_pin_obj_t GPIO_AD_B0_05 = PIN(GPIO_AD_B0_05, GPIO1, 5, GPIO_AD_B0_05_af);

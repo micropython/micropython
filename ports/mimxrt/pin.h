@@ -30,6 +30,33 @@
 #include "fsl_gpio.h"
 #include "py/obj.h"
 
+// ------------------------------------------------------------------------------------------------------------------ //
+
+#define PIN_AF(_name, _af_mode, _instance, _pad_config) \
+    { \
+        .base = { &machine_pin_af_type }, \
+        .name = MP_QSTR_##_name, \
+        .af_mode = (uint32_t)(_af_mode), \
+        .instance = (void *)(_instance), \
+        .pad_config = (uint32_t)(_pad_config), \
+    } \
+
+#define PIN(_name, _gpio, _pin, _af_list) \
+    { \
+        .base = { &machine_pin_type }, \
+        .name = MP_QSTR_##_name, \
+        .gpio = (_gpio), \
+        .pin = (uint32_t)(_pin), \
+        .muxRegister = (uint32_t)&(IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_##_name]), \
+        .configRegister = (uint32_t)&(IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_PAD_CTL_PAD_##_name]), \
+        .mode = PIN_MODE_IN, \
+        .af_mode = PIN_AF_MODE_ALT5, \
+        .af_list_len = (size_t)(sizeof((_af_list)) / sizeof(machine_pin_af_obj_t)), \
+        .af_list = (_af_list), \
+    } \
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
 enum {
     PIN_MODE_IN = 0,
     PIN_MODE_OUT,
@@ -53,7 +80,7 @@ typedef struct {
     uint32_t af_mode;  // alternate function
     void *instance;  // pointer to peripheral instance for alternate function
     uint32_t pad_config;  // pad configuration for alternate function
-} pin_af_obj_t;
+} machine_pin_af_obj_t;
 
 typedef struct {
     mp_obj_base_t base;
@@ -65,36 +92,52 @@ typedef struct {
     uint32_t mode;  // current pin mode
     uint32_t af_mode;  // current alternate function mode
     size_t af_list_len;  // length of available alternate functions list
-    const pin_af_obj_t *af_list;  // pointer tolist with alternate functions
-} pin_obj_t;
+    const machine_pin_af_obj_t *af_list;  // pointer tolist with alternate functions
+} machine_pin_obj_t;
 
-extern const mp_obj_type_t pin_type;
-extern const mp_obj_type_t pin_af_type;
+// ------------------------------------------------------------------------------------------------------------------ //
 
-#define PIN_AF(_name, _af_mode, _instance, _pad_config) \
-    { \
-        .base = { &pin_af_type }, \
-        .name = MP_QSTR_##_name, \
-        .af_mode = (uint32_t)(_af_mode), \
-        .instance = (void *)(_instance), \
-        .pad_config = (uint32_t)(_pad_config), \
-    } \
+extern const mp_obj_type_t machine_pin_type;
+extern const mp_obj_type_t machine_pin_af_type;
 
-#define PIN(_name, _gpio, _pin, _af_list) \
-    { \
-        .base = { &pin_type }, \
-        .name = MP_QSTR_##_name, \
-        .gpio = (_gpio), \
-        .pin = (uint32_t)(_pin), \
-        .muxRegister = (uint32_t)&(IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_##_name]), \
-        .configRegister = (uint32_t)&(IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_PAD_CTL_PAD_##_name]), \
-        .mode = PIN_MODE_IN, \
-        .af_mode = PIN_AF_MODE_ALT5, \
-        .af_list_len = (size_t)(sizeof((_af_list)) / sizeof(pin_af_obj_t)), \
-        .af_list = (_af_list), \
-    } \
+// ------------------------------------------------------------------------------------------------------------------ //
 
 // Include board specific pins
-#include "pins.h"
+// TODO: include generated pins.h header file instead
+#include "pins.h"  // pins.h must included at this location
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+typedef struct {
+    const char *name;
+    const machine_pin_obj_t *pin;
+} pin_named_pin_t;
+
+extern const pin_named_pin_t pin_board_pins[];
+extern const pin_named_pin_t pin_cpu_pins[];
+
+typedef struct {
+    mp_obj_base_t base;
+    qstr name;
+    const pin_named_pin_t *named_pins;
+} pin_named_pins_obj_t;
+
+extern const mp_obj_type_t pin_board_pins_obj_type;
+extern const mp_obj_type_t pin_cpu_pins_obj_type;
+
+extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t pin_board_pins_locals_dict;
+
+// ------------------------------------------------------------------------------------------------------------------ //
+
+void pin_init(void);
+uint32_t pin_get_mode(const machine_pin_obj_t *pin);
+uint32_t pin_get_pull(const machine_pin_obj_t *pin);
+uint32_t pin_get_af(const machine_pin_obj_t *pin);
+const machine_pin_obj_t *pin_find(mp_obj_t user_obj);
+const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
+const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn, uint8_t unit);
+const machine_pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx);
+const machine_pin_af_obj_t *pin_find_af_by_name(const machine_pin_obj_t *pin, const char *name);
 
 #endif // MICROPY_INCLUDED_MIMXRT_PIN_H
