@@ -331,27 +331,27 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
 
         switch (rx_buffer[0]) {
             case H4_ACL:
-                if (rx_idx > sizeof(h4_hci_acl_pkt_t)) {
+                if (rx_idx >= sizeof(h4_hci_acl_pkt_t)) {
                     const size_t total_len =
                         sizeof(h4_hci_acl_pkt_t) + ((h4_hci_acl_pkt_t *) rx_buffer)->data_len;
                     if (rx_idx == total_len) {
                         packet_is_complete = true;
                     }
                     if (rx_idx > total_len) {
-                        mp_printf(&mp_plat_print, "acl: rx_idx > total_len\n");
+                        return HCI_PACKET_SIZE_ERROR;
                     }
                 }
                 break;
 
             case H4_EVT:
-                if (rx_idx > sizeof(h4_hci_evt_pkt_t)) {
+                if (rx_idx >= sizeof(h4_hci_evt_pkt_t)) {
                     const size_t total_len =
                         sizeof(h4_hci_evt_pkt_t) + ((h4_hci_evt_pkt_t *) rx_buffer)->param_len;
                     if (rx_idx == total_len) {
                         packet_is_complete = true;
                     }
                     if (rx_idx > total_len) {
-                        mp_printf(&mp_plat_print, "evt: rx_idx > total_len\n");
+                        return HCI_PACKET_SIZE_ERROR;
                     }
                 }
                 break;
@@ -784,6 +784,10 @@ void hci_check_error(hci_result_t result) {
 
         case HCI_WRITE_ERROR:
             mp_raise_bleio_BluetoothError(translate("Error writing to HCI adapter"));
+            return;
+
+        case HCI_PACKET_SIZE_ERROR:
+            mp_raise_RuntimeError(translate("HCI packet size mismatch"));
             return;
 
         case HCI_ATT_ERROR:

@@ -29,14 +29,15 @@
 typedef struct _bleio_adapter_obj_t bleio_adapter_obj_t;
 
 // An hci_result_t is one of the HCI_x values below,
-// or is it > 0 and is an HCI command status value (see hci_include/hci_err.h)
+// or it is > 0 and is an HCI command status value (see hci_include/hci_err.h)
 typedef int hci_result_t;
-#define HCI_OK (0)
-#define HCI_RESPONSE_TIMEOUT (-1)
-#define HCI_WRITE_TIMEOUT (-2)
-#define HCI_READ_ERROR (-3)
-#define HCI_WRITE_ERROR (-4)
-#define HCI_ATT_ERROR (-5)
+#define HCI_OK                 (0)
+#define HCI_RESPONSE_TIMEOUT  (-1)
+#define HCI_WRITE_TIMEOUT     (-2)
+#define HCI_READ_ERROR        (-3)
+#define HCI_WRITE_ERROR       (-4)
+#define HCI_ATT_ERROR         (-5)
+#define HCI_PACKET_SIZE_ERROR (-6)
 
 extern void bleio_hci_reset(void);
 
