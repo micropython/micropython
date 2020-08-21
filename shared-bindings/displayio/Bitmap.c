@@ -172,10 +172,10 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     return mp_const_none;
 }
 
-
 //|     def blit(self, x: int, y: int, source_bitmap: bitmap, *, x1: int, y1: int, x2: int, y2: int, skip_index: int) -> None:
 //|         """Inserts the source_bitmap region defined by rectangular boundaries
 //|         (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
+//|
 //|         :param int x: Horizontal pixel location in bitmap where source_bitmap upper-left
 //|         corner will be placed
 //|         :param int y: Vertical pixel location in bitmap where source_bitmap upper-left
