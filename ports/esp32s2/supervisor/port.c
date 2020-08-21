@@ -43,7 +43,14 @@
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 
-#include "rmt.h"
+#include "peripherals/rmt.h"
+#include "esp-idf/components/heap/include/esp_heap_caps.h"
+#include "esp-idf/components/soc/soc/esp32s2/include/soc/cache_memory.h"
+
+#define HEAP_SIZE (48 * 1024)
+
+uint32_t* heap;
+uint32_t heap_size;
 
 STATIC esp_timer_handle_t _tick_timer;
 
@@ -59,6 +66,16 @@ safe_mode_t port_init(void) {
     args.name = "CircuitPython Tick";
     esp_timer_create(&args, &_tick_timer);
     never_reset_module_internal_pins();
+
+    #ifdef CONFIG_SPIRAM
+        heap = (uint32_t*) (DRAM0_CACHE_ADDRESS_HIGH - CONFIG_SPIRAM_SIZE);
+        heap_size = CONFIG_SPIRAM_SIZE / sizeof(uint32_t);
+    #endif
+
+    if (heap == NULL) {
+        heap = malloc(HEAP_SIZE);
+        heap_size = HEAP_SIZE / sizeof(uint32_t);
+    }
     return NO_SAFE_MODE;
 }
 
@@ -86,14 +103,12 @@ void reset_to_bootloader(void) {
 void reset_cpu(void) {
 }
 
-uint32_t heap[64 / sizeof(uint32_t) * 1024];
-
 uint32_t *port_heap_get_bottom(void) {
     return heap;
 }
 
 uint32_t *port_heap_get_top(void) {
-    return heap + sizeof(heap) / sizeof(heap[0]);
+    return heap + heap_size;
 }
 
 uint32_t *port_stack_get_limit(void) {

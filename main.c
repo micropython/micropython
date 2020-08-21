@@ -436,10 +436,11 @@ int run_repl(void) {
 }
 
 int __attribute__((used)) main(void) {
-    memory_init();
-
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
+
+    // Init memory after the port in case the port needs to set aside memory.
+    memory_init();
 
     // Turn on LEDs
     init_status_leds();
