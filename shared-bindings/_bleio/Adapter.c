@@ -71,8 +71,8 @@
 //|         ...
 //|
 
-//|     def hci_uart_init(self, *, uart: busio.UART, rts: digitalio.DigitalInOut, cts: digitalio.DigitalInOut, baudrate: int = 115200, buffer_size: int = 256):
-//|         On boards that do not have native BLE, you can an use HCI co-processor.
+//|     def hci_uart_init(self, *, uart: busio.UART, rts: digitalio.DigitalInOut, cts: digitalio.DigitalInOut, baudrate: int = 115200, buffer_size: int = 256) -> None:
+//|         """On boards that do not have native BLE, you can an use HCI co-processor.
 //|         Call `_bleio.adapter.hci_uart_init()` passing it the uart and pins used to communicate
 //|         with the co-processor, such as an Adafruit AirLift.
 //|         The co-processor must have been reset and put into BLE mode beforehand
@@ -83,6 +83,8 @@
 //|         The `_bleio.adapter` object is enabled during this call.
 //|
 //|         Raises `RuntimeError` on boards with native BLE.
+//|         """
+//|         ...
 //|
 STATIC mp_obj_t bleio_adapter_hci_uart_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 #if CIRCUITPY_BLEIO_HCI
