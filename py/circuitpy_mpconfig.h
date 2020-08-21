@@ -347,16 +347,20 @@ extern const struct _mp_obj_module_t displayio_module;
 extern const struct _mp_obj_module_t fontio_module;
 extern const struct _mp_obj_module_t terminalio_module;
 #define DISPLAYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
-#define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
-#define TERMINALIO_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
 #ifndef CIRCUITPY_DISPLAY_LIMIT
 #define CIRCUITPY_DISPLAY_LIMIT (1)
 #endif
 #else
 #define DISPLAYIO_MODULE
+#define CIRCUITPY_DISPLAY_LIMIT (0)
+#endif
+
+#if CIRCUITPY_DISPLAYIO && CIRCUITPY_TERMINALIO
+#define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
+#define TERMINALIO_MODULE   { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
+#else
 #define FONTIO_MODULE
 #define TERMINALIO_MODULE
-#define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
 #if CIRCUITPY_FRAMEBUFFERIO
@@ -499,13 +503,6 @@ extern const struct _mp_obj_module_t pixelbuf_module;
 #define PIXELBUF_MODULE
 #endif
 
-#if CIRCUITPY_RGBMATRIX
-extern const struct _mp_obj_module_t rgbmatrix_module;
-#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
-#else
-#define RGBMATRIX_MODULE
-#endif
-
 #if CIRCUITPY_PULSEIO
 extern const struct _mp_obj_module_t pulseio_module;
 #define PULSEIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module },
@@ -518,6 +515,13 @@ extern const struct _mp_obj_module_t ps2io_module;
 #define PS2IO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_ps2io), (mp_obj_t)&ps2io_module },
 #else
 #define PS2IO_MODULE
+#endif
+
+#if CIRCUITPY_RGBMATRIX
+extern const struct _mp_obj_module_t rgbmatrix_module;
+#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
+#else
+#define RGBMATRIX_MODULE
 #endif
 
 #if CIRCUITPY_RANDOM
@@ -560,6 +564,13 @@ extern const struct _mp_obj_module_t sdioio_module;
 #define SDIOIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_sdioio), (mp_obj_t)&sdioio_module },
 #else
 #define SDIOIO_MODULE
+#endif
+
+#if CIRCUITPY_SHARPDISPLAY
+extern const struct _mp_obj_module_t sharpdisplay_module;
+#define SHARPDISPLAY_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_sharpdisplay),(mp_obj_t)&sharpdisplay_module },
+#else
+#define SHARPDISPLAY_MODULE
 #endif
 
 #if CIRCUITPY_STAGE
@@ -737,6 +748,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     SAMD_MODULE \
     SDCARDIO_MODULE \
     SDIOIO_MODULE \
+    SHARPDISPLAY_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \

@@ -42,7 +42,7 @@
 //|         """Create a new Address object encapsulating the address value.
 //|         The value itself can be one of:
 //|
-//|         :param buf address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
+//|         :param ~_typing.ReadableBuffer address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
 //|         :param int address_type: one of the integer values: `PUBLIC`, `RANDOM_STATIC`,
 //|           `RANDOM_PRIVATE_RESOLVABLE`, or `RANDOM_PRIVATE_NON_RESOLVABLE`."""
 //|         ...
@@ -128,7 +128,7 @@ const mp_obj_property_t bleio_address_type_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __eq__(self, other: Address) -> bool:
+//|     def __eq__(self, other: object) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""
 //|         ...
 //|

@@ -165,7 +165,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_count_obj, sdioio_sdcard_count);
 //|         """Read one or more blocks from the card
 //|
 //|         :param int start_block: The block to start reading from
-//|         :param bytearray buf: The buffer to write into.  Length must be multiple of 512.
+//|         :param ~_typing.WriteableBuffer buf: The buffer to write into.  Length must be multiple of 512.
 //|
 //|         :return: None"""
 mp_obj_t sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
@@ -182,12 +182,12 @@ mp_obj_t sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_
 
 MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks);
 
-//|     def writeblocks(self, start_block: int, buf: WriteableBuffer) -> None:
+//|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
 //|
 //|         """Write one or more blocks to the card
 //|
 //|         :param int start_block: The block to start writing from
-//|         :param bytearray buf: The buffer to read from.  Length must be multiple of 512.
+//|         :param ~_typing.ReadableBuffer buf: The buffer to read from.  Length must be multiple of 512.
 //|
 //|         :return: None"""
 //|

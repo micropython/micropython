@@ -53,12 +53,6 @@ typedef struct {
 #define BLE_GATTS_FIX_ATTR_LEN_MAX (510)  /**< Maximum length for fixed length Attribute Values. */
 #define BLE_GATTS_VAR_ATTR_LEN_MAX (512)  /**< Maximum length for variable length Attribute Values. */
 
-
-// These helpers raise the appropriate exceptions if the code doesn't equal success.
-void check_hci_error(hci_result_t result);
-void check_gatt_status(uint16_t gatt_status);
-void check_sec_status(uint8_t sec_status);
-
 // Track if the user code modified the BLE state to know if we need to undo it on reload.
 extern bool vm_used_ble;
 

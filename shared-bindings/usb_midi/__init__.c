@@ -35,8 +35,14 @@
 
 #include "py/runtime.h"
 
-//| """Classes to transmit and receive MIDI messages over USB"""
+//| """MIDI over USB
 //|
+//| The `usb_midi` module contains classes to transmit and receive MIDI messages over USB."""
+//|
+//| ports: Tuple[Union[PortIn, PortOut], ...]
+//| """Tuple of all MIDI ports. Each item is ether `PortIn` or `PortOut`."""
+//|
+
 mp_map_elem_t usb_midi_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usb_midi) },
     { MP_ROM_QSTR(MP_QSTR_ports), mp_const_empty_tuple },

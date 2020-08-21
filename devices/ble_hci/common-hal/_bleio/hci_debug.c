@@ -288,7 +288,7 @@ STATIC void dump_acl_pkt(bool tx, uint8_t pkt_len, uint8_t pkt_data[]) {
     if (pkt->pb != ACL_DATA_PB_MIDDLE && acl->cid == BT_L2CAP_CID_ATT) {
         // This is the start of a fragmented acl_data packet or is a full packet,
         // and is an ATT protocol packet.
-        mp_printf(&mp_plat_print, "att: %s, ", att_opcode_name(acl->acl_data[0]));
+        mp_printf(&mp_plat_print, "att: %s (%02x), ", att_opcode_name(acl->acl_data[0]), acl->acl_data[0]);
     }
 
     mp_printf(&mp_plat_print,

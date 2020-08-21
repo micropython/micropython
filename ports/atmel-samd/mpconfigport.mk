@@ -39,10 +39,23 @@ endif
 
 CIRCUITPY_SDCARDIO ?= 0
 
+# Not enough RAM for framebuffers
+CIRCUITPY_FRAMEBUFFERIO ?= 0
+
 # SAMD21 needs separate endpoint pairs for MSC BULK IN and BULK OUT, otherwise it's erratic.
 USB_MSC_EP_NUM_OUT = 1
 
 CIRCUITPY_ULAB = 0
+
+ifeq ($(TRANSLATION), ja)
+RELEASE_NEEDS_CLEAN_BUILD = 1
+CIRCUITPY_TERMINALIO = 0
+endif
+
+ifeq ($(TRANSLATION), ko)
+RELEASE_NEEDS_CLEAN_BUILD = 1
+CIRCUITPY_TERMINALIO = 0
+endif
 
 endif # samd21
 

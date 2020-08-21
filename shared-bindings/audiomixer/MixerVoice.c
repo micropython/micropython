@@ -56,11 +56,11 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def play(self, sample: audiocore._AudioSample, *, loop: bool = False) -> None:
+//|     def play(self, sample: _typing.AudioSample, *, loop: bool = False) -> None:
 //|         """Plays the sample once when ``loop=False``, and continuously when ``loop=True``.
 //|         Does not block. Use `playing` to block.
 //|
-//|         Sample must be an `audiocore.WaveFile`, `audiomixer.Mixer` or `audiocore.RawSample`.
+//|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, `audiomixer.Mixer` or `audiomp3.MP3Decoder`.
 //|
 //|         The sample must match the `audiomixer.Mixer`'s encoding settings given in the constructor."""
 //|         ...

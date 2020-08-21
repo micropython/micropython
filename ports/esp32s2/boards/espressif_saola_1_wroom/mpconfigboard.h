@@ -29,4 +29,6 @@
 #define MICROPY_HW_BOARD_NAME       "Saola 1 w/Wroom"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
+
 #define AUTORESET_DELAY_MS 500

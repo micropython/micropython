@@ -137,6 +137,7 @@ STATIC const byte *find_qstr(qstr q) {
     while (q < pool->total_prev_len) {
         pool = pool->prev;
     }
+    assert(q - pool->total_prev_len < pool->len);
     return pool->qstrs[q - pool->total_prev_len];
 }
 

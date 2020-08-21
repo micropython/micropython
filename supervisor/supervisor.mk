@@ -110,7 +110,9 @@ ifeq ($(CIRCUITPY_DISPLAYIO), 1)
 	SRC_SUPERVISOR += \
 		supervisor/shared/display.c
 
-	SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+	ifeq ($(CIRCUITPY_TERMINALIO), 1)
+		SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+	endif
 endif
 ifndef USB_INTERFACE_NAME
 USB_INTERFACE_NAME = "CircuitPython"

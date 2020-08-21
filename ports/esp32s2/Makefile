@@ -171,6 +171,7 @@ SRC_C += \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
 	peripherals/pins.c \
+	peripherals/rmt.c \
 	supervisor/shared/memory.c
 
 ifneq ($(USB),FALSE)

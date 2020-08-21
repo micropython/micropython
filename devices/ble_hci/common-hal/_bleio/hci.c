@@ -17,6 +17,8 @@
 #include "hci.h"
 
 #include "py/obj.h"
+#include "py/mperrno.h"
+#include "py/runtime.h"
 
 // Zephyr include files to define HCI communication values and structs.
 #include "hci_include/hci.h"
@@ -25,10 +27,18 @@
 
 #include <string.h>
 
+#include "py/mphal.h"  //*****************************
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "common-hal/_bleio/Adapter.h"
 #include "shared-bindings/microcontroller/__init__.h"
+
+// Set to 1 for extensive HCI packet logging.
+#define HCI_DEBUG 0
+
+//FIX **********8
+busio_uart_obj_t debug_out;
+bool debug_out_in_use;
 
 
 // HCI H4 protocol packet types: first byte in the packet.
@@ -95,7 +105,7 @@ STATIC uint8_t acl_data_buffer[ACL_DATA_BUFFER_SIZE];
 STATIC size_t acl_data_len;
 
 STATIC size_t num_command_packets_allowed;
-STATIC size_t pending_pkt;
+STATIC volatile size_t pending_pkt;
 
 // Results from parsing a command response packet.
 STATIC bool cmd_response_received;
@@ -106,13 +116,12 @@ STATIC uint8_t* cmd_response_data;
 
 STATIC volatile bool hci_poll_in_progress = false;
 
-#define DEBUG_HCI 1
 
 //////////////////////////////////////////////////////////////////////
 
-#if DEBUG_HCI
+#if HCI_DEBUG
 #include "hci_debug.c"
-#endif // DEBUG_HCI
+#endif // HCI_DEBUG
 
 STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
     h4_hci_acl_pkt_t *pkt = (h4_hci_acl_pkt_t*) pkt_data;
@@ -156,6 +165,11 @@ STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
 // Process number of completed packets. Reduce number of pending packets by reported
 // number of completed.
 STATIC void process_num_comp_pkts(uint16_t handle, uint16_t num_pkts) {
+    const uint8_t ff = 0xff;
+    int err;
+    common_hal_busio_uart_write(&debug_out, (uint8_t *) &pending_pkt, 1, &err);
+    common_hal_busio_uart_write(&debug_out, (uint8_t *) &ff, 1, &err);
+    common_hal_busio_uart_write(&debug_out, (uint8_t *) &ff, 1, &err);
     if (num_pkts && pending_pkt > num_pkts) {
         pending_pkt -= num_pkts;
     } else {
@@ -271,26 +285,44 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
         }
 
         default:
-#if DEBUG_HCI
+#if HCI_DEBUG
             mp_printf(&mp_plat_print, "process_evt_pkt: Unknown event: %02x\n");
 #endif
             break;
     }
 }
 
+//FIX
+busio_uart_obj_t debug_out;
+bool debug_out_in_use;
+
 void bleio_hci_reset(void) {
     rx_idx = 0;
     pending_pkt = 0;
     hci_poll_in_progress = false;
-
+    debug_out_in_use = false;
     bleio_att_reset();
 }
 
 hci_result_t hci_poll_for_incoming_pkt(void) {
+    if (!debug_out_in_use) {
+        debug_out.base.type = &busio_uart_type;
+        common_hal_busio_uart_construct(&debug_out,
+                                        &pin_PB12 /*D7*/, NULL, // no RX
+                                        NULL, NULL,
+                                        NULL, false,
+                                        115200, 8, BUSIO_UART_PARITY_NONE, 1, 0,
+                                        512, NULL, false);
+        debug_out_in_use = true;
+    }
+
+    common_hal_mcu_disable_interrupts();
     if (hci_poll_in_progress) {
+        common_hal_mcu_enable_interrupts();
         return HCI_OK;
     }
     hci_poll_in_progress = true;
+    common_hal_mcu_enable_interrupts();
 
     // Assert RTS low to say we're ready to read data.
     common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, false);
@@ -298,28 +330,55 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
     int errcode = 0;
     bool packet_is_complete = false;
 
-    // Read bytes until we run out, or accumulate a complete packet.
+    // Read bytes until we run out. There may be more than one packet in the input buffer.
     while (!packet_is_complete &&
-           common_hal_busio_uart_rx_characters_available(common_hal_bleio_adapter_obj.hci_uart)) {
-        common_hal_busio_uart_read(common_hal_bleio_adapter_obj.hci_uart, rx_buffer + rx_idx, 1, &errcode);
+           common_hal_busio_uart_rx_characters_available(common_hal_bleio_adapter_obj.hci_uart) > 0) {
+
+        // Read just one character a a time, so we don't accidentally get part of a second
+        // packet.
+        size_t num_read =
+            common_hal_busio_uart_read(common_hal_bleio_adapter_obj.hci_uart, rx_buffer + rx_idx, 1, &errcode);
+        if (num_read == 0) {
+            return HCI_OK;
+        }
         if (errcode) {
+            if (errcode == EAGAIN) {
+                continue;
+            }
             hci_poll_in_progress = false;
+            mp_printf(&mp_plat_print, "HCI_READ_ERROR, errcode: %x\n", errcode);
             return HCI_READ_ERROR;
         }
         rx_idx++;
+        if (rx_idx >= sizeof(rx_buffer)) {
+            // Incoming packet is too large. Should not happen.
+            return HCI_READ_ERROR;
+        }
 
         switch (rx_buffer[0]) {
             case H4_ACL:
-                if (rx_idx > sizeof(h4_hci_acl_pkt_t) &&
-                    rx_idx >= sizeof(h4_hci_acl_pkt_t) + ((h4_hci_acl_pkt_t *) rx_buffer)->data_len) {
-                    packet_is_complete = true;
+                if (rx_idx > sizeof(h4_hci_acl_pkt_t)) {
+                    const size_t total_len =
+                        sizeof(h4_hci_acl_pkt_t) + ((h4_hci_acl_pkt_t *) rx_buffer)->data_len;
+                    if (rx_idx == total_len) {
+                        packet_is_complete = true;
+                    }
+                    if (rx_idx > total_len) {
+                        mp_printf(&mp_plat_print, "acl: rx_idx > total_len\n");
+                    }
                 }
                 break;
 
             case H4_EVT:
-                if (rx_idx > sizeof(h4_hci_evt_pkt_t) &&
-                    rx_idx >= sizeof(h4_hci_evt_pkt_t) + ((h4_hci_evt_pkt_t *) rx_buffer)->param_len) {
-                    packet_is_complete = true;
+                if (rx_idx > sizeof(h4_hci_evt_pkt_t)) {
+                    const size_t total_len =
+                        sizeof(h4_hci_evt_pkt_t) + ((h4_hci_evt_pkt_t *) rx_buffer)->param_len;
+                    if (rx_idx == total_len) {
+                        packet_is_complete = true;
+                    }
+                    if (rx_idx > total_len) {
+                        mp_printf(&mp_plat_print, "evt: rx_idx > total_len\n");
+                    }
                 }
                 break;
 
@@ -328,45 +387,54 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
                 rx_idx = 0;
                 break;
         }
+    } // end while
+
+    if (packet_is_complete) {
+        // Stop incoming data while processing packet.
+        common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, true);
+        size_t pkt_len = rx_idx;
+
+        //FIX output packet for debugging
+        int err;
+        common_hal_busio_uart_write(&debug_out, (uint8_t *) &rx_idx, 1, &err);
+        common_hal_busio_uart_write(&debug_out, (uint8_t *) &rx_idx, 1, &err);
+        common_hal_busio_uart_write(&debug_out, (uint8_t *) &rx_idx, 1, &err);
+
+        common_hal_busio_uart_write(&debug_out, rx_buffer, rx_idx, &err);
+
+
+        // Reset for next packet.
+        rx_idx = 0;
+        packet_is_complete = false;
+
+        switch (rx_buffer[0]) {
+            case H4_ACL:
+#if HCI_DEBUG
+                dump_acl_pkt(false, pkt_len, rx_buffer);
+#endif
+                process_acl_data_pkt(pkt_len, rx_buffer);
+                break;
+
+            case H4_EVT:
+#if HCI_DEBUG
+                dump_evt_pkt(false, pkt_len, rx_buffer);
+#endif
+                process_evt_pkt(pkt_len, rx_buffer);
+                break;
+
+            default:
+#if HCI_DEBUG
+                mp_printf(&mp_plat_print, "Unknown HCI packet type: %d\n", rx_buffer[0]);
+#endif
+                break;
+        }
+
+        // Let incoming bytes flow again.
+        common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, false);
     }
 
-    if (!packet_is_complete) {
-        hci_poll_in_progress = false;
-        return HCI_OK;
-    }
-
-    // Stop incoming data while processing packet.
-    common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, true);
-    size_t pkt_len = rx_idx;
-    // Reset for next packet.
-    rx_idx = 0;
-
-    switch (rx_buffer[0]) {
-        case H4_ACL:
-#if DEBUG_HCI
-            dump_acl_pkt(false, pkt_len, rx_buffer);
-#endif
-
-            process_acl_data_pkt(pkt_len, rx_buffer);
-            break;
-
-        case H4_EVT:
-#if DEBUG_HCI
-            dump_evt_pkt(false, pkt_len, rx_buffer);
-#endif
-
-            process_evt_pkt(pkt_len, rx_buffer);
-            break;
-
-        default:
-#if DEBUG_HCI
-            mp_printf(&mp_plat_print, "Unknown HCI packet type: %d\n", rx_buffer[0]);
-#endif
-            break;
-    }
-
-    common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, true);
-
+    // All done with this batch. Hold off receiving bytes until we're ready again.
+    ///common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, true);
     hci_poll_in_progress = false;
     return HCI_OK;
 }
@@ -404,7 +472,7 @@ STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* para
 
     memcpy(cmd_pkt->params, params, params_len);
 
-#if DEBUG_HCI
+#if HCI_DEBUG
         dump_cmd_pkt(true, sizeof(tx_buffer), tx_buffer);
 #endif
 
@@ -419,12 +487,8 @@ STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* para
     // command responses.
     uint64_t start = supervisor_ticks_ms64();
     while (supervisor_ticks_ms64() - start < RESPONSE_TIMEOUT_MSECS) {
-        result = hci_poll_for_incoming_pkt();
-        if (result != HCI_OK) {
-            // I/O error.
-            return result;
-        }
-
+        // RUN_BACKGROUND_TASKS includes hci_poll_for_incoming_pkt();
+        RUN_BACKGROUND_TASKS;
         if (cmd_response_received && cmd_response_opcode == opcode) {
             // If this is definitely a response to the command that was sent,
             // return the status value, which will will be
@@ -432,20 +496,17 @@ STATIC hci_result_t send_command(uint16_t opcode, uint8_t params_len, void* para
             // or a BT_HCI_ERR_x value (> 0x00) if there was a problem.
             return cmd_response_status;
         }
-        RUN_BACKGROUND_TASKS;
     }
 
     // No I/O error, but no response sent back in time.
     return HCI_RESPONSE_TIMEOUT;
 }
 
-hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint8_t data_len, uint8_t *data) {
-    int result;
+hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint16_t data_len, uint8_t *data) {
+    // Wait for all backlogged packets to finish.
     while (pending_pkt >= common_hal_bleio_adapter_obj.max_acl_num_buffers) {
-        result = hci_poll_for_incoming_pkt();
-        if (result != HCI_OK) {
-            return result;
-        }
+        // RUN_BACKGROUND_TASKS includes hci_poll_for_incoming_pkt();
+        RUN_BACKGROUND_TASKS;
     }
 
     // buf_len is size of entire packet including header.
@@ -457,13 +518,14 @@ hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint8_t data_len, ui
     acl_pkt->pkt_type = H4_ACL;
     acl_pkt->handle = handle;
     acl_pkt->pb = ACL_DATA_PB_FIRST_FLUSH;
-    acl_pkt->data_len = (uint8_t)(sizeof(acl_data_t) + data_len);
+    acl_pkt->bc = 0;
+    acl_pkt->data_len = (uint16_t)(sizeof(acl_data_t) + data_len);
     acl_data->acl_data_len = data_len;
     acl_data->cid = cid;
 
     memcpy(&acl_data->acl_data, data, data_len);
 
-#if DEBUG_HCI
+#if HCI_DEBUG
         dump_acl_pkt(true, buf_len, tx_buffer);
 #endif
 
@@ -474,7 +536,6 @@ hci_result_t hci_send_acl_pkt(uint16_t handle, uint8_t cid, uint8_t data_len, ui
     if (errcode) {
         return HCI_WRITE_ERROR;
     }
-
     return HCI_OK;
 }
 
@@ -737,4 +798,40 @@ hci_result_t hci_disconnect(uint16_t handle) {
     };
 
     return send_command(BT_HCI_OP_DISCONNECT, sizeof(params), &params);
+}
+
+void hci_check_error(hci_result_t result) {
+    switch (result) {
+        case HCI_OK:
+            return;
+
+        case HCI_RESPONSE_TIMEOUT:
+            mp_raise_bleio_BluetoothError(translate("Timeout waiting for HCI response"));
+            return;
+
+        case HCI_WRITE_TIMEOUT:
+            mp_raise_bleio_BluetoothError(translate("Timeout waiting to write HCI request"));
+            return;
+
+        case HCI_READ_ERROR:
+            mp_raise_bleio_BluetoothError(translate("Error reading from HCI adapter"));
+            return;
+
+        case HCI_WRITE_ERROR:
+            mp_raise_bleio_BluetoothError(translate("Error writing to HCI adapter"));
+            return;
+
+        case HCI_ATT_ERROR:
+            mp_raise_RuntimeError(translate("Error in ATT protocol code"));
+            return;
+
+        default:
+            // Should be an HCI status error, > 0.
+            if (result > 0) {
+                mp_raise_bleio_BluetoothError(translate("HCI status error: %02x"), result);
+            } else {
+                mp_raise_bleio_BluetoothError(translate("Unknown hci_result_t: %d"), result);
+            }
+            return;
+    }
 }

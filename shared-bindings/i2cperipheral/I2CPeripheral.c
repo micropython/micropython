@@ -52,13 +52,14 @@ STATIC mp_obj_t mp_obj_new_i2cperipheral_i2c_peripheral_request(i2cperipheral_i2
 //| class I2CPeripheral:
 //|     """Two wire serial protocol peripheral"""
 //|
-//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, addresses: tuple, smbus: bool = False) -> None:
+//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, addresses: Sequence[int], smbus: bool = False) -> None:
 //|         """I2C is a two-wire protocol for communicating between devices.
 //|         This implements the peripheral (sensor, secondary) side.
 //|
 //|         :param ~microcontroller.Pin scl: The clock pin
 //|         :param ~microcontroller.Pin sda: The data pin
-//|         :param tuple addresses: The I2C addresses to respond to (how many is hw dependent).
+//|         :param addresses: The I2C addresses to respond to (how many is hw dependent).
+//|         :type addresses: list[int]
 //|         :param bool smbus: Use SMBUS timings if the hardware supports it"""
 //|         ...
 //|
@@ -86,7 +87,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_make_new(const mp_obj_type_t *type,
     while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
         mp_int_t value;
         if (!mp_obj_get_int_maybe(item, &value)) {
-            mp_raise_TypeError(translate("can't convert address to int"));
+            mp_raise_TypeError_varg(translate("can't convert %q to %q"), MP_QSTR_address, MP_QSTR_int);
         }
         if (value < 0x00 || value > 0x7f) {
             mp_raise_ValueError(translate("address out of bounds"));
@@ -352,7 +353,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(i2cperipheral_i2c_peripheral_request_read_obj, 1, i2c
 //|     def write(self, buffer: ReadableBuffer) -> int:
 //|         """Write the data contained in buffer.
 //|
-//|         :param buffer: Write out the data in this buffer
+//|         :param ~_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :return: Number of bytes written"""
 //|         ...
 //|

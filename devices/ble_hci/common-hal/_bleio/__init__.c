@@ -43,43 +43,6 @@ bleio_uuid_obj_t cccd_uuid;
 
 bool vm_used_ble;
 
-void check_hci_error(hci_result_t result) {
-    switch (result) {
-        case HCI_OK:
-            return;
-
-        case HCI_RESPONSE_TIMEOUT:
-            mp_raise_bleio_BluetoothError(translate("Timeout waiting for HCI response"));
-            return;
-
-        case HCI_WRITE_TIMEOUT:
-            mp_raise_bleio_BluetoothError(translate("Timeout waiting to write HCI request"));
-            return;
-
-        case HCI_READ_ERROR:
-            mp_raise_bleio_BluetoothError(translate("Error reading from HCI adapter"));
-            return;
-
-        case HCI_WRITE_ERROR:
-            mp_raise_bleio_BluetoothError(translate("Error writing to HCI adapter"));
-            return;
-
-        case HCI_ATT_ERROR:
-            mp_raise_RuntimeError(translate("Error in ATT protocol code"));
-            return;
-
-        default:
-            // Should be an HCI status error, > 0.
-            if (result > 0) {
-                mp_raise_bleio_BluetoothError(translate("HCI status error: %02x"), result);
-            } else {
-                mp_raise_bleio_BluetoothError(translate("Unknown hci_result_t: %d"), result);
-            }
-            return;
-    }
-}
-
-
 // void check_sec_status(uint8_t sec_status) {
 //     if (sec_status == BLE_GAP_SEC_STATUS_SUCCESS) {
 //         return;

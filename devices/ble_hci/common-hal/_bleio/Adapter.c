@@ -280,7 +280,7 @@ STATIC void bleio_adapter_hci_init(bleio_adapter_obj_t *self) {
     const size_t len = sizeof(default_ble_name);
 
     bt_addr_t addr;
-    check_hci_error(hci_read_bd_addr(&addr));
+    hci_check_error(hci_read_bd_addr(&addr));
 
     default_ble_name[len - 4] = nibble_to_hex_lower[addr.val[1] >> 4 & 0xf];
     default_ble_name[len - 3] = nibble_to_hex_lower[addr.val[1] & 0xf];
@@ -373,7 +373,7 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     }
 
     // Enabling or disabling: stop any current activity; reset to known state.
-    check_hci_error(hci_reset());
+    hci_reset();
     self->now_advertising = false;
     self->extended_advertising = false;
     self->circuitpython_advertising = false;
@@ -397,13 +397,21 @@ bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *s
     check_enabled(self);
 
     bt_addr_t addr;
-    check_hci_error(hci_read_bd_addr(&addr));
+    hci_check_error(hci_read_bd_addr(&addr));
 
     bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
     address->base.type = &bleio_address_type;
 
     common_hal_bleio_address_construct(address, addr.val, BT_ADDR_LE_PUBLIC);
     return address;
+}
+
+bool common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_address_obj_t *address) {
+    mp_buffer_info_t bufinfo;
+    if (!mp_get_buffer(address->bytes, &bufinfo, MP_BUFFER_READ)) {
+        return false;
+    }
+    return hci_le_set_random_address(bufinfo.buf) == HCI_OK;
 }
 
 mp_obj_str_t* common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
@@ -673,7 +681,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         // Advertising interval.
         uint32_t interval_units = SEC_TO_UNITS(interval, UNIT_0_625_MS);
 
-        check_hci_error(
+        hci_check_error(
             hci_le_set_extended_advertising_parameters(
                 0,              // handle
                 props,          // adv properties
@@ -697,7 +705,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         uint8_t handle[1] = { 0 };
         uint16_t duration_10msec[1] = { timeout * 100 };
         uint8_t max_ext_adv_evts[1] =  { 0 };
-        check_hci_error(
+        hci_check_error(
             hci_le_set_extended_advertising_enable(
                 BT_HCI_LE_ADV_ENABLE,
                 1,                // one advertising set.
@@ -725,7 +733,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         // Advertising interval.
         uint16_t interval_units = SEC_TO_UNITS(interval, UNIT_0_625_MS);
 
-        check_hci_error(
+        hci_check_error(
             hci_le_set_advertising_parameters(
                 interval_units, // min interval
                 interval_units, // max interval
@@ -740,11 +748,11 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         // even though the actual data length may be shorter.
         uint8_t full_data[MAX_ADVERTISEMENT_SIZE] = { 0 };
         memcpy(full_data, advertising_data, MIN(sizeof(full_data), advertising_data_len));
-        check_hci_error(hci_le_set_advertising_data(advertising_data_len, full_data));
+        hci_check_error(hci_le_set_advertising_data(advertising_data_len, full_data));
         memset(full_data, 0, sizeof(full_data));
         if (scan_response_data_len > 0) {
             memcpy(full_data, scan_response_data, MIN(sizeof(full_data), scan_response_data_len));
-            check_hci_error(hci_le_set_scan_response_data(scan_response_data_len, full_data));
+            hci_check_error(hci_le_set_scan_response_data(scan_response_data_len, full_data));
         }
 
         // No duration mechanism is provided for legacy advertising, so we need to do our own.
@@ -752,7 +760,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
         self->advertising_start_ticks = supervisor_ticks_ms64();
 
         // Start advertising.
-        check_hci_error(hci_le_set_advertising_enable(BT_HCI_LE_ADV_ENABLE));
+        hci_check_error(hci_le_set_advertising_enable(BT_HCI_LE_ADV_ENABLE));
         self->extended_advertising = false;
     } // end legacy advertising setup
 
@@ -809,7 +817,7 @@ void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
     // OK if we're already stopped. There seems to be an ESP32 HCI bug:
     // If advertising is already off, then LE_SET_ADV_ENABLE does not return a response.
     if (result != HCI_RESPONSE_TIMEOUT) {
-        check_hci_error(result);
+        hci_check_error(result);
     }
 
     //TODO startup CircuitPython advertising again.
@@ -942,5 +950,8 @@ void bleio_adapter_background(bleio_adapter_obj_t* adapter) {
         common_hal_bleio_adapter_stop_advertising(adapter);
     }
 
-    hci_poll_for_incoming_pkt();
+    hci_result_t result = hci_poll_for_incoming_pkt();
+    if (result != HCI_OK) {
+        mp_printf(&mp_plat_print, "bad hci_poll_for_incoming_pkt() result in background: %d\n", result);
+    }
 }

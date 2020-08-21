@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
-"PO-Revision-Date: 2020-07-13 17:39+0000\n"
+"POT-Creation-Date: 2020-08-14 09:36-0400\n"
+"PO-Revision-Date: 2020-08-10 19:59+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
@@ -72,13 +72,17 @@ msgstr "%q fout: %d"
 msgid "%q in use"
 msgstr "%q in gebruik"
 
-#: py/obj.c
+#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
+#: py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q index buiten bereik"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q indexen moeten integers zijn, niet %s"
+msgid "%q indices must be integers, not %q"
+msgstr "%q indices moeten integers zijn, geen %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -86,7 +90,7 @@ msgstr "%q lijst moet een lijst zijn"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q moet >= 0 zijn"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -115,6 +119,42 @@ msgstr "%q() verwacht %d positionele argumenten maar kreeg %d"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' argument vereist"
+
+#: py/runtime.c
+msgid "'%q' object cannot assign attribute '%q'"
+msgstr "'%q' object kan attribuut ' %q' niet toewijzen"
+
+#: py/proto.c
+msgid "'%q' object does not support '%q'"
+msgstr "'%q' object ondersteunt geen '%q'"
+
+#: py/obj.c
+msgid "'%q' object does not support item assignment"
+msgstr "'%q' object ondersteunt toewijzing van items niet"
+
+#: py/obj.c
+msgid "'%q' object does not support item deletion"
+msgstr "'%q' object ondersteunt verwijderen van items niet"
+
+#: py/runtime.c
+msgid "'%q' object has no attribute '%q'"
+msgstr "'%q' object heeft geen attribuut '%q'"
+
+#: py/runtime.c
+msgid "'%q' object is not an iterator"
+msgstr "'%q' object is geen iterator"
+
+#: py/objtype.c py/runtime.c
+msgid "'%q' object is not callable"
+msgstr "'%q' object is niet aanroepbaar"
+
+#: py/runtime.c
+msgid "'%q' object is not iterable"
+msgstr "'%q' object is niet itereerbaar"
+
+#: py/obj.c
+msgid "'%q' object is not subscriptable"
+msgstr "kan niet abonneren op '%q' object"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -166,48 +206,6 @@ msgstr "'%s' integer %d is niet in bereik %d..%d"
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' integer 0x%x past niet in mask 0x%x"
 
-#: py/runtime.c
-msgid "'%s' object cannot assign attribute '%q'"
-msgstr "'%s' object kan niet aan attribuut '%q' toewijzen"
-
-#: py/proto.c
-msgid "'%s' object does not support '%q'"
-msgstr "'%s' object ondersteunt '%q' niet"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object does not support item assignment"
-msgstr "'%s' object ondersteunt item toewijzing niet"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object does not support item deletion"
-msgstr "'%s' object ondersteunt item verwijdering niet"
-
-#: py/runtime.c
-msgid "'%s' object has no attribute '%q'"
-msgstr "'%s' object heeft geen attribuut '%q'"
-
-#: py/runtime.c
-#, c-format
-msgid "'%s' object is not an iterator"
-msgstr "'%s' object is geen iterator"
-
-#: py/objtype.c py/runtime.c
-#, c-format
-msgid "'%s' object is not callable"
-msgstr "'%s' object is niet aanroepbaar"
-
-#: py/runtime.c
-#, c-format
-msgid "'%s' object is not iterable"
-msgstr "'%s' object is niet itereerbaar"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object is not subscriptable"
-msgstr "'%s' object is niet onderschrijfbaar"
-
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
 msgstr "'=' uitlijning niet toegestaan in string format specifier"
@@ -226,7 +224,7 @@ msgstr "'await' buiten de functie"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' of 'async with' buiten async functie"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -238,7 +236,7 @@ msgstr "'continue' buiten de loop"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "'coroutine' object is geen iterator"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -333,7 +331,7 @@ msgstr "Advertising is al bezig."
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Wordt al uitgevoerd"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -373,7 +371,7 @@ msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Poging om %d blokken toe te wijzen"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -455,6 +453,12 @@ msgstr "Buffer lengte %d te groot. Het moet kleiner zijn dan %d"
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
+msgstr "Buffer lengte moet een veelvoud van 512 zijn"
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, fuzzy
+#| msgid "Buffer length must be a multiple of 512"
+msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Buffer lengte moet een veelvoud van 512 zijn"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
@@ -653,6 +657,12 @@ msgstr "Kan timer niet her-initialiseren"
 msgid "Could not restart PWM"
 msgstr "Kan PWM niet herstarten"
 
+#: shared-bindings/_bleio/Adapter.c
+#, fuzzy
+#| msgid "Could not start PWM"
+msgid "Could not set address"
+msgstr "Kan PWM niet starten"
+
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "Kan PWM niet starten"
@@ -835,6 +845,11 @@ msgstr "Schrijven naar interne flash mislukt."
 msgid "File exists"
 msgstr "Bestand bestaat"
 
+#: shared-module/framebufferio/FramebufferDisplay.c
+#, c-format
+msgid "Framebuffer requires %d bytes"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
@@ -861,7 +876,7 @@ msgid "Group full"
 msgstr "Groep is vol"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr "Hardware bezig, probeer alternatieve pinnen"
 
@@ -879,7 +894,7 @@ msgstr "I2C Init Fout"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut is niet beschikbaar"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -928,6 +943,13 @@ msgstr "Ongeldige %q"
 msgid "Invalid %q pin"
 msgstr "Ongeldige %q pin"
 
+#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+#, fuzzy
+#| msgid "Invalid I2C pin selection"
+msgid "Invalid %q pin selection"
+msgstr "Ongeldige I2C pin selectie"
+
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Ongeldige ADC Unit waarde"
@@ -940,23 +962,11 @@ msgstr "Ongeldig BMP bestand"
 msgid "Invalid DAC pin supplied"
 msgstr "Ongeldige DAC pin opgegeven"
 
-#: ports/stm/common-hal/busio/I2C.c
-msgid "Invalid I2C pin selection"
-msgstr "Ongeldige I2C pin selectie"
-
 #: ports/atmel-samd/common-hal/pulseio/PWMOut.c
 #: ports/cxd56/common-hal/pulseio/PWMOut.c
 #: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Ongeldige PWM frequentie"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Invalid SPI pin selection"
-msgstr "Ongeldige SPI pin selectie"
-
-#: ports/stm/common-hal/busio/UART.c
-msgid "Invalid UART pin selection"
-msgstr "Ongeldige UART pin selectie"
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
@@ -1253,6 +1263,10 @@ msgstr "Niet verbonden"
 msgid "Not playing"
 msgstr "Wordt niet afgespeeld"
 
+#: main.c
+msgid "Not running saved code.\n"
+msgstr "Opgeslagen code wordt niet uitgevoerd.\n"
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -1350,10 +1364,6 @@ msgstr "En iedere module in het bestandssysteem\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Polygon heeft op zijn minst 3 punten nodig"
 
-#: shared-bindings/ps2io/Ps2.c
-msgid "Pop from an empty Ps2 buffer"
-msgstr "Pop van een lege Ps2 buffer"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Prefix buffer moet op de heap zijn"
@@ -1428,12 +1438,8 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Rij invoeging moet digitalio.DigitalInOut zijn"
 
 #: main.c
-msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr "Draaiende in veilige modus! Auto-herlaad is uit.\n"
-
-#: main.c
-msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Draaiende in veilige modus! Opgeslagen code wordt niet uitgevoerd.\n"
+msgid "Running in safe mode! "
+msgstr "Veilige modus wordt uitgevoerd! "
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -1443,6 +1449,17 @@ msgstr "SD kaart CSD formaat niet ondersteund"
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA of SCL hebben een pullup nodig"
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, c-format
+msgid "SDIO GetCardInfo Error %d"
+msgstr ""
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, fuzzy, c-format
+#| msgid "SPI Init Error"
+msgid "SDIO Init Error %d"
+msgstr "SPI Init Fout"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
@@ -1585,6 +1602,8 @@ msgstr "Time-out is te lang. Maximale time-out lengte is %d seconden"
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+"Timer is gereserveerd voor intern gebruik - wijs PWM pins eerder in het "
+"programma toe"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1812,9 +1831,8 @@ msgid "__init__() should return None"
 msgstr "__init __ () zou None moeten retourneren"
 
 #: py/objtype.c
-#, c-format
-msgid "__init__() should return None, not '%s'"
-msgstr "__init __ () zou None moeten retouneren, niet '%s'"
+msgid "__init__() should return None, not '%q'"
+msgstr "__init__() moet None teruggeven, niet '%q'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -1859,7 +1877,7 @@ msgstr "argument heeft onjuist type"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr ""
+msgstr "argument moet ndarray zijn"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -1967,7 +1985,7 @@ msgstr "butes > 8 niet ondersteund"
 msgid "bytes value out of range"
 msgstr "bytes waarde buiten bereik"
 
-#: ports/atmel-samd/bindings/samd/Clock.c
+#: ports/atmel-samd/bindings/samd/Clock.c ports/atmel-samd/common-hal/rtc/RTC.c
 msgid "calibration is out of range"
 msgstr "calibration is buiten bereik"
 
@@ -2000,48 +2018,18 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr "kan niet toewijzen aan expressie"
 
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to complex"
-msgstr "kan %s niet converteren naar een complex"
-
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to float"
-msgstr "kan %s niet omzetten naar een float"
-
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to int"
-msgstr "kan %s niet omzetten naar een int"
+#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
+msgid "can't convert %q to %q"
+msgstr "kan %q niet naar %q converteren"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "kan '%q' object niet omzetten naar %q impliciet"
 
-#: py/objint.c
-msgid "can't convert NaN to int"
-msgstr "kan NaN niet omzetten naar int"
-
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
-msgid "can't convert address to int"
-msgstr "kan adres niet omzetten naar int"
-
-#: py/objint.c
-msgid "can't convert inf to int"
-msgstr "kan inf niet omzetten naar int"
-
 #: py/obj.c
-msgid "can't convert to complex"
-msgstr "kan niet omzetten naar complex"
-
-#: py/obj.c
-msgid "can't convert to float"
-msgstr "kan niet omzetten naar float"
-
-#: py/obj.c
-msgid "can't convert to int"
-msgstr "kan niet omzetten naar int"
+msgid "can't convert to %q"
+msgstr "kan niet naar %q converteren"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2451,7 +2439,7 @@ msgstr "functie mist vereist sleutelwoord argument \"%q"
 msgid "function missing required positional argument #%d"
 msgstr "functie mist vereist positie-argument #%d"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c shared-bindings/time/__init__.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
@@ -2501,10 +2489,7 @@ msgstr "vulling (padding) is onjuist"
 msgid "index is out of bounds"
 msgstr "index is buiten bereik"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c
+#: py/obj.c
 msgid "index out of range"
 msgstr "index is buiten bereik"
 
@@ -2566,7 +2551,7 @@ msgstr "integer vereist"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
-msgstr "interp is gedefinieerd for eendimensionale arrays van gelijke lengte"
+msgstr "interp is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -2863,9 +2848,8 @@ msgid "number of points must be at least 2"
 msgstr "aantal punten moet minimaal 2 zijn"
 
 #: py/obj.c
-#, c-format
-msgid "object '%s' is not a tuple or list"
-msgstr "object '%s' is geen tuple of lijst"
+msgid "object '%q' is not a tuple or list"
+msgstr "object '%q' is geen tuple of lijst"
 
 #: py/obj.c
 msgid "object does not support item assignment"
@@ -2900,9 +2884,8 @@ msgid "object not iterable"
 msgstr "object niet itereerbaar"
 
 #: py/obj.c
-#, c-format
-msgid "object of type '%s' has no len()"
-msgstr "object van type '%s' heeft geen len()"
+msgid "object of type '%q' has no len()"
+msgstr "object van type '%q' heeft geen len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -2995,21 +2978,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "pop from an empty PulseIn"
-msgstr "pop van een lege PulseIn"
-
-#: py/objset.c
-msgid "pop from an empty set"
-msgstr "pop van een lege set"
-
-#: py/objlist.c
-msgid "pop from empty list"
-msgstr "pop van een lege lijst"
-
-#: py/objdict.c
-msgid "popitem(): dictionary is empty"
-msgstr "popitem(): dictionary is leeg"
+#: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
+#: shared-bindings/ps2io/Ps2.c
+msgid "pop from empty %q"
+msgstr "pop van een lege %q"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -3167,13 +3139,8 @@ msgid "stream operation not supported"
 msgstr "stream operatie niet ondersteund"
 
 #: py/objstrunicode.c
-msgid "string index out of range"
-msgstr "string index buiten bereik"
-
-#: py/objstrunicode.c
-#, c-format
-msgid "string indices must be integers, not %s"
-msgstr "string indices moeten integer zijn, niet %s"
+msgid "string indices must be integers, not %q"
+msgstr "string indices moeten integers zijn, geen %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3182,10 +3149,6 @@ msgstr "string niet ondersteund; gebruik bytes of bytearray"
 #: extmod/moductypes.c
 msgid "struct: cannot index"
 msgstr "struct: kan niet indexeren"
-
-#: extmod/moductypes.c
-msgid "struct: index out of range"
-msgstr "struct: index buiten bereik"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -3254,19 +3217,15 @@ msgstr "te veel waarden om uit te pakken (%d verwacht)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "trapz is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 
-#: extmod/ulab/code/linalg/linalg.c py/objstr.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
 msgstr "tuple index buiten bereik"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tuple of lijst heeft onjuiste lengte"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr "tuple of lijst vereist op RHS"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
@@ -3323,9 +3282,8 @@ msgid "unknown conversion specifier %c"
 msgstr "onbekende conversiespecificatie %c"
 
 #: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type '%s'"
-msgstr "onbekende formaatcode '%c' voor object van type '%s'"
+msgid "unknown format code '%c' for object of type '%q'"
+msgstr "onbekende formaatcode '%c' voor object van type '%q'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3364,16 +3322,16 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "niet ondersteund formaatkarakter '%c' (0x%x) op index %d"
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%s'"
-msgstr "niet ondersteund type voor %q: '%s'"
+msgid "unsupported type for %q: '%q'"
+msgstr "niet ondersteund type voor %q: '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
 msgstr "niet ondersteund type voor operator"
 
 #: py/runtime.c
-msgid "unsupported types for %q: '%s', '%s'"
-msgstr "niet ondersteunde types voor %q: '%s', '%s'"
+msgid "unsupported types for %q: '%q', '%q'"
+msgstr "niet ondersteunde types voor %q: '%q', '%q'"
 
 #: py/objint.c
 #, c-format
@@ -3386,7 +3344,7 @@ msgstr "value_count moet groter dan 0 zijn"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "vectoren moeten van gelijke lengte zijn"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
@@ -3452,6 +3410,121 @@ msgstr "zi moet van type float zijn"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
 
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "tuple of lijst vereist op RHS"
+
+#~ msgid "Invalid SPI pin selection"
+#~ msgstr "Ongeldige SPI pin selectie"
+
+#~ msgid "Invalid UART pin selection"
+#~ msgstr "Ongeldige UART pin selectie"
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q indexen moeten integers zijn, niet %s"
+
+#~ msgid "'%s' object cannot assign attribute '%q'"
+#~ msgstr "'%s' object kan niet aan attribuut '%q' toewijzen"
+
+#~ msgid "'%s' object does not support '%q'"
+#~ msgstr "'%s' object ondersteunt '%q' niet"
+
+#~ msgid "'%s' object does not support item assignment"
+#~ msgstr "'%s' object ondersteunt item toewijzing niet"
+
+#~ msgid "'%s' object does not support item deletion"
+#~ msgstr "'%s' object ondersteunt item verwijdering niet"
+
+#~ msgid "'%s' object has no attribute '%q'"
+#~ msgstr "'%s' object heeft geen attribuut '%q'"
+
+#~ msgid "'%s' object is not an iterator"
+#~ msgstr "'%s' object is geen iterator"
+
+#~ msgid "'%s' object is not callable"
+#~ msgstr "'%s' object is niet aanroepbaar"
+
+#~ msgid "'%s' object is not iterable"
+#~ msgstr "'%s' object is niet itereerbaar"
+
+#~ msgid "'%s' object is not subscriptable"
+#~ msgstr "'%s' object is niet onderschrijfbaar"
+
+#~ msgid "Pop from an empty Ps2 buffer"
+#~ msgstr "Pop van een lege Ps2 buffer"
+
+#~ msgid "Running in safe mode! Auto-reload is off.\n"
+#~ msgstr "Draaiende in veilige modus! Auto-herlaad is uit.\n"
+
+#~ msgid "Running in safe mode! Not running saved code.\n"
+#~ msgstr ""
+#~ "Draaiende in veilige modus! Opgeslagen code wordt niet uitgevoerd.\n"
+
+#~ msgid "__init__() should return None, not '%s'"
+#~ msgstr "__init __ () zou None moeten retouneren, niet '%s'"
+
+#~ msgid "can't convert %s to complex"
+#~ msgstr "kan %s niet converteren naar een complex"
+
+#~ msgid "can't convert %s to float"
+#~ msgstr "kan %s niet omzetten naar een float"
+
+#~ msgid "can't convert %s to int"
+#~ msgstr "kan %s niet omzetten naar een int"
+
+#~ msgid "can't convert NaN to int"
+#~ msgstr "kan NaN niet omzetten naar int"
+
+#~ msgid "can't convert address to int"
+#~ msgstr "kan adres niet omzetten naar int"
+
+#~ msgid "can't convert inf to int"
+#~ msgstr "kan inf niet omzetten naar int"
+
+#~ msgid "can't convert to complex"
+#~ msgstr "kan niet omzetten naar complex"
+
+#~ msgid "can't convert to float"
+#~ msgstr "kan niet omzetten naar float"
+
+#~ msgid "can't convert to int"
+#~ msgstr "kan niet omzetten naar int"
+
+#~ msgid "object '%s' is not a tuple or list"
+#~ msgstr "object '%s' is geen tuple of lijst"
+
+#~ msgid "object of type '%s' has no len()"
+#~ msgstr "object van type '%s' heeft geen len()"
+
+#~ msgid "pop from an empty PulseIn"
+#~ msgstr "pop van een lege PulseIn"
+
+#~ msgid "pop from an empty set"
+#~ msgstr "pop van een lege set"
+
+#~ msgid "pop from empty list"
+#~ msgstr "pop van een lege lijst"
+
+#~ msgid "popitem(): dictionary is empty"
+#~ msgstr "popitem(): dictionary is leeg"
+
+#~ msgid "string index out of range"
+#~ msgstr "string index buiten bereik"
+
+#~ msgid "string indices must be integers, not %s"
+#~ msgstr "string indices moeten integer zijn, niet %s"
+
+#~ msgid "struct: index out of range"
+#~ msgstr "struct: index buiten bereik"
+
+#~ msgid "unknown format code '%c' for object of type '%s'"
+#~ msgstr "onbekende formaatcode '%c' voor object van type '%s'"
+
+#~ msgid "unsupported type for %q: '%s'"
+#~ msgstr "niet ondersteund type voor %q: '%s'"
+
+#~ msgid "unsupported types for %q: '%s', '%s'"
+#~ msgstr "niet ondersteunde types voor %q: '%s', '%s'"
+
 #~ msgid "'async for' or 'async with' outside async function"
 #~ msgstr "'async for' of 'async with' buiten async functie"
 
@@ -3484,3 +3557,6 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 
 #~ msgid "must specify all of sck/mosi/miso"
 #~ msgstr "sck/mosi/miso moeten alle gespecificeerd worden"
+
+#~ msgid "'%q' object is not bytes-like"
+#~ msgstr "'%q' object is niet bytes-achtig"

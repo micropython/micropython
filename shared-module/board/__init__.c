@@ -39,6 +39,11 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_SHARPDISPLAY
+#include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
+#include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
+#endif
+
 #if BOARD_I2C
 // Statically allocate the I2C object so it can live past the end of the heap and into the next VM.
 // That way it can be used by built-in I2CDisplay displays and be accessible through board.I2C().
@@ -148,10 +153,17 @@ void reset_board_busses(void) {
     bool display_using_spi = false;
     #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].fourwire_bus.bus == spi_singleton) {
+        mp_const_obj_t bus_type = displays[i].bus_base.type;
+        if (bus_type == &displayio_fourwire_type && displays[i].fourwire_bus.bus == spi_singleton) {
             display_using_spi = true;
             break;
         }
+        #if CIRCUITPY_SHARPDISPLAY
+        if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type && displays[i].sharpdisplay.bus == spi_singleton) {
+            display_using_spi = true;
+            break;
+        }
+        #endif
     }
     #endif
     if (!display_using_spi) {

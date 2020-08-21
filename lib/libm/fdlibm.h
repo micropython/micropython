@@ -188,7 +188,7 @@ extern float __ieee754_scalbf __P((float,float));
 extern float __kernel_sinf __P((float,float,int));
 extern float __kernel_cosf __P((float,float));
 extern float __kernel_tanf __P((float,float,int));
-extern int   __kernel_rem_pio2f __P((float*,float*,int,int,int,const __int32_t*));
+extern int   __kernel_rem_pio2f __P((float*,float*,int,int,int,const __uint8_t*));
 
 /* A union which permits us to convert between a float and a 32 bit
    int.  */

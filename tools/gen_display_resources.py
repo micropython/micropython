@@ -58,15 +58,19 @@ filtered_characters = all_characters
 # Try to pre-load all of the glyphs. Misses will still be slow later.
 f.load_glyphs(set(ord(c) for c in all_characters))
 
+missing = 0
 # Get each glyph.
 for c in set(all_characters):
     if ord(c) not in f._glyphs:
-        print("Font missing character:", c, ord(c))
+        missing += 1
         filtered_characters = filtered_characters.replace(c, "")
         continue
     g = f.get_glyph(ord(c))
     if g["shift"][1] != 0:
         raise RuntimeError("y shift")
+
+if missing > 0:
+    print("Font missing", missing, "characters", file=sys.stderr)
 
 x, y, dx, dy = f.get_bounding_box()
 tile_x, tile_y = x - dx, y - dy

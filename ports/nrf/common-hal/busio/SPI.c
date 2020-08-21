@@ -34,6 +34,22 @@
 #include "nrfx_spim.h"
 #include "nrf_gpio.h"
 
+#ifndef NRFX_SPIM3_ENABLED
+#define NRFX_SPIM3_ENABLED (0)
+#endif
+
+#ifndef NRFX_SPIM2_ENABLED
+#define NRFX_SPIM2_ENABLED (0)
+#endif
+
+#ifndef NRFX_SPIM1_ENABLED
+#define NRFX_SPIM1_ENABLED (0)
+#endif
+
+#ifndef NRFX_SPIM0_ENABLED
+#define NRFX_SPIM0_ENABLED (0)
+#endif
+
 // These are in order from highest available frequency to lowest (32MHz first, then 8MHz).
 STATIC spim_peripheral_t spim_peripherals[] = {
 #if NRFX_CHECK(NRFX_SPIM3_ENABLED)
@@ -41,7 +57,7 @@ STATIC spim_peripheral_t spim_peripherals[] = {
     // Allocate SPIM3 first.
     { .spim = NRFX_SPIM_INSTANCE(3),
       .max_frequency = 32000000,
-      .max_xfer_size = MIN(SPIM3_BUFFER_SIZE, (1UL << SPIM3_EASYDMA_MAXCNT_SIZE) - 1)
+      .max_xfer_size = MIN(SPIM3_BUFFER_RAM_SIZE, (1UL << SPIM3_EASYDMA_MAXCNT_SIZE) - 1)
     },
 #endif
 #if NRFX_CHECK(NRFX_SPIM2_ENABLED)
@@ -71,8 +87,7 @@ STATIC bool never_reset[MP_ARRAY_SIZE(spim_peripherals)];
 
 // Separate RAM area for SPIM3 transmit buffer to avoid SPIM3 hardware errata.
 // https://infocenter.nordicsemi.com/index.jsp?topic=%2Ferrata_nRF52840_Rev2%2FERR%2FnRF52840%2FRev2%2Flatest%2Fanomaly_840_198.html
-extern uint32_t _spim3_ram;
-STATIC uint8_t *spim3_transmit_buffer = (uint8_t *) &_spim3_ram;
+STATIC uint8_t *spim3_transmit_buffer = (uint8_t *) SPIM3_BUFFER_RAM_START_ADDR;
 
 void spi_reset(void) {
     for (size_t i = 0 ; i < MP_ARRAY_SIZE(spim_peripherals); i++) {

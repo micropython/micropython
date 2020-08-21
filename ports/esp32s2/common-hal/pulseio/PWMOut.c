@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
- * Uses code from Micropython, Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +32,7 @@
 
 #define INDEX_EMPTY 0xFF
 
+STATIC bool not_first_reset = false;
 STATIC uint32_t reserved_timer_freq[LEDC_TIMER_MAX];
 STATIC uint8_t reserved_channels[LEDC_CHANNEL_MAX];
 STATIC bool never_reset_tim[LEDC_TIMER_MAX];
@@ -40,17 +40,22 @@ STATIC bool never_reset_chan[LEDC_CHANNEL_MAX];
 
 void pwmout_reset(void) {
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++ ) {
-        ledc_stop(LEDC_LOW_SPEED_MODE, i, 0);
+        if (reserved_channels[i] != INDEX_EMPTY && not_first_reset) {
+            ledc_stop(LEDC_LOW_SPEED_MODE, i, 0);
+        }
         if (!never_reset_chan[i]) {
             reserved_channels[i] = INDEX_EMPTY;
         }
     }
     for (size_t i = 0; i < LEDC_TIMER_MAX; i++ ) {
-        ledc_timer_rst(LEDC_LOW_SPEED_MODE, i);
+        if (reserved_timer_freq[i]) {
+            ledc_timer_rst(LEDC_LOW_SPEED_MODE, i);
+        }
         if (!never_reset_tim[i]) {
             reserved_timer_freq[i] = 0;
         }
     }
+    not_first_reset = true;
 }
 
 pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
@@ -158,7 +163,10 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     if (common_hal_pulseio_pwmout_deinited(self)) {
         return;
     }
-    ledc_stop(LEDC_LOW_SPEED_MODE, self->chan_handle.channel, 0);
+
+    if (reserved_channels[self->chan_handle.channel] != INDEX_EMPTY) {
+        ledc_stop(LEDC_LOW_SPEED_MODE, self->chan_handle.channel, 0);
+    }
     // Search if any other channel is using the timer
     bool taken = false;
     for (size_t i =0; i < LEDC_CHANNEL_MAX; i++) {
@@ -168,7 +176,9 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
     }
     // Variable frequency means there's only one channel on the timer
     if (!taken || self->variable_frequency) {
-        ledc_timer_rst(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num);
+        if (reserved_timer_freq[self->tim_handle.timer_num] != 0) {
+            ledc_timer_rst(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num);
+        }
         reserved_timer_freq[self->tim_handle.timer_num] = 0;
     }
     reset_pin_number(self->pin_number);

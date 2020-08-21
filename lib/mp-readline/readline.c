@@ -58,6 +58,16 @@ STATIC char *str_dup_maybe(const char *str) {
     return s2;
 }
 
+STATIC size_t count_cont_bytes(char *start, char *end) {
+    int count = 0;
+    for (char *pos = start; pos < end; pos++) {
+        if(UTF8_IS_CONT(*pos)) {
+            count++;
+        }
+    }
+    return count;
+}
+
 // By default assume terminal which implements VT100 commands...
 #ifndef MICROPY_HAL_HAS_VT100
 #define MICROPY_HAL_HAS_VT100 (1)
@@ -92,6 +102,7 @@ typedef struct _readline_t {
     int escape_seq;
     int hist_cur;
     size_t cursor_pos;
+    uint8_t utf8_cont_chars;
     char escape_seq_buf[1];
     const char *prompt;
 } readline_t;
@@ -99,7 +110,8 @@ typedef struct _readline_t {
 STATIC readline_t rl;
 
 int readline_process_char(int c) {
-    size_t last_line_len = rl.line->len;
+    size_t last_line_len = utf8_charlen((byte *)rl.line->buf, rl.line->len);
+    int cont_chars = 0;
     int redraw_step_back = 0;
     bool redraw_from_cursor = false;
     int redraw_step_forward = 0;
@@ -178,6 +190,12 @@ int readline_process_char(int c) {
                 int nspace = 1;
                 #endif
 
+                // Check if we have moved into a UTF-8 continuation byte
+                while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos-nspace])) {
+                    nspace++;
+                    cont_chars++;
+                }
+
                 // do the backspace
                 vstr_cut_out_bytes(rl.line, rl.cursor_pos - nspace, nspace);
                 // set redraw parameters
@@ -206,12 +224,27 @@ int readline_process_char(int c) {
                 redraw_step_forward = compl_len;
             }
         #endif
-         } else if (32 <= c ) {
+        } else if (32 <= c) {
             // printable character
-            vstr_ins_char(rl.line, rl.cursor_pos, c);
-            // set redraw parameters
-            redraw_from_cursor = true;
-            redraw_step_forward = 1;
+            char lcp = rl.line->buf[rl.cursor_pos];
+            uint8_t cont_need = 0;
+            if (!UTF8_IS_CONT(c)) {
+                // ASCII or Lead code point
+                rl.utf8_cont_chars = 0;
+                lcp = c;
+            }else {
+                rl.utf8_cont_chars += 1;
+            }
+            if (lcp >= 0xc0 && lcp < 0xf8) {
+                cont_need = (0xe5 >> ((lcp >> 3) & 0x6)) & 3; // From unicode.c L195
+            }
+            vstr_ins_char(rl.line, rl.cursor_pos+rl.utf8_cont_chars, c);
+            // set redraw parameters if we have the entire character
+            if (rl.utf8_cont_chars == cont_need) {
+                redraw_from_cursor = true;
+                redraw_step_forward = rl.utf8_cont_chars+1;
+                cont_chars = rl.utf8_cont_chars;
+            }
         }
     } else if (rl.escape_seq == ESEQ_ESC) {
         switch (c) {
@@ -237,6 +270,8 @@ up_arrow_key:
 #endif
                 // up arrow
                 if (rl.hist_cur + 1 < (int)READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
+                    // Check for continuation characters
+                    cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // increase hist num
                     rl.hist_cur += 1;
                     // set line to history
@@ -253,6 +288,8 @@ down_arrow_key:
 #endif
                 // down arrow
                 if (rl.hist_cur >= 0) {
+                    // Check for continuation characters
+                    cont_chars = count_cont_bytes(rl.line->buf+rl.orig_line_len, rl.line->buf+rl.cursor_pos);
                     // decrease hist num
                     rl.hist_cur -= 1;
                     // set line to history
@@ -272,6 +309,11 @@ right_arrow_key:
                 // right arrow
                 if (rl.cursor_pos < rl.line->len) {
                     redraw_step_forward = 1;
+                    // Check if we have moved into a UTF-8 continuation byte
+                    while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos+redraw_step_forward]) &&
+                            rl.cursor_pos+redraw_step_forward < rl.line->len) {
+                        redraw_step_forward++;
+                    }
                 }
             } else if (c == 'D') {
 #if MICROPY_REPL_EMACS_KEYS
@@ -280,6 +322,11 @@ left_arrow_key:
                 // left arrow
                 if (rl.cursor_pos > rl.orig_line_len) {
                     redraw_step_back = 1;
+                    // Check if we have moved into a UTF-8 continuation byte
+                    while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos-redraw_step_back])) {
+                        redraw_step_back++;
+                        cont_chars++;
+                    }
                 }
             } else if (c == 'H') {
                 // home
@@ -331,18 +378,20 @@ delete_key:
 
     // redraw command prompt, efficiently
     if (redraw_step_back > 0) {
-        mp_hal_move_cursor_back(redraw_step_back);
+        mp_hal_move_cursor_back(redraw_step_back-cont_chars);
         rl.cursor_pos -= redraw_step_back;
     }
     if (redraw_from_cursor) {
-        if (rl.line->len < last_line_len) {
+        if (utf8_charlen((byte *)rl.line->buf, rl.line->len) < last_line_len) {
             // erase old chars
             mp_hal_erase_line_from_cursor(last_line_len - rl.cursor_pos);
         }
+        // Check for continuation characters
+        cont_chars = count_cont_bytes(rl.line->buf+rl.cursor_pos+redraw_step_forward, rl.line->buf+rl.line->len);
         // draw new chars
         mp_hal_stdout_tx_strn(rl.line->buf + rl.cursor_pos, rl.line->len - rl.cursor_pos);
         // move cursor forward if needed (already moved forward by length of line, so move it back)
-        mp_hal_move_cursor_back(rl.line->len - (rl.cursor_pos + redraw_step_forward));
+        mp_hal_move_cursor_back(rl.line->len - (rl.cursor_pos + redraw_step_forward) - cont_chars);
         rl.cursor_pos += redraw_step_forward;
     } else if (redraw_step_forward > 0) {
         // draw over old chars to move cursor forwards

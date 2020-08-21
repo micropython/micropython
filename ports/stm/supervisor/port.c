@@ -43,6 +43,9 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "timers.h"
 #endif
+#if CIRCUITPY_SDIOIO
+#include "common-hal/sdioio/SDCard.h"
+#endif
 
 #include "clocks.h"
 #include "gpio.h"
@@ -223,6 +226,9 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     uart_reset();
+#endif
+#if CIRCUITPY_SDIOIO
+    sdioio_reset();
 #endif
 #if CIRCUITPY_PULSEIO
     timers_reset();

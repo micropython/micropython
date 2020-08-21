@@ -65,6 +65,10 @@
 #include "common-hal/audiopwmio/PWMAudioOut.h"
 #endif
 
+#if defined(MICROPY_QSPI_CS)
+extern void qspi_disable(void);
+#endif
+
 static void power_warning_handler(void) {
     reset_into_safe_mode(BROWNOUT);
 }
@@ -295,6 +299,10 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
 void port_sleep_until_interrupt(void) {
+#if defined(MICROPY_QSPI_CS)
+    qspi_disable();
+#endif
+
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (NVIC_GetPendingIRQ(FPU_IRQn)) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));

@@ -43,6 +43,11 @@
 
 STATIC const esp_partition_t * _partition;
 
+// TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
+#define SECTOR_SIZE 4096
+STATIC uint8_t _cache[SECTOR_SIZE];
+STATIC uint32_t _cache_lba = 0xffffffff;
+
 void supervisor_flash_init(void) {
     _partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
                                           ESP_PARTITION_SUBTYPE_DATA_FAT,
@@ -60,11 +65,6 @@ uint32_t supervisor_flash_get_block_count(void) {
 void port_internal_flash_flush(void) {
 
 }
-
-// TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
-#define SECTOR_SIZE 4096
-STATIC uint8_t _cache[SECTOR_SIZE];
-STATIC uint32_t _cache_lba;
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     esp_partition_read(_partition,

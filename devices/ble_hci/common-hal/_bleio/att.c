@@ -149,7 +149,8 @@ STATIC int send_req_wait_for_rsp(uint16_t conn_handle, size_t request_length, ui
     }
 
     for (uint64_t start = supervisor_ticks_ms64(); supervisor_ticks_ms64() - start < timeout;) {
-        hci_poll_for_incoming_pkt();
+        // RUN_BACKGROUND_TASKS includes hci_poll_for_incoming_pkt();
+        RUN_BACKGROUND_TASKS;
 
         if (!att_handle_is_connected(conn_handle)) {
             break;
@@ -188,8 +189,6 @@ void bleio_att_reset(void) {
         memset(bleio_connections[i].addr.a.val, 0, sizeof_field(bt_addr_t, val));
         bleio_connections[i].mtu = BT_ATT_DEFAULT_LE_MTU;
     }
-
-    //FIX memset(event_handlers, 0x00, sizeof(event_handlers));
 }
 
 bool att_connect_to_address(bt_addr_le_t *addr) {
@@ -202,7 +201,8 @@ bool att_connect_to_address(bt_addr_le_t *addr) {
     bool is_connected = false;
 
     for (uint64_t start = supervisor_ticks_ms64(); supervisor_ticks_ms64() - start < timeout;) {
-        hci_poll_for_incoming_pkt();
+        // RUN_BACKGROUND_TASKS includes hci_poll_for_incoming_pkt();
+        RUN_BACKGROUND_TASKS;
 
         is_connected = att_address_is_connected(addr);
 
@@ -421,36 +421,36 @@ bool att_discover_attributes(bt_addr_le_t *addr, const char* service_uuid_filter
     //FIX BLERemoteDevice* device = NULL;
 
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
-    //     if (bleio_connections[i].conn_handle == conn_handle) {
-    //         //FIX if (bleio_connections[i].device == NULL) {
-    //             //FIX
-    //             //bleio_connections[i].device = new BLERemoteDevice();
-    //         //}
+        //     if (bleio_connections[i].conn_handle == conn_handle) {
+        //         //FIX if (bleio_connections[i].device == NULL) {
+        //             //FIX
+        //             //bleio_connections[i].device = new BLERemoteDevice();
+        //         //}
 
-    //         //device = bleio_connections[i].device;
+        //         //device = bleio_connections[i].device;
 
-    //         break;
-    //     }
-    // }
+        //         break;
+        //     }
+        // }
 
-    // //FIX if (device == NULL) {
-    // //     return false;
-    // // }
+        // //FIX if (device == NULL) {
+        // //     return false;
+        // // }
 
-    // if (service_uuid_filter == NULL) {
-    //     // clear existing services
-    //     //FIX device->clear_services();
-    // } else {
-    //     //FIX int service_count = device->service_count();
+        // if (service_uuid_filter == NULL) {
+        //     // clear existing services
+        //     //FIX device->clear_services();
+        // } else {
+        //     //FIX int service_count = device->service_count();
 
-    //     for (size_t i = 0; i < service_count; i++) {
-    //         //FIX BLERemoteService* service = device->service(i);
+        //     for (size_t i = 0; i < service_count; i++) {
+        //         //FIX BLERemoteService* service = device->service(i);
 
-    //         if (strcasecmp(service->uuid(), service_uuid_filter) == 0) {
-    //             // found an existing service with same UUID
-    //             return true;
-    //         }
-    //     }
+        //         if (strcasecmp(service->uuid(), service_uuid_filter) == 0) {
+        //             // found an existing service with same UUID
+        //             return true;
+        //         }
+        //     }
     }
 
     // discover services
@@ -584,8 +584,6 @@ bool att_address_is_connected(bt_addr_le_t *addr) {
 }
 
 bool att_handle_is_connected(uint16_t handle) {
-    hci_poll_for_incoming_pkt();
-
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         if (bleio_connections[i].conn_handle == handle) {
             return true;
@@ -685,7 +683,8 @@ bool att_indicate(uint16_t handle, const uint8_t* value, int length) {
                          sizeof(indicate_bytes), indicate_bytes);
 
         while (!confirm) {
-            hci_poll_for_incoming_pkt();
+            // RUN_BACKGROUND_TASKS includes hci_poll_for_incoming_pkt();
+            RUN_BACKGROUND_TASKS;
 
             if (!att_address_is_connected(&bleio_connections[i].addr)) {
                 break;

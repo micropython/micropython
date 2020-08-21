@@ -42,7 +42,7 @@
 //|         """Load a .mp3 file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|         :param typing.BinaryIO file: Already opened mp3 file
-//|         :param bytearray buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
+//|         :param ~_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
 //|
 //|
 //|         Playing a mp3 file from flash::
@@ -106,7 +106,7 @@ STATIC void check_for_deinit(audiomp3_mp3file_obj_t *self) {
     }
 }
 
-//|     def __enter__(self) -> MP3:
+//|     def __enter__(self) -> MP3Decoder:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
@@ -124,7 +124,7 @@ STATIC mp_obj_t audiomp3_mp3file_obj___exit__(size_t n_args, const mp_obj_t *arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiomp3_mp3file___exit___obj, 4, 4, audiomp3_mp3file_obj___exit__);
 
-//|     file: file
+//|     file: typing.BinaryIO
 //|     """File to play back."""
 //|
 STATIC mp_obj_t audiomp3_mp3file_obj_get_file(mp_obj_t self_in) {
