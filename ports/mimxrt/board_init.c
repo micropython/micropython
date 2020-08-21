@@ -39,8 +39,6 @@
 
 #include "clock_config.h"
 
-#define LED_STATE_ON (0)
-
 volatile uint32_t systick_ms = 0;
 
 const uint8_t dcd_data[] = { 0x00 };
