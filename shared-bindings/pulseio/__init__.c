@@ -48,7 +48,7 @@
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
-//| :ref:`lifetime-and-contextmanagers` for more info.
+//| :ref:`lifetime-and-contextmanagers` for more info."""
 //|
 
 STATIC const mp_rom_map_elem_t pulseio_module_globals_table[] = {
