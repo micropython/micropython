@@ -36,6 +36,7 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * [Arduino Primo](http://www.arduino.org/products/boards/arduino-primo)
   * [IBK-BLYST-NANO breakout board](https://www.crowdsupply.com/i-syst/blyst-nano)
   * [BLUEIO-TAG-EVIM BLYST Nano Sensor board](https://www.crowdsupply.com/i-syst/blyst-nano)
+  * [IDK-BLYST-NANO Dev Kit with builtin IDAP](https://www.tindie.com/products/hnhoan/bluetooth-5-nrf52832-arm-m4f-dev-board-30-io/)
   * [uBlox EVK-NINA-B1](https://www.u-blox.com/en/product/evk-nina-b1)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
@@ -45,6 +46,9 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
 * nRF9160
   * [PCA10090](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF9160-DK)
   * [Actinius Icarus](https://www.actinius.com/icarus)
+  * [IBK-NRF52840 BLYST840 breakout board](https://www.crowdsupply.com/i-syst/blyst840)
+  * [UDG-NRF52840 BLYST840 small form factor USB Dongle](https://www.crowdsupply.com/i-syst/blyst840)
+  * [UDG-NRF52840C BLYST840 USB Type-C Dongle](https://www.crowdsupply.com/i-syst/blyst840)
 
 ## Compile and Flash
 
@@ -136,6 +140,9 @@ evk_nina_b1          | s132                    | Peripheral and Central | [Segge
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
 pca10059             | s140                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the sides.
 particle_xenon       | s140                    | Peripheral and Central | [Black Magic Probe](#black-magic-probe-targets)
+idk-nrf52840         | s140                    | Peripheral and Central | [IDAP](#idap-midap-link-targets) or nRFConnect programmer
+udg-nrf52840         | s140                    | Peripheral and Central | [IDAP](#idap-midap-link-targets) or nRFConnect programmer
+udg-nrf52840C        | s140                    | Peripheral and Central | [IDAP](#idap-midap-link-targets) or nRFConnect programmer
 pca10090             | None (bsdlib.a)         | None (LTE/GNSS)        | [Segger](#segger-targets)
 actinius_icarus      | None (bsdlib.a)         | None (LTE/GNSS)        | [Segger](#segger-targets)
 
@@ -143,9 +150,11 @@ actinius_icarus      | None (bsdlib.a)         | None (LTE/GNSS)        | [Segge
 
 Install the necessary tools to flash and debug using IDAP-M/IDAP-Link CMSIS-DAP Debug JTAG:
 
-[IDAPnRFProg for Linux](https://sourceforge.net/projects/idaplinkfirmware/files/Linux/IDAPnRFProg_1_7_190320.zip/download)
-[IDAPnRFProg for OSX](https://sourceforge.net/projects/idaplinkfirmware/files/OSX/IDAPnRFProg_1_7_190320.zip/download)
-[IDAPnRFProg for Windows](https://sourceforge.net/projects/idaplinkfirmware/files/Windows/IDAPnRFProg_1_7_190320.zip/download)
+[IDAPnRFProg for Linux](https://sourceforge.net/projects/idaplinkfirmware/files/Linux/IDAPnRFProg_1_7_190320.zip/download) 
+
+[IDAPnRFProg for OSX](https://sourceforge.net/projects/idaplinkfirmware/files/OSX/IDAPnRFProg_1_7_190320.zip/download) 
+
+[IDAPnRFProg for Windows](https://sourceforge.net/projects/idaplinkfirmware/files/Windows/IDAPnRFProg_1_7_190320.zip/download) 
 
 
 ## Segger Targets
