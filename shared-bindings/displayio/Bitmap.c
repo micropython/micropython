@@ -189,7 +189,6 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 //|         set to None to copy all pixels"""
 //|         ...
 //|
-
 STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
     enum {ARG_x, ARG_y, ARG_source, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_index};
     static const mp_arg_t allowed_args[] = {
