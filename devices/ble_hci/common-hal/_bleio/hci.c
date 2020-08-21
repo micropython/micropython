@@ -36,11 +36,6 @@
 // Set to 1 for extensive HCI packet logging.
 #define HCI_DEBUG 0
 
-//FIX **********8
-busio_uart_obj_t debug_out;
-bool debug_out_in_use;
-
-
 // HCI H4 protocol packet types: first byte in the packet.
 #define H4_CMD 0x01
 #define H4_ACL 0x02
@@ -165,11 +160,6 @@ STATIC void process_acl_data_pkt(uint8_t pkt_len, uint8_t pkt_data[]) {
 // Process number of completed packets. Reduce number of pending packets by reported
 // number of completed.
 STATIC void process_num_comp_pkts(uint16_t handle, uint16_t num_pkts) {
-    const uint8_t ff = 0xff;
-    int err;
-    common_hal_busio_uart_write(&debug_out, (uint8_t *) &pending_pkt, 1, &err);
-    common_hal_busio_uart_write(&debug_out, (uint8_t *) &ff, 1, &err);
-    common_hal_busio_uart_write(&debug_out, (uint8_t *) &ff, 1, &err);
     if (num_pkts && pending_pkt > num_pkts) {
         pending_pkt -= num_pkts;
     } else {
@@ -292,30 +282,14 @@ STATIC void process_evt_pkt(size_t pkt_len, uint8_t pkt_data[])
     }
 }
 
-//FIX
-busio_uart_obj_t debug_out;
-bool debug_out_in_use;
-
 void bleio_hci_reset(void) {
     rx_idx = 0;
     pending_pkt = 0;
     hci_poll_in_progress = false;
-    debug_out_in_use = false;
     bleio_att_reset();
 }
 
 hci_result_t hci_poll_for_incoming_pkt(void) {
-    if (!debug_out_in_use) {
-        debug_out.base.type = &busio_uart_type;
-        common_hal_busio_uart_construct(&debug_out,
-                                        &pin_PB12 /*D7*/, NULL, // no RX
-                                        NULL, NULL,
-                                        NULL, false,
-                                        115200, 8, BUSIO_UART_PARITY_NONE, 1, 0,
-                                        512, NULL, false);
-        debug_out_in_use = true;
-    }
-
     common_hal_mcu_disable_interrupts();
     if (hci_poll_in_progress) {
         common_hal_mcu_enable_interrupts();
@@ -393,15 +367,6 @@ hci_result_t hci_poll_for_incoming_pkt(void) {
         // Stop incoming data while processing packet.
         common_hal_digitalio_digitalinout_set_value(common_hal_bleio_adapter_obj.rts_digitalinout, true);
         size_t pkt_len = rx_idx;
-
-        //FIX output packet for debugging
-        int err;
-        common_hal_busio_uart_write(&debug_out, (uint8_t *) &rx_idx, 1, &err);
-        common_hal_busio_uart_write(&debug_out, (uint8_t *) &rx_idx, 1, &err);
-        common_hal_busio_uart_write(&debug_out, (uint8_t *) &rx_idx, 1, &err);
-
-        common_hal_busio_uart_write(&debug_out, rx_buffer, rx_idx, &err);
-
 
         // Reset for next packet.
         rx_idx = 0;
