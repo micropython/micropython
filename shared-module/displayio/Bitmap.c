@@ -105,6 +105,83 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
     return 0;
 }
 
+void common_hal_displayio_bitmap_insert(displayio_bitmap_t *self, int16_t x, int16_t y, displayio_bitmap_t *source,  
+                                        int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
+    // Copy complete "source" bitmap into "self" bitmap at location x,y in the "self"
+    // Add a boolean to determine if all values are copied, or only if non-zero
+    // Default is copy all values, but for text glyphs this should copy only non-zero values
+
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only object"));
+    }
+
+    // If this value is encountered in the source bitmap, it will not be copied (for text glyphs)
+    // This should be added as an optional parameter, and if it is `None`, then all pixels are copied
+    uint32_t skip_value=0;
+
+    //// check for zero width, this would be a single pixel
+    // if (x1_source == x2_source) || (y1_source == y2_source) {
+    //     return 0
+    // }
+
+    // Dirty area update is unnecessary with simplest version.
+    // int16_t x_max=x+(x2_source-x1_source);
+    // int16_t y_max=y+(y2_source-y1_source);
+    // 
+    // 
+    // // Update the dirty area.
+    // if (x < self->dirty_area.x1) {
+    //     self->dirty_area.x1 = x;
+    // } else if (x_max >= self->dirty_area.x2) {
+    //     self->dirty_area.x2 = x_max);
+    // }
+    // if (y < self->dirty_area.y1) {
+    //     self->dirty_area.y1 = y;
+    // } else if (y_max >= self->dirty_area.y2) {
+    //     self->dirty_area.y2 = y_max;
+    // }
+
+    // simplest version - use internal functions for get/set pixels
+    for (uint16_t i=0; i<= (x2-x1) ; i++) {
+        for (uint16_t j=0; j<= (y2-y1) ; j++){
+            uint32_t value = common_hal_displayio_bitmap_get_pixel(source, x1+i, y1+j);
+            if (value != skip_value) {
+                if ( (x+i >= 0) && (y+j >= 0) && (x+i <= self->width-1) && (y+j <= self->height-1) ){
+                    common_hal_displayio_bitmap_set_pixel(self, x+i, y+j, value);
+                }
+            }
+        }
+    }
+    
+    // Would be faster if copying a full word at a time.
+    /// Hard work here!!!!
+    // index into the original row
+    // figure out how to shift the bits into the right location
+    // check the boolean and don't update any zero's
+
+    // // Update our data
+    // int32_t row_start = y * self->stride;
+    // uint32_t bytes_per_value = self->bits_per_value / 8;
+    // if (bytes_per_value < 1) {
+    //     uint32_t bit_position = (sizeof(size_t) * 8 - ((x & self->x_mask) + 1) * self->bits_per_value);
+    //     uint32_t index = row_start + (x >> self->x_shift);
+    //     uint32_t word = self->data[index];
+    //     word &= ~(self->bitmask << bit_position);
+    //     word |= (value & self->bitmask) << bit_position;
+    //     self->data[index] = word;
+    // } else {
+    //     size_t* row = self->data + row_start;
+    //     if (bytes_per_value == 1) {
+    //         ((uint8_t*) row)[x] = value;
+    //     } else if (bytes_per_value == 2) {
+    //         ((uint16_t*) row)[x] = value;
+    //     } else if (bytes_per_value == 4) {
+    //         ((uint32_t*) row)[x] = value;
+    //     }
+    // }
+}
+
+
 void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
     if (self->read_only) {
         mp_raise_RuntimeError(translate("Read-only object"));

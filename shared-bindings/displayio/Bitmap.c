@@ -172,7 +172,78 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     return mp_const_none;
 }
 
-//|     def fill(self, value: int) -> None:
+//|     def insert(self, x: int, y: int, source_bitmap: bitmap, x1: int, y1: int, x2: int, y2:int) -> Any:
+//|         """Inserts the source_bitmap region defined by rectangular boundaries
+//|         (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
+//|         :param int x: Horizontal pixel location in bitmap where source_bitmap upper-left
+//|             corner will be placed
+//|         :param int y: Vertical pixel location in bitmap where source_bitmap upper-left
+//|             corner will be placed
+//|         :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
+//|         : param x1: Minimum x-value for rectangular bounding box to be copied from the source bitmap
+//|         : param y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
+//|         : param x2: Maximum x-value for rectangular bounding box to be copied from the source bitmap
+//|         : param y2: Maximum y-value for rectangular bounding box to be copied from the source bitmap
+//|         
+//|         ...
+//|
+
+//STATIC mp_obj_t displayio_bitmap_obj_insert(mp_obj_t self_in, mp_obj_t x_obj, mp_obj_t y_obj, mp_obj_t source_in, mp_obj_t x1_obj, mp_obj_t y1_obj, mp_obj_t x2_obj, mp_obj_t y2_obj){
+STATIC mp_obj_t displayio_bitmap_obj_insert(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
+
+    // // convert the inputs into the correct type
+    // displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
+    // int16_t x = mp_obj_get_int(x_obj);
+    // int16_t y = mp_obj_get_int(y_obj);
+    // displayio_bitmap_t *source = MP_OBJ_TO_PTR(source_in);    
+    // int16_t x1 = mp_obj_get_int(x1_obj);
+    // int16_t y1 = mp_obj_get_int(y1_obj);
+    // int16_t x2 = mp_obj_get_int(x2_obj);
+    // int16_t y2 = mp_obj_get_int(y2_obj);
+    displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    int16_t x = mp_obj_get_int(pos_args[1]);
+    int16_t y = mp_obj_get_int(pos_args[2]);
+    displayio_bitmap_t *source = MP_OBJ_TO_PTR(pos_args[3]);    
+    int16_t x1 = mp_obj_get_int(pos_args[4]);
+    int16_t y1 = mp_obj_get_int(pos_args[5]);
+    int16_t x2 = mp_obj_get_int(pos_args[6]);
+    int16_t y2 = mp_obj_get_int(pos_args[7]);
+
+
+
+
+    if ( (x<0) || (y<0) || (x > self-> width) || (y > self->height) ) {
+            mp_raise_ValueError(translate("(x,y): out of range of target bitmap"));
+    }
+    if ( (x1 < 0) || (x1 > source->width)  || 
+        (y1 < 0) || (y1 > source->height) || 
+        (x2 < 0) || (x2 > source->width)  ||
+        (y2 < 0) || (y2 > source->height) ) {
+            mp_raise_ValueError(translate("(x1,y1) or (x2,y2): out of range of source bitmap"));
+    }
+    
+    // Ensure x1 < x2 and y1 < y2
+    if (x1 > x2) {
+        int16_t temp=x2;
+        x2=x1;
+        x1=temp;
+    }
+    if (y1 > y2) {
+        int16_t temp=y2;
+        y2=y1;
+        y1=temp;
+    }
+
+    common_hal_displayio_bitmap_insert(self, x, y, source, x1, y1, x2, y2);
+
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_insert_obj, 8, displayio_bitmap_obj_insert);
+/// What should this number value be? ****
+
+
+//|     def fill(self, value: Any) -> Any:
 //|         """Fills the bitmap with the supplied palette index value."""
 //|         ...
 //|
@@ -192,6 +263,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_bitmap_fill_obj, displayio_bitmap_obj_fill);
 STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_bitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_bitmap_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_insert), MP_ROM_PTR(&displayio_bitmap_insert_obj) }, // Added insert function 8/7/2020
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&displayio_bitmap_fill_obj) },
 
 };
