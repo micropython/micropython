@@ -25,7 +25,6 @@
 # THE SOFTWARE.
 
 from __future__ import print_function
-import errno
 import sys
 import os
 import subprocess
@@ -165,17 +164,10 @@ def get_timestamp_newest(path):
     return ts_newest
 
 
-def mkdir(path):
-    cur_path = ""
-    for p in path.split("/")[:-1]:
-        cur_path += p + "/"
-        try:
-            os.mkdir(cur_path)
-        except OSError as er:
-            if er.args[0] == errno.EEXIST:
-                pass
-            else:
-                raise er
+def mkdir(filename):
+    path = os.path.dirname(filename)
+    if not os.path.isdir(path):
+        os.makedirs(path)
 
 
 def freeze_internal(kind, path, script, opt):
