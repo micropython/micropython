@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-14 09:36-0400\n"
+"POT-Creation-Date: 2020-08-18 11:19-0400\n"
 "PO-Revision-Date: 2020-08-10 19:59+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
@@ -762,7 +762,7 @@ msgstr "Fout in regex"
 
 #: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
 #: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Verwacht een %q"
@@ -1364,6 +1364,15 @@ msgstr "En iedere module in het bestandssysteem\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Polygon heeft op zijn minst 3 punten nodig"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/pulseio/PulseOut.c
+#: ports/stm/common-hal/pulseio/PulseOut.c
+msgid ""
+"Port does not accept pins or frequency.                                     "
+"Construct and pass a PWMOut Carrier instead"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Prefix buffer moet op de heap zijn"
@@ -1377,6 +1386,10 @@ msgstr ""
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Pull niet gebruikt wanneer de richting output is."
+
+#: ports/stm/ref/pulseout-pre-timeralloc.c
+msgid "PulseOut not supported on this chip"
+msgstr "PulseOut niet ondersteund door deze chip"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -3530,9 +3543,6 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 
 #~ msgid "PulseIn not supported on this chip"
 #~ msgstr "PusleIn niet ondersteund door deze chip"
-
-#~ msgid "PulseOut not supported on this chip"
-#~ msgstr "PulseOut niet ondersteund door deze chip"
 
 #~ msgid "I2C operation not supported"
 #~ msgstr "I2C actie niet ondersteund"

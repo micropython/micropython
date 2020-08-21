@@ -58,8 +58,16 @@ static bool pulseout_timer_handler(unsigned int *next_interval_us, void *arg)
     return true;
 }
 
-void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
-    const pwmio_pwmout_obj_t *carrier) {
+void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
+                                            const pwmio_pwmout_obj_t* carrier,
+                                            const mcu_pin_obj_t* pin,
+                                            uint32_t frequency,
+                                            uint16_t duty_cycle) {
+    if (!carrier || pin || frequency) {
+        mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. \
+                                    Construct and pass a PWMOut Carrier instead"));
+    }
+
     if (pulse_fd < 0) {
         pulse_fd = open("/dev/timer0", O_RDONLY);
     }

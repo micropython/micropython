@@ -38,9 +38,12 @@
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
+#include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
+
+#include "rmt.h"
 
 STATIC esp_timer_handle_t _tick_timer;
 
@@ -65,9 +68,15 @@ void reset_port(void) {
     // A larger delay so the idle task can run and do any IDF cleanup needed.
     vTaskDelay(4);
 
+#if CIRCUITPY_PULSEIO
+    esp32s2_peripherals_rmt_reset();
+    pulsein_reset();
+#endif
+
 #if CIRCUITPY_PWMIO
     pwmout_reset();
 #endif
+
 #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
