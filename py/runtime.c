@@ -1602,6 +1602,10 @@ NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
     va_end(argptr);
 }
 
+NORETURN void mp_raise_ConnectionError(const compressed_string_t *msg) {
+    mp_raise_msg(&mp_type_ConnectionError, msg);
+}
+
 NORETURN void mp_raise_BrokenPipeError(void) {
     nlr_raise(mp_obj_new_exception_arg1(&mp_type_BrokenPipeError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE)));
 }

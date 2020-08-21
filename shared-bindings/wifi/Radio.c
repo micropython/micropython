@@ -136,9 +136,21 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     password.len = 0;
     if (args[ARG_password].u_obj != MP_OBJ_NULL) {
         mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
+        if (password.len > 0 && (password.len < 8 || password.len > 63)) {
+            mp_raise_ValueError(translate("WiFi password must be between 8 and 63 characters."));
+        }
     }
 
-    return mp_obj_new_bool(common_hal_wifi_radio_connect(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, timeout));
+    wifi_radio_error_t error = common_hal_wifi_radio_connect(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, timeout);
+    if (error == WIFI_RADIO_ERROR_AUTH) {
+        mp_raise_ConnectionError(translate("Authentication failure"));
+    } else if (error == WIFI_RADIO_ERROR_NO_AP_FOUND) {
+        mp_raise_ConnectionError(translate("No network with that ssid"));
+    } else if (error != WIFI_RADIO_ERROR_NONE) {
+        mp_raise_ConnectionError(translate("Unknown failure"));
+    }
+
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_connect_obj, 1, wifi_radio_connect);
 

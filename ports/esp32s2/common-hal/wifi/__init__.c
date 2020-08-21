@@ -54,11 +54,24 @@ static void event_handler(void* arg, esp_event_base_t event_base,
             ESP_EARLY_LOGW(TAG, "disconnected");
             wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
             uint8_t reason = d->reason;
-            if (reason != WIFI_REASON_ASSOC_LEAVE) {
-                // reconnect
-            }
             ESP_EARLY_LOGW(TAG, "reason %d 0x%02x", reason, reason);
+            if (radio->retries_left > 0 &&
+                    (reason == WIFI_REASON_AUTH_EXPIRE ||
+                     reason == WIFI_REASON_ASSOC_EXPIRE ||
+                     reason == WIFI_REASON_CONNECTION_FAIL ||
+                     reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)) {
+                radio->retries_left--;
+                ESP_EARLY_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
+                esp_wifi_connect();
+                return;
+            }
+
+            radio->last_disconnect_reason = reason;
             xEventGroupSetBits(radio->event_group_handle, WIFI_DISCONNECTED_BIT);
+
+            // if (reason != WIFI_REASON_ASSOC_LEAVE) {
+            //     // reconnect
+            // }
         } else if (event_id == WIFI_EVENT_STA_AUTHMODE_CHANGE) {
         }
     }
@@ -78,6 +91,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     // } else
     if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ESP_EARLY_LOGW(TAG, "got ip");
+        radio->retries_left = radio->starting_retries;
         xEventGroupSetBits(radio->event_group_handle, WIFI_CONNECTED_BIT);
     }
 }

@@ -105,7 +105,7 @@ void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
     self->current_scan = NULL;
 }
 
-bool common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout) {
+wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout) {
     // check enabled
     wifi_config_t* config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);
@@ -116,6 +116,8 @@ bool common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t
     config->sta.password[password_len] = 0;
     config->sta.channel = channel;
     esp_wifi_set_config(ESP_IF_WIFI_STA, config);
+    self->starting_retries = 5;
+    self->retries_left = 5;
     esp_wifi_connect();
 
     EventBits_t bits;
@@ -128,9 +130,14 @@ bool common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t
             0);
     } while ((bits & (WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT)) == 0 && !mp_hal_is_interrupted());
     if ((bits & WIFI_DISCONNECTED_BIT) != 0) {
-        return false;
+        if (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) {
+            return WIFI_RADIO_ERROR_AUTH;
+        } else if (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND) {
+            return WIFI_RADIO_ERROR_NO_AP_FOUND;
+        }
+        return WIFI_RADIO_ERROR_UNKNOWN;
     }
-    return true;
+    return WIFI_RADIO_ERROR_NONE;
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {

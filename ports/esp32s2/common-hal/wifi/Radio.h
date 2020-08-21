@@ -50,6 +50,9 @@ typedef struct {
     bool started;
     bool ap_mode;
     bool sta_mode;
+    uint8_t retries_left;
+    uint8_t starting_retries;
+    uint8_t last_disconnect_reason;
 } wifi_radio_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_RADIO_H
