@@ -186,7 +186,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 //|         :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
 //|         :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
 //|         :param int skip_index: bitmap palette index in the source that will not be copied,
-//|         set `None` to copy all pixels"""
+//|         set to None to copy all pixels"""
 //|         ...
 //|
 
