@@ -34,32 +34,6 @@
 #include "nrf_sdm.h"  // for SD_FLASH_SIZE
 #include "peripherals/nrf/nvm.h" // for FLASH_PAGE_SIZE
 
-// Max RAM used by SoftDevice. Can be changed when SoftDevice parameters are changed.
-// See common.template.ld.
-#ifndef SOFTDEVICE_RAM_SIZE
-#define SOFTDEVICE_RAM_SIZE         (64*1024)
-#endif
-
-#ifdef NRF52840
-#define MICROPY_PY_SYS_PLATFORM "nRF52840"
-#define FLASH_SIZE                  (0x100000)  // 1MiB
-#define RAM_SIZE                    (0x40000)   // 256 KiB
-// Special RAM area for SPIM3 transmit buffer, to work around hardware bug.
-// See common.template.ld.
-#define SPIM3_BUFFER_SIZE           (8192)
-#endif
-
-#ifdef NRF52833
-#define MICROPY_PY_SYS_PLATFORM "nRF52833"
-#define FLASH_SIZE                  (0x80000)  // 512 KiB
-#define RAM_SIZE                    (0x20000)  // 128 KiB
-// Special RAM area for SPIM3 transmit buffer, to work around hardware bug.
-// See common.template.ld.
-#ifndef SPIM3_BUFFER_SIZE
-#define SPIM3_BUFFER_SIZE           (8192)
-#endif
-#endif
-
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
 #define MICROPY_PY_IO                            (1)
@@ -69,7 +43,26 @@
 #define MICROPY_PY_UJSON                         (1)
 
 // 24kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            0x6000
+#define CIRCUITPY_DEFAULT_STACK_SIZE            (24*1024)
+
+#ifdef NRF52840
+#define MICROPY_PY_SYS_PLATFORM "nRF52840"
+#define FLASH_SIZE                  (1024*1024)  // 1MiB
+#define RAM_SIZE                    (256*1024)   // 256 KiB
+// Special RAM area for SPIM3 transmit buffer, to work around hardware bug.
+// See common.template.ld.
+#define SPIM3_BUFFER_RAM_SIZE       (8*1024)     // 8 KiB
+#endif
+
+#ifdef NRF52833
+#define MICROPY_PY_SYS_PLATFORM "nRF52833"
+#define FLASH_SIZE                  (512*1024)  // 512 KiB
+#define RAM_SIZE                    (128*1024)  // 128 KiB
+// SPIM3 buffer is not needed on nRF52833: the SPIM3 hw bug is not present.
+#ifndef SPIM3_BUFFER_RAM_SIZE
+#define SPIM3_BUFFER_RAM_SIZE       (0)
+#endif
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -79,7 +72,7 @@
 // Definitions that might be overriden by mpconfigboard.h
 
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
-#define CIRCUITPY_INTERNAL_NVM_SIZE (8192)
+#define CIRCUITPY_INTERNAL_NVM_SIZE (8*1024)
 #endif
 
 #ifndef BOARD_HAS_32KHZ_XTAL
@@ -88,11 +81,11 @@
 #endif
 
 #if INTERNAL_FLASH_FILESYSTEM
-  #ifndef CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE
-    #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (256*1024)
-  #endif
+#ifndef CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (256*1024)
+#endif
 #else
-  #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
+#define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
 #endif
 
 // Flash layout, starting at 0x00000000
@@ -116,7 +109,7 @@
 
 // SD_FLASH_SIZE is from nrf_sdm.h
 #define ISR_START_ADDR  (SD_FLASH_START_ADDR + SD_FLASH_SIZE)
-#define ISR_SIZE        (0x1000)   // 4kiB
+#define ISR_SIZE        (4*1024)   // 4kiB
 
 // Smallest unit of flash that can be erased.
 #define FLASH_ERASE_SIZE FLASH_PAGE_SIZE
@@ -127,12 +120,12 @@
 
 // Bootloader values from https://github.com/adafruit/Adafruit_nRF52_Bootloader/blob/master/src/linker/s140_v6.ld
 #define BOOTLOADER_START_ADDR          (FLASH_SIZE - BOOTLOADER_SIZE - BOOTLOADER_SETTINGS_SIZE - BOOTLOADER_MBR_SIZE)
-#define BOOTLOADER_MBR_SIZE            (0x1000)     // 4kib
+#define BOOTLOADER_MBR_SIZE            (4*1024)     // 4kib
 #ifndef BOOTLOADER_SIZE
-#define BOOTLOADER_SIZE                (0xA000)     // 40kiB
+#define BOOTLOADER_SIZE                (40*1024)     // 40kiB
 #endif
 #define BOOTLOADER_SETTINGS_START_ADDR (FLASH_SIZE - BOOTLOADER_SETTINGS_SIZE)
-#define BOOTLOADER_SETTINGS_SIZE       (0x1000)     // 4kiB
+#define BOOTLOADER_SETTINGS_SIZE       (4*1024)     // 4kiB
 
 #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_START_ADDR (BOOTLOADER_START_ADDR - CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE)
 
@@ -180,11 +173,46 @@
 #error No space left in flash for firmware after specifying other regions!
 #endif
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// RAM space definitions
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-    uint16_t* pixels_pattern_heap; \
-    ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries; \
+// Max RAM used by SoftDevice. Can be changed when SoftDevice parameters are changed.
+// On nRF52840, the first 64kB of RAM is composed of 8 8kB RAM blocks. Above those is
+// RAM block 8, which is 192kB.
+// If SPIM3_BUFFER_RAM_SIZE is 8kB, as opposed to zero, it must be in the first 64kB of RAM.
+// So the amount of RAM reserved for the SoftDevice must be no more than 56kB.
+// SoftDevice 6.1.0 with 5 connections and various increases can be made to use < 56kB.
+// To measure the minimum required amount of memory for given configuration, set this number
+// high enough to work and then check the mutation of the value done by sd_ble_enable().
+// See common.template.ld.
+#ifndef SOFTDEVICE_RAM_SIZE
+#define SOFTDEVICE_RAM_SIZE         (56*1024)
+#endif
+
+
+#define RAM_START_ADDR              (0x20000000)
+#define SOFTDEVICE_RAM_START_ADDR   (RAM_START_ADDR)
+#define SPIM3_BUFFER_RAM_START_ADDR (SOFTDEVICE_RAM_START_ADDR + SOFTDEVICE_RAM_SIZE)
+#define APP_RAM_START_ADDR          (SPIM3_BUFFER_RAM_START_ADDR + SPIM3_BUFFER_RAM_SIZE)
+#define APP_RAM_SIZE                (RAM_START_ADDR + RAM_SIZE - APP_RAM_START_ADDR)
+
+#if SPIM3_BUFFER_RAM_SIZE > 0 && SOFTDEVICE_RAM_SIZE + SPIM3_BUFFER_RAM_SIZE > (64*1024)
+#error SPIM3 buffer must be in the first 64kB of RAM.
+#endif
+
+#if SOFTDEVICE_RAM_SIZE + SPIM3_BUFFER_RAM_SIZE + APP_RAM_SIZE > RAM_SIZE
+#error RAM size regions overflow RAM
+#endif
+
+#if SOFTDEVICE_RAM_SIZE + SPIM3_BUFFER_RAM_SIZE + APP_RAM_SIZE < RAM_SIZE
+#error RAM size regions do not use all of RAM
+#endif
+
+
+#define MICROPY_PORT_ROOT_POINTERS                              \
+    CIRCUITPY_COMMON_ROOT_POINTERS                              \
+    uint16_t* pixels_pattern_heap;                              \
+    ble_drv_evt_handler_entry_t* ble_drv_evt_handler_entries;   \
 
 
 #endif  // NRF5_MPCONFIGPORT_H__

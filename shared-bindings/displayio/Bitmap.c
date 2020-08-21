@@ -172,7 +172,8 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     return mp_const_none;
 }
 
-//|     def blit(self, x: int, y: int, source_bitmap: bitmap, *, x1: int, y1: int, x2: int, y2: int, skip_index: int) -> Any:
+
+//|     def blit(self, x: int, y: int, source_bitmap: bitmap, *, x1: int, y1: int, x2: int, y2: int, skip_index: int) -> None:
 //|         """Inserts the source_bitmap region defined by rectangular boundaries
 //|         (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
 //|         :param int x: Horizontal pixel location in bitmap where source_bitmap upper-left
@@ -294,11 +295,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_bitmap_fill_obj, displayio_bitmap_obj_fill);
 STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_bitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_bitmap_width_obj) },
-<<<<<<< HEAD
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&displayio_bitmap_blit_obj) },
-=======
-    { MP_ROM_QSTR(MP_QSTR_insert), MP_ROM_PTR(&displayio_bitmap_insert_obj) }, // Added insert function 8/7/2020
->>>>>>> upstream/master
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&displayio_bitmap_fill_obj) },
 
 };

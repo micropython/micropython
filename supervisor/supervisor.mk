@@ -110,7 +110,9 @@ ifeq ($(CIRCUITPY_DISPLAYIO), 1)
 	SRC_SUPERVISOR += \
 		supervisor/shared/display.c
 
-	SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+	ifeq ($(CIRCUITPY_TERMINALIO), 1)
+		SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+	endif
 endif
 ifndef USB_INTERFACE_NAME
 USB_INTERFACE_NAME = "CircuitPython"
@@ -169,6 +171,10 @@ ifndef USB_MIDI_EP_NUM_IN
 USB_MIDI_EP_NUM_IN = 0
 endif
 
+ifndef USB_NUM_EP
+USB_NUM_EP = 0
+endif
+
 USB_DESCRIPTOR_ARGS = \
 	--manufacturer $(USB_MANUFACTURER)\
 	--product $(USB_PRODUCT)\
@@ -178,6 +184,7 @@ USB_DESCRIPTOR_ARGS = \
 	--interface_name $(USB_INTERFACE_NAME)\
 	--devices $(USB_DEVICES)\
 	--hid_devices $(USB_HID_DEVICES)\
+	--max_ep $(USB_NUM_EP) \
 	--cdc_ep_num_notification $(USB_CDC_EP_NUM_NOTIFICATION)\
 	--cdc_ep_num_data_out $(USB_CDC_EP_NUM_DATA_OUT)\
 	--cdc_ep_num_data_in $(USB_CDC_EP_NUM_DATA_IN)\

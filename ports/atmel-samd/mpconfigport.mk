@@ -47,6 +47,16 @@ USB_MSC_EP_NUM_OUT = 1
 
 CIRCUITPY_ULAB = 0
 
+ifeq ($(TRANSLATION), ja)
+RELEASE_NEEDS_CLEAN_BUILD = 1
+CIRCUITPY_TERMINALIO = 0
+endif
+
+ifeq ($(TRANSLATION), ko)
+RELEASE_NEEDS_CLEAN_BUILD = 1
+CIRCUITPY_TERMINALIO = 0
+endif
+
 endif # samd21
 
 # Put samd51-only choices here.
@@ -81,3 +91,5 @@ endif # samd51
 INTERNAL_LIBM = 1
 
 USB_SERIAL_NUMBER_LENGTH = 32
+
+USB_NUM_EP = 8

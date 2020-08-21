@@ -40,6 +40,10 @@
 #include "shared-module/_pixelbuf/PixelBuf.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
+#ifdef CIRCUITPY_ULAB
+#include "extmod/ulab/code/ndarray.h"
+#endif
+
 extern const int32_t colorwheel(float pos);
 
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t* parsed);
@@ -305,6 +309,16 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
 
         size_t length = common_hal__pixelbuf_pixelbuf_get_len(self_in);
         mp_seq_get_fast_slice_indexes(length, index_in, &slice);
+        static mp_obj_tuple_t flat_item_tuple = {
+            .base = {&mp_type_tuple},
+            .len = 0,
+            .items = {
+                mp_const_none,
+                mp_const_none,
+                mp_const_none,
+                mp_const_none,
+            }
+        };
 
         size_t slice_len;
         if (slice.step > 0) {
@@ -326,27 +340,13 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
         } else { // Set
             #if MICROPY_PY_ARRAY_SLICE_ASSIGN
 
-            if (!(MP_OBJ_IS_TYPE(value, &mp_type_list) || MP_OBJ_IS_TYPE(value, &mp_type_tuple))) {
-                mp_raise_ValueError(translate("tuple/list required on RHS"));
-            }
+            size_t num_items = mp_obj_get_int(mp_obj_len(value));
 
-            mp_obj_t *src_objs;
-            size_t num_items;
-            if (MP_OBJ_IS_TYPE(value, &mp_type_list)) {
-                mp_obj_list_t *t = MP_OBJ_TO_PTR(value);
-                num_items = t->len;
-                src_objs = t->items;
-            } else {
-                mp_obj_tuple_t *l = MP_OBJ_TO_PTR(value);
-                num_items = l->len;
-                src_objs = l->items;
+            if (num_items != slice_len && num_items != (slice_len * common_hal__pixelbuf_pixelbuf_get_bpp(self_in))) {
+                mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
             }
-            if (num_items != slice_len) {
-                mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."),
-                                                   slice_len, num_items);
-            }
-
-            common_hal__pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, src_objs);
+            common_hal__pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, value,
+                num_items != slice_len ? &flat_item_tuple : mp_const_none);
             return mp_const_none;
             #else
             return MP_OBJ_NULL; // op not supported

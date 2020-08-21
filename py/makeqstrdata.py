@@ -102,10 +102,6 @@ def translate(translation_file, i18ns):
 
 def compute_huffman_coding(translations, qstrs, compression_filename):
     all_strings = [x[1] for x in translations]
-
-    # go through each qstr and print it out
-    for _, _, qstr in qstrs.values():
-        all_strings.append(qstr)
     all_strings_concat = "".join(all_strings)
     counts = collections.Counter(all_strings_concat)
     cb = huffman.codebook(counts.items())
@@ -259,8 +255,6 @@ def compress(encoding_table, decompressed, encoded_length_bits, len_translation_
                 current_bit -= 1
     if current_bit != 7:
         current_byte += 1
-    if current_byte > len(decompressed):
-        print("Note: compression increased length", repr(decompressed), len(decompressed), current_byte, file=sys.stderr)
     return enc[:current_byte]
 
 def qstr_escape(qst):

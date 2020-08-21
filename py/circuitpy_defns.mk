@@ -145,7 +145,7 @@ ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
-SRC_PATTERNS += displayio/% terminalio/% fontio/%
+SRC_PATTERNS += displayio/%
 endif
 ifeq ($(CIRCUITPY_VECTORIO),1)
 SRC_PATTERNS += vectorio/%
@@ -236,6 +236,9 @@ SRC_PATTERNS += struct/%
 endif
 ifeq ($(CIRCUITPY_SUPERVISOR),1)
 SRC_PATTERNS += supervisor/%
+endif
+ifeq ($(CIRCUITPY_TERMINALIO),1)
+SRC_PATTERNS += terminalio/% fontio/%
 endif
 ifeq ($(CIRCUITPY_TIME),1)
 SRC_PATTERNS += time/%
