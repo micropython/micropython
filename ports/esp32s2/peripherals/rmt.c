@@ -29,6 +29,14 @@
 
 bool rmt_reserved_channels[RMT_CHANNEL_MAX];
 
+void esp32s2_peripherals_rmt_reset(void) {
+    for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
+        if (rmt_reserved_channels[i]) {
+            esp32s2_peripherals_free_rmt(i);
+        }
+    }
+}
+
 rmt_channel_t esp32s2_peripherals_find_and_reserve_rmt(void) {
     for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
         if (!rmt_reserved_channels[i]) {
@@ -36,8 +44,8 @@ rmt_channel_t esp32s2_peripherals_find_and_reserve_rmt(void) {
             return i;
         }
     }
-    mp_raise_RuntimeError(translate("All timers in use"));
-    return false;
+    // Returning the max indicates a reservation failure.
+    return RMT_CHANNEL_MAX;
 }
 
 void esp32s2_peripherals_free_rmt(rmt_channel_t chan) {

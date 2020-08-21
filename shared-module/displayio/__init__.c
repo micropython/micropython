@@ -26,7 +26,7 @@
 
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
-#if CIRCUITPY_RGBMATRIX || CIRCUITPY_SHARPDISPLAY
+#if CIRCUITPY_RGBMATRIX
 STATIC bool any_display_uses_this_framebuffer(mp_obj_base_t *obj) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display_base.type == &framebufferio_framebufferdisplay_type) {
@@ -186,11 +186,7 @@ void reset_displays(void) {
 #if CIRCUITPY_SHARPDISPLAY
         } else if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
             sharpdisplay_framebuffer_obj_t * sharp = &displays[i].sharpdisplay;
-            if(any_display_uses_this_framebuffer(&sharp->base)) {
-                common_hal_sharpdisplay_framebuffer_reset(sharp);
-            } else {
-                common_hal_sharpdisplay_framebuffer_deinit(sharp);
-            }
+            common_hal_sharpdisplay_framebuffer_reset(sharp);
 #endif
         } else {
             // Not an active display bus.
@@ -398,8 +394,8 @@ primary_display_t *allocate_display_or_raise(void) {
 }
 primary_display_t *allocate_display_bus(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        mp_const_obj_t display_type = displays[i].display.base.type;
-        if (display_type == NULL || display_type == &mp_type_NoneType) {
+        mp_const_obj_t display_bus_type = displays[i].bus_base.type;
+        if (display_bus_type == NULL || display_bus_type == &mp_type_NoneType) {
             return &displays[i];
         }
     }
