@@ -243,6 +243,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
         (y2 < 0) || (y2 > source->height) ) {
             mp_raise_ValueError(translate("(x1,y1) or (x2,y2): out of range of source bitmap"));
     }
+
     // Ensure x1 < x2 and y1 < y2
     if (x1 > x2) {
         int16_t temp=x2;
@@ -293,7 +294,11 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_bitmap_fill_obj, displayio_bitmap_obj_fill);
 STATIC const mp_rom_map_elem_t displayio_bitmap_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_bitmap_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_bitmap_width_obj) },
+<<<<<<< HEAD
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&displayio_bitmap_blit_obj) },
+=======
+    { MP_ROM_QSTR(MP_QSTR_insert), MP_ROM_PTR(&displayio_bitmap_insert_obj) }, // Added insert function 8/7/2020
+>>>>>>> upstream/master
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&displayio_bitmap_fill_obj) },
 
 };
