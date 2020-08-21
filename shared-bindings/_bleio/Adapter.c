@@ -96,7 +96,7 @@ const mp_obj_property_t bleio_adapter_enabled_obj = {
 };
 
 //|     address: Address
-//|     """MAC address of the BLE adapter. (read-only)"""
+//|     """MAC address of the BLE adapter."""
 //|
 STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
     return MP_OBJ_FROM_PTR(common_hal_bleio_adapter_get_address(self));
@@ -104,10 +104,18 @@ STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_address_obj, bleio_adapter_get_address);
 
+STATIC mp_obj_t bleio_adapter_set_address(mp_obj_t self, mp_obj_t new_address) {
+    if (!common_hal_bleio_adapter_set_address(self, new_address)) {
+        mp_raise_bleio_BluetoothError(translate("Could not set address"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(bleio_adapter_set_address_obj, bleio_adapter_set_address);
+
 const mp_obj_property_t bleio_adapter_address_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_address_obj,
-               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&bleio_adapter_set_address_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
 

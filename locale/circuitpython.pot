@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-11 15:37-0500\n"
+"POT-Creation-Date: 2020-08-14 09:36-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -639,6 +639,10 @@ msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not restart PWM"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Could not set address"
 msgstr ""
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
