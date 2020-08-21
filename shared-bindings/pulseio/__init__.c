@@ -41,10 +41,10 @@
 //| Individual pulses are commonly used in infrared remotes and in DHT
 //| temperature sensors.
 //|
-
+//|
 //| .. warning:: PWMOut is moving to `pwmio` and will be removed from `pulseio`
 //|    in CircuitPython 7.
-
+//|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
