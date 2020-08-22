@@ -633,7 +633,11 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     if (spi->State != HAL_SPI_STATE_RESET) {
         if (spi->Init.Mode == SPI_MODE_MASTER) {
             // compute baudrate
+            #if defined(STM32H7)
+            uint log_prescaler = (spi->Init.BaudRatePrescaler >> 28) + 1;
+            #else
             uint log_prescaler = (spi->Init.BaudRatePrescaler >> 3) + 1;
+            #endif
             uint baudrate = spi_get_source_freq(spi) >> log_prescaler;
             if (legacy) {
                 mp_printf(print, ", SPI.MASTER");
