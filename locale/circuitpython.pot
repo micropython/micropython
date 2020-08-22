@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-21 14:36-0500\n"
+"POT-Creation-Date: 2020-08-21 21:39-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -82,7 +82,6 @@ msgstr ""
 msgid "%q list must be a list"
 msgstr ""
 
-#: shared-bindings/memorymonitor/AllocationAlarm 2.c
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
 msgstr ""
@@ -90,7 +89,6 @@ msgstr ""
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/Shape.c
-#: shared-bindings/memorymonitor/AllocationAlarm 2.c
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
@@ -254,14 +252,6 @@ msgstr ""
 msgid "'yield' outside function"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c
-msgid "(x,y): out of range of target bitmap"
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c
-msgid "(x1,y1) or (x2,y2): out of range of source bitmap"
-msgstr ""
-
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr ""
@@ -332,9 +322,7 @@ msgstr ""
 msgid "Already advertising."
 msgstr ""
 
-#: shared-module/memorymonitor/AllocationAlarm 2.c
 #: shared-module/memorymonitor/AllocationAlarm.c
-#: shared-module/memorymonitor/AllocationSize 2.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
 msgstr ""
@@ -374,7 +362,6 @@ msgstr ""
 msgid "At most %d %q may be specified (not %d)"
 msgstr ""
 
-#: shared-module/memorymonitor/AllocationAlarm 2.c
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
@@ -456,8 +443,7 @@ msgid "Buffer length %d too big. It must be less than %d"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
-#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard 2.c
-#: shared-module/sdcardio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
 msgstr ""
 
@@ -505,11 +491,6 @@ msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
-msgid "Cannot blit: source palette too large."
-msgstr ""
-
-#: shared-bindings/displayio/Bitmap.c
-#: shared-bindings/memorymonitor/AllocationSize 2.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
@@ -931,7 +912,7 @@ msgstr ""
 msgid "Internal error #%d"
 msgstr ""
 
-#: shared-bindings/sdioio/SDCard 2.c shared-bindings/sdioio/SDCard.c
+#: shared-bindings/sdioio/SDCard.c
 msgid "Invalid %q"
 msgstr ""
 
@@ -1398,7 +1379,6 @@ msgstr ""
 msgid "Random number generation error"
 msgstr ""
 
-#: shared-bindings/memorymonitor/AllocationSize 2.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
@@ -1432,7 +1412,7 @@ msgstr ""
 msgid "Running in safe mode! "
 msgstr ""
 
-#: shared-module/sdcardio/SDCard 2.c shared-module/sdcardio/SDCard.c
+#: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
 msgstr ""
 
@@ -1491,7 +1471,6 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/TileGrid.c
-#: shared-bindings/memorymonitor/AllocationSize 2.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
@@ -1517,7 +1496,7 @@ msgstr ""
 msgid "Supply at least one UART pin"
 msgstr ""
 
-#: shared-bindings/gnss/GNSS 2.c shared-bindings/gnss/GNSS.c
+#: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
 msgstr ""
 
@@ -1821,12 +1800,10 @@ msgstr ""
 msgid "address %08x is not aligned to %d bytes"
 msgstr ""
 
-#: shared-bindings/i2cperipheral/I2CPeripheral 2.c
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr ""
 
-#: shared-bindings/i2cperipheral/I2CPeripheral 2.c
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr ""
@@ -1989,8 +1966,7 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr ""
 
-#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral 2.c
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
+#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
@@ -2051,7 +2027,7 @@ msgstr ""
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
 
-#: shared-module/sdcardio/SDCard 2.c shared-module/sdcardio/SDCard.c
+#: shared-module/sdcardio/SDCard.c
 msgid "can't set 512 block size"
 msgstr ""
 
@@ -2181,7 +2157,7 @@ msgstr ""
 msgid "could not invert Vandermonde matrix"
 msgstr ""
 
-#: shared-module/sdcardio/SDCard 2.c shared-module/sdcardio/SDCard.c
+#: shared-module/sdcardio/SDCard.c
 msgid "couldn't determine SD card version"
 msgstr ""
 
@@ -2739,7 +2715,7 @@ msgstr ""
 msgid "negative shift count"
 msgstr ""
 
-#: shared-module/sdcardio/SDCard 2.c shared-module/sdcardio/SDCard.c
+#: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
 msgstr ""
 
@@ -2764,7 +2740,7 @@ msgstr ""
 msgid "no reset pin available"
 msgstr ""
 
-#: shared-module/sdcardio/SDCard 2.c shared-module/sdcardio/SDCard.c
+#: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
 msgstr ""
 
@@ -2897,6 +2873,14 @@ msgstr ""
 #: py/modbuiltins.c
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of source"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of target"
 msgstr ""
 
 #: py/objint_mpz.c
@@ -3076,6 +3060,10 @@ msgstr ""
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "source palette too large"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr ""
@@ -3152,11 +3140,11 @@ msgstr ""
 msgid "timeout must be >= 0.0"
 msgstr ""
 
-#: shared-module/sdcardio/SDCard 2.c shared-module/sdcardio/SDCard.c
+#: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
 msgstr ""
 
-#: shared-module/sdcardio/SDCard 2.c shared-module/sdcardio/SDCard.c
+#: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v2 card"
 msgstr ""
 

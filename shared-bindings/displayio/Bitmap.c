@@ -177,16 +177,16 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 //|                     (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
 //|
 //|         :param int x: Horizontal pixel location in bitmap where source_bitmap upper-left
-//|                     corner will be placed
+//|                       corner will be placed
 //|         :param int y: Vertical pixel location in bitmap where source_bitmap upper-left
-//|                     corner will be placed
+//|                       corner will be placed
 //|         :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
 //|         :param int x1: Minimum x-value for rectangular bounding box to be copied from the source bitmap
 //|         :param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
 //|         :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
 //|         :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
 //|         :param int skip_index: bitmap palette index in the source that will not be copied,
-//|                     set to None to copy all pixels"""
+//|                                set to None to copy all pixels"""
 //|         ...
 //|
 STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args){
@@ -213,7 +213,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
 
     // ensure that the target bitmap (self) has at least as many `bits_per_value` as the source
     if (self->bits_per_value < source->bits_per_value) {
-        mp_raise_ValueError(translate("Cannot blit: source palette too large."));
+        mp_raise_ValueError(translate("source palette too large"));
     }
 
     int16_t x1 = args[ARG_x1].u_int;
@@ -234,14 +234,14 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
 
     // Check x,y are within self (target) bitmap boundary
     if ( (x < 0) || (y < 0) || (x > self->width) || (y > self->height) ) {
-            mp_raise_ValueError(translate("(x,y): out of range of target bitmap"));
+            mp_raise_ValueError(translate("out of range of target"));
     }
     // Check x1,y1,x2,y2 are within source bitmap boundary
     if ( (x1 < 0) || (x1 > source->width)  ||
         (y1 < 0) || (y1 > source->height) ||
         (x2 < 0) || (x2 > source->width)  ||
         (y2 < 0) || (y2 > source->height) ) {
-            mp_raise_ValueError(translate("(x1,y1) or (x2,y2): out of range of source bitmap"));
+            mp_raise_ValueError(translate("out of range of source"));
     }
 
     // Ensure x1 < x2 and y1 < y2
