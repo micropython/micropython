@@ -384,12 +384,12 @@ class DocModule(DocItem):
         rst_writer = ReStructuredTextWriter()
         rst_writer.start()
         self.dump(rst_writer)
-        with open(dir + "/" + self.name + ".rst", "wt") as f:
+        with open(os.path.join(dir, self.name + ".rst"), "wt") as f:
             f.write(rst_writer.end())
         for c in self.classes.values():
             rst_writer.start()
             c.dump(rst_writer)
-            with open(dir + "/" + self.name + "." + c.name + ".rst", "wt") as f:
+            with open(os.path.join(dir, self.name + "." + c.name + ".rst"), "wt") as f:
                 f.write(rst_writer.end())
 
 
