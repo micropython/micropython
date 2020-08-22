@@ -43,12 +43,12 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * [PCA10059](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-Dongle)
   * [Particle Xenon](https://docs.particle.io/xenon/)
   * [nRF52840 MDK USB Dongle](boards/nrf52840-mdk-usb-dongle/README.md)
-* nRF9160
-  * [PCA10090](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF9160-DK)
-  * [Actinius Icarus](https://www.actinius.com/icarus)
   * [IBK-NRF52840 BLYST840 breakout board](https://www.crowdsupply.com/i-syst/blyst840)
   * [UDG-NRF52840 BLYST840 small form factor USB Dongle](https://www.crowdsupply.com/i-syst/blyst840)
   * [UDG-NRF52840C BLYST840 USB Type-C Dongle](https://www.crowdsupply.com/i-syst/blyst840)
+* nRF9160
+  * [PCA10090](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF9160-DK)
+  * [Actinius Icarus](https://www.actinius.com/icarus)
 
 ## Compile and Flash
 
