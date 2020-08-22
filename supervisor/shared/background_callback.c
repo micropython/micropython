@@ -43,10 +43,6 @@ uint64_t get_background_ticks(void) {
     return last_background_tick;
 }
 
-void update_background_ticks(void) {
-    last_background_tick = port_get_raw_ticks(NULL);
-}
-
 void background_callback_add_core(background_callback_t *cb) {
     last_background_tick = port_get_raw_ticks(NULL);
     CALLBACK_CRITICAL_BEGIN;

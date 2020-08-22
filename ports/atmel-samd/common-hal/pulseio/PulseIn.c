@@ -112,7 +112,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
         }
 
         uint16_t i = (self->start + self->len) % self->maxlen;
-        if (self->len <= self->maxlen) {
+        if (self->len < self->maxlen) {
             self->len++;
         } else {
             self->errored_too_fast = true;
@@ -278,6 +278,7 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
     self->first_edge = true;
     self->last_overflow = 0;
     self->last_count = 0;
+    self->errored_too_fast = false;
     gpio_set_pin_function(self->pin, GPIO_PIN_FUNCTION_A);
     uint32_t mask = 1 << self->channel;
     // Clear previous interrupt state and re-enable it.
@@ -299,7 +300,6 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
         mp_raise_IndexError(translate("pop from an empty PulseIn"));
     }
     if (self->errored_too_fast) {
-      self->errored_too_fast = false;
       mp_raise_RuntimeError(translate("Input taking too long"));
     }
     common_hal_mcu_disable_interrupts();

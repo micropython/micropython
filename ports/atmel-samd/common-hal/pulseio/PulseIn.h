@@ -50,7 +50,6 @@ void pulsein_reset(void);
 
 void pulsein_interrupt_handler(uint8_t channel);
 void pulsein_timer_interrupt_handler(uint8_t index);
-void update_background_ticks(void);
 #ifdef SAMD21
 void rtc_set_continuous(void);
 void rtc_start_pulsein(void);
