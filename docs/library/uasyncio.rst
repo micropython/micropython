@@ -237,9 +237,11 @@ TCP stream connections
 
     This is a coroutine.
 
-.. method:: Stream.read(n)
+.. method:: Stream.read(n=-1)
 
-    Read up to *n* bytes and return them.
+    Read up to *n* bytes and return them.  If *n* is not provided or -1 then read all
+    bytes until EOF.  The returned value will be an empty bytes object if EOF is
+    encountered before any bytes are read.
 
     This is a coroutine.
 
