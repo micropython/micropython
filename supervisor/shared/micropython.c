@@ -29,14 +29,32 @@
 #include "supervisor/serial.h"
 #include "lib/oofatfs/ff.h"
 #include "py/mpconfig.h"
+#include "py/mpstate.h"
 
 #include "supervisor/shared/status_leds.h"
+
+#if CIRCUITPY_WATCHDOG
+#include "shared-bindings/watchdog/__init__.h"
+#define WATCHDOG_EXCEPTION_CHECK() (MP_STATE_VM(mp_pending_exception) == &mp_watchdog_timeout_exception)
+#else
+#define WATCHDOG_EXCEPTION_CHECK() 0
+#endif
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         #ifdef MICROPY_VM_HOOK_LOOP
             MICROPY_VM_HOOK_LOOP
         #endif
+        // Check to see if we've been CTRL-Ced by autoreload or the user.
+        if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception))) {
+            // clear exception and generate stacktrace
+            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+            nlr_raise(&MP_STATE_VM(mp_kbd_exception));
+          }
+        if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception)) || WATCHDOG_EXCEPTION_CHECK()) {
+            // stop reading immediately
+            return EOF;
+        }
         if (serial_bytes_available()) {
             toggle_rx_led();
             return serial_read();
