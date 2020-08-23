@@ -31,6 +31,7 @@
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
+#define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (1)
@@ -197,5 +198,8 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define MP_FASTCODE(n) __attribute__((section(".iram0.text." #n))) n
 #define MICROPY_WRAP_MP_KEYBOARD_INTERRUPT(f) MP_FASTCODE(f)
 #define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) MP_FASTCODE(f)
+
+#define WDEV_HWRNG ((volatile uint32_t *)0x3ff20e44)
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (*WDEV_HWRNG)
 
 #define _assert(expr) ((expr) ? (void)0 : __assert_func(__FILE__, __LINE__, __func__, #expr))
