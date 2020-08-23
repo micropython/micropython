@@ -79,6 +79,7 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #endif
 #define MICROPY_STREAMS_NON_BLOCK   (1)
+#define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
@@ -167,6 +168,7 @@
 #endif
 #ifndef MICROPY_PY_URANDOM
 #define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (rng_get())
 #endif
 #ifndef MICROPY_PY_URANDOM_EXTRA_FUNCS
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
@@ -427,3 +429,6 @@ static inline mp_uint_t disable_irq(void) {
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
+
+// Needed for MICROPY_PY_URANDOM_SEED_INIT_FUNC.
+uint32_t rng_get(void);
