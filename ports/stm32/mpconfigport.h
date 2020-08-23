@@ -81,6 +81,7 @@
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
+#define MICROPY_MODULE_BUILTIN_INIT (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_ENABLE_SCHEDULER    (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
@@ -361,6 +362,9 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
+
+uint32_t rng_get(void);
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (rng_get())
 
 // We have inlined IRQ functions for efficiency (they are generally
 // 1 machine instruction).
