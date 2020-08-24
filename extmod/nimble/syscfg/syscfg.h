@@ -114,16 +114,16 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_BLE_MONITOR_UART_BUFFER_SIZE (64)
 #define MYNEWT_VAL_BLE_MONITOR_UART_DEV ("uart0")
 #define MYNEWT_VAL_BLE_RPA_TIMEOUT (300)
-#define MYNEWT_VAL_BLE_SM_BONDING (0)
+#define MYNEWT_VAL_BLE_SM_BONDING (1)
 #define MYNEWT_VAL_BLE_SM_IO_CAP (BLE_HS_IO_NO_INPUT_OUTPUT)
 #define MYNEWT_VAL_BLE_SM_KEYPRESS (0)
-#define MYNEWT_VAL_BLE_SM_LEGACY (1)
+#define MYNEWT_VAL_BLE_SM_LEGACY (0)
 #define MYNEWT_VAL_BLE_SM_MAX_PROCS (1)
 #define MYNEWT_VAL_BLE_SM_MITM (0)
 #define MYNEWT_VAL_BLE_SM_OOB_DATA_FLAG (0)
-#define MYNEWT_VAL_BLE_SM_OUR_KEY_DIST (0)
 #define MYNEWT_VAL_BLE_SM_SC (1)
-#define MYNEWT_VAL_BLE_SM_THEIR_KEY_DIST (0)
+#define MYNEWT_VAL_BLE_SM_OUR_KEY_DIST (7)
+#define MYNEWT_VAL_BLE_SM_THEIR_KEY_DIST (7)
 #define MYNEWT_VAL_BLE_STORE_MAX_BONDS (3)
 #define MYNEWT_VAL_BLE_STORE_MAX_CCCDS (8)
 
@@ -163,5 +163,8 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 
 /* Required for code that uses BLE_HS_LOG */
 #define MYNEWT_VAL_NEWT_FEATURE_LOGCFG (1)
+
+/* Required for storing bonding information */
+#define MYNEWT_VAL_BLE_STORE_CONFIG_PERSIST (1)
 
 #endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_SYSCFG_H

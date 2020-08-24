@@ -78,7 +78,6 @@ LIB_SRC_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 		ble_store_util.c \
 		ble_uuid.c \
 		) \
-	nimble/host/store/ram/src/ble_store_ram.c \
 	nimble/host/util/src/addr.c \
 	nimble/transport/uart/src/ble_hci_uart.c \
 	$(addprefix porting/nimble/src/, \
@@ -94,6 +93,7 @@ LIB_SRC_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 EXTMOD_SRC_C += $(addprefix $(NIMBLE_EXTMOD_DIR)/, \
 	nimble/nimble_npl_os.c \
 	hal/hal_uart.c \
+	ble_store_mpy.c \
 	)
 
 INC += -I$(TOP)/$(NIMBLE_EXTMOD_DIR)
@@ -102,7 +102,7 @@ INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/ext/tinycrypt/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/services/gap/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/services/gatt/include
-INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/store/ram/include
+INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/store/config/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/util/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/uart/include
