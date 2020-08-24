@@ -47,4 +47,13 @@ void never_reset_pin_number(uint8_t pin_number);
 void claim_pin(const mcu_pin_obj_t* pin);
 bool pin_number_is_free(uint8_t pin_number);
 
+typedef struct {
+    const mcu_pin_obj_t *obj;
+    uint8_t instance;
+    uint8_t pin;
+    uint16_t function;
+} mcu_pin_function_t;
+
+mcu_pin_function_t *mcu_find_pin_function(mcu_pin_function_t *table, const mcu_pin_obj_t *pin, int instance, uint16_t name);
+
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
