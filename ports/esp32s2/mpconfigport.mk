@@ -27,6 +27,6 @@ CIRCUITPY_COUNTIO = 0
 # any port once their prerequisites in common-hal are complete.
 CIRCUITPY_RANDOM = 0          # Requires OS
 CIRCUITPY_USB_MIDI = 0        # Requires USB
-CIRCUITPY_ULAB = 0            # No requirements, but takes extra flash
+CIRCUITPY_ULAB = 1            # No requirements, but takes extra flash
 
 CIRCUITPY_MODULE ?= none
