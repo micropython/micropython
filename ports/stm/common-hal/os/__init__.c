@@ -77,11 +77,10 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
         uint32_t start = HAL_GetTick();
         //the HAL function has a timeout, but it isn't long enough, and isn't adjustable
         while(!(__HAL_RNG_GET_FLAG(&handle,RNG_FLAG_DRDY)) && ((HAL_GetTick() - start) < RNG_TIMEOUT));
-        //
         if (HAL_RNG_GenerateRandomNumber(&handle, &temp) != HAL_OK) {
             mp_raise_ValueError(translate("Random number generation error"));
         }
-        *buffer = (uint8_t)temp;
+        buffer[i] = (uint8_t)temp;
     }
 
     //shut down the peripheral

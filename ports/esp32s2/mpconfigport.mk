@@ -25,7 +25,6 @@ CIRCUITPY_COUNTIO = 0
 
 # These modules are implemented in shared-module/ - they can be included in
 # any port once their prerequisites in common-hal are complete.
-CIRCUITPY_RANDOM = 0          # Requires OS
 CIRCUITPY_USB_MIDI = 0        # Requires USB
 CIRCUITPY_ULAB = 0            # No requirements, but takes extra flash
 
