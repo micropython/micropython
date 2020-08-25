@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-21 21:39-0500\n"
+"POT-Creation-Date: 2020-08-25 16:39-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -273,7 +273,7 @@ msgstr ""
 msgid "A hardware interrupt channel is already in use"
 msgstr ""
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr ""
@@ -302,7 +302,7 @@ msgstr ""
 msgid "All sync event channels in use"
 msgstr ""
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr ""
 
@@ -314,7 +314,7 @@ msgstr ""
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: ports/stm/peripherals/timers.c shared-bindings/pulseio/PWMOut.c
+#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr ""
 
@@ -369,6 +369,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
 msgstr ""
 
 #: main.c
@@ -552,7 +556,7 @@ msgstr ""
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr ""
 
@@ -621,23 +625,23 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize channel"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize timer"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init timer"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not restart PWM"
 msgstr ""
 
@@ -645,7 +649,7 @@ msgstr ""
 msgid "Could not set address"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr ""
 
@@ -836,7 +840,7 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 
@@ -938,9 +942,9 @@ msgstr ""
 msgid "Invalid DAC pin supplied"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c
-#: ports/cxd56/common-hal/pulseio/PWMOut.c
-#: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
+#: ports/atmel-samd/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr ""
 
@@ -980,7 +984,7 @@ msgstr ""
 msgid "Invalid format chunk size"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
 msgstr ""
 
@@ -998,8 +1002,8 @@ msgid "Invalid phase"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr ""
 
@@ -1023,7 +1027,7 @@ msgstr ""
 msgid "Invalid pins"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid pins for PWMOut"
 msgstr ""
 
@@ -1205,8 +1209,12 @@ msgstr ""
 msgid "No long integer support"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
 msgstr ""
 
 #: shared-module/touchio/TouchIn.c
@@ -1227,6 +1235,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
+msgstr ""
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string."
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1269,16 +1281,20 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip."
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr ""
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
@@ -1465,6 +1481,10 @@ msgstr ""
 msgid "Serializer in use"
 msgstr ""
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname."
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr ""
@@ -1560,7 +1580,7 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
@@ -1658,6 +1678,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1761,6 +1785,10 @@ msgid ""
 "Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters."
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
