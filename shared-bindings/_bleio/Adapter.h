@@ -35,7 +35,7 @@
 #include "py/objstr.h"
 #include "shared-module/_bleio/Address.h"
 
-const mp_obj_type_t bleio_adapter_type;
+extern const mp_obj_type_t bleio_adapter_type;
 
 extern bool common_hal_bleio_adapter_get_advertising(bleio_adapter_obj_t *self);
 extern bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self);

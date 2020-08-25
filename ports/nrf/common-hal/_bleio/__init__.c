@@ -87,6 +87,8 @@ void check_sec_status(uint8_t sec_status) {
     }
 }
 
+bool vm_used_ble;
+
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
