@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,20 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PULSEIO_PWMOUT_H
+#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_PWMIO_PWMOUT_H
+#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PWMIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "periph.h"
+
+#include STM32_HAL_H
+#include "peripherals/periph.h"
+
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    const mcu_pwm_obj_t *pwm;
-    bool variable_frequency;
-} pulseio_pwmout_obj_t;
+    TIM_HandleTypeDef handle;
+    TIM_OC_InitTypeDef chan_handle;
+    const mcu_tim_pin_obj_t *tim;
+    uint8_t channel: 7;
+    bool variable_frequency: 1;
+    uint16_t duty_cycle;
+    uint32_t frequency;
+    uint32_t period;
+} pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);
 
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PULSEIO_PWMOUT_H
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_PWMIO_PWMOUT_H
