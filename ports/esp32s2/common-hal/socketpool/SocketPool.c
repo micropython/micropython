@@ -33,7 +33,6 @@
 
 #include "bindings/espidf/__init__.h"
 
-
 void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t* self, mp_obj_t radio) {
     if (radio != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
         mp_raise_ValueError(translate("SocketPool can only be used with wifi.radio."));

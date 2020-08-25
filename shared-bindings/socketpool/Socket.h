@@ -38,5 +38,6 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self);
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t* self);
 bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t* self);
+mp_uint_t common_hal_socketpool_socket_get_hash(socketpool_socket_obj_t* self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H

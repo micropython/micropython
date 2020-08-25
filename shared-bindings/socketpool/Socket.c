@@ -267,8 +267,7 @@ STATIC mp_obj_t socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args)
     }
 
     if (len == 0) {
-        ESP_EARLY_LOGW(TAG, "len 0");
-        mp_raise_OSError(0);
+        return MP_OBJ_NEW_SMALL_INT(0);
     }
 
     mp_int_t ret = common_hal_socketpool_socket_recv_into(self, (byte*)bufinfo.buf, len);
@@ -426,6 +425,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_settimeout_obj, socketpool_so
 // }
 // STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_setblocking_obj, socketpool_socket_setblocking);
 
+//|     def __hash__(self) -> int:
+//|         """Returns a hash for the Socket."""
+//|         ...
+//|
+STATIC mp_obj_t socketpool_socket_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    switch (op) {
+        case MP_UNARY_OP_HASH: {
+            return MP_OBJ_NEW_SMALL_INT(common_hal_socketpool_socket_get_hash(MP_OBJ_TO_PTR(self_in)));
+        }
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
 STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&socketpool_socket___exit___obj) },
@@ -451,4 +464,5 @@ const mp_obj_type_t socketpool_socket_type = {
     { &mp_type_type },
     .name = MP_QSTR_Socket,
     .locals_dict = (mp_obj_dict_t*)&socketpool_socket_locals_dict,
+    .unary_op = socketpool_socket_unary_op,
 };
