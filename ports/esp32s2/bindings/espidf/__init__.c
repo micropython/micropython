@@ -77,7 +77,7 @@ void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
     if (!is_subclass && (k == PRINT_EXC)) {
-        mp_print_str(print, qstr_str(MP_OBJ_QSTR_VALUE(MP_QSTR_espidf)));
+        mp_print_str(print, qstr_str(MP_OBJ_QSTR_VALUE(MP_ROM_QSTR(MP_QSTR_espidf))));
         mp_print_str(print, ".");
     }
     mp_obj_exception_print(print, o_in, kind);
