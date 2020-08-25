@@ -94,7 +94,10 @@ void pulseout_reset() {
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                            const pulseio_pwmout_obj_t* carrier) {
+                                            const pwmio_pwmout_obj_t* carrier,
+                                            const mcu_pin_obj_t* pin,
+                                            uint32_t frequency,
+                                            uint16_t duty_cycle) {
 //    if (refcount == 0) {
 //        // Find a spare timer.
 //        Tc *tc = NULL;

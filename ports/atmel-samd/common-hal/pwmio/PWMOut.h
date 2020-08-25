@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PWMOUT_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -37,8 +37,8 @@ typedef struct {
     const pin_timer_t* timer;
     bool variable_frequency;
     uint16_t duty_cycle;
-} pulseio_pwmout_obj_t;
+} pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PWMOUT_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H

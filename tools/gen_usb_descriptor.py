@@ -62,6 +62,8 @@ parser.add_argument('--midi_ep_num_out', type=int, default=0,
                     help='endpoint number of MIDI OUT')
 parser.add_argument('--midi_ep_num_in', type=int, default=0,
                     help='endpoint number of MIDI IN')
+parser.add_argument('--max_ep', type=int, default=0,
+                    help='total number of endpoints available')
 parser.add_argument('--output_c_file', type=argparse.FileType('w', encoding='UTF-8'), required=True)
 parser.add_argument('--output_h_file', type=argparse.FileType('w', encoding='UTF-8'), required=True)
 
@@ -375,6 +377,15 @@ if 'AUDIO' in args.devices:
 # and renumber the interfaces in order. But we still need to fix up certain
 # interface cross-references.
 interfaces = util.join_interfaces(interfaces_to_join, renumber_endpoints=args.renumber_endpoints)
+
+if args.max_ep != 0:
+    for interface in interfaces:
+        for subdescriptor in interface.subdescriptors:
+            endpoint_address = getattr(subdescriptor, 'bEndpointAddress', 0) & 0x7f
+            if endpoint_address > args.max_ep:
+                raise ValueError("Endpoint address %d of %s may not exceed %d" % (endpoint_address & 0x7f, interface.description, args.max_ep))
+else:
+    print("Unable to check whether maximum number of endpoints is respected", file=sys.stderr)
 
 # Now adjust the CDC interface cross-references.
 

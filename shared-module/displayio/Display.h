@@ -29,8 +29,8 @@
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/displayio/Group.h"
-#if CIRCUITPY_PULSEIO
-#include "shared-bindings/pulseio/PWMOut.h"
+#if CIRCUITPY_PWMIO
+#include "shared-bindings/pwmio/PWMOut.h"
 #endif
 
 #include "shared-module/displayio/area.h"
@@ -41,8 +41,8 @@ typedef struct {
     displayio_display_core_t core;
     union {
         digitalio_digitalinout_obj_t backlight_inout;
-        #if CIRCUITPY_PULSEIO
-        pulseio_pwmout_obj_t backlight_pwm;
+        #if CIRCUITPY_PWMIO
+        pwmio_pwmout_obj_t backlight_pwm;
         #endif
     };
     uint64_t last_backlight_refresh;

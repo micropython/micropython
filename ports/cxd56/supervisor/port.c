@@ -36,12 +36,14 @@
 #include "boards/board.h"
 
 #include "supervisor/port.h"
+#include "supervisor/background_callback.h"
+#include "supervisor/usb.h"
 #include "supervisor/shared/tick.h"
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/busio/UART.h"
 
 safe_mode_t port_init(void) {
@@ -67,6 +69,8 @@ void reset_port(void) {
 #endif
 #if CIRCUITPY_PULSEIO
     pulseout_reset();
+#endif
+#if CIRCUITPY_PWMIO
     pwmout_reset();
 #endif
 #if CIRCUITPY_BUSIO
@@ -114,6 +118,11 @@ uint32_t port_get_saved_word(void) {
     return _ebss;
 }
 
+static background_callback_t callback;
+static void usb_background_do(void* unused) {
+    usb_background();
+}
+
 volatile bool _tick_enabled;
 void board_timerhook(void)
 {
@@ -121,6 +130,8 @@ void board_timerhook(void)
     if (_tick_enabled) {
         supervisor_tick();
     }
+
+    background_callback_add(&callback, usb_background_do, NULL);
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {

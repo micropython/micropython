@@ -26,35 +26,66 @@
 
 #include "common-hal/pulseio/PulseOut.h"
 
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "py/runtime.h"
 
-// STATIC void turn_on(pulseio_pulseout_obj_t *pulseout) {
-// }
-
-// STATIC void turn_off(pulseio_pulseout_obj_t *pulseout) {
-// }
-
-// STATIC void start_timer(void) {
-// }
-
-// STATIC void pulseout_event_handler(void) {
-// }
-
-void pulseout_reset() {
-}
+// Requires rmt.c void esp32s2_peripherals_reset_all(void) to reset
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                           const pulseio_pwmout_obj_t* carrier) {
-    mp_raise_NotImplementedError(translate("PulseOut not supported on this chip"));
+                                            const pwmio_pwmout_obj_t* carrier,
+                                            const mcu_pin_obj_t* pin,
+                                            uint32_t frequency,
+                                            uint16_t duty_cycle) {
+    if (carrier || !pin || !frequency) {
+        mp_raise_NotImplementedError(translate("Port does not accept PWM carrier. \
+                                    Pass a pin, frequency and duty cycle instead"));
+    }
+
+    rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
+    if (channel == RMT_CHANNEL_MAX) {
+        mp_raise_RuntimeError(translate("All timers in use"));
+    }
+
+    // Configure Channel
+    rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin->number, channel);
+    config.tx_config.carrier_en = true;
+    config.tx_config.carrier_duty_percent = (duty_cycle * 100) / (1<<16);
+    config.tx_config.carrier_freq_hz = frequency;
+    config.clk_div = 80;
+
+    rmt_config(&config);
+    rmt_driver_install(channel, 0, 0);
+
+    self->channel = channel;
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
-    return false;
+    return (self->channel == RMT_CHANNEL_MAX);
 }
 
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
+    esp32s2_peripherals_free_rmt(self->channel);
+    self->channel = RMT_CHANNEL_MAX;
+
 }
 
 void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pulses, uint16_t length) {
+    rmt_item32_t items[length];
+
+    // Circuitpython allows 16 bit pulse values, while ESP32 only allows 15 bits
+    // Thus, we use entire items for one pulse, rather than switching inside each item
+    for (size_t i = 0; i < length; i++) {
+        // Setting the RMT duration to 0 has undefined behavior, so avoid that pre-emptively.
+        if (pulses[i] == 0) {
+            pulses[i] = 1;
+        }
+        uint32_t level = (i % 2) ? 0 : 1;
+        const rmt_item32_t item = {{{ (pulses[i] & 0x8000 ? 0x7FFF : 1), level, (pulses[i] & 0x7FFF), level}}};
+        items[i] = item;
+    }
+
+    rmt_write_items(self->channel, items, length, true);
+    while (rmt_wait_tx_done(self->channel, 0) != ESP_OK) {
+        RUN_BACKGROUND_TASKS;
+    }
 }
