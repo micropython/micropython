@@ -66,22 +66,22 @@ busio_spi_obj_t status_apa102 = {
 #if defined(CP_RGB_STATUS_R) || defined(CP_RGB_STATUS_G) || defined(CP_RGB_STATUS_B)
 #define CP_RGB_STATUS_LED
 
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-pulseio_pwmout_obj_t rgb_status_r = {
+pwmio_pwmout_obj_t rgb_status_r = {
     .base = {
-        .type = &pulseio_pwmout_type,
+        .type = &pwmio_pwmout_type,
     },
 };
-pulseio_pwmout_obj_t rgb_status_g = {
+pwmio_pwmout_obj_t rgb_status_g = {
     .base = {
-        .type = &pulseio_pwmout_type,
+        .type = &pwmio_pwmout_type,
     },
 };
-pulseio_pwmout_obj_t rgb_status_b = {
+pwmio_pwmout_obj_t rgb_status_b = {
     .base = {
-        .type = &pulseio_pwmout_type,
+        .type = &pwmio_pwmout_type,
     },
 };
 
@@ -147,26 +147,26 @@ void rgb_led_status_init() {
 
     #if defined(CP_RGB_STATUS_LED)
     if (common_hal_mcu_pin_is_free(CP_RGB_STATUS_R)) {
-        pwmout_result_t red_result = common_hal_pulseio_pwmout_construct(&rgb_status_r, CP_RGB_STATUS_R, 0, 50000, false);
+        pwmout_result_t red_result = common_hal_pwmio_pwmout_construct(&rgb_status_r, CP_RGB_STATUS_R, 0, 50000, false);
 
         if (PWMOUT_OK == red_result) {
-            common_hal_pulseio_pwmout_never_reset(&rgb_status_r);
+            common_hal_pwmio_pwmout_never_reset(&rgb_status_r);
         }
     }
 
     if (common_hal_mcu_pin_is_free(CP_RGB_STATUS_G)) {
-        pwmout_result_t green_result = common_hal_pulseio_pwmout_construct(&rgb_status_g, CP_RGB_STATUS_G, 0, 50000, false);
+        pwmout_result_t green_result = common_hal_pwmio_pwmout_construct(&rgb_status_g, CP_RGB_STATUS_G, 0, 50000, false);
 
         if (PWMOUT_OK == green_result) {
-            common_hal_pulseio_pwmout_never_reset(&rgb_status_g);
+            common_hal_pwmio_pwmout_never_reset(&rgb_status_g);
         }
     }
 
     if (common_hal_mcu_pin_is_free(CP_RGB_STATUS_B)) {
-        pwmout_result_t blue_result = common_hal_pulseio_pwmout_construct(&rgb_status_b, CP_RGB_STATUS_B, 0, 50000, false);
+        pwmout_result_t blue_result = common_hal_pwmio_pwmout_construct(&rgb_status_b, CP_RGB_STATUS_B, 0, 50000, false);
 
         if (PWMOUT_OK == blue_result) {
-            common_hal_pulseio_pwmout_never_reset(&rgb_status_b);
+            common_hal_pwmio_pwmout_never_reset(&rgb_status_b);
         }
     }
     #endif
@@ -242,9 +242,9 @@ void new_status_color(uint32_t rgb) {
         status_rgb_color[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
 	#endif
 
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
     #endif
 }
 
@@ -288,9 +288,9 @@ void temp_status_color(uint32_t rgb) {
         temp_status_color_rgb[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
     #endif
 
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, temp_status_color_rgb[0]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, temp_status_color_rgb[1]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, temp_status_color_rgb[2]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, temp_status_color_rgb[0]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, temp_status_color_rgb[1]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, temp_status_color_rgb[2]);
     #endif
 }
 
@@ -327,9 +327,9 @@ void clear_temp_status() {
 		blue = status_rgb_color[2];
 	#endif
 
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, red);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, green);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, blue);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, red);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, green);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, blue);
     #endif
 }
 
