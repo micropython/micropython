@@ -35,6 +35,6 @@ typedef struct {
     mp_obj_base_t base;
 } mcu_processor_obj_t;
 
-const mp_obj_type_t mcu_processor_type;
+extern const mp_obj_type_t mcu_processor_type;
 
 #endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
