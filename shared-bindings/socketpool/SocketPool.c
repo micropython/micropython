@@ -53,7 +53,7 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
 
     socketpool_socketpool_obj_t *s = m_new_obj_with_finaliser(socketpool_socketpool_obj_t);
     s->base.type = &socketpool_socketpool_type;
-    mp_obj_t radio = args[1];
+    mp_obj_t radio = args[0];
 
     common_hal_socketpool_socketpool_construct(s, radio);
 
