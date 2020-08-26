@@ -29,5 +29,7 @@ CIRCUITPY_COUNTIO = 0
 CIRCUITPY_RANDOM = 0
 # Requires USB
 CIRCUITPY_USB_MIDI = 0
+# Too large for the partition table!
+CIRCUITPY_ULAB = 0
 
 CIRCUITPY_MODULE ?= none
