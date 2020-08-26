@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PWMOUT_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PWMIO_PWMOUT_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PWMIO_PWMOUT_H
 
-#include "nrfx_pwm.h"
-#include "py/obj.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "driver/ledc.h"
 
 typedef struct {
     mp_obj_base_t base;
-    NRF_PWM_Type* pwm;
-    uint8_t pin_number;
-    uint8_t channel: 7;
+    ledc_timer_config_t tim_handle;
+    ledc_channel_config_t chan_handle;
+    uint16_t pin_number;
+    uint8_t duty_resolution;
     bool variable_frequency: 1;
-    uint16_t duty_cycle;
-    uint32_t frequency;
-} pulseio_pwmout_obj_t;
+    bool deinited: 1;
+} pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);
-NRF_PWM_Type *pwmout_allocate(uint16_t countertop, nrf_pwm_clk_t base_clock,
-    bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out,
-    IRQn_Type *irq);
-void pwmout_free_channel(NRF_PWM_Type *pwm, int8_t channel);
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PWMOUT_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PWMIO_PWMOUT_H

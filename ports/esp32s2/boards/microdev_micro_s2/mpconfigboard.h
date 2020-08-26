@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PWMOUT_H
+//Micropython setup
 
-#include "common-hal/microcontroller/Pin.h"
-#include "driver/ledc.h"
+#define MICROPY_HW_BOARD_NAME       "microDev microS2"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-typedef struct {
-    mp_obj_base_t base;
-    ledc_timer_config_t tim_handle;
-    ledc_channel_config_t chan_handle;
-    uint16_t pin_number;
-    uint8_t duty_resolution;
-    bool variable_frequency: 1;
-    bool deinited: 1;
-} pulseio_pwmout_obj_t;
+#define MICROPY_HW_LED (&pin_GPIO21)
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
 
-void pwmout_reset(void);
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PWMOUT_H
+#define AUTORESET_DELAY_MS 500

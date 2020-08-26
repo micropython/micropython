@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
-
-#include <nuttx/timers/pwm.h>
-
-#include "common-hal/microcontroller/Pin.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PWMIO___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_PWMIO___INIT___H
 
 #include "py/obj.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    struct pwm_info_s info;
-    bool variable_frequency;
-    int8_t number;
-} pulseio_pwmout_obj_t;
+// Nothing now.
 
-void pwmout_reset(void);
-void pwmout_start(uint8_t pwm_num);
-void pwmout_stop(uint8_t pwm_num);
-
-#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_PULSEIO_PWMOUT_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_PWMIO___INIT___H

@@ -38,8 +38,8 @@
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
-#include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/pulseio/PulseIn.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 
@@ -70,9 +70,13 @@ void reset_port(void) {
 
 #if CIRCUITPY_PULSEIO
     esp32s2_peripherals_rmt_reset();
-    pwmout_reset();
     pulsein_reset();
 #endif
+
+#if CIRCUITPY_PWMIO
+    pwmout_reset();
+#endif
+
 #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();

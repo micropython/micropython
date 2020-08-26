@@ -32,7 +32,7 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "supervisor/shared/translate.h"
 
 #include STM32_HAL_H
@@ -113,7 +113,7 @@ void pulseout_reset() {
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                            const pulseio_pwmout_obj_t* carrier,
+                                            const pwmio_pwmout_obj_t* carrier,
                                             const mcu_pin_obj_t* pin,
                                             uint32_t frequency,
                                             uint16_t duty_cycle) {
@@ -143,7 +143,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
     tim_handle.Instance->SR = 0;
 
     // The HAL can't work with const, recast required.
-    self->pwmout = (pulseio_pwmout_obj_t*)carrier;
+    self->pwmout = (pwmio_pwmout_obj_t*)carrier;
     turn_off(self);
 }
 
