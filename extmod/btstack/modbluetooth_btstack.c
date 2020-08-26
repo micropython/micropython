@@ -893,7 +893,30 @@ STATIC inline uint16_t get_uuid16(const mp_obj_bluetooth_uuid_t *uuid) {
     return (uuid->data[1] << 8) | uuid->data[0];
 }
 
-int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint8_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint8_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics) {
+// Map MP_BLUETOOTH_CHARACTERISTIC_FLAG_ values to btstack read/write permission values.
+STATIC void get_characteristic_permissions(uint16_t flags, uint16_t *read_permission, uint16_t *write_permission) {
+    if (flags & MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ_ENCRYPTED) {
+        *read_permission = ATT_SECURITY_ENCRYPTED;
+    } else if (flags & MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ_AUTHENTICATED) {
+        *read_permission = ATT_SECURITY_AUTHENTICATED;
+    } else if (flags & MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ_AUTHORIZED) {
+        *read_permission = ATT_SECURITY_AUTHORIZED;
+    } else {
+        *read_permission = ATT_SECURITY_NONE;
+    }
+
+    if (flags & MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_ENCRYPTED) {
+        *write_permission = ATT_SECURITY_ENCRYPTED;
+    } else if (flags & MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_AUTHENTICATED) {
+        *write_permission = ATT_SECURITY_AUTHENTICATED;
+    } else if (flags & MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_AUTHORIZED) {
+        *write_permission = ATT_SECURITY_AUTHORIZED;
+    } else {
+        *write_permission = ATT_SECURITY_NONE;
+    }
+}
+
+int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint16_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint16_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics) {
     DEBUG_printf("mp_bluetooth_gatts_register_service\n");
     // Note: btstack expects BE UUIDs (which it immediately convertes to LE).
     // So we have to convert all our modbluetooth LE UUIDs to BE just for the att_db_util_add_* methods (using get_uuid16 above, and reverse_128 from btstackutil.h).
@@ -916,9 +939,9 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
     static uint8_t cccb_buf[2] = {0};
 
     for (size_t i = 0; i < num_characteristics; ++i) {
-        uint16_t props = characteristic_flags[i] | ATT_PROPERTY_DYNAMIC;
-        uint16_t read_permission = ATT_SECURITY_NONE;
-        uint16_t write_permission = ATT_SECURITY_NONE;
+        uint16_t props = (characteristic_flags[i] & 0x7f) | ATT_PROPERTY_DYNAMIC;
+        uint16_t read_permission, write_permission;
+        get_characteristic_permissions(characteristic_flags[i], &read_permission, &write_permission);
         if (characteristic_uuids[i]->type == MP_BLUETOOTH_UUID_TYPE_16) {
             handles[handle_index] = att_db_util_add_characteristic_uuid16(get_uuid16(characteristic_uuids[i]), props, read_permission, write_permission, NULL, 0);
         } else if (characteristic_uuids[i]->type == MP_BLUETOOTH_UUID_TYPE_128) {
@@ -942,9 +965,8 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
         ++handle_index;
 
         for (size_t j = 0; j < num_descriptors[i]; ++j) {
-            props = descriptor_flags[descriptor_index] | ATT_PROPERTY_DYNAMIC;
-            read_permission = ATT_SECURITY_NONE;
-            write_permission = ATT_SECURITY_NONE;
+            props = (descriptor_flags[descriptor_index] & 0x7f) | ATT_PROPERTY_DYNAMIC;
+            get_characteristic_permissions(descriptor_flags[descriptor_index], &read_permission, &write_permission);
 
             if (descriptor_uuids[descriptor_index]->type == MP_BLUETOOTH_UUID_TYPE_16) {
                 handles[handle_index] = att_db_util_add_descriptor_uuid16(get_uuid16(descriptor_uuids[descriptor_index]), props, read_permission, write_permission, NULL, 0);
