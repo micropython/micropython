@@ -43,7 +43,7 @@ def get_circuitpython_root_dir():
 def get_shared_bindings():
     """ Get a list of modules in shared-bindings based on folder names
     """
-    shared_bindings_dir = get_circuitpython_root_dir() / "shared-bindings"
+    shared_bindings_dir = get_circuitpython_root_dir() / "circuitpython-stubs"
     return [item.name for item in shared_bindings_dir.iterdir()]
 
 
