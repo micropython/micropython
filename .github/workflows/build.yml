@@ -410,7 +410,7 @@ jobs:
         board:
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
-        - "micro_s2" 
+        - "microdev_micro_s2" 
         - "unexpectedmaker_feathers2"
 
     steps:
