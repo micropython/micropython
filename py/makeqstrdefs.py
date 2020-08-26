@@ -58,7 +58,8 @@ def process_file(f):
             elif args.mode == _MODE_COMPRESS:
                 output.append(match)
 
-    write_out(last_fname, output)
+    if last_fname:
+        write_out(last_fname, output)
     return ""
 
 
