@@ -18,4 +18,5 @@ OPTIMIZATION_FLAGS = -Os
 
 LD_COMMON = boards/common_default.ld
 LD_FILE = boards/STM32F401xe_boot.ld
-# LD_FILE = boards/STM32F401xe_fs.ld # use for internal flash
+# use for internal flash
+# LD_FILE = boards/STM32F401xe_fs.ld
