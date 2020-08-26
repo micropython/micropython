@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-18 11:19-0400\n"
-"PO-Revision-Date: 2020-07-25 20:58+0000\n"
+"PO-Revision-Date: 2020-08-30 18:28+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.2.1-dev\n"
 
 #: main.c
 msgid ""
@@ -82,7 +82,7 @@ msgstr "Index %q ligger utanför intervallet"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %q"
-msgstr ""
+msgstr "%q index måste vara heltal, inte %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -122,39 +122,39 @@ msgstr "'%q' argument krävs"
 
 #: py/runtime.c
 msgid "'%q' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "Objektet '%q' kan inte tilldela attributet '%q'"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "Objektet '%q' stöder inte '%q'"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
-msgstr ""
+msgstr "Objektet '%q' stöder inte tilldelning"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr ""
+msgstr "Objektet '%q' stöder inte borttagning av objekt"
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
-msgstr ""
+msgstr "Objektet '%q' har inget attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "Objektet '%q' är inte en iterator"
 
 #: py/objtype.c py/runtime.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "Objektet '%q' kan inte anropas"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
+msgstr "Objektet '%q' är inte itererbart"
 
 #: py/obj.c
 msgid "'%q' object is not subscriptable"
-msgstr ""
+msgstr "Objektet '%q' är inte indexbar"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -224,7 +224,7 @@ msgstr "'await' utanför funktion"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' eller 'async with' utanför asynk-funktion"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -457,7 +457,7 @@ msgstr "Buffertlängd måste vara en multipel av 512"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr ""
+msgstr "Bufferten måste vara en multipel av 512 byte"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -657,7 +657,7 @@ msgstr "Det gick inte att starta om PWM"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
-msgstr ""
+msgstr "Kan inte ange adress"
 
 #: ports/stm/common-hal/pulseio/PWMOut.c
 msgid "Could not start PWM"
@@ -844,7 +844,7 @@ msgstr "Filen finns redan"
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
-msgstr ""
+msgstr "Framebuffer kräver %d byte"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
@@ -888,7 +888,7 @@ msgstr "I2C init-fel"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut är inte tillgängligt"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -940,7 +940,7 @@ msgstr "Ogiltig %q-pinne"
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
-msgstr ""
+msgstr "Ogiltigt val av % q pinne"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
@@ -1258,7 +1258,7 @@ msgstr "Ingen uppspelning"
 
 #: main.c
 msgid "Not running saved code.\n"
-msgstr ""
+msgstr "Kör inte sparad kod.\n"
 
 #: shared-bindings/util.c
 msgid ""
@@ -1442,7 +1442,7 @@ msgstr "Radvärdet måste vara digitalio.DigitalInOut"
 
 #: main.c
 msgid "Running in safe mode! "
-msgstr ""
+msgstr "Kör i säkert läge! "
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -1456,12 +1456,12 @@ msgstr "SDA eller SCL behöver en pullup"
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
-msgstr ""
+msgstr "SDIO GetCardInfo-fel %d"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO Init Error %d"
-msgstr ""
+msgstr "SDIO Init-fel %d"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
@@ -1831,7 +1831,7 @@ msgstr "__init __ () ska returnera None"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
-msgstr ""
+msgstr "__init__() ska returnera None, inte '%q'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -1876,7 +1876,7 @@ msgstr "argumentet har fel typ"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr ""
+msgstr "argument måste vara ndarray"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -2019,7 +2019,7 @@ msgstr "kan inte tilldela uttryck"
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
-msgstr ""
+msgstr "kan inte konvertera %q till %q"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2027,7 +2027,7 @@ msgstr "kan inte konvertera '%q' objekt implicit till %q"
 
 #: py/obj.c
 msgid "can't convert to %q"
-msgstr ""
+msgstr "kan inte konvertera till %q"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2848,7 +2848,7 @@ msgstr "antal punkter måste vara minst 2"
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
-msgstr ""
+msgstr "objektet '%q' är inte en tuple eller list"
 
 #: py/obj.c
 msgid "object does not support item assignment"
@@ -2884,7 +2884,7 @@ msgstr "objektet är inte iterable"
 
 #: py/obj.c
 msgid "object of type '%q' has no len()"
-msgstr ""
+msgstr "objekt av typen '%q' har inte len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -2980,7 +2980,7 @@ msgstr "polygon kan endast registreras i en förälder"
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
-msgstr ""
+msgstr "pop från tom %q"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -3139,7 +3139,7 @@ msgstr "stream-åtgärd stöds inte"
 
 #: py/objstrunicode.c
 msgid "string indices must be integers, not %q"
-msgstr ""
+msgstr "strängindex måste vara heltal, inte %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3216,7 +3216,7 @@ msgstr "för många värden att packa upp (förväntat %d)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "trapz är definierad för 1D-matriser med samma längd"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
@@ -3282,7 +3282,7 @@ msgstr "okänd konverteringsspecificerare %c"
 
 #: py/objstr.c
 msgid "unknown format code '%c' for object of type '%q'"
-msgstr ""
+msgstr "okänd formatkod '%c' för objekt av typ '%q'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3322,7 +3322,7 @@ msgstr "Formattecknet '%c' (0x%x) stöds inte vid index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%q'"
-msgstr ""
+msgstr "typen %q stöder inte '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -3330,7 +3330,7 @@ msgstr "typ stöds inte för operatören"
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%q', '%q'"
-msgstr ""
+msgstr "typen %q stöder inte '%q', '%q'"
 
 #: py/objint.c
 #, c-format
@@ -3343,7 +3343,7 @@ msgstr "value_count måste vara > 0"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "vektorer måste ha samma längd"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
