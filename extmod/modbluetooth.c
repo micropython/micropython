@@ -457,7 +457,7 @@ STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t character
 
     // Lists of characteristic uuids and flags.
     mp_obj_bluetooth_uuid_t **characteristic_uuids = m_new(mp_obj_bluetooth_uuid_t *, len);
-    uint8_t *characteristic_flags = m_new(uint8_t, len);
+    uint16_t *characteristic_flags = m_new(uint16_t, len);
 
     // Flattened list of descriptor uuids and flags. Grows (realloc) as more descriptors are encountered.
     mp_obj_bluetooth_uuid_t **descriptor_uuids = NULL;
