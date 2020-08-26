@@ -71,12 +71,28 @@
 // Advertisement packet lengths
 #define MP_BLUETOOTH_GAP_ADV_MAX_LEN (32)
 
+// Basic characteristic/descriptor flags.
 // These match the spec values for these flags so can be passed directly to the stack.
-#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ     (1 << 1)
-#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_NO_RESPONSE (1 << 2)
-#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE    (1 << 3)
-#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY   (1 << 4)
-#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_INDICATE (1 << 5)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_BROADCAST                  (0x0001)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ                       (0x0002)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_NO_RESPONSE          (0x0004)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE                      (0x0008)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY                     (0x0010)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_INDICATE                   (0x0020)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_AUTHENTICATED_SIGNED_WRITE (0x0040)
+
+// TODO: NimBLE and BlueKitchen disagree on this one.
+// #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_RELIABLE_WRITE             (0x0080)
+
+// Extended flags for security and privacy.
+// These match NimBLE but might require mapping in the bindings for other stacks.
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_AUX_WRITE                  (0x0100)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ_ENCRYPTED             (0x0200)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ_AUTHENTICATED         (0x0400)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ_AUTHORIZED            (0x0800)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_ENCRYPTED            (0x1000)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_AUTHENTICATED        (0x2000)
+#define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_AUTHORIZED           (0x4000)
 
 // For mp_bluetooth_gattc_write, the mode parameter
 #define MP_BLUETOOTH_WRITE_MODE_NO_RESPONSE     (0)
@@ -153,6 +169,22 @@ _IRQ_L2CAP_DISCONNECT = const(24)
 _IRQ_L2CAP_RECV = const(25)
 _IRQ_L2CAP_SEND_READY = const(26)
 _IRQ_GATTS_CONN_UPDATE = const(27)
+
+_FLAG_BROADCAST = const(0x0001)
+_FLAG_READ = const(0x0002)
+_FLAG_WRITE_NO_RESPONSE = const(0x0004)
+_FLAG_WRITE = const(0x0008)
+_FLAG_NOTIFY = const(0x0010)
+_FLAG_INDICATE = const(0x0020)
+_FLAG_AUTHENTICATED_SIGNED_WRITE = const(0x0040)
+
+_FLAG_AUX_WRITE = const(0x0100)
+_FLAG_READ_ENCRYPTED = const(0x0200)
+_FLAG_READ_AUTHENTICATED = const(0x0400)
+_FLAG_READ_AUTHORIZED = const(0x0800)
+_FLAG_WRITE_ENCRYPTED = const(0x1000)
+_FLAG_WRITE_AUTHENTICATED = const(0x2000)
+_FLAG_WRITE_AUTHORIZED = const(0x4000)
 */
 
 // bluetooth.UUID type.
@@ -214,7 +246,7 @@ void mp_bluetooth_gap_advertise_stop(void);
 int mp_bluetooth_gatts_register_service_begin(bool append);
 // Add a service with the given list of characteristics to the queue to be registered.
 // The value_handles won't be valid until after mp_bluetooth_register_service_end is called.
-int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint8_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint8_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics);
+int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint16_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint16_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics);
 // Register any queued services.
 int mp_bluetooth_gatts_register_service_end(void);
 

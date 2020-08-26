@@ -685,7 +685,7 @@ int mp_bluetooth_gatts_register_service_end(void) {
     return 0;
 }
 
-int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint8_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint8_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics) {
+int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, mp_obj_bluetooth_uuid_t **characteristic_uuids, uint16_t *characteristic_flags, mp_obj_bluetooth_uuid_t **descriptor_uuids, uint16_t *descriptor_flags, uint8_t *num_descriptors, uint16_t *handles, size_t num_characteristics) {
     if (MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services == MP_BLUETOOTH_NIMBLE_MAX_SERVICES) {
         return MP_E2BIG;
     }
@@ -697,6 +697,7 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
         characteristics[i].uuid = create_nimble_uuid(characteristic_uuids[i], NULL);
         characteristics[i].access_cb = characteristic_access_cb;
         characteristics[i].arg = NULL;
+        // NimBLE flags match the MP_BLUETOOTH_CHARACTERISTIC_FLAG_ ones exactly (including the security/privacy options).
         characteristics[i].flags = characteristic_flags[i];
         characteristics[i].min_key_size = 0;
         characteristics[i].val_handle = &handles[handle_index];
@@ -710,7 +711,8 @@ int mp_bluetooth_gatts_register_service(mp_obj_bluetooth_uuid_t *service_uuid, m
             for (size_t j = 0; j < num_descriptors[i]; ++j) {
                 descriptors[j].uuid = create_nimble_uuid(descriptor_uuids[descriptor_index], NULL);
                 descriptors[j].access_cb = characteristic_access_cb;
-                descriptors[j].att_flags = descriptor_flags[descriptor_index];
+                // NimBLE doesn't support security/privacy options on descriptors.
+                descriptors[j].att_flags = (uint8_t)descriptor_flags[descriptor_index];
                 descriptors[j].min_key_size = 0;
                 // Unlike characteristic, Nimble doesn't provide an automatic way to remember the handle, so use the arg.
                 descriptors[j].arg = &handles[handle_index];
