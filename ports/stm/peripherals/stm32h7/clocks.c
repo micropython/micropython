@@ -37,7 +37,6 @@ void stm32_peripherals_clocks_init(void) {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-    bool lse_failure = false;
 
     // Set voltage scaling in accordance with system clock speed
     HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
@@ -73,15 +72,9 @@ void stm32_peripherals_clocks_init(void) {
     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
     RCC_OscInitStruct.PLL.PLLFRACN = 0;
     if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-        // Failure likely means a LSE issue - attempt to swap to LSI, and set to crash
-        RCC_OscInitStruct.LSEState = RCC_LSE_OFF;
-        RCC_OscInitStruct.OscillatorType |= RCC_OSCILLATORTYPE_LSI;
-        RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-        if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
-            // No HSE means no USB, so just fail forever
-            while(1);
-        }
-        lse_failure = true;
+        // Clock issues are too problematic to even attempt recovery.
+        // If you end up here, check whether your LSE settings match your board.
+        while(1);
     }
 
     // Configure bus clock sources and divisors
@@ -116,8 +109,4 @@ void stm32_peripherals_clocks_init(void) {
 
     // Enable USB Voltage detector
     HAL_PWREx_EnableUSBVoltageDetector();
-
-    if (lse_failure) {
-        reset_into_safe_mode(HARD_CRASH); //TODO: make safe mode category CLOCK_FAULT?
-    }
 }
