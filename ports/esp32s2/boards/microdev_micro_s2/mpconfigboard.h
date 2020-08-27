@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,45 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+//Micropython setup
 
-#include "supervisor/serial.h"
-#include "lib/oofatfs/ff.h"
-#include "py/mpconfig.h"
-#include "py/mpstate.h"
-#include "py/runtime.h"
+#define MICROPY_HW_BOARD_NAME       "microDev microS2"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#include "supervisor/shared/status_leds.h"
+#define MICROPY_HW_LED (&pin_GPIO21)
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
 
-#if CIRCUITPY_WATCHDOG
-#include "shared-bindings/watchdog/__init__.h"
-#define WATCHDOG_EXCEPTION_CHECK() (MP_STATE_VM(mp_pending_exception) == &mp_watchdog_timeout_exception)
-#else
-#define WATCHDOG_EXCEPTION_CHECK() 0
-#endif
-
-int mp_hal_stdin_rx_chr(void) {
-    for (;;) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
-        mp_handle_pending();
-        if (serial_bytes_available()) {
-            toggle_rx_led();
-            return serial_read();
-        }
-    }
-}
-
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    toggle_tx_led();
-
-    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-    if (boot_output_file != NULL) {
-        UINT bytes_written = 0;
-        f_write(boot_output_file, str, len, &bytes_written);
-    }
-    #endif
-
-    serial_write_substring(str, len);
-}
+#define AUTORESET_DELAY_MS 500

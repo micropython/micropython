@@ -67,6 +67,8 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     #ifdef RUN_BACKGROUND_TASKS
     RUN_BACKGROUND_TASKS;
     #endif
+    mp_handle_pending();
+
 #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
