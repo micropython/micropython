@@ -25,8 +25,6 @@ CIRCUITPY_COUNTIO = 0
 
 # These modules are implemented in shared-module/ - they can be included in
 # any port once their prerequisites in common-hal are complete.
-# Requires OS
-CIRCUITPY_RANDOM = 0
 # Requires USB
 CIRCUITPY_USB_MIDI = 0
 # Too large for the partition table!
