@@ -62,7 +62,7 @@ else
     case $1 in
         "s110_nrf51" )
             download_s110_nrf51_8_0_0 ${SCRIPT_DIR} ;;
-        "s132_nrf52_6_1_1" )
+        "s132_nrf52_7_2_0" )
             download_s132_nrf52_7_2_0 ${SCRIPT_DIR} ;;
         "s140_nrf52_7_2_0" )
             download_s140_nrf52_7_2_0 ${SCRIPT_DIR} ;;
