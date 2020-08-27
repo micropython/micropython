@@ -144,6 +144,7 @@ version = release = final_version
 # directories to ignore when looking for source files.
 exclude_patterns = ["**/build*",
                     ".git",
+                    ".env",
                     ".venv",
                     ".direnv",
                     "docs/autoapi",

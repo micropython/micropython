@@ -36,7 +36,7 @@
 static const char *TAG = "cp iternext";
 
 //| class ScannedNetworks:
-//|     """Iterates over wifi `Network`s found while scanning. This object is always created
+//|     """Iterates over all `wifi.Network` objects found while scanning. This object is always created
 //|     by a `wifi.Radio`: it has no user-visible constructor."""
 //|
 STATIC mp_obj_t scannednetworks_iternext(mp_obj_t self_in) {

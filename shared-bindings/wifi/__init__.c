@@ -32,12 +32,11 @@
 
 //| """
 //| The `wifi` module provides necessary low-level functionality for managing wifi
-//| wifi connections. Use `socketpool` for communicating over the network.
+//| wifi connections. Use `socketpool` for communicating over the network."""
 //|
-//| .. attribute:: radio
-//|
-//|   Wifi radio used to manage both station and AP modes.
-//|   This object is the sole instance of `wifi.Radio`."""
+//| radio: Radio
+//| """Wifi radio used to manage both station and AP modes.
+//| This object is the sole instance of `wifi.Radio`."""
 //|
 
 

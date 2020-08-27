@@ -42,7 +42,7 @@
 //|     def __init__(self, address: Union[str, bytes]) -> None:
 //|         """Create a new IPv4Address object encapsulating the address value.
 //|
-//|            The value itself can either be bytes or a string formatted address.""
+//|            The value itself can either be bytes or a string formatted address."""
 //|         ...
 //|
 STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
