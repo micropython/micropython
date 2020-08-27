@@ -1,9 +1,10 @@
 # ESP-IDF Partition Table
 # Name,   Type, SubType, Offset,  Size, Flags
-# bootloader.bin         0x1000
-# partition table        0x8000, 0xC00
-otadata,  data, ota,     0xd000,  0x2000,
-ota_0,    0,    ota_0,  0x10000,  0x120000,
-ota_1,    0,    ota_1, 0x130000,  0x120000,
-phy_init, data, phy,   0x250000,  0x1000,
-user_fs,  data, fat,   0x251000,  0x1af000,
+# bootloader.bin          0x1000
+# partition table         0x8000, 0xC00
+otadata,  data, ota,      0xd000,  0x2000,
+phy_init, data, phy,      0xf000,  0x1000,
+ota_0,    0,    ota_0,   0x10000,  0x160000,
+ota_1,    0,    ota_1,  0x170000,  0x160000,
+uf2,      app,  factory,0x2d0000,  256K,
+user_fs,  data, fat,    0x310000,  960K,
