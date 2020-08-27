@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,45 +24,33 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "supervisor/serial.h"
-#include "lib/oofatfs/ff.h"
-#include "py/mpconfig.h"
-#include "py/mpstate.h"
-#include "py/runtime.h"
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
-#include "supervisor/shared/status_leds.h"
+    // Debug UART
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
 
-#if CIRCUITPY_WATCHDOG
-#include "shared-bindings/watchdog/__init__.h"
-#define WATCHDOG_EXCEPTION_CHECK() (MP_STATE_VM(mp_pending_exception) == &mp_watchdog_timeout_exception)
-#else
-#define WATCHDOG_EXCEPTION_CHECK() 0
-#endif
-
-int mp_hal_stdin_rx_chr(void) {
-    for (;;) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
-        mp_handle_pending();
-        if (serial_bytes_available()) {
-            toggle_rx_led();
-            return serial_read();
-        }
-    }
+    // SPI Flash and RAM
+    common_hal_never_reset_pin(&pin_GPIO26);
+    common_hal_never_reset_pin(&pin_GPIO27);
+    common_hal_never_reset_pin(&pin_GPIO28);
+    common_hal_never_reset_pin(&pin_GPIO29);
+    common_hal_never_reset_pin(&pin_GPIO30);
+    common_hal_never_reset_pin(&pin_GPIO31);
+    common_hal_never_reset_pin(&pin_GPIO32);
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    toggle_tx_led();
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-    if (boot_output_file != NULL) {
-        UINT bytes_written = 0;
-        f_write(boot_output_file, str, len, &bytes_written);
-    }
-    #endif
+void reset_board(void) {
 
-    serial_write_substring(str, len);
 }

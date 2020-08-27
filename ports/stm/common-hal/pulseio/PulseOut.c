@@ -118,8 +118,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
                                             uint32_t frequency,
                                             uint16_t duty_cycle) {
     if (!carrier || pin || frequency) {
-        mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. \
-                                    Construct and pass a PWMOut Carrier instead"));
+        mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. Construct and pass a PWMOut Carrier instead"));
     }
 
     // Add to active PulseOuts

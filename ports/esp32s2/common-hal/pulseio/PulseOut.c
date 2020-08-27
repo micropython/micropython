@@ -37,8 +37,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
                                             uint32_t frequency,
                                             uint16_t duty_cycle) {
     if (carrier || !pin || !frequency) {
-        mp_raise_NotImplementedError(translate("Port does not accept PWM carrier. \
-                                    Pass a pin, frequency and duty cycle instead"));
+        mp_raise_NotImplementedError(translate("Port does not accept PWM carrier. Pass a pin, frequency and duty cycle instead"));
     }
 
     rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
