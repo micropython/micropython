@@ -408,6 +408,7 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "electroniccats_bastwifi"
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
         - "microdev_micro_s2"
