@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x80A6
+USB_PID = 0x80C8
 USB_PRODUCT = "Kaluga 1"
 USB_MANUFACTURER = "Espressif"
 
