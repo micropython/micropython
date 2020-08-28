@@ -84,7 +84,7 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         _PM_FREE(self->core.screenData);
 
         self->framebuffer = NULL;
-        self->bufinfo.buf = _PM_allocator_impl(self->bufsize);
+        self->bufinfo.buf = common_hal_rgbmatrix_allocator_impl(self->bufsize);
         self->bufinfo.len = self->bufsize;
         self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
     }
@@ -210,4 +210,21 @@ int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t* self) {
 int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t* self) {
     int computed_height = (self->rgb_count / 3) << (self->addr_count);
     return computed_height;
+}
+
+void *common_hal_rgbmatrix_allocator_impl(size_t sz) {
+    if (gc_alloc_possible()) {
+        return m_malloc_maybe(sz + sizeof(void*), true);
+    } else {
+        supervisor_allocation *allocation = allocate_memory(align32_size(sz), false);
+        return allocation ? allocation->ptr : NULL;
+    }
+}
+
+void common_hal_rgbmatrix_free_impl(void *ptr_in) {
+    supervisor_allocation *allocation = allocation_from_ptr(ptr_in);
+
+    if (allocation) {
+        free_memory(allocation);
+    }
 }
