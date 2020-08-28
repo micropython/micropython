@@ -89,6 +89,7 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
     }
 
+    memset(&self->core, 0, sizeof(self->core));
     ProtomatterStatus stat = _PM_init(&self->core,
         self->width, self->bit_depth,
         self->rgb_count/6, self->rgb_pins,
@@ -101,14 +102,17 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         common_hal_mcu_disable_interrupts();
         common_hal_rgbmatrix_timer_enable(self->timer);
         stat = _PM_begin(&self->core);
-        _PM_convert_565(&self->core, self->bufinfo.buf, self->width);
+
+        if (stat == PROTOMATTER_OK) {
+            _PM_convert_565(&self->core, self->bufinfo.buf, self->width);
+        }
         common_hal_mcu_enable_interrupts();
-        _PM_swapbuffer_maybe(&self->core);
+        if (stat == PROTOMATTER_OK) {
+            _PM_swapbuffer_maybe(&self->core);
+        }
     }
 
     if (stat != PROTOMATTER_OK) {
-        // XXX this deinit() actually makes crashy-crashy
-        // can trigger it by sending inappropriate pins
         common_hal_rgbmatrix_rgbmatrix_deinit(self);
         switch (stat) {
         case PROTOMATTER_ERR_PINS:
@@ -117,7 +121,9 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         case PROTOMATTER_ERR_ARG:
             mp_raise_ValueError(translate("Invalid argument"));
             break;
-        case PROTOMATTER_ERR_MALLOC: /// should have already been signaled as NLR
+        case PROTOMATTER_ERR_MALLOC:
+            mp_raise_msg(&mp_type_MemoryError, NULL);
+            break;
         default:
             mp_raise_msg_varg(&mp_type_RuntimeError,
                 translate("Internal error #%d"), (int)stat);
@@ -126,7 +132,6 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
     }
 
     self->paused = 0;
-
 }
 
 STATIC void free_pin(uint8_t *pin) {
