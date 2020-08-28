@@ -27,6 +27,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/gc.h"
 
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
 
@@ -47,6 +48,11 @@ bool mp_bluetooth_hci_poll(void) {
     }
 
     if (mp_bluetooth_nimble_ble_state >= MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
+        // When executing code within a handler we must lock the scheduler to
+        // prevent any scheduled callbacks from running, and lock the GC to
+        // prevent any memory allocations.
+        mp_sched_lock();
+        gc_lock();
 
         // Pretend like we're running in IRQ context (i.e. other things can't be running at the same time).
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
@@ -56,9 +62,12 @@ bool mp_bluetooth_hci_poll(void) {
 
         // Run pending background operations and events, but only after HCI sync.
         mp_bluetooth_nimble_os_callout_process();
-        mp_bluetooth_nimble_os_eventq_run_all();
+        mp_bluetooth_nimble_os_eventq_schedule();
 
         MICROPY_END_ATOMIC_SECTION(atomic_state);
+        
+        gc_unlock();
+        mp_sched_unlock();        
     }
 
     return true;

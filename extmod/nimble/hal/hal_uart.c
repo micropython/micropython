@@ -78,16 +78,18 @@ int hal_uart_close(uint32_t port) {
 }
 
 void mp_bluetooth_nimble_hci_uart_process(void) {
-    bool host_wake = mp_bluetooth_hci_controller_woken();
+    if (hal_uart_rx_cb) {
+        bool host_wake = mp_bluetooth_hci_controller_woken();
 
-    int chr;
-    while ((chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
-        // printf("UART RX: %02x\n", data);
-        hal_uart_rx_cb(hal_uart_rx_arg, chr);
-    }
+        int chr;
+        while ((chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
+            // printf("UART RX: %02x\n", data);
+            hal_uart_rx_cb(hal_uart_rx_arg, chr);
+        }
 
-    if (host_wake) {
-        mp_bluetooth_hci_controller_sleep_maybe();
+        if (host_wake) {
+            mp_bluetooth_hci_controller_sleep_maybe();
+        }
     }
 }
 

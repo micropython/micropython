@@ -178,8 +178,11 @@ int nimble_sprintf(char *str, const char *fmt, ...) {
 // EVENTQ
 
 struct ble_npl_eventq *global_eventq = NULL;
+static bool eventq_run_all_scheduled = false;
+static bool eventq_in_progress = false;
 
-void mp_bluetooth_nimble_os_eventq_run_all(void) {
+STATIC mp_obj_t mp_bluetooth_nimble_os_eventq_run_all(mp_obj_t none_in) {
+    eventq_run_all_scheduled = false;
     for (struct ble_npl_eventq *evq = global_eventq; evq != NULL; evq = evq->nextq) {
         int n = 0;
         while (evq->head != NULL && mp_bluetooth_nimble_ble_state > MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
@@ -190,10 +193,11 @@ void mp_bluetooth_nimble_os_eventq_run_all(void) {
                 ev->next = NULL;
             }
             ev->prev = NULL;
+            eventq_in_progress = true;
             DEBUG_EVENT_printf("event_run(%p)\n", ev);
             ev->fn(ev);
             DEBUG_EVENT_printf("event_run(%p) done\n", ev);
-
+            eventq_in_progress = false;
             if (++n > 3) {
                 // Limit to running 3 tasks per queue.
                 // Some tasks (such as reset) can enqueue themselves
@@ -202,6 +206,22 @@ void mp_bluetooth_nimble_os_eventq_run_all(void) {
             }
         }
     }
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_bluetooth_nimble_os_eventq_run_all_obj, mp_bluetooth_nimble_os_eventq_run_all);
+
+void mp_bluetooth_nimble_os_eventq_schedule(void) {
+    if (eventq_run_all_scheduled) return;
+    if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) return;
+
+    for (struct ble_npl_eventq *evq = global_eventq; evq != NULL; evq = evq->nextq) {
+        if (evq->head != NULL) {
+            // There are events to be run
+            eventq_run_all_scheduled = true;
+            mp_sched_schedule(MP_OBJ_FROM_PTR(&mp_bluetooth_nimble_os_eventq_run_all_obj), mp_const_none);
+        }
+    }        
 }
 
 void ble_npl_eventq_init(struct ble_npl_eventq *evq) {
@@ -339,10 +359,8 @@ ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout
     if (sem->count == 0) {
         uint32_t t0 = mp_hal_ticks_ms();
         while (sem->count == 0 && mp_hal_ticks_ms() - t0 < timeout) {
-            // This can be called either from code running in NimBLE's "task"
-            // (i.e. PENDSV) or directly by application code, so for the
-            // latter case, prevent the "task" from running while we poll the
-            // UART directly.
+            // This is most commonly called while hci is waiting to ack 
+            // which occurs while hci_lock is active, blocking pend.
             MICROPY_PY_BLUETOOTH_ENTER
             mp_bluetooth_nimble_hci_uart_process();
             MICROPY_PY_BLUETOOTH_EXIT
@@ -351,9 +369,15 @@ ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout
                 break;
             }
 
-            // Because we're polling, might as well wait for a UART IRQ indicating
-            // more data available.
-            mp_bluetooth_nimble_hci_uart_wfi();
+            if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
+                // Needed during mp_bluetooth_init()
+                MICROPY_EVENT_POLL_HOOK
+            } else {
+            
+                // Because we're polling, might as well wait for a UART IRQ indicating
+                // more data available.
+                mp_bluetooth_nimble_hci_uart_wfi();
+            }
         }
 
         if (sem->count == 0) {
