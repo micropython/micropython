@@ -46,15 +46,15 @@ class BLETemperature:
     def _irq(self, event, data):
         # Track connections so we can send notifications.
         if event == _IRQ_CENTRAL_CONNECT:
-            conn_handle, _, _, = data
+            conn_handle, _, _ = data
             self._connections.add(conn_handle)
         elif event == _IRQ_CENTRAL_DISCONNECT:
-            conn_handle, _, _, = data
+            conn_handle, _, _ = data
             self._connections.remove(conn_handle)
             # Start advertising again to allow a new connection.
             self._advertise()
         elif event == _IRQ_GATTS_INDICATE_DONE:
-            conn_handle, value_handle, status, = data
+            conn_handle, value_handle, status = data
 
     def set_temperature(self, temp_deg_c, notify=False, indicate=False):
         # Data is sint16 in degrees Celsius with a resolution of 0.01 degrees Celsius.
