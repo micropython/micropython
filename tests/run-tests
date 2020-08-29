@@ -367,7 +367,7 @@ def run_tests(pyb, tests, args, result_dir):
     if not has_complex:
         skip_tests.add('float/complex1.py')
         skip_tests.add('float/complex1_intbig.py')
-        skip_tests.add('float/complex_special_mehods.py')
+        skip_tests.add('float/complex_special_methods.py')
         skip_tests.add('float/int_big_float.py')
         skip_tests.add('float/true_value.py')
         skip_tests.add('float/types.py')
@@ -476,7 +476,7 @@ def run_tests(pyb, tests, args, result_dir):
         skip_it |= skip_slice and is_slice
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
-        skip_it |= skip_revops and test_name.startswith("class_reverse_op")
+        skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_io_module and is_io_module
 
         if args.list_tests:
