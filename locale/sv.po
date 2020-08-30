@@ -6,8 +6,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-27 11:21-0400\n"
-"PO-Revision-Date: 2020-08-30 18:28+0000\n"
-"Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
+"PO-Revision-Date: 2020-08-30 20:02+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
@@ -940,7 +940,7 @@ msgstr "Ogiltig %q-pinne"
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
-msgstr "Ogiltigt val av % q pinne"
+msgstr "Ogiltigt val av %q pinne"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
