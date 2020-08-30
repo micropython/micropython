@@ -2002,6 +2002,11 @@ typedef time_t mp_timestamp_t;
 #define MICROPY_PY_CRYPTOLIB_CONSTS (0)
 #endif
 
+// Optional AES-GCM support in cryptolib (mbedTLS-backed). On by default if mbedTLS is included.
+#ifndef MICROPY_PY_CRYPTOLIB_GCM
+#define MICROPY_PY_CRYPTOLIB_GCM (MICROPY_SSL_MBEDTLS)
+#endif
+
 #ifndef MICROPY_PY_BINASCII
 #define MICROPY_PY_BINASCII (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
