@@ -32,5 +32,3 @@
 // 91 is a magic number proposed by @dpgeorge, which make pystone run ~ at tie
 // with CPython 3.4.
 #define MICROPY_MODULE_DICT_SIZE (91)
-
-#include "variants/DEV/mpconfigvariant.h"
