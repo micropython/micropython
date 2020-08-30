@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-27 11:21-0400\n"
-"PO-Revision-Date: 2020-08-21 18:19+0000\n"
+"PO-Revision-Date: 2020-08-31 00:37+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1375,6 +1375,8 @@ msgid ""
 "Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
 "instead"
 msgstr ""
+"A porta não aceita pinos ou frequência. Em vez disso, construa e passe um "
+"PWMOut Carrier"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -2967,11 +2969,11 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
-msgstr ""
+msgstr "fora do alcance da fonte"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
-msgstr ""
+msgstr "fora do alcance do alvo"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
@@ -3156,7 +3158,7 @@ msgstr "o sosfilt requer que os argumentos sejam iteráveis"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
+msgstr "a paleta de origem é muito grande"
 
 #: py/objstr.c
 msgid "start/end indices"
