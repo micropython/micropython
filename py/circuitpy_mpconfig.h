@@ -503,6 +503,13 @@ extern const struct _mp_obj_module_t pixelbuf_module;
 #define PIXELBUF_MODULE
 #endif
 
+#if CIRCUITPY_PS2IO
+extern const struct _mp_obj_module_t ps2io_module;
+#define PS2IO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_ps2io), (mp_obj_t)&ps2io_module },
+#else
+#define PS2IO_MODULE
+#endif
+
 #if CIRCUITPY_PULSEIO
 extern const struct _mp_obj_module_t pulseio_module;
 #define PULSEIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module },
@@ -510,11 +517,11 @@ extern const struct _mp_obj_module_t pulseio_module;
 #define PULSEIO_MODULE
 #endif
 
-#if CIRCUITPY_PS2IO
-extern const struct _mp_obj_module_t ps2io_module;
-#define PS2IO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_ps2io), (mp_obj_t)&ps2io_module },
+#if CIRCUITPY_PWMIO
+extern const struct _mp_obj_module_t pwmio_module;
+#define PWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_pwmio), (mp_obj_t)&pwmio_module },
 #else
-#define PS2IO_MODULE
+#define PWMIO_MODULE
 #endif
 
 #if CIRCUITPY_RGBMATRIX
@@ -740,6 +747,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     PIXELBUF_MODULE \
     PS2IO_MODULE \
     PULSEIO_MODULE \
+    PWMIO_MODULE \
     RANDOM_MODULE \
     RE_MODULE \
     RGBMATRIX_MODULE \

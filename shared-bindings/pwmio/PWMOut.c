@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
@@ -55,33 +55,33 @@
 //|
 //|         Simple LED fade::
 //|
-//|           import pulseio
+//|           import pwmio
 //|           import board
 //|
-//|           pwm = pulseio.PWMOut(board.D13)     # output on D13
+//|           pwm = pwmio.PWMOut(board.D13)     # output on D13
 //|           pwm.duty_cycle = 2 ** 15            # Cycles the pin with 50% duty cycle (half of 2 ** 16) at the default 500hz
 //|
 //|         PWM at specific frequency (servos and motors)::
 //|
-//|           import pulseio
+//|           import pwmio
 //|           import board
 //|
-//|           pwm = pulseio.PWMOut(board.D13, frequency=50)
+//|           pwm = pwmio.PWMOut(board.D13, frequency=50)
 //|           pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at 50hz
 //|
 //|         Variable frequency (usually tones)::
 //|
-//|           import pulseio
+//|           import pwmio
 //|           import board
 //|           import time
 //|
-//|           pwm = pulseio.PWMOut(board.D13, duty_cycle=2 ** 15, frequency=440, variable_frequency=True)
+//|           pwm = pwmio.PWMOut(board.D13, duty_cycle=2 ** 15, frequency=440, variable_frequency=True)
 //|           time.sleep(0.2)
 //|           pwm.frequency = 880
 //|           time.sleep(0.1)"""
 //|         ...
 //|
-STATIC mp_obj_t pulseio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     enum { ARG_pin, ARG_duty_cycle, ARG_frequency, ARG_variable_frequency };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ, },
@@ -99,9 +99,9 @@ STATIC mp_obj_t pulseio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args
     bool variable_frequency = parsed_args[ARG_variable_frequency].u_bool;
 
     // create PWM object from the given pin
-    pulseio_pwmout_obj_t *self = m_new_obj(pulseio_pwmout_obj_t);
-    self->base.type = &pulseio_pwmout_type;
-    pwmout_result_t result = common_hal_pulseio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
+    pwmio_pwmout_obj_t *self = m_new_obj(pwmio_pwmout_obj_t);
+    self->base.type = &pwmio_pwmout_type;
+    pwmout_result_t result = common_hal_pwmio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
     if (result == PWMOUT_INVALID_PIN) {
         mp_raise_ValueError(translate("Invalid pin"));
     } else if (result == PWMOUT_INVALID_FREQUENCY) {
@@ -119,15 +119,15 @@ STATIC mp_obj_t pulseio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args
 //|         """Deinitialises the PWMOut and releases any hardware resources for reuse."""
 //|         ...
 //|
-STATIC mp_obj_t pulseio_pwmout_deinit(mp_obj_t self_in) {
-    pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_pulseio_pwmout_deinit(self);
+STATIC mp_obj_t pwmio_pwmout_deinit(mp_obj_t self_in) {
+    pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_pwmio_pwmout_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pwmout_deinit_obj, pulseio_pwmout_deinit);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pwmio_pwmout_deinit_obj, pwmio_pwmout_deinit);
 
-STATIC void check_for_deinit(pulseio_pwmout_obj_t *self) {
-    if (common_hal_pulseio_pwmout_deinited(self)) {
+STATIC void check_for_deinit(pwmio_pwmout_obj_t *self) {
+    if (common_hal_pwmio_pwmout_deinited(self)) {
         raise_deinited_error();
     }
 }
@@ -143,12 +143,12 @@ STATIC void check_for_deinit(pulseio_pwmout_obj_t *self) {
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
 //|
-STATIC mp_obj_t pulseio_pwmout_obj___exit__(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pwmio_pwmout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    common_hal_pulseio_pwmout_deinit(args[0]);
+    common_hal_pwmio_pwmout_deinit(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pwmout___exit___obj, 4, 4, pulseio_pwmout_obj___exit__);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pwmio_pwmout___exit___obj, 4, 4, pwmio_pwmout_obj___exit__);
 
 //|     duty_cycle: int
 //|     """16 bit value that dictates how much of one cycle is high (1) versus low
@@ -160,29 +160,29 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pwmout___exit___obj, 4, 4, pu
 //|     Reading this property will return the value from the internal representation,
 //|     so it may differ from the value set."""
 //|
-STATIC mp_obj_t pulseio_pwmout_obj_get_duty_cycle(mp_obj_t self_in) {
-    pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t pwmio_pwmout_obj_get_duty_cycle(mp_obj_t self_in) {
+    pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pwmout_get_duty_cycle(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_pwmio_pwmout_get_duty_cycle(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pwmout_get_duty_cycle_obj, pulseio_pwmout_obj_get_duty_cycle);
+MP_DEFINE_CONST_FUN_OBJ_1(pwmio_pwmout_get_duty_cycle_obj, pwmio_pwmout_obj_get_duty_cycle);
 
-STATIC mp_obj_t pulseio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_cycle) {
-    pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t pwmio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_cycle) {
+    pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     mp_int_t duty = mp_obj_get_int(duty_cycle);
     if (duty < 0 || duty > 0xffff) {
         mp_raise_ValueError(translate("PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"));
     }
-   common_hal_pulseio_pwmout_set_duty_cycle(self, duty);
+   common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(pulseio_pwmout_set_duty_cycle_obj, pulseio_pwmout_obj_set_duty_cycle);
+MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_duty_cycle_obj, pwmio_pwmout_obj_set_duty_cycle);
 
-const mp_obj_property_t pulseio_pwmout_duty_cycle_obj = {
+const mp_obj_property_t pwmio_pwmout_duty_cycle_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pulseio_pwmout_get_duty_cycle_obj,
-              (mp_obj_t)&pulseio_pwmout_set_duty_cycle_obj,
+    .proxy = {(mp_obj_t)&pwmio_pwmout_get_duty_cycle_obj,
+              (mp_obj_t)&pwmio_pwmout_set_duty_cycle_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
@@ -196,50 +196,50 @@ const mp_obj_property_t pulseio_pwmout_duty_cycle_obj = {
 //|     from the original duty cycle value. This should happen without any need
 //|     to manually re-set the duty cycle."""
 //|
-STATIC mp_obj_t pulseio_pwmout_obj_get_frequency(mp_obj_t self_in) {
-    pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t pwmio_pwmout_obj_get_frequency(mp_obj_t self_in) {
+    pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_pulseio_pwmout_get_frequency(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_pwmio_pwmout_get_frequency(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pwmout_get_frequency_obj, pulseio_pwmout_obj_get_frequency);
+MP_DEFINE_CONST_FUN_OBJ_1(pwmio_pwmout_get_frequency_obj, pwmio_pwmout_obj_get_frequency);
 
-STATIC mp_obj_t pulseio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t frequency) {
-    pulseio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t frequency) {
+    pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    if (!common_hal_pulseio_pwmout_get_variable_frequency(self)) {
+    if (!common_hal_pwmio_pwmout_get_variable_frequency(self)) {
         mp_raise_AttributeError(translate(
             "PWM frequency not writable when variable_frequency is False on "
             "construction."));
     }
-   common_hal_pulseio_pwmout_set_frequency(self, mp_obj_get_int(frequency));
+   common_hal_pwmio_pwmout_set_frequency(self, mp_obj_get_int(frequency));
    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(pulseio_pwmout_set_frequency_obj, pulseio_pwmout_obj_set_frequency);
+MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_frequency_obj, pwmio_pwmout_obj_set_frequency);
 
-const mp_obj_property_t pulseio_pwmout_frequency_obj = {
+const mp_obj_property_t pwmio_pwmout_frequency_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pulseio_pwmout_get_frequency_obj,
-              (mp_obj_t)&pulseio_pwmout_set_frequency_obj,
+    .proxy = {(mp_obj_t)&pwmio_pwmout_get_frequency_obj,
+              (mp_obj_t)&pwmio_pwmout_set_frequency_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
-STATIC const mp_rom_map_elem_t pulseio_pwmout_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {
     // Methods
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pulseio_pwmout_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pwmio_pwmout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&pulseio_pwmout___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&pwmio_pwmout___exit___obj) },
 
     // Properties
-    { MP_ROM_QSTR(MP_QSTR_duty_cycle), MP_ROM_PTR(&pulseio_pwmout_duty_cycle_obj) },
-    { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&pulseio_pwmout_frequency_obj) },
+    { MP_ROM_QSTR(MP_QSTR_duty_cycle), MP_ROM_PTR(&pwmio_pwmout_duty_cycle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&pwmio_pwmout_frequency_obj) },
     // TODO(tannewt): Add enabled to determine whether the signal is output
     // without giving up the resources. Useful for IR output.
 };
-STATIC MP_DEFINE_CONST_DICT(pulseio_pwmout_locals_dict, pulseio_pwmout_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(pwmio_pwmout_locals_dict, pwmio_pwmout_locals_dict_table);
 
-const mp_obj_type_t pulseio_pwmout_type = {
+const mp_obj_type_t pwmio_pwmout_type = {
     { &mp_type_type },
     .name = MP_QSTR_PWMOut,
-    .make_new = pulseio_pwmout_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pulseio_pwmout_locals_dict,
+    .make_new = pwmio_pwmout_make_new,
+    .locals_dict = (mp_obj_dict_t*)&pwmio_pwmout_locals_dict,
 };

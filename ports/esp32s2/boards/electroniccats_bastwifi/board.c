@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PWMOUT_H
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "nrfx_pwm.h"
-#include "py/obj.h"
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
-typedef struct {
-    mp_obj_base_t base;
-    NRF_PWM_Type* pwm;
-    uint8_t pin_number;
-    uint8_t channel: 7;
-    bool variable_frequency: 1;
-    uint16_t duty_cycle;
-    uint32_t frequency;
-} pulseio_pwmout_obj_t;
+    // Debug UART
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+}
 
-void pwmout_reset(void);
-NRF_PWM_Type *pwmout_allocate(uint16_t countertop, nrf_pwm_clk_t base_clock,
-    bool variable_frequency, int8_t *channel_out, bool *pwm_already_in_use_out,
-    IRQn_Type *irq);
-void pwmout_free_channel(NRF_PWM_Type *pwm, int8_t channel);
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_PULSEIO_PWMOUT_H
+void reset_board(void) {
+
+}

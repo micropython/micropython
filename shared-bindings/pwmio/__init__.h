@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PWMOUT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_PWMIO___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_PWMIO___INIT___H
 
-#include "common-hal/microcontroller/Pin.h"
-#include "driver/ledc.h"
+#include "py/obj.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    ledc_timer_config_t tim_handle;
-    ledc_channel_config_t chan_handle;
-    uint16_t pin_number;
-    uint8_t duty_resolution;
-    bool variable_frequency: 1;
-    bool deinited: 1;
-} pulseio_pwmout_obj_t;
+// Nothing now.
 
-void pwmout_reset(void);
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PWMOUT_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_PWMIO___INIT___H

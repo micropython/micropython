@@ -35,7 +35,7 @@ typedef enum {
     WATCHDOGMODE_RESET,
 } watchdog_watchdogmode_t;
 
-const mp_obj_type_t watchdog_watchdogmode_type;
+extern const mp_obj_type_t watchdog_watchdogmode_type;
 
 watchdog_watchdogmode_t watchdog_watchdogmode_obj_to_type(mp_obj_t obj);
 mp_obj_t watchdog_watchdogmode_type_to_obj(watchdog_watchdogmode_t mode);
