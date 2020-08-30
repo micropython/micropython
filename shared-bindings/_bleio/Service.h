@@ -34,7 +34,7 @@
 
 #include "py/objtuple.h"
 
-const mp_obj_type_t bleio_service_type;
+extern const mp_obj_type_t bleio_service_type;
 
 // Private version that doesn't allocate on the heap
 extern uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_obj_t *uuid, bool is_secondary, mp_obj_list_t * characteristic_list);

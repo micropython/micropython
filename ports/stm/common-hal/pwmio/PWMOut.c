@@ -27,8 +27,8 @@
 
 #include <stdint.h>
 #include "py/runtime.h"
-#include "common-hal/pulseio/PWMOut.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "supervisor/shared/translate.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
@@ -75,7 +75,7 @@ void pwmout_reset(void) {
     }
 }
 
-pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
+pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
                                                     const mcu_pin_obj_t* pin,
                                                     uint16_t duty,
                                                     uint32_t frequency,
@@ -96,7 +96,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
         //if pin is same
         if (l_tim->pin == pin) {
             //check if the timer has a channel active, or is reserved by main timer system
-            if (reserved_tim[l_tim_index] != 0) {
+            if (l_tim_index < TIM_BANK_ARRAY_LEN && reserved_tim[l_tim_index] != 0) {
                 // Timer has already been reserved by an internal module
                 if (stm_peripherals_timer_is_reserved(mcu_tim_banks[l_tim_index])) {
                     tim_taken_internal = true;
@@ -204,7 +204,7 @@ pwmout_result_t common_hal_pulseio_pwmout_construct(pulseio_pwmout_obj_t* self,
     return PWMOUT_OK;
 }
 
-void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     for (size_t i = 0; i < TIM_BANK_ARRAY_LEN; i++) {
         if (mcu_tim_banks[i] == self->handle.Instance) {
             never_reset_tim[i] = true;
@@ -214,7 +214,7 @@ void common_hal_pulseio_pwmout_never_reset(pulseio_pwmout_obj_t *self) {
     }
 }
 
-void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
+void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
     for(size_t i = 0; i < TIM_BANK_ARRAY_LEN; i++) {
         if (mcu_tim_banks[i] == self->handle.Instance) {
             never_reset_tim[i] = false;
@@ -223,12 +223,12 @@ void common_hal_pulseio_pwmout_reset_ok(pulseio_pwmout_obj_t *self) {
     }
 }
 
-bool common_hal_pulseio_pwmout_deinited(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t* self) {
     return self->tim == NULL;
 }
 
-void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
-    if (common_hal_pulseio_pwmout_deinited(self)) {
+void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
+    if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
     //var freq shuts down entire timer, others just their channel
@@ -239,26 +239,27 @@ void common_hal_pulseio_pwmout_deinit(pulseio_pwmout_obj_t* self) {
         HAL_TIM_PWM_Stop(&self->handle, self->channel);
     }
     reset_pin_number(self->tim->pin->port,self->tim->pin->number);
-    self->tim = NULL;
 
     //if reserved timer has no active channels, we can disable it
     if (!reserved_tim[self->tim->tim_index - 1]) {
         tim_frequencies[self->tim->tim_index - 1] = 0x00;
         stm_peripherals_timer_free(self->handle.Instance);
     }
+
+    self->tim = NULL;
 }
 
-void common_hal_pulseio_pwmout_set_duty_cycle(pulseio_pwmout_obj_t* self, uint16_t duty) {
+void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty) {
     uint32_t internal_duty_cycle = timer_get_internal_duty(duty, self->period);
     __HAL_TIM_SET_COMPARE(&self->handle, self->channel, internal_duty_cycle);
     self->duty_cycle = duty;
 }
 
-uint16_t common_hal_pulseio_pwmout_get_duty_cycle(pulseio_pwmout_obj_t* self) {
+uint16_t common_hal_pwmio_pwmout_get_duty_cycle(pwmio_pwmout_obj_t* self) {
     return self->duty_cycle;
 }
 
-void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_t frequency) {
+void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self, uint32_t frequency) {
     //don't halt setup for the same frequency
     if (frequency == self->frequency) {
         return;
@@ -295,10 +296,10 @@ void common_hal_pulseio_pwmout_set_frequency(pulseio_pwmout_obj_t* self, uint32_
     self->period = period;
 }
 
-uint32_t common_hal_pulseio_pwmout_get_frequency(pulseio_pwmout_obj_t* self) {
+uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t* self) {
     return self->frequency;
 }
 
-bool common_hal_pulseio_pwmout_get_variable_frequency(pulseio_pwmout_obj_t* self) {
+bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t* self) {
     return self->variable_frequency;
 }

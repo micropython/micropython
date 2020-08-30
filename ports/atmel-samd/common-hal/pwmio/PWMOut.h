@@ -4,7 +4,6 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,20 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PULSEIO_PWMOUT_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PULSEIO_PWMOUT_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "periph.h"
+
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
-    const mcu_pwm_obj_t *pwm;
+    const pin_timer_t* timer;
     bool variable_frequency;
-} pulseio_pwmout_obj_t;
+    uint16_t duty_cycle;
+} pwmio_pwmout_obj_t;
 
 void pwmout_reset(void);
 
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PULSEIO_PWMOUT_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H

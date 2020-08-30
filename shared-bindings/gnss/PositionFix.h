@@ -13,7 +13,7 @@ typedef enum {
     POSITIONFIX_3D,
 } gnss_positionfix_t;
 
-const mp_obj_type_t gnss_positionfix_type;
+extern const mp_obj_type_t gnss_positionfix_type;
 
 gnss_positionfix_t gnss_positionfix_obj_to_type(mp_obj_t obj);
 mp_obj_t gnss_positionfix_type_to_obj(gnss_positionfix_t mode);

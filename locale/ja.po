@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-14 09:36-0400\n"
+"POT-Creation-Date: 2020-08-18 11:19-0400\n"
 "PO-Revision-Date: 2020-08-16 13:25+0000\n"
 "Last-Translator: Taku Fukada <naninunenor@gmail.com>\n"
 "Language-Team: none\n"
@@ -759,7 +759,7 @@ msgstr "正規表現にエラーがあります"
 
 #: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
 #: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr ""
@@ -1348,6 +1348,15 @@ msgstr ""
 msgid "Polygon needs at least 3 points"
 msgstr "ポリゴンには少なくとも3つの点が必要"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/pulseio/PulseOut.c
+#: ports/stm/common-hal/pulseio/PulseOut.c
+msgid ""
+"Port does not accept pins or frequency.                                     "
+"Construct and pass a PWMOut Carrier instead"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Prefixバッファはヒープ上になければなりません"
@@ -1360,6 +1369,10 @@ msgstr "何らかのキーを押すとREPLに入ります。CTRL-Dでリロー�
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "方向がoutputのときpullは使われません"
+
+#: ports/stm/ref/pulseout-pre-timeralloc.c
+msgid "PulseOut not supported on this chip"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
