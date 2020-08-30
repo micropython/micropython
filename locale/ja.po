@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-18 11:19-0400\n"
+"POT-Creation-Date: 2020-08-27 11:21-0400\n"
 "PO-Revision-Date: 2020-08-16 13:25+0000\n"
 "Last-Translator: Taku Fukada <naninunenor@gmail.com>\n"
 "Language-Team: none\n"
@@ -311,7 +311,7 @@ msgstr "全てのイベントチャネルが使用中"
 msgid "All sync event channels in use"
 msgstr "全ての同期イベントチャネルが使用中"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "このピン用の全てのタイマが使用中"
 
@@ -323,7 +323,7 @@ msgstr "このピン用の全てのタイマが使用中"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: ports/stm/peripherals/timers.c shared-bindings/pulseio/PWMOut.c
+#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "全てのタイマーが使用中"
 
@@ -565,7 +565,7 @@ msgstr "MOSIピンとMISOピンなしに転送できません"
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "スカラのサイズを曖昧さなしに取得できません"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "使用中のタイマー上で周波数を変えられません"
 
@@ -636,23 +636,23 @@ msgstr "SDカードを初期化できません"
 msgid "Could not initialize UART"
 msgstr "UARTを初期化できません"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize channel"
 msgstr "チャネルを初期化できません"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize timer"
 msgstr "タイマーを初期化できません"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "チャネルを再初期化できません"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init timer"
 msgstr "タイマーを再初期化できません"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not restart PWM"
 msgstr "PWMを再スタートできません"
 
@@ -660,7 +660,7 @@ msgstr "PWMを再スタートできません"
 msgid "Could not set address"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "PWMをスタートできません"
 
@@ -851,7 +851,7 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "このタイマーを使う既存のPWMOutと周波数を一致させてください"
 
@@ -955,9 +955,9 @@ msgstr "不正なBMPファイル"
 msgid "Invalid DAC pin supplied"
 msgstr "無効なDACピンが与えられました"
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c
-#: ports/cxd56/common-hal/pulseio/PWMOut.c
-#: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
+#: ports/atmel-samd/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "無効なPWM周波数"
 
@@ -997,7 +997,7 @@ msgstr "不正なファイル"
 msgid "Invalid format chunk size"
 msgstr "フォーマットチャンクのサイズが不正"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
 msgstr "不正な周波数が与えられました"
 
@@ -1015,8 +1015,8 @@ msgid "Invalid phase"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "不正なピン"
 
@@ -1040,7 +1040,7 @@ msgstr "右チャネルのピンが不正"
 msgid "Invalid pins"
 msgstr "ピンが不正"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid pins for PWMOut"
 msgstr "PWMOutのピンが不正"
 
@@ -1222,7 +1222,7 @@ msgstr "キーが指定されていません"
 msgid "No long integer support"
 msgstr "long integerサポートがありません"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
 msgstr "このピンに利用可能なタイマーがもうありません"
 
@@ -1292,13 +1292,13 @@ msgstr ""
 msgid "Oversample must be multiple of 8."
 msgstr "オーバーサンプルは8の倍数でなければなりません"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
 "PWMの duty_cycle 値は 0 から 65535 の間でなければなりません（16ビット解像度）"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr "PWM周波数は、生成時のvariable_frequencyがFalseのとき書き換え不可"
@@ -1353,8 +1353,8 @@ msgstr "ポリゴンには少なくとも3つの点が必要"
 #: ports/nrf/common-hal/pulseio/PulseOut.c
 #: ports/stm/common-hal/pulseio/PulseOut.c
 msgid ""
-"Port does not accept pins or frequency.                                     "
-"Construct and pass a PWMOut Carrier instead"
+"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
+"instead"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
@@ -1593,7 +1593,7 @@ msgstr "タイルの幅はビットマップの幅を割り切れる値でなけ
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "タイムアウトが長すぎ。最大のタイムアウト長は%d秒"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
@@ -2912,6 +2912,14 @@ msgstr "ord()は1文字を受け取ります"
 msgid "ord() expected a character, but string of length %d found"
 msgstr "ord()は1文字を要求しますが、長さ %d の文字列が与えられました"
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of source"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of target"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
 msgstr "long int をマシンの word に変換する際にオーバーフローしました"
@@ -3089,6 +3097,10 @@ msgstr ""
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sosfilt requires iterable arguments"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "source palette too large"
 msgstr ""
 
 #: py/objstr.c
