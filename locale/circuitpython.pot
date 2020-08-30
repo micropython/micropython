@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-21 11:37-0400\n"
+"POT-Creation-Date: 2020-08-30 14:34-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -490,6 +490,10 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -742,8 +746,8 @@ msgstr ""
 msgid "Error in regex"
 msgstr ""
 
-#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -1249,6 +1253,10 @@ msgstr ""
 
 #: main.c
 msgid "Not running saved code.\n"
+msgstr ""
+
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
 msgstr ""
 
 #: shared-bindings/util.c
@@ -2411,10 +2419,6 @@ msgstr ""
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "hci_uart_init not available"
 msgstr ""
 
 #: extmod/moduheapq.c
