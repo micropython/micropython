@@ -72,6 +72,18 @@ Example::
     # Don't forget to close the underlying stream!
     f.close()
 
+.. note::
+
+   Due to licensing restrictions ``btree`` is not commonly included in builds, e.g. PyBoard builds.
+   The licensing restriction is that when advertising products containing the BerkelyDB library then
+   the advertising must acknoledge that the BerkelyDB library (this is onerous to do in *all* advertising).
+   If ``btree`` is required then, ``btree`` can be built from source as a native ``.mpy`` file:
+   
+       $ cd examples/natmod/btree
+       
+       $ make ARCH=armv7m
+   
+   Then copy ``btree_armv7m.mpy`` to the board as ``btree.mpy``.
 
 Functions
 ---------
