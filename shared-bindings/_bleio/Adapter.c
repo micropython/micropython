@@ -48,46 +48,42 @@
 #define WINDOW_DEFAULT (0.1f)
 
 //| class Adapter:
-//|     """BLE adapter
-//|
-//|     The Adapter manages the discovery and connection to other nearby Bluetooth Low Energy devices.
+//|     """
+//|     The BLE Adapter object manages the discovery and connection to other nearby Bluetooth Low Energy devices.
 //|     This part of the Bluetooth Low Energy Specification is known as Generic Access Profile (GAP).
 //|
 //|     Discovery of other devices happens during a scanning process that listens for small packets of
 //|     information, known as advertisements, that are broadcast unencrypted. The advertising packets
 //|     have two different uses. The first is to broadcast a small piece of data to anyone who cares and
-//|     and nothing more. These are known as Beacons. The second class of advertisement is to promote
+//|     and nothing more. These are known as beacons. The second class of advertisement is to promote
 //|     additional functionality available after the devices establish a connection. For example, a
-//|     BLE keyboard may advertise that it can provide key information, but not what the key info is.
+//|     BLE heart rate monitor would advertise that it provides the standard BLE Heart Rate Service.
 //|
-//|     The built-in BLE adapter can do both parts of this process: it can scan for other device
+//|     The Adapter can do both parts of this process: it can scan for other device
 //|     advertisements and it can advertise its own data. Furthermore, Adapters can accept incoming
 //|     connections and also initiate connections."""
 //|
 
-//|     def __init__(self) -> None:
-//|         """You cannot create an instance of `_bleio.Adapter`.
-//|         Use `_bleio.adapter` to access the sole instance available."""
-//|         ...
-//|
-
-//|     def hci_uart_init(self, *, uart: busio.UART, rts: digitalio.DigitalInOut, cts: digitalio.DigitalInOut, baudrate: int = 115200, buffer_size: int = 256) -> None:
-//|         """On boards that do not have native BLE, you can an use HCI co-processor.
+//|     def __init__(self, *, uart: busio.UART, rts: digitalio.DigitalInOut, cts: digitalio.DigitalInOut) -> None:
+//|         """On boards that do not have native BLE, you can use an HCI co-processor.
 //|         Pass the uart and pins used to communicate with the co-processor, such as an Adafruit AirLift.
 //|         The co-processor must have been reset and put into BLE mode beforehand
 //|         by the appropriate pin manipulation.
 //|         The ``uart``, ``rts``, and ``cts`` objects are used to
 //|         communicate with the HCI co-processor in HCI mode.
+//|         The `Adapter` object is enabled during this call.
 //|
-//|         The `_bleio.adapter` object is enabled during this call.
+//|         After instantiating the Adapter, assign it to _bleio.adapter
 //|
-//|         Raises `RuntimeError` on boards with native BLE.
+//|         On boards with native BLE, you cannot create an instance of `_bleio.Adapter`;
+//|         this constructor will raise `NotImplementedError`.
+//|         Use `_bleio.adapter` to access the sole instance already available."""
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t bleio_adapter_hci_uart_init(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 #if CIRCUITPY_BLEIO_HCI
-    bleio_adapter_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    bleio_adapter_obj_t *self = common_hal_bleio_allocate_adapter_or_raise();
 
     enum { ARG_uart, ARG_rts, ARG_cts };
     static const mp_arg_t allowed_args[] = {
@@ -97,7 +93,7 @@ STATIC mp_obj_t bleio_adapter_hci_uart_init(mp_uint_t n_args, const mp_obj_t *po
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     busio_uart_obj_t *uart = args[ARG_uart].u_obj;
     if (!MP_OBJ_IS_TYPE(uart, &busio_uart_type)) {
@@ -112,15 +108,14 @@ STATIC mp_obj_t bleio_adapter_hci_uart_init(mp_uint_t n_args, const mp_obj_t *po
     }
 
     // Will enable the adapter.
-    common_hal_bleio_adapter_hci_uart_init(self, uart, rts, cts);
+    common_hal_bleio_adapter_construct_hci_uart(self, uart, rts, cts);
 
-    return mp_const_none;
+    return MP_OBJ_FROM_PTR(self);
 #else
-    mp_raise_RuntimeError(translate("hci_uart_init not available"));
+    mp_raise_NotImplementedError(translate("Cannot create a new Adapter; use _bleio.adapter;"));
     return mp_const_none;
 #endif // CIRCUITPY_BLEIO_HCI
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_hci_uart_init_obj, 1, bleio_adapter_hci_uart_init);
 
 //|
 //|     enabled: bool
@@ -454,7 +449,6 @@ STATIC mp_obj_t bleio_adapter_erase_bonding(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_erase_bonding_obj, bleio_adapter_erase_bonding);
 
 STATIC const mp_rom_map_elem_t bleio_adapter_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_hci_uart_init), MP_ROM_PTR(&bleio_adapter_hci_uart_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&bleio_adapter_enabled_obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&bleio_adapter_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_name),    MP_ROM_PTR(&bleio_adapter_name_obj) },
@@ -479,5 +473,6 @@ STATIC MP_DEFINE_CONST_DICT(bleio_adapter_locals_dict, bleio_adapter_locals_dict
 const mp_obj_type_t bleio_adapter_type = {
     .base = { &mp_type_type },
     .name = MP_QSTR_Adapter,
+    .make_new = bleio_adapter_make_new,
     .locals_dict = (mp_obj_t)&bleio_adapter_locals_dict,
 };

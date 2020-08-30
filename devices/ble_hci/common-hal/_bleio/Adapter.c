@@ -341,7 +341,8 @@ STATIC void bleio_adapter_hci_init(bleio_adapter_obj_t *self) {
     }
 }
 
-void common_hal_bleio_adapter_hci_uart_init(bleio_adapter_obj_t *self, busio_uart_obj_t *uart, digitalio_digitalinout_obj_t *rts, digitalio_digitalinout_obj_t *cts) {
+void common_hal_bleio_adapter_construct_hci_uart(bleio_adapter_obj_t *self, busio_uart_obj_t *uart, digitalio_digitalinout_obj_t *rts, digitalio_digitalinout_obj_t *cts) {
+    self->allocated = true;
     self->hci_uart = uart;
     self->rts_digitalinout = rts;
     self->cts_digitalinout = cts;

@@ -52,6 +52,7 @@ typedef struct _bleio_adapter_obj_t {
     busio_uart_obj_t* hci_uart;
     digitalio_digitalinout_obj_t *rts_digitalinout;
     digitalio_digitalinout_obj_t *cts_digitalinout;
+    bool allocated;  // True when in use.
     bool now_advertising;
     bool extended_advertising;
     bool circuitpython_advertising;

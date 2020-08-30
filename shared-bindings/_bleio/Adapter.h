@@ -38,7 +38,7 @@
 const mp_obj_type_t bleio_adapter_type;
 
 #if CIRCUITPY_BLEIO_HCI
-void common_hal_bleio_adapter_hci_uart_init(bleio_adapter_obj_t *self, busio_uart_obj_t *uart, digitalio_digitalinout_obj_t *rts, digitalio_digitalinout_obj_t *cts);
+void common_hal_bleio_adapter_construct_hci_uart(bleio_adapter_obj_t *self, busio_uart_obj_t *uart, digitalio_digitalinout_obj_t *rts, digitalio_digitalinout_obj_t *cts);
 #endif // CIRCUITPY_BLEIO_HCI
 
 extern bool common_hal_bleio_adapter_get_advertising(bleio_adapter_obj_t *self);
