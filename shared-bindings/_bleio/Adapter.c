@@ -77,7 +77,7 @@
 //|
 //|         On boards with native BLE, you cannot create an instance of `_bleio.Adapter`;
 //|         this constructor will raise `NotImplementedError`.
-//|         Use `_bleio.adapter` to access the sole instance already available."""
+//|         Use `_bleio.adapter` to access the sole instance already available.
 //|         """
 //|         ...
 //|
