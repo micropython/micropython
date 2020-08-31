@@ -4,7 +4,7 @@ statvfs: (512, 512, 16, 16, 16, 0, 0, 0, 0, 255)
 getcwd: /
 True
 [('foo_file.txt', 32768, 0, 6)]
-stat root: (16384, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+stat root: (16384, 0, 0, 0, 0, 0, 0)
 stat file: (32768, 0, 0, 0, 0, 0, 6)
 True
 True
