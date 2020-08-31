@@ -14,12 +14,13 @@ user code (via machine.Pin class).
 Constructors
 ------------
 
-.. class:: SPI(id, ...)
+.. class:: SPI(id, /, ...)
 
    Construct an SPI object on the given bus, ``id``. Values of ``id`` depend
    on a particular port and its hardware. Values 0, 1, etc. are commonly used
    to select hardware SPI block #0, #1, etc. Value -1 can be used for
    bitbanging (software) implementation of SPI (if supported by a port).
+   ``id`` shall not be passed as a keyword argument.
 
    With no additional parameters, the SPI object is created but not
    initialised (it has the settings from the last initialisation of

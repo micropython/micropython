@@ -33,7 +33,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: I2C(id=-1, *, scl, sda, freq=400000)
+.. class:: I2C(id=-1, /, *, scl, sda, freq=400000)
 
    Construct and return a new I2C object using the following parameters:
 
@@ -43,7 +43,7 @@ Constructors
         If *id* is -1 then *scl* and *sda* must be specified.  Other
         allowed values for *id* depend on the particular port/board,
         and specifying *scl* and *sda* may or may not be required or
-        allowed in this case.
+        allowed in this case. *id* shall not be passed as a keyword argument.
       - *scl* should be a pin object specifying the pin to use for SCL.
       - *sda* should be a pin object specifying the pin to use for SDA.
       - *freq* should be an integer which sets the maximum frequency
