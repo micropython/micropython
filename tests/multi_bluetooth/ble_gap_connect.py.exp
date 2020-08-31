@@ -2,6 +2,7 @@
 gap_advertise
 _IRQ_CENTRAL_CONNECT
 _IRQ_CENTRAL_DISCONNECT
+gap_advertise
 _IRQ_CENTRAL_CONNECT
 gap_disconnect: True
 _IRQ_CENTRAL_DISCONNECT
