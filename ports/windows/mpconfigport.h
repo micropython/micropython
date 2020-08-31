@@ -128,6 +128,9 @@
 #define MICROPY_BYTES_PER_GC_BLOCK (64 * BYTES_PER_WORD)
 
 
+// VFS stat functions should return time values relative to 1970/1/1
+#define MICROPY_EPOCH_IS_1970       (1)
+
 extern const struct _mp_print_t mp_stderr_print;
 
 #ifdef _MSC_VER
