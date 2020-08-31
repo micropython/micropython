@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-18 11:19-0400\n"
+"POT-Creation-Date: 2020-08-27 11:21-0400\n"
 "PO-Revision-Date: 2020-08-17 21:11+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
@@ -313,7 +313,7 @@ msgstr ""
 "Todos los canales de eventos de sincronización (sync event channels) están "
 "siendo utilizados"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Todos los timers para este pin están siendo utilizados"
 
@@ -325,7 +325,7 @@ msgstr "Todos los timers para este pin están siendo utilizados"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: ports/stm/peripherals/timers.c shared-bindings/pulseio/PWMOut.c
+#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Todos los timers en uso"
 
@@ -569,7 +569,7 @@ msgstr "No se puede transmitir sin pines MOSI y MISO."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "No se puede obtener inequívocamente sizeof escalar"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "No puede variar la frecuencia en un temporizador que ya está en uso"
 
@@ -642,23 +642,23 @@ msgstr "No se pudo inicializar SDCard"
 msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize channel"
 msgstr "No se pudo inicializar el canal"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize timer"
 msgstr "No se pudo inicializar el temporizador"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "No se pudo reiniciar el canal"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init timer"
 msgstr "No se pudo reiniciar el temporizador"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not restart PWM"
 msgstr "No se pudo reiniciar el PWM"
 
@@ -666,7 +666,7 @@ msgstr "No se pudo reiniciar el PWM"
 msgid "Could not set address"
 msgstr "No se puede definir la dirección"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "No se pudo iniciar el PWM"
 
@@ -857,7 +857,7 @@ msgstr "Framebuffer requiere %d bytes"
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr "Frecuencia capturada por encima de la capacidad. Captura en pausa."
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 "La frecuencia debe coincidir con PWMOut existente usando este temporizador"
@@ -962,9 +962,9 @@ msgstr "Archivo BMP inválido"
 msgid "Invalid DAC pin supplied"
 msgstr "Pin suministrado inválido para DAC"
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c
-#: ports/cxd56/common-hal/pulseio/PWMOut.c
-#: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
+#: ports/atmel-samd/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Frecuencia PWM inválida"
 
@@ -1004,7 +1004,7 @@ msgstr "Archivo inválido"
 msgid "Invalid format chunk size"
 msgstr "Formato de fragmento de formato no válido"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
 msgstr "Frecuencia suministrada no válida"
 
@@ -1022,8 +1022,8 @@ msgid "Invalid phase"
 msgstr "Fase inválida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Pin inválido"
 
@@ -1047,7 +1047,7 @@ msgstr "Pin inválido para canal derecho"
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid pins for PWMOut"
 msgstr "Pines inválidos para PWMOut"
 
@@ -1229,7 +1229,7 @@ msgstr "No se especificó ninguna llave"
 msgid "No long integer support"
 msgstr "No hay soporte de entero largo"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
 msgstr "No hay más temporizadores disponibles en este pin."
 
@@ -1303,12 +1303,12 @@ msgstr ""
 msgid "Oversample must be multiple of 8."
 msgstr "El sobremuestreo debe ser un múltiplo de 8."
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr "PWM duty_cycle debe ser entre 0 y 65535 inclusivo (16 bit resolution)"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
@@ -1367,8 +1367,8 @@ msgstr "El polígono necesita al menos 3 puntos"
 #: ports/nrf/common-hal/pulseio/PulseOut.c
 #: ports/stm/common-hal/pulseio/PulseOut.c
 msgid ""
-"Port does not accept pins or frequency.                                     "
-"Construct and pass a PWMOut Carrier instead"
+"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
+"instead"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
@@ -1610,7 +1610,7 @@ msgstr ""
 "Tiempo de espera demasiado largo: El tiempo máximo de espera es de %d "
 "segundos"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
@@ -2952,6 +2952,14 @@ msgstr "ord espera un carácter"
 msgid "ord() expected a character, but string of length %d found"
 msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of source"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of target"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
 msgstr "desbordamiento convirtiendo long int a palabra de máquina"
@@ -3130,6 +3138,10 @@ msgstr "sos[:, 3] deberían ser todos unos"
 #: extmod/ulab/code/filter/filter.c
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt requiere argumentos iterables"
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "source palette too large"
+msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"
