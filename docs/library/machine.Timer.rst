@@ -40,8 +40,14 @@ Methods
 
    Initialise the timer. Example::
 
-       tim.init(period=100)                         # periodic with 100ms period
-       tim.init(mode=Timer.ONE_SHOT, period=1000)   # one shot firing after 1000ms
+    def mycallback(t):
+        pass
+
+    # periodic with 100ms period
+    tim.init(period=100, callback=mycallback)
+
+    # one shot firing after 1000m
+    tim.init(mode=Timer.ONE_SHOT, period=1000, callback=mycallback)
 
    Keyword arguments:
 
@@ -51,6 +57,14 @@ Methods
          period of the channel expires.
        - ``Timer.PERIODIC`` - The timer runs periodically at the configured
          frequency of the channel.
+
+     - ``period`` - The timer period, in milliseconds.
+
+     - ``callback`` - The callable to call upon expiration of the timer period.
+       The callback must take one argument, which is passed the Timer object.
+       The ``callback`` argument shall be specified. Otherwise an exception
+       will occurr upon timer expiration:
+       ``TypeError: 'NoneType' object isn't callable``
 
 .. method:: Timer.deinit()
 
