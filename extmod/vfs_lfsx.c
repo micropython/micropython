@@ -377,9 +377,9 @@ STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
     t->items[6] = mp_obj_new_int_from_uint(info.size); // st_size
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(mtime); // st_atime
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(mtime); // st_mtime
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(mtime); // st_ctime
+    t->items[7] = mp_obj_new_int_from_uint(mtime); // st_atime
+    t->items[8] = mp_obj_new_int_from_uint(mtime); // st_mtime
+    t->items[9] = mp_obj_new_int_from_uint(mtime); // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }
