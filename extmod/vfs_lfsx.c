@@ -366,6 +366,9 @@ STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
             ns = ns << 8 | mtime_buf[i - 1];
         }
         mtime = timeutils_seconds_since_2000_from_nanoseconds_since_1970(ns);
+        #if MICROPY_EPOCH_IS_1970
+        mtime += TIMEUTILS_SECONDS_1970_TO_2000;
+        #endif
     }
     #endif
 
