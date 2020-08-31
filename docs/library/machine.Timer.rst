@@ -27,10 +27,11 @@ instead of this class.
 Constructors
 ------------
 
-.. class:: Timer(id, ...)
+.. class:: Timer(id)
 
-   Construct a new timer object of the given id. Id of -1 constructs a
+   Construct a new timer object of the given ``id``. ``id`` of -1 constructs a
    virtual timer (if supported by a board).
+   ``id`` shall not be passed as a keyword argument.
 
 Methods
 -------
