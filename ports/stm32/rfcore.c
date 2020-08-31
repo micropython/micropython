@@ -258,11 +258,13 @@ STATIC int ipcc_wait_msg(unsigned int ch, uint32_t timeout_ms) {
 
 STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
     const char *kind;
-    size_t len = 3 + buf[2];
+    size_t len = 0;
     switch (buf[0]) {
         case 0x02: {
             // Standard BT HCI ACL packet
             kind = "HCI_ACL";
+            // <kind><?><?><len LSB><len MSB>
+            len = 5 + buf[3] + (buf[4] << 8);
             if (parse != NULL) {
                 parse->cb_fun(parse->cb_env, buf, len);
             }
@@ -271,6 +273,8 @@ STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
         case 0x04: {
             // Standard BT HCI event packet
             kind = "HCI_EVT";
+            // <kind><op><len><data...>
+            len = 3 + buf[2];
             if (parse != NULL) {
                 bool fix = false;
                 if (buf[1] == 0x0e && len == 7 && buf[3] == 0x01 && buf[4] == 0x63 && buf[5] == 0x0c && buf[6] == 0x01) {
