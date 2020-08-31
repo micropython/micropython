@@ -601,9 +601,8 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
                 return BLE_ATT_ERR_ATTR_NOT_FOUND;
             }
 
-            os_mbuf_append(ctxt->om, entry->data, entry->data_len);
-
-            return 0;
+            int rc = os_mbuf_append(ctxt->om, entry->data, entry->data_len);
+            return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
         case BLE_GATT_ACCESS_OP_WRITE_CHR:
         case BLE_GATT_ACCESS_OP_WRITE_DSC:
             entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle);
