@@ -11,6 +11,44 @@ SS (Slave Select), to select a particular device on a bus with which
 communication takes place. Management of an SS signal should happen in
 user code (via machine.Pin class).
 
+Example usage::
+
+    from machine import SPI, Pin
+
+    spi = SPI(0, baudrate=400000)           # Create SPI peripheral 0 at frequency of 400kHz.
+                                            # Depending on the use case, extra parameters may be required
+                                            # to select the bus characteristics and/or pins to use.
+    ss = Pin(4, mode=Pin.OUT, value=1)      # Create Slave Select on pin 4.
+
+    try:
+        ss(0)                               # Select slave.
+        spi.write(b"12345678")              # Write 8 bytes. Don't care about received data.
+    finally:
+        ss(1)                               # Deselect slave.
+
+    try:
+        ss(0)                               # Select slave.
+        rxdata = spi.read(8, 0x42)          # Write 8 bytes with value 0x42.
+                                            # Simultaneously read 8 bytes.
+    finally:
+        ss(1)                               # Deselect slave.
+
+    rxdata = bytearray(8)
+    try:
+        ss(0)                               # Select slave.
+        spi.readinto(rxdata, 0x42)          # Write 8 bytes with value 0x42.
+                                            # Simultaneously read 8 bytes.
+    finally:
+        ss(1)                               # Deselect slave.
+
+    txdata = b"12345678"
+    rxdata = bytearray(len(txdata))
+    try:
+        ss(0)                               # Select slave.
+        spi.write_readinto(txdata, rxdata)  # Simultaneously write and read bytes.
+    finally:
+        ss(1)                               # Deselect slave.
+
 Constructors
 ------------
 
