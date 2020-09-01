@@ -35,4 +35,7 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src);
 void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env);
 void rfcore_ble_set_txpower(uint8_t level);
 
+void rfcore_c1_tx_irq_handler(void);
+void rfcore_c1_rx_irq_handler(void);
+
 #endif // MICROPY_INCLUDED_STM32_RFCORE_H
