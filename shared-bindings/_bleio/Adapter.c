@@ -73,7 +73,7 @@
 //|         communicate with the HCI co-processor in HCI mode.
 //|         The `Adapter` object is enabled during this call.
 //|
-//|         After instantiating the Adapter, assign it to _bleio.adapter
+//|         After instantiating an Adapter, call `_bleio.set_adapter()` to set `_bleio.adapter`
 //|
 //|         On boards with native BLE, you cannot create an instance of `_bleio.Adapter`;
 //|         this constructor will raise `NotImplementedError`.
