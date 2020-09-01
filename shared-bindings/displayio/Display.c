@@ -227,7 +227,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show
 //|         When auto refresh is on, updates the display immediately. (The display will also update
 //|         without calls to this.)
 //|
-//|         When auto refresh is off, refresh() or refresh(target_frames_per_second=None) will update  
+//|         When auto refresh is off, refresh() or refresh(target_frames_per_second=None) will update
 //|         the display immediately.
 //|
 //|         :param int target_frames_per_second: How many times a second `refresh` should be called and the screen updated.
@@ -252,8 +252,9 @@ STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos
     }
 
     uint32_t target_ms_per_frame;
-    if ( (args[ARG_target_frames_per_second].u_obj == mp_const_none) || (n_args == 1) ) { // if None or no arguments 
-        target_ms_per_frame = 0xffffffff; 
+    if ( (args[ARG_target_frames_per_second].u_obj == mp_const_none) || (n_args == 1) ) {
+        // if None or no arguments
+        target_ms_per_frame = 0xffffffff;
     }
     else {
         target_ms_per_frame = 1000 / mp_obj_get_int(args[ARG_target_frames_per_second].u_obj);
