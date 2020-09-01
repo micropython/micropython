@@ -433,6 +433,11 @@ jobs:
       with:
         path: ${{ github.workspace }}/.idf_tools
         key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20200801
+    - name: Clone IDF submodules
+      run: |
+        (cd $IDF_PATH && git submodule update --init)
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
     - name: Install IDF tools
       run: |
         $IDF_PATH/tools/idf_tools.py --non-interactive install required
