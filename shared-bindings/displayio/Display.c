@@ -215,7 +215,7 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: int = None, minimum_frames_per_second: int = 1) -> bool:
+//|     def refresh(self, *, target_frames_per_second: Optional[int] = None, minimum_frames_per_second: int = 1) -> bool:
 //|         """When auto refresh is off, waits for the target frame rate and then refreshes the display,
 //|         returning True. If the call has taken too long since the last refresh call for the given
 //|         target frame rate, then the refresh returns False immediately without updating the screen to
@@ -230,7 +230,8 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show
 //|         When auto refresh is off, `refresh()` or `refresh(target_frames_per_second=None)` will update
 //|         the display immediately.
 //|
-//|         :param int target_frames_per_second: How many times a second `refresh` should be called and the screen updated. Set to `None` for immediate refresh.
+//|         :param int target_frames_per_second: How many times a second `refresh` should be called 
+//|             and the screen updated. Set to `None` for immediate refresh.
 //|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
 //|         ...
 //|
