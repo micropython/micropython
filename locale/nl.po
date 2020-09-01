@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-27 11:21-0400\n"
+"POT-Creation-Date: 2020-08-30 14:38-0400\n"
 "PO-Revision-Date: 2020-08-10 19:59+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
@@ -500,6 +500,10 @@ msgstr "Roep super().__init__() aan voor toegang native object."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Kan CCCD niet toewijzen aan lokaal Characteristic"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -760,8 +764,8 @@ msgstr "EXTINT kanaal al in gebruik"
 msgid "Error in regex"
 msgstr "Fout in regex"
 
-#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -772,9 +776,17 @@ msgstr "Verwacht een %q"
 msgid "Expected a Characteristic"
 msgstr "Verwachtte een Characteristic"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr "Verwachtte een Service"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
+msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -1267,6 +1279,10 @@ msgstr "Wordt niet afgespeeld"
 msgid "Not running saved code.\n"
 msgstr "Opgeslagen code wordt niet uitgevoerd.\n"
 
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -1386,10 +1402,6 @@ msgstr ""
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Pull niet gebruikt wanneer de richting output is."
-
-#: ports/stm/ref/pulseout-pre-timeralloc.c
-msgid "PulseOut not supported on this chip"
-msgstr "PulseOut niet ondersteund door deze chip"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2518,6 +2530,10 @@ msgstr "indices moeten integers, segmenten (slices) of Boolean lijsten zijn"
 msgid "initial values must be iterable"
 msgstr "oorspronkelijke waarden moeten itereerbaar zijn"
 
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler moet een functie zijn"
@@ -2712,6 +2728,10 @@ msgstr "matrix is niet positief-definiet"
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length moet 0-%d zijn als fixed_length %s is"
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
+msgstr ""
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3434,6 +3454,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseOut niet ondersteund door deze chip"
 
 #~ msgid "tuple/list required on RHS"
 #~ msgstr "tuple of lijst vereist op RHS"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-27 11:21-0400\n"
+"POT-Creation-Date: 2020-08-30 14:38-0400\n"
 "PO-Revision-Date: 2020-07-27 21:27+0000\n"
 "Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
 "Language: fr\n"
@@ -505,6 +505,10 @@ msgstr "Appelez super () .__ init __ () avant d'accéder à l'objet natif."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Impossible de définir CCCD sur une caractéristique locale"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -766,8 +770,8 @@ msgstr "Canal EXTINT déjà utilisé"
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
 
-#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -778,9 +782,17 @@ msgstr "Attendu un %q"
 msgid "Expected a Characteristic"
 msgstr "Une 'Characteristic' est attendue"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr "Attendu un service"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
+msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -1271,6 +1283,10 @@ msgstr "Ne joue pas"
 msgid "Not running saved code.\n"
 msgstr ""
 
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -1389,10 +1405,6 @@ msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
-
-#: ports/stm/ref/pulseout-pre-timeralloc.c
-msgid "PulseOut not supported on this chip"
-msgstr "PulseOut non pris en charge sur cette puce"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2538,6 +2550,10 @@ msgstr ""
 msgid "initial values must be iterable"
 msgstr "les valeurs initiales doivent être itérables"
 
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "l'assembleur doit être une fonction"
@@ -2733,6 +2749,10 @@ msgstr "la matrice n'est pas définie positive"
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length doit être 0-%d lorsque fixed_length est %s"
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
+msgstr ""
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3460,6 +3480,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseOut non pris en charge sur cette puce"
 
 #~ msgid "tuple/list required on RHS"
 #~ msgstr "tuple ou liste requis en partie droite"

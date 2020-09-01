@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-27 11:21-0400\n"
+"POT-Creation-Date: 2020-08-30 14:38-0400\n"
 "PO-Revision-Date: 2020-08-30 20:02+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -498,6 +498,10 @@ msgstr "Anropa super().__init__() innan du använder det ursprungliga objektet."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Kan inte ställa in CCCD på lokal karaktäristik"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -756,8 +760,8 @@ msgstr "EXTINT-kanalen används redan"
 msgid "Error in regex"
 msgstr "Fel i regex"
 
-#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -768,9 +772,17 @@ msgstr "Förväntade %q"
 msgid "Expected a Characteristic"
 msgstr "Förväntade en karaktäristik"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr "Förväntade en tjänst"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
+msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -1260,6 +1272,10 @@ msgstr "Ingen uppspelning"
 msgid "Not running saved code.\n"
 msgstr "Kör inte sparad kod.\n"
 
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -1376,10 +1392,6 @@ msgstr ""
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Pull används inte när riktningen är output."
-
-#: ports/stm/ref/pulseout-pre-timeralloc.c
-msgid "PulseOut not supported on this chip"
-msgstr "PulseIn stöds inte av detta chip"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2504,6 +2516,10 @@ msgstr "index måste vara heltal, slices, eller Boolean-listor"
 msgid "initial values must be iterable"
 msgstr "initialvärden måste vara iterable"
 
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler måste vara en funktion"
@@ -2698,6 +2714,10 @@ msgstr "matrisen är inte positiv bestämd"
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length måste vara 0-%d när fixed_length är %s"
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
+msgstr ""
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3420,6 +3440,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseIn stöds inte av detta chip"
 
 #~ msgid "tuple/list required on RHS"
 #~ msgstr "tupel/lista krävs för RHS"

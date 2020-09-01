@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-27 11:21-0400\n"
-"PO-Revision-Date: 2020-08-21 18:19+0000\n"
+"POT-Creation-Date: 2020-08-30 14:38-0400\n"
+"PO-Revision-Date: 2020-08-31 00:37+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -506,6 +506,10 @@ msgstr "Chame super().__init__() antes de acessar o objeto nativo."
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Não é possível definir o CCCD com a característica local"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -765,8 +769,8 @@ msgstr "Canal EXTINT em uso"
 msgid "Error in regex"
 msgstr "Erro no regex"
 
-#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -777,9 +781,17 @@ msgstr "Esperado um"
 msgid "Expected a Characteristic"
 msgstr "Uma característica é necessária"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr "Esperava um Serviço"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
+msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -1270,6 +1282,10 @@ msgstr "Não está jogando"
 msgid "Not running saved code.\n"
 msgstr "O código salvo não está em execução.\n"
 
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -1375,6 +1391,8 @@ msgid ""
 "Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
 "instead"
 msgstr ""
+"A porta não aceita pinos ou frequência. Em vez disso, construa e passe um "
+"PWMOut Carrier"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -1390,10 +1408,6 @@ msgstr ""
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "O Pull não foi usado quando a direção for gerada."
-
-#: ports/stm/ref/pulseout-pre-timeralloc.c
-msgid "PulseOut not supported on this chip"
-msgstr "O PulseOut não é compatível neste CI"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2531,6 +2545,10 @@ msgstr "os índices devem ser números inteiros, fatias ou listas booleanas"
 msgid "initial values must be iterable"
 msgstr "os valores iniciais devem ser iteráveis"
 
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "o assembler em linha deve ser uma função"
@@ -2725,6 +2743,10 @@ msgstr "a matriz não é definitiva positiva"
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "o max_length deve ser 0-%d quando Fixed_length for %s"
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
+msgstr ""
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -2967,11 +2989,11 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
-msgstr ""
+msgstr "fora do alcance da fonte"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
-msgstr ""
+msgstr "fora do alcance do alvo"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
@@ -3156,7 +3178,7 @@ msgstr "o sosfilt requer que os argumentos sejam iteráveis"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
+msgstr "a paleta de origem é muito grande"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3453,6 +3475,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "O PulseOut não é compatível neste CI"
 
 #~ msgid ""
 #~ "Port does not accept pins or "
