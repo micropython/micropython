@@ -164,6 +164,9 @@ STATIC uint8_t ipcc_membuf_ble_cs_buf[272]; // mem2
 STATIC tl_list_node_t ipcc_mem_ble_evt_queue; // mem1
 STATIC uint8_t ipcc_membuf_ble_hci_acl_data_buf[272]; // mem2
 
+// Set by the RX IRQ handler on incoming HCI payload.
+STATIC volatile bool had_ble_irq = false;
+
 /******************************************************************************/
 // Transport layer linked list
 
@@ -208,6 +211,13 @@ void ipcc_init(uint32_t irq_pri) {
 
     // Start IPCC peripheral
     __HAL_RCC_IPCC_CLK_ENABLE();
+
+    // Enable receive IRQ on the BLE channel.
+    LL_C1_IPCC_EnableIT_RXO(IPCC);
+    LL_C1_IPCC_DisableReceiveChannel(IPCC, LL_IPCC_CHANNEL_1 | LL_IPCC_CHANNEL_2 | LL_IPCC_CHANNEL_3 | LL_IPCC_CHANNEL_4 | LL_IPCC_CHANNEL_5 | LL_IPCC_CHANNEL_6);
+    LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
+    NVIC_SetPriority(IPCC_C1_RX_IRQn, irq_pri);
+    HAL_NVIC_EnableIRQ(IPCC_C1_RX_IRQn);
 
     // Device info table will be populated by FUS/WS on CPU2 boot.
 
@@ -360,10 +370,10 @@ STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_h
 }
 
 STATIC void tl_check_msg_ble(volatile tl_list_node_t *head, parse_hci_info_t *parse) {
-    if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
+    if (had_ble_irq) {
         tl_process_msg(head, IPCC_CH_BLE, parse);
 
-        LL_C1_IPCC_ClearFlag_CHx(IPCC, IPCC_CH_BLE);
+        had_ble_irq = false;
     }
 }
 
@@ -404,7 +414,7 @@ STATIC void tl_sys_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf)
 
 STATIC int tl_ble_wait_resp(void) {
     uint32_t t0 = mp_hal_ticks_ms();
-    while (!LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
+    while (!had_ble_irq) {
         if (mp_hal_ticks_ms() - t0 > BLE_ACK_TIMEOUT_MS) {
             printf("tl_ble_wait_resp: timeout\n");
             return -MP_ETIMEDOUT;
@@ -551,6 +561,28 @@ void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env)
 void rfcore_ble_set_txpower(uint8_t level) {
     uint8_t buf[2] = { 0x00, level };
     tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_SET_TX_POWER), 2, buf);
+}
+
+// IPCC IRQ Handlers
+void IPCC_C1_TX_IRQHandler(void) {
+    IRQ_ENTER(IPCC_C1_TX_IRQn);
+    IRQ_EXIT(IPCC_C1_TX_IRQn);
+}
+
+void IPCC_C1_RX_IRQHandler(void) {
+    IRQ_ENTER(IPCC_C1_RX_IRQn);
+
+    if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
+        had_ble_irq = true;
+
+        LL_C1_IPCC_ClearFlag_CHx(IPCC, IPCC_CH_BLE);
+
+        // Schedule PENDSV to process incoming HCI payload.
+        extern void mp_bluetooth_hci_poll_wrapper(uint32_t ticks_ms);
+        mp_bluetooth_hci_poll_wrapper(0);
+    }
+
+    IRQ_EXIT(IPCC_C1_RX_IRQn);
 }
 
 #endif // defined(STM32WB)
