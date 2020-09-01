@@ -325,10 +325,11 @@ bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in) {
 }
 
 void bleio_connection_clear(bleio_connection_internal_t *self) {
-    self->remote_service_list = NULL;
+    mp_obj_list_clear(MP_OBJ_FROM_PTR(self->remote_service_list));
 
     self->conn_handle = BLE_CONN_HANDLE_INVALID;
     self->pair_status = PAIR_NOT_PAIRED;
+    self->is_central = false;
     bonding_clear_keys(&self->bonding_keys);
 }
 
@@ -452,8 +453,6 @@ STATIC bool discover_next_descriptors(bleio_connection_internal_t* connection, b
 }
 
 STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *response, bleio_connection_internal_t* connection) {
-    bleio_service_obj_t* tail = connection->remote_service_list;
-
     for (size_t i = 0; i < response->count; ++i) {
         ble_gattc_service_t *gattc_service = &response->services[i];
 
@@ -481,11 +480,9 @@ STATIC void on_primary_srv_discovery_rsp(ble_gattc_evt_prim_srvc_disc_rsp_t *res
             service->uuid = NULL;
         }
 
-        service->next = tail;
-        tail = service;
+        mp_obj_list_append(MP_OBJ_FROM_PTR(connection->remote_service_list),
+                           MP_OBJ_FROM_PTR(service));
     }
-
-    connection->remote_service_list = tail;
 
     if (response->count > 0) {
         m_discovery_successful = true;
@@ -526,9 +523,10 @@ STATIC void on_char_discovery_rsp(ble_gattc_evt_char_disc_rsp_t *response, bleio
             characteristic, m_char_discovery_service, gattc_char->handle_value, uuid,
             props, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,
             GATT_MAX_DATA_LENGTH, false,   // max_length, fixed_length: values may not matter for gattc
-            NULL);
+            mp_const_empty_bytes);
 
-        mp_obj_list_append(m_char_discovery_service->characteristic_list, MP_OBJ_FROM_PTR(characteristic));
+        mp_obj_list_append(MP_OBJ_FROM_PTR(m_char_discovery_service->characteristic_list),
+                           MP_OBJ_FROM_PTR(characteristic));
     }
 
     if (response->count > 0) {
@@ -584,7 +582,8 @@ STATIC void on_desc_discovery_rsp(ble_gattc_evt_desc_disc_rsp_t *response, bleio
             GATT_MAX_DATA_LENGTH, false, mp_const_empty_bytes);
         descriptor->handle = gattc_desc->handle;
 
-        mp_obj_list_append(m_desc_discovery_characteristic->descriptor_list, MP_OBJ_FROM_PTR(descriptor));
+        mp_obj_list_append(MP_OBJ_FROM_PTR(m_desc_discovery_characteristic->descriptor_list),
+                           MP_OBJ_FROM_PTR(descriptor));
     }
 
     if (response->count > 0) {
@@ -625,7 +624,7 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
     ble_drv_add_event_handler(discovery_on_ble_evt, self);
 
     // Start over with an empty list.
-    self->remote_service_list = NULL;
+    self->remote_service_list = mp_obj_new_list(0, NULL);
 
     if (service_uuids_whitelist == mp_const_none) {
         // List of service UUID's not given, so discover all available services.
@@ -637,7 +636,9 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
 
             // Get the most recently discovered service, and then ask for services
             // whose handles start after the last attribute handle inside that service.
-            const bleio_service_obj_t *service = self->remote_service_list;
+            // There must be at least one if discover_next_services() returned true.
+            const bleio_service_obj_t *service =
+                self->remote_service_list->items[self->remote_service_list->len - 1];
             next_service_start_handle = service->end_handle + 1;
         }
     } else {
@@ -661,11 +662,10 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
     }
 
 
-    bleio_service_obj_t *service = self->remote_service_list;
-    while (service != NULL) {
+    for (size_t i = 0; i < self->remote_service_list->len; i++) {
+        bleio_service_obj_t *service = MP_OBJ_TO_PTR(self->remote_service_list->items[i]);
         // Skip the service if it had an unknown (unregistered) UUID.
         if (service->uuid == NULL) {
-            service = service->next;
             continue;
         }
 
@@ -677,9 +677,9 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
         while (next_char_start_handle <= service->end_handle &&
                discover_next_characteristics(self, service, next_char_start_handle)) {
 
-
             // Get the most recently discovered characteristic, and then ask for characteristics
             // whose handles start after the last attribute handle inside that characteristic.
+            // There must be at least one if discover_next_characteristics() returned true.
             const bleio_characteristic_obj_t *characteristic =
                 MP_OBJ_TO_PTR(service->characteristic_list->items[service->characteristic_list->len - 1]);
 
@@ -717,24 +717,26 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
                                              next_desc_start_handle, next_desc_end_handle)) {
                 // Get the most recently discovered descriptor, and then ask for descriptors
                 // whose handles start after that descriptor's handle.
-                const bleio_descriptor_obj_t *descriptor = characteristic->descriptor_list;
+                // There must be at least one if discover_next_descriptors() returned true.
+                const bleio_descriptor_obj_t *descriptor =
+                    characteristic->descriptor_list->items[characteristic->descriptor_list->len - 1];
                 next_desc_start_handle = descriptor->handle + 1;
             }
         }
-        service = service->next;
     }
 
     // This event handler is no longer needed.
     ble_drv_remove_event_handler(discovery_on_ble_evt, self);
-
 }
 
 mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_connection_obj_t *self, mp_obj_t service_uuids_whitelist) {
     discover_remote_services(self->connection, service_uuids_whitelist);
     bleio_connection_ensure_connected(self);
     // Convert to a tuple and then clear the list so the callee will take ownership.
-    mp_obj_tuple_t *services_tuple = service_linked_list_to_tuple(self->connection->remote_service_list);
-    self->connection->remote_service_list = NULL;
+    mp_obj_tuple_t *services_tuple =
+        mp_obj_new_tuple(self->connection->remote_service_list->len,
+                         self->connection->remote_service_list->items);
+    mp_obj_list_clear(MP_OBJ_FROM_PTR(self->connection->remote_service_list));
 
     return services_tuple;
 }
