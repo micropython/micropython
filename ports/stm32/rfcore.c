@@ -42,17 +42,32 @@
 // Define to 1 to print traces of HCI packets
 #define HCI_TRACE (0)
 
-#define IPCC_CH_BLE         (0x01) // BLE HCI command and response
-#define IPCC_CH_SYS         (0x02) // system HCI command and response
-#define IPCC_CH_MM          (0x08) // release buffer
-#define IPCC_CH_HCI_ACL     (0x20) // HCI ACL outgoing data
+#define IPCC_CH_BLE         (LL_IPCC_CHANNEL_1) // BLE HCI command and response
+#define IPCC_CH_SYS         (LL_IPCC_CHANNEL_2) // system HCI command and response
+#define IPCC_CH_MM          (LL_IPCC_CHANNEL_4) // release buffer
+#define IPCC_CH_HCI_ACL     (LL_IPCC_CHANNEL_6) // HCI ACL outgoing data
 
-#define OGF_VENDOR          (0x3f)
-#define OCF_WRITE_CONFIG    (0x0c)
-#define OCF_SET_TX_POWER    (0x0f)
-#define OCF_BLE_INIT        (0x66)
+#define OGF_CTLR_BASEBAND        (0x03)
+#define OCF_CB_RESET             (0x03)
+#define OCF_CB_SET_EVENT_MASK2   (0x63)
+
+#define OGF_VENDOR               (0x3f)
+#define OCF_WRITE_CONFIG         (0x0c)
+#define OCF_SET_TX_POWER         (0x0f)
+#define OCF_BLE_INIT             (0x66)
 
 #define HCI_OPCODE(ogf, ocf) ((ogf) << 10 | (ocf))
+
+#define HCI_KIND_BT_CMD (0x01) // <kind=1>...?
+#define HCI_KIND_BT_ACL (0x02) // <kind=2><?><?><len LSB><len MSB>
+#define HCI_KIND_BT_EVENT (0x04) // <kind=4><op><len><data...>
+#define HCI_KIND_VENDOR_RESPONSE (0x11)
+#define HCI_KIND_VENDOR_EVENT (0x12)
+
+#define HCI_EVENT_COMMAND_COMPLETE     (0x0E) // <num packets><opcode 16><status><data...>
+
+#define SYS_ACK_TIMEOUT_MS (250)
+#define BLE_ACK_TIMEOUT_MS (250)
 
 typedef struct _tl_list_node_t {
     volatile struct _tl_list_node_t *next;
@@ -194,12 +209,6 @@ void ipcc_init(uint32_t irq_pri) {
     // Start IPCC peripheral
     __HAL_RCC_IPCC_CLK_ENABLE();
 
-    // Enable wanted IRQs
-    IPCC->C1CR = 0; // IPCC_C1CR_RXOIE;
-    IPCC->C1MR = 0xffffffff;
-    NVIC_SetPriority(IPCC_C1_RX_IRQn, irq_pri);
-    HAL_NVIC_EnableIRQ(IPCC_C1_RX_IRQn);
-
     // Device info table will be populated by FUS/WS on CPU2 boot.
 
     // Populate system table
@@ -225,127 +234,136 @@ void ipcc_init(uint32_t irq_pri) {
     ipcc_mem_ble_tab.phci_acl_data_buffer = ipcc_membuf_ble_hci_acl_data_buf;
 }
 
-STATIC int ipcc_wait_ack(unsigned int ch, uint32_t timeout_ms) {
-    DEBUG_printf("ipcc_wait_ack\n");
-
-    uint32_t t0 = mp_hal_ticks_ms();
-    while (IPCC->C1TOC2SR & ch) {
-        if (mp_hal_ticks_ms() - t0 > timeout_ms) {
-            printf("ipcc_wait_ack: timeout\n");
-            return -MP_ETIMEDOUT;
-        }
-    }
-    // C2 cleared IPCC flag
-    return 0;
-}
-
-STATIC int ipcc_wait_msg(unsigned int ch, uint32_t timeout_ms) {
-    DEBUG_printf("ipcc_wait_msg\n");
-
-    uint32_t t0 = mp_hal_ticks_ms();
-    while (!(IPCC->C2TOC1SR & ch)) {
-        if (mp_hal_ticks_ms() - t0 > timeout_ms) {
-            printf("ipcc_wait_msg: timeout\n");
-            return -MP_ETIMEDOUT;
-        }
-    }
-    // C2 set IPCC flag
-    return 0;
-}
-
 /******************************************************************************/
 // Transport layer HCI interface
 
 STATIC void tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
-    const char *kind;
+    const char *info;
     size_t len = 0;
+    bool applied_set_event_event_mask2_fix = false;
     switch (buf[0]) {
-        case 0x02: {
-            // Standard BT HCI ACL packet
-            kind = "HCI_ACL";
-            // <kind><?><?><len LSB><len MSB>
+        case HCI_KIND_BT_ACL: {
+            info = "HCI_ACL";
+
             len = 5 + buf[3] + (buf[4] << 8);
             if (parse != NULL) {
                 parse->cb_fun(parse->cb_env, buf, len);
             }
             break;
         }
-        case 0x04: {
-            // Standard BT HCI event packet
-            kind = "HCI_EVT";
-            // <kind><op><len><data...>
+        case HCI_KIND_BT_EVENT: {
+            info = "HCI_EVT";
+
             len = 3 + buf[2];
             if (parse != NULL) {
-                bool fix = false;
-                if (buf[1] == 0x0e && len == 7 && buf[3] == 0x01 && buf[4] == 0x63 && buf[5] == 0x0c && buf[6] == 0x01) {
-                    len -= 1;
-                    fix = true;
+
+                if (buf[1] == HCI_EVENT_COMMAND_COMPLETE && len == 7) {
+                    uint16_t opcode = (buf[5] << 8) | buf[4];
+                    uint8_t status = buf[6];
+
+                    if (opcode == HCI_OPCODE(OGF_CTLR_BASEBAND, OCF_CB_SET_EVENT_MASK2) && status != 0) {
+                        // The WB doesn't support this command (despite being in CS 4.1), so pretend like
+                        // it succeeded by replacing the final byte (status) with a zero.
+                        applied_set_event_event_mask2_fix = true;
+                        len -= 1;
+                    }
+
+                    if (opcode == HCI_OPCODE(OGF_CTLR_BASEBAND, OCF_CB_RESET) && status == 0) {
+                        // Controller acknowledged reset command.
+                        // This will trigger setting the MAC address.
+                        parse->was_hci_reset_evt = true;
+                    }
                 }
+
                 parse->cb_fun(parse->cb_env, buf, len);
-                if (fix) {
-                    len += 1;
-                    uint8_t data = 0x00; // success
+
+                if (applied_set_event_event_mask2_fix) {
+                    // Inject the zero status.
+                    uint8_t data = 0;
                     parse->cb_fun(parse->cb_env, &data, 1);
+                    // Restore the length for the HCI tracing below.
+                    len += 1;
                 }
-                // Check for successful HCI_Reset event
-                parse->was_hci_reset_evt = buf[1] == 0x0e && buf[2] == 0x04 && buf[3] == 0x01
-                    && buf[4] == 0x03 && buf[5] == 0x0c && buf[6] == 0x00;
             }
             break;
         }
-        case 0x11: {
-            // Response packet
+        case HCI_KIND_VENDOR_RESPONSE: {
             // assert(buf[1] == 0x0e);
-            kind = "VEND_RESP";
+            info = "VEND_RESP";
+            len = 3 + buf[2]; // ???
             // uint16_t cmd = buf[4] | buf[5] << 8;
             // uint8_t status = buf[6];
             break;
         }
-        case 0x12: {
-            // Event packet
+        case HCI_KIND_VENDOR_EVENT: {
             // assert(buf[1] == 0xff);
-            kind = "VEND_EVT";
+            info = "VEND_EVT";
+            len = 3 + buf[2]; // ???
             // uint16_t evt = buf[3] | buf[4] << 8;
             break;
         }
         default:
-            kind = "HCI_UNKNOWN";
+            info = "HCI_UNKNOWN";
             break;
     }
 
     #if HCI_TRACE
-    printf("[% 8d] %s(%02x", mp_hal_ticks_ms(), kind, buf[0]);
+    printf("[% 8d] <%s(%02x", mp_hal_ticks_ms(), info, buf[0]);
     for (int i = 1; i < len; ++i) {
         printf(":%02x", buf[i]);
     }
-    printf(")\n");
+    printf(")");
+    if (parse && parse->was_hci_reset_evt) {
+        printf(" (reset)");
+    }
+    if (applied_set_event_event_mask2_fix) {
+        printf(" (mask2 fix)");
+    }
+    printf("\n");
+
     #else
-    (void)kind;
+    (void)info;
     #endif
 }
 
+STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
+    volatile tl_list_node_t *cur = head->next;
+    bool added_to_free_queue = false;
+    while (cur != head) {
+        tl_parse_hci_msg((uint8_t *)cur->body, parse);
+
+        volatile tl_list_node_t *next = tl_list_unlink(cur);
+
+        // If this node is allocated from the memmgr event pool, then place it into the free buffer.
+        if ((uint8_t *)cur >= ipcc_membuf_memmgr_evt_pool && (uint8_t *)cur < ipcc_membuf_memmgr_evt_pool + sizeof(ipcc_membuf_memmgr_evt_pool)) {
+            // Place memory back in free pool.
+            tl_list_append(&ipcc_mem_memmgr_free_buf_queue, cur);
+            added_to_free_queue = true;
+        }
+
+        cur = next;
+    }
+
+    if (added_to_free_queue) {
+        // Notify change in free pool.
+        LL_C1_IPCC_SetFlag_CHx(IPCC, IPCC_CH_MM);
+    }
+}
+
 STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
-    if (IPCC->C2TOC1SR & ch) {
-        // Message available on CH2
-        volatile tl_list_node_t *cur = head->next;
-        bool free = false;
-        while (cur != head) {
-            tl_parse_hci_msg((uint8_t *)cur->body, parse);
-            volatile tl_list_node_t *next = tl_list_unlink(cur);
-            if ((void *)&ipcc_membuf_memmgr_evt_pool[0] <= (void *)cur
-                && (void *)cur < (void *)&ipcc_membuf_memmgr_evt_pool[MP_ARRAY_SIZE(ipcc_membuf_memmgr_evt_pool)]) {
-                // Place memory back in free pool
-                tl_list_append(&ipcc_mem_memmgr_free_buf_queue, cur);
-                free = true;
-            }
-            cur = next;
-        }
-        if (free) {
-            // Notify change in free pool
-            IPCC->C1SCR = IPCC_CH_MM << 16;
-        }
-        // Clear receive channel
-        IPCC->C1SCR = ch;
+    if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, ch)) {
+        tl_process_msg(head, ch, parse);
+
+        // Clear receive channel.
+        LL_C1_IPCC_ClearFlag_CHx(IPCC, ch);
+    }
+}
+
+STATIC void tl_check_msg_ble(volatile tl_list_node_t *head, parse_hci_info_t *parse) {
+    if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
+        tl_process_msg(head, IPCC_CH_BLE, parse);
+
+        LL_C1_IPCC_ClearFlag_CHx(IPCC, IPCC_CH_BLE);
     }
 }
 
@@ -358,25 +376,51 @@ STATIC void tl_hci_cmd(uint8_t *cmd, unsigned int ch, uint8_t hdr, uint16_t opco
     cmd[10] = opcode >> 8;
     cmd[11] = len;
     memcpy(&cmd[12], buf, len);
-    // IPCC indicate
-    IPCC->C1SCR = ch << 16;
+
+    // Indicate that this channel is ready.
+    LL_C1_IPCC_SetFlag_CHx(IPCC, ch);
 }
 
-STATIC void tl_sys_wait_resp(const uint8_t *buf, unsigned int ch) {
-    if (ipcc_wait_ack(ch, 250) == 0) {
-        tl_parse_hci_msg(buf, NULL);
+STATIC int tl_sys_wait_ack(const uint8_t *buf) {
+    uint32_t t0 = mp_hal_ticks_ms();
+
+    // C2 will clear this bit to acknowledge the request.
+    while (LL_C1_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_SYS)) {
+        if (mp_hal_ticks_ms() - t0 > SYS_ACK_TIMEOUT_MS) {
+            printf("tl_sys_wait_ack: timeout\n");
+            return -MP_ETIMEDOUT;
+        }
     }
+
+    // C1-to-C2 bit cleared, so process (but ignore) the response.
+    tl_parse_hci_msg(buf, NULL);
+    return 0;
 }
 
 STATIC void tl_sys_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf) {
-    tl_hci_cmd((uint8_t *)&ipcc_membuf_sys_cmd_buf, IPCC_CH_SYS, 0x10, opcode, len, buf);
-    tl_sys_wait_resp((uint8_t *)&ipcc_membuf_sys_cmd_buf, IPCC_CH_SYS);
+    tl_hci_cmd(ipcc_membuf_sys_cmd_buf, IPCC_CH_SYS, 0x10, opcode, len, buf);
+    tl_sys_wait_ack(ipcc_membuf_sys_cmd_buf);
 }
 
+STATIC int tl_ble_wait_resp(void) {
+    uint32_t t0 = mp_hal_ticks_ms();
+    while (!LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
+        if (mp_hal_ticks_ms() - t0 > BLE_ACK_TIMEOUT_MS) {
+            printf("tl_ble_wait_resp: timeout\n");
+            return -MP_ETIMEDOUT;
+        }
+    }
+
+    // C2 set IPCC flag.
+    tl_check_msg_ble(&ipcc_mem_ble_evt_queue, NULL);
+    return 0;
+}
+
+// Synchronously send a BLE command.
 STATIC void tl_ble_hci_cmd_resp(uint16_t opcode, size_t len, const uint8_t *buf) {
-    tl_hci_cmd((uint8_t *)&ipcc_membuf_ble_cmd_buf[0], IPCC_CH_BLE, 0x01, opcode, len, buf);
-    ipcc_wait_msg(IPCC_CH_BLE, 250);
-    tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, NULL);
+    tl_hci_cmd(ipcc_membuf_ble_cmd_buf, IPCC_CH_BLE, HCI_KIND_BT_CMD, opcode, len, buf);
+    tl_ble_wait_resp();
+
 }
 
 /******************************************************************************/
@@ -445,7 +489,7 @@ void rfcore_ble_init(void) {
 
     // Clear any outstanding messages from ipcc_init
     tl_check_msg(&ipcc_mem_sys_queue, IPCC_CH_SYS, NULL);
-    tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, NULL);
+    tl_check_msg_ble(&ipcc_mem_ble_evt_queue, NULL);
 
     // Configure and reset the BLE controller
     tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), sizeof(ble_init_params), (const uint8_t *)&ble_init_params);
@@ -456,7 +500,7 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     DEBUG_printf("rfcore_ble_hci_cmd\n");
 
     #if HCI_TRACE
-    printf("[% 8d] HCI_CMD(%02x", mp_hal_ticks_ms(), src[0]);
+    printf("[% 8d] >HCI_CMD(%02x", mp_hal_ticks_ms(), src[0]);
     for (int i = 1; i < len; ++i) {
         printf(":%02x", src[i]);
     }
@@ -465,10 +509,10 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
 
     tl_list_node_t *n;
     uint32_t ch;
-    if (src[0] == 0x01) {
+    if (src[0] == HCI_KIND_BT_CMD) {
         n = (tl_list_node_t *)&ipcc_membuf_ble_cmd_buf[0];
         ch = IPCC_CH_BLE;
-    } else if (src[0] == 0x02) {
+    } else if (src[0] == HCI_KIND_BT_ACL) {
         n = (tl_list_node_t *)&ipcc_membuf_ble_hci_acl_data_buf[0];
         ch = IPCC_CH_HCI_ACL;
     } else {
@@ -480,13 +524,13 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     n->prev = n;
     memcpy(n->body, src, len);
 
-    // IPCC indicate
-    IPCC->C1SCR = ch << 16;
+    // IPCC indicate.
+    LL_C1_IPCC_SetFlag_CHx(IPCC, ch);
 }
 
 void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env) {
     parse_hci_info_t parse = { cb, env, false };
-    tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
+    tl_check_msg_ble(&ipcc_mem_ble_evt_queue, &parse);
 
     // Intercept HCI_Reset events and reconfigure the controller following the reset
     if (parse.was_hci_reset_evt) {
