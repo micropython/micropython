@@ -185,7 +185,7 @@ soft_reset:
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (!ret) {
+        if (ret) {
             // flash the system led
             mperror_signal_error();
         }
@@ -210,7 +210,7 @@ soft_reset:
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
             }
-            if (!ret) {
+            if (ret) {
                 // flash the system led
                 mperror_signal_error();
             }

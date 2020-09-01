@@ -35,6 +35,14 @@
 #include <mphalport.h>
 #endif
 
+#ifndef mp_hal_stdio_mode_raw
+#define mp_hal_stdio_mode_raw()
+#endif
+
+#ifndef mp_hal_stdio_mode_orig
+#define mp_hal_stdio_mode_orig()
+#endif
+
 #ifndef mp_hal_stdio_poll
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags);
 #endif

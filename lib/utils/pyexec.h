@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
 
 #include "py/obj.h"
+#include "py/parse.h"
 
 typedef enum {
     PYEXEC_MODE_FRIENDLY_REPL,
@@ -40,9 +41,22 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
 // It will reset to 0 at the start of each execution (eg each REPL entry).
 extern int pyexec_system_exit;
 
+#define PYEXEC_FLAG_PRINT_EOF               (0x0001)
+#define PYEXEC_FLAG_ALLOW_DEBUGGING         (0x0002)
+#define PYEXEC_FLAG_IS_REPL                 (0x0004)
+#define PYEXEC_FLAG_COMPILE_ONLY            (0x0008)
+#define PYEXEC_FLAG_SOURCE_IS_RAW_CODE      (0x0010)
+#define PYEXEC_FLAG_SOURCE_IS_VSTR          (0x0020)
+#define PYEXEC_FLAG_SOURCE_IS_FILENAME      (0x0040)
+#if MICROPY_HELPER_LEXER_UNIX
+#define PYEXEC_FLAG_SOURCE_IS_FD            (0x0080)
+#endif
+
 #define PYEXEC_FORCED_EXIT (0x100)
 #define PYEXEC_SWITCH_MODE (0x200)
 
+int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int exec_flags);
+int pyexec_handle_uncaught_exception(mp_obj_base_t *exc);
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
 int pyexec_file(const char *filename);

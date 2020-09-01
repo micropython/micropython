@@ -50,32 +50,29 @@ int pyexec_system_exit = 0;
 STATIC bool repl_display_debugging_info = 0;
 #endif
 
-#define EXEC_FLAG_PRINT_EOF (1)
-#define EXEC_FLAG_ALLOW_DEBUGGING (2)
-#define EXEC_FLAG_IS_REPL (4)
-#define EXEC_FLAG_SOURCE_IS_RAW_CODE (8)
-#define EXEC_FLAG_SOURCE_IS_VSTR (16)
-#define EXEC_FLAG_SOURCE_IS_FILENAME (32)
-
-// parses, compiles and executes the code in the lexer
-// frees the lexer before returning
-// EXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
-// EXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
-// EXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
-STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input_kind, int exec_flags) {
+// Parses, compiles and executes the code in the lexer.
+// Frees the lexer before returning.
+// Returns 0 for success, non-zero for an error or SystemExit.
+// PYEXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
+// PYEXEC_FLAG_ALLOW_DEBUGGING allows debugging info to be printed after executing the code
+// PYEXEC_FLAG_IS_REPL is used for REPL inputs (flag passed on to mp_compile)
+int pyexec_exec_src(const void *source, mp_parse_input_kind_t input_kind, int exec_flags) {
     int ret = 0;
     #if MICROPY_REPL_INFO
     uint32_t start = 0;
     #endif
 
-    // by default a SystemExit exception returns 0
-    pyexec_system_exit = 0;
+    // By default a SystemExit exception returns a value based on its argument.
+    #ifndef MICROPY_PYEXEC_SYSTEM_EXIT_DEFAULT
+    #define MICROPY_PYEXEC_SYSTEM_EXIT_DEFAULT (0)
+    #endif
+    pyexec_system_exit = MICROPY_PYEXEC_SYSTEM_EXIT_DEFAULT;
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun;
         #if MICROPY_MODULE_FROZEN_MPY
-        if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
+        if (exec_flags & PYEXEC_FLAG_SOURCE_IS_RAW_CODE) {
             // source is a raw_code object, create the function
             module_fun = mp_make_function_from_raw_code(source, MP_OBJ_NULL, MP_OBJ_NULL);
         } else
@@ -83,34 +80,55 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         {
             #if MICROPY_ENABLE_COMPILER
             mp_lexer_t *lex;
-            if (exec_flags & EXEC_FLAG_SOURCE_IS_VSTR) {
+            if (exec_flags & PYEXEC_FLAG_SOURCE_IS_VSTR) {
                 const vstr_t *vstr = source;
                 lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
-            } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
+            } else if (exec_flags & PYEXEC_FLAG_SOURCE_IS_FILENAME) {
                 lex = mp_lexer_new_from_file(source);
+            #if MICROPY_HELPER_LEXER_UNIX
+            } else if (exec_flags & PYEXEC_FLAG_SOURCE_IS_FD) {
+                int fd = (int)(intptr_t)source;
+                lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, fd, false);
+            #endif
             } else {
                 lex = (mp_lexer_t *)source;
             }
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
+            #if MICROPY_PY___FILE__
+            if (input_kind == MP_PARSE_FILE_INPUT) {
+                mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+            }
+            #endif
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-            module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
+            #if defined(MICROPY_UNIX_COVERAGE)
+            // allow to print the parse tree in the coverage build
+            if (mp_verbose_flag >= 3) {
+                printf("----------------\n");
+                mp_parse_node_print(parse_tree.root, 0);
+                printf("----------------\n");
+            }
+            #endif
+            module_fun = mp_compile(&parse_tree, source_name, exec_flags & PYEXEC_FLAG_IS_REPL);
             #else
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
             #endif
         }
 
         // execute code
-        mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
-        #if MICROPY_REPL_INFO
-        start = mp_hal_ticks_ms();
-        #endif
-        mp_call_function_0(module_fun);
-        mp_hal_set_interrupt_char(-1); // disable interrupt
-        mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
+        if (!(exec_flags & PYEXEC_FLAG_COMPILE_ONLY)) {
+            mp_hal_set_interrupt_char(CHAR_CTRL_C); // allow ctrl-C to interrupt us
+            #if MICROPY_REPL_INFO
+            start = mp_hal_ticks_ms();
+            #endif
+            mp_call_function_0(module_fun);
+            mp_hal_set_interrupt_char(-1); // disable interrupt
+            mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
+        }
+
         nlr_pop();
-        ret = 1;
-        if (exec_flags & EXEC_FLAG_PRINT_EOF) {
+        ret = 0;
+        if (exec_flags & PYEXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);
         }
     } else {
@@ -118,22 +136,15 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         mp_hal_set_interrupt_char(-1); // disable interrupt
         mp_handle_pending(false); // clear any pending exceptions (and run any callbacks)
         // print EOF after normal output
-        if (exec_flags & EXEC_FLAG_PRINT_EOF) {
+        if (exec_flags & PYEXEC_FLAG_PRINT_EOF) {
             mp_hal_stdout_tx_strn("\x04", 1);
         }
-        // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-            // at the moment, the value of SystemExit is unused
-            ret = pyexec_system_exit;
-        } else {
-            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            ret = 0;
-        }
+        ret = pyexec_handle_uncaught_exception(nlr.ret_val);
     }
 
     #if MICROPY_REPL_INFO
     // display debugging info if wanted
-    if ((exec_flags & EXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
+    if ((exec_flags & PYEXEC_FLAG_ALLOW_DEBUGGING) && repl_display_debugging_info) {
         mp_uint_t ticks = mp_hal_ticks_ms() - start; // TODO implement a function that does this properly
         printf("took " UINT_FMT " ms\n", ticks);
         // qstr info
@@ -153,11 +164,32 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     }
     #endif
 
-    if (exec_flags & EXEC_FLAG_PRINT_EOF) {
+    if (exec_flags & PYEXEC_FLAG_PRINT_EOF) {
         mp_hal_stdout_tx_strn("\x04", 1);
     }
 
     return ret;
+}
+
+// If exc is SystemExit, return pyexec_system_exit or'd with lower 8 bits of SystemExit value.
+// For all other exceptions, return 1.
+int pyexec_handle_uncaught_exception(mp_obj_base_t *exc) {
+    if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+        // SystemExit was raised, evaluate its argument:
+        // - None is an exit value of 0;
+        // - an int is its value;
+        // - anything else is 1.
+        mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
+        mp_int_t val = 0;
+        if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
+            val = 1;
+        }
+        return pyexec_system_exit | (val & 255);
+    } else {
+        // Report all other exceptions and return 1 to indicate error.
+        mp_obj_print_exception(MICROPY_ERROR_PRINTER, MP_OBJ_FROM_PTR(exc));
+        return 1;
+    }
 }
 
 #if MICROPY_ENABLE_COMPILER
@@ -226,7 +258,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
         return PYEXEC_FORCED_EXIT;
     }
 
-    int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR);
+    int ret = pyexec_exec_src(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, PYEXEC_FLAG_PRINT_EOF | PYEXEC_FLAG_SOURCE_IS_VSTR);
     if (ret & PYEXEC_FORCED_EXIT) {
         return ret;
     }
@@ -247,7 +279,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
         } else if (c == CHAR_CTRL_D) {
             // end of input
             mp_hal_stdout_tx_str("\r\n");
-            int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+            int ret = pyexec_exec_src(MP_STATE_VM(repl_line), MP_PARSE_FILE_INPUT, PYEXEC_FLAG_ALLOW_DEBUGGING | PYEXEC_FLAG_IS_REPL | PYEXEC_FLAG_SOURCE_IS_VSTR);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }
@@ -336,7 +368,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
         }
 
     exec:;
-        int ret = parse_compile_execute(MP_STATE_VM(repl_line), MP_PARSE_SINGLE_INPUT, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+        int ret = pyexec_exec_src(MP_STATE_VM(repl_line), MP_PARSE_SINGLE_INPUT, PYEXEC_FLAG_ALLOW_DEBUGGING | PYEXEC_FLAG_IS_REPL | PYEXEC_FLAG_SOURCE_IS_VSTR);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
@@ -408,7 +440,7 @@ raw_repl_reset:
             return PYEXEC_FORCED_EXIT;
         }
 
-        int ret = parse_compile_execute(&line, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR);
+        int ret = pyexec_exec_src(&line, MP_PARSE_FILE_INPUT, PYEXEC_FLAG_PRINT_EOF | PYEXEC_FLAG_SOURCE_IS_VSTR);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
@@ -426,7 +458,12 @@ int pyexec_friendly_repl(void) {
     #endif
 
 friendly_repl_reset:
+    #ifdef MICROPY_HW_BOARD_NAME
     mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME "\r\n");
+    #else
+    mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_PY_SYS_PLATFORM " version\r\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
+    #endif
+
     #if MICROPY_PY_BUILTINS_HELP
     mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
     #endif
@@ -450,6 +487,8 @@ friendly_repl_reset:
     */
 
     for (;;) {
+        mp_hal_stdio_mode_raw();
+
     input_restart:
 
         #if MICROPY_HW_ENABLE_USB
@@ -478,20 +517,23 @@ friendly_repl_reset:
         if (ret == CHAR_CTRL_A) {
             // change to raw REPL
             mp_hal_stdout_tx_str("\r\n");
+            mp_hal_stdio_mode_orig();
             vstr_clear(&line);
             pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
             return 0;
         } else if (ret == CHAR_CTRL_B) {
             // reset friendly REPL
             mp_hal_stdout_tx_str("\r\n");
+            mp_hal_stdio_mode_orig();
             goto friendly_repl_reset;
         } else if (ret == CHAR_CTRL_C) {
             // break
             mp_hal_stdout_tx_str("\r\n");
-            continue;
+            goto input_restart;
         } else if (ret == CHAR_CTRL_D) {
             // exit for a soft reset
             mp_hal_stdout_tx_str("\r\n");
+            mp_hal_stdio_mode_orig();
             vstr_clear(&line);
             return PYEXEC_FORCED_EXIT;
         } else if (ret == CHAR_CTRL_E) {
@@ -520,7 +562,10 @@ friendly_repl_reset:
             }
             parse_input_kind = MP_PARSE_FILE_INPUT;
         } else if (vstr_len(&line) == 0) {
-            continue;
+            if (ret != 0) {
+                mp_hal_stdout_tx_str("\r\n");
+            }
+            goto input_restart;
         } else {
             // got a line with non-zero length, see if it needs continuing
             while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
@@ -537,7 +582,9 @@ friendly_repl_reset:
             }
         }
 
-        ret = parse_compile_execute(&line, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR);
+        mp_hal_stdio_mode_orig();
+
+        ret = pyexec_exec_src(&line, parse_input_kind, PYEXEC_FLAG_ALLOW_DEBUGGING | PYEXEC_FLAG_IS_REPL | PYEXEC_FLAG_SOURCE_IS_VSTR);
         if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
@@ -548,7 +595,7 @@ friendly_repl_reset:
 #endif // MICROPY_ENABLE_COMPILER
 
 int pyexec_file(const char *filename) {
-    return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
+    return pyexec_exec_src(filename, MP_PARSE_FILE_INPUT, PYEXEC_FLAG_SOURCE_IS_FILENAME);
 }
 
 int pyexec_file_if_exists(const char *filename) {
@@ -571,12 +618,12 @@ int pyexec_frozen_module(const char *name) {
     switch (frozen_type) {
         #if MICROPY_MODULE_FROZEN_STR
         case MP_FROZEN_STR:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, 0);
+            return pyexec_exec_src(frozen_data, MP_PARSE_FILE_INPUT, 0);
         #endif
 
         #if MICROPY_MODULE_FROZEN_MPY
         case MP_FROZEN_MPY:
-            return parse_compile_execute(frozen_data, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_RAW_CODE);
+            return pyexec_exec_src(frozen_data, MP_PARSE_FILE_INPUT, PYEXEC_FLAG_SOURCE_IS_RAW_CODE);
         #endif
 
         default:

@@ -46,6 +46,7 @@
 #include "py/stackctrl.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
+#include "lib/utils/pyexec.h"
 #include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
@@ -53,7 +54,7 @@
 #include "input.h"
 
 // Command line options, with their defaults
-STATIC bool compile_only = false;
+STATIC int compile_only = 0;
 STATIC uint emit_opt = MP_EMIT_OPT_NONE;
 
 #if MICROPY_ENABLE_GC
@@ -70,93 +71,6 @@ STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
-
-#define FORCED_EXIT (0x100)
-// If exc is SystemExit, return value where FORCED_EXIT bit set,
-// and lower 8 bits are SystemExit value. For all other exceptions,
-// return 1.
-STATIC int handle_uncaught_exception(mp_obj_base_t *exc) {
-    // check for SystemExit
-    if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(exc->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-        // None is an exit value of 0; an int is its value; anything else is 1
-        mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(exc));
-        mp_int_t val = 0;
-        if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
-            val = 1;
-        }
-        return FORCED_EXIT | (val & 255);
-    }
-
-    // Report all other exceptions
-    mp_obj_print_exception(&mp_stderr_print, MP_OBJ_FROM_PTR(exc));
-    return 1;
-}
-
-#define LEX_SRC_STR (1)
-#define LEX_SRC_VSTR (2)
-#define LEX_SRC_FILENAME (3)
-#define LEX_SRC_STDIN (4)
-
-// Returns standard error codes: 0 for success, 1 for all other errors,
-// except if FORCED_EXIT bit is set then script raised SystemExit and the
-// value of the exit is in the lower 8 bits of the return value
-STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_input_kind_t input_kind, bool is_repl) {
-    mp_hal_set_interrupt_char(CHAR_CTRL_C);
-
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        // create lexer based on source kind
-        mp_lexer_t *lex;
-        if (source_kind == LEX_SRC_STR) {
-            const char *line = source;
-            lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, line, strlen(line), false);
-        } else if (source_kind == LEX_SRC_VSTR) {
-            const vstr_t *vstr = source;
-            lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, false);
-        } else if (source_kind == LEX_SRC_FILENAME) {
-            lex = mp_lexer_new_from_file((const char *)source);
-        } else { // LEX_SRC_STDIN
-            lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, 0, false);
-        }
-
-        qstr source_name = lex->source_name;
-
-        #if MICROPY_PY___FILE__
-        if (input_kind == MP_PARSE_FILE_INPUT) {
-            mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
-        }
-        #endif
-
-        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-
-        #if defined(MICROPY_UNIX_COVERAGE)
-        // allow to print the parse tree in the coverage build
-        if (mp_verbose_flag >= 3) {
-            printf("----------------\n");
-            mp_parse_node_print(parse_tree.root, 0);
-            printf("----------------\n");
-        }
-        #endif
-
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, is_repl);
-
-        if (!compile_only) {
-            // execute it
-            mp_call_function_0(module_fun);
-        }
-
-        mp_hal_set_interrupt_char(-1);
-        mp_handle_pending(true);
-        nlr_pop();
-        return 0;
-
-    } else {
-        // uncaught exception
-        mp_hal_set_interrupt_char(-1);
-        mp_handle_pending(false);
-        return handle_uncaught_exception(nlr.ret_val);
-    }
-}
 
 #if MICROPY_USE_READLINE == 1
 #include "lib/mp-readline/readline.h"
@@ -177,90 +91,17 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 #endif
 
 STATIC int do_repl(void) {
-    mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; "
-        MICROPY_PY_SYS_PLATFORM " version\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
-
     #if MICROPY_USE_READLINE == 1
 
     // use MicroPython supplied readline
-
-    vstr_t line;
-    vstr_init(&line, 16);
-    for (;;) {
-        mp_hal_stdio_mode_raw();
-
-    input_restart:
-        vstr_reset(&line);
-        int ret = readline(&line, ">>> ");
-        mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
-
-        if (ret == CHAR_CTRL_C) {
-            // cancel input
-            mp_hal_stdout_tx_str("\r\n");
-            goto input_restart;
-        } else if (ret == CHAR_CTRL_D) {
-            // EOF
-            printf("\n");
-            mp_hal_stdio_mode_orig();
-            vstr_clear(&line);
-            return 0;
-        } else if (ret == CHAR_CTRL_E) {
-            // paste mode
-            mp_hal_stdout_tx_str("\npaste mode; Ctrl-C to cancel, Ctrl-D to finish\n=== ");
-            vstr_reset(&line);
-            for (;;) {
-                char c = mp_hal_stdin_rx_chr();
-                if (c == CHAR_CTRL_C) {
-                    // cancel everything
-                    mp_hal_stdout_tx_str("\n");
-                    goto input_restart;
-                } else if (c == CHAR_CTRL_D) {
-                    // end of input
-                    mp_hal_stdout_tx_str("\n");
-                    break;
-                } else {
-                    // add char to buffer and echo
-                    vstr_add_byte(&line, c);
-                    if (c == '\r') {
-                        mp_hal_stdout_tx_str("\n=== ");
-                    } else {
-                        mp_hal_stdout_tx_strn(&c, 1);
-                    }
-                }
-            }
-            parse_input_kind = MP_PARSE_FILE_INPUT;
-        } else if (line.len == 0) {
-            if (ret != 0) {
-                printf("\n");
-            }
-            goto input_restart;
-        } else {
-            // got a line with non-zero length, see if it needs continuing
-            while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
-                vstr_add_byte(&line, '\n');
-                ret = readline(&line, "... ");
-                if (ret == CHAR_CTRL_C) {
-                    // cancel everything
-                    printf("\n");
-                    goto input_restart;
-                } else if (ret == CHAR_CTRL_D) {
-                    // stop entering compound statement
-                    break;
-                }
-            }
-        }
-
-        mp_hal_stdio_mode_orig();
-
-        ret = execute_from_lexer(LEX_SRC_VSTR, &line, parse_input_kind, true);
-        if (ret & FORCED_EXIT) {
-            return ret;
-        }
-    }
+    return pyexec_friendly_repl();
 
     #else
 
     // use simple readline
+
+    mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; "
+        MICROPY_PY_SYS_PLATFORM " version\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
 
     for (;;) {
         char *line = prompt(">>> ");
@@ -279,8 +120,11 @@ STATIC int do_repl(void) {
             line = line3;
         }
 
-        int ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
-        if (ret & FORCED_EXIT) {
+        vstr_t vstr;
+        vstr.buf = (char *)line;
+        vstr.len = strlen(line);
+        int ret = pyexec_exec_src(&vstr, MP_PARSE_SINGLE_INPUT, PYEXEC_FLAG_IS_REPL | PYEXEC_FLAG_SOURCE_IS_VSTR | compile_only);
+        if (ret & PYEXEC_FORCED_EXIT) {
             return ret;
         }
         free(line);
@@ -290,11 +134,14 @@ STATIC int do_repl(void) {
 }
 
 STATIC int do_file(const char *file) {
-    return execute_from_lexer(LEX_SRC_FILENAME, file, MP_PARSE_FILE_INPUT, false);
+    return pyexec_exec_src(file, MP_PARSE_FILE_INPUT, PYEXEC_FLAG_SOURCE_IS_FILENAME | compile_only);
 }
 
 STATIC int do_str(const char *str) {
-    return execute_from_lexer(LEX_SRC_STR, str, MP_PARSE_FILE_INPUT, false);
+    vstr_t vstr;
+    vstr.buf = (char *)str;
+    vstr.len = strlen(str);
+    return pyexec_exec_src(&vstr, MP_PARSE_FILE_INPUT, PYEXEC_FLAG_SOURCE_IS_VSTR | compile_only);
 }
 
 STATIC void print_help(char **argv) {
@@ -351,7 +198,7 @@ STATIC void pre_process_options(int argc, char **argv) {
                 }
                 if (0) {
                 } else if (strcmp(argv[a + 1], "compile-only") == 0) {
-                    compile_only = true;
+                    compile_only = PYEXEC_FLAG_COMPILE_ONLY;
                 } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
                     emit_opt = MP_EMIT_OPT_BYTECODE;
                 #if MICROPY_EMIT_NATIVE
@@ -567,7 +414,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return invalid_args();
                 }
                 ret = do_str(argv[a + 1]);
-                if (ret & FORCED_EXIT) {
+                if (ret & PYEXEC_FORCED_EXIT) {
                     break;
                 }
                 a += 1;
@@ -598,7 +445,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     nlr_pop();
                 } else {
                     // uncaught exception
-                    return handle_uncaught_exception(nlr.ret_val) & 0xff;
+                    return pyexec_handle_uncaught_exception(nlr.ret_val) & 0xff;
                 }
 
                 if (mp_obj_is_package(mod) && !subpkg_tried) {
@@ -662,7 +509,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             ret = do_repl();
             prompt_write_history();
         } else {
-            ret = execute_from_lexer(LEX_SRC_STDIN, NULL, MP_PARSE_FILE_INPUT, false);
+            ret = pyexec_exec_src((void*)(uintptr_t)STDIN_FILENO, MP_PARSE_FILE_INPUT, PYEXEC_FLAG_SOURCE_IS_FD | compile_only);
         }
     }
 

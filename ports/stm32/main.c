@@ -660,7 +660,7 @@ soft_reset:
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (!ret) {
+        if (ret) {
             flash_error(4);
         }
     }
@@ -721,7 +721,7 @@ soft_reset:
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (!ret) {
+        if (ret) {
             flash_error(3);
         }
     }
