@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-27 11:21-0400\n"
-"PO-Revision-Date: 2020-09-01 12:07+0000\n"
-"Last-Translator: Taku Fukada <naninunenor@gmail.com>\n"
+"PO-Revision-Date: 2020-09-01 18:44+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -2143,7 +2143,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
-msgstr "色は0x000000から0xffffffでなければなりません"
+msgstr "色は0x000000から0xffffffでなければなりません"
 
 #: shared-bindings/displayio/ColorConverter.c
 msgid "color should be an int"
@@ -2739,7 +2739,7 @@ msgstr ""
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
-msgstr "アンパックする値は%d個では足りません"
+msgstr "アンパックする値は%d個では足りません"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
