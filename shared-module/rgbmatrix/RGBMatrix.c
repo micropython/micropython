@@ -69,7 +69,6 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
     common_hal_rgbmatrix_timer_disable(self->timer);
     if (framebuffer) {
         self->framebuffer = framebuffer;
-        framebuffer = mp_obj_new_bytearray_of_zeros(self->bufsize);
         mp_get_buffer_raise(self->framebuffer, &self->bufinfo, MP_BUFFER_READ);
         if (mp_get_buffer(self->framebuffer, &self->bufinfo, MP_BUFFER_RW)) {
             self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
