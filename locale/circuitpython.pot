@@ -615,6 +615,10 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
+
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
 msgstr ""
@@ -670,6 +674,10 @@ msgstr ""
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate input buffer"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Couldn't allocate picture buffer"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
@@ -996,6 +1004,10 @@ msgstr ""
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
+msgstr ""
+
+#: shared-bindings/camera/Camera.c
+msgid "Invalid image size."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -1497,6 +1509,10 @@ msgstr ""
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
