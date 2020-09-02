@@ -65,10 +65,14 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     if (width_in_tiles < 80) {
         scale = 1;
     }
+
     width_in_tiles = (width_px - blinka_bitmap.width * scale) / (grid->tile_width * scale);
+    if (width_in_tiles < 1) {
+        width_in_tiles = 1;
+    }
     uint16_t height_in_tiles = height_px / (grid->tile_height * scale);
     uint16_t remaining_pixels = height_px % (grid->tile_height * scale);
-    if (remaining_pixels > 0) {
+    if (height_in_tiles < 1 || remaining_pixels > 0) {
         height_in_tiles += 1;
     }
 
@@ -94,6 +98,8 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     }
     grid->width_in_tiles = width_in_tiles;
     grid->height_in_tiles = height_in_tiles;
+    assert(width_in_tiles > 0);
+    assert(height_in_tiles > 0);
     grid->pixel_width = width_in_tiles * grid->tile_width;
     grid->pixel_height = height_in_tiles * grid->tile_height;
     grid->tiles = tiles;

@@ -252,7 +252,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_deinit_obj, rgbmatrix_rgbmatrix_deinit);
 
 static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
-    if (!self->core.rgbPins) {
+    if (!self->protomatter.rgbPins) {
         raise_deinited_error();
     }
 }

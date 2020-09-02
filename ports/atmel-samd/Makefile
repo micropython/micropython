@@ -107,7 +107,7 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAME5X -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_
 endif
 
 # option to override default optimization level, set in boards/$(BOARD)/mpconfigboard.mk
-CFLAGS += $(OPTIMIZATION_FLAGS) -DNDEBUG
+CFLAGS += $(OPTIMIZATION_FLAGS)
 
 $(echo PERIPHERALS_CHIP_FAMILY=$(PERIPHERALS_CHIP_FAMILY))
 #Debugging/Optimization
@@ -121,6 +121,7 @@ ifeq ($(DEBUG), 1)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
 else
+  CFLAGS += -DNDEBUG
   # -finline-limit can shrink the image size.
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
@@ -256,6 +257,8 @@ SRC_ASF += \
 
 $(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align
 endif
+
+$(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sercom/hpl_sercom.o: CFLAGS += -Wno-maybe-uninitialized
 
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
