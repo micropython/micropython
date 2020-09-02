@@ -222,16 +222,16 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show
 //|         hopefully help getting caught up.
 //|
 //|         If the time since the last successful refresh is below the minimum frame rate, then an
-//|         exception will be raised. Set minimum_frames_per_second to 0 to disable.
+//|         exception will be raised. Set ``minimum_frames_per_second`` to 0 to disable.
+//|
+//|         When auto refresh is off, ``display.refresh()`` or ``display.refresh(target_frames_per_second=None)`` 
+//|         will update the display immediately.
 //|
 //|         When auto refresh is on, updates the display immediately. (The display will also update
 //|         without calls to this.)
 //|
-//|         When auto refresh is off, refresh() or refresh(target_frames_per_second=None) will update
-//|         the display immediately.
-//|
 //|         :param int target_frames_per_second: How many times a second `refresh` should be called and the screen updated.
-//|             Set to None for immediate refresh.
+//|             Set to `None` for immediate refresh.
 //|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
 //|         ...
 //|
