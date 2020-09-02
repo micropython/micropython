@@ -387,9 +387,10 @@ LIB_SRC_C += \
 	lib/lv_bindings/driver/esp32/modlvesp32.c \
 	lib/lv_bindings/driver/esp32/modrtch.c \
 	lib/lv_bindings/driver/esp32/espidf.c \
-	$(ESPIDFMOD_MODULE) \
-	lib/lv_bindings/driver/esp32/modxpt2046.c \
-	lib/lv_bindings/driver/esp32/modILI9341.c \
+	$(ESPIDFMOD_MODULE)
+	
+#	lib/lv_bindings/driver/esp32/modxpt2046.c
+#	lib/lv_bindings/driver/esp32/modILI9341.c
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
 	bus/softspi.c \
