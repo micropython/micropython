@@ -116,7 +116,7 @@ def pua_to_ngrams(compressed, ngrams):
     if len(ngrams) > 32:
         start, end = 0xe000, 0xf8ff
     else:
-        start, end = 0x80, 0xbf
+        start, end = 0x80, 0x9f
     return "".join(ngrams[ord(c) - start] if (start <= ord(c) <= end) else c for c in compressed)
 
 def compute_huffman_coding(translations, qstrs, compression_filename):
@@ -146,6 +146,7 @@ def compute_huffman_coding(translations, qstrs, compression_filename):
         last_l = l
     lengths = bytearray()
     print("// length count", length_count)
+    print("// bigrams", ngrams)
     for i in range(1, max(length_count) + 2):
         lengths.append(length_count.get(i, 0))
     print("// values", values, "lengths", len(lengths), lengths)
