@@ -55,7 +55,6 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const c
         if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
             mp_raise_espidf_MemoryError();
         } else if (ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
-            // What should this error be?
             mp_raise_OSError_msg_varg(translate("Failed SSL handshake"));
         } else {
             mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, result);
@@ -123,15 +122,9 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
 }
 
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
-    if (self->connected) {
-        self->connected = false;
-    }
+    self->connected = false;
     if (self->tcp != NULL) {
-        int status = esp_tls_conn_destroy(self->tcp);
-
-        if (status < 0) {
-            // raise an error
-        }
+        esp_tls_conn_destroy(self->tcp);
         self->tcp = NULL;
     }
 }

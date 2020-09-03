@@ -39,7 +39,7 @@
 //|     """Encapsulates an IPv4 address."""
 //|
 
-//|     def __init__(self, address: Union[str, bytes]) -> None:
+//|     def __init__(self, address: Union[int, str, bytes]) -> None:
 //|         """Create a new IPv4Address object encapsulating the address value.
 //|
 //|            The value itself can either be bytes or a string formatted address."""
@@ -64,7 +64,7 @@ STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t
     } else if (MP_OBJ_IS_STR(address)) {
         GET_STR_DATA_LEN(address, str_data, str_len);
         if (!ipaddress_parse_ipv4address((const char*) str_data, str_len, &value)) {
-            mp_raise_ValueError(translate("Not a valid IP string."));
+            mp_raise_ValueError(translate("Not a valid IP string"));
         }
     } else {
         mp_buffer_info_t buf_info;

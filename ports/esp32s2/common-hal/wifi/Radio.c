@@ -73,10 +73,12 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
     }
 }
 
+#define MAC_ADDRESS_LENGTH 6
+
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
-    uint8_t mac[6];
+    uint8_t mac[MAC_ADDRESS_LENGTH];
     esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
-    return mp_const_none;
+    return mp_obj_new_bytes(mac, MAC_ADDRESS_LENGTH);
 }
 
 mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
@@ -87,8 +89,8 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
     start_station(self);
 
     wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
-    self->current_scan = scan;
     scan->base.type = &wifi_scannednetworks_type;
+    self->current_scan = scan;
     scan->start_channel = 1;
     scan->end_channel = 11;
     scan->radio_event_group = self->event_group_handle;
@@ -107,9 +109,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     wifi_config_t* config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);
     config->sta.ssid[ssid_len] = 0;
-    if (password_len > 0) {
-        memcpy(&config->sta.password, password, password_len);
-    }
+    memcpy(&config->sta.password, password, password_len);
     config->sta.password[password_len] = 0;
     config->sta.channel = channel;
     esp_wifi_set_config(ESP_IF_WIFI_STA, config);
@@ -159,7 +159,7 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
 
     uint32_t received = 0;
     uint32_t total_time_ms = 0;
-    while (received == 0 && total_time_ms < timeout_ms) {
+    while (received == 0 && total_time_ms < timeout_ms && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
         esp_ping_get_profile(ping, ESP_PING_PROF_DURATION, &total_time_ms, sizeof(total_time_ms));
         esp_ping_get_profile(ping, ESP_PING_PROF_REPLY, &received, sizeof(received));

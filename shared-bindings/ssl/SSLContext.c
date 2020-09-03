@@ -72,7 +72,7 @@ STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_ar
     const char *server_hostname = mp_obj_str_get_str(args[ARG_server_hostname].u_obj);
     bool server_side = args[ARG_server_side].u_bool;
     if (server_side && server_hostname != NULL) {
-        mp_raise_ValueError(translate("Server side context cannot have hostname."));
+        mp_raise_ValueError(translate("Server side context cannot have hostname"));
     }
 
     socketpool_socket_obj_t* sock = args[ARG_sock].u_obj;

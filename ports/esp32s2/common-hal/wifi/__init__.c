@@ -44,51 +44,42 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data) {
     wifi_radio_obj_t* radio = arg;
     if (event_base == WIFI_EVENT) {
-        if (event_id == WIFI_EVENT_SCAN_DONE) {
-            xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
-        } else if (event_id == WIFI_EVENT_STA_START) {
-        } else if (event_id == WIFI_EVENT_STA_STOP) {
-        } else if (event_id == WIFI_EVENT_STA_CONNECTED) {
-            ESP_EARLY_LOGW(TAG, "connected");
-        } else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
-            ESP_EARLY_LOGW(TAG, "disconnected");
-            wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
-            uint8_t reason = d->reason;
-            ESP_EARLY_LOGW(TAG, "reason %d 0x%02x", reason, reason);
-            if (radio->retries_left > 0 &&
-                    (reason == WIFI_REASON_AUTH_EXPIRE ||
-                     reason == WIFI_REASON_ASSOC_EXPIRE ||
-                     reason == WIFI_REASON_CONNECTION_FAIL ||
-                     reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)) {
-                radio->retries_left--;
-                ESP_EARLY_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
-                esp_wifi_connect();
-                return;
+        switch (event_id) {
+            case WIFI_EVENT_SCAN_DONE:
+                xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
+                break;
+            case WIFI_EVENT_STA_CONNECTED:
+                ESP_EARLY_LOGW(TAG, "connected");
+                break;
+            case WIFI_EVENT_STA_DISCONNECTED: {
+                ESP_EARLY_LOGW(TAG, "disconnected");
+                wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
+                uint8_t reason = d->reason;
+                ESP_EARLY_LOGW(TAG, "reason %d 0x%02x", reason, reason);
+                if (radio->retries_left > 0 &&
+                        (reason == WIFI_REASON_AUTH_EXPIRE ||
+                         reason == WIFI_REASON_ASSOC_EXPIRE ||
+                         reason == WIFI_REASON_CONNECTION_FAIL ||
+                         reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)) {
+                    radio->retries_left--;
+                    ESP_EARLY_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
+                    esp_wifi_connect();
+                    return;
+                }
+
+                radio->last_disconnect_reason = reason;
+                xEventGroupSetBits(radio->event_group_handle, WIFI_DISCONNECTED_BIT);
             }
 
-            radio->last_disconnect_reason = reason;
-            xEventGroupSetBits(radio->event_group_handle, WIFI_DISCONNECTED_BIT);
-
-            // if (reason != WIFI_REASON_ASSOC_LEAVE) {
-            //     // reconnect
-            // }
-        } else if (event_id == WIFI_EVENT_STA_AUTHMODE_CHANGE) {
+            // Cases to handle later.
+            // case WIFI_EVENT_STA_START:
+            // case WIFI_EVENT_STA_STOP:
+            // case WIFI_EVENT_STA_AUTHMODE_CHANGE:
+            default:
+                break;
         }
     }
 
-    //     esp_wifi_connect();
-    // if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
-    //     esp_wifi_connect();
-    // } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-    //     if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY) {
-    //         esp_wifi_connect();
-    //         s_retry_num++;
-    //         ESP_LOGI(TAG, "retry to connect to the AP");
-    //     } else {
-    //         xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-    //     }
-    //     ESP_LOGI(TAG,"connect to the AP fail");
-    // } else
     if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ESP_EARLY_LOGW(TAG, "got ip");
         radio->retries_left = radio->starting_retries;
@@ -100,7 +91,7 @@ static bool wifi_inited;
 
 void common_hal_wifi_init(void) {
     wifi_inited = true;
-	common_hal_wifi_radio_obj.base.type = &wifi_radio_type;
+    common_hal_wifi_radio_obj.base.type = &wifi_radio_type;
 
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -120,13 +111,13 @@ void common_hal_wifi_init(void) {
                                                         self,
                                                         &self->handler_instance_got_ip));
 
-	wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
-	esp_err_t result = esp_wifi_init(&config);
-	if (result == ESP_ERR_NO_MEM) {
-		mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate Wifi memory"));
-	} else if (result != ESP_OK) {
-		// handle this
-	}
+    wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
+    esp_err_t result = esp_wifi_init(&config);
+    if (result == ESP_ERR_NO_MEM) {
+        mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate Wifi memory"));
+    } else if (result != ESP_OK) {
+        mp_raise_RuntimeError(translate("Failed to init wifi"));
+    }
     common_hal_wifi_radio_set_enabled(self, true);
 }
 
@@ -135,14 +126,14 @@ void wifi_reset(void) {
         return;
     }
     wifi_radio_obj_t* radio = &common_hal_wifi_radio_obj;
-	common_hal_wifi_radio_set_enabled(radio, false);
+    common_hal_wifi_radio_set_enabled(radio, false);
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT,
                                                           ESP_EVENT_ANY_ID,
                                                           radio->handler_instance_all_wifi));
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT,
                                                           IP_EVENT_STA_GOT_IP,
                                                           radio->handler_instance_got_ip));
-	ESP_ERROR_CHECK(esp_wifi_deinit());
+    ESP_ERROR_CHECK(esp_wifi_deinit());
     esp_netif_destroy(radio->netif);
     radio->netif = NULL;
     ESP_ERROR_CHECK(esp_netif_deinit());

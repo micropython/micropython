@@ -35,7 +35,7 @@
 
 void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t* self, mp_obj_t radio) {
     if (radio != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
-        mp_raise_ValueError(translate("SocketPool can only be used with wifi.radio."));
+        mp_raise_ValueError(translate("SocketPool can only be used with wifi.radio"));
     }
 }
 
@@ -63,7 +63,7 @@ socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_
 
     if (socket_type == SOCK_DGRAM || socket_type == SOCK_RAW ||
             addr_family == AF_INET6 || ipproto == IPPROTO_IPV6) {
-        mp_raise_NotImplementedError(translate("Only IPv4 SOCK_STREAM sockets supported."));
+        mp_raise_NotImplementedError(translate("Only IPv4 SOCK_STREAM sockets supported"));
     }
 
     int socknum = -1;

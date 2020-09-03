@@ -162,6 +162,7 @@ void wifi_scannednetworks_deinit(wifi_scannednetworks_obj_t* self) {
     if (self->scanning) {
         esp_wifi_scan_stop();
         if (wifi_scannednetworks_wait_for_scan(self)) {
+            // Ignore the number of records since we're throwing them away.
             uint16_t number = 0;
             esp_wifi_scan_get_ap_records(&number, NULL);
             self->scanning = false;

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-27 11:21-0400\n"
+"POT-Creation-Date: 2020-09-03 15:16-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1238,7 +1238,7 @@ msgid "Nordic Soft Device failure assertion."
 msgstr ""
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
-msgid "Not a valid IP string."
+msgid "Not a valid IP string"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1282,7 +1282,7 @@ msgid ""
 msgstr ""
 
 #: shared-bindings/ipaddress/__init__.c
-msgid "Only raw int supported for ip."
+msgid "Only raw int supported for ip"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -1363,10 +1363,6 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
-msgstr ""
-
-#: ports/stm/ref/pulseout-pre-timeralloc.c
-msgid "PulseOut not supported on this chip"
 msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
@@ -1486,7 +1482,7 @@ msgid "Serializer in use"
 msgstr ""
 
 #: shared-bindings/ssl/SSLContext.c
-msgid "Server side context cannot have hostname."
+msgid "Server side context cannot have hostname"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
@@ -1792,7 +1788,7 @@ msgid ""
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
-msgid "WiFi password must be between 8 and 63 characters."
+msgid "WiFi password must be between 8 and 63 characters"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c

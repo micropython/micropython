@@ -61,7 +61,7 @@ const mp_obj_property_t wifi_radio_enabled_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     mac_address: Address
+//|     mac_address: bytes
 //|     """MAC address of the wifi radio. (read-only)"""
 //|
 STATIC mp_obj_t wifi_radio_get_mac_address(mp_obj_t self) {
@@ -110,7 +110,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_scanning_networks_obj, wifi_rad
 STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_ssid, ARG_password, ARG_channel, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_channel, MP_ARG_KW_ONLY |  MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -127,17 +127,14 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
 
 
     mp_buffer_info_t ssid;
-    ssid.len = 0;
-    if (args[ARG_ssid].u_obj != MP_OBJ_NULL) {
-        mp_get_buffer_raise(args[ARG_ssid].u_obj, &ssid, MP_BUFFER_READ);
-    }
+    mp_get_buffer_raise(args[ARG_ssid].u_obj, &ssid, MP_BUFFER_READ);
 
     mp_buffer_info_t password;
     password.len = 0;
     if (args[ARG_password].u_obj != MP_OBJ_NULL) {
         mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
         if (password.len > 0 && (password.len < 8 || password.len > 63)) {
-            mp_raise_ValueError(translate("WiFi password must be between 8 and 63 characters."));
+            mp_raise_ValueError(translate("WiFi password must be between 8 and 63 characters"));
         }
     }
 
