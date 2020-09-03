@@ -74,6 +74,8 @@ Constructors
        - ``Pin.ALT_OPEN_DRAIN`` - The Same as ``Pin.ALT``, but the pin is configured as
          open-drain.  Not all ports implement this mode.
 
+       - ``Pin.ANALOG`` - Pin is configured for analog input, see the :class:`ADC` class.
+
      - ``pull`` specifies if the pin has a (weak) pull resistor attached, and can be
        one of:
 
@@ -231,6 +233,7 @@ not all constants are available on all ports.
           Pin.OPEN_DRAIN
           Pin.ALT
           Pin.ALT_OPEN_DRAIN
+          Pin.ANALOG
 
    Selects the pin mode.
 
