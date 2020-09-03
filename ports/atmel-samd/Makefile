@@ -286,8 +286,6 @@ SRC_ASF += \
 $(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align -Wno-implicit-fallthrough
 endif
 
-$(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sercom/hpl_sercom.o: CFLAGS += -Wno-maybe-uninitialized
-
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
 SRC_C += \
