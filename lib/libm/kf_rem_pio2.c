@@ -62,10 +62,10 @@ two8   =  2.5600000000e+02f, /* 0x43800000 */
 twon8  =  3.9062500000e-03f; /* 0x3b800000 */
 
 #ifdef __STDC__
-	int __kernel_rem_pio2f(float *x, float *y, int e0, int nx, int prec, const __int32_t *ipio2) 
+	int __kernel_rem_pio2f(float *x, float *y, int e0, int nx, int prec, const __uint8_t *ipio2) 
 #else
 	int __kernel_rem_pio2f(x,y,e0,nx,prec,ipio2) 	
-	float x[], y[]; int e0,nx,prec; __int32_t ipio2[];
+	float x[], y[]; int e0,nx,prec; __uint8_t ipio2[];
 #endif
 {
 	__int32_t jz,jx,jv,jp,jk,carry,n,iq[20],i,j,k,m,q0,ih;
