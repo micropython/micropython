@@ -303,7 +303,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
                   (mp_obj_t)&mp_const_none_obj, \
                   (mp_obj_t)&mp_const_none_obj}, }
 
-// These macros are used to define constant map/dict objects
+// These macros are used to define constant or mutable map/dict objects
 // You can put "static" in front of the definition to make it local
 
 #define MP_DEFINE_CONST_MAP(map_name, table_name) \
@@ -326,6 +326,29 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
             .used = MP_ARRAY_SIZE(table_name), \
             .alloc = MP_ARRAY_SIZE(table_name), \
             .table = (mp_map_elem_t*)(mp_rom_map_elem_t*)table_name, \
+        }, \
+    }
+
+#define MP_DEFINE_MUTABLE_MAP(map_name, table_name) \
+    mp_map_t map_name = { \
+        .all_keys_are_qstrs = 1, \
+        .is_fixed = 1, \
+        .is_ordered = 1, \
+        .used = MP_ARRAY_SIZE(table_name), \
+        .alloc = MP_ARRAY_SIZE(table_name), \
+        .table = table_name, \
+    }
+
+#define MP_DEFINE_MUTABLE_DICT(dict_name, table_name) \
+    mp_obj_dict_t dict_name = {                 \
+        .base = {&mp_type_dict}, \
+        .map = { \
+            .all_keys_are_qstrs = 1, \
+            .is_fixed = 1, \
+            .is_ordered = 1, \
+            .used = MP_ARRAY_SIZE(table_name), \
+            .alloc = MP_ARRAY_SIZE(table_name), \
+            .table = table_name, \
         }, \
     }
 

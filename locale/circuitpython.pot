@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-03 15:16-0700\n"
+"POT-Creation-Date: 2020-09-03 16:33-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -494,6 +494,10 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -746,8 +750,8 @@ msgstr ""
 msgid "Error in regex"
 msgstr ""
 
-#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -758,8 +762,16 @@ msgstr ""
 msgid "Expected a Characteristic"
 msgstr ""
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
 msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
@@ -1253,6 +1265,10 @@ msgstr ""
 
 #: main.c
 msgid "Not running saved code.\n"
+msgstr ""
+
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
 msgstr ""
 
 #: shared-bindings/util.c
@@ -2477,6 +2493,10 @@ msgstr ""
 msgid "initial values must be iterable"
 msgstr ""
 
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr ""
@@ -2667,6 +2687,10 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
 msgstr ""
 
 #: py/runtime.c

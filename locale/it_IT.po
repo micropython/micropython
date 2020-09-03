@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-18 11:19-0400\n"
+"POT-Creation-Date: 2020-08-30 14:38-0400\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -303,7 +303,7 @@ msgstr "Tutti i canali eventi utilizati"
 msgid "All sync event channels in use"
 msgstr "Tutti i canali di eventi sincronizzati in uso"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Tutti i timer per questo pin sono in uso"
 
@@ -315,7 +315,7 @@ msgstr "Tutti i timer per questo pin sono in uso"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: ports/stm/peripherals/timers.c shared-bindings/pulseio/PWMOut.c
+#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Tutti i timer utilizzati"
 
@@ -495,6 +495,10 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -559,7 +563,7 @@ msgstr "Impossibile trasferire senza i pin MOSI e MISO."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Impossibile ricavare la grandezza scalare di sizeof inequivocabilmente"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr ""
 
@@ -629,23 +633,23 @@ msgstr ""
 msgid "Could not initialize UART"
 msgstr "Impossibile inizializzare l'UART"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize channel"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize timer"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init timer"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not restart PWM"
 msgstr ""
 
@@ -653,7 +657,7 @@ msgstr ""
 msgid "Could not set address"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr ""
 
@@ -752,8 +756,8 @@ msgstr "Canale EXTINT già in uso"
 msgid "Error in regex"
 msgstr "Errore nella regex"
 
-#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -765,8 +769,16 @@ msgstr "Atteso un %q"
 msgid "Expected a Characteristic"
 msgstr "Non è possibile aggiungere Characteristic."
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
 msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
@@ -848,7 +860,7 @@ msgstr ""
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 
@@ -952,9 +964,9 @@ msgstr "File BMP non valido"
 msgid "Invalid DAC pin supplied"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c
-#: ports/cxd56/common-hal/pulseio/PWMOut.c
-#: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
+#: ports/atmel-samd/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Frequenza PWM non valida"
 
@@ -996,7 +1008,7 @@ msgstr "File non valido"
 msgid "Invalid format chunk size"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
 msgstr ""
 
@@ -1014,8 +1026,8 @@ msgid "Invalid phase"
 msgstr "Fase non valida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Pin non valido"
 
@@ -1039,7 +1051,7 @@ msgstr "Pin non valido per il canale destro"
 msgid "Invalid pins"
 msgstr "Pin non validi"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid pins for PWMOut"
 msgstr ""
 
@@ -1223,7 +1235,7 @@ msgstr ""
 msgid "No long integer support"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
 msgstr ""
 
@@ -1262,6 +1274,10 @@ msgstr "In pausa"
 msgid "Not running saved code.\n"
 msgstr ""
 
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -1295,14 +1311,14 @@ msgstr ""
 msgid "Oversample must be multiple of 8."
 msgstr "L'oversampling deve essere multiplo di 8."
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr ""
 "duty_cycle del PWM deve essere compresa tra 0 e 65535 inclusiva (risoluzione "
 "a 16 bit)"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 #, fuzzy
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -1361,8 +1377,8 @@ msgstr ""
 #: ports/nrf/common-hal/pulseio/PulseOut.c
 #: ports/stm/common-hal/pulseio/PulseOut.c
 msgid ""
-"Port does not accept pins or frequency.                                     "
-"Construct and pass a PWMOut Carrier instead"
+"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
+"instead"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
@@ -1376,10 +1392,6 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
-msgstr ""
-
-#: ports/stm/ref/pulseout-pre-timeralloc.c
-msgid "PulseOut not supported on this chip"
 msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
@@ -1596,7 +1608,7 @@ msgstr ""
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
@@ -2498,6 +2510,10 @@ msgstr ""
 msgid "initial values must be iterable"
 msgstr ""
 
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler deve essere una funzione"
@@ -2693,6 +2709,10 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
 msgstr ""
 
 #: py/runtime.c
@@ -2934,6 +2954,14 @@ msgid "ord() expected a character, but string of length %d found"
 msgstr ""
 "ord() aspettava un carattere, ma ha ricevuto una stringa di lunghezza %d"
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of source"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of target"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
 msgstr "overflow convertendo long int in parola"
@@ -3113,6 +3141,10 @@ msgstr ""
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sosfilt requires iterable arguments"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "source palette too large"
 msgstr ""
 
 #: py/objstr.c

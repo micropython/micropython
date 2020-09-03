@@ -37,7 +37,7 @@
 
 #if CIRCUITPY_BLEIO
 #include "supervisor/shared/bluetooth.h"
-#include "common-hal/_bleio/bonding.h"
+#include "common-hal/_bleio/__init__.h"
 #endif
 
 #if CIRCUITPY_DISPLAYIO
@@ -87,7 +87,7 @@ void supervisor_background_tasks(void *unused) {
 
     #if CIRCUITPY_BLEIO
     supervisor_bluetooth_background();
-    bonding_background();
+    bleio_background();
     #endif
 
     port_background_task();
