@@ -47,4 +47,5 @@ char serial_read(void);
 bool serial_bytes_available(void);
 bool serial_connected(void);
 
+extern volatile bool _serial_connected;
 #endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
