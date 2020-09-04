@@ -139,7 +139,6 @@ STATIC mp_uint_t pyb_uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
 }
 
 STATIC const mp_irq_methods_t pyb_uart_irq_methods = {
-    .init = pyb_uart_irq,
     .trigger = pyb_uart_irq_trigger,
     .info = pyb_uart_irq_info,
 };
