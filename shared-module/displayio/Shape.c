@@ -49,10 +49,16 @@ void common_hal_displayio_shape_construct(displayio_shape_t *self, uint32_t widt
     self->half_height = height;
 
     self->data = m_malloc(height * sizeof(uint32_t), false);
+    //for (uint16_t i = 0; i < height; i++) {
     for (uint16_t i = 0; i <= height; i++) {
         self->data[2 * i] = 0;
         self->data[2 * i + 1] = width;
     }
+
+    self->dirty_area.x1=0;
+    self->dirty_area.x2=width;
+    self->dirty_area.y1=0;
+    self->dirty_area.y2=height;
 }
 
 void common_hal_displayio_shape_set_boundary(displayio_shape_t *self, uint16_t y, uint16_t start_x, uint16_t end_x) {
@@ -66,8 +72,58 @@ void common_hal_displayio_shape_set_boundary(displayio_shape_t *self, uint16_t y
     if (self->mirror_x && (start_x > half_width || end_x > half_width)) {
         mp_raise_ValueError_varg(translate("Maximum x value when mirrored is %d"), half_width);
     }
+
+    uint16_t lower_x, upper_x;
+
+    // find x-boundaries for updating based on current data and start_x, end_x
+    if (start_x < self->data[2 * y]) {
+        lower_x = start_x;
+    } else {
+        lower_x = self->data[2 * y];
+    }
+
+    if (self->mirror_x) {
+        upper_x = self->width-lower_x;
+    } else {
+        if (end_x > self->data[2 * y + 1]) {
+            upper_x = end_x + 1;
+        } else {
+            upper_x = self->data[2 * y + 1] + 1;
+        }
+    }
+
     self->data[2 * y] = start_x;
     self->data[2 * y + 1] = end_x;
+
+    if (self->dirty_area.x1 == self->dirty_area.x2) { // Dirty region is empty
+        self->dirty_area.x1=lower_x;
+        self->dirty_area.x2=upper_x;
+        self->dirty_area.y1 = y;
+        if (self->mirror_y) {
+            self->dirty_area.y2 = self->height-y;
+        } else {
+            self->dirty_area.y2 = y+1;
+        }
+    } else { // Dirty region is not empty
+        if (lower_x < self->dirty_area.x1) {
+            self->dirty_area.x1 = lower_x;
+        }
+        if (upper_x > self->dirty_area.x2) {
+            self->dirty_area.x2 = upper_x;
+        }
+        if (y < self->dirty_area.y1) {
+            self->dirty_area.y1=y;
+            if (self->mirror_y) {   // if y is mirrored and the lower y was updated, the upper y must be updated too
+                self->dirty_area.y2=self->height-y;
+            }
+        }
+        else {
+            if ( !self->mirror_y && (y >= self->dirty_area.y2) ) { // y is not mirrored
+                self->dirty_area.y2=y+1;
+            }
+        }
+    }
+
 }
 
 uint32_t common_hal_displayio_shape_get_pixel(void *obj, int16_t x, int16_t y) {
@@ -88,3 +144,21 @@ uint32_t common_hal_displayio_shape_get_pixel(void *obj, int16_t x, int16_t y) {
     }
     return 1;
 }
+
+displayio_area_t* displayio_shape_get_refresh_areas(displayio_shape_t *self, displayio_area_t* tail) {
+    if (self->dirty_area.x1 == self->dirty_area.x2) {
+        return tail;
+    }
+    self->dirty_area.next = tail;
+    return &self->dirty_area;
+}
+
+void displayio_shape_finish_refresh(displayio_shape_t *self) {
+    self->dirty_area.x1 = 0;
+    self->dirty_area.x2 = 0;
+}
+
+
+
+
+
