@@ -157,8 +157,3 @@ void displayio_shape_finish_refresh(displayio_shape_t *self) {
     self->dirty_area.x1 = 0;
     self->dirty_area.x2 = 0;
 }
-
-
-
-
-
