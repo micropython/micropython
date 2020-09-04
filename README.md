@@ -1,5 +1,7 @@
 # Micropython + lvgl
 
+![Build lv_micropython unix port](https://github.com/lvgl/lv_micropython/workflows/Build%20lv_micropython%20unix%20port/badge.svg)
+
 **For information abound Micropython lvgl bindings please refrer to [lv_bindings/README.md](https://github.com/littlevgl/lv_bindings/blob/master/README.md)**
 
 See also [Micropython + LittlevGL](https://blog.littlevgl.com/2019-02-20/micropython-bindings) blog post.
