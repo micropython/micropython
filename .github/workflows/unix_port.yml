@@ -1,0 +1,34 @@
+name: Build lv_micropython unix port
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install SDL
+      run: |
+        sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse"
+        sudo apt-get update -y -qq
+        sudo apt-get install libsdl2-dev
+    - name: Update submodules
+      run: git submodule update --init --recursive  
+    - name: Build mpy-cross
+      run: make -j $(nproc) -C mpy-cross
+    - name: Build the unix port
+      run: make -j $(nproc) -C ports/unix
+    - name: Run advanced_demo
+      run: >
+        echo "import gc,utime;
+        utime.sleep(5);
+        gc.collect();
+        utime.sleep(5)" | 
+        ports/unix/micropython -i lib/lv_bindings/examples/advanced_demo.py
+    
