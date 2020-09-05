@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-30 14:38-0400\n"
-"PO-Revision-Date: 2020-08-31 00:37+0000\n"
+"PO-Revision-Date: 2020-09-02 22:32+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.2.1-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: main.c
 msgid ""
@@ -508,7 +508,7 @@ msgstr "Não é possível definir o CCCD com a característica local"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
-msgstr ""
+msgstr "Não é possível criar um novo Adaptador; utilize _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -783,7 +783,7 @@ msgstr "Uma característica é necessária"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "Espera-se um DigitalInOut"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -791,7 +791,7 @@ msgstr "Esperava um Serviço"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr ""
+msgstr "Espera-se uma UART"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -1284,7 +1284,7 @@ msgstr "O código salvo não está em execução.\n"
 
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
-msgstr ""
+msgstr "Não configurável"
 
 #: shared-bindings/util.c
 msgid ""
@@ -2547,7 +2547,7 @@ msgstr "os valores iniciais devem ser iteráveis"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "initial_value length is wrong"
-msgstr ""
+msgstr "O comprimento do initial_value está errado"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2746,7 +2746,7 @@ msgstr "o max_length deve ser 0-%d quando Fixed_length for %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "max_length must be > 0"
-msgstr ""
+msgstr "max_length deve ser > 0"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
