@@ -104,12 +104,8 @@ void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
             never_reset[i] = true;
 
             never_reset_pin_number(self->clock_pin_number);
-            if ( self->MOSI_pin_number != NO_PIN) {
-                never_reset_pin_number(self->MOSI_pin_number);
-            }
-            if ( self->MISO_pin_number != NO_PIN) {
-                never_reset_pin_number(self->MISO_pin_number);
-            }
+            never_reset_pin_number(self->MOSI_pin_number);
+            never_reset_pin_number(self->MISO_pin_number);
             break;
         }
     }
@@ -208,12 +204,8 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     nrfx_spim_uninit(&self->spim_peripheral->spim);
 
     reset_pin_number(self->clock_pin_number);
-    if ( self->MOSI_pin_number != NO_PIN) {
-        reset_pin_number(self->MOSI_pin_number);
-    }
-    if ( self->MISO_pin_number != NO_PIN) {
-        reset_pin_number(self->MISO_pin_number);
-    }
+    reset_pin_number(self->MOSI_pin_number);
+    reset_pin_number(self->MISO_pin_number);
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self, uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t bits) {
