@@ -33,6 +33,7 @@
 #include "soc/sens_reg.h"
 #include "driver/gpio.h"
 #include "driver/adc.h"
+#include "driver/touch_pad.h"
 #include "esp_heap_caps.h"
 #include "multi_heap.h"
 #include "../heap_private.h"
