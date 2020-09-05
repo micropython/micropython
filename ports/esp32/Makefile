@@ -54,13 +54,13 @@ SDKCONFIG_COMBINED = $(BUILD)/sdkconfig.combined
 SDKCONFIG_H = $(BUILD)/sdkconfig.h
 
 # The git hash of the currently supported ESP IDF version.
-# These correspond to v3.3.2 and v4.0.1.
+# These correspond to v3.3.2 and v4.1
 ESPIDF_SUPHASH_V3 := 9e70825d1e1cbf7988cf36981774300066580ea7
-ESPIDF_SUPHASH_V4 := 4c81978a3e2220674a432a588292a4c860eef27b
+ESPIDF_SUPHASH_V4 := 5ef1b390026270503634ac3ec9f1ec2e364e23b2
 
 define print_supported_git_hash
 $(info Supported git hash (v3.3): $(ESPIDF_SUPHASH_V3))
-$(info Supported git hash (v4.0) (experimental): $(ESPIDF_SUPHASH_V4))
+$(info Supported git hash (v4.1) (experimental): $(ESPIDF_SUPHASH_V4))
 endef
 
 # paths to ESP IDF and its components
@@ -79,6 +79,8 @@ ESPCOMP = $(ESPIDF)/components
 ESPTOOL ?= $(ESPCOMP)/esptool_py/esptool/esptool.py
 ESPCOMP_KCONFIGS = $(shell find $(ESPCOMP) -name Kconfig)
 ESPCOMP_KCONFIGS_PROJBUILD = $(shell find $(ESPCOMP) -name Kconfig.projbuild)
+ESPCOMP_KCONFIGS_SOURCE_FILE ?= $(ESPCOMP)/Kconfig.combined
+ESPCOMP_KCONFIGS_PROJBUILD_SOURCE_FILE ?= $(ESPCOMP)/Kconfig.projbuild.combined
 
 # verify the ESP IDF version
 ESPIDF_CURHASH := $(shell git -C $(ESPIDF) show -s --pretty=format:'%H')
@@ -89,7 +91,7 @@ else ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 $(info Building with ESP IDF v4)
 
 PYPARSING_VERSION = $(shell python3 -c 'import pyparsing; print(pyparsing.__version__)')
-ifneq ($(PYPARSING_VERSION),2.3.1)
+ifeq ($(filter 2.3% 2.2% 2.1%,$(PYPARSING_VERSION)),)
 $(info ** ERROR **)
 $(info EDP IDF requires pyparsing version less than 2.4)
 $(info You will need to set up a Python virtual environment with pyparsing 2.3.1)
@@ -146,7 +148,9 @@ INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_bootloader
 INC_ESPCOMP += -I$(ESPCOMP)/console
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include/driver
+INC_ESPCOMP += -I$(ESPCOMP)/driver/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/efuse/include
+INC_ESPCOMP += -I$(ESPCOMP)/efuse/private_include
 INC_ESPCOMP += -I$(ESPCOMP)/efuse/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/espcoredump/include
@@ -158,6 +162,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/nvs_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/freertos/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_ringbuf/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_event/include
+INC_ESPCOMP += -I$(ESPCOMP)/esp_netif/include
 INC_ESPCOMP += -I$(ESPCOMP)/tcpip_adapter/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/lwip/src/include
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/port/esp32/include
@@ -260,7 +265,7 @@ CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfie
 	-Wno-error=unused-variable -Wno-error=deprecated-declarations \
 	-DESP_PLATFORM
 
-CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H
+CFLAGS_BASE = -std=gnu11 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H
 CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP) $(INC_NEWLIB)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
@@ -398,17 +403,23 @@ $(SDKCONFIG_COMBINED): $(SDKCONFIG)
 	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(CAT) $^ > $@
 
-$(SDKCONFIG_H): $(SDKCONFIG_COMBINED)
+$(ESPCOMP_KCONFIGS_SOURCE_FILE): $(ESPCOMP_KCONFIGS)
+	$(Q)$(CAT) $^ > $@
+
+$(ESPCOMP_KCONFIGS_PROJBUILD_SOURCE_FILE): $(ESPCOMP_KCONFIGS_PROJBUILD)
+	$(Q)$(CAT) $^ > $@
+
+$(SDKCONFIG_H): $(SDKCONFIG_COMBINED) $(ESPCOMP_KCONFIGS_SOURCE_FILE) $(ESPCOMP_KCONFIGS_PROJBUILD_SOURCE_FILE)
 	$(ECHO) "GEN $@"
 	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(PYTHON) $(ESPIDF)/tools/kconfig_new/confgen.py \
+	$(Q)$(PYTHON2) $(ESPIDF)/tools/kconfig_new/confgen.py \
 		--output header $@ \
 		--config $< \
 		--kconfig $(ESPIDF)/Kconfig \
 		--env "IDF_TARGET=esp32" \
 		--env "IDF_CMAKE=n" \
-		--env "COMPONENT_KCONFIGS=$(ESPCOMP_KCONFIGS)" \
-		--env "COMPONENT_KCONFIGS_PROJBUILD=$(ESPCOMP_KCONFIGS_PROJBUILD)" \
+		--env "COMPONENT_KCONFIGS_SOURCE_FILE=$(ESPCOMP_KCONFIGS_SOURCE_FILE)" \
+		--env "COMPONENT_KCONFIGS_PROJBUILD_SOURCE_FILE=$(ESPCOMP_KCONFIGS_PROJBUILD_SOURCE_FILE)" \
 		--env "IDF_PATH=$(ESPIDF)"
 	$(Q)touch $@
 
@@ -417,8 +428,12 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H) $(BOARD_DIR)/mpconfigboard.
 ################################################################################
 # List of object files from the ESP32 IDF components
 
+ESPIDF_BOOTLOADER_OBJEXCLUDE = src/bootloader_init.c \
+	src/bootloader_flash_config_esp32s2beta.c \
+	src/bootloader_efuse_esp32s2beta.c \
+
 ESPIDF_BOOTLOADER_SUPPORT_O = $(patsubst %.c,%.o,\
-	$(filter-out $(ESPCOMP)/bootloader_support/src/bootloader_init.c,\
+	$(filter-out $(addprefix $(ESPCOMP)/bootloader_support/,$(ESPIDF_BOOTLOADER_OBJEXCLUDE)),\
 		$(wildcard $(ESPCOMP)/bootloader_support/src/*.c) \
 		$(wildcard $(ESPCOMP)/bootloader_support/src/idf/*.c) \
 		))
@@ -562,7 +577,7 @@ ESPIDF_BT_NIMBLE_O = $(patsubst %.c,%.o,\
 endif
 
 $(BUILD)/$(ESPCOMP)/esp_eth/src/esp_eth_mac_dm9051.o: CFLAGS += -fno-strict-aliasing
-ESPIDF_ESP_ETH_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/esp_eth/src/*.c))
+ESPIDF_ESP_ETH_O = $(patsubst %.c,%.o,$(filter-out %_openeth.c,$(wildcard $(ESPCOMP)/esp_eth/src/*.c)))
 
 ESPIDF_XTENSA_O = $(patsubst %.c,%.o,\
     $(wildcard $(ESPCOMP)/xtensa/*.c) \
@@ -667,7 +682,7 @@ LIB = $(foreach lib,$(LIB_ESPIDF),$(BUILD_ESPIDF_LIB)/$(lib)/lib$(lib).a)
 ################################################################################
 # ESP IDF ldgen
 
-LDGEN_FRAGMENTS = $(shell find $(ESPCOMP) -name "*.lf")
+LDGEN_FRAGMENTS := $(shell find $(ESPCOMP) -name "*.lf" | grep -v esp32s2)
 
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 
@@ -678,7 +693,7 @@ $(BUILD_ESPIDF_LIB)/ldgen_libraries: $(LDGEN_LIBRARIES) $(ESPIDF)/make/ldgen.mk
 
 $(BUILD)/esp32.project.ld: $(ESPCOMP)/esp32/ld/esp32.project.ld.in $(LDGEN_FRAGMENTS) $(SDKCONFIG_COMBINED) $(BUILD_ESPIDF_LIB)/ldgen_libraries
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(ESPIDF)/tools/ldgen/ldgen.py \
+	$(Q)$(PYTHON2) $(ESPIDF)/tools/ldgen/ldgen.py \
 		--input $< \
 		--output $@ \
 		--config $(SDKCONFIG_COMBINED) \
@@ -687,8 +702,8 @@ $(BUILD)/esp32.project.ld: $(ESPCOMP)/esp32/ld/esp32.project.ld.in $(LDGEN_FRAGM
 		--libraries-file $(BUILD_ESPIDF_LIB)/ldgen_libraries \
 		--env "IDF_TARGET=esp32" \
 		--env "IDF_CMAKE=n" \
-		--env "COMPONENT_KCONFIGS=$(ESPCOMP_KCONFIGS)" \
-		--env "COMPONENT_KCONFIGS_PROJBUILD=$(ESPCOMP_KCONFIGS_PROJBUILD)" \
+		--env "COMPONENT_KCONFIGS_SOURCE_FILE=$(ESPCOMP_KCONFIGS_SOURCE_FILE)" \
+		--env "COMPONENT_KCONFIGS_PROJBUILD_SOURCE_FILE=$(ESPCOMP_KCONFIGS_PROJBUILD_SOURCE_FILE)" \
 		--env "IDF_PATH=$(ESPIDF)" \
 		--objdump $(OBJDUMP)
 
@@ -821,7 +836,6 @@ BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOM
 	bootloader_support/src/bootloader_clock.o \
 	bootloader_support/src/bootloader_common.o \
 	bootloader_support/src/bootloader_flash.o \
-	bootloader_support/src/bootloader_flash_config.o \
 	bootloader_support/src/bootloader_init.o \
 	bootloader_support/src/bootloader_random.o \
 	bootloader_support/src/bootloader_utility.o \
@@ -833,9 +847,11 @@ BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOM
 
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ += $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
+	bootloader_support/src/esp32/bootloader_esp32.o \
 	bootloader_support/src/esp32/bootloader_sha.o \
-	bootloader_support/src/bootloader_flash_config.o \
 	bootloader_support/src/esp32/secure_boot.o \
+	bootloader_support/src/bootloader_flash_config_esp32.o \
+	bootloader_support/src/bootloader_efuse_esp32.o \
 	)
 else
 BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ += $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
@@ -853,6 +869,7 @@ $(BOOTLOADER_LIB_DIR)/libbootloader_support.a: $(BOOTLOADER_LIB_BOOTLOADER_SUPPO
 BOOTLOADER_LIB_ALL += log
 BOOTLOADER_LIB_LOG_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
 	log/log.o \
+	log/log_noos.o \
 	)
 $(BOOTLOADER_LIB_DIR)/liblog.a: $(BOOTLOADER_LIB_LOG_OBJ)
 	$(ECHO) "AR $@"
@@ -861,7 +878,7 @@ $(BOOTLOADER_LIB_DIR)/liblog.a: $(BOOTLOADER_LIB_LOG_OBJ)
 # libspi_flash.a
 BOOTLOADER_LIB_ALL += spi_flash
 BOOTLOADER_LIB_SPI_FLASH_OBJ = $(addprefix $(BUILD)/bootloader/$(ESPCOMP)/,\
-	spi_flash/spi_flash_rom_patch.o \
+	spi_flash/esp32/spi_flash_rom_patch.o \
 	)
 $(BOOTLOADER_LIB_DIR)/libspi_flash.a: $(BOOTLOADER_LIB_SPI_FLASH_OBJ)
 	$(ECHO) "AR $@"
@@ -927,7 +944,7 @@ BOOTLOADER_LIBS += -Wl,--start-group
 BOOTLOADER_LIBS += $(BOOTLOADER_OBJ)
 BOOTLOADER_LIBS += -L$(BUILD)/bootloader $(addprefix -l,$(BOOTLOADER_LIB_ALL))
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
-BOOTLOADER_LIBS += -L$(ESPCOMP)/esp_wifi/lib_esp32 -lrtc
+BOOTLOADER_LIBS += -L$(ESPCOMP)/esp_wifi/lib/esp32 -lrtc
 else
 BOOTLOADER_LIBS += -L$(ESPCOMP)/esp32/lib -lrtc
 endif
@@ -943,12 +960,14 @@ BOOTLOADER_LDFLAGS += -Wl,--gc-sections
 BOOTLOADER_LDFLAGS += -static
 BOOTLOADER_LDFLAGS += -Wl,-EL
 BOOTLOADER_LDFLAGS += -Wl,-Map=$(@:.elf=.map) -Wl,--cref
-BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/bootloader/subproject/main/esp32.bootloader.ld
-BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/bootloader/subproject/main/esp32.bootloader.rom.ld
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
+BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/bootloader/subproject/main/ld/esp32/bootloader.ld
+BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/bootloader/subproject/main/ld/esp32/bootloader.rom.ld
 BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp_rom/esp32/ld/esp32.rom.ld
 BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp_rom/esp32/ld/esp32.rom.newlib-funcs.ld
 else
+BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/bootloader/subproject/main/esp32.bootloader.ld
+BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/bootloader/subproject/main/esp32.bootloader.rom.ld
 BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp32/ld/esp32.rom.ld
 BOOTLOADER_LDFLAGS += -T $(ESPCOMP)/esp32/ld/esp32.rom.spiram_incompatible_fns.ld
 endif
