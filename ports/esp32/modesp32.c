@@ -170,6 +170,54 @@ STATIC mp_obj_t esp32_idf_heap_info(const mp_obj_t cap_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_idf_heap_info_obj, esp32_idf_heap_info);
 
+STATIC mp_obj_t esp32_ts_set_meas_time(mp_obj_t sleep_cycle_in, mp_obj_t meas_cycle_in) {
+    uint16_t sleep_cycle = mp_obj_get_int(sleep_cycle_in);
+    uint16_t meas_cycle = mp_obj_get_int(meas_cycle_in);
+    esp_err_t err = touch_pad_set_meas_time(sleep_cycle, meas_cycle);
+    if (err == ESP_OK) {
+        return mp_const_none;
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("touch sensor error"));
+}
+MP_DEFINE_CONST_FUN_OBJ_2(esp32_ts_set_meas_time_obj, esp32_ts_set_meas_time);
+
+STATIC mp_obj_t esp32_ts_get_meas_time(void) {
+    uint16_t sleep_cycle;
+    uint16_t meas_cycle;
+    esp_err_t err = touch_pad_get_meas_time(&sleep_cycle, &meas_cycle);
+    if (err == ESP_OK) {
+        mp_obj_t data[] = {
+            MP_OBJ_NEW_SMALL_INT(sleep_cycle),
+            MP_OBJ_NEW_SMALL_INT(meas_cycle),
+        };
+        return mp_obj_new_tuple(2, data);
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("touch sensor error"));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(esp32_ts_get_meas_time_obj, esp32_ts_get_meas_time);
+
+STATIC mp_obj_t esp32_ts_get_meas_time_sleep_cycle(void) {
+    uint16_t sleep_cycle;
+    uint16_t meas_cycle;
+    esp_err_t err = touch_pad_get_meas_time(&sleep_cycle, &meas_cycle);
+    if (err == ESP_OK) {
+        return MP_OBJ_NEW_SMALL_INT(sleep_cycle);
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("touch sensor error"));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(esp32_ts_get_meas_time_sleep_cycle_obj, esp32_ts_get_meas_time_sleep_cycle);
+
+STATIC mp_obj_t esp32_ts_get_meas_time_meas_cycle(void) {
+    uint16_t sleep_cycle;
+    uint16_t meas_cycle;
+    esp_err_t err = touch_pad_get_meas_time(&sleep_cycle, &meas_cycle);
+    if (err == ESP_OK) {
+        return MP_OBJ_NEW_SMALL_INT(meas_cycle);
+    }
+    mp_raise_ValueError(MP_ERROR_TEXT("touch sensor error"));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(esp32_ts_get_meas_time_meas_cycle_obj, esp32_ts_get_meas_time_meas_cycle);
+
 STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
@@ -179,6 +227,10 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
     { MP_ROM_QSTR(MP_QSTR_hall_sensor), MP_ROM_PTR(&esp32_hall_sensor_obj) },
     { MP_ROM_QSTR(MP_QSTR_idf_heap_info), MP_ROM_PTR(&esp32_idf_heap_info_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_touch_sensor_measurement_time), MP_ROM_PTR(&esp32_ts_set_meas_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_touch_sensor_measurement_time), MP_ROM_PTR(&esp32_ts_get_meas_time_obj) },
+    { MP_ROM_QSTR(MP_QSTR_touch_sensor_sleep_cycle), MP_ROM_PTR(&esp32_ts_get_meas_time_sleep_cycle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_touch_sensor_measurement_cycle), MP_ROM_PTR(&esp32_ts_get_meas_time_meas_cycle_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Partition), MP_ROM_PTR(&esp32_partition_type) },
     { MP_ROM_QSTR(MP_QSTR_RMT), MP_ROM_PTR(&esp32_rmt_type) },
