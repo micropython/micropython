@@ -126,6 +126,15 @@ Constants
     locations until the rightmost edge is reached. Further bytes are rendered
     at locations starting at the leftmost edge, 8 pixels lower.
 
+.. data:: framebuf.MONO_VMSB
+
+    Monochrome (1-bit) color format
+    This defines a mapping where the bits in a byte are vertically mapped with
+    bit 7 being nearest the top of the screen. Consequently each byte occupies
+    8 vertical pixels. Subsequent bytes appear at successive horizontal
+    locations until the rightmost edge is reached. Further bytes are rendered
+    at locations starting at the leftmost edge, 8 pixels lower.
+
 .. data:: framebuf.MONO_HLSB
 
     Monochrome (1-bit) color format
