@@ -245,6 +245,50 @@ $ make deploy
 This will use the `esptool.py` script (provided by ESP-IDF) to flash the
 binary images to the device.
 
+Alternative: Building the firmware with Docker
+----------------------------------------------
+
+If you are already using Docker or don't mind setting it up, it is actually
+possible to build the firmware using the official Espressif images.
+
+Using this method, none of the previous steps are required.
+
+1. Go at the root of micropython's project and run:
+
+```bash
+$ docker run --rm -it -v $(pwd):/project -w /project \
+  --user $(id -u):$(id -g) -v /etc/group:/etc/group -v /etc/passwd:/etc/passwd \
+  --device /dev/ttyUSB0:/dev/ttyUSB0 espressif/idf:v3.3.2 bash
+```
+
+Notes: \
+a. The uid and gid are passed in so the resulting compilation artifacts belong
+to your user. \
+b. The `group` and `passwd` files are mapped inside simply so your prompt and
+other things refering to uid/gid look beautiful. It can safely be omitted. \
+c. The serial device is mapped inside so `make deploy` works.
+
+2. Build the MicroPython cross-compiler
+
+```bash
+$ cd mpy-cross
+$ make mpy-cross
+$ cd -
+```
+
+3. Build MicroPython e.g. the TinyPICO port
+
+```bash
+$ cd ports/esp32/
+$ make BOARD=TINYPICO PYTHON2=python
+```
+
+4. Flash the MicroPython firmware
+
+```bash
+$ make BOARD=TINYPICO PYTHON2=python deploy
+```
+
 Getting a Python prompt on the device
 -------------------------------------
 
