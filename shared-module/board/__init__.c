@@ -89,6 +89,8 @@ mp_obj_t common_hal_board_create_spi(void) {
     const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MOSI);
     const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MISO);
     common_hal_busio_spi_construct(self, clock, mosi, miso);
+    // make sure lock is not held initially
+    common_hal_busio_spi_unlock(self);
     spi_singleton = (mp_obj_t)self;
     return spi_singleton;
 }
