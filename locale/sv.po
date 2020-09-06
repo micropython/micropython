@@ -6,15 +6,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-30 14:38-0400\n"
-"PO-Revision-Date: 2020-08-30 20:02+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"PO-Revision-Date: 2020-09-07 19:36+0000\n"
+"Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2.1-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: main.c
 msgid ""
@@ -500,7 +500,7 @@ msgstr "Kan inte ställa in CCCD på lokal karaktäristik"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
-msgstr ""
+msgstr "Det går inte att skapa en ny Adapter; använd _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -774,7 +774,7 @@ msgstr "Förväntade en karaktäristik"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "Förväntar en DigitalInOut"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -782,7 +782,7 @@ msgstr "Förväntade en tjänst"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr ""
+msgstr "Förväntar en UART"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -1274,7 +1274,7 @@ msgstr "Kör inte sparad kod.\n"
 
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
-msgstr ""
+msgstr "Går inte sätta"
 
 #: shared-bindings/util.c
 msgid ""
@@ -1379,6 +1379,8 @@ msgid ""
 "Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
 "instead"
 msgstr ""
+"Porten accepterar inte pinne eller frekvens. Skapa och skicka en PWMOut "
+"Carrier istället"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -2518,7 +2520,7 @@ msgstr "initialvärden måste vara iterable"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "initial_value length is wrong"
-msgstr ""
+msgstr "initial_value-längd är fel"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2717,7 +2719,7 @@ msgstr "max_length måste vara 0-%d när fixed_length är %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "max_length must be > 0"
-msgstr ""
+msgstr "max_length måste vara > 0"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -2955,11 +2957,11 @@ msgstr "ord() förväntade sig ett tecken, men en sträng med längden %d hittad
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
-msgstr ""
+msgstr "utanför räckvidd för source"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
-msgstr ""
+msgstr "utanför räckvidd för target"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
@@ -3143,7 +3145,7 @@ msgstr "sosfilt kräver iterable argument"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
+msgstr "källpalett för stor"
 
 #: py/objstr.c
 msgid "start/end indices"
