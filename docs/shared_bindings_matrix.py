@@ -43,8 +43,8 @@ def get_circuitpython_root_dir():
 def get_shared_bindings():
     """ Get a list of modules in shared-bindings based on folder names
     """
-    shared_bindings_dir = get_circuitpython_root_dir() / "circuitpython-stubs"
-    return [item.name for item in shared_bindings_dir.iterdir()]
+    shared_bindings_dir = get_circuitpython_root_dir() / "shared-bindings"
+    return [item.name for item in shared_bindings_dir.iterdir()] + ["ulab"]
 
 
 def read_mpconfig():
@@ -159,6 +159,8 @@ def support_matrix_by_board(use_branded_name=True):
                                       board_contents)
             if board_name_re:
                 board_name = board_name_re.group(1).strip('"')
+        else:
+            board_name = entry.name
 
         board_modules = []
         for module in base:
