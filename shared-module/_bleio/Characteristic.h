@@ -27,6 +27,9 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
 #define MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H
 
+// These are not the Bluetooth spec values. They are what is used by the Nordic SoftDevice.
+// The bit values are in different positions.
+
 typedef enum {
     CHAR_PROP_NONE =              0,
     CHAR_PROP_BROADCAST =         1u << 0,
@@ -39,5 +42,15 @@ typedef enum {
                                    CHAR_PROP_READ | CHAR_PROP_WRITE | CHAR_PROP_WRITE_NO_RESPONSE)
 } bleio_characteristic_properties_enum_t;
 typedef uint8_t bleio_characteristic_properties_t;
+
+// Bluetooth spec property values
+#define BT_GATT_CHRC_BROADCAST			0x01
+#define BT_GATT_CHRC_READ			0x02
+#define BT_GATT_CHRC_WRITE_WITHOUT_RESP		0x04
+#define BT_GATT_CHRC_WRITE			0x08
+#define BT_GATT_CHRC_NOTIFY			0x10
+#define BT_GATT_CHRC_INDICATE			0x20
+#define BT_GATT_CHRC_AUTH			0x40
+#define BT_GATT_CHRC_EXT_PROP			0x80
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_CHARACTERISTIC_H

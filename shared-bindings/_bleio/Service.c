@@ -79,9 +79,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
 //|
 STATIC mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
     bleio_service_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // Return list as a tuple so user won't be able to change it.
-    mp_obj_list_t *char_list = common_hal_bleio_service_get_characteristic_list(self);
-    return mp_obj_new_tuple(char_list->len, char_list->items);
+    return MP_OBJ_FROM_PTR(common_hal_bleio_service_get_characteristics(self));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_service_get_characteristics);
 
@@ -151,7 +149,7 @@ STATIC const mp_rom_map_elem_t bleio_service_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_characteristics),   MP_ROM_PTR(&bleio_service_characteristics_obj) },
     { MP_ROM_QSTR(MP_QSTR_secondary),         MP_ROM_PTR(&bleio_service_secondary_obj) },
     { MP_ROM_QSTR(MP_QSTR_uuid),              MP_ROM_PTR(&bleio_service_uuid_obj) },
-    { MP_ROM_QSTR(MP_QSTR_remote),              MP_ROM_PTR(&bleio_service_remote_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remote),            MP_ROM_PTR(&bleio_service_remote_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bleio_service_locals_dict, bleio_service_locals_dict_table);
 
@@ -173,21 +171,3 @@ const mp_obj_type_t bleio_service_type = {
     .print = bleio_service_print,
     .locals_dict = (mp_obj_dict_t*)&bleio_service_locals_dict
 };
-
-// Helper for classes that store lists of services.
-mp_obj_tuple_t* service_linked_list_to_tuple(bleio_service_obj_t * services) {
-    // Return list as a tuple so user won't be able to change it.
-    bleio_service_obj_t *head = services;
-    size_t len = 0;
-    while (head != NULL) {
-        len++;
-        head = head->next;
-    }
-    mp_obj_tuple_t * t = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
-    head = services;
-    for (int32_t i = len - 1; i >= 0; i--) {
-        t->items[i] = MP_OBJ_FROM_PTR(head);
-        head = head->next;
-    }
-    return t;
-}

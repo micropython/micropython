@@ -39,6 +39,7 @@
 #include "supervisor/shared/bluetooth.h"
 
 #include "common-hal/_bleio/__init__.h"
+#include "common-hal/_bleio/bonding.h"
 
 void check_nrf_error(uint32_t err_code) {
     if (err_code == NRF_SUCCESS) {
@@ -241,6 +242,10 @@ void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buff
         check_nrf_error(err_code);
     }
 
+}
+
+void bleio_background(void) {
+    bonding_background();
 }
 
 void common_hal_bleio_gc_collect(void) {
