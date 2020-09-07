@@ -283,7 +283,7 @@ void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         mp_printf(print, "UUID(0x%04x)", common_hal_bleio_uuid_get_uuid16(self));
     } else {
         uint8_t uuid128[16];
-        (void) common_hal_bleio_uuid_get_uuid128(self, uuid128);
+        common_hal_bleio_uuid_get_uuid128(self, uuid128);
         mp_printf(print, "UUID('"
                   "%02x%02x%02x%02x-"
                   "%02x%02x-"

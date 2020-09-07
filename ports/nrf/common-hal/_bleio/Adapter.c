@@ -354,6 +354,8 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     if (enabled) {
         for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
             bleio_connection_internal_t *connection = &bleio_connections[i];
+            // Reset connection.
+            bleio_connection_clear(connection);
             connection->conn_handle = BLE_CONN_HANDLE_INVALID;
         }
         bleio_adapter_reset_name(self);
@@ -589,6 +591,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         bleio_connection_internal_t *connection = &bleio_connections[i];
         if (connection->conn_handle == conn_handle) {
+            connection->is_central = true;
             return bleio_connection_new_from_internal(connection);
         }
     }
