@@ -457,6 +457,28 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
     return MP_OBJ_NULL; // op not supported
 }
 
+#if MICROPY_CPYTHON_COMPAT
+STATIC mp_obj_t int_bit_length(mp_obj_t self_in) {
+    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+    if (!MP_OBJ_IS_SMALL_INT(self_in)) {
+        return mp_obj_int_bit_length_impl(self_in);
+    }
+    else
+    #endif
+    {
+        mp_int_t int_val = MP_OBJ_SMALL_INT_VALUE(self_in);
+        mp_uint_t value =
+            (int_val == 0) ? 0 :
+            (int_val == MP_SMALL_INT_MIN) ? 8 * sizeof(mp_int_t) :
+            (int_val < 0) ? 8 * sizeof(long) - __builtin_clzl(-int_val) :
+                 8 * sizeof(long) - __builtin_clzl(int_val);
+        return mp_obj_new_int_from_uint(value);
+    }
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(int_bit_length_obj, int_bit_length);
+#endif
+
 // this is a classmethod
 STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *args) {
     // TODO: Support signed param (assumes signed=False at the moment)
@@ -537,6 +559,9 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(int_to_bytes_obj, 3, int_to_bytes);
 
 STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
+#if MICROPY_CPYTHON_COMPAT
+    { MP_ROM_QSTR(MP_QSTR_bit_length), MP_ROM_PTR(&int_bit_length_obj) },
+#endif
     { MP_ROM_QSTR(MP_QSTR_from_bytes), MP_ROM_PTR(&int_from_bytes_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_bytes), MP_ROM_PTR(&int_to_bytes_obj) },
 };
