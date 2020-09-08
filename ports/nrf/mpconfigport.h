@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef NRF5_MPCONFIGPORT_H__
-#define NRF5_MPCONFIGPORT_H__
-
 #include <mpconfigboard.h>
 
 #if defined(NRF51822)
@@ -342,5 +339,3 @@ extern const struct _mp_obj_module_t ble_module;
 #include <alloca.h>
 
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_nrf5.h"
-
-#endif
