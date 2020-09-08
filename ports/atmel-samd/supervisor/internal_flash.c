@@ -39,6 +39,9 @@
 #ifdef SAMD21
 #include "hpl/pm/hpl_pm_base.h"
 #endif
+#ifdef SAME51
+#include "hri/hri_mclk_e51.h"
+#endif
 #ifdef SAME54
 #include "hri/hri_mclk_e54.h"
 #endif
