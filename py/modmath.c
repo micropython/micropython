@@ -98,7 +98,19 @@ mp_float_t MICROPY_FLOAT_C_FUN(log2)(mp_float_t x) {
 // sqrt(x): returns the square root of x
 MATH_FUN_1(sqrt, sqrt)
 // pow(x, y): returns x to the power of y
+#if MICROPY_PY_MATH_POW_FIX_NAN
+mp_float_t pow_func(mp_float_t x, mp_float_t y) {
+    // pow(base, 0) returns 1 for any base, even when base is NaN
+    // pow(+1, exponent) returns 1 for any exponent, even when exponent is NaN
+    if (x == MICROPY_FLOAT_CONST(1.0) || y == MICROPY_FLOAT_CONST(0.0)) {
+        return MICROPY_FLOAT_CONST(1.0);
+    }
+    return MICROPY_FLOAT_C_FUN(pow)(x, y);
+}
+MATH_FUN_2(pow, pow_func)
+#else
 MATH_FUN_2(pow, pow)
+#endif
 // exp(x)
 MATH_FUN_1(exp, exp)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
