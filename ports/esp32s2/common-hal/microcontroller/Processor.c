@@ -42,6 +42,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     temp_sensor_set_config(temp_sensor);
     temp_sensor_start();
     temp_sensor_read_celsius(&tsens_out);
+    temp_sensor_stop();
     return tsens_out;
 }
 
