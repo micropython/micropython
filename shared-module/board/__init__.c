@@ -89,8 +89,6 @@ mp_obj_t common_hal_board_create_spi(void) {
     const mcu_pin_obj_t* mosi = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MOSI);
     const mcu_pin_obj_t* miso = MP_OBJ_TO_PTR(DEFAULT_SPI_BUS_MISO);
     common_hal_busio_spi_construct(self, clock, mosi, miso);
-    // make sure lock is not held initially
-    common_hal_busio_spi_unlock(self);
     spi_singleton = (mp_obj_t)self;
     return spi_singleton;
 }
@@ -153,6 +151,7 @@ void reset_board_busses(void) {
 #endif
 #if BOARD_SPI
     bool display_using_spi = false;
+    busio_spi_obj_t *self = &spi_obj;
     #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         mp_const_obj_t bus_type = displays[i].bus_base.type;
@@ -169,6 +168,8 @@ void reset_board_busses(void) {
     }
     #endif
     if (!display_using_spi) {
+        // make sure lock is not held over a soft reset
+        common_hal_busio_spi_unlock(self);
         spi_singleton = NULL;
     }
 #endif
