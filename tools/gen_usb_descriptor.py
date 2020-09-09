@@ -382,7 +382,6 @@ if args.max_ep != 0:
     for interface in interfaces:
         for subdescriptor in interface.subdescriptors:
             endpoint_address = getattr(subdescriptor, 'bEndpointAddress', 0) & 0x7f
-            print("Endpoint %d - vs max_ep %d" % (endpoint_address, args.max_ep))
             if endpoint_address >= args.max_ep:
                 raise ValueError("Endpoint address %d of %s must be less than %d" % (endpoint_address & 0x7f, interface.description, args.max_ep))
 else:

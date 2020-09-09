@@ -34,7 +34,7 @@ endif
 CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM)
 
 ifeq ($(CIRCUITPY_BLEIO),1)
-	SRC_SUPERVISOR += supervisor/shared/bluetooth.c
+	SRC_SUPERVISOR += supervisor/shared/bluetooth.c supervisor/bluetooth.c
 endif
 
 # Choose which flash filesystem impl to use.

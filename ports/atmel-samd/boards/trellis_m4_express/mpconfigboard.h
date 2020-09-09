@@ -16,8 +16,8 @@
 #define MICROPY_PORT_C (0)
 #define MICROPY_PORT_D (0)
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PB08)
-#define DEFAULT_I2C_BUS_SDA (&pin_PB09)
+#define DEFAULT_I2C_BUS_SCL (&pin_PB09)
+#define DEFAULT_I2C_BUS_SDA (&pin_PB08)
 
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1

@@ -215,28 +215,33 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1) -> bool:
+//|     def refresh(self, *, target_frames_per_second: Optional[int] = None, minimum_frames_per_second: int = 1) -> bool:
 //|         """When auto refresh is off, waits for the target frame rate and then refreshes the display,
 //|         returning True. If the call has taken too long since the last refresh call for the given
 //|         target frame rate, then the refresh returns False immediately without updating the screen to
 //|         hopefully help getting caught up.
 //|
 //|         If the time since the last successful refresh is below the minimum frame rate, then an
-//|         exception will be raised. Set minimum_frames_per_second to 0 to disable.
+//|         exception will be raised. Set ``minimum_frames_per_second`` to 0 to disable.
+//|
+//|         When auto refresh is off, ``display.refresh()`` or ``display.refresh(target_frames_per_second=None)``
+//|         will update the display immediately.
 //|
 //|         When auto refresh is on, updates the display immediately. (The display will also update
 //|         without calls to this.)
 //|
 //|         :param int target_frames_per_second: How many times a second `refresh` should be called and the screen updated.
+//|             Set to `None` for immediate refresh.
 //|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
 //|         ...
 //|
 STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_target_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 60} },
+        { MP_QSTR_target_frames_per_second, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_minimum_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
+
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -246,8 +251,18 @@ STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos
     if (minimum_frames_per_second > 0) {
         maximum_ms_per_real_frame = 1000 / minimum_frames_per_second;
     }
-    return mp_obj_new_bool(common_hal_displayio_display_refresh(self, 1000 / args[ARG_target_frames_per_second].u_int, maximum_ms_per_real_frame));
+
+    uint32_t target_ms_per_frame;
+    if (args[ARG_target_frames_per_second].u_obj == mp_const_none) {
+        target_ms_per_frame = 0xffffffff;
+    }
+    else {
+        target_ms_per_frame = 1000 / mp_obj_get_int(args[ARG_target_frames_per_second].u_obj);
+    }
+
+    return mp_obj_new_bool(common_hal_displayio_display_refresh(self, target_ms_per_frame, maximum_ms_per_real_frame));
 }
+
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_refresh_obj, 1, displayio_display_obj_refresh);
 
 //|     auto_refresh: bool
