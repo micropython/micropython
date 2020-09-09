@@ -59,8 +59,6 @@ void tick_timer_cb(void* arg) {
     supervisor_tick();
 }
 
-uint32_t* heap;
-
 safe_mode_t port_init(void) {
     esp_timer_create_args_t args;
     args.callback = &tick_timer_cb;
@@ -69,7 +67,7 @@ safe_mode_t port_init(void) {
     args.name = "CircuitPython Tick";
     esp_timer_create(&args, &_tick_timer);
 
-    heap = malloc(HEAP_SIZE);
+    heap = NULL;
     never_reset_module_internal_pins();
 
     #ifdef CONFIG_SPIRAM
@@ -81,6 +79,10 @@ safe_mode_t port_init(void) {
         heap = malloc(HEAP_SIZE);
         heap_size = HEAP_SIZE / sizeof(uint32_t);
     }
+    if (heap == NULL) {
+        return NO_HEAP;
+    }
+
     return NO_SAFE_MODE;
 }
 
@@ -140,13 +142,6 @@ supervisor_allocation* port_fixed_stack(void) {
     _fixed_stack.ptr = port_stack_get_limit();
     _fixed_stack.length = (port_stack_get_top() - port_stack_get_limit()) * sizeof(uint32_t);
     return &_fixed_stack;
-}
-
-supervisor_allocation _fixed_heap;
-supervisor_allocation* port_fixed_heap(void) {
-    _fixed_heap.ptr = port_heap_get_bottom();
-    _fixed_heap.length = (port_heap_get_top() - port_heap_get_bottom()) * sizeof(uint32_t);
-    return &_fixed_heap;
 }
 
 // Place the word to save just after our BSS section that gets blanked.
