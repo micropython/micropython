@@ -159,7 +159,14 @@ def compute_huffman_coding(translations, qstrs, compression_filename):
         f.write("const uint8_t lengths[] = {{ {} }};\n".format(", ".join(map(str, lengths))))
         f.write("const {} values[] = {{ {} }};\n".format(values_type, ", ".join(str(ord(u)) for u in values)))
         f.write("#define compress_max_length_bits ({})\n".format(max_translation_encoded_length.bit_length()))
-        f.write("const {} ngrams[] = {{ {} }};\n".format(values_type, ", ".join(str(u) for u in ngramdata)))
+        f.write("const {} bigrams[] = {{ {} }};\n".format(values_type, ", ".join(str(u) for u in ngramdata)))
+        if len(ngrams) > 32:
+            bigram_start = 0xe000
+        else:
+            bigram_start = 0x80
+        bigram_end = bigram_start + len(ngrams) - 1 # End is inclusive
+        f.write("#define bigram_start {}\n".format(bigram_start))
+        f.write("#define bigram_end {}\n".format(bigram_end))
     return values, lengths, ngrams
 
 def decompress(encoding_table, encoded, encoded_length_bits):
