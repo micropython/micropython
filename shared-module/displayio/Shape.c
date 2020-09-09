@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/misc.h"
 
 void common_hal_displayio_shape_construct(displayio_shape_t *self, uint32_t width,
     uint32_t height, bool mirror_x, bool mirror_y) {
@@ -76,20 +77,12 @@ void common_hal_displayio_shape_set_boundary(displayio_shape_t *self, uint16_t y
     uint16_t lower_x, upper_x;
 
     // find x-boundaries for updating based on current data and start_x, end_x
-    if (start_x < self->data[2 * y]) {
-        lower_x = start_x;
-    } else {
-        lower_x = self->data[2 * y];
-    }
+    lower_x = MIN(start_x, self->data[2 * y]);
 
     if (self->mirror_x) {
         upper_x = self->width-lower_x;
     } else {
-        if (end_x > self->data[2 * y + 1]) {
-            upper_x = end_x + 1;
-        } else {
-            upper_x = self->data[2 * y + 1] + 1;
-        }
+        upper_x = 1 + MAX(end_x, self->data[2 * y + 1]);
     }
 
     self->data[2 * y] = start_x;
@@ -105,12 +98,10 @@ void common_hal_displayio_shape_set_boundary(displayio_shape_t *self, uint16_t y
             self->dirty_area.y2 = y+1;
         }
     } else { // Dirty region is not empty
-        if (lower_x < self->dirty_area.x1) {
-            self->dirty_area.x1 = lower_x;
-        }
-        if (upper_x > self->dirty_area.x2) {
-            self->dirty_area.x2 = upper_x;
-        }
+
+        self->dirty_area.x1 = MIN(lower_x, self->dirty_area.x1);
+        self->dirty_area.x2 = MAX(upper_x, self->dirty_area.x2);
+
         if (y < self->dirty_area.y1) {
             self->dirty_area.y1=y;
             if (self->mirror_y) {   // if y is mirrored and the lower y was updated, the upper y must be updated too
