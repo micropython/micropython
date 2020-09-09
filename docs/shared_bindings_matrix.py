@@ -28,6 +28,7 @@ import re
 import subprocess
 import sys
 
+from concurrent.futures import ThreadPoolExecutor
 
 SUPPORTED_PORTS = ['atmel-samd', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'stm']
 
@@ -43,7 +44,7 @@ def get_shared_bindings():
     """ Get a list of modules in shared-bindings based on folder names
     """
     shared_bindings_dir = get_circuitpython_root_dir() / "shared-bindings"
-    return [item.name for item in shared_bindings_dir.iterdir()]
+    return [item.name for item in shared_bindings_dir.iterdir()] + ["ulab"]
 
 
 def read_mpconfig():
@@ -131,38 +132,46 @@ def lookup_setting(settings, key, default=''):
         key = value[2:-1]
     return value
 
+def all_ports_all_boards(ports=SUPPORTED_PORTS):
+    for port in ports:
+
+        port_dir = get_circuitpython_root_dir() / "ports" / port
+        for entry in (port_dir / "boards").iterdir():
+            if not entry.is_dir():
+                continue
+            yield (port, entry)
+
 def support_matrix_by_board(use_branded_name=True):
     """ Compiles a list of the available core modules available for each
         board.
     """
     base = build_module_map()
 
-    boards = dict()
-    for port in SUPPORTED_PORTS:
-
+    def support_matrix(arg):
+        port, entry = arg
         port_dir = get_circuitpython_root_dir() / "ports" / port
-        for entry in (port_dir / "boards").iterdir():
-            if not entry.is_dir():
-                continue
-            board_modules = []
+        settings = get_settings_from_makefile(str(port_dir), entry.name)
+
+        if use_branded_name:
+            with open(entry / "mpconfigboard.h") as get_name:
+                board_contents = get_name.read()
+            board_name_re = re.search(r"(?<=MICROPY_HW_BOARD_NAME)\s+(.+)",
+                                      board_contents)
+            if board_name_re:
+                board_name = board_name_re.group(1).strip('"')
+        else:
             board_name = entry.name
 
-            settings = get_settings_from_makefile(str(port_dir), entry.name)
+        board_modules = []
+        for module in base:
+            key = f'CIRCUITPY_{module.upper()}'
+            if int(lookup_setting(settings, key, '0')):
+                board_modules.append(base[module]['name'])
 
-            if use_branded_name:
-                with open(entry / "mpconfigboard.h") as get_name:
-                    board_contents = get_name.read()
-                board_name_re = re.search(r"(?<=MICROPY_HW_BOARD_NAME)\s+(.+)",
-                                          board_contents)
-                if board_name_re:
-                    board_name = board_name_re.group(1).strip('"')
+        return (board_name, sorted(board_modules))
 
-            board_modules = []
-            for module in base:
-                key = f'CIRCUITPY_{module.upper()}'
-                if int(lookup_setting(settings, key, '0')):
-                    board_modules.append(base[module]['name'])
-            boards[board_name] = sorted(board_modules)
+    executor = ThreadPoolExecutor(max_workers=os.cpu_count())
+    boards = dict(sorted(executor.map(support_matrix, all_ports_all_boards())))
 
     #print(json.dumps(boards, indent=2))
     return boards

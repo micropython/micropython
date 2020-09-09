@@ -60,6 +60,7 @@ void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_s
 void mp_small_int_buffer_overflow_check(mp_int_t val, size_t nbytes, bool is_signed);
 
 mp_int_t mp_obj_int_hash(mp_obj_t self_in);
+mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in);
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf);
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf);
 int mp_obj_int_sign(mp_obj_t self_in);

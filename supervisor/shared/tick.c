@@ -27,6 +27,7 @@
 #include "supervisor/shared/tick.h"
 
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "supervisor/linker.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/background_callback.h"
@@ -36,7 +37,7 @@
 
 #if CIRCUITPY_BLEIO
 #include "supervisor/shared/bluetooth.h"
-#include "common-hal/_bleio/bonding.h"
+#include "common-hal/_bleio/__init__.h"
 #endif
 
 #if CIRCUITPY_DISPLAYIO
@@ -86,7 +87,7 @@ void supervisor_background_tasks(void *unused) {
 
     #if CIRCUITPY_BLEIO
     supervisor_bluetooth_background();
-    bonding_background();
+    bleio_background();
     #endif
 
     port_background_task();
@@ -149,17 +150,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     while (remaining > 0) {
         RUN_BACKGROUND_TASKS;
         // Check to see if we've been CTRL-Ced by autoreload or the user.
-        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)))
-           {
-            // clear exception and generate stacktrace
-            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-            nlr_raise(&MP_STATE_VM(mp_kbd_exception));
-          }
-        if( MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception)) ||
-           WATCHDOG_EXCEPTION_CHECK()) {
-            // stop sleeping immediately
-            break;
-        }
+        mp_handle_pending();
         remaining = end_tick - port_get_raw_ticks(NULL);
         // We break a bit early so we don't risk setting the alarm before the time when we call
         // sleep.

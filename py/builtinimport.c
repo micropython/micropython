@@ -488,7 +488,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 // afterwards.
                 gc_collect();
             }
-            if (outer_module_obj != MP_OBJ_NULL) {
+            if (outer_module_obj != MP_OBJ_NULL && VERIFY_PTR(outer_module_obj) ) {
                 qstr s = qstr_from_strn(mod_str + last, i - last);
                 mp_store_attr(outer_module_obj, s, module_obj);
                 // The above store can cause a dictionary rehash and new allocation. So,

@@ -239,13 +239,14 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t* self) {
         HAL_TIM_PWM_Stop(&self->handle, self->channel);
     }
     reset_pin_number(self->tim->pin->port,self->tim->pin->number);
-    self->tim = NULL;
 
     //if reserved timer has no active channels, we can disable it
     if (!reserved_tim[self->tim->tim_index - 1]) {
         tim_frequencies[self->tim->tim_index - 1] = 0x00;
         stm_peripherals_timer_free(self->handle.Instance);
     }
+
+    self->tim = NULL;
 }
 
 void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t* self, uint16_t duty) {

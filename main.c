@@ -105,6 +105,12 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
 #endif
 
+static void reset_devices(void) {
+#if CIRCUITPY_BLEIO_HCI
+    bleio_reset();
+#endif
+}
+
 void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
@@ -206,6 +212,8 @@ bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result
 }
 
 void cleanup_after_vm(supervisor_allocation* heap) {
+    // Reset port-independent devices, like CIRCUITPY_BLEIO_HCI.
+    reset_devices();
     // Turn off the display and flush the fileystem before the heap disappears.
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
@@ -436,10 +444,11 @@ int run_repl(void) {
 }
 
 int __attribute__((used)) main(void) {
-    memory_init();
-
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
+
+    // Init memory after the port in case the port needs to set aside memory.
+    memory_init();
 
     // Turn on LEDs
     init_status_leds();
@@ -465,6 +474,8 @@ int __attribute__((used)) main(void) {
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
+    // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
+    reset_devices();
     reset_board();
 
     // Turn on autoreload by default but before boot.py in case it wants to change it.

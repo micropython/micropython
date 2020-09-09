@@ -1,0 +1,2 @@
+The HCI-related include files here were copied from the Zephyr project, from this commit:
+https://github.com/zephyrproject-rtos/zephyr/tree/0a87f9359edf1ec1c169626df3e19c2b4a4e9646/include/bluetooth

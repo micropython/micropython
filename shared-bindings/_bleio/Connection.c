@@ -31,7 +31,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "ble_drv.h"
 #include "py/objarray.h"
 #include "py/objproperty.h"
 #include "py/objstr.h"

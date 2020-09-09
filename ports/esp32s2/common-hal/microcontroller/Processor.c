@@ -34,8 +34,16 @@
 
 #include "soc/efuse_reg.h"
 
+#include "esp-idf/components/driver/esp32s2/include/driver/temp_sensor.h"
+
 float common_hal_mcu_processor_get_temperature(void) {
-    return NAN;
+    float tsens_out;
+    temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT(); // DEFAULT: range:-10℃ ~  80℃, error < 1℃.
+    temp_sensor_set_config(temp_sensor);
+    temp_sensor_start();
+    temp_sensor_read_celsius(&tsens_out);
+    temp_sensor_stop();
+    return tsens_out;
 }
 
 float common_hal_mcu_processor_get_voltage(void) {

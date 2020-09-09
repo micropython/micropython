@@ -352,7 +352,7 @@ uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t* self
 
 
 bool common_hal_displayio_display_refresh(displayio_display_obj_t* self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
-    if (!self->auto_refresh && !self->first_manual_refresh) {
+    if (!self->auto_refresh && !self->first_manual_refresh && (target_ms_per_frame != 0xffffffff) ) {
         uint64_t current_time = supervisor_ticks_ms64();
         uint32_t current_ms_since_real_refresh = current_time - self->core.last_refresh;
         // Test to see if the real frame time is below our minimum.

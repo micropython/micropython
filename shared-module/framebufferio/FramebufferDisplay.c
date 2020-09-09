@@ -66,7 +66,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         ram_height,
         0,
         0,
-        rotation,
+        0, // rotation
         depth,
         fb_getter_default(get_grayscale, (depth < 8)),
         fb_getter_default(get_pixels_in_byte_share_row, false),
@@ -91,6 +91,10 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 
     self->native_frames_per_second = fb_getter_default(get_native_frames_per_second, 60);
     self->native_ms_per_frame = 1000 / self->native_frames_per_second;
+
+    if (rotation != 0) {
+        common_hal_framebufferio_framebufferdisplay_set_rotation(self, rotation);
+    }
 
     supervisor_start_terminal(self->core.width, self->core.height);
 
