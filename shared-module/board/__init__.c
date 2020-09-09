@@ -151,7 +151,6 @@ void reset_board_busses(void) {
 #endif
 #if BOARD_SPI
     bool display_using_spi = false;
-    busio_spi_obj_t *self = &spi_obj;
     #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         mp_const_obj_t bus_type = displays[i].bus_base.type;
@@ -169,7 +168,7 @@ void reset_board_busses(void) {
     #endif
     if (!display_using_spi) {
         // make sure lock is not held over a soft reset
-        common_hal_busio_spi_unlock(self);
+        common_hal_busio_spi_unlock(&spi_obj);
         spi_singleton = NULL;
     }
 #endif
