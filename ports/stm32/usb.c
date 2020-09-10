@@ -221,7 +221,9 @@ void pyb_usb_init0(void) {
     for (int i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
         usb_device.usbd_cdc_itf[i].attached_to_repl = false;
     }
+    #if MICROPY_HW_USB_HID
     MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
+    #endif
 
     pyb_usb_vcp_init0();
 }
