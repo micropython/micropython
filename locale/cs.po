@@ -44,15 +44,15 @@ msgstr ""
 
 #: py/obj.c
 msgid "  File \"%q\""
-msgstr "  Soubor \"%q\""
+msgstr "  Soubor \"%q\""
 
 #: py/obj.c
 msgid "  File \"%q\", line %d"
-msgstr "  Soubor \"%q\", řádek %d"
+msgstr "  Soubor \"%q\", řádek %d"
 
 #: main.c
 msgid " output:\n"
-msgstr " výstup:\n"
+msgstr " výstup:\n"
 
 #: py/objstr.c
 #, c-format

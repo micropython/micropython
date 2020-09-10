@@ -100,9 +100,30 @@ def translate(translation_file, i18ns):
             translations.append((original, translation))
         return translations
 
+def frequent_ngrams(corpus, sz, n):
+    return collections.Counter(corpus[i:i+sz] for i in range(len(corpus)-sz)).most_common(n)
+
+def encode_ngrams(translation, ngrams):
+    if len(ngrams) > 32:
+        start = 0xe000
+    else:
+        start = 0x80
+    for i, g in enumerate(ngrams):
+        translation = translation.replace(g, chr(start + i))
+    return translation
+
+def decode_ngrams(compressed, ngrams):
+    if len(ngrams) > 32:
+        start, end = 0xe000, 0xf8ff
+    else:
+        start, end = 0x80, 0x9f
+    return "".join(ngrams[ord(c) - start] if (start <= ord(c) <= end) else c for c in compressed)
+
 def compute_huffman_coding(translations, qstrs, compression_filename):
     all_strings = [x[1] for x in translations]
     all_strings_concat = "".join(all_strings)
+    ngrams = [i[0] for i in frequent_ngrams(all_strings_concat, 2, 32)]
+    all_strings_concat = encode_ngrams(all_strings_concat, ngrams)
     counts = collections.Counter(all_strings_concat)
     cb = huffman.codebook(counts.items())
     values = []
@@ -125,10 +146,12 @@ def compute_huffman_coding(translations, qstrs, compression_filename):
         last_l = l
     lengths = bytearray()
     print("// length count", length_count)
+    print("// bigrams", ngrams)
     for i in range(1, max(length_count) + 2):
         lengths.append(length_count.get(i, 0))
     print("// values", values, "lengths", len(lengths), lengths)
-    print("// estimated total memory size", len(lengths) + 2*len(values) + sum(len(cb[u]) for u in all_strings_concat))
+    ngramdata = [ord(ni) for i in ngrams for ni in i]
+    print("// estimated total memory size", len(lengths) + 2*len(values) + 2 * len(ngramdata) + sum((len(cb[u]) + 7)//8 for u in all_strings_concat))
     print("//", values, lengths)
     values_type = "uint16_t" if max(ord(u) for u in values) > 255 else "uint8_t"
     max_translation_encoded_length = max(len(translation.encode("utf-8")) for original,translation in translations)
@@ -136,10 +159,18 @@ def compute_huffman_coding(translations, qstrs, compression_filename):
         f.write("const uint8_t lengths[] = {{ {} }};\n".format(", ".join(map(str, lengths))))
         f.write("const {} values[] = {{ {} }};\n".format(values_type, ", ".join(str(ord(u)) for u in values)))
         f.write("#define compress_max_length_bits ({})\n".format(max_translation_encoded_length.bit_length()))
-    return values, lengths
+        f.write("const {} bigrams[] = {{ {} }};\n".format(values_type, ", ".join(str(u) for u in ngramdata)))
+        if len(ngrams) > 32:
+            bigram_start = 0xe000
+        else:
+            bigram_start = 0x80
+        bigram_end = bigram_start + len(ngrams) - 1 # End is inclusive
+        f.write("#define bigram_start {}\n".format(bigram_start))
+        f.write("#define bigram_end {}\n".format(bigram_end))
+    return values, lengths, ngrams
 
 def decompress(encoding_table, encoded, encoded_length_bits):
-    values, lengths = encoding_table
+    values, lengths, ngrams = encoding_table
     dec = []
     this_byte = 0
     this_bit = 7
@@ -187,6 +218,7 @@ def decompress(encoding_table, encoded, encoded_length_bits):
             searched_length += lengths[bit_length]
 
         v = values[searched_length + bits - max_code]
+        v = decode_ngrams(v, ngrams)
         i += len(v.encode('utf-8'))
         dec.append(v)
     return ''.join(dec)
@@ -194,7 +226,8 @@ def decompress(encoding_table, encoded, encoded_length_bits):
 def compress(encoding_table, decompressed, encoded_length_bits, len_translation_encoded):
     if not isinstance(decompressed, str):
         raise TypeError()
-    values, lengths = encoding_table
+    values, lengths, ngrams = encoding_table
+    decompressed = encode_ngrams(decompressed, ngrams)
     enc = bytearray(len(decompressed) * 3)
     #print(decompressed)
     #print(lengths)
