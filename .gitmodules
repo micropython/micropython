@@ -150,3 +150,6 @@
 [submodule "frozen/Adafruit_CircuitPython_RFM9x"]
 	path = frozen/Adafruit_CircuitPython_RFM9x
 	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM9x.git
+[submodule "frozen/Adafruit_CircuitPython_RFM69"]
+	path = frozen/Adafruit_CircuitPython_RFM69
+	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM69.git
