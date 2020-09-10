@@ -327,7 +327,7 @@ def main():
             b"    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0\n"
             b"};\n"
             b'const char mp_frozen_mpy_names[1] = {"\\0"};\n'
-            b"const mp_raw_code_t *const mp_frozen_mpy_content[0] = {};\n"
+            b"const mp_raw_code_t *const mp_frozen_mpy_content[1] = {NULL};\n"
         )
 
     # Generate output
