@@ -55,7 +55,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <ItemGroup>
       <PyIncDirs Include="$(PyIncDirs)"/>
       <PreProcDefs Include="%(ClCompile.PreProcessorDefinitions);NO_QSTR"/>
-      <PyQstrSourceFiles Include="@(ClCompile)">
+      <PyQstrSourceFiles Include="@(ClCompile)" Exclude="$(PyBuildDir)\frozen_content.c">
         <OutFile>$([System.String]::new('%(FullPath)').Replace('$(PyBaseDir)', '$(DestDir)qstr\'))</OutFile>
       </PyQstrSourceFiles>
       <PyQstrSourceFiles>
@@ -101,8 +101,8 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <PropertyGroup>
       <TmpFile>$(QstrGen).tmp</TmpFile>
     </PropertyGroup>
-    <Exec Command="$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /E $(PyQstrDefs) $(QstrDefs) > $(DestDir)qstrdefspreprocessed.h"/>
-    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdata.py $(DestDir)qstrdefspreprocessed.h $(QstrDefsCollected) > $(TmpFile)"/>
+    <Exec Command="$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /E $(PyQstrDefs) $(QstrDefs) > $(DestDir)qstrdefs.preprocessed.h"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdata.py $(DestDir)qstrdefs.preprocessed.h $(QstrDefsCollected) > $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(QstrGen)"/>
   </Target>
 
@@ -113,6 +113,17 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     </PropertyGroup>
     <Exec Command="$(PyPython) $(PySrcDir)makeversionhdr.py $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
+  </Target>
+
+  <Target Name="FreezeModules" Condition="'$(FrozenManifest)' != ''" DependsOnTargets="MakeQstrData" Inputs="$(FrozenManifest)" Outputs="$(PyBuildDir)frozen_content.c">
+    <ItemGroup>
+      <ClCompile Include="$(PyBuildDir)frozen_content.c"/>
+      <ClCompile>
+        <PreprocessorDefinitions>MICROPY_MODULE_FROZEN_MPY=1;MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      </ClCompile>
+    </ItemGroup>
+    <Exec Command="$(PyPython) $(PyBaseDir)tools\makemanifest.py -v MPY_DIR=$(PyBaseDir) -v MPY_LIB_DIR=$(PyBaseDir)../micropython-lib -v PORT_DIR=$(PyWinDir) -f&quot;-mcache-lookup-bc&quot; -o $(PyBuildDir)frozen_content.c -b $(PyBuildDir) $(FrozenManifest)"/>
+    <WriteLinesToFile File="$(TLogLocation)frozen.read.1.tlog" Lines="$(FrozenManifest)" Overwrite="True"/>
   </Target>
 
   <Target Name="RemoveGeneratedFiles" AfterTargets="Clean">
