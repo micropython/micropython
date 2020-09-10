@@ -6,15 +6,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-30 14:38-0400\n"
-"PO-Revision-Date: 2020-08-10 19:59+0000\n"
-"Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
+"PO-Revision-Date: 2020-09-09 16:05+0000\n"
+"Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
 "Language-Team: none\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: main.c
 msgid ""
@@ -456,10 +456,8 @@ msgid "Buffer length must be a multiple of 512"
 msgstr "Buffer lengte moet een veelvoud van 512 zijn"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
-#, fuzzy
-#| msgid "Buffer length must be a multiple of 512"
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr "Buffer lengte moet een veelvoud van 512 zijn"
+msgstr "Buffer moet een veelvoud van 512 zijn"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -502,7 +500,7 @@ msgstr "Kan CCCD niet toewijzen aan lokaal Characteristic"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
-msgstr ""
+msgstr "Kan geen nieuwe Adapter creëren; gebruik _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -662,10 +660,8 @@ msgid "Could not restart PWM"
 msgstr "Kan PWM niet herstarten"
 
 #: shared-bindings/_bleio/Adapter.c
-#, fuzzy
-#| msgid "Could not start PWM"
 msgid "Could not set address"
-msgstr "Kan PWM niet starten"
+msgstr "Kan adres niet zetten"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not start PWM"
@@ -778,7 +774,7 @@ msgstr "Verwachtte een Characteristic"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "Verwachtte een DigitalInOut"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -786,7 +782,7 @@ msgstr "Verwachtte een Service"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr ""
+msgstr "Verwachtte een UART"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -860,7 +856,7 @@ msgstr "Bestand bestaat"
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
-msgstr ""
+msgstr "Framebuffer benodigd %d bytes"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
@@ -957,10 +953,8 @@ msgstr "Ongeldige %q pin"
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
-#, fuzzy
-#| msgid "Invalid I2C pin selection"
 msgid "Invalid %q pin selection"
-msgstr "Ongeldige I2C pin selectie"
+msgstr "Ongeldige %q pin selectie"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
@@ -1478,13 +1472,12 @@ msgstr "SDA of SCL hebben een pullup nodig"
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
-msgstr ""
+msgstr "SDIO GetCardInfo Fout %d"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
-#, fuzzy, c-format
-#| msgid "SPI Init Error"
+#, c-format
 msgid "SDIO Init Error %d"
-msgstr "SPI Init Fout"
+msgstr "SDIO Init Fout %d"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
@@ -2731,7 +2724,7 @@ msgstr "max_length moet 0-%d zijn als fixed_length %s is"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "max_length must be > 0"
-msgstr ""
+msgstr "max_length moet >0 zijn"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
