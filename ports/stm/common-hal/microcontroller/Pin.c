@@ -70,6 +70,10 @@ void reset_all_pins(void) {
 
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
+    if ( pin_number == NO_PIN ) {
+        return;
+    }
+
     if (pin_port == 0x0F) {
         return;
     }
@@ -88,6 +92,9 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
 }
 
 void never_reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
+    if ( pin_number == NO_PIN ) {
+        return;
+    }
     never_reset_pins[pin_port] |= 1<<pin_number;
     // Make sure never reset pins are also always claimed
     claimed_pins[pin_port] |= 1<<pin_number;

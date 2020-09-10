@@ -180,7 +180,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
 
     if (miso != NULL) {
         config.miso_pin = miso->number;
-        self->MISO_pin_number = mosi->number;
+        self->MISO_pin_number = miso->number;
         claim_pin(miso);
     } else {
         self->MISO_pin_number = NO_PIN;
