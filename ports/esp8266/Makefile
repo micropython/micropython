@@ -22,7 +22,8 @@ QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_PY_USSL = 1
-MICROPY_SSL_AXTLS = 1
+#MICROPY_SSL_AXTLS = 1
+MICROPY_SSL_MBEDTLS = 1
 AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096
 BTREE_DEFS_EXTRA = -DDEFPSIZE=1024 -DMINCACHE=3
 
@@ -155,6 +156,13 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 
 SRC_S = \
 	gchelper.s \
+
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"../stm32/mbedtls/mbedtls_config.h"'
+# replace mbedtls' error.c by ours
+SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
+LIB_SRC_C += lib/mbedtls_errors/mp_mbedtls_errors.c
+endif
 
 OBJ =
 OBJ += $(PY_O)

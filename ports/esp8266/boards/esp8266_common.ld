@@ -134,6 +134,7 @@ SECTIONS
         *lib/berkeley-db-1.xx/*.o(.literal*, .text*)
         *lib/libm/*.o*(.literal*, .text*)
         *lib/littlefs/*.o*(.literal*, .text*)
+        *lib/mbedtls*/*.o(.literal*, .text*)
         *lib/mp-readline/*.o(.literal*, .text*)
         *lib/netutils/*.o*(.literal*, .text*)
         *lib/timeutils/*.o*(.literal*, .text*)

@@ -181,10 +181,17 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#if MICROPY_SSL_MBEDTLS
+#define MICROPY_PORT_ROOT_POINTER_MBEDTLS void **mbedtls_memory;
+#else
+#define MICROPY_PORT_ROOT_POINTER_MBEDTLS
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t pin_irq_handler[16]; \
     byte *uart0_rxbuf; \
+    MICROPY_PORT_ROOT_POINTER_MBEDTLS \
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
