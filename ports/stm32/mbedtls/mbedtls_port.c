@@ -29,14 +29,17 @@
 #include "rng.h"
 #include "mbedtls_config.h"
 
-#define DEBUG (0)
+#define DEBUG (1)
 
 #if DEBUG
-static size_t count_links(uint32_t *nb) {
+static size_t count_links(uint32_t *nb, void *ptr_find, int *ptr_found) {
     void **p = MP_STATE_PORT(mbedtls_memory);
     size_t n = 0;
     *nb = 0;
     while (p != NULL) {
+        if (p == ptr_find) {
+            (*ptr_found)++;
+        }
         ++n;
         *nb += gc_nbytes(p);
         p = (void**)p[1];
@@ -47,9 +50,9 @@ static size_t count_links(uint32_t *nb) {
 
 void *m_calloc_mbedtls(size_t nmemb, size_t size) {
     void **ptr = m_malloc0(nmemb * size + 2 * sizeof(uintptr_t));
-    #if DEBUG
+    #if 0&&DEBUG
     uint32_t nb;
-    size_t n = count_links(&nb);
+    size_t n = count_links(&nb, NULL, NULL);
     printf("mbed_alloc(%u, %u) -> (%u;%u) %p\n", nmemb, size, n, (uint)nb, ptr);
     #endif
     if (MP_STATE_PORT(mbedtls_memory) != NULL) {
@@ -65,8 +68,13 @@ void m_free_mbedtls(void *ptr_in) {
     void **ptr = &((void**)ptr_in)[-2];
     #if DEBUG
     uint32_t nb;
-    size_t n = count_links(&nb);
-    printf("mbed_free(%p, [%p, %p], nbytes=%u, links=%u;%u)\n", ptr, ptr[0], ptr[1], gc_nbytes(ptr), n, (uint)nb);
+    int ptr_found = 0;
+    size_t n = count_links(&nb, ptr, &ptr_found);
+    if (ptr_found == 0) {
+        printf("****** mbed_free(%p, links=%u;%u)\n", ptr, n, (uint)nb);
+        return;
+    }
+    //printf("mbed_free(%p, [%p, %p], nbytes=%u, links=%u;%u)\n", ptr, ptr[0], ptr[1], gc_nbytes(ptr), n, (uint)nb);
     #endif
     if (ptr[1] != NULL) {
         ((void**)ptr[1])[0] = ptr[0];
