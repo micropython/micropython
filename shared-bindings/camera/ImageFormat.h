@@ -24,36 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGESIZE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGESIZE_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
 
 #include "py/obj.h"
 
 typedef enum {
-    IMAGESIZE_NONE,
-    IMAGESIZE_320x240,
-    IMAGESIZE_640x320,
-    IMAGESIZE_1280x720,
-    IMAGESIZE_1280x960,
-    IMAGESIZE_1920x1080,
-    IMAGESIZE_2048x1536,
-    IMAGESIZE_2560x1920,
-} camera_imagesize_t;
+    IMAGEFORMAT_NONE,
+    IMAGEFORMAT_JPG,
+    IMAGEFORMAT_RGB565,
+} camera_imageformat_t;
 
-const mp_obj_type_t camera_imagesize_type;
+const mp_obj_type_t camera_imageformat_type;
 
-camera_imagesize_t camera_imagesize_obj_to_type(mp_obj_t obj);
-mp_obj_t camera_imagesize_type_to_obj(camera_imagesize_t mode);
+camera_imageformat_t camera_imageformat_obj_to_type(mp_obj_t obj);
+mp_obj_t camera_imageformat_type_to_obj(camera_imageformat_t mode);
 
 typedef struct {
     mp_obj_base_t base;
-} camera_imagesize_obj_t;
-extern const camera_imagesize_obj_t camera_imagesize_320x240_obj;
-extern const camera_imagesize_obj_t camera_imagesize_640x320_obj;
-extern const camera_imagesize_obj_t camera_imagesize_1280x720_obj;
-extern const camera_imagesize_obj_t camera_imagesize_1280x960_obj;
-extern const camera_imagesize_obj_t camera_imagesize_1920x1080_obj;
-extern const camera_imagesize_obj_t camera_imagesize_2048x1536_obj;
-extern const camera_imagesize_obj_t camera_imagesize_2560x1920_obj;
+} camera_imageformat_obj_t;
+extern const camera_imageformat_obj_t camera_imageformat_jpg_obj;
+extern const camera_imageformat_obj_t camera_imageformat_rgb565_obj;
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGESIZE_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H

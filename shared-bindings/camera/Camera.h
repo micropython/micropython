@@ -28,18 +28,18 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_CAMERA_H
 
 #include "common-hal/camera/Camera.h"
-#include "shared-bindings/camera/ImageSize.h"
+#include "shared-bindings/camera/ImageFormat.h"
 
 extern const mp_obj_type_t camera_type;
 
-void common_hal_camera_construct(camera_obj_t *self, camera_imagesize_t size);
+void common_hal_camera_construct(camera_obj_t *self, uint16_t width, uint16_t height);
 void common_hal_camera_deinit(camera_obj_t *self);
 bool common_hal_camera_deinited(camera_obj_t *self);
-void common_hal_camera_take_picture(camera_obj_t *self);
+size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_t len, camera_imageformat_t format);
 
-uint8_t* common_hal_camera_get_picture_buffer(camera_obj_t *self);
-size_t common_hal_camera_get_picture_size(camera_obj_t *self);
-camera_imagesize_t common_hal_camera_get_size(camera_obj_t *self);
-void common_hal_camera_set_size(camera_obj_t *self, camera_imagesize_t size);
+uint16_t common_hal_camera_get_width(camera_obj_t *self);
+void common_hal_camera_set_width(camera_obj_t *self, uint16_t width);
+uint16_t common_hal_camera_get_height(camera_obj_t *self);
+void common_hal_camera_set_height(camera_obj_t *self, uint16_t height);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_CAMERA_H

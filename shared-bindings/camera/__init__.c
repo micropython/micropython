@@ -39,7 +39,7 @@ STATIC const mp_rom_map_elem_t camera_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Camera), MP_ROM_PTR(&camera_type) },
 
     // Enum-like Classes.
-    { MP_ROM_QSTR(MP_QSTR_ImageSize), MP_ROM_PTR(&camera_imagesize_type) },
+    { MP_ROM_QSTR(MP_QSTR_ImageSize), MP_ROM_PTR(&camera_imageformat_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(camera_module_globals, camera_module_globals_table);

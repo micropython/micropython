@@ -29,15 +29,10 @@
 
 #include "py/obj.h"
 
-#include "shared-bindings/camera/ImageSize.h"
-
 typedef struct {
     mp_obj_base_t base;
-    uint8_t *buffer;
-    size_t buffer_size;
-    uint8_t *picture_buffer;
-    size_t picture_size;
-    camera_imagesize_t size;
+    uint16_t width;
+    uint16_t height;
 } camera_obj_t;
 
 #endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_CAMERA_CAMERA_H

@@ -315,7 +315,6 @@ SRC_COMMON_HAL_ALL = \
 	busio/__init__.c \
 	camera/__init__.c \
 	camera/Camera.c \
-	camera/ImageSize.c \
 	countio/Counter.c \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
@@ -386,6 +385,7 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_eve/__init__.c \
+	camera/ImageFormat.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \

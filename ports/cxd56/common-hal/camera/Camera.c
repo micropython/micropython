@@ -35,9 +35,6 @@
 
 #include "shared-bindings/camera/Camera.h"
 
-#define JPG_COMPRESS_RATIO (9)
-#define SPRESENSE_CAMIMAGE_MEM_ALIGN (32)
-
 typedef struct {
     const char* devpath;
     int fd;
@@ -45,39 +42,36 @@ typedef struct {
 
 STATIC camera_dev_t camera_dev = {"/dev/video", -1};
 
-static void camera_size_to_width_and_height(camera_imagesize_t size, uint16_t *width, uint16_t *height) {
-    switch (size) {
-        case IMAGESIZE_320x240:
-            *height = VIDEO_VSIZE_QVGA;
-            *width = VIDEO_HSIZE_QVGA;
-            break;
-        case IMAGESIZE_640x320:
-            *height = VIDEO_VSIZE_VGA;
-            *width = VIDEO_HSIZE_VGA;
-            break;
-        case IMAGESIZE_1280x720:
-            *height = VIDEO_VSIZE_HD;
-            *width = VIDEO_HSIZE_HD;
-            break;
-        case IMAGESIZE_1280x960:
-            *height = VIDEO_VSIZE_QUADVGA;
-            *width = VIDEO_HSIZE_QUADVGA;
-            break;
-        case IMAGESIZE_1920x1080:
-            *height = VIDEO_VSIZE_FULLHD;
-            *width = VIDEO_HSIZE_FULLHD;
-            break;
-        case IMAGESIZE_2048x1536:
-            *height = VIDEO_VSIZE_3M;
-            *width = VIDEO_HSIZE_3M;
-            break;
-        case IMAGESIZE_2560x1920:
-            *height = VIDEO_VSIZE_5M;
-            *width = VIDEO_HSIZE_5M;
-            break;
-        default:
-            mp_raise_ValueError(translate("Size not supported"));
-            break;
+static bool camera_check_width_and_height(uint16_t width, uint16_t height) {
+    if ((width == VIDEO_HSIZE_QVGA && height == VIDEO_VSIZE_QVGA) ||
+        (width == VIDEO_HSIZE_VGA && height == VIDEO_VSIZE_VGA) ||
+        (width == VIDEO_HSIZE_HD && height == VIDEO_VSIZE_HD) ||
+        (width == VIDEO_HSIZE_QUADVGA && height == VIDEO_VSIZE_QUADVGA) ||
+        (width == VIDEO_HSIZE_FULLHD && height == VIDEO_VSIZE_FULLHD) ||
+        (width == VIDEO_HSIZE_3M && height == VIDEO_VSIZE_3M) ||
+        (width == VIDEO_HSIZE_5M && height == VIDEO_VSIZE_5M)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static bool camera_check_buffer_length(uint16_t width, uint16_t height, camera_imageformat_t format, size_t length) {
+    if (format == IMAGEFORMAT_JPG) {
+        // In SPRESENSE SDK, JPEG compression quality=80 by default.
+        // In such setting, the maximum actual measured size of JPEG image
+        // is about width * height * 2 / 9.
+        return length >= (size_t)(width * height * 2 / 9) ? true : false;
+    } else {
+        return false;
+    }
+}
+
+static bool camera_check_format(camera_imageformat_t format) {
+    if (format == IMAGEFORMAT_JPG) {
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -118,7 +112,9 @@ static void camera_start_preview() {
     camera_start_streaming(V4L2_BUF_TYPE_VIDEO_CAPTURE);
 }
 
-void common_hal_camera_construct(camera_obj_t *self, camera_imagesize_t size) {
+extern uint32_t _ebss;
+extern uint32_t _stext;
+void common_hal_camera_construct(camera_obj_t *self, uint16_t width, uint16_t height) {
     if (camera_dev.fd < 0) {
         if (video_initialize(camera_dev.devpath) < 0) {
             mp_raise_ValueError(translate("Could not initialize Camera"));
@@ -129,24 +125,12 @@ void common_hal_camera_construct(camera_obj_t *self, camera_imagesize_t size) {
         }
     }
 
-    uint16_t width, height;
-
-    camera_size_to_width_and_height(size, &width, &height);
-
-    self->size = size;
-
-    // In SPRESENSE SDK, JPEG compression quality=80 by default.
-    // In such setting, the maximum actual measured size of JPEG image
-    // is about width * height * 2 / 9.
-    self->buffer_size = (size_t)(width * height * 2 / JPG_COMPRESS_RATIO);;
-    self->buffer = m_malloc(self->buffer_size, true);
-    if (self->buffer == NULL) {
-        mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate picture buffer"));
+    if (!camera_check_width_and_height(width, height)) {
+        mp_raise_ValueError(translate("Size not supported"));
     }
-    self->picture_buffer = self->buffer;
-    while ((uint32_t)self->picture_buffer % SPRESENSE_CAMIMAGE_MEM_ALIGN != 0) {
-        self->picture_buffer++;
-    }
+
+    self->width = width;
+    self->height = height;
 
     camera_start_preview();
 
@@ -164,8 +148,6 @@ void common_hal_camera_deinit(camera_obj_t *self) {
 
     video_uninitialize();
 
-    m_free(self->buffer);
-
     close(camera_dev.fd);
     camera_dev.fd = -1;
 }
@@ -174,14 +156,26 @@ bool common_hal_camera_deinited(camera_obj_t *self) {
     return camera_dev.fd < 0;
 }
 
-void common_hal_camera_take_picture(camera_obj_t *self) {
+size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_t len, camera_imageformat_t format) {
+    if (!camera_check_width_and_height(self->width, self->height)) {
+        mp_raise_ValueError(translate("Size not supported"));
+    }
+    if (!camera_check_buffer_length(self->width, self->height, format, len)) {
+        mp_raise_ValueError(translate("Buffer is too small"));
+    }
+    if (!camera_check_format(format)) {
+        mp_raise_ValueError(translate("Format not supported"));
+    }
+
+    camera_set_format(V4L2_BUF_TYPE_STILL_CAPTURE, V4L2_PIX_FMT_JPEG, self->width, self->height);
+
     v4l2_buffer_t buf;
 
     memset(&buf, 0, sizeof(v4l2_buffer_t));
     buf.type = V4L2_BUF_TYPE_STILL_CAPTURE;
     buf.memory = V4L2_MEMORY_USERPTR;
-    buf.m.userptr = (unsigned long)self->picture_buffer;
-    buf.length = self->buffer_size - SPRESENSE_CAMIMAGE_MEM_ALIGN;
+    buf.m.userptr = (unsigned long)buffer;
+    buf.length = len;
     ioctl(camera_dev.fd, VIDIOC_QBUF, (unsigned long)&buf);
 
     ioctl(camera_dev.fd, VIDIOC_TAKEPICT_START, 0);
@@ -190,35 +184,21 @@ void common_hal_camera_take_picture(camera_obj_t *self) {
 
     ioctl(camera_dev.fd, VIDIOC_TAKEPICT_STOP, false);
 
-    self->picture_size = (size_t)buf.bytesused;
+    return (size_t)buf.bytesused;
 }
 
-uint8_t *common_hal_camera_get_picture_buffer(camera_obj_t *self) {
-    return self->picture_buffer;
+uint16_t common_hal_camera_get_width(camera_obj_t *self) {
+    return self->width;
 }
 
-size_t common_hal_camera_get_picture_size(camera_obj_t *self) {
-    return self->picture_size;
+void common_hal_camera_set_width(camera_obj_t *self, uint16_t width) {
+    self->width = width;
 }
 
-camera_imagesize_t common_hal_camera_get_size(camera_obj_t *self) {
-    return self->size;
+uint16_t common_hal_camera_get_height(camera_obj_t *self) {
+    return self->height;
 }
 
-void common_hal_camera_set_size(camera_obj_t *self, camera_imagesize_t size) {
-    uint16_t width, height;
-
-    camera_size_to_width_and_height(size, &width, &height);
-
-    self->buffer_size = (size_t)(width * height * 2 / JPG_COMPRESS_RATIO);;
-    self->buffer = m_realloc(self->buffer, self->buffer_size);
-    if (self->buffer == NULL) {
-        mp_raise_msg(&mp_type_MemoryError, translate("Couldn't allocate picture buffer"));
-    }
-    self->picture_buffer = self->buffer;
-    while ((uint32_t)self->picture_buffer % SPRESENSE_CAMIMAGE_MEM_ALIGN != 0) {
-        self->picture_buffer++;
-    }
-
-    camera_set_format(V4L2_BUF_TYPE_STILL_CAPTURE, V4L2_PIX_FMT_JPEG, width, height);
+void common_hal_camera_set_height(camera_obj_t *self, uint16_t height) {
+    self->height = height;
 }
