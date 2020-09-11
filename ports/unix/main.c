@@ -133,7 +133,7 @@ STATIC int execute_from_lexer(int source_kind, const void *source, mp_parse_inpu
         // allow to print the parse tree in the coverage build
         if (mp_verbose_flag >= 3) {
             printf("----------------\n");
-            mp_parse_node_print(parse_tree.root, 0);
+            mp_parse_node_print(&mp_plat_print, parse_tree.root, 0);
             printf("----------------\n");
         }
         #endif
