@@ -34,6 +34,7 @@
 #include "genhdr/compression.generated.h"
 #endif
 
+#include "py/misc.h"
 #include "supervisor/serial.h"
 
 void serial_write_compressed(const compressed_string_t* compressed) {
@@ -46,13 +47,20 @@ STATIC int put_utf8(char *buf, int u) {
     if(u <= 0x7f) {
         *buf = u;
         return 1;
+    } else if(bigram_start <= u && u <= bigram_end) {
+        int n = (u - 0x80) * 2;
+        // (note that at present, entries in the bigrams table are
+        // guaranteed not to represent bigrams themselves, so this adds
+        // at most 1 level of recursive call
+        int ret = put_utf8(buf, bigrams[n]);
+        return ret + put_utf8(buf + ret, bigrams[n+1]);
     } else if(u <= 0x07ff) {
         *buf++ = 0b11000000 | (u >> 6);
         *buf   = 0b10000000 | (u & 0b00111111);
         return 2;
-    } else { // u <= 0xffff)
-        *buf++ = 0b11000000 | (u >> 12);
-        *buf   = 0b10000000 | ((u >> 6) & 0b00111111);
+    } else { // u <= 0xffff
+        *buf++ = 0b11100000 | (u >> 12);
+        *buf++ = 0b10000000 | ((u >> 6) & 0b00111111);
         *buf   = 0b10000000 | (u & 0b00111111);
         return 3;
     }

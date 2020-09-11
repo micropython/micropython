@@ -133,6 +133,10 @@ void print_safe_mode_message(safe_mode_t reason) {
                 serial_write_compressed(translate("The CircuitPython heap was corrupted because the stack was too small.\nPlease increase the stack size if you know how, or if not:"));
                 serial_write_compressed(FILE_AN_ISSUE);
                 return;
+            case NO_HEAP:
+                serial_write_compressed(translate("CircuitPython was unable to allocate the heap.\n"));
+                serial_write_compressed(FILE_AN_ISSUE);
+                return;
             default:
                 break;
         }

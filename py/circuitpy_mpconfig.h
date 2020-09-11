@@ -185,6 +185,7 @@ typedef long mp_off_t;
 // Turning off FULL_BUILD removes some functionality to reduce flash size on tiny SAMD21s
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_FULL_BUILD)
 #define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
 #define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
@@ -363,6 +364,13 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define TERMINALIO_MODULE
 #endif
 
+#if CIRCUITPY_ESPIDF
+extern const struct _mp_obj_module_t espidf_module;
+#define ESPIDF_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_espidf),(mp_obj_t)&espidf_module },
+#else
+#define ESPIDF_MODULE
+#endif
+
 #if CIRCUITPY_FRAMEBUFFERIO
 extern const struct _mp_obj_module_t framebufferio_module;
 #define FRAMEBUFFERIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_framebufferio), (mp_obj_t)&framebufferio_module },
@@ -418,6 +426,13 @@ extern const struct _mp_obj_module_t i2cperipheral_module;
 #define I2CPERIPHERAL_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_i2cperipheral), (mp_obj_t)&i2cperipheral_module },
 #else
 #define I2CPERIPHERAL_MODULE
+#endif
+
+#if CIRCUITPY_IPADDRESS
+extern const struct _mp_obj_module_t ipaddress_module;
+#define IPADDRESS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_ipaddress), (mp_obj_t)&ipaddress_module },
+#else
+#define IPADDRESS_MODULE
 #endif
 
 #if CIRCUITPY_MATH
@@ -573,11 +588,26 @@ extern const struct _mp_obj_module_t sdioio_module;
 #define SDIOIO_MODULE
 #endif
 
+
 #if CIRCUITPY_SHARPDISPLAY
 extern const struct _mp_obj_module_t sharpdisplay_module;
 #define SHARPDISPLAY_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_sharpdisplay),(mp_obj_t)&sharpdisplay_module },
 #else
 #define SHARPDISPLAY_MODULE
+#endif
+
+#if CIRCUITPY_SOCKETPOOL
+extern const struct _mp_obj_module_t socketpool_module;
+#define SOCKETPOOL_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_socketpool), (mp_obj_t)&socketpool_module },
+#else
+#define SOCKETPOOL_MODULE
+#endif
+
+#if CIRCUITPY_SSL
+extern const struct _mp_obj_module_t ssl_module;
+#define SSL_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_ssl), (mp_obj_t)&ssl_module },
+#else
+#define SSL_MODULE
 #endif
 
 #if CIRCUITPY_STAGE
@@ -690,6 +720,13 @@ extern const struct _mp_obj_module_t watchdog_module;
 #define WATCHDOG_MODULE
 #endif
 
+#if CIRCUITPY_WIFI
+extern const struct _mp_obj_module_t wifi_module;
+#define WIFI_MODULE { MP_ROM_QSTR(MP_QSTR_wifi), MP_ROM_PTR(&wifi_module) },
+#else
+#define WIFI_MODULE
+#endif
+
 // Define certain native modules with weak links so they can be replaced with Python
 // implementations. This list may grow over time.
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
@@ -728,12 +765,14 @@ extern const struct _mp_obj_module_t watchdog_module;
       TERMINALIO_MODULE \
       VECTORIO_MODULE \
     ERRNO_MODULE \
+    ESPIDF_MODULE \
     FRAMEBUFFERIO_MODULE \
     FREQUENCYIO_MODULE \
     GAMEPAD_MODULE \
     GAMEPADSHIFT_MODULE \
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \
+    IPADDRESS_MODULE \
     JSON_MODULE \
     MATH_MODULE \
     _EVE_MODULE \
@@ -757,6 +796,8 @@ extern const struct _mp_obj_module_t watchdog_module;
     SDCARDIO_MODULE \
     SDIOIO_MODULE \
     SHARPDISPLAY_MODULE \
+    SOCKETPOOL_MODULE \
+    SSL_MODULE \
     STAGE_MODULE \
     STORAGE_MODULE \
     STRUCT_MODULE \
@@ -767,6 +808,7 @@ extern const struct _mp_obj_module_t watchdog_module;
     USB_MIDI_MODULE \
     USTACK_MODULE \
     WATCHDOG_MODULE \
+    WIFI_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.

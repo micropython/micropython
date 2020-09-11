@@ -1971,7 +1971,7 @@ msgstr "wartość kalibracji poza zakresem +/-127"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
-msgstr "asembler Thumb może przyjąć do 4 parameterów"
+msgstr "asembler Thumb może przyjąć do 4 parameterów"
 
 #: py/emitinlinextensa.c
 msgid "can only have up to 4 parameters to Xtensa assembly"
@@ -3562,7 +3562,7 @@ msgstr ""
 #~ msgstr "Nie udało się odkryć serwisów"
 
 #~ msgid "Failed to get local address"
-#~ msgstr "Nie udało się uzyskać lokalnego adresu"
+#~ msgstr "Nie udało się uzyskać lokalnego adresu"
 
 #~ msgid "Failed to get softdevice state"
 #~ msgstr "Nie udało się odczytać stanu softdevice"
@@ -3610,7 +3610,7 @@ msgstr ""
 #~ msgstr "Nie udało się zapisać gatts, błąd 0x%04x"
 
 #~ msgid "Flash erase failed"
-#~ msgstr "Nie udało się skasować flash"
+#~ msgstr "Nie udało się skasować flash"
 
 #~ msgid "Flash erase failed to start, err 0x%04x"
 #~ msgstr "Nie udało się rozpocząć kasowania flash, błąd 0x%04x"
