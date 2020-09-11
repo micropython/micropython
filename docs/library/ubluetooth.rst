@@ -28,15 +28,15 @@ Constructor
 Configuration
 -------------
 
-.. method:: BLE.active([active])
+.. method:: BLE.active([active], /)
 
     Optionally changes the active state of the BLE radio, and returns the
     current state.
 
     The radio must be made active before using any other methods on this class.
 
-.. method:: BLE.config('param')
-            BLE.config(param=value, ...)
+.. method:: BLE.config('param', /)
+            BLE.config(*, param=value, ...)
 
     Get or set configuration values of the BLE interface.  To get a value the
     parameter name should be quoted as a string, and just one parameter is
@@ -76,7 +76,7 @@ Configuration
 Event Handling
 --------------
 
-.. method:: BLE.irq(handler)
+.. method:: BLE.irq(handler, /)
 
     Registers a callback for events from the BLE stack. The *handler* takes two
     arguments, ``event`` (which will be one of the codes below) and ``data``
@@ -195,7 +195,7 @@ program.
 Broadcaster Role (Advertiser)
 -----------------------------
 
-.. method:: BLE.gap_advertise(interval_us, adv_data=None, resp_data=None, connectable=True)
+.. method:: BLE.gap_advertise(interval_us, adv_data=None, *, resp_data=None, connectable=True)
 
     Starts advertising at the specified interval (in **micro**\ seconds). This
     interval will be rounded down to the nearest 625us. To stop advertising, set
@@ -214,7 +214,7 @@ Broadcaster Role (Advertiser)
 Observer Role (Scanner)
 -----------------------
 
-.. method:: BLE.gap_scan(duration_ms, [interval_us], [window_us], [active])
+.. method:: BLE.gap_scan(duration_ms, interval_us=1280000, window_us=11250, active=False, /)
 
     Run a scan operation lasting for the specified duration (in **milli**\ seconds).
 
@@ -244,7 +244,7 @@ Observer Role (Scanner)
         * 0x04 - SCAN_RSP - scan response
 
     ``active`` can be set ``True`` if you want to receive scan responses in the results.
-    
+
     When scanning is stopped (either due to the duration finishing or when
     explicitly stopped), the ``_IRQ_SCAN_DONE`` event will be raised.
 
@@ -268,7 +268,7 @@ writes from a central to a given characteristic, use
 :meth:`gatts_write<BLE.gatts_write>` after registration. e.g.
 ``gatts_write(char_handle, bytes(100))``.
 
-.. method:: BLE.gatts_register_services(services_definition)
+.. method:: BLE.gatts_register_services(services_definition, /)
 
     Configures the peripheral with the specified services, replacing any
     existing services.
@@ -308,26 +308,26 @@ writes from a central to a given characteristic, use
 
     **Note:** Advertising must be stopped before registering services.
 
-.. method:: BLE.gatts_read(value_handle)
+.. method:: BLE.gatts_read(value_handle, /)
 
     Reads the local value for this handle (which has either been written by
     :meth:`gatts_write <BLE.gatts_write>` or by a remote central).
 
-.. method:: BLE.gatts_write(value_handle, data)
+.. method:: BLE.gatts_write(value_handle, data, /)
 
     Writes the local value for this handle, which can be read by a central.
 
-.. method:: BLE.gatts_notify(conn_handle, value_handle, [data])
+.. method:: BLE.gatts_notify(conn_handle, value_handle, data=None, /)
 
     Sends a notification request to a connected central.
 
-    If *data* is specified, then that value is sent to the central as part of
+    If *data* is not ``None``, then that value is sent to the central as part of
     the notification. The local value will not be modified.
 
-    Otherwise, if *data* is not specified, then the current local value (as
+    Otherwise, if *data* is ``None``, then the current local value (as
     set with :meth:`gatts_write <BLE.gatts_write>`) will be sent.
 
-.. method:: BLE.gatts_indicate(conn_handle, value_handle)
+.. method:: BLE.gatts_indicate(conn_handle, value_handle, /)
 
     Sends an indication request to a connected central.
 
@@ -361,7 +361,7 @@ Central Role (GATT Client)
 
     On success, the ``_IRQ_PERIPHERAL_CONNECT`` event will be raised.
 
-.. method:: BLE.gap_disconnect(conn_handle)
+.. method:: BLE.gap_disconnect(conn_handle, /)
 
     Disconnect the specified connection handle.
 
@@ -370,7 +370,7 @@ Central Role (GATT Client)
     Returns ``False`` if the connection handle wasn't connected, and ``True``
     otherwise.
 
-.. method:: BLE.gattc_discover_services(conn_handle, [uuid])
+.. method:: BLE.gattc_discover_services(conn_handle, uuid=None, /)
 
     Query a connected peripheral for its services.
 
@@ -379,7 +379,7 @@ Central Role (GATT Client)
     For each service discovered, the ``_IRQ_GATTC_SERVICE_RESULT`` event will
     be raised, followed by ``_IRQ_GATTC_SERVICE_DONE`` on completion.
 
-.. method:: BLE.gattc_discover_characteristics(conn_handle, start_handle, end_handle, [uuid])
+.. method:: BLE.gattc_discover_characteristics(conn_handle, start_handle, end_handle, uuid=None, /)
 
     Query a connected peripheral for characteristics in the specified range.
 
@@ -392,14 +392,14 @@ Central Role (GATT Client)
     For each characteristic discovered, the ``_IRQ_GATTC_CHARACTERISTIC_RESULT``
     event will be raised, followed by ``_IRQ_GATTC_CHARACTERISTIC_DONE`` on completion.
 
-.. method:: BLE.gattc_discover_descriptors(conn_handle, start_handle, end_handle)
+.. method:: BLE.gattc_discover_descriptors(conn_handle, start_handle, end_handle, /)
 
     Query a connected peripheral for descriptors in the specified range.
 
     For each descriptor discovered, the ``_IRQ_GATTC_DESCRIPTOR_RESULT`` event
     will be raised, followed by ``_IRQ_GATTC_DESCRIPTOR_DONE`` on completion.
 
-.. method:: BLE.gattc_read(conn_handle, value_handle)
+.. method:: BLE.gattc_read(conn_handle, value_handle, /)
 
     Issue a remote read to a connected peripheral for the specified
     characteristic or descriptor handle.
@@ -433,7 +433,7 @@ class UUID
 Constructor
 -----------
 
-.. class:: UUID(value)
+.. class:: UUID(value, /)
 
     Creates a UUID instance with the specified **value**.
 
