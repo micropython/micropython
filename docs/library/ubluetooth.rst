@@ -72,6 +72,13 @@ Configuration
       Increasing this allows better handling of bursty incoming data (for
       example scan results) and the ability to receive larger characteristic values.
 
+    - ``'mtu'``: Get/set the MTU that will be used during an MTU exchange. The
+      resulting MTU will be the minimum of this and the remote device's MTU.
+      MTU exchange will not happen automatically (unless the remote device initiates
+      it), and must be manually initiated with
+      :meth:`gattc_exchange_mtu<BLE.gattc_exchange_mtu>`.
+      Use the ``_IRQ_MTU_EXCHANGED`` event to discover the MTU for a given connection.
+
 Event Handling
 --------------
 
@@ -161,6 +168,9 @@ Event Handling
                 # A client has acknowledged the indication.
                 # Note: Status will be zero on successful acknowledgment, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
+            elif event == _IRQ_MTU_EXCHANGED:
+                # MTU exchange complete (either initiated by us or the remote device).
+                conn_handle, mtu = data
 
 The event codes are::
 
@@ -185,6 +195,7 @@ The event codes are::
     _IRQ_GATTC_NOTIFY = const(18)
     _IRQ_GATTC_INDICATE = const(19)
     _IRQ_GATTS_INDICATE_DONE = const(20)
+    _IRQ_MTU_EXCHANGED = const(21)
 
 In order to save space in the firmware, these constants are not included on the
 :mod:`ubluetooth` module. Add the ones that you need from the list above to your
@@ -458,6 +469,18 @@ device name from the device information service).
 
     If a response is received from the remote server the
     ``_IRQ_GATTC_WRITE_DONE`` event will be raised.
+
+.. method:: BLE.gattc_exchange_mtu(conn_handle, /)
+
+    Initiate MTU exchange with a connected server, using the preferred MTU
+    set using ``BLE.config(mtu=value)``.
+
+    The ``_IRQ_MTU_EXCHANGED`` event will be raised when MTU exchange
+    completes.
+
+    **Note:** MTU exchange is typically initiated by the central. When using
+    the BlueKitchen stack in the central role, it does not support a remote
+    peripheral initiating the MTU exchange. NimBLE works for both roles.
 
 
 class UUID
