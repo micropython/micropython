@@ -679,7 +679,7 @@ STATIC mp_obj_t bluetooth_ble_gatts_notify(size_t n_args, const mp_obj_t *args) 
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
     mp_int_t value_handle = mp_obj_get_int(args[2]);
 
-    if (n_args == 4) {
+    if (n_args == 4 && args[3] != mp_const_none) {
         mp_buffer_info_t bufinfo = {0};
         mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
         int err = mp_bluetooth_gatts_notify_send(conn_handle, value_handle, bufinfo.buf, bufinfo.len);
@@ -719,7 +719,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gatts_set_buffer_obj, 3
 STATIC mp_obj_t bluetooth_ble_gattc_discover_services(size_t n_args, const mp_obj_t *args) {
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
     mp_obj_bluetooth_uuid_t *uuid = NULL;
-    if (n_args == 3) {
+    if (n_args == 3 && args[2] != mp_const_none) {
+        if (!mp_obj_is_type(args[2], &bluetooth_uuid_type)) {
+            mp_raise_TypeError(MP_ERROR_TEXT("UUID"));
+        }
         uuid = MP_OBJ_TO_PTR(args[2]);
     }
     return bluetooth_handle_errno(mp_bluetooth_gattc_discover_primary_services(conn_handle, uuid));
@@ -731,7 +734,10 @@ STATIC mp_obj_t bluetooth_ble_gattc_discover_characteristics(size_t n_args, cons
     mp_int_t start_handle = mp_obj_get_int(args[2]);
     mp_int_t end_handle = mp_obj_get_int(args[3]);
     mp_obj_bluetooth_uuid_t *uuid = NULL;
-    if (n_args == 3) {
+    if (n_args == 5 && args[4] != mp_const_none) {
+        if (!mp_obj_is_type(args[4], &bluetooth_uuid_type)) {
+            mp_raise_TypeError(MP_ERROR_TEXT("UUID"));
+        }
         uuid = MP_OBJ_TO_PTR(args[4]);
     }
     return bluetooth_handle_errno(mp_bluetooth_gattc_discover_characteristics(conn_handle, start_handle, end_handle, uuid));
