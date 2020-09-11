@@ -32,4 +32,8 @@
 #define MICROPY_HW_LED (&pin_GPIO21)
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
 
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+
+#define BOARD_USER_SAFE_MODE_ACTION "pressing boot button at start up."
+
 #define AUTORESET_DELAY_MS 500
