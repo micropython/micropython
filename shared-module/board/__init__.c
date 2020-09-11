@@ -166,9 +166,9 @@ void reset_board_busses(void) {
         #endif
     }
     #endif
+    // make sure SPI lock is not held over a soft reset
+    common_hal_busio_spi_unlock(&spi_obj);
     if (!display_using_spi) {
-        // make sure lock is not held over a soft reset
-        common_hal_busio_spi_unlock(&spi_obj);
         spi_singleton = NULL;
     }
 #endif
