@@ -546,7 +546,7 @@ c_file.write("""
 };
 """)
 
-c_file.write("\n");
+c_file.write("\n")
 
 hid_descriptor_length = len(bytes(combined_hid_report_descriptor))
 
@@ -604,12 +604,18 @@ for name in args.hid_devices:
 static uint8_t {name}_report_buffer[{report_length}];
 """.format(name=name.lower(), report_length=hid_report_descriptors.HID_DEVICE_DATA[name].report_length))
 
+    if hid_report_descriptors.HID_DEVICE_DATA[name].out_report_length > 0:
+        c_file.write("""\
+static uint8_t {name}_out_report_buffer[{report_length}];
+""".format(name=name.lower(), report_length=hid_report_descriptors.HID_DEVICE_DATA[name].out_report_length))
+
 # Write out table of device objects.
 c_file.write("""
 usb_hid_device_obj_t usb_hid_devices[] = {
-""");
+""")
 for name in args.hid_devices:
     device_data = hid_report_descriptors.HID_DEVICE_DATA[name]
+    out_report_buffer = '{}_out_report_buffer'.format(name.lower()) if device_data.out_report_length > 0 else 'NULL'
     c_file.write("""\
     {{
         .base          = {{ .type = &usb_hid_device_type }},
@@ -618,11 +624,15 @@ for name in args.hid_devices:
         .report_length = {report_length},
         .usage_page    = {usage_page:#04x},
         .usage         = {usage:#04x},
+        .out_report_buffer = {out_report_buffer},
+        .out_report_length = {out_report_length},
     }},
 """.format(name=name.lower(), report_id=report_ids[name],
            report_length=device_data.report_length,
            usage_page=device_data.usage_page,
-           usage=device_data.usage))
+           usage=device_data.usage,
+           out_report_buffer=out_report_buffer,
+           out_report_length=device_data.out_report_length))
 c_file.write("""\
 };
 """)
