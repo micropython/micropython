@@ -288,9 +288,17 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
                 // Map "done/ack" to 0, otherwise pass the status directly.
                 mp_bluetooth_gatts_on_indicate_complete(event->notify_tx.conn_handle, event->notify_tx.attr_handle, event->notify_tx.status == BLE_HS_EDONE ? 0 : event->notify_tx.status);
             }
+            break;
+        }
+
+        case BLE_GAP_EVENT_MTU: {
+            if (event->mtu.channel_id == BLE_L2CAP_CID_ATT) {
+                DEBUG_printf("gap_event_cb: mtu update: conn_handle=%d cid=%d mtu=%d\n", event->mtu.conn_handle, event->mtu.channel_id, event->mtu.value);
+                mp_bluetooth_gatts_on_mtu_exchanged(event->mtu.conn_handle, event->mtu.value);
+            }
+            break;
         }
     }
-
     return 0;
 }
 
@@ -637,7 +645,7 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
     return 0;
 }
 
-int mp_bluetooth_gatts_register_service_end() {
+int mp_bluetooth_gatts_register_service_end(void) {
     int ret = ble_gatts_start();
     if (ret != 0) {
         return ble_hs_err_to_errno(ret);
@@ -769,6 +777,23 @@ int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append
     return mp_bluetooth_gatts_db_resize(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle, len, append);
 }
 
+int mp_bluetooth_get_preferred_mtu(void) {
+    if (!mp_bluetooth_is_active()) {
+        mp_raise_OSError(ERRNO_BLUETOOTH_NOT_ACTIVE);
+    }
+    return ble_att_preferred_mtu();
+}
+
+int mp_bluetooth_set_preferred_mtu(uint16_t mtu) {
+    if (!mp_bluetooth_is_active()) {
+        return ERRNO_BLUETOOTH_NOT_ACTIVE;
+    }
+    if (ble_att_set_preferred_mtu(mtu)) {
+        return MP_EINVAL;
+    }
+    return 0;
+}
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 STATIC void gattc_on_data_available(uint8_t event, uint16_t conn_handle, uint16_t value_handle, const struct os_mbuf *om) {
@@ -883,6 +908,14 @@ STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
         case BLE_GAP_EVENT_CONN_UPDATE_REQ:
             // TODO
             break;
+
+        case BLE_GAP_EVENT_MTU: {
+            if (event->mtu.channel_id == BLE_L2CAP_CID_ATT) {
+                DEBUG_printf("peripheral_gap_event_cb: mtu update: conn_handle=%d cid=%d mtu=%d\n", event->mtu.conn_handle, event->mtu.channel_id, event->mtu.value);
+                mp_bluetooth_gatts_on_mtu_exchanged(event->mtu.conn_handle, event->mtu.value);
+            }
+            break;
+        }
 
         default:
             break;
@@ -1040,6 +1073,13 @@ int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const 
         err = BLE_HS_EINVAL;
     }
     return ble_hs_err_to_errno(err);
+}
+
+int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle) {
+    DEBUG_printf("mp_bluetooth_exchange_mtu: conn_handle=%d mtu=%d\n", conn_handle, ble_att_preferred_mtu());
+
+    // Using NULL callback (we'll get notified in gap_event_cb instead).
+    return ble_hs_err_to_errno(ble_gattc_exchange_mtu(conn_handle, NULL, NULL));
 }
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE

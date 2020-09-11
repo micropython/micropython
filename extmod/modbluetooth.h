@@ -100,6 +100,7 @@
 #define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                   (18)
 #define MP_BLUETOOTH_IRQ_GATTC_INDICATE                 (19)
 #define MP_BLUETOOTH_IRQ_GATTS_INDICATE_DONE            (20)
+#define MP_BLUETOOTH_IRQ_MTU_EXCHANGED                  (21)
 
 #define MP_BLUETOOTH_ADDRESS_MODE_PUBLIC (0)
 #define MP_BLUETOOTH_ADDRESS_MODE_RANDOM (1)
@@ -131,6 +132,7 @@ _IRQ_GATTC_WRITE_DONE = const(17)
 _IRQ_GATTC_NOTIFY = const(18)
 _IRQ_GATTC_INDICATE = const(19)
 _IRQ_GATTS_INDICATE_DONE = const(20)
+_IRQ_MTU_EXCHANGED = const(21)
 */
 
 // Common UUID type.
@@ -212,6 +214,10 @@ int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append
 // Disconnect from a central or peripheral.
 int mp_bluetooth_gap_disconnect(uint16_t conn_handle);
 
+// Set/get the MTU that we will respond to a MTU exchange with.
+int mp_bluetooth_get_preferred_mtu(void);
+int mp_bluetooth_set_preferred_mtu(uint16_t mtu);
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 // Start a discovery (scan). Set duration to zero to run continuously.
 int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_t window_us, bool active_scan);
@@ -236,6 +242,9 @@ int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle);
 
 // Write the value to the remote peripheral.
 int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len, unsigned int mode);
+
+// Initiate MTU exchange for a specific connection using the preferred MTU.
+int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle);
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -254,6 +263,9 @@ void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t valu
 // Call this when a characteristic is read from. Return false to deny the read.
 bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle);
 #endif
+
+// Call this when an MTU exchange completes.
+void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 // Notify modbluetooth that scan has finished, either timeout, manually, or by some other action (e.g. connecting).
