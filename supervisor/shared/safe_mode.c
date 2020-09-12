@@ -72,7 +72,7 @@ safe_mode_t wait_for_safe_mode_reset(void) {
         // Blink on for 100, off for 100, on for 100, off for 100 and on for 200
         common_hal_digitalio_digitalinout_set_value(&status_led, diff > 100 && diff / 100 != 2 && diff / 100 != 4);
         #endif
-	#ifdef CIRCUITPY_BOOT_BUTTON
+	    #ifdef CIRCUITPY_BOOT_BUTTON
         if (!common_hal_digitalio_digitalinout_get_value(&boot_button)) {
            return USER_SAFE_MODE;
         }
@@ -120,11 +120,11 @@ void print_safe_mode_message(safe_mode_t reason) {
                 // Output a user safe mode string if it's set.
                 serial_write_compressed(translate("You requested starting safe mode by "));
                 serial_write_compressed(translate(BOARD_USER_SAFE_MODE_ACTION));
-                serial_write_compressed(translate("\nTo exit, please reset the board without "));
+                serial_write_compressed(translate("To exit, please reset the board without "));
                 serial_write_compressed(translate(BOARD_USER_SAFE_MODE_ACTION));
-                serial_write("\n");
             #else
                 // fallthrough
+                serial_write_compressed(translate("CircuitPython is in safe mode with status being USER_SAFE_MODE but no specific reason was provided.\n"));
             #endif
             return;
         case MANUAL_SAFE_MODE:
