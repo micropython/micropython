@@ -97,7 +97,7 @@ STATIC int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t add
     struct i2c_msg msg;
     int ret;
 
-    msg.buf = (u8_t *)buf;
+    msg.buf = (uint8_t *)buf;
     msg.len = len;
     msg.flags = 0;
 
