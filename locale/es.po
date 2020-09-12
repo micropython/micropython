@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-30 14:38-0400\n"
+"POT-Creation-Date: 2020-09-09 14:33-0700\n"
 "PO-Revision-Date: 2020-08-17 21:11+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
@@ -282,7 +282,7 @@ msgstr "pow() con 3 argumentos no soportado"
 msgid "A hardware interrupt channel is already in use"
 msgstr "El canal EXTINT ya está siendo utilizado"
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "La dirección debe ser %d bytes de largo"
@@ -383,6 +383,10 @@ msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr ""
 "Se intentó asignación del montículo, sin que la VM de MicroPython esté "
 "ejecutando."
+
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr ""
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -596,6 +600,10 @@ msgid ""
 msgstr ""
 "CircuitPython está en modo seguro porque presionó el botón de reinicio "
 "durante el arranque. Presione nuevamente para salir del modo seguro.\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -1245,6 +1253,10 @@ msgstr "No hay soporte de entero largo"
 msgid "No more timers available on this pin."
 msgstr "No hay más temporizadores disponibles en este pin."
 
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "No hay pulldown en el pin; 1Mohm recomendado"
@@ -1264,6 +1276,10 @@ msgstr "No hay temporizador disponible"
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
 msgstr "fallo de aserción de dispositivo Nordic Soft."
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1314,6 +1330,10 @@ msgid ""
 msgstr ""
 "Solo se admiten BMP monocromáticos, indexados de 4 bpp u 8 bpp y 16 bpp o "
 "más: %d bpp proporcionados"
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1515,6 +1535,10 @@ msgstr "Pin RTS seleccionado no válido"
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Serializer in use"
 msgstr "Serializer está siendo utilizado"
+
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -1725,6 +1749,10 @@ msgstr "Imposible escribir en nvm."
 msgid "Unexpected nrfx uuid type"
 msgstr "Tipo de uuid nrfx inesperado"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown gatt error: 0x%04x"
@@ -1838,6 +1866,10 @@ msgstr ""
 "proyectos.\n"
 "\n"
 "Para listar los módulos incorporados por favor haga `help(\"modules\")`.\n"
+
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"

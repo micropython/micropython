@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-30 14:38-0400\n"
+"POT-Creation-Date: 2020-09-09 14:33-0700\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -273,7 +273,7 @@ msgstr "3-argumentowy pow() jest niewspierany"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Kanał przerwań sprzętowych w użyciu"
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "Adres musi mieć %d bajtów"
@@ -369,6 +369,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
 msgstr ""
 
 #: main.c
@@ -578,6 +582,10 @@ msgstr ""
 msgid ""
 "CircuitPython is in safe mode because you pressed the reset button during "
 "boot. Press again to exit safe mode.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
 msgstr ""
 
 #: shared-module/bitbangio/SPI.c
@@ -1225,6 +1233,10 @@ msgstr ""
 msgid "No more timers available on this pin."
 msgstr ""
 
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr ""
@@ -1243,6 +1255,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
+msgstr ""
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1287,6 +1303,10 @@ msgstr "Wspierane są tylko nieskompresowane pliki BMP: wielkość nagłówka %d
 msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
+msgstr ""
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -1485,6 +1505,10 @@ msgstr ""
 msgid "Serializer in use"
 msgstr "Serializator w użyciu"
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Fragment i wartość są różnych długości."
@@ -1680,6 +1704,10 @@ msgstr "Błąd zapisu do NVM."
 msgid "Unexpected nrfx uuid type"
 msgstr "Nieoczekiwany typ nrfx uuid."
 
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown gatt error: 0x%04x"
@@ -1785,6 +1813,10 @@ msgstr ""
 "Witamy w CircuitPythonie Adafruita %s!\n"
 "Podręczniki dostępne na learn.adafruit.com/category/circuitpyhon.\n"
 "Aby zobaczyć wbudowane moduły, wpisz `help(\"modules\")`.\n"
+
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
