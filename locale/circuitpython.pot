@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-12 15:10-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1925,7 +1925,7 @@ msgstr ""
 msgid "bad format string"
 msgstr ""
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr ""
 
@@ -1976,6 +1976,10 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
+msgstr ""
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
 msgstr ""
 
 #: py/objstr.c
@@ -2941,6 +2945,11 @@ msgstr ""
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
+msgstr ""
+
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
