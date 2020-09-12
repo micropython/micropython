@@ -9,7 +9,7 @@ MP_DECLARE_CONST_FUN_OBJ_0(machine_info_obj);
 
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
-    struct device *port;
+    const struct device *port;
     uint32_t pin;
     struct _machine_pin_irq_obj_t *irq;
 } machine_pin_obj_t;

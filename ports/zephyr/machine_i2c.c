@@ -42,7 +42,7 @@ STATIC const mp_obj_type_t machine_hard_i2c_type;
 
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
-    struct device *dev;
+    const struct device *dev;
     bool restart;
 } machine_hard_i2c_obj_t;
 
@@ -65,7 +65,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const char *dev_name = mp_obj_str_get_str(args[ARG_id].u_obj);
-    struct device *dev = device_get_binding(dev_name);
+    const struct device *dev = device_get_binding(dev_name);
 
     if (dev == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("device not found"));
