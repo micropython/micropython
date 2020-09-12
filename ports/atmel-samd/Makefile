@@ -255,7 +255,7 @@ SRC_ASF += \
 	hal/src/hal_mci_sync.c \
 	hpl/sdhc/hpl_sdhc.c \
 
-$(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align
+$(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align -Wno-implicit-fallthrough
 endif
 
 $(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sercom/hpl_sercom.o: CFLAGS += -Wno-maybe-uninitialized
