@@ -53,7 +53,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
         }
     }
     #else
-    static struct device *uart_console_dev;
+    static const struct device *uart_console_dev;
     if (uart_console_dev == NULL) {
         uart_console_dev = device_get_binding(CONFIG_UART_CONSOLE_ON_DEV_NAME);
     }
