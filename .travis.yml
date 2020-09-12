@@ -54,7 +54,7 @@ jobs:
           zephyrprojectrtos/ci:v0.11.8
         - docker ps -a
       install:
-        - docker exec zephyr-ci west init --mr v2.3.0 /zephyrproject
+        - docker exec zephyr-ci west init --mr v2.4.0 /zephyrproject
         - docker exec -w /zephyrproject zephyr-ci west update
         - docker exec -w /zephyrproject zephyr-ci west zephyr-export
       script:
