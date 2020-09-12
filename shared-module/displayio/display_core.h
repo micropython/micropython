@@ -54,6 +54,7 @@ typedef struct {
     int16_t colstart;
     int16_t rowstart;
     bool full_refresh; // New group means we need to refresh the whole display.
+    bool refresh_in_progress;
 } displayio_display_core_t;
 
 void displayio_display_core_construct(displayio_display_core_t* self,
@@ -78,7 +79,7 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
 
 void release_display_core(displayio_display_core_t* self);
 
-void displayio_display_core_start_refresh(displayio_display_core_t* self);
+bool displayio_display_core_start_refresh(displayio_display_core_t* self);
 void displayio_display_core_finish_refresh(displayio_display_core_t* self);
 
 void displayio_display_core_collect_ptrs(displayio_display_core_t* self);

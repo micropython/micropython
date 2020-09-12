@@ -317,11 +317,10 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
 }
 
 STATIC void _refresh_display(displayio_display_obj_t* self) {
-    if (!displayio_display_core_bus_free(&self->core)) {
-        // Can't acquire display bus; skip updating this display. Try next display.
+    if (!displayio_display_core_start_refresh(&self->core)) {
+        // A refresh on this bus is already in progress.  Try next display.
         return;
     }
-    displayio_display_core_start_refresh(&self->core);
     const displayio_area_t* current_area = _get_refresh_areas(self);
     while (current_area != NULL) {
         _refresh_area(self, current_area);
