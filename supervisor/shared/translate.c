@@ -47,13 +47,22 @@ STATIC int put_utf8(char *buf, int u) {
     if(u <= 0x7f) {
         *buf = u;
         return 1;
-    } else if(bigram_start <= u && u <= bigram_end) {
-        int n = (u - 0x80) * 2;
-        // (note that at present, entries in the bigrams table are
-        // guaranteed not to represent bigrams themselves, so this adds
+    } else if(word_start <= u && u <= word_end) {
+        int n = (u - 0x80);
+        size_t off = 0;
+        for(int i=0; i<n; i++) {
+            off += wlen[i];
+        }
+        int ret = 0;
+        // note that at present, entries in the words table are
+        // guaranteed not to represent words themselves, so this adds
         // at most 1 level of recursive call
-        int ret = put_utf8(buf, bigrams[n]);
-        return ret + put_utf8(buf + ret, bigrams[n+1]);
+        for(int i=0; i<wlen[n]; i++) {
+            int len = put_utf8(buf, words[off+i]);
+            buf += len;
+            ret += len;
+        }
+        return ret;
     } else if(u <= 0x07ff) {
         *buf++ = 0b11000000 | (u >> 6);
         *buf   = 0b10000000 | (u & 0b00111111);
