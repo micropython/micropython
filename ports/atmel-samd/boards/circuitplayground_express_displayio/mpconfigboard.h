@@ -25,7 +25,7 @@
 #define CALIBRATE_CRYSTALLESS 1
 
 // Explanation of how a user got into safe mode.
-#define BOARD_USER_SAFE_MODE_ACTION "pressing both buttons at start up"
+#define BOARD_USER_SAFE_MODE_ACTION "pressing both buttons at start up\n"
 
 // Increase stack size slightly due to CPX library import nesting.
 #define CIRCUITPY_DEFAULT_STACK_SIZE  (4248)  // divisible by 8
