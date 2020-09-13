@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -33,14 +33,6 @@ msgstr ""
 "\n"
 "Qǐng tōngguò https://github.com/adafruit/circuitpython/issues\n"
 "tíjiāo yǒuguān nín de CIRCUITPY qūdòngqì nèiróng de wèntí \n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Qǐng zài méiyǒu _ de qíngkuàng xià chóng zhì bǎn zǐ yǐ tuìchū "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -1635,6 +1627,10 @@ msgid ""
 msgstr ""
 "Dìngshí qì bǎoliú gōng nèibù shǐyòng-zài chéngxù de qiánmiàn shēngmíng PWM "
 "yǐn jiǎo"
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3463,6 +3459,13 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Qǐng zài méiyǒu _ de qíngkuàng xià chóng zhì bǎn zǐ yǐ tuìchū "
+
 #~ msgid "tuple/list required on RHS"
 #~ msgstr "RHS yāoqiú de yuán zǔ/lièbiǎo"
 
@@ -3837,9 +3840,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Píng pū zhǐshù bìxū wèi 0 - 255"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
 
 #~ msgid "UUID integer value not in range 0 to 0xffff"
 #~ msgstr "UUID zhěngshù zhí bùzài fànwéi 0 zhì 0xffff"

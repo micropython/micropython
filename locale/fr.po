@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: 2020-07-27 21:27+0000\n"
 "Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
 "Language: fr\n"
@@ -35,14 +35,6 @@ msgstr ""
 "Veuillez signaler un problème avec le contenu de votre lecteur CIRCUITPY à "
 "l'adresse\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Pour quitter, veuillez réinitialiser la carte sans "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -1654,6 +1646,10 @@ msgstr "Le délai est trop long : le délai maximal est de %d secondes"
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Pour quitter, redémarrez la carte SVP sans "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3513,6 +3509,13 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Pour quitter, veuillez réinitialiser la carte sans "
+
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut non pris en charge sur cette puce"
 
@@ -3969,9 +3972,6 @@ msgstr ""
 
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Les indices des tuiles doivent être compris entre 0 et 255 "
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Pour quitter, redémarrez la carte SVP sans "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) n'existe pas"

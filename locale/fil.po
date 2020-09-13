@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -26,12 +26,6 @@ msgid ""
 "\n"
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
 msgstr ""
 
 #: py/obj.c
@@ -1625,6 +1619,10 @@ msgstr ""
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Para lumabas, paki-reset ang board na wala ang "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3841,9 +3839,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 #~ "ulit para lumabas sa safe mode.\n"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Para lumabas, paki-reset ang board na wala ang "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "Walang UART(%d)"

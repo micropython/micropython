@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: 2020-08-17 21:11+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
@@ -35,14 +35,6 @@ msgstr ""
 "\n"
 "Reporte un problema con el contenido de su unidad CIRCUITPY en\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Para salir, favor reinicie la tarjeta sin "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -1652,6 +1644,10 @@ msgid ""
 msgstr ""
 "El temporizador es utilizado para uso interno - declare los pines para PWM "
 "más temprano en el programa"
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Para salir, por favor reinicia la tarjeta sin "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3492,6 +3488,13 @@ msgstr "zi debe ser de tipo flotante"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
 
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Para salir, favor reinicie la tarjeta sin "
+
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut no es compatible con este chip"
 
@@ -3940,9 +3943,6 @@ msgstr "zi debe ser una forma (n_section,2)"
 
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Los índices de Tile deben ser 0 - 255"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Para salir, por favor reinicia la tarjeta sin "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) no existe"

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: 2020-09-09 16:05+0000\n"
 "Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
 "Language-Team: none\n"
@@ -33,14 +33,6 @@ msgstr ""
 "\n"
 "Meld een probleem met de inhoud van de CIRCUITPY drive op:\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Om te verlaten, herstart de module zonder "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -1646,6 +1638,10 @@ msgid ""
 msgstr ""
 "Timer is gereserveerd voor intern gebruik - wijs PWM pins eerder in het "
 "programma toe"
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3479,6 +3475,13 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Om te verlaten, herstart de module zonder "
 
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut niet ondersteund door deze chip"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: 2020-09-01 18:44+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
@@ -35,14 +35,6 @@ msgstr ""
 "\n"
 "CIRCUITPYドライブの内容を添えて問題を以下で報告してください：\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"終了するには、次の操作をせずにリセットしてください: "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -1632,6 +1624,10 @@ msgstr "タイムアウトが長すぎです。最大のタイムアウト長は
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
@@ -3449,6 +3445,13 @@ msgstr "ziはfloat値が必要"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "終了するには、次の操作をせずにリセットしてください: "
 
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOutはこのチップでサポートされていません"
