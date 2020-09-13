@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-09 14:33-0700\n"
-"PO-Revision-Date: 2020-09-02 22:32+0000\n"
+"PO-Revision-Date: 2020-09-12 17:32+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -385,7 +385,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
-msgstr ""
+msgstr "Houve um falha na autenticação"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -606,7 +606,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr ""
+msgstr "O CircuitPython não conseguiu alocar o heap.\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -1258,7 +1258,7 @@ msgstr "Não há mais temporizadores disponíveis neste pino."
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
-msgstr ""
+msgstr "Não há rede com este ssid"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1282,7 +1282,7 @@ msgstr "Declaração de falha do dispositivo Nordic Soft."
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
-msgstr ""
+msgstr "Não é uma sequência válida de IP"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1335,7 +1335,7 @@ msgstr ""
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"
-msgstr ""
+msgstr "Apenas o int bruto é compatível para o ip"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1547,7 +1547,7 @@ msgstr "Serializer em uso"
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
-msgstr ""
+msgstr "O contexto do lado do servidor não pode ter nome de host"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -1760,7 +1760,7 @@ msgstr "Tipo uuid nrfx inesperado"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Unknown failure"
-msgstr ""
+msgstr "Falha desconhecida"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1879,7 +1879,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
-msgstr ""
+msgstr "A senha do Wi-Fi deve ter entre 8 e 63 caracteres"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"

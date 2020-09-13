@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,20 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#include "boards/board.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "supervisor/shared/board.h"
+#include "hal/include/hal_gpio.h"
 
-#define MICROPY_HW_BOARD_NAME       "microDev microS2"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+void board_init(void) {
+    gpio_set_pin_function(PIN_PA18, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_direction(PIN_PA18, GPIO_DIRECTION_OUT);
+    gpio_set_pin_level(PIN_PA18, true); // Turn on neopixel by default
+}
 
-#define MICROPY_HW_LED (&pin_GPIO21)
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-
-#define BOARD_USER_SAFE_MODE_ACTION "pressing boot button at start up.\n"
-
-#define AUTORESET_DELAY_MS 500
+void reset_board(void) {
+}
