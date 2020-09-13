@@ -29,12 +29,11 @@ def time():
     return val - NTP_DELTA
 
 
-# There's currently no timezone support in MicroPython, so
-# utime.localtime() will return UTC time (as if it was .gmtime())
+# There's currently no timezone support in MicroPython, and the RTC is set in UTC time.
 def settime():
     t = time()
     import machine
     import utime
 
-    tm = utime.localtime(t)
+    tm = utime.gmtime(t)
     machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
