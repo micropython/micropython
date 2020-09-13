@@ -48,17 +48,17 @@ STATIC int put_utf8(char *buf, int u) {
         *buf = u;
         return 1;
     } else if(word_start <= u && u <= word_end) {
-        int n = (u - 0x80);
-        size_t off = 0;
-        for(int i=0; i<n; i++) {
-            off += wlen[i];
+        uint n = (u - word_start);
+        size_t pos = 0;
+        if (n > 0) {
+            pos = wends[n - 1] + (n * 2);
         }
         int ret = 0;
         // note that at present, entries in the words table are
         // guaranteed not to represent words themselves, so this adds
         // at most 1 level of recursive call
-        for(int i=0; i<wlen[n]; i++) {
-            int len = put_utf8(buf, words[off+i]);
+        for(; pos < wends[n] + (n + 1) * 2; pos++) {
+            int len = put_utf8(buf, words[pos]);
             buf += len;
             ret += len;
         }
