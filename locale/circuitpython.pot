@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-12 18:06+0530\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -574,12 +574,6 @@ msgstr ""
 msgid ""
 "CircuitPython is in safe mode because you pressed the reset button during "
 "boot. Press again to exit safe mode.\n"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"CircuitPython is in safe mode with status being USER_SAFE_MODE but no "
-"specific reason was provided.\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c

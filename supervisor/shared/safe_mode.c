@@ -123,8 +123,7 @@ void print_safe_mode_message(safe_mode_t reason) {
                 serial_write_compressed(translate("To exit, please reset the board without "));
                 serial_write_compressed(translate(BOARD_USER_SAFE_MODE_ACTION));
             #else
-                // fallthrough
-                serial_write_compressed(translate("CircuitPython is in safe mode with status being USER_SAFE_MODE but no specific reason was provided.\n"));
+                break;
             #endif
             return;
         case MANUAL_SAFE_MODE:
