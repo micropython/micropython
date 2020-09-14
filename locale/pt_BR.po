@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-13 14:21-0500\n"
-"PO-Revision-Date: 2020-09-12 17:32+0000\n"
+"PO-Revision-Date: 2020-09-14 13:47+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2046,7 +2046,7 @@ msgstr "bytes > 8 bits não suportado"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
-msgstr ""
+msgstr "o comprimento dos bytes não é um múltiplo do tamanho do item"
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -3036,7 +3036,7 @@ msgstr ""
 #: py/modstruct.c
 #, c-format
 msgid "pack expected %d items for packing (got %d)"
-msgstr ""
+msgstr "o pacote previa %d itens para a empacotamento (obteve %d)"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
