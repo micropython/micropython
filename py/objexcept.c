@@ -282,15 +282,17 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
     */
   MP_DEFINE_EXCEPTION(OSError, Exception)
-  MP_DEFINE_EXCEPTION(TimeoutError, OSError)
-    /*
-    MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
-    MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
+    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
     MP_DEFINE_EXCEPTION(ConnectionError, OSError)
       MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
+      /*
       MP_DEFINE_EXCEPTION(ConnectionAbortedError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionRefusedError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionResetError, ConnectionError)
+      */
+    /*
+    MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
+    MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
     MP_DEFINE_EXCEPTION(InterruptedError, OSError)
     MP_DEFINE_EXCEPTION(IsADirectoryError, OSError)
     MP_DEFINE_EXCEPTION(NotADirectoryError, OSError)

@@ -39,6 +39,28 @@ print(v == (10, 100, 200, 300))
 # network byte order
 print(struct.pack('!i', 123))
 
+# too short / too long arguments
+buf = bytearray(b'>>>123<<<')
+try:
+    struct.pack_into('bb', buf, 0, 3)
+except:
+    print('struct.error')
+
+try:
+    struct.pack_into('bb', buf, 0, 3, 1, 4)
+except:
+    print('struct.error')
+
+try:
+    struct.pack('bb', 3)
+except:
+    print('struct.error')
+
+try:
+    struct.pack('bb', 3, 1, 4)
+except:
+    print('struct.error')
+
 # check that we get an error if the buffer is too small
 try:
     struct.unpack('I', b'\x00\x00\x00')
@@ -96,3 +118,6 @@ try:
     print(struct.unpack_from('<b', buf, -11))
 except:
     print('struct.error')
+
+# check padding bytes
+print(struct.pack("xb", 3))

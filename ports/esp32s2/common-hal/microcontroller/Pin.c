@@ -45,6 +45,9 @@ bool apa102_mosi_in_use;
 bool apa102_sck_in_use;
 
 void never_reset_pin_number(gpio_num_t pin_number) {
+    if (pin_number == -1 ) {
+         return;
+    }
     never_reset_pins[pin_number / 32] |= 1 << pin_number % 32;
 }
 
@@ -54,6 +57,9 @@ void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
 
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(gpio_num_t pin_number) {
+    if (pin_number == -1 ) {
+         return;
+    }
     never_reset_pins[pin_number / 32] &= ~(1 << pin_number % 32);
     in_use[pin_number / 32] &= ~(1 << pin_number % 32);
 

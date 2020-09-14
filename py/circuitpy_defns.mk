@@ -31,6 +31,7 @@ BASE_CFLAGS = \
 	-fsingle-precision-constant \
 	-fno-strict-aliasing \
 	-Wdouble-promotion \
+	-Wimplicit-fallthrough=2 \
 	-Wno-endif-labels \
 	-Wstrict-prototypes \
 	-Werror-implicit-function-declaration \
@@ -168,6 +169,9 @@ endif
 ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
 SRC_PATTERNS += i2cperipheral/%
 endif
+ifeq ($(CIRCUITPY_IPADDRESS),1)
+SRC_PATTERNS += ipaddress/%
+endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
 endif
@@ -228,6 +232,12 @@ endif
 ifeq ($(CIRCUITPY_SHARPDISPLAY),1)
 SRC_PATTERNS += sharpdisplay/%
 endif
+ifeq ($(CIRCUITPY_SOCKETPOOL),1)
+SRC_PATTERNS += socketpool/%
+endif
+ifeq ($(CIRCUITPY_SSL),1)
+SRC_PATTERNS += ssl/%
+endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
 endif
@@ -263,6 +273,9 @@ SRC_PATTERNS += ustack/%
 endif
 ifeq ($(CIRCUITPY_WATCHDOG),1)
 SRC_PATTERNS += watchdog/%
+endif
+ifeq ($(CIRCUITPY_WIFI),1)
+SRC_PATTERNS += wifi/%
 endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
@@ -332,11 +345,20 @@ SRC_COMMON_HAL_ALL = \
 	rtc/__init__.c \
 	sdioio/SDCard.c \
 	sdioio/__init__.c \
+	socketpool/__init__.c \
+	socketpool/SocketPool.c \
+	socketpool/Socket.c \
+	ssl/__init__.c \
+	ssl/SSLContext.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \
+	wifi/Network.c \
+	wifi/Radio.c \
+	wifi/ScannedNetworks.c \
+	wifi/__init__.c \
 
 ifeq ($(CIRCUITPY_BLEIO_HCI),1)
 # Helper code for _bleio HCI.
@@ -414,6 +436,8 @@ SRC_SHARED_MODULE_ALL = \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
+	ipaddress/IPv4Address.c \
+	ipaddress/__init__.c \
 	sdcardio/SDCard.c \
 	sdcardio/__init__.c \
 	gamepad/GamePad.c \

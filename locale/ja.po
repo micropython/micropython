@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-27 11:21-0400\n"
+"POT-Creation-Date: 2020-09-13 14:21-0500\n"
 "PO-Revision-Date: 2020-09-01 18:44+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
@@ -35,14 +35,6 @@ msgstr ""
 "\n"
 "CIRCUITPYドライブの内容を添えて問題を以下で報告してください：\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"終了するには、次の操作をせずにリセットしてください: "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -282,7 +274,7 @@ msgstr "引数3つのpow()はサポートされていません"
 msgid "A hardware interrupt channel is already in use"
 msgstr "ハードウェア割り込みチャネルは使用中"
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "アドレスは、%dバイト長でなければなりません"
@@ -379,6 +371,10 @@ msgstr "%d個のブロックの確保を試みました"
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr "MicroPython VM 非実行時にヒープの確保を試みました"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr ""
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -503,6 +499,10 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr "ローカルのCharacteristicにはCCCDを設定できません"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -588,6 +588,10 @@ msgid ""
 msgstr ""
 "起動中にリセットボタンを押したためCircuitPythonはセーフモードにいます。もう一"
 "度押すとセーフモードを終了します。\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -757,8 +761,8 @@ msgstr "EXTINTチャネルはすでに使用されています"
 msgid "Error in regex"
 msgstr "正規表現にエラーがあります"
 
-#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
@@ -769,8 +773,16 @@ msgstr "%qが必要"
 msgid "Expected a Characteristic"
 msgstr ""
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
 msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
@@ -900,7 +912,9 @@ msgstr "IVは%dバイト長でなければなりません"
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
-msgstr "非互換の.mpyファイルです。全ての.mpyファイルを更新してください。詳細は http://adafru.it/mpy-update を参照"
+msgstr ""
+"非互換の.mpyファイルです。全ての.mpyファイルを更新してください。詳細は "
+"http://adafru.it/mpy-update を参照"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1224,6 +1238,10 @@ msgstr "long integerサポートがありません"
 msgid "No more timers available on this pin."
 msgstr "このピンに利用可能なタイマーがもうありません"
 
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "ピンにプルダウンがありません。1Mオーム推奨"
@@ -1244,6 +1262,10 @@ msgstr "利用できるタイマーなし"
 msgid "Nordic Soft Device failure assertion."
 msgstr ""
 
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1257,6 +1279,10 @@ msgstr "再生していません"
 #: main.c
 msgid "Not running saved code.\n"
 msgstr "保存されたコードは実行していません。\n"
+
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
+msgstr ""
 
 #: shared-bindings/util.c
 msgid ""
@@ -1286,6 +1312,10 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "オーバーサンプルは8の倍数が必要"
@@ -1293,7 +1323,8 @@ msgstr "オーバーサンプルは8の倍数が必要"
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-msgstr "PWMのduty_cycle値は0から65535の間でなければなりません（16ビット解像度）"
+msgstr ""
+"PWMのduty_cycle値は0から65535の間でなければなりません（16ビット解像度）"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1366,10 +1397,6 @@ msgstr "いずれかのキーを押すとREPLに入ります。リロードはCT
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "方向がoutputのときpullは使われません"
-
-#: ports/stm/ref/pulseout-pre-timeralloc.c
-msgid "PulseOut not supported on this chip"
-msgstr "PulseOutはこのチップでサポートされていません"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1487,6 +1514,10 @@ msgstr "選択されたRTSピンが正しくありません"
 msgid "Serializer in use"
 msgstr "シリアライザは使用中"
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "スライスと値の長さが一致しません"
@@ -1595,6 +1626,10 @@ msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "サンプルのチャンネル数が多すぎます"
@@ -1691,6 +1726,10 @@ msgstr "nvm に書き込みできません"
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "想定されていないnrfx UUID型"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1793,6 +1832,10 @@ msgid ""
 "Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
@@ -1909,7 +1952,7 @@ msgstr ""
 msgid "bad format string"
 msgstr "不正な書式化文字列"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "不正なtypecode"
 
@@ -1960,6 +2003,10 @@ msgstr "byteorderが文字列ではありません"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
+msgstr ""
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
 msgstr ""
 
 #: py/objstr.c
@@ -2483,6 +2530,10 @@ msgstr ""
 msgid "initial values must be iterable"
 msgstr ""
 
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
+msgstr ""
+
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "インラインアセンブラは関数でなければなりません"
@@ -2673,6 +2724,10 @@ msgstr "正定値行列ではありません"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
 msgstr ""
 
 #: py/runtime.c
@@ -2921,6 +2976,11 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr "long intをマシンのwordに変換する際にオーバーフローしました"
 
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
+
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
 msgstr "パレットの長さは32バイトでなければなりません"
@@ -3024,7 +3084,8 @@ msgstr "rsplit(None,n)"
 msgid ""
 "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
 "'B'"
-msgstr "sample_source バッファには bytearray または 'h','H','b','B'型のarrayが必要"
+msgstr ""
+"sample_source バッファには bytearray または 'h','H','b','B'型のarrayが必要"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
@@ -3393,6 +3454,16 @@ msgstr "ziはfloat値が必要"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "終了するには、次の操作をせずにリセットしてください: "
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseOutはこのチップでサポートされていません"
 
 #~ msgid "Invalid I2C pin selection"
 #~ msgstr "I2Cピンの選択が不正です"

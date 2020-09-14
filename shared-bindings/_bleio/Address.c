@@ -86,7 +86,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     or use `str()` on the :py:class:`~_bleio.Attribute` object itself, the address will be printed
 //|     in the expected order. For example:
 //|
-//|     .. code-block:: pycon
+//|     .. code-block:: python
 //|
 //|       >>> import _bleio
 //|       >>> _bleio.adapter.address

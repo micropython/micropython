@@ -97,6 +97,9 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
+    if (typecode == 'x') {
+        mp_raise_ValueError(translate("bad typecode"));
+    }
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_PY_ARRAY
@@ -126,8 +129,10 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
                 || (MICROPY_PY_BUILTINS_BYTEARRAY && MP_OBJ_IS_TYPE(initializer, &mp_type_bytearray)))))
         && mp_get_buffer(initializer, &bufinfo, MP_BUFFER_READ)) {
         // construct array from raw bytes
-        // we round-down the len to make it a multiple of sz (CPython raises error)
         size_t sz = mp_binary_get_size('@', typecode, NULL);
+        if (bufinfo.len % sz) {
+            mp_raise_ValueError(translate("bytes length not a multiple of item size"));
+        }
         size_t len = bufinfo.len / sz;
         mp_obj_array_t *o = array_new(typecode, len);
         memcpy(o->items, bufinfo.buf, len * sz);

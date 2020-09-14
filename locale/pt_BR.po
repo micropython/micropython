@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-30 14:38-0400\n"
-"PO-Revision-Date: 2020-09-02 22:32+0000\n"
+"POT-Creation-Date: 2020-09-13 14:21-0500\n"
+"PO-Revision-Date: 2020-09-12 17:32+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -33,14 +33,6 @@ msgstr ""
 "\n"
 "Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Para encerrar, redefina a placa sem "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -283,7 +275,7 @@ msgstr "3-arg pow() não compatível"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Um canal de interrupção de hardware já está em uso"
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "O endereço deve ter %d bytes de comprimento"
@@ -382,6 +374,10 @@ msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr ""
 "A tentativa da área de alocação dinâmica de variáveis (heap) quando o "
 "MicroPython VM não está em execução."
+
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr "Houve um falha na autenticação"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -599,6 +595,10 @@ msgstr ""
 "O CircuitPython está no modo de segurança porque você pressionou o botão de "
 "redefinição durante a inicialização. Pressione novamente para sair do modo "
 "de segurança.\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr "O CircuitPython não conseguiu alocar o heap.\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -1248,6 +1248,10 @@ msgstr "Não há compatibilidade com inteiro longo"
 msgid "No more timers available on this pin."
 msgstr "Não há mais temporizadores disponíveis neste pino."
 
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr "Não há rede com este ssid"
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "Não há pulldown no pino; É recomendável utilizar um resistor de 1M ohm"
@@ -1267,6 +1271,10 @@ msgstr "Não há um temporizador disponível"
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
 msgstr "Declaração de falha do dispositivo Nordic Soft."
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
+msgstr "Não é uma sequência válida de IP"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1316,6 +1324,10 @@ msgid ""
 msgstr ""
 "São compatíveis apenas os BMPs monocromáticos, indexados em 4bpp ou 8bpp e "
 "16bpp ou superior: determinado %d bpp"
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
+msgstr "Apenas o int bruto é compatível para o ip"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1525,6 +1537,10 @@ msgstr "O pino RTS selecionado é inválido"
 msgid "Serializer in use"
 msgstr "Serializer em uso"
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr "O contexto do lado do servidor não pode ter nome de host"
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Fatie e avalie os diferentes comprimentos."
@@ -1638,6 +1654,10 @@ msgstr ""
 "O temporizador foi reservado para uso interno - declare os pinos PWM no "
 "início do programa"
 
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Para sair, por favor, reinicie a placa sem "
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "Muitos canais na amostra."
@@ -1733,6 +1753,10 @@ msgstr "Não é possível gravar no nvm."
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Tipo uuid nrfx inesperado"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr "Falha desconhecida"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1849,6 +1873,10 @@ msgstr ""
 "\n"
 "Para listar os módulos internos, faça `help(\"modules\")`.\n"
 
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr "A senha do Wi-Fi deve ter entre 8 e 63 caracteres"
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "A escrita não é compatível na Característica"
@@ -1963,7 +1991,7 @@ msgstr "especificador de conversão incorreto"
 msgid "bad format string"
 msgstr "formato da string incorreta"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "typecode incorreto"
 
@@ -2015,6 +2043,10 @@ msgstr "a ordem dos bytes não é uma cadeia de caracteres"
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits não suportado"
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -3001,6 +3033,11 @@ msgstr ""
 "houve um transbordamento durante a conversão int longo para a palavra de "
 "máquina"
 
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
+
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
 msgstr "a paleta deve ter 32 bytes de comprimento"
@@ -3476,6 +3513,13 @@ msgstr "zi deve ser de um tipo float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
 
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Para encerrar, redefina a placa sem "
+
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "O PulseOut não é compatível neste CI"
 
@@ -3798,9 +3842,6 @@ msgstr "zi deve estar na forma (n_section, 2)"
 
 #~ msgid "STA required"
 #~ msgstr "STA requerido"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Para sair, por favor, reinicie a placa sem "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) não existe"

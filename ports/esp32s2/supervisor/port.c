@@ -40,6 +40,7 @@
 #include "common-hal/busio/UART.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
+#include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 
@@ -65,6 +66,8 @@ safe_mode_t port_init(void) {
     args.dispatch_method = ESP_TIMER_TASK;
     args.name = "CircuitPython Tick";
     esp_timer_create(&args, &_tick_timer);
+
+    heap = NULL;
     never_reset_module_internal_pins();
 
     #ifdef CONFIG_SPIRAM
@@ -76,6 +79,10 @@ safe_mode_t port_init(void) {
         heap = malloc(HEAP_SIZE);
         heap_size = HEAP_SIZE / sizeof(uint32_t);
     }
+    if (heap == NULL) {
+        return NO_HEAP;
+    }
+
     return NO_SAFE_MODE;
 }
 
@@ -98,6 +105,9 @@ void reset_port(void) {
     i2c_reset();
     spi_reset();
     uart_reset();
+#endif
+#if CIRCUITPY_WIFI
+    wifi_reset();
 #endif
 }
 
