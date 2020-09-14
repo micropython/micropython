@@ -37,14 +37,7 @@ STATIC volatile background_callback_t *callback_head, *callback_tail;
 #define CALLBACK_CRITICAL_BEGIN (common_hal_mcu_disable_interrupts())
 #define CALLBACK_CRITICAL_END (common_hal_mcu_enable_interrupts())
 
-uint64_t last_background_tick = 0;
-
-uint64_t get_background_ticks(void) {
-    return last_background_tick;
-}
-
 void background_callback_add_core(background_callback_t *cb) {
-    last_background_tick = port_get_raw_ticks(NULL);
     CALLBACK_CRITICAL_BEGIN;
     if (cb->prev || callback_head == cb) {
         CALLBACK_CRITICAL_END;
