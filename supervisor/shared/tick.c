@@ -94,6 +94,8 @@ void supervisor_background_tasks(void *unused) {
 
     assert_heap_ok();
 
+    last_finished_tick = port_get_raw_ticks(NULL);
+
     port_finish_background_task();
 }
 
