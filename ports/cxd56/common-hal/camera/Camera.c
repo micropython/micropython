@@ -42,18 +42,28 @@ typedef struct {
 
 STATIC camera_dev_t camera_dev = {"/dev/video", -1};
 
+typedef struct {
+    uint16_t width;
+    uint16_t height;
+} image_size_t;
+
+STATIC const image_size_t image_size_table[] = {
+    { VIDEO_HSIZE_QVGA, VIDEO_VSIZE_QVGA },
+    { VIDEO_HSIZE_VGA, VIDEO_VSIZE_VGA },
+    { VIDEO_HSIZE_HD, VIDEO_VSIZE_HD },
+    { VIDEO_HSIZE_QUADVGA, VIDEO_VSIZE_QUADVGA },
+    { VIDEO_HSIZE_FULLHD, VIDEO_VSIZE_FULLHD },
+    { VIDEO_HSIZE_3M, VIDEO_VSIZE_3M },
+    { VIDEO_HSIZE_5M, VIDEO_VSIZE_5M },
+};
+
 static bool camera_check_width_and_height(uint16_t width, uint16_t height) {
-    if ((width == VIDEO_HSIZE_QVGA && height == VIDEO_VSIZE_QVGA) ||
-        (width == VIDEO_HSIZE_VGA && height == VIDEO_VSIZE_VGA) ||
-        (width == VIDEO_HSIZE_HD && height == VIDEO_VSIZE_HD) ||
-        (width == VIDEO_HSIZE_QUADVGA && height == VIDEO_VSIZE_QUADVGA) ||
-        (width == VIDEO_HSIZE_FULLHD && height == VIDEO_VSIZE_FULLHD) ||
-        (width == VIDEO_HSIZE_3M && height == VIDEO_VSIZE_3M) ||
-        (width == VIDEO_HSIZE_5M && height == VIDEO_VSIZE_5M)) {
-        return true;
-    } else {
-        return false;
+    for (int i = 0; i < MP_ARRAY_SIZE(image_size_table); i++) {
+        if (image_size_table[i].width == width && image_size_table[i].height == height) {
+            return true;
+        }
     }
+    return false;
 }
 
 static bool camera_check_buffer_length(uint16_t width, uint16_t height, camera_imageformat_t format, size_t length) {
@@ -61,18 +71,14 @@ static bool camera_check_buffer_length(uint16_t width, uint16_t height, camera_i
         // In SPRESENSE SDK, JPEG compression quality=80 by default.
         // In such setting, the maximum actual measured size of JPEG image
         // is about width * height * 2 / 9.
-        return length >= (size_t)(width * height * 2 / 9) ? true : false;
+        return length >= (size_t)(width * height * 2 / 9);
     } else {
         return false;
     }
 }
 
 static bool camera_check_format(camera_imageformat_t format) {
-    if (format == IMAGEFORMAT_JPG) {
-        return true;
-    } else {
-        return false;
-    }
+    return format == IMAGEFORMAT_JPG;
 }
 
 static void camera_set_format(enum v4l2_buf_type type, uint32_t pixformat, uint16_t width, uint16_t height) {

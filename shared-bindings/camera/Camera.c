@@ -52,7 +52,7 @@
 //|
 //|         buffer = bytearray(512 * 1024)
 //|         file = open("/sd/image.jpg","wb")
-//|         size = cam.take_picture()
+//|         size = cam.take_picture(buffer, camera.ImageFormat.JPG)
 //|         file.write(buffer, size)
 //|         file.close()"""
 //|
@@ -99,7 +99,7 @@ STATIC void check_for_deinit(camera_obj_t *self) {
 //|     def take_picture(self, buf: WriteableBuffer, format: ImageFormat) -> int:
 //|         """Take picture and save to ``buf`` in the given ``format``
 //|
-//|         :return: the size of the picture taken
+//|         :return: the number of bytes written into buf
 //|         :rtype: int"""
 //|         ...
 //|
