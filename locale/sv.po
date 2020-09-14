@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-13 22:53+0530\n"
+"POT-Creation-Date: 2020-09-13 14:21-0500\n"
 "PO-Revision-Date: 2020-09-07 19:36+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1969,7 +1969,7 @@ msgstr "Ogiltig konverteringsspecifikation"
 msgid "bad format string"
 msgstr "Ogiltig formatsträng"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "Ogiltig typkod"
 
@@ -2021,6 +2021,10 @@ msgstr "byteorder är inte en sträng"
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "bytes> 8 bitar stöds inte"
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2994,6 +2998,11 @@ msgstr "utanför räckvidd för target"
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
 msgstr "Konvertering av long int till machine word överskred maxvärde"
+
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
