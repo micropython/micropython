@@ -110,9 +110,9 @@ STATIC mp_obj_t dict_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL:
-            return mp_obj_new_bool(self->map.used != 0);
+            return mp_obj_new_bool(mp_map_num_filled_slots(&self->map) != 0);
         case MP_UNARY_OP_LEN:
-            return MP_OBJ_NEW_SMALL_INT(self->map.used);
+            return MP_OBJ_NEW_SMALL_INT(mp_map_num_filled_slots(&self->map));
         #if MICROPY_PY_SYS_GETSIZEOF
         case MP_UNARY_OP_SIZEOF: {
             size_t sz = sizeof(*self) + sizeof(*self->map.table) * self->map.alloc;
@@ -228,15 +228,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_clear_obj, dict_clear);
 mp_obj_t mp_obj_dict_copy(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_dict_or_ordereddict(self_in));
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t other_out = mp_obj_new_dict(self->map.alloc);
-    mp_obj_dict_t *other = MP_OBJ_TO_PTR(other_out);
+    mp_obj_dict_t *other = m_new_obj(mp_obj_dict_t);
     other->base.type = self->base.type;
-    other->map.used = self->map.used;
-    other->map.all_keys_are_qstrs = self->map.all_keys_are_qstrs;
-    other->map.is_fixed = 0;
-    other->map.is_ordered = self->map.is_ordered;
-    memcpy(other->map.table, self->map.table, self->map.alloc * sizeof(mp_map_elem_t));
-    return other_out;
+    mp_map_init_copy(&other->map, &self->map);
+    return MP_OBJ_FROM_PTR(other);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, mp_obj_dict_copy);
 
