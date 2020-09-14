@@ -72,8 +72,8 @@ void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self) {
         common_hal_busio_i2c_deinit(self->bus);
     }
 
-    if (self->reset.pin) {
-        common_hal_reset_pin(self->reset.pin);
+    if (self->reset.base.type == &digitalio_digitalinout_type) {
+        common_hal_digitalio_digitalinout_deinit(&self->reset);
     }
 }
 
