@@ -42,13 +42,7 @@ Additionally, any time you open a new bash environment for building or flashing,
 . esp-idf/export.sh
 ```
 
-To build for a board such as the Saola 1 Wrover and flash it over the UART interface, run the following:
-
-```
-make BOARD=espressif_saola_1_wrover flash
-```
-
-On MacOS, you may need to directly specify the port. You can determine the correct port on your machine by running `ls /dev/tty.usb*` and selecting the one that appears only when your development board is plugged in. Example:
+Building boards such as the Saola is typically done through `make flash`. The default port is `tty.SLAB_USBtoUART`, which will only work on certain Mac setups. On most machines, both Mac and Linux, you will need to set the port yourself by running `ls /dev/tty.usb*` and selecting the one that only appears when your development board is plugged in. An example make command with the port setting is as follows:
 
 ```
 make BOARD=espressif_saola_1_wrover flash PORT=/dev/tty.usbserial-1421120
