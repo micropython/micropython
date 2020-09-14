@@ -1748,6 +1748,7 @@ void check_att_err(uint8_t err) {
             break;
         case BT_ATT_ERR_ENCRYPTION_KEY_SIZE:
             msg = translate("Encryption key size");
+            break;
         case BT_ATT_ERR_INVALID_ATTRIBUTE_LEN:
             msg = translate("Invalid attribute length");
             break;

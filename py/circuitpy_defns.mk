@@ -31,6 +31,7 @@ BASE_CFLAGS = \
 	-fsingle-precision-constant \
 	-fno-strict-aliasing \
 	-Wdouble-promotion \
+	-Wimplicit-fallthrough=2 \
 	-Wno-endif-labels \
 	-Wstrict-prototypes \
 	-Werror-implicit-function-declaration \
