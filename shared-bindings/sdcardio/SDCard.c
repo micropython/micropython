@@ -125,7 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_deinit_obj, sdcardio_sdcard_deinit);
 //|         """Read one or more blocks from the card
 //|
 //|         :param int start_block: The block to start reading from
-//|         :param bytearray buf: The buffer to write into.  Length must be multiple of 512.
+//|         :param ~_typing.WriteableBuffer buf: The buffer to write into.  Length must be multiple of 512.
 //|
 //|         :return: None"""
 //|
@@ -149,7 +149,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(sdcardio_sdcard_readblocks_obj, sdcardio_sdcard_readbl
 //|         """Write one or more blocks to the card
 //|
 //|         :param int start_block: The block to start writing from
-//|         :param bytearray buf: The buffer to read from.  Length must be multiple of 512.
+//|         :param ~_typing.ReadableBuffer buf: The buffer to read from.  Length must be multiple of 512.
 //|
 //|         :return: None"""
 //|

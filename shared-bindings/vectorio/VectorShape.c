@@ -20,7 +20,7 @@
 
 
 //| class VectorShape:
-//|     def __init__(self, shape: Polygon, pixel_shader: displayio.Palette, x: int=0, y: int=0) -> None:
+//|     def __init__(self, shape: Union[Polygon, Rectangle, Circle], pixel_shader: Union[displayio.ColorConverter, displayio.Palette], x: int=0, y: int=0) -> None:
 //|         """Binds a vector shape to a location and pixel color
 //|
 //|            :param shape: The shape to draw.
@@ -145,7 +145,7 @@ const mp_obj_property_t vectorio_vector_shape_y_obj = {
 };
 
 
-//|     pixel_shader: displayio.Palette
+//|     pixel_shader: Union[displayio.ColorConverter, displayio.Palette]
 //|     """The pixel shader of the shape."""
 //|
 STATIC mp_obj_t vectorio_vector_shape_obj_get_pixel_shader(mp_obj_t self_in) {

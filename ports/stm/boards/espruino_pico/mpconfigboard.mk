@@ -9,8 +9,11 @@ MCU_SERIES = F4
 MCU_VARIANT = STM32F401xE
 MCU_PACKAGE = UFQFPN48
 
+OPTIMIZATION_FLAGS = -Os
+
 LD_COMMON = boards/common_default.ld
-LD_FILE = boards/STM32F401xd_fs.ld # use for internal flash
+# use for internal flash
+LD_FILE = boards/STM32F401xd_fs.ld
 
 # Disable ulab as we're nearly out of space on this board due to
 # INTERNAL_FLASH_FILESYSTEM.  It can probably be reenabled if we enable

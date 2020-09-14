@@ -254,8 +254,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_
 //|         must be equal.
 //|         If buffer slice lengths are both 0, nothing happens.
 //|
-//|         :param bytearray buffer_out: Write out the data in this buffer
-//|         :param bytearray buffer_in: Read data into this buffer
+//|         :param ~_typing.ReadableBuffer buffer_out: Write out the data in this buffer
+//|         :param ~_typing.WriteableBuffer buffer_in: Read data into this buffer
 //|         :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
 //|         :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
 //|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``

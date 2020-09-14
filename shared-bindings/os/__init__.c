@@ -43,11 +43,21 @@
 //| code written in CircuitPython will work in CPython but not necessarily the
 //| other way around."""
 //|
+//| import typing
 
-//| def uname() -> tuple:
+//| def uname() -> _Uname:
 //|     """Returns a named tuple of operating specific and CircuitPython port
 //|     specific information."""
 //|     ...
+//|
+//| class _Uname(typing.NamedTuple):
+//|     """The type of values that :py:func:`.uname()` returns"""
+//|
+//|     sysname: str
+//|     nodename: str
+//|     release: str
+//|     version: str
+//|     machine: str
 //|
 STATIC mp_obj_t os_uname(void) {
     return common_hal_os_uname();
@@ -134,7 +144,7 @@ mp_obj_t os_rmdir(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 
-//| def stat(path: str) -> str:
+//| def stat(path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|     """Get the status of a file or directory.
 //|
 //|     .. note:: On builds without long integers, the number of seconds

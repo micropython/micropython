@@ -48,7 +48,7 @@
 //|         temporary 16-bit UUID that can be used in place of the full 128-bit UUID.
 //|
 //|         :param value: The uuid value to encapsulate
-//|         :type value: int or typing.ByteString"""
+//|         :type value: int, ~_typing.ReadableBuffer or str"""
 //|         ...
 //|
 STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -248,7 +248,7 @@ STATIC mp_obj_t bleio_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|     def __eq__(self, other: UUID) -> bool:
+//|     def __eq__(self, other: object) -> bool:
 //|         """Two UUID objects are equal if their values match and they are both 128-bit or both 16-bit."""
 //|         ...
 //|
@@ -283,7 +283,7 @@ void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         mp_printf(print, "UUID(0x%04x)", common_hal_bleio_uuid_get_uuid16(self));
     } else {
         uint8_t uuid128[16];
-        (void) common_hal_bleio_uuid_get_uuid128(self, uuid128);
+        common_hal_bleio_uuid_get_uuid128(self, uuid128);
         mp_printf(print, "UUID('"
                   "%02x%02x%02x%02x-"
                   "%02x%02x-"

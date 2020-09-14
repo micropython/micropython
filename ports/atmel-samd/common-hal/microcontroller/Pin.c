@@ -106,6 +106,10 @@ void reset_all_pins(void) {
 }
 
 void never_reset_pin_number(uint8_t pin_number) {
+    if (pin_number >= PORT_BITS) {
+        return;
+    }
+
     never_reset_pins[GPIO_PORT(pin_number)] |= 1 << GPIO_PIN(pin_number);
 }
 

@@ -105,6 +105,12 @@ void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
 #endif
 
+static void reset_devices(void) {
+#if CIRCUITPY_BLEIO_HCI
+    bleio_reset();
+#endif
+}
+
 void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
@@ -181,7 +187,7 @@ void stop_mp(void) {
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
-const char* first_existing_file_in_list(const char ** filenames) {
+const char* first_existing_file_in_list(const char * const * filenames) {
     for (int i = 0; filenames[i] != (char*)""; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat == MP_IMPORT_STAT_FILE) {
@@ -191,7 +197,7 @@ const char* first_existing_file_in_list(const char ** filenames) {
     return NULL;
 }
 
-bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
+bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result) {
     const char* filename = first_existing_file_in_list(filenames);
     if (filename == NULL) {
         return false;
@@ -206,6 +212,8 @@ bool maybe_run_list(const char ** filenames, pyexec_result_t* exec_result) {
 }
 
 void cleanup_after_vm(supervisor_allocation* heap) {
+    // Reset port-independent devices, like CIRCUITPY_BLEIO_HCI.
+    reset_devices();
     // Turn off the display and flush the fileystem before the heap disappears.
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
@@ -234,7 +242,8 @@ bool run_code_py(safe_mode_t safe_mode) {
         if (autoreload_is_enabled()) {
             serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
         } else if (safe_mode != NO_SAFE_MODE) {
-            serial_write_compressed(translate("Running in safe mode! Auto-reload is off.\n"));
+            serial_write_compressed(translate("Running in safe mode! "));
+            serial_write_compressed(translate("Auto-reload is off.\n"));
         } else if (!autoreload_is_enabled()) {
             serial_write_compressed(translate("Auto-reload is off.\n"));
         }
@@ -250,25 +259,30 @@ bool run_code_py(safe_mode_t safe_mode) {
     bool found_main = false;
 
     if (safe_mode != NO_SAFE_MODE) {
-        serial_write_compressed(translate("Running in safe mode! Not running saved code.\n"));
+        serial_write_compressed(translate("Running in safe mode! "));
+        serial_write_compressed(translate("Not running saved code.\n"));
     } else {
         new_status_color(MAIN_RUNNING);
 
-        static const char *supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
-        static const char *double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
+        static const char * const supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        #if CIRCUITPY_FULL_BUILD
+        static const char * const double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
                                                     "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
+        #endif
 
         stack_resize();
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
         start_mp(heap);
         found_main = maybe_run_list(supported_filenames, &result);
+        #if CIRCUITPY_FULL_BUILD
         if (!found_main){
             found_main = maybe_run_list(double_extension_filenames, &result);
             if (found_main) {
                 serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
             }
         }
+        #endif
         cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
@@ -276,7 +290,7 @@ bool run_code_py(safe_mode_t safe_mode) {
         }
     }
 
-    // Wait for connection or character.
+    // Display a different completion message if the user has no USB attached (cannot save files)
     if (!serial_connected_at_start) {
         serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
     }
@@ -337,7 +351,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
-        static const char *boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+        static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
 
         new_status_color(BOOT_RUNNING);
 
@@ -430,10 +444,11 @@ int run_repl(void) {
 }
 
 int __attribute__((used)) main(void) {
-    memory_init();
-
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
+
+    // Init memory after the port in case the port needs to set aside memory.
+    memory_init();
 
     // Turn on LEDs
     init_status_leds();
@@ -459,6 +474,8 @@ int __attribute__((used)) main(void) {
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
+    // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
+    reset_devices();
     reset_board();
 
     // Turn on autoreload by default but before boot.py in case it wants to change it.

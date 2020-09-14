@@ -147,3 +147,9 @@
 [submodule "ports/esp32s2/esp-idf"]
 	path = ports/esp32s2/esp-idf
 	url = https://github.com/tannewt/esp-idf.git
+[submodule "frozen/Adafruit_CircuitPython_RFM9x"]
+	path = frozen/Adafruit_CircuitPython_RFM9x
+	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM9x.git
+[submodule "frozen/Adafruit_CircuitPython_RFM69"]
+	path = frozen/Adafruit_CircuitPython_RFM69
+	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM69.git

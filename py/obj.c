@@ -58,7 +58,7 @@ mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
 }
 
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
-    return qstr_str(mp_obj_get_type(o_in)->name);
+    return qstr_str(mp_obj_get_type_qstr(o_in));
 }
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
@@ -67,6 +67,8 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     #ifdef RUN_BACKGROUND_TASKS
     RUN_BACKGROUND_TASKS;
     #endif
+    mp_handle_pending();
+
 #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
@@ -260,10 +262,10 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
         return mp_obj_int_get_checked(arg);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError(translate("can't convert to int"));
+            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_int);
         } else {
             mp_raise_TypeError_varg(
-                translate("can't convert %s to int"), mp_obj_get_type_str(arg));
+                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_int);
         }
     }
 }
@@ -323,10 +325,10 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError(translate("can't convert to float"));
+            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_float);
         } else {
             mp_raise_TypeError_varg(
-                translate("can't convert %s to float"), mp_obj_get_type_str(arg));
+                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_float);
         }
     }
 
@@ -356,10 +358,10 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
         mp_obj_complex_get(arg, real, imag);
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError(translate("can't convert to complex"));
+            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_complex);
         } else {
             mp_raise_TypeError_varg(
-                translate("can't convert %s to complex"), mp_obj_get_type_str(arg));
+                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_complex);
         }
     }
 }
@@ -377,7 +379,7 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
             mp_raise_TypeError(translate("expected tuple/list"));
         } else {
             mp_raise_TypeError_varg(
-                translate("object '%s' is not a tuple or list"), mp_obj_get_type_str(o));
+                translate("object '%q' is not a tuple or list"), mp_obj_get_type_qstr(o));
         }
     }
 }
@@ -406,8 +408,8 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
             mp_raise_TypeError(translate("indices must be integers"));
         } else {
             mp_raise_TypeError_varg(
-                translate("%q indices must be integers, not %s"),
-                type->name, mp_obj_get_type_str(index));
+                translate("%q indices must be integers, not %q"),
+                type->name, mp_obj_get_type_qstr(index));
         }
     }
 
@@ -461,7 +463,7 @@ mp_obj_t mp_obj_len(mp_obj_t o_in) {
             mp_raise_TypeError(translate("object has no len"));
         } else {
             mp_raise_TypeError_varg(
-                translate("object of type '%s' has no len()"), mp_obj_get_type_str(o_in));
+                translate("object of type '%q' has no len()"), mp_obj_get_type_qstr(o_in));
         }
     } else {
         return len;
@@ -504,21 +506,21 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
             mp_raise_TypeError(translate("object does not support item deletion"));
         } else {
             mp_raise_TypeError_varg(
-                translate("'%s' object does not support item deletion"), mp_obj_get_type_str(base));
+                translate("'%q' object does not support item deletion"), mp_obj_get_type_qstr(base));
         }
     } else if (value == MP_OBJ_SENTINEL) {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError(translate("object is not subscriptable"));
         } else {
             mp_raise_TypeError_varg(
-                translate("'%s' object is not subscriptable"), mp_obj_get_type_str(base));
+                translate("'%q' object is not subscriptable"), mp_obj_get_type_qstr(base));
         }
     } else {
         if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
             mp_raise_TypeError(translate("object does not support item assignment"));
         } else {
             mp_raise_TypeError_varg(
-                translate("'%s' object does not support item assignment"), mp_obj_get_type_str(base));
+                translate("'%q' object does not support item assignment"), mp_obj_get_type_qstr(base));
         }
     }
 }

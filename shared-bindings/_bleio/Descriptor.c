@@ -46,7 +46,7 @@
 //|         as part of remote Characteristics in the remote Services that are discovered."""
 //|
 //|     @classmethod
-//|     def add_to_characteristic(characteristic: Characteristic, uuid: UUID, *, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length = 20, fixed_length: bool = False, initial_value: ReadableBuffer = b'') -> Descriptor:
+//|     def add_to_characteristic(cls, characteristic: Characteristic, uuid: UUID, *, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length: int = 20, fixed_length: bool = False, initial_value: ReadableBuffer = b'') -> Descriptor:
 //|         """Create a new Descriptor object, and add it to this Service.
 //|
 //|         :param Characteristic characteristic: The characteristic that will hold this descriptor
@@ -61,7 +61,7 @@
 //|            is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
 //|            number of data bytes that fit in a single BLE 4.x ATT packet.
 //|         :param bool fixed_length: True if the descriptor value is of fixed length.
-//|         :param buf initial_value: The initial value for this descriptor.
+//|         :param ~_typing.ReadableBuffer initial_value: The initial value for this descriptor.
 //|
 //|         :return: the new Descriptor."""
 //|         ...
@@ -100,11 +100,14 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
     const bleio_attribute_security_mode_t write_perm = args[ARG_write_perm].u_int;
     common_hal_bleio_attribute_security_mode_check_valid(write_perm);
 
-    const mp_int_t max_length = args[ARG_max_length].u_int;
+    const mp_int_t max_length_int = args[ARG_max_length].u_int;
+    if (max_length_int <= 0) {
+        mp_raise_ValueError(translate("max_length must be > 0"));
+    }
+    const size_t max_length = (size_t) max_length_int;
     const bool fixed_length =  args[ARG_fixed_length].u_bool;
     mp_obj_t initial_value = args[ARG_initial_value].u_obj;
 
-    // Length will be validated in common_hal.
     mp_buffer_info_t initial_value_bufinfo;
     if (initial_value == mp_const_none) {
         if (fixed_length && max_length > 0) {
@@ -114,6 +117,10 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
         }
     }
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
+    if (initial_value_bufinfo.len > max_length ||
+        (fixed_length && initial_value_bufinfo.len != max_length)) {
+            mp_raise_ValueError(translate("initial_value length is wrong"));
+    }
 
     bleio_descriptor_obj_t *descriptor = m_new_obj(bleio_descriptor_obj_t);
     descriptor->base.type = &bleio_descriptor_type;

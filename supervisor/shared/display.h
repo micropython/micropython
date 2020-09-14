@@ -27,6 +27,10 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_DISPLAY_H
 #define MICROPY_INCLUDED_SUPERVISOR_SHARED_DISPLAY_H
 
+#include <stdint.h>
+
+#if CIRCUITPY_TERMINALIO
+
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/TileGrid.h"
 #include "shared-bindings/fontio/BuiltinFont.h"
@@ -41,6 +45,8 @@ extern const fontio_builtinfont_t supervisor_terminal_font;
 extern displayio_bitmap_t supervisor_terminal_font_bitmap;
 extern displayio_tilegrid_t supervisor_terminal_text_grid;
 extern terminalio_terminal_obj_t supervisor_terminal;
+
+#endif
 
 void supervisor_start_terminal(uint16_t width_px, uint16_t height_px);
 void supervisor_stop_terminal(void);

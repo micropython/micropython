@@ -120,7 +120,7 @@ static void check_lock(bitbangio_i2c_obj_t *self) {
     }
 }
 
-//|     def scan(self) -> list:
+//|     def scan(self) -> List[int]:
 //|         """Scan all I2C addresses between 0x08 and 0x77 inclusive and return a list of
 //|         those that respond.  A device responds if it pulls the SDA line low after
 //|         its address (including a read bit) is sent on the bus."""
@@ -175,7 +175,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_unlock_obj, bitbangio_i2c_obj_unlock);
 //|         ``buf[start:end]`` will so it saves memory.
 //|
 //|         :param int address: 7-bit device address
-//|         :param bytearray buffer: buffer to write into
+//|         :param ~_typing.WriteableBuffer buffer: buffer to write into
 //|         :param int start: Index to start writing at
 //|         :param int end: Index to write up to but not include"""
 //|         ...
@@ -230,7 +230,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 3, bitbangio_i2c_rea
 //|         to poll for the existence of a device.
 //|
 //|         :param int address: 7-bit device address
-//|         :param bytearray buffer: buffer containing the bytes to write
+//|         :param ~_typing.ReadableBuffer buffer: buffer containing the bytes to write
 //|         :param int start: Index to start writing from
 //|         :param int end: Index to read up to but not include"""
 //|         ...
@@ -274,7 +274,7 @@ STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, m
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_writeto);
 
 
-//|     def writeto_then_readfrom(self, address: int, out_buffer: WriteableBuffer, in_buffer: ReadableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
+//|     def writeto_then_readfrom(self, address: int, out_buffer: ReadableBuffer, in_buffer: ReadableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
 //|         """Write the bytes from ``out_buffer`` to the device selected by ``address``, generate no stop
 //|         bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
 //|         ``in_buffer`` can be the same buffer because they are used sequentially.
@@ -284,8 +284,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_wr
 //|         will so it saves memory.
 //|
 //|         :param int address: 7-bit device address
-//|         :param bytearray out_buffer: buffer containing the bytes to write
-//|         :param bytearray in_buffer: buffer to write into
+//|         :param ~_typing.ReadableBuffer out_buffer: buffer containing the bytes to write
+//|         :param ~_typing.WriteableBuffer in_buffer: buffer to write into
 //|         :param int out_start: Index to start writing from
 //|         :param int out_end: Index to read up to but not include. Defaults to ``len(buffer)``
 //|         :param int in_start: Index to start writing at

@@ -33,7 +33,7 @@
 #include "shared-bindings/_pixelbuf/PixelBuf.h"
 
 
-//| """A fast RGB(W) pixel buffer library for like NeoPixel and DotStar.
+//| """A fast RGB(W) pixel buffer library for like NeoPixel and DotStar
 //|
 //| The `_pixelbuf` module provides the :py:class:`PixelBuf` class to accelerate
 //| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel.

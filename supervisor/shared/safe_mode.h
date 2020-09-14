@@ -42,6 +42,7 @@ typedef enum {
   FLASH_WRITE_FAIL,
   MEM_MANAGE,
   WATCHDOG_RESET,
+  NO_HEAP,
 } safe_mode_t;
 
 safe_mode_t wait_for_safe_mode_reset(void);

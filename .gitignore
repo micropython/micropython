@@ -57,7 +57,7 @@ _build
 ######################
 genrst/
 /autoapi/
-/shared-bindings/**/*.rst
+/shared-bindings/*/**/*.rst
 
 # ctags and similar
 ###################
@@ -80,3 +80,8 @@ TAGS
 *.mo
 
 .vscode
+
+# Python Virtual Environments
+####################
+.venv
+.env

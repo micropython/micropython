@@ -48,26 +48,8 @@
 //|     def __init__(
 //|         self,
 //|         buffer: ReadableBuffer,
-//|         rows: List[
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|         ],
-//|         cols: List[
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|             digitalio.DigitalInOut,
-//|         ],
+//|         rows: List[digitalio.DigitalInOut],
+//|         cols: List[digitalio.DigitalInOut],
 //|         buttons: digitalio.DigitalInOut,
 //|     ) -> None:
 //|         """Initializes matrix scanning routines.

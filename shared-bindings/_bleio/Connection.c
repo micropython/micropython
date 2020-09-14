@@ -31,7 +31,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "ble_drv.h"
 #include "py/objarray.h"
 #include "py/objproperty.h"
 #include "py/objstr.h"
@@ -111,12 +110,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_pair_obj, 1, bleio_connection
 
 //|     def discover_remote_services(self, service_uuids_whitelist: Optional[Iterable[UUID]] = None) -> Tuple[Service, ...]:
 //|         """Do BLE discovery for all services or for the given service UUIDS,
-//|          to find their handles and characteristics, and return the discovered services.
-//|          `Connection.connected` must be True.
+//|         to find their handles and characteristics, and return the discovered services.
+//|         `Connection.connected` must be True.
 //|
 //|         :param iterable service_uuids_whitelist:
 //|
-//|           an iterable of :py:class:~`UUID` objects for the services provided by the peripheral
+//|           an iterable of :py:class:`UUID` objects for the services provided by the peripheral
 //|           that you want to use.
 //|
 //|           The peripheral may provide more services, but services not listed are ignored
@@ -126,7 +125,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_pair_obj, 1, bleio_connection
 //|           slow.
 //|
 //|           If the service UUID is 128-bit, or its characteristic UUID's are 128-bit, you
-//|           you must have already created a :py:class:~`UUID` object for that UUID in order for the
+//|           you must have already created a :py:class:`UUID` object for that UUID in order for the
 //|           service or characteristic to be discovered. Creating the UUID causes the UUID to be
 //|           registered for use. (This restriction may be lifted in the future.)
 //|

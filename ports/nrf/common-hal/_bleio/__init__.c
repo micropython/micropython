@@ -39,6 +39,7 @@
 #include "supervisor/shared/bluetooth.h"
 
 #include "common-hal/_bleio/__init__.h"
+#include "common-hal/_bleio/bonding.h"
 
 void check_nrf_error(uint32_t err_code) {
     if (err_code == NRF_SUCCESS) {
@@ -86,6 +87,8 @@ void check_sec_status(uint8_t sec_status) {
             mp_raise_bleio_SecurityError(translate("Unknown security error: 0x%04x"), sec_status);
     }
 }
+
+bool vm_used_ble;
 
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
@@ -239,6 +242,10 @@ void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buff
         check_nrf_error(err_code);
     }
 
+}
+
+void bleio_background(void) {
+    bonding_background();
 }
 
 void common_hal_bleio_gc_collect(void) {

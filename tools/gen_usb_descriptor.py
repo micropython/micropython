@@ -62,6 +62,8 @@ parser.add_argument('--midi_ep_num_out', type=int, default=0,
                     help='endpoint number of MIDI OUT')
 parser.add_argument('--midi_ep_num_in', type=int, default=0,
                     help='endpoint number of MIDI IN')
+parser.add_argument('--max_ep', type=int, default=0,
+                    help='total number of endpoints available')
 parser.add_argument('--output_c_file', type=argparse.FileType('w', encoding='UTF-8'), required=True)
 parser.add_argument('--output_h_file', type=argparse.FileType('w', encoding='UTF-8'), required=True)
 
@@ -376,6 +378,15 @@ if 'AUDIO' in args.devices:
 # interface cross-references.
 interfaces = util.join_interfaces(interfaces_to_join, renumber_endpoints=args.renumber_endpoints)
 
+if args.max_ep != 0:
+    for interface in interfaces:
+        for subdescriptor in interface.subdescriptors:
+            endpoint_address = getattr(subdescriptor, 'bEndpointAddress', 0) & 0x7f
+            if endpoint_address >= args.max_ep:
+                raise ValueError("Endpoint address %d of %s must be less than %d" % (endpoint_address & 0x7f, interface.description, args.max_ep))
+else:
+    print("Unable to check whether maximum number of endpoints is respected", file=sys.stderr)
+
 # Now adjust the CDC interface cross-references.
 
 cdc_union.bMasterInterface = cdc_comm_interface.bInterfaceNumber
@@ -535,7 +546,7 @@ c_file.write("""
 };
 """)
 
-c_file.write("\n");
+c_file.write("\n")
 
 hid_descriptor_length = len(bytes(combined_hid_report_descriptor))
 
@@ -593,12 +604,18 @@ for name in args.hid_devices:
 static uint8_t {name}_report_buffer[{report_length}];
 """.format(name=name.lower(), report_length=hid_report_descriptors.HID_DEVICE_DATA[name].report_length))
 
+    if hid_report_descriptors.HID_DEVICE_DATA[name].out_report_length > 0:
+        c_file.write("""\
+static uint8_t {name}_out_report_buffer[{report_length}];
+""".format(name=name.lower(), report_length=hid_report_descriptors.HID_DEVICE_DATA[name].out_report_length))
+
 # Write out table of device objects.
 c_file.write("""
 usb_hid_device_obj_t usb_hid_devices[] = {
-""");
+""")
 for name in args.hid_devices:
     device_data = hid_report_descriptors.HID_DEVICE_DATA[name]
+    out_report_buffer = '{}_out_report_buffer'.format(name.lower()) if device_data.out_report_length > 0 else 'NULL'
     c_file.write("""\
     {{
         .base          = {{ .type = &usb_hid_device_type }},
@@ -607,11 +624,15 @@ for name in args.hid_devices:
         .report_length = {report_length},
         .usage_page    = {usage_page:#04x},
         .usage         = {usage:#04x},
+        .out_report_buffer = {out_report_buffer},
+        .out_report_length = {out_report_length},
     }},
 """.format(name=name.lower(), report_id=report_ids[name],
            report_length=device_data.report_length,
            usage_page=device_data.usage_page,
-           usage=device_data.usage))
+           usage=device_data.usage,
+           out_report_buffer=out_report_buffer,
+           out_report_length=device_data.out_report_length))
 c_file.write("""\
 };
 """)

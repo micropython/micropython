@@ -78,7 +78,7 @@ STATIC mp_obj_t multiterminal_obj_clear_secondary_terminal() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(multiterminal_clear_secondary_terminal_obj, multiterminal_obj_clear_secondary_terminal);
 
-//| def schedule_secondary_terminal_read(socket: secondary_terminal) -> None:
+//| def schedule_secondary_terminal_read(socket: socket.socket) -> None:
 //|     """In cases where the underlying OS is doing task scheduling, this notifies
 //|     the OS when more data is available on the socket to read. This is useful
 //|     as a callback for lwip sockets."""

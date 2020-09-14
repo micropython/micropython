@@ -128,7 +128,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: List[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0) -> None:
+//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: Sequence[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0) -> None:
 //|         """Create a RGBMatrix object with the given attributes.  The height of
 //|         the display is determined by the number of rgb and address pins:
 //|         len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4
@@ -252,7 +252,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_deinit_obj, rgbmatrix_rgbmatrix_deinit);
 
 static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
-    if (!self->core.rgbPins) {
+    if (!self->protomatter.rgbPins) {
         raise_deinited_error();
     }
 }
@@ -352,7 +352,8 @@ STATIC void rgbmatrix_rgbmatrix_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *
 
 // These version exists so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
-STATIC void rgbmatrix_rgbmatrix_swapbuffers(mp_obj_t self_in) {
+STATIC void rgbmatrix_rgbmatrix_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
+    (void)dirty_row_bitmap;
     common_hal_rgbmatrix_rgbmatrix_refresh(self_in);
 }
 

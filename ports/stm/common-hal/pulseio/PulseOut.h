@@ -28,13 +28,13 @@
 #define MICROPY_INCLUDED_STM32F4_COMMON_HAL_PULSEIO_PULSEOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    pulseio_pwmout_obj_t *pwmout;
+    pwmio_pwmout_obj_t *pwmout;
 } pulseio_pulseout_obj_t;
 
 void pulseout_reset(void);

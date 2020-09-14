@@ -1,0 +1,3475 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-09-13 14:21-0500\n"
+"PO-Revision-Date: 2020-09-01 18:44+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"Language-Team: none\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 4.2.1-dev\n"
+
+#: main.c
+msgid ""
+"\n"
+"Code done running. Waiting for reload.\n"
+msgstr ""
+"\n"
+"コードの実行が完了しました。リロードを待っています。\n"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"\n"
+"Please file an issue with the contents of your CIRCUITPY drive at \n"
+"https://github.com/adafruit/circuitpython/issues\n"
+msgstr ""
+"\n"
+"CIRCUITPYドライブの内容を添えて問題を以下で報告してください：\n"
+"https://github.com/adafruit/circuitpython/issues\n"
+
+#: py/obj.c
+msgid "  File \"%q\""
+msgstr "  ファイル \"%q\""
+
+#: py/obj.c
+msgid "  File \"%q\", line %d"
+msgstr "  ファイル \"%q\", 行 %d"
+
+#: main.c
+msgid " output:\n"
+msgstr " 出力:\n"
+
+#: py/objstr.c
+#, c-format
+msgid "%%c requires int or char"
+msgstr "%%c にはintまたはcharが必要"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr ""
+
+#: shared-bindings/microcontroller/Pin.c
+msgid "%q in use"
+msgstr "%qは使用中"
+
+#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
+#: py/objstrunicode.c
+msgid "%q index out of range"
+msgstr "%q インデックスは範囲外"
+
+#: py/obj.c
+msgid "%q indices must be integers, not %q"
+msgstr "%qインデクスは、%qでなく整数が必要"
+
+#: shared-bindings/vectorio/Polygon.c
+msgid "%q list must be a list"
+msgstr "%q のリストはリスト型でなければなりません"
+
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+msgid "%q must be >= 0"
+msgstr "%qは0以上でなければなりません"
+
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/Shape.c
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
+msgid "%q must be >= 1"
+msgstr "%qは1以上でなければなりません"
+
+#: shared-module/vectorio/Polygon.c
+msgid "%q must be a tuple of length 2"
+msgstr "%qは長さ2のタプルでなければなりません"
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q pin invalid"
+msgstr "%q ピンは無効"
+
+#: shared-bindings/fontio/BuiltinFont.c
+msgid "%q should be an int"
+msgstr "%qはint型が必要"
+
+#: py/bc.c py/objnamedtuple.c
+#, fuzzy
+msgid "%q() takes %d positional arguments but %d were given"
+msgstr "%q()は%d個の位置引数を受け取りますが、%d個しか与えられていません"
+
+#: py/argcheck.c
+msgid "'%q' argument required"
+msgstr "引数 '%q' が必要"
+
+#: py/runtime.c
+msgid "'%q' object cannot assign attribute '%q'"
+msgstr "オブジェクト'%q'に属性'%q'を割り当てられません"
+
+#: py/proto.c
+msgid "'%q' object does not support '%q'"
+msgstr "オブジェクト'%q'は'%q'をサポートしていません"
+
+#: py/obj.c
+msgid "'%q' object does not support item assignment"
+msgstr "オブジェクト'%q'は要素の代入をサポートしていません"
+
+#: py/obj.c
+msgid "'%q' object does not support item deletion"
+msgstr "オブジェクト'%q'は要素の削除をサポートしていません"
+
+#: py/runtime.c
+msgid "'%q' object has no attribute '%q'"
+msgstr "オブジェクト'%q'に属性'%q'はありません"
+
+#: py/runtime.c
+msgid "'%q' object is not an iterator"
+msgstr "オブジェクト'%q'はイテレータではありません"
+
+#: py/objtype.c py/runtime.c
+msgid "'%q' object is not callable"
+msgstr "オブジェクト'%q'は呼び出し可能ではありません"
+
+#: py/runtime.c
+msgid "'%q' object is not iterable"
+msgstr "オブジェクト'%q'はイテレート可能ではありません"
+
+#: py/obj.c
+msgid "'%q' object is not subscriptable"
+msgstr "オブジェクト'%q'は要素の取得ができません"
+
+#: py/emitinlinethumb.c py/emitinlinextensa.c
+#, c-format
+msgid "'%s' expects a label"
+msgstr ""
+
+#: py/emitinlinethumb.c py/emitinlinextensa.c
+#, c-format
+msgid "'%s' expects a register"
+msgstr ""
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects a special register"
+msgstr ""
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects an FPU register"
+msgstr "'%s'にはFPUレジスタが必要"
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects an address of the form [a, b]"
+msgstr ""
+
+#: py/emitinlinethumb.c py/emitinlinextensa.c
+#, c-format
+msgid "'%s' expects an integer"
+msgstr ""
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects at most r%d"
+msgstr ""
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' expects {r0, r1, ...}"
+msgstr ""
+
+#: py/emitinlinextensa.c
+#, c-format
+msgid "'%s' integer %d is not within range %d..%d"
+msgstr ""
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+msgstr ""
+
+#: py/objstr.c
+msgid "'=' alignment not allowed in string format specifier"
+msgstr ""
+
+#: shared-module/struct/__init__.c
+msgid "'S' and 'O' are not supported format types"
+msgstr ""
+
+#: py/compile.c
+msgid "'align' requires 1 argument"
+msgstr ""
+
+#: py/compile.c
+msgid "'await' outside function"
+msgstr "関数外でのawait"
+
+#: py/compile.c
+msgid "'await', 'async for' or 'async with' outside async function"
+msgstr "async関数外での await, async for, async with"
+
+#: py/compile.c
+msgid "'break' outside loop"
+msgstr "ループ外でのbreak"
+
+#: py/compile.c
+msgid "'continue' outside loop"
+msgstr "ループ外でのcontinue"
+
+#: py/objgenerator.c
+msgid "'coroutine' object is not an iterator"
+msgstr "'coroutine' オブジェクトはイテレータではありません"
+
+#: py/compile.c
+msgid "'data' requires at least 2 arguments"
+msgstr "'data'には少なくとも2つの引数が必要"
+
+#: py/compile.c
+msgid "'data' requires integer arguments"
+msgstr "'data'には整数の引数が必要"
+
+#: py/compile.c
+msgid "'label' requires 1 argument"
+msgstr ""
+
+#: py/compile.c
+msgid "'return' outside function"
+msgstr "関数外でのreturn"
+
+#: py/compile.c
+msgid "'yield' outside function"
+msgstr "関数外でのyield"
+
+#: py/compile.c
+msgid "*x must be assignment target"
+msgstr ""
+
+#: py/obj.c
+msgid ", in %q\n"
+msgstr ""
+
+#: py/objcomplex.c
+msgid "0.0 to a complex power"
+msgstr ""
+
+#: py/modbuiltins.c
+msgid "3-arg pow() not supported"
+msgstr "引数3つのpow()はサポートされていません"
+
+#: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+msgid "A hardware interrupt channel is already in use"
+msgstr "ハードウェア割り込みチャネルは使用中"
+
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
+#, c-format
+msgid "Address must be %d bytes long"
+msgstr "アドレスは、%dバイト長でなければなりません"
+
+#: shared-bindings/_bleio/Address.c
+msgid "Address type out of range"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/I2C.c
+msgid "All I2C peripherals are in use"
+msgstr "全てのI2C周辺機器が使用中"
+
+#: ports/nrf/common-hal/busio/SPI.c
+msgid "All SPI peripherals are in use"
+msgstr "全てのSPI周辺機器が使用中"
+
+#: ports/nrf/common-hal/busio/UART.c
+msgid "All UART peripherals are in use"
+msgstr "全てのUART周辺機器が使用中"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "All event channels in use"
+msgstr "全てのイベントチャネルが使用中"
+
+#: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "All sync event channels in use"
+msgstr "全ての同期イベントチャネルが使用中"
+
+#: shared-bindings/pwmio/PWMOut.c
+msgid "All timers for this pin are in use"
+msgstr "このピン用の全てのタイマが使用中"
+
+#: ports/atmel-samd/common-hal/_pew/PewPew.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
+msgid "All timers in use"
+msgstr "全てのタイマーが使用中"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Already advertising."
+msgstr "すでにアドバータイズ中"
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#: shared-module/memorymonitor/AllocationSize.c
+msgid "Already running"
+msgstr "すでに実行中"
+
+#: ports/cxd56/common-hal/analogio/AnalogIn.c
+msgid "AnalogIn not supported on given pin"
+msgstr "指定のピンはAnalogInに対応していません"
+
+#: ports/cxd56/common-hal/analogio/AnalogOut.c
+#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c
+msgid "AnalogOut functionality not supported"
+msgstr "AnalogOut機能はサポートされていません"
+
+#: shared-bindings/analogio/AnalogOut.c
+msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+msgstr "AnalogOutは16ビットです。値は65536以下にしてください"
+
+#: ports/atmel-samd/common-hal/analogio/AnalogOut.c
+msgid "AnalogOut not supported on given pin"
+msgstr "指定のピンはAnalogOutをサポートしていません"
+
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/cxd56/common-hal/pulseio/PulseOut.c
+msgid "Another send is already active"
+msgstr "他のsendがすでにアクティブ"
+
+#: shared-bindings/pulseio/PulseOut.c
+msgid "Array must contain halfwords (type 'H')"
+msgstr "array のタイプは16ビット ('H') でなければなりません"
+
+#: shared-bindings/nvm/ByteArray.c
+msgid "Array values should be single bytes."
+msgstr "Arrayの各値は1バイトでなければなりません"
+
+#: shared-bindings/microcontroller/Pin.c
+msgid "At most %d %q may be specified (not %d)"
+msgstr "最大で %d個の %q が指定できます（%d個でなく）"
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#, c-format
+msgid "Attempt to allocate %d blocks"
+msgstr "%d個のブロックの確保を試みました"
+
+#: supervisor/shared/safe_mode.c
+msgid "Attempted heap allocation when MicroPython VM not running."
+msgstr "MicroPython VM 非実行時にヒープの確保を試みました"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr ""
+
+#: main.c
+msgid "Auto-reload is off.\n"
+msgstr "オートリロードはオフです。\n"
+
+#: main.c
+msgid ""
+"Auto-reload is on. Simply save files over USB to run them or enter REPL to "
+"disable.\n"
+msgstr ""
+"オートリロードがオンです。ファイルをUSB経由で保存するだけで実行できます。REPL"
+"に入ると無効化します。\n"
+
+#: shared-module/displayio/Display.c
+#: shared-module/framebufferio/FramebufferDisplay.c
+msgid "Below minimum frame rate"
+msgstr "最低のフレームレート未満"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "Bit clock and word select must share a clock unit"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Bit depth must be multiple of 8."
+msgstr "ビット深度は8の倍数でなければなりません"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Both RX and TX required for flow control"
+msgstr "フロー制御のためRXとTXの両方が必要"
+
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Both pins must support hardware interrupts"
+msgstr "両方のピンにハードウェア割り込み対応が必要"
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "Brightness must be 0-1.0"
+msgstr "brightnessは0から1.0まででなければなりません"
+
+#: shared-bindings/supervisor/__init__.c
+msgid "Brightness must be between 0 and 255"
+msgstr "Brightnessは0から255の間でなければなりません"
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "Brightness not adjustable"
+msgstr "Brightnessは調整可能ではありません"
+
+#: shared-bindings/_bleio/UUID.c
+#, c-format
+msgid "Buffer + offset too small %d %d %d"
+msgstr ""
+
+#: shared-module/usb_hid/Device.c
+#, c-format
+msgid "Buffer incorrect size. Should be %d bytes."
+msgstr "バッファサイズが正しくありません。%dバイトでなければなりません"
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "Buffer is not a bytearray."
+msgstr "バッファが bytearray ではありません"
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "Buffer is too small"
+msgstr "バッファが小さすぎます"
+
+#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
+#, c-format
+msgid "Buffer length %d too big. It must be less than %d"
+msgstr "バッファ長%dは大きすぎます。%d以下でなければなりません"
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+msgid "Buffer length must be a multiple of 512"
+msgstr "バッファ長は512の倍数でなければなりません"
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+msgid "Buffer must be a multiple of 512 bytes"
+msgstr ""
+
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+msgid "Buffer must be at least length 1"
+msgstr "バッファ長は少なくとも1以上でなければなりません"
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Buffer too large and unable to allocate"
+msgstr "バッファが大きすぎて確保できません"
+
+#: shared-bindings/_bleio/PacketBuffer.c
+#, c-format
+msgid "Buffer too short by %d bytes"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/nrf/common-hal/displayio/ParallelBus.c
+#, c-format
+msgid "Bus pin %d is already in use"
+msgstr "Busピン%dはすでに使用中"
+
+#: shared-bindings/_bleio/UUID.c
+msgid "Byte buffer must be 16 bytes."
+msgstr "バッファは16バイトにしてください"
+
+#: shared-bindings/nvm/ByteArray.c
+msgid "Bytes must be between 0 and 255."
+msgstr "バイト値は0から255の間でなければなりません"
+
+#: shared-bindings/aesio/aes.c
+msgid "CBC blocks must be multiples of 16 bytes"
+msgstr "CBCブロックは16バイトの整数倍でなければなりません"
+
+#: py/objtype.c
+msgid "Call super().__init__() before accessing native object."
+msgstr ""
+"ネイティブオブジェクトにアクセスする前にsuper().__init__()を呼び出してくださ"
+"い"
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+msgid "Can't set CCCD on local Characteristic"
+msgstr "ローカルのCharacteristicにはCCCDを設定できません"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
+msgid "Cannot delete values"
+msgstr "値を削除できません"
+
+#: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
+#: ports/mimxrt10xx/common-hal/digitalio/DigitalInOut.c
+#: ports/nrf/common-hal/digitalio/DigitalInOut.c
+msgid "Cannot get pull while in output mode"
+msgstr "出力モード時はpullを取得できません"
+
+#: ports/nrf/common-hal/microcontroller/Processor.c
+msgid "Cannot get temperature"
+msgstr "温度を取得できません"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot have scan responses for extended, connectable advertisements."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Cannot output both channels on the same pin"
+msgstr "同じピン上の両チャネルに出力できません"
+
+#: shared-module/bitbangio/SPI.c
+msgid "Cannot read without MISO pin."
+msgstr "MISOピンなしで読み込めません"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Cannot record to a file"
+msgstr "ファイルへ記録できません"
+
+#: shared-module/storage/__init__.c
+msgid "Cannot remount '/' when USB is active."
+msgstr "USBがアクティブの時に'/'を再マウントできません"
+
+#: ports/atmel-samd/common-hal/microcontroller/__init__.c
+#: ports/cxd56/common-hal/microcontroller/__init__.c
+#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
+msgid "Cannot reset into bootloader because no bootloader is present."
+msgstr "ブートローダが存在しないため、ブートローダへとリセットできません"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Cannot set value when direction is input."
+msgstr "方向がINPUTのときは値を設定できません"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Cannot specify RTS or CTS in RS485 mode"
+msgstr "RS485モードにRTSまたはCTSを指定できません"
+
+#: py/objslice.c
+msgid "Cannot subclass slice"
+msgstr "sliceをサブクラス化することはできません"
+
+#: shared-module/bitbangio/SPI.c
+msgid "Cannot transfer without MOSI and MISO pins."
+msgstr "MOSIピンとMISOピンなしに転送できません"
+
+#: extmod/moductypes.c
+msgid "Cannot unambiguously get sizeof scalar"
+msgstr "スカラのサイズを曖昧さなしに取得できません"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Cannot vary frequency on a timer that is already in use"
+msgstr "使用中のタイマー上では周波数を変えられません"
+
+#: shared-module/bitbangio/SPI.c
+msgid "Cannot write without MOSI pin."
+msgstr "MOSIピンなしで書き込みできません"
+
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+msgid "CharacteristicBuffer writing not provided"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython core code crashed hard. Whoops!\n"
+msgstr "CircuitPythonのコアコードが激しくクラッシュしました。おっと！\n"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"CircuitPython is in safe mode because you pressed the reset button during "
+"boot. Press again to exit safe mode.\n"
+msgstr ""
+"起動中にリセットボタンを押したためCircuitPythonはセーフモードにいます。もう一"
+"度押すとセーフモードを終了します。\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr ""
+
+#: shared-module/bitbangio/SPI.c
+msgid "Clock pin init failed."
+msgstr "クロックピンの初期化に失敗"
+
+#: shared-module/bitbangio/I2C.c
+msgid "Clock stretch too long"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "Clock unit in use"
+msgstr "クロックユニットは使用中"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Column entry must be digitalio.DigitalInOut"
+msgstr "Columnの要素は digitalio.DigitalInOut でなければなりません"
+
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
+msgid "Command must be an int between 0 and 255"
+msgstr "commandは0から255の間の整数でなければなりません"
+
+#: shared-bindings/_bleio/Connection.c
+msgid ""
+"Connection has been disconnected and can no longer be used. Create a new "
+"connection."
+msgstr "接続は切断済みのためもう使えません。新たな接続を作成してください"
+
+#: py/persistentcode.c
+msgid "Corrupt .mpy file"
+msgstr "破損した .mpy ファイル"
+
+#: py/emitglue.c
+msgid "Corrupt raw code"
+msgstr "破損したraw code"
+
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "Could not initialize GNSS"
+msgstr "GNSSを初期化できません"
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
+msgstr "SDカードを初期化できません"
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+msgid "Could not initialize UART"
+msgstr "UARTを初期化できません"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Could not initialize channel"
+msgstr "チャネルを初期化できません"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Could not initialize timer"
+msgstr "タイマーを初期化できません"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Could not re-init channel"
+msgstr "チャネルを再初期化できません"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Could not re-init timer"
+msgstr "タイマーを再初期化できません"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Could not restart PWM"
+msgstr "PWMを再スタートできません"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Could not set address"
+msgstr "アドレスをセットできません"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Could not start PWM"
+msgstr "PWMをスタートできません"
+
+#: ports/stm/common-hal/busio/UART.c
+msgid "Could not start interrupt, RX busy"
+msgstr "割り込みをスタートできません。RXビジー"
+
+#: shared-module/audiomp3/MP3Decoder.c
+msgid "Couldn't allocate decoder"
+msgstr "デコーダを確保できません"
+
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3Decoder.c
+msgid "Couldn't allocate first buffer"
+msgstr "1つ目のバッファを確保できません"
+
+#: shared-module/audiomp3/MP3Decoder.c
+msgid "Couldn't allocate input buffer"
+msgstr "入力バッファを確保できません"
+
+#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
+#: shared-module/audiomp3/MP3Decoder.c
+msgid "Couldn't allocate second buffer"
+msgstr "2つ目のバッファを確保できません"
+
+#: supervisor/shared/safe_mode.c
+msgid "Crash into the HardFault_Handler."
+msgstr "クラッシュしてHardFault_Handlerに入りました"
+
+#: ports/stm/common-hal/analogio/AnalogOut.c
+msgid "DAC Channel Init Error"
+msgstr "DACチャネル初期化エラー"
+
+#: ports/stm/common-hal/analogio/AnalogOut.c
+msgid "DAC Device Init Error"
+msgstr "DACデバイス初期化エラー"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "DAC already in use"
+msgstr "DACはすでに使用中"
+
+#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/nrf/common-hal/displayio/ParallelBus.c
+msgid "Data 0 pin must be byte aligned"
+msgstr "Data 0 ピンは、バイト整列されていなければなりません"
+
+#: shared-module/audiocore/WaveFile.c
+msgid "Data chunk must follow fmt chunk"
+msgstr "fmtチャンクの後にdataチャンクが続かなければなりません"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Data too large for advertisement packet"
+msgstr "データが、アドバタイズメントパケットには大きすぎます"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Destination capacity is smaller than destination_length."
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/I2SOut.c
+msgid "Device in use"
+msgstr "デバイス使用中"
+
+#: ports/cxd56/common-hal/digitalio/DigitalInOut.c
+msgid "DigitalInOut not supported on given pin"
+msgstr "指定されたピンはDigitalInOutをサポートしていません"
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "Display must have a 16 bit colorspace."
+msgstr "ディスプレイには16ビット色空間が必要"
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "Display rotation must be in 90 degree increments"
+msgstr "ディスプレイの回転は90度の倍数でなければなりません"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Drive mode not used when direction is input."
+msgstr "方向がINPUTのときドライブモードは使われません"
+
+#: shared-bindings/aesio/aes.c
+msgid "ECB only operates on 16 bytes at a time"
+msgstr "ECBは一度に16バイトの演算のみを行います"
+
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+msgid "EXTINT channel already in use"
+msgstr "EXTINTチャネルはすでに使用されています"
+
+#: extmod/modure.c
+msgid "Error in regex"
+msgstr "正規表現にエラーがあります"
+
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/neopixel_write/__init__.c
+#: shared-bindings/terminalio/Terminal.c
+msgid "Expected a %q"
+msgstr "%qが必要"
+
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
+msgid "Expected a Characteristic"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c
+msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+#: shared-bindings/_bleio/Service.c
+msgid "Expected a UUID"
+msgstr "UUIDが必要"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected an Address"
+msgstr ""
+
+#: shared-module/_pixelbuf/PixelBuf.c
+#, c-format
+msgid "Expected tuple of length %d, got %d"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Extended advertisements with scan response not supported."
+msgstr ""
+
+#: extmod/ulab/code/fft/fft.c
+msgid "FFT is defined for ndarrays only"
+msgstr "FFTはndarrayでのみ使えます"
+
+#: shared-bindings/ps2io/Ps2.c
+msgid "Failed sending command."
+msgstr "コマンドの送信に失敗"
+
+#: ports/nrf/sd_mutex.c
+#, c-format
+msgid "Failed to acquire mutex, err 0x%04x"
+msgstr "ミューテックスの取得に失敗。エラー 0x%04x"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+msgid "Failed to allocate RX buffer"
+msgstr "RXバッファの確保に失敗"
+
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c
+#, c-format
+msgid "Failed to allocate RX buffer of %d bytes"
+msgstr "%dバイトのRXバッファの確保に失敗"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to connect: internal error"
+msgstr "接続失敗: 内部エラー"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Failed to connect: timeout"
+msgstr "接続失敗: タイムアウト"
+
+#: shared-module/audiomp3/MP3Decoder.c
+msgid "Failed to parse MP3 file"
+msgstr "MP3ファイルのパーズに失敗"
+
+#: ports/nrf/sd_mutex.c
+#, c-format
+msgid "Failed to release mutex, err 0x%04x"
+msgstr "ミューテックスの開放に失敗。エラー 0x%04x"
+
+#: supervisor/shared/safe_mode.c
+msgid "Failed to write internal flash."
+msgstr "内部フラッシュの書き込みに失敗"
+
+#: py/moduerrno.c
+msgid "File exists"
+msgstr "ファイルが存在します"
+
+#: shared-module/framebufferio/FramebufferDisplay.c
+#, c-format
+msgid "Framebuffer requires %d bytes"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+msgid "Frequency captured is above capability. Capture Paused."
+msgstr "キャプチャした周波数は能力を超えています。キャプチャ停止"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Frequency must match existing PWMOut using this timer"
+msgstr "このタイマーを使う既存のPWMOutと周波数を一致させる必要があります"
+
+#: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
+#: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
+msgid "Function requires lock"
+msgstr ""
+
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid "Group already used"
+msgstr "グループはすでに使われています"
+
+#: shared-module/displayio/Group.c
+msgid "Group full"
+msgstr "グループが一杯"
+
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
+msgid "Hardware busy, try alternative pins"
+msgstr "ハードウェアビジー。代替のピンを試してください"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+msgid "Hardware in use, try alternative pins"
+msgstr "ハードウェア使用中。代わりのピンを試してください"
+
+#: extmod/vfs_posix_file.c py/objstringio.c
+msgid "I/O operation on closed file"
+msgstr "閉じられたファイルへのI/O操作"
+
+#: ports/stm/common-hal/busio/I2C.c
+msgid "I2C Init Error"
+msgstr "I2C初期化エラー"
+
+#: shared-bindings/audiobusio/I2SOut.c
+msgid "I2SOut not available"
+msgstr "I2SOutが利用できません"
+
+#: shared-bindings/aesio/aes.c
+#, c-format
+msgid "IV must be %d bytes long"
+msgstr "IVは%dバイト長でなければなりません"
+
+#: py/persistentcode.c
+msgid ""
+"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
+"mpy-update for more info."
+msgstr ""
+"非互換の.mpyファイルです。全ての.mpyファイルを更新してください。詳細は "
+"http://adafru.it/mpy-update を参照"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Incorrect buffer size"
+msgstr "バッファサイズが正しくありません"
+
+#: py/moduerrno.c
+msgid "Input/output error"
+msgstr "入力/出力エラー"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient authentication"
+msgstr "認証が不十分"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid "Insufficient encryption"
+msgstr "暗号化が不十分"
+
+#: ports/stm/common-hal/busio/UART.c
+msgid "Internal define error"
+msgstr "内部定義エラー"
+
+#: shared-module/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Internal error #%d"
+msgstr "内部エラー #%d"
+
+#: shared-bindings/sdioio/SDCard.c
+msgid "Invalid %q"
+msgstr "不正な %q"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Invalid %q pin"
+msgstr "不正な%qピン"
+
+#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+msgid "Invalid %q pin selection"
+msgstr "不正な%qピン選択"
+
+#: ports/stm/common-hal/analogio/AnalogIn.c
+msgid "Invalid ADC Unit value"
+msgstr "不正なADCユニット値"
+
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "Invalid BMP file"
+msgstr "不正なBMPファイル"
+
+#: ports/stm/common-hal/analogio/AnalogOut.c
+msgid "Invalid DAC pin supplied"
+msgstr "不正なDACピンが与えられました"
+
+#: ports/atmel-samd/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
+msgid "Invalid PWM frequency"
+msgstr "無効なPWM周波数"
+
+#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
+msgid "Invalid argument"
+msgstr "不正な引数"
+
+#: shared-module/displayio/Bitmap.c
+msgid "Invalid bits per value"
+msgstr "不正なbits per value"
+
+#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+msgid "Invalid buffer size"
+msgstr "不正なバッファサイズ"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "Invalid byteorder string"
+msgstr "不正なバイトオーダー文字列"
+
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+msgid "Invalid capture period. Valid range: 1 - 500"
+msgstr "不正なキャプチャ周期。有効な周期は1-500"
+
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid channel count"
+msgstr "不正なチャンネル数"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Invalid direction."
+msgstr "不正な入出力方向"
+
+#: shared-module/audiocore/WaveFile.c
+msgid "Invalid file"
+msgstr "不正なファイル"
+
+#: shared-module/audiocore/WaveFile.c
+msgid "Invalid format chunk size"
+msgstr "フォーマットチャンクのサイズが不正"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Invalid frequency supplied"
+msgstr "不正な周波数が与えられました"
+
+#: supervisor/shared/safe_mode.c
+msgid "Invalid memory access."
+msgstr "不正なメモリアクセス"
+
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+msgid "Invalid number of bits"
+msgstr "不正なビット数"
+
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
+msgid "Invalid phase"
+msgstr "不正なphase"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/rgbmatrix/RGBMatrix.c
+msgid "Invalid pin"
+msgstr "不正なピン"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Invalid pin for left channel"
+msgstr "左チャネルのピンが不正"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Invalid pin for right channel"
+msgstr "右チャネルのピンが不正"
+
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+msgid "Invalid pins"
+msgstr "ピンが不正"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "Invalid pins for PWMOut"
+msgstr "PWMOutのピンが不正"
+
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+#: shared-bindings/displayio/FourWire.c
+msgid "Invalid polarity"
+msgstr "不正な極性"
+
+#: shared-bindings/_bleio/Characteristic.c
+msgid "Invalid properties"
+msgstr "不正なプロパティ"
+
+#: shared-bindings/microcontroller/__init__.c
+msgid "Invalid run mode."
+msgstr "不正なRun Mode"
+
+#: shared-module/_bleio/Attribute.c
+msgid "Invalid security_mode"
+msgstr "不正なsecurity_mode"
+
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid voice"
+msgstr "不正なボイス"
+
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Invalid voice count"
+msgstr "不正なボイス数"
+
+#: shared-module/audiocore/WaveFile.c
+msgid "Invalid wave file"
+msgstr "不正なwaveファイル"
+
+#: ports/stm/common-hal/busio/UART.c
+msgid "Invalid word/bit length"
+msgstr "不正なワード/ビット長"
+
+#: shared-bindings/aesio/aes.c
+msgid "Key must be 16, 24, or 32 bytes long"
+msgstr "Keyの長さは、16, 24, 32バイトのいずれかでなければなりません"
+
+#: py/compile.c
+msgid "LHS of keyword arg must be an id"
+msgstr "キーワード引数の左辺には識別子が必要"
+
+#: shared-module/displayio/Group.c
+msgid "Layer already in a group."
+msgstr "レイヤーはすでにグループに含まれています"
+
+#: shared-module/displayio/Group.c
+msgid "Layer must be a Group or TileGrid subclass."
+msgstr "レイヤーはGroupかTileGridのサブクラスでなければなりません"
+
+#: py/objslice.c
+msgid "Length must be an int"
+msgstr "長さには整数が必要"
+
+#: py/objslice.c
+msgid "Length must be non-negative"
+msgstr "Lengthは非負数でなければなりません"
+
+#: shared-module/bitbangio/SPI.c
+msgid "MISO pin init failed."
+msgstr "MISOピンの初期化に失敗"
+
+#: shared-module/bitbangio/SPI.c
+msgid "MOSI pin init failed."
+msgstr "MOSIピンの初期化に失敗"
+
+#: shared-module/displayio/Shape.c
+#, c-format
+msgid "Maximum x value when mirrored is %d"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "MicroPython NLR jump failed. Likely memory corruption."
+msgstr "MicroPythonのNLRジャンプに失敗。メモリ破壊の可能性あり"
+
+#: supervisor/shared/safe_mode.c
+msgid "MicroPython fatal error."
+msgstr "MicroPythonの致命的エラー"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Microphone startup delay must be in range 0.0 to 1.0"
+msgstr "マイクのスタートアップディレイは 0.0 から 1.0 の間でなければなりません"
+
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+msgid "Missing MISO or MOSI Pin"
+msgstr "MISOまたはMOSIピンがありません"
+
+#: shared-bindings/displayio/Group.c
+msgid "Must be a %q subclass."
+msgstr "%q のサブクラスでなければなりません"
+
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+msgid "Must provide MISO or MOSI pin"
+msgstr "MISOピンまたはMOSIピンが必要"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Must provide SCK pin"
+msgstr "SCKピンが必要"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Must use a multiple of 6 rgb pins, not %d"
+msgstr "%d個でなく6の倍数個のrgbピンを使ってください"
+
+#: py/parse.c
+msgid "Name too long"
+msgstr "名前が長すぎます"
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+msgid "No CCCD for this Characteristic"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/analogio/AnalogOut.c
+#: ports/stm/common-hal/analogio/AnalogOut.c
+msgid "No DAC on chip"
+msgstr "チップにDACがありません"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "No DMA channel found"
+msgstr "DMAチャネルが見つかりません"
+
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+msgid "No MISO Pin"
+msgstr "MISOピンなし"
+
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+msgid "No MOSI Pin"
+msgstr "MOSIピンがありません"
+
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
+msgid "No RX pin"
+msgstr "RXピンがありません"
+
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
+msgid "No TX pin"
+msgstr "TXピンがありません"
+
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+msgid "No available clocks"
+msgstr "利用できるクロックがありません"
+
+#: shared-bindings/_bleio/PacketBuffer.c
+msgid "No connection: length cannot be determined"
+msgstr "接続なし: 長さが決定できません"
+
+#: shared-bindings/board/__init__.c
+msgid "No default %q bus"
+msgstr "デフォルトの %q バスがありません"
+
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+msgid "No free GCLKs"
+msgstr "使われていないGCLKがありません"
+
+#: shared-bindings/os/__init__.c
+msgid "No hardware random available"
+msgstr "利用可能なハードウェア乱数なし"
+
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+msgid "No hardware support on clk pin"
+msgstr "clkピン上にハードウェアサポートがありません"
+
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "No hardware support on pin"
+msgstr "ピン上のハードウェアサポートがありません"
+
+#: shared-bindings/aesio/aes.c
+msgid "No key was specified"
+msgstr "キーが指定されていません"
+
+#: shared-bindings/time/__init__.c
+msgid "No long integer support"
+msgstr "long integerサポートがありません"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "No more timers available on this pin."
+msgstr "このピンに利用可能なタイマーがもうありません"
+
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
+
+#: shared-module/touchio/TouchIn.c
+msgid "No pulldown on pin; 1Mohm recommended"
+msgstr "ピンにプルダウンがありません。1Mオーム推奨"
+
+#: py/moduerrno.c
+msgid "No space left on device"
+msgstr "デバイスに空き容量が残っていません"
+
+#: py/moduerrno.c
+msgid "No such file/directory"
+msgstr "指定されたファイル/ディレクトリはありません"
+
+#: shared-module/rgbmatrix/RGBMatrix.c
+msgid "No timer available"
+msgstr "利用できるタイマーなし"
+
+#: supervisor/shared/safe_mode.c
+msgid "Nordic Soft Device failure assertion."
+msgstr ""
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+msgid "Not connected"
+msgstr "接続されていません"
+
+#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
+#: shared-bindings/audiopwmio/PWMAudioOut.c
+msgid "Not playing"
+msgstr "再生していません"
+
+#: main.c
+msgid "Not running saved code.\n"
+msgstr "保存されたコードは実行していません。\n"
+
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
+msgstr ""
+
+#: shared-bindings/util.c
+msgid ""
+"Object has been deinitialized and can no longer be used. Create a new object."
+msgstr ""
+"オブジェクトは解体済みでもう使われていません。新たなオブジェクトを作成してく"
+"ださい"
+
+#: ports/nrf/common-hal/busio/UART.c
+msgid "Odd parity is not supported"
+msgstr "奇数パリティはサポートされていません"
+
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Only 8 or 16 bit mono with "
+msgstr "8または16ビットの"
+
+#: shared-module/displayio/OnDiskBitmap.c
+#, c-format
+msgid ""
+"Only Windows format, uncompressed BMP supported: given header size is %d"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c
+#, c-format
+msgid ""
+"Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
+"%d bpp given"
+msgstr ""
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "Oversample must be multiple of 8."
+msgstr "オーバーサンプルは8の倍数が必要"
+
+#: shared-bindings/pwmio/PWMOut.c
+msgid ""
+"PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+msgstr ""
+"PWMのduty_cycle値は0から65535の間でなければなりません（16ビット解像度）"
+
+#: shared-bindings/pwmio/PWMOut.c
+msgid ""
+"PWM frequency not writable when variable_frequency is False on construction."
+msgstr "PWM周波数は、生成時のvariable_frequencyがFalseのとき書き換え不可"
+
+#: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
+#: ports/stm/common-hal/displayio/ParallelBus.c
+msgid "ParallelBus not yet supported"
+msgstr "ParallelBusはまだサポートされていません"
+
+#: py/moduerrno.c
+msgid "Permission denied"
+msgstr "パーミッション拒否"
+
+#: ports/atmel-samd/common-hal/analogio/AnalogIn.c
+#: ports/cxd56/common-hal/analogio/AnalogIn.c
+#: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
+#: ports/nrf/common-hal/analogio/AnalogIn.c
+#: ports/stm/common-hal/analogio/AnalogIn.c
+msgid "Pin does not have ADC capabilities"
+msgstr "ピンにADCの能力がありません"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pin is input only"
+msgstr "ピンは入力専用"
+
+#: ports/atmel-samd/common-hal/countio/Counter.c
+msgid "Pin must support hardware interrupts"
+msgstr "ピンはハードウェア割り込みをサポートしていなければなりません"
+
+#: ports/stm/common-hal/pulseio/PulseIn.c
+msgid "Pin number already reserved by EXTI"
+msgstr "ピン番号はすでにEXTIによって予約されています"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid ""
+"Pinout uses %d bytes per element, which consumes more than the ideal %d "
+"bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
+"constructor"
+msgstr ""
+
+#: py/builtinhelp.c
+msgid "Plus any modules on the filesystem\n"
+msgstr ""
+
+#: shared-module/vectorio/Polygon.c
+msgid "Polygon needs at least 3 points"
+msgstr "ポリゴンには少なくとも3つの点が必要"
+
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/pulseio/PulseOut.c
+#: ports/stm/common-hal/pulseio/PulseOut.c
+msgid ""
+"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
+"instead"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Prefix buffer must be on the heap"
+msgstr "Prefixバッファはヒープ上になければなりません"
+
+#: main.c
+#, fuzzy
+msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgstr "いずれかのキーを押すとREPLに入ります。リロードはCTRL-D"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Pull not used when direction is output."
+msgstr "方向がoutputのときpullは使われません"
+
+#: ports/stm/common-hal/os/__init__.c
+msgid "RNG DeInit Error"
+msgstr "RNG解体エラー"
+
+#: ports/stm/common-hal/os/__init__.c
+msgid "RNG Init Error"
+msgstr "乱数生成器の初期化エラー"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "RS485 inversion specified when not in RS485 mode"
+msgstr ""
+
+#: ports/cxd56/common-hal/rtc/RTC.c ports/mimxrt10xx/common-hal/rtc/RTC.c
+#: ports/nrf/common-hal/rtc/RTC.c
+msgid "RTC calibration is not supported on this board"
+msgstr "このボードはRTCのキャリブレーションに非対応"
+
+#: shared-bindings/time/__init__.c
+msgid "RTC is not supported on this board"
+msgstr "このボードではRTCがサポートされていません"
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+msgid "RTS/CTS/RS485 Not yet supported on this device"
+msgstr "RTS/CTS/RS485はこのデバイスでは未サポート"
+
+#: ports/stm/common-hal/os/__init__.c
+msgid "Random number generation error"
+msgstr "乱数生成エラー"
+
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
+msgid "Read-only"
+msgstr "読み込み専用"
+
+#: extmod/vfs_fat.c py/moduerrno.c
+msgid "Read-only filesystem"
+msgstr "読み込み専用のファイルシステム"
+
+#: shared-module/displayio/Bitmap.c
+msgid "Read-only object"
+msgstr "読み込み専用のオブジェクト"
+
+#: shared-bindings/displayio/EPaperDisplay.c
+msgid "Refresh too soon"
+msgstr "リフレッシュが早すぎます"
+
+#: shared-bindings/aesio/aes.c
+msgid "Requested AES mode is unsupported"
+msgstr "要求のAESモードは非サポート"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Right channel unsupported"
+msgstr "右チャネルはサポートされていません"
+
+#: shared-bindings/_pew/PewPew.c
+msgid "Row entry must be digitalio.DigitalInOut"
+msgstr "Rowの各要素は digitalio.DigitalInOut でなければなりません"
+
+#: main.c
+msgid "Running in safe mode! "
+msgstr "セーフモードで実行中！ "
+
+#: shared-module/sdcardio/SDCard.c
+msgid "SD card CSD format not supported"
+msgstr "SDカードのCSDフォーマットは非サポート"
+
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+msgid "SDA or SCL needs a pull up"
+msgstr "SDAとSCLにプルアップが必要"
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, c-format
+msgid "SDIO GetCardInfo Error %d"
+msgstr ""
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, c-format
+msgid "SDIO Init Error %d"
+msgstr "SDIO初期化エラー %d"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "SPI Init Error"
+msgstr "SPI初期化エラー"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "SPI Re-initialization error"
+msgstr "SPI再初期化エラー"
+
+#: shared-bindings/audiomixer/Mixer.c
+msgid "Sample rate must be positive"
+msgstr "サンプルレートには正の数が必要"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#, c-format
+msgid "Sample rate too high. It must be less than %d"
+msgstr "サンプルレートは%d以下でなければなりません"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "Scan already in progess. Stop with stop_scan."
+msgstr "スキャンはすでに進行中。stop_scanで停止してください"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Selected CTS pin not valid"
+msgstr "選択されたCTSピンが不正"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+msgid "Selected RTS pin not valid"
+msgstr "選択されたRTSピンが正しくありません"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Serializer in use"
+msgstr "シリアライザは使用中"
+
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: shared-bindings/nvm/ByteArray.c
+msgid "Slice and value different lengths."
+msgstr "スライスと値の長さが一致しません"
+
+#: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
+#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
+msgid "Slices not supported"
+msgstr "スライスはサポートされていません"
+
+#: shared-bindings/aesio/aes.c
+msgid "Source and destination buffers must be the same length"
+msgstr ""
+
+#: extmod/modure.c
+msgid "Splitting with sub-captures"
+msgstr ""
+
+#: shared-bindings/supervisor/__init__.c
+msgid "Stack size must be at least 256"
+msgstr "スタックサイズは少なくとも256以上が必要"
+
+#: shared-bindings/multiterminal/__init__.c
+msgid "Stream missing readinto() or write() method."
+msgstr "streamにreadinto()またはwrite()メソッドがありません"
+
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+msgid "Supply at least one UART pin"
+msgstr "少なくとも1つのUARTピンが必要"
+
+#: shared-bindings/gnss/GNSS.c
+msgid "System entry must be gnss.SatelliteSystem"
+msgstr ""
+
+#: ports/stm/common-hal/microcontroller/Processor.c
+msgid "Temperature read timed out"
+msgstr "温度読み取りがタイムアウトしました"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"The CircuitPython heap was corrupted because the stack was too small.\n"
+"Please increase the stack size if you know how, or if not:"
+msgstr ""
+"スタックが小さすぎたためCircuitPythonのヒープが壊れました。\n"
+"スタックサイズを上げるか、その方法が分からなければ:"
+
+#: supervisor/shared/safe_mode.c
+msgid ""
+"The `microcontroller` module was used to boot into safe mode. Press reset to "
+"exit safe mode.\n"
+msgstr ""
+"`microcontroller` モジュールが使われてセーフモードで起動しました。セーフモー"
+"ドを抜けるにはリセットを押します。\n"
+
+#: supervisor/shared/safe_mode.c
+#, fuzzy
+msgid ""
+"The microcontroller's power dipped. Make sure your power supply provides\n"
+"enough power for the whole circuit and press reset (after ejecting "
+"CIRCUITPY).\n"
+msgstr ""
+"マイクロコントローラの電力が降下しました。電源が回路全体が求める十分な電力を"
+"供給できることを確認してリセットを押してください（CIRCUITPYを取り出した"
+"後）。\n"
+
+#: shared-module/audiomixer/MixerVoice.c
+msgid "The sample's bits_per_sample does not match the mixer's"
+msgstr "サンプルのbits_per_sampleがミキサーのそれと一致しません"
+
+#: shared-module/audiomixer/MixerVoice.c
+msgid "The sample's channel count does not match the mixer's"
+msgstr ""
+
+#: shared-module/audiomixer/MixerVoice.c
+msgid "The sample's sample rate does not match the mixer's"
+msgstr "サンプルレートがサンプルとミキサーで一致しません"
+
+#: shared-module/audiomixer/MixerVoice.c
+msgid "The sample's signedness does not match the mixer's"
+msgstr "符号の有無がサンプルとミキサーで一致しません"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "Tile height must exactly divide bitmap height"
+msgstr "タイルの高さはビットマップの高さを割り切れる値でなければなりません"
+
+#: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
+msgid "Tile index out of bounds"
+msgstr "タイルのインデクスが範囲外"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "Tile value out of bounds"
+msgstr "タイル値が範囲外"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "Tile width must exactly divide bitmap width"
+msgstr "タイルの幅はビットマップの幅を割り切れる値でなければなりません"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+#, c-format
+msgid "Timeout is too long: Maximum timeout length is %d seconds"
+msgstr "タイムアウトが長すぎです。最大のタイムアウト長は%d秒"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid ""
+"Timer was reserved for internal use - declare PWM pins earlier in the program"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "Too many channels in sample."
+msgstr "サンプルのチャンネル数が多すぎます"
+
+#: shared-module/displayio/__init__.c
+msgid "Too many display busses"
+msgstr ""
+
+#: shared-module/displayio/__init__.c
+msgid "Too many displays"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Total data to write is larger than outgoing_packet_length"
+msgstr ""
+
+#: py/obj.c
+msgid "Traceback (most recent call last):\n"
+msgstr "トレースバック（最新の呼び出しが末尾）:\n"
+
+#: shared-bindings/time/__init__.c
+msgid "Tuple or struct_time argument required"
+msgstr ""
+
+#: ports/stm/common-hal/busio/UART.c
+msgid "UART Buffer allocation error"
+msgstr "UARTバッファの確保エラー"
+
+#: ports/stm/common-hal/busio/UART.c
+#, fuzzy
+msgid "UART De-init error"
+msgstr "UARTの解体エラー"
+
+#: ports/stm/common-hal/busio/UART.c
+msgid "UART Init Error"
+msgstr "UARTの初期化エラー"
+
+#: ports/stm/common-hal/busio/UART.c
+msgid "UART Re-init error"
+msgstr "UARTの再初期化エラー"
+
+#: ports/stm/common-hal/busio/UART.c
+msgid "UART write error"
+msgstr "UART書き込みエラー"
+
+#: shared-module/usb_hid/Device.c
+msgid "USB Busy"
+msgstr "USBビジー"
+
+#: shared-module/usb_hid/Device.c
+msgid "USB Error"
+msgstr "USBエラー"
+
+#: shared-bindings/_bleio/UUID.c
+msgid "UUID integer value must be 0-0xffff"
+msgstr "UUIDの整数値は0から0xffffの間でなければなりません"
+
+#: shared-bindings/_bleio/UUID.c
+msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
+msgstr ""
+"UUID文字列が 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' の形式になっていません"
+
+#: shared-bindings/_bleio/UUID.c
+msgid "UUID value is not str, int or byte buffer"
+msgstr "UUIDの値がstr, int, bufferのいずれでもありません"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "Unable to allocate buffers for signed conversion"
+msgstr ""
+
+#: shared-module/displayio/I2CDisplay.c
+#, c-format
+msgid "Unable to find I2C Display at %x"
+msgstr "I2Cディスプレイを %x に見つけられません"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "Unable to find free GCLK"
+msgstr ""
+
+#: py/parse.c
+msgid "Unable to init parser"
+msgstr "パーザを初期化できません"
+
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "Unable to read color palette data"
+msgstr "カラーパレットデータを読み込めません"
+
+#: shared-bindings/nvm/ByteArray.c
+msgid "Unable to write to nvm."
+msgstr "nvm に書き込みできません"
+
+#: ports/nrf/common-hal/_bleio/UUID.c
+msgid "Unexpected nrfx uuid type"
+msgstr "想定されていないnrfx UUID型"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown gatt error: 0x%04x"
+msgstr "不明なGATTエラー: 0x%04x"
+
+#: supervisor/shared/safe_mode.c
+msgid "Unknown reason."
+msgstr "理由不明"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown security error: 0x%04x"
+msgstr "不明なセキュリティエラー: 0x%04x"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown soft device error: %04x"
+msgstr "不明なソフトデバイスエラー: %04x"
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+#, c-format
+msgid "Unmatched number of items on RHS (expected %d, got %d)."
+msgstr "右辺の要素数が一致しません (expected %d, got %d)"
+
+#: ports/nrf/common-hal/_bleio/__init__.c
+msgid ""
+"Unspecified issue. Can be that the pairing prompt on the other device was "
+"declined or ignored."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
+msgid "Unsupported baudrate"
+msgstr "非サポートのbaudrate"
+
+#: shared-module/displayio/display_core.c
+msgid "Unsupported display bus type"
+msgstr ""
+
+#: shared-module/audiocore/WaveFile.c
+msgid "Unsupported format"
+msgstr "サポートされていないフォーマット"
+
+#: py/moduerrno.c
+msgid "Unsupported operation"
+msgstr "サポートされていない操作"
+
+#: shared-bindings/digitalio/DigitalInOut.c
+msgid "Unsupported pull value."
+msgstr "サポートされていないpull値"
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
+msgid "Value length != required fixed length"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
+msgid "Value length > max_length"
+msgstr ""
+
+#: py/emitnative.c
+msgid "Viper functions don't currently support more than 4 arguments"
+msgstr ""
+
+#: ports/stm/common-hal/microcontroller/Processor.c
+msgid "Voltage read timed out"
+msgstr "電圧読み取りがタイムアウト"
+
+#: main.c
+msgid "WARNING: Your code filename has two extensions\n"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer is not currently running"
+msgstr "WatchDogTimerは現在動作していません"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+msgstr "WatchDogTimer.modeはいったんWatchDogMode.RESETに設定すると変更不可"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.timeout must be greater than 0"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Watchdog timer expired."
+msgstr ""
+
+#: py/builtinhelp.c
+#, c-format
+msgid ""
+"Welcome to Adafruit CircuitPython %s!\n"
+"\n"
+"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"\n"
+"To list built-in modules please do `help(\"modules\")`.\n"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+msgid "Writes not supported on Characteristic"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "You are in safe mode: something unanticipated happened.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "You requested starting safe mode by "
+msgstr ""
+
+#: py/objtype.c
+msgid "__init__() should return None"
+msgstr ""
+
+#: py/objtype.c
+msgid "__init__() should return None, not '%q'"
+msgstr ""
+
+#: py/objobject.c
+msgid "__new__ arg must be a user-type"
+msgstr ""
+
+#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
+msgid "a bytes-like object is required"
+msgstr "bytes-likeオブジェクトが必要"
+
+#: lib/embed/abort_.c
+msgid "abort() called"
+msgstr "abort()が呼ばれました"
+
+#: extmod/machine_mem.c
+#, c-format
+msgid "address %08x is not aligned to %d bytes"
+msgstr ""
+
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
+msgid "address out of bounds"
+msgstr "アドレスが範囲外"
+
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
+msgid "addresses is empty"
+msgstr ""
+
+#: extmod/ulab/code/vector/vectorise.c
+msgid "arctan2 is implemented for scalars and ndarrays only"
+msgstr ""
+
+#: py/modbuiltins.c
+msgid "arg is an empty sequence"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "argsort argument must be an ndarray"
+msgstr ""
+
+#: py/runtime.c
+msgid "argument has wrong type"
+msgstr ""
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "argument must be ndarray"
+msgstr ""
+
+#: py/argcheck.c shared-bindings/_stage/__init__.c
+#: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
+msgid "argument num/types mismatch"
+msgstr ""
+
+#: py/runtime.c
+msgid "argument should be a '%q' not a '%q'"
+msgstr "引数には '%q' が必要（'%q' ではなく）"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "arguments must be ndarrays"
+msgstr ""
+
+#: py/objarray.c shared-bindings/nvm/ByteArray.c
+msgid "array/bytes required on right side"
+msgstr "右辺にはarray/bytesが必要"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "attempt to get argmin/argmax of an empty sequence"
+msgstr ""
+
+#: py/objstr.c
+msgid "attributes not supported yet"
+msgstr "属性はまだサポートされていません"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "axis must be -1, 0, None, or 1"
+msgstr "axisは -1, 0, 1, None のいずれかでなければなりません"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "axis must be -1, 0, or 1"
+msgstr "axisは -1, 0, 1 のいずれかでなければなりません"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "axis must be None, 0, or 1"
+msgstr "axisは None, 0, 1 のいずれか"
+
+#: py/builtinevex.c
+msgid "bad compile mode"
+msgstr ""
+
+#: py/objstr.c
+msgid "bad conversion specifier"
+msgstr ""
+
+#: py/objstr.c
+msgid "bad format string"
+msgstr "不正な書式化文字列"
+
+#: py/binary.c py/objarray.c
+msgid "bad typecode"
+msgstr "不正なtypecode"
+
+#: py/emitnative.c
+msgid "binary op %q not implemented"
+msgstr ""
+
+#: shared-bindings/busio/UART.c
+msgid "bits must be 7, 8 or 9"
+msgstr "bitsは7, 8, 9のいずれかが必要"
+
+#: shared-bindings/audiomixer/Mixer.c
+msgid "bits_per_sample must be 8 or 16"
+msgstr ""
+
+#: py/emitinlinethumb.c
+msgid "branch not in range"
+msgstr ""
+
+#: shared-bindings/audiocore/RawSample.c
+msgid "buffer must be a bytes-like object"
+msgstr ""
+
+#: shared-module/struct/__init__.c
+msgid "buffer size must match format"
+msgstr ""
+
+#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
+msgid "buffer slices must be of equal length"
+msgstr ""
+
+#: py/modstruct.c shared-bindings/struct/__init__.c
+#: shared-module/struct/__init__.c
+msgid "buffer too small"
+msgstr ""
+
+#: shared-bindings/_pew/PewPew.c
+msgid "buttons must be digitalio.DigitalInOut"
+msgstr ""
+
+#: py/vm.c
+msgid "byte code not implemented"
+msgstr ""
+
+#: shared-bindings/_pixelbuf/PixelBuf.c
+msgid "byteorder is not a string"
+msgstr "byteorderが文字列ではありません"
+
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "bytes > 8 bits not supported"
+msgstr ""
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
+
+#: py/objstr.c
+msgid "bytes value out of range"
+msgstr "範囲外のバイト値"
+
+#: ports/atmel-samd/bindings/samd/Clock.c ports/atmel-samd/common-hal/rtc/RTC.c
+msgid "calibration is out of range"
+msgstr "キャリブレーションが範囲外"
+
+#: ports/atmel-samd/bindings/samd/Clock.c
+msgid "calibration is read only"
+msgstr "calibrationは読み込み専用"
+
+#: ports/atmel-samd/common-hal/rtc/RTC.c
+msgid "calibration value out of range +/-127"
+msgstr ""
+
+#: py/emitinlinethumb.c
+msgid "can only have up to 4 parameters to Thumb assembly"
+msgstr ""
+
+#: py/emitinlinextensa.c
+msgid "can only have up to 4 parameters to Xtensa assembly"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "can only save bytecode"
+msgstr ""
+
+#: py/objtype.c
+msgid "can't add special method to already-subclassed class"
+msgstr "サブクラス化済みのクラスに特殊メソッドを追加できません"
+
+#: py/compile.c
+msgid "can't assign to expression"
+msgstr "式には代入できません"
+
+#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
+msgid "can't convert %q to %q"
+msgstr "%qを%qに変換できません"
+
+#: py/objstr.c
+msgid "can't convert '%q' object to %q implicitly"
+msgstr "オブジェクト '%q' を %q に暗黙に変換できません"
+
+#: py/obj.c
+msgid "can't convert to %q"
+msgstr "%q に変換できません"
+
+#: py/objstr.c
+msgid "can't convert to str implicitly"
+msgstr ""
+
+#: py/compile.c
+msgid "can't declare nonlocal in outer code"
+msgstr "外側のコードでnonlocalは使えません"
+
+#: py/compile.c
+msgid "can't delete expression"
+msgstr ""
+
+#: py/emitnative.c
+msgid "can't do binary op between '%q' and '%q'"
+msgstr ""
+
+#: py/objcomplex.c
+msgid "can't do truncated division of a complex number"
+msgstr "複素数の切り捨て除算はできません"
+
+#: py/compile.c
+msgid "can't have multiple **x"
+msgstr "複数の **x は持てません"
+
+#: py/compile.c
+msgid "can't have multiple *x"
+msgstr "複数の *x は持てません"
+
+#: py/emitnative.c
+msgid "can't implicitly convert '%q' to 'bool'"
+msgstr ""
+
+#: py/emitnative.c
+msgid "can't load from '%q'"
+msgstr ""
+
+#: py/emitnative.c
+msgid "can't load with '%q' index"
+msgstr ""
+
+#: py/objgenerator.c
+msgid "can't pend throw to just-started generator"
+msgstr ""
+
+#: py/objgenerator.c
+msgid "can't send non-None value to a just-started generator"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "can't set 512 block size"
+msgstr ""
+
+#: py/objnamedtuple.c
+msgid "can't set attribute"
+msgstr ""
+
+#: py/emitnative.c
+msgid "can't store '%q'"
+msgstr ""
+
+#: py/emitnative.c
+msgid "can't store to '%q'"
+msgstr ""
+
+#: py/emitnative.c
+msgid "can't store with '%q' index"
+msgstr ""
+
+#: py/objstr.c
+msgid ""
+"can't switch from automatic field numbering to manual field specification"
+msgstr ""
+
+#: py/objstr.c
+msgid ""
+"can't switch from manual field specification to automatic field numbering"
+msgstr "手動と自動のフィールド指定は混在できません"
+
+#: py/objtype.c
+msgid "cannot create '%q' instances"
+msgstr ""
+
+#: py/objtype.c
+msgid "cannot create instance"
+msgstr "インスタンスを作れません"
+
+#: py/runtime.c
+msgid "cannot import name %q"
+msgstr ""
+
+#: py/builtinimport.c
+msgid "cannot perform relative import"
+msgstr "相対インポートはできません"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot reshape array (incompatible input/output shape)"
+msgstr "入力/出力シェイプが互換でなくreshapeできません"
+
+#: py/emitnative.c
+msgid "casting"
+msgstr ""
+
+#: shared-bindings/_stage/Text.c
+msgid "chars buffer too small"
+msgstr ""
+
+#: py/modbuiltins.c
+msgid "chr() arg not in range(0x110000)"
+msgstr ""
+
+#: py/modbuiltins.c
+msgid "chr() arg not in range(256)"
+msgstr ""
+
+#: shared-module/vectorio/Circle.c
+msgid "circle can only be registered in one parent"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c
+msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c
+msgid "color buffer must be a buffer, tuple, list, or int"
+msgstr "カラーバッファはbuffer, tuple, list, int のいずれかです"
+
+#: shared-bindings/displayio/Palette.c
+msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
+msgstr ""
+
+#: shared-bindings/displayio/Palette.c
+msgid "color must be between 0x000000 and 0xffffff"
+msgstr "色は0x000000から0xffffffでなければなりません"
+
+#: shared-bindings/displayio/ColorConverter.c
+msgid "color should be an int"
+msgstr ""
+
+#: py/objcomplex.c
+msgid "complex division by zero"
+msgstr "複素数ゼロ除算"
+
+#: py/objfloat.c py/parsenum.c
+msgid "complex values not supported"
+msgstr ""
+
+#: extmod/moduzlib.c
+msgid "compression header"
+msgstr "圧縮ヘッダー"
+
+#: py/parse.c
+msgid "constant must be an integer"
+msgstr ""
+
+#: py/emitnative.c
+msgid "conversion to object"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "convolve arguments must be linear arrays"
+msgstr "convolve引数には1次元arrayが必要"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "convolve arguments must be ndarrays"
+msgstr "convolve引数にはndarrayが必要"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "convolve arguments must not be empty"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "could not broadast input array from shape"
+msgstr ""
+
+#: extmod/ulab/code/poly/poly.c
+msgid "could not invert Vandermonde matrix"
+msgstr "ヴァンデルモンド行列の逆行列を求められません"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "couldn't determine SD card version"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "data must be iterable"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "data must be of equal length"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "ddof must be smaller than length of data set"
+msgstr ""
+
+#: py/parsenum.c
+msgid "decimal numbers not supported"
+msgstr ""
+
+#: py/compile.c
+msgid "default 'except' must be last"
+msgstr "デフォルトのexceptは最後に置く必要があります"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid ""
+"destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
+msgstr "bit_depath = 16 用のバッファにはタイプ'H'のarrayが必要"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "destination_length must be an int >= 0"
+msgstr "desitination_lengthには正の整数が必要"
+
+#: py/objdict.c
+msgid "dict update sequence has wrong length"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "diff argument must be an ndarray"
+msgstr "引数にはndarrayが必要"
+
+#: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
+#: shared-bindings/math/__init__.c
+msgid "division by zero"
+msgstr "ゼロ除算 (division by zero)"
+
+#: py/objdeque.c
+msgid "empty"
+msgstr ""
+
+#: extmod/moduheapq.c extmod/modutimeq.c
+msgid "empty heap"
+msgstr ""
+
+#: py/objstr.c
+msgid "empty separator"
+msgstr ""
+
+#: shared-bindings/random/__init__.c
+msgid "empty sequence"
+msgstr ""
+
+#: py/objstr.c
+msgid "end of format while looking for conversion specifier"
+msgstr ""
+
+#: shared-bindings/displayio/Shape.c
+msgid "end_x should be an int"
+msgstr "end_xは整数でなければなりません"
+
+#: ports/nrf/common-hal/busio/UART.c
+#, c-format
+msgid "error = 0x%08lX"
+msgstr "error = 0x1%08lX"
+
+#: py/runtime.c
+msgid "exceptions must derive from BaseException"
+msgstr "例外はBaseExceptionから派生していなければなりません"
+
+#: py/objstr.c
+msgid "expected ':' after format specifier"
+msgstr "書式化指定子の後に':'が必要"
+
+#: py/obj.c
+msgid "expected tuple/list"
+msgstr "タプルまたはリストが必要"
+
+#: py/modthread.c
+msgid "expecting a dict for keyword args"
+msgstr ""
+
+#: py/compile.c
+msgid "expecting an assembler instruction"
+msgstr "アセンブラ命令が必要"
+
+#: py/compile.c
+msgid "expecting just a value for set"
+msgstr "setには値のみが必要"
+
+#: py/compile.c
+msgid "expecting key:value for dict"
+msgstr "dictには key:value が必要"
+
+#: py/argcheck.c
+msgid "extra keyword arguments given"
+msgstr "余分なキーワード引数があります"
+
+#: py/argcheck.c
+msgid "extra positional arguments given"
+msgstr "余分な位置引数が与えられました"
+
+#: py/parse.c
+msgid "f-string expression part cannot include a '#'"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string expression part cannot include a backslash"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: empty expression not allowed"
+msgstr ""
+
+#: py/parse.c
+msgid "f-string: expecting '}'"
+msgstr "f-string: '}'が必要"
+
+#: py/parse.c
+msgid "f-string: single '}' is not allowed"
+msgstr "f-string: 1つだけの'}'は許されません"
+
+#: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
+#: shared-bindings/displayio/OnDiskBitmap.c
+msgid "file must be a file opened in byte mode"
+msgstr "fileにはバイトモードで開かれたファイルが必要"
+
+#: shared-bindings/storage/__init__.c
+msgid "filesystem must provide mount method"
+msgstr "filesystemにはmountメソッドが必要"
+
+#: extmod/ulab/code/vector/vectorise.c
+msgid "first argument must be a callable"
+msgstr "1つ目の引数は呼び出し可能でなければなりません"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "first argument must be a function"
+msgstr "1つ目の引数は関数でなければなりません"
+
+#: extmod/ulab/code/ndarray.c
+msgid "first argument must be an iterable"
+msgstr "1つ目の引数はイテレート可能でなければなりません"
+
+#: extmod/ulab/code/vector/vectorise.c
+msgid "first argument must be an ndarray"
+msgstr "1つ目の引数にはndarrayが必要"
+
+#: py/objtype.c
+msgid "first argument to super() must be type"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "flattening order must be either 'C', or 'F'"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "flip argument must be an ndarray"
+msgstr "flipの引数はndarrayでなければなりません"
+
+#: py/objint.c
+msgid "float too big"
+msgstr "floatの値が大きすぎます"
+
+#: shared-bindings/_stage/Text.c
+msgid "font must be 2048 bytes long"
+msgstr ""
+
+#: py/objstr.c
+msgid "format requires a dict"
+msgstr "formatにはdictが必要"
+
+#: py/objdeque.c
+msgid "full"
+msgstr ""
+
+#: py/argcheck.c
+msgid "function does not take keyword arguments"
+msgstr ""
+
+#: py/argcheck.c
+#, c-format
+msgid "function expected at most %d arguments, got %d"
+msgstr ""
+
+#: py/bc.c py/objnamedtuple.c
+msgid "function got multiple values for argument '%q'"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "function has the same sign at the ends of interval"
+msgstr ""
+
+#: extmod/ulab/code/compare/compare.c
+msgid "function is implemented for scalars and ndarrays only"
+msgstr "スカラ値およびndarrayのみを受け取ります"
+
+#: py/argcheck.c
+#, c-format
+msgid "function missing %d required positional arguments"
+msgstr ""
+
+#: py/bc.c
+#, fuzzy
+msgid "function missing keyword-only argument"
+msgstr "キーワード専用引数が足りません"
+
+#: py/bc.c
+msgid "function missing required keyword argument '%q'"
+msgstr "必須のキーワード引数'%q'が与えられていません"
+
+#: py/bc.c
+#, c-format
+msgid "function missing required positional argument #%d"
+msgstr ""
+
+#: py/argcheck.c py/bc.c py/objnamedtuple.c shared-bindings/time/__init__.c
+#, c-format
+msgid "function takes %d positional arguments but %d were given"
+msgstr ""
+
+#: shared-bindings/time/__init__.c
+msgid "function takes exactly 9 arguments"
+msgstr "関数はちょうど9個の引数をとります"
+
+#: py/objgenerator.c
+msgid "generator already executing"
+msgstr ""
+
+#: py/objgenerator.c
+msgid "generator ignored GeneratorExit"
+msgstr ""
+
+#: shared-bindings/_stage/Layer.c
+msgid "graphic must be 2048 bytes long"
+msgstr ""
+
+#: extmod/moduheapq.c
+msgid "heap must be a list"
+msgstr "heapにはリストが必要"
+
+#: py/compile.c
+msgid "identifier redefined as global"
+msgstr ""
+
+#: py/compile.c
+msgid "identifier redefined as nonlocal"
+msgstr ""
+
+#: py/objstr.c
+msgid "incomplete format"
+msgstr ""
+
+#: py/objstr.c
+msgid "incomplete format key"
+msgstr ""
+
+#: extmod/modubinascii.c
+msgid "incorrect padding"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "index is out of bounds"
+msgstr ""
+
+#: py/obj.c
+msgid "index out of range"
+msgstr "インデクスが範囲外"
+
+#: py/obj.c
+msgid "indices must be integers"
+msgstr "インデクスは整数でなければなりません"
+
+#: extmod/ulab/code/ndarray.c
+msgid "indices must be integers, slices, or Boolean lists"
+msgstr ""
+"インデクスは、整数、スライス、boolのリストのいずれかでなければなりません"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "initial values must be iterable"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
+msgstr ""
+
+#: py/compile.c
+msgid "inline assembler must be a function"
+msgstr "インラインアセンブラは関数でなければなりません"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "input argument must be an integer or a 2-tuple"
+msgstr ""
+
+#: extmod/ulab/code/fft/fft.c
+msgid "input array length must be power of 2"
+msgstr "入力array長は2の累乗でなければなりません"
+
+#: extmod/ulab/code/poly/poly.c
+msgid "input data must be an iterable"
+msgstr ""
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "input matrix is asymmetric"
+msgstr "入力行列が非対称"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "input matrix is singular"
+msgstr "入力が非正則行列"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "input must be square matrix"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "input must be tuple, list, range, or ndarray"
+msgstr "入力はtuple, list, range, ndarrayでなければなりません"
+
+#: extmod/ulab/code/poly/poly.c
+msgid "input vectors must be of equal length"
+msgstr ""
+
+#: py/parsenum.c
+msgid "int() arg 2 must be >= 2 and <= 36"
+msgstr "int()の第2引数は2以上36以下でなければなりません"
+
+#: py/objstr.c
+msgid "integer required"
+msgstr "整数が必要"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "interp is defined for 1D arrays of equal length"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+#, c-format
+msgid "interval must be in range %s-%s"
+msgstr "intervalは%s-%sの範囲でなければなりません"
+
+#: lib/netutils/netutils.c
+msgid "invalid arguments"
+msgstr "不正な引数"
+
+#: extmod/modussl_axtls.c
+msgid "invalid cert"
+msgstr "不正な証明書"
+
+#: extmod/uos_dupterm.c
+msgid "invalid dupterm index"
+msgstr "不正なduptermインデクス"
+
+#: extmod/modframebuf.c
+msgid "invalid format"
+msgstr ""
+
+#: py/objstr.c
+msgid "invalid format specifier"
+msgstr ""
+
+#: extmod/modussl_axtls.c
+msgid "invalid key"
+msgstr "不正な鍵"
+
+#: py/compile.c
+msgid "invalid micropython decorator"
+msgstr "不正なmicropythonデコレータ"
+
+#: shared-bindings/random/__init__.c
+msgid "invalid step"
+msgstr "不正なステップ"
+
+#: py/compile.c py/parse.c
+msgid "invalid syntax"
+msgstr "不正な構文"
+
+#: py/parsenum.c
+msgid "invalid syntax for integer"
+msgstr "整数の構文が不正"
+
+#: py/parsenum.c
+#, c-format
+msgid "invalid syntax for integer with base %d"
+msgstr ""
+
+#: py/parsenum.c
+msgid "invalid syntax for number"
+msgstr "数字として不正な構文"
+
+#: py/objtype.c
+msgid "issubclass() arg 1 must be a class"
+msgstr "issubclass()の第1引数はクラスが必要"
+
+#: py/objtype.c
+msgid "issubclass() arg 2 must be a class or a tuple of classes"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "iterables are not of the same length"
+msgstr "iterableが同じ長さではありません"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "iterations did not converge"
+msgstr "収束しません"
+
+#: py/objstr.c
+msgid "join expects a list of str/bytes objects consistent with self object"
+msgstr "joinには、str/bytes（のうち自身と一致した型の）リストが必要"
+
+#: py/argcheck.c
+msgid "keyword argument(s) not yet implemented - use normal args instead"
+msgstr "キーワード引数はまだ実装されていません。通常の引数を使ってください。"
+
+#: py/bc.c
+msgid "keywords must be strings"
+msgstr "キーワードは文字列でなければなりません"
+
+#: py/emitinlinethumb.c py/emitinlinextensa.c
+msgid "label '%q' not defined"
+msgstr "ラベル'%q'は定義されていません"
+
+#: py/compile.c
+msgid "label redefined"
+msgstr "ラベルの再定義"
+
+#: py/stream.c
+msgid "length argument not allowed for this type"
+msgstr ""
+
+#: shared-bindings/audiomixer/MixerVoice.c
+msgid "level must be between 0 and 1"
+msgstr "levelは0から1の間でなければなりません"
+
+#: py/objarray.c
+msgid "lhs and rhs should be compatible"
+msgstr "左辺と右辺が互換でなければなりません"
+
+#: py/emitnative.c
+msgid "local '%q' has type '%q' but source is '%q'"
+msgstr ""
+
+#: py/emitnative.c
+msgid "local '%q' used before type known"
+msgstr ""
+
+#: py/vm.c
+msgid "local variable referenced before assignment"
+msgstr ""
+
+#: py/objint.c
+msgid "long int not supported in this build"
+msgstr "このビルドはlong intをサポートしていません"
+
+#: py/parse.c
+msgid "malformed f-string"
+msgstr "不正な形式のf-string"
+
+#: shared-bindings/_stage/Layer.c
+msgid "map buffer too small"
+msgstr ""
+
+#: py/modmath.c shared-bindings/math/__init__.c
+msgid "math domain error"
+msgstr "定義域エラー"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "matrix dimensions do not match"
+msgstr "行列の次元が一致しません"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "matrix is not positive definite"
+msgstr "正定値行列ではありません"
+
+#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nrf/common-hal/_bleio/Descriptor.c
+#, c-format
+msgid "max_length must be 0-%d when fixed_length is %s"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
+msgstr ""
+
+#: py/runtime.c
+msgid "maximum recursion depth exceeded"
+msgstr "最大の再帰深度を超えました"
+
+#: py/runtime.c
+#, c-format
+msgid "memory allocation failed, allocating %u bytes"
+msgstr ""
+
+#: py/runtime.c
+msgid "memory allocation failed, heap is locked"
+msgstr "メモリ確保に失敗。ヒープがロックされています"
+
+#: py/builtinimport.c
+msgid "module not found"
+msgstr "モジュールが見つかりません"
+
+#: extmod/ulab/code/poly/poly.c
+msgid "more degrees of freedom than data points"
+msgstr ""
+
+#: py/compile.c
+msgid "multiple *x in assignment"
+msgstr ""
+
+#: py/objtype.c
+msgid "multiple bases have instance lay-out conflict"
+msgstr ""
+
+#: py/objtype.c
+msgid "multiple inheritance not supported"
+msgstr "複数継承は非サポート"
+
+#: py/emitnative.c
+msgid "must raise an object"
+msgstr ""
+
+#: py/modbuiltins.c
+msgid "must use keyword argument for key function"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "n must be between 0, and 9"
+msgstr "nは0から9まで"
+
+#: py/runtime.c
+msgid "name '%q' is not defined"
+msgstr "名前 '%q' は定義されていません"
+
+#: py/runtime.c
+msgid "name not defined"
+msgstr "名前が定義されていません"
+
+#: py/compile.c
+msgid "name reused for argument"
+msgstr "引数で名前が再利用されています"
+
+#: py/emitnative.c
+msgid "native yield"
+msgstr ""
+
+#: py/runtime.c
+#, c-format
+msgid "need more than %d values to unpack"
+msgstr "アンパックする値は%d個では足りません"
+
+#: py/objint_longlong.c py/objint_mpz.c py/runtime.c
+msgid "negative power with no float support"
+msgstr ""
+
+#: py/objint_mpz.c py/runtime.c
+msgid "negative shift count"
+msgstr "シフトカウントが負数"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no SD card"
+msgstr "SDカードがありません"
+
+#: py/vm.c
+msgid "no active exception to reraise"
+msgstr ""
+
+#: shared-bindings/socket/__init__.c shared-module/network/__init__.c
+msgid "no available NIC"
+msgstr "利用可能なNICがありません"
+
+#: py/compile.c
+msgid "no binding for nonlocal found"
+msgstr "nonlocalの対象が見つかりません"
+
+#: py/builtinimport.c
+msgid "no module named '%q'"
+msgstr "'%q' という名前のモジュールはありません"
+
+#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/displayio/ParallelBus.c
+msgid "no reset pin available"
+msgstr "利用可能なリセットピンがありません"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no response from SD card"
+msgstr "SDカードからの応答がありません"
+
+#: py/runtime.c
+msgid "no such attribute"
+msgstr "指定の属性はありません"
+
+#: ports/nrf/common-hal/_bleio/Connection.c
+msgid "non-UUID found in service_uuids_whitelist"
+msgstr ""
+
+#: py/compile.c
+msgid "non-default argument follows default argument"
+msgstr "デフォルト引数の後に通常の引数は置けません"
+
+#: extmod/modubinascii.c
+msgid "non-hex digit found"
+msgstr "16進数以外の桁があります"
+
+#: py/compile.c
+msgid "non-keyword arg after */**"
+msgstr "*/** の後に非キーワード引数は置けません"
+
+#: py/compile.c
+msgid "non-keyword arg after keyword arg"
+msgstr "キーワード引数の後に非キーワード引数は置けません"
+
+#: shared-bindings/_bleio/UUID.c
+msgid "not a 128-bit UUID"
+msgstr "128ビットのUUIDではありません"
+
+#: py/objstr.c
+msgid "not all arguments converted during string formatting"
+msgstr ""
+
+#: py/objstr.c
+msgid "not enough arguments for format string"
+msgstr "書式化文字列への引数が足りません"
+
+#: extmod/ulab/code/poly/poly.c
+msgid "number of arguments must be 2, or 3"
+msgstr "引数は2個または3個でなければなりません"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "number of points must be at least 2"
+msgstr ""
+
+#: py/obj.c
+msgid "object '%q' is not a tuple or list"
+msgstr "オブジェクト'%q'がタプルやリストでありません"
+
+#: py/obj.c
+msgid "object does not support item assignment"
+msgstr "オブジェクトは要素の代入をサポートしていません"
+
+#: py/obj.c
+msgid "object does not support item deletion"
+msgstr "オブジェクトは要素の削除をサポートしていません"
+
+#: py/obj.c
+msgid "object has no len"
+msgstr "オブジェクトがlenを持っていません"
+
+#: py/obj.c
+msgid "object is not subscriptable"
+msgstr "オブジェクトは要素の取得をサポートしていません"
+
+#: py/runtime.c
+msgid "object not an iterator"
+msgstr "オブジェクトがイテレータではありません"
+
+#: py/objtype.c py/runtime.c
+msgid "object not callable"
+msgstr "オブジェクトは呼び出し可能でありません"
+
+#: py/sequence.c shared-bindings/displayio/Group.c
+msgid "object not in sequence"
+msgstr ""
+
+#: py/runtime.c
+msgid "object not iterable"
+msgstr "オブジェクトはイテレートできません"
+
+#: py/obj.c
+msgid "object of type '%q' has no len()"
+msgstr "オブジェクト（型 '%q'）はlen()を持ちません"
+
+#: py/obj.c
+msgid "object with buffer protocol required"
+msgstr ""
+
+#: extmod/modubinascii.c
+msgid "odd-length string"
+msgstr "奇数長の文字列"
+
+#: py/objstr.c py/objstrunicode.c
+msgid "offset out of bounds"
+msgstr ""
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only bit_depth=16 is supported"
+msgstr "bit_depth=16のみサポートしています"
+
+#: ports/nrf/common-hal/audiobusio/PDMIn.c
+msgid "only sample_rate=16000 is supported"
+msgstr ""
+
+#: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
+#: shared-bindings/nvm/ByteArray.c
+msgid "only slices with step=1 (aka None) are supported"
+msgstr ""
+
+#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/vector/vectorise.c
+msgid "operands could not be broadcast together"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "operation is not implemented on ndarrays"
+msgstr "この演算はndarray上で実装されていません"
+
+#: extmod/ulab/code/ndarray.c
+msgid "operation is not supported for given type"
+msgstr "この演算は与えられた型をサポートしていません"
+
+#: py/modbuiltins.c
+msgid "ord expects a character"
+msgstr "ord()は1文字を受け取ります"
+
+#: py/modbuiltins.c
+#, c-format
+msgid "ord() expected a character, but string of length %d found"
+msgstr "ord()は1文字を要求しますが、長さ %d の文字列が与えられました"
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of source"
+msgstr "ソースが範囲外"
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of target"
+msgstr ""
+
+#: py/objint_mpz.c
+msgid "overflow converting long int to machine word"
+msgstr "long intをマシンのwordに変換する際にオーバーフローしました"
+
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
+
+#: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
+msgid "palette must be 32 bytes long"
+msgstr "パレットの長さは32バイトでなければなりません"
+
+#: shared-bindings/displayio/Palette.c
+msgid "palette_index should be an int"
+msgstr "palette_indexには整数が必要"
+
+#: py/compile.c
+msgid "parameter annotation must be an identifier"
+msgstr "引数アノテーションは識別子でなければなりません"
+
+#: py/emitinlinextensa.c
+msgid "parameters must be registers in sequence a2 to a5"
+msgstr ""
+
+#: py/emitinlinethumb.c
+msgid "parameters must be registers in sequence r0 to r3"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "pixel coordinates out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "pixel value requires too many bits"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
+msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+msgstr ""
+
+#: shared-module/vectorio/Polygon.c
+msgid "polygon can only be registered in one parent"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
+#: shared-bindings/ps2io/Ps2.c
+msgid "pop from empty %q"
+msgstr ""
+
+#: py/objint_mpz.c
+msgid "pow() 3rd argument cannot be 0"
+msgstr "pow()の3つ目の引数は0にできません"
+
+#: py/objint_mpz.c
+msgid "pow() with 3 arguments requires integers"
+msgstr "pow()の第3引数には整数が必要"
+
+#: extmod/modutimeq.c
+msgid "queue overflow"
+msgstr "キューがオーバーフローしました"
+
+#: py/parse.c
+msgid "raw f-strings are not implemented"
+msgstr "raw f-文字列は実装されていません"
+
+#: extmod/ulab/code/fft/fft.c
+msgid "real and imaginary parts must be of equal length"
+msgstr "実数部と虚数部は同じ長さでなければなりません"
+
+#: py/builtinimport.c
+msgid "relative import"
+msgstr "相対インポート"
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr "必要な長さは%dですがオブジェクトの長さは%d"
+
+#: py/compile.c
+msgid "return annotation must be an identifier"
+msgstr "戻り値のアノテーションは識別子でなければなりません"
+
+#: py/emitnative.c
+msgid "return expected '%q' but got '%q'"
+msgstr ""
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "rgb_pins[%d] duplicates another pin assignment"
+msgstr ""
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "rgb_pins[%d] is not on the same port as clock"
+msgstr "rgb_pins[%d]はクロックと同じポートではありません"
+
+#: extmod/ulab/code/ndarray.c
+msgid "right hand side must be an ndarray, or a scalar"
+msgstr "右辺は ndarray またはスカラ値でなければなりません"
+
+#: py/objstr.c
+msgid "rsplit(None,n)"
+msgstr "rsplit(None,n)"
+
+#: shared-bindings/audiocore/RawSample.c
+msgid ""
+"sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' or "
+"'B'"
+msgstr ""
+"sample_source バッファには bytearray または 'h','H','b','B'型のarrayが必要"
+
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
+msgid "sampling rate out of range"
+msgstr "サンプリングレートが範囲外"
+
+#: py/modmicropython.c
+msgid "schedule stack full"
+msgstr "スケジュールスタックが一杯"
+
+#: lib/utils/pyexec.c py/builtinimport.c
+msgid "script compilation not supported"
+msgstr "スクリプトのコンパイルは非サポート"
+
+#: extmod/ulab/code/ndarray.c
+msgid "shape must be a 2-tuple"
+msgstr "shapeは2値のタプルでなければなりません"
+
+#: py/objstr.c
+msgid "sign not allowed in string format specifier"
+msgstr "文字列フォーマット指定子で符号は使えません"
+
+#: py/objstr.c
+msgid "sign not allowed with integer format specifier 'c'"
+msgstr "整数フォーマット指定子'c'で符号は使えません"
+
+#: py/objstr.c
+msgid "single '}' encountered in format string"
+msgstr "文字列フォーマット中に孤立した '}' があります"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "size is defined for ndarrays only"
+msgstr ""
+
+#: shared-bindings/time/__init__.c
+msgid "sleep length must be non-negative"
+msgstr "sleepの長さは非負数でなければなりません"
+
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr "スライスのステップは0にできません"
+
+#: py/objslice.c py/sequence.c
+msgid "slice step cannot be zero"
+msgstr ""
+
+#: py/objint.c py/sequence.c
+msgid "small int overflow"
+msgstr "small int オーバーフロー"
+
+#: main.c
+msgid "soft reboot\n"
+msgstr "ソフトリブート\n"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "sort argument must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "sosfilt requires iterable arguments"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "source palette too large"
+msgstr ""
+
+#: py/objstr.c
+msgid "start/end indices"
+msgstr ""
+
+#: shared-bindings/displayio/Shape.c
+msgid "start_x should be an int"
+msgstr ""
+
+#: shared-bindings/random/__init__.c
+msgid "step must be non-zero"
+msgstr "stepは非ゼロ値が必要"
+
+#: shared-bindings/busio/UART.c
+msgid "stop must be 1 or 2"
+msgstr "stopは1または2のいずれか"
+
+#: shared-bindings/random/__init__.c
+msgid "stop not reachable from start"
+msgstr ""
+
+#: py/stream.c
+msgid "stream operation not supported"
+msgstr "ストリーム操作はサポートされていません"
+
+#: py/objstrunicode.c
+msgid "string indices must be integers, not %q"
+msgstr "文字列のインデクスには整数が必要（%qでなく）"
+
+#: py/stream.c
+msgid "string not supported; use bytes or bytearray"
+msgstr "文字列ではなくbytesまたはbytesarrayが必要"
+
+#: extmod/moductypes.c
+msgid "struct: cannot index"
+msgstr ""
+
+#: extmod/moductypes.c
+msgid "struct: no fields"
+msgstr ""
+
+#: py/objarray.c py/objstr.c
+msgid "substring not found"
+msgstr "部分文字列が見つかりません"
+
+#: py/compile.c
+msgid "super() can't find self"
+msgstr "super()がselfを見つけられません"
+
+#: extmod/modujson.c
+msgid "syntax error in JSON"
+msgstr "JSONに構文エラーがあります"
+
+#: extmod/moductypes.c
+msgid "syntax error in uctypes descriptor"
+msgstr "uctypedディスクリプタの構文エラー"
+
+#: shared-bindings/touchio/TouchIn.c
+msgid "threshold must be in the range 0-65536"
+msgstr "threshouldは0から65536まで"
+
+#: shared-bindings/time/__init__.c
+msgid "time.struct_time() takes a 9-sequence"
+msgstr "time.struct_time()は9要素のシーケンスを受け取ります"
+
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "timeout duration exceeded the maximum supported value"
+msgstr "タイムアウト長がサポートされる最大値を超えています"
+
+#: shared-bindings/busio/UART.c
+msgid "timeout must be 0.0-100.0 seconds"
+msgstr ""
+
+#: shared-bindings/_bleio/CharacteristicBuffer.c
+msgid "timeout must be >= 0.0"
+msgstr "timeoutは0.0以上が必要"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v1 card"
+msgstr "v1カードの待機がタイムアウト"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v2 card"
+msgstr "v2カードの待機がタイムアウトしました"
+
+#: shared-bindings/time/__init__.c
+msgid "timestamp out of range for platform time_t"
+msgstr "timestampがプラットフォームのtime_tの範囲外"
+
+#: shared-module/struct/__init__.c
+msgid "too many arguments provided with the given format"
+msgstr "指定された書式に対して引数が多すぎます"
+
+#: extmod/ulab/code/ndarray.c
+msgid "too many indices"
+msgstr "インデクスが多すぎます"
+
+#: py/runtime.c
+#, c-format
+msgid "too many values to unpack (expected %d)"
+msgstr "アンパックする値が多すぎます (%d個を期待)"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays of equal length"
+msgstr "trapzは同じ長さの1次元arrayに対して定義されています"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "tuple index out of range"
+msgstr ""
+
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr "タプル/リストの長さが正しくありません"
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: shared-bindings/busio/UART.c
+msgid "tx and rx cannot both be None"
+msgstr "txとrxを両方ともNoneにできません"
+
+#: py/objtype.c
+msgid "type '%q' is not an acceptable base type"
+msgstr "型'%q'はベース型として使えません"
+
+#: py/objtype.c
+msgid "type is not an acceptable base type"
+msgstr "この型はベース型にできません"
+
+#: py/runtime.c
+msgid "type object '%q' has no attribute '%q'"
+msgstr ""
+
+#: py/objtype.c
+msgid "type takes 1 or 3 arguments"
+msgstr "typeは1つか3つの引数をとります"
+
+#: py/objint_longlong.c
+msgid "ulonglong too large"
+msgstr ""
+
+#: py/emitnative.c
+msgid "unary op %q not implemented"
+msgstr "単項演算子 %q は未実装"
+
+#: py/parse.c
+msgid "unexpected indent"
+msgstr ""
+
+#: py/bc.c
+msgid "unexpected keyword argument"
+msgstr ""
+
+#: py/bc.c py/objnamedtuple.c
+msgid "unexpected keyword argument '%q'"
+msgstr "キーワード引数'%q'は使えません"
+
+#: py/lexer.c
+msgid "unicode name escapes"
+msgstr ""
+
+#: py/parse.c
+msgid "unindent does not match any outer indentation level"
+msgstr "インデントの解除が、外側のどのインデントにも一致していません"
+
+#: py/objstr.c
+#, c-format
+msgid "unknown conversion specifier %c"
+msgstr ""
+
+#: py/objstr.c
+msgid "unknown format code '%c' for object of type '%q'"
+msgstr "型'%q'のオブジェクトに対する不明な書式コード'%c'"
+
+#: py/compile.c
+msgid "unknown type"
+msgstr "不明な型"
+
+#: py/emitnative.c
+msgid "unknown type '%q'"
+msgstr "不明な型 '%q'"
+
+#: py/objstr.c
+msgid "unmatched '{' in format"
+msgstr "書式中にマッチしない '{' があります"
+
+#: py/objtype.c py/runtime.c
+msgid "unreadable attribute"
+msgstr "読み込み不可能な属性"
+
+#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
+#: shared-module/vectorio/Polygon.c
+msgid "unsupported %q type"
+msgstr "サポートされない型 %q"
+
+#: py/emitinlinethumb.c
+#, c-format
+msgid "unsupported Thumb instruction '%s' with %d arguments"
+msgstr ""
+
+#: py/emitinlinextensa.c
+#, c-format
+msgid "unsupported Xtensa instruction '%s' with %d arguments"
+msgstr ""
+
+#: py/objstr.c
+#, c-format
+msgid "unsupported format character '%c' (0x%x) at index %d"
+msgstr ""
+
+#: py/runtime.c
+msgid "unsupported type for %q: '%q'"
+msgstr "%qがサポートしていない型: '%q'"
+
+#: py/runtime.c
+msgid "unsupported type for operator"
+msgstr "演算子がサポートしていない型"
+
+#: py/runtime.c
+msgid "unsupported types for %q: '%q', '%q'"
+msgstr "%qでサポートされない型: '%q', '%q'"
+
+#: py/objint.c
+#, c-format
+msgid "value must fit in %d byte(s)"
+msgstr "値は%dバイトに収まらなければなりません"
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "value_count must be > 0"
+msgstr ""
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "vectors must have same lengths"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "watchdog timeout must be greater than 0"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "window must be <= interval"
+msgstr ""
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "wrong argument type"
+msgstr "引数の型が不正"
+
+#: extmod/ulab/code/ndarray.c
+msgid "wrong index type"
+msgstr "インデクスの型が不正"
+
+#: extmod/ulab/code/vector/vectorise.c
+msgid "wrong input type"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c py/objstr.c
+msgid "wrong number of arguments"
+msgstr ""
+
+#: py/runtime.c
+msgid "wrong number of values to unpack"
+msgstr "アンパックする値の個数が不正です"
+
+#: extmod/ulab/code/ndarray.c
+msgid "wrong operand type"
+msgstr ""
+
+#: extmod/ulab/code/vector/vectorise.c
+msgid "wrong output type"
+msgstr ""
+
+#: shared-module/displayio/Shape.c
+msgid "x value out of bounds"
+msgstr ""
+
+#: shared-bindings/displayio/Shape.c
+msgid "y should be an int"
+msgstr "yは整数が必要"
+
+#: shared-module/displayio/Shape.c
+msgid "y value out of bounds"
+msgstr "yが範囲外"
+
+#: py/objrange.c
+msgid "zero step"
+msgstr "ステップが0"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "zi must be an ndarray"
+msgstr "ziはndarrayでなければなりません"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "zi must be of float type"
+msgstr "ziはfloat値が必要"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "zi must be of shape (n_section, 2)"
+msgstr ""
+
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "終了するには、次の操作をせずにリセットしてください: "
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseOutはこのチップでサポートされていません"
+
+#~ msgid "Invalid I2C pin selection"
+#~ msgstr "I2Cピンの選択が不正です"
+
+#~ msgid "Invalid SPI pin selection"
+#~ msgstr "SPIピンの選択が不正です"
+
+#~ msgid "Invalid UART pin selection"
+#~ msgstr "UARTピンの選択が不正です"

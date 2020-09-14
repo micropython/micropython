@@ -28,15 +28,14 @@
 #define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PULSEOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "driver/rmt.h"
+#include "rmt.h"
 
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    pulseio_pwmout_obj_t *pwmout;
+    rmt_channel_t channel;
 } pulseio_pulseout_obj_t;
-
-void pulseout_reset(void);
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PULSEOUT_H

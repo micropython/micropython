@@ -129,14 +129,12 @@ STATIC bool packet_buffer_on_ble_client_evt(ble_evt_t *ble_evt, void *param) {
             }
             break;
         }
-        case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE: {
+        case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
             queue_next_write(self);
             break;
-        }
-        case BLE_GATTC_EVT_WRITE_RSP: {
+        case BLE_GATTC_EVT_WRITE_RSP:
             queue_next_write(self);
             break;
-        }
         default:
             return false;
             break;
@@ -171,14 +169,14 @@ STATIC bool packet_buffer_on_ble_server_evt(ble_evt_t *ble_evt, void *param) {
             }
             break;
         }
-        case BLE_GAP_EVT_DISCONNECTED: {
+        case BLE_GAP_EVT_DISCONNECTED:
             if (self->conn_handle == ble_evt->evt.gap_evt.conn_handle) {
                 self->conn_handle = BLE_CONN_HANDLE_INVALID;
             }
-        }
-        case BLE_GATTS_EVT_HVN_TX_COMPLETE: {
+            break;
+        case BLE_GATTS_EVT_HVN_TX_COMPLETE:
             queue_next_write(self);
-        }
+            break;
         default:
             return false;
             break;

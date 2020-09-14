@@ -187,7 +187,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|         """Like builtin ``open()``"""
 //|         ...
 //|
-//|     def ilistdir(self, path: str) -> Iterator[Tuple[AnyStr, int, int, int]]:
+//|     def ilistdir(self, path: str) -> Iterator[Union[Tuple[AnyStr, int, int, int], Tuple[AnyStr, int, int]]]:
 //|         """Return an iterator whose values describe files and folders within
 //|         ``path``"""
 //|         ...
@@ -200,11 +200,11 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|         """Like `os.rmdir`"""
 //|         ...
 //|
-//|     def stat(self, path: str) -> str:
+//|     def stat(self, path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|         """Like `os.stat`"""
 //|         ...
 //|
-//|     def statvfs(self, path: str) -> Tuple[str, str, str, str, str, str, str, str, str, str]:
+//|     def statvfs(self, path: int) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|         """Like `os.statvfs`"""
 //|         ...
 //|

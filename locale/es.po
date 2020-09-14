@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-30 07:23-0500\n"
-"PO-Revision-Date: 2020-07-22 20:48+0000\n"
+"POT-Creation-Date: 2020-09-13 14:21-0500\n"
+"PO-Revision-Date: 2020-08-17 21:11+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -35,14 +35,6 @@ msgstr ""
 "\n"
 "Reporte un problema con el contenido de su unidad CIRCUITPY en\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Para salir, favor reinicie la tarjeta sin "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -75,13 +67,17 @@ msgstr "%q fallo: %d"
 msgid "%q in use"
 msgstr "%q está siendo utilizado"
 
-#: py/obj.c
+#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
+#: py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q indice fuera de rango"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q indices deben ser enteros, no %s"
+msgid "%q indices must be integers, not %q"
+msgstr "índices %q deben ser enteros, no %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -89,7 +85,7 @@ msgstr "%q lista debe ser una lista"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q debe ser >= 0"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -118,6 +114,42 @@ msgstr "%q() toma %d argumentos posicionales pero %d fueron dados"
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "argumento '%q' requerido"
+
+#: py/runtime.c
+msgid "'%q' object cannot assign attribute '%q'"
+msgstr "el objeto '%q' no puede asignar el atributo '%q'"
+
+#: py/proto.c
+msgid "'%q' object does not support '%q'"
+msgstr "objeto '%q' no tiene capacidad '%q'"
+
+#: py/obj.c
+msgid "'%q' object does not support item assignment"
+msgstr "objeto '%q' no tiene capacidad de asignado de artículo"
+
+#: py/obj.c
+msgid "'%q' object does not support item deletion"
+msgstr "objeto '%q' no tiene capacidad de borrado de artículo"
+
+#: py/runtime.c
+msgid "'%q' object has no attribute '%q'"
+msgstr "objeto '%q' no tiene atributo '%q'"
+
+#: py/runtime.c
+msgid "'%q' object is not an iterator"
+msgstr "objeto '%q' no es un iterador"
+
+#: py/objtype.c py/runtime.c
+msgid "'%q' object is not callable"
+msgstr "objeto '%q' no es llamable"
+
+#: py/runtime.c
+msgid "'%q' object is not iterable"
+msgstr "objeto '%q' no es iterable"
+
+#: py/obj.c
+msgid "'%q' object is not subscriptable"
+msgstr "objeto '%q' no es subscribible"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -169,48 +201,6 @@ msgstr "'%s' entero %d no esta dentro del rango %d..%d"
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' entero 0x%x no cabe en la máscara 0x%x"
 
-#: py/runtime.c
-msgid "'%s' object cannot assign attribute '%q'"
-msgstr "El objeto '%s' no puede asignar al atributo '%q'"
-
-#: py/proto.c
-msgid "'%s' object does not support '%q'"
-msgstr "El objeto '%s' no admite '%q'"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object does not support item assignment"
-msgstr "el objeto '%s' no soporta la asignación de elementos"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object does not support item deletion"
-msgstr "objeto '%s' no soporta la eliminación de elementos"
-
-#: py/runtime.c
-msgid "'%s' object has no attribute '%q'"
-msgstr "objeto '%s' no tiene atributo '%q'"
-
-#: py/runtime.c
-#, c-format
-msgid "'%s' object is not an iterator"
-msgstr "objeto '%s' no es un iterator"
-
-#: py/objtype.c py/runtime.c
-#, c-format
-msgid "'%s' object is not callable"
-msgstr "objeto '%s' no puede ser llamado"
-
-#: py/runtime.c
-#, c-format
-msgid "'%s' object is not iterable"
-msgstr "objeto '%s' no es iterable"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object is not subscriptable"
-msgstr "el objeto '%s' no es suscriptable"
-
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
 msgstr "'=' alineación no permitida en el especificador string format"
@@ -229,7 +219,7 @@ msgstr "'await' fuera de la función"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' o 'async with' fuera de la función async"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -241,7 +231,7 @@ msgstr "'continue' fuera de un bucle"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "el objeto 'coroutine' no es un iterador"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -284,7 +274,7 @@ msgstr "pow() con 3 argumentos no soportado"
 msgid "A hardware interrupt channel is already in use"
 msgstr "El canal EXTINT ya está siendo utilizado"
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "La dirección debe ser %d bytes de largo"
@@ -315,7 +305,7 @@ msgstr ""
 "Todos los canales de eventos de sincronización (sync event channels) están "
 "siendo utilizados"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Todos los timers para este pin están siendo utilizados"
 
@@ -327,7 +317,7 @@ msgstr "Todos los timers para este pin están siendo utilizados"
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: ports/stm/peripherals/timers.c shared-bindings/pulseio/PWMOut.c
+#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Todos los timers en uso"
 
@@ -338,7 +328,7 @@ msgstr "Ya se encuentra publicando."
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Ya está en ejecución"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -378,13 +368,17 @@ msgstr "Como máximo %d %q se puede especificar (no %d)"
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Tratando de localizar %d bloques"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr ""
 "Se intentó asignación del montículo, sin que la VM de MicroPython esté "
 "ejecutando."
+
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr ""
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -464,6 +458,10 @@ msgstr "La longitud del buffer %d es muy grande. Debe ser menor a %d"
 msgid "Buffer length must be a multiple of 512"
 msgstr "El tamaño del búfer debe ser múltiplo de 512"
 
+#: ports/stm/common-hal/sdioio/SDCard.c
+msgid "Buffer must be a multiple of 512 bytes"
+msgstr "Búfer deber ser un múltiplo de 512 bytes"
+
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Buffer debe ser de longitud 1 como minimo"
@@ -502,6 +500,10 @@ msgstr "Llame a super().__ init __() antes de acceder al objeto nativo."
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr "No se puede configurar CCCD en la característica local"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -567,7 +569,7 @@ msgstr "No se puede transmitir sin pines MOSI y MISO."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "No se puede obtener inequívocamente sizeof escalar"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "No puede variar la frecuencia en un temporizador que ya está en uso"
 
@@ -590,6 +592,10 @@ msgid ""
 msgstr ""
 "CircuitPython está en modo seguro porque presionó el botón de reinicio "
 "durante el arranque. Presione nuevamente para salir del modo seguro.\n"
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -640,27 +646,31 @@ msgstr "No se pudo inicializar SDCard"
 msgid "Could not initialize UART"
 msgstr "No se puede inicializar la UART"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize channel"
 msgstr "No se pudo inicializar el canal"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize timer"
 msgstr "No se pudo inicializar el temporizador"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr "No se pudo reiniciar el canal"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init timer"
 msgstr "No se pudo reiniciar el temporizador"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not restart PWM"
 msgstr "No se pudo reiniciar el PWM"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: shared-bindings/_bleio/Adapter.c
+msgid "Could not set address"
+msgstr "No se puede definir la dirección"
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr "No se pudo iniciar el PWM"
 
@@ -757,9 +767,9 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 msgid "Error in regex"
 msgstr "Error en regex"
 
-#: shared-bindings/aesio/aes.c shared-bindings/busio/SPI.c
-#: shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Se espera un %q"
@@ -769,9 +779,17 @@ msgstr "Se espera un %q"
 msgid "Expected a Characteristic"
 msgstr "Se esperaba una Característica"
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr "Se esperaba un servicio"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
+msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -842,11 +860,16 @@ msgstr "Error al escribir al flash interno."
 msgid "File exists"
 msgstr "El archivo ya existe"
 
+#: shared-module/framebufferio/FramebufferDisplay.c
+#, c-format
+msgid "Framebuffer requires %d bytes"
+msgstr "Framebuffer requiere %d bytes"
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr "Frecuencia capturada por encima de la capacidad. Captura en pausa."
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 "La frecuencia debe coincidir con PWMOut existente usando este temporizador"
@@ -867,7 +890,7 @@ msgid "Group full"
 msgstr "Group lleno"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr "Hardware ocupado, pruebe pines alternativos"
 
@@ -885,7 +908,7 @@ msgstr "Error de inicio de I2C"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut no disponible"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -934,6 +957,11 @@ msgstr "%q inválido"
 msgid "Invalid %q pin"
 msgstr "Pin %q inválido"
 
+#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+msgid "Invalid %q pin selection"
+msgstr "selección inválida de pin %q"
+
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Valor de unidad de ADC no válido"
@@ -946,23 +974,11 @@ msgstr "Archivo BMP inválido"
 msgid "Invalid DAC pin supplied"
 msgstr "Pin suministrado inválido para DAC"
 
-#: ports/stm/common-hal/busio/I2C.c
-msgid "Invalid I2C pin selection"
-msgstr "Selección de pin I2C no válida"
-
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c
-#: ports/cxd56/common-hal/pulseio/PWMOut.c
-#: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
+#: ports/atmel-samd/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Frecuencia PWM inválida"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Invalid SPI pin selection"
-msgstr "Selección de pin SPI no válida"
-
-#: ports/stm/common-hal/busio/UART.c
-msgid "Invalid UART pin selection"
-msgstr "Selección de pin UART no válida"
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
@@ -1000,7 +1016,7 @@ msgstr "Archivo inválido"
 msgid "Invalid format chunk size"
 msgstr "Formato de fragmento de formato no válido"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
 msgstr "Frecuencia suministrada no válida"
 
@@ -1018,8 +1034,8 @@ msgid "Invalid phase"
 msgstr "Fase inválida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Pin inválido"
 
@@ -1043,7 +1059,7 @@ msgstr "Pin inválido para canal derecho"
 msgid "Invalid pins"
 msgstr "pines inválidos"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid pins for PWMOut"
 msgstr "Pines inválidos para PWMOut"
 
@@ -1225,9 +1241,13 @@ msgstr "No se especificó ninguna llave"
 msgid "No long integer support"
 msgstr "No hay soporte de entero largo"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
 msgstr "No hay más temporizadores disponibles en este pin."
+
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1249,6 +1269,10 @@ msgstr "No hay temporizador disponible"
 msgid "Nordic Soft Device failure assertion."
 msgstr "fallo de aserción de dispositivo Nordic Soft."
 
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -1258,6 +1282,14 @@ msgstr "No conectado"
 #: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr "No reproduciendo"
+
+#: main.c
+msgid "Not running saved code.\n"
+msgstr "No ejecutando el código almacenado.\n"
+
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
+msgstr ""
 
 #: shared-bindings/util.c
 msgid ""
@@ -1291,16 +1323,20 @@ msgstr ""
 "Solo se admiten BMP monocromáticos, indexados de 4 bpp u 8 bpp y 16 bpp o "
 "más: %d bpp proporcionados"
 
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "El sobremuestreo debe ser un múltiplo de 8."
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr "PWM duty_cycle debe ser entre 0 y 65535 inclusivo (16 bit resolution)"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
@@ -1354,9 +1390,14 @@ msgstr "Además de cualquier módulo en el sistema de archivos\n"
 msgid "Polygon needs at least 3 points"
 msgstr "El polígono necesita al menos 3 puntos"
 
-#: shared-bindings/ps2io/Ps2.c
-msgid "Pop from an empty Ps2 buffer"
-msgstr "Pop de un buffer Ps2 vacio"
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/pulseio/PulseOut.c
+#: ports/stm/common-hal/pulseio/PulseOut.c
+msgid ""
+"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
+"instead"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -1431,12 +1472,8 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "La entrada de la fila debe ser digitalio.DigitalInOut"
 
 #: main.c
-msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
-
-#: main.c
-msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
+msgid "Running in safe mode! "
+msgstr "¡Corriendo en modo seguro! "
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
@@ -1446,6 +1483,16 @@ msgstr "Sin capacidad para formato CSD para tarjeta SD"
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "SDA o SCL necesitan una pull up"
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, c-format
+msgid "SDIO GetCardInfo Error %d"
+msgstr "Error SDIO GetCardInfo %d"
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, c-format
+msgid "SDIO Init Error %d"
+msgstr "Error de iniciado de SDIO %d"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
@@ -1480,6 +1527,10 @@ msgstr "Pin RTS seleccionado no válido"
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Serializer in use"
 msgstr "Serializer está siendo utilizado"
+
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -1587,10 +1638,16 @@ msgstr ""
 "Tiempo de espera demasiado largo: El tiempo máximo de espera es de %d "
 "segundos"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+"El temporizador es utilizado para uso interno - declare los pines para PWM "
+"más temprano en el programa"
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Para salir, por favor reinicia la tarjeta sin "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1687,6 +1744,10 @@ msgstr "Imposible escribir en nvm."
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Tipo de uuid nrfx inesperado"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1802,6 +1863,10 @@ msgstr ""
 "\n"
 "Para listar los módulos incorporados por favor haga `help(\"modules\")`.\n"
 
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Escrituras no admitidas en la característica"
@@ -1819,9 +1884,8 @@ msgid "__init__() should return None"
 msgstr "__init__() deberia devolver None"
 
 #: py/objtype.c
-#, c-format
-msgid "__init__() should return None, not '%s'"
-msgstr "__init__() deberia devolver None, no '%s'"
+msgid "__init__() should return None, not '%q'"
+msgstr "__init__() debe retornar None, no '%q'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -1866,7 +1930,7 @@ msgstr "el argumento tiene un tipo erroneo"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr ""
+msgstr "argumento debe ser ndarray"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -1917,7 +1981,7 @@ msgstr "especificador de conversion erroneo"
 msgid "bad format string"
 msgstr "formato de string erroneo"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "typecode erroneo"
 
@@ -1970,11 +2034,15 @@ msgstr "byteorder no es una cadena"
 msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits no soportados"
 
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
+
 #: py/objstr.c
 msgid "bytes value out of range"
 msgstr "valor de bytes fuera de rango"
 
-#: ports/atmel-samd/bindings/samd/Clock.c
+#: ports/atmel-samd/bindings/samd/Clock.c ports/atmel-samd/common-hal/rtc/RTC.c
 msgid "calibration is out of range"
 msgstr "calibration esta fuera de rango"
 
@@ -2006,48 +2074,18 @@ msgstr "no se puede agregar un método a una clase ya subclasificada"
 msgid "can't assign to expression"
 msgstr "no se puede asignar a la expresión"
 
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to complex"
-msgstr "no se puede convertir %s a complejo"
-
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to float"
-msgstr "no se puede convertir %s a float"
-
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to int"
-msgstr "no se puede convertir %s a int"
+#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
+msgid "can't convert %q to %q"
+msgstr "no puede convertir %q a %q"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "no se puede convertir el objeto '%q' a %q implícitamente"
 
-#: py/objint.c
-msgid "can't convert NaN to int"
-msgstr "no se puede convertir Nan a int"
-
-#: shared-bindings/i2cperipheral/I2CPeripheral.c
-msgid "can't convert address to int"
-msgstr "no se puede convertir address a int"
-
-#: py/objint.c
-msgid "can't convert inf to int"
-msgstr "no se puede convertir inf en int"
-
 #: py/obj.c
-msgid "can't convert to complex"
-msgstr "no se puede convertir a complejo"
-
-#: py/obj.c
-msgid "can't convert to float"
-msgstr "no se puede convertir a float"
-
-#: py/obj.c
-msgid "can't convert to int"
-msgstr "no se puede convertir a int"
+msgid "can't convert to %q"
+msgstr "no puede convertir a %q"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2461,7 +2499,7 @@ msgstr "la función requiere del argumento por palabra clave '%q'"
 msgid "function missing required positional argument #%d"
 msgstr "la función requiere del argumento posicional #%d"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c shared-bindings/time/__init__.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "la función toma %d argumentos posicionales pero le fueron dados %d"
@@ -2510,10 +2548,7 @@ msgstr "relleno (padding) incorrecto"
 msgid "index is out of bounds"
 msgstr "el índice está fuera de límites"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c
+#: py/obj.c
 msgid "index out of range"
 msgstr "index fuera de rango"
 
@@ -2528,6 +2563,10 @@ msgstr "los índices deben ser enteros, particiones o listas de booleanos"
 #: extmod/ulab/code/approx/approx.c
 msgid "initial values must be iterable"
 msgstr "los valores iniciales deben permitir iteración"
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
+msgstr ""
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2724,6 +2763,10 @@ msgstr "matrix no es definida positiva"
 msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length debe ser 0-%d cuando fixed_length es %s"
 
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
+msgstr ""
+
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "profundidad máxima de recursión excedida"
@@ -2875,9 +2918,8 @@ msgid "number of points must be at least 2"
 msgstr "el número de puntos debe ser al menos 2"
 
 #: py/obj.c
-#, c-format
-msgid "object '%s' is not a tuple or list"
-msgstr "el objeto '%s' no es una tupla o lista"
+msgid "object '%q' is not a tuple or list"
+msgstr "objeto '%q' no es tupla o lista"
 
 #: py/obj.c
 msgid "object does not support item assignment"
@@ -2912,9 +2954,8 @@ msgid "object not iterable"
 msgstr "objeto no iterable"
 
 #: py/obj.c
-#, c-format
-msgid "object of type '%s' has no len()"
-msgstr "el objeto de tipo '%s' no tiene len()"
+msgid "object of type '%q' has no len()"
+msgstr "objeto de tipo '%q' no tiene len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -2963,9 +3004,22 @@ msgstr "ord espera un carácter"
 msgid "ord() expected a character, but string of length %d found"
 msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of source"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of target"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
 msgstr "desbordamiento convirtiendo long int a palabra de máquina"
+
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
@@ -3006,21 +3060,10 @@ msgstr "el polígono solo se puede registrar en uno de los padres"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "pop from an empty PulseIn"
-msgstr "pop de un PulseIn vacío"
-
-#: py/objset.c
-msgid "pop from an empty set"
-msgstr "pop desde un set vacío"
-
-#: py/objlist.c
-msgid "pop from empty list"
-msgstr "pop desde una lista vacía"
-
-#: py/objdict.c
-msgid "popitem(): dictionary is empty"
-msgstr "popitem(): diccionario vacío"
+#: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
+#: shared-bindings/ps2io/Ps2.c
+msgid "pop from empty %q"
+msgstr "pop desde %q vacía"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -3153,6 +3196,10 @@ msgstr "sos[:, 3] deberían ser todos unos"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt requiere argumentos iterables"
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "source palette too large"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "índices inicio/final"
@@ -3178,13 +3225,8 @@ msgid "stream operation not supported"
 msgstr "operación stream no soportada"
 
 #: py/objstrunicode.c
-msgid "string index out of range"
-msgstr "string index fuera de rango"
-
-#: py/objstrunicode.c
-#, c-format
-msgid "string indices must be integers, not %s"
-msgstr "índices de string deben ser enteros, no %s"
+msgid "string indices must be integers, not %q"
+msgstr "índices de cadena deben ser enteros, no %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3193,10 +3235,6 @@ msgstr "string no soportado; usa bytes o bytearray"
 #: extmod/moductypes.c
 msgid "struct: cannot index"
 msgstr "struct: no se puede indexar"
-
-#: extmod/moductypes.c
-msgid "struct: index out of range"
-msgstr "struct: index fuera de rango"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -3266,19 +3304,15 @@ msgstr "demasiados valores para descomprimir (%d esperado)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "trapz está definido para arreglos 1D de igual tamaño"
 
-#: extmod/ulab/code/linalg/linalg.c py/objstr.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
 msgstr "tuple index fuera de rango"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tupla/lista tiene una longitud incorrecta"
-
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
-msgstr "tuple/lista se require en RHS"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c
@@ -3335,9 +3369,8 @@ msgid "unknown conversion specifier %c"
 msgstr "especificador de conversión %c desconocido"
 
 #: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type '%s'"
-msgstr "codigo format desconocido '%c' para el typo de objeto '%s'"
+msgid "unknown format code '%c' for object of type '%q'"
+msgstr "formato de código desconocicdo '%c' para objeto de tipo '%q'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3376,16 +3409,16 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "carácter no soportado '%c' (0x%x) en índice %d"
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%s'"
-msgstr "tipo no soportado para %q: '%s'"
+msgid "unsupported type for %q: '%q'"
+msgstr "tipo no soportado para %q: '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
 msgstr "tipo de operador no soportado"
 
 #: py/runtime.c
-msgid "unsupported types for %q: '%s', '%s'"
-msgstr "tipos no soportados para %q: '%s', '%s'"
+msgid "unsupported types for %q: '%q', '%q'"
+msgstr "tipos no soportados para %q: '%q', '%q'"
 
 #: py/objint.c
 #, c-format
@@ -3398,7 +3431,7 @@ msgstr "value_count debe ser > 0"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "los vectores deben tener el mismo tamaño"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
@@ -3464,6 +3497,134 @@ msgstr "zi debe ser de tipo flotante"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
 
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Para salir, favor reinicie la tarjeta sin "
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseOut no es compatible con este chip"
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "tuple/lista se require en RHS"
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q indices deben ser enteros, no %s"
+
+#~ msgid "'%s' object cannot assign attribute '%q'"
+#~ msgstr "El objeto '%s' no puede asignar al atributo '%q'"
+
+#~ msgid "'%s' object does not support '%q'"
+#~ msgstr "El objeto '%s' no admite '%q'"
+
+#~ msgid "'%s' object does not support item assignment"
+#~ msgstr "el objeto '%s' no soporta la asignación de elementos"
+
+#~ msgid "'%s' object does not support item deletion"
+#~ msgstr "objeto '%s' no soporta la eliminación de elementos"
+
+#~ msgid "'%s' object has no attribute '%q'"
+#~ msgstr "objeto '%s' no tiene atributo '%q'"
+
+#~ msgid "'%s' object is not an iterator"
+#~ msgstr "objeto '%s' no es un iterator"
+
+#~ msgid "'%s' object is not callable"
+#~ msgstr "objeto '%s' no puede ser llamado"
+
+#~ msgid "'%s' object is not iterable"
+#~ msgstr "objeto '%s' no es iterable"
+
+#~ msgid "'%s' object is not subscriptable"
+#~ msgstr "el objeto '%s' no es suscriptable"
+
+#~ msgid "Invalid I2C pin selection"
+#~ msgstr "Selección de pin I2C no válida"
+
+#~ msgid "Invalid SPI pin selection"
+#~ msgstr "Selección de pin SPI no válida"
+
+#~ msgid "Invalid UART pin selection"
+#~ msgstr "Selección de pin UART no válida"
+
+#~ msgid "Pop from an empty Ps2 buffer"
+#~ msgstr "Pop de un buffer Ps2 vacio"
+
+#~ msgid "Running in safe mode! Auto-reload is off.\n"
+#~ msgstr "Ejecutando en modo seguro! La auto-recarga esta deshabilitada.\n"
+
+#~ msgid "Running in safe mode! Not running saved code.\n"
+#~ msgstr ""
+#~ "Ejecutando en modo seguro! No se esta ejecutando el código guardado.\n"
+
+#~ msgid "__init__() should return None, not '%s'"
+#~ msgstr "__init__() deberia devolver None, no '%s'"
+
+#~ msgid "can't convert %s to complex"
+#~ msgstr "no se puede convertir %s a complejo"
+
+#~ msgid "can't convert %s to float"
+#~ msgstr "no se puede convertir %s a float"
+
+#~ msgid "can't convert %s to int"
+#~ msgstr "no se puede convertir %s a int"
+
+#~ msgid "can't convert NaN to int"
+#~ msgstr "no se puede convertir Nan a int"
+
+#~ msgid "can't convert address to int"
+#~ msgstr "no se puede convertir address a int"
+
+#~ msgid "can't convert inf to int"
+#~ msgstr "no se puede convertir inf en int"
+
+#~ msgid "can't convert to complex"
+#~ msgstr "no se puede convertir a complejo"
+
+#~ msgid "can't convert to float"
+#~ msgstr "no se puede convertir a float"
+
+#~ msgid "can't convert to int"
+#~ msgstr "no se puede convertir a int"
+
+#~ msgid "object '%s' is not a tuple or list"
+#~ msgstr "el objeto '%s' no es una tupla o lista"
+
+#~ msgid "object of type '%s' has no len()"
+#~ msgstr "el objeto de tipo '%s' no tiene len()"
+
+#~ msgid "pop from an empty PulseIn"
+#~ msgstr "pop de un PulseIn vacío"
+
+#~ msgid "pop from an empty set"
+#~ msgstr "pop desde un set vacío"
+
+#~ msgid "pop from empty list"
+#~ msgstr "pop desde una lista vacía"
+
+#~ msgid "popitem(): dictionary is empty"
+#~ msgstr "popitem(): diccionario vacío"
+
+#~ msgid "string index out of range"
+#~ msgstr "string index fuera de rango"
+
+#~ msgid "string indices must be integers, not %s"
+#~ msgstr "índices de string deben ser enteros, no %s"
+
+#~ msgid "struct: index out of range"
+#~ msgstr "struct: index fuera de rango"
+
+#~ msgid "unknown format code '%c' for object of type '%s'"
+#~ msgstr "codigo format desconocido '%c' para el typo de objeto '%s'"
+
+#~ msgid "unsupported type for %q: '%s'"
+#~ msgstr "tipo no soportado para %q: '%s'"
+
+#~ msgid "unsupported types for %q: '%s', '%s'"
+#~ msgstr "tipos no soportados para %q: '%s', '%s'"
+
 #~ msgid "'%q' object is not bytes-like"
 #~ msgstr "el objeto '%q' no es similar a bytes"
 
@@ -3472,9 +3633,6 @@ msgstr "zi debe ser una forma (n_section,2)"
 
 #~ msgid "PulseIn not supported on this chip"
 #~ msgstr "PulseIn no es compatible con este chip"
-
-#~ msgid "PulseOut not supported on this chip"
-#~ msgstr "PulseOut no es compatible con este chip"
 
 #~ msgid "AP required"
 #~ msgstr "AP requerido"
@@ -3719,8 +3877,8 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d "
 #~ "bpp given"
 #~ msgstr ""
-#~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:% "
-#~ "d bppdado"
+#~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:%d "
+#~ "bppdado"
 
 #, fuzzy
 #~ msgid "Only slices with step=1 (aka None) are supported"
@@ -3794,9 +3952,6 @@ msgstr "zi debe ser una forma (n_section,2)"
 
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Los índices de Tile deben ser 0 - 255"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Para salir, por favor reinicia la tarjeta sin "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) no existe"

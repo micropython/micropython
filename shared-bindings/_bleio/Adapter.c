@@ -48,29 +48,76 @@
 #define WINDOW_DEFAULT (0.1f)
 
 //| class Adapter:
-//|     """BLE adapter
-//|
-//|     The Adapter manages the discovery and connection to other nearby Bluetooth Low Energy devices.
+//|     """
+//|     The BLE Adapter object manages the discovery and connection to other nearby Bluetooth Low Energy devices.
 //|     This part of the Bluetooth Low Energy Specification is known as Generic Access Profile (GAP).
 //|
 //|     Discovery of other devices happens during a scanning process that listens for small packets of
 //|     information, known as advertisements, that are broadcast unencrypted. The advertising packets
 //|     have two different uses. The first is to broadcast a small piece of data to anyone who cares and
-//|     and nothing more. These are known as Beacons. The second class of advertisement is to promote
+//|     and nothing more. These are known as beacons. The second class of advertisement is to promote
 //|     additional functionality available after the devices establish a connection. For example, a
-//|     BLE keyboard may advertise that it can provide key information, but not what the key info is.
+//|     BLE heart rate monitor would advertise that it provides the standard BLE Heart Rate Service.
 //|
-//|     The built-in BLE adapter can do both parts of this process: it can scan for other device
+//|     The Adapter can do both parts of this process: it can scan for other device
 //|     advertisements and it can advertise its own data. Furthermore, Adapters can accept incoming
 //|     connections and also initiate connections."""
 //|
 
-//|     def __init__(self) -> None:
-//|         """You cannot create an instance of `_bleio.Adapter`.
-//|         Use `_bleio.adapter` to access the sole instance available."""
+//|     def __init__(self, *, uart: busio.UART, rts: digitalio.DigitalInOut, cts: digitalio.DigitalInOut) -> None:
+//|         """On boards that do not have native BLE, you can use an HCI co-processor.
+//|         Pass the uart and pins used to communicate with the co-processor, such as an Adafruit AirLift.
+//|         The co-processor must have been reset and put into BLE mode beforehand
+//|         by the appropriate pin manipulation.
+//|         The ``uart``, ``rts``, and ``cts`` objects are used to
+//|         communicate with the HCI co-processor in HCI mode.
+//|         The `Adapter` object is enabled during this call.
+//|
+//|         After instantiating an Adapter, call `_bleio.set_adapter()` to set `_bleio.adapter`
+//|
+//|         On boards with native BLE, you cannot create an instance of `_bleio.Adapter`;
+//|         this constructor will raise `NotImplementedError`.
+//|         Use `_bleio.adapter` to access the sole instance already available.
+//|         """
 //|         ...
 //|
+STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+#if CIRCUITPY_BLEIO_HCI
+    bleio_adapter_obj_t *self = common_hal_bleio_allocate_adapter_or_raise();
 
+    enum { ARG_uart, ARG_rts, ARG_cts };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_uart, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    busio_uart_obj_t *uart = args[ARG_uart].u_obj;
+    if (!MP_OBJ_IS_TYPE(uart, &busio_uart_type)) {
+        mp_raise_ValueError(translate("Expected a UART"));
+    }
+
+    digitalio_digitalinout_obj_t *rts = args[ARG_rts].u_obj;
+    digitalio_digitalinout_obj_t *cts = args[ARG_cts].u_obj;
+    if (!MP_OBJ_IS_TYPE(rts, &digitalio_digitalinout_type) ||
+        !MP_OBJ_IS_TYPE(cts, &digitalio_digitalinout_type)) {
+        mp_raise_ValueError(translate("Expected a DigitalInOut"));
+    }
+
+    // Will enable the adapter.
+    common_hal_bleio_adapter_construct_hci_uart(self, uart, rts, cts);
+
+    return MP_OBJ_FROM_PTR(self);
+#else
+    mp_raise_NotImplementedError(translate("Cannot create a new Adapter; use _bleio.adapter;"));
+    return mp_const_none;
+#endif // CIRCUITPY_BLEIO_HCI
+}
+
+//|
 //|     enabled: bool
 //|     """State of the BLE adapter."""
 //|
@@ -96,7 +143,7 @@ const mp_obj_property_t bleio_adapter_enabled_obj = {
 };
 
 //|     address: Address
-//|     """MAC address of the BLE adapter. (read-only)"""
+//|     """MAC address of the BLE adapter."""
 //|
 STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
     return MP_OBJ_FROM_PTR(common_hal_bleio_adapter_get_address(self));
@@ -104,10 +151,18 @@ STATIC mp_obj_t bleio_adapter_get_address(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_address_obj, bleio_adapter_get_address);
 
+STATIC mp_obj_t bleio_adapter_set_address(mp_obj_t self, mp_obj_t new_address) {
+    if (!common_hal_bleio_adapter_set_address(self, new_address)) {
+        mp_raise_bleio_BluetoothError(translate("Could not set address"));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(bleio_adapter_set_address_obj, bleio_adapter_set_address);
+
 const mp_obj_property_t bleio_adapter_address_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&bleio_adapter_get_address_obj,
-               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&bleio_adapter_set_address_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
 
@@ -145,8 +200,8 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|         .. note: If you set ``anonymous=True``, then a timeout must be specified. If no timeout is
 //|            specified, then the maximum allowed timeout will be selected automatically.
 //|
-//|         :param buf data: advertising data packet bytes
-//|         :param buf scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
+//|         :param ~_typing.ReadableBuffer data: advertising data packet bytes
+//|         :param ~_typing.ReadableBuffer scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
 //|         :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
 //|         :param bool anonymous:  If `True` then this device's MAC address is randomized before advertising.
 //|         :param int timeout:  If set, we will only advertise for this many seconds.
@@ -219,7 +274,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_advertising_obj, bleio_adapt
 //|         """Starts a BLE scan and returns an iterator of results. Advertisements and scan responses are
 //|         filtered and returned separately.
 //|
-//|         :param sequence prefixes: Sequence of byte string prefixes to filter advertising packets
+//|         :param ~_typing.ReadableBuffer prefixes: Sequence of byte string prefixes to filter advertising packets
 //|             with. A packet without an advertising structure that matches one of the prefixes is
 //|             ignored. Format is one byte for length (n) and n bytes of prefix and can be repeated.
 //|         :param int buffer_size: the maximum number of advertising bytes to buffer.
@@ -334,7 +389,7 @@ const mp_obj_property_t bleio_adapter_connected_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     connections: tuple
+//|     connections: Tuple[Connection]
 //|     """Tuple of active connections including those initiated through
 //|     :py:meth:`_bleio.Adapter.connect`. (read-only)"""
 //|
@@ -354,7 +409,7 @@ const mp_obj_property_t bleio_adapter_connections_obj = {
 //|         """Attempts a connection to the device with the given address.
 //|
 //|         :param Address address: The address of the peripheral to connect to
-//|         :param float timeout: Try to connect for timeout seconds."""
+//|         :param float/int timeout: Try to connect for timeout seconds."""
 //|         ...
 //|
 STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -418,5 +473,6 @@ STATIC MP_DEFINE_CONST_DICT(bleio_adapter_locals_dict, bleio_adapter_locals_dict
 const mp_obj_type_t bleio_adapter_type = {
     .base = { &mp_type_type },
     .name = MP_QSTR_Adapter,
+    .make_new = bleio_adapter_make_new,
     .locals_dict = (mp_obj_t)&bleio_adapter_locals_dict,
 };

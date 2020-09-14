@@ -41,7 +41,8 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-//| """
+//| """Bluetooth Low Energy (BLE) communication
+//|
 //| The `_bleio` module provides necessary low-level functionality for communicating
 //| using Bluetooth Low Energy (BLE). The '_' prefix indicates this module is meant
 //| for internal use by libraries but not by the end user. Its API may change incompatibly
@@ -50,12 +51,12 @@
 //| `adafruit_ble <https://circuitpython.readthedocs.io/projects/ble/en/latest/>`_
 //| CircuitPython library instead, which builds on `_bleio`, and
 //| provides higher-level convenience functionality, including predefined beacons, clients,
-//| servers.
+//| servers."""
 //|
-//| .. attribute:: adapter
-//|
-//|   BLE Adapter used to manage device discovery and connections.
-//|   This object is the sole instance of `_bleio.Adapter`."""
+
+//| adapter: Adapter
+//| """BLE Adapter used to manage device discovery and connections.
+//| This object is the sole instance of `_bleio.Adapter`."""
 //|
 
 //| class BluetoothError(Exception):
@@ -107,43 +108,95 @@ NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t* fmt, ...) 
 
 // Called when _bleio is imported.
 STATIC mp_obj_t bleio___init__(void) {
+// HCI cannot be enabled on import, because we need to setup the HCI adapter first.
+#if !CIRCUITPY_BLEIO_HCI
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
+#endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(bleio___init___obj, bleio___init__);
 
 
+// Need a forward reference due to mutual references.
+#if CIRCUITPY_BLEIO_HCI
+STATIC mp_obj_dict_t bleio_module_globals;
+#endif
+
+//| def set_adapter(adapter: Optional[_bleio.Adapter]) -> None:
+//|     """Set the adapter to use for BLE, such as when using an HCI adapter.
+//|     Raises `NotImplementedError` when the adapter is a singleton and cannot be set."""
+//|     ...
+//|
+mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj) {
+#if CIRCUITPY_BLEIO_HCI
+    if (adapter_obj != mp_const_none && !MP_OBJ_IS_TYPE(adapter_obj, &bleio_adapter_type)) {
+        mp_raise_TypeError_varg(translate("Expected a %q"), bleio_adapter_type.name);
+    }
+
+    // Equivalent of:
+    // bleio.adapter = adapter_obj
+    mp_map_elem_t *elem = mp_map_lookup(&bleio_module_globals.map, MP_ROM_QSTR(MP_QSTR_adapter), MP_MAP_LOOKUP);
+    if (elem) {
+        elem->value = adapter_obj;
+    }
+#else
+    mp_raise_NotImplementedError(translate("Not settable"));
+#endif
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(bleio_set_adapter_obj, bleio_set_adapter);
+
+#if CIRCUITPY_BLEIO_HCI
+// Make the module dictionary be in RAM, so that _bleio.adapter can be set.
+// Use a local macro to define how table entries should be converted.
+#define OBJ_FROM_PTR MP_OBJ_FROM_PTR
+STATIC mp_map_elem_t bleio_module_globals_table[] = {
+#else
+#define OBJ_FROM_PTR MP_ROM_PTR
 STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
+#endif
     // Name must be the first entry so that the exception printing below is correct.
     { MP_ROM_QSTR(MP_QSTR___name__),             MP_ROM_QSTR(MP_QSTR__bleio) },
-    { MP_ROM_QSTR(MP_QSTR_Adapter),              MP_ROM_PTR(&bleio_adapter_type) },
-    { MP_ROM_QSTR(MP_QSTR_Address),              MP_ROM_PTR(&bleio_address_type) },
-    { MP_ROM_QSTR(MP_QSTR_Attribute),            MP_ROM_PTR(&bleio_attribute_type) },
-    { MP_ROM_QSTR(MP_QSTR_Connection),           MP_ROM_PTR(&bleio_connection_type) },
-    { MP_ROM_QSTR(MP_QSTR_Characteristic),       MP_ROM_PTR(&bleio_characteristic_type) },
-    { MP_ROM_QSTR(MP_QSTR_CharacteristicBuffer), MP_ROM_PTR(&bleio_characteristic_buffer_type) },
-    { MP_ROM_QSTR(MP_QSTR_Descriptor),           MP_ROM_PTR(&bleio_descriptor_type) },
-    { MP_ROM_QSTR(MP_QSTR_PacketBuffer),         MP_ROM_PTR(&bleio_packet_buffer_type) },
-    { MP_ROM_QSTR(MP_QSTR_ScanEntry),            MP_ROM_PTR(&bleio_scanentry_type) },
-    { MP_ROM_QSTR(MP_QSTR_ScanResults),          MP_ROM_PTR(&bleio_scanresults_type) },
-    { MP_ROM_QSTR(MP_QSTR_Service),              MP_ROM_PTR(&bleio_service_type) },
-    { MP_ROM_QSTR(MP_QSTR_UUID),                 MP_ROM_PTR(&bleio_uuid_type) },
+    { MP_ROM_QSTR(MP_QSTR_Adapter),              OBJ_FROM_PTR(&bleio_adapter_type) },
+    { MP_ROM_QSTR(MP_QSTR_Address),              OBJ_FROM_PTR(&bleio_address_type) },
+    { MP_ROM_QSTR(MP_QSTR_Attribute),            OBJ_FROM_PTR(&bleio_attribute_type) },
+    { MP_ROM_QSTR(MP_QSTR_Connection),           OBJ_FROM_PTR(&bleio_connection_type) },
+    { MP_ROM_QSTR(MP_QSTR_Characteristic),       OBJ_FROM_PTR(&bleio_characteristic_type) },
+    { MP_ROM_QSTR(MP_QSTR_CharacteristicBuffer), OBJ_FROM_PTR(&bleio_characteristic_buffer_type) },
+    { MP_ROM_QSTR(MP_QSTR_Descriptor),           OBJ_FROM_PTR(&bleio_descriptor_type) },
+    { MP_ROM_QSTR(MP_QSTR_PacketBuffer),         OBJ_FROM_PTR(&bleio_packet_buffer_type) },
+    { MP_ROM_QSTR(MP_QSTR_ScanEntry),            OBJ_FROM_PTR(&bleio_scanentry_type) },
+    { MP_ROM_QSTR(MP_QSTR_ScanResults),          OBJ_FROM_PTR(&bleio_scanresults_type) },
+    { MP_ROM_QSTR(MP_QSTR_Service),              OBJ_FROM_PTR(&bleio_service_type) },
+    { MP_ROM_QSTR(MP_QSTR_UUID),                 OBJ_FROM_PTR(&bleio_uuid_type) },
 
-    // Properties
+#if CIRCUITPY_BLEIO_HCI
+    // For HCI, _bleio.adapter is settable, and starts as None.
+    { MP_ROM_QSTR(MP_QSTR_adapter),              mp_const_none },
+    { MP_ROM_QSTR(MP_QSTR_set_adapter),          (mp_obj_t) &bleio_set_adapter_obj },
+#else
+    // For non-HCI _bleio.adapter is a fixed singleton, and is not settable.
+    // _bleio.set_adapter will raise NotImplementedError.
     { MP_ROM_QSTR(MP_QSTR_adapter),              MP_ROM_PTR(&common_hal_bleio_adapter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_adapter),          MP_ROM_PTR(&bleio_set_adapter_obj) },
+#endif
 
     // Errors
-    { MP_ROM_QSTR(MP_QSTR_BluetoothError),      MP_ROM_PTR(&mp_type_bleio_BluetoothError) },
-    { MP_ROM_QSTR(MP_QSTR_ConnectionError),     MP_ROM_PTR(&mp_type_bleio_ConnectionError) },
-    { MP_ROM_QSTR(MP_QSTR_RoleError),           MP_ROM_PTR(&mp_type_bleio_RoleError) },
-    { MP_ROM_QSTR(MP_QSTR_SecurityError),       MP_ROM_PTR(&mp_type_bleio_SecurityError) },
+    { MP_ROM_QSTR(MP_QSTR_BluetoothError),       OBJ_FROM_PTR(&mp_type_bleio_BluetoothError) },
+    { MP_ROM_QSTR(MP_QSTR_ConnectionError),      OBJ_FROM_PTR(&mp_type_bleio_ConnectionError) },
+    { MP_ROM_QSTR(MP_QSTR_RoleError),            OBJ_FROM_PTR(&mp_type_bleio_RoleError) },
+    { MP_ROM_QSTR(MP_QSTR_SecurityError),        OBJ_FROM_PTR(&mp_type_bleio_SecurityError) },
 
     // Initialization
-    { MP_ROM_QSTR(MP_QSTR___init__),            MP_ROM_PTR(&bleio___init___obj) },
-
+    { MP_ROM_QSTR(MP_QSTR___init__),             OBJ_FROM_PTR(&bleio___init___obj) },
 };
 
+#if CIRCUITPY_BLEIO_HCI
+// Module dict is mutable to allow setting _bleio.adapter.
+STATIC MP_DEFINE_MUTABLE_DICT(bleio_module_globals, bleio_module_globals_table);
+#else
 STATIC MP_DEFINE_CONST_DICT(bleio_module_globals, bleio_module_globals_table);
+#endif
 
 void bleio_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
