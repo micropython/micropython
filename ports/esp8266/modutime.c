@@ -58,11 +58,11 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     timeutils_struct_time_t tm;
     mp_int_t seconds;
     if (n_args == 0 || args[0] == mp_const_none) {
-        seconds = pyb_rtc_get_us_since_2000() / 1000 / 1000;
+        seconds = pyb_rtc_get_us_since_epoch() / 1000 / 1000;
     } else {
         seconds = mp_obj_get_int(args[0]);
     }
-    timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
+    timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
     mp_obj_t tuple[8] = {
         tuple[0] = mp_obj_new_int(tm.tm_year),
         tuple[1] = mp_obj_new_int(tm.tm_mon),
@@ -98,10 +98,10 @@ STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
 MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 
 /// \function time()
-/// Returns the number of seconds, as an integer, since 1/1/2000.
+/// Returns the number of seconds, as an integer, since the Epoch.
 STATIC mp_obj_t time_time(void) {
     // get date and time
-    return mp_obj_new_int(pyb_rtc_get_us_since_2000() / 1000 / 1000);
+    return mp_obj_new_int(pyb_rtc_get_us_since_epoch() / 1000 / 1000);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 

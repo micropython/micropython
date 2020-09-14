@@ -44,7 +44,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     } else {
         seconds = mp_obj_get_int(args[0]);
     }
-    timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
+    timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
     mp_obj_t tuple[8] = {
         tuple[0] = mp_obj_new_int(tm.tm_year),
         tuple[1] = mp_obj_new_int(tm.tm_mon),

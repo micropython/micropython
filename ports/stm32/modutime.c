@@ -76,7 +76,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     } else {
         mp_int_t seconds = mp_obj_get_int(args[0]);
         timeutils_struct_time_t tm;
-        timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
+        timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
         mp_obj_t tuple[8] = {
             tuple[0] = mp_obj_new_int(tm.tm_year),
             tuple[1] = mp_obj_new_int(tm.tm_mon),
@@ -125,7 +125,7 @@ STATIC mp_obj_t time_time(void) {
     RTC_TimeTypeDef time;
     HAL_RTC_GetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
     HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
-    return mp_obj_new_int(timeutils_seconds_since_2000(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds));
+    return mp_obj_new_int(timeutils_seconds_since_epoch(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 

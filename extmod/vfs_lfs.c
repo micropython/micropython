@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "lib/timeutils/timeutils.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_lfs.h"
 
@@ -126,7 +127,8 @@ const char *mp_vfs_lfs2_make_path(mp_obj_vfs_lfs2_t *self, mp_obj_t path_in);
 mp_obj_t mp_vfs_lfs2_file_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in);
 
 STATIC void lfs_get_mtime(uint8_t buf[8]) {
-    uint64_t ns = mp_hal_time_ns();
+    // On-disk storage of timestamps uses 1970 as the Epoch, so convert from host's Epoch.
+    uint64_t ns = timeutils_nanoseconds_since_epoch_to_nanoseconds_since_1970(mp_hal_time_ns());
     // Store "ns" to "buf" in little-endian format (essentially htole64).
     for (size_t i = 0; i < 8; ++i) {
         buf[i] = ns;

@@ -311,7 +311,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     } else {
         mode |= MP_S_IFREG;
     }
-    mp_int_t seconds = timeutils_seconds_since_2000(
+    mp_int_t seconds = timeutils_seconds_since_epoch(
         1980 + ((fno.fdate >> 9) & 0x7f),
         (fno.fdate >> 5) & 0x0f,
         fno.fdate & 0x1f,
@@ -319,9 +319,6 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
         (fno.ftime >> 5) & 0x3f,
         2 * (fno.ftime & 0x1f)
         );
-    #if MICROPY_EPOCH_IS_1970
-    seconds += TIMEUTILS_SECONDS_1970_TO_2000;
-    #endif
     t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
