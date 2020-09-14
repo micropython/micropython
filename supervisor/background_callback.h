@@ -27,8 +27,6 @@
 #ifndef CIRCUITPY_INCLUDED_SUPERVISOR_BACKGROUND_CALLBACK_H
 #define CIRCUITPY_INCLUDED_SUPERVISOR_BACKGROUND_CALLBACK_H
 
-#include "supervisor/port.h"
-
 /** Background callbacks are a linked list of tasks to call in the background.
  *
  * Include a member of type `background_callback_t` inside an object
@@ -85,7 +83,5 @@ void background_callback_end_critical_section(void);
  * Background callbacks may stop objects from being collected
  */
 void background_callback_gc_collect(void);
-
-uint64_t background_get_ticks(void);
 
 #endif
