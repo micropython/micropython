@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: 2020-09-12 17:32+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
@@ -33,14 +33,6 @@ msgstr ""
 "\n"
 "Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Para encerrar, redefina a placa sem "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -1661,6 +1653,10 @@ msgid ""
 msgstr ""
 "O temporizador foi reservado para uso interno - declare os pinos PWM no "
 "início do programa"
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Para sair, por favor, reinicie a placa sem "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3508,6 +3504,13 @@ msgstr "zi deve ser de um tipo float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
 
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Para encerrar, redefina a placa sem "
+
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "O PulseOut não é compatível neste CI"
 
@@ -3830,9 +3833,6 @@ msgstr "zi deve estar na forma (n_section, 2)"
 
 #~ msgid "STA required"
 #~ msgstr "STA requerido"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Para sair, por favor, reinicie a placa sem "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) não existe"

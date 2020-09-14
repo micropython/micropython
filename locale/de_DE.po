@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: 2020-06-16 18:24+0000\n"
 "Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language: de_DE\n"
@@ -32,14 +32,6 @@ msgstr ""
 "\n"
 "Bitte melden Sie ein Problem mit dem Inhalt Ihres CIRCUITPY-Laufwerks unter\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Zum Beenden, resete bitte das Board ohne "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -1652,6 +1644,10 @@ msgstr ""
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Zum beenden, resette bitte das board ohne "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3510,6 +3506,13 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Zum Beenden, resete bitte das Board ohne "
+
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut wird auf diesem Chip nicht unterstützt"
 
@@ -3931,9 +3934,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Die Reset-Taste wurde beim Booten von CircuitPython gedrückt. Drücke sie "
 #~ "erneut um den abgesicherten Modus zu verlassen. \n"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Zum beenden, resette bitte das board ohne "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) existiert nicht"

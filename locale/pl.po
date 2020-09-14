@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-13 22:53+0530\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -28,12 +28,6 @@ msgid ""
 "\n"
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
 msgstr ""
 
 #: py/obj.c
@@ -1608,6 +1602,10 @@ msgstr ""
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "By wyjść, proszę zresetować płytkę bez "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -3734,9 +3732,6 @@ msgstr ""
 
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Indeks kafelka musi być pomiędzy 0 a 255 włącznie"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "By wyjść, proszę zresetować płytkę bez "
 
 #~ msgid "UUID integer value not in range 0 to 0xffff"
 #~ msgstr "Wartość UUID poza zakresem 0 do 0xffff"
