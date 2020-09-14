@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-13 22:53+0530\n"
+"POT-Creation-Date: 2020-09-13 14:21-0500\n"
 "PO-Revision-Date: 2020-09-01 18:44+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
@@ -1952,7 +1952,7 @@ msgstr ""
 msgid "bad format string"
 msgstr "不正な書式化文字列"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "不正なtypecode"
 
@@ -2003,6 +2003,10 @@ msgstr "byteorderが文字列ではありません"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
+msgstr ""
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
 msgstr ""
 
 #: py/objstr.c
@@ -2971,6 +2975,11 @@ msgstr ""
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
 msgstr "long intをマシンのwordに変換する際にオーバーフローしました"
+
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"

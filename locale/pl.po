@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-13 22:53+0530\n"
+"POT-Creation-Date: 2020-09-13 14:21-0500\n"
 "PO-Revision-Date: 2019-03-19 18:37-0700\n"
 "Last-Translator: Radomir Dopieralski <circuitpython@sheep.art.pl>\n"
 "Language-Team: pl\n"
@@ -1930,7 +1930,7 @@ msgstr "zły specyfikator konwersji"
 msgid "bad format string"
 msgstr "zła specyfikacja formatu"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "zły typecode"
 
@@ -1982,6 +1982,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "bajty większe od 8 bitów są niewspierane"
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2948,6 +2952,11 @@ msgstr ""
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
 msgstr "przepełnienie przy konwersji long in to słowa maszynowego"
+
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
