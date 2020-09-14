@@ -115,11 +115,11 @@ void pulsein_interrupt_handler(uint8_t channel) {
             duration = total_diff;
         }
         //check if the input is taking too long, 15 timer overflows is approx 1 second
-        if (current_overflow - start_overflow > 15) {	
-            self->errored_too_fast = true;	
-            common_hal_pulseio_pulsein_pause(self);	
+        if (current_overflow - start_overflow > 15) {
+            self->errored_too_fast = true;
+            common_hal_pulseio_pulsein_pause(self);
             common_hal_mcu_enable_interrupts();
-            return;	
+            return;
         }
 
         uint16_t i = (self->start + self->len) % self->maxlen;
