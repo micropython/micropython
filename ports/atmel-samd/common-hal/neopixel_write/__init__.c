@@ -34,6 +34,9 @@
 #if defined(SAME54)
 #include "hri/hri_cmcc_e54.h"
 #include "hri/hri_nvmctrl_e54.h"
+#elif defined(SAME51)
+#include "hri/hri_cmcc_e51.h"
+#include "hri/hri_nvmctrl_e51.h"
 #elif defined(SAMD51)
 #include "hri/hri_cmcc_d51.h"
 #include "hri/hri_nvmctrl_d51.h"
