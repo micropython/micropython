@@ -181,7 +181,7 @@ STATIC void bluetooth_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     (void)kind;
 
     mp_obj_bluetooth_uuid_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UUID%u(%s", self->type * 8, self->type <= 4 ? "0x" : "'");
+    mp_printf(print, "UUID(%s", self->type <= 4 ? "0x" : "'");
     for (int i = 0; i < self->type; ++i) {
         if (i == 4 || i == 6 || i == 8 || i == 10) {
             mp_printf(print, "-");
