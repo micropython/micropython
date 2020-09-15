@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x8023
+USB_PID = 0x80D1
 USB_PRODUCT = "Feather M0 Express"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 

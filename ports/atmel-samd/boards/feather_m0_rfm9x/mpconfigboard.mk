@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x8015
+USB_PID = 0x80D4
 USB_PRODUCT = "Feather M0 RFM9x"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 

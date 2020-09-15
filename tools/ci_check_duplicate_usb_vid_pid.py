@@ -38,7 +38,13 @@ DEFAULT_IGNORELIST = [
     "pygamer",
     "pygamer_advance",
     "trinket_m0",
-    "trinket_m0_haxpress"
+    "trinket_m0_haxpress",
+    "sparkfun_qwiic_micro_with_flash",
+    "sparkfun_qwiic_micro_no_flash",
+    "feather_m0_express",
+    "feather_m0_supersized",
+    "cp32-m4",
+    "metro_m4_express"
 ]
 
 cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")
@@ -118,9 +124,13 @@ def check_vid_pid(files, ignorelist):
                 )
 
         duplicate_message = (
-            f"Duplicate VID/PID usage found!\n{duplicates}"
+            f"Duplicate VID/PID usage found!\n{duplicates}\n"
+            f"If you are open source maker, then you can request a PID from http://pid.codes\n"
+            f"Otherwise, companies should pay the USB-IF for a vendor ID: https://www.usb.org/getting-vendor-id"
         )
         sys.exit(duplicate_message)
+    else:
+        print("No USB PID duplicates found.")
 
 
 if __name__ == "__main__":

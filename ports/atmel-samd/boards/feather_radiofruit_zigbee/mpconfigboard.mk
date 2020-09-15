@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x8023
+USB_PID = 0x80D0
 USB_PRODUCT = "Feather RadioFruit Zigbee"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
