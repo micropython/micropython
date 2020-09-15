@@ -43,6 +43,19 @@
 //   (building the huffman encoding on UTF-16 code points gave better
 //   compression than building it on UTF-8 bytes)
 //
+// - code points starting at 128 (word_start) and potentially extending
+//   to 255 (word_end) (but never interfering with the target
+//   language's used code points) stand for dictionary entries in a
+//   dictionary with size up to 256 code points.  The dictionary entries
+//   are computed with a heuristic based on frequent substrings of 2 to
+//   9 code points.  These are called "words" but are not, grammatically
+//   speaking, words.  They're just spans of code points that frequently
+//   occur together.
+//
+// - dictionary entries are non-overlapping, and the _ending_ index of each
+//   entry is stored in an array.  Since the index given is the ending
+//   index, the array is called "wends".
+//
 // The "data" / "tail" construct is so that the struct's last member is a
 // "flexible array".  However, the _only_ member is not permitted to be
 // a flexible member, so we have to declare the first byte as a separte
