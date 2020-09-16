@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-13 14:21-0500\n"
+"POT-Creation-Date: 2020-09-11 13:30+0200\n"
 "PO-Revision-Date: 2020-09-09 16:05+0000\n"
 "Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
 "Language-Team: none\n"
@@ -436,7 +436,7 @@ msgstr "Buffer heeft incorrect grootte. Moet %d bytes zijn."
 msgid "Buffer is not a bytearray."
 msgstr "Buffer is geen bytearray."
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr "Buffer is te klein"
@@ -626,6 +626,10 @@ msgstr "Corrupt .mpy bestand"
 #: py/emitglue.c
 msgid "Corrupt raw code"
 msgstr "Corrupt raw code"
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -852,6 +856,10 @@ msgstr "Schrijven naar interne flash mislukt."
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Bestand bestaat"
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
 
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
@@ -1531,6 +1539,10 @@ msgstr "Serializer in gebruik"
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
