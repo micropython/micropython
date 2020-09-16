@@ -58,6 +58,7 @@ const void *common_hal_canio_message_data_get(const canio_message_obj_t *self)
 
 const void common_hal_canio_message_data_set(canio_message_obj_t *self, const void *data, size_t size)
 {
+    self->size = size;
     memcpy(self->data, data, size);
 }
 
