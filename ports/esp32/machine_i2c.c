@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
+#include "modmachine.h"
 
 #include "driver/i2c.h"
 
@@ -45,7 +46,6 @@ typedef struct _machine_hw_i2c_obj_t {
     gpio_num_t sda : 8;
 } machine_hw_i2c_obj_t;
 
-STATIC const mp_obj_type_t machine_hw_i2c_type;
 STATIC machine_hw_i2c_obj_t machine_hw_i2c_obj[I2C_NUM_MAX];
 
 STATIC void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq, uint32_t timeout_us, bool first_init) {
@@ -169,7 +169,7 @@ STATIC const mp_machine_i2c_p_t machine_hw_i2c_p = {
     .transfer = machine_hw_i2c_transfer,
 };
 
-STATIC const mp_obj_type_t machine_hw_i2c_type = {
+const mp_obj_type_t machine_hw_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .print = machine_hw_i2c_print,

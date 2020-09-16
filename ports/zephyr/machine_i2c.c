@@ -37,8 +37,7 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
-
-STATIC const mp_obj_type_t machine_hard_i2c_type;
+#include "modmachine.h"
 
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
@@ -127,7 +126,7 @@ STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
     .transfer_single = machine_hard_i2c_transfer_single,
 };
 
-STATIC const mp_obj_type_t machine_hard_i2c_type = {
+const mp_obj_type_t machine_hard_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .print = machine_hard_i2c_print,

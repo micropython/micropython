@@ -32,10 +32,9 @@
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
 #include "i2c.h"
+#include "modmachine.h"
 
 #if MICROPY_HW_ENABLE_HW_I2C
-
-STATIC const mp_obj_type_t machine_hard_i2c_type;
 
 #define I2C_POLL_DEFAULT_TIMEOUT_US (50000) // 50ms
 
@@ -266,7 +265,7 @@ STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
     .transfer = machine_hard_i2c_transfer,
 };
 
-STATIC const mp_obj_type_t machine_hard_i2c_type = {
+const mp_obj_type_t machine_hard_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .print = machine_hard_i2c_print,
