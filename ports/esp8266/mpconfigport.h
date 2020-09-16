@@ -80,7 +80,6 @@
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
-#define MICROPY_PY_MACHINE_SPI_MAKE_NEW machine_hspi_make_new
 #define MICROPY_PY_UWEBSOCKET       (1)
 #define MICROPY_PY_WEBREPL          (1)
 #define MICROPY_PY_WEBREPL_DELAY    (20)
