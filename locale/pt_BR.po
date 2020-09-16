@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-11 13:30+0200\n"
-"PO-Revision-Date: 2020-09-16 16:30+0000\n"
+"PO-Revision-Date: 2020-09-17 17:58+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -638,7 +638,7 @@ msgstr "Código bruto corrompido"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
-msgstr ""
+msgstr "Não foi possível inicializar a Câmera"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -868,7 +868,7 @@ msgstr "Arquivo já existe"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
-msgstr ""
+msgstr "O formato não é suportado"
 
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
@@ -1555,7 +1555,7 @@ msgstr "O contexto do lado do servidor não pode ter nome de host"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
-msgstr ""
+msgstr "O tamanho não é suportado"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
