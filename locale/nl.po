@@ -921,6 +921,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Incorrecte buffer grootte"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Input/Output fout"
