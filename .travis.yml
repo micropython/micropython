@@ -31,6 +31,7 @@ jobs:
       install:
         - sudo apt-get install uncrustify python3-pip
         - uncrustify --version
+        - pip3 install --user setuptools
         - pip3 install --user black
         - black --version
       script:
