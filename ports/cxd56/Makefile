@@ -201,7 +201,7 @@ all: $(BUILD)/firmware.spk
 $(FIRMWARE):
 	$(ECHO) ""
 	$(ECHO) "Download the spresense binaries zip archive from:"
-	$(ECHO) "https://developer.sony.com/file/download/download-spresense-firmware-v1-4-000"
+	$(ECHO) "https://developer.sony.com/file/download/download-spresense-firmware-v2-0-000"
 	$(ECHO) "Extract spresense binaries to $(FIRMWARE)"
 	$(ECHO) ""
 	$(ECHO) "run make flash-bootloader again to flash bootloader."

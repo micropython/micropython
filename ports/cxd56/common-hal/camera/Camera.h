@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright 2020 Sony Semiconductor Solutions Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#ifndef MICROPY_INCLUDED_CXD56_COMMON_HAL_CAMERA_CAMERA_H
+#define MICROPY_INCLUDED_CXD56_COMMON_HAL_CAMERA_CAMERA_H
 
-#define MICROPY_PY_SYS_PLATFORM                 "CXD56"
+#include "py/obj.h"
 
-// 64kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
+typedef struct {
+    mp_obj_base_t base;
+} camera_obj_t;
 
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_BYTES_PER_GC_BLOCK              (32)
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+#endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_CAMERA_CAMERA_H
