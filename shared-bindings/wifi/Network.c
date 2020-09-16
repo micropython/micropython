@@ -58,6 +58,23 @@ const mp_obj_property_t wifi_network_ssid_obj = {
 };
 
 
+//|     bssid: bytes
+//|     """BSSID of the network (usually the AP's MAC address)"""
+//|
+STATIC mp_obj_t wifi_network_get_bssid(mp_obj_t self) {
+    return common_hal_wifi_network_get_bssid(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_bssid_obj, wifi_network_get_bssid);
+
+const mp_obj_property_t wifi_network_bssid_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_network_get_bssid_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+
 //|     rssi: int
 //|     """Signal strength of the network"""
 //|
@@ -94,6 +111,7 @@ const mp_obj_property_t wifi_network_channel_obj = {
 
 STATIC const mp_rom_map_elem_t wifi_network_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ssid), MP_ROM_PTR(&wifi_network_ssid_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bssid), MP_ROM_PTR(&wifi_network_bssid_obj) },
     { MP_ROM_QSTR(MP_QSTR_rssi), MP_ROM_PTR(&wifi_network_rssi_obj) },
     { MP_ROM_QSTR(MP_QSTR_channel), MP_ROM_PTR(&wifi_network_channel_obj) },
 };
