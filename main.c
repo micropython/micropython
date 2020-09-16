@@ -230,7 +230,7 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     free_memory(heap);
     supervisor_move_memory();
 
-    #ifdef CIRCUITPY_CANIO
+    #if CIRCUITPY_CANIO
     common_hal_canio_reset();
     #endif
 
