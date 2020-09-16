@@ -218,6 +218,15 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
         hri_can_write_XIDFC_reg(self->hw, dfc.reg);
     }
 
+    {
+        CAN_IE_Type ie = {
+            .bit.EWE = 1,
+            .bit.EPE = 1,
+            .bit.BOE = 1,
+        };
+        hri_can_write_IE_reg(self->hw, ie.reg);
+    }
+
     hri_can_write_XIDAM_reg(self->hw, CAN_XIDAM_RESETVALUE);
 
 // silent: The CAN is set in Bus Monitoring Mode by programming CCCR.MON to '1'. (tx pin unused)
@@ -261,35 +270,71 @@ int common_hal_canio_can_baudrate_get(canio_can_obj_t *self)
 
 int common_hal_canio_can_transmit_error_count_get(canio_can_obj_t *self)
 {
-    return -1;
+    return self->hw->ECR.bit.TEC;
 }
 
 int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self)
 {
-    return -1;
+    return self->hw->ECR.bit.REC;
 }
 
 int common_hal_canio_can_error_warning_state_count_get(canio_can_obj_t *self)
 {
-    return -1;
+    return self->error_warning_state_count;
 }
 
 int common_hal_canio_can_error_passive_state_count_get(canio_can_obj_t *self)
 {
-    return -1;
+    return self->error_passive_state_count;
 }
 
 int common_hal_canio_can_bus_off_state_count_get(canio_can_obj_t *self)
 {
-    return -1;
+    return self->bus_off_state_count;
 }
 
-int common_hal_canio_can_state_get(canio_can_obj_t *self) {
-    return -1;
+canio_bus_state_t common_hal_canio_can_state_get(canio_can_obj_t *self) {
+    CAN_PSR_Type psr = self->hw->PSR;
+    if(psr.bit.BO) {
+        return BUS_STATE_OFF;
+    }
+    if(psr.bit.EP) {
+        return BUS_STATE_ERROR_PASSIVE;
+    }
+    if(psr.bit.EW) {
+        return BUS_STATE_ERROR_WARNING;
+    }
+    return BUS_STATE_ERROR_ACTIVE;
+}
+
+void common_hal_canio_can_restart(canio_can_obj_t *self) {
+    if (!self->hw->PSR.bit.BO) {
+        return;
+    }
+
+    hri_can_clear_CCCR_INIT_bit(self->hw);
+    while (hri_can_get_CCCR_INIT_bit(self->hw)) {
+    }
+}
+
+bool common_hal_canio_can_auto_restart_get(canio_can_obj_t *self) {
+    return self->auto_restart;
+}
+
+void common_hal_canio_can_auto_restart_set(canio_can_obj_t *self, bool value) {
+    self->auto_restart = value;
+}
+
+static void maybe_auto_restart(canio_can_obj_t *self) {
+    if(self->auto_restart) {
+        common_hal_canio_can_restart(self);
+    }
 }
 
 void common_hal_canio_can_send(canio_can_obj_t *self, canio_message_obj_t *message)
 {
+    maybe_auto_restart(self);
+
     // We have just one dedicated TX buffer, use it!
     canio_can_fifo_t *ent = &self->state->tx_fifo[0];
     ent->txb0.bit.ESI = false;
@@ -365,7 +410,17 @@ STATIC void can_handler(int i) {
 
     Can *hw = can_insts[i];
     uint32_t ir = hri_can_read_IR_reg(hw);
-    /* Handle various interrupts */
+
+    /* Count up errors*/
+    if (ir & CAN_IE_EWE) {
+        self->error_warning_state_count += 1;
+    }
+    if (ir & CAN_IE_EPE) {
+        self->error_passive_state_count += 1;
+    }
+    if (ir & CAN_IE_BOE) {
+        self->bus_off_state_count += 1;
+    }
 
     /* Acknowledge interrupt */
     hri_can_write_IR_reg(hw, ir);

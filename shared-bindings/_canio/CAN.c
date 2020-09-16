@@ -24,8 +24,10 @@
  * THE SOFTWARE.
  */
 
+#include "py/enum.h"
 #include "common-hal/_canio/CAN.h"
 #include "common-hal/_canio/Listener.h"
+#include "shared-bindings/_canio/__init__.h"
 #include "shared-bindings/_canio/CAN.h"
 #include "shared-bindings/_canio/Listener.h"
 #include "shared-bindings/_canio/Match.h"
@@ -45,6 +47,7 @@
 //|             *,
 //|             baudrate: int = 250000,
 //|             loopback: bool = False,
+//|             auto_restart: bool = False,
 //|         ):
 //|         """A common shared-bus protocol.  The rx and tx pins are generally
 //|         connected to a transceiver which controls the H and L pins on a shared
@@ -54,19 +57,19 @@
 //|         :param ~microcontrller.Pin tx: the pin to transmit with, or None if the peripheral should operate in "silent" mode.
 //|         :param int baudrate: The bit rate of the bus in Hz.  All devices on the bus must agree on this value.
 //|         :param bool loopback: True if the peripheral will be operated in loopback mode.
+//|         :param bool auto_restart: If True, will restart communications after entering bus-off state
 //|         """
 //|         ...
 //|
-//##             auto_restart: bool = False, # Whether to restart communications after entering bus-off state
-//##             sample_point: float = .875, # When to sample within bit time (0.0-1.0)
 STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_rx, ARG_tx, ARG_baudrate, ARG_loopback, ARG_silent, NUM_ARGS };
+    enum { ARG_rx, ARG_tx, ARG_baudrate, ARG_loopback, ARG_silent, ARG_auto_restart, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_rx, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = 0} },
         { MP_QSTR_tx, MP_ARG_OBJ, {.u_obj = 0} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 250000} },
         { MP_QSTR_loopback, MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_silent, MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_auto_restart, MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
@@ -85,12 +88,40 @@ mp_printf(&mp_plat_print, "tx_pin=%p\n", tx_pin);
     self->base.type = &canio_can_type;
     common_hal_canio_can_construct(self, rx_pin, tx_pin, args[ARG_baudrate].u_int, args[ARG_loopback].u_bool, args[ARG_silent].u_bool);
 
+    common_hal_canio_can_auto_restart_set(self, args[ARG_auto_restart].u_bool);
+
     return MP_OBJ_FROM_PTR(self);
 }
 
 
+//|     auto_restart: int
+//|     """If True, will restart communications after entering bus-off state"""
+//|
+STATIC mp_obj_t canio_can_auto_restart_get(mp_obj_t self_in) {
+    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_canio_can_check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_canio_can_auto_restart_get(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(canio_can_auto_restart_get_obj, canio_can_auto_restart_get);
+
+STATIC mp_obj_t canio_can_auto_restart_set(mp_obj_t self_in, mp_obj_t flag_in) {
+    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_canio_can_check_for_deinit(self);
+    common_hal_canio_can_auto_restart_set(self, mp_obj_is_true(flag_in));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(canio_can_auto_restart_set_obj, canio_can_auto_restart_set);
+
+STATIC const mp_obj_property_t canio_can_auto_restart_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&canio_can_auto_restart_get_obj,
+              (mp_obj_t)&canio_can_auto_restart_set_obj,
+              (mp_obj_t)mp_const_none},
+};
+
+
 //|     baudrate: int
-//|     """The baud rate(read-only)"""
+//|     """The baud rate (read-only)"""
 //|
 STATIC mp_obj_t canio_can_baudrate_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -102,23 +133,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_can_baudrate_get_obj, canio_can_baudrate_get);
 STATIC const mp_obj_property_t canio_can_baudrate_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_can_baudrate_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
-};
-
-//|     state: State
-//|     """The status of the hardware (read-only)"""
-//|
-STATIC mp_obj_t canio_can_state_get(mp_obj_t self_in) {
-    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_canio_can_check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_state_get(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(canio_can_state_get_obj, canio_can_state_get);
-
-STATIC const mp_obj_property_t canio_can_state_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_state_get_obj,
               (mp_obj_t)mp_const_none,
               (mp_obj_t)mp_const_none},
 };
@@ -208,12 +222,43 @@ STATIC const mp_obj_property_t canio_can_bus_off_state_count_obj = {
               (mp_obj_t)mp_const_none},
 };
 
+//|     state: State
+//|     """The current state of the bus."""
+STATIC mp_obj_t canio_can_state_get(mp_obj_t self_in) {
+    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_canio_can_check_for_deinit(self);
+    return cp_enum_find(&canio_bus_state_type, common_hal_canio_can_state_get(self));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(canio_can_state_get_obj, canio_can_state_get);
+
+STATIC const mp_obj_property_t canio_can_state_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&canio_can_state_get_obj,
+              (mp_obj_t)mp_const_none,
+              (mp_obj_t)mp_const_none},
+};
+
+
 #if 0
 //|     # pending_tx_count: int
 //|     # """The number of messages waiting to be transmitted. (read-only)"""
+//|
 #endif
 
-//|     def listen(filters: Optional[Sequence[Filter]]=None, *, timeout: float=10) -> Listener:
+//|     def restart(self) -> None:
+//|         """If the device is in the bus off state, restart it."""
+//|         ...
+//|
+STATIC mp_obj_t canio_can_restart(mp_obj_t self_in) {
+    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_canio_can_check_for_deinit(self);
+    common_hal_canio_can_restart(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
+
+//|     def listen(self, filters: Optional[Sequence[Filter]]=None, *, timeout: float=10) -> Listener:
 //|         """Start receiving messages that match any one of the filters.
 //|         Creating a listener is an expensive operation and can interfere with reception of messages by other listeners.
 //|         There is an implementation-defined maximum number of listeners and limit to the complexity of the filters.
@@ -317,15 +362,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(canio_can_exit_obj, 4, 4, canio_can_e
 STATIC const mp_rom_map_elem_t canio_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&canio_can_enter_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&canio_can_exit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_auto_restart), MP_ROM_PTR(&canio_can_auto_restart_obj) },
+    { MP_ROM_QSTR(MP_QSTR_baudrate), MP_ROM_PTR(&canio_can_baudrate_obj) },
     { MP_ROM_QSTR(MP_QSTR_bus_off_state_count), MP_ROM_PTR(&canio_can_bus_off_state_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&canio_can_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_error_passive_state_count), MP_ROM_PTR(&canio_can_error_passive_state_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_error_warning_state_count), MP_ROM_PTR(&canio_can_error_warning_state_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&canio_can_listen_obj) },
     { MP_ROM_QSTR(MP_QSTR_receive_error_count), MP_ROM_PTR(&canio_can_receive_error_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&canio_can_restart_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&canio_can_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_state), MP_ROM_PTR(&canio_can_state_obj) },
-    { MP_ROM_QSTR(MP_QSTR_baudrate), MP_ROM_PTR(&canio_can_baudrate_obj) },
     { MP_ROM_QSTR(MP_QSTR_transmit_error_count), MP_ROM_PTR(&canio_can_transmit_error_count_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(canio_can_locals_dict, canio_can_locals_dict_table);

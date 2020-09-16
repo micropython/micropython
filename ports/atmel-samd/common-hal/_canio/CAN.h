@@ -27,6 +27,7 @@
 #pragma once
 
 #include "py/obj.h"
+#include "shared-bindings/_canio/__init__.h"
 #include "component/can.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/_canio/__init__.h"
@@ -38,25 +39,33 @@
 typedef struct {
     mp_obj_base_t base;
     Can *hw;
-    int baudrate;
-    uint8_t rx_pin_number, tx_pin_number;
-    bool loopback;
-    bool silent;
     canio_can_state_t *state;
+    volatile uint32_t error_warning_state_count;
+    volatile uint32_t error_passive_state_count;
+    volatile uint32_t bus_off_state_count;
+    int baudrate;
+    uint8_t rx_pin_number:8;
+    uint8_t tx_pin_number:8;
+    bool loopback:1;
+    bool silent:1;
+    bool auto_restart:1;
     bool fifo0_in_use:1;
     bool fifo1_in_use:1;
 } canio_can_obj_t;
 
 void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mcu_pin_obj_t *tx, int baudrate, bool loopback, bool silent);
-int common_hal_canio_can_state_get(canio_can_obj_t *self);
-int common_hal_canio_can_baudrate_get(canio_can_obj_t *self);
-int common_hal_canio_can_transmit_error_count_get(canio_can_obj_t *self);
-int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self);
-int common_hal_canio_can_error_warning_state_count_get(canio_can_obj_t *self);
-int common_hal_canio_can_error_passive_state_count_get(canio_can_obj_t *self);
-int common_hal_canio_can_bus_off_state_count_get(canio_can_obj_t *self);
-void common_hal_canio_can_send(canio_can_obj_t *self, canio_message_obj_t *message);
-void common_hal_canio_can_deinit(canio_can_obj_t *self);
-void common_hal_canio_can_check_for_deinit(canio_can_obj_t *self);
+bool common_hal_canio_can_auto_restart_get(canio_can_obj_t *self);
 bool common_hal_canio_can_deinited(canio_can_obj_t *self);
+int common_hal_canio_can_baudrate_get(canio_can_obj_t *self);
+int common_hal_canio_can_bus_off_state_count_get(canio_can_obj_t *self);
+int common_hal_canio_can_error_passive_state_count_get(canio_can_obj_t *self);
+int common_hal_canio_can_error_warning_state_count_get(canio_can_obj_t *self);
+int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self);
+canio_bus_state_t common_hal_canio_can_state_get(canio_can_obj_t *self);
+int common_hal_canio_can_transmit_error_count_get(canio_can_obj_t *self);
+void common_hal_canio_can_auto_restart_set(canio_can_obj_t *self, bool auto_restart);
+void common_hal_canio_can_check_for_deinit(canio_can_obj_t *self);
+void common_hal_canio_can_deinit(canio_can_obj_t *self);
+void common_hal_canio_can_restart(canio_can_obj_t *self);
+void common_hal_canio_can_send(canio_can_obj_t *self, canio_message_obj_t *message);
 void common_hal_canio_reset(void);
