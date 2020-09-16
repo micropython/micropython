@@ -57,11 +57,9 @@
 STATIC const mp_rom_map_elem_t canio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__canio) },
     { MP_ROM_QSTR(MP_QSTR_CAN), MP_ROM_PTR(&canio_can_type) },
+    { MP_ROM_QSTR(MP_QSTR_Listener), MP_ROM_PTR(&canio_listener_type) },
     { MP_ROM_QSTR(MP_QSTR_Match), MP_ROM_PTR(&canio_match_type) },
     { MP_ROM_QSTR(MP_QSTR_Message), MP_ROM_PTR(&canio_message_type) },
-#if 0
-    { MP_ROM_QSTR(MP_QSTR_Listener), MP_ROM_PTR(&canio_listener_type) },
-#endif
 };
 
 

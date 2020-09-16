@@ -32,10 +32,10 @@
 #include "py/objproperty.h"
 
 //| class Listener:
-//| """Listens for CAN message
+//|     """Listens for CAN message
 //|
-//| _canio.Listener is not constructed directly, but instead by calling the
-//| Listen method of a _canio.CAN object."""
+//|     _canio.Listener is not constructed directly, but instead by calling the
+//|     Listen method of a _canio.CAN object."""
 //|
 
 //|     def read(self) -> Optional[Message]:
