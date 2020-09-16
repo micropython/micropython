@@ -44,12 +44,14 @@
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/port.h"
 
 // This timer is shared amongst all PulseIn objects as a higher resolution clock.
 static uint8_t refcount = 0;
 static uint8_t pulsein_tc_index = 0xff;
 
 volatile static uint32_t overflow_count = 0;
+volatile static uint32_t start_overflow = 0;
 
 void pulsein_timer_interrupt_handler(uint8_t index) {
     if (index != pulsein_tc_index) return;
@@ -77,6 +79,8 @@ static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
 }
 
 void pulsein_interrupt_handler(uint8_t channel) {
+    // Turn off interrupts while in handler
+    common_hal_mcu_disable_interrupts();
     // Grab the current time first.
     uint32_t current_overflow = overflow_count;
     Tc* tc = tc_insts[pulsein_tc_index];
@@ -88,10 +92,8 @@ void pulsein_interrupt_handler(uint8_t channel) {
     uint32_t current_count = tc->COUNT16.COUNT.reg;
 
     pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
-    if (!supervisor_background_tasks_ok() || self->errored_too_fast) {
-        self->errored_too_fast = true;
-        common_hal_pulseio_pulsein_pause(self);
-        return;
+    if (self->len == 0 ) {
+        start_overflow = overflow_count;
     }
     if (self->first_edge) {
         self->first_edge = false;
@@ -112,6 +114,13 @@ void pulsein_interrupt_handler(uint8_t channel) {
         if (total_diff < duration) {
             duration = total_diff;
         }
+        //check if the input is taking too long, 15 timer overflows is approx 1 second
+        if (current_overflow - start_overflow > 15) {
+            self->errored_too_fast = true;
+            common_hal_pulseio_pulsein_pause(self);
+            common_hal_mcu_enable_interrupts();
+            return;
+        }
 
         uint16_t i = (self->start + self->len) % self->maxlen;
         self->buffer[i] = duration;
@@ -123,6 +132,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
     }
     self->last_overflow = current_overflow;
     self->last_count = current_count;
+    common_hal_mcu_enable_interrupts();
 }
 
 void pulsein_reset() {
@@ -264,9 +274,6 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
     // Make sure we're paused.
     common_hal_pulseio_pulsein_pause(self);
 
-    // Reset erroring
-    self->errored_too_fast = false;
-
     // Send the trigger pulse.
     if (trigger_duration > 0) {
         gpio_set_pin_pull_mode(self->pin, GPIO_PULL_OFF);
@@ -280,6 +287,7 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self,
     self->first_edge = true;
     self->last_overflow = 0;
     self->last_count = 0;
+    self->errored_too_fast = false;
     gpio_set_pin_function(self->pin, GPIO_PIN_FUNCTION_A);
     uint32_t mask = 1 << self->channel;
     // Clear previous interrupt state and re-enable it.
@@ -300,12 +308,15 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     if (self->len == 0) {
         mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
     }
+    if (self->errored_too_fast) {
+      self->errored_too_fast = 0;
+      mp_raise_RuntimeError(translate("Input taking too long"));
+    }
     common_hal_mcu_disable_interrupts();
     uint16_t value = self->buffer[self->start];
     self->start = (self->start + 1) % self->maxlen;
     self->len--;
     common_hal_mcu_enable_interrupts();
-
     return value;
 }
 
