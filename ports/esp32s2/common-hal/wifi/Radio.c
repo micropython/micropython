@@ -104,7 +104,7 @@ void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
     self->current_scan = NULL;
 }
 
-wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout) {
+wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t* bssid, size_t bssid_len) {
     // check enabled
     wifi_config_t* config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);
@@ -112,6 +112,14 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     memcpy(&config->sta.password, password, password_len);
     config->sta.password[password_len] = 0;
     config->sta.channel = channel;
+    // From esp_wifi_types.h:
+    //   Generally, station_config.bssid_set needs to be 0; and it needs
+    //   to be 1 only when users need to check the MAC address of the AP
+    if (bssid_len > 0){
+        memcpy(&config->sta.bssid, bssid, bssid_len);
+        config->sta.bssid[bssid_len] = 0;
+        config->sta.bssid_set = 1;
+    }
     esp_wifi_set_config(ESP_IF_WIFI_STA, config);
     self->starting_retries = 5;
     self->retries_left = 5;
