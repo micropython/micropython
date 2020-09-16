@@ -32,14 +32,9 @@
 
 extern const mp_obj_type_t camera_type;
 
-void common_hal_camera_construct(camera_obj_t *self, uint16_t width, uint16_t height);
+void common_hal_camera_construct(camera_obj_t *self);
 void common_hal_camera_deinit(camera_obj_t *self);
 bool common_hal_camera_deinited(camera_obj_t *self);
-size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_t len, camera_imageformat_t format);
-
-uint16_t common_hal_camera_get_width(camera_obj_t *self);
-void common_hal_camera_set_width(camera_obj_t *self, uint16_t width);
-uint16_t common_hal_camera_get_height(camera_obj_t *self);
-void common_hal_camera_set_height(camera_obj_t *self, uint16_t height);
+size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_t len, uint16_t width, uint16_t height, camera_imageformat_t format);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_CAMERA_H

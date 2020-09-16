@@ -31,8 +31,6 @@
 
 typedef struct {
     mp_obj_base_t base;
-    uint16_t width;
-    uint16_t height;
 } camera_obj_t;
 
 #endif // MICROPY_INCLUDED_CXD56_COMMON_HAL_CAMERA_CAMERA_H

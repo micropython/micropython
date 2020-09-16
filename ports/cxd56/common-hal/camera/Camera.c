@@ -118,9 +118,7 @@ static void camera_start_preview() {
     camera_start_streaming(V4L2_BUF_TYPE_VIDEO_CAPTURE);
 }
 
-extern uint32_t _ebss;
-extern uint32_t _stext;
-void common_hal_camera_construct(camera_obj_t *self, uint16_t width, uint16_t height) {
+void common_hal_camera_construct(camera_obj_t *self) {
     if (camera_dev.fd < 0) {
         if (video_initialize(camera_dev.devpath) < 0) {
             mp_raise_ValueError(translate("Could not initialize Camera"));
@@ -131,16 +129,7 @@ void common_hal_camera_construct(camera_obj_t *self, uint16_t width, uint16_t he
         }
     }
 
-    if (!camera_check_width_and_height(width, height)) {
-        mp_raise_ValueError(translate("Size not supported"));
-    }
-
-    self->width = width;
-    self->height = height;
-
     camera_start_preview();
-
-    camera_set_format(V4L2_BUF_TYPE_STILL_CAPTURE, V4L2_PIX_FMT_JPEG, width, height);
 
     camera_start_streaming(V4L2_BUF_TYPE_STILL_CAPTURE);
 
@@ -162,18 +151,18 @@ bool common_hal_camera_deinited(camera_obj_t *self) {
     return camera_dev.fd < 0;
 }
 
-size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_t len, camera_imageformat_t format) {
-    if (!camera_check_width_and_height(self->width, self->height)) {
+size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_t len, uint16_t width, uint16_t height, camera_imageformat_t format) {
+    if (!camera_check_width_and_height(width, height)) {
         mp_raise_ValueError(translate("Size not supported"));
     }
-    if (!camera_check_buffer_length(self->width, self->height, format, len)) {
+    if (!camera_check_buffer_length(width, height, format, len)) {
         mp_raise_ValueError(translate("Buffer is too small"));
     }
     if (!camera_check_format(format)) {
         mp_raise_ValueError(translate("Format not supported"));
     }
 
-    camera_set_format(V4L2_BUF_TYPE_STILL_CAPTURE, V4L2_PIX_FMT_JPEG, self->width, self->height);
+    camera_set_format(V4L2_BUF_TYPE_STILL_CAPTURE, V4L2_PIX_FMT_JPEG, width, height);
 
     v4l2_buffer_t buf;
 
@@ -191,20 +180,4 @@ size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_
     ioctl(camera_dev.fd, VIDIOC_TAKEPICT_STOP, false);
 
     return (size_t)buf.bytesused;
-}
-
-uint16_t common_hal_camera_get_width(camera_obj_t *self) {
-    return self->width;
-}
-
-void common_hal_camera_set_width(camera_obj_t *self, uint16_t width) {
-    self->width = width;
-}
-
-uint16_t common_hal_camera_get_height(camera_obj_t *self) {
-    return self->height;
-}
-
-void common_hal_camera_set_height(camera_obj_t *self, uint16_t height) {
-    self->height = height;
 }
