@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-13 14:21-0500\n"
-"PO-Revision-Date: 2020-09-14 13:47+0000\n"
+"PO-Revision-Date: 2020-09-16 16:30+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -932,7 +932,7 @@ msgstr "O tamanho do buffer está incorreto"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
-msgstr ""
+msgstr "A entrada está demorando demais"
 
 #: py/moduerrno.c
 msgid "Input/output error"
