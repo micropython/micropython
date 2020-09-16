@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-13 14:21-0500\n"
-"PO-Revision-Date: 2020-07-27 21:27+0000\n"
-"Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
+"PO-Revision-Date: 2020-09-16 13:47+0000\n"
+"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: main.c
 msgid ""
@@ -78,7 +78,7 @@ msgstr "index %q hors gamme"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %q"
-msgstr ""
+msgstr "indices %q doivent être des chiffres entier, et non %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -118,39 +118,39 @@ msgstr "'%q' argument requis"
 
 #: py/runtime.c
 msgid "'%q' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "object '%q' ne peut assigner l'attribut '%q'"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "object '%q' ne supporte pas '%q'"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
-msgstr ""
+msgstr "objet '%q' ne supporte pas l'assignement d'objets"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr ""
+msgstr "object '%q' ne supported pas la suppression d'objet"
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
-msgstr ""
+msgstr "object '%q' n'as pas d'attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "object '%q' n'est pas un itérateur"
 
 #: py/objtype.c py/runtime.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "object '%q' ne peut pas être appelé"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
+msgstr "objet '%q' n'est pas iterable"
 
 #: py/obj.c
 msgid "'%q' object is not subscriptable"
-msgstr ""
+msgstr "objet '%q' n'est pas souscriptable"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -220,7 +220,7 @@ msgstr "'await' en dehors d'une fonction"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' ou 'async with' au dehors d'une fonction async"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -378,7 +378,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
-msgstr ""
+msgstr "Échec d'authentification"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -460,7 +460,7 @@ msgstr "La longueur de la mémoire tampon doit être un multiple de 512"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr ""
+msgstr "La mémoire tampon doit être un multiple de 512"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -504,6 +504,7 @@ msgstr "Impossible de définir CCCD sur une caractéristique locale"
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
+"Un nouveau Adapter ne peut être créé ; Adapter; utilisez _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -598,7 +599,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr ""
+msgstr "CircuitPython n'as pu faire l'allocation de la pile\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -784,7 +785,7 @@ msgstr "Une 'Characteristic' est attendue"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "Un 'DigitalInOut' est attendu"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -792,7 +793,7 @@ msgstr "Attendu un service"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr ""
+msgstr "Un 'UART' est attendu"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -3391,7 +3392,7 @@ msgstr "spécification %c de conversion inconnue"
 
 #: py/objstr.c
 msgid "unknown format code '%c' for object of type '%q'"
-msgstr ""
+msgstr "code de formatage inconnu '%c' pour objet de type '%q'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3431,7 +3432,7 @@ msgstr "caractère de format '%c' (0x%x) non supporté à l'index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%q'"
-msgstr ""
+msgstr "type non supporté pour %q: '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -3439,7 +3440,7 @@ msgstr "type non supporté pour l'opérateur"
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%q', '%q'"
-msgstr ""
+msgstr "types non supportés pour %q: '%q', '%q'"
 
 #: py/objint.c
 #, c-format
@@ -3452,7 +3453,7 @@ msgstr "'value_count' doit être > 0"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "les vecteurs doivent avoir la même longueur"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
