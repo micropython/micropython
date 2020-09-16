@@ -26,4 +26,8 @@
 
 #pragma once
 
-// Nothing now.
+typedef enum {
+    BUS_STATE_ERROR_ACTIVE, BUS_STATE_ERROR_PASSIVE, BUS_STATE_ERROR_WARNING, BUS_STATE_OFF
+} canio_bus_state_t;
+
+extern const mp_obj_type_t canio_bus_state_type;
