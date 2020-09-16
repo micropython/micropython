@@ -244,7 +244,7 @@ jobs:
         - "metro_nrf52840_express"
         - "mini_sam_m4"
         - "monster_m4sk"
-        - "muselabnanoesp32_s2"
+        - "muselab_nanoesp32_s2"
         - "ndgarage_ndbit6"
         - "ndgarage_ndbit6_v2"
         - "nfc_copy_cat"
