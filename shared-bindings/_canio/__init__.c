@@ -45,7 +45,16 @@
 //|   can.deinit()
 //|
 //| This example will write the data 'adafruit' onto the CAN bus to any
-//| device listening for message id 0x0408."""
+//| device listening for message id 0x0408.
+//|
+//| A CAN bus involves a transceiver, which is often a separate chip with a "standby" pin.
+//| If your board has a CAN_STANDBY pin, ensure to set it to an output with the value False
+//| to enable the transceiver.
+//|
+//| Other implementations of the CAN device may exist (for instance, attached
+//| via an SPI bus).  If so their constructor arguments may differ, but
+//| otherwise we encourage implementors to follow the API that the core uses.
+//| """
 //|
 
 #include "py/obj.h"
@@ -69,13 +78,22 @@ MAKE_ENUM_VALUE(canio_bus_state_type, bus_state, BUS_OFF, BUS_STATE_OFF);
 //|     """The bus is in the normal (active) state"""
 //|
 //|     ERROR_WARNING: object
-//|     """The bus is in the normal (active) state, but a moderate number of errors have occurred recently"""
+//|     """The bus is in the normal (active) state, but a moderate number of errors have occurred recently.
+//|
+//|     NOTE: Not all implementations may use ERROR_WARNING.  Do not rely on seeing ERROR_WARNING before ERROR_PASSIVE."""
 //|
 //|     ERROR_PASSIVE: object
-//|     """The bus is in the passive state due to the number of errors that have occurred recently"""
+//|     """The bus is in the passive state due to the number of errors that have occurred recently.
+//|
+//|     This device will acknowledge packets it receives, but cannot transmit messages.
+//|     If additional errors occur, this device may progress to BUS_OFF.
+//|     If it successfully acknowledges other packets on the bus, it can return to ERROR_WARNING or ERROR_ACTIVE and transmit packets.
+//|     """
 //|
 //|     BUS_OFF: object
-//|     """The bus has turned off due to the number of errors that have occurred recently.  It must be restarted before it will send or receive packets"""
+//|     """The bus has turned off due to the number of errors that have
+//|     occurred recently.  It must be restarted before it will send or receive
+//|     packets.  This device will neither send or acknowledge packets on the bus."""
 //|
 MAKE_ENUM_MAP(canio_bus_state) {
     MAKE_ENUM_MAP_ENTRY(bus_state, ERROR_ACTIVE),
