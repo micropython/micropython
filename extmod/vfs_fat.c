@@ -319,6 +319,9 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
         (fno.ftime >> 5) & 0x3f,
         2 * (fno.ftime & 0x1f)
         );
+    #if MICROPY_EPOCH_IS_1970
+    seconds += TIMEUTILS_SECONDS_1970_TO_2000;
+    #endif
     t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
@@ -326,9 +329,9 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
     t->items[6] = mp_obj_new_int_from_uint(fno.fsize); // st_size
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(seconds); // st_atime
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(seconds); // st_mtime
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(seconds); // st_ctime
+    t->items[7] = mp_obj_new_int_from_uint(seconds); // st_atime
+    t->items[8] = mp_obj_new_int_from_uint(seconds); // st_mtime
+    t->items[9] = mp_obj_new_int_from_uint(seconds); // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }

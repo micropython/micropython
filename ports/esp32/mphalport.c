@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -44,6 +45,7 @@
 #include "py/mpstate.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
+#include "lib/timeutils/timeutils.h"
 #include "lib/utils/pyexec.h"
 #include "mphalport.h"
 
@@ -193,6 +195,15 @@ void mp_hal_delay_us(uint32_t us) {
             mp_handle_pending(true);
         }
     }
+}
+
+uint64_t mp_hal_time_ns(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    // gettimeofday returns seconds since 2000/1/1
+    uint64_t ns = timeutils_seconds_since_2000_to_nanoseconds_since_1970(tv.tv_sec);
+    ns += (uint64_t)tv.tv_usec * 1000ULL;
+    return ns;
 }
 
 // Wake up the main task if it is sleeping

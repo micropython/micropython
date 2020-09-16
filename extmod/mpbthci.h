@@ -24,15 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_EXTMOD_MODBLUETOOTH_HCI_H
-#define MICROPY_INCLUDED_EXTMOD_MODBLUETOOTH_HCI_H
+#ifndef MICROPY_INCLUDED_EXTMOD_MPBTHCI_H
+#define MICROPY_INCLUDED_EXTMOD_MPBTHCI_H
 
-#include "uart.h"
+// --- Optionally can be implemented by the driver. ---------------------------
 
-// Optionally can be implemented by the driver.
+// Start/stop the HCI controller.
+// Requires the UART to this HCI controller is available.
 int mp_bluetooth_hci_controller_init(void);
-int mp_bluetooth_hci_controller_activate(void);
-int mp_bluetooth_hci_controller_deactivate(void);
+int mp_bluetooth_hci_controller_deinit(void);
 
 // Tell the controller to go to sleep (e.g. on RX if we don't think we're expecting anything more).
 int mp_bluetooth_hci_controller_sleep_maybe(void);
@@ -41,16 +41,11 @@ bool mp_bluetooth_hci_controller_woken(void);
 // Wake up the controller (e.g. we're about to TX).
 int mp_bluetooth_hci_controller_wakeup(void);
 
-// Storage and bindings that need to be implemented by the port.
-// These are used by the stack bindings (e.g. nimble/hal_uart.c)
-// as well as potentially the driver (e.g. cywbt.c).
-extern uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
-extern pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
-
-int mp_bluetooth_hci_uart_init(uint32_t port);
-int mp_bluetooth_hci_uart_activate(void);
+// --- Bindings that need to be implemented by the port. ----------------------
+int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate);
+int mp_bluetooth_hci_uart_deinit(void);
 int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate);
 int mp_bluetooth_hci_uart_readchar(void);
 int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len);
 
-#endif // MICROPY_INCLUDED_EXTMOD_MODBLUETOOTH_HCI_H
+#endif // MICROPY_INCLUDED_EXTMOD_MPBTHCI_H

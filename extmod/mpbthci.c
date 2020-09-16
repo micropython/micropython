@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
-#define MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
 
-// Extensions to extmod/modbluetooth_hci.h specific to NimBLE.
+// Default definitions in case a controller doesn't implement this.
 
-#include "extmod/nimble/hal/hal_uart.h"
+#include "py/mphal.h"
 
-// Helpers called from ports.
-void mp_bluetooth_nimble_hci_uart_process(void);
+#if MICROPY_PY_BLUETOOTH
 
-// Must be provided by the port.
-void mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg);
-void mp_bluetooth_nimble_hci_uart_tx_strn(const char *str, uint len);
+#define DEBUG_printf(...) // printf(__VA_ARGS__)
 
-#endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_NIMBLE_NIMBLE_HCI_UART_H
+#include "extmod/mpbthci.h"
+
+
+#endif // MICROPY_PY_BLUETOOTH

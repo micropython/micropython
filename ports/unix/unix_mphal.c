@@ -214,3 +214,8 @@ mp_uint_t mp_hal_ticks_us(void) {
     return tv.tv_sec * 1000000 + tv.tv_usec;
     #endif
 }
+
+uint64_t mp_hal_time_ns(void) {
+    time_t now = time(NULL);
+    return (uint64_t)now * 1000000000ULL;
+}

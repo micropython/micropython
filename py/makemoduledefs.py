@@ -17,7 +17,7 @@ pattern = re.compile(r"[\n;]\s*MP_REGISTER_MODULE\((.*?),\s*(.*?),\s*(.*?)\);", 
 
 
 def find_c_file(obj_file, vpath):
-    """ Search vpaths for the c file that matches the provided object_file.
+    """Search vpaths for the c file that matches the provided object_file.
 
     :param str obj_file: object file to find the matching c file for
     :param List[str] vpath: List of base paths, similar to gcc vpath
@@ -36,7 +36,7 @@ def find_c_file(obj_file, vpath):
 
 
 def find_module_registrations(c_file):
-    """ Find any MP_REGISTER_MODULE definitions in the provided c file.
+    """Find any MP_REGISTER_MODULE definitions in the provided c file.
 
     :param str c_file: path to c file to check
     :return: List[(module_name, obj_module, enabled_define)]
@@ -52,7 +52,7 @@ def find_module_registrations(c_file):
 
 
 def generate_module_table_header(modules):
-    """ Generate header with module table entries for builtin modules.
+    """Generate header with module table entries for builtin modules.
 
     :param List[(module_name, obj_module, enabled_define)] modules: module defs
     :return: None

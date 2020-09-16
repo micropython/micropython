@@ -213,11 +213,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         }
         if (irq == NULL) {
             irq = m_new_obj(machine_pin_irq_obj_t);
-            irq->base.base.type = &mp_irq_type;
-            irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
-            irq->base.parent = MP_OBJ_FROM_PTR(self);
-            irq->base.handler = mp_const_none;
-            irq->base.ishard = false;
+            mp_irq_init(&irq->base, &machine_pin_irq_methods, MP_OBJ_FROM_PTR(self));
             irq->next = MP_STATE_PORT(machine_pin_irq_list);
             gpio_init_callback(&irq->callback, gpio_callback_handler, BIT(self->pin));
             int ret = gpio_add_callback(self->port, &irq->callback);
@@ -322,7 +318,6 @@ STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
 }
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods = {
-    .init = machine_pin_irq,
     .trigger = machine_pin_irq_trigger,
     .info = machine_pin_irq_info,
 };

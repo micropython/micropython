@@ -1,7 +1,7 @@
 # test importing of .mpy files with native code (x64 only)
 
 try:
-    import sys, uio, uos
+    import usys, uio, uos
 
     uio.IOBase
     uos.mount
@@ -9,7 +9,7 @@ except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
-if not (sys.platform == "linux" and sys.maxsize > 2 ** 32):
+if not (usys.platform == "linux" and usys.maxsize > 2 ** 32):
     print("SKIP")
     raise SystemExit
 
@@ -101,7 +101,7 @@ user_files = {
 
 # create and mount a user filesystem
 uos.mount(UserFS(user_files), "/userfs")
-sys.path.append("/userfs")
+usys.path.append("/userfs")
 
 # import .mpy files from the user filesystem
 for i in range(len(user_files)):
@@ -114,4 +114,4 @@ for i in range(len(user_files)):
 
 # unmount and undo path addition
 uos.umount("/userfs")
-sys.path.pop()
+usys.path.pop()

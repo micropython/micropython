@@ -1,9 +1,9 @@
 # test sys.atexit() function
 
-import sys
+import usys
 
 try:
-    sys.atexit
+    usys.atexit
 except AttributeError:
     print("SKIP")
     raise SystemExit
@@ -15,7 +15,7 @@ def do_at_exit():
     print("done at exit:", some_var)
 
 
-sys.atexit(do_at_exit)
+usys.atexit(do_at_exit)
 
 some_var = "ok"
 print("done before exit")

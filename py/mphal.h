@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_MPHAL_H
 #define MICROPY_INCLUDED_PY_MPHAL_H
 
+#include <stdint.h>
 #include "py/mpconfig.h"
 
 #ifdef MICROPY_MPHALPORT_H
@@ -72,6 +73,11 @@ mp_uint_t mp_hal_ticks_us(void);
 
 #ifndef mp_hal_ticks_cpu
 mp_uint_t mp_hal_ticks_cpu(void);
+#endif
+
+#ifndef mp_hal_time_ns
+// Nanoseconds since 1970/1/1.
+uint64_t mp_hal_time_ns(void);
 #endif
 
 // If port HAL didn't define its own pin API, use generic

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "py/objstr.h"
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
+#include "lib/timeutils/timeutils.h"
 
 STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API (config) * c, int cmd, int arg, bool must_return_int) {
     mp_obj_t ret = mp_vfs_blockdev_ioctl(c->context, cmd, arg);
@@ -120,6 +121,9 @@ STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args,
     self->base.type = type;
     vstr_init(&self->cur_dir, 16);
     vstr_add_byte(&self->cur_dir, '/');
+    #if LFS_BUILD_VERSION == 2
+    self->enable_mtime = args[LFS_MAKE_ARG_mtime].u_bool;
+    #endif
     MP_VFS_LFSx(init_config)(self, args[LFS_MAKE_ARG_bdev].u_obj,
         args[LFS_MAKE_ARG_readsize].u_int, args[LFS_MAKE_ARG_progsize].u_int, args[LFS_MAKE_ARG_lookahead].u_int);
     int ret = LFSx_API(mount)(&self->lfs, &self->config);
@@ -352,6 +356,22 @@ STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
         mp_raise_OSError(-ret);
     }
 
+    mp_uint_t mtime = 0;
+    #if LFS_BUILD_VERSION == 2
+    uint8_t mtime_buf[8];
+    lfs2_ssize_t sz = lfs2_getattr(&self->lfs, path, LFS_ATTR_MTIME, &mtime_buf, sizeof(mtime_buf));
+    if (sz == sizeof(mtime_buf)) {
+        uint64_t ns = 0;
+        for (size_t i = sizeof(mtime_buf); i > 0; --i) {
+            ns = ns << 8 | mtime_buf[i - 1];
+        }
+        mtime = timeutils_seconds_since_2000_from_nanoseconds_since_1970(ns);
+        #if MICROPY_EPOCH_IS_1970
+        mtime += TIMEUTILS_SECONDS_1970_TO_2000;
+        #endif
+    }
+    #endif
+
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(info.type == LFSx_MACRO(_TYPE_REG) ? MP_S_IFREG : MP_S_IFDIR); // st_mode
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
@@ -360,9 +380,9 @@ STATIC mp_obj_t MP_VFS_LFSx(stat)(mp_obj_t self_in, mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
     t->items[6] = mp_obj_new_int_from_uint(info.size); // st_size
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(0); // st_atime
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(0); // st_mtime
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(0); // st_ctime
+    t->items[7] = mp_obj_new_int_from_uint(mtime); // st_atime
+    t->items[8] = mp_obj_new_int_from_uint(mtime); // st_mtime
+    t->items[9] = mp_obj_new_int_from_uint(mtime); // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }
