@@ -29,7 +29,7 @@
 //| The `_canio` module contains low level classes to support the CAN bus
 //| protocol.
 //|
-//| All classes change hardware state and should be deinitialized when they
+//| CAN and Listener classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info.
@@ -39,12 +39,13 @@
 //|   import _canio
 //|   from board import *
 //|
-//|   can = _canio.BUS(board.CANRX, board.CANTX)
-//|   can.write(408, b"adafruit")
+//|   can = _canio.CAN(board.CAN_RX, board.CAN_TX, baudrate=1000000)
+//|   message = _canio.Message(id=0x0408, data="adafruit"
+//|   can.write(message))
 //|   can.deinit()
 //|
 //| This example will write the data 'adafruit' onto the CAN bus to any
-//| device listening for message id 408."""
+//| device listening for message id 0x0408."""
 //|
 
 #include "py/obj.h"

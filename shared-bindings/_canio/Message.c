@@ -115,7 +115,7 @@ STATIC const mp_obj_property_t canio_message_id_obj = {
 //|     data: bytes
 //|     """The content of the message, or dummy content in the case of an rtr.
 //|
-//|     Assigning to data sets the bytes to zero"""
+//|     Assigning to data also sets the length."""
 //|
 STATIC mp_obj_t canio_message_data_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
@@ -145,7 +145,9 @@ STATIC const mp_obj_property_t canio_message_data_obj = {
 
 
 //|     size: int
-//|     """The length of the message, or the length of the requested data in the case of an rtr"""
+//|     """The length of the message, or the length of the requested data in the case of an rtr
+//|
+//|     Assigning to the length sets all the data bytes to zero"""
 //|
 STATIC mp_obj_t canio_message_size_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
