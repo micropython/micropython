@@ -228,9 +228,17 @@ IDF_PATH = $(realpath ./esp-idf)
 $(BUILD)/esp-idf:
 	$(Q)$(MKDIR) -p $@
 
+FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
+ifeq ($(DEBUG), 1)
+	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-debug.defaults
+else
+	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-opt.defaults
+endif
+SDKCONFIGS = esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);boards/$(BOARD)/sdkconfig
+
 # create the config headers
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-idf
-	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults;boards/$(BOARD)/sdkconfig" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-esp32s2.cmake -DIDF_TARGET=esp32s2 -GNinja
+	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-esp32s2.cmake -DIDF_TARGET=esp32s2 -GNinja
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
@@ -247,10 +255,12 @@ $(BUILD)/esp-idf/esp-idf/esp32s2/ld/esp32s2.project.ld: $(BUILD)/esp-idf/config/
 $(BUILD)/esp-idf/partition_table/partition-table.bin: $(BUILD)/esp-idf/config/sdkconfig.h
 	IDF_PATH=$(IDF_PATH) ninja -C $(BUILD)/esp-idf partition_table/partition-table.bin
 
-# run menuconfig
+# run menuconfig and then remove standard settings
 menuconfig: $(BUILD)/esp-idf/config
 	$(Q)ninja -C $(BUILD)/esp-idf menuconfig
-	$(Q)diff --old-line-format= --unchanged-line-format= sdkconfig.defaults $(BUILD)/esp-idf/sdkconfig > boards/$(BOARD)/sdkconfig || true
+	$(Q)diff --old-line-format= --unchanged-line-format= esp-idf-config/sdkconfig.defaults $(BUILD)/esp-idf/sdkconfig > $(BUILD)/sdkconfig.diff || true
+	$(Q)grep -Fvxf $(FLASH_SDKCONFIG) $(BUILD)/sdkconfig.diff > $(BUILD)/sdkconfig.stripped1
+	$(Q)grep -Fvxf $(DEBUG_SDKCONFIG) $(BUILD)/sdkconfig.stripped1 > boards/$(BOARD)/sdkconfig
 
 # qstr builds include headers so we need to make sure they are up to date
 $(HEADER_BUILD)/qstr.i.last: | $(BUILD)/esp-idf/config/sdkconfig.h
@@ -307,8 +317,6 @@ $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
 	$(Q)esptool.py --chip esp32s2 elf2image $(FLASH_FLAGS) --elf-sha256-offset 0xb0 -o $@ $^
-#	$(Q)$(OBJCOPY) -O binary $^ $@
-#   $(Q)$(OBJCOPY) -O binary -j .vectors -j .text -j .data $^ $@
 
 $(BUILD)/firmware.bin: $(BUILD)/circuitpython-firmware.bin | esp-idf-stamp
 	$(Q)$(PYTHON) ../../tools/join_bins.py $@ 0x1000 $(BUILD)/esp-idf/bootloader/bootloader.bin 0x8000 $(BUILD)/esp-idf/partition_table/partition-table.bin 0x10000 $(BUILD)/circuitpython-firmware.bin
