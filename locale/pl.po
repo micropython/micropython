@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-11 13:30+0200\n"
-"PO-Revision-Date: 2020-09-16 13:47+0000\n"
+"PO-Revision-Date: 2020-09-17 17:58+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -326,7 +326,7 @@ msgstr ""
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
-msgstr ""
+msgstr "AnalogIn nie jest obsługiwany na danym pinie"
 
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
@@ -443,7 +443,7 @@ msgstr "Bufor jest za mały"
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr "Długość %d bufora jest za duża. Musi być ona mniejsza niż %d"
+msgstr "Długość %d bufora jest za duża. Musi być mniejsza niż %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
@@ -465,7 +465,7 @@ msgstr "Bufor jest zbyt duży i nie można go przydzielić"
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Bufor za krótki o %d bajtów"
+msgstr "Bufor za krótki o% d bajtów"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
@@ -642,23 +642,23 @@ msgstr "Ustawienie UART nie powiodło się"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize channel"
-msgstr ""
+msgstr "Nie można zainicjować kanału"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize timer"
-msgstr ""
+msgstr "Nie można zainicjować timera"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
-msgstr ""
+msgstr "Nie można ponownie zainicjować kanału"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init timer"
-msgstr ""
+msgstr "Nie można ponownie zainicjować timera"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not restart PWM"
-msgstr "Nie można zrestartować PWM"
+msgstr "Nie można ponownie uruchomić PWM"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -666,11 +666,11 @@ msgstr "Nie można ustawić adresu"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not start PWM"
-msgstr "Nie można wystartować PWM"
+msgstr "Nie można uruchomić PWM"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Could not start interrupt, RX busy"
-msgstr ""
+msgstr "Nie można rozpocząć przerwania, RX jest zajęty"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
@@ -683,7 +683,7 @@ msgstr "Nie udała się alokacja pierwszego bufora"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate input buffer"
-msgstr ""
+msgstr "Nie można przydzielić bufora wejściowego"
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 #: shared-module/audiomp3/MP3Decoder.c
@@ -696,11 +696,11 @@ msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Channel Init Error"
-msgstr ""
+msgstr "Błąd inicjalizacji kanału DAC"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Device Init Error"
-msgstr ""
+msgstr "Błąd inicjowania urządzenia DAC"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "DAC already in use"
@@ -729,12 +729,12 @@ msgstr "Urządzenie w użyciu"
 
 #: ports/cxd56/common-hal/digitalio/DigitalInOut.c
 msgid "DigitalInOut not supported on given pin"
-msgstr ""
+msgstr "DigitalInOut nie jest obsługiwany na podanym pinie"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display must have a 16 bit colorspace."
-msgstr ""
+msgstr "Wyświetlacz musi mieć 16-bitową przestrzeń kolorów."
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -748,7 +748,7 @@ msgstr "Tryb sterowania nieużywany w trybie wejścia."
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
-msgstr ""
+msgstr "ECB działa tylko na 16 bajtach naraz"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
@@ -792,7 +792,7 @@ msgstr "Oczekiwano UUID"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
-msgstr ""
+msgstr "Oczekiwano adresu"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -839,7 +839,7 @@ msgstr "Nie udało się połączyć: upłynął limit czasu"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
-msgstr ""
+msgstr "Nie można przeanalizować pliku MP3"
 
 #: ports/nrf/sd_mutex.c
 #, c-format
@@ -889,11 +889,11 @@ msgstr "Grupa pełna"
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
-msgstr ""
+msgstr "Sprzęt zajęty, wypróbuj alternatywne piny"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
-msgstr ""
+msgstr "Sprzęt w użyciu, wypróbuj alternatywne piny"
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -910,7 +910,7 @@ msgstr ""
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
-msgstr ""
+msgstr "IV musi mieć długość %d bajtów"
 
 #: py/persistentcode.c
 msgid ""
@@ -1123,11 +1123,11 @@ msgstr "Długość musi być nieujemna"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
-msgstr "Nie powiodło się ustawienie nóżki MISO."
+msgstr "Nie powiodło się ustawienie pinu MISO."
 
 #: shared-module/bitbangio/SPI.c
 msgid "MOSI pin init failed."
-msgstr "Nie powiodło się ustawienie nóżki MOSI."
+msgstr "Nie powiodło się ustawienie pinu MOSI."
 
 #: shared-module/displayio/Shape.c
 #, c-format
@@ -1188,7 +1188,7 @@ msgstr "Nie znaleziono kanału DMA"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
-msgstr ""
+msgstr "Brak pinu MISO"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
