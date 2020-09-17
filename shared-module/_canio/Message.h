@@ -31,17 +31,20 @@
 typedef struct {
     mp_obj_base_t base;
     int id;
-    size_t size;
     uint8_t data[8];
-    bool rtr;
+    size_t size:4;
+    bool rtr:1;
+    bool extended:1;
 } canio_message_obj_t;
 
-void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool rtr);
+void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool rtr, bool extended);
 bool common_hal_canio_message_rtr_get(const canio_message_obj_t *self);
+bool common_hal_canio_message_extended_get(const canio_message_obj_t *self);
 int common_hal_canio_message_id_get(const canio_message_obj_t *self);
 const void *common_hal_canio_message_data_get(const canio_message_obj_t *self);
 size_t common_hal_canio_message_size_get(const canio_message_obj_t *self);
 void common_hal_canio_message_rtr_set(canio_message_obj_t *self, bool rtr);
+void common_hal_canio_message_extended_set(canio_message_obj_t *self, bool extended);
 void common_hal_canio_message_id_set(canio_message_obj_t *self, int id);
 void common_hal_canio_message_data_set(canio_message_obj_t *self, const void *data, size_t size);
 void common_hal_canio_message_size_set(canio_message_obj_t *self, size_t size);

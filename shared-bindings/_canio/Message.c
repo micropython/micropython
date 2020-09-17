@@ -32,13 +32,14 @@
 #include "py/runtime.h"
 
 //| class Message:
-//|     def __init__(self, id: int=0, data: Optional[bytes] = None, *, size: Optional[int] = None, rtr: bool = False):
+//|     def __init__(self, id: int=0, data: Optional[bytes] = None, *, size: Optional[int] = None, rtr: bool = False, extended: bool = False):
 //|         """Construct a Message to send on a CAN bus
 //|
 //|         :param int id: The numeric ID of the message
 //|         :param bytes data: The content of the message
 //|         :param int size: The amount of data requested, for an rtr
 //|         :param bool rtr: True if the message represents an rtr (Remote Transmission Request)
+//|         :param bool extended: True if the message has an extended identifier, False if it has a standard identifier
 //|
 //|         In CAN, messages can have a size from 0 to 8 bytes.
 //|
@@ -47,12 +48,13 @@
 //|         ...
 //|
 STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_id, ARG_data, ARG_size, ARG_rtr, NUM_ARGS };
+    enum { ARG_id, ARG_data, ARG_size, ARG_rtr, ARG_extended, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_INT, {.u_obj = 0} },
         { MP_QSTR_data, MP_ARG_OBJ, {.u_obj = 0} },
         { MP_QSTR_size, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rtr, MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_extended, MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
@@ -60,6 +62,7 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     bool rtr = args[ARG_rtr].u_bool;
+    bool extended = args[ARG_extended].u_bool;
     size_t size = (size_t)args[ARG_size].u_int;
     bool specified_size = (size != (size_t)-1);
     bool specified_data = (args[ARG_data].u_obj != NULL);
@@ -85,7 +88,7 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
 
     canio_message_obj_t *self = m_new_obj(canio_message_obj_t);
     self->base.type = &canio_message_type;
-    common_hal_canio_message_construct(self, args[ARG_id].u_int, data.buf, data.len, rtr);
+    common_hal_canio_message_construct(self, args[ARG_id].u_int, data.buf, data.len, rtr, extended);
     return self;
 }
 
@@ -174,6 +177,31 @@ STATIC const mp_obj_property_t canio_message_size_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     extended: bool
+//|     """True if the message represents a remote transmission request (RTR)"""
+//|
+STATIC mp_obj_t canio_message_extended_get(const mp_obj_t self_in) {
+    canio_message_obj_t *self = self_in;
+    return mp_obj_new_bool(common_hal_canio_message_extended_get(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(canio_message_extended_get_obj, canio_message_extended_get);
+
+STATIC mp_obj_t canio_message_extended_set(const mp_obj_t self_in, const mp_obj_t extended) {
+    canio_message_obj_t *self = self_in;
+    common_hal_canio_message_size_set(self, mp_obj_is_true(extended));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(canio_message_extended_set_obj, canio_message_extended_set);
+
+
+STATIC const mp_obj_property_t canio_message_extended_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&canio_message_extended_get_obj,
+              (mp_obj_t)&canio_message_extended_set_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+
 //|     rtr: bool
 //|     """True if the message represents a remote transmission request (RTR)"""
 //|
@@ -204,6 +232,7 @@ STATIC const mp_rom_map_elem_t canio_message_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_data), MP_ROM_PTR(&canio_message_data_obj) },
     { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&canio_message_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_rtr), MP_ROM_PTR(&canio_message_rtr_obj) },
+    { MP_ROM_QSTR(MP_QSTR_extended), MP_ROM_PTR(&canio_message_extended_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(canio_message_locals_dict, canio_message_locals_dict_table);
 

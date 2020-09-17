@@ -28,11 +28,12 @@
 
 #include <string.h>
 
-void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool rtr)
+void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool rtr, bool extended)
 {
     self->id = id;
     self->size = size;
     self->rtr = rtr;
+    self->extended = extended;
     if (data) {
         memcpy(self->data, data, size);
     } else {
@@ -83,4 +84,14 @@ bool common_hal_canio_message_rtr_get(const canio_message_obj_t *self)
 void common_hal_canio_message_rtr_set(canio_message_obj_t *self, bool rtr)
 {
     self->rtr = rtr;
+}
+
+bool common_hal_canio_message_extended_get(const canio_message_obj_t *self)
+{
+    return self->extended;
+}
+
+void common_hal_canio_message_extended_set(canio_message_obj_t *self, bool extended)
+{
+    self->extended = extended;
 }
