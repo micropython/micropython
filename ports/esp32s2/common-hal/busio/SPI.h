@@ -44,10 +44,6 @@ typedef struct {
     spi_hal_context_t hal_context;
     spi_hal_timing_conf_t timing_conf;
     intr_handle_t interrupt;
-    // IDF allocates these in DMA accessible memory so they may need to move when
-    // we use external RAM for CircuitPython.
-    lldesc_t tx_dma;
-    lldesc_t rx_dma;
     uint32_t target_frequency;
     int32_t real_frequency;
     uint8_t polarity;
