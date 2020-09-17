@@ -67,7 +67,7 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
     bool specified_size = (size != (size_t)-1);
     bool specified_data = (args[ARG_data].u_obj != NULL);
 
-    if(specified_size && specified_data) {
+    if (specified_size && specified_data) {
         mp_raise_TypeError(translate("specify size or data, but not both"));
     }
 
@@ -82,7 +82,7 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
         data.len = 0;
     }
 
-    if(data.len > 8) {
+    if (data.len > 8) {
         mp_raise_ValueError(translate("Messages limited to 8 bytes"));
     }
 
@@ -130,7 +130,7 @@ STATIC mp_obj_t canio_message_data_set(const mp_obj_t self_in, const mp_obj_t da
     canio_message_obj_t *self = self_in;
     mp_buffer_info_t data;
     mp_get_buffer_raise(data_in, &data, MP_BUFFER_READ);
-    if(data.len > 8) {
+    if (data.len > 8) {
         mp_raise_ValueError(translate("Messages limited to 8 bytes"));
     }
     common_hal_canio_message_data_set(self, data.buf, data.len);
@@ -161,7 +161,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_message_size_get_obj, canio_message_size_get);
 STATIC mp_obj_t canio_message_size_set(const mp_obj_t self_in, const mp_obj_t size_in) {
     canio_message_obj_t *self = self_in;
     int size = mp_obj_get_int(size_in);
-    if(size > 8) {
+    if (size > 8) {
         mp_raise_ValueError(translate("Messages limited to 8 bytes"));
     }
     common_hal_canio_message_size_set(self, size);

@@ -298,7 +298,7 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
     canio_match_obj_t *matches[nmatch];
     for (size_t i=0; i<nmatch; i++) {
         mp_obj_type_t *type = mp_obj_get_type(match_objects[i]);
-        if(type != &canio_match_type) {
+        if (type != &canio_match_type) {
             mp_raise_TypeError_varg(translate("expected '%q' but got '%q'"), MP_QSTR_Match, type->name);
         }
         matches[i] = MP_OBJ_TO_PTR(match_objects[i]);

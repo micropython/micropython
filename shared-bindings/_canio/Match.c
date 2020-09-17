@@ -59,11 +59,11 @@ STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, c
     int address = args[ARG_address].u_int;
     int mask = args[ARG_mask].u_int;
 
-    if(address & ~address_bits) {
+    if (address & ~address_bits) {
         mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_address);
     }
 
-    if(mask & ~address_bits) {
+    if (mask & ~address_bits) {
         mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_mask);
     }
 
