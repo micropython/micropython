@@ -338,7 +338,7 @@ void common_hal_canio_can_send(canio_can_obj_t *self, canio_message_obj_t *messa
 
     // We have just one dedicated TX buffer, use it!
     canio_can_fifo_t *ent = &self->state->tx_fifo[0];
-    
+
     ent->txb0.bit.ESI = false;
     ent->txb0.bit.XTD = message->extended;
     ent->txb0.bit.RTR = message->rtr;
