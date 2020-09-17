@@ -1,0 +1,12 @@
+__imul__
+__imatmul__
+__ifloordiv__
+__itruediv__
+__imod__
+__ipow__
+__ior__
+__ixor__
+__iand__
+__ilshift__
+__irshift__
+TypeError
