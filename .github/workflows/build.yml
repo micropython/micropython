@@ -91,6 +91,8 @@ jobs:
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
+    - name: Duplicate USB VID/PID Check
+      run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
     - uses: actions/upload-artifact@v2
