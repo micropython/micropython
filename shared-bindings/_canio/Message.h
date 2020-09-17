@@ -27,5 +27,18 @@
 #pragma once
 
 #include "py/obj.h"
+#include "shared-module/_canio/Message.h"
 
 extern const mp_obj_type_t canio_message_type;
+
+void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool rtr, bool extended);
+const void *common_hal_canio_message_get_data(const canio_message_obj_t *self);
+void common_hal_canio_message_set_data(canio_message_obj_t *self, const void *data, size_t size);
+bool common_hal_canio_message_get_extended(const canio_message_obj_t *self);
+void common_hal_canio_message_set_extended(canio_message_obj_t *self, bool extended);
+int common_hal_canio_message_get_id(const canio_message_obj_t *self);
+void common_hal_canio_message_set_id(canio_message_obj_t *self, int id);
+bool common_hal_canio_message_get_rtr(const canio_message_obj_t *self);
+void common_hal_canio_message_set_rtr(canio_message_obj_t *self, bool rtr);
+size_t common_hal_canio_message_get_size(const canio_message_obj_t *self);
+void common_hal_canio_message_set_size(canio_message_obj_t *self, size_t size);

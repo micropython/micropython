@@ -34,8 +34,3 @@ typedef struct {
     int mask;
     bool extended;
 } canio_match_obj_t;
-
-void common_hal_canio_match_construct(canio_match_obj_t *self, int address, int mask, bool extended);
-int common_hal_canio_match_address_get(const canio_match_obj_t *self);
-int common_hal_canio_match_mask_get(const canio_match_obj_t *self);
-bool common_hal_canio_match_extended_get(const canio_match_obj_t *self);

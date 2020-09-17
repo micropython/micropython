@@ -375,7 +375,6 @@ bool common_hal_canio_listener_readinto(canio_listener_obj_t *self, canio_messag
 }
 
 void common_hal_canio_listener_deinit(canio_listener_obj_t *self) {
-    // free our FIFO, clear our matches, SOMETHING
     if (self->can) {
         clear_filters(self);
         if (self->fifo_idx == 0) {

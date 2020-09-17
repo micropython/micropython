@@ -41,57 +41,57 @@ void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void 
     }
 }
 
-int common_hal_canio_message_id_get(const canio_message_obj_t *self)
+int common_hal_canio_message_get_id(const canio_message_obj_t *self)
 {
     return self->id;
 }
 
-void common_hal_canio_message_id_set(canio_message_obj_t *self, int id)
+void common_hal_canio_message_set_id(canio_message_obj_t *self, int id)
 {
     self->id = id;
 }
 
 
-const void *common_hal_canio_message_data_get(const canio_message_obj_t *self)
+const void *common_hal_canio_message_get_data(const canio_message_obj_t *self)
 {
     return self->data;
 }
 
-const void common_hal_canio_message_data_set(canio_message_obj_t *self, const void *data, size_t size)
+const void common_hal_canio_message_set_data(canio_message_obj_t *self, const void *data, size_t size)
 {
     self->size = size;
     memcpy(self->data, data, size);
 }
 
 
-size_t common_hal_canio_message_size_get(const canio_message_obj_t *self)
+size_t common_hal_canio_message_get_size(const canio_message_obj_t *self)
 {
     return self->size;
 }
 
-void common_hal_canio_message_size_set(canio_message_obj_t *self, size_t size)
+void common_hal_canio_message_set_size(canio_message_obj_t *self, size_t size)
 {
     memset(self->data, 0, size);
     self->size = size;
 }
 
 
-bool common_hal_canio_message_rtr_get(const canio_message_obj_t *self)
+bool common_hal_canio_message_get_rtr(const canio_message_obj_t *self)
 {
     return self->rtr;
 }
 
-void common_hal_canio_message_rtr_set(canio_message_obj_t *self, bool rtr)
+void common_hal_canio_message_set_rtr(canio_message_obj_t *self, bool rtr)
 {
     self->rtr = rtr;
 }
 
-bool common_hal_canio_message_extended_get(const canio_message_obj_t *self)
+bool common_hal_canio_message_get_extended(const canio_message_obj_t *self)
 {
     return self->extended;
 }
 
-void common_hal_canio_message_extended_set(canio_message_obj_t *self, bool extended)
+void common_hal_canio_message_set_extended(canio_message_obj_t *self, bool extended)
 {
     self->extended = extended;
 }

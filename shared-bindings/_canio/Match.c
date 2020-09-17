@@ -25,7 +25,6 @@
  */
 
 #include "shared-bindings/_canio/Match.h"
-#include "shared-module/_canio/Match.h"
 
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -46,7 +45,7 @@
 STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_mask, ARG_extended, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_address, MP_ARG_INT | MP_ARG_REQUIRED, {.u_int = 0} },
+        { MP_QSTR_address, MP_ARG_INT | MP_ARG_REQUIRED },
         { MP_QSTR_mask, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_extended, MP_ARG_BOOL, {.u_bool = false} },
     };
@@ -79,7 +78,7 @@ STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, c
 
 STATIC mp_obj_t canio_match_address_get(mp_obj_t self_in) {
     canio_match_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_match_address_get(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_match_get_address(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_match_address_get_obj, canio_match_address_get);
 
@@ -97,7 +96,7 @@ const mp_obj_property_t canio_match_address_obj = {
 
 STATIC mp_obj_t canio_match_mask_get(mp_obj_t self_in) {
     canio_match_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_match_mask_get(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_match_get_mask(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_match_mask_get_obj, canio_match_mask_get);
 
@@ -114,7 +113,7 @@ const mp_obj_property_t canio_match_mask_obj = {
 
 STATIC mp_obj_t canio_match_extended_get(mp_obj_t self_in) {
     canio_match_obj_t *self = self_in;
-    return mp_obj_new_bool(common_hal_canio_match_extended_get(self));
+    return mp_obj_new_bool(common_hal_canio_match_get_extended(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_match_extended_get_obj, canio_match_extended_get);
 

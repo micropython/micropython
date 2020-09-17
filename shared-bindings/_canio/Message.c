@@ -25,7 +25,6 @@
  */
 
 #include "shared-bindings/_canio/Message.h"
-#include "shared-module/_canio/Message.h"
 
 #include "py/obj.h"
 #include "py/objproperty.h"
@@ -33,7 +32,7 @@
 
 //| class Message:
 //|     def __init__(self, id: int=0, data: Optional[bytes] = None, *, size: Optional[int] = None, rtr: bool = False, extended: bool = False):
-//|         """Construct a Message to send on a CAN bus
+//|         """Construct a Message to use with a CAN bus.  Provide arguments to create a message to send.  Otherwise, use Listener.readinto() to read a message.
 //|
 //|         :param int id: The numeric ID of the message
 //|         :param bytes data: The content of the message
@@ -97,13 +96,13 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
 //|
 STATIC mp_obj_t canio_message_id_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_message_id_get(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_message_get_id(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_message_id_get_obj, canio_message_id_get);
 
 STATIC mp_obj_t canio_message_id_set(const mp_obj_t self_in, const mp_obj_t id) {
     canio_message_obj_t *self = self_in;
-    common_hal_canio_message_id_set(self, mp_obj_get_int(id));
+    common_hal_canio_message_set_id(self, mp_obj_get_int(id));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_id_set_obj, canio_message_id_set);
@@ -122,7 +121,7 @@ STATIC const mp_obj_property_t canio_message_id_obj = {
 //|
 STATIC mp_obj_t canio_message_data_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
-    return mp_obj_new_bytes((const byte*)common_hal_canio_message_data_get(self), common_hal_canio_message_size_get(self));
+    return mp_obj_new_bytes((const byte*)common_hal_canio_message_get_data(self), common_hal_canio_message_get_size(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_message_data_get_obj, canio_message_data_get);
 
@@ -133,7 +132,7 @@ STATIC mp_obj_t canio_message_data_set(const mp_obj_t self_in, const mp_obj_t da
     if (data.len > 8) {
         mp_raise_ValueError(translate("Messages limited to 8 bytes"));
     }
-    common_hal_canio_message_data_set(self, data.buf, data.len);
+    common_hal_canio_message_set_data(self, data.buf, data.len);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_data_set_obj, canio_message_data_set);
@@ -154,7 +153,7 @@ STATIC const mp_obj_property_t canio_message_data_obj = {
 //|
 STATIC mp_obj_t canio_message_size_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_message_size_get(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_message_get_size(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_message_size_get_obj, canio_message_size_get);
 
@@ -164,7 +163,7 @@ STATIC mp_obj_t canio_message_size_set(const mp_obj_t self_in, const mp_obj_t si
     if (size > 8) {
         mp_raise_ValueError(translate("Messages limited to 8 bytes"));
     }
-    common_hal_canio_message_size_set(self, size);
+    common_hal_canio_message_set_size(self, size);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_size_set_obj, canio_message_size_set);
@@ -182,13 +181,13 @@ STATIC const mp_obj_property_t canio_message_size_obj = {
 //|
 STATIC mp_obj_t canio_message_extended_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
-    return mp_obj_new_bool(common_hal_canio_message_extended_get(self));
+    return mp_obj_new_bool(common_hal_canio_message_get_extended(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_message_extended_get_obj, canio_message_extended_get);
 
 STATIC mp_obj_t canio_message_extended_set(const mp_obj_t self_in, const mp_obj_t extended) {
     canio_message_obj_t *self = self_in;
-    common_hal_canio_message_size_set(self, mp_obj_is_true(extended));
+    common_hal_canio_message_set_extended(self, mp_obj_is_true(extended));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_extended_set_obj, canio_message_extended_set);
@@ -207,13 +206,13 @@ STATIC const mp_obj_property_t canio_message_extended_obj = {
 //|
 STATIC mp_obj_t canio_message_rtr_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
-    return mp_obj_new_bool(common_hal_canio_message_rtr_get(self));
+    return mp_obj_new_bool(common_hal_canio_message_get_rtr(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_message_rtr_get_obj, canio_message_rtr_get);
 
 STATIC mp_obj_t canio_message_rtr_set(const mp_obj_t self_in, const mp_obj_t rtr) {
     canio_message_obj_t *self = self_in;
-    common_hal_canio_message_size_set(self, mp_obj_is_true(rtr));
+    common_hal_canio_message_set_rtr(self, mp_obj_is_true(rtr));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_rtr_set_obj, canio_message_rtr_set);

@@ -53,8 +53,8 @@
 //|         connected to a transceiver which controls the H and L pins on a shared
 //|         bus.
 //|
-//|         :param ~microcontrller.Pin rx: the pin to receive with.
-//|         :param ~microcontrller.Pin tx: the pin to transmit with, or None if the peripheral should operate in "silent" mode.
+//|         :param ~microcontroller.Pin rx: the pin to receive with.
+//|         :param ~microcontroller.Pin tx: the pin to transmit with, or None if the peripheral should operate in "silent" mode.
 //|         :param int baudrate: The bit rate of the bus in Hz.  All devices on the bus must agree on this value.
 //|         :param bool loopback: True if the peripheral will be operated in loopback mode.
 //|         :param bool auto_restart: If True, will restart communications after entering bus-off state
@@ -76,13 +76,8 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, con
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-mp_printf(&mp_plat_print, "ARG_rx=%d args[ARG_rx].u_obj=%p\n", ARG_rx, args[ARG_rx].u_obj);
-mp_printf(&mp_plat_print, "ARG_tx=%d args[ARG_tx].u_obj=%p\n", ARG_tx, args[ARG_tx].u_obj);
-
     mcu_pin_obj_t *rx_pin = validate_obj_is_free_pin(args[ARG_rx].u_obj);
-mp_printf(&mp_plat_print, "rx_pin=%p\n", rx_pin);
     mcu_pin_obj_t *tx_pin = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
-mp_printf(&mp_plat_print, "tx_pin=%p\n", tx_pin);
 
     canio_can_obj_t *self = m_new_obj(canio_can_obj_t);
     self->base.type = &canio_can_type;
@@ -94,7 +89,7 @@ mp_printf(&mp_plat_print, "tx_pin=%p\n", tx_pin);
 }
 
 
-//|     auto_restart: int
+//|     auto_restart: bool
 //|     """If True, will restart communications after entering bus-off state"""
 //|
 STATIC mp_obj_t canio_can_auto_restart_get(mp_obj_t self_in) {
@@ -239,12 +234,6 @@ STATIC const mp_obj_property_t canio_can_state_obj = {
               (mp_obj_t)mp_const_none},
 };
 
-
-#if 0
-//|     # pending_tx_count: int
-//|     # """The number of messages waiting to be transmitted. (read-only)"""
-//|
-#endif
 
 //|     def restart(self) -> None:
 //|         """If the device is in the bus off state, restart it."""

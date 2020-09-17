@@ -32,12 +32,12 @@ void common_hal_canio_match_construct(canio_match_obj_t *self, int address, int 
     self->extended = extended;
 }
 
-int common_hal_canio_match_address_get(const canio_match_obj_t *self) {
+int common_hal_canio_match_get_address(const canio_match_obj_t *self) {
     return self->address;
 }
-int common_hal_canio_match_mask_get(const canio_match_obj_t *self) {
+int common_hal_canio_match_get_mask(const canio_match_obj_t *self) {
     return self->mask;
 }
-bool common_hal_canio_match_extended_get(const canio_match_obj_t *self) {
+bool common_hal_canio_match_get_extended(const canio_match_obj_t *self) {
     return self->extended;
 }

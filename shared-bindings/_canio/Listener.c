@@ -39,7 +39,7 @@
 //|
 
 //|     def read(self) -> Optional[Message]:
-//|         """Returns a message, after waiting up to self.timeout seconds
+//|         """Reads a message, after waiting up to self.timeout seconds
 //|
 //|         If no message is received in time, None is returned.  Otherwise,
 //|         a Message is returned."""
@@ -62,10 +62,8 @@ STATIC mp_obj_t canio_listener_read(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_read_obj, canio_listener_read);
 
 //|     def readinto(self, message: Message) -> bool:
-//|         """Returns a message, after waiting up to self.timeout seconds
-//|
-//|         Returns True (and modifies message) if a message was received,
-//|         False otherwise."""
+//|         """Returns True (and modifies message) if a message was received
+//|         before ``timeout`` seconds elapsed, False otherwise."""
 //|         ...
 //|
 STATIC mp_obj_t canio_listener_readinto(mp_obj_t self_in, mp_obj_t message) {
@@ -115,7 +113,7 @@ STATIC mp_obj_t canio_listener_next(mp_obj_t self_in) {
     if (common_hal_canio_listener_in_waiting(self)) {
         return canio_listener_read(self_in);
     }
-    return self;
+    return MP_OBJ_STOP_ITERATION;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_next_obj, canio_listener_next);
 
