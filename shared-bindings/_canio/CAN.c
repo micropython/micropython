@@ -258,15 +258,20 @@ STATIC mp_obj_t canio_can_restart(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
 
-//|     def listen(self, filters: Optional[Sequence[Filter]]=None, *, timeout: float=10) -> Listener:
+//|     def listen(self, match: Optional[Sequence[Match]]=None, *, timeout: float=10) -> Listener:
 //|         """Start receiving messages that match any one of the filters.
+//|
 //|         Creating a listener is an expensive operation and can interfere with reception of messages by other listeners.
+//|
 //|         There is an implementation-defined maximum number of listeners and limit to the complexity of the filters.
-//|         If the hardware cannot support all the requested filters, a ValueError is raised.  Note that generally there are some number of hardware filters shared among all fifos.
-//|         A message can be received by at most one Listener.
+//|
+//|         If the hardware cannot support all the requested matches, a ValueError is raised.  Note that generally there are some number of hardware filters shared among all fifos.
+//|
+//|         A message can be received by at most one Listener.  If more than one listener matches a message, it is undefined which one actually receives it.
+//|
 //|         An empty filter list causes all messages to be accepted.
-//|         Timeout dictates how long readinto, read and next() will block.
-//|         Readinto will return false(), read will return None, and next() will raise StopIteration."""
+//|
+//|         Timeout dictates how long readinto, read and next() will block."""
 //|         ...
 //|
 STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

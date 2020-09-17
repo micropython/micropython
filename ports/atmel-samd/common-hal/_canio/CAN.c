@@ -91,7 +91,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
     }
     hri_can_set_CCCR_CCE_bit(self->hw);
 
-    if(instance == 0) {
+    if (instance == 0) {
         hri_mclk_set_AHBMASK_CAN0_bit(MCLK);
         hri_gclk_write_PCHCTRL_reg(GCLK, CAN0_GCLK_ID, CONF_GCLK_CAN0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
@@ -100,7 +100,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
         NVIC_EnableIRQ(CAN0_IRQn);
         hri_can_write_ILE_reg(self->hw, CAN_ILE_EINT0);
 #ifdef CAN1_GCLK_ID
-    } else if(instance == 1) {
+    } else if (instance == 1) {
         hri_mclk_set_AHBMASK_CAN1_bit(MCLK);
         hri_gclk_write_PCHCTRL_reg(GCLK, CAN1_GCLK_ID, CONF_GCLK_CAN1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
@@ -197,7 +197,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
     {
         CAN_GFC_Type gfc = {
             .bit.RRFE = 1,
-            .bit.ANFS = CAN_GFC_ANFS_RXF0_Val,
+            .bit.ANFS = CAN_GFC_ANFS_REJECT_Val,
             .bit.ANFE = CAN_GFC_ANFE_REJECT_Val,
         };
         hri_can_write_GFC_reg(self->hw, gfc.reg);
@@ -206,14 +206,15 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
     {
         CAN_SIDFC_Type dfc = {
             .bit.LSS = COMMON_HAL_CANIO_RX_FILTER_SIZE,
-            .bit.FLSSA = (uint32_t)self->state->rx_filter
+            .bit.FLSSA = (uint32_t)self->state->standard_rx_filter
         };
         hri_can_write_SIDFC_reg(self->hw, dfc.reg);
     }
 
     {
         CAN_XIDFC_Type dfc = {
-            .bit.LSE = 0,
+            .bit.LSE = COMMON_HAL_CANIO_RX_FILTER_SIZE,
+            .bit.FLESA = (uint32_t)self->state->extended_rx_filter
         };
         hri_can_write_XIDFC_reg(self->hw, dfc.reg);
     }
@@ -236,12 +237,12 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
     self->hw->CCCR.bit.TEST = loopback;
     self->hw->TEST.bit.LBCK = loopback;
 
-    if(instance == 0) {
+    if (instance == 0) {
         NVIC_DisableIRQ(CAN0_IRQn);
         NVIC_ClearPendingIRQ(CAN0_IRQn);
         NVIC_EnableIRQ(CAN0_IRQn);
 #ifdef CAN1_GCLK_ID
-    } else if(instance == 1) {
+    } else if (instance == 1) {
         NVIC_DisableIRQ(CAN1_IRQn);
         NVIC_ClearPendingIRQ(CAN1_IRQn);
         NVIC_EnableIRQ(CAN1_IRQn);
@@ -295,13 +296,13 @@ int common_hal_canio_can_bus_off_state_count_get(canio_can_obj_t *self)
 
 canio_bus_state_t common_hal_canio_can_state_get(canio_can_obj_t *self) {
     CAN_PSR_Type psr = self->hw->PSR;
-    if(psr.bit.BO) {
+    if (psr.bit.BO) {
         return BUS_STATE_OFF;
     }
-    if(psr.bit.EP) {
+    if (psr.bit.EP) {
         return BUS_STATE_ERROR_PASSIVE;
     }
-    if(psr.bit.EW) {
+    if (psr.bit.EW) {
         return BUS_STATE_ERROR_WARNING;
     }
     return BUS_STATE_ERROR_ACTIVE;
@@ -326,7 +327,7 @@ void common_hal_canio_can_auto_restart_set(canio_can_obj_t *self, bool value) {
 }
 
 static void maybe_auto_restart(canio_can_obj_t *self) {
-    if(self->auto_restart) {
+    if (self->auto_restart) {
         common_hal_canio_can_restart(self);
     }
 }
@@ -337,10 +338,15 @@ void common_hal_canio_can_send(canio_can_obj_t *self, canio_message_obj_t *messa
 
     // We have just one dedicated TX buffer, use it!
     canio_can_fifo_t *ent = &self->state->tx_fifo[0];
+    
     ent->txb0.bit.ESI = false;
-    ent->txb0.bit.XTD = false;
+    ent->txb0.bit.XTD = message->extended;
     ent->txb0.bit.RTR = message->rtr;
-    ent->txb0.bit.ID = message->id << 18; // short addresses are left-justified
+    if (message->extended) {
+        ent->txb0.bit.ID = message->id << 18;
+    } else {
+        ent->txb0.bit.ID = message->id << 18; // short addresses are left-justified
+    }
 
     ent->txb1.bit.MM = 0; // "message marker"
     ent->txb1.bit.EFC = 0; // don't store fifo events to event queue
@@ -367,7 +373,7 @@ bool common_hal_canio_can_deinited(canio_can_obj_t *self) {
 }
 
 void common_hal_canio_can_check_for_deinit(canio_can_obj_t *self) {
-    if(common_hal_canio_can_deinited(self)) {
+    if (common_hal_canio_can_deinited(self)) {
         raise_deinited_error();
     }
 }
