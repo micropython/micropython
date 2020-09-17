@@ -1,4 +1,137 @@
-[![Build Status](https://travis-ci.com/micropython/micropython.png?branch=master)](https://travis-ci.com/micropython/micropython) [![Coverage Status](https://coveralls.io/repos/micropython/micropython/badge.png?branch=master)](https://coveralls.io/r/micropython/micropython?branch=master)
+# MicroPython for KidBright32
+
+Support KidBright32 V1.3, V1.4, V1.5, V1.5i by INEX, V1.6 by Gravitech
+
+## Modules
+
+All ESP32 modules support (See [Quick reference for the ESP32](http://docs.micropython.org/en/latest/esp32/quickref.html)) 
+
+I add modules for KidBright32
+
+### Module `display` 
+
+Show text and number on DotMarix 16x8
+
+```python
+import display
+
+display.show(99) # only 2-char show
+display.scroll("Hello, mars !")
+display.clear()
+```
+
+### Module `sensor`
+
+Read temp and light level
+
+```python
+import sensor
+
+lavel = sensor.light() # 0 - 100%
+temp = sensor.temperature() # temperature in celsius
+```
+
+### Module `buzzer` 
+
+Made sound on buzzer
+
+```python
+import buzzer
+
+buzzer.tone(freq=2093, duration=0.5, duty=50)
+buzzer.on(freq=2000, duty=50)
+buzzer.off()
+```
+
+### Module `rtc` 
+
+Get and set time to RTC, same [machine.RTC](http://docs.micropython.org/en/latest/library/machine.RTC.html#machine-rtc)
+
+```python
+import rtc
+
+rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
+datetime = rtc.datetime() # get date and time
+```
+
+### Module `usb` 
+
+Get and set logic on USB-A port
+
+```python
+import usb
+
+usb.value(1) # or 0
+usb.on()
+usb.off()
+usb.toggle()
+```
+
+### Module `switch` 
+
+Get status from S1 ann S2
+
+```python
+import switch
+
+value = switch.value(switch.S1) # or switch.S2
+```
+
+### Module `servo` 
+
+Set angle of Servo motor on Servo pin (only on KidBrgiht32 V1.5 , V1.5i by INEX, V1.6 by Gravitech)
+
+```python
+import servo
+
+servo.angle(servo.SV1, 45) # Set servo on SV0 move to angle 0
+servo.angle(servo.SV2, 90) # Set servo on SV1 move to angle 1
+```
+
+### Module `imu` 
+
+Read data from IMU sensor on KidBrgiht32 V1.5i by INEX, V1.6 by Gravitech
+
+```python
+import imu
+
+imu.update() # read data from sensor
+acc = imu.acc # array of (x, y, z)
+gyro = imu.gyro # array of (x, y, z), only on KidBrgiht32 V1.6 by Gravitech
+mag = imu.mag # array of (x, y, z), only on KidBrgiht32 V1.5i by INEX
+```
+
+You can see more detail. [Source all module](https://github.com/microBlock-IDE/micropython/tree/V1.0.0/ports/esp32/boards/KidBright32/modules)
+
+## How to install on KidBright32
+
+You can choose one
+
+### MicroUploader (Recommend)
+
+[Download MicroUploader](https://github.com/microBlock-IDE/MicroUploader/releases/tag/V1.2.0) and then open, Select you board, Port and MicroPython firmware version then click Upload
+
+
+
+### esptool
+
+See [Deploying the firmware](http://docs.micropython.org/en/latest/esp32/tutorial/intro.html#deploying-the-firmware)
+
+### Flash Download Tools
+
+only on Windows. you can download this tool from https://www.espressif.com/en/support/download/other-tools
+
+Open `flash_download_tool_3.8.5.exe` then select Developer Mode > ESP32 DownloadToo
+
+Add `MicroPython.for.KidBright32.V1.0.0.bin` @ 0x1000
+
+Select port and baud then Click Erase for clear flash (Fixed can't upload MicroPython code file)
+
+Click START and wait finished
+
+## How to use
+
+You can use [microBlock IDE](https://microblock.app) in Code mode for programming.
 
 The MicroPython project
 =======================
