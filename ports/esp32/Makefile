@@ -1,7 +1,7 @@
 # Select the board to build for: if not given on the command line,
 # then default to GENERIC.
 # BOARD ?= GENERIC
-BOARD ?= KidBrightV15i
+BOARD ?= KidBright32
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
@@ -43,7 +43,7 @@ include $(TOP)/py/py.mk
 
 GIT_SUBMODULES = lib/berkeley-db-1.xx
 
-PORT ?= /dev/ttyS188
+PORT ?= /dev/ttyS10
 BAUD ?= 1152000
 FLASH_MODE ?= dio
 FLASH_FREQ ?= 40m
