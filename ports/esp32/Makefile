@@ -43,7 +43,7 @@ include $(TOP)/py/py.mk
 
 GIT_SUBMODULES = lib/berkeley-db-1.xx
 
-PORT ?= /dev/ttyS10
+PORT ?= /dev/ttyS151
 BAUD ?= 1152000
 FLASH_MODE ?= dio
 FLASH_FREQ ?= 40m
