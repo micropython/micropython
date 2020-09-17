@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright 2020 Sony Semiconductor Solutions Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/mphal.h"
+#include "shared-bindings/camera/Camera.h"
+#include "shared-bindings/util.h"
 
-#define MICROPY_PY_SYS_PLATFORM                 "CXD56"
+//| """Support for camera input
+//|
+//| The `camera` module contains classes to control the camera and take pictures."""
+//|
+STATIC const mp_rom_map_elem_t camera_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_camera) },
+    { MP_ROM_QSTR(MP_QSTR_Camera), MP_ROM_PTR(&camera_type) },
 
-// 64kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
+    // Enum-like Classes.
+    { MP_ROM_QSTR(MP_QSTR_ImageFormat), MP_ROM_PTR(&camera_imageformat_type) },
+};
 
-#include "py/circuitpy_mpconfig.h"
+STATIC MP_DEFINE_CONST_DICT(camera_module_globals, camera_module_globals_table);
 
-#define MICROPY_BYTES_PER_GC_BLOCK              (32)
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+const mp_obj_module_t camera_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&camera_module_globals,
+};

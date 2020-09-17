@@ -24,19 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#include <sys/time.h>
 
-#define MICROPY_PY_SYS_PLATFORM                 "CXD56"
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "soc/rtc_periph.h"
+#include "shared-bindings/rtc/RTC.h"
 
-// 64kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
+void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
+    struct timeval tv_now;
+    gettimeofday(&tv_now, NULL);
+    timeutils_seconds_since_2000_to_struct_time(tv_now.tv_sec, tm);
+}
 
-#include "py/circuitpy_mpconfig.h"
+void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
+    struct timeval tv_now = {0};
+    tv_now.tv_sec = timeutils_seconds_since_2000(tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+    settimeofday(&tv_now, NULL);
+}
 
-#define MICROPY_BYTES_PER_GC_BLOCK              (32)
+int common_hal_rtc_get_calibration(void) {
+    return 0;
+}
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+void common_hal_rtc_set_calibration(int calibration) {
+    mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
+}

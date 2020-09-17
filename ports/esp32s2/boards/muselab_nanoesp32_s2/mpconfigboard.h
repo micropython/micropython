@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+//Micropython setup
 
-#define MICROPY_PY_SYS_PLATFORM                 "CXD56"
+#define MICROPY_HW_BOARD_NAME       "nanoESP32-S2"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-// 64kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
 
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_BYTES_PER_GC_BLOCK              (32)
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+#define AUTORESET_DELAY_MS 500

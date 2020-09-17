@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright 2020 Sony Semiconductor Solutions Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
 
-#define MICROPY_PY_SYS_PLATFORM                 "CXD56"
+#include "py/obj.h"
 
-// 64kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
+typedef enum {
+    IMAGEFORMAT_NONE,
+    IMAGEFORMAT_JPG,
+    IMAGEFORMAT_RGB565,
+} camera_imageformat_t;
 
-#include "py/circuitpy_mpconfig.h"
+const mp_obj_type_t camera_imageformat_type;
 
-#define MICROPY_BYTES_PER_GC_BLOCK              (32)
+camera_imageformat_t camera_imageformat_obj_to_type(mp_obj_t obj);
+mp_obj_t camera_imageformat_type_to_obj(camera_imageformat_t mode);
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
+typedef struct {
+    mp_obj_base_t base;
+} camera_imageformat_obj_t;
+extern const camera_imageformat_obj_t camera_imageformat_jpg_obj;
+extern const camera_imageformat_obj_t camera_imageformat_rgb565_obj;
 
-#endif  // __INCLUDED_MPCONFIGPORT_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H

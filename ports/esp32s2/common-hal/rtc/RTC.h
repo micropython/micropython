@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2018 Noralf Trønnes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_RTC_RTC_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_RTC_RTC_H
 
-#define MICROPY_PY_SYS_PLATFORM                 "CXD56"
+extern void rtc_init(void);
+extern void rtc_reset(void);
+extern void common_hal_rtc_init(void);
 
-// 64kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
-
-#include "py/circuitpy_mpconfig.h"
-
-#define MICROPY_BYTES_PER_GC_BLOCK              (32)
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+#endif  // MICROPY_INCLUDED_NRF_COMMON_HAL_RTC_RTC_H

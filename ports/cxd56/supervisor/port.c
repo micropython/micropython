@@ -46,11 +46,21 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/busio/UART.h"
 
+#define SPRESENSE_MEM_ALIGN (32)
+
+uint32_t* heap;
+uint32_t heap_size;
+
 safe_mode_t port_init(void) {
     boardctl(BOARDIOC_INIT, 0);
 
     // Wait until RTC is available
     while (g_rtc_enabled == false);
+
+    heap = memalign(SPRESENSE_MEM_ALIGN, 128 * 1024);
+    uint32_t size = CONFIG_RAM_START + CONFIG_RAM_SIZE - (uint32_t)heap - 2 * SPRESENSE_MEM_ALIGN;
+    heap = realloc(heap, size);
+    heap_size = size / sizeof(uint32_t);
 
     if (board_requests_safe_mode()) {
         return USER_SAFE_MODE;
@@ -100,11 +110,11 @@ uint32_t *port_stack_get_top(void) {
 }
 
 uint32_t *port_heap_get_bottom(void) {
-    return port_stack_get_limit();
+    return heap;
 }
 
 uint32_t *port_heap_get_top(void) {
-    return port_stack_get_top();
+    return heap + heap_size;
 }
 
 extern uint32_t _ebss;

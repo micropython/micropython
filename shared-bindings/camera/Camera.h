@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2019 Sony Semiconductor Solutions Corporation
+ * Copyright 2020 Sony Semiconductor Solutions Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef __INCLUDED_MPCONFIGPORT_H
-#define __INCLUDED_MPCONFIGPORT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_CAMERA_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_CAMERA_H
 
-#define MICROPY_PY_SYS_PLATFORM                 "CXD56"
+#include "common-hal/camera/Camera.h"
+#include "shared-bindings/camera/ImageFormat.h"
 
-// 64kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
+extern const mp_obj_type_t camera_type;
 
-#include "py/circuitpy_mpconfig.h"
+void common_hal_camera_construct(camera_obj_t *self);
+void common_hal_camera_deinit(camera_obj_t *self);
+bool common_hal_camera_deinited(camera_obj_t *self);
+size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_t len, uint16_t width, uint16_t height, camera_imageformat_t format);
 
-#define MICROPY_BYTES_PER_GC_BLOCK              (32)
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-
-#endif  // __INCLUDED_MPCONFIGPORT_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_CAMERA_H
