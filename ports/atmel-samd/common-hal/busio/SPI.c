@@ -98,8 +98,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t miso_pad = 0;
     uint8_t dopo = 255;
 
-    // Special case for SAMR boards.
-    #ifdef PIN_PC19
+    // Special case for SAMR21 boards. (feather_radiofruit_zigbee)
+    #if defined(PIN_PC19F_SERCOM4_PAD0)
     if (miso == &pin_PC19) {
         if (mosi == &pin_PB30 && clock == &pin_PC18) {
             sercom = SERCOM4;
@@ -113,67 +113,67 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
             dopo = samd_peripherals_get_spi_dopo(clock_pad, mosi_pad);
         }
         // Error, leave SERCOM unset to throw an exception later.
-    } else {
+    } else
     #endif
-    for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
-        sercom_index = clock->sercom[i].index; // 2 for SERCOM2, etc.
-        if (sercom_index >= SERCOM_INST_NUM) {
-            continue;
-        }
-        Sercom* potential_sercom = sercom_insts[sercom_index];
-        if (
-        #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !CIRCUITPY_BITBANG_APA102
-            (potential_sercom->SPI.CTRLA.bit.ENABLE != 0 &&
-             potential_sercom != status_apa102.spi_desc.dev.prvt &&
-             !apa102_sck_in_use)) {
-        #else
-            potential_sercom->SPI.CTRLA.bit.ENABLE != 0) {
-        #endif
-            continue;
-        }
-        clock_pinmux = PINMUX(clock->number, (i == 0) ? MUX_C : MUX_D);
-        clock_pad = clock->sercom[i].pad;
-        if (!samd_peripherals_valid_spi_clock_pad(clock_pad)) {
-            continue;
-        }
-        for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
-            if (!mosi_none) {
-                if (sercom_index == mosi->sercom[j].index) {
-                    mosi_pinmux = PINMUX(mosi->number, (j == 0) ? MUX_C : MUX_D);
-                    mosi_pad = mosi->sercom[j].pad;
-                    dopo = samd_peripherals_get_spi_dopo(clock_pad, mosi_pad);
-                    if (dopo > 0x3) {
-                        continue;  // pad combination not possible
-                    }
-                    if (miso_none) {
-                        sercom = potential_sercom;
-                        break;
-                    }
-                } else {
-                    continue;
-                }
+    {
+        for (int i = 0; i < NUM_SERCOMS_PER_PIN; i++) {
+            sercom_index = clock->sercom[i].index; // 2 for SERCOM2, etc.
+            if (sercom_index >= SERCOM_INST_NUM) {
+                continue;
             }
-            if (!miso_none) {
-                for (int k = 0; k < NUM_SERCOMS_PER_PIN; k++) {
-                    if (sercom_index == miso->sercom[k].index) {
-                        miso_pinmux = PINMUX(miso->number, (k == 0) ? MUX_C : MUX_D);
-                        miso_pad = miso->sercom[k].pad;
-                        sercom = potential_sercom;
-                        break;
+            Sercom* potential_sercom = sercom_insts[sercom_index];
+            if (
+            #if defined(MICROPY_HW_APA102_SCK) && defined(MICROPY_HW_APA102_MOSI) && !CIRCUITPY_BITBANG_APA102
+                (potential_sercom->SPI.CTRLA.bit.ENABLE != 0 &&
+                 potential_sercom != status_apa102.spi_desc.dev.prvt &&
+                 !apa102_sck_in_use)
+            #else
+                potential_sercom->SPI.CTRLA.bit.ENABLE != 0
+            #endif
+            ) {
+                continue;
+            }
+            clock_pinmux = PINMUX(clock->number, (i == 0) ? MUX_C : MUX_D);
+            clock_pad = clock->sercom[i].pad;
+            if (!samd_peripherals_valid_spi_clock_pad(clock_pad)) {
+                continue;
+            }
+            for (int j = 0; j < NUM_SERCOMS_PER_PIN; j++) {
+                if (!mosi_none) {
+                    if (sercom_index == mosi->sercom[j].index) {
+                        mosi_pinmux = PINMUX(mosi->number, (j == 0) ? MUX_C : MUX_D);
+                        mosi_pad = mosi->sercom[j].pad;
+                        dopo = samd_peripherals_get_spi_dopo(clock_pad, mosi_pad);
+                        if (dopo > 0x3) {
+                            continue;  // pad combination not possible
+                        }
+                        if (miso_none) {
+                            sercom = potential_sercom;
+                            break;
+                        }
+                    } else {
+                        continue;
                     }
+                }
+                if (!miso_none) {
+                    for (int k = 0; k < NUM_SERCOMS_PER_PIN; k++) {
+                        if (sercom_index == miso->sercom[k].index) {
+                            miso_pinmux = PINMUX(miso->number, (k == 0) ? MUX_C : MUX_D);
+                            miso_pad = miso->sercom[k].pad;
+                            sercom = potential_sercom;
+                            break;
+                        }
+                    }
+                }
+                if (sercom != NULL) {
+                    break;
                 }
             }
             if (sercom != NULL) {
                 break;
             }
-        }
-        if (sercom != NULL) {
-            break;
-        }
     }
-    #ifdef PIN_PC19
     }
-    #endif
     if (sercom == NULL) {
         mp_raise_ValueError(translate("Invalid pins"));
     }
