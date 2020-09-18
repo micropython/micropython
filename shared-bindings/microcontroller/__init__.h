@@ -43,6 +43,8 @@ extern void common_hal_mcu_enable_interrupts(void);
 extern void common_hal_mcu_on_next_reset(mcu_runmode_t runmode);
 extern void common_hal_mcu_reset(void);
 
+extern void common_hal_mcu_sleep(void);
+
 extern const mp_obj_dict_t mcu_pin_globals;
 
 extern const mcu_processor_obj_t common_hal_mcu_processor_obj;

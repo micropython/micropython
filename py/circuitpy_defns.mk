@@ -259,6 +259,9 @@ endif
 ifeq ($(CIRCUITPY_TIME),1)
 SRC_PATTERNS += time/%
 endif
+ifeq ($(CIRCUITPY_TIMEALARM),1)
+SRC_PATTERNS += timealarm/%
+endif
 ifeq ($(CIRCUITPY_TOUCHIO),1)
 SRC_PATTERNS += touchio/%
 endif
@@ -360,6 +363,7 @@ SRC_COMMON_HAL_ALL = \
 	ssl/SSLContext.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
+	timealarm/__init__.c \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \

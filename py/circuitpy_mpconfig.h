@@ -663,6 +663,13 @@ extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE_ALT_NAME
 #endif
 
+#if CIRCUITPY_TIMEALARM
+extern const struct _mp_obj_module_t timealarm_module;
+#define TIMEALARM_MODULE             { MP_OBJ_NEW_QSTR(MP_QSTR_timealarm), (mp_obj_t)&timealarm_module },
+#else
+#define TIMEALARM_MODULE
+#endif
+
 #if CIRCUITPY_TOUCHIO
 extern const struct _mp_obj_module_t touchio_module;
 #define TOUCHIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_touchio), (mp_obj_t)&touchio_module },
@@ -821,6 +828,7 @@ extern const struct _mp_obj_module_t wifi_module;
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
     TOUCHIO_MODULE \
+    TIMEALARM_MODULE \
     UHEAP_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \
