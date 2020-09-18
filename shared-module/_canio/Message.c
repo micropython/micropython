@@ -59,6 +59,7 @@ const void *common_hal_canio_message_get_data(const canio_message_obj_t *self)
 
 const void common_hal_canio_message_set_data(canio_message_obj_t *self, const void *data, size_t size)
 {
+    self->rtr = false;
     self->size = size;
     memcpy(self->data, data, size);
 }
@@ -84,6 +85,9 @@ bool common_hal_canio_message_get_rtr(const canio_message_obj_t *self)
 void common_hal_canio_message_set_rtr(canio_message_obj_t *self, bool rtr)
 {
     self->rtr = rtr;
+    if (rtr) {
+        memset(self->data, 0, self->size);
+    }
 }
 
 bool common_hal_canio_message_get_extended(const canio_message_obj_t *self)

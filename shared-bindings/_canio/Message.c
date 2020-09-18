@@ -117,7 +117,7 @@ STATIC const mp_obj_property_t canio_message_id_obj = {
 //|     data: bytes
 //|     """The content of the message, or dummy content in the case of an rtr.
 //|
-//|     Assigning to data also sets the length."""
+//|     Assigning to data also sets the length and clears the rtr flag."""
 //|
 STATIC mp_obj_t canio_message_data_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
@@ -202,7 +202,7 @@ STATIC const mp_obj_property_t canio_message_extended_obj = {
 
 
 //|     rtr: bool
-//|     """True if the message represents a remote transmission request (RTR)"""
+//|     """True if the message represents a remote transmission request (RTR).  Setting rtr to true zeros out data"""
 //|
 STATIC mp_obj_t canio_message_rtr_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;
