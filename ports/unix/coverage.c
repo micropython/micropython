@@ -176,8 +176,38 @@ STATIC void pairheap_test(size_t nops, int *ops) {
     printf("\n");
 }
 
+// Test object with a finaliser for use with the GC coverage test.
+// Allows detection of whether the finaliser has been called.
+STATIC const mp_obj_type_t coverage_obj_with_finaliser_type;
+
+typedef struct _coverage_obj_with_finaliser_t {
+    mp_obj_base_t base;
+    bool *finalised;
+    struct _coverage_obj_with_finaliser_t *other;
+} coverage_obj_with_finaliser_t;
+
+STATIC mp_obj_t coverage_obj_with_finaliser_del(mp_obj_t self_in) {
+    (void)self_in;
+    coverage_obj_with_finaliser_t *self = MP_OBJ_TO_PTR(self_in);
+    *self->finalised = true;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(coverage_obj_with_finaliser_del_obj, coverage_obj_with_finaliser_del);
+
+STATIC const mp_rom_map_elem_t coverage_obj_with_finaliser_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&coverage_obj_with_finaliser_del_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(coverage_obj_with_finaliser_locals_dict, coverage_obj_with_finaliser_locals_dict_table);
+
+STATIC const mp_obj_type_t coverage_obj_with_finaliser_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_CoverageFinaliser,
+    .locals_dict = (mp_obj_dict_t *)&coverage_obj_with_finaliser_locals_dict,
+};
+
 // function to run extra tests for things that can't be checked by scripts
 STATIC mp_obj_t extra_coverage(void) {
+
     // mp_printf (used by ports that don't have a native printf)
     {
         mp_printf(&mp_plat_print, "# mp_printf\n");
@@ -217,6 +247,32 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // calling gc_nbytes with a non-heap pointer
         mp_printf(&mp_plat_print, "%p\n", gc_nbytes(NULL));
+
+        // verify that gc_set_permanent works and doesn't recursively scan
+        for (int i = 0; i < 100; ++i) {
+            // 100 single-block allocs will advance the GC "next" pointer
+            // into an area that shouldn't be currently pointed to by
+            // any existing pointers on the stack.
+            m_malloc0(MICROPY_BYTES_PER_GC_BLOCK);
+        }
+        // static so the pointers won't be on the stack.
+        static coverage_obj_with_finaliser_t *obj1, *obj2;
+        bool finalised1 = false, finalised2 = false;
+        obj1 = m_new_obj_with_finaliser(coverage_obj_with_finaliser_t);
+        obj2 = m_new_obj_with_finaliser(coverage_obj_with_finaliser_t);
+        obj1->base.type = &coverage_obj_with_finaliser_type;
+        obj2->base.type = &coverage_obj_with_finaliser_type;
+        obj1->finalised = &finalised1;
+        obj2->finalised = &finalised2;
+        // even though obj1 points to obj2, it won't keep obj2 alive.
+        gc_set_permanent(obj1, true);
+        obj1->other = obj2;
+        obj2->other = obj1;
+        gc_collect();
+        printf("%d %d ", finalised1, finalised2);
+        gc_set_permanent(obj1, false);
+        gc_collect();
+        printf("%d %d\n", finalised1, finalised2);
     }
 
     // vstr

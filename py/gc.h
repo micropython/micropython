@@ -48,6 +48,14 @@ void gc_collect_end(void);
 // Use this function to sweep the whole heap and run all finalisers
 void gc_sweep_all(void);
 
+#if MICROPY_GC_PERMANENT_ALLOCS
+// Mark an allocation as "permanent", which means that it will be treated
+// as marked even if not discoverable by the root pointer tree walk, including
+// from gc_sweep_all. For example, this allows it to survive a soft reset.
+// Note that these allocations are not recursively scanned for GC heap pointers.
+void gc_set_permanent(void *ptr, bool permanent);
+#endif
+
 enum {
     GC_ALLOC_FLAG_HAS_FINALISER = 1,
 };

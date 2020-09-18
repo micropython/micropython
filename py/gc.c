@@ -165,6 +165,12 @@ void gc_init(void *start, void *end) {
     mp_thread_mutex_init(&MP_STATE_MEM(gc_mutex));
     #endif
 
+    #if MICROPY_GC_PERMANENT_ALLOCS
+    MP_STATE_MEM(gc_permanent) = NULL;
+    MP_STATE_MEM(gc_permanent_used) = 0;
+    MP_STATE_MEM(gc_permanent_alloc) = 0;
+    #endif
+
     DEBUG_printf("GC layout:\n");
     DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(gc_alloc_table_start), MP_STATE_MEM(gc_alloc_table_byte_len), MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB);
     #if MICROPY_ENABLE_FINALISER
@@ -263,6 +269,20 @@ STATIC void gc_deal_with_stack_overflow(void) {
 }
 
 STATIC void gc_sweep(void) {
+    #if MICROPY_GC_PERMANENT_ALLOCS
+    if (MP_STATE_MEM(gc_permanent)) {
+        // Explicitly mark entries in the list of permanent pointers.
+        // Note that these aren't root pointers, and we don't search them
+        // recursively, the assumption being that they points to memory owned by
+        // a library that wouldn't contain anything pointing back to the MP heap.
+        for (size_t i = 0; i < MP_STATE_MEM(gc_permanent_used); ++i) {
+            ATB_HEAD_TO_MARK(MP_STATE_MEM(gc_permanent)[i]);
+        }
+        // Then (non-recursively) mark the permanent list itself.
+        ATB_HEAD_TO_MARK(BLOCK_FROM_PTR(MP_STATE_MEM(gc_permanent)));
+    }
+    #endif
+
     #if MICROPY_PY_GC_COLLECT_RETVAL
     MP_STATE_MEM(gc_collected) = 0;
     #endif
@@ -795,6 +815,35 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     return ptr_out;
 }
 #endif // Alternative gc_realloc impl
+
+#if MICROPY_GC_PERMANENT_ALLOCS
+void gc_set_permanent(void *ptr, bool permanent) {
+    if (!VERIFY_PTR(ptr)) {
+        return;
+    }
+
+    size_t block = BLOCK_FROM_PTR(ptr);
+
+    if (permanent) {
+        // Append to the list, growing as necessary.
+        if (MP_STATE_MEM(gc_permanent_used) == MP_STATE_MEM(gc_permanent_alloc)) {
+            MP_STATE_MEM(gc_permanent_alloc) += BYTES_PER_BLOCK / sizeof(MICROPY_GC_STACK_ENTRY_TYPE);
+            MP_STATE_MEM(gc_permanent) = gc_realloc(MP_STATE_MEM(gc_permanent), MP_STATE_MEM(gc_permanent_alloc) * sizeof(MICROPY_GC_STACK_ENTRY_TYPE), true);
+        }
+        MP_STATE_MEM(gc_permanent)[MP_STATE_MEM(gc_permanent_used)++] = block;
+    } else {
+        // Remove matching elements, shifting the list down as necessary.
+        size_t dest = 0;
+        for (size_t src = 0; src < MP_STATE_MEM(gc_permanent_used); ++src) {
+            if (MP_STATE_MEM(gc_permanent)[src] != block) {
+                MP_STATE_MEM(gc_permanent)[dest] = MP_STATE_MEM(gc_permanent)[src];
+                ++dest;
+            }
+        }
+        MP_STATE_MEM(gc_permanent_used) = dest;
+    }
+}
+#endif
 
 void gc_dump_info(void) {
     gc_info_t info;

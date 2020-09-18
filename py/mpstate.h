@@ -102,6 +102,15 @@ typedef struct _mp_state_mem_t {
     // This is a global mutex used to make the GC thread-safe.
     mp_thread_mutex_t gc_mutex;
     #endif
+
+    #if MICROPY_GC_PERMANENT_ALLOCS
+    // List of block numbers that are "always marked" allocs.
+    MICROPY_GC_STACK_ENTRY_TYPE *gc_permanent;
+    // Current number of used entries in gc_permanent.
+    uint16_t gc_permanent_used;
+    // Current allocation size (in entries) of gc_permanent.
+    uint16_t gc_permanent_alloc;
+    #endif
 } mp_state_mem_t;
 
 // This structure hold runtime and VM information.  It includes a section

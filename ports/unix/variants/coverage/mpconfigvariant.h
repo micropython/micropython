@@ -30,6 +30,7 @@
 #define MICROPY_VFS                    (1)
 #define MICROPY_PY_UOS_VFS             (1)
 
+#define MICROPY_GC_PERMANENT_ALLOCS    (1)
 #define MICROPY_OPT_MATH_FACTORIAL     (1)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_ENABLE_SCHEDULER       (1)

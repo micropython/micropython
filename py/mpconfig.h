@@ -159,6 +159,14 @@
 #define MICROPY_GC_ALLOC_THRESHOLD (1)
 #endif
 
+// Allow GC heap allocations to be set as "always marked" using
+// gc_set_permanent, regardless of whether they can be found during the main
+// root pointer tree walk. Note that these allocations are not recursively
+// scanned for GC heap pointers.
+#ifndef MICROPY_GC_PERMANENT_ALLOCS
+#define MICROPY_GC_PERMANENT_ALLOCS (0)
+#endif
+
 // Number of bytes to allocate initially when creating new chunks to store
 // interned string data.  Smaller numbers lead to more chunks being needed
 // and more wastage at the end of the chunk.  Larger numbers lead to wasted
