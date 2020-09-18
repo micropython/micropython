@@ -43,6 +43,17 @@ SECTIONS
         _sidata = .;       /* start of .data section */
     } >FLASH_FIRMWARE
 
+    /* Data accessed by the CAN peripheral must be in the first 64kB RAM */
+    /* place it at the very start of RAM, before the .data section */
+    /* it is zeroed by reset_port */
+    .canram (NOLOAD) :
+    {
+        . = ALIGN(4);
+        _scanram = .;
+        *(.canram)
+        _ecanram = .;
+    } > RAM
+
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH_FIRMWARE (inidata).
@@ -67,10 +78,6 @@ SECTIONS
         . = ALIGN(4);
         _sbss = .;
         _szero = .;         /* define a global symbol at bss start; used by startup code */
-        /* Data accessed by the CAN peripheral must be in the first 64kB RAM */
-        _scanram = .;
-        *(.canram)
-        _ecanram = .;
         *(.bss)
         *(.bss*)
         *(COMMON)
