@@ -144,8 +144,8 @@ CLK PA21 PCC_D? (D32)  BROWN
         hri_mclk_set_AHBMASK_SDHC0_bit(MCLK);
         hri_gclk_write_PCHCTRL_reg(GCLK, SDHC0_GCLK_ID, CONF_GCLK_SDHC0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
         hri_gclk_write_PCHCTRL_reg(GCLK, SDHC0_GCLK_ID_SLOW, CONF_GCLK_SDHC0_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-    } else {
 #ifdef SDHC1_GCLK_ID
+    } else {
         hri_mclk_set_AHBMASK_SDHC1_bit(MCLK);
         hri_gclk_write_PCHCTRL_reg(GCLK, SDHC1_GCLK_ID, CONF_GCLK_SDHC1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
         hri_gclk_write_PCHCTRL_reg(GCLK, SDHC1_GCLK_ID_SLOW, CONF_GCLK_SDHC1_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
