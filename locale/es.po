@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-11 13:30+0200\n"
-"PO-Revision-Date: 2020-08-17 21:11+0000\n"
+"PO-Revision-Date: 2020-09-18 23:14+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: main.c
 msgid ""
@@ -378,7 +378,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
-msgstr ""
+msgstr "Fallo de autenticación"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -503,7 +503,7 @@ msgstr "No se puede configurar CCCD en la característica local"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
-msgstr ""
+msgstr "No se puede crear nuevo Adapter; use _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -595,7 +595,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr ""
+msgstr "CircuitPython no puedo encontrar el montículo.\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -636,7 +636,7 @@ msgstr "Código crudo corrupto"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
-msgstr ""
+msgstr "No se puede inicializar Camera"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -785,7 +785,7 @@ msgstr "Se esperaba una Característica"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "Se espera un DigitalInOut"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -793,7 +793,7 @@ msgstr "Se esperaba un servicio"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr ""
+msgstr "Se espera un UART"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -866,7 +866,7 @@ msgstr "El archivo ya existe"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
-msgstr ""
+msgstr "Sin capacidades para el formato"
 
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
@@ -937,7 +937,7 @@ msgstr "Tamaño incorrecto del buffer"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
-msgstr ""
+msgstr "La entrada está durando mucho tiempo"
 
 #: py/moduerrno.c
 msgid "Input/output error"
@@ -1259,7 +1259,7 @@ msgstr "No hay más temporizadores disponibles en este pin."
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
-msgstr ""
+msgstr "No hay una red con ese ssid"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1283,7 +1283,7 @@ msgstr "fallo de aserción de dispositivo Nordic Soft."
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
-msgstr ""
+msgstr "No es una cadena de IP válida"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1301,7 +1301,7 @@ msgstr "No ejecutando el código almacenado.\n"
 
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
-msgstr ""
+msgstr "No configurable"
 
 #: shared-bindings/util.c
 msgid ""
@@ -1337,7 +1337,7 @@ msgstr ""
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"
-msgstr ""
+msgstr "Solo se aceptan enteros crudos para ip"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1410,6 +1410,8 @@ msgid ""
 "Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
 "instead"
 msgstr ""
+"Port no acepta los pines o la frecuencia. Construya y pase en su lugar un "
+"Carrier de PWMOut"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -1542,11 +1544,11 @@ msgstr "Serializer está siendo utilizado"
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
-msgstr ""
+msgstr "El contexto del lado del servidor no puede tener un hostname"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
-msgstr ""
+msgstr "Sin capacidades para el tamaño"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -1763,7 +1765,7 @@ msgstr "Tipo de uuid nrfx inesperado"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Unknown failure"
-msgstr ""
+msgstr "Fallo desconocido"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1881,7 +1883,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
-msgstr ""
+msgstr "La clave de WiFi debe ser entre 8 y 63 caracteres"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -2052,7 +2054,7 @@ msgstr "bytes > 8 bits no soportados"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
-msgstr ""
+msgstr "el tamaño en bytes no es un múltiplo del tamaño del item"
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2582,7 +2584,7 @@ msgstr "los valores iniciales deben permitir iteración"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "initial_value length is wrong"
-msgstr ""
+msgstr "el tamaño de initial_value es incorrecto"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2781,7 +2783,7 @@ msgstr "max_length debe ser 0-%d cuando fixed_length es %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "max_length must be > 0"
-msgstr ""
+msgstr "max_lenght debe ser > 0"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3022,11 +3024,11 @@ msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
-msgstr ""
+msgstr "fuera de rango de fuente"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
-msgstr ""
+msgstr "fuera de rango del objetivo"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
@@ -3035,7 +3037,7 @@ msgstr "desbordamiento convirtiendo long int a palabra de máquina"
 #: py/modstruct.c
 #, c-format
 msgid "pack expected %d items for packing (got %d)"
-msgstr ""
+msgstr "pack espera %d items para empaquetado (se recibió %d)"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
@@ -3214,7 +3216,7 @@ msgstr "sosfilt requiere argumentos iterables"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
+msgstr "paleta fuente muy larga"
 
 #: py/objstr.c
 msgid "start/end indices"
