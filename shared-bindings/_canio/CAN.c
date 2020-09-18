@@ -42,7 +42,7 @@
 //|     """CAN bus protocol"""
 //|
 //|     def __init__(self,
-//|             rx: microcontroller.Pin,
+//|             rx: Optional[microcontroller.Pin]=None,
 //|             tx: Optional[microcontroller.Pin]=None,
 //|             *,
 //|             baudrate: int = 250000,
@@ -50,13 +50,18 @@
 //|             auto_restart: bool = False,
 //|         ):
 //|         """A common shared-bus protocol.  The rx and tx pins are generally
-//|         connected to a transceiver which controls the H and L pins on a shared
-//|         bus.
+//|         connected to a transceiver which controls the H and L pins on a
+//|         shared bus.
 //|
-//|         :param ~microcontroller.Pin rx: the pin to receive with.
-//|         :param ~microcontroller.Pin tx: the pin to transmit with, or None if the peripheral should operate in "silent" mode.
+//|         Normally, both ``tx`` and ``rx`` pins will be specified.  However,
+//|         in silent and loopback modes, the other pin may not be required and
+//|         can be used for other purposes.
+//|
+//|         :param ~microcontroller.Pin rx: the pin to receive with, or None.
+//|         :param ~microcontroller.Pin tx: the pin to transmit with, or None.
 //|         :param int baudrate: The bit rate of the bus in Hz.  All devices on the bus must agree on this value.
-//|         :param bool loopback: True if the peripheral will be operated in loopback mode.
+//|         :param bool loopback: True if the peripheral will be operated in loopback mode.  In loopback mode, the ``rx`` pin's value is ignored, and the device receives the packets it sends.
+//|         :param bool silent: True if the peripheral will be operated in silent mode.  In silent mode, the ``tx`` pin is always driven to the high logic level.  This mode can be used to "sniff" a CAN bus without interfering.
 //|         :param bool auto_restart: If True, will restart communications after entering bus-off state
 //|         """
 //|         ...
@@ -64,8 +69,8 @@
 STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_rx, ARG_tx, ARG_baudrate, ARG_loopback, ARG_silent, ARG_auto_restart, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_rx, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = 0} },
-        { MP_QSTR_tx, MP_ARG_OBJ, {.u_obj = 0} },
+        { MP_QSTR_rx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_tx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 250000} },
         { MP_QSTR_loopback, MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_silent, MP_ARG_BOOL, {.u_bool = false} },
@@ -76,8 +81,11 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, con
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mcu_pin_obj_t *rx_pin = validate_obj_is_free_pin(args[ARG_rx].u_obj);
+    mcu_pin_obj_t *rx_pin = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
     mcu_pin_obj_t *tx_pin = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
+    if (!rx_pin && !tx_pin) {
+        mp_raise_ValueError(translate("tx and rx cannot both be None"));
+    }
 
     canio_can_obj_t *self = m_new_obj(canio_can_obj_t);
     self->base.type = &canio_can_type;
@@ -301,6 +309,24 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(canio_can_listen_obj, 1, canio_can_listen);
 
+//|     loopback: bool
+//|     """True if the device was created in loopback mode, False otherwise"""
+//|
+STATIC mp_obj_t canio_can_loopback_get(mp_obj_t self_in) {
+    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_canio_can_check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_canio_can_loopback_get(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(canio_can_loopback_get_obj, canio_can_loopback_get);
+
+STATIC const mp_obj_property_t canio_can_loopback_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&canio_can_loopback_get_obj,
+              (mp_obj_t)mp_const_none,
+              (mp_obj_t)mp_const_none},
+};
+
+
 //|     def send(message: Message) -> None:
 //|         """Send a message on the bus with the given data and id.
 //|         If the message could not be sent due to a full fifo or a bus error condition, RuntimeError is raised.
@@ -320,6 +346,24 @@ STATIC mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_can_send_obj, canio_can_send);
+
+//|     silent: bool
+//|     """True if the device was created in silent mode, False otherwise"""
+//|
+STATIC mp_obj_t canio_can_silent_get(mp_obj_t self_in) {
+    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_canio_can_check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_canio_can_silent_get(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(canio_can_silent_get_obj, canio_can_silent_get);
+
+STATIC const mp_obj_property_t canio_can_silent_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&canio_can_silent_get_obj,
+              (mp_obj_t)mp_const_none,
+              (mp_obj_t)mp_const_none},
+};
+
 
 //|     def deinit(self) -> None:
 //|         """Deinitialize this object, freeing its hardware resources"""
@@ -363,9 +407,11 @@ STATIC const mp_rom_map_elem_t canio_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_error_passive_state_count), MP_ROM_PTR(&canio_can_error_passive_state_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_error_warning_state_count), MP_ROM_PTR(&canio_can_error_warning_state_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&canio_can_listen_obj) },
+    { MP_ROM_QSTR(MP_QSTR_loopback), MP_ROM_PTR(&canio_can_loopback_obj) },
     { MP_ROM_QSTR(MP_QSTR_receive_error_count), MP_ROM_PTR(&canio_can_receive_error_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&canio_can_restart_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&canio_can_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_silent), MP_ROM_PTR(&canio_can_silent_obj) },
     { MP_ROM_QSTR(MP_QSTR_state), MP_ROM_PTR(&canio_can_state_obj) },
     { MP_ROM_QSTR(MP_QSTR_transmit_error_count), MP_ROM_PTR(&canio_can_transmit_error_count_obj) },
 };

@@ -51,9 +51,10 @@ __attribute__((optimize("O0"), noinline))
 void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mcu_pin_obj_t *tx, int baudrate, bool loopback, bool silent)
 {
     mcu_pin_function_t *tx_function = mcu_find_pin_function(can_tx, tx, -1, MP_QSTR_tx);
-    int instance = tx_function->instance;
+    int instance = tx_function ? tx_function->instance : -1;
 
     mcu_pin_function_t *rx_function = mcu_find_pin_function(can_rx, rx, instance, MP_QSTR_rx);
+    instance = rx_function->instance;
 
     const uint32_t can_frequency = CONF_CAN0_FREQUENCY;
 
@@ -68,9 +69,11 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
         mp_raise_OSError(MP_EINVAL); // baudrate cannot be attained (16kHz or something is lower bound, should never happen)
     }
 
-    gpio_set_pin_direction(tx_function->pin, GPIO_DIRECTION_OUT);
-    gpio_set_pin_function(tx_function->pin, tx_function->function);
-    common_hal_never_reset_pin(tx_function->obj);
+    if (tx_function) {
+        gpio_set_pin_direction(tx_function->pin, GPIO_DIRECTION_OUT);
+        gpio_set_pin_function(tx_function->pin, tx_function->function);
+        common_hal_never_reset_pin(tx_function->obj);
+    }
 
     if (rx_function) {
         gpio_set_pin_direction(rx_function->pin, GPIO_DIRECTION_IN);
@@ -78,12 +81,13 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
         common_hal_never_reset_pin(rx_function->obj);
     }
 
-    self->tx_pin_number = common_hal_mcu_pin_number(tx);
+    self->tx_pin_number = tx ? common_hal_mcu_pin_number(tx) : COMMON_HAL_MCU_NO_PIN;
     self->rx_pin_number = rx ? common_hal_mcu_pin_number(rx) : COMMON_HAL_MCU_NO_PIN;
     self->hw = can_insts[instance];
     self->state = &can_state[instance];
 
     self->loopback = loopback;
+    self->silent = silent;
 
     // Allow configuration change
     hri_can_set_CCCR_INIT_bit(self->hw);
@@ -129,11 +133,9 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
         hri_can_write_NBTP_reg(self->hw, btp.reg);
     }
 
-    // we don't do the high bit rate yet, so do we need to set this register?
-    // hri_can_write_DBTP_reg(self->hw, ???);
-    // A "data bit" is a data bit :) with dul rate CAN FD, this is a higher
-    // rate.  However, CAN FD is not implemented in CircuitPython, and this is the same rate as
-    // the "nominal rate".
+    // A "data bit" is a data bit :) with dula rate CAN FD, this is a higher
+    // rate.  However, CAN FD is not implemented in CircuitPython, and this is
+    // the same rate as the "nominal rate".
     {
         CAN_DBTP_Type btp = {
             .bit.DTSEG1 = DIV_ROUND(clocks_to_sample, divisor) - 1,
@@ -259,7 +261,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
     can_objs[instance] = self;
 }
 
-int common_hal_canio_can_loopback_get(canio_can_obj_t *self)
+bool common_hal_canio_can_loopback_get(canio_can_obj_t *self)
 {
     return self->loopback;
 }
@@ -366,6 +368,10 @@ void common_hal_canio_can_send(canio_can_obj_t *self, canio_message_obj_t *messa
     while (port_get_raw_ticks(NULL) < deadline && !(self->hw->TXBTO.reg & 1)) {
         RUN_BACKGROUND_TASKS;
     }
+}
+
+bool common_hal_canio_can_silent_get(canio_can_obj_t *self) {
+    return self->silent;
 }
 
 bool common_hal_canio_can_deinited(canio_can_obj_t *self) {
