@@ -55,7 +55,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_LED_GREEN), MP_ROM_PTR(&pin_P0_22) },
   { MP_ROM_QSTR(MP_QSTR_LED_BLUE), MP_ROM_PTR(&pin_P0_24) },
 
-  { MP_ROM_QSTR(MP_QSTR_USR_BTN), MP_ROM_PTR(&pin_P1_00) },
+  { MP_ROM_QSTR(MP_QSTR_BUTTON_USR), MP_ROM_PTR(&pin_P1_00) },
 };
 
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
