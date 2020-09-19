@@ -35,6 +35,12 @@ mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self) {
 	return mp_obj_new_str(cstr, strlen(cstr));
 }
 
+#define MAC_ADDRESS_LENGTH 6
+
+mp_obj_t common_hal_wifi_network_get_bssid(wifi_network_obj_t *self) {
+    return mp_obj_new_bytes(self->record.bssid, MAC_ADDRESS_LENGTH);
+}
+
 mp_obj_t common_hal_wifi_network_get_rssi(wifi_network_obj_t *self) {
     return mp_obj_new_int(self->record.rssi);
 }
