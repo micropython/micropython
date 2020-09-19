@@ -163,6 +163,47 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_connect_obj, 1, wifi_radio_connect);
 
+//|     ap_rssi: int
+//|     """RSSI of the currently connected AP. Returns none if not connected"""
+//|
+STATIC mp_obj_t wifi_radio_get_ap_rssi(mp_obj_t self) {
+    return common_hal_wifi_radio_get_ap_rssi(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ap_rssi_obj, wifi_radio_get_ap_rssi);
+
+//|     ipv4_gateway: Optional[ipaddress.IPv4Address]
+//|     """IP v4 Address of the gateway when connected to an access point. None otherwise."""
+//|
+STATIC mp_obj_t wifi_radio_get_ipv4_gateway(mp_obj_t self) {
+    return common_hal_wifi_radio_get_ipv4_gateway(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_gateway_obj, wifi_radio_get_ipv4_gateway);
+
+const mp_obj_property_t wifi_radio_ipv4_gateway_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_gateway_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
+//|     ipv4_subnet: Optional[ipaddress.IPv4Address]
+//|     """IP v4 Address of the subnet when connected to an access point. None otherwise."""
+//|
+STATIC mp_obj_t wifi_radio_get_ipv4_subnet(mp_obj_t self) {
+    return common_hal_wifi_radio_get_ipv4_subnet(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_subnet_obj, wifi_radio_get_ipv4_subnet);
+
+const mp_obj_property_t wifi_radio_ipv4_subnet_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_subnet_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
 //|     ipv4_address: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the radio when connected to an access point. None otherwise."""
 //|
@@ -219,6 +260,9 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&wifi_radio_connect_obj) },
     // { MP_ROM_QSTR(MP_QSTR_connect_to_enterprise),    MP_ROM_PTR(&wifi_radio_connect_to_enterprise_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_ap_rssi),    MP_ROM_PTR(&wifi_radio_get_ap_rssi_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipv4_gateway),    MP_ROM_PTR(&wifi_radio_ipv4_gateway_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipv4_subnet),    MP_ROM_PTR(&wifi_radio_ipv4_subnet_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipv4_address),    MP_ROM_PTR(&wifi_radio_ipv4_address_obj) },
 
     // { MP_ROM_QSTR(MP_QSTR_access_point_active),   MP_ROM_PTR(&wifi_radio_access_point_active_obj) },

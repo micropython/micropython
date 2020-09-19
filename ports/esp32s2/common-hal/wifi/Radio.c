@@ -147,6 +147,44 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     return WIFI_RADIO_ERROR_NONE;
 }
 
+mp_obj_t common_hal_wifi_radio_get_ap_rssi(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+    // Make sure the interface is in STA mode
+    wifi_mode_t if_mode;
+    esp_wifi_get_mode(&if_mode);
+    if (if_mode != WIFI_MODE_STA){
+        return mp_const_none;
+    }
+
+    wifi_ap_record_t ap_info;
+    esp_wifi_sta_get_ap_info(&ap_info);
+
+    mp_obj_t rssi;
+    rssi = MP_OBJ_NEW_SMALL_INT(ap_info.rssi);
+
+    return rssi;
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+    esp_netif_ip_info_t ip_info;
+    esp_netif_get_ip_info(self->netif, &ip_info);
+    return common_hal_ipaddress_new_ipv4address(ip_info.gw.addr);
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+    esp_netif_ip_info_t ip_info;
+    esp_netif_get_ip_info(self->netif, &ip_info);
+    return common_hal_ipaddress_new_ipv4address(ip_info.netmask.addr);
+}
+
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
