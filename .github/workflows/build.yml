@@ -179,7 +179,7 @@ jobs:
         - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
-        - "bdmicro_vina_m0"
+        - "bdmicro_vina_d21"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
         - "capablerobot_usbhub"
