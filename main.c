@@ -509,7 +509,7 @@ int __attribute__((used)) main(void) {
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
-                serial_write_compressed(translate("\n\n ----- soft reboot -----\n"));
+                serial_write_compressed(translate("\n\n------ soft reboot ------\n"));
             }
             first_run = false;
             skip_repl = run_code_py(safe_mode);

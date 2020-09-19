@@ -1,0 +1,8 @@
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_TIME_ALARM___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_TIME_ALARM___INIT___H
+
+#include "py/runtime.h"
+
+extern void common_hal_time_alarm_duration(uint32_t);
+
+#endif //MICROPY_INCLUDED_SHARED_BINDINGS_TIME_ALARM___INIT___H
