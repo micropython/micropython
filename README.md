@@ -16,6 +16,7 @@ Show text and number on DotMarix 16x8
 import display
 
 display.show(99) # only 2-char show
+display.show4x8(1234) # show number 4-char in one time
 display.scroll("Hello, mars !")
 display.clear()
 ```
@@ -99,6 +100,8 @@ imu.update() # read data from sensor
 acc = imu.acc # array of (x, y, z)
 gyro = imu.gyro # array of (x, y, z), only on KidBrgiht32 V1.6 by Gravitech
 mag = imu.mag # array of (x, y, z), only on KidBrgiht32 V1.5i by INEX
+r = imu.rotation() # array of (roll, pitch) needs call imu.update() before use
+head = imu.heading() # get angle from compass sensor (needs call imu.update() before use), only on KidBrgiht32 V1.5i by INEX
 ```
 
 You can see more detail. [Source all module](https://github.com/microBlock-IDE/micropython/tree/V1.0.0/ports/esp32/boards/KidBright32/modules)
