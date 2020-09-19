@@ -75,7 +75,7 @@ def update():
             buff[i] = i2c1.readfrom_mem(LSM303AGR_MEG_ADDR, 0x68 + i, 1)[0]
         for i in range(3):
             mag[i] = b2i(buff[(i * 2) + 1], buff[(i * 2) + 0])
-            mag[i] = round(mag[i] * 1.5, 2)
+            mag[i] = round(mag[i] * 1.5 * 0.1, 2)
 
 
 def rotation():
@@ -97,3 +97,122 @@ def rotation():
     pitch = round(pitch, 2)
 
     return (roll, pitch)
+
+calibrateMagFlag = False
+mag_min = [ 99999, 99999, 99999 ]
+mag_max = [ -99999, -99999, -99999 ]
+def heading():
+    global calibrateMagFlag
+    if not calibrateMagFlag:
+        if not loadCalibrateFromSRAM():
+            calibrate_compass()
+        calibrateMagFlag = True
+
+    # use calibration values to shift and scale magnetometer measurements
+    x_mag = (0.0 + mag[0] - mag_min[0]) / (mag_max[0] - mag_min[0]) * 2 - 1
+    y_mag = (0.0 + mag[1] - mag_min[1]) / (mag_max[1] - mag_min[1]) * 2 - 1
+    z_mag = (0.0 + mag[2] - mag_min[2]) / (mag_max[2] - mag_min[2]) * 2 - 1
+
+    # Normalize acceleration measurements so they range from 0 to 1
+    s = math.sqrt(math.pow(acc[0], 2) + math.pow(acc[1], 2) + math.pow(acc[2], 2))
+    xAccelNorm = acc[0] / s
+    yAccelNorm = acc[1] / s
+    # DF("Acc norm (x, y): (%f, %f)\n", xAccelNorm, yAccelNorm)
+
+    pitch = math.asin(-xAccelNorm)
+    roll = math.asin(yAccelNorm / math.cos(pitch))
+
+    # tilt compensated magnetic sensor measurements
+    x_mag_comp = x_mag * math.cos(pitch) + z_mag * math.sin(pitch)
+    y_mag_comp = x_mag * math.sin(roll) * math.sin(pitch) + y_mag * math.cos(roll) - z_mag * math.sin(roll) * math.cos(pitch)
+
+    # arctangent of y/x converted to degrees
+    heading = 180 * math.atan2(x_mag_comp, y_mag_comp) / math.pi
+
+    heading = (-heading) if heading <= 0 else (360 - heading)
+    return int(heading)
+
+
+def calibrate_compass():
+    global calibrateMagFlag
+    import display
+    from time import sleep
+
+    display.scroll("TILT TO FILL SCREEN")
+
+    buffer = bytearray(16)
+
+    before_index_cols = -1
+    before_index_rows = -1
+
+    delay = 0
+    pixelShow = False
+    while True:
+        if mag[0] < mag_min[0]:
+            mag_min[0] = mag[0]
+        if mag[0] > mag_max[0]:
+            mag_max[0] = mag[0]
+
+        if mag[1] < mag_min[1]:
+            mag_min[1] = mag[1]
+        if mag[1] > mag_max[1]:
+            mag_max[1] = mag[1]
+        
+        if mag[2] < mag_min[2]:
+            mag_min[2] = mag[2]
+        if mag[2] > mag_max[2]:
+            mag_max[2] = mag[2]
+
+        update()
+        (roll, pitch) = rotation()
+
+        index_cols = int((roll - -60) * (15 - 0) / (60 - -60) + 0)
+        index_rows = int((pitch - -60) * (7 - 0) / (60 - -60) + 0)
+
+        if index_cols > 15:
+            index_cols = 15
+        if index_rows > 7:
+            index_rows = 7
+
+        if before_index_cols == -1 or before_index_rows == -1:
+            before_index_cols = index_cols
+            before_index_rows = index_rows
+
+        if index_cols >= 0 and index_cols <= 15 and index_rows >= 0 and index_rows <= 7:
+            if (index_cols != before_index_cols) or (index_rows != before_index_rows):
+                buffer[before_index_cols] |= 0x80 >> before_index_rows
+
+            if pixelShow:
+                buffer[index_cols] |= 0x80 >> index_rows
+                if buffer == b'\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF':
+                    break
+            else:
+                buffer[index_cols] &= ~(0x80 >> index_rows)
+            if delay >= 200:
+                delay = 0
+                pixelShow = not pixelShow
+
+        before_index_cols = index_cols
+        before_index_rows = index_rows
+
+        display.raw(buffer)
+
+        sleep(0.05)
+        delay += 50
+
+    display.scroll("FINISH")
+    saveCalibrateIntoSRAM()
+    calibrateMagFlag = True
+
+def loadCalibrateFromSRAM():
+    return False
+
+def saveCalibrateIntoSRAM():
+    return True
+
+def calCRC(data, size):
+    sum = b'\0'
+    for i in range(size):
+        sum += data[i]
+    sum = sum ^ 0xFF
+    return sum
