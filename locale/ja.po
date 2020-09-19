@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-13 14:21-0500\n"
+"POT-Creation-Date: 2020-09-16 17:07-0700\n"
 "PO-Revision-Date: 2020-09-01 18:44+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
@@ -439,7 +439,7 @@ msgstr "バッファサイズが正しくありません。%dバイトでなけ�
 msgid "Buffer is not a bytearray."
 msgstr "バッファが bytearray ではありません"
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr "バッファが小さすぎます"
@@ -627,6 +627,10 @@ msgstr "破損した .mpy ファイル"
 #: py/emitglue.c
 msgid "Corrupt raw code"
 msgstr "破損したraw code"
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -854,6 +858,10 @@ msgstr "内部フラッシュの書き込みに失敗"
 msgid "File exists"
 msgstr "ファイルが存在します"
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -920,6 +928,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "バッファサイズが正しくありません"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "入力/出力エラー"
@@ -962,6 +974,10 @@ msgstr "不正なADCユニット値"
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "不正なBMPファイル"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
+msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1516,6 +1532,10 @@ msgstr "シリアライザは使用中"
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c

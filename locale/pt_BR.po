@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-13 14:21-0500\n"
-"PO-Revision-Date: 2020-09-14 13:47+0000\n"
+"POT-Creation-Date: 2020-09-16 17:07-0700\n"
+"PO-Revision-Date: 2020-09-19 17:41+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -444,7 +444,7 @@ msgstr "Buffer de tamanho incorreto. Deve ser %d bytes."
 msgid "Buffer is not a bytearray."
 msgstr "O buffer não é um bytearray."
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr "O buffer é muito pequeno"
@@ -635,6 +635,10 @@ msgstr "Arquivo .mpy corrompido"
 #: py/emitglue.c
 msgid "Corrupt raw code"
 msgstr "Código bruto corrompido"
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr "Não foi possível inicializar a Câmera"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -862,6 +866,10 @@ msgstr "Falha ao gravar o flash interno."
 msgid "File exists"
 msgstr "Arquivo já existe"
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr "O formato não é suportado"
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -930,6 +938,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "O tamanho do buffer está incorreto"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr "A entrada está demorando demais"
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Erro de entrada/saída"
@@ -972,6 +984,10 @@ msgstr "Valor inválido da unidade ADC"
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Arquivo BMP inválido"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
+msgstr "BSSID Inválido"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1540,6 +1556,10 @@ msgstr "Serializer em uso"
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
 msgstr "O contexto do lado do servidor não pode ter nome de host"
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
+msgstr "O tamanho não é suportado"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
