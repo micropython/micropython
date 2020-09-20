@@ -36,6 +36,7 @@ extern void _PM_IRQ_HANDLER(void);
 void *common_hal_rgbmatrix_timer_allocate() {
     TIM_TypeDef * timer = stm_peripherals_find_timer();
     stm_peripherals_timer_reserve(timer);
+    stm_peripherals_timer_never_reset(timer);
     return timer;
 }
 
