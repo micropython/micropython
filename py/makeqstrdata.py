@@ -17,8 +17,9 @@ import collections
 import gettext
 import os.path
 
-sys.stdout.reconfigure(encoding='utf-8')
-sys.stderr.reconfigure(errors='backslashreplace')
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(errors='backslashreplace')
 
 py = os.path.dirname(sys.argv[0])
 top = os.path.dirname(py)
