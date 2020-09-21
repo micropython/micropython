@@ -47,14 +47,12 @@ STATIC canio_can_obj_t *can_objs[MP_ARRAY_SIZE(can_insts)];
 // This must be placed in the first 64kB of RAM
 STATIC COMPILER_SECTION(".canram") canio_can_state_t can_state[MP_ARRAY_SIZE(can_insts)];
 
-__attribute__((optimize("O0"), noinline))
-void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mcu_pin_obj_t *tx, int baudrate, bool loopback, bool silent)
+void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent)
 {
     mcu_pin_function_t *tx_function = mcu_find_pin_function(can_tx, tx, -1, MP_QSTR_tx);
-    int instance = tx_function ? tx_function->instance : -1;
+    int instance = tx_function->instance;
 
     mcu_pin_function_t *rx_function = mcu_find_pin_function(can_rx, rx, instance, MP_QSTR_rx);
-    instance = rx_function->instance;
 
     const uint32_t can_frequency = CONF_CAN0_FREQUENCY;
 
@@ -69,17 +67,13 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *rx, mc
         mp_raise_OSError(MP_EINVAL); // baudrate cannot be attained (16kHz or something is lower bound, should never happen)
     }
 
-    if (tx_function) {
-        gpio_set_pin_direction(tx_function->pin, GPIO_DIRECTION_OUT);
-        gpio_set_pin_function(tx_function->pin, tx_function->function);
-        common_hal_never_reset_pin(tx_function->obj);
-    }
+    gpio_set_pin_direction(tx_function->pin, GPIO_DIRECTION_OUT);
+    gpio_set_pin_function(tx_function->pin, tx_function->function);
+    common_hal_never_reset_pin(tx_function->obj);
 
-    if (rx_function) {
-        gpio_set_pin_direction(rx_function->pin, GPIO_DIRECTION_IN);
-        gpio_set_pin_function(rx_function->pin, rx_function->function);
-        common_hal_never_reset_pin(rx_function->obj);
-    }
+    gpio_set_pin_direction(rx_function->pin, GPIO_DIRECTION_IN);
+    gpio_set_pin_function(rx_function->pin, rx_function->function);
+    common_hal_never_reset_pin(rx_function->obj);
 
     self->tx_pin_number = tx ? common_hal_mcu_pin_number(tx) : COMMON_HAL_MCU_NO_PIN;
     self->rx_pin_number = rx ? common_hal_mcu_pin_number(rx) : COMMON_HAL_MCU_NO_PIN;

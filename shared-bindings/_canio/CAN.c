@@ -42,26 +42,23 @@
 //|     """CAN bus protocol"""
 //|
 //|     def __init__(self,
-//|             rx: Optional[microcontroller.Pin]=None,
-//|             tx: Optional[microcontroller.Pin]=None,
+//|             tx: microcontroller.Pin,
+//|             rx: microcontroller.Pin,
 //|             *,
 //|             baudrate: int = 250000,
 //|             loopback: bool = False,
+//|             silent: bool = False,
 //|             auto_restart: bool = False,
 //|         ):
 //|         """A common shared-bus protocol.  The rx and tx pins are generally
 //|         connected to a transceiver which controls the H and L pins on a
 //|         shared bus.
 //|
-//|         Normally, both ``tx`` and ``rx`` pins will be specified.  However,
-//|         in silent and loopback modes, the other pin may not be required and
-//|         can be used for other purposes.
-//|
-//|         :param ~microcontroller.Pin rx: the pin to receive with, or None.
-//|         :param ~microcontroller.Pin tx: the pin to transmit with, or None.
+//|         :param ~microcontroller.Pin rx: the pin to receive with
+//|         :param ~microcontroller.Pin tx: the pin to transmit with
 //|         :param int baudrate: The bit rate of the bus in Hz.  All devices on the bus must agree on this value.
-//|         :param bool loopback: True if the peripheral will be operated in loopback mode.  In loopback mode, the ``rx`` pin's value is ignored, and the device receives the packets it sends.
-//|         :param bool silent: True if the peripheral will be operated in silent mode.  In silent mode, the ``tx`` pin is always driven to the high logic level.  This mode can be used to "sniff" a CAN bus without interfering.
+//|         :param bool loopback: When True  the ``rx`` pin's value is ignored, and the device receives the packets it sends.
+//|         :param bool silent: When True the ``tx`` pin is always driven to the high logic level.  This mode can be used to "sniff" a CAN bus without interfering.
 //|         :param bool auto_restart: If True, will restart communications after entering bus-off state
 //|         """
 //|         ...
@@ -69,8 +66,8 @@
 STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_rx, ARG_tx, ARG_baudrate, ARG_loopback, ARG_silent, ARG_auto_restart, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_rx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_tx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_tx, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_rx, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 250000} },
         { MP_QSTR_loopback, MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_silent, MP_ARG_BOOL, {.u_bool = false} },
@@ -89,7 +86,7 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, con
 
     canio_can_obj_t *self = m_new_obj(canio_can_obj_t);
     self->base.type = &canio_can_type;
-    common_hal_canio_can_construct(self, rx_pin, tx_pin, args[ARG_baudrate].u_int, args[ARG_loopback].u_bool, args[ARG_silent].u_bool);
+    common_hal_canio_can_construct(self, tx_pin, rx_pin, args[ARG_baudrate].u_int, args[ARG_loopback].u_bool, args[ARG_silent].u_bool);
 
     common_hal_canio_can_auto_restart_set(self, args[ARG_auto_restart].u_bool);
 
