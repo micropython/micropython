@@ -146,36 +146,6 @@ STATIC const mp_obj_property_t canio_message_data_obj = {
 };
 
 
-//|     size: int
-//|     """The length of the message, or the length of the requested data in the case of an rtr
-//|
-//|     Assigning to the length sets all the data bytes to zero"""
-//|
-STATIC mp_obj_t canio_message_size_get(const mp_obj_t self_in) {
-    canio_message_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_message_get_size(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(canio_message_size_get_obj, canio_message_size_get);
-
-STATIC mp_obj_t canio_message_size_set(const mp_obj_t self_in, const mp_obj_t size_in) {
-    canio_message_obj_t *self = self_in;
-    int size = mp_obj_get_int(size_in);
-    if (size > 8) {
-        mp_raise_ValueError(translate("Messages limited to 8 bytes"));
-    }
-    common_hal_canio_message_set_size(self, size);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(canio_message_size_set_obj, canio_message_size_set);
-
-
-STATIC const mp_obj_property_t canio_message_size_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_message_size_get_obj,
-              (mp_obj_t)&canio_message_size_set_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
 //|     extended: bool
 //|     """True if the message represents a remote transmission request (RTR)"""
 //|
@@ -229,7 +199,6 @@ STATIC const mp_obj_property_t canio_message_rtr_obj = {
 STATIC const mp_rom_map_elem_t canio_message_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&canio_message_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_data), MP_ROM_PTR(&canio_message_data_obj) },
-    { MP_ROM_QSTR(MP_QSTR_size), MP_ROM_PTR(&canio_message_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_rtr), MP_ROM_PTR(&canio_message_rtr_obj) },
     { MP_ROM_QSTR(MP_QSTR_extended), MP_ROM_PTR(&canio_message_extended_obj) },
 };
