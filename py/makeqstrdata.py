@@ -109,7 +109,11 @@ class TextSplitter:
     def __init__(self, words):
         words.sort(key=lambda x: len(x), reverse=True)
         self.words = set(words)
-        self.pat = re.compile("|".join(re.escape(w) for w in words) + "|.", flags=re.DOTALL)
+        if words:
+            pat = "|".join(re.escape(w) for w in words) + "|."
+        else:
+            pat = "."
+        self.pat = re.compile(pat, flags=re.DOTALL)
 
     def iter_words(self, text):
         s = []
