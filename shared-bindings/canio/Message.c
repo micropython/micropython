@@ -42,7 +42,7 @@
 //|
 //|         In CAN, messages can have a size from 0 to 8 bytes.
 //|
-//|         For a non-rtr message, specify `data`.  For an rtr-message, specify either `data` (a dummy buffer of the requested size) or `size`.
+//|         For a non-rtr message, specify ``data``.  For an rtr-message, specify either ``data`` (a dummy buffer of the requested size) or ``size``.
 //|         """
 //|         ...
 //|
