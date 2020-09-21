@@ -105,6 +105,7 @@
 //|         :param bool auto_brightness: If True, brightness is controlled via an ambient light sensor or other mechanism.
 //|         :param bool single_byte_bounds: Display column and row commands use single bytes
 //|         :param bool data_as_commands: Treat all init and boundary data as SPI commands. Certain displays require this.
+//|         :param bool column_and_page_addressing: Special quirk for SH1107, use upper/lower column set and page set
 //|         :param bool auto_refresh: Automatically refresh the screen
 //|         :param int native_frames_per_second: Number of display refreshes per second that occur with the given init_sequence.
 //|         :param bool backlight_on_high: If True, pulling the backlight pin high turns the backlight on."""
@@ -139,6 +140,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_auto_refresh, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_native_frames_per_second, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 60} },
         { MP_QSTR_backlight_on_high, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
+        { MP_QSTR_column_and_page_addressing, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -180,7 +182,8 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         args[ARG_data_as_commands].u_bool,
         args[ARG_auto_refresh].u_bool,
         args[ARG_native_frames_per_second].u_int,
-        args[ARG_backlight_on_high].u_bool
+        args[ARG_backlight_on_high].u_bool,
+        args[ARG_column_and_page_addressing].u_bool
         );
 
     return self;

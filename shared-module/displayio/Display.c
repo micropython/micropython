@@ -48,7 +48,8 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         uint8_t set_row_command, uint8_t write_ram_command, uint8_t set_vertical_scroll,
         uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin,
         uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
-        bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second, bool backlight_on_high) {
+        bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second, 
+        bool backlight_on_high), bool column_and_page_addressing {
     // Turn off auto-refresh as we init.
     self->auto_refresh = false;
     uint16_t ram_width = 0x100;
@@ -68,6 +69,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->first_manual_refresh = !auto_refresh;
     self->data_as_commands = data_as_commands;
     self->backlight_on_high = backlight_on_high;
+    self->column_and_page_addressing = column_and_page_addressing;
 
     self->native_frames_per_second = native_frames_per_second;
     self->native_ms_per_frame = 1000 / native_frames_per_second;
