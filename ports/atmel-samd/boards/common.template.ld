@@ -60,7 +60,6 @@ SECTIONS
     {
         . = ALIGN(4);
         _srelocate = .;        /* create a global symbol at data start; used by startup code in order to initialize the .data section in RAM */
-        . = ALIGN(4);
         *(.ramfunc)
         *(.ramfunc*)
         *(.data)           /* .data sections */
