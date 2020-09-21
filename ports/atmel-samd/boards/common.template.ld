@@ -49,9 +49,7 @@ SECTIONS
     .canram (NOLOAD) :
     {
         . = ALIGN(4);
-        _scanram = .;
         *(.canram)
-        _ecanram = .;
     } > RAM
 
     /* This is the initialized data section
