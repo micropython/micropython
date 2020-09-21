@@ -26,7 +26,7 @@
 
 //| """CAN bus access
 //|
-//| The `_canio` module contains low level classes to support the CAN bus
+//| The `canio` module contains low level classes to support the CAN bus
 //| protocol.
 //|
 //| CAN and Listener classes change hardware state and should be deinitialized when they
@@ -36,11 +36,11 @@
 //|
 //| For example::
 //|
-//|   import _canio
+//|   import canio
 //|   from board import *
 //|
-//|   can = _canio.CAN(board.CAN_RX, board.CAN_TX, baudrate=1000000)
-//|   message = _canio.Message(id=0x0408, data="adafruit"
+//|   can = canio.CAN(board.CAN_RX, board.CAN_TX, baudrate=1000000)
+//|   message = canio.Message(id=0x0408, data="adafruit"
 //|   can.write(message))
 //|   can.deinit()
 //|
@@ -103,9 +103,9 @@ MAKE_ENUM_MAP(canio_bus_state) {
 };
 STATIC MP_DEFINE_CONST_DICT(canio_bus_state_locals_dict, canio_bus_state_locals_table);
 
-MAKE_PRINTER(_canio, canio_bus_state);
+MAKE_PRINTER(canio, canio_bus_state);
 
-MAKE_ENUM_TYPE(_canio, BusState, canio_bus_state);
+MAKE_ENUM_TYPE(canio, BusState, canio_bus_state);
 
 STATIC const mp_rom_map_elem_t canio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_BusState), MP_ROM_PTR(&canio_bus_state_type) },

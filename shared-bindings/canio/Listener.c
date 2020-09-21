@@ -34,8 +34,8 @@
 //| class Listener:
 //|     """Listens for CAN message
 //|
-//|     _canio.Listener is not constructed directly, but instead by calling the
-//|     Listen method of a _canio.CAN object."""
+//|     canio.Listener is not constructed directly, but instead by calling the
+//|     Listen method of a canio.CAN object."""
 //|
 
 //|     def read(self) -> Optional[Message]:
