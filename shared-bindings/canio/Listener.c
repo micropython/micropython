@@ -24,9 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/_canio/Listener.h"
-#include "shared-bindings/_canio/Message.h"
-#include "common-hal/_canio/Listener.h"
+#include "shared-bindings/canio/Listener.h"
+#include "shared-bindings/canio/Message.h"
+#include "common-hal/canio/Listener.h"
 
 #include "py/runtime.h"
 #include "py/objproperty.h"

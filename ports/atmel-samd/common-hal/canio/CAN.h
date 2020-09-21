@@ -27,18 +27,29 @@
 #pragma once
 
 #include "py/obj.h"
-#include "shared-module/_canio/Message.h"
+#include "shared-bindings/canio/__init__.h"
+#include "shared-bindings/canio/CAN.h"
+#include "component/can.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/canio/__init__.h"
+#include "shared-module/canio/Message.h"
 
-extern const mp_obj_type_t canio_message_type;
+#define COMMON_HAL_CAN_RX_FIFO_LEN (2)
+#define COMMON_HAL_CAN_TX_FIFO_LEN (2)
 
-void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool rtr, bool extended);
-const void *common_hal_canio_message_get_data(const canio_message_obj_t *self);
-void common_hal_canio_message_set_data(canio_message_obj_t *self, const void *data, size_t size);
-bool common_hal_canio_message_get_extended(const canio_message_obj_t *self);
-void common_hal_canio_message_set_extended(canio_message_obj_t *self, bool extended);
-int common_hal_canio_message_get_id(const canio_message_obj_t *self);
-void common_hal_canio_message_set_id(canio_message_obj_t *self, int id);
-bool common_hal_canio_message_get_rtr(const canio_message_obj_t *self);
-void common_hal_canio_message_set_rtr(canio_message_obj_t *self, bool rtr);
-size_t common_hal_canio_message_get_size(const canio_message_obj_t *self);
-void common_hal_canio_message_set_size(canio_message_obj_t *self, size_t size);
+typedef struct canio_can_obj {
+    mp_obj_base_t base;
+    Can *hw;
+    canio_can_state_t *state;
+    volatile uint32_t error_warning_state_count;
+    volatile uint32_t error_passive_state_count;
+    volatile uint32_t bus_off_state_count;
+    int baudrate;
+    uint8_t rx_pin_number:8;
+    uint8_t tx_pin_number:8;
+    bool loopback:1;
+    bool silent:1;
+    bool auto_restart:1;
+    bool fifo0_in_use:1;
+    bool fifo1_in_use:1;
+} canio_can_obj_t;

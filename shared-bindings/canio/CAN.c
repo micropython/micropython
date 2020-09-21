@@ -25,13 +25,13 @@
  */
 
 #include "py/enum.h"
-#include "common-hal/_canio/CAN.h"
-#include "common-hal/_canio/Listener.h"
-#include "shared-bindings/_canio/__init__.h"
-#include "shared-bindings/_canio/CAN.h"
-#include "shared-bindings/_canio/Listener.h"
-#include "shared-bindings/_canio/Match.h"
-#include "shared-bindings/_canio/Message.h"
+#include "common-hal/canio/CAN.h"
+#include "common-hal/canio/Listener.h"
+#include "shared-bindings/canio/__init__.h"
+#include "shared-bindings/canio/CAN.h"
+#include "shared-bindings/canio/Listener.h"
+#include "shared-bindings/canio/Match.h"
+#include "shared-bindings/canio/Message.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "py/objproperty.h"

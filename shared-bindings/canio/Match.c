@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/_canio/Match.h"
+#include "shared-bindings/canio/Match.h"
 
 #include "py/objproperty.h"
 #include "py/runtime.h"

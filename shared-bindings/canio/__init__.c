@@ -60,11 +60,11 @@
 #include "py/obj.h"
 #include "py/enum.h"
 
-#include "shared-bindings/_canio/__init__.h"
-#include "shared-bindings/_canio/CAN.h"
-#include "shared-bindings/_canio/Match.h"
-#include "shared-bindings/_canio/Message.h"
-#include "shared-bindings/_canio/Listener.h"
+#include "shared-bindings/canio/__init__.h"
+#include "shared-bindings/canio/CAN.h"
+#include "shared-bindings/canio/Match.h"
+#include "shared-bindings/canio/Message.h"
+#include "shared-bindings/canio/Listener.h"
 
 MAKE_ENUM_VALUE(canio_bus_state_type, bus_state, ERROR_ACTIVE, BUS_STATE_ERROR_ACTIVE);
 MAKE_ENUM_VALUE(canio_bus_state_type, bus_state, ERROR_PASSIVE, BUS_STATE_ERROR_PASSIVE);

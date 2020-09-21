@@ -82,7 +82,7 @@
 #endif
 
 #if CIRCUITPY_CANIO
-#include "common-hal/_canio/CAN.h"
+#include "common-hal/canio/CAN.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {

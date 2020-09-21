@@ -338,7 +338,7 @@ extern const struct _mp_obj_module_t camera_module;
 
 #if CIRCUITPY_CANIO
 extern const struct _mp_obj_module_t canio_module;
-#define CANIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__canio), (mp_obj_t)&canio_module },
+#define CANIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_canio), (mp_obj_t)&canio_module },
 #else
 #define CANIO_MODULE
 #endif

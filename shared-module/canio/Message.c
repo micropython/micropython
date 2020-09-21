@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-module/_canio/Message.h"
+#include "shared-module/canio/Message.h"
 
 #include <string.h>
 

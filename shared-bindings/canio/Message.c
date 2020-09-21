@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/_canio/Message.h"
+#include "shared-bindings/canio/Message.h"
 
 #include "py/obj.h"
 #include "py/objproperty.h"

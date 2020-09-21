@@ -30,8 +30,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "common-hal/_canio/__init__.h"
-#include "common-hal/_canio/Listener.h"
+#include "common-hal/canio/__init__.h"
+#include "common-hal/canio/Listener.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/tick.h"
 #include "component/can.h"

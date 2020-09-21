@@ -31,7 +31,7 @@
 
 #include "peripheral_clk_config.h"
 
-#include "common-hal/_canio/CAN.h"
+#include "common-hal/canio/CAN.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "supervisor/port.h"

@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include "common-hal/_canio/CAN.h"
-#include "shared-module/_canio/Match.h"
+#include "common-hal/canio/CAN.h"
+#include "shared-module/canio/Match.h"
 
 typedef struct {
   __IO CAN_RXF0C_Type            RXFC;       /**< \brief (R/W 32) Rx FIFO n Configuration */
