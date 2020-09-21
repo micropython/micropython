@@ -108,11 +108,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_scanning_networks_obj, wifi_rad
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_channel, ARG_timeout };
+    enum { ARG_ssid, ARG_password, ARG_channel, ARG_bssid, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_channel, MP_ARG_KW_ONLY |  MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_bssid, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
@@ -124,7 +125,6 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     if (args[ARG_timeout].u_obj != mp_const_none) {
         timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     }
-
 
     mp_buffer_info_t ssid;
     mp_get_buffer_raise(args[ARG_ssid].u_obj, &ssid, MP_BUFFER_READ);
@@ -138,7 +138,19 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
         }
     }
 
-    wifi_radio_error_t error = common_hal_wifi_radio_connect(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, timeout);
+    #define MAC_ADDRESS_LENGTH 6
+
+    mp_buffer_info_t bssid;
+    bssid.len = 0;
+    // Should probably make sure bssid is just bytes and not something else too
+    if (args[ARG_bssid].u_obj != MP_OBJ_NULL) {
+        mp_get_buffer_raise(args[ARG_bssid].u_obj, &bssid, MP_BUFFER_READ);
+        if (bssid.len != MAC_ADDRESS_LENGTH) {
+            mp_raise_ValueError(translate("Invalid BSSID"));
+        }
+    }
+
+    wifi_radio_error_t error = common_hal_wifi_radio_connect(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, timeout, bssid.buf, bssid.len);
     if (error == WIFI_RADIO_ERROR_AUTH) {
         mp_raise_ConnectionError(translate("Authentication failure"));
     } else if (error == WIFI_RADIO_ERROR_NO_AP_FOUND) {

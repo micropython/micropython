@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-30 14:38-0400\n"
+"POT-Creation-Date: 2020-09-16 17:07-0700\n"
 "PO-Revision-Date: 2020-09-09 16:05+0000\n"
 "Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
 "Language-Team: none\n"
@@ -33,14 +33,6 @@ msgstr ""
 "\n"
 "Meld een probleem met de inhoud van de CIRCUITPY drive op:\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Om te verlaten, herstart de module zonder "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -279,7 +271,7 @@ msgstr "3-arg pow() niet ondersteund"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Een hardware interrupt kanaal is al in gebruik"
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "Adres moet %d bytes lang zijn"
@@ -377,6 +369,10 @@ msgstr "Poging om %d blokken toe te wijzen"
 msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr "heap allocatie geprobeerd terwijl MicroPython VM niet draait."
 
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr ""
+
 #: main.c
 msgid "Auto-reload is off.\n"
 msgstr "Auto-herlaad staat uit.\n"
@@ -440,7 +436,7 @@ msgstr "Buffer heeft incorrect grootte. Moet %d bytes zijn."
 msgid "Buffer is not a bytearray."
 msgstr "Buffer is geen bytearray."
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr "Buffer is te klein"
@@ -590,6 +586,10 @@ msgstr ""
 "CircuitPython is in veilige modus omdat de rest knop werd ingedrukt tijdens "
 "het opstarten. Druk nogmaals om veilige modus te verlaten\n"
 
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr ""
+
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
 msgstr "Clock pin init mislukt."
@@ -626,6 +626,10 @@ msgstr "Corrupt .mpy bestand"
 #: py/emitglue.c
 msgid "Corrupt raw code"
 msgstr "Corrupt raw code"
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -853,6 +857,10 @@ msgstr "Schrijven naar interne flash mislukt."
 msgid "File exists"
 msgstr "Bestand bestaat"
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -921,6 +929,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Incorrecte buffer grootte"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Input/Output fout"
@@ -963,6 +975,10 @@ msgstr "Ongeldige ADC Unit waarde"
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Ongeldig BMP bestand"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
+msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1239,6 +1255,10 @@ msgstr "Geen lange integer ondersteuning"
 msgid "No more timers available on this pin."
 msgstr "Geen timers meer beschikbaar op deze pin."
 
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "Geen pulldown op pin; 1MOhm aangeraden"
@@ -1258,6 +1278,10 @@ msgstr "Geen timer beschikbaar"
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
 msgstr "Nordic Soft Device assertion mislukt."
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1308,6 +1332,10 @@ msgid ""
 msgstr ""
 "Alleen monochrome en 4bpp of 8bpp, en 16bpp of grotere geïndiceerde BMP's "
 "zijn ondersteund: %d bpp is gegeven"
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1513,6 +1541,14 @@ msgstr "Geselecteerde RTS pin niet geldig"
 msgid "Serializer in use"
 msgstr "Serializer in gebruik"
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice en waarde hebben verschillende lengtes."
@@ -1623,6 +1659,10 @@ msgstr ""
 "Timer is gereserveerd voor intern gebruik - wijs PWM pins eerder in het "
 "programma toe"
 
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "Teveel kanalen in sample."
@@ -1717,6 +1757,10 @@ msgstr "Niet in staat om naar nvm te schrijven."
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Onverwacht mrfx uuid type"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1832,6 +1876,10 @@ msgstr ""
 "\n"
 "Voor een lijst van ingebouwde modules, gebruik `help(\"modules\")`.\n"
 
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Schrijven niet ondersteund op Characteristic"
@@ -1946,7 +1994,7 @@ msgstr "slechte conversie specificatie"
 msgid "bad format string"
 msgstr "string met verkeerde indeling"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "verkeerde typecode"
 
@@ -1998,6 +2046,10 @@ msgstr "byteorder is geen string"
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "butes > 8 niet ondersteund"
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2972,6 +3024,11 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr "overloop bij converteren van long int naar machine word"
 
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
+
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
 msgstr "palette moet 32 bytes lang zijn"
@@ -3447,6 +3504,13 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Om te verlaten, herstart de module zonder "
 
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut niet ondersteund door deze chip"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-09 14:33-0700\n"
+"POT-Creation-Date: 2020-09-16 17:07-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,12 +28,6 @@ msgid ""
 "\n"
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
 msgstr ""
 
 #: py/obj.c
@@ -436,7 +430,7 @@ msgstr ""
 msgid "Buffer is not a bytearray."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr ""
@@ -619,6 +613,10 @@ msgstr ""
 
 #: py/emitglue.c
 msgid "Corrupt raw code"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
 msgstr ""
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
@@ -847,6 +845,10 @@ msgstr ""
 msgid "File exists"
 msgstr ""
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -911,6 +913,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr ""
@@ -952,6 +958,10 @@ msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
 msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
@@ -1505,6 +1515,10 @@ msgstr ""
 msgid "Server side context cannot have hostname"
 msgstr ""
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr ""
@@ -1603,6 +1617,10 @@ msgstr ""
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
@@ -1925,7 +1943,7 @@ msgstr ""
 msgid "bad format string"
 msgstr ""
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr ""
 
@@ -1976,6 +1994,10 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
+msgstr ""
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
 msgstr ""
 
 #: py/objstr.c
@@ -2941,6 +2963,11 @@ msgstr ""
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
+msgstr ""
+
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c

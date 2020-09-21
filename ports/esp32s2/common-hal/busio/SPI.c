@@ -183,9 +183,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     // spi_hal_init clears the given hal context so set everything after.
     spi_hal_init(hal, host_id);
-    hal->dmadesc_tx = &self->tx_dma;
-    hal->dmadesc_rx = &self->rx_dma;
-    hal->dmadesc_n = 1;
 
     // We don't use native CS.
     // hal->cs_setup = 0;
@@ -196,7 +193,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     hal->half_duplex = 0;
     // hal->tx_lsbfirst = 0;
     // hal->rx_lsbfirst = 0;
-    hal->dma_enabled = 1;
     hal->no_compensate = 1;
     // Ignore CS bits
 
@@ -315,16 +311,34 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     hal->rcv_buffer = NULL;
     // Reset timing_conf in case we've moved since the last time we used it.
     hal->timing_conf = &self->timing_conf;
+    lldesc_t tx_dma __attribute__((aligned(16)));
+    lldesc_t rx_dma __attribute__((aligned(16)));
+    hal->dmadesc_tx = &tx_dma;
+    hal->dmadesc_rx = &rx_dma;
+    hal->dmadesc_n = 1;
+
+    size_t burst_length;
+    // If both of the incoming pointers are DMA capable then use DMA. Otherwise, do
+    // bursts the size of the SPI data buffer without DMA.
+    if ((data_out == NULL || esp_ptr_dma_capable(data_out)) &&
+        (data_in == NULL || esp_ptr_dma_capable(data_out))) {
+        hal->dma_enabled = 1;
+        burst_length = LLDESC_MAX_NUM_PER_DESC;
+    } else {
+        hal->dma_enabled = 0;
+        burst_length = sizeof(hal->hw->data_buf);
+    }
+
     // This rounds up.
-    size_t dma_count = (len + LLDESC_MAX_NUM_PER_DESC - 1) / LLDESC_MAX_NUM_PER_DESC;
-    for (size_t i = 0; i < dma_count; i++) {
-        size_t offset = LLDESC_MAX_NUM_PER_DESC * i;
-        size_t dma_len = len - offset;
-        if (dma_len > LLDESC_MAX_NUM_PER_DESC) {
-            dma_len = LLDESC_MAX_NUM_PER_DESC;
+    size_t burst_count = (len + burst_length - 1) / burst_length;
+    for (size_t i = 0; i < burst_count; i++) {
+        size_t offset = burst_length * i;
+        size_t this_length = len - offset;
+        if (this_length > burst_length) {
+            this_length = burst_length;
         }
-        hal->tx_bitlen = dma_len * self->bits;
-        hal->rx_bitlen = dma_len * self->bits;
+        hal->tx_bitlen = this_length * self->bits;
+        hal->rx_bitlen = this_length * self->bits;
         if (data_out != NULL) {
             hal->send_buffer = (uint8_t*) data_out + offset;
         }
@@ -341,6 +355,9 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
         }
         spi_hal_fetch_result(hal);
     }
+    hal->dmadesc_tx = NULL;
+    hal->dmadesc_rx = NULL;
+    hal->dmadesc_n = 0;
 
     return true;
 }

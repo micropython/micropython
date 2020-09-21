@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-30 14:38-0400\n"
+"POT-Creation-Date: 2020-09-16 17:07-0700\n"
 "PO-Revision-Date: 2020-07-06 18:10+0000\n"
 "Last-Translator: oon arfiandwi <oon.arfiandwi@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,14 +33,6 @@ msgstr ""
 "\n"
 "Harap ajukan masalah dengan konten drive CIRCUITPY Anda di\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Untuk keluar, harap setel ulang papan tanpa"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -279,7 +271,7 @@ msgstr "pow() 3-arg tidak didukung"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Sebuah channel hardware interrupt sedang digunakan"
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "Alamat harus sepanjang %d byte"
@@ -377,6 +369,10 @@ msgstr ""
 msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr "Mencoba alokasi heap ketika MicroPython VM tidak berjalan."
 
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr ""
+
 #: main.c
 msgid "Auto-reload is off.\n"
 msgstr "Auto-reload tidak aktif.\n"
@@ -440,7 +436,7 @@ msgstr "Ukuran buffer salah. Seharusnya %d byte."
 msgid "Buffer is not a bytearray."
 msgstr "Buffer bukan bytearray."
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr "Buffer terlalu kecil"
@@ -596,6 +592,10 @@ msgstr ""
 "CircuitPython dalam mode aman karena Anda menekan tombol reset saat boot. "
 "Tekan lagi untuk keluar dari mode aman.\n"
 
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr ""
+
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
 msgstr "Init pin clock gagal."
@@ -631,6 +631,10 @@ msgstr "File .mpy rusak"
 #: py/emitglue.c
 msgid "Corrupt raw code"
 msgstr "Kode raw rusak"
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -859,6 +863,10 @@ msgstr "Gagal menulis flash internal."
 msgid "File exists"
 msgstr "File sudah ada"
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -926,6 +934,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Ukuran penyangga salah"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Kesalahan input/output"
@@ -968,6 +980,10 @@ msgstr "Nilai Unit ADC tidak valid"
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "File BMP tidak valid"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
+msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1244,6 +1260,10 @@ msgstr ""
 msgid "No more timers available on this pin."
 msgstr ""
 
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr ""
@@ -1262,6 +1282,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
+msgstr ""
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1307,6 +1331,10 @@ msgstr ""
 msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
+msgstr ""
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -1508,6 +1536,14 @@ msgstr ""
 msgid "Serializer in use"
 msgstr "Serializer sedang digunakan"
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr ""
@@ -1608,6 +1644,10 @@ msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Untuk keluar, silahkan reset board tanpa "
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "Terlalu banyak channel dalam sampel"
@@ -1701,6 +1741,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1812,6 +1856,10 @@ msgstr ""
 "project.\n"
 "\n"
 "Untuk menampilkan modul built-in silahkan ketik `help(\"modules\")`.\n"
+
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -1927,7 +1975,7 @@ msgstr ""
 msgid "bad format string"
 msgstr ""
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "typecode buruk"
 
@@ -1980,6 +2028,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "byte > 8 bit tidak didukung"
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2947,6 +2999,11 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr ""
 
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
+
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
 msgstr ""
@@ -3421,6 +3478,13 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Untuk keluar, harap setel ulang papan tanpa"
+
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "indeks %q harus bilangan bulat, bukan %s"
 
@@ -3679,9 +3743,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Tegangan dari mikrokontroler turun atau mati. Pastikan sumber tegangan "
 #~ "memberikan daya\n"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Untuk keluar, silahkan reset board tanpa "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) tidak ada"

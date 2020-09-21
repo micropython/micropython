@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-30 14:38-0400\n"
+"POT-Creation-Date: 2020-09-16 17:07-0700\n"
 "PO-Revision-Date: 2020-09-07 19:36+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,14 +33,6 @@ msgstr ""
 "\n"
 "Vänligen skapa ett ärende med innehållet i din CIRCUITPY-enhet på\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"För att avsluta, gör reset på kortet utan "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -279,7 +271,7 @@ msgstr "3-arguments pow() stöds inte"
 msgid "A hardware interrupt channel is already in use"
 msgstr "En kanal för hårdvaruavbrott används redan"
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "Adressen måste vara %d byte lång"
@@ -377,6 +369,10 @@ msgstr "Försök att tilldela %d block"
 msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr "Försökte tilldela heap när MicroPython VM inte körs."
 
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr ""
+
 #: main.c
 msgid "Auto-reload is off.\n"
 msgstr "Autoladdning är avstängd.\n"
@@ -440,7 +436,7 @@ msgstr "Buffert har felaktig storlek. Ska vara %d byte."
 msgid "Buffer is not a bytearray."
 msgstr "Buffert är inte en bytearray."
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr "Bufferten är för liten"
@@ -590,6 +586,10 @@ msgstr ""
 "CircuitPython är i säkert läge eftersom du tryckte på återställningsknappen "
 "under start. Tryck igen för att lämna säkert läge.\n"
 
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr ""
+
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
 msgstr "Initiering av klockpinne misslyckades."
@@ -626,6 +626,10 @@ msgstr "Skadad .mpy-fil"
 #: py/emitglue.c
 msgid "Corrupt raw code"
 msgstr "Korrupt rå kod"
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -853,6 +857,10 @@ msgstr "Det gick inte att skriva till intern flash."
 msgid "File exists"
 msgstr "Filen finns redan"
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -919,6 +927,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Fel buffertstorlek"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Indata-/utdatafel"
@@ -961,6 +973,10 @@ msgstr "Ogiltigt ADC-enhetsvärde"
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Ogiltig BMP-fil"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
+msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1238,6 +1254,10 @@ msgstr "Inget stöd för långt heltal"
 msgid "No more timers available on this pin."
 msgstr "Inga fler timers tillgängliga på denna pinne."
 
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "Ingen pulldown på pinnen; 1Mohm rekommenderas"
@@ -1257,6 +1277,10 @@ msgstr "Ingen timer tillgänglig"
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
 msgstr "Påståendet om Nordic Soft Device-fel."
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1306,6 +1330,10 @@ msgid ""
 msgstr ""
 "Endast monokrom, indexerad 4 bpp eller 8 bpp och 16 bpp eller högre BMP: er "
 "stöds: %d bpp angiven"
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1511,6 +1539,14 @@ msgstr "Vald CTS-pinne är inte giltig"
 msgid "Serializer in use"
 msgstr "Serializern används redan"
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice och värde har olika längd."
@@ -1621,6 +1657,10 @@ msgstr ""
 "Timern är reserverad för internt bruk - deklarera PWM-pinne tidigare i "
 "programmet"
 
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "För många kanaler i sampling."
@@ -1715,6 +1755,10 @@ msgstr "Det gick inte att skriva till nvm."
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Oväntad nrfx uuid-typ"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1826,6 +1870,10 @@ msgstr ""
 "Besök learning.adafruit.com/category/circuitpython för projektguider.\n"
 "\n"
 "För att lista inbyggda moduler, ange `help(\"modules\")`.\n"
+
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -1941,7 +1989,7 @@ msgstr "Ogiltig konverteringsspecifikation"
 msgid "bad format string"
 msgstr "Ogiltig formatsträng"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "Ogiltig typkod"
 
@@ -1993,6 +2041,10 @@ msgstr "byteorder är inte en sträng"
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "bytes> 8 bitar stöds inte"
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2967,6 +3019,11 @@ msgstr "utanför räckvidd för target"
 msgid "overflow converting long int to machine word"
 msgstr "Konvertering av long int till machine word överskred maxvärde"
 
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
+
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
 msgstr "palette måste vara 32 bytes lång"
@@ -3442,6 +3499,13 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "För att avsluta, gör reset på kortet utan "
 
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseIn stöds inte av detta chip"

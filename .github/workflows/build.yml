@@ -91,6 +91,8 @@ jobs:
     - name: New boards check
       run: python3 -u ci_new_boards_check.py
       working-directory: tools
+    - name: Duplicate USB VID/PID Check
+      run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
     - uses: actions/upload-artifact@v2
@@ -177,7 +179,7 @@ jobs:
         - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
-        - "bdmicro_vina_m0"
+        - "bdmicro_vina_d21"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
         - "capablerobot_usbhub"
@@ -208,6 +210,7 @@ jobs:
         - "feather_m0_rfm69"
         - "feather_m0_rfm9x"
         - "feather_m0_supersized"
+        - "feather_m4_can"
         - "feather_m4_express"
         - "feather_m7_1011"
         - "feather_mimxrt1011"
@@ -275,6 +278,7 @@ jobs:
         - "pyportal"
         - "pyportal_titano"
         - "pyruler"
+        - "qtpy_m0"
         - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
         - "sam32"
@@ -414,6 +418,7 @@ jobs:
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
         - "microdev_micro_s2"
+        - "muselab_nanoesp32_s2"
         - "unexpectedmaker_feathers2"
 
     steps:

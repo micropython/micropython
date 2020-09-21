@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 #include <stdbool.h>
+#include <string.h>
 
 #include "shared-bindings/busio/SPI.h"
 #include "py/mperrno.h"
@@ -340,7 +341,7 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     if (self->mosi == NULL) {
         mp_raise_ValueError(translate("No MOSI Pin"));
     }
-    HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, HAL_MAX_DELAY);
+    HAL_StatusTypeDef result = HAL_SPI_Transmit(&self->handle, (uint8_t *)data, (uint16_t)len, HAL_MAX_DELAY);
     return result == HAL_OK;
 }
 
@@ -349,7 +350,13 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     if (self->miso == NULL) {
         mp_raise_ValueError(translate("No MISO Pin"));
     }
-    HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, HAL_MAX_DELAY);
+    HAL_StatusTypeDef result = HAL_OK;
+    if (self->mosi == NULL) {
+        result = HAL_SPI_Receive(&self->handle, data, (uint16_t)len, HAL_MAX_DELAY);
+    } else {
+        memset(data, write_value, len);
+        result = HAL_SPI_TransmitReceive(&self->handle, data, data, (uint16_t)len, HAL_MAX_DELAY);
+    }
     return result == HAL_OK;
 }
 
@@ -358,7 +365,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
     if (self->miso == NULL || self->mosi == NULL) {
         mp_raise_ValueError(translate("Missing MISO or MOSI Pin"));
     }
-    HAL_StatusTypeDef result = HAL_SPI_TransmitReceive (&self->handle,
+    HAL_StatusTypeDef result = HAL_SPI_TransmitReceive(&self->handle,
         (uint8_t *) data_out, data_in, (uint16_t)len,HAL_MAX_DELAY);
     return result == HAL_OK;
 }

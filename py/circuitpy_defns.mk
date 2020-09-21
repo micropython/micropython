@@ -31,6 +31,7 @@ BASE_CFLAGS = \
 	-fsingle-precision-constant \
 	-fno-strict-aliasing \
 	-Wdouble-promotion \
+	-Wimplicit-fallthrough=2 \
 	-Wno-endif-labels \
 	-Wstrict-prototypes \
 	-Werror-implicit-function-declaration \
@@ -137,6 +138,9 @@ SRC_PATTERNS += board/%
 endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/% bitbangio/OneWire.%
+endif
+ifeq ($(CIRCUITPY_CAMERA),1)
+SRC_PATTERNS += camera/%
 endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
@@ -309,6 +313,8 @@ SRC_COMMON_HAL_ALL = \
 	busio/SPI.c \
 	busio/UART.c \
 	busio/__init__.c \
+	camera/__init__.c \
+	camera/Camera.c \
 	countio/Counter.c \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
@@ -379,6 +385,7 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_eve/__init__.c \
+	camera/ImageFormat.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \

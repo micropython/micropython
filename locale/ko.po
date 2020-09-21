@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-30 14:38-0400\n"
+"POT-Creation-Date: 2020-09-16 17:07-0700\n"
 "PO-Revision-Date: 2019-05-06 14:22-0700\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,12 +28,6 @@ msgid ""
 "\n"
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
 msgstr ""
 
 #: py/obj.c
@@ -273,7 +267,7 @@ msgstr ""
 msgid "A hardware interrupt channel is already in use"
 msgstr ""
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr ""
@@ -371,6 +365,10 @@ msgstr ""
 msgid "Attempted heap allocation when MicroPython VM not running."
 msgstr ""
 
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr ""
+
 #: main.c
 msgid "Auto-reload is off.\n"
 msgstr "자동 재 장전이 꺼져 있습니다\n"
@@ -434,7 +432,7 @@ msgstr "잘못된 크기의 버퍼. %d 바이트 여야합니다."
 msgid "Buffer is not a bytearray."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr ""
@@ -580,6 +578,10 @@ msgid ""
 "boot. Press again to exit safe mode.\n"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr ""
+
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
 msgstr ""
@@ -613,6 +615,10 @@ msgstr ""
 
 #: py/emitglue.c
 msgid "Corrupt raw code"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
 msgstr ""
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
@@ -841,6 +847,10 @@ msgstr ""
 msgid "File exists"
 msgstr ""
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -905,6 +915,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr ""
@@ -946,6 +960,10 @@ msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
 msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
@@ -1223,6 +1241,10 @@ msgstr ""
 msgid "No more timers available on this pin."
 msgstr ""
 
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr ""
@@ -1241,6 +1263,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
+msgstr ""
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1285,6 +1311,10 @@ msgstr ""
 msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
+msgstr ""
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -1483,6 +1513,14 @@ msgstr ""
 msgid "Serializer in use"
 msgstr ""
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr ""
@@ -1583,6 +1621,10 @@ msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr ""
@@ -1677,6 +1719,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1780,6 +1826,10 @@ msgid ""
 "Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
 "\n"
 "To list built-in modules please do `help(\"modules\")`.\n"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
@@ -1896,7 +1946,7 @@ msgstr ""
 msgid "bad format string"
 msgstr ""
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr ""
 
@@ -1947,6 +1997,10 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
+msgstr ""
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
 msgstr ""
 
 #: py/objstr.c
@@ -2912,6 +2966,11 @@ msgstr ""
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
+msgstr ""
+
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
 msgstr ""
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c

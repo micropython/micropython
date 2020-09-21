@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-30 14:38-0400\n"
-"PO-Revision-Date: 2020-07-27 21:27+0000\n"
-"Last-Translator: Nathan <bonnemainsnathan@gmail.com>\n"
+"POT-Creation-Date: 2020-09-16 17:07-0700\n"
+"PO-Revision-Date: 2020-09-16 13:47+0000\n"
+"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.2-dev\n"
+"X-Generator: Weblate 4.3-dev\n"
 
 #: main.c
 msgid ""
@@ -35,14 +35,6 @@ msgstr ""
 "Veuillez signaler un problème avec le contenu de votre lecteur CIRCUITPY à "
 "l'adresse\n"
 "https://github.com/adafruit/circuitpython/issues\n"
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
-msgstr ""
-"\n"
-"Pour quitter, veuillez réinitialiser la carte sans "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -86,7 +78,7 @@ msgstr "index %q hors gamme"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %q"
-msgstr ""
+msgstr "indices %q doivent être des chiffres entier, et non %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -126,39 +118,39 @@ msgstr "'%q' argument requis"
 
 #: py/runtime.c
 msgid "'%q' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "object '%q' ne peut assigner l'attribut '%q'"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "object '%q' ne supporte pas '%q'"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
-msgstr ""
+msgstr "objet '%q' ne supporte pas l'assignement d'objets"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr ""
+msgstr "object '%q' ne supported pas la suppression d'objet"
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
-msgstr ""
+msgstr "object '%q' n'as pas d'attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "object '%q' n'est pas un itérateur"
 
 #: py/objtype.c py/runtime.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "object '%q' ne peut pas être appelé"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
+msgstr "objet '%q' n'est pas iterable"
 
 #: py/obj.c
 msgid "'%q' object is not subscriptable"
-msgstr ""
+msgstr "objet '%q' n'est pas souscriptable"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -228,7 +220,7 @@ msgstr "'await' en dehors d'une fonction"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' ou 'async with' au dehors d'une fonction async"
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -283,7 +275,7 @@ msgstr "pow() non supporté avec 3 arguments"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Un canal d'interruptions matérielles est déjà utilisé"
 
-#: shared-bindings/_bleio/Address.c
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "L'adresse doit être longue de %d octets"
@@ -384,6 +376,10 @@ msgstr ""
 "Tentative d'allocation de segments lorsque la machine virtuelle MicroPython "
 "n'est pas en cours d'exécution."
 
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
+msgstr "Échec d'authentification"
+
 #: main.c
 msgid "Auto-reload is off.\n"
 msgstr "L'auto-chargement est désactivé.\n"
@@ -447,7 +443,7 @@ msgstr "Tampon de taille incorrect. Devrait être de %d octets."
 msgid "Buffer is not a bytearray."
 msgstr "Le tampon n'est pas un 'bytearray'."
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr "Le tampon est trop petit"
@@ -464,7 +460,7 @@ msgstr "La longueur de la mémoire tampon doit être un multiple de 512"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr ""
+msgstr "La mémoire tampon doit être un multiple de 512"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -508,6 +504,7 @@ msgstr "Impossible de définir CCCD sur une caractéristique locale"
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
+"Un nouveau Adapter ne peut être créé ; Adapter; utilisez _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -600,6 +597,10 @@ msgstr ""
 "réinitialisation pendant le démarrage. Appuyez à nouveau pour quitter le "
 "mode sans échec.\n"
 
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
+msgstr "CircuitPython n'as pu faire l'allocation de la pile\n"
+
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
 msgstr "Echec de l'init. de la broche d'horloge."
@@ -636,6 +637,10 @@ msgstr "Fichier .mpy corrompu"
 #: py/emitglue.c
 msgid "Corrupt raw code"
 msgstr "Code brut corrompu"
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -784,7 +789,7 @@ msgstr "Une 'Characteristic' est attendue"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "Un 'DigitalInOut' est attendu"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -792,7 +797,7 @@ msgstr "Attendu un service"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr ""
+msgstr "Un 'UART' est attendu"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -864,6 +869,10 @@ msgstr "Échec de l'écriture du flash interne."
 msgid "File exists"
 msgstr "Le fichier existe"
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -931,6 +940,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Taille de tampon incorrecte"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Erreur d'entrée/sortie"
@@ -973,6 +986,10 @@ msgstr "Valeur d'unité ADC non valide"
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Fichier BMP invalide"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
+msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1249,6 +1266,10 @@ msgstr "Pas de support entier long"
 msgid "No more timers available on this pin."
 msgstr "Plus de minuteurs disponibles sur cette broche."
 
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "Pas de pulldown sur la broche ; 1Mohm recommandé"
@@ -1268,6 +1289,10 @@ msgstr "Pas de minuterie disponible"
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
 msgstr "Affirmation de défaillance du Nordic Soft Device."
+
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1318,6 +1343,10 @@ msgid ""
 msgstr ""
 "Prise en charge uniquement des monochromes, 4 bpp ou 8 bpp indexés et 16 bpp "
 "ou plus : %d bpp fournis"
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1522,6 +1551,14 @@ msgstr "Broche RTS sélectionnée non valide"
 msgid "Serializer in use"
 msgstr "Sérialiseur en cours d'utilisation"
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Tranche et valeur de tailles différentes."
@@ -1631,6 +1668,10 @@ msgid ""
 "Timer was reserved for internal use - declare PWM pins earlier in the program"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Pour quitter, redémarrez la carte SVP sans "
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr "Trop de canaux dans l'échantillon."
@@ -1729,6 +1770,10 @@ msgstr "Impossible d'écrire sur la mémoire non-volatile."
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Type inattendu pour l'uuid nrfx"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1846,6 +1891,10 @@ msgstr ""
 "\n"
 "Pour lister les modules inclus, tapez `help(\"modules\")`.\n"
 
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Écritures non prises en charge sur la caractéristique"
@@ -1960,7 +2009,7 @@ msgstr "mauvaise spécification de conversion"
 msgid "bad format string"
 msgstr "chaîne mal-formée"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "mauvais code type"
 
@@ -2012,6 +2061,10 @@ msgstr "byteorder n'est pas une chaîne"
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "octets > 8 bits non supporté"
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -3004,6 +3057,11 @@ msgstr ""
 msgid "overflow converting long int to machine word"
 msgstr "dépassement de capacité en convertissant un entier long en mot machine"
 
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
+
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
 msgstr "la palette doit être longue de 32 octets"
@@ -3354,7 +3412,7 @@ msgstr "spécification %c de conversion inconnue"
 
 #: py/objstr.c
 msgid "unknown format code '%c' for object of type '%q'"
-msgstr ""
+msgstr "code de formatage inconnu '%c' pour objet de type '%q'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3394,7 +3452,7 @@ msgstr "caractère de format '%c' (0x%x) non supporté à l'index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%q'"
-msgstr ""
+msgstr "type non supporté pour %q: '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -3402,7 +3460,7 @@ msgstr "type non supporté pour l'opérateur"
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%q', '%q'"
-msgstr ""
+msgstr "types non supportés pour %q: '%q', '%q'"
 
 #: py/objint.c
 #, c-format
@@ -3415,7 +3473,7 @@ msgstr "'value_count' doit être > 0"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "les vecteurs doivent avoir la même longueur"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
@@ -3480,6 +3538,13 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Pour quitter, veuillez réinitialiser la carte sans "
 
 #~ msgid "PulseOut not supported on this chip"
 #~ msgstr "PulseOut non pris en charge sur cette puce"
@@ -3937,9 +4002,6 @@ msgstr ""
 
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Les indices des tuiles doivent être compris entre 0 et 255 "
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Pour quitter, redémarrez la carte SVP sans "
 
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "UART(%d) n'existe pas"
