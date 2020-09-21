@@ -100,20 +100,18 @@ STATIC mp_obj_t canio_listener_iter(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_iter_obj, canio_listener_iter);
 
 //|     def __next__(self):
-//|         """Returns the next waiting message, if one is available
+//|         """Reads a message, after waiting up to self.timeout seconds
 //|
-//|         If the object is deinitialized, raises ValueError.
-//|
-//|         If no message is waiting raises StopIteration"""
+//|         If no message is received in time, raises StopIteration.  Otherwise,
+//|         a Message is returned."""
 //|         ...
 //|
 STATIC mp_obj_t canio_listener_next(mp_obj_t self_in) {
-    canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_canio_listener_check_for_deinit(self);
-    if (common_hal_canio_listener_in_waiting(self)) {
-        return canio_listener_read(self_in);
+    mp_obj_t result = canio_listener_read(self_in);
+    if (result == mp_const_none) {
+        return MP_OBJ_STOP_ITERATION;
     }
-    return MP_OBJ_STOP_ITERATION;
+    return result;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_next_obj, canio_listener_next);
 
