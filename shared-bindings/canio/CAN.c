@@ -64,7 +64,7 @@
 //|         ...
 //|
 STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_rx, ARG_tx, ARG_baudrate, ARG_loopback, ARG_silent, ARG_auto_restart, NUM_ARGS };
+    enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_loopback, ARG_silent, ARG_auto_restart, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_tx, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_rx, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -380,7 +380,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_deinit_obj, canio_can_deinit);
 STATIC mp_obj_t canio_can_enter(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
-    return mp_const_none;
+    return self_in;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_enter_obj, canio_can_enter);
 

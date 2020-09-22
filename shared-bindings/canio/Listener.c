@@ -133,7 +133,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_deinit_obj, canio_listener_deini
 STATIC mp_obj_t canio_listener_enter(mp_obj_t self_in) {
     canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_listener_check_for_deinit(self);
-    return mp_const_none;
+    return self_in;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_enter_obj, canio_listener_enter);
 
