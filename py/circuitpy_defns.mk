@@ -139,6 +139,9 @@ endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/% bitbangio/OneWire.%
 endif
+ifeq ($(CIRCUITPY_CAMERA),1)
+SRC_PATTERNS += camera/%
+endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
@@ -310,6 +313,8 @@ SRC_COMMON_HAL_ALL = \
 	busio/SPI.c \
 	busio/UART.c \
 	busio/__init__.c \
+	camera/__init__.c \
+	camera/Camera.c \
 	countio/Counter.c \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
@@ -380,6 +385,7 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_eve/__init__.c \
+	camera/ImageFormat.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \

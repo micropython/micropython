@@ -44,6 +44,9 @@
 #include "hri/hri_pm_d21.h"
 #elif defined(SAME54)
 #include "hri/hri_rstc_e54.h"
+#elif defined(SAME51)
+#include "sam.h"
+#include "hri/hri_rstc_e51.h"
 #elif defined(SAMD51)
 #include "hri/hri_rstc_d51.h"
 #else

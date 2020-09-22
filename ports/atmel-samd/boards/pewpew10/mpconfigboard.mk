@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x801D
+USB_PID = 0x80D5
 USB_PRODUCT = "PewPew 10.2"
 USB_MANUFACTURER = "Radomir Dopieralski"
 

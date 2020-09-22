@@ -12,9 +12,14 @@ from __future__ import print_function
 import re
 import sys
 
+from math import log
 import collections
 import gettext
 import os.path
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(errors='backslashreplace')
 
 py = os.path.dirname(sys.argv[0])
 top = os.path.dirname(py)
@@ -100,77 +105,177 @@ def translate(translation_file, i18ns):
             translations.append((original, translation))
         return translations
 
-def frequent_ngrams(corpus, sz, n):
-    return collections.Counter(corpus[i:i+sz] for i in range(len(corpus)-sz)).most_common(n)
+class TextSplitter:
+    def __init__(self, words):
+        words.sort(key=lambda x: len(x), reverse=True)
+        self.words = set(words)
+        if words:
+            pat = "|".join(re.escape(w) for w in words) + "|."
+        else:
+            pat = "."
+        self.pat = re.compile(pat, flags=re.DOTALL)
 
-def encode_ngrams(translation, ngrams):
-    if len(ngrams) > 32:
-        start = 0xe000
-    else:
-        start = 0x80
-    for i, g in enumerate(ngrams):
-        translation = translation.replace(g, chr(start + i))
-    return translation
+    def iter_words(self, text):
+        s = []
+        words = self.words
+        for m in self.pat.finditer(text):
+            t = m.group(0)
+            if t in words:
+                if s:
+                    yield (False, "".join(s))
+                    s = []
+                yield (True, t)
+            else:
+                s.append(t)
+        if s:
+            yield (False, "".join(s))
 
-def decode_ngrams(compressed, ngrams):
-    if len(ngrams) > 32:
-        start, end = 0xe000, 0xf8ff
-    else:
-        start, end = 0x80, 0x9f
-    return "".join(ngrams[ord(c) - start] if (start <= ord(c) <= end) else c for c in compressed)
+    def iter(self, text):
+        for m in self.pat.finditer(text):
+            yield m.group(0)
 
-def compute_huffman_coding(translations, qstrs, compression_filename):
-    all_strings = [x[1] for x in translations]
-    all_strings_concat = "".join(all_strings)
-    ngrams = [i[0] for i in frequent_ngrams(all_strings_concat, 2, 32)]
-    all_strings_concat = encode_ngrams(all_strings_concat, ngrams)
-    counts = collections.Counter(all_strings_concat)
-    cb = huffman.codebook(counts.items())
+def iter_substrings(s, minlen, maxlen):
+    len_s = len(s)
+    maxlen = min(len_s, maxlen)
+    for n in range(minlen, maxlen + 1):
+        for begin in range(0, len_s - n + 1):
+            yield s[begin : begin + n]
+
+def compute_huffman_coding(translations, compression_filename):
+    texts = [t[1] for t in translations]
+    words = []
+
+    start_unused = 0x80
+    end_unused = 0xff
+    max_ord = 0
+    for text in texts:
+        for c in text:
+            ord_c = ord(c)
+            max_ord = max(ord_c, max_ord)
+            if 0x80 <= ord_c < 0xff:
+                end_unused = min(ord_c, end_unused)
+    max_words = end_unused - 0x80
+
+    values_type = "uint16_t" if max_ord > 255 else "uint8_t"
+    max_words_len = 160 if max_ord > 255 else 255
+
+    sum_len = 0
+    while True:
+        # Until the dictionary is filled to capacity, use a heuristic to find
+        # the best "word" (2- to 9-gram) to add to it.
+        #
+        # The TextSplitter allows us to avoid considering parts of the text
+        # that are already covered by a previously chosen word, for example
+        # if "the" is in words then not only will "the" not be considered
+        # again, neither will "there" or "wither", since they have "the"
+        # as substrings.
+        extractor = TextSplitter(words)
+        counter = collections.Counter()
+        for t in texts:
+            for (found, word) in extractor.iter_words(t):
+                if not found:
+                    for substr in iter_substrings(word, minlen=2, maxlen=9):
+                        counter[substr] += 1
+
+        # Score the candidates we found.  This is an empirical formula only,
+        # chosen for its effectiveness.
+        scores = sorted(
+            (
+                (s, (len(s) - 1) ** log(max(occ - 2, 1)), occ)
+                for (s, occ) in counter.items()
+            ),
+            key=lambda x: x[1],
+            reverse=True,
+        )
+
+        # Do we have a "word" that occurred 5 times and got a score of at least
+        # 5?  Horray.  Pick the one with the highest score.
+        word = None
+        for (s, score, occ) in scores:
+            if occ < 5:
+                continue
+            if score < 5:
+                break
+            word = s
+            break
+
+        # If we can successfully add it to the dictionary, do so.  Otherwise,
+        # we've filled the dictionary to capacity and are done.
+        if not word:
+            break
+        if sum_len + len(word) - 2 > max_words_len:
+            break
+        if len(words) == max_words:
+            break
+        words.append(word)
+        sum_len += len(word) - 2
+
+    extractor = TextSplitter(words)
+    counter = collections.Counter()
+    for t in texts:
+        for atom in extractor.iter(t):
+            counter[atom] += 1
+    cb = huffman.codebook(counter.items())
+
+    word_start = start_unused
+    word_end = word_start + len(words) - 1
+    print("// # words", len(words))
+    print("// words", words)
+
     values = []
     length_count = {}
     renumbered = 0
-    last_l = None
+    last_length = None
     canonical = {}
-    for ch, code in sorted(cb.items(), key=lambda x: (len(x[1]), x[0])):
-        values.append(ch)
-        l = len(code)
-        if l not in length_count:
-            length_count[l] = 0
-        length_count[l] += 1
-        if last_l:
-            renumbered <<= (l - last_l)
-        canonical[ch] = '{0:0{width}b}'.format(renumbered, width=l)
-        s = C_ESCAPES.get(ch, ch)
-        print("//", ord(ch), s, counts[ch], canonical[ch], renumbered)
+    for atom, code in sorted(cb.items(), key=lambda x: (len(x[1]), x[0])):
+        values.append(atom)
+        length = len(code)
+        if length not in length_count:
+            length_count[length] = 0
+        length_count[length] += 1
+        if last_length:
+            renumbered <<= (length - last_length)
+        canonical[atom] = '{0:0{width}b}'.format(renumbered, width=length)
+        # print(f"atom={repr(atom)} code={code}", file=sys.stderr)
+        if len(atom) > 1:
+            o = words.index(atom) + 0x80
+            s = "".join(C_ESCAPES.get(ch1, ch1) for ch1 in atom)
+        else:
+            s = C_ESCAPES.get(atom, atom)
+            o = ord(atom)
+        print("//", o, s, counter[atom], canonical[atom], renumbered)
         renumbered += 1
-        last_l = l
+        last_length = length
     lengths = bytearray()
     print("// length count", length_count)
-    print("// bigrams", ngrams)
+
     for i in range(1, max(length_count) + 2):
         lengths.append(length_count.get(i, 0))
     print("// values", values, "lengths", len(lengths), lengths)
-    ngramdata = [ord(ni) for i in ngrams for ni in i]
-    print("// estimated total memory size", len(lengths) + 2*len(values) + 2 * len(ngramdata) + sum((len(cb[u]) + 7)//8 for u in all_strings_concat))
+
     print("//", values, lengths)
-    values_type = "uint16_t" if max(ord(u) for u in values) > 255 else "uint8_t"
-    max_translation_encoded_length = max(len(translation.encode("utf-8")) for original,translation in translations)
+    values = [(atom if len(atom) == 1 else chr(0x80 + words.index(atom))) for atom in values]
+    print("//", values, lengths)
+    max_translation_encoded_length = max(
+        len(translation.encode("utf-8")) for (original, translation) in translations)
+
+    wends = list(len(w) - 2 for w in words)
+    for i in range(1, len(wends)):
+        wends[i] += wends[i - 1]
+
     with open(compression_filename, "w") as f:
         f.write("const uint8_t lengths[] = {{ {} }};\n".format(", ".join(map(str, lengths))))
         f.write("const {} values[] = {{ {} }};\n".format(values_type, ", ".join(str(ord(u)) for u in values)))
         f.write("#define compress_max_length_bits ({})\n".format(max_translation_encoded_length.bit_length()))
-        f.write("const {} bigrams[] = {{ {} }};\n".format(values_type, ", ".join(str(u) for u in ngramdata)))
-        if len(ngrams) > 32:
-            bigram_start = 0xe000
-        else:
-            bigram_start = 0x80
-        bigram_end = bigram_start + len(ngrams) - 1 # End is inclusive
-        f.write("#define bigram_start {}\n".format(bigram_start))
-        f.write("#define bigram_end {}\n".format(bigram_end))
-    return values, lengths, ngrams
+        f.write("const {} words[] = {{ {} }};\n".format(values_type, ", ".join(str(ord(c)) for w in words for c in w)))
+        f.write("const uint8_t wends[] = {{ {} }};\n".format(", ".join(str(p) for p in wends)))
+        f.write("#define word_start {}\n".format(word_start))
+        f.write("#define word_end {}\n".format(word_end))
+
+    return (values, lengths, words, canonical, extractor)
 
 def decompress(encoding_table, encoded, encoded_length_bits):
-    values, lengths, ngrams = encoding_table
+    (values, lengths, words, _, _) = encoding_table
     dec = []
     this_byte = 0
     this_bit = 7
@@ -218,7 +323,8 @@ def decompress(encoding_table, encoded, encoded_length_bits):
             searched_length += lengths[bit_length]
 
         v = values[searched_length + bits - max_code]
-        v = decode_ngrams(v, ngrams)
+        if v >= chr(0x80) and v < chr(0x80 + len(words)):
+            v = words[ord(v) - 0x80]
         i += len(v.encode('utf-8'))
         dec.append(v)
     return ''.join(dec)
@@ -226,66 +332,32 @@ def decompress(encoding_table, encoded, encoded_length_bits):
 def compress(encoding_table, decompressed, encoded_length_bits, len_translation_encoded):
     if not isinstance(decompressed, str):
         raise TypeError()
-    values, lengths, ngrams = encoding_table
-    decompressed = encode_ngrams(decompressed, ngrams)
+    (_, _, _, canonical, extractor) = encoding_table
+
     enc = bytearray(len(decompressed) * 3)
-    #print(decompressed)
-    #print(lengths)
     current_bit = 7
     current_byte = 0
 
-    code = len_translation_encoded
-    bits = encoded_length_bits+1
+    bits = encoded_length_bits + 1
     for i in range(bits - 1, 0, -1):
         if len_translation_encoded & (1 << (i - 1)):
             enc[current_byte] |= 1 << current_bit
         if current_bit == 0:
             current_bit = 7
-            #print("packed {0:0{width}b}".format(enc[current_byte], width=8))
             current_byte += 1
         else:
             current_bit -= 1
 
-    for c in decompressed:
-        #print()
-        #print("char", c, values.index(c))
-        start = 0
-        end = lengths[0]
-        bits = 1
-        compressed = None
-        code = 0
-        while compressed is None:
-            s = start
-            e = end
-            #print("{0:0{width}b}".format(code, width=bits))
-            # Binary search!
-            while e > s:
-                midpoint = (s + e) // 2
-                #print(s, e, midpoint)
-                if values[midpoint] == c:
-                    compressed = code + (midpoint - start)
-                    #print("found {0:0{width}b}".format(compressed, width=bits))
-                    break
-                elif c < values[midpoint]:
-                    e = midpoint
-                else:
-                    s = midpoint + 1
-            code += end - start
-            code <<= 1
-            start = end
-            end += lengths[bits]
-            bits += 1
-            #print("next bit", bits)
-
-        for i in range(bits - 1, 0, -1):
-            if compressed & (1 << (i - 1)):
+    for atom in extractor.iter(decompressed):
+        for b in canonical[atom]:
+            if b == "1":
                 enc[current_byte] |= 1 << current_bit
             if current_bit == 0:
                 current_bit = 7
-                #print("packed {0:0{width}b}".format(enc[current_byte], width=8))
                 current_byte += 1
             else:
                 current_bit -= 1
+
     if current_bit != 7:
         current_byte += 1
     return enc[:current_byte]
@@ -452,7 +524,7 @@ if __name__ == "__main__":
     if args.translation:
         i18ns = sorted(i18ns)
         translations = translate(args.translation, i18ns)
-        encoding_table = compute_huffman_coding(translations, qstrs, args.compression_filename)
+        encoding_table = compute_huffman_coding(translations, args.compression_filename)
         print_qstr_data(encoding_table, qcfgs, qstrs, translations)
     else:
         print_qstr_enums(qstrs)

@@ -76,7 +76,9 @@ void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
 
     common_hal_reset_pin(self->command.pin);
     common_hal_reset_pin(self->chip_select.pin);
-    common_hal_reset_pin(self->reset.pin);
+    if (self->reset.pin) {
+        common_hal_reset_pin(self->reset.pin);
+    }
 }
 
 bool common_hal_displayio_fourwire_reset(mp_obj_t obj) {
