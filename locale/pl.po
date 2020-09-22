@@ -6,9 +6,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-16 17:07-0700\n"
-"PO-Revision-Date: 2020-09-17 17:58+0000\n"
-"Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
+"POT-Creation-Date: 2020-09-21 16:45-0500\n"
+"PO-Revision-Date: 2020-09-22 13:32+0000\n"
+"Last-Translator: Szymon Jakubiak <sz.a.jakubiak@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
@@ -32,6 +32,9 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Zgłoś problem z zawartością dysku CIRCUITPY pod adresem\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -57,7 +60,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q niepowodzenie: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -95,7 +98,11 @@ msgstr "%q musi być >= 1"
 msgid "%q must be a tuple of length 2"
 msgstr "%q musi być krotką o długości 2"
 
-#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: shared-bindings/canio/Match.c
+msgid "%q out of range"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
 msgstr ""
 
@@ -283,6 +290,10 @@ msgstr ""
 msgid "All I2C peripherals are in use"
 msgstr "Wszystkie peryferia I2C w użyciu"
 
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "All RX FIFOs in use"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
 msgstr "Wszystkie peryferia SPI w użyciu"
@@ -317,6 +328,10 @@ msgstr "Wszystkie timery w użyciu"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Already have all-matches listener"
 msgstr ""
 
 #: shared-module/memorymonitor/AllocationAlarm.c
@@ -761,7 +776,7 @@ msgstr "Kanał EXTINT w użyciu"
 msgid "Error in regex"
 msgstr "Błąd w regex"
 
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
@@ -853,6 +868,10 @@ msgstr "Nie udało się zapisać wewnętrznej pamięci flash."
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Plik istnieje"
+
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Filters too complex"
+msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1137,6 +1156,10 @@ msgstr "Nie powiodło się ustawienie pinu MOSI."
 #, c-format
 msgid "Maximum x value when mirrored is %d"
 msgstr "Największa wartość x przy odwróceniu to %d"
+
+#: shared-bindings/canio/Message.c
+msgid "Messages limited to 8 bytes"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
@@ -2329,6 +2352,10 @@ msgstr "błąd = 0x%08lX"
 msgid "exceptions must derive from BaseException"
 msgstr "wyjątki muszą dziedziczyć po BaseException"
 
+#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+msgid "expected '%q' but got '%q'"
+msgstr ""
+
 #: py/objstr.c
 msgid "expected ':' after format specifier"
 msgstr "oczekiwano ':' po specyfikacji formatu"
@@ -3168,6 +3195,10 @@ msgstr ""
 msgid "source palette too large"
 msgstr ""
 
+#: shared-bindings/canio/Message.c
+msgid "specify size or data, but not both"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "początkowe/końcowe indeksy"
@@ -3282,7 +3313,7 @@ msgid "tuple/list has wrong length"
 msgstr "krotka/lista ma złą długość"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: shared-bindings/busio/UART.c
+#: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx i rx nie mogą być oba None"
 
