@@ -160,9 +160,15 @@ mp_obj_t common_hal_wifi_radio_get_ap_rssi(wifi_radio_obj_t *self) {
     }
 
     wifi_ap_record_t ap_info;
-    esp_wifi_sta_get_ap_info(&ap_info);
-
-    return MP_OBJ_NEW_SMALL_INT(ap_info.rssi);
+    // From esp_wifi.h, the possible return values (typos theirs):
+    //    ESP_OK: succeed
+    //    ESP_ERR_WIFI_CONN: The station interface don't initialized
+    //    ESP_ERR_WIFI_NOT_CONNECT: The station is in disconnect status
+    if (esp_wifi_sta_get_ap_info(&ap_info) != ESP_OK){
+        return mp_const_none;
+    } else {
+        return mp_obj_new_int(ap_info.rssi);
+    }
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self) {
