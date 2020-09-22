@@ -46,6 +46,8 @@ typedef struct {
     StaticEventGroup_t event_group;
     EventGroupHandle_t event_group_handle;
     wifi_config_t sta_config;
+    wifi_ap_record_t ap_info;
+    esp_netif_ip_info_t ip_info;
     esp_netif_t *netif;
     bool started;
     bool ap_mode;

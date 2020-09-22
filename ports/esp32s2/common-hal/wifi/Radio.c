@@ -153,21 +153,18 @@ mp_obj_t common_hal_wifi_radio_get_ap_rssi(wifi_radio_obj_t *self) {
     }
 
     // Make sure the interface is in STA mode
-    wifi_mode_t if_mode;
-    esp_wifi_get_mode(&if_mode);
-    if (if_mode != WIFI_MODE_STA){
+    if (self->sta_mode){
         return mp_const_none;
     }
 
-    wifi_ap_record_t ap_info;
     // From esp_wifi.h, the possible return values (typos theirs):
     //    ESP_OK: succeed
     //    ESP_ERR_WIFI_CONN: The station interface don't initialized
     //    ESP_ERR_WIFI_NOT_CONNECT: The station is in disconnect status
-    if (esp_wifi_sta_get_ap_info(&ap_info) != ESP_OK){
+    if (esp_wifi_sta_get_ap_info(&self->ap_info) != ESP_OK){
         return mp_const_none;
     } else {
-        return mp_obj_new_int(ap_info.rssi);
+        return mp_obj_new_int(self->ap_info.rssi);
     }
 }
 
@@ -175,27 +172,24 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
     }
-    esp_netif_ip_info_t ip_info;
-    esp_netif_get_ip_info(self->netif, &ip_info);
-    return common_hal_ipaddress_new_ipv4address(ip_info.gw.addr);
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.gw.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
     }
-    esp_netif_ip_info_t ip_info;
-    esp_netif_get_ip_info(self->netif, &ip_info);
-    return common_hal_ipaddress_new_ipv4address(ip_info.netmask.addr);
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.netmask.addr);
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
     }
-    esp_netif_ip_info_t ip_info;
-    esp_netif_get_ip_info(self->netif, &ip_info);
-    return common_hal_ipaddress_new_ipv4address(ip_info.ip.addr);
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.ip.addr);
 }
 
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {
