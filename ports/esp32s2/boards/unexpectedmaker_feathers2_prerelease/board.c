@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,33 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#define MICROPY_HW_BOARD_NAME       "FeatherS2"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+    // Debug UART
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
 
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+    // SPI Flash and RAM
+    common_hal_never_reset_pin(&pin_GPIO26);
+    common_hal_never_reset_pin(&pin_GPIO27);
+    common_hal_never_reset_pin(&pin_GPIO28);
+    common_hal_never_reset_pin(&pin_GPIO29);
+    common_hal_never_reset_pin(&pin_GPIO30);
+    common_hal_never_reset_pin(&pin_GPIO31);
+    common_hal_never_reset_pin(&pin_GPIO32);
+}
 
-#define AUTORESET_DELAY_MS 500
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#define MICROPY_HW_APA102_MOSI   (&pin_GPIO40)
-#define MICROPY_HW_APA102_SCK    (&pin_GPIO45)
+void reset_board(void) {
+
+}
