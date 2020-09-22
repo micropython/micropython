@@ -253,8 +253,16 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
         data[data_length++] = x2 >> 8;
         data[data_length++] = x2 & 0xff;
     }
+    // Quirk for SH1107 "column_and_page_addressing"
+    //     Column lower command = 0x00, Column upper command = 0x10
+    if (column_and_page_addressing) {
+        data[0] = 0x00 | (x1 & 0x0F);
+        data[1] = 0x10 | (x1 >> 4);
+        data_length = 2;
+    }
     self->send(self->bus, data_type, chip_select, data, data_length);
     displayio_display_core_end_transaction(self);
+
     if (set_current_column_command != NO_COMMAND) {
         uint8_t command = set_current_column_command;
         displayio_display_core_begin_transaction(self);
@@ -283,6 +291,14 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
         data[data_length++] = y2 >> 8;
         data[data_length++] = y2 & 0xff;
     }
+    // Quirk for SH1107 "column_and_page_addressing"
+    //      Page address command = 0xB0
+    if (column_and_page_addressing) {
+        data[0] = 0xB0 | (y1 & 0x07);
+        data_length = 1;
+    }
+    self->send(self->bus, data_type, chip_select, data, data_length);
+
     self->send(self->bus, data_type, chip_select, data, data_length);
     displayio_display_core_end_transaction(self);
 

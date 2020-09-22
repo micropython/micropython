@@ -49,7 +49,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin,
         uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
         bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second, 
-        bool backlight_on_high), bool column_and_page_addressing {
+        bool backlight_on_high, bool column_and_page_addressing) {
     // Turn off auto-refresh as we init.
     self->auto_refresh = false;
     uint16_t ram_width = 0x100;
