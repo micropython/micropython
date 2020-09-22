@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * SPDX-FileCopyrightText: Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,36 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
+#include "py/enum.h"
+#include "py/runtime.h"
 
-#include <assert.h>
+mp_obj_t cp_enum_find(const mp_obj_type_t *type, int value) {
+    const mp_obj_dict_t *dict = type->locals_dict;
+    for (size_t i=0; i<dict->map.used; i++) {
+        const cp_enum_obj_t *v = dict->map.table[i].value;
+        if (v->value == value) {
+            return (mp_obj_t)v;
+        }
+    }
+    return mp_const_none;
+}
 
-#include "peripherals/samd/pins.h"
+int cp_enum_value(const mp_obj_type_t *type, mp_obj_t *obj) {
+    if (!MP_OBJ_IS_TYPE(obj, type)) {
+        mp_raise_TypeError_varg(translate("Expected a %q"), type->name);
+    }
+    return ((cp_enum_obj_t*)MP_OBJ_TO_PTR(obj))->value;
+}
 
-#ifdef MICROPY_HW_NEOPIXEL
-extern bool neopixel_in_use;
-#endif
-#ifdef MICROPY_HW_APA102_MOSI
-extern bool apa102_sck_in_use;
-extern bool apa102_mosi_in_use;
-#endif
-
-void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
-void reset_pin_number(uint8_t pin_number);
-void never_reset_pin_number(uint8_t pin_number);
-void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(uint8_t pin_number);
-
-typedef struct {
-    const mcu_pin_obj_t *obj;
-    uint8_t instance;
-    uint8_t pin;
-    uint16_t function;
-} mcu_pin_function_t;
-
-mcu_pin_function_t *mcu_find_pin_function(mcu_pin_function_t *table, const mcu_pin_obj_t *pin, int instance, uint16_t name);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
+void cp_enum_obj_print_helper(uint16_t module, const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void) kind;
+    cp_enum_obj_t *self = self_in;
+    mp_printf(print, "%q.%q.%q", module, self->base.type->name, self->name);
+}

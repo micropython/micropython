@@ -81,6 +81,10 @@
 #include "supervisor/shared/bluetooth.h"
 #endif
 
+#if CIRCUITPY_CANIO
+#include "common-hal/canio/CAN.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -225,6 +229,10 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     stop_mp();
     free_memory(heap);
     supervisor_move_memory();
+
+    #if CIRCUITPY_CANIO
+    common_hal_canio_reset();
+    #endif
 
     reset_port();
     #if CIRCUITPY_BOARD

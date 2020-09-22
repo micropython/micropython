@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,36 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
+#include "shared-module/canio/Match.h"
 
-#include <assert.h>
+void common_hal_canio_match_construct(canio_match_obj_t *self, int address, int mask, bool extended) {
+    self->address = address;
+    self->mask = mask;
+    self->extended = extended;
+}
 
-#include "peripherals/samd/pins.h"
-
-#ifdef MICROPY_HW_NEOPIXEL
-extern bool neopixel_in_use;
-#endif
-#ifdef MICROPY_HW_APA102_MOSI
-extern bool apa102_sck_in_use;
-extern bool apa102_mosi_in_use;
-#endif
-
-void reset_all_pins(void);
-// reset_pin_number takes the pin number instead of the pointer so that objects don't
-// need to store a full pointer.
-void reset_pin_number(uint8_t pin_number);
-void never_reset_pin_number(uint8_t pin_number);
-void claim_pin(const mcu_pin_obj_t* pin);
-bool pin_number_is_free(uint8_t pin_number);
-
-typedef struct {
-    const mcu_pin_obj_t *obj;
-    uint8_t instance;
-    uint8_t pin;
-    uint16_t function;
-} mcu_pin_function_t;
-
-mcu_pin_function_t *mcu_find_pin_function(mcu_pin_function_t *table, const mcu_pin_obj_t *pin, int instance, uint16_t name);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_MICROCONTROLLER_PIN_H
+int common_hal_canio_match_get_address(const canio_match_obj_t *self) {
+    return self->address;
+}
+int common_hal_canio_match_get_mask(const canio_match_obj_t *self) {
+    return self->mask;
+}
+bool common_hal_canio_match_get_extended(const canio_match_obj_t *self) {
+    return self->extended;
+}
