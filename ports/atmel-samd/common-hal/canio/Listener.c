@@ -358,15 +358,15 @@ bool common_hal_canio_listener_readinto(canio_listener_obj_t *self, canio_messag
         } while (!common_hal_canio_listener_in_waiting(self));
     }
     int index = self->hw->RXFS.bit.F0GI;
-    canio_can_fifo_t *hw_message = &self->fifo[index];
-    message->extended = hw_message->rxb0.bit.XTD;
+    canio_can_rx_fifo_t *hw_message = &self->fifo[index];
+    message->extended = hw_message->rxf0.bit.XTD;
     if (message->extended) {
-        message->id = hw_message->rxb0.bit.ID;
+        message->id = hw_message->rxf0.bit.ID;
     } else {
-        message->id = hw_message->rxb0.bit.ID >> 18; // short addresses are left-justified
+        message->id = hw_message->rxf0.bit.ID >> 18; // short addresses are left-justified
     }
-    message->rtr = hw_message->rxb0.bit.RTR;
-    message->size = hw_message->rxb1.bit.DLC;
+    message->rtr = hw_message->rxf0.bit.RTR;
+    message->size = hw_message->rxf1.bit.DLC;
     if (!message->rtr) {
         memcpy(message->data, hw_message->data, message->size);
     }

@@ -38,7 +38,7 @@ typedef struct {
 typedef struct {
     mp_obj_base_t base;
     canio_can_obj_t *can;
-    canio_can_fifo_t *fifo;
+    canio_can_rx_fifo_t *fifo;
     canio_rxfifo_reg_t *hw;
     uint32_t timeout_ms;
     uint8_t fifo_idx;

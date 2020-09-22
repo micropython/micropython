@@ -176,7 +176,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
 
     {
         CAN_TXBC_Type bc = {
-            .bit.TBSA = (uint32_t)self->state->tx_fifo,
+            .bit.TBSA = (uint32_t)self->state->tx_buffer,
             .bit.NDTB = COMMON_HAL_CANIO_TX_FIFO_SIZE,
             .bit.TFQM = 0, // Messages are transmitted in the order submitted
         };
@@ -192,7 +192,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
 
     {
         CAN_GFC_Type gfc = {
-            .bit.RRFE = 1,
+            .bit.RRFE = 0,
             .bit.ANFS = CAN_GFC_ANFS_REJECT_Val,
             .bit.ANFE = CAN_GFC_ANFE_REJECT_Val,
         };
@@ -333,13 +333,13 @@ void common_hal_canio_can_send(canio_can_obj_t *self, canio_message_obj_t *messa
     maybe_auto_restart(self);
 
     // We have just one dedicated TX buffer, use it!
-    canio_can_fifo_t *ent = &self->state->tx_fifo[0];
+    canio_can_tx_buffer_t *ent = &self->state->tx_buffer[0];
 
     ent->txb0.bit.ESI = false;
     ent->txb0.bit.XTD = message->extended;
     ent->txb0.bit.RTR = message->rtr;
     if (message->extended) {
-        ent->txb0.bit.ID = message->id << 18;
+        ent->txb0.bit.ID = message->id;
     } else {
         ent->txb0.bit.ID = message->id << 18; // short addresses are left-justified
     }
