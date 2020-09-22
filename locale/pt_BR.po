@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-21 16:45-0500\n"
-"PO-Revision-Date: 2020-09-19 17:41+0000\n"
+"PO-Revision-Date: 2020-09-22 21:30+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -98,7 +98,7 @@ msgstr "%q deve ser uma tupla de comprimento 2"
 
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
-msgstr ""
+msgstr "%q fora do alcance"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
@@ -294,7 +294,7 @@ msgstr "Todos os periféricos I2C estão em uso"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr ""
+msgstr "Todos os FIFOs RX estão em uso"
 
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
@@ -334,7 +334,7 @@ msgstr "Já está anunciando."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Already have all-matches listener"
-msgstr ""
+msgstr "Já há um ouvinte com todas as correspondências"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -880,7 +880,7 @@ msgstr "Arquivo já existe"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Filters too complex"
-msgstr ""
+msgstr "Os filtros são muito complexos"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1170,7 +1170,7 @@ msgstr "O valor máximo de x quando espelhado é %d"
 
 #: shared-bindings/canio/Message.c
 msgid "Messages limited to 8 bytes"
-msgstr ""
+msgstr "As mensagens estão limitadas a 8 bytes"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
@@ -2410,7 +2410,7 @@ msgstr "as exceções devem derivar a partir do BaseException"
 
 #: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
 msgid "expected '%q' but got '%q'"
-msgstr ""
+msgstr "o retorno esperado era '%q', porém obteve '% q'"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -3263,7 +3263,7 @@ msgstr "a paleta de origem é muito grande"
 
 #: shared-bindings/canio/Message.c
 msgid "specify size or data, but not both"
-msgstr ""
+msgstr "defina o tamanho ou os dados, porém não ambos"
 
 #: py/objstr.c
 msgid "start/end indices"
