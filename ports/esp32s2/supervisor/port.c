@@ -43,6 +43,7 @@
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
+#include "shared-bindings/rtc/__init__.h"
 
 #include "peripherals/rmt.h"
 #include "esp-idf/components/heap/include/esp_heap_caps.h"
@@ -106,6 +107,11 @@ void reset_port(void) {
     spi_reset();
     uart_reset();
 #endif
+
+#if CIRCUITPY_RTC
+    rtc_reset();
+#endif
+
 #if CIRCUITPY_WIFI
     wifi_reset();
 #endif
