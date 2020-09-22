@@ -35,6 +35,9 @@
 
 #include "shared-bindings/microcontroller/RunMode.h"
 
+#include "shared-bindings/io_alarm/__init__.h"
+#include "shared-bindings/time_alarm/__init__.h"
+
 extern void common_hal_mcu_delay_us(uint32_t);
 
 extern void common_hal_mcu_disable_interrupts(void);
@@ -44,6 +47,8 @@ extern void common_hal_mcu_on_next_reset(mcu_runmode_t runmode);
 extern void common_hal_mcu_reset(void);
 
 extern void common_hal_mcu_sleep(void);
+extern int common_hal_mcu_get_sleep_time(void);
+extern mp_obj_t common_hal_mcu_get_wake_alarm(void);
 
 extern const mp_obj_dict_t mcu_pin_globals;
 

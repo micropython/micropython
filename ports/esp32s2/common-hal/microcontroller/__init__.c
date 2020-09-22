@@ -25,6 +25,8 @@
  * THE SOFTWARE.
  */
 
+#include <sys/time.h>
+
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -42,6 +44,9 @@
 #include "freertos/FreeRTOS.h"
 
 #include "esp_sleep.h"
+#include "soc/rtc_periph.h"
+
+static RTC_DATA_ATTR struct timeval sleep_enter_time;
 
 void common_hal_mcu_delay_us(uint32_t delay) {
 
@@ -80,7 +85,48 @@ void common_hal_mcu_reset(void) {
 }
 
 void common_hal_mcu_sleep(void) {
+    gettimeofday(&sleep_enter_time, NULL);
     esp_deep_sleep_start(); 
+}
+
+int common_hal_mcu_get_sleep_time(void) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    return (now.tv_sec - sleep_enter_time.tv_sec) * 1000 + (now.tv_usec - sleep_enter_time.tv_usec) / 1000;
+}
+
+mp_obj_t common_hal_mcu_get_wake_alarm(void) {
+    switch (esp_sleep_get_wakeup_cause()) {
+        case ESP_SLEEP_WAKEUP_TIMER: ;
+            //Wake up from timer.
+            time_alarm_obj_t *timer = m_new_obj(time_alarm_obj_t);
+            timer->base.type = &time_alarm_type;           
+            return timer;
+        case ESP_SLEEP_WAKEUP_EXT0: ;
+            //Wake up from GPIO
+            io_alarm_obj_t *ext0 = m_new_obj(io_alarm_obj_t);
+            ext0->base.type = &io_alarm_type;  
+            return ext0;
+        case ESP_SLEEP_WAKEUP_EXT1: 
+            //Wake up from GPIO, returns -> esp_sleep_get_ext1_wakeup_status()  
+            /*uint64_t wakeup_pin_mask = esp_sleep_get_ext1_wakeup_status();
+            if (wakeup_pin_mask != 0) {
+                int pin = __builtin_ffsll(wakeup_pin_mask) - 1;
+                printf("Wake up from GPIO %d\n", pin);
+            } else {
+                printf("Wake up from GPIO\n");
+            }*/
+            break;       
+        case ESP_SLEEP_WAKEUP_TOUCHPAD: 
+            //TODO: implement TouchIO
+            //Wake up from touch on pad, returns -> esp_sleep_get_touchpad_wakeup_status()
+            break;        
+        case ESP_SLEEP_WAKEUP_UNDEFINED:
+        default:
+            //Not a deep sleep reset
+            break;
+    }
+    return mp_const_none;
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
