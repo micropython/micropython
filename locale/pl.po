@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-16 17:07-0700\n"
-"PO-Revision-Date: 2020-09-17 17:58+0000\n"
-"Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
+"PO-Revision-Date: 2020-09-22 13:32+0000\n"
+"Last-Translator: Szymon Jakubiak <sz.a.jakubiak@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
@@ -32,6 +32,9 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Zgłoś problem z zawartością dysku CIRCUITPY pod adresem\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -57,7 +60,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q niepowodzenie: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
