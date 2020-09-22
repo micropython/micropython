@@ -302,7 +302,6 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
     }
     self->send(self->bus, data_type, chip_select, data, data_length);
 
-    self->send(self->bus, data_type, chip_select, data, data_length);
     displayio_display_core_end_transaction(self);
 
     if (set_current_row_command != NO_COMMAND) {
