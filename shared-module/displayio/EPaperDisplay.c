@@ -239,7 +239,9 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
         uint16_t remaining_rows = displayio_area_height(&clipped);
 
         if (self->set_row_window_command != NO_COMMAND) {
-            displayio_display_core_set_region_to_update(&self->core, self->set_column_window_command, self->set_row_window_command, self->set_current_column_command, self->set_current_row_command, false, self->chip_select, &clipped);
+            displayio_display_core_set_region_to_update(&self->core, self->set_column_window_command, 
+            self->set_row_window_command, self->set_current_column_command, self->set_current_row_command, 
+            false, self->chip_select, &clipped, false);
         }
 
         uint8_t write_command = self->write_black_ram_command;

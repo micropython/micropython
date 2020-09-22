@@ -288,7 +288,9 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
         }
         remaining_rows -= rows_per_buffer;
 
-        displayio_display_core_set_region_to_update(&self->core, self->set_column_command, self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false, &subrectangle);
+        displayio_display_core_set_region_to_update(&self->core, self->set_column_command, 
+              self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false, 
+              &subrectangle, self->column_and_page_addressing);
 
         uint16_t subrectangle_size_bytes;
         if (self->core.colorspace.depth >= 8) {

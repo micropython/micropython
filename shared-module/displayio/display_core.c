@@ -208,7 +208,10 @@ void displayio_display_core_end_transaction(displayio_display_core_t* self) {
     self->end_transaction(self->bus);
 }
 
-void displayio_display_core_set_region_to_update(displayio_display_core_t* self, uint8_t column_command, uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command, bool data_as_commands, bool always_toggle_chip_select, displayio_area_t* area) {
+void displayio_display_core_set_region_to_update(displayio_display_core_t* self, uint8_t column_command, 
+              uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command, 
+              bool data_as_commands, bool always_toggle_chip_select, 
+              displayio_area_t* area, bool column_and_page_addressing) {
     uint16_t x1 = area->x1;
     uint16_t x2 = area->x2;
     uint16_t y1 = area->y1;
