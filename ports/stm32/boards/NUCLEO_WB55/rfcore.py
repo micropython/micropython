@@ -34,8 +34,13 @@
 # to print out SRAM2A, register state and FUS/WS info.
 
 from machine import mem8, mem16, mem32
-import time, struct, uctypes
+import time, struct
 import stm
+
+
+def addressof(buf):
+    assert type(buf) is bytearray
+    return mem32[id(buf) + 12]
 
 
 class Flash:
@@ -68,7 +73,7 @@ class Flash:
         self.wait_not_busy()
         cr = 1 << 0  # PG
         mem32[stm.FLASH + stm.FLASH_CR] = cr
-        buf_addr = uctypes.addressof(buf)
+        buf_addr = addressof(buf)
         off = 0
         while off < len(buf):
             mem32[addr + off] = mem32[buf_addr + off]
@@ -110,13 +115,6 @@ OCF_FUS_FW_UPGRADE = const(0x54)
 OCF_FUS_FW_DELETE = const(0x55)
 OCF_FUS_START_WS = const(0x5A)
 OCF_BLE_INIT = const(0x66)
-
-
-@micropython.asm_thumb
-def asm_sev_wfe():
-    data(2, 0xBF40)  # sev
-    data(2, 0xBF20)  # wfe
-
 
 TABLE_DEVICE_INFO = const(0)
 TABLE_BLE = const(1)
@@ -198,6 +196,9 @@ def ipcc_init():
     BLE_CS_BUF = get_ipcc_table_word(TABLE_BLE, 1)
     BLE_EVT_QUEUE = get_ipcc_table_word(TABLE_BLE, 2)
     BLE_HCI_ACL_DATA_BUF = get_ipcc_table_word(TABLE_BLE, 3)
+
+    # Disable interrupts, the code here uses polling
+    mem32[stm.IPCC + stm.IPCC_C1CR] = 0
 
     print("IPCC initialised")
     print("SYS: 0x%08x 0x%08x" % (SYS_CMD_BUF, SYS_SYS_QUEUE))

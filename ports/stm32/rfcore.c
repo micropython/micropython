@@ -94,15 +94,35 @@ typedef struct _parse_hci_info_t {
 // [16:23] = SRAM2b (Number of 1k sectors)
 // [24:31] = SRAM2a (Number of 1k sectors)
 
-typedef struct __attribute__((packed)) _ipcc_device_info_table_t {
-    uint32_t safeboot_version;
-    uint32_t fus_version;
-    uint32_t fus_memorysize;
-    uint32_t fus_info;
-    uint32_t fw_version;
-    uint32_t fw_memorysize;
-    uint32_t fw_infostack;
-    uint32_t fw_reserved;
+typedef union __attribute__((packed)) _ipcc_device_info_table_t {
+    struct {
+        uint32_t table_state;
+        uint8_t reserved0;
+        uint8_t last_fus_state;
+        uint8_t last_ws_state;
+        uint8_t ws_type;
+        uint32_t safeboot_version;
+        uint32_t fus_version;
+        uint32_t fus_memorysize;
+        uint32_t ws_version;
+        uint32_t ws_memorysize;
+        uint32_t ws_ble_info;
+        uint32_t ws_thread_info;
+        uint32_t reserved1;
+        uint64_t uid64;
+        uint16_t device_id;
+        uint16_t pad;
+    } fus;
+    struct {
+        uint32_t safeboot_version;
+        uint32_t fus_version;
+        uint32_t fus_memorysize;
+        uint32_t fus_info;
+        uint32_t fw_version;
+        uint32_t fw_memorysize;
+        uint32_t fw_infostack;
+        uint32_t fw_reserved;
+    } ws;
 } ipcc_device_info_table_t;
 
 typedef struct __attribute__((packed)) _ipcc_ble_table_t {
