@@ -50,7 +50,7 @@ STATIC mp_obj_t canio_listener_read(mp_obj_t self_in) {
     common_hal_canio_listener_check_for_deinit(self);
 
     canio_message_obj_t *message = m_new_obj(canio_message_obj_t);
-    self->base.type = &canio_message_type;
+    message->base.type = &canio_message_type;
 
     if (common_hal_canio_listener_readinto(self, message)) {
         return message;
@@ -92,13 +92,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_in_waiting_obj, canio_listener_i
 //|         """Returns self, unless the object is deinitialized"""
 //|         ...
 //|
-STATIC mp_obj_t canio_listener_iter(mp_obj_t self_in) {
-    canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_canio_listener_check_for_deinit(self);
-    return self;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_iter_obj, canio_listener_iter);
-
 //|     def __next__(self):
 //|         """Reads a message, after waiting up to self.timeout seconds
 //|
@@ -106,14 +99,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_iter_obj, canio_listener_iter);
 //|         a Message is returned."""
 //|         ...
 //|
-STATIC mp_obj_t canio_listener_next(mp_obj_t self_in) {
+STATIC mp_obj_t canio_iternext(mp_obj_t self_in) {
     mp_obj_t result = canio_listener_read(self_in);
     if (result == mp_const_none) {
         return MP_OBJ_STOP_ITERATION;
     }
     return result;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_next_obj, canio_listener_next);
 
 //|     def deinit(self) -> None:
 //|         """Deinitialize this object, freeing its hardware resources"""
@@ -176,8 +168,6 @@ STATIC const mp_obj_property_t canio_listener_timeout_obj = {
 STATIC const mp_rom_map_elem_t canio_listener_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&canio_listener_enter_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&canio_listener_exit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___iter__), MP_ROM_PTR(&canio_listener_iter_obj) },
-    { MP_ROM_QSTR(MP_QSTR___next__), MP_ROM_PTR(&canio_listener_next_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&canio_listener_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_in_waiting), MP_ROM_PTR(&canio_listener_in_waiting_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&canio_listener_read_obj) },
@@ -189,5 +179,7 @@ STATIC MP_DEFINE_CONST_DICT(canio_listener_locals_dict, canio_listener_locals_di
 const mp_obj_type_t canio_listener_type = {
     { &mp_type_type },
     .name = MP_QSTR_Listener,
+    .getiter = mp_identity_getiter,
+    .iternext = canio_iternext,
     .locals_dict = (mp_obj_dict_t*)&canio_listener_locals_dict,
 };
