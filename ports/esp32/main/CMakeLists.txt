@@ -5,7 +5,7 @@ set(MPY_BOARD_DIR ${PROJECT_DIR}/boards/GENERIC)
 
 # Include core source components.
 include(${MPY_DIR}/py/micropy_py.cmake)
-include(${MPY_DIR}/py/micropy_extmod.cmake)
+include(${MPY_DIR}/extmod/micropy_extmod.cmake)
 
 set(SOURCE_EXTMOD_EXTRA
     ${MPY_DIR}/extmod/modonewire.c
