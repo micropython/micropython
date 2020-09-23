@@ -4,8 +4,8 @@ set(MPY_PORT_DIR ${PROJECT_DIR})
 set(MPY_BOARD_DIR ${PROJECT_DIR}/boards/GENERIC)
 
 # Include core source components.
-include(${MPY_DIR}/py/py.cmake)
-include(${MPY_DIR}/extmod/extmod.cmake)
+include(${MPY_DIR}/py/micropy_py.cmake)
+include(${MPY_DIR}/py/micropy_extmod.cmake)
 
 set(SOURCE_EXTMOD_EXTRA
     ${MPY_DIR}/extmod/modonewire.c
@@ -101,7 +101,7 @@ set(FROZEN_MANIFEST ${PROJECT_DIR}/boards/manifest.py)
 
 # Include the main MicroPython cmake rules.
 set(MICROPYTHON_TARGET ${COMPONENT_TARGET})
-include(${MPY_DIR}/py/mkrules.cmake)
+include(${MPY_DIR}/py/micropy_rules.cmake)
 
 # Set compile options for this port.
 target_compile_options(${MICROPYTHON_TARGET} PUBLIC
@@ -111,13 +111,4 @@ target_compile_options(${MICROPYTHON_TARGET} PUBLIC
     -DFFCONF_H=\"${OOFATFS_DIR}/ffconf.h\"
     -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
     -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
-)
-
-# Disable some warnings to keep the build output clean.
-target_compile_options(${MICROPYTHON_TARGET} PUBLIC
-    -Wno-clobbered
-    -Wno-deprecated-declarations
-    -Wno-implicit-fallthrough
-    -Wno-missing-field-initializers
-    -Wno-override-init
 )
