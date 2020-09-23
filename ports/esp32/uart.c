@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 #include "driver/uart.h"
+#include "soc/uart_periph.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"

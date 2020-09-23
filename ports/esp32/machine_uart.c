@@ -36,6 +36,8 @@
 #include "py/mperrno.h"
 #include "modmachine.h"
 
+#define UART_LINE_INV_MASK (0xff)
+
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     uart_port_t uart_num;
@@ -68,28 +70,28 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     if (self->invert) {
         mp_printf(print, ", invert=");
         uint32_t invert_mask = self->invert;
-        if (invert_mask & UART_INVERSE_TXD) {
+        if (invert_mask & UART_SIGNAL_TXD_INV) {
             mp_printf(print, "INV_TX");
-            invert_mask &= ~UART_INVERSE_TXD;
+            invert_mask &= ~UART_SIGNAL_TXD_INV;
             if (invert_mask) {
                 mp_printf(print, "|");
             }
         }
-        if (invert_mask & UART_INVERSE_RXD) {
+        if (invert_mask & UART_SIGNAL_RXD_INV) {
             mp_printf(print, "INV_RX");
-            invert_mask &= ~UART_INVERSE_RXD;
+            invert_mask &= ~UART_SIGNAL_RXD_INV;
             if (invert_mask) {
                 mp_printf(print, "|");
             }
         }
-        if (invert_mask & UART_INVERSE_RTS) {
+        if (invert_mask & UART_SIGNAL_RTS_INV) {
             mp_printf(print, "INV_RTS");
-            invert_mask &= ~UART_INVERSE_RTS;
+            invert_mask &= ~UART_SIGNAL_RTS_INV;
             if (invert_mask) {
                 mp_printf(print, "|");
             }
         }
-        if (invert_mask & UART_INVERSE_CTS) {
+        if (invert_mask & UART_SIGNAL_CTS_INV) {
             mp_printf(print, "INV_CTS");
         }
     }
@@ -380,10 +382,10 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERSE_TXD) },
-    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERSE_RXD) },
-    { MP_ROM_QSTR(MP_QSTR_INV_RTS), MP_ROM_INT(UART_INVERSE_RTS) },
-    { MP_ROM_QSTR(MP_QSTR_INV_CTS), MP_ROM_INT(UART_INVERSE_CTS) },
+    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_SIGNAL_TXD_INV) },
+    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_SIGNAL_RXD_INV) },
+    { MP_ROM_QSTR(MP_QSTR_INV_RTS), MP_ROM_INT(UART_SIGNAL_RTS_INV) },
+    { MP_ROM_QSTR(MP_QSTR_INV_CTS), MP_ROM_INT(UART_SIGNAL_CTS_INV) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);

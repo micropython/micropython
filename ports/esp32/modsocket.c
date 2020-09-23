@@ -46,7 +46,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "lib/netutils/netutils.h"
-#include "tcpip_adapter.h"
 #include "mdns.h"
 #include "modnetwork.h"
 
@@ -181,7 +180,7 @@ static int _socket_getaddrinfo3(const char *nodename, const char *servname,
         memcpy(nodename_no_local, nodename, nodename_len - local_len);
         nodename_no_local[nodename_len - local_len] = '\0';
 
-        struct ip4_addr addr = {0};
+        esp_ip4_addr_t addr = {0};
         esp_err_t err = mdns_query_a(nodename_no_local, MDNS_QUERY_TIMEOUT_MS, &addr);
         if (err != ESP_OK) {
             if (err == ESP_ERR_NOT_FOUND) {
