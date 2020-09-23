@@ -205,6 +205,10 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         return mp_const_empty_bytes;
     }
 
+    if (mp_obj_is_type(args[0], &mp_type_bytes)) {
+        return args[0];
+    }
+
     if (mp_obj_is_str(args[0])) {
         if (n_args < 2 || n_args > 3) {
             goto wrong_args;
