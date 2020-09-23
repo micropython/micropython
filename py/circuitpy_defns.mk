@@ -259,11 +259,11 @@ endif
 ifeq ($(CIRCUITPY_TIME),1)
 SRC_PATTERNS += time/%
 endif
-ifeq ($(CIRCUITPY_TIME_ALARM),1)
-SRC_PATTERNS += time_alarm/%
+ifeq ($(CIRCUITPY_ALARM_TIME),1)
+SRC_PATTERNS += alarm_time/%
 endif
-ifeq ($(CIRCUITPY_IO_ALARM),1)
-SRC_PATTERNS += io_alarm/%
+ifeq ($(CIRCUITPY_ALARM_IO),1)
+SRC_PATTERNS += alarm_io/%
 endif
 ifeq ($(CIRCUITPY_TOUCHIO),1)
 SRC_PATTERNS += touchio/%
@@ -366,8 +366,8 @@ SRC_COMMON_HAL_ALL = \
 	ssl/SSLContext.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
-	time_alarm/__init__.c \
-	io_alarm/__init__.c \
+	alarm_time/__init__.c \
+	alarm_io/__init__.c \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \

@@ -1,9 +1,9 @@
-#include "shared-bindings/io_alarm/__init__.h"
+#include "shared-bindings/alarm_io/__init__.h"
 
 #include "esp_sleep.h"
 #include "driver/rtc_io.h"
 
-mp_obj_t common_hal_io_alarm_pin_state (io_alarm_obj_t *self_in) {
+mp_obj_t common_hal_alarm_io_pin_state (alarm_io_obj_t *self_in) {
     if (!rtc_gpio_is_valid_gpio(self_in->gpio)) {
         mp_raise_ValueError(translate("io must be rtc io"));       
     }   
@@ -22,6 +22,6 @@ mp_obj_t common_hal_io_alarm_pin_state (io_alarm_obj_t *self_in) {
     return self_in;     
 }  
 
-void common_hal_io_alarm_disable (void) {
+void common_hal_alarm_io_disable (void) {
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_EXT0 | ESP_SLEEP_WAKEUP_EXT1);
 }

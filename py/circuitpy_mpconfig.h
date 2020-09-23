@@ -663,18 +663,18 @@ extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE_ALT_NAME
 #endif
 
-#if CIRCUITPY_TIME_ALARM
-extern const struct _mp_obj_module_t time_alarm_module;
-#define TIME_ALARM_MODULE             { MP_OBJ_NEW_QSTR(MP_QSTR_time_alarm), (mp_obj_t)&time_alarm_module },
+#if CIRCUITPY_ALARM_TIME
+extern const struct _mp_obj_module_t alarm_time_module;
+#define ALARM_TIME_MODULE             { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_time), (mp_obj_t)&alarm_time_module },
 #else
-#define TIME_ALARM_MODULE
+#define ALARM_TIME_MODULE
 #endif
 
-#if CIRCUITPY_IO_ALARM
-extern const struct _mp_obj_module_t io_alarm_module;
-#define IO_ALARM_MODULE             { MP_OBJ_NEW_QSTR(MP_QSTR_io_alarm), (mp_obj_t)&io_alarm_module },
+#if CIRCUITPY_ALARM_IO
+extern const struct _mp_obj_module_t alarm_io_module;
+#define ALARM_IO_MODULE             { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_io), (mp_obj_t)&alarm_io_module },
 #else
-#define IO_ALARM_MODULE
+#define ALARM_IO_MODULE
 #endif
 
 #if CIRCUITPY_TOUCHIO
@@ -835,8 +835,8 @@ extern const struct _mp_obj_module_t wifi_module;
     STRUCT_MODULE \
     SUPERVISOR_MODULE \
     TOUCHIO_MODULE \
-    TIME_ALARM_MODULE \
-    IO_ALARM_MODULE \
+    ALARM_TIME_MODULE \
+    ALARM_IO_MODULE \
     UHEAP_MODULE \
     USB_HID_MODULE \
     USB_MIDI_MODULE \

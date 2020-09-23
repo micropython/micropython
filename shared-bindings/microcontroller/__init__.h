@@ -35,8 +35,8 @@
 
 #include "shared-bindings/microcontroller/RunMode.h"
 
-#include "shared-bindings/io_alarm/__init__.h"
-#include "shared-bindings/time_alarm/__init__.h"
+#include "shared-bindings/alarm_io/__init__.h"
+#include "shared-bindings/alarm_time/__init__.h"
 
 extern void common_hal_mcu_delay_us(uint32_t);
 

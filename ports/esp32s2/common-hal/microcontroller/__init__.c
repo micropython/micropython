@@ -99,13 +99,13 @@ mp_obj_t common_hal_mcu_get_wake_alarm(void) {
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_TIMER: ;
             //Wake up from timer.
-            time_alarm_obj_t *timer = m_new_obj(time_alarm_obj_t);
-            timer->base.type = &time_alarm_type;           
+            alarm_time_obj_t *timer = m_new_obj(alarm_time_obj_t);
+            timer->base.type = &alarm_time_type;           
             return timer;
         case ESP_SLEEP_WAKEUP_EXT0: ;
             //Wake up from GPIO
-            io_alarm_obj_t *ext0 = m_new_obj(io_alarm_obj_t);
-            ext0->base.type = &io_alarm_type;  
+            alarm_io_obj_t *ext0 = m_new_obj(alarm_io_obj_t);
+            ext0->base.type = &alarm_io_type;  
             return ext0;
         case ESP_SLEEP_WAKEUP_EXT1: 
             //Wake up from GPIO, returns -> esp_sleep_get_ext1_wakeup_status()  
