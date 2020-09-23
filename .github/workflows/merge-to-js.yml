@@ -7,6 +7,16 @@ jobs:
   merge-branch:
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for Unix port build to succeed
+        uses: fountainhead/action-wait-for-check@v1.0.0
+        id: wait-for-build
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: unix_port
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Skip merge
+        run: exit 1
+        if: steps.wait-for-build.outputs.conclusion == 'failure'
       - uses: actions/checkout@master
       - name: Merge to dev branch
         uses: devmasx/merge-branch@v1.1.0
