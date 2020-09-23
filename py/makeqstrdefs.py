@@ -57,6 +57,10 @@ name2codepoint['caret'] = ord('^')
 name2codepoint['pipe'] = ord('|')
 name2codepoint['tilde'] = ord('~')
 
+# These are just vexing!
+del name2codepoint['and']
+del name2codepoint['or']
+
 def write_out(fname, output):
     if output:
         for m, r in [("/", "__"), ("\\", "__"), (":", "@"), ("..", "@@")]:
