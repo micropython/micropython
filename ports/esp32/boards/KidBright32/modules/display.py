@@ -294,8 +294,11 @@ font4x8 = bytes([
     0x00, 0x7c, 0x44, 0x38, # D
     0x00, 0x7c, 0x54, 0x54, # E
     0x00, 0x7c, 0x50, 0x50, # F
-    0x00, 0x10, 0x10, 0x10  # -
+    0x00, 0x10, 0x10, 0x10, # -
+    0x00, 0x00, 0x00, 0x00
 ])
+
+displayBuff = bytearray(16)
 
 def raw(data):
     buffer = bytearray(17)
@@ -344,7 +347,9 @@ def scroll(value):
 
 
 def clear():
-    raw(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+    global displayBuff
+    raw(b'\x00' * 16)
+    displayBuff = bytearray(16)
 
 def show4x8(value):
     value = str(value).upper()
@@ -353,8 +358,8 @@ def show4x8(value):
     value = value[:(5 if b'.' in value else 4)]
     buffer = bytearray(16)
     nextIndex = 0
-    if (len(value) < 4): # fit to right
-        nextIndex = nextIndex + ((4 - len(value)) * 4)
+    if (len(value) < (5 if b'.' in value else 4)): # fit to right
+        nextIndex = nextIndex + (((5 if b'.' in value else 4) - len(value)) * 4)
     showDotFlag = False
     for x in range(len(value)):
         c = value[x]
@@ -377,6 +382,94 @@ def show4x8(value):
                 showDotFlag = False
             nextIndex = nextIndex + 1
     raw(buffer)
+
+def left(value):
+    global displayBuff
+    def getCharIndex(c):
+        if c >= ord(b'0') and c <= ord(b'9'):
+            return c - ord(b'0')
+        elif c >= ord(b'a') and c <= ord(b'f'):
+            return c - ord(b'a') + 10
+        elif c == ord(b'-'):
+            return 16
+        else:
+            return 17
+    value = int(value)
+    value = str(value).upper()
+    value = bytearray(value)
+    value = value[:2]
+    if len(value) == 1:
+        charIndex = getCharIndex(value[0])
+        displayBuff[0] = 0x00
+        displayBuff[1] = 0x00
+        displayBuff[2] = 0x00
+        displayBuff[3] = font4x8[(charIndex * 4) + 1]
+        displayBuff[4] = font4x8[(charIndex * 4) + 2]
+        displayBuff[5] = font4x8[(charIndex * 4) + 3]
+        displayBuff[6] = 0x00
+        displayBuff[7] = 0x00
+    elif len(value) == 2:
+        charIndex = getCharIndex(value[0])
+        displayBuff[0] = font4x8[(charIndex * 4) + 1]
+        displayBuff[1] = font4x8[(charIndex * 4) + 2]
+        displayBuff[2] = font4x8[(charIndex * 4) + 3]
+        displayBuff[3] = 0x00
+
+        charIndex = getCharIndex(value[1])
+        displayBuff[4] = font4x8[(charIndex * 4) + 1]
+        displayBuff[5] = font4x8[(charIndex * 4) + 2]
+        displayBuff[6] = font4x8[(charIndex * 4) + 3]
+        displayBuff[7] = 0x00
+    raw(displayBuff)
+
+def right(value):
+    global displayBuff
+    def getCharIndex(c):
+        if c >= ord(b'0') and c <= ord(b'9'):
+            return c - ord(b'0')
+        elif c >= ord(b'a') and c <= ord(b'f'):
+            return c - ord(b'a') + 10
+        elif c == ord(b'-'):
+            return 16
+        else:
+            return 17
+    value = int(value)
+    value = str(value).upper()
+    value = bytearray(value)
+    value = value[:2]
+    if len(value) == 1:
+        charIndex = getCharIndex(value[0])
+        displayBuff[8] = 0x00
+        displayBuff[9] = 0x00
+        displayBuff[10] = 0x00
+        displayBuff[11] = font4x8[(charIndex * 4) + 1]
+        displayBuff[12] = font4x8[(charIndex * 4) + 2]
+        displayBuff[13] = font4x8[(charIndex * 4) + 3]
+        displayBuff[14] = 0x00
+        displayBuff[15] = 0x00
+    elif len(value) == 2:
+        charIndex = getCharIndex(value[0])
+        displayBuff[8] = 0x00
+        displayBuff[9] = font4x8[(charIndex * 4) + 1]
+        displayBuff[10] = font4x8[(charIndex * 4) + 2]
+        displayBuff[11] = font4x8[(charIndex * 4) + 3]
+
+        charIndex = getCharIndex(value[1])
+        displayBuff[12] = 0x00
+        displayBuff[13] = font4x8[(charIndex * 4) + 1]
+        displayBuff[14] = font4x8[(charIndex * 4) + 2]
+        displayBuff[15] = font4x8[(charIndex * 4) + 3]
+    raw(displayBuff)
+
+def plot(value):
+    global displayBuff
+    displayBuff = displayBuff[-15:] + b'\x00'
+    value = int(value)
+    if value >= 0 and value <= 7:
+        displayBuff[15] = 0x01 << int(value)
+    else:
+        displayBuff[15] = 0
+    raw(displayBuff)
 
 clear()
 i2c0.writeto(HT16K33_ADDR, bytes([ HT16K33_OSC_ON ]))
