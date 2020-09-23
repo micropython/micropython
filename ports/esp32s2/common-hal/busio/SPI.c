@@ -116,15 +116,6 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
         const mcu_pin_obj_t * miso) {
 
-    //SCK is not optional. MOSI and MISO are
-    if (!clock) {
-        mp_raise_ValueError(translate("Must provide SCK pin"));
-    }
-
-    if (!miso && !mosi) {
-        mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
-    }
-
     spi_bus_config_t bus_config;
     bus_config.mosi_io_num = mosi != NULL ? mosi->number : -1;
     bus_config.miso_io_num = miso != NULL ? miso->number : -1;
