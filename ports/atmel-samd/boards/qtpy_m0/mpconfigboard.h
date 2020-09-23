@@ -1,7 +1,7 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit QT Py M0"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
-#define MICROPY_HW_NEOPIXEL (&pin_PA19)
+#define MICROPY_HW_NEOPIXEL (&pin_PA18)
 
 #define MICROPY_PORT_A        (0)
 #define MICROPY_PORT_B        (0)
@@ -9,9 +9,9 @@
 
 #define IGNORE_PIN_PA00     1
 #define IGNORE_PIN_PA01     1
-#define IGNORE_PIN_PA09     1
 #define IGNORE_PIN_PA12     1
 #define IGNORE_PIN_PA13     1
+#define IGNORE_PIN_PA14     1
 #define IGNORE_PIN_PA20     1
 #define IGNORE_PIN_PA21     1
 // USB is always used internally so skip the pin objects for it.
@@ -48,8 +48,8 @@
 #define DEFAULT_I2C_BUS_SDA (&pin_PA16)
 
 #define DEFAULT_SPI_BUS_SCK (&pin_PA11)
-#define DEFAULT_SPI_BUS_MOSI (&pin_PA08)
-#define DEFAULT_SPI_BUS_MISO (&pin_PA10)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PA10)
+#define DEFAULT_SPI_BUS_MISO (&pin_PA09)
 
 #define DEFAULT_UART_BUS_RX (&pin_PA07)
 #define DEFAULT_UART_BUS_TX (&pin_PA06)
