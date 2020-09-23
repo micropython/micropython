@@ -2,6 +2,7 @@
 
 from machine import Pin, I2C
 import math
+import utime
 
 MPU6050_ADDR = const(0x68)
 LSM303AGR_ACC_ADDR = const(0x19)
@@ -10,10 +11,27 @@ LSM303AGR_MEG_ADDR = const(0x1E)
 MPU6050 = const(0)
 LSM303AGR = const(1)
 
-acc = [0, 0, 0]
-gyro = [0, 0, 0]
-mag = [0, 0, 0]
+acc = [0, 0, 0, 0]
+gyro = [0, 0, 0, 0]
+mag = [0, 0, 0, 0]
 temp = 0.0
+
+EVENT_SHAKE = const(0)
+EVENT_BOARD_UP = const(1)
+EVENT_BOARD_DOWN = const(2)
+EVENT_SCREEN_UP = const(3)
+EVENT_SCREEN_DOWN = const(4)
+EVENT_TILT_LEFT = const(5)
+EVENT_TILT_RIGHT = const(6)
+EVENT_FREE_FALL = const(7)
+EVENT_3G = const(8)
+EVENT_6G = const(9)
+EVENT_8G = const(10)
+
+__event_callback = [ None ] * 10
+
+__startCalcLowStrengthContinue = False
+__xStartCalc = 0
 
 # Check sensor on board
 i2c1 = I2C(1, scl=Pin(5), sda=Pin(4), freq=100000)
@@ -27,13 +45,13 @@ del devAddrs
 
 if __device == MPU6050:
     i2c1.writeto_mem(MPU6050_ADDR, 0x6B, b'\x00')
-    i2c1.writeto_mem(MPU6050_ADDR, 0x1C, b'\x00')  # 2g
+    i2c1.writeto_mem(MPU6050_ADDR, 0x1C, b'\x10')  # 8g
     i2c1.writeto_mem(MPU6050_ADDR, 0x1B, b'\x00')  # 250 */sec
 elif __device == LSM303AGR:
     i2c1.writeto_mem(LSM303AGR_ACC_ADDR, 0x2E, b'\x00')  # FIFO_CTRL_REG_A
     i2c1.writeto_mem(LSM303AGR_ACC_ADDR, 0x20, b'\x57')  # CTRL_REG1_A
-    # Full-scale selection, 2g
-    i2c1.writeto_mem(LSM303AGR_ACC_ADDR, 0x23, b'\x00')
+    i2c1.writeto_mem(LSM303AGR_ACC_ADDR, 0x23, b'\x20')  # Full-scale selection, 8g
+
     i2c1.writeto_mem(LSM303AGR_MEG_ADDR, 0x60, b'\x8C')  # CFG_REG_A_M
     i2c1.writeto_mem(LSM303AGR_MEG_ADDR, 0x61, b'\x01')  # CFG_REG_B_M
 
@@ -48,18 +66,20 @@ def update():
         buff = i2c1.readfrom_mem(MPU6050_ADDR, 0x3B, 14)
         for i in range(3):
             acc[i] = b2i(buff[(i * 2)], buff[(i * 2) + 1])
-            acc[i] = round(acc[i] / 16384.0 * 1000.0, 2)
+            acc[i] = round(acc[i] / 4096.0 * 1000.0, 2)
         x = -acc[1]
         y = acc[0]
         z = -acc[2]
         acc[0] = x
         acc[1] = y
         acc[2] = z
+        acc[3] = math.sqrt(math.pow(acc[0], 2) + math.pow(acc[1], 2) + math.pow(acc[2], 2))
         del x, y, z
         temp = round(b2i(buff[6], buff[7]) / 340.00 + 36.53, 2)
         for i in range(3):
             gyro[i] = b2i(buff[(i * 2) + 8], buff[(i * 2) + 9])
             gyro[i] = round(gyro[i] / 131.0, 2)
+        gyro[3] = math.sqrt(math.pow(gyro[0], 2) + math.pow(gyro[1], 2) + math.pow(gyro[2], 2))
     elif __device == LSM303AGR:
         buff = [0, 0, 0, 0, 0, 0]
         for i in range(6):
@@ -67,7 +87,8 @@ def update():
             buff[i] = value
         for i in range(3):
             acc[i] = b2i(buff[(i * 2) + 1], buff[(i * 2) + 0])
-            acc[i] = round(((acc[i] >> 6) * 3900 + 500) / 1000, 2)
+            acc[i] = round(((acc[i] >> 6) * 15630 + 500) / 1000, 2)
+        acc[3] = math.sqrt(math.pow(acc[0], 2) + math.pow(acc[1], 2) + math.pow(acc[2], 2))
         acc[0] = acc[0] * -1
         acc[1] = acc[1] * -1
         buff = [0, 0, 0, 0, 0, 0]
@@ -76,7 +97,7 @@ def update():
         for i in range(3):
             mag[i] = b2i(buff[(i * 2) + 1], buff[(i * 2) + 0])
             mag[i] = round(mag[i] * 1.5 * 0.1, 2)
-
+        mag[3] = math.sqrt(math.pow(mag[0], 2) + math.pow(mag[1], 2) + math.pow(mag[2], 2))
 
 def rotation():
     x_g_value = acc[0] / 1000.0 # Acceleration in x-direction in g units
@@ -216,3 +237,58 @@ def calCRC(data, size):
         sum += data[i]
     sum = sum ^ 0xFF
     return sum
+
+def is_gesture(event, blocking=True):
+    global __xStartCalc, __startCalcLowStrengthContinue
+    if event == EVENT_SHAKE:
+        return acc[3] > 4000
+    elif event == EVENT_BOARD_UP:
+        return acc[1] < -600
+    elif event == EVENT_BOARD_DOWN:
+        return acc[1] > 600
+    elif event == EVENT_SCREEN_UP:
+        pitch = rotation()[1]
+        return pitch >= -30 and pitch <= 30
+    elif event == EVENT_SCREEN_DOWN:
+        pitch = rotation()[1]
+        return pitch >= 150 or pitch <= -150
+    elif event == EVENT_TILT_LEFT:
+        roll = rotation()[0]
+        return roll <= -30
+    elif event == EVENT_TILT_RIGHT:
+        roll = rotation()[0]
+        return roll >= 30
+    elif event == EVENT_FREE_FALL:
+        if blocking:
+            lowStrengthContinue = False
+            for i in range(0, 240, 40):
+                if acc[3] < 500:
+                    lowStrengthContinue = True
+                    utime.sleep_ms(40)
+                else:
+                    lowStrengthContinue = False
+                    break
+            return lowStrengthContinue;
+        else:
+            if acc[3] < 500:
+                if not __startCalcLowStrengthContinue:
+                    __xStartCalc = utime.ticks_ms()
+                    __startCalcLowStrengthContinue = True
+                else:
+                    if (utime.ticks_ms() - __xStartCalc) >= 220E3:
+                        __startCalcLowStrengthContinue = False
+                        return True
+            else:
+                __xStartCalc = 0
+                __startCalcLowStrengthContinue = False
+                return False
+    elif event ==  EVENT_3G:
+        return acc[3] > 3000
+
+    elif event == EVENT_6G:
+        return acc[3] > 6000
+
+    elif event == EVENT_8G:
+        return acc[3] > 8000
+    else:
+        return False
