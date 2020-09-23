@@ -32,7 +32,6 @@
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/objarray.h"
-#include "py/objstr.h"
 #include "py/qstr.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
@@ -62,9 +61,8 @@ typedef struct {
     mp_obj_t irq_data_tuple;
     uint8_t irq_data_addr_bytes[6];
     uint16_t irq_data_data_alloc;
-    uint8_t *irq_data_data_bytes;
-    mp_obj_str_t irq_data_addr;
-    mp_obj_str_t irq_data_data;
+    mp_obj_array_t irq_data_addr;
+    mp_obj_array_t irq_data_data;
     mp_obj_bluetooth_uuid_t irq_data_uuid;
     ringbuf_t ringbuf;
     #if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
@@ -262,11 +260,9 @@ STATIC mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
         #endif
 
         // Pre-allocated buffers for address, payload and uuid.
-        o->irq_data_addr.base.type = &mp_type_bytes;
-        o->irq_data_addr.data = o->irq_data_addr_bytes;
+        mp_obj_memoryview_init(&o->irq_data_addr, 'B', 0, 0, o->irq_data_addr_bytes);
         o->irq_data_data_alloc = MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_BYTES_LEN(MICROPY_PY_BLUETOOTH_RINGBUF_SIZE);
-        o->irq_data_data.base.type = &mp_type_bytes;
-        o->irq_data_data.data = m_new(uint8_t, o->irq_data_data_alloc);
+        mp_obj_memoryview_init(&o->irq_data_data, 'B', 0, 0, m_new(uint8_t, o->irq_data_data_alloc));
         o->irq_data_uuid.base.type = &bluetooth_uuid_type;
 
         // Allocate the default ringbuf.
@@ -352,7 +348,7 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                         // Get old buffer sizes and pointers
                         uint8_t *old_ringbuf_buf = self->ringbuf.buf;
                         size_t old_ringbuf_alloc = self->ringbuf.size;
-                        uint8_t *old_irq_data_buf = (uint8_t *)self->irq_data_data.data;
+                        uint8_t *old_irq_data_buf = (uint8_t *)self->irq_data_data.items;
                         size_t old_irq_data_alloc = self->irq_data_data_alloc;
 
                         // Atomically update the ringbuf and irq data
@@ -362,7 +358,7 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                         self->ringbuf.iget = 0;
                         self->ringbuf.iput = 0;
                         self->irq_data_data_alloc = irq_data_alloc;
-                        self->irq_data_data.data = irq_data;
+                        self->irq_data_data.items = irq_data;
                         MICROPY_PY_BLUETOOTH_EXIT
 
                         // Free old buffers
@@ -850,7 +846,7 @@ const mp_obj_module_t mp_module_ubluetooth = {
 
 #include <stdio.h>
 
-STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size_t n_u16, size_t n_u8, mp_obj_str_t *bytes_addr, size_t n_i8, mp_obj_bluetooth_uuid_t *uuid, mp_obj_str_t *bytes_data) {
+STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size_t n_u16, size_t n_u8, mp_obj_array_t *bytes_addr, size_t n_i8, mp_obj_bluetooth_uuid_t *uuid, mp_obj_array_t *bytes_data) {
     assert(ringbuf_avail(ringbuf) >= n_u16 * 2 + n_u8 + (bytes_addr ? 6 : 0) + n_i8 + (uuid ? 1 : 0) + (bytes_data ? 1 : 0));
     size_t j = 0;
 
@@ -863,8 +859,7 @@ STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size
     if (bytes_addr) {
         bytes_addr->len = 6;
         for (size_t i = 0; i < bytes_addr->len; ++i) {
-            // cast away const, this is actually bt->irq_addr_bytes.
-            ((uint8_t *)bytes_addr->data)[i] = ringbuf_get(ringbuf);
+            ((uint8_t *)bytes_addr->items)[i] = ringbuf_get(ringbuf);
         }
         data_tuple->items[j++] = MP_OBJ_FROM_PTR(bytes_addr);
     }
@@ -880,12 +875,11 @@ STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size
     #endif
     // The code that enqueues into the ringbuf should ensure that it doesn't
     // put more than bt->irq_data_data_alloc bytes into the ringbuf, because
-    // that's what's available here in bt->irq_data_bytes.
+    // that's what's available here.
     if (bytes_data) {
         bytes_data->len = ringbuf_get16(ringbuf);
         for (size_t i = 0; i < bytes_data->len; ++i) {
-            // cast away const, this is actually bt->irq_data_bytes.
-            ((uint8_t *)bytes_data->data)[i] = ringbuf_get(ringbuf);
+            ((uint8_t *)bytes_data->items)[i] = ringbuf_get(ringbuf);
         }
         data_tuple->items[j++] = MP_OBJ_FROM_PTR(bytes_data);
     }

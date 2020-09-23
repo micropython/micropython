@@ -88,12 +88,22 @@ Event Handling
     arguments, ``event`` (which will be one of the codes below) and ``data``
     (which is an event-specific tuple of values).
 
-    **Note:** the ``addr``, ``adv_data``, ``char_data``, ``notify_data``, and
-    ``uuid`` entries in the tuples are references to data managed by the
-    :mod:`ubluetooth` module (i.e. the same instance will be re-used across
-    multiple calls to the event handler). If your program wants to use this
-    data outside of the handler, then it must copy them first, e.g. by using
-    ``bytes(addr)`` or ``bluetooth.UUID(uuid)``.
+    **Note:** As an optimisation to prevent unnecessary allocations, the ``addr``,
+    ``adv_data``, ``char_data``, ``notify_data``, and ``uuid`` entries in the
+    tuples are read-only memoryview instances pointing to ubluetooth's internal
+    ringbuffer, and are only valid during the invocation of the IRQ handler
+    function.  If your program needs to save one of these values to access after
+    the IRQ handler has returned (e.g. by saving it in a class instance or global
+    variable), then it needs to take a copy of the data, either by using ``bytes()``
+    or ``bluetooth.UUID()``, like this::
+
+        connected_addr = bytes(addr)  # equivalently: adv_data, char_data, or notify_data
+        matched_uuid = bluetooth.UUID(uuid)
+
+    For example, the IRQ handler for a scan result might inspect the ``adv_data``
+    to decide if it's the correct device, and only then copy the address data to be
+    used elsewhere in the program.  And to print data from within the IRQ handler,
+    ``print(bytes(addr))`` will be needed.
 
     An event handler showing all possible events::
 
