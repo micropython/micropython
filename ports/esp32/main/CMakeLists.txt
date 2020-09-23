@@ -1,7 +1,7 @@
 # Set location of base MicroPython directory, and this port's directory.
 get_filename_component(MICROPY_DIR ${PROJECT_DIR}/../.. ABSOLUTE)
 set(MICROPY_PORT_DIR ${PROJECT_DIR})
-set(MICROPY_BOARD_DIR ${PROJECT_DIR}/boards/GENERIC)
+set(MICROPY_BOARD_DIR ${PROJECT_DIR}/boards/${MICROPY_BOARD})
 
 # Include core source components.
 include(${MICROPY_DIR}/py/py.cmake)
