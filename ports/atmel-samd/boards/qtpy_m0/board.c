@@ -33,6 +33,7 @@ void board_init(void) {
     gpio_set_pin_function(PIN_PA15, GPIO_PIN_FUNCTION_OFF);
     gpio_set_pin_direction(PIN_PA15, GPIO_DIRECTION_OUT);
     gpio_set_pin_level(PIN_PA15, true); // Turn on neopixel by default
+    never_reset_pin_number(PIN_PA15);
 }
 
 bool board_requests_safe_mode(void) {
