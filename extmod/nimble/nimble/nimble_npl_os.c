@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "py/gc.h"
 #include "nimble/ble.h"
 #include "nimble/nimble_npl.h"
 #include "extmod/nimble/hal/hal_uart.h"
@@ -56,64 +57,72 @@ void *ble_npl_get_current_task_id(void) {
 /******************************************************************************/
 // malloc
 
-// Maintain a linked list of heap memory that we've passed to Nimble,
-// discoverable via the bluetooth_nimble_memory root pointer.
+// Forwards directly to GC heap allocations, however we mark them as permanent
+// so that they survive soft resets.
 
-typedef struct _mp_bluetooth_nimble_malloc_t {
-    struct _mp_bluetooth_nimble_malloc_t *prev;
-    struct _mp_bluetooth_nimble_malloc_t *next;
+#if !MICROPY_GC_PERMANENT_ALLOCS
+#error nimble_npl_os requires MICROPY_GC_PERMANENT_ALLOCS
+#endif
+
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+
+typedef struct _sized_malloc_t {
     size_t size;
     uint8_t data[];
-} mp_bluetooth_nimble_malloc_t;
+} sized_malloc_t;
 
-// TODO: This is duplicated from mbedtls. Perhaps make this a generic feature?
 STATIC void *m_malloc_bluetooth(size_t size) {
-    size += sizeof(mp_bluetooth_nimble_malloc_t);
-    mp_bluetooth_nimble_malloc_t *alloc = m_malloc0(size);
+    size += sizeof(sized_malloc_t);
+
+    sized_malloc_t *alloc = m_malloc(size);
+    gc_set_permanent(alloc, true);
+
     alloc->size = size;
-    alloc->next = MP_STATE_PORT(bluetooth_nimble_memory);
-    if (alloc->next) {
-        alloc->next->prev = alloc;
-    }
-    MP_STATE_PORT(bluetooth_nimble_memory) = alloc;
     return alloc->data;
 }
 
-STATIC mp_bluetooth_nimble_malloc_t* get_nimble_malloc(void *ptr) {
-    return (mp_bluetooth_nimble_malloc_t*)((uintptr_t)ptr - sizeof(mp_bluetooth_nimble_malloc_t));
+STATIC void m_free_bluetooth(void *ptr) {
+    sized_malloc_t *alloc = (sized_malloc_t *)((uintptr_t)ptr - offsetof(sized_malloc_t, data));
+
+    gc_set_permanent(alloc, false);
+
+    m_free(alloc, alloc->size);
+}
+
+STATIC void *m_realloc_bluetooth(void *ptr, size_t new_size) {
+    sized_malloc_t *alloc = (sized_malloc_t *)((uintptr_t)ptr - offsetof(sized_malloc_t, data));
+    new_size += sizeof(sized_malloc_t);
+
+    gc_set_permanent(alloc, false);
+    alloc = m_realloc(alloc, alloc->size, new_size);
+    gc_set_permanent(alloc, true);
+
+    alloc->size = new_size;
+    return alloc->data;
+}
+
+#else
+
+STATIC void *m_malloc_bluetooth(size_t size) {
+    void *ptr = m_malloc(size);
+    gc_set_permanent(ptr, true);
+    return ptr;
 }
 
 STATIC void m_free_bluetooth(void *ptr) {
-    mp_bluetooth_nimble_malloc_t *alloc = get_nimble_malloc(ptr);
-    if (alloc->next) {
-        alloc->next->prev = alloc->prev;
-    }
-    if (alloc->prev) {
-        alloc->prev->next = alloc->next;
-    } else {
-        MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
-    }
-    m_free(alloc
-    #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-           , alloc->size
-    #endif
-    );
+    gc_set_permanent(ptr, false);
+    m_free(ptr);
 }
 
-// Check if a nimble ptr is tracked.
-// If it isn't, that means that it's from a previous soft-reset cycle.
-STATIC bool is_valid_nimble_malloc(void *ptr) {
-    DEBUG_MALLOC_printf("NIMBLE is_valid_nimble_malloc(%p)\n", ptr);
-    mp_bluetooth_nimble_malloc_t *alloc = MP_STATE_PORT(bluetooth_nimble_memory);
-    while (alloc) {
-        DEBUG_MALLOC_printf("NIMBLE   checking: %p\n", alloc->data);
-        if (alloc->data == ptr) {
-            return true;
-        }
-        alloc = alloc->next;
-    }
-    return false;
+STATIC void *m_realloc_bluetooth(void *ptr, size_t new_size) {
+    gc_set_permanent(ptr, false);
+    ptr = m_realloc(ptr, new_size);
+    gc_set_permanent(ptr, true);
+    return ptr;
 }
+
+#endif
+
 
 void *nimble_malloc(size_t size) {
     DEBUG_MALLOC_printf("NIMBLE malloc(%u)\n", (uint)size);
@@ -127,15 +136,7 @@ void nimble_free(void *ptr) {
     DEBUG_MALLOC_printf("NIMBLE free(%p)\n", ptr);
 
     if (ptr) {
-        // After a stack re-init, NimBLE has variables in BSS that might be
-        // still pointing to old allocations from a previous init. We can't do
-        // anything about this (e.g. ble_gatts_free_mem is private). But we
-        // can identify that this is a non-null, invalid alloc because it
-        // won't be in our list, so ignore it because it is effectively free'd
-        // anyway (it's not referenced by anything the GC can find).
-        if (is_valid_nimble_malloc(ptr)) {
-            m_free_bluetooth(ptr);
-        }
+        m_free_bluetooth(ptr);
     }
 }
 
@@ -147,25 +148,9 @@ void *nimble_realloc(void *ptr, size_t new_size) {
         return nimble_malloc(new_size);
     }
 
-    assert(is_valid_nimble_malloc(ptr));
-
-    // Existing alloc is big enough.
-    mp_bluetooth_nimble_malloc_t *alloc = get_nimble_malloc(ptr);
-    size_t old_size = alloc->size - sizeof(mp_bluetooth_nimble_malloc_t);
-    if (old_size >= new_size) {
-        return ptr;
-    }
-
-    // Allocate a new, larger region.
-    void *ptr2 = m_malloc_bluetooth(new_size);
-
-    // Copy old, smaller region into new region.
-    memcpy(ptr2, ptr, old_size);
-    m_free_bluetooth(ptr);
-
-    DEBUG_MALLOC_printf("  --> %p\n", ptr2);
-
-    return ptr2;
+    ptr = m_realloc_bluetooth(ptr, new_size);
+    DEBUG_MALLOC_printf("  --> %p\n", ptr);
+    return ptr;
 }
 
 // No-op implementation (only used by NimBLE logging).

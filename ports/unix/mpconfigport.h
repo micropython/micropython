@@ -315,9 +315,9 @@ struct _mp_bluetooth_btstack_root_pointers_t;
 #define MICROPY_BLUETOOTH_ROOT_POINTERS struct _mp_bluetooth_btstack_root_pointers_t *bluetooth_btstack_root_pointers;
 #endif
 #if MICROPY_BLUETOOTH_NIMBLE
+#define MICROPY_GC_PERMANENT_ALLOCS (1)
 struct _mp_bluetooth_nimble_root_pointers_t;
-struct _mp_bluetooth_nimble_malloc_t;
-#define MICROPY_BLUETOOTH_ROOT_POINTERS struct _mp_bluetooth_nimble_malloc_t *bluetooth_nimble_memory; struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
+#define MICROPY_BLUETOOTH_ROOT_POINTERS struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
 #endif
 #else
 #define MICROPY_BLUETOOTH_ROOT_POINTERS

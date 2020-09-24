@@ -373,11 +373,6 @@ int mp_bluetooth_init(void) {
     MP_STATE_PORT(bluetooth_nimble_root_pointers) = m_new0(mp_bluetooth_nimble_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
 
-    #if !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
-    // Dereference any previous NimBLE mallocs.
-    MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
-    #endif
-
     // Allow port (ESP32) to override NimBLE's HCI init.
     // Otherwise default implementation above calls ble_hci_uart_init().
     mp_bluetooth_nimble_port_hci_init();
@@ -438,11 +433,6 @@ void mp_bluetooth_deinit(void) {
     mp_bluetooth_nimble_port_hci_deinit();
 
     MP_STATE_PORT(bluetooth_nimble_root_pointers) = NULL;
-
-    #if !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
-    // Dereference any previous NimBLE mallocs.
-    MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
-    #endif
 
     DEBUG_printf("mp_bluetooth_deinit: shut down\n");
 }
