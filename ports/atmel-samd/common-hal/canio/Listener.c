@@ -58,8 +58,8 @@ STATIC void static_assertions(void) {
     MP_STATIC_ASSERT(CAN_XIDFE_0_EFEC_STF0M_Val + 1 == CAN_XIDFE_0_EFEC_STF1M_Val);
 }
 
-STATIC bool single_address_filter(canio_match_obj_t *match) {
-    return match->mask == 0 || match->mask == match->address;
+STATIC bool single_id_filter(canio_match_obj_t *match) {
+    return match->mask == 0 || match->mask == match->id;
 }
 
 STATIC bool standard_filter_in_use(CanMramSidfe *filter) {
@@ -76,7 +76,7 @@ STATIC size_t num_filters_needed(size_t nmatch, canio_match_obj_t **matches, boo
         if (extended != matches[i]->extended) {
             continue;
         }
-        if (single_address_filter(matches[i])) {
+        if (single_id_filter(matches[i])) {
             num_half_filters_needed += 1;
         } else {
             num_half_filters_needed += 2;
@@ -191,7 +191,7 @@ STATIC void install_extended_filter(CanMramXidfe *extended, int id1, int id2, in
 }
 
 
-#define NO_ADDRESS (-1)
+#define NO_ID (-1)
 void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
     int fifo = self->fifo_idx;
 
@@ -207,31 +207,31 @@ void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **
     CanMramSidfe *standard = next_standard_filter(self, NULL);
     CanMramXidfe *extended = next_extended_filter(self, NULL);
 
-    int first_address = NO_ADDRESS;
+    int first_id = NO_ID;
 
-    // step 1: single address standard matches
+    // step 1: single id standard matches
     // we have to gather up pairs and stuff them in a single filter entry
     for(size_t i = 0; i<nmatch; i++) {
         canio_match_obj_t *match = matches[i];
         if (match->extended) {
             continue;
         }
-        if (!single_address_filter(match)) {
+        if (!single_id_filter(match)) {
             continue;
         }
-        if (first_address != NO_ADDRESS) {
-            install_standard_filter(standard, first_address, match->address, CAN_SIDFE_0_SFEC_STF0M_Val + fifo, CAN_SIDFE_0_SFT_DUAL_Val);
-            first_address = NO_ADDRESS;
+        if (first_id != NO_ID) {
+            install_standard_filter(standard, first_id, match->id, CAN_SIDFE_0_SFEC_STF0M_Val + fifo, CAN_SIDFE_0_SFT_DUAL_Val);
+            first_id = NO_ID;
             standard = next_standard_filter(self, standard);
         } else {
-            first_address = match->address;
+            first_id = match->id;
         }
     }
-    // step 1.5. odd single address standard match
-    if (first_address != NO_ADDRESS) {
-            install_standard_filter(standard, first_address, first_address, CAN_SIDFE_0_SFEC_STF0M_Val + fifo, CAN_SIDFE_0_SFT_DUAL_Val);
+    // step 1.5. odd single id standard match
+    if (first_id != NO_ID) {
+            install_standard_filter(standard, first_id, first_id, CAN_SIDFE_0_SFEC_STF0M_Val + fifo, CAN_SIDFE_0_SFT_DUAL_Val);
             standard = next_standard_filter(self, standard);
-            first_address = NO_ADDRESS;
+            first_id = NO_ID;
     }
 
     // step 2: standard mask filter
@@ -240,36 +240,36 @@ void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **
         if (match->extended) {
             continue;
         }
-        if (single_address_filter(match)) {
+        if (single_id_filter(match)) {
             continue;
         }
-        install_standard_filter(standard, match->address, match->mask, CAN_SIDFE_0_SFEC_STF0M_Val + fifo, CAN_SIDFE_0_SFT_CLASSIC_Val);
+        install_standard_filter(standard, match->id, match->mask, CAN_SIDFE_0_SFEC_STF0M_Val + fifo, CAN_SIDFE_0_SFT_CLASSIC_Val);
         standard = next_standard_filter(self, standard);
     }
 
-    // step 3: single address extended matches
+    // step 3: single id extended matches
     // we have to gather up pairs and stuff them in a single filter entry
     for(size_t i = 0; i<nmatch; i++) {
         canio_match_obj_t *match = matches[i];
         if (!match->extended) {
             continue;
         }
-        if (!single_address_filter(match)) {
+        if (!single_id_filter(match)) {
             continue;
         }
-        if (first_address != NO_ADDRESS) {
-            install_extended_filter(extended, first_address, match->address, CAN_XIDFE_0_EFEC_STF0M_Val + fifo, CAN_XIDFE_1_EFT_DUAL_Val);
-            first_address = NO_ADDRESS;
+        if (first_id != NO_ID) {
+            install_extended_filter(extended, first_id, match->id, CAN_XIDFE_0_EFEC_STF0M_Val + fifo, CAN_XIDFE_1_EFT_DUAL_Val);
+            first_id = NO_ID;
             extended = next_extended_filter(self, extended);
         } else {
-            first_address = match->address;
+            first_id = match->id;
         }
     }
-    // step 3.5. odd single address standard match
-    if (first_address != NO_ADDRESS) {
-            install_extended_filter(extended, first_address, first_address, CAN_XIDFE_0_EFEC_STF0M_Val + fifo, CAN_XIDFE_1_EFT_DUAL_Val);
+    // step 3.5. odd single id standard match
+    if (first_id != NO_ID) {
+            install_extended_filter(extended, first_id, first_id, CAN_XIDFE_0_EFEC_STF0M_Val + fifo, CAN_XIDFE_1_EFT_DUAL_Val);
             extended = next_extended_filter(self, extended);
-            first_address = NO_ADDRESS;
+            first_id = NO_ID;
     }
 
     // step 4: extended mask filters
@@ -278,10 +278,10 @@ void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **
         if (!match->extended) {
             continue;
         }
-        if (single_address_filter(match)) {
+        if (single_id_filter(match)) {
             continue;
         }
-        install_extended_filter(extended, match->address, match->mask, CAN_XIDFE_0_EFEC_STF0M_Val + fifo, CAN_XIDFE_1_EFT_CLASSIC_Val);
+        install_extended_filter(extended, match->id, match->mask, CAN_XIDFE_0_EFEC_STF0M_Val + fifo, CAN_XIDFE_1_EFT_CLASSIC_Val);
         extended = next_extended_filter(self, extended);
     }
 
@@ -363,7 +363,7 @@ bool common_hal_canio_listener_readinto(canio_listener_obj_t *self, canio_messag
     if (message->extended) {
         message->id = hw_message->rxf0.bit.ID;
     } else {
-        message->id = hw_message->rxf0.bit.ID >> 18; // short addresses are left-justified
+        message->id = hw_message->rxf0.bit.ID >> 18; // short ids are left-justified
     }
     message->rtr = hw_message->rxf0.bit.RTR;
     message->size = hw_message->rxf1.bit.DLC;
