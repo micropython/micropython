@@ -5,9 +5,9 @@ import os
 from time import sleep, time
 from machine import Pin, TouchPad
 
-config_file = "./iotanium_cfg.json"
-ap_prefix = "IoTanium"
-ap_passwd = b"iotanium"
+config_file = "./rackspace_iot_cfg.json"
+ap_prefix = "RackspaceIoT"
+ap_passwd = b"rackspaceiot"
 timeout = 15 # seconds, used for wlan connection and scan timeouts
 capacative_touch = TouchPad(Pin(12))
 onboard_led = Pin(15, Pin.OUT)

@@ -57,7 +57,7 @@ def stop():
         listen_s.close()
 
 
-def start(port=8266, password="iotanium"):
+def start(port=8266, password="rackspace"):
     stop()
     if password is None:
         try:
