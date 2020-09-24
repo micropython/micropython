@@ -548,6 +548,9 @@ void stm32_main(uint32_t reset_mode) {
     MP_STATE_PORT(pyb_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
     #endif
 
+    // GC init
+    gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
+
 soft_reset:
 
     #if defined(MICROPY_HW_LED2)
@@ -575,9 +578,6 @@ soft_reset:
     // Note: stack control relies on main thread being initialised above
     mp_stack_set_top(&_estack);
     mp_stack_set_limit((char *)&_estack - (char *)&_sstack - 1024);
-
-    // GC init
-    gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[384];
@@ -770,6 +770,7 @@ soft_reset_exit:
     pyb_thread_deinit();
     #endif
 
+    // Frees all non-permanent allocations.
     gc_sweep_all();
 
     goto soft_reset;
