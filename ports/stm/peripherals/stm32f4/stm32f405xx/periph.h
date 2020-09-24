@@ -71,5 +71,11 @@ extern const mcu_periph_obj_t mcu_sdio_data1_list[1];
 extern const mcu_periph_obj_t mcu_sdio_data2_list[1];
 extern const mcu_periph_obj_t mcu_sdio_data3_list[1];
 
+// CAN
+extern CAN_TypeDef * mcu_can_banks[2];
+
+extern const mcu_periph_obj_t mcu_can_tx_list[6];
+extern const mcu_periph_obj_t mcu_can_rx_list[6];
+
 
 #endif // MICROPY_INCLUDED_STM32_PERIPHERALS_STM32F405XX_PERIPH_H
