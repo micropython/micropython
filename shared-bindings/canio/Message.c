@@ -117,7 +117,7 @@ STATIC const mp_obj_property_t canio_message_id_obj = {
 //|     data: bytes
 //|     """The content of the message, or dummy content in the case of an rtr.
 //|
-//|     Assigning to data also sets the length and clears the rtr flag."""
+//|     Assigning to data also clears the rtr flag, if it was set."""
 //|
 STATIC mp_obj_t canio_message_data_get(const mp_obj_t self_in) {
     canio_message_obj_t *self = self_in;

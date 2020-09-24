@@ -40,8 +40,8 @@
 //|   from board import *
 //|
 //|   can = canio.CAN(board.CAN_RX, board.CAN_TX, baudrate=1000000)
-//|   message = canio.Message(id=0x0408, data="adafruit"
-//|   can.write(message))
+//|   message = canio.Message(id=0x0408, data=b"adafruit")
+//|   can.send(message)
 //|   can.deinit()
 //|
 //| This example will write the data 'adafruit' onto the CAN bus to any
