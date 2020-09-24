@@ -155,6 +155,11 @@ The following libraries are specific to the ESP8266 and ESP32.
   esp.rst
   esp32.rst
 
+.. toctree::
+  :maxdepth: 1
+
+  espnow.rst
+
 
 Libraries specific to the RP2040
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,0 +1,14 @@
+--- instance0 ---
+Server Start
+Server Done
+--- instance1 ---
+RECVINTO() test...
+TEST: send/recv(msglen=12,sync=True): OK
+IRECV() test...
+TEST: send/recv(msglen=12,sync=True): OK
+RECV() test...
+TEST: send/recv(msglen=12,sync=True): OK
+ITERATOR() test...
+TEST: send/recv(msglen=12,sync=True): OK
+DONE
+TEST: send/recv(msglen=5,sync=True): OK
