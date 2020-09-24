@@ -121,6 +121,7 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
+    esp_restart();
 }
 
 uint32_t *port_heap_get_bottom(void) {
