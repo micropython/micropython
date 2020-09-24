@@ -216,8 +216,9 @@ Functions
    function returns number of seconds since a port-specific reference point in time (for
    embedded boards without a battery-backed RTC, usually since power up or reset). If you
    want to develop portable MicroPython application, you should not rely on this function
-   to provide higher than second precision. If you need higher precision, use
-   `ticks_ms()` and `ticks_us()` functions, if you need calendar time,
+   to provide higher than second precision.  If you need higher precision, absolute
+   timestamps, use `time_ns()`.  If relative times are acceptable then use the
+   `ticks_ms()` and `ticks_us()` functions.  If you need calendar time, `gmtime()` or
    `localtime()` without an argument is a better choice.
 
    .. admonition:: Difference to CPython
@@ -233,3 +234,8 @@ Functions
       hardware also lacks battery-powered RTC, so returns number of seconds
       since last power-up or from other relative, hardware-specific point
       (e.g. reset).
+
+.. function:: time_ns()
+
+    Similar to `time()` but returns nanoseconds since the Epoch, as an integer (usually
+    a big integer, so will allocate on the heap).

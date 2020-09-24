@@ -99,4 +99,10 @@ STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_add_obj, time_ticks_add);
 
+// Returns the number of nanoseconds since the Epoch, as an integer.
+STATIC mp_obj_t time_time_ns(void) {
+    return mp_obj_new_int_from_ull(mp_hal_time_ns());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_utime_time_ns_obj, time_time_ns);
+
 #endif // MICROPY_PY_UTIME_MP_HAL
