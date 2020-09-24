@@ -99,6 +99,15 @@ endif
 ifeq ($(CIRCUITPY_AESIO),1)
 SRC_PATTERNS += aesio/%
 endif
+ifeq ($(CIRCUITPY_ALARM),1)
+SRC_PATTERNS += alarm/%
+endif
+ifeq ($(CIRCUITPY_ALARM_IO),1)
+SRC_PATTERNS += alarm_io/%
+endif
+ifeq ($(CIRCUITPY_ALARM_TIME),1)
+SRC_PATTERNS += alarm_time/%
+endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
 endif
@@ -259,12 +268,6 @@ endif
 ifeq ($(CIRCUITPY_TIME),1)
 SRC_PATTERNS += time/%
 endif
-ifeq ($(CIRCUITPY_ALARM_TIME),1)
-SRC_PATTERNS += alarm_time/%
-endif
-ifeq ($(CIRCUITPY_ALARM_IO),1)
-SRC_PATTERNS += alarm_io/%
-endif
 ifeq ($(CIRCUITPY_TOUCHIO),1)
 SRC_PATTERNS += touchio/%
 endif
@@ -304,6 +307,9 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/__init__.c \
 	_pew/PewPew.c \
 	_pew/__init__.c \
+	alarm/__init__.c \
+	alarm_io/__init__.c \
+	alarm_time/__init__.c \	
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -366,8 +372,6 @@ SRC_COMMON_HAL_ALL = \
 	ssl/SSLContext.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
-	alarm_time/__init__.c \
-	alarm_io/__init__.c \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \

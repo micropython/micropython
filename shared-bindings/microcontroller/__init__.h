@@ -28,15 +28,12 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
 
-#include "py/mpconfig.h"
 #include "py/obj.h"
+#include "py/mpconfig.h"
 
 #include "common-hal/microcontroller/Processor.h"
 
 #include "shared-bindings/microcontroller/RunMode.h"
-
-#include "shared-bindings/alarm_io/__init__.h"
-#include "shared-bindings/alarm_time/__init__.h"
 
 extern void common_hal_mcu_delay_us(uint32_t);
 
@@ -47,8 +44,6 @@ extern void common_hal_mcu_on_next_reset(mcu_runmode_t runmode);
 extern void common_hal_mcu_reset(void);
 
 extern void common_hal_mcu_sleep(void);
-extern int common_hal_mcu_get_sleep_time(void);
-extern mp_obj_t common_hal_mcu_get_wake_alarm(void);
 
 extern const mp_obj_dict_t mcu_pin_globals;
 

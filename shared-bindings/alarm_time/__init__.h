@@ -9,7 +9,7 @@ typedef struct {
 
 extern const mp_obj_type_t alarm_time_type;
 
-extern void common_hal_alarm_time_duration(uint32_t);
+extern void common_hal_alarm_time_duration (uint32_t);
 extern void common_hal_alarm_time_disable (void);
 
 #endif //MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME___INIT___H

@@ -34,13 +34,14 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/alarm/__init__.h"
 #include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
-#include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
+#include "common-hal/pulseio/PulseIn.h"
+#include "common-hal/microcontroller/Pin.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
@@ -86,6 +87,8 @@ safe_mode_t port_init(void) {
     if (heap == NULL) {
         return NO_HEAP;
     }
+
+    esp_wake_deep_sleep();
 
     return NO_SAFE_MODE;
 }
