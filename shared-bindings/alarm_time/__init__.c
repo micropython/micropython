@@ -1,8 +1,6 @@
 #include "py/obj.h"
 #include "shared-bindings/alarm_time/__init__.h"
 
-//| Set Timer Wakeup 
-//|
 STATIC mp_obj_t alarm_time_duration(mp_obj_t seconds_o) { 
     #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t seconds = mp_obj_get_float(seconds_o);
@@ -24,8 +22,6 @@ STATIC mp_obj_t alarm_time_duration(mp_obj_t seconds_o) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(alarm_time_duration_obj, alarm_time_duration);
 
-//| Disable Timer Wakeup 
-//|
 STATIC mp_obj_t alarm_time_disable(void) {      
     common_hal_alarm_time_disable();
     return mp_const_none;

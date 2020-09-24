@@ -309,7 +309,7 @@ SRC_COMMON_HAL_ALL = \
 	_pew/__init__.c \
 	alarm/__init__.c \
 	alarm_io/__init__.c \
-	alarm_time/__init__.c \	
+	alarm_time/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \

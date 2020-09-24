@@ -3,8 +3,6 @@
 #include "shared-bindings/alarm_io/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-//| Set Pin Wakeup 
-//|
 STATIC mp_obj_t alarm_io_pin_state(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {  
     enum { ARG_level, ARG_pull };
     static const mp_arg_t allowed_args[] = {
@@ -27,9 +25,6 @@ STATIC mp_obj_t alarm_io_pin_state(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(alarm_io_pin_state_obj, 1, alarm_io_pin_state);
 
-
-//| Disable Pin Wakeup 
-//|
 STATIC mp_obj_t alarm_io_disable(void) {      
     common_hal_alarm_io_disable();
     return mp_const_none;

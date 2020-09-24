@@ -25,28 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include <sys/time.h>
-
-#include "common-hal/alarm/__init__.h"
 #include "shared-bindings/alarm/__init__.h"
+#include "shared-bindings/alarm_io/__init__.h"
+#include "shared-bindings/alarm_time/__init__.h"
 
 #include "esp_sleep.h"
-#include "soc/rtc_periph.h"
-#include "driver/rtc_io.h"
-
-static RTC_DATA_ATTR struct timeval sleep_enter_time;
-static RTC_DATA_ATTR struct timeval sleep_exit_time;
-static RTC_DATA_ATTR uint8_t wake_io;
-
-int common_hal_alarm_get_sleep_time(void) {
-    return (sleep_exit_time.tv_sec - sleep_enter_time.tv_sec) * 1000 + (sleep_exit_time.tv_usec - sleep_enter_time.tv_usec) / 1000;
-}
-
-void RTC_IRAM_ATTR esp_wake_deep_sleep(void) {
-    esp_default_wake_deep_sleep();
-    wake_io = rtc_gpio_get_level(6);
-    gettimeofday(&sleep_exit_time, NULL);
-}
 
 mp_obj_t common_hal_alarm_get_wake_alarm(void) {
     switch (esp_sleep_get_wakeup_cause()) {
@@ -57,23 +40,12 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
             return timer;
         case ESP_SLEEP_WAKEUP_EXT0: ;
             //Wake up from GPIO
-            /*alarm_io_obj_t *ext0 = m_new_obj(alarm_io_obj_t);
+            alarm_io_obj_t *ext0 = m_new_obj(alarm_io_obj_t);
             ext0->base.type = &alarm_io_type;  
-            return ext0;*/
-            return mp_obj_new_int(wake_io);
-        case ESP_SLEEP_WAKEUP_EXT1: 
-            //Wake up from GPIO, returns -> esp_sleep_get_ext1_wakeup_status()  
-            /*uint64_t wakeup_pin_mask = esp_sleep_get_ext1_wakeup_status();
-            if (wakeup_pin_mask != 0) {
-                int pin = __builtin_ffsll(wakeup_pin_mask) - 1;
-                printf("Wake up from GPIO %d\n", pin);
-            } else {
-                printf("Wake up from GPIO\n");
-            }*/
-            break;       
+            return ext0;   
         case ESP_SLEEP_WAKEUP_TOUCHPAD: 
             //TODO: implement TouchIO
-            //Wake up from touch on pad, returns -> esp_sleep_get_touchpad_wakeup_status()
+            //Wake up from touch on pad, esp_sleep_get_touchpad_wakeup_status()
             break;        
         case ESP_SLEEP_WAKEUP_UNDEFINED:
         default:

@@ -20,6 +20,13 @@ msgstr ""
 #: main.c
 msgid ""
 "\n"
+"\n"
+"------ soft reboot ------\n"
+msgstr ""
+
+#: main.c
+msgid ""
+"\n"
 "Code done running. Waiting for reload.\n"
 msgstr ""
 
@@ -3303,7 +3310,7 @@ msgstr ""
 msgid "size is defined for ndarrays only"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
+#: shared-bindings/alarm_time/__init__.c shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
 msgstr ""
 
@@ -3317,10 +3324,6 @@ msgstr ""
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
-msgstr ""
-
-#: main.c
-msgid "soft reboot\n"
 msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
