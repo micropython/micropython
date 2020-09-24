@@ -261,6 +261,13 @@ extern const struct _mp_obj_module_t alarm_time_module;
 #define ALARM_TIME_MODULE
 #endif
 
+#if CIRCUITPY_ALARM_TOUCH
+extern const struct _mp_obj_module_t alarm_touch_module;
+#define ALARM_TOUCH_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_touch), (mp_obj_t)&alarm_touch_module },
+#else
+#define ALARM_TOUCH_MODULE
+#endif
+
 #if CIRCUITPY_ANALOGIO
 #define ANALOGIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module },
 extern const struct _mp_obj_module_t analogio_module;
@@ -787,6 +794,7 @@ extern const struct _mp_obj_module_t wifi_module;
     ALARM_MODULE \
     ALARM_IO_MODULE \
     ALARM_TIME_MODULE \
+    ALARM_TOUCH_MODULE \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \

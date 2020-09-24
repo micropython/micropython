@@ -80,7 +80,7 @@ void common_hal_mcu_reset(void) {
 }
 
 void common_hal_mcu_sleep(void) {
-    esp_deep_sleep_start(); 
+    esp_deep_sleep_start();
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu

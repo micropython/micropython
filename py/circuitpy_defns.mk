@@ -108,6 +108,9 @@ endif
 ifeq ($(CIRCUITPY_ALARM_TIME),1)
 SRC_PATTERNS += alarm_time/%
 endif
+ifeq ($(CIRCUITPY_ALARM_TIME),1)
+SRC_PATTERNS += alarm_touch/%
+endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
 endif
@@ -310,6 +313,7 @@ SRC_COMMON_HAL_ALL = \
 	alarm/__init__.c \
 	alarm_io/__init__.c \
 	alarm_time/__init__.c \
+	alarm_touch/__init__.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \

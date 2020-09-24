@@ -3,15 +3,15 @@
 #include "shared-bindings/alarm_io/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-STATIC mp_obj_t alarm_io_pin_state(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {  
+STATIC mp_obj_t alarm_io_pin_state(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_level, ARG_pull };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_level, MP_ARG_INT | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_pull, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_bool = false} },
-    }; 
+    };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);  
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mcu_pin_obj_t *pin = validate_obj_is_pin(pos_args[0]);
     alarm_io_obj_t *self = m_new_obj(alarm_io_obj_t);
@@ -20,12 +20,12 @@ STATIC mp_obj_t alarm_io_pin_state(size_t n_args, const mp_obj_t *pos_args, mp_m
     self->gpio = pin->number;
     self->level = args[ARG_level].u_int;
     self->pull = args[ARG_pull].u_bool;
-    
+
     return common_hal_alarm_io_pin_state(self);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(alarm_io_pin_state_obj, 1, alarm_io_pin_state);
 
-STATIC mp_obj_t alarm_io_disable(void) {      
+STATIC mp_obj_t alarm_io_disable(void) {
     common_hal_alarm_io_disable();
     return mp_const_none;
 }

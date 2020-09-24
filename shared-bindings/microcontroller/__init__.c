@@ -135,15 +135,6 @@ STATIC mp_obj_t mcu_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 
-//| def sleep() -> None:
-//|     """Microcontroller will go into deep sleep. 
-//|     cpy will restart when wakeup func. is triggered`.
-//|
-//|     .. warning:: This may result in file system corruption when connected to a
-//|       host computer. Be very careful when calling this! Make sure the device
-//|       "Safely removed" on Windows or "ejected" on Mac OSX and Linux."""
-//|     ...
-//|
 STATIC mp_obj_t mcu_sleep(void) {
     common_hal_mcu_sleep();
     // We won't actually get here because mcu is going into sleep.
