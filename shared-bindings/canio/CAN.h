@@ -28,6 +28,7 @@
 
 #include "py/obj.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/canio/__init__.h"
 #include "shared-bindings/canio/Message.h"
 
 extern const mp_obj_type_t canio_can_type;

@@ -348,7 +348,7 @@ int common_hal_canio_listener_in_waiting(canio_listener_obj_t *self) {
     return self->hw->RXFS.bit.F0FL;
 }
 
-bool common_hal_canio_listener_readinto(canio_listener_obj_t *self, canio_message_obj_t *message) {
+bool common_hal_canio_listener_receiveinto(canio_listener_obj_t *self, canio_message_obj_t *message) {
     if (!common_hal_canio_listener_in_waiting(self)) {
         uint64_t deadline = supervisor_ticks_ms64() + self->timeout_ms;
         do {
