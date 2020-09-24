@@ -1,6 +1,10 @@
 #include "py/obj.h"
 #include "shared-bindings/alarm_touch/__init__.h"
 
+//| """alarm_touch module
+//|
+//| The `alarm_touch` module implements deep sleep."""
+
 STATIC mp_obj_t alarm_touch_disable(void) {
     common_hal_alarm_touch_disable();
     return mp_const_none;

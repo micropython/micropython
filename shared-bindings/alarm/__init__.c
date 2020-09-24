@@ -1,5 +1,9 @@
 #include "shared-bindings/alarm/__init__.h"
 
+//| """alarm module
+//|
+//| The `alarm` module implements deep sleep."""
+
 STATIC mp_obj_t alarm_get_wake_alarm(void) {
     return common_hal_alarm_get_wake_alarm();
 }

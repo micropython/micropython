@@ -3,6 +3,10 @@
 #include "shared-bindings/alarm_io/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+//| """alarm_io module
+//|
+//| The `alarm_io` module implements deep sleep."""
+
 STATIC mp_obj_t alarm_io_pin_state(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_level, ARG_pull };
     static const mp_arg_t allowed_args[] = {

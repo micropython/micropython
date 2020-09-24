@@ -95,6 +95,10 @@ void common_hal_mcu_reset(void) {
     reset_cpu();
 }
 
+void common_hal_mcu_sleep(void) {
+    //deep sleep call here
+}
+
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
 // It currently only has properties, and no state.
 const mcu_processor_obj_t common_hal_mcu_processor_obj = {

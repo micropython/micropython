@@ -1,6 +1,10 @@
 #include "py/obj.h"
 #include "shared-bindings/alarm_time/__init__.h"
 
+//| """alarm_time module
+//|
+//| The `alarm_time` module implements deep sleep."""
+
 STATIC mp_obj_t alarm_time_duration(mp_obj_t seconds_o) {
     #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t seconds = mp_obj_get_float(seconds_o);
