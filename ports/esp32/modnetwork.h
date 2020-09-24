@@ -35,4 +35,12 @@ MP_DECLARE_CONST_FUN_OBJ_KW(esp_config_obj);
 
 void usocket_events_deinit(void);
 
-#endif
+extern bool wifi_started;
+
+typedef struct _wlan_if_obj_t {
+    mp_obj_base_t base;
+    int if_id;
+} wlan_if_obj_t;
+
+#endif // MICROPY_INCLUDED_ESP32_MODESP_MODNETWORK_H
+
