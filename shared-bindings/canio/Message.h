@@ -30,8 +30,9 @@
 #include "shared-module/canio/Message.h"
 
 extern const mp_obj_type_t canio_message_type;
+extern const mp_obj_type_t canio_remote_transmission_request_type;
 
-void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool rtr, bool extended);
+void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool extended);
 const void *common_hal_canio_message_get_data(const canio_message_obj_t *self);
 void common_hal_canio_message_set_data(canio_message_obj_t *self, const void *data, size_t size);
 bool common_hal_canio_message_get_extended(const canio_message_obj_t *self);
@@ -40,5 +41,5 @@ int common_hal_canio_message_get_id(const canio_message_obj_t *self);
 void common_hal_canio_message_set_id(canio_message_obj_t *self, int id);
 bool common_hal_canio_message_get_rtr(const canio_message_obj_t *self);
 void common_hal_canio_message_set_rtr(canio_message_obj_t *self, bool rtr);
-size_t common_hal_canio_message_get_size(const canio_message_obj_t *self);
-void common_hal_canio_message_set_size(canio_message_obj_t *self, size_t size);
+size_t common_hal_canio_message_get_length(const canio_message_obj_t *self);
+void common_hal_canio_remote_transmission_request_set_length(canio_message_obj_t *self, size_t length);

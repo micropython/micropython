@@ -265,7 +265,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
 //|
 //|         An empty filter list causes all messages to be accepted.
 //|
-//|         Timeout dictates how long readinto, read and next() will block."""
+//|         Timeout dictates how long receive() and next() will block."""
 //|         ...
 //|
 STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -334,8 +334,8 @@ STATIC mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     mp_obj_type_t *message_type = mp_obj_get_type(message_in);
-    if (message_type != &canio_message_type) {
-        mp_raise_TypeError_varg(translate("expected '%q' but got '%q'"), MP_QSTR_Message, message_type->name);
+    if (message_type != &canio_message_type && message_type != &canio_remote_transmission_request_type) {
+        mp_raise_TypeError_varg(translate("expected '%q' or '%q' but got '%q'"), MP_QSTR_Message, MP_QSTR_RemoteTransmissionRequest, message_type->name);
     }
 
     canio_message_obj_t *message = message_in;
