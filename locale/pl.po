@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-21 16:45-0500\n"
-"PO-Revision-Date: 2020-09-22 13:32+0000\n"
-"Last-Translator: Szymon Jakubiak <sz.a.jakubiak@gmail.com>\n"
+"PO-Revision-Date: 2020-09-23 18:31+0000\n"
+"Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
@@ -100,7 +100,7 @@ msgstr "%q musi być krotką o długości 2"
 
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
-msgstr ""
+msgstr "%q poza zakresem"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
@@ -438,7 +438,7 @@ msgstr "Jasność nie jest regulowana"
 #: shared-bindings/_bleio/UUID.c
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
-msgstr ""
+msgstr "Bufor + przesunięcie za małe %d %d %d"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -480,7 +480,7 @@ msgstr "Bufor jest zbyt duży i nie można go przydzielić"
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Bufor za krótki o% d bajtów"
+msgstr "Bufor za krótki o %d bajtów"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
@@ -790,7 +790,7 @@ msgstr "Oczekiwano charakterystyki"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "Oczekiwano DigitalInOut"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -875,7 +875,7 @@ msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
-msgstr ""
+msgstr "Nie wspierany format"
 
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
@@ -924,7 +924,7 @@ msgstr "Błąd inicjalizacji I2C"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut niedostępne"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1159,7 +1159,7 @@ msgstr "Największa wartość x przy odwróceniu to %d"
 
 #: shared-bindings/canio/Message.c
 msgid "Messages limited to 8 bytes"
-msgstr ""
+msgstr "Wiadomości ograniczone do 8 bajtów"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
@@ -1176,7 +1176,7 @@ msgstr "Opóźnienie włączenia mikrofonu musi być w zakresie od 0.0 do 1.0"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
-msgstr ""
+msgstr "Brak pinu MISO lub MOSI"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1219,7 +1219,7 @@ msgstr "Brak pinu MISO"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
-msgstr ""
+msgstr "Brak pinu MOSI"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
