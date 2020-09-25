@@ -261,7 +261,7 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
     //     Page address command = 0xB0
     if (SH1107_addressing) {
         // set the page to our x value
-        data[0] = 0xB0 | (x1 & 0x07);
+        data[0] = 0xB0 | (x1 & 0x0F);
         data_length = 1;
     }
     self->send(self->bus, data_type, chip_select, data, data_length);
