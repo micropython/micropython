@@ -41,7 +41,7 @@
 #include <string.h>
 
 #define DISPLAYIO_CORE_DEBUG(...) (void)0
-// #define DISPLAYIO_CORE_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+//#define DISPLAYIO_CORE_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
 void displayio_display_core_construct(displayio_display_core_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart, uint16_t rotation,
@@ -57,7 +57,7 @@ void displayio_display_core_construct(displayio_display_core_t* self,
     self->colstart = colstart;
     self->rowstart = rowstart;
     self->last_refresh = 0;
-
+    
     // (framebufferdisplay already validated its 'bus' is a buffer-protocol object)
     if (bus) {
         if (MP_OBJ_IS_TYPE(bus, &displayio_parallelbus_type)) {
@@ -211,7 +211,7 @@ void displayio_display_core_end_transaction(displayio_display_core_t* self) {
 void displayio_display_core_set_region_to_update(displayio_display_core_t* self, uint8_t column_command, 
               uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command, 
               bool data_as_commands, bool always_toggle_chip_select, 
-              displayio_area_t* area, bool column_and_page_addressing) {
+              displayio_area_t* area, bool SH1107_addressing) {
     uint16_t x1 = area->x1;
     uint16_t x2 = area->x2;
     uint16_t y1 = area->y1;
@@ -256,12 +256,13 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
         data[data_length++] = x2 >> 8;
         data[data_length++] = x2 & 0xff;
     }
-    // Quirk for SH1107 "column_and_page_addressing"
-    //     Column lower command = 0x00, Column upper command = 0x10
-    if (column_and_page_addressing) {
-        data[0] = 0x00 | (x1 & 0x0F);
-        data[1] = 0x10 | (x1 >> 4);
-        data_length = 2;
+    // Quirk for SH1107 "SH1107_addressing"
+    //     Note... column is y!  page is x!
+    //     Page address command = 0xB0
+    if (SH1107_addressing) {
+        // set the page to our x value
+        data[0] = 0xB0 | (x1 & 0x07);
+        data_length = 1;
     }
     self->send(self->bus, data_type, chip_select, data, data_length);
     displayio_display_core_end_transaction(self);
@@ -294,11 +295,13 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
         data[data_length++] = y2 >> 8;
         data[data_length++] = y2 & 0xff;
     }
-    // Quirk for SH1107 "column_and_page_addressing"
-    //      Page address command = 0xB0
-    if (column_and_page_addressing) {
-        data[0] = 0xB0 | (y1 & 0x07);
-        data_length = 1;
+    // Quirk for SH1107 "SH1107_addressing"
+    //     Note... column is y!  page is x!
+    //     Column lower command = 0x00, Column upper command = 0x10
+    if (SH1107_addressing) {
+        data[0] = y1 & 0x0F; // 0x00 to 0x0F
+        data[1] = (y1 >> 4 & 0x0F) | 0x10; // 0x10 to 0x17
+        data_length = 2;
     }
     self->send(self->bus, data_type, chip_select, data, data_length);
 
@@ -319,7 +322,7 @@ void displayio_display_core_start_refresh(displayio_display_core_t* self) {
 
 void displayio_display_core_finish_refresh(displayio_display_core_t* self) {
     if (self->current_group != NULL) {
-        DISPLAYIO_CORE_DEBUG("displayiocore group_finish_refresh\n");
+//       DISPLAYIO_CORE_DEBUG("displayiocore group_finish_refresh\n");
         displayio_group_finish_refresh(self->current_group);
     }
     self->full_refresh = false;

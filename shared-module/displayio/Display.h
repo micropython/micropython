@@ -61,7 +61,7 @@ typedef struct {
     bool updating_backlight;
     bool backlight_on_high;
     // new quirk for sh1107
-    bool column_and_page_addressing;
+    bool SH1107_addressing;
 } displayio_display_obj_t;
 
 void displayio_display_background(displayio_display_obj_t* self);
