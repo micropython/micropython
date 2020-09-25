@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-21 16:45-0500\n"
-"PO-Revision-Date: 2020-09-18 23:14+0000\n"
+"PO-Revision-Date: 2020-09-25 18:20+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -101,7 +101,7 @@ msgstr "%q debe ser una tupla de longitud 2"
 
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
-msgstr ""
+msgstr "%q fuera de rango"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
@@ -293,7 +293,7 @@ msgstr "Todos los periféricos I2C están siendo usados"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr ""
+msgstr "Todos los FIFOs de RX en uso"
 
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
@@ -335,7 +335,7 @@ msgstr "Ya se encuentra publicando."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Already have all-matches listener"
-msgstr ""
+msgstr "Ya se tiene un escucha todas-las-coincidencias"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -878,7 +878,7 @@ msgstr "El archivo ya existe"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Filters too complex"
-msgstr ""
+msgstr "Filtros muy complejos"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1000,7 +1000,7 @@ msgstr "Archivo BMP inválido"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr ""
+msgstr "BSSID inválido"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1167,7 +1167,7 @@ msgstr "Valor máximo de x cuando se refleja es %d"
 
 #: shared-bindings/canio/Message.c
 msgid "Messages limited to 8 bytes"
-msgstr ""
+msgstr "Mensajes limitados a 8 bytes"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
@@ -2399,7 +2399,7 @@ msgstr "las excepciones deben derivar de BaseException"
 
 #: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
 msgid "expected '%q' but got '%q'"
-msgstr ""
+msgstr "se espera '%q' pero se recibe '%q'"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -3248,7 +3248,7 @@ msgstr "paleta fuente muy larga"
 
 #: shared-bindings/canio/Message.c
 msgid "specify size or data, but not both"
-msgstr ""
+msgstr "especifique o tamaño o datos, pero no ambos"
 
 #: py/objstr.c
 msgid "start/end indices"
