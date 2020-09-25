@@ -39,7 +39,7 @@
 //| class I2C:
 //|     """Two wire serial protocol"""
 //|
-//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, *, frequency: int = 400000, timeout: int = 255) -> None:
+//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, *, frequency: int = 100000, timeout: int = 255) -> None:
 //|
 //|         """I2C is a two-wire protocol for communicating between devices.  At the
 //|         physical level it consists of 2 wires: SCL and SDA, the clock and data
@@ -70,7 +70,7 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, con
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
+        { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100000} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 255} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
