@@ -29,6 +29,19 @@
 #include "py/obj.h"
 #include "py/mphal.h"
 
+// Temporary support for legacy construction of SoftI2C via I2C type.
+#define MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args) \
+    do { \
+        if (n_args == 0 || all_args[0] == MP_OBJ_NEW_SMALL_INT(-1)) { \
+            mp_print_str(MICROPY_ERROR_PRINTER, "Warning: I2C(-1, ...) is deprecated, use SoftI2C(...) instead\n"); \
+            if (n_args != 0) { \
+                --n_args; \
+                ++all_args; \
+            } \
+            return mp_machine_soft_i2c_type.make_new(&mp_machine_soft_i2c_type, n_args, n_kw, all_args); \
+        } \
+    } while (0)
+
 #define MP_MACHINE_I2C_FLAG_READ (0x01) // if not set then it's a write
 #define MP_MACHINE_I2C_FLAG_STOP (0x02)
 
