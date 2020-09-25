@@ -69,3 +69,6 @@ try:
     re.sub(123, "a", "a")
 except TypeError:
     print("TypeError")
+
+# Include \ in the sub replacement
+print(re.sub("b", "\\\\b", "abc"))
