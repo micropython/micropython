@@ -56,6 +56,8 @@ uint32_t heap_size;
 
 STATIC esp_timer_handle_t _tick_timer;
 
+extern void esp_restart(void) NORETURN;
+
 void tick_timer_cb(void* arg) {
     supervisor_tick();
 }
@@ -118,6 +120,7 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
+    esp_restart();
 }
 
 void reset_cpu(void) {
