@@ -28,7 +28,7 @@
 
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 12
+#define MICROPY_VERSION_MINOR 13
 #define MICROPY_VERSION_MICRO 0
 
 // Combined version as a 32-bit number for convenience
@@ -1158,6 +1158,11 @@ typedef double mp_float_t;
 // Whether to provide fix for modf negative zero handling.
 #ifndef MICROPY_PY_MATH_MODF_FIX_NEGZERO
 #define MICROPY_PY_MATH_MODF_FIX_NEGZERO (0)
+#endif
+
+// Whether to provide fix for pow(1, NaN) and pow(NaN, 0), which both should be 1 not NaN.
+#ifndef MICROPY_PY_MATH_POW_FIX_NAN
+#define MICROPY_PY_MATH_POW_FIX_NAN (0)
 #endif
 
 // Whether to provide "cmath" module

@@ -4,7 +4,10 @@
 print('__name__' in dir())
 
 # dir of module
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 print('version' in dir(sys))
 
 # dir of type

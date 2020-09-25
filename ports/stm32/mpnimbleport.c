@@ -31,58 +31,41 @@
 
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
 
-#include "transport/uart/ble_hci_uart.h"
 #include "host/ble_hs.h"
+#include "nimble/nimble_npl.h"
 
-#include "extmod/modbluetooth_hci.h"
+#include "extmod/mpbthci.h"
 #include "extmod/nimble/modbluetooth_nimble.h"
-#include "extmod/nimble/nimble/nimble_hci_uart.h"
+#include "extmod/nimble/hal/hal_uart.h"
 
-extern void os_eventq_run_all(void);
-extern void os_callout_process(void);
-
+// This implements the Nimble "background task". It's called at PENDSV
+// priority, either every 128ms or whenever there's UART data available.
+// Because it's called via PENDSV, you can implicitly consider that it
+// is surrounded by MICROPY_PY_BLUETOOTH_ENTER / MICROPY_PY_BLUETOOTH_EXIT.
 void mp_bluetooth_hci_poll(void) {
-    if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
-        return;
-    }
+    if (mp_bluetooth_nimble_ble_state >= MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
+        // Ask NimBLE to process UART data.
+        mp_bluetooth_nimble_hci_uart_process();
 
-    mp_bluetooth_nimble_hci_uart_process();
-    os_callout_process();
-    os_eventq_run_all();
-}
-
-void mp_bluetooth_nimble_port_preinit(void) {
-    MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
-    ble_hci_uart_init();
-}
-
-void mp_bluetooth_nimble_port_postinit(void) {
-}
-
-void mp_bluetooth_nimble_port_deinit(void) {
-    mp_bluetooth_hci_controller_deactivate();
-}
-
-void mp_bluetooth_nimble_port_start(void) {
-    ble_hs_start();
-}
-
-void mp_bluetooth_nimble_hci_uart_rx(hal_uart_rx_cb_t rx_cb, void *rx_arg) {
-    bool host_wake = mp_bluetooth_hci_controller_woken();
-
-    int chr;
-    while ((chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
-        // printf("UART RX: %02x\n", data);
-        rx_cb(rx_arg, chr);
-    }
-
-    if (host_wake) {
-        mp_bluetooth_hci_controller_sleep_maybe();
+        // Run pending background operations and events, but only after HCI sync.
+        mp_bluetooth_nimble_os_callout_process();
+        mp_bluetooth_nimble_os_eventq_run_all();
     }
 }
 
-void mp_bluetooth_nimble_hci_uart_tx_strn(const char *str, uint len) {
-    mp_bluetooth_hci_uart_write((const uint8_t *)str, len);
+// --- Port-specific helpers for the generic NimBLE bindings. -----------------
+
+void mp_bluetooth_nimble_hci_uart_wfi(void) {
+    __WFI();
+}
+
+uint32_t mp_bluetooth_nimble_hci_uart_enter_critical(void) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    return atomic_state;
+}
+
+void mp_bluetooth_nimble_hci_uart_exit_critical(uint32_t atomic_state) {
+    MICROPY_PY_BLUETOOTH_EXIT
 }
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE

@@ -1,10 +1,10 @@
-import sys
-
 try:
     try:
         import uio as io
+        import usys as sys
     except ImportError:
         import io
+        import sys
 except ImportError:
     print("SKIP")
     raise SystemExit

@@ -31,11 +31,39 @@ jobs:
       install:
         - sudo apt-get install uncrustify python3-pip
         - uncrustify --version
+        - pip3 install --user setuptools
         - pip3 install --user black
         - black --version
       script:
         - tools/codeformat.py
         - git diff --exit-code
+
+    # zephyr port
+    - stage: test
+      name: "zephyr port build"
+      services:
+        - docker
+      before_install:
+        - docker pull zephyrprojectrtos/ci:v0.11.8
+        - >
+          docker run --name zephyr-ci -d -it
+          -v "$(pwd)":/micropython
+          -e ZEPHYR_SDK_INSTALL_DIR=/opt/sdk/zephyr-sdk-0.11.3
+          -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr
+          -w /micropython/ports/zephyr
+          zephyrprojectrtos/ci:v0.11.8
+        - docker ps -a
+      install:
+        - docker exec zephyr-ci west init --mr v2.3.0 /zephyrproject
+        - docker exec -w /zephyrproject zephyr-ci west update
+        - docker exec -w /zephyrproject zephyr-ci west zephyr-export
+      script:
+        - docker exec zephyr-ci bash -c "make clean; ./make-minimal ${MAKEOPTS}"
+        - docker exec zephyr-ci bash -c "make clean; ./make-minimal ${MAKEOPTS} BOARD=frdm_k64f"
+        - docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS}"
+        - docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS} BOARD=frdm_k64f"
+        - docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS} BOARD=mimxrt1050_evk"
+        - docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS} BOARD=reel_board"
 
     # unix port on OSX (first in list because the build VM takes a long time to start)
     - stage: test

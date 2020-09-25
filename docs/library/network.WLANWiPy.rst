@@ -43,7 +43,7 @@ Constructors
 Methods
 -------
 
-.. method:: WLANWiPy.init(mode, \*, ssid, auth, channel, antenna)
+.. method:: WLANWiPy.init(mode, *, ssid, auth, channel, antenna)
 
    Set or get the WiFi network processor configuration.
 
@@ -69,7 +69,7 @@ Methods
       # configure as an station
       wlan.init(mode=WLAN.STA)
 
-.. method:: WLANWiPy.connect(ssid, \*, auth=None, bssid=None, timeout=None)
+.. method:: WLANWiPy.connect(ssid, *, auth=None, bssid=None, timeout=None)
 
    Connect to a WiFi access point using the given SSID, and other security
    parameters.
@@ -131,7 +131,7 @@ Methods
 
    Get or set a 6-byte long bytes object with the MAC address.
 
-.. method:: WLANWiPy.irq(\*, handler, wake)
+.. method:: WLANWiPy.irq(*, handler, wake)
 
     Create a callback to be triggered when a WLAN event occurs during ``machine.SLEEP``
     mode. Events are triggered by socket activity or by WLAN connection/disconnection.

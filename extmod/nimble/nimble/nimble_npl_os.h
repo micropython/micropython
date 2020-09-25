@@ -24,12 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H
-#define MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H
+#ifndef MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NIMBLE_NPL_OS_H
+#define MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NIMBLE_NPL_OS_H
+
+// This is included by nimble/nimble_npl.h -- include that rather than this file directly.
 
 #include <stdint.h>
 
-#define BLE_NPL_OS_ALIGNMENT (4)
+// --- Configuration of NimBLE data structures --------------------------------
+
+#define BLE_NPL_OS_ALIGNMENT (sizeof(uintptr_t))
 #define BLE_NPL_TIME_FOREVER (0xffffffff)
 
 typedef uint32_t ble_npl_time_t;
@@ -57,10 +61,22 @@ struct ble_npl_callout {
 
 struct ble_npl_mutex {
     volatile uint8_t locked;
+    volatile uint32_t atomic_state;
 };
 
 struct ble_npl_sem {
     volatile uint16_t count;
 };
+
+// --- Called by the MicroPython port -----------------------------------------
+
+void mp_bluetooth_nimble_os_eventq_run_all(void);
+void mp_bluetooth_nimble_os_callout_process(void);
+
+// --- Must be provided by the MicroPython port -------------------------------
+
+void mp_bluetooth_nimble_hci_uart_wfi(void);
+uint32_t mp_bluetooth_nimble_hci_uart_enter_critical(void);
+void mp_bluetooth_nimble_hci_uart_exit_critical(uint32_t atomic_state);
 
 #endif // MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H

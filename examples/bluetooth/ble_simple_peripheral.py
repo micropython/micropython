@@ -23,7 +23,7 @@ _UART_RX = (
 )
 _UART_SERVICE = (
     _UART_UUID,
-    (_UART_TX, _UART_RX,),
+    (_UART_TX, _UART_RX),
 )
 
 
@@ -32,22 +32,20 @@ class BLESimplePeripheral:
         self._ble = ble
         self._ble.active(True)
         self._ble.irq(handler=self._irq)
-        ((self._handle_tx, self._handle_rx,),) = self._ble.gatts_register_services(
-            (_UART_SERVICE,)
-        )
+        ((self._handle_tx, self._handle_rx),) = self._ble.gatts_register_services((_UART_SERVICE,))
         self._connections = set()
         self._write_callback = None
-        self._payload = advertising_payload(name=name, services=[_UART_UUID],)
+        self._payload = advertising_payload(name=name, services=[_UART_UUID])
         self._advertise()
 
     def _irq(self, event, data):
         # Track connections so we can send notifications.
         if event == _IRQ_CENTRAL_CONNECT:
-            conn_handle, _, _, = data
+            conn_handle, _, _ = data
             print("New connection", conn_handle)
             self._connections.add(conn_handle)
         elif event == _IRQ_CENTRAL_DISCONNECT:
-            conn_handle, _, _, = data
+            conn_handle, _, _ = data
             print("Disconnected", conn_handle)
             self._connections.remove(conn_handle)
             # Start advertising again to allow a new connection.

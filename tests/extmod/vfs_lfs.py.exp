@@ -7,8 +7,8 @@ test <class 'VfsLfs1'>
 [('test', 32768, 0, 8), ('testdir', 16384, 0, 0)]
 []
 [('test', 32768, 0, 8)]
-(32768, 0, 0, 0, 0, 0, 8, 0, 0, 0)
-(16384, 0, 0, 0, 0, 0)
+(32768, 0, 0, 0, 0, 0) 8 <class 'int'> <class 'int'> <class 'int'>
+(16384, 0, 0, 0, 0, 0) -1 <class 'int'> <class 'int'> <class 'int'>
 littlefs
 data length: 4096
 write 0
@@ -22,8 +22,8 @@ write 3
 [('test', 32768, 0, 8), ('testdir', 16384, 0, 0)]
 /
 /testdir
-(32768, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-(32768, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+(32768, 0, 0, 0, 0, 0) 0 <class 'int'> <class 'int'> <class 'int'>
+(32768, 0, 0, 0, 0, 0) 0 <class 'int'> <class 'int'> <class 'int'>
 /
 /testdir
 /
@@ -44,8 +44,8 @@ test <class 'VfsLfs2'>
 [('testdir', 16384, 0, 0), ('test', 32768, 0, 8)]
 []
 [('test', 32768, 0, 8)]
-(32768, 0, 0, 0, 0, 0, 8, 0, 0, 0)
-(16384, 0, 0, 0, 0, 0)
+(32768, 0, 0, 0, 0, 0) 8 <class 'int'> <class 'int'> <class 'int'>
+(16384, 0, 0, 0, 0, 0) -1 <class 'int'> <class 'int'> <class 'int'>
 littlefs
 data length: 4096
 write 0
@@ -59,8 +59,8 @@ write 3
 [('test', 32768, 0, 8), ('testdir', 16384, 0, 0)]
 /
 /testdir
-(32768, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-(32768, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+(32768, 0, 0, 0, 0, 0) 0 <class 'int'> <class 'int'> <class 'int'>
+(32768, 0, 0, 0, 0, 0) 0 <class 'int'> <class 'int'> <class 'int'>
 /
 /testdir
 /

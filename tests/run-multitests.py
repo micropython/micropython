@@ -7,6 +7,7 @@
 import sys, os, time, re, select
 import argparse
 import subprocess
+import tempfile
 
 sys.path.append("../tools")
 import pyboard
@@ -17,6 +18,9 @@ if os.name == "nt":
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
     MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/unix/micropython")
+
+# For diff'ing test output
+DIFF = os.getenv("MICROPY_DIFF", "diff -u")
 
 PYTHON_TRUTH = CPYTHON3
 
@@ -323,6 +327,18 @@ def run_test_on_instances(test_file, num_instances, instances):
     return error, skip, output_str
 
 
+def print_diff(a, b):
+    a_fd, a_path = tempfile.mkstemp(text=True)
+    b_fd, b_path = tempfile.mkstemp(text=True)
+    os.write(a_fd, a.encode())
+    os.write(b_fd, b.encode())
+    os.close(a_fd)
+    os.close(b_fd)
+    subprocess.run(DIFF.split(" ") + [a_path, b_path])
+    os.unlink(a_path)
+    os.unlink(b_path)
+
+
 def run_tests(test_files, instances_truth, instances_test):
     skipped_tests = []
     passed_tests = []
@@ -372,6 +388,8 @@ def run_tests(test_files, instances_truth, instances_test):
                 print(output_test, end="")
                 print("### TRUTH ###")
                 print(output_truth, end="")
+                print("### DIFF ###")
+                print_diff(output_test, output_truth)
 
         if cmd_args.show_output:
             print()

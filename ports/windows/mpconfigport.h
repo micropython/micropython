@@ -123,6 +123,9 @@
 #define MICROPY_WARNINGS            (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
 
+// VFS stat functions should return time values relative to 1970/1/1
+#define MICROPY_EPOCH_IS_1970       (1)
+
 extern const struct _mp_print_t mp_stderr_print;
 
 #ifdef _MSC_VER
@@ -233,6 +236,8 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define MICROPY_PY_MATH_FMOD_FIX_INFNAN (1)
 #ifdef _WIN64
 #define MICROPY_PY_MATH_MODF_FIX_NEGZERO (1)
+#else
+#define MICROPY_PY_MATH_POW_FIX_NAN (1)
 #endif
 #endif
 

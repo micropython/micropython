@@ -79,15 +79,6 @@
 #define MP_BLUETOOTH_UUID_TYPE_32  (4)
 #define MP_BLUETOOTH_UUID_TYPE_128 (16)
 
-// Address types (for the addr_type params).
-// Ports will need to map these to their own values.
-#define MP_BLUETOOTH_ADDR_PUBLIC                        (0x00)  // Public (identity) address. (Same as NimBLE and NRF SD)
-#define MP_BLUETOOTH_ADDR_RANDOM_STATIC                 (0x01)  // Random static (identity) address. (Same as NimBLE and NRF SD)
-#define MP_BLUETOOTH_ADDR_PUBLIC_ID                     (0x02)  // (Same as NimBLE)
-#define MP_BLUETOOTH_ADDR_RANDOM_ID                     (0x03)  // (Same as NimBLE)
-#define MP_BLUETOOTH_ADDR_RANDOM_PRIVATE_RESOLVABLE     (0x12) // Random private resolvable address. (NRF SD 0x02)
-#define MP_BLUETOOTH_ADDR_RANDOM_PRIVATE_NON_RESOLVABLE (0x13) // Random private non-resolvable address. (NRF SD 0x03)
-
 // Event codes for the IRQ handler.
 #define MP_BLUETOOTH_IRQ_CENTRAL_CONNECT                (1)
 #define MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT             (2)
@@ -109,6 +100,12 @@
 #define MP_BLUETOOTH_IRQ_GATTC_NOTIFY                   (18)
 #define MP_BLUETOOTH_IRQ_GATTC_INDICATE                 (19)
 #define MP_BLUETOOTH_IRQ_GATTS_INDICATE_DONE            (20)
+#define MP_BLUETOOTH_IRQ_MTU_EXCHANGED                  (21)
+
+#define MP_BLUETOOTH_ADDRESS_MODE_PUBLIC (0)
+#define MP_BLUETOOTH_ADDRESS_MODE_RANDOM (1)
+#define MP_BLUETOOTH_ADDRESS_MODE_RPA (2)
+#define MP_BLUETOOTH_ADDRESS_MODE_NRPA (3)
 
 /*
 These aren't included in the module for space reasons, but can be used
@@ -135,6 +132,7 @@ _IRQ_GATTC_WRITE_DONE = const(17)
 _IRQ_GATTC_NOTIFY = const(18)
 _IRQ_GATTC_INDICATE = const(19)
 _IRQ_GATTS_INDICATE_DONE = const(20)
+_IRQ_MTU_EXCHANGED = const(21)
 */
 
 // Common UUID type.
@@ -173,8 +171,11 @@ void mp_bluetooth_deinit(void);
 // Returns true when the Bluetooth stack is active.
 bool mp_bluetooth_is_active(void);
 
-// Gets the MAC addr of this device in big-endian format.
-void mp_bluetooth_get_device_addr(uint8_t *addr);
+// Gets the current address of this device in big-endian format.
+void mp_bluetooth_get_current_address(uint8_t *addr_type, uint8_t *addr);
+
+// Sets the addressing mode to use.
+void mp_bluetooth_set_address_mode(uint8_t addr_mode);
 
 // Get or set the GAP device name that will be used by service 0x1800, characteristic 0x2a00.
 size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf);
@@ -213,9 +214,13 @@ int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append
 // Disconnect from a central or peripheral.
 int mp_bluetooth_gap_disconnect(uint16_t conn_handle);
 
+// Set/get the MTU that we will respond to a MTU exchange with.
+int mp_bluetooth_get_preferred_mtu(void);
+int mp_bluetooth_set_preferred_mtu(uint16_t mtu);
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 // Start a discovery (scan). Set duration to zero to run continuously.
-int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_t window_us);
+int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_t window_us, bool active_scan);
 
 // Stop discovery (if currently active).
 int mp_bluetooth_gap_scan_stop(void);
@@ -237,6 +242,9 @@ int mp_bluetooth_gattc_read(uint16_t conn_handle, uint16_t value_handle);
 
 // Write the value to the remote peripheral.
 int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const uint8_t *value, size_t *value_len, unsigned int mode);
+
+// Initiate MTU exchange for a specific connection using the preferred MTU.
+int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle);
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -255,6 +263,9 @@ void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t valu
 // Call this when a characteristic is read from. Return false to deny the read.
 bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle);
 #endif
+
+// Call this when an MTU exchange completes.
+void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 // Notify modbluetooth that scan has finished, either timeout, manually, or by some other action (e.g. connecting).

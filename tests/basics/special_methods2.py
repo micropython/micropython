@@ -129,12 +129,3 @@ print(dir(cud1))
 
 # test that dir() does not delegate to __dir__ for the type
 print('a' in dir(Cud))
-
-# TODO: the following operations are not supported on every ports
-#
-# ne is not supported, !(eq) is called instead
-#cud1 != cud2
-#
-# in the following test, cpython still calls __eq__
-# cud3=cud1
-# cud3==cud1

@@ -51,7 +51,7 @@ Methods
 
    Turn off the SPI bus.
 
-.. method:: SPI.init(mode, baudrate=328125, \*, prescaler, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
+.. method:: SPI.init(mode, baudrate=328125, *, prescaler, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
 
    Initialise the SPI bus with the given parameters:
 
@@ -77,7 +77,7 @@ Methods
    Printing the SPI object will show you the computed baudrate and the chosen
    prescaler.
 
-.. method:: SPI.recv(recv, \*, timeout=5000)
+.. method:: SPI.recv(recv, *, timeout=5000)
 
    Receive data on the bus:
 
@@ -88,7 +88,7 @@ Methods
    Return value: if ``recv`` is an integer then a new buffer of the bytes received,
    otherwise the same buffer that was passed in to ``recv``.
 
-.. method:: SPI.send(send, \*, timeout=5000)
+.. method:: SPI.send(send, *, timeout=5000)
 
    Send data on the bus:
 
@@ -97,7 +97,7 @@ Methods
 
    Return value: ``None``.
 
-.. method:: SPI.send_recv(send, recv=None, \*, timeout=5000)
+.. method:: SPI.send_recv(send, recv=None, *, timeout=5000)
 
    Send and receive data on the bus at the same time:
 

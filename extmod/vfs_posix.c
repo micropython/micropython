@@ -295,15 +295,15 @@ STATIC mp_obj_t vfs_posix_stat(mp_obj_t self_in, mp_obj_t path_in) {
     MP_HAL_RETRY_SYSCALL(ret, stat(path, &sb), mp_raise_OSError(err));
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
     t->items[0] = MP_OBJ_NEW_SMALL_INT(sb.st_mode);
-    t->items[1] = MP_OBJ_NEW_SMALL_INT(sb.st_ino);
-    t->items[2] = MP_OBJ_NEW_SMALL_INT(sb.st_dev);
-    t->items[3] = MP_OBJ_NEW_SMALL_INT(sb.st_nlink);
-    t->items[4] = MP_OBJ_NEW_SMALL_INT(sb.st_uid);
-    t->items[5] = MP_OBJ_NEW_SMALL_INT(sb.st_gid);
-    t->items[6] = MP_OBJ_NEW_SMALL_INT(sb.st_size);
-    t->items[7] = MP_OBJ_NEW_SMALL_INT(sb.st_atime);
-    t->items[8] = MP_OBJ_NEW_SMALL_INT(sb.st_mtime);
-    t->items[9] = MP_OBJ_NEW_SMALL_INT(sb.st_ctime);
+    t->items[1] = mp_obj_new_int_from_uint(sb.st_ino);
+    t->items[2] = mp_obj_new_int_from_uint(sb.st_dev);
+    t->items[3] = mp_obj_new_int_from_uint(sb.st_nlink);
+    t->items[4] = mp_obj_new_int_from_uint(sb.st_uid);
+    t->items[5] = mp_obj_new_int_from_uint(sb.st_gid);
+    t->items[6] = mp_obj_new_int_from_uint(sb.st_size);
+    t->items[7] = mp_obj_new_int_from_uint(sb.st_atime);
+    t->items[8] = mp_obj_new_int_from_uint(sb.st_mtime);
+    t->items[9] = mp_obj_new_int_from_uint(sb.st_ctime);
     return MP_OBJ_FROM_PTR(t);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_stat_obj, vfs_posix_stat);

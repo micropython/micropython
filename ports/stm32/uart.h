@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_UART_H
 #define MICROPY_INCLUDED_STM32_UART_H
 
-struct _mp_irq_obj_t;
+#include "lib/utils/mpirq.h"
 
 typedef enum {
     PYB_UART_NONE = 0,
@@ -45,6 +45,12 @@ typedef enum {
 #define CHAR_WIDTH_8BIT (0)
 #define CHAR_WIDTH_9BIT (1)
 
+// OR-ed IRQ flags which are allowed to be used by the user
+#define MP_UART_ALLOWED_FLAGS UART_FLAG_IDLE
+
+// OR-ed IRQ flags which should not be touched by the user
+#define MP_UART_RESERVED_FLAGS UART_FLAG_RXNE
+
 typedef struct _pyb_uart_obj_t {
     mp_obj_base_t base;
     USART_TypeDef *uartx;
@@ -62,16 +68,18 @@ typedef struct _pyb_uart_obj_t {
     byte *read_buf;                     // byte or uint16_t, depending on char size
     uint16_t mp_irq_trigger;            // user IRQ trigger mask
     uint16_t mp_irq_flags;              // user IRQ active IRQ flags
-    struct _mp_irq_obj_t *mp_irq_obj;   // user IRQ object
+    mp_irq_obj_t *mp_irq_obj;           // user IRQ object
 } pyb_uart_obj_t;
 
 extern const mp_obj_type_t pyb_uart_type;
+extern const mp_irq_methods_t uart_irq_methods;
 
 void uart_init0(void);
 void uart_deinit_all(void);
 bool uart_exists(int uart_id);
 bool uart_init(pyb_uart_obj_t *uart_obj,
     uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow);
+void uart_irq_config(pyb_uart_obj_t *self, bool enable);
 void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf);
 void uart_deinit(pyb_uart_obj_t *uart_obj);
 void uart_irq_handler(mp_uint_t uart_id);

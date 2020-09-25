@@ -132,7 +132,7 @@ STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
 
     // see if RTC.ALARM0 should wake the device
     if (pyb_rtc_alarm0_wake & MACHINE_WAKE_DEEPSLEEP) {
-        uint64_t t = pyb_rtc_get_us_since_2000();
+        uint64_t t = pyb_rtc_get_us_since_epoch();
         if (pyb_rtc_alarm0_expiry <= t) {
             sleep_us = 1; // alarm already expired so wake immediately
         } else {

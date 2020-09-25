@@ -31,12 +31,18 @@
 #include "py/mphal.h"
 #include "pin_static_af.h"
 #include "uart.h"
-#include "extmod/modbluetooth_hci.h"
+#include "extmod/mpbthci.h"
 
 #if MICROPY_PY_NETWORK_CYW43
 
 extern const char fw_4343WA1_7_45_98_50_start;
 #define CYWBT_FW_ADDR (&fw_4343WA1_7_45_98_50_start + 749 * 512 + 29 * 256)
+
+// Provided by the port.
+extern pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
+
+// Provided by the port, and also possibly shared with the stack.
+extern uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
 /******************************************************************************/
 // CYW BT HCI low-level driver
@@ -168,10 +174,6 @@ int mp_bluetooth_hci_controller_init(void) {
     mp_hal_pin_config(pyb_pin_WL_GPIO_4, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0); // RF-switch power
     mp_hal_pin_high(pyb_pin_WL_GPIO_4); // Turn the RF-switch on
 
-    return 0;
-}
-
-int mp_bluetooth_hci_controller_activate(void) {
     uint8_t buf[256];
 
     mp_hal_pin_low(pyb_pin_BT_REG_ON);
@@ -219,7 +221,7 @@ int mp_bluetooth_hci_controller_activate(void) {
     return 0;
 }
 
-int mp_bluetooth_hci_controller_deactivate(void) {
+int mp_bluetooth_hci_controller_deinit(void) {
     mp_hal_pin_low(pyb_pin_BT_REG_ON);
 
     return 0;
