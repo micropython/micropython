@@ -324,7 +324,7 @@ STATIC const mp_obj_property_t canio_can_loopback_obj = {
 };
 
 
-//|     def send(message: Message) -> None:
+//|     def send(message: Union[RemoteTransmissionRequest, Message]) -> None:
 //|         """Send a message on the bus with the given data and id.
 //|         If the message could not be sent due to a full fifo or a bus error condition, RuntimeError is raised.
 //|         """

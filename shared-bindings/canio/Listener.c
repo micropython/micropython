@@ -38,7 +38,7 @@
 //|     `~canio.CAN.listen`."""
 //|
 
-//|     def receive(self) -> Optional[Message]:
+//|     def receive(self) -> Optional[Union[RemoteTransmissionRequest,Message]]:
 //|         """Reads a message, after waiting up to self.timeout seconds
 //|
 //|         If no message is received in time, None is returned.  Otherwise,
