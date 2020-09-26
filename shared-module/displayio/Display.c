@@ -252,14 +252,8 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
     //      write one single row at a time
     if (self->SH1107_addressing) {
         subrectangles = rows_per_buffer;  // vertical (column mode) write each separately (height times)
-    }
-
-    // Skip this recalculation of subrectangles if SH1107 (each subrectangle is a single row)
-    // [mdroberts1243] I am worried/confused about the pixels_in_byte_share_row calculation though
-    //       since it makes sense to be on a byte boundary (actually a page boundary too)
-    //       seems to work as is though.
-    if ((displayio_area_size(&clipped) > buffer_size * pixels_per_word)
-                    && (!self->SH1107_addressing)) {
+        rows_per_buffer = 1;
+    } else if (displayio_area_size(&clipped) > buffer_size * pixels_per_word) {
         rows_per_buffer = buffer_size * pixels_per_word / displayio_area_width(&clipped);
         if (rows_per_buffer == 0) {
             rows_per_buffer = 1;
@@ -297,18 +291,13 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
             .y2 = clipped.y1 + rows_per_buffer * (j + 1)
         };
         if (self->SH1107_addressing) {
-                // one row only for SH1107 in vertical (column) mode
-                subrectangle.y1 = clipped.y1 + j;
-                subrectangle.y2 = clipped.y1 + (j + 1);
-            };
-        if ((remaining_rows < rows_per_buffer) && (!self->SH1107_addressing)) {
+            // one row only for SH1107 in vertical (column) mode
+            subrectangle.y1 = clipped.y1 + j;
+            subrectangle.y2 = clipped.y1 + (j + 1);
+        } else if (remaining_rows < rows_per_buffer) {
             subrectangle.y2 = subrectangle.y1 + remaining_rows;
         }
-        if (self->SH1107_addressing) {
-            remaining_rows -= 1;
-        } else {
-            remaining_rows -= rows_per_buffer;
-        }
+        remaining_rows -= rows_per_buffer;
 
         displayio_display_core_set_region_to_update(&self->core, self->set_column_command, 
               self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false, 
