@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-16 17:07-0700\n"
-"PO-Revision-Date: 2020-09-17 17:58+0000\n"
+"POT-Creation-Date: 2020-09-21 16:45-0500\n"
+"PO-Revision-Date: 2020-09-23 18:31+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -32,6 +32,9 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Zgłoś problem z zawartością dysku CIRCUITPY pod adresem\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -57,7 +60,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q niepowodzenie: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -95,7 +98,11 @@ msgstr "%q musi być >= 1"
 msgid "%q must be a tuple of length 2"
 msgstr "%q musi być krotką o długości 2"
 
-#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: shared-bindings/canio/Match.c
+msgid "%q out of range"
+msgstr "%q poza zakresem"
+
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
 msgstr ""
 
@@ -283,6 +290,10 @@ msgstr ""
 msgid "All I2C peripherals are in use"
 msgstr "Wszystkie peryferia I2C w użyciu"
 
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "All RX FIFOs in use"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
 msgstr "Wszystkie peryferia SPI w użyciu"
@@ -317,6 +328,10 @@ msgstr "Wszystkie timery w użyciu"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Already have all-matches listener"
 msgstr ""
 
 #: shared-module/memorymonitor/AllocationAlarm.c
@@ -423,7 +438,7 @@ msgstr "Jasność nie jest regulowana"
 #: shared-bindings/_bleio/UUID.c
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
-msgstr ""
+msgstr "Bufor + przesunięcie za małe %d %d %d"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -465,7 +480,7 @@ msgstr "Bufor jest zbyt duży i nie można go przydzielić"
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Bufor za krótki o% d bajtów"
+msgstr "Bufor za krótki o %d bajtów"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
@@ -761,7 +776,7 @@ msgstr "Kanał EXTINT w użyciu"
 msgid "Error in regex"
 msgstr "Błąd w regex"
 
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
@@ -775,7 +790,7 @@ msgstr "Oczekiwano charakterystyki"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "Oczekiwano DigitalInOut"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -854,9 +869,13 @@ msgstr "Nie udało się zapisać wewnętrznej pamięci flash."
 msgid "File exists"
 msgstr "Plik istnieje"
 
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Filters too complex"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
-msgstr ""
+msgstr "Nie wspierany format"
 
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
@@ -905,7 +924,7 @@ msgstr "Błąd inicjalizacji I2C"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut niedostępne"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1138,6 +1157,10 @@ msgstr "Nie powiodło się ustawienie pinu MOSI."
 msgid "Maximum x value when mirrored is %d"
 msgstr "Największa wartość x przy odwróceniu to %d"
 
+#: shared-bindings/canio/Message.c
+msgid "Messages limited to 8 bytes"
+msgstr "Wiadomości ograniczone do 8 bajtów"
+
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
 msgstr ""
@@ -1153,7 +1176,7 @@ msgstr "Opóźnienie włączenia mikrofonu musi być w zakresie od 0.0 do 1.0"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
-msgstr ""
+msgstr "Brak pinu MISO lub MOSI"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1196,7 +1219,7 @@ msgstr "Brak pinu MISO"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
-msgstr ""
+msgstr "Brak pinu MOSI"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
@@ -2329,6 +2352,10 @@ msgstr "błąd = 0x%08lX"
 msgid "exceptions must derive from BaseException"
 msgstr "wyjątki muszą dziedziczyć po BaseException"
 
+#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+msgid "expected '%q' but got '%q'"
+msgstr ""
+
 #: py/objstr.c
 msgid "expected ':' after format specifier"
 msgstr "oczekiwano ':' po specyfikacji formatu"
@@ -3168,6 +3195,10 @@ msgstr ""
 msgid "source palette too large"
 msgstr ""
 
+#: shared-bindings/canio/Message.c
+msgid "specify size or data, but not both"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "początkowe/końcowe indeksy"
@@ -3282,7 +3313,7 @@ msgid "tuple/list has wrong length"
 msgstr "krotka/lista ma złą długość"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: shared-bindings/busio/UART.c
+#: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx i rx nie mogą być oba None"
 

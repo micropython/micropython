@@ -26,10 +26,11 @@
 
 //Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "microDev microS2"
+#define MICROPY_HW_BOARD_NAME       "microS2"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
 #define MICROPY_HW_LED (&pin_GPIO21)
+#define MICROPY_HW_BUTTON (&pin_GPIO0)
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
 
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)

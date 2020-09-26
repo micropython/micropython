@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-16 17:07-0700\n"
+"POT-Creation-Date: 2020-09-21 16:45-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -91,7 +91,11 @@ msgstr "aarehas na haba dapat ang buffer slices"
 msgid "%q must be a tuple of length 2"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: shared-bindings/canio/Match.c
+msgid "%q out of range"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
 msgstr ""
 
@@ -281,6 +285,10 @@ msgstr ""
 msgid "All I2C peripherals are in use"
 msgstr "Lahat ng I2C peripherals ginagamit"
 
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "All RX FIFOs in use"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng SPI peripherals ay ginagamit"
@@ -316,6 +324,10 @@ msgstr "Lahat ng timer ginagamit"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Already have all-matches listener"
 msgstr ""
 
 #: shared-module/memorymonitor/AllocationAlarm.c
@@ -762,7 +774,7 @@ msgstr "Ginagamit na ang EXTINT channel"
 msgid "Error in regex"
 msgstr "May pagkakamali sa REGEX"
 
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
@@ -856,6 +868,10 @@ msgstr ""
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Mayroong file"
+
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Filters too complex"
+msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1139,6 +1155,10 @@ msgstr "Hindi ma-initialize ang MOSI pin."
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
+msgstr ""
+
+#: shared-bindings/canio/Message.c
+msgid "Messages limited to 8 bytes"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -2353,6 +2373,10 @@ msgstr ""
 msgid "exceptions must derive from BaseException"
 msgstr "ang mga exceptions ay dapat makuha mula sa BaseException"
 
+#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+msgid "expected '%q' but got '%q'"
+msgstr ""
+
 #: py/objstr.c
 msgid "expected ':' after format specifier"
 msgstr "umaasa ng ':' pagkatapos ng format specifier"
@@ -3199,6 +3223,10 @@ msgstr ""
 msgid "source palette too large"
 msgstr ""
 
+#: shared-bindings/canio/Message.c
+msgid "specify size or data, but not both"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "start/end indeks"
@@ -3315,7 +3343,7 @@ msgid "tuple/list has wrong length"
 msgstr "mali ang haba ng tuple/list"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: shared-bindings/busio/UART.c
+#: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx at rx hindi pwedeng parehas na None"
 
