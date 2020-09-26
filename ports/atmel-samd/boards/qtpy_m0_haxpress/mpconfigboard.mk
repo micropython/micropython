@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x80CC
+USB_PID = 0x00CC
 USB_PRODUCT = "QT Py M0 Haxpress"
 USB_MANUFACTURER = "Adafruit Industries LLC"
 
