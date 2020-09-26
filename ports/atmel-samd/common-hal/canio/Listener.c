@@ -32,6 +32,7 @@
 
 #include "common-hal/canio/__init__.h"
 #include "common-hal/canio/Listener.h"
+#include "shared-bindings/canio/Listener.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/tick.h"
 #include "component/can.h"
