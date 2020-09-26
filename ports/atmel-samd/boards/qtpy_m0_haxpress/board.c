@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,21 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/shared/safe_mode.h"
+#include "boards/board.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "supervisor/shared/board.h"
+#include "hal/include/hal_gpio.h"
 
-safe_mode_t wait_for_safe_mode_reset(void) {
-    return NO_SAFE_MODE;
+void board_init(void) {
+    gpio_set_pin_function(PIN_PA15, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_direction(PIN_PA15, GPIO_DIRECTION_OUT);
+    gpio_set_pin_level(PIN_PA15, true); // Turn on neopixel by default
+    never_reset_pin_number(PIN_PA15);
 }
 
-void reset_into_safe_mode(safe_mode_t reason) {
-    (void) reason;
-    for (;;) {
-    }
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-void print_safe_mode_message(safe_mode_t reason) {
-    (void) reason;
+void reset_board(void) {
 }
