@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-21 16:45-0500\n"
+"POT-Creation-Date: 2020-09-24 16:55-0500\n"
 "PO-Revision-Date: 2020-09-25 18:20+0000\n"
 "Last-Translator: Taku Fukada <naninunenor@gmail.com>\n"
 "Language-Team: none\n"
@@ -935,7 +935,9 @@ msgstr "IVは%dバイト長でなければなりません"
 msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
-msgstr "非互換の.mpyファイル。全.mpyファイルを更新してください。詳細は http://adafru.it/mpy-update を参照"
+msgstr ""
+"非互換の.mpyファイル。全.mpyファイルを更新してください。詳細は http://adafru."
+"it/mpy-update を参照"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1179,13 +1181,9 @@ msgstr "MISOまたはMOSIピンがありません"
 msgid "Must be a %q subclass."
 msgstr "%q のサブクラスでなければなりません"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "MISOピンまたはMOSIピンが必要"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Must provide SCK pin"
-msgstr "SCKピンが必要"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1320,7 +1318,9 @@ msgstr ""
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
-msgstr "オブジェクトは解放済みでもう使われていません。新しいオブジェクトを作成してください"
+msgstr ""
+"オブジェクトは解放済みでもう使われていません。新しいオブジェクトを作成してく"
+"ださい"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1613,8 +1613,8 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY).\n"
 msgstr ""
-"マイコンの電力が降下しました。使っている電源が十分な電力を回路に供給することを確認し (CIRCUITPYを取り出してから) リセットを押してください。"
-"\n"
+"マイコンの電力が降下しました。使っている電源が十分な電力を回路に供給すること"
+"を確認し (CIRCUITPYを取り出してから) リセットを押してください。\n"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2209,7 +2209,8 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr "色バッファは3バイト (RGB) か4バイト (RGB + pad byte) でなければなりません"
+msgstr ""
+"色バッファは3バイト (RGB) か4バイト (RGB + pad byte) でなければなりません"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer, tuple, list, or int"
@@ -2217,7 +2218,8 @@ msgstr "カラーバッファはbuffer, tuple, list, int のいずれかです"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr "色バッファは、bytearrayまたはタイプが 'b' か 'B' のarrayでなければなりません"
+msgstr ""
+"色バッファは、bytearrayまたはタイプが 'b' か 'B' のarrayでなければなりません"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -2294,7 +2296,9 @@ msgstr "デフォルトのexceptは最後に置く必要があります"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
-msgstr "bit_depth = 8のとき、宛先バッファはbytearrayまたはタイプ'B'のarrayでなければなりません"
+msgstr ""
+"bit_depth = 8のとき、宛先バッファはbytearrayまたはタイプ'B'のarrayでなければ"
+"なりません"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
@@ -3045,7 +3049,9 @@ msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr "pixel_shaderはdisplayio.Paletteかdisplayio.ColorConverterのどちらかでなければなりません"
+msgstr ""
+"pixel_shaderはdisplayio.Paletteかdisplayio.ColorConverterのどちらかでなければ"
+"なりません"
 
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
@@ -3492,6 +3498,9 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Must provide SCK pin"
+#~ msgstr "SCKピンが必要"
 
 #~ msgid ""
 #~ "\n"

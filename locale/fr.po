@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-21 16:45-0500\n"
+"POT-Creation-Date: 2020-09-24 16:55-0500\n"
 "PO-Revision-Date: 2020-09-16 13:47+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
@@ -1194,13 +1194,9 @@ msgstr "Broche MISO ou MOSI manquante"
 msgid "Must be a %q subclass."
 msgstr "Doit être une sous-classe de %q."
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr "Doit fournir une broche MISO ou MOSI"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Must provide SCK pin"
-msgstr "Vous devez fournir un code PIN SCK"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -3566,6 +3562,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Must provide SCK pin"
+#~ msgstr "Vous devez fournir un code PIN SCK"
 
 #~ msgid ""
 #~ "\n"
