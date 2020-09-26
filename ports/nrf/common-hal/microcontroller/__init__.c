@@ -95,7 +95,7 @@ void common_hal_mcu_reset(void) {
     reset_cpu();
 }
 
-void common_hal_mcu_sleep(void) {
+void common_hal_mcu_deep_sleep(void) {
     //deep sleep call here
 }
 

@@ -108,7 +108,7 @@ endif
 ifeq ($(CIRCUITPY_ALARM_TIME),1)
 SRC_PATTERNS += alarm_time/%
 endif
-ifeq ($(CIRCUITPY_ALARM_TIME),1)
+ifeq ($(CIRCUITPY_ALARM_TOUCH),1)
 SRC_PATTERNS += alarm_touch/%
 endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)

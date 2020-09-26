@@ -8,6 +8,14 @@ mp_obj_t common_hal_alarm_io_pin_state (alarm_io_obj_t *self_in) {
         mp_raise_ValueError(translate("io must be rtc io"));
     }
 
+    if (self_in->pull && !self_in->level) {
+        for (uint8_t i = 0; i<=4; i+=2) {
+            if (self_in->gpio == i) {
+                mp_raise_ValueError(translate("IOs 0, 2 & 4 do not support internal pullup in sleep"));
+            }
+        }
+    }
+
     switch(esp_sleep_enable_ext0_wakeup(self_in->gpio, self_in->level)) {
         case ESP_ERR_INVALID_ARG:
             mp_raise_ValueError(translate("trigger level must be 0 or 1"));

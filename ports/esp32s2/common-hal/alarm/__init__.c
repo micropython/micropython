@@ -31,6 +31,10 @@
 
 #include "esp_sleep.h"
 
+void common_hal_alarm_disable_all(void) {
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+}
+
 mp_obj_t common_hal_alarm_get_wake_alarm(void) {
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_TIMER: ;
