@@ -144,77 +144,6 @@ STATIC const mp_obj_property_t canio_message_extended_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//| class RemoteTransmissionRequest:
-//|     def __init__(self, id: int, length: int, *, extended: bool = False):
-//|         """Construct a Message to send on a CAN bus.
-//|
-//|         :param int id: The numeric ID of the requested message
-//|         :param int length: The length of the requested message
-//|         :param bool extended: True if the message has an extended identifier, False if it has a standard identifier
-//|
-//|         In CAN, messages can have a length from 0 to 8 bytes.
-//|         """
-//|         ...
-//|
-STATIC mp_obj_t canio_remote_transmission_request_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_id, ARG_length, ARG_extended, NUM_ARGS };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_INT | MP_ARG_REQUIRED },
-        { MP_QSTR_length, MP_ARG_INT | MP_ARG_REQUIRED },
-        { MP_QSTR_extended, MP_ARG_BOOL, {.u_bool = false} },
-    };
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    MP_STATIC_ASSERT( MP_ARRAY_SIZE(allowed_args) == NUM_ARGS );
-
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    int length = args[ARG_length].u_int;
-    if (length < 0 || length > 8) {
-        mp_raise_ValueError(translate("Messages limited to 8 bytes"));
-    }
-
-    canio_message_obj_t *self = m_new_obj(canio_message_obj_t);
-    self->base.type = &canio_remote_transmission_request_type;
-    common_hal_canio_message_construct(self, args[ARG_id].u_int, NULL, length, args[ARG_extended].u_bool);
-    return self;
-}
-
-//|     extended: bool
-//|     """True if the message's id is an extended id"""
-//|
-
-//|     id: int
-//|     """The numeric ID of the message"""
-//|
-
-//|     length: int
-//|     """The length of the requested message."""
-//|
-STATIC mp_obj_t canio_remote_transmission_request_length_get(const mp_obj_t self_in) {
-    canio_message_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_message_get_length(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(canio_remote_transmission_request_length_get_obj, canio_remote_transmission_request_length_get);
-
-STATIC mp_obj_t canio_remote_transmission_request_length_set(const mp_obj_t self_in, const mp_obj_t length_in) {
-    canio_message_obj_t *self = self_in;
-    int length = mp_obj_get_int(length_in);
-    if (length < 0 || length > 8) {
-        mp_raise_ValueError(translate("Messages limited to 8 bytes"));
-    }
-    common_hal_canio_remote_transmission_request_set_length(self, length);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(canio_remote_transmission_request_length_set_obj, canio_remote_transmission_request_length_set);
-
-
-STATIC const mp_obj_property_t canio_remote_transmission_request_length_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_remote_transmission_request_length_get_obj,
-              (mp_obj_t)&canio_remote_transmission_request_length_set_obj,
-              (mp_obj_t)&mp_const_none_obj},
-};
-
 STATIC const mp_rom_map_elem_t canio_message_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&canio_message_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_data), MP_ROM_PTR(&canio_message_data_obj) },
@@ -227,18 +156,4 @@ const mp_obj_type_t canio_message_type = {
     .name = MP_QSTR_Message,
     .make_new = canio_message_make_new,
     .locals_dict = (mp_obj_t)&canio_message_locals_dict,
-};
-
-STATIC const mp_rom_map_elem_t canio_remote_transmission_request_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&canio_message_id_obj) },
-    { MP_ROM_QSTR(MP_QSTR_length), MP_ROM_PTR(&canio_remote_transmission_request_length_obj) },
-    { MP_ROM_QSTR(MP_QSTR_extended), MP_ROM_PTR(&canio_message_extended_obj) },
-};
-STATIC MP_DEFINE_CONST_DICT(canio_remote_transmission_request_locals_dict, canio_remote_transmission_request_locals_dict_table);
-
-const mp_obj_type_t canio_remote_transmission_request_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RemoteTransmissionRequest,
-    .make_new = canio_remote_transmission_request_make_new,
-    .locals_dict = (mp_obj_t)&canio_remote_transmission_request_locals_dict,
 };
