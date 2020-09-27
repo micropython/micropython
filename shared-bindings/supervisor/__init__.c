@@ -34,6 +34,7 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
+#include "supervisor/shared/traceback.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
 
@@ -255,7 +256,33 @@ STATIC mp_obj_t supervisor_ticks_ms(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_ticks_ms_obj, supervisor_ticks_ms);
 
-
+//| def get_previous_traceback() -> Optional[str]:
+//|     """If the last vm run ended with an exception (including the KeyboardInterrupt caused by
+//|     CTRL-C), returns the traceback as a string.
+//|     Otherwise, returns ``None``.
+//|
+//|     An exception traceback is only preserved over a soft reload, a hard reset clears it.
+//|
+//|     Only code (main or boot) runs are considered, not REPL runs."""
+//|     ...
+//|
+STATIC mp_obj_t supervisor_get_previous_traceback(void) {
+    //TODO is this a safe and proper way of making a heap-allocated string object that points at long-lived (and likely long and unique) data outside the heap?
+    if (prev_traceback_allocation) {
+        size_t len = strlen((const char*)prev_traceback_allocation->ptr);
+        if (len > 0) {
+            mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
+            o->base.type = &mp_type_str;
+            o->len = len;
+            //TODO is it a good assumption that callers probably aren't going to compare this string, so skip computing the hash?
+            o->hash = 0;
+            o->data = (const byte*)prev_traceback_allocation->ptr;
+            return MP_OBJ_FROM_PTR(o);
+        }
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(supervisor_get_previous_traceback_obj, supervisor_get_previous_traceback);
 
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
@@ -268,6 +295,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_next_stack_limit),  MP_ROM_PTR(&supervisor_set_next_stack_limit_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_next_code_file),  MP_ROM_PTR(&supervisor_set_next_code_file_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_ms),  MP_ROM_PTR(&supervisor_ticks_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_previous_traceback),  MP_ROM_PTR(&supervisor_get_previous_traceback_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);

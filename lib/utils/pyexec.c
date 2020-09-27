@@ -167,7 +167,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         result->return_code = ret;
         if (ret != 0) {
             mp_obj_t return_value = (mp_obj_t)nlr.ret_val;
-            result->exception_type = mp_obj_get_type(return_value);
+            result->exception = return_value;
             result->exception_line = -1;
 
             if (mp_obj_is_exception_instance(return_value)) {
