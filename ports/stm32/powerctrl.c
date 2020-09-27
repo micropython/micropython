@@ -629,10 +629,14 @@ void powerctrl_enter_standby_mode(void) {
     RTC->ISR &= ~ISR_BITS;
 
     #if defined(STM32F7)
+    // Save user EWUP state
+    uint32_t csr2_ewup = PWR->CSR2 & (PWR_CSR2_EWUP6 | PWR_CSR2_EWUP5 | PWR_CSR2_EWUP4 | PWR_CSR2_EWUP3 | PWR_CSR2_EWUP2 | PWR_CSR2_EWUP1);
     // disable wake-up flags
     PWR->CSR2 &= ~(PWR_CSR2_EWUP6 | PWR_CSR2_EWUP5 | PWR_CSR2_EWUP4 | PWR_CSR2_EWUP3 | PWR_CSR2_EWUP2 | PWR_CSR2_EWUP1);
     // clear global wake-up flag
     PWR->CR2 |= PWR_CR2_CWUPF6 | PWR_CR2_CWUPF5 | PWR_CR2_CWUPF4 | PWR_CR2_CWUPF3 | PWR_CR2_CWUPF2 | PWR_CR2_CWUPF1;
+    // Restore state
+    PWR->CSR2 |= csr2_ewup;
     #elif defined(STM32H7)
     // TODO
     #elif defined(STM32L4) || defined(STM32WB)
