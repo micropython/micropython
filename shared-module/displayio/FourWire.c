@@ -87,9 +87,9 @@ bool common_hal_displayio_fourwire_reset(mp_obj_t obj) {
         return false;
     }
     common_hal_digitalio_digitalinout_set_value(&self->reset, false);
-    common_hal_time_delay_ms(1);
+    common_hal_mcu_delay_us(1000);
     common_hal_digitalio_digitalinout_set_value(&self->reset, true);
-    common_hal_time_delay_ms(1);
+    common_hal_mcu_delay_us(1000);
     return true;
 }
 
