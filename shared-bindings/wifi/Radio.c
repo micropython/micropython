@@ -227,6 +227,22 @@ const mp_obj_property_t wifi_radio_ipv4_address_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+//|     ipv4_dns: Optional[ipaddress.IPv4Address]
+//|     """IP v4 Address of the DNS server in use when connected to an access point. None otherwise."""
+//|
+STATIC mp_obj_t wifi_radio_get_ipv4_dns(mp_obj_t self) {
+    return common_hal_wifi_radio_get_ipv4_dns(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_dns_obj, wifi_radio_get_ipv4_dns);
+
+const mp_obj_property_t wifi_radio_ipv4_dns_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_dns_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
 //|     def ping(self, ip, *, timeout: float = 0.5) -> float:
 //|         """Ping an IP to test connectivity. Returns echo time in seconds.
 //|            Returns None when it times out."""
@@ -268,6 +284,7 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_connect_to_enterprise),    MP_ROM_PTR(&wifi_radio_connect_to_enterprise_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_ap_rssi),    MP_ROM_PTR(&wifi_radio_ap_rssi_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipv4_dns),    MP_ROM_PTR(&wifi_radio_ipv4_dns_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipv4_gateway),    MP_ROM_PTR(&wifi_radio_ipv4_gateway_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipv4_subnet),    MP_ROM_PTR(&wifi_radio_ipv4_subnet_obj) },
     { MP_ROM_QSTR(MP_QSTR_ipv4_address),    MP_ROM_PTR(&wifi_radio_ipv4_address_obj) },

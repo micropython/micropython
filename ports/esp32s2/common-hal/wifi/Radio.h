@@ -48,6 +48,7 @@ typedef struct {
     wifi_config_t sta_config;
     wifi_ap_record_t ap_info;
     esp_netif_ip_info_t ip_info;
+    esp_netif_dns_info_t dns_info;
     esp_netif_t *netif;
     bool started;
     bool ap_mode;

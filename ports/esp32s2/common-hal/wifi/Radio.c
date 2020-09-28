@@ -192,6 +192,20 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->ip_info.ip.addr);
 }
 
+mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+
+    esp_netif_get_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &self->dns_info);
+
+    // dns_info is of type esp_netif_dns_info_t, which is just ever so slightly
+    // different than esp_netif_ip_info_t used for
+    // common_hal_wifi_radio_get_ipv4_address (includes both ipv4 and 6),
+    // so some extra jumping is required to get to the actual address
+    return common_hal_ipaddress_new_ipv4address(self->dns_info.ip.u_addr.ip4.addr);
+}
+
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {
     esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
     ipaddress_ipaddress_to_esp_idf(ip_address, &ping_config.target_addr);
