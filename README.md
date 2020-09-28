@@ -17,6 +17,9 @@ import display
 
 display.show(99) # only 2-char show
 display.show4x8(1234) # show number 4-char in one time
+display.left(12) # show number on left dot matrix
+display.right(12) # show number on right dot matrix
+display.plot(5) # plot graph and shift old data to left
 display.scroll("Hello, mars !")
 display.clear()
 ```
@@ -42,6 +45,7 @@ import buzzer
 buzzer.tone(freq=2093, duration=0.5, duty=50)
 buzzer.on(freq=2000, duty=50)
 buzzer.off()
+buzzer.note("C4 D4 E4 SIL G#6", 1 / 4) # play note with duration = 1 / 4
 ```
 
 ### Module `rtc` 
@@ -76,6 +80,16 @@ Get status from S1 ann S2
 import switch
 
 value = switch.value(switch.S1) # or switch.S2
+
+# Use switch as Event
+def onPressCallback():
+  print("Hello")
+  
+def onReleaseCallback():
+  print("Hello")
+
+switch.press(switch.S1, onPressCallback) # onPressCallback will call when S1 press
+switch.release(switch.S1, onReleaseCallback) # onReleaseCallback will call when S1 release
 ```
 
 ### Module `servo` 
@@ -102,6 +116,17 @@ gyro = imu.gyro # array of (x, y, z), only on KidBrgiht32 V1.6 by Gravitech
 mag = imu.mag # array of (x, y, z), only on KidBrgiht32 V1.5i by INEX
 r = imu.rotation() # array of (roll, pitch) needs call imu.update() before use
 head = imu.heading() # get angle from compass sensor (needs call imu.update() before use), only on KidBrgiht32 V1.5i by INEX
+
+# IMU support is_gesture
+#   - imu.EVENT_SHAKE
+#   - imu.EVENT_BOARD_DOWN
+#   - imu.EVENT_SCREEN_UP
+#   - imu.EVENT_SCREEN_DOWN
+#   - imu.EVENT_TILT_LEFT
+#   - imu.EVENT_TILT_RIGHT
+#   - imu.EVENT_FREE_FALL
+if imu.is_gesture(imu.EVENT_SHAKE): # if board is shake
+  ...
 ```
 
 You can see more detail. [Source all module](https://github.com/microBlock-IDE/micropython/tree/V1.0.0/ports/esp32/boards/KidBright32/modules)
