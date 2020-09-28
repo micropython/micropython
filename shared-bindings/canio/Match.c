@@ -33,10 +33,10 @@
 //|     """Describe CAN bus messages to match"""
 //|
 //|
-//|     def __init__(self, id: int, *, mask: int = 0, extended: bool = False):
+//|     def __init__(self, id: int, *, mask: Optional[int] = None, extended: bool = False):
 //|         """Construct a Match with the given properties.
 //|
-//|         If mask is nonzero, then the filter is for any id which matches all
+//|         If mask is not None, then the filter is for any id which matches all
 //|         the nonzero bits in mask. Otherwise, it matches exactly the given id.
 //|         If extended is true then only extended ids are matched, otherwise
 //|         only standard ids are matched."""
@@ -46,7 +46,7 @@ STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, c
     enum { ARG_id, ARG_mask, ARG_extended, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_INT | MP_ARG_REQUIRED },
-        { MP_QSTR_mask, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_mask, MP_ARG_OBJ, {.u_obj = mp_const_none } },
         { MP_QSTR_extended, MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -56,7 +56,7 @@ STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, c
 
     int id_bits = args[ARG_extended].u_bool ? 0x1fffffff : 0x7ff;
     int id = args[ARG_id].u_int;
-    int mask = args[ARG_mask].u_int;
+    int mask = args[ARG_mask].u_obj == mp_const_none ?  id_bits : mp_obj_get_int(args[ARG_mask].u_obj);
 
     if (id & ~id_bits) {
         mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_id);
@@ -68,7 +68,7 @@ STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, c
 
     canio_match_obj_t *self = m_new_obj(canio_match_obj_t);
     self->base.type = &canio_match_type;
-    common_hal_canio_match_construct(self, args[ARG_id].u_int, args[ARG_mask].u_int, args[ARG_extended].u_bool);
+    common_hal_canio_match_construct(self, id, mask, args[ARG_extended].u_bool);
     return self;
 }
 
