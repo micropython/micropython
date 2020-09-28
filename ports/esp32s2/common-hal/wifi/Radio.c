@@ -35,8 +35,8 @@
 #include "shared-bindings/wifi/ScannedNetworks.h"
 #include "shared-module/ipaddress/__init__.h"
 
-#include "esp-idf/components/esp_wifi/include/esp_wifi.h"
-#include "esp-idf/components/lwip/include/apps/ping/ping_sock.h"
+#include "components/esp_wifi/include/esp_wifi.h"
+#include "components/lwip/include/apps/ping/ping_sock.h"
 
 static void start_station(wifi_radio_obj_t *self) {
     if (self->sta_mode) {

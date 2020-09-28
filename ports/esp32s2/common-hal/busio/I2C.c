@@ -28,7 +28,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "driver/i2c.h"
+#include "components/driver/include/driver/i2c.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"

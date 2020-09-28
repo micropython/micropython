@@ -46,8 +46,8 @@
 #include "shared-bindings/rtc/__init__.h"
 
 #include "peripherals/rmt.h"
-#include "esp-idf/components/heap/include/esp_heap_caps.h"
-#include "esp-idf/components/soc/soc/esp32s2/include/soc/cache_memory.h"
+#include "components/heap/include/esp_heap_caps.h"
+#include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
 
 #define HEAP_SIZE (48 * 1024)
 

@@ -28,7 +28,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "soc/rtc_periph.h"
+#include "components/soc/soc/include/soc/rtc_periph.h"
 #include "shared-bindings/rtc/RTC.h"
 
 void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {

@@ -266,7 +266,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     self->bits = bits;
     self->target_frequency = baudrate;
     self->hal_context.timing_conf = &self->timing_conf;
-    esp_err_t result =  spi_hal_get_clock_conf(&self->hal_context,
+    esp_err_t result =  spi_hal_cal_clock_conf(&self->hal_context,
                                                self->target_frequency,
                                                128 /* duty_cycle */,
                                                self->connected_through_gpio,
