@@ -259,8 +259,7 @@ $(BUILD)/esp-idf/partition_table/partition-table.bin: $(BUILD)/esp-idf/config/sd
 menuconfig: $(BUILD)/esp-idf/config
 	$(Q)ninja -C $(BUILD)/esp-idf menuconfig
 	$(Q)diff --old-line-format= --unchanged-line-format= esp-idf-config/sdkconfig.defaults $(BUILD)/esp-idf/sdkconfig > $(BUILD)/sdkconfig.diff || true
-	$(Q)grep -Fvxf $(FLASH_SDKCONFIG) $(BUILD)/sdkconfig.diff > $(BUILD)/sdkconfig.stripped1
-	$(Q)grep -Fvxf $(DEBUG_SDKCONFIG) $(BUILD)/sdkconfig.stripped1 > boards/$(BOARD)/sdkconfig
+	$(Q)grep -Fvxf $(DEBUG_SDKCONFIG) -f $(FLASH_SDKCONFIG) $(BUILD)/sdkconfig.diff > boards/$(BOARD)/sdkconfig
 
 # qstr builds include headers so we need to make sure they are up to date
 $(HEADER_BUILD)/qstr.i.last: | $(BUILD)/esp-idf/config/sdkconfig.h
