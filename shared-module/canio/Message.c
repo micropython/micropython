@@ -32,7 +32,6 @@ void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void 
 {
     self->id = id;
     self->size = size;
-    self->rtr = !data;
     self->extended = extended;
     if (data) {
         memcpy(self->data, data, size);
@@ -57,7 +56,6 @@ const void *common_hal_canio_message_get_data(const canio_message_obj_t *self)
 
 const void common_hal_canio_message_set_data(canio_message_obj_t *self, const void *data, size_t size)
 {
-    self->rtr = false;
     self->size = size;
     memcpy(self->data, data, size);
 }

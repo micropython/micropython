@@ -33,7 +33,6 @@ void common_hal_canio_remote_transmission_request_construct(canio_remote_transmi
 {
     self->id = id;
     self->size = size;
-    self->rtr = true;
     self->extended = extended;
 }
 
