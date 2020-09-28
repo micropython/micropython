@@ -40,4 +40,3 @@ void common_hal_canio_message_set_extended(canio_message_obj_t *self, bool exten
 int common_hal_canio_message_get_id(const canio_message_obj_t *self);
 void common_hal_canio_message_set_id(canio_message_obj_t *self, int id);
 size_t common_hal_canio_message_get_length(const canio_message_obj_t *self);
-void common_hal_canio_remote_transmission_request_set_length(canio_message_obj_t *self, size_t length);
