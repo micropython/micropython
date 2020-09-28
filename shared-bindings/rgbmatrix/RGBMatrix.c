@@ -210,6 +210,10 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         }
     }
 
+    if (args[ARG_width] <= 0) {
+        mp_raise_ValueError(translate("width must be greater than zero"));
+    }
+
     preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);
 
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
