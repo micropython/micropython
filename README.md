@@ -99,8 +99,8 @@ Set angle of Servo motor on Servo pin (only on KidBrgiht32 V1.5 , V1.5i by INEX,
 ```python
 import servo
 
-servo.angle(servo.SV1, 45) # Set servo on SV0 move to angle 0
-servo.angle(servo.SV2, 90) # Set servo on SV1 move to angle 1
+servo.angle(servo.SV1, 45) # Set servo on SV0 move to angle 45
+servo.angle(servo.SV2, 90) # Set servo on SV1 move to angle 90
 ```
 
 ### Module `imu` 
