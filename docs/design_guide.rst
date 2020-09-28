@@ -448,6 +448,19 @@ struct.pack
 
 Use `struct.pack_into` instead of `struct.pack`.
 
+Use of MicroPython `const()`
+--------------------------------------------------------------------------------
+The MicroPython `const()` feature, as discussed in `this forum post
+<https://forum.micropython.org/viewtopic.php?t=450>`_, and in `this issue thread
+<https://github.com/micropython/micropython/issues/573>`_, provides some
+optimizations that can be useful on smaller, memory constrained devices. However,
+when using `const()`, keep in mind these general guide lines:
+
+- Always use via an import, ex: `from micropython import const`
+- Limit use to global (module level) variables only.
+- If user will not need access to variable, prefix name with a leading
+  underscore, ex: `_SOME_CONST`.
+
 Sensor properties and units
 --------------------------------------------------------------------------------
 
