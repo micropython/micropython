@@ -31,8 +31,12 @@
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "shared-bindings/digitalio/DigitalInOut.h"
 
 displayio_fourwire_obj_t board_display_obj;
+digitalio_digitalinout_obj_t CTR_5V;
+digitalio_digitalinout_obj_t CTR_3V3;
+digitalio_digitalinout_obj_t USB_HOST_ENABLE;
 
 uint8_t display_init_sequence[] = {
     0x01, 0x80, 0x80, // Software reset then delay 0x80 (128ms)
@@ -106,6 +110,25 @@ void board_init(void) {
         true, // auto_refresh
         60, // native_frames_per_second
         true); // backlight_on_high
+
+        // Enabling the Power of the 40-pin at the back
+        CTR_5V.base.type = &digitalio_digitalinout_type;
+        CTR_3V3.base.type = &digitalio_digitalinout_type;
+        USB_HOST_ENABLE.base.type = &digitalio_digitalinout_type;
+
+        common_hal_digitalio_digitalinout_construct(&CTR_5V, PIN_CTR_5V);
+        common_hal_digitalio_digitalinout_construct(&CTR_3V3, PIN_CTR_3V3);
+        common_hal_digitalio_digitalinout_construct(&USB_HOST_ENABLE, PIN_USB_HOST_ENABLE);
+
+        common_hal_digitalio_digitalinout_set_value(&CTR_5V, true);
+        common_hal_digitalio_digitalinout_set_value(&CTR_3V3, false);
+        common_hal_digitalio_digitalinout_set_value(&USB_HOST_ENABLE, false);
+
+        // Never reset
+        common_hal_digitalio_digitalinout_never_reset(&CTR_5V);
+        common_hal_digitalio_digitalinout_never_reset(&CTR_3V3);
+        common_hal_digitalio_digitalinout_never_reset(&USB_HOST_ENABLE);
+
 }
 
 bool board_requests_safe_mode(void) {
