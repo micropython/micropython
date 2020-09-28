@@ -252,7 +252,7 @@ STATIC mp_obj_t canio_can_restart(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
 
-//|     def listen(self, match: Optional[Sequence[Match]]=None, *, timeout: float=10) -> Listener:
+//|     def listen(self, matches: Optional[Sequence[Match]]=None, *, timeout: float=10) -> Listener:
 //|         """Start receiving messages that match any one of the filters.
 //|
 //|         Creating a listener is an expensive operation and can interfere with reception of messages by other listeners.
@@ -272,9 +272,9 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
     canio_can_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     common_hal_canio_can_check_for_deinit(self);
 
-    enum { ARG_match, ARG_timeout, NUM_ARGS };
+    enum { ARG_matches, ARG_timeout, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_match, MP_ARG_OBJ, {.u_obj = 0} },
+        { MP_QSTR_matches, MP_ARG_OBJ, {.u_obj = 0} },
         { MP_QSTR_timeout, MP_ARG_OBJ, {.u_obj = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -285,8 +285,8 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
     size_t nmatch = 0;
     mp_obj_t *match_objects = NULL;
 
-    if (args[ARG_match].u_obj) {
-        mp_obj_get_array(args[ARG_match].u_obj, &nmatch, &match_objects);
+    if (args[ARG_matches].u_obj) {
+        mp_obj_get_array(args[ARG_matches].u_obj, &nmatch, &match_objects);
     }
 
     canio_match_obj_t *matches[nmatch];
