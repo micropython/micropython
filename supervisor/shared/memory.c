@@ -33,6 +33,10 @@
 
 #define CIRCUITPY_SUPERVISOR_ALLOC_COUNT (12)
 
+// Using a zero length to mark an unused allocation makes the code a bit shorter (but makes it
+// impossible to support zero-length allocations).
+#define FREE 0
+
 static supervisor_allocation allocations[CIRCUITPY_SUPERVISOR_ALLOC_COUNT];
 // We use uint32_t* to ensure word (4 byte) alignment.
 uint32_t* low_address;
@@ -61,19 +65,23 @@ void free_memory(supervisor_allocation* allocation) {
     }
     if (allocation->ptr == high_address) {
         high_address += allocation->length / 4;
+        allocation->length = FREE;
         for (index++; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {
             if (allocations[index].ptr != NULL) {
                 break;
             }
             high_address += allocations[index].length / 4;
+            allocations[index].length = FREE;
         }
     } else if (allocation->ptr + allocation->length / 4 == low_address) {
         low_address = allocation->ptr;
+        allocation->length = FREE;
         for (index--; index >= 0; index--) {
             if (allocations[index].ptr != NULL) {
                 break;
             }
             low_address -= allocations[index].length / 4;
+            allocations[index].length = FREE;
         }
     } else {
         // Freed memory isn't in the middle so skip updating bounds. The memory will be added to the
@@ -99,7 +107,7 @@ supervisor_allocation* allocate_remaining_memory(void) {
 }
 
 supervisor_allocation* allocate_memory(uint32_t length, bool high) {
-    if ((high_address - low_address) * 4 < (int32_t) length || length % 4 != 0) {
+    if (length == 0 || (high_address - low_address) * 4 < (int32_t) length || length % 4 != 0) {
         return NULL;
     }
     uint8_t index = 0;
@@ -109,7 +117,7 @@ supervisor_allocation* allocate_memory(uint32_t length, bool high) {
         direction = -1;
     }
     for (; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index += direction) {
-        if (allocations[index].ptr == NULL) {
+        if (allocations[index].length == FREE) {
             break;
         }
     }
