@@ -127,15 +127,6 @@ STATIC int check_pins(busio_spi_obj_t *self,
     uint8_t mosi_len = MP_ARRAY_SIZE(mcu_spi_mosi_list);
     uint8_t miso_len = MP_ARRAY_SIZE(mcu_spi_miso_list);
 
-    //SCK is not optional. MOSI and MISO are
-    if (!sck) {
-        mp_raise_ValueError(translate("Must provide SCK pin"));
-    }
-
-    if (!miso && !mosi) {
-        mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
-    }
-
     // Loop over each possibility for SCK.  Check whether MISO and/or MOSI can be used on the same peripheral
     for (uint i = 0; i < sck_len; i++) {
         const mcu_periph_obj_t *mcu_spi_sck = &mcu_spi_sck_list[i];

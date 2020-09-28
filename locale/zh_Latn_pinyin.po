@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-13 14:21-0500\n"
+"POT-Creation-Date: 2020-09-21 16:45-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -97,7 +97,11 @@ msgstr "%q bìxū dàyú huò děngyú 1"
 msgid "%q must be a tuple of length 2"
 msgstr "%q bìxū shì chángdù wèi 2 de yuán zǔ"
 
-#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: shared-bindings/canio/Match.c
+msgid "%q out of range"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
 msgstr "%q yǐn jiǎo wúxiào"
 
@@ -285,6 +289,10 @@ msgstr "Dìzhǐ lèixíng chāochū fànwéi"
 msgid "All I2C peripherals are in use"
 msgstr "Suǒyǒu I2C wàiwéi qì zhèngzài shǐyòng"
 
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "All RX FIFOs in use"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
 msgstr "Suǒyǒu SPI wàiwéi qì zhèngzài shǐyòng"
@@ -320,6 +328,10 @@ msgstr "Suǒyǒu jìshí qì shǐyòng"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Mùqián zhèngzài guǎngbò"
+
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Already have all-matches listener"
+msgstr ""
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -437,7 +449,7 @@ msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè. Yīnggāi shì %d zì jié."
 msgid "Buffer is not a bytearray."
 msgstr "Huǎnchōng qū bùshì bytearray"
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr "Huǎnchōng qū tài xiǎo"
@@ -624,6 +636,10 @@ msgstr "Fǔbài de .mpy wénjiàn"
 msgid "Corrupt raw code"
 msgstr "Sǔnhuài de yuánshǐ dàimǎ"
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
+
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
 msgstr "wú fǎ chū shǐ huà GNSS"
@@ -757,7 +773,7 @@ msgstr "EXTINT píndào yǐjīng shǐyòng"
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
 
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
@@ -850,6 +866,14 @@ msgstr "Wúfǎ xiě rù nèibù shǎncún."
 msgid "File exists"
 msgstr "Wénjiàn cúnzài"
 
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Filters too complex"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -916,6 +940,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "Shūrù/shūchū cuòwù"
@@ -958,6 +986,10 @@ msgstr "Wúxiào de ADC dānwèi zhí"
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "Wúxiào de BMP wénjiàn"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
+msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1121,6 +1153,10 @@ msgstr "MOSI yǐn jiǎo shūrù shībài."
 #, c-format
 msgid "Maximum x value when mirrored is %d"
 msgstr "Jìngxiàng shí de zuìdà X zhí wèi%d"
+
+#: shared-bindings/canio/Message.c
+msgid "Messages limited to 8 bytes"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
@@ -1517,6 +1553,10 @@ msgstr "Xùliè huà yǐjīng shǐyòngguò"
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
@@ -2330,6 +2370,10 @@ msgstr "cuòwù = 0x%08lX"
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
 msgstr "lìwài bìxū láizì BaseException"
+
+#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+msgid "expected '%q' but got '%q'"
+msgstr ""
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -3172,6 +3216,10 @@ msgstr "sosfilt xūyào diédài cānshù"
 msgid "source palette too large"
 msgstr ""
 
+#: shared-bindings/canio/Message.c
+msgid "specify size or data, but not both"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "kāishǐ/jiéshù zhǐshù"
@@ -3286,7 +3334,7 @@ msgid "tuple/list has wrong length"
 msgstr "yuán zǔ/lièbiǎo chángdù cuòwù"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: shared-bindings/busio/UART.c
+#: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx hé rx bùnéng dōu shì wú"
 

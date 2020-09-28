@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-13 14:21-0500\n"
+"POT-Creation-Date: 2020-09-21 16:45-0500\n"
 "PO-Revision-Date: 2020-09-01 18:44+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
@@ -98,7 +98,11 @@ msgstr "%qは1以上でなければなりません"
 msgid "%q must be a tuple of length 2"
 msgstr "%qは長さ2のタプルでなければなりません"
 
-#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: shared-bindings/canio/Match.c
+msgid "%q out of range"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
 msgstr "%q ピンは無効"
 
@@ -287,6 +291,10 @@ msgstr ""
 msgid "All I2C peripherals are in use"
 msgstr "全てのI2C周辺機器が使用中"
 
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "All RX FIFOs in use"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
 msgstr "全てのSPI周辺機器が使用中"
@@ -322,6 +330,10 @@ msgstr "全てのタイマーが使用中"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "すでにアドバータイズ中"
+
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Already have all-matches listener"
+msgstr ""
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -439,7 +451,7 @@ msgstr "バッファサイズが正しくありません。%dバイトでなけ�
 msgid "Buffer is not a bytearray."
 msgstr "バッファが bytearray ではありません"
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr "バッファが小さすぎます"
@@ -628,6 +640,10 @@ msgstr "破損した .mpy ファイル"
 msgid "Corrupt raw code"
 msgstr "破損したraw code"
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
+
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
 msgstr "GNSSを初期化できません"
@@ -761,7 +777,7 @@ msgstr "EXTINTチャネルはすでに使用されています"
 msgid "Error in regex"
 msgstr "正規表現にエラーがあります"
 
-#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
@@ -854,6 +870,14 @@ msgstr "内部フラッシュの書き込みに失敗"
 msgid "File exists"
 msgstr "ファイルが存在します"
 
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Filters too complex"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
@@ -920,6 +944,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "バッファサイズが正しくありません"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
 #: py/moduerrno.c
 msgid "Input/output error"
 msgstr "入力/出力エラー"
@@ -962,6 +990,10 @@ msgstr "不正なADCユニット値"
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Invalid BMP file"
 msgstr "不正なBMPファイル"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
+msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1124,6 +1156,10 @@ msgstr "MOSIピンの初期化に失敗"
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
+msgstr ""
+
+#: shared-bindings/canio/Message.c
+msgid "Messages limited to 8 bytes"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -1516,6 +1552,10 @@ msgstr "シリアライザは使用中"
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
 msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
@@ -2318,6 +2358,10 @@ msgstr "error = 0x1%08lX"
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
 msgstr "例外はBaseExceptionから派生していなければなりません"
+
+#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+msgid "expected '%q' but got '%q'"
+msgstr ""
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -3159,6 +3203,10 @@ msgstr ""
 msgid "source palette too large"
 msgstr ""
 
+#: shared-bindings/canio/Message.c
+msgid "specify size or data, but not both"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr ""
@@ -3273,7 +3321,7 @@ msgid "tuple/list has wrong length"
 msgstr "タプル/リストの長さが正しくありません"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: shared-bindings/busio/UART.c
+#: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "txとrxを両方ともNoneにできません"
 

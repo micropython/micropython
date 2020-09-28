@@ -17,8 +17,9 @@ import collections
 import gettext
 import os.path
 
-sys.stdout.reconfigure(encoding='utf-8')
-sys.stderr.reconfigure(errors='backslashreplace')
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(errors='backslashreplace')
 
 py = os.path.dirname(sys.argv[0])
 top = os.path.dirname(py)
@@ -108,7 +109,11 @@ class TextSplitter:
     def __init__(self, words):
         words.sort(key=lambda x: len(x), reverse=True)
         self.words = set(words)
-        self.pat = re.compile("|".join(re.escape(w) for w in words) + "|.", flags=re.DOTALL)
+        if words:
+            pat = "|".join(re.escape(w) for w in words) + "|."
+        else:
+            pat = "."
+        self.pat = re.compile(pat, flags=re.DOTALL)
 
     def iter_words(self, text):
         s = []
