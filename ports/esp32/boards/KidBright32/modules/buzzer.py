@@ -66,5 +66,6 @@ def note(notes, duration=4):
     delay = quarter_delay * duration
     delay = delay / 1000 # mS -> S
     for note in notes.split(" "):
-        tone(note_map[note], delay)
+        if note in note_map:
+            tone(note_map[note], delay)
 
