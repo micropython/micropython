@@ -214,15 +214,15 @@ Software SPI bus
 ----------------
 
 There are two SPI drivers. One is implemented in software (bit-banging)
-and works on all pins, and is accessed via the :ref:`machine.SPI <machine.SPI>`
+and works on all pins, and is accessed via the :ref:`machine.SoftSPI <machine.SoftSPI>`
 class::
 
-    from machine import Pin, SPI
+    from machine import Pin, SoftSPI
 
     # construct an SPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SPI(-1, baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
+    spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
 
     spi.init(baudrate=200000) # set the baudrate
 
@@ -258,7 +258,8 @@ I2C bus
 -------
 
 The I2C driver is implemented in software and works on all pins,
-and is accessed via the :ref:`machine.I2C <machine.I2C>` class::
+and is accessed via the :ref:`machine.I2C <machine.I2C>` class (which is an
+alias of :ref:`machine.SoftI2C <machine.SoftI2C>`)::
 
     from machine import Pin, I2C
 
