@@ -243,6 +243,7 @@ jobs:
         - "metro_m0_express"
         - "metro_m4_airlift_lite"
         - "metro_m4_express"
+        - "metro_m7_1011"
         - "metro_nrf52840_express"
         - "mini_sam_m4"
         - "monster_m4sk"
