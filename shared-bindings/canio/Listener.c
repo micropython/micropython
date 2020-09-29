@@ -77,7 +77,7 @@ STATIC mp_obj_t canio_listener_in_waiting(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_in_waiting_obj, canio_listener_in_waiting);
 
 //|     def __iter__(self) -> Listener:
-//|         """Returns self, unless the object is deinitialized.
+//|         """Returns self
 //|
 //|         This method exists so that `Listener` can be used as an
 //|         iterable"""
