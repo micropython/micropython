@@ -38,6 +38,8 @@
 #include "esp-idf/components/esp_wifi/include/esp_wifi.h"
 #include "esp-idf/components/lwip/include/apps/ping/ping_sock.h"
 
+#define MAC_ADDRESS_LENGTH 6
+
 static void start_station(wifi_radio_obj_t *self) {
     if (self->sta_mode) {
         return;
@@ -72,8 +74,6 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         return;
     }
 }
-
-#define MAC_ADDRESS_LENGTH 6
 
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
     uint8_t mac[MAC_ADDRESS_LENGTH];
@@ -165,6 +165,41 @@ mp_obj_t common_hal_wifi_radio_get_ap_rssi(wifi_radio_obj_t *self) {
         return mp_const_none;
     } else {
         return mp_obj_new_int(self->ap_info.rssi);
+    }
+}
+
+mp_obj_t common_hal_wifi_radio_get_ap_ssid(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+
+    // Make sure the interface is in STA mode
+    if (self->sta_mode){
+        return mp_const_none;
+    }
+
+    if (esp_wifi_sta_get_ap_info(&self->ap_info) != ESP_OK){
+        return mp_const_none;
+    } else {
+        const char* cstr = (const char*) self->ap_info.ssid;
+        return mp_obj_new_str(cstr, strlen(cstr));
+    }
+}
+
+mp_obj_t common_hal_wifi_radio_get_ap_bssid(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+
+    // Make sure the interface is in STA mode
+    if (self->sta_mode){
+        return mp_const_none;
+    }
+
+    if (esp_wifi_sta_get_ap_info(&self->ap_info) != ESP_OK){
+        return mp_const_none;
+    } else {
+        return mp_obj_new_bytes(self->ap_info.bssid, MAC_ADDRESS_LENGTH);
     }
 }
 
