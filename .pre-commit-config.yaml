@@ -8,6 +8,6 @@ repos:
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
-        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*)'
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|ports/esp32s2/esp-idf-config/.*|ports/esp32s2/boards/.*/sdkconfig)'
     -   id: trailing-whitespace
         exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*)'
