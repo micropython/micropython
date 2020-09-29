@@ -290,11 +290,7 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
             .x2 = clipped.x2,
             .y2 = clipped.y1 + rows_per_buffer * (j + 1)
         };
-        if (self->SH1107_addressing) {
-            // one row only for SH1107 in vertical (column) mode
-            subrectangle.y1 = clipped.y1 + j;
-            subrectangle.y2 = clipped.y1 + (j + 1);
-        } else if (remaining_rows < rows_per_buffer) {
+        if (remaining_rows < rows_per_buffer) {
             subrectangle.y2 = subrectangle.y1 + remaining_rows;
         }
         remaining_rows -= rows_per_buffer;
