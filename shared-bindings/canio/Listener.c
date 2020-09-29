@@ -34,15 +34,20 @@
 //| class Listener:
 //|     """Listens for CAN message
 //|
-//|     canio.Listener is not constructed directly, but instead by calling
-//|     `~canio.CAN.listen`."""
+//|     `canio.Listener` is not constructed directly, but instead by calling
+//|     `canio.CAN.listen`.
+//|
+//|     In addition to using the `receive` method to retrieve a message or
+//|     the `in_waiting` method to check for an available message, a
+//|     listener can be used as an iterable, yielding messages until no
+//|     message arrives within ``self.timeout`` seconds."""
 //|
 
 //|     def receive(self) -> Optional[Union[RemoteTransmissionRequest,Message]]:
-//|         """Reads a message, after waiting up to self.timeout seconds
+//|         """Reads a message, after waiting up to ``self.timeout`` seconds
 //|
-//|         If no message is received in time, None is returned.  Otherwise,
-//|         a Message is returned."""
+//|         If no message is received in time, `None` is returned.  Otherwise,
+//|         a `Message` or `RemoteTransmissionRequest` is returned."""
 //|         ...
 //|
 STATIC mp_obj_t canio_listener_receive(mp_obj_t self_in) {
@@ -60,7 +65,8 @@ STATIC mp_obj_t canio_listener_receive(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_receive_obj, canio_listener_receive);
 
 //|     def in_waiting(self) -> int:
-//|         """Returns the number of messages waiting"""
+//|         """Returns the number of messages (including remote
+//|         transmission requests) waiting"""
 //|         ...
 //|
 STATIC mp_obj_t canio_listener_in_waiting(mp_obj_t self_in) {
@@ -70,15 +76,21 @@ STATIC mp_obj_t canio_listener_in_waiting(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_in_waiting_obj, canio_listener_in_waiting);
 
-//|     def __iter__(self):
-//|         """Returns self, unless the object is deinitialized"""
+//|     def __iter__(self) -> Listener:
+//|         """Returns self, unless the object is deinitialized.
+//|
+//|         This method exists so that `Listener` can be used as an
+//|         iterable"""
 //|         ...
 //|
-//|     def __next__(self):
+//|     def __next__(self) -> Union[RemoteTransmissionRequest,Message]:
 //|         """Reads a message, after waiting up to self.timeout seconds
 //|
 //|         If no message is received in time, raises StopIteration.  Otherwise,
-//|         a Message is returned."""
+//|         a Message or  is returned.
+//|
+//|         This method enables the `Listener` to be used as an
+//|         iterable, for instance in a for-loop."""
 //|         ...
 //|
 STATIC mp_obj_t canio_iternext(mp_obj_t self_in) {
