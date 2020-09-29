@@ -27,84 +27,15 @@
 # mechanism in the WB55, and works with the memory layout configured in
 # ports/stm32/rfcore.c -- i.e. it expects that rfcore_init() has been run.
 
-# At this stage this is useful for debugging, but can be extended to support
-# FUS/WS firmware updates.
 # e.g.
 # ../../tools/pyboard.py --device /dev/ttyACM0 boards/NUCLEO_WB55/rfcore.py
 # to print out SRAM2A, register state and FUS/WS info.
+#
+# The `stm` module provides some helper functions to access rfcore functionality.
+# See rfcore_firmware.py for more information.
 
 from machine import mem8, mem16, mem32
-import time, struct
 import stm
-
-
-def addressof(buf):
-    assert type(buf) is bytearray
-    return mem32[id(buf) + 12]
-
-
-class Flash:
-    FLASH_KEY1 = 0x45670123
-    FLASH_KEY2 = 0xCDEF89AB
-
-    def wait_not_busy(self):
-        while mem32[stm.FLASH + stm.FLASH_SR] & 1 << 16:
-            machine.idle()
-
-    def unlock(self):
-        mem32[stm.FLASH + stm.FLASH_KEYR] = Flash.FLASH_KEY1
-        mem32[stm.FLASH + stm.FLASH_KEYR] = Flash.FLASH_KEY2
-
-    def lock(self):
-        mem32[stm.FLASH + stm.FLASH_CR] = 1 << 31  # LOCK
-
-    def erase_page(self, page):
-        print("erase", page)
-        assert 0 <= page <= 255  # 1MiB range (4k page)
-        self.wait_not_busy()
-        cr = page << 3 | 1 << 1  # PNB  # PER
-        mem32[stm.FLASH + stm.FLASH_CR] = cr
-        mem32[stm.FLASH + stm.FLASH_CR] = cr | 1 << 16  # STRT
-        self.wait_not_busy()
-        mem32[stm.FLASH + stm.FLASH_CR] = 0
-
-    def write(self, addr, buf):
-        assert len(buf) % 4 == 0
-        self.wait_not_busy()
-        cr = 1 << 0  # PG
-        mem32[stm.FLASH + stm.FLASH_CR] = cr
-        buf_addr = addressof(buf)
-        off = 0
-        while off < len(buf):
-            mem32[addr + off] = mem32[buf_addr + off]
-            off += 4
-            if off % 8 == 0:
-                self.wait_not_busy()
-        if off % 8:
-            mem32[addr + off] = 0
-            self.wait_not_busy()
-        mem32[stm.FLASH + stm.FLASH_CR] = 0
-
-
-def copy_file_to_flash(filename, addr):
-    flash = Flash()
-    flash.unlock()
-    try:
-        with open(filename, "rb") as f:
-            buf = bytearray(4096)
-            while 1:
-                sz = f.readinto(buf)
-                if sz == 0:
-                    break
-                print("write", hex(addr), sz)
-                flash.erase_page((addr - 0x08000000) // 4096)
-                print("done e")
-                flash.write(addr, buf)
-                print("done")
-                addr += 4096
-    finally:
-        flash.lock()
-
 
 SRAM2A_BASE = const(0x2003_0000)
 
@@ -205,49 +136,6 @@ def ipcc_init():
     print("BLE: 0x%08x 0x%08x 0x%08x" % (BLE_CMD_BUF, BLE_CS_BUF, BLE_EVT_QUEUE))
 
 
-def tl_list_init(addr):
-    mem32[addr] = addr  # next
-    mem32[addr + 4] = addr  # prev
-
-
-def tl_list_append(head, n):
-    sram2a_dump(1024)
-    print("Appending 0x%08x to 0x%08x" % (head, n))
-    # item->next = head
-    mem32[n] = head
-    # item->prev = head->prev
-    mem32[n + 4] = mem32[head + 4]
-    # head->prev->next = item
-    mem32[mem32[head + 4]] = n
-    # head->prev = item
-    mem32[head + 4] = n
-
-
-def tl_list_unlink(n):
-    # next = item->next
-    next = mem32[n]
-    # prev = item->prev
-    prev = mem32[n + 4]
-    # prev->next = item->next
-    mem32[prev] = next
-    # item->next->prev = prev
-    mem32[next + 4] = prev
-
-    return next
-
-
-def tl_list_dump(head):
-    print(
-        "list(%08x, %08x, %08x):" % (head, mem32[head] & 0xFFFFFFFF, mem32[head + 4] & 0xFFFFFFFF),
-        end="",
-    )
-    cur = mem32[head]
-    while cur != head:
-        print(" %08x" % (cur & 0xFFFFFFFF), end="")
-        cur = mem32[cur]
-    print()
-
-
 def fus_active():
     return get_ipcc_table_word(TABLE_DEVICE_INFO, 0) == MAGIC_FUS_ACTIVE
 
@@ -346,3 +234,4 @@ sram2a_dump(264)
 ipcc_init()
 info()
 dev_info()
+ipcc_state()
