@@ -74,9 +74,9 @@ bool displayio_display_core_bus_free(displayio_display_core_t *self);
 bool displayio_display_core_begin_transaction(displayio_display_core_t* self);
 void displayio_display_core_end_transaction(displayio_display_core_t* self);
 
-void displayio_display_core_set_region_to_update(displayio_display_core_t* self, uint8_t column_command, 
-          uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command, 
-          bool data_as_commands, bool always_toggle_chip_select, 
+void displayio_display_core_set_region_to_update(displayio_display_core_t* self, uint8_t column_command,
+          uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,
+          bool data_as_commands, bool always_toggle_chip_select,
           displayio_area_t* area, bool SH1107_addressing);
 
 void release_display_core(displayio_display_core_t* self);

@@ -57,7 +57,7 @@ void displayio_display_core_construct(displayio_display_core_t* self,
     self->colstart = colstart;
     self->rowstart = rowstart;
     self->last_refresh = 0;
-    
+
     // (framebufferdisplay already validated its 'bus' is a buffer-protocol object)
     if (bus) {
         if (MP_OBJ_IS_TYPE(bus, &displayio_parallelbus_type)) {
@@ -208,9 +208,9 @@ void displayio_display_core_end_transaction(displayio_display_core_t* self) {
     self->end_transaction(self->bus);
 }
 
-void displayio_display_core_set_region_to_update(displayio_display_core_t* self, uint8_t column_command, 
-              uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command, 
-              bool data_as_commands, bool always_toggle_chip_select, 
+void displayio_display_core_set_region_to_update(displayio_display_core_t* self, uint8_t column_command,
+              uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,
+              bool data_as_commands, bool always_toggle_chip_select,
               displayio_area_t* area, bool SH1107_addressing) {
     uint16_t x1 = area->x1;
     uint16_t x2 = area->x2;

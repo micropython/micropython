@@ -48,7 +48,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         uint8_t set_row_command, uint8_t write_ram_command, uint8_t set_vertical_scroll,
         uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin,
         uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
-        bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second, 
+        bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second,
         bool backlight_on_high, bool SH1107_addressing) {
 
     // Turn off auto-refresh as we init.
@@ -246,7 +246,7 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
     uint16_t rows_per_buffer = displayio_area_height(&clipped);
     uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->core.colorspace.depth;
     uint16_t pixels_per_buffer = displayio_area_size(&clipped);
-    
+
     uint16_t subrectangles = 1;
     // for SH1107 and other boundary constrained controllers
     //      write one single row at a time
@@ -299,8 +299,8 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
         }
         remaining_rows -= rows_per_buffer;
 
-        displayio_display_core_set_region_to_update(&self->core, self->set_column_command, 
-              self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false, 
+        displayio_display_core_set_region_to_update(&self->core, self->set_column_command,
+              self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false,
               &subrectangle, self->SH1107_addressing);
 
         uint16_t subrectangle_size_bytes;

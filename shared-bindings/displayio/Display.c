@@ -111,15 +111,15 @@
 //|         :param bool backlight_on_high: If True, pulling the backlight pin high turns the backlight on."""
 //|         ...
 //|
-STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args, 
+STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args,
                 const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, 
-                ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row, 
-                ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word, 
-                ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, 
-                ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command, 
-                ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands, 
-                ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high, 
+    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart,
+                ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row,
+                ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word,
+                ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command,
+                ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command,
+                ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands,
+                ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high,
                 ARG_SH1107_addressing };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
