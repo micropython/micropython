@@ -172,7 +172,12 @@ STATIC const mp_obj_property_t canio_can_receive_error_count_obj = {
 };
 
 //|     error_warning_state_count: int
-//|     """The number of times the controller enterted the Error Warning state (read-only).  This number wraps around to 0 after an implementation-defined number of errors."""
+//|     """The number of times the controller enterted the Error Warning
+//|     state (read-only).  This number wraps around to 0 after an
+//|     implementation-defined number of errors.
+//|
+//|     Not all implementations support this property.  If the property
+//|     is unsupported, AttributeError will be raised."""
 //|
 STATIC mp_obj_t canio_can_error_warning_state_count_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -189,7 +194,12 @@ STATIC const mp_obj_property_t canio_can_error_warning_state_count_obj = {
 };
 
 //|     error_passive_state_count: int
-//|     """The number of times the controller enterted the Error Passive state (read-only).  This number wraps around to 0 after an implementation-defined number of errors."""
+//|     """The number of times the controller enterted the Error Passive
+//|     state (read-only).  This number wraps around to 0 after an
+//|     implementation-defined number of errors.
+//|
+//|     Not all implementations support this property.  If the property
+//|     is unsupported, AttributeError will be raised."""
 //|
 STATIC mp_obj_t canio_can_error_passive_state_count_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -206,7 +216,12 @@ STATIC const mp_obj_property_t canio_can_error_passive_state_count_obj = {
 };
 
 //|     bus_off_state_count: int
-//|     """The number of times the controller enterted the Bus Off state (read-only).  This number wraps around to 0 after an implementation-defined number of errors."""
+//|     """The number of times the controller enterted the Bus Off state
+//|     (read-only).  This number wraps around to 0 after an
+//|     implementation-defined number of errors.
+//|
+//|     Not all implementations support this property.  If the property
+//|     is unsupported, AttributeError will be raised."""
 //|
 STATIC mp_obj_t canio_can_bus_off_state_count_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
