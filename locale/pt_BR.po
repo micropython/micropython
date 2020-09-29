@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-29 11:11+0530\n"
-"PO-Revision-Date: 2020-09-22 21:30+0000\n"
+"PO-Revision-Date: 2020-09-30 18:43+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -346,7 +346,7 @@ msgstr "Já está em execução"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
-msgstr ""
+msgstr "Já está em busca das redes de wifi"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -695,7 +695,7 @@ msgstr "Não foi possível reiniciar o PWM"
 
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
-msgstr ""
+msgstr "Não foi possível recuperar o clock"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -789,7 +789,7 @@ msgstr "O BCE opera apenas com 16 bytes por vez"
 
 #: ports/esp32s2/common-hal/busio/SPI.c
 msgid "ESP-IDF memory allocation failed"
-msgstr ""
+msgstr "Houve uma falha na alocação da memória ESP-IDF"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
@@ -850,7 +850,7 @@ msgstr "O FFT é definido apenas para ndarrays"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
-msgstr ""
+msgstr "Houve uma falha no handshake do SSL"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -877,11 +877,11 @@ msgstr "Falha ao alocar buffer RX de %d bytes"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
-msgstr ""
+msgstr "Houve uma falha na alocação da memória do Wifi"
 
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
-msgstr ""
+msgstr "Houve uma falha na alocação da memória para a varredura do Wifi"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
@@ -893,7 +893,7 @@ msgstr "Falha ao conectar: tempo limite"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to init wifi"
-msgstr ""
+msgstr "Houve uma falha ao iniciar o wifi"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
@@ -1087,7 +1087,7 @@ msgstr "Tamanho do pedaço de formato inválido"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
-msgstr ""
+msgstr "Frequência inválida"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
@@ -1322,11 +1322,11 @@ msgstr "Não há compatibilidade com inteiro longo"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more channels available"
-msgstr ""
+msgstr "Não há mais canais disponíveis"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more timers available"
-msgstr ""
+msgstr "Não há mais temporizadores disponíveis"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1394,11 +1394,11 @@ msgstr "Apenas mono com 8 ou 16 bits com "
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr ""
+msgstr "São suportados apenas soquetes IPv4 SOCK_STREAM"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
-msgstr ""
+msgstr "Somente os endereços IPv4 são suportados"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1423,7 +1423,7 @@ msgstr "Apenas o int bruto é compatível para o ip"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
-msgstr ""
+msgstr "Sem soquetes"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1497,6 +1497,8 @@ msgid ""
 "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
 "instead"
 msgstr ""
+"A porta não aceita portadora PWM. Em vez disso informe um pino, frequência e "
+"o ciclo de trabalho"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -1662,7 +1664,7 @@ msgstr "Fatiamento não compatível"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
-msgstr ""
+msgstr "O SocketPool só pode ser usado com rádio wifi.radio"
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
@@ -1842,7 +1844,7 @@ msgstr "Não é possível alocar buffers para conversão assinada"
 
 #: ports/esp32s2/common-hal/busio/I2C.c
 msgid "Unable to create lock"
-msgstr ""
+msgstr "Não é possível criar um lock"
 
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
@@ -1873,7 +1875,7 @@ msgstr "Tipo uuid nrfx inesperado"
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr ""
+msgstr "Erro não tratado do ESP TLS %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Unknown failure"
@@ -3228,7 +3230,7 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
-msgstr ""
+msgstr "pressionando o botão de boot na inicialização.\n"
 
 #: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
 #: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
@@ -3236,7 +3238,7 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
-msgstr ""
+msgstr "pressionando ambos os botões durante a inicialização.\n"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
