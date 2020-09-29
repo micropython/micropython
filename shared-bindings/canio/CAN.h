@@ -39,9 +39,6 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
 bool common_hal_canio_can_auto_restart_get(canio_can_obj_t *self);
 bool common_hal_canio_can_deinited(canio_can_obj_t *self);
 int common_hal_canio_can_baudrate_get(canio_can_obj_t *self);
-int common_hal_canio_can_bus_off_state_count_get(canio_can_obj_t *self);
-int common_hal_canio_can_error_passive_state_count_get(canio_can_obj_t *self);
-int common_hal_canio_can_error_warning_state_count_get(canio_can_obj_t *self);
 bool common_hal_canio_can_loopback_get(canio_can_obj_t *self);
 int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self);
 canio_bus_state_t common_hal_canio_can_state_get(canio_can_obj_t *self);

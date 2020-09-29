@@ -275,21 +275,6 @@ int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self)
     return self->hw->ECR.bit.REC;
 }
 
-int common_hal_canio_can_error_warning_state_count_get(canio_can_obj_t *self)
-{
-    return self->error_warning_state_count;
-}
-
-int common_hal_canio_can_error_passive_state_count_get(canio_can_obj_t *self)
-{
-    return self->error_passive_state_count;
-}
-
-int common_hal_canio_can_bus_off_state_count_get(canio_can_obj_t *self)
-{
-    return self->bus_off_state_count;
-}
-
 canio_bus_state_t common_hal_canio_can_state_get(canio_can_obj_t *self) {
     CAN_PSR_Type psr = self->hw->PSR;
     if (psr.bit.BO) {
@@ -418,17 +403,6 @@ STATIC void can_handler(int i) {
 
     Can *hw = can_insts[i];
     uint32_t ir = hri_can_read_IR_reg(hw);
-
-    /* Count up errors*/
-    if (ir & CAN_IE_EWE) {
-        self->error_warning_state_count += 1;
-    }
-    if (ir & CAN_IE_EPE) {
-        self->error_passive_state_count += 1;
-    }
-    if (ir & CAN_IE_BOE) {
-        self->bus_off_state_count += 1;
-    }
 
     /* Acknowledge interrupt */
     hri_can_write_IR_reg(hw, ir);

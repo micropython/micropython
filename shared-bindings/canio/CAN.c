@@ -171,72 +171,6 @@ STATIC const mp_obj_property_t canio_can_receive_error_count_obj = {
               (mp_obj_t)mp_const_none},
 };
 
-//|     error_warning_state_count: int
-//|     """The number of times the controller enterted the Error Warning
-//|     state (read-only).  This number wraps around to 0 after an
-//|     implementation-defined number of errors.
-//|
-//|     Not all implementations support this property.  If the property
-//|     is unsupported, AttributeError will be raised."""
-//|
-STATIC mp_obj_t canio_can_error_warning_state_count_get(mp_obj_t self_in) {
-    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_canio_can_check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_error_warning_state_count_get(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(canio_can_error_warning_state_count_get_obj, canio_can_error_warning_state_count_get);
-
-STATIC const mp_obj_property_t canio_can_error_warning_state_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_error_warning_state_count_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
-};
-
-//|     error_passive_state_count: int
-//|     """The number of times the controller enterted the Error Passive
-//|     state (read-only).  This number wraps around to 0 after an
-//|     implementation-defined number of errors.
-//|
-//|     Not all implementations support this property.  If the property
-//|     is unsupported, AttributeError will be raised."""
-//|
-STATIC mp_obj_t canio_can_error_passive_state_count_get(mp_obj_t self_in) {
-    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_canio_can_check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_error_passive_state_count_get(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(canio_can_error_passive_state_count_get_obj, canio_can_error_passive_state_count_get);
-
-STATIC const mp_obj_property_t canio_can_error_passive_state_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_error_passive_state_count_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
-};
-
-//|     bus_off_state_count: int
-//|     """The number of times the controller enterted the Bus Off state
-//|     (read-only).  This number wraps around to 0 after an
-//|     implementation-defined number of errors.
-//|
-//|     Not all implementations support this property.  If the property
-//|     is unsupported, AttributeError will be raised."""
-//|
-STATIC mp_obj_t canio_can_bus_off_state_count_get(mp_obj_t self_in) {
-    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_canio_can_check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_bus_off_state_count_get(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(canio_can_bus_off_state_count_get_obj, canio_can_bus_off_state_count_get);
-
-STATIC const mp_obj_property_t canio_can_bus_off_state_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_bus_off_state_count_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
-};
-
 //|     state: State
 //|     """The current state of the bus."""
 STATIC mp_obj_t canio_can_state_get(mp_obj_t self_in) {
@@ -414,10 +348,7 @@ STATIC const mp_rom_map_elem_t canio_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&canio_can_exit_obj) },
     { MP_ROM_QSTR(MP_QSTR_auto_restart), MP_ROM_PTR(&canio_can_auto_restart_obj) },
     { MP_ROM_QSTR(MP_QSTR_baudrate), MP_ROM_PTR(&canio_can_baudrate_obj) },
-    { MP_ROM_QSTR(MP_QSTR_bus_off_state_count), MP_ROM_PTR(&canio_can_bus_off_state_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&canio_can_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_error_passive_state_count), MP_ROM_PTR(&canio_can_error_passive_state_count_obj) },
-    { MP_ROM_QSTR(MP_QSTR_error_warning_state_count), MP_ROM_PTR(&canio_can_error_warning_state_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&canio_can_listen_obj) },
     { MP_ROM_QSTR(MP_QSTR_loopback), MP_ROM_PTR(&canio_can_loopback_obj) },
     { MP_ROM_QSTR(MP_QSTR_receive_error_count), MP_ROM_PTR(&canio_can_receive_error_count_obj) },
