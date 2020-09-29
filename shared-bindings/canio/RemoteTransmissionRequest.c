@@ -113,14 +113,6 @@ STATIC const mp_obj_property_t canio_remote_transmission_request_extended_obj = 
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     extended: bool
-//|     """True if the message's id is an extended id"""
-//|
-
-//|     id: int
-//|     """The numeric ID of the message"""
-//|
-
 //|     length: int
 //|     """The length of the requested message."""
 //|
