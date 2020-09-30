@@ -48,6 +48,7 @@ typedef struct {
     uint8_t *current_advertising_data;
     bleio_scanresults_obj_t *scan_results;
     mp_obj_t name;
+    mp_int_t tx_power;
     mp_obj_tuple_t *connection_objs;
     ble_drv_evt_handler_entry_t handler_entry;
 } bleio_adapter_obj_t;
