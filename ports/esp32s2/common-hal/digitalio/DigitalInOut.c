@@ -30,7 +30,7 @@
 
 #include "components/driver/include/driver/gpio.h"
 
-#include "components/hal/include/hal/gpio_hal.h"
+#include "components/soc/include/hal/gpio_hal.h"
 
 void common_hal_digitalio_digitalinout_never_reset(
         digitalio_digitalinout_obj_t *self) {
