@@ -142,6 +142,34 @@ const mp_obj_property_t bleio_adapter_enabled_obj = {
                MP_ROM_NONE },
 };
 
+//|
+//|     tx_power: int
+//|     """transmitter power"""
+//|
+
+STATIC mp_obj_t bleio_adapter_get_tx_power(mp_obj_t self) {
+return mp_obj_new_int(common_hal_bleio_adapter_get_tx_power(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_tx_power_obj, bleio_adapter_get_tx_power);
+
+static mp_obj_t bleio_adapter_set_tx_power(mp_obj_t self, mp_obj_t value) {
+    const mp_int_t tx_power = mp_obj_get_int(value);
+
+    common_hal_bleio_adapter_set_tx_power(self, tx_power);
+
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_adapter_set_tx_power_obj, bleio_adapter_set_tx_power);
+
+const mp_obj_property_t bleio_adapter_tx_power_obj = {
+        .base.type = &mp_type_property,
+        .proxy = { (mp_obj_t)&bleio_adapter_get_tx_power_obj,
+                   (mp_obj_t)&bleio_adapter_set_tx_power_obj,
+                   (mp_obj_t)&mp_const_none_obj },
+};
+
+
 //|     address: Address
 //|     """MAC address of the BLE adapter."""
 //|
@@ -457,6 +485,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_erase_bonding_obj, bleio_adapter_
 
 STATIC const mp_rom_map_elem_t bleio_adapter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enabled), MP_ROM_PTR(&bleio_adapter_enabled_obj) },
+    { MP_ROM_QSTR(MP_QSTR_tx_power), MP_ROM_PTR(&bleio_adapter_tx_power_obj) },
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&bleio_adapter_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_name),    MP_ROM_PTR(&bleio_adapter_name_obj) },
 
