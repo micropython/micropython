@@ -37,7 +37,7 @@
 #include "shared-bindings/wifi/Radio.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
 
-#include "esp-idf/components/esp_wifi/include/esp_wifi.h"
+#include "components/esp_wifi/include/esp_wifi.h"
 
 static void wifi_scannednetworks_done(wifi_scannednetworks_obj_t *self) {
     self->done = true;

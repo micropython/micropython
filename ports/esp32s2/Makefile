@@ -73,10 +73,15 @@ INC += -I./peripherals
 INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I../../supervisor/shared/usb
+
+INC += -isystem esp-idf
+INC += -isystem esp-idf/components/driver/include
+INC += -isystem esp-idf/components/hal/esp32s2/include
+INC += -isystem esp-idf/components/hal/include
+
 INC += -isystem esp-idf/components/freertos/include/freertos
 INC += -isystem esp-idf/components/freertos/xtensa/include
 INC += -isystem esp-idf/components/esp32s2/include
-INC += -isystem esp-idf/components/driver/esp32s2/include
 INC += -isystem esp-idf/components/xtensa/esp32s2/include
 INC += -isystem esp-idf/components/esp_common/include
 INC += -isystem esp-idf/components/esp_event/include
@@ -92,6 +97,10 @@ INC += -isystem esp-idf/components/newlib/platform_include
 INC += -isystem esp-idf/components/lwip/lwip/src/include
 INC += -isystem esp-idf/components/lwip/port/esp32/include
 INC += -isystem esp-idf/components/lwip/include/apps/sntp
+<<<<<<< HEAD
+=======
+INC += -isystem esp-idf/components/hal/include
+>>>>>>> esp32-update-idf
 INC += -isystem esp-idf/components/soc/include
 INC += -isystem esp-idf/components/soc/src/esp32s2/include
 INC += -isystem esp-idf/components/soc/soc/include

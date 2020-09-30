@@ -43,8 +43,8 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "shared-bindings/neopixel_write/__init__.h"
-#include "driver/rmt.h"
-#include "rmt.h"
+#include "components/driver/include/driver/rmt.h"
+#include "peripherals/rmt.h"
 
 #define WS2812_T0H_NS (350)
 #define WS2812_T0L_NS (1000)

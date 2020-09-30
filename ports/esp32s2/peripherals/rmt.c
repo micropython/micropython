@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "rmt.h"
+#include "peripherals/rmt.h"
 #include "py/runtime.h"
 
 bool rmt_reserved_channels[RMT_CHANNEL_MAX];

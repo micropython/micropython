@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_RMT_H
-#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_RMT_H
+#include "boards/board.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "supervisor/shared/board.h"
+#include "hal/include/hal_gpio.h"
 
-#include "py/mphal.h"
-#include "components/driver/include/driver/rmt.h"
-#include <stdint.h>
+void board_init(void) {
+    gpio_set_pin_function(PIN_PA15, GPIO_PIN_FUNCTION_OFF);
+    gpio_set_pin_direction(PIN_PA15, GPIO_DIRECTION_OUT);
+    gpio_set_pin_level(PIN_PA15, true); // Turn on neopixel by default
+    never_reset_pin_number(PIN_PA15);
+}
 
-void esp32s2_peripherals_rmt_reset(void);
-rmt_channel_t esp32s2_peripherals_find_and_reserve_rmt(void);
-void esp32s2_peripherals_free_rmt(rmt_channel_t chan);
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#endif
+void reset_board(void) {
+}

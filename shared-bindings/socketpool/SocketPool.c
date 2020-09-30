@@ -37,7 +37,6 @@
 #include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 
-#include "esp_log.h"
 static const char* TAG = "socketpool binding";
 
 //| class SocketPool:

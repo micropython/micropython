@@ -279,6 +279,7 @@ jobs:
         - "pyportal_titano"
         - "pyruler"
         - "qtpy_m0"
+        - "qtpy_m0_haxpress"
         - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
         - "sam32"
