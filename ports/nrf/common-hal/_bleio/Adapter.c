@@ -333,6 +333,10 @@ STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
     common_hal_bleio_adapter_set_name(self, (char *)default_ble_name);
 }
 
+
+// The nRF SD 6.1.0 can only do one concurrent advertisement so share the advertising handle.
+uint8_t adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
+
 void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled) {
     const bool is_enabled = common_hal_bleio_adapter_get_enabled(self);
 
@@ -384,6 +388,14 @@ bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
     check_nrf_error(sd_softdevice_is_enabled(&is_enabled));
 
     return is_enabled;
+}
+
+void common_hal_bleio_adapter_set_tx_power(bleio_adapter_obj_t *self, mp_int_t tx_power) {
+    self->tx_power = tx_power;
+}
+
+mp_int_t common_hal_bleio_adapter_get_tx_power(bleio_adapter_obj_t *self) {
+    return self->tx_power;
 }
 
 bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *self) {
@@ -619,8 +631,6 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
     return mp_const_none;
 }
 
-// The nRF SD 6.1.0 can only do one concurrent advertisement so share the advertising handle.
-uint8_t adv_handle = BLE_GAP_ADV_SET_HANDLE_NOT_SET;
 
 STATIC void check_data_fit(size_t data_len, bool connectable) {
     if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED ||
@@ -725,7 +735,10 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
     }
 
     ble_drv_add_event_handler(advertising_on_ble_evt, self);
-
+    err_code = sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, adv_handle, self->tx_power);
+    if (err_code != NRF_SUCCESS) {
+        return err_code;
+    }
     vm_used_ble = true;
     err_code = sd_ble_gap_adv_start(adv_handle, BLE_CONN_CFG_TAG_CUSTOM);
     if (err_code != NRF_SUCCESS) {
