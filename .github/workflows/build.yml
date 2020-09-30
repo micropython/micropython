@@ -414,6 +414,7 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "adafruit_metro_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
