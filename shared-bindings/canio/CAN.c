@@ -172,7 +172,7 @@ STATIC const mp_obj_property_t canio_can_receive_error_count_obj = {
 };
 
 //|     state: State
-//|     """The current state of the bus."""
+//|     """The current state of the bus. (read-only)"""
 STATIC mp_obj_t canio_can_state_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
@@ -256,7 +256,8 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(canio_can_listen_obj, 1, canio_can_listen);
 
 //|     loopback: bool
-//|     """True if the device was created in loopback mode, False otherwise"""
+//|     """True if the device was created in loopback mode, False
+//|     otherwise (read-only)"""
 //|
 STATIC mp_obj_t canio_can_loopback_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -294,7 +295,8 @@ STATIC mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(canio_can_send_obj, canio_can_send);
 
 //|     silent: bool
-//|     """True if the device was created in silent mode, False otherwise"""
+//|     """True if the device was created in silent mode, False
+//|     otherwise (read-only)"""
 //|
 STATIC mp_obj_t canio_can_silent_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
