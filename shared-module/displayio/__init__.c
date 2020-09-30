@@ -50,7 +50,6 @@ void displayio_background(void) {
         return;
     }
 
-    displayio_background_in_progress = true;
 
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display.base.type == NULL || displays[i].display.base.type == &mp_type_NoneType) {
