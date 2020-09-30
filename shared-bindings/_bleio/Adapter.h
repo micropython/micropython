@@ -44,6 +44,8 @@ void common_hal_bleio_adapter_construct_hci_uart(bleio_adapter_obj_t *self, busi
 extern bool common_hal_bleio_adapter_get_advertising(bleio_adapter_obj_t *self);
 extern bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self);
 extern void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled);
+extern mp_int_t common_hal_bleio_adapter_get_tx_power(bleio_adapter_obj_t *self);
+extern void common_hal_bleio_adapter_set_tx_power(bleio_adapter_obj_t *self, mp_int_t tx_power);
 extern bool common_hal_bleio_adapter_get_connected(bleio_adapter_obj_t *self);
 extern bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *self);
 extern bool common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_address_obj_t *address);
