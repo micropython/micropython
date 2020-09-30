@@ -44,7 +44,9 @@ DEFAULT_IGNORELIST = [
     "feather_m0_express",
     "feather_m0_supersized",
     "cp32-m4",
-    "metro_m4_express"
+    "metro_m4_express",
+    "unexpectedmaker_feathers2",
+    "unexpectedmaker_feathers2_prerelease"
 ]
 
 cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")
