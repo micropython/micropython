@@ -171,59 +171,8 @@ STATIC const mp_obj_property_t canio_can_receive_error_count_obj = {
               (mp_obj_t)mp_const_none},
 };
 
-//|     error_warning_state_count: int
-//|     """The number of times the controller enterted the Error Warning state (read-only).  This number wraps around to 0 after an implementation-defined number of errors."""
-//|
-STATIC mp_obj_t canio_can_error_warning_state_count_get(mp_obj_t self_in) {
-    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_canio_can_check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_error_warning_state_count_get(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(canio_can_error_warning_state_count_get_obj, canio_can_error_warning_state_count_get);
-
-STATIC const mp_obj_property_t canio_can_error_warning_state_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_error_warning_state_count_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
-};
-
-//|     error_passive_state_count: int
-//|     """The number of times the controller enterted the Error Passive state (read-only).  This number wraps around to 0 after an implementation-defined number of errors."""
-//|
-STATIC mp_obj_t canio_can_error_passive_state_count_get(mp_obj_t self_in) {
-    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_canio_can_check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_error_passive_state_count_get(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(canio_can_error_passive_state_count_get_obj, canio_can_error_passive_state_count_get);
-
-STATIC const mp_obj_property_t canio_can_error_passive_state_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_error_passive_state_count_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
-};
-
-//|     bus_off_state_count: int
-//|     """The number of times the controller enterted the Bus Off state (read-only).  This number wraps around to 0 after an implementation-defined number of errors."""
-//|
-STATIC mp_obj_t canio_can_bus_off_state_count_get(mp_obj_t self_in) {
-    canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_canio_can_check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_can_bus_off_state_count_get(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(canio_can_bus_off_state_count_get_obj, canio_can_bus_off_state_count_get);
-
-STATIC const mp_obj_property_t canio_can_bus_off_state_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_bus_off_state_count_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
-};
-
 //|     state: State
-//|     """The current state of the bus."""
+//|     """The current state of the bus. (read-only)"""
 STATIC mp_obj_t canio_can_state_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
@@ -252,7 +201,7 @@ STATIC mp_obj_t canio_can_restart(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
 
-//|     def listen(self, match: Optional[Sequence[Match]]=None, *, timeout: float=10) -> Listener:
+//|     def listen(self, matches: Optional[Sequence[Match]]=None, *, timeout: float=10) -> Listener:
 //|         """Start receiving messages that match any one of the filters.
 //|
 //|         Creating a listener is an expensive operation and can interfere with reception of messages by other listeners.
@@ -265,16 +214,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
 //|
 //|         An empty filter list causes all messages to be accepted.
 //|
-//|         Timeout dictates how long readinto, read and next() will block."""
+//|         Timeout dictates how long receive() and next() will block."""
 //|         ...
 //|
 STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     common_hal_canio_can_check_for_deinit(self);
 
-    enum { ARG_match, ARG_timeout, NUM_ARGS };
+    enum { ARG_matches, ARG_timeout, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_match, MP_ARG_OBJ, {.u_obj = 0} },
+        { MP_QSTR_matches, MP_ARG_OBJ, {.u_obj = 0} },
         { MP_QSTR_timeout, MP_ARG_OBJ, {.u_obj = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -285,8 +234,8 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
     size_t nmatch = 0;
     mp_obj_t *match_objects = NULL;
 
-    if (args[ARG_match].u_obj) {
-        mp_obj_get_array(args[ARG_match].u_obj, &nmatch, &match_objects);
+    if (args[ARG_matches].u_obj) {
+        mp_obj_get_array(args[ARG_matches].u_obj, &nmatch, &match_objects);
     }
 
     canio_match_obj_t *matches[nmatch];
@@ -307,7 +256,8 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(canio_can_listen_obj, 1, canio_can_listen);
 
 //|     loopback: bool
-//|     """True if the device was created in loopback mode, False otherwise"""
+//|     """True if the device was created in loopback mode, False
+//|     otherwise (read-only)"""
 //|
 STATIC mp_obj_t canio_can_loopback_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -324,7 +274,7 @@ STATIC const mp_obj_property_t canio_can_loopback_obj = {
 };
 
 
-//|     def send(message: Message) -> None:
+//|     def send(message: Union[RemoteTransmissionRequest, Message]) -> None:
 //|         """Send a message on the bus with the given data and id.
 //|         If the message could not be sent due to a full fifo or a bus error condition, RuntimeError is raised.
 //|         """
@@ -334,8 +284,8 @@ STATIC mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_can_check_for_deinit(self);
     mp_obj_type_t *message_type = mp_obj_get_type(message_in);
-    if (message_type != &canio_message_type) {
-        mp_raise_TypeError_varg(translate("expected '%q' but got '%q'"), MP_QSTR_Message, message_type->name);
+    if (message_type != &canio_message_type && message_type != &canio_remote_transmission_request_type) {
+        mp_raise_TypeError_varg(translate("expected '%q' or '%q' but got '%q'"), MP_QSTR_Message, MP_QSTR_RemoteTransmissionRequest, message_type->name);
     }
 
     canio_message_obj_t *message = message_in;
@@ -345,7 +295,8 @@ STATIC mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
 MP_DEFINE_CONST_FUN_OBJ_2(canio_can_send_obj, canio_can_send);
 
 //|     silent: bool
-//|     """True if the device was created in silent mode, False otherwise"""
+//|     """True if the device was created in silent mode, False
+//|     otherwise (read-only)"""
 //|
 STATIC mp_obj_t canio_can_silent_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -399,10 +350,7 @@ STATIC const mp_rom_map_elem_t canio_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&canio_can_exit_obj) },
     { MP_ROM_QSTR(MP_QSTR_auto_restart), MP_ROM_PTR(&canio_can_auto_restart_obj) },
     { MP_ROM_QSTR(MP_QSTR_baudrate), MP_ROM_PTR(&canio_can_baudrate_obj) },
-    { MP_ROM_QSTR(MP_QSTR_bus_off_state_count), MP_ROM_PTR(&canio_can_bus_off_state_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&canio_can_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_error_passive_state_count), MP_ROM_PTR(&canio_can_error_passive_state_count_obj) },
-    { MP_ROM_QSTR(MP_QSTR_error_warning_state_count), MP_ROM_PTR(&canio_can_error_warning_state_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&canio_can_listen_obj) },
     { MP_ROM_QSTR(MP_QSTR_loopback), MP_ROM_PTR(&canio_can_loopback_obj) },
     { MP_ROM_QSTR(MP_QSTR_receive_error_count), MP_ROM_PTR(&canio_can_receive_error_count_obj) },

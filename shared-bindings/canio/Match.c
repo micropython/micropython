@@ -33,20 +33,20 @@
 //|     """Describe CAN bus messages to match"""
 //|
 //|
-//|     def __init__(self, address: int, *, mask: int = 0, extended: bool = False):
+//|     def __init__(self, id: int, *, mask: Optional[int] = None, extended: bool = False):
 //|         """Construct a Match with the given properties.
 //|
-//|         If mask is nonzero, then the filter is for any sender which matches all
-//|         the nonzero bits in mask. Otherwise, it matches exactly the given address.
-//|         If extended is true then only extended addresses are matched, otherwise
-//|         only standard addresses are matched."""
+//|         If mask is not None, then the filter is for any id which matches all
+//|         the nonzero bits in mask. Otherwise, it matches exactly the given id.
+//|         If extended is true then only extended ids are matched, otherwise
+//|         only standard ids are matched."""
 //|
 
 STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_address, ARG_mask, ARG_extended, NUM_ARGS };
+    enum { ARG_id, ARG_mask, ARG_extended, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_address, MP_ARG_INT | MP_ARG_REQUIRED },
-        { MP_QSTR_mask, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_id, MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_mask, MP_ARG_OBJ, {.u_obj = mp_const_none } },
         { MP_QSTR_extended, MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -54,44 +54,44 @@ STATIC mp_obj_t canio_match_make_new(const mp_obj_type_t *type, size_t n_args, c
 
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    int address_bits = args[ARG_extended].u_bool ? 0x1fffffff : 0x7ff;
-    int address = args[ARG_address].u_int;
-    int mask = args[ARG_mask].u_int;
+    int id_bits = args[ARG_extended].u_bool ? 0x1fffffff : 0x7ff;
+    int id = args[ARG_id].u_int;
+    int mask = args[ARG_mask].u_obj == mp_const_none ?  id_bits : mp_obj_get_int(args[ARG_mask].u_obj);
 
-    if (address & ~address_bits) {
-        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_address);
+    if (id & ~id_bits) {
+        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_id);
     }
 
-    if (mask & ~address_bits) {
+    if (mask & ~id_bits) {
         mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_mask);
     }
 
     canio_match_obj_t *self = m_new_obj(canio_match_obj_t);
     self->base.type = &canio_match_type;
-    common_hal_canio_match_construct(self, args[ARG_address].u_int, args[ARG_mask].u_int, args[ARG_extended].u_bool);
+    common_hal_canio_match_construct(self, id, mask, args[ARG_extended].u_bool);
     return self;
 }
 
-//|     address: int
-//|     """The address to match"""
+//|     id: int
+//|     """The id to match"""
 //|
 
-STATIC mp_obj_t canio_match_address_get(mp_obj_t self_in) {
+STATIC mp_obj_t canio_match_id_get(mp_obj_t self_in) {
     canio_match_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_match_get_address(self));
+    return MP_OBJ_NEW_SMALL_INT(common_hal_canio_match_get_id(self));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(canio_match_address_get_obj, canio_match_address_get);
+MP_DEFINE_CONST_FUN_OBJ_1(canio_match_id_get_obj, canio_match_id_get);
 
-const mp_obj_property_t canio_match_address_obj = {
+const mp_obj_property_t canio_match_id_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_match_address_get_obj,
+    .proxy = {(mp_obj_t)&canio_match_id_get_obj,
               (mp_obj_t)&mp_const_none_obj,
               (mp_obj_t)&mp_const_none_obj},
 };
 
 //|
 //|     mask: int
-//|     """The optional mask of addresses to match"""
+//|     """The optional mask of ids to match"""
 //|
 
 STATIC mp_obj_t canio_match_mask_get(mp_obj_t self_in) {
@@ -108,7 +108,7 @@ const mp_obj_property_t canio_match_mask_obj = {
 };
 
 //|     extended: bool
-//|     """True to match extended addresses, False to match standard addresses"""
+//|     """True to match extended ids, False to match standard ides"""
 //|
 
 STATIC mp_obj_t canio_match_extended_get(mp_obj_t self_in) {
@@ -125,7 +125,7 @@ const mp_obj_property_t canio_match_extended_obj = {
 };
 
 STATIC const mp_rom_map_elem_t canio_match_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&canio_match_address_obj) },
+    { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&canio_match_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_mask), MP_ROM_PTR(&canio_match_mask_obj) },
     { MP_ROM_QSTR(MP_QSTR_extended), MP_ROM_PTR(&canio_match_extended_obj) },
 };

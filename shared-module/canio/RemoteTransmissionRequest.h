@@ -27,11 +27,7 @@
 #pragma once
 
 #include "py/obj.h"
-#include "shared-module/canio/Match.h"
 
-extern const mp_obj_type_t canio_match_type;
+#include "shared-bindings/canio/Message.h"
 
-void common_hal_canio_match_construct(canio_match_obj_t *self, int id, int mask, bool extended);
-int common_hal_canio_match_get_id(const canio_match_obj_t *self);
-int common_hal_canio_match_get_mask(const canio_match_obj_t *self);
-bool common_hal_canio_match_get_extended(const canio_match_obj_t *self);
+typedef canio_message_obj_t canio_remote_transmission_request_obj_t;

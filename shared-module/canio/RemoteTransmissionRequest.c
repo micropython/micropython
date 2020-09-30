@@ -24,14 +24,44 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "shared-module/canio/RemoteTransmissionRequest.h"
+#include "shared-bindings/canio/RemoteTransmissionRequest.h"
 
-#include "py/obj.h"
-#include "shared-module/canio/Match.h"
+#include <string.h>
 
-extern const mp_obj_type_t canio_match_type;
+void common_hal_canio_remote_transmission_request_construct(canio_remote_transmission_request_obj_t *self, int id, size_t size, bool extended)
+{
+    self->id = id;
+    self->size = size;
+    self->extended = extended;
+}
 
-void common_hal_canio_match_construct(canio_match_obj_t *self, int id, int mask, bool extended);
-int common_hal_canio_match_get_id(const canio_match_obj_t *self);
-int common_hal_canio_match_get_mask(const canio_match_obj_t *self);
-bool common_hal_canio_match_get_extended(const canio_match_obj_t *self);
+int common_hal_canio_remote_transmission_request_get_id(const canio_remote_transmission_request_obj_t *self)
+{
+    return self->id;
+}
+
+void common_hal_canio_remote_transmission_request_set_id(canio_remote_transmission_request_obj_t *self, int id)
+{
+    self->id = id;
+}
+
+size_t common_hal_canio_remote_transmission_request_get_length(const canio_remote_transmission_request_obj_t *self)
+{
+    return self->size;
+}
+
+void common_hal_canio_remote_transmission_request_set_length(canio_remote_transmission_request_obj_t *self, size_t size)
+{
+    self->size = size;
+}
+
+bool common_hal_canio_remote_transmission_request_get_extended(const canio_remote_transmission_request_obj_t *self)
+{
+    return self->extended;
+}
+
+void common_hal_canio_remote_transmission_request_set_extended(canio_remote_transmission_request_obj_t *self, bool extended)
+{
+    self->extended = extended;
+}

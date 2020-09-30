@@ -33,6 +33,5 @@ typedef struct {
     int id;
     uint8_t data[8];
     size_t size:4;
-    bool rtr:1;
     bool extended:1;
 } canio_message_obj_t;
