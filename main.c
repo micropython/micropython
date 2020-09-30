@@ -57,6 +57,9 @@
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
+#include "supervisor/usb.h"
+
+#include "shared-bindings/microcontroller/__init__.h"
 
 #include "boards/board.h"
 
@@ -298,6 +301,19 @@ bool run_code_py(safe_mode_t safe_mode) {
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             return reload_requested;
         }
+    }
+
+    for (uint8_t i = 0; i<=100; i++) {
+        if (!usb_msc_ejected()) {
+            //Go into light sleep
+            break;
+        }
+        mp_hal_delay_ms(10);
+    }
+
+    if (usb_msc_ejected()) {
+        //Go into deep sleep
+        common_hal_mcu_deep_sleep();
     }
 
     // Display a different completion message if the user has no USB attached (cannot save files)
