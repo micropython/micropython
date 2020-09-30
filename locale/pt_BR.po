@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 11:11+0530\n"
+"POT-Creation-Date: 2020-09-29 20:14-0500\n"
 "PO-Revision-Date: 2020-09-30 18:43+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
@@ -1574,6 +1574,10 @@ msgstr "Objeto de leitura apenas"
 msgid "Refresh too soon"
 msgstr "A recarga foi cedo demais"
 
+#: shared-bindings/canio/RemoteTransmissionRequest.c
+msgid "RemoteTransmissionRequests limited to 8 bytes"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "O modo AES solicitado não é compatível"
@@ -2492,9 +2496,13 @@ msgstr "erro = 0x%08lX"
 msgid "exceptions must derive from BaseException"
 msgstr "as exceções devem derivar a partir do BaseException"
 
-#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+#: shared-bindings/canio/CAN.c
 msgid "expected '%q' but got '%q'"
 msgstr "o retorno esperado era '%q', porém obteve '% q'"
+
+#: shared-bindings/canio/CAN.c
+msgid "expected '%q' or '%q' but got '%q'"
+msgstr ""
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -3367,10 +3375,6 @@ msgstr "o sosfilt requer que os argumentos sejam iteráveis"
 msgid "source palette too large"
 msgstr "a paleta de origem é muito grande"
 
-#: shared-bindings/canio/Message.c
-msgid "specify size or data, but not both"
-msgstr "defina o tamanho ou os dados, porém não ambos"
-
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "os índices de início/fim"
@@ -3667,6 +3671,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "specify size or data, but not both"
+#~ msgstr "defina o tamanho ou os dados, porém não ambos"
 
 #~ msgid "Must provide SCK pin"
 #~ msgstr "É obrigatório informar o pino SCK"

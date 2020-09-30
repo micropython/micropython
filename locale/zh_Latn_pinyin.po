@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 11:11+0530\n"
+"POT-Creation-Date: 2020-09-29 20:14-0500\n"
 "PO-Revision-Date: 2019-04-13 10:10-0700\n"
 "Last-Translator: hexthat\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -1550,6 +1550,10 @@ msgstr "Zhǐ dú duìxiàng"
 msgid "Refresh too soon"
 msgstr "Shuāxīn tài kuàile"
 
+#: shared-bindings/canio/RemoteTransmissionRequest.c
+msgid "RemoteTransmissionRequests limited to 8 bytes"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "Qǐngqiú de AES móshì bù shòu zhīchí"
@@ -2453,8 +2457,12 @@ msgstr "cuòwù = 0x%08lX"
 msgid "exceptions must derive from BaseException"
 msgstr "lìwài bìxū láizì BaseException"
 
-#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+#: shared-bindings/canio/CAN.c
 msgid "expected '%q' but got '%q'"
+msgstr ""
+
+#: shared-bindings/canio/CAN.c
+msgid "expected '%q' or '%q' but got '%q'"
 msgstr ""
 
 #: py/objstr.c
@@ -3318,10 +3326,6 @@ msgstr "sosfilt xūyào diédài cānshù"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
-
-#: shared-bindings/canio/Message.c
-msgid "specify size or data, but not both"
 msgstr ""
 
 #: py/objstr.c

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 11:11+0530\n"
+"POT-Creation-Date: 2020-09-29 20:14-0500\n"
 "PO-Revision-Date: 2020-06-16 18:24+0000\n"
 "Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language: de_DE\n"
@@ -1564,6 +1564,10 @@ msgstr "Schreibgeschützte Objekt"
 msgid "Refresh too soon"
 msgstr "Zu früh neu geladen"
 
+#: shared-bindings/canio/RemoteTransmissionRequest.c
+msgid "RemoteTransmissionRequests limited to 8 bytes"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "Der angeforderte AES-Modus wird nicht unterstützt"
@@ -2486,8 +2490,12 @@ msgstr "Fehler = 0x%08lX"
 msgid "exceptions must derive from BaseException"
 msgstr "Exceptions müssen von BaseException abgeleitet sein"
 
-#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+#: shared-bindings/canio/CAN.c
 msgid "expected '%q' but got '%q'"
+msgstr ""
+
+#: shared-bindings/canio/CAN.c
+msgid "expected '%q' or '%q' but got '%q'"
 msgstr ""
 
 #: py/objstr.c
@@ -3360,10 +3368,6 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
-
-#: shared-bindings/canio/Message.c
-msgid "specify size or data, but not both"
 msgstr ""
 
 #: py/objstr.c

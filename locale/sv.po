@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 11:11+0530\n"
+"POT-Creation-Date: 2020-09-29 20:14-0500\n"
 "PO-Revision-Date: 2020-09-30 18:43+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1560,6 +1560,10 @@ msgstr "Skrivskyddat objekt"
 msgid "Refresh too soon"
 msgstr "Uppdaterad för tidigt"
 
+#: shared-bindings/canio/RemoteTransmissionRequest.c
+msgid "RemoteTransmissionRequests limited to 8 bytes"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "Det begärda AES-läget stöds inte"
@@ -2465,9 +2469,13 @@ msgstr "fel = 0x%08lX"
 msgid "exceptions must derive from BaseException"
 msgstr "exceptions måste ärvas från BaseException"
 
-#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+#: shared-bindings/canio/CAN.c
 msgid "expected '%q' but got '%q'"
 msgstr "förväntade '%q' men fick '%q'"
+
+#: shared-bindings/canio/CAN.c
+msgid "expected '%q' or '%q' but got '%q'"
+msgstr ""
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -3334,10 +3342,6 @@ msgstr "sosfilt kräver iterable argument"
 msgid "source palette too large"
 msgstr "källpalett för stor"
 
-#: shared-bindings/canio/Message.c
-msgid "specify size or data, but not both"
-msgstr "ange storlek eller data, men inte båda"
-
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "start-/slutindex"
@@ -3634,6 +3638,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "specify size or data, but not both"
+#~ msgstr "ange storlek eller data, men inte båda"
 
 #~ msgid "Must provide SCK pin"
 #~ msgstr "Måste ange SCK-pinne"
