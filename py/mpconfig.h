@@ -454,6 +454,11 @@
 #define MICROPY_DEBUG_MP_OBJ_SENTINELS (0)
 #endif
 
+// Whether to print parse rule names (rather than integers) in mp_parse_node_print
+#ifndef MICROPY_DEBUG_PARSE_RULE_NAME
+#define MICROPY_DEBUG_PARSE_RULE_NAME (0)
+#endif
+
 // Whether to enable a simple VM stack overflow check
 #ifndef MICROPY_DEBUG_VM_STACK_OVERFLOW
 #define MICROPY_DEBUG_VM_STACK_OVERFLOW (0)
