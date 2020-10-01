@@ -187,3 +187,12 @@ Other:
 * nRF UART application for IPhone/Android
 
 WebBluetooth mode can also be configured by editing `bluetooth_conf.h` and set `BLUETOOTH_WEBBLUETOOTH_REPL` to 1. This will alternate advertisement between Eddystone URL and regular connectable advertisement. The Eddystone URL will point the phone or PC to download [WebBluetooth REPL](https://aykevl.nl/apps/nus/) (experimental), which subsequently can be used to connect to the Bluetooth REPL from the PC or Phone browser.
+
+
+## Pin numbering scheme for nrf52840-based boards
+
+Software Pins 0-31 correspond to physical pins 0.x and software Pins 32-47
+correspond to physical pins 1.x.
+
+Example:
+`Pin(47)` would be 1.15 on the PCA10059
