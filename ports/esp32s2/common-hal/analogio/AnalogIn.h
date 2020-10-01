@@ -29,7 +29,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "esp-idf/components/soc/include/hal/adc_types.h"
+#include "components/soc/include/hal/adc_types.h"
 #include "FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "py/obj.h"

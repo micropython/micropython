@@ -29,9 +29,9 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-#include "driver/adc.h"
-// TODO: Add when ESP-IDF is updated latest version
-// #include "esp-idf/components/esp_adc_cal/include/esp_adc_cal.h"
+#include "components/driver/include/driver/adc_common.h"
+
+#include "components/esp_adc_cal/include/esp_adc_cal.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
 
@@ -69,10 +69,9 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         adc2_config_channel_atten((adc2_channel_t)self->pin->adc_channel, ATTENUATION);
     }
 
-    // TODO: esp_adc_cal is only available in the latest version of the esp-idf. Enable when we update.
     // Automatically select calibration process depending on status of efuse
-    // esp_adc_cal_characteristics_t *adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    // esp_adc_cal_characterize(self->pin->adc_index, ATTENUATION, DATA_WIDTH, DEFAULT_VREF, adc_chars);
+    esp_adc_cal_characteristics_t *adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    esp_adc_cal_characterize(self->pin->adc_index, ATTENUATION, DATA_WIDTH, DEFAULT_VREF, adc_chars);
 
     uint32_t adc_reading = 0;
     //Multisampling
@@ -91,11 +90,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     adc_reading /= NO_OF_SAMPLES;
 
     // This corrects non-linear regions of the ADC range with a LUT, so it's a better reading than raw
-    // Enable when ESP-IDF is updated
-    //uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
-    //return voltage * ((1 << 16) - 1)/3300;
-
-    return adc_reading;
+    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+    return voltage * ((1 << 16) - 1)/3300;
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {
