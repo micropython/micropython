@@ -316,8 +316,17 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
     }
 }
 
-void displayio_display_core_start_refresh(displayio_display_core_t* self) {
+bool displayio_display_core_start_refresh(displayio_display_core_t* self) {
+    if (!displayio_display_core_bus_free(self)) {
+        // Can't acquire display bus; skip updating this display. Try next display.
+        return false;
+    }
+    if (self->refresh_in_progress) {
+        return false;
+    }
+    self->refresh_in_progress = true;
     self->last_refresh = supervisor_ticks_ms64();
+    return true;
 }
 
 void displayio_display_core_finish_refresh(displayio_display_core_t* self) {
@@ -326,6 +335,7 @@ void displayio_display_core_finish_refresh(displayio_display_core_t* self) {
         displayio_group_finish_refresh(self->current_group);
     }
     self->full_refresh = false;
+    self->refresh_in_progress = false;
     self->last_refresh = supervisor_ticks_ms64();
 }
 
