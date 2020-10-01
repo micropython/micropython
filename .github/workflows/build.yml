@@ -422,6 +422,7 @@ jobs:
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
         - "unexpectedmaker_feathers2"
+        - "unexpectedmaker_feathers2_prerelease"
 
     steps:
     - name: Set up Python 3.8
