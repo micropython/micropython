@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-09-30 18:43+0000\n"
+"PO-Revision-Date: 2020-10-01 14:20+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1576,7 +1576,7 @@ msgstr "A recarga foi cedo demais"
 
 #: shared-bindings/canio/RemoteTransmissionRequest.c
 msgid "RemoteTransmissionRequests limited to 8 bytes"
-msgstr ""
+msgstr "As requisições de transmissões remotas é limitada a 8 bytes"
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
@@ -2498,11 +2498,11 @@ msgstr "as exceções devem derivar a partir do BaseException"
 
 #: shared-bindings/canio/CAN.c
 msgid "expected '%q' but got '%q'"
-msgstr "o retorno esperado era '%q', porém obteve '% q'"
+msgstr "o retorno esperado era '%q', porém obteve '%q'"
 
 #: shared-bindings/canio/CAN.c
 msgid "expected '%q' or '%q' but got '%q'"
-msgstr ""
+msgstr "o retorno esperado era '%q' ou '%q', porém obteve '%q'"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
