@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-10-01 17:13+0000\n"
+"PO-Revision-Date: 2020-10-01 21:24+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -1492,6 +1492,8 @@ msgid ""
 "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
 "instead"
 msgstr ""
+"Port no acepta un carrier de PWM. Pase en cambio un pin, una frecuencia o un "
+"ciclo de actividad"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
