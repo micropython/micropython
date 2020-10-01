@@ -45,6 +45,7 @@ TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/esp32s2
 # Each must be preceded by "-path"; if any wildcards, enclose in quotes.
 # Separate by "-o" (Find's "or" operand)
 TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
+	-o -path "ports/*/build" \
 	-o -path ports/esp32s2/esp-idf \
 	-o -path ports/cxd56/spresense-exported-sdk \
 	-o -path ports/stm/st_driver \
