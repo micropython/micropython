@@ -34,51 +34,39 @@
 //| class Listener:
 //|     """Listens for CAN message
 //|
-//|     canio.Listener is not constructed directly, but instead by calling the
-//|     Listen method of a canio.CAN object."""
+//|     `canio.Listener` is not constructed directly, but instead by calling
+//|     `canio.CAN.listen`.
+//|
+//|     In addition to using the `receive` method to retrieve a message or
+//|     the `in_waiting` method to check for an available message, a
+//|     listener can be used as an iterable, yielding messages until no
+//|     message arrives within ``self.timeout`` seconds."""
 //|
 
-//|     def read(self) -> Optional[Message]:
-//|         """Reads a message, after waiting up to self.timeout seconds
+//|     def receive(self) -> Optional[Union[RemoteTransmissionRequest,Message]]:
+//|         """Reads a message, after waiting up to ``self.timeout`` seconds
 //|
-//|         If no message is received in time, None is returned.  Otherwise,
-//|         a Message is returned."""
+//|         If no message is received in time, `None` is returned.  Otherwise,
+//|         a `Message` or `RemoteTransmissionRequest` is returned."""
 //|         ...
 //|
-STATIC mp_obj_t canio_listener_read(mp_obj_t self_in) {
+STATIC mp_obj_t canio_listener_receive(mp_obj_t self_in) {
     canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_canio_listener_check_for_deinit(self);
 
-    canio_message_obj_t *message = m_new_obj(canio_message_obj_t);
-    message->base.type = &canio_message_type;
+    mp_obj_t message = common_hal_canio_listener_receive(self);
+    // note: receive fills out the type field of the message
 
-    if (common_hal_canio_listener_readinto(self, message)) {
+    if (message) {
         return message;
-    } else {
-        m_free(message); // message did not escape into vm
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_read_obj, canio_listener_read);
-
-//|     def readinto(self, message: Message) -> bool:
-//|         """Returns True (and modifies message) if a message was received
-//|         before ``timeout`` seconds elapsed, False otherwise."""
-//|         ...
-//|
-STATIC mp_obj_t canio_listener_readinto(mp_obj_t self_in, mp_obj_t message) {
-    canio_listener_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_type_t *type = mp_obj_get_type(message);
-    if (type != &canio_message_type) {
-        mp_raise_TypeError_varg(translate("expected '%q' but got '%q'"), MP_QSTR_Message, type->name);
-    }
-    common_hal_canio_listener_check_for_deinit(self);
-    return mp_obj_new_bool(common_hal_canio_listener_readinto(self, message));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(canio_listener_readinto_obj, canio_listener_readinto);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_receive_obj, canio_listener_receive);
 
 //|     def in_waiting(self) -> int:
-//|         """Returns the number of messages waiting"""
+//|         """Returns the number of messages (including remote
+//|         transmission requests) waiting"""
 //|         ...
 //|
 STATIC mp_obj_t canio_listener_in_waiting(mp_obj_t self_in) {
@@ -88,19 +76,25 @@ STATIC mp_obj_t canio_listener_in_waiting(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_in_waiting_obj, canio_listener_in_waiting);
 
-//|     def __iter__(self):
-//|         """Returns self, unless the object is deinitialized"""
+//|     def __iter__(self) -> Listener:
+//|         """Returns self
+//|
+//|         This method exists so that `Listener` can be used as an
+//|         iterable"""
 //|         ...
 //|
-//|     def __next__(self):
+//|     def __next__(self) -> Union[RemoteTransmissionRequest,Message]:
 //|         """Reads a message, after waiting up to self.timeout seconds
 //|
 //|         If no message is received in time, raises StopIteration.  Otherwise,
-//|         a Message is returned."""
+//|         a Message or  is returned.
+//|
+//|         This method enables the `Listener` to be used as an
+//|         iterable, for instance in a for-loop."""
 //|         ...
 //|
 STATIC mp_obj_t canio_iternext(mp_obj_t self_in) {
-    mp_obj_t result = canio_listener_read(self_in);
+    mp_obj_t result = canio_listener_receive(self_in);
     if (result == mp_const_none) {
         return MP_OBJ_STOP_ITERATION;
     }
@@ -170,8 +164,7 @@ STATIC const mp_rom_map_elem_t canio_listener_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&canio_listener_exit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&canio_listener_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_in_waiting), MP_ROM_PTR(&canio_listener_in_waiting_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&canio_listener_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&canio_listener_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_receive), MP_ROM_PTR(&canio_listener_receive_obj) },
     { MP_ROM_QSTR(MP_QSTR_timeout), MP_ROM_PTR(&canio_listener_timeout_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(canio_listener_locals_dict, canio_listener_locals_dict_table);

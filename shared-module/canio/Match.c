@@ -26,14 +26,14 @@
 
 #include "shared-module/canio/Match.h"
 
-void common_hal_canio_match_construct(canio_match_obj_t *self, int address, int mask, bool extended) {
-    self->address = address;
+void common_hal_canio_match_construct(canio_match_obj_t *self, int id, int mask, bool extended) {
+    self->id = id;
     self->mask = mask;
     self->extended = extended;
 }
 
-int common_hal_canio_match_get_address(const canio_match_obj_t *self) {
-    return self->address;
+int common_hal_canio_match_get_id(const canio_match_obj_t *self) {
+    return self->id;
 }
 int common_hal_canio_match_get_mask(const canio_match_obj_t *self) {
     return self->mask;

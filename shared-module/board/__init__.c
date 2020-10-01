@@ -167,7 +167,9 @@ void reset_board_busses(void) {
     }
     #endif
     // make sure SPI lock is not held over a soft reset
-    common_hal_busio_spi_unlock(&spi_obj);
+    if (spi_singleton != NULL) {
+        common_hal_busio_spi_unlock(spi_singleton);
+    }
     if (!display_using_spi) {
         spi_singleton = NULL;
     }

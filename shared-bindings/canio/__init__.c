@@ -40,8 +40,8 @@
 //|   from board import *
 //|
 //|   can = canio.CAN(board.CAN_RX, board.CAN_TX, baudrate=1000000)
-//|   message = canio.Message(id=0x0408, data="adafruit"
-//|   can.write(message))
+//|   message = canio.Message(id=0x0408, data=b"adafruit")
+//|   can.send(message)
 //|   can.deinit()
 //|
 //| This example will write the data 'adafruit' onto the CAN bus to any
@@ -113,6 +113,7 @@ STATIC const mp_rom_map_elem_t canio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Listener), MP_ROM_PTR(&canio_listener_type) },
     { MP_ROM_QSTR(MP_QSTR_Match), MP_ROM_PTR(&canio_match_type) },
     { MP_ROM_QSTR(MP_QSTR_Message), MP_ROM_PTR(&canio_message_type) },
+    { MP_ROM_QSTR(MP_QSTR_RemoteTransmissionRequest), MP_ROM_PTR(&canio_remote_transmission_request_type) },
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__canio) },
 };
 

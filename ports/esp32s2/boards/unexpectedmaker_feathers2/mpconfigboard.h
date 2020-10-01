@@ -35,6 +35,5 @@
 
 #define AUTORESET_DELAY_MS 500
 
-// Doesn't work with this on.
-// #define MICROPY_HW_APA102_MOSI   (&pin_GPIO44)
-// #define MICROPY_HW_APA102_SCK    (&pin_GPIO45)
+#define MICROPY_HW_APA102_MOSI   (&pin_GPIO40)
+#define MICROPY_HW_APA102_SCK    (&pin_GPIO45)
