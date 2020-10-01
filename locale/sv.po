@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-09-30 18:43+0000\n"
+"PO-Revision-Date: 2020-10-01 21:24+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1562,7 +1562,7 @@ msgstr "Uppdaterad för tidigt"
 
 #: shared-bindings/canio/RemoteTransmissionRequest.c
 msgid "RemoteTransmissionRequests limited to 8 bytes"
-msgstr ""
+msgstr "RemoteTransmissionRequests begränsad till 8 byte"
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
@@ -2475,7 +2475,7 @@ msgstr "förväntade '%q' men fick '%q'"
 
 #: shared-bindings/canio/CAN.c
 msgid "expected '%q' or '%q' but got '%q'"
-msgstr ""
+msgstr "förväntade '%q' eller '%q' men fick '%q'"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
