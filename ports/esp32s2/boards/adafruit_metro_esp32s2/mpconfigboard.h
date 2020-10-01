@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +24,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+//Micropython setup
 
-#include "common-hal/microcontroller/Pin.h"
+#define MICROPY_HW_BOARD_NAME       "Metro ESP32S2"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool output_value;
-} digitalio_digitalinout_obj_t;
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO45)
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+
+#define AUTORESET_DELAY_MS 500
+
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO34)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO33)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+
+#define DEFAULT_UART_BUS_RX (&pin_GPIO5)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO6)

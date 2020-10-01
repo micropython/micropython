@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#include "boards/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "common-hal/microcontroller/Pin.h"
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool output_value;
-} digitalio_digitalinout_obj_t;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+void reset_board(void) {
+
+}
