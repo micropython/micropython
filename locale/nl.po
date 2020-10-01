@@ -1700,6 +1700,10 @@ msgstr ""
 "De `microcontroller` module is gebruikt om in veilige modus op te starten. "
 "Druk reset om de veilige modus te verlaten.\n"
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
@@ -3581,6 +3585,10 @@ msgstr "vectoren moeten van gelijke lengte zijn"
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
 msgstr "watchdog time-out moet groter zijn dan 0"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "width must be greater than zero"
+msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
