@@ -34,21 +34,22 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 
 #include "supervisor/memory.h"
+#include "supervisor/shared/safe_mode.h"
 
 #define SHARPMEM_BIT_WRITECMD_LSB (0x80)
 #define SHARPMEM_BIT_VCOM_LSB (0x40)
 
-static inline void *hybrid_alloc(size_t sz) {
-    if (gc_alloc_possible()) {
-        return m_malloc(sz + sizeof(void*), true);
-    } else {
-        supervisor_allocation *allocation = allocate_memory(align32_size(sz), false);
-        if (!allocation) {
-            return NULL;
-        }
+static void *hybrid_alloc(size_t sz) {
+    supervisor_allocation *allocation = allocate_memory(align32_size(sz), false);
+    if (allocation) {
         memset(allocation->ptr, 0, sz);
         return allocation->ptr;
     }
+    if (gc_alloc_possible()) {
+        return m_malloc(sz, true);
+    }
+    reset_into_safe_mode(MEM_MANAGE);
+    return NULL; // unreached
 }
 
 static inline void hybrid_free(void *ptr_in) {
@@ -155,7 +156,8 @@ void common_hal_sharpdisplay_framebuffer_construct(sharpdisplay_framebuffer_obj_
 
     int row_stride = common_hal_sharpdisplay_framebuffer_get_row_stride(self);
     self->bufinfo.len = row_stride * height + 2;
-    self->bufinfo.buf = gc_alloc(self->bufinfo.len, false, true);
+    // re-use a supervisor allocation if possible
+    self->bufinfo.buf = hybrid_alloc(self->bufinfo.len);
 
     uint8_t *data = self->bufinfo.buf;
     *data++ = SHARPMEM_BIT_WRITECMD_LSB;
