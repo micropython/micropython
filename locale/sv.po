@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 11:11+0530\n"
-"PO-Revision-Date: 2020-09-07 19:36+0000\n"
+"POT-Creation-Date: 2020-09-29 20:14-0500\n"
+"PO-Revision-Date: 2020-09-30 18:43+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -98,7 +98,7 @@ msgstr "%q måste vara en tuple av längd 2"
 
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
-msgstr ""
+msgstr "%q utanför intervallet"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
@@ -290,7 +290,7 @@ msgstr "All I2C-kringutrustning används"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr ""
+msgstr "Alla RX FIFO i bruk"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
@@ -333,7 +333,7 @@ msgstr "Annonserar redan."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Already have all-matches listener"
-msgstr ""
+msgstr "Har redan lyssnare för all-matchningar"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -342,7 +342,7 @@ msgstr "Kör redan"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
-msgstr ""
+msgstr "Skannar redan efter wifi-nätverk"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -390,7 +390,7 @@ msgstr "Försökte tilldela heap när MicroPython VM inte körs."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
-msgstr ""
+msgstr "Autentiseringsfel"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -608,7 +608,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr ""
+msgstr "CircuitPython kunde inte allokera heap.\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -649,7 +649,7 @@ msgstr "Korrupt rå kod"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
-msgstr ""
+msgstr "Kunde inte initiera Camera"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -686,7 +686,7 @@ msgstr "Det gick inte att starta om PWM"
 
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
-msgstr ""
+msgstr "Kunde inte hämta klocka"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -780,7 +780,7 @@ msgstr "ECB arbetar endast på 16 byte åt gången"
 
 #: ports/esp32s2/common-hal/busio/SPI.c
 msgid "ESP-IDF memory allocation failed"
-msgstr ""
+msgstr "ESP-IDF-minnetilldelning misslyckades"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
@@ -841,7 +841,7 @@ msgstr "FFT är enbart definierade för ndarrays"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
-msgstr ""
+msgstr "Misslyckad SSL-handskakning"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -868,11 +868,11 @@ msgstr "Det gick inte att allokera RX-bufferten på %d byte"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
-msgstr ""
+msgstr "Det gick inte att allokera WiFi-minne"
 
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
-msgstr ""
+msgstr "Det gick inte att allokera minne för WiFi-scanning"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
@@ -884,7 +884,7 @@ msgstr "Det gick inte att ansluta: timeout"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to init wifi"
-msgstr ""
+msgstr "Kunde inte initiera WiFi"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
@@ -905,11 +905,11 @@ msgstr "Filen finns redan"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Filters too complex"
-msgstr ""
+msgstr "Filter för komplexa"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
-msgstr ""
+msgstr "Formatet stöds inte"
 
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
@@ -979,7 +979,7 @@ msgstr "Fel buffertstorlek"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
-msgstr ""
+msgstr "Indata tar för lång tid"
 
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
@@ -1026,7 +1026,7 @@ msgstr "Ogiltig BMP-fil"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr ""
+msgstr "Ogiltig BSSID"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
@@ -1076,7 +1076,7 @@ msgstr "Ogiltig formatsegmentstorlek"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
-msgstr ""
+msgstr "Ogiltig frekvens"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
@@ -1199,7 +1199,7 @@ msgstr "Maximum x-värde vid spegling är %d"
 
 #: shared-bindings/canio/Message.c
 msgid "Messages limited to 8 bytes"
-msgstr ""
+msgstr "Meddelanden begränsad till 8 byte"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
@@ -1312,11 +1312,11 @@ msgstr "Inget stöd för långt heltal"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more channels available"
-msgstr ""
+msgstr "Inga fler kanaler tillgängliga"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more timers available"
-msgstr ""
+msgstr "Ingen timer tillgänglig"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1324,7 +1324,7 @@ msgstr "Inga fler timers tillgängliga på denna pinne."
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
-msgstr ""
+msgstr "Inget nätverk med sådant ssid"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1348,7 +1348,7 @@ msgstr "Påståendet om Nordic Soft Device-fel."
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
-msgstr ""
+msgstr "Inte en giltig IP-sträng"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1385,11 +1385,11 @@ msgstr "Endast 8 eller 16 bitars mono med "
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr ""
+msgstr "Endast IPv4 SOCK_STREAM sockets stöds"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
-msgstr ""
+msgstr "Endast IPv4-adresser stöds"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1409,11 +1409,11 @@ msgstr ""
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"
-msgstr ""
+msgstr "Endast raw int stöds för ip"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
-msgstr ""
+msgstr "Slut på sockets"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1485,6 +1485,8 @@ msgid ""
 "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
 "instead"
 msgstr ""
+"Port accepterar inte PWM carrier. Ange pinne frekvens och arbetscykel "
+"istället"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -1558,6 +1560,10 @@ msgstr "Skrivskyddat objekt"
 msgid "Refresh too soon"
 msgstr "Uppdaterad för tidigt"
 
+#: shared-bindings/canio/RemoteTransmissionRequest.c
+msgid "RemoteTransmissionRequests limited to 8 bytes"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "Det begärda AES-läget stöds inte"
@@ -1629,11 +1635,11 @@ msgstr "Serializern används redan"
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
-msgstr ""
+msgstr "Serversidans kontext kan inte ha värdnamn"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
-msgstr ""
+msgstr "Storleken stöds inte"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -1648,7 +1654,7 @@ msgstr "Slice stöds inte"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
-msgstr ""
+msgstr "SocketPool kan endast användas med wifi.radio"
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
@@ -1751,7 +1757,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
-msgstr ""
+msgstr "För att avsluta, gör reset på kortet utan "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1824,7 +1830,7 @@ msgstr "Det går inte att allokera buffert för signerad konvertering"
 
 #: ports/esp32s2/common-hal/busio/I2C.c
 msgid "Unable to create lock"
-msgstr ""
+msgstr "Kan inte skapa lås"
 
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
@@ -1855,11 +1861,11 @@ msgstr "Oväntad nrfx uuid-typ"
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr ""
+msgstr "Ej hanterat ESP TLS-fel %d-%d-%x-%d"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Unknown failure"
-msgstr ""
+msgstr "Okänt fel"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1974,7 +1980,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
-msgstr ""
+msgstr "WiFi-lösenord måste vara mellan 8 och 63 tecken"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -2146,7 +2152,7 @@ msgstr "bytes> 8 bitar stöds inte"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
-msgstr ""
+msgstr "bytelängd inte en multipel av storlek"
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2463,8 +2469,12 @@ msgstr "fel = 0x%08lX"
 msgid "exceptions must derive from BaseException"
 msgstr "exceptions måste ärvas från BaseException"
 
-#: shared-bindings/canio/CAN.c shared-bindings/canio/Listener.c
+#: shared-bindings/canio/CAN.c
 msgid "expected '%q' but got '%q'"
+msgstr "förväntade '%q' men fick '%q'"
+
+#: shared-bindings/canio/CAN.c
+msgid "expected '%q' or '%q' but got '%q'"
 msgstr ""
 
 #: py/objstr.c
@@ -3128,7 +3138,7 @@ msgstr "Konvertering av long int till machine word överskred maxvärde"
 #: py/modstruct.c
 #, c-format
 msgid "pack expected %d items for packing (got %d)"
-msgstr ""
+msgstr "pack förväntade %d stycken för packning (fick %d)"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
@@ -3195,7 +3205,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
-msgstr ""
+msgstr "trycka på startknappen vid start.\n"
 
 #: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
 #: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
@@ -3203,7 +3213,7 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
-msgstr ""
+msgstr "trycka båda knapparna vid uppstart.\n"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
@@ -3331,10 +3341,6 @@ msgstr "sosfilt kräver iterable argument"
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "källpalett för stor"
-
-#: shared-bindings/canio/Message.c
-msgid "specify size or data, but not both"
-msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3632,6 +3638,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "specify size or data, but not both"
+#~ msgstr "ange storlek eller data, men inte båda"
 
 #~ msgid "Must provide SCK pin"
 #~ msgstr "Måste ange SCK-pinne"
