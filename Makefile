@@ -41,7 +41,18 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(BASEOPTS)
 I18NSPHINXOPTS  = $(BASEOPTS)
 
 TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/esp32s2 ports/mimxrt10xx ports/nrf ports/stm py shared-bindings shared-module supervisor
-TRANSLATE_SOURCES_EXC = -path ports/*/build-* -o -path ports/esp32s2/esp-idf
+# Paths to exclude from TRANSLATE_SOURCES
+# Each must be preceded by "-path"; if any wildcards, enclose in quotes.
+# Separate by "-o" (Find's "or" operand)
+TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
+	-o -path "ports/*/build" \
+	-o -path ports/esp32s2/esp-idf \
+	-o -path ports/cxd56/spresense-exported-sdk \
+	-o -path ports/stm/st_driver \
+	-o -path ports/atmel-samd/asf4 \
+	-o -path ports/mimxrt10xx/sdk \
+	-o -path lib/tinyusb \
+	-o -path lib/lwip \
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext stubs
 
