@@ -56,7 +56,53 @@
 #include "extmod/vfs.h"
 #include "extmod/utime_mphal.h"
 
+#if defined(STM32F7)
+#include "powerctrl.h"
+#define PYB_PWR_WKUP_X1     (PWR_CSR2_EWUP1)
+#define PYB_PWR_WKUP_X1_FALLING     (PWR_CSR2_EWUP1)
+#define PYB_PWR_WKUP_X1_RISING     (0)
+#define PYB_PWR_WKUP_X18    (PWR_CSR2_EWUP4)
+#define PYB_PWR_WKUP_X18_FALLING     (PWR_CSR2_EWUP4)
+#define PYB_PWR_WKUP_X18_RISING     (0)
+#endif
+
 char pyb_country_code[2];
+
+STATIC mp_obj_t pyb_standby(size_t n_args, const mp_obj_t *args) {
+    char has_args = false;
+    int ms_value = 0;
+
+    #if defined(STM32F7)
+    // make sure all pins are cleared
+    PWR->CSR2 &= ~(PWR_CSR2_EWUP6 | PWR_CSR2_EWUP5 | PWR_CSR2_EWUP4 | PWR_CSR2_EWUP3 | PWR_CSR2_EWUP2 | PWR_CSR2_EWUP1);
+    if (n_args != 0) {
+        has_args = true;
+	ms_value = mp_obj_get_int(args[0]);
+
+	if (n_args == 3) {
+            uint32_t pins = mp_obj_get_int(args[1]);
+	    uint32_t falling = mp_obj_get_int(args[2]);
+
+	    if ((pins | (PYB_PWR_WKUP_X1 | PYB_PWR_WKUP_X18)) != 0) {
+	        PWR->CSR2 |= pins;
+	    }
+	    if ((falling | (PYB_PWR_WKUP_X1_FALLING | PYB_PWR_WKUP_X18_FALLING)) != 0) {
+	        PWR->CR2 |= falling;
+	    }
+	}
+    }
+    #endif
+    if (has_args == true && ms_value != 0) {
+        mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
+
+	pyb_rtc_wakeup(2, args2);
+    }
+    powerctrl_enter_standby_mode();
+
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_standby_obj, 0, 3, pyb_standby);
 
 STATIC mp_obj_t pyb_fault_debug(mp_obj_t value) {
     pyb_hard_fault_debug = mp_obj_is_true(value);
@@ -155,7 +201,7 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
 
     #if MICROPY_PY_PYB_LEGACY
     { MP_ROM_QSTR(MP_QSTR_stop), MP_ROM_PTR(&machine_lightsleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_standby), MP_ROM_PTR(&machine_deepsleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_standby), MP_ROM_PTR(&pyb_standby_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_main), MP_ROM_PTR(&pyb_main_obj) },
     { MP_ROM_QSTR(MP_QSTR_repl_uart), MP_ROM_PTR(&pyb_repl_uart_obj) },
@@ -256,6 +302,14 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
 
     #if MICROPY_HW_HAS_LCD
     { MP_ROM_QSTR(MP_QSTR_LCD), MP_ROM_PTR(&pyb_lcd_type) },
+    #endif
+    #if defined(STM32F7)
+    { MP_ROM_QSTR(MP_QSTR_WKUP_X1),          MP_ROM_INT(PYB_PWR_WKUP_X1) },
+    { MP_ROM_QSTR(MP_QSTR_WKUP_X1_FALLING),          MP_ROM_INT(PYB_PWR_WKUP_X1_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_WKUP_X1_RISING),          MP_ROM_INT(PYB_PWR_WKUP_X1_RISING) },
+    { MP_ROM_QSTR(MP_QSTR_WKUP_X18),          MP_ROM_INT(PYB_PWR_WKUP_X18) },
+    { MP_ROM_QSTR(MP_QSTR_WKUP_X18_FALLING),          MP_ROM_INT(PYB_PWR_WKUP_X18_FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_WKUP_X18_RISING),          MP_ROM_INT(PYB_PWR_WKUP_X18_RISING) },
     #endif
 };
 
