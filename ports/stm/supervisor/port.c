@@ -56,6 +56,8 @@
 
 #include STM32_HAL_H
 
+void NVIC_SystemReset(void) NORETURN;
+
 #if (CPY_STM32H7) || (CPY_STM32F7)
 
 // Device memories must be accessed in order.
@@ -247,7 +249,7 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
-
+    NVIC_SystemReset();
 }
 
 void reset_cpu(void) {
