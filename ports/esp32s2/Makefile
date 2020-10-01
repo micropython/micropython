@@ -76,9 +76,6 @@ INC += -I../../supervisor/shared/usb
 
 INC += -isystem esp-idf
 INC += -isystem esp-idf/components/driver/include
-INC += -isystem esp-idf/components/hal/esp32s2/include
-INC += -isystem esp-idf/components/hal/include
-
 INC += -isystem esp-idf/components/freertos/include/freertos
 INC += -isystem esp-idf/components/freertos/xtensa/include
 INC += -isystem esp-idf/components/esp32s2/include
@@ -98,6 +95,8 @@ INC += -isystem esp-idf/components/lwip/lwip/src/include
 INC += -isystem esp-idf/components/lwip/port/esp32/include
 INC += -isystem esp-idf/components/lwip/include/apps/sntp
 INC += -isystem esp-idf/components/hal/include
+INC += -isystem esp-idf/components/hal/esp32s2/include
+INC += -isystem esp-idf/components/log/include/
 INC += -isystem esp-idf/components/soc/include
 INC += -isystem esp-idf/components/soc/src/esp32s2/include
 INC += -isystem esp-idf/components/soc/soc/include
