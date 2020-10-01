@@ -76,10 +76,6 @@ INC += -I../../supervisor/shared/usb
 
 INC += -isystem esp-idf
 INC += -isystem esp-idf/components/driver/include
-INC += -isystem esp-idf/components/hal/esp32s2/include
-INC += -isystem esp-idf/components/driver/esp32s2/include
-INC += -isystem esp-idf/components/hal/include
-
 INC += -isystem esp-idf/components/freertos/include/freertos
 INC += -isystem esp-idf/components/freertos/xtensa/include
 INC += -isystem esp-idf/components/esp32s2/include
@@ -98,6 +94,10 @@ INC += -isystem esp-idf/components/newlib/platform_include
 INC += -isystem esp-idf/components/lwip/lwip/src/include
 INC += -isystem esp-idf/components/lwip/port/esp32/include
 INC += -isystem esp-idf/components/lwip/include/apps/sntp
+INC += -isystem esp-idf/components/hal/include
+INC += -isystem esp-idf/components/hal/esp32s2/include
+INC += -isystem esp-idf/components/log/include/
+INC += -isystem esp-idf/components/driver/esp32s2/include
 INC += -isystem esp-idf/components/soc/include
 INC += -isystem esp-idf/components/soc/src/esp32s2/include
 INC += -isystem esp-idf/components/soc/soc/include
@@ -263,7 +263,7 @@ menuconfig: $(BUILD)/esp-idf/config
 $(HEADER_BUILD)/qstr.i.last: | $(BUILD)/esp-idf/config/sdkconfig.h
 
 # Order here matters
-ESP_IDF_COMPONENTS_LINK = freertos log esp_system esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp_rom esp-tls
+ESP_IDF_COMPONENTS_LINK = freertos log esp_system esp_adc_cal esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp_rom esp-tls
 
 ESP_IDF_COMPONENTS_INCLUDE = driver freertos log soc
 

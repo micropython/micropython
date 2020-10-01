@@ -30,7 +30,6 @@
 #include "supervisor/shared/translate.h"
 
 #include "components/driver/include/driver/adc_common.h"
-
 #include "components/esp_adc_cal/include/esp_adc_cal.h"
 
 #include "shared-bindings/microcontroller/Pin.h"

@@ -31,11 +31,14 @@
 #define CIRCUITPY_INTERNAL_NVM_SIZE         (0)
 #define MICROPY_NLR_THUMB                   (0)
 
-#define MICROPY_PY_UJSON                 (1)
-#define MICROPY_USE_INTERNAL_PRINTF      (0)
+#define MICROPY_PY_UJSON                    (1)
+#define MICROPY_USE_INTERNAL_PRINTF         (0)
 
 #include "py/circuitpy_mpconfig.h"
 
+// ESP-IDF leaves this undefined but uses it everywhere.
+// Defining it will reduce chance of undef errors.
+#define CONFIG_IDF_TARGET_ESP32             (0)
 
 #define MICROPY_PORT_ROOT_POINTERS \
 	CIRCUITPY_COMMON_ROOT_POINTERS
