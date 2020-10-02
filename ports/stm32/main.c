@@ -552,6 +552,11 @@ void stm32_main(uint32_t reset_mode) {
     MP_STATE_PORT(pyb_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
     #endif
 
+    #if !MICROPY_HW_USES_BOOTLOADER
+    // check if user switch held to select the reset mode
+    reset_mode = update_reset_mode(1);
+    #endif
+
 soft_reset:
 
     #if defined(MICROPY_HW_LED2)
@@ -563,11 +568,6 @@ soft_reset:
     #endif
     led_state(3, 0);
     led_state(4, 0);
-
-    #if !MICROPY_HW_USES_BOOTLOADER
-    // check if user switch held to select the reset mode
-    reset_mode = update_reset_mode(1);
-    #endif
 
     // Python threading init
     #if MICROPY_PY_THREAD
@@ -775,6 +775,9 @@ soft_reset_exit:
     #endif
 
     gc_sweep_all();
+
+    // Set reset_mode to normal boot.
+    reset_mode = 1;
 
     goto soft_reset;
 }
