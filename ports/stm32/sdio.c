@@ -76,7 +76,9 @@ void sdio_init(uint32_t irq_pri) {
     #endif
     mp_hal_delay_us(10);
 
+    #if defined(STM32F7)
     __HAL_RCC_DMA2_CLK_ENABLE(); // enable DMA2 peripheral
+    #endif
 
     NVIC_SetPriority(SDMMC1_IRQn, irq_pri);
 
@@ -216,7 +218,9 @@ int sdio_transfer(uint32_t cmd, uint32_t arg, uint32_t *resp) {
     }
     #endif
 
+    #if defined(STM32F7)
     DMA2_Stream3->CR = 0; // ensure DMA is reset
+    #endif
     SDMMC1->ICR = SDMMC_STATIC_FLAGS; // clear interrupts
     SDMMC1->ARG = arg;
     SDMMC1->CMD = cmd | SDMMC_CMD_WAITRESP_0 | SDMMC_CMD_CPSMEN;
@@ -296,7 +300,9 @@ int sdio_transfer_cmd53(bool write, uint32_t block_size, uint32_t arg, size_t le
     SDMMC1->DTIMER = 0x2000000; // about 700ms running at 48MHz
     SDMMC1->DLEN = (len + block_size - 1) & ~(block_size - 1);
 
+    #if defined(STM32F7)
     DMA2_Stream3->CR = 0;
+    #endif
 
     if (dma) {
         // prepare DMA so it's ready when the DPSM starts its transfer
