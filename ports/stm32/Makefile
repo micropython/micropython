@@ -259,7 +259,7 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 	dht/dht.c \
 	)
 
-SRC_C = \
+SRC_C += \
 	main.c \
 	stm32_it.c \
 	usbd_conf.c \
@@ -330,7 +330,7 @@ SRC_C = \
 	adc.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
-SRC_O = \
+SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE)
 
@@ -505,7 +505,6 @@ endif
 
 endif
 
-OBJ =
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(LIBM_O)
