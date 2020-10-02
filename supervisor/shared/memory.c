@@ -125,7 +125,7 @@ supervisor_allocation* allocate_memory(uint32_t length, bool high) {
     supervisor_allocation* alloc;
     for (; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index += direction) {
         alloc = &allocations[index];
-        if (alloc->length == FREE) {
+        if (alloc->length == FREE && (high_address - low_address) * 4 >= (int32_t) length) {
             break;
         }
         // If a hole matches in length exactly, we can reuse it.
@@ -134,7 +134,7 @@ supervisor_allocation* allocate_memory(uint32_t length, bool high) {
             return alloc;
         }
     }
-    if (index >= CIRCUITPY_SUPERVISOR_ALLOC_COUNT || (high_address - low_address) * 4 < (int32_t) length) {
+    if (index >= CIRCUITPY_SUPERVISOR_ALLOC_COUNT) {
         return NULL;
     }
     if (high) {
