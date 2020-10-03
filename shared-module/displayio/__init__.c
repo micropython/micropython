@@ -40,8 +40,6 @@ STATIC bool any_display_uses_this_framebuffer(mp_obj_base_t *obj) {
 }
 #endif
 
-// Check for recursive calls to displayio_background.
-bool displayio_background_in_progress = false;
 
 void displayio_background(void) {
     if (mp_hal_is_interrupted()) {
@@ -52,12 +50,6 @@ void displayio_background(void) {
         return;
     }
 
-    if (displayio_background_in_progress) {
-        // Don't allow recursive calls to this routine.
-        return;
-    }
-
-    displayio_background_in_progress = true;
 
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display.base.type == NULL || displays[i].display.base.type == &mp_type_NoneType) {
@@ -75,8 +67,6 @@ void displayio_background(void) {
         }
     }
 
-    // All done.
-    displayio_background_in_progress = false;
 }
 
 void common_hal_displayio_release_displays(void) {

@@ -393,6 +393,10 @@ SRC_QSTR += $(HEADER_BUILD)/sdiodata.h
 $(HEADER_BUILD)/sdiodata.h: tools/mksdiodata.py | $(HEADER_BUILD)
 	$(Q)$(PYTHON3) $< > $@
 
+SRC_QSTR += $(HEADER_BUILD)/candata.h
+$(HEADER_BUILD)/candata.h: tools/mkcandata.py | $(HEADER_BUILD)
+	$(Q)$(PYTHON3) $< > $@
+
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 # Sources that only hold QSTRs after pre-processing.
 SRC_QSTR_PREPROCESSOR += peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/clocks.c

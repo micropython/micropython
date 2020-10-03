@@ -30,12 +30,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "py/mpconfig.h"
+
 // Copied from inc/uf2.h in https://github.com/Microsoft/uf2-samd21
 #define DBL_TAP_MAGIC 0xf01669ef // Randomly selected, adjusted to have first and last bit set
 #define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
 
-void reset_to_bootloader(void);
-void reset(void);
+void reset_to_bootloader(void) NORETURN;
+void reset(void) NORETURN;
 bool bootloader_available(void);
 
 #endif  // MICROPY_INCLUDED_MIMXRT10XX_RESET_H

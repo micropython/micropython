@@ -61,7 +61,7 @@ mp_obj_t common_hal_board_create_i2c(void) {
     busio_i2c_obj_t *self = &i2c_obj;
     self->base.type = &busio_i2c_type;
 
-    common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000, 0);
+    common_hal_busio_i2c_construct(self, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 100000, 0);
     i2c_singleton = (mp_obj_t)self;
     return i2c_singleton;
 }
@@ -167,7 +167,9 @@ void reset_board_busses(void) {
     }
     #endif
     // make sure SPI lock is not held over a soft reset
-    common_hal_busio_spi_unlock(&spi_obj);
+    if (spi_singleton != NULL) {
+        common_hal_busio_spi_unlock(spi_singleton);
+    }
     if (!display_using_spi) {
         spi_singleton = NULL;
     }

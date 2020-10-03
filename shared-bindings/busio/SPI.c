@@ -96,6 +96,10 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, con
     const mcu_pin_obj_t* mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);
     const mcu_pin_obj_t* miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj);
 
+    if (!miso && !mosi) {
+        mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
+    }
+
     common_hal_busio_spi_construct(self, clock, mosi, miso);
     return MP_OBJ_FROM_PTR(self);
 }

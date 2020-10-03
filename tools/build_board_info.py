@@ -42,7 +42,7 @@ extension_by_port = {
     "cxd56": SPK,
     "mimxrt10xx": HEX_UF2,
     "litex": DFU,
-    "esp32s2": BIN
+    "esp32s2": BIN_UF2
 }
 
 # Per board overrides

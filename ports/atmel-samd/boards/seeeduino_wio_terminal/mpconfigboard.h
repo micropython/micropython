@@ -27,6 +27,10 @@
 #define DEFAULT_UART_BUS_RX (&pin_PB27)
 #define DEFAULT_UART_BUS_TX (&pin_PB26)
 
+#define PIN_CTR_5V (&pin_PC14)
+#define PIN_CTR_3V3 (&pin_PC15)
+#define PIN_USB_HOST_ENABLE (&pin_PA27)
+
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1

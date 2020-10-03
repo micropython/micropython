@@ -115,6 +115,7 @@ static void spi_bus_intr_disable(void *self)
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * mosi,
         const mcu_pin_obj_t * miso) {
+
     spi_bus_config_t bus_config;
     bus_config.mosi_io_num = mosi != NULL ? mosi->number : -1;
     bus_config.miso_io_num = miso != NULL ? miso->number : -1;
@@ -212,8 +213,12 @@ void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
     spi_never_reset[self->host_id] = true;
 
     common_hal_never_reset_pin(self->clock_pin);
-    common_hal_never_reset_pin(self->MOSI_pin);
-    common_hal_never_reset_pin(self->MISO_pin);
+    if (self->MOSI_pin != NULL) {
+        common_hal_never_reset_pin(self->MOSI_pin);
+    }
+    if (self->MISO_pin != NULL) {
+        common_hal_never_reset_pin(self->MISO_pin);
+    }
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
@@ -236,9 +241,15 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     spi_bus_free(self->host_id);
 
     common_hal_reset_pin(self->clock_pin);
-    common_hal_reset_pin(self->MOSI_pin);
-    common_hal_reset_pin(self->MISO_pin);
+    if (self->MOSI_pin != NULL) {
+        common_hal_reset_pin(self->MOSI_pin);
+    }
+    if (self->MISO_pin != NULL) {
+        common_hal_reset_pin(self->MISO_pin);
+    }
     self->clock_pin = NULL;
+    self->MISO_pin = NULL;
+    self->MOSI_pin = NULL;
 }
 
 bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
@@ -293,17 +304,36 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
         const uint8_t *data, size_t len) {
+    if (self->MOSI_pin == NULL) {
+        mp_raise_ValueError(translate("No MOSI Pin"));
+    }
     return common_hal_busio_spi_transfer(self, data, NULL, len);
 }
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
         uint8_t *data, size_t len, uint8_t write_value) {
-    return common_hal_busio_spi_transfer(self, NULL, data, len);
+
+    if (self->MISO_pin == NULL) {
+        mp_raise_ValueError(translate("No MISO Pin"));
+    }
+    if (self->MOSI_pin == NULL) {
+        return common_hal_busio_spi_transfer(self, NULL, data, len);
+    } else {
+        memset(data, write_value, len);
+        return common_hal_busio_spi_transfer(self, data, data, len);
+    }
 }
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
     if (len == 0) {
         return true;
+    }
+    // Other than the read special case, stop transfers that don't have a pin/array match
+    if (!self->MOSI_pin && (data_out != data_in)) {
+        mp_raise_ValueError(translate("No MOSI Pin"));
+    }
+    if (!self->MISO_pin && data_in) {
+        mp_raise_ValueError(translate("No MISO Pin"));
     }
 
     spi_hal_context_t* hal = &self->hal_context;

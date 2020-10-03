@@ -33,6 +33,7 @@
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
+    bool output_value;
 } digitalio_digitalinout_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
