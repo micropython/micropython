@@ -206,8 +206,8 @@ MATH_FUN_1(lgamma, lgamma)
 STATIC mp_obj_t mp_math_isclose(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_a, ARG_b, ARG_rel_tol, ARG_abs_tol };
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
-        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         {MP_QSTR_rel_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         {MP_QSTR_abs_tol, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(0)}},
     };

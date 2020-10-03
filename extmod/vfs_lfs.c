@@ -35,7 +35,7 @@
 enum { LFS_MAKE_ARG_bdev, LFS_MAKE_ARG_readsize, LFS_MAKE_ARG_progsize, LFS_MAKE_ARG_lookahead, LFS_MAKE_ARG_mtime };
 
 static const mp_arg_t lfs_make_allowed_args[] = {
-    { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ },
+    { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_readsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 32} },
     { MP_QSTR_progsize, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 32} },
     { MP_QSTR_lookahead, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 32} },

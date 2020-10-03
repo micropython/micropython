@@ -311,8 +311,8 @@ STATIC void mp_machine_soft_i2c_print(const mp_print_t *print, mp_obj_t self_in,
 STATIC void machine_i2c_obj_init_helper(machine_i2c_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 255} },
     };
