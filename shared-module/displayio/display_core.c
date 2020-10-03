@@ -197,7 +197,7 @@ bool displayio_display_core_get_dither(displayio_display_core_t* self){
 }
 
 bool displayio_display_core_bus_free(displayio_display_core_t *self) {
-    return self->bus_free(self->bus);
+    return !self->bus || self->bus_free(self->bus);
 }
 
 bool displayio_display_core_begin_transaction(displayio_display_core_t* self) {
