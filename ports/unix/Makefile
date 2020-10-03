@@ -39,7 +39,7 @@ INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wpointer-arith -Wuninitialized -Wdouble-promotion -Wsign-compare -Wfloat-conversion
+CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
 CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
