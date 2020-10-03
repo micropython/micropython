@@ -29,14 +29,14 @@
 #include "py/parse.h"
 #include "py/emitglue.h"
 
-enum {
+typedef enum {
     ID_INFO_KIND_UNDECIDED,
     ID_INFO_KIND_GLOBAL_IMPLICIT,
     ID_INFO_KIND_GLOBAL_EXPLICIT,
     ID_INFO_KIND_LOCAL, // in a function f, written and only referenced by f
     ID_INFO_KIND_CELL,  // in a function f, read/written by children of f
     ID_INFO_KIND_FREE,  // in a function f, belongs to the parent of f
-};
+} id_info_kind_t;
 
 enum {
     ID_FLAG_IS_PARAM = 0x01,
@@ -92,7 +92,7 @@ typedef struct _scope_t {
 
 scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options);
 void scope_free(scope_t *scope);
-id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, scope_kind_t kind);
+id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, id_info_kind_t kind);
 id_info_t *scope_find(scope_t *scope, qstr qstr);
 id_info_t *scope_find_global(scope_t *scope, qstr qstr);
 void scope_check_to_close_over(scope_t *scope, id_info_t *id);

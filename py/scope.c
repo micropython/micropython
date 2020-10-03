@@ -72,7 +72,7 @@ void scope_free(scope_t *scope) {
     m_del(scope_t, scope, 1);
 }
 
-id_info_t *scope_find_or_add_id(scope_t *scope, qstr qst, scope_kind_t kind) {
+id_info_t *scope_find_or_add_id(scope_t *scope, qstr qst, id_info_kind_t kind) {
     id_info_t *id_info = scope_find(scope, qst);
     if (id_info != NULL) {
         return id_info;
