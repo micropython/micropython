@@ -181,21 +181,6 @@ int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self)
     return (self->handle.Instance->ESR & CAN_ESR_REC) >> CAN_ESR_REC_Pos;
 }
 
-int common_hal_canio_can_error_warning_state_count_get(canio_can_obj_t *self)
-{
-    return self->error_warning_state_count;
-}
-
-int common_hal_canio_can_error_passive_state_count_get(canio_can_obj_t *self)
-{
-    return self->error_passive_state_count;
-}
-
-int common_hal_canio_can_bus_off_state_count_get(canio_can_obj_t *self)
-{
-    return self->bus_off_state_count;
-}
-
 canio_bus_state_t common_hal_canio_can_state_get(canio_can_obj_t *self) {
     uint32_t esr = self->handle.Instance->ESR;
     if (READ_BIT(esr, CAN_ESR_BOFF)) {
