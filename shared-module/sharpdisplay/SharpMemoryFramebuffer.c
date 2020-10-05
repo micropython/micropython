@@ -90,10 +90,6 @@ bool common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(sharpdispl
 }
 
 void common_hal_sharpdisplay_framebuffer_reset(sharpdisplay_framebuffer_obj_t *self) {
-    if (!allocation_from_ptr(self->bufinfo.buf)) {
-        self->bufinfo.buf = NULL;
-    }
-
     if (self->bus != &self->inline_bus
 #if BOARD_SPI
         && self->bus != common_hal_board_get_spi()
@@ -105,7 +101,9 @@ void common_hal_sharpdisplay_framebuffer_reset(sharpdisplay_framebuffer_obj_t *s
 }
 
 void common_hal_sharpdisplay_framebuffer_reconstruct(sharpdisplay_framebuffer_obj_t *self) {
-
+    if (!allocation_from_ptr(self->bufinfo.buf)) {
+        self->bufinfo.buf = NULL;
+    }
 }
 
 void common_hal_sharpdisplay_framebuffer_get_bufinfo(sharpdisplay_framebuffer_obj_t *self, mp_buffer_info_t *bufinfo) {

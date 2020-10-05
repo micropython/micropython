@@ -275,21 +275,6 @@ int common_hal_canio_can_receive_error_count_get(canio_can_obj_t *self)
     return self->hw->ECR.bit.REC;
 }
 
-int common_hal_canio_can_error_warning_state_count_get(canio_can_obj_t *self)
-{
-    return self->error_warning_state_count;
-}
-
-int common_hal_canio_can_error_passive_state_count_get(canio_can_obj_t *self)
-{
-    return self->error_passive_state_count;
-}
-
-int common_hal_canio_can_bus_off_state_count_get(canio_can_obj_t *self)
-{
-    return self->bus_off_state_count;
-}
-
 canio_bus_state_t common_hal_canio_can_state_get(canio_can_obj_t *self) {
     CAN_PSR_Type psr = self->hw->PSR;
     if (psr.bit.BO) {
@@ -328,16 +313,18 @@ static void maybe_auto_restart(canio_can_obj_t *self) {
     }
 }
 
-void common_hal_canio_can_send(canio_can_obj_t *self, canio_message_obj_t *message)
+void common_hal_canio_can_send(canio_can_obj_t *self, mp_obj_t message_in)
 {
     maybe_auto_restart(self);
 
+    canio_message_obj_t *message = message_in;;
     // We have just one dedicated TX buffer, use it!
     canio_can_tx_buffer_t *ent = &self->state->tx_buffer[0];
 
+    bool rtr = message->base.type == &canio_remote_transmission_request_type;
     ent->txb0.bit.ESI = false;
     ent->txb0.bit.XTD = message->extended;
-    ent->txb0.bit.RTR = message->rtr;
+    ent->txb0.bit.RTR = rtr;
     if (message->extended) {
         ent->txb0.bit.ID = message->id;
     } else {
@@ -350,7 +337,7 @@ void common_hal_canio_can_send(canio_can_obj_t *self, canio_message_obj_t *messa
     ent->txb1.bit.BRS = 0; // No bit rate switching
     ent->txb1.bit.DLC = message->size;
 
-    if (!message->rtr) {
+    if (!rtr) {
         memcpy(ent->data, message->data, message->size);
     }
 
@@ -416,17 +403,6 @@ STATIC void can_handler(int i) {
 
     Can *hw = can_insts[i];
     uint32_t ir = hri_can_read_IR_reg(hw);
-
-    /* Count up errors*/
-    if (ir & CAN_IE_EWE) {
-        self->error_warning_state_count += 1;
-    }
-    if (ir & CAN_IE_EPE) {
-        self->error_passive_state_count += 1;
-    }
-    if (ir & CAN_IE_BOE) {
-        self->bus_off_state_count += 1;
-    }
 
     /* Acknowledge interrupt */
     hri_can_write_IR_reg(hw, ir);

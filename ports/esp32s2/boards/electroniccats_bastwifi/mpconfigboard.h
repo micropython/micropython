@@ -31,6 +31,6 @@
 
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 
-#define BOARD_USER_SAFE_MODE_ACTION "pressing boot button at start up.\n"
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
 #define AUTORESET_DELAY_MS 500

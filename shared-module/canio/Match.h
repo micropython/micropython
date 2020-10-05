@@ -30,7 +30,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    int address;
+    int id;
     int mask;
     bool extended;
 } canio_match_obj_t;

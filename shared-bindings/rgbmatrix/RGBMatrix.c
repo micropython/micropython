@@ -73,6 +73,10 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     uint32_t port = clock_pin / 32;
     uint32_t bit_mask = 1 << (clock_pin % 32);
 
+    if (rgb_pin_count <= 0 || rgb_pin_count % 6 != 0 || rgb_pin_count > 30) {
+        mp_raise_ValueError_varg(translate("The length of rgb_pins must be 6, 12, 18, 24, or 30"));
+    }
+
     for (uint8_t i = 0; i < rgb_pin_count; i++) {
         uint32_t pin_port = rgb_pins[i] / 32;
 
@@ -208,6 +212,10 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
             mp_raise_ValueError_varg(
                 translate("%d address pins and %d rgb pins indicate a height of %d, not %d"), addr_count, rgb_count, computed_height, args[ARG_height].u_int);
         }
+    }
+
+    if (args[ARG_width].u_int <= 0) {
+        mp_raise_ValueError(translate("width must be greater than zero"));
     }
 
     preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);

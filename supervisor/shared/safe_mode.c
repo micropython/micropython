@@ -119,9 +119,9 @@ void print_safe_mode_message(safe_mode_t reason) {
             #ifdef BOARD_USER_SAFE_MODE_ACTION
                 // Output a user safe mode string if it's set.
                 serial_write_compressed(translate("You requested starting safe mode by "));
-                serial_write_compressed(translate(BOARD_USER_SAFE_MODE_ACTION));
+                serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
                 serial_write_compressed(translate("To exit, please reset the board without "));
-                serial_write_compressed(translate(BOARD_USER_SAFE_MODE_ACTION));
+                serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
             #else
                 break;
             #endif

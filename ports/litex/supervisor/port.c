@@ -85,9 +85,17 @@ void reset_port(void) {
 
 void reset_to_bootloader(void) {
     reboot_ctrl_write(0xac);
+    for(;;) {}
 }
 
 void reset_cpu(void) {
+    // "You can reset Fomu by writing a special value to the CSR_REBOOT_CTRL
+    // register at 0xe0006000L. All writes to this register must start with
+    // 0xac, to ensure random values aren’t written. We can reboot Fomu by
+    // simply writing this value" --
+    //     https://workshop.fomu.im/en/latest/riscv.html
+    reboot_ctrl_write(0xac);
+    for(;;) {}
 }
 
 supervisor_allocation* port_fixed_stack(void) {
