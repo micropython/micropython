@@ -39,12 +39,4 @@ typedef struct {
     const mcu_pin_obj_t * pin;
 } analogio_analogin_obj_t;
 
-static inline uint8_t stm32_adc_units(uint8_t adc_packed) {
-    return adc_packed >> 5;
-}
-
-static inline uint8_t stm32_adc_channel(uint8_t adc_packed) {
-    return adc_packed & 0x1f;
-}
-
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ANALOGIO_ANALOGIN_H

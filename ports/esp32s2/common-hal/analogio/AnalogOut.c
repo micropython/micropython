@@ -39,7 +39,7 @@
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
-    //mp_raise_ValueError(translate("No DAC on chip"));
+    mp_raise_NotImplementedError(translate("No DAC on chip"));
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
@@ -52,7 +52,6 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
         uint16_t value) {
-
 }
 
 void analogout_reset(void) {
