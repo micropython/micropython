@@ -279,6 +279,7 @@ jobs:
         - git -C esp-idf submodule update --init
         - export IDF_PATH=$(pwd)/esp-idf
         - sudo apt-get install python3-pip
+        - sudo pip3 install setuptools
         - sudo pip3 install -r $IDF_PATH/requirements.txt
       script:
         - make ${MAKEOPTS} -C mpy-cross
