@@ -275,13 +275,13 @@ jobs:
         - curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-gcc8_2_0-esp-2020r2-linux-amd64.tar.gz | tar zxf -
         - export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
         - git clone https://github.com/espressif/esp-idf.git
-        - export IDF_PATH=$(pwd)/esp-idf
-        - sudo apt-get install python3-pip
-        - sudo pip3 install -r $IDF_PATH/requirementns.txt
-      script:
-        - make ${MAKEOPTS} -C mpy-cross
         - git -C esp-idf checkout v4.1
         - git -C esp-idf submodule update --init components/bt/controller/lib components/bt/host/nimble/nimble components/esp_wifi/lib_esp32 components/esptool_py/esptool components/lwip/lwip components/mbedtls/mbedtls
+        - export IDF_PATH=$(pwd)/esp-idf
+        - sudo apt-get install python3-pip
+        - sudo pip3 install -r $IDF_PATH/requirements.txt
+      script:
+        - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32 submodules
         - cmake -S ports/esp32 -B build
         - make ${MAKEOPTS} -C build
