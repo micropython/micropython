@@ -241,13 +241,21 @@ void common_hal_canio_can_send(canio_can_obj_t *self, mp_obj_t message_in)
         //
         // We don't strictly guarantee that we abort the oldest Tx request,
         // rather we just abort a different index each time.  This permits us
-        // to avoid tracking this information altogether.
+        // to just track a single cancel index
         HAL_CAN_AbortTxRequest(&self->handle, 1 << (self->cancel_mailbox));
         self->cancel_mailbox = (self->cancel_mailbox + 1) % 3;
+        // The abort request may not have completed immediately, so wait for
+        // the Tx mailbox to become free
+        do {
+            free_level = HAL_CAN_GetTxMailboxesFreeLevel(&self->handle);
+        } while (!free_level);
     }
     HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(&self->handle, &header, message->data, &mailbox);
     if (status != HAL_OK) {
-        mp_raise_OSError(MP_ENOMEM);
+        // this is a "shouldn't happen" condition.  we don't throw because the
+        // contract of send() is that it queues the packet to be sent if
+        // possible and does not signal success or failure to actually send.
+        return;
     }
 
     // wait 8ms (hard coded for now) for TX to occur
