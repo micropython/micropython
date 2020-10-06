@@ -268,39 +268,23 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 
-    # esp32 w/ESP-IDFv3 port
+    # esp32 port
     - stage: test
-      name: "esp32 ESP-IDFv3 port build"
+      name: "esp32 port build"
       install:
-        - sudo apt-get install python3-pip
-        - sudo pip3 install 'pyparsing<2.4'
-        - curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar zxf -
+        - curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-gcc8_2_0-esp-2020r2-linux-amd64.tar.gz | tar zxf -
         - export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
         - git clone https://github.com/espressif/esp-idf.git
         - export IDF_PATH=$(pwd)/esp-idf
-      script:
-        - make ${MAKEOPTS} -C mpy-cross
-        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V3 :=" ports/esp32/Makefile | cut -d " " -f 3)
-        - git -C esp-idf submodule update --init components/json/cJSON components/esp32/lib components/esptool_py/esptool components/expat/expat components/lwip/lwip components/mbedtls/mbedtls components/micro-ecc/micro-ecc components/nghttp/nghttp2 components/nimble components/bt
-        - make ${MAKEOPTS} -C ports/esp32 submodules
-        - make ${MAKEOPTS} -C ports/esp32
-
-    # esp32 w/ESP-IDFv4 port
-    - stage: test
-      name: "esp32 ESP-IDFv4 port build"
-      install:
         - sudo apt-get install python3-pip
-        - sudo pip3 install 'pyparsing<2.4'
-        - curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-gcc8_2_0-esp-2019r2-linux-amd64.tar.gz | tar zxf -
-        - export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
-        - git clone https://github.com/espressif/esp-idf.git
-        - export IDF_PATH=$(pwd)/esp-idf
+        - sudo pip3 install -r $IDF_PATH/requirementns.txt
       script:
         - make ${MAKEOPTS} -C mpy-cross
-        - git -C esp-idf checkout $(grep "ESPIDF_SUPHASH_V4 :=" ports/esp32/Makefile | cut -d " " -f 3)
+        - git -C esp-idf checkout v4.1
         - git -C esp-idf submodule update --init components/bt/controller/lib components/bt/host/nimble/nimble components/esp_wifi/lib_esp32 components/esptool_py/esptool components/lwip/lwip components/mbedtls/mbedtls
         - make ${MAKEOPTS} -C ports/esp32 submodules
-        - make ${MAKEOPTS} -C ports/esp32
+        - cmake -S ports/esp32 -B build
+        - make ${MAKEOPTS} -C build
 
     # esp8266 port
     - stage: test
