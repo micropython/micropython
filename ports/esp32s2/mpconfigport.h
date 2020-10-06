@@ -36,9 +36,6 @@
 
 #include "py/circuitpy_mpconfig.h"
 
-// ESP-IDF leaves this undefined but uses it everywhere.
-// Defining it will reduce chance of undef errors.
-#define CONFIG_IDF_TARGET_ESP32             (0)
 
 #define MICROPY_PORT_ROOT_POINTERS \
 	CIRCUITPY_COMMON_ROOT_POINTERS
