@@ -35,25 +35,39 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
+#include "components/driver/include/driver/dac.h"
+
 #include "common-hal/microcontroller/Pin.h"
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
-    mp_raise_NotImplementedError(translate("No DAC on chip"));
+    if (pin == &pin_GPIO17) {
+        self->channel = DAC_CHANNEL_1;
+    } else if (pin == &pin_GPIO18) {
+        self->channel = DAC_CHANNEL_2;
+    } else {
+        mp_raise_ValueError(translate("Invalid DAC pin supplied"));
+    }
+    dac_output_enable(self->channel);
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
-    return true;
+    return (self->channel == DAC_CHANNEL_MAX);
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
-
+    dac_output_disable(self->channel);
+    self->channel = DAC_CHANNEL_MAX;
 }
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
         uint16_t value) {
+    uint8_t dac_value = (value * 255) / 65535;
+    dac_output_enable(self->channel);
+    dac_output_voltage(self->channel, dac_value);
 }
 
 void analogout_reset(void) {
-
+    dac_output_disable(DAC_CHANNEL_1);
+    dac_output_disable(DAC_CHANNEL_2);
 }
