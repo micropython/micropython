@@ -54,6 +54,7 @@ typedef struct canio_can_obj {
     bool fifo0_in_use:1;
     bool fifo1_in_use:1;
     uint8_t periph_index:2;
+    uint8_t cancel_mailbox;
     uint8_t start_filter_bank;
     uint8_t end_filter_bank;
     long filter_in_use; // bitmask for the 28 filter banks

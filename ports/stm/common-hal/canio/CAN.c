@@ -225,9 +225,27 @@ void common_hal_canio_can_send(canio_can_obj_t *self, mp_obj_t message_in)
         .RTR = rtr ? CAN_RTR_REMOTE : CAN_RTR_DATA,
         .DLC = message->size,
     };
+    uint32_t free_level = HAL_CAN_GetTxMailboxesFreeLevel(&self->handle);
+    if (free_level == 0) {
+        // There's no free Tx mailbox.  We need to cancel some message without
+        // transmitting it, because once the bus returns to active state it's
+        // preferable to transmit the newest messages instead of older messages.
+        //
+        // We don't strictly guarantee that we abort the oldest Tx request,
+        // rather we just abort a different index each time.  This permits us
+        // to avoid tracking this information altogether.
+        HAL_CAN_AbortTxRequest(&self->handle, 1 << (self->cancel_mailbox));
+        self->cancel_mailbox = (self->cancel_mailbox + 1) % 3;
+    }
     HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(&self->handle, &header, message->data, &mailbox);
     if (status != HAL_OK) {
         mp_raise_OSError(MP_ENOMEM);
+    }
+
+    // wait 8ms (hard coded for now) for TX to occur
+    uint64_t deadline = port_get_raw_ticks(NULL) + 8;
+    while (port_get_raw_ticks(NULL) < deadline && HAL_CAN_IsTxMessagePending(&self->handle, 1 << mailbox)) {
+        RUN_BACKGROUND_TASKS;
     }
 }
 
