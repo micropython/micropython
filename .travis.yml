@@ -285,7 +285,7 @@ jobs:
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32 submodules
-        - (mkdir build && cd build && cmake ../ports/esp32)
+        - (mkdir build && cd build && cmake -D PYTHON=python3 ../ports/esp32)
         - make ${MAKEOPTS} -C build
 
     # esp8266 port
