@@ -197,7 +197,15 @@ canio_bus_state_t common_hal_canio_can_state_get(canio_can_obj_t *self) {
 
 void common_hal_canio_can_restart(canio_can_obj_t *self) {
     if (!common_hal_canio_can_auto_restart_get(self)) {
-        HAL_CAN_Start(&self->handle);
+        // "If ABOM is cleared, the software must initiate the recovering
+        // sequence by requesting bxCAN to enter and to leave initialization
+        // mode."
+        self->handle.Instance->MCR |= CAN_MCR_INRQ;
+        while ((self->handle.Instance->MSR & CAN_MSR_INAK) == 0) {
+        }
+        self->handle.Instance->MCR &= ~CAN_MCR_INRQ;
+        while ((self->handle.Instance->MSR & CAN_MSR_INAK)) {
+        }
     }
 }
 
