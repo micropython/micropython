@@ -272,6 +272,7 @@ jobs:
     - stage: test
       name: "esp32 port build"
       install:
+        - cmake --version
         - curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-gcc8_2_0-esp-2020r2-linux-amd64.tar.gz | tar zxf -
         - export PATH=$(pwd)/xtensa-esp32-elf/bin:$PATH
         - git clone https://github.com/espressif/esp-idf.git
@@ -284,7 +285,7 @@ jobs:
       script:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/esp32 submodules
-        - cmake -S ports/esp32 -B build
+        - (mkdir build && cd build && cmake ../ports/esp32)
         - make ${MAKEOPTS} -C build
 
     # esp8266 port
