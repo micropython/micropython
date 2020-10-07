@@ -980,6 +980,10 @@ msgstr ""
 msgid "I2SOut not available"
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm_io/__init__.c
+msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -2790,6 +2794,10 @@ msgstr ""
 msgid "invalid syntax for number"
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm_io/__init__.c
+msgid "io must be rtc io"
+msgstr ""
+
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr ""
@@ -3410,6 +3418,10 @@ msgstr ""
 msgid "threshold must be in the range 0-65536"
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm_time/__init__.c
+msgid "time out of range"
+msgstr ""
+
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
@@ -3453,6 +3465,10 @@ msgstr ""
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm_io/__init__.c
+msgid "trigger level must be 0 or 1"
 msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c
@@ -3595,6 +3611,10 @@ msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm_io/__init__.c
+msgid "wakeup conflict"
 msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
