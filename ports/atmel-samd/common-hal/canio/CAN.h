@@ -41,9 +41,6 @@ typedef struct canio_can_obj {
     mp_obj_base_t base;
     Can *hw;
     canio_can_state_t *state;
-    volatile uint32_t error_warning_state_count;
-    volatile uint32_t error_passive_state_count;
-    volatile uint32_t bus_off_state_count;
     int baudrate;
     uint8_t rx_pin_number:8;
     uint8_t tx_pin_number:8;

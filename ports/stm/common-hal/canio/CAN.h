@@ -42,9 +42,6 @@ typedef struct canio_can_obj {
     mp_obj_base_t base;
     CAN_HandleTypeDef handle;
     CAN_TypeDef *filter_hw;
-    volatile uint32_t error_warning_state_count;
-    volatile uint32_t error_passive_state_count;
-    volatile uint32_t bus_off_state_count;
     int baudrate;
     const mcu_pin_obj_t *rx_pin;
     const mcu_pin_obj_t *tx_pin;
