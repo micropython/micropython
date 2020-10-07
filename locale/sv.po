@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-10-01 21:24+0000\n"
+"PO-Revision-Date: 2020-10-02 22:53+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1702,7 +1702,7 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
+msgstr "Längden på rgb_pins vara 6, 12, 18, 24 eller 30"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -3585,7 +3585,7 @@ msgstr "watchdog timeout måste vara större än 0"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr ""
+msgstr "width måste vara större än noll"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
