@@ -8,7 +8,8 @@ limitations with the Python environment, often due to an inability to access
 certain hardware resources or Python speed limitations.
 
 If your limitations can't be resolved with suggestions in :ref:`speed_python`,
-writing some or all of your module in C is a viable option.
+writing some or all of your module in C (and/or C++ if implemented for your port)
+is a viable option.
 
 If your module is designed to access or work with commonly available
 hardware or libraries please consider implementing it inside the MicroPython
@@ -29,7 +30,7 @@ Structure of an external C module
 
 A MicroPython user C module is a directory with the following files:
 
-* ``*.c`` and/or ``*.h`` source code files for your module.
+* ``*.c`` / ``*.cpp`` / ``*.h`` source code files for your module.
 
   These will typically include the low level functionality being implemented and
   the MicroPython binding functions to expose the functions and module(s).
@@ -44,12 +45,12 @@ A MicroPython user C module is a directory with the following files:
   in your ``micropython.mk`` to a local make variable,
   eg ``EXAMPLE_MOD_DIR := $(USERMOD_DIR)``
 
-  Your ``micropython.mk`` must add your modules C files relative to your
+  Your ``micropython.mk`` must add your modules source files relative to your
   expanded copy of ``$(USERMOD_DIR)`` to ``SRC_USERMOD``, eg
   ``SRC_USERMOD += $(EXAMPLE_MOD_DIR)/example.c``
 
   If you have custom ``CFLAGS`` settings or include folders to define, these
-  should be added to ``CFLAGS_USERMOD``.
+  should be added to ``CFLAGS_USERMOD``, or ``CXXFLAGS_USERMOD``.
 
   See below for full usage example.
 
