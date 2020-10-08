@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-10-01 21:24+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"PO-Revision-Date: 2020-10-09 17:19+0000\n"
+"Last-Translator: dherrada <dylan.herrada@adafruit.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -1709,7 +1709,7 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
+msgstr "La longitud de rgb_pins debe ser 6, 12, 18, 24, o 30"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -3604,7 +3604,7 @@ msgstr "el tiempo de espera del perro guardián debe ser mayor a 0"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr ""
+msgstr "el ancho debe ser mayor que cero"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
