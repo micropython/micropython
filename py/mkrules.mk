@@ -15,10 +15,12 @@ CFLAGS += -DMICROPY_ROM_TEXT_COMPRESSION=1
 endif
 
 # QSTR generation uses the same CFLAGS, with these modifications.
+QSTR_GEN_FLAGS = -DNO_QSTR -I$(BUILD)/tmp
 # Note: := to force evalulation immediately.
 QSTR_GEN_CFLAGS := $(CFLAGS)
-QSTR_GEN_CFLAGS += -DNO_QSTR
-QSTR_GEN_CFLAGS += -I$(BUILD)/tmp
+QSTR_GEN_CFLAGS += $(QSTR_GEN_FLAGS)
+QSTR_GEN_CXXFLAGS := $(CXXFLAGS)
+QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
 
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
@@ -95,14 +97,14 @@ $(BUILD)/%.pp: %.c
 # to get built before we try to compile any of them.
 $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h $(OBJ_EXTRA_ORDER_DEPS)
 
-# The logic for qstr regeneration is:
+# The logic for qstr regeneration (applied by makeqstrdefs.py) is:
 # - if anything in QSTR_GLOBAL_DEPENDENCIES is newer, then process all source files ($^)
 # - else, if list of newer prerequisites ($?) is not empty, then process just these ($?)
 # - else, process all source files ($^) [this covers "make -B" which can set $? to empty]
 # See more information about this process in docs/develop/qstr.rst.
 $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(QSTR_GLOBAL_REQUIREMENTS)
 	$(ECHO) "GEN $@"
-	$(Q)$(CPP) $(QSTR_GEN_CFLAGS) $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) >$(HEADER_BUILD)/qstr.i.last
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py pp $(CPP) output $(HEADER_BUILD)/qstr.i.last cflags $(QSTR_GEN_CFLAGS) cxxflags $(QSTR_GEN_CXXFLAGS) sources $^ dependencies $(QSTR_GLOBAL_DEPENDENCIES) changed_sources $?
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
