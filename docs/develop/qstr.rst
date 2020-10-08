@@ -51,7 +51,7 @@ Processing happens in the following stages:
    through the C pre-processor.  This means that any conditionally disabled code
    will be removed, and macros expanded.  This means we don't add strings to the
    pool that won't be used in the final firmware.  Because at this stage (thanks
-   to the ``NO_QSTR`` macro added by ``QSTR_GEN_EXTRA_CFLAGS``) there is no
+   to the ``NO_QSTR`` macro added by ``QSTR_GEN_CFLAGS``) there is no
    definition for ``MP_QSTR_Foo`` it passes through this stage unaffected.  This
    file also includes comments from the preprocessor that include line number
    information.  Note that this step only uses files that have changed, which
