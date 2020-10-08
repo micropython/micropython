@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-10-07 17:22+0000\n"
+"PO-Revision-Date: 2020-10-08 16:22+0000\n"
 "Last-Translator: oon arfiandwi <oon.arfiandwi@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ID\n"
@@ -1466,7 +1466,7 @@ msgstr "Pin harus mendukung interupsi perangkat keras"
 
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
-msgstr ""
+msgstr "Nomor pin sudah dipesan oleh EXTI"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1475,6 +1475,9 @@ msgid ""
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
 msgstr ""
+"Pinout menggunakan %d byte per elemen, yang mengonsumsi lebih dari %d byte "
+"ideal. Jika ini tidak dapat dihindari, berikan allow_inefficient=True ke "
+"konstruktor"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -1501,7 +1504,7 @@ msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
-msgstr ""
+msgstr "Buffer awalan harus ada di heap"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload."
@@ -1511,43 +1514,43 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
-msgstr ""
+msgstr "Pull tidak digunakan saat arah output."
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
-msgstr ""
+msgstr "Kesalahan DeInit RNG"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG Init Error"
-msgstr ""
+msgstr "Kesalahan Init RNG"
 
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
-msgstr ""
+msgstr "Pembalikan RS485 ditentukan saat tidak dalam mode RS485"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
-msgstr ""
+msgstr "Kalibrasi RTC tidak didukung pada board ini"
 
 #: shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
-msgstr ""
+msgstr "RTC tidak didukung di board ini"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
-msgstr ""
+msgstr "RTS/CTS/RS485 Belum didukung pada perangkat ini"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
-msgstr ""
+msgstr "Kesalahan pembuatan nomor acak"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
-msgstr ""
+msgstr "Baca-saja"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
@@ -1560,7 +1563,7 @@ msgstr "sistem file (filesystem) bersifat Read-only"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
-msgstr ""
+msgstr "Segarkan terlalu cepat"
 
 #: shared-bindings/canio/RemoteTransmissionRequest.c
 msgid "RemoteTransmissionRequests limited to 8 bytes"
@@ -1568,7 +1571,7 @@ msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
-msgstr ""
+msgstr "Mode AES yang diminta tidak didukung"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1576,7 +1579,7 @@ msgstr "Channel Kanan tidak didukung"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Row entry must be digitalio.DigitalInOut"
-msgstr ""
+msgstr "Entri baris harus digitalio.DigitalInOut"
 
 #: main.c
 msgid "Running in safe mode! "
