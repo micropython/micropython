@@ -46,6 +46,9 @@ stream.set_error(uerrno.EAGAIN)
 buf = uio.BufferedWriter(stream, 8)
 print(buf.write(bytearray(16)))
 
+# function defined in C++ code
+print("cpp", extra_cpp_coverage())
+
 # test basic import of frozen scripts
 import frzstr1
 

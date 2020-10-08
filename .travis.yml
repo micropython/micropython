@@ -165,7 +165,7 @@ jobs:
     - stage: test
       name: "unix coverage 32-bit build and tests"
       install:
-        - sudo apt-get install gcc-multilib libffi-dev:i386
+        - sudo apt-get install gcc-multilib g++-multilib libffi-dev:i386
         - sudo apt-get install python3-pip
         - sudo pip3 install setuptools
         - sudo pip3 install pyelftools
