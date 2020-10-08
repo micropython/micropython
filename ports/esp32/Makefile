@@ -781,22 +781,6 @@ $(BUILD)/application.elf: $(OBJ) $(LIB) $(BUILD)/esp32_out.ld $(BUILD)/esp32.pro
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(APP_LD_ARGS)
 	$(Q)$(SIZE) $@
 
-define compile_cxx
-$(ECHO) "CXX $<"
-$(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $<
-@# The following fixes the dependency file.
-@# See http://make.paulandlesley.org/autodep.html for details.
-@# Regex adjusted from the above to play better with Windows paths, etc.
-@$(CP) $(@:.o=.d) $(@:.o=.P); \
-  $(SED) -e 's/#.*//' -e 's/^.*:  *//' -e 's/ *\\$$//' \
-      -e '/^$$/ d' -e 's/$$/ :/' < $(@:.o=.d) >> $(@:.o=.P); \
-  $(RM) -f $(@:.o=.d)
-endef
-
-vpath %.cpp . $(TOP)
-$(BUILD)/%.o: %.cpp
-	$(call compile_cxx)
-
 ################################################################################
 # Declarations to build the bootloader
 
