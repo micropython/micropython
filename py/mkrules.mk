@@ -58,11 +58,27 @@ $(Q)$(CC) $(CFLAGS) -c -MD -o $@ $<
   $(RM) -f $(@:.o=.d)
 endef
 
+define compile_cxx
+$(ECHO) "CXX $<"
+$(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $<
+@# The following fixes the dependency file.
+@# See http://make.paulandlesley.org/autodep.html for details.
+@# Regex adjusted from the above to play better with Windows paths, etc.
+@$(CP) $(@:.o=.d) $(@:.o=.P); \
+  $(SED) -e 's/#.*//' -e 's/^.*:  *//' -e 's/ *\\$$//' \
+      -e '/^$$/ d' -e 's/$$/ :/' < $(@:.o=.d) >> $(@:.o=.P); \
+  $(RM) -f $(@:.o=.d)
+endef
+
 vpath %.c . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
 vpath %.c . $(TOP) $(USER_C_MODULES)
+
+vpath %.cpp . $(TOP) $(USER_C_MODULES)
+$(BUILD)/%.o: %.cpp
+	$(call compile_cxx)
 
 $(BUILD)/%.pp: %.c
 	$(ECHO) "PreProcess $<"
