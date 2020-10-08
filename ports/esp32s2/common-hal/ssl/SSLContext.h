@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 
-#include "esp-idf/components/esp-tls/esp_tls.h"
+#include "components/esp-tls/esp_tls.h"
 
 typedef struct {
     mp_obj_base_t base;

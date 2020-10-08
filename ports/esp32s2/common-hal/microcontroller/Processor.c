@@ -34,7 +34,7 @@
 
 #include "soc/efuse_reg.h"
 
-#include "esp-idf/components/driver/esp32s2/include/driver/temp_sensor.h"
+#include "components/driver/esp32s2/include/driver/temp_sensor.h"
 
 float common_hal_mcu_processor_get_temperature(void) {
     float tsens_out;

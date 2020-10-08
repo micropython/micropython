@@ -234,6 +234,8 @@ void reset_cpu(void) {
     uint32_t ticks = nrfx_rtc_counter_get(&rtc_instance);
     overflow_tracker.overflowed_ticks += ticks / 32;
     NVIC_SystemReset();
+    for (;;) {
+    }
 }
 
 // The uninitialized data section is placed directly after BSS, under the theory

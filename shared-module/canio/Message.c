@@ -28,16 +28,13 @@
 
 #include <string.h>
 
-void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool rtr, bool extended)
+void common_hal_canio_message_construct(canio_message_obj_t *self, int id, void *data, size_t size, bool extended)
 {
     self->id = id;
     self->size = size;
-    self->rtr = rtr;
     self->extended = extended;
     if (data) {
         memcpy(self->data, data, size);
-    } else {
-        memset(self->data, 0, size);
     }
 }
 
@@ -59,35 +56,14 @@ const void *common_hal_canio_message_get_data(const canio_message_obj_t *self)
 
 const void common_hal_canio_message_set_data(canio_message_obj_t *self, const void *data, size_t size)
 {
-    self->rtr = false;
     self->size = size;
     memcpy(self->data, data, size);
 }
 
 
-size_t common_hal_canio_message_get_size(const canio_message_obj_t *self)
+size_t common_hal_canio_message_get_length(const canio_message_obj_t *self)
 {
     return self->size;
-}
-
-void common_hal_canio_message_set_size(canio_message_obj_t *self, size_t size)
-{
-    memset(self->data, 0, size);
-    self->size = size;
-}
-
-
-bool common_hal_canio_message_get_rtr(const canio_message_obj_t *self)
-{
-    return self->rtr;
-}
-
-void common_hal_canio_message_set_rtr(canio_message_obj_t *self, bool rtr)
-{
-    self->rtr = rtr;
-    if (rtr) {
-        memset(self->data, 0, self->size);
-    }
 }
 
 bool common_hal_canio_message_get_extended(const canio_message_obj_t *self)

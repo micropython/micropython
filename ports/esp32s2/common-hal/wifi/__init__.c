@@ -31,13 +31,14 @@
 
 #include "py/runtime.h"
 
-#include "esp-idf/components/esp_wifi/include/esp_wifi.h"
+#include "components/esp_wifi/include/esp_wifi.h"
 
-#include "esp-idf/components/heap/include/esp_heap_caps.h"
+#include "components/heap/include/esp_heap_caps.h"
 
 wifi_radio_obj_t common_hal_wifi_radio_obj;
 
-#include "esp_log.h"
+#include "components/log/include/esp_log.h"
+
 static const char* TAG = "wifi";
 
 static void event_handler(void* arg, esp_event_base_t event_base,

@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 
-#include "esp-idf/components/esp_event/include/esp_event.h"
+#include "components/esp_event/include/esp_event.h"
 
 #include "shared-bindings/wifi/ScannedNetworks.h"
 

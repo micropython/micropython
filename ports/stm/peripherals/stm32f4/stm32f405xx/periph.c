@@ -216,3 +216,26 @@ const mcu_periph_obj_t mcu_sdio_data2_list[1] = {
 const mcu_periph_obj_t mcu_sdio_data3_list[1] = {
     PERIPH(1, 12, &pin_PC11),
 };
+
+//CAN
+CAN_TypeDef * mcu_can_banks[2] = {CAN1, CAN2};
+
+const mcu_periph_obj_t mcu_can_tx_list[6] = {
+    PERIPH(1, 9, &pin_PA11),
+    PERIPH(1, 9, &pin_PB08),
+    PERIPH(1, 9, &pin_PD00),
+    PERIPH(1, 9, &pin_PI09),
+
+    PERIPH(2, 9, &pin_PB12),
+    PERIPH(2, 9, &pin_PB05),
+};
+
+const mcu_periph_obj_t mcu_can_rx_list[6] = {
+    PERIPH(1, 9, &pin_PA12),
+    PERIPH(1, 9, &pin_PB09),
+    PERIPH(1, 9, &pin_PD01),
+    PERIPH(1, 9, &pin_PH13),
+
+    PERIPH(2, 9, &pin_PB13),
+    PERIPH(2, 9, &pin_PB06),
+};

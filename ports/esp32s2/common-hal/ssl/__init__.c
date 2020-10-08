@@ -26,7 +26,7 @@
 
 #include "shared-bindings/ssl/SSLContext.h"
 
-#include "esp-idf/components/mbedtls/esp_crt_bundle/include/esp_crt_bundle.h"
+#include "components/mbedtls/esp_crt_bundle/include/esp_crt_bundle.h"
 
 void common_hal_ssl_create_default_context(ssl_sslcontext_obj_t* self) {
     memset(&self->ssl_config, 0, sizeof(esp_tls_cfg_t));

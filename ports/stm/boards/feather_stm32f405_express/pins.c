@@ -47,5 +47,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SDIO_CLOCK), MP_ROM_PTR(&pin_PC12) },
     { MP_ROM_QSTR(MP_QSTR_SDIO_COMMAND), MP_ROM_PTR(&pin_PD02) },
     { MP_ROM_QSTR(MP_QSTR_SDIO_DATA), MP_ROM_PTR(&sdio_data_tuple) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CAN_RX),  MP_ROM_PTR(&pin_PB09) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CAN_TX),  MP_ROM_PTR(&pin_PB08) },
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

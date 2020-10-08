@@ -35,8 +35,8 @@
 #include "shared-bindings/wifi/ScannedNetworks.h"
 #include "shared-module/ipaddress/__init__.h"
 
-#include "esp-idf/components/esp_wifi/include/esp_wifi.h"
-#include "esp-idf/components/lwip/include/apps/ping/ping_sock.h"
+#include "components/esp_wifi/include/esp_wifi.h"
+#include "components/lwip/include/apps/ping/ping_sock.h"
 
 #define MAC_ADDRESS_LENGTH 6
 
@@ -106,6 +106,8 @@ void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t* bssid, size_t bssid_len) {
     // check enabled
+    start_station(self);
+
     wifi_config_t* config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);
     config->sta.ssid[ssid_len] = 0;

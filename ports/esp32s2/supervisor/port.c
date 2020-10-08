@@ -46,8 +46,8 @@
 #include "shared-bindings/rtc/__init__.h"
 
 #include "peripherals/rmt.h"
-#include "esp-idf/components/heap/include/esp_heap_caps.h"
-#include "esp-idf/components/soc/soc/esp32s2/include/soc/cache_memory.h"
+#include "components/heap/include/esp_heap_caps.h"
+#include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
 
 #define HEAP_SIZE (48 * 1024)
 
@@ -55,6 +55,8 @@ uint32_t* heap;
 uint32_t heap_size;
 
 STATIC esp_timer_handle_t _tick_timer;
+
+extern void esp_restart(void) NORETURN;
 
 void tick_timer_cb(void* arg) {
     supervisor_tick();
@@ -118,9 +120,11 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
+    esp_restart();
 }
 
 void reset_cpu(void) {
+    esp_restart();
 }
 
 uint32_t *port_heap_get_bottom(void) {

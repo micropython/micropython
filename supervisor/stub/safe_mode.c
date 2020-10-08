@@ -26,14 +26,15 @@
 
 #include "supervisor/shared/safe_mode.h"
 
+#include <stdlib.h>
+
 safe_mode_t wait_for_safe_mode_reset(void) {
     return NO_SAFE_MODE;
 }
 
 void reset_into_safe_mode(safe_mode_t reason) {
     (void) reason;
-    for (;;) {
-    }
+    abort();
 }
 
 void print_safe_mode_message(safe_mode_t reason) {

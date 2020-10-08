@@ -29,7 +29,7 @@
 
 #include "bindings/espidf/__init__.h"
 
-#include "esp-idf/components/heap/include/esp_heap_caps.h"
+#include "components/heap/include/esp_heap_caps.h"
 
 //| """Direct access to a few ESP-IDF details. This module *should not* include any functionality
 //|    that could be implemented by other frameworks. It should only include ESP-IDF specific

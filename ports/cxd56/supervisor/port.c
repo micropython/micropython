@@ -71,6 +71,8 @@ safe_mode_t port_init(void) {
 
 void reset_cpu(void) {
     boardctl(BOARDIOC_RESET, 0);
+    for (;;) {
+    }
 }
 
 void reset_port(void) {
@@ -91,6 +93,9 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
+    boardctl(BOARDIOC_RESET, 0);
+    for (;;) {
+    }
 }
 
 supervisor_allocation* port_fixed_stack(void) {

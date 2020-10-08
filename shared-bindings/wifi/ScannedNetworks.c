@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
 
-#include "esp_log.h"
 static const char *TAG = "cp iternext";
 
 //| class ScannedNetworks:

@@ -28,7 +28,7 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "py/runtime.h"
-#include "driver/ledc.h"
+#include "components/driver/include/driver/ledc.h"
 
 #define INDEX_EMPTY 0xFF
 

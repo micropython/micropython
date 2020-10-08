@@ -32,7 +32,8 @@
 #include "common-hal/socketpool/SocketPool.h"
 #include "common-hal/ssl/SSLContext.h"
 
-#include "esp-idf/components/esp-tls/esp_tls.h"
+#include "components/esp-tls/esp_tls.h"
+#include "components/log/include/esp_log.h"
 
 typedef struct {
     mp_obj_base_t base;

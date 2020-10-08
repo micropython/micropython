@@ -36,7 +36,6 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 
-#include "esp_log.h"
 static const char* TAG = "socket binding";
 
 //| class Socket:
