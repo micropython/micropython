@@ -35,8 +35,8 @@
 #include "esp32s2_peripherals_config.h"
 #include "esp-idf/config/sdkconfig.h"
 
-#include "components/soc/include/hal/gpio_types.h"
-#include "components/soc/include/hal/adc_types.h"
+#include "components/hal/include/hal/gpio_types.h"
+#include "components/hal/include/hal/adc_types.h"
 
 typedef struct {
     PIN_PREFIX_FIELDS

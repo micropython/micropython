@@ -35,7 +35,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
-#include "components/driver/include/driver/dac.h"
+#include "components/driver/include/driver/dac_common.h"
 
 #include "common-hal/microcontroller/Pin.h"
 

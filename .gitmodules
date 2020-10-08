@@ -152,4 +152,4 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM69.git
 [submodule "ports/esp32s2/esp-idf"]
 	path = ports/esp32s2/esp-idf
-	url = https://github.com/hierophect/esp-idf.git
+	url = https://github.com/espressif/esp-idf.git
