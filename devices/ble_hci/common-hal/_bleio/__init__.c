@@ -98,7 +98,7 @@ bleio_adapter_obj_t *common_hal_bleio_allocate_adapter_or_raise(void) {
 
 void common_hal_bleio_check_connected(uint16_t conn_handle) {
     if (conn_handle == BLE_CONN_HANDLE_INVALID) {
-        mp_raise_bleio_ConnectionError(translate("Not connected"));
+        mp_raise_ConnectionError(translate("Not connected"));
     }
 }
 

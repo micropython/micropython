@@ -161,7 +161,7 @@ STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_
         // gatts write events, which may not have been sent yet.
         //
         // IDEAL:
-        // mp_raise_bleio_ConnectionError(translate("Not connected"));
+        // mp_raise_ConnectionError(translate("Not connected"));
         // TEMPORARY:
         num_bytes_written = 0;
     }

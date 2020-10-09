@@ -242,19 +242,24 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     reset_status_led();
 }
 
+void print_code_py_status_message(safe_mode_t safe_mode) {
+    if (autoreload_is_enabled()) {
+        serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
+    } else {
+        serial_write_compressed(translate("Auto-reload is off.\n"));
+    }
+    if (safe_mode != NO_SAFE_MODE) {
+        serial_write_compressed(translate("Running in safe mode! "));
+        serial_write_compressed(translate("Not running saved code.\n"));
+    }
+}
+
 bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
     if (serial_connected_at_start) {
         serial_write("\n");
-        if (autoreload_is_enabled()) {
-            serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
-        } else if (safe_mode != NO_SAFE_MODE) {
-            serial_write_compressed(translate("Running in safe mode! "));
-            serial_write_compressed(translate("Auto-reload is off.\n"));
-        } else if (!autoreload_is_enabled()) {
-            serial_write_compressed(translate("Auto-reload is off.\n"));
-        }
+        print_code_py_status_message(safe_mode);
     }
     #endif
 
@@ -266,10 +271,7 @@ bool run_code_py(safe_mode_t safe_mode) {
 
     bool found_main = false;
 
-    if (safe_mode != NO_SAFE_MODE) {
-        serial_write_compressed(translate("Running in safe mode! "));
-        serial_write_compressed(translate("Not running saved code.\n"));
-    } else {
+    if (safe_mode == NO_SAFE_MODE) {
         new_status_color(MAIN_RUNNING);
 
         static const char * const supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
@@ -322,16 +324,8 @@ bool run_code_py(safe_mode_t safe_mode) {
         }
 
         if (!serial_connected_before_animation && serial_connected()) {
-            if (serial_connected_at_start) {
-                serial_write("\n\n");
-            }
-
             if (!serial_connected_at_start) {
-                if (autoreload_is_enabled()) {
-                    serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
-                } else {
-                    serial_write_compressed(translate("Auto-reload is off.\n"));
-                }
+                print_code_py_status_message(safe_mode);
             }
             print_safe_mode_message(safe_mode);
             serial_write("\n");
@@ -486,8 +480,10 @@ int __attribute__((used)) main(void) {
     reset_devices();
     reset_board();
 
-    // Turn on autoreload by default but before boot.py in case it wants to change it.
-    autoreload_enable();
+    // If not in safe mode turn on autoreload by default but before boot.py in case it wants to change it.
+    if (safe_mode == NO_SAFE_MODE) {
+        autoreload_enable();
+    }
 
     // By default our internal flash is readonly to local python code and
     // writable over USB. Set it here so that boot.py can change it.
