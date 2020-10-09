@@ -66,6 +66,7 @@
 #define HCI_KIND_VENDOR_EVENT (0x12)
 
 #define HCI_EVENT_COMMAND_COMPLETE     (0x0E) // <num packets><opcode 16><status><data...>
+#define HCI_EVENT_COMMAND_STATUS       (0x0F) // <status><num_packets><opcode 16>
 
 // There can be quite long delays during firmware update.
 #define SYS_ACK_TIMEOUT_MS (1000)
@@ -275,9 +276,19 @@ void ipcc_init(uint32_t irq_pri) {
 /******************************************************************************/
 // Transport layer HCI interface
 
+// The WS firmware doesn't support OCF_CB_SET_EVENT_MASK2, and fails with:
+//  v1.8.0.0.4 (and below): HCI_EVENT_COMMAND_COMPLETE with a non-zero status
+//  v1.9.0.0.4 (and above): HCI_EVENT_COMMAND_STATUS with a non-zero status
+// In either case we detect the failure response and inject this response
+// instead (which is HCI_EVENT_COMMAND_COMPLETE for OCF_CB_SET_EVENT_MASK2
+// with status=0).
+STATIC const uint8_t set_event_event_mask2_fix_payload[] = { 0x04, 0x0e, 0x04, 0x01, 0x63, 0x0c, 0x00 };
+
 STATIC size_t tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
     const char *info;
-    bool applied_set_event_event_mask2_fix = false;
+    #if HCI_TRACE
+    int applied_set_event_event_mask2_fix = 0;
+    #endif
     size_t len;
     switch (buf[0]) {
         case HCI_KIND_BT_ACL: {
@@ -300,10 +311,12 @@ STATIC size_t tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
                     uint8_t status = buf[6];
 
                     if (opcode == HCI_OPCODE(OGF_CTLR_BASEBAND, OCF_CB_SET_EVENT_MASK2) && status != 0) {
-                        // The WB doesn't support this command (despite being in CS 4.1), so pretend like
-                        // it succeeded by replacing the final byte (status) with a zero.
-                        applied_set_event_event_mask2_fix = true;
-                        len -= 1;
+                        // For WS firmware v1.8.0.0.4 and below. Reply with the "everything OK" payload.
+                        parse->cb_fun(parse->cb_env, set_event_event_mask2_fix_payload, sizeof(set_event_event_mask2_fix_payload));
+                        #if HCI_TRACE
+                        applied_set_event_event_mask2_fix = 18;
+                        #endif
+                        break; // Don't send the original payload.
                     }
 
                     if (opcode == HCI_OPCODE(OGF_CTLR_BASEBAND, OCF_CB_RESET) && status == 0) {
@@ -313,15 +326,21 @@ STATIC size_t tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
                     }
                 }
 
-                parse->cb_fun(parse->cb_env, buf, len);
+                if (buf[1] == HCI_EVENT_COMMAND_STATUS && len == 7) {
+                    uint16_t opcode = (buf[6] << 8) | buf[5];
+                    uint8_t status = buf[3];
 
-                if (applied_set_event_event_mask2_fix) {
-                    // Inject the zero status.
-                    uint8_t data = 0;
-                    parse->cb_fun(parse->cb_env, &data, 1);
-                    // Restore the length for the HCI tracing below.
-                    len += 1;
+                    if (opcode == HCI_OPCODE(OGF_CTLR_BASEBAND, OCF_CB_SET_EVENT_MASK2) && status != 0) {
+                        // For WS firmware v1.9.0.0.4 and higher. Reply with the "everything OK" payload.
+                        parse->cb_fun(parse->cb_env, set_event_event_mask2_fix_payload, sizeof(set_event_event_mask2_fix_payload));
+                        #if HCI_TRACE
+                        applied_set_event_event_mask2_fix = 19;
+                        #endif
+                        break;  // Don't send the original payload.
+                    }
                 }
+
+                parse->cb_fun(parse->cb_env, buf, len);
             }
             break;
         }
@@ -356,7 +375,7 @@ STATIC size_t tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
         printf(" (reset)");
     }
     if (applied_set_event_event_mask2_fix) {
-        printf(" (mask2 fix)");
+        printf(" (mask2 fix %d)", applied_set_event_event_mask2_fix);
     }
     printf("\n");
 
