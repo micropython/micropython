@@ -29,6 +29,7 @@
 #include "py/gc.h"
 #include "py/mpconfig.h"
 #include "supervisor/background_callback.h"
+#include "supervisor/linker.h"
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
@@ -63,7 +64,7 @@ void background_callback_add(background_callback_t *cb, background_callback_fun 
 }
 
 static bool in_background_callback;
-void background_callback_run_all() {
+void PLACE_IN_ITCM(background_callback_run_all)() {
     if (!callback_head) {
         return;
     }
