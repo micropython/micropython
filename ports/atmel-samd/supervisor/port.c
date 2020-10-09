@@ -430,6 +430,33 @@ uint32_t port_get_saved_word(void) {
 static volatile uint64_t overflowed_ticks = 0;
 static volatile bool _ticks_enabled = false;
 
+static uint32_t _get_count(void) {
+    #ifdef SAM_D5X_E5X
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
+    #endif
+    #ifdef SAMD21
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {}
+    #endif
+
+    return RTC->MODE0.COUNT.reg;
+}
+
+static void _port_interrupt_after_ticks(uint32_t ticks) {
+    uint32_t current_ticks = _get_count();
+    if (ticks > 1 << 28) {
+        // We'll interrupt sooner with an overflow.
+        return;
+    }
+#ifdef SAMD21
+    if (hold_interrupt) {
+        return;
+    }
+#endif
+    RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
+    RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
+    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
+}
+
 void RTC_Handler(void) {
     uint32_t intflag = RTC->MODE0.INTFLAG.reg;
     if (intflag & RTC_MODE0_INTFLAG_OVF) {
@@ -452,7 +479,7 @@ void RTC_Handler(void) {
             supervisor_tick();
             // Check _ticks_enabled again because a tick handler may have turned it off.
             if (_ticks_enabled) {
-                port_interrupt_after_ticks(1);
+                _port_interrupt_after_ticks(1);
             }
         }
         #endif
@@ -460,17 +487,6 @@ void RTC_Handler(void) {
         RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
         #endif
     }
-}
-
-static uint32_t _get_count(void) {
-    #ifdef SAM_D5X_E5X
-    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
-    #endif
-    #ifdef SAMD21
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {}
-    #endif
-
-    return RTC->MODE0.COUNT.reg;
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
@@ -490,7 +506,7 @@ void port_enable_tick(void) {
     #endif
     #ifdef SAMD21
     _ticks_enabled = true;
-    port_interrupt_after_ticks(1);
+    _port_interrupt_after_ticks(1);
     #endif
 }
 
@@ -505,20 +521,14 @@ void port_disable_tick(void) {
     #endif
 }
 
+// This is called by sleep, we ignore it when our ticks are enabled because
+// they'll wake us up earlier. If we don't, we'll mess up ticks by overwriting
+// the next RTC wake up time.
 void port_interrupt_after_ticks(uint32_t ticks) {
-    uint32_t current_ticks = _get_count();
-    if (ticks > 1 << 28) {
-        // We'll interrupt sooner with an overflow.
+    if (_ticks_enabled) {
         return;
     }
-#ifdef SAMD21
-    if (hold_interrupt) {
-        return;
-    }
-#endif
-    RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
-    RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
-    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
+    _port_interrupt_after_ticks(ticks);
 }
 
 void port_sleep_until_interrupt(void) {
