@@ -62,7 +62,7 @@ Constructors
 Methods
 -------
 
-.. method:: Timer.init(*, freq, prescaler, period, mode=Timer.UP, div=1, callback=None, deadtime=0)
+.. method:: Timer.init(*, freq, prescaler, period, mode=Timer.UP, div=1, callback=None, deadtime=0, brk)
 
    Initialise the timer.  Initialisation must be either by frequency (in Hz)
    or by prescaler and period::
@@ -106,6 +106,12 @@ Methods
        2, 256-512 in steps of 8, and 512-1008 in steps of 16. ``deadtime``
        measures ticks of ``source_freq`` divided by ``div`` clock ticks.
        ``deadtime`` is only available on timers 1 and 8.
+
+     - ``brk`` - specifies if the break mode is used to kill the output of
+        the PWM when the ``BRK_IN`` input is asserted. The polarity set how the
+        ``BRK_IN`` input is triggered. It can be set to ``BRK_OFF``, ``BRK_LOW``
+        and ``BRK_HIGH``.
+
 
     You must either specify freq or both of period and prescaler.
 
