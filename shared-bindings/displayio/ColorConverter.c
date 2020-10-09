@@ -43,6 +43,7 @@
 //|         """Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
 //|         currently.
 //|         :param bool dither: Adds random noise to dither the output image"""
+//|         :param bool transparent_color: Sets one color in the colorset to transparent"""
 //|         ...
 //|
 
@@ -50,9 +51,11 @@
 //|
 STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_dither};
+    enum { ARG_transparent_color };
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_transparent_color, MP_ARG_KW_ONLY | MP_ARG_INT, {.uint32_t = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -60,7 +63,7 @@ STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, siz
     displayio_colorconverter_t *self = m_new_obj(displayio_colorconverter_t);
     self->base.type = &displayio_colorconverter_type;
 
-    common_hal_displayio_colorconverter_construct(self, args[ARG_dither].u_bool);
+    common_hal_displayio_colorconverter_construct(self, args[ARG_dither].u_bool, args[ARG_transparent_color].uint32_t);
 
     return MP_OBJ_FROM_PTR(self);
 }

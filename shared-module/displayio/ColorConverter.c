@@ -39,8 +39,9 @@ uint32_t displayio_colorconverter_dither_noise_2(uint32_t x, uint32_t y) {
     return displayio_colorconverter_dither_noise_1(x + y * 0xFFFF);
 }
 
-void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self, bool dither) {
+void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self, bool dither, uint32_t transparent_color) {
     self->dither = dither;
+    self->transparent_color = transparent_color;
 }
 
 uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
@@ -161,6 +162,9 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
         }
         output_color->pixel = packed;
         output_color->opaque = true;
+        if (self->transparent_color == pixel) {
+            output_color->opaque = false;
+        }
         return;
     } else if (colorspace->tricolor) {
         uint8_t luma = displayio_colorconverter_compute_luma(pixel);
@@ -170,6 +174,9 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
                 output_color->pixel = 0;
             }
             output_color->opaque = true;
+            if (self->transparent_color == pixel) {
+                output_color->opaque = false;
+            }
             return;
         }
         uint8_t pixel_hue = displayio_colorconverter_compute_hue(pixel);
@@ -179,6 +186,9 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
         uint8_t luma = displayio_colorconverter_compute_luma(pixel);
         output_color->pixel = luma >> (8 - colorspace->depth);
         output_color->opaque = true;
+        if (self->transparent_color == pixel) {
+            output_color->opaque = false;
+        }
         return;
     }
     output_color->opaque = false;
