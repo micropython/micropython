@@ -422,8 +422,6 @@ typedef enum _mp_map_lookup_kind_t {
     MP_MAP_LOOKUP_ADD_IF_NOT_FOUND_OR_REMOVE_IF_FOUND = 3, // only valid for mp_set_lookup
 } mp_map_lookup_kind_t;
 
-extern const mp_map_t mp_const_empty_map;
-
 static inline bool mp_map_slot_is_filled(const mp_map_t *map, size_t pos) {
     assert(pos < map->alloc);
     return (map)->table[pos].key != MP_OBJ_NULL && (map)->table[pos].key != MP_OBJ_SENTINEL;
@@ -906,6 +904,12 @@ mp_obj_t mp_obj_dict_copy(mp_obj_t self_in);
 static inline mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
     return &((mp_obj_dict_t *)MP_OBJ_TO_PTR(dict))->map;
 }
+
+extern const mp_obj_dict_t mp_const_empty_dict_obj;
+
+// Fixed empty map. Useful when need to call kw-receiving functions
+// without any keywords from C, etc.
+#define mp_const_empty_map (mp_const_empty_dict_obj.map)
 
 // set
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item);
