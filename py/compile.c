@@ -2655,7 +2655,11 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
     compile_require_async_context(comp, pns);
     compile_atom_expr_normal(comp, pns);
 
-    compile_await_object_method(comp, MP_QSTR___await__);
+    
+    EMIT_ARG(load_method, MP_QSTR___await__, false);
+    EMIT_ARG(call_method, 0, 0, 0);
+    // EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE); // don't yield anything from an awaitable; only return the final result.
+    // EMIT_ARG(yield, MP_EMIT_YIELD_FROM);
 }
 #endif
 
