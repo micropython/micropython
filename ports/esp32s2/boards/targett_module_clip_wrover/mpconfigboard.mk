@@ -1,6 +1,6 @@
 USB_VID = 0x239A
 USB_PID = 0x80A6
-USB_PRODUCT = "Targett Module Clip w/WROVER"
+USB_PRODUCT = "Targett Module Clip w/Wrover"
 USB_MANUFACTURER = "Targett"
 
 INTERNAL_FLASH_FILESYSTEM = 1
