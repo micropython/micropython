@@ -129,4 +129,3 @@ void pew_reset(void) {
 uint16_t pew_get_ticks() {
     return pewpew_ticks;
 }
-
