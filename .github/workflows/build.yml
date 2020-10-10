@@ -422,7 +422,7 @@ jobs:
         - "espressif_saola_1_wrover"
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
-        - "targett_module_clip_wrooom"
+        - "targett_module_clip_wroom"
         - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
         - "unexpectedmaker_feathers2_prerelease"
