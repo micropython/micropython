@@ -528,10 +528,10 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 $(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
-SRC_MOD += $(addprefix lib/protomatter/, \
+SRC_MOD += $(addprefix lib/protomatter/src/, \
 	core.c \
 )
-$(BUILD)/lib/protomatter/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
+$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.

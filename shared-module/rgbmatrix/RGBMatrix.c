@@ -78,10 +78,10 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         // verify that the matrix is big enough
         mp_get_index(mp_obj_get_type(self->framebuffer), self->bufinfo.len, MP_OBJ_NEW_SMALL_INT(self->bufsize-1), false);
     } else {
-        _PM_FREE(self->bufinfo.buf);
-        _PM_FREE(self->protomatter.rgbPins);
-        _PM_FREE(self->protomatter.addr);
-        _PM_FREE(self->protomatter.screenData);
+        _PM_free(self->bufinfo.buf);
+        _PM_free(self->protomatter.rgbPins);
+        _PM_free(self->protomatter.addr);
+        _PM_free(self->protomatter.screenData);
 
         self->framebuffer = NULL;
         self->bufinfo.buf = common_hal_rgbmatrix_allocator_impl(self->bufsize);
@@ -164,13 +164,13 @@ void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t* self) {
     free_pin(&self->oe_pin);
 
     if (self->protomatter.rgbPins) {
-        _PM_free(&self->protomatter);
+        _PM_deallocate(&self->protomatter);
     }
     memset(&self->protomatter, 0, sizeof(self->protomatter));
 
     // If it was supervisor-allocated, it is supervisor-freed and the pointer
     // is zeroed, otherwise the pointer is just zeroed
-    _PM_FREE(self->bufinfo.buf);
+    _PM_free(self->bufinfo.buf);
     self->base.type = NULL;
 
     // If a framebuffer was passed in to the constructor, NULL the reference
