@@ -36,10 +36,6 @@ void board_init(void) {
     // Debug UART
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
-
-    //Crystal
-    common_hal_never_reset_pin(&pin_GPIO15);
-    common_hal_never_reset_pin(&pin_GPIO16);
 }
 
 bool board_requests_safe_mode(void) {
