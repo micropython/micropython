@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-06 13:26-0400\n"
-"PO-Revision-Date: 2020-10-08 16:22+0000\n"
+"PO-Revision-Date: 2020-10-10 23:51+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -279,7 +279,7 @@ msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr ""
+msgstr "ADC2 zhèng yóu WiFi shǐ yòng"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -3261,7 +3261,7 @@ msgstr "yòubiān bìxū shì ndarray huò biāoliàng"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
-msgstr ""
+msgstr "Rchāifēn(wú ，N）"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid ""
