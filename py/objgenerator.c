@@ -234,12 +234,8 @@ STATIC mp_obj_t gen_instance_await(mp_obj_t self_in) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
             translate("type object 'generator' has no attribute '__await__'")));
     }
-    mp_obj_t ret = gen_resume_and_raise(self_in, mp_const_none, MP_OBJ_NULL);
-    if (ret == MP_OBJ_STOP_ITERATION) {
-        nlr_raise(mp_obj_new_exception(&mp_type_StopIteration));
-    } else {
-        return ret;
-    }
+    // You can directly call send on a coroutine generator or you can __await__ then send on the return of that.
+    return self;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_await_obj, gen_instance_await);
 #endif
