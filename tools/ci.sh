@@ -460,6 +460,7 @@ function ci_zephyr_setup {
       -v "$(pwd)":/micropython \
       -e ZEPHYR_SDK_INSTALL_DIR=/opt/sdk/zephyr-sdk-0.11.3 \
       -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr \
+      -e ZEPHYR_BASE=/zephyrproject/zephyr \
       -w /micropython/ports/zephyr \
       zephyrprojectrtos/ci:v0.11.8
     docker ps -a
@@ -472,10 +473,10 @@ function ci_zephyr_install {
 }
 
 function ci_zephyr_build {
-    docker exec zephyr-ci bash -c "make clean; ./make-minimal ${MAKEOPTS}"
-    docker exec zephyr-ci bash -c "make clean; ./make-minimal ${MAKEOPTS} BOARD=frdm_k64f"
-    docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS}"
-    docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS} BOARD=frdm_k64f"
-    docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS} BOARD=mimxrt1050_evk"
-    docker exec zephyr-ci bash -c "make clean; make ${MAKEOPTS} BOARD=reel_board"
+    docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE=prj_minimal.conf
+    docker exec zephyr-ci west build -p auto -b frdm_k64f -- -DCONF_FILE=prj_minimal.conf
+    docker exec zephyr-ci west build -p auto -b qemu_x86
+    docker exec zephyr-ci west build -p auto -b frdm_k64f
+    docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
+    docker exec zephyr-ci west build -p auto -b reel_board
 }
