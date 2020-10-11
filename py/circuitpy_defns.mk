@@ -45,7 +45,6 @@ BASE_CFLAGS = \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
-	-Wno-error=lto-type-mismatch \
 	-D__$(CHIP_VARIANT)__ \
 	-ffunction-sections \
 	-fdata-sections \
@@ -66,7 +65,6 @@ ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
 # and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
@@ -76,7 +74,6 @@ endif
 ifneq ($(FROZEN_MPY_DIRS),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
 
