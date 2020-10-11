@@ -867,7 +867,6 @@ struct _supervisor_allocation_node;
     mp_obj_t rtc_time_source; \
     GAMEPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
-    mp_obj_t terminal_tilegrid_tiles; \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
