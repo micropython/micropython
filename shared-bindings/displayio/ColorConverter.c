@@ -110,9 +110,41 @@ const mp_obj_property_t displayio_colorconverter_dither_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     def make_transparent(self, pixel: int) -> None:
+//|         """Sets a pixel to not opaque."""
+//|
+STATIC mp_obj_t displayio_colorconverter_make_transparent(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
+    displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_int_t transparent_color;
+    if (!mp_obj_get_int_maybe(transparent_color_obj, &transparent_color)) {
+        mp_raise_ValueError(translate("transparent_color should be an int"));
+    }
+    common_hal_displayio_colorconverter_make_transparent(self, transparent_color);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_make_transparent_obj, displayio_colorconverter_make_transparent);
+
+//|     def make_opaque(self, pixel: int) -> None:
+//|         """Sets a pixel to opaque."""
+//|
+STATIC mp_obj_t displayio_colorconverter_make_opaque(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
+    displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_int_t transparent_color;
+    if (!mp_obj_get_int_maybe(transparent_color_obj, &transparent_color)) {
+        mp_raise_ValueError(translate("transparent_color should be an int"));
+    }
+    common_hal_displayio_colorconverter_make_opaque(self, transparent_color);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_make_opaque_obj, displayio_colorconverter_make_opaque);
+
 STATIC const mp_rom_map_elem_t displayio_colorconverter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_convert), MP_ROM_PTR(&displayio_colorconverter_convert_obj) },
     { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&displayio_colorconverter_dither_obj) },
+    { MP_ROM_QSTR(MP_QSTR_make_transparent), MP_ROM_PTR(&displayio_colorconverter_make_transparent_obj) },
+    { MP_ROM_QSTR(MP_QSTR_make_opaque), MP_ROM_PTR(&displayio_colorconverter_make_opaque_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_colorconverter_locals_dict, displayio_colorconverter_locals_dict_table);
 
