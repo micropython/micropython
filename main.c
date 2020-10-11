@@ -123,15 +123,15 @@ void start_mp(supervisor_allocation* heap) {
     // to recover from limit hit.  (Limit is measured in bytes.)
     mp_stack_ctrl_init();
 
-    if (stack_alloc != NULL) {
-        mp_stack_set_limit(stack_alloc->length - 1024);
+    if (stack_get_bottom() != NULL) {
+        mp_stack_set_limit(stack_get_length() - 1024);
     }
 
 
 #if MICROPY_MAX_STACK_USAGE
     // _ezero (same as _ebss) is an int, so start 4 bytes above it.
-    if (stack_alloc != NULL) {
-        mp_stack_set_bottom(stack_alloc->ptr);
+    if (stack_get_bottom() != NULL) {
+        mp_stack_set_bottom(stack_get_bottom());
         mp_stack_fill_with_sentinel();
     }
 #endif
@@ -148,7 +148,7 @@ void start_mp(supervisor_allocation* heap) {
     #endif
 
     #if MICROPY_ENABLE_GC
-    gc_init(heap->ptr, heap->ptr + heap->length / 4);
+    gc_init(heap->ptr, heap->ptr + get_allocation_length(heap) / 4);
     #endif
     mp_init();
     mp_obj_list_init(mp_sys_path, 0);
@@ -450,9 +450,6 @@ int run_repl(void) {
 int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
     safe_mode_t safe_mode = port_init();
-
-    // Init memory after the port in case the port needs to set aside memory.
-    memory_init();
 
     // Turn on LEDs
     init_status_leds();

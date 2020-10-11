@@ -220,7 +220,7 @@ void *common_hal_rgbmatrix_allocator_impl(size_t sz) {
     if (gc_alloc_possible()) {
         return m_malloc_maybe(sz + sizeof(void*), true);
     } else {
-        supervisor_allocation *allocation = allocate_memory(align32_size(sz), false);
+        supervisor_allocation *allocation = allocate_memory(align32_size(sz), false, false);
         return allocation ? allocation->ptr : NULL;
     }
 }

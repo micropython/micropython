@@ -33,23 +33,36 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 typedef struct {
     uint32_t* ptr;
-    uint32_t length; // in bytes
 } supervisor_allocation;
 
 
 
-void memory_init(void);
 void free_memory(supervisor_allocation* allocation);
+
+// Find the allocation with the given ptr, NULL if not found. When called from the context of a
+// supervisor_move_memory() callback, finds the allocation that had that ptr *before* the move, but
+// the returned allocation already contains the ptr after the move.
+// When called with NULL, may return either NULL or an unused allocation whose ptr is NULL (this is
+// a feature used internally in allocate_memory to save code size). Passing the return value to
+// free_memory() is a permissible no-op in either case.
 supervisor_allocation* allocation_from_ptr(void *ptr);
+
 supervisor_allocation* allocate_remaining_memory(void);
 
 // Allocate a piece of a given length in bytes. If high_address is true then it should be allocated
 // at a lower address from the top of the stack. Otherwise, addresses will increase starting after
-// statically allocated memory.
-supervisor_allocation* allocate_memory(uint32_t length, bool high_address);
+// statically allocated memory. If movable is false, memory will be taken from outside the GC heap
+// and will stay stationary until freed. While the VM is running, this will fail unless a previous
+// allocation of exactly matching length has recently been freed. If movable is true, memory will be
+// taken from either outside or inside the GC heap, and when the VM exits, will be moved outside.
+// The ptr of the returned supervisor_allocation will change at that point. If you need to be
+// notified of that, add your own callback function at the designated place near the end of
+// supervisor_move_memory().
+supervisor_allocation* allocate_memory(uint32_t length, bool high_address, bool movable);
 
 static inline uint16_t align32_size(uint16_t size) {
     if (size % 4 != 0) {
@@ -58,7 +71,10 @@ static inline uint16_t align32_size(uint16_t size) {
     return size;
 }
 
-// Called after the heap is freed in case the supervisor wants to save some values.
+size_t get_allocation_length(supervisor_allocation* allocation);
+
+// Called after the GC heap is freed, transfers movable allocations from the GC heap to the
+// supervisor heap and compacts the supervisor heap.
 void supervisor_move_memory(void);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_MEMORY_H

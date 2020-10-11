@@ -45,7 +45,7 @@ void usb_midi_init(void) {
     uint16_t portout_size = align32_size(sizeof(usb_midi_portout_obj_t));
 
     // For each embedded MIDI Jack in the descriptor we create a Port
-    usb_midi_allocation = allocate_memory(tuple_size + portin_size + portout_size, false);
+    usb_midi_allocation = allocate_memory(tuple_size + portin_size + portout_size, false, false);
 
     mp_obj_tuple_t *ports = (mp_obj_tuple_t *) usb_midi_allocation->ptr;
     ports->base.type = &mp_type_tuple;

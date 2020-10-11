@@ -82,7 +82,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     uint16_t total_tiles = width_in_tiles * height_in_tiles;
 
     // First try to allocate outside the heap. This will fail when the VM is running.
-    tilegrid_tiles = allocate_memory(align32_size(total_tiles), false);
+    tilegrid_tiles = allocate_memory(align32_size(total_tiles), false, false);
     uint8_t* tiles;
     if (tilegrid_tiles == NULL) {
         tiles = m_malloc(total_tiles, true);
@@ -133,7 +133,7 @@ void supervisor_display_move_memory(void) {
         grid->tiles == MP_STATE_VM(terminal_tilegrid_tiles)) {
         uint16_t total_tiles = grid->width_in_tiles * grid->height_in_tiles;
 
-        tilegrid_tiles = allocate_memory(align32_size(total_tiles), false);
+        tilegrid_tiles = allocate_memory(align32_size(total_tiles), false, false);
         if (tilegrid_tiles != NULL) {
             memcpy(tilegrid_tiles->ptr, grid->tiles, total_tiles);
             grid->tiles = (uint8_t*) tilegrid_tiles->ptr;

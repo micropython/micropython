@@ -40,7 +40,7 @@
 #define SHARPMEM_BIT_VCOM_LSB (0x40)
 
 static void *hybrid_alloc(size_t sz) {
-    supervisor_allocation *allocation = allocate_memory(align32_size(sz), false);
+    supervisor_allocation *allocation = allocate_memory(align32_size(sz), false, false);
     if (allocation) {
         memset(allocation->ptr, 0, sz);
         return allocation->ptr;

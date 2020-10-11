@@ -27,78 +27,81 @@
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
 
-#include <stddef.h>
+#include <string.h>
 
+#include "py/gc.h"
 #include "supervisor/shared/display.h"
 
 #define CIRCUITPY_SUPERVISOR_ALLOC_COUNT (12)
 
-// Using a zero length to mark an unused allocation makes the code a bit shorter (but makes it
-// impossible to support zero-length allocations).
-#define FREE 0
-
 // The lowest two bits of a valid length are always zero, so we can use them to mark an allocation
-// as freed by the client but not yet reclaimed into the FREE middle.
+// as a hole (freed by the client but not yet reclaimed into the free middle) and as movable.
+#define FLAGS 3
 #define HOLE 1
+#define MOVABLE 2
 
 static supervisor_allocation allocations[CIRCUITPY_SUPERVISOR_ALLOC_COUNT];
-// We use uint32_t* to ensure word (4 byte) alignment.
-uint32_t* low_address;
-uint32_t* high_address;
+supervisor_allocation* old_allocations;
 
-void memory_init(void) {
-    low_address = port_heap_get_bottom();
-    high_address = port_heap_get_top();
-}
+typedef struct _supervisor_allocation_node {
+    struct _supervisor_allocation_node* next;
+    size_t length;
+    // We use uint32_t to ensure word (4 byte) alignment.
+    uint32_t data[];
+} supervisor_allocation_node;
+
+supervisor_allocation_node* low_head;
+supervisor_allocation_node* high_head;
+
+// Intermediate (void*) is to suppress -Wcast-align warning. Alignment will always be correct
+// because this only reverses how (alloc)->ptr was obtained as &(node->data[0]).
+#define ALLOCATION_NODE(alloc) ((supervisor_allocation_node*)(void*)((char*)((alloc)->ptr) - sizeof(supervisor_allocation_node)))
 
 void free_memory(supervisor_allocation* allocation) {
-    if (allocation == NULL) {
+    if (allocation == NULL || allocation->ptr == NULL) {
         return;
     }
-    int32_t index = 0;
-    bool found = false;
-    for (index = 0; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {
-        found = allocation == &allocations[index];
-        if (found) {
-            break;
-        }
+    supervisor_allocation_node* node = ALLOCATION_NODE(allocation);
+    if (node == low_head) {
+        do {
+            low_head = low_head->next;
+        } while (low_head != NULL && (low_head->length & HOLE));
     }
-    if (!found) {
-        // Bad!
-        // TODO(tannewt): Add a way to escape into safe mode on error.
+    else if (node == high_head) {
+        do {
+            high_head = high_head->next;
+        } while (high_head != NULL && (high_head->length & HOLE));
     }
-    if (allocation->ptr == high_address) {
-        high_address += allocation->length / 4;
-        allocation->length = FREE;
-        for (index++; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {
-            if (!(allocations[index].length & HOLE)) {
-                break;
+    else {
+        // Check if it's in the list of embedded allocations.
+        supervisor_allocation_node** emb = &MP_STATE_VM(first_embedded_allocation);
+        while (*emb != NULL) {
+            if (*emb == node) {
+                // Found, remove it from the list.
+                *emb = node->next;
+                m_free(node
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+                    , sizeof(supervisor_allocation_node) + (node->length & ~FLAGS)
+#endif
+                );
+                goto done;
             }
-            // Division automatically shifts out the HOLE bit.
-            high_address += allocations[index].length / 4;
-            allocations[index].length = FREE;
+            emb = &((*emb)->next);
         }
-    } else if (allocation->ptr + allocation->length / 4 == low_address) {
-        low_address = allocation->ptr;
-        allocation->length = FREE;
-        for (index--; index >= 0; index--) {
-            if (!(allocations[index].length & HOLE)) {
-                break;
-            }
-            low_address -= allocations[index].length / 4;
-            allocations[index].length = FREE;
-        }
-    } else {
-        // Freed memory isn't in the middle so skip updating bounds. The memory will be added to the
-        // middle when the memory to the inside is freed. We still need its length, but setting
-        // only the lowest bit is nondestructive.
-        allocation->length |= HOLE;
+        // Else it must be within the low or high ranges and becomes a hole.
+        node->length = ((node->length & ~FLAGS) | HOLE);
     }
+done:
+    allocation->ptr = NULL;
 }
 
 supervisor_allocation* allocation_from_ptr(void *ptr) {
+    // When called from the context of supervisor_move_memory() (old_allocations != NULL), search
+    // by old pointer to give clients a way of mapping from old to new pointer. But not if
+    // ptr == NULL, then the caller wants an allocation whose current ptr is NULL.
+    supervisor_allocation* list = (old_allocations && ptr) ? old_allocations : &allocations[0];
     for (size_t index = 0; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {
-        if (allocations[index].ptr == ptr) {
+        if (list[index].ptr == ptr) {
             return &allocations[index];
         }
     }
@@ -106,50 +109,172 @@ supervisor_allocation* allocation_from_ptr(void *ptr) {
 }
 
 supervisor_allocation* allocate_remaining_memory(void) {
-    if (low_address == high_address) {
-        return NULL;
-    }
-    return allocate_memory((high_address - low_address) * 4, false);
+    uint32_t* low_address = low_head ? low_head->data + low_head->length / 4 : port_heap_get_bottom();
+    uint32_t* high_address = high_head ? (uint32_t*)high_head : port_heap_get_top();
+    return allocate_memory((high_address - low_address) * 4 - sizeof(supervisor_allocation_node), false, false);
 }
 
-supervisor_allocation* allocate_memory(uint32_t length, bool high) {
+static supervisor_allocation_node* find_hole(supervisor_allocation_node* node, size_t length) {
+    for (; node != NULL; node = node->next) {
+        if (node->length == (length | HOLE)) {
+            break;
+        }
+    }
+    return node;
+}
+
+static supervisor_allocation_node* allocate_memory_node(uint32_t length, bool high, bool movable) {
+    // supervisor_move_memory() currently does not support movable allocations on the high side, it
+    // must be extended first if this is ever needed.
+    assert(!(high && movable));
     if (length == 0 || length % 4 != 0) {
         return NULL;
     }
-    uint8_t index = 0;
-    int8_t direction = 1;
-    if (high) {
-        index = CIRCUITPY_SUPERVISOR_ALLOC_COUNT - 1;
-        direction = -1;
-    }
-    supervisor_allocation* alloc;
-    for (; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index += direction) {
-        alloc = &allocations[index];
-        if (alloc->length == FREE && (high_address - low_address) * 4 >= (int32_t) length) {
-            break;
+    // 1. Matching hole on the requested side?
+    supervisor_allocation_node* node = find_hole(high ? high_head : low_head, length);
+    if (!node) {
+        // 2. Enough free space in the middle?
+        uint32_t* low_address = low_head ? low_head->data + low_head->length / 4 : port_heap_get_bottom();
+        uint32_t* high_address = high_head ? (uint32_t*)high_head : port_heap_get_top();
+        if ((high_address - low_address) * 4 >= (int32_t)(sizeof(supervisor_allocation_node) + length)) {
+            if (high) {
+                high_address -= (sizeof(supervisor_allocation_node) + length) / 4;
+                node = (supervisor_allocation_node*)high_address;
+                node->next = high_head;
+                high_head = node;
+            }
+            else {
+                node = (supervisor_allocation_node*)low_address;
+                node->next = low_head;
+                low_head = node;
+            }
         }
-        // If a hole matches in length exactly, we can reuse it.
-        if (alloc->length == (length | HOLE)) {
-            alloc->length = length;
-            return alloc;
+        else {
+            // 3. Matching hole on the other side?
+            node = find_hole(high ? low_head : high_head, length);
+            if (!node) {
+                // 4. GC allocation?
+                if (movable && gc_alloc_possible()) {
+                    node = m_malloc_maybe(sizeof(supervisor_allocation_node) + length, true);
+                    if (node) {
+                        node->next = MP_STATE_VM(first_embedded_allocation);
+                        MP_STATE_VM(first_embedded_allocation) = node;
+                    }
+                }
+                if (!node) {
+                    // 5. Give up.
+                    return NULL;
+                }
+            }
         }
     }
-    if (index >= CIRCUITPY_SUPERVISOR_ALLOC_COUNT) {
+    node->length = length;
+    if (movable) {
+        node->length |= MOVABLE;
+    }
+    return node;
+}
+
+supervisor_allocation* allocate_memory(uint32_t length, bool high, bool movable) {
+    supervisor_allocation_node* node = allocate_memory_node(length, high, movable);
+    if (!node) {
         return NULL;
     }
-    if (high) {
-        high_address -= length / 4;
-        alloc->ptr = high_address;
-    } else {
-        alloc->ptr = low_address;
-        low_address += length / 4;
+    // Find the first free allocation.
+    supervisor_allocation* alloc = allocation_from_ptr(NULL);
+    if (!alloc) {
+        // We should free node again to avoid leaking, but something is wrong anyway if clients try
+        // to make more allocations than available, so don't bother.
+        return NULL;
     }
-    alloc->length = length;
+    alloc->ptr = &(node->data[0]);
     return alloc;
 }
 
+size_t get_allocation_length(supervisor_allocation* allocation) {
+    return ALLOCATION_NODE(allocation)->length & ~FLAGS;
+}
+
 void supervisor_move_memory(void) {
+    // This must be called exactly after freeing the heap, so that the embedded allocations, if any,
+    // are now in the free region.
+    assert(MP_STATE_VM(first_embedded_allocation) == NULL || (low_head < MP_STATE_VM(first_embedded_allocation) && MP_STATE_VM(first_embedded_allocation) < high_head));
+
+    // Save the old pointers for allocation_from_ptr().
+    supervisor_allocation old_allocations_array[CIRCUITPY_SUPERVISOR_ALLOC_COUNT];
+    memcpy(old_allocations_array, allocations, sizeof(allocations));
+
+    // Compact the low side. Traverse the list repeatedly, finding movable allocations preceded by a
+    // hole and swapping them, until no more are found. This is not the most runtime-efficient way,
+    // but probably the shortest and simplest code.
+    bool acted;
+    do {
+        acted = false;
+        supervisor_allocation_node** nodep = &low_head;
+        while (*nodep != NULL && (*nodep)->next != NULL) {
+            if (((*nodep)->length & MOVABLE) && ((*nodep)->next->length & HOLE)) {
+                supervisor_allocation_node* oldnode = *nodep;
+                supervisor_allocation_node* start = oldnode->next;
+                supervisor_allocation* alloc = allocation_from_ptr(&(oldnode->data[0]));
+                assert(alloc != NULL);
+                alloc->ptr = &(start->data[0]);
+                oldnode->next = start->next;
+                size_t holelength = start->length;
+                size_t size = sizeof(supervisor_allocation_node) + (oldnode->length & ~FLAGS);
+                memmove(start, oldnode, size);
+                supervisor_allocation_node* newhole = (supervisor_allocation_node*)(void*)((char*)start + size);
+                newhole->next = start;
+                newhole->length = holelength;
+                *nodep = newhole;
+                acted = true;
+            }
+            nodep = &((*nodep)->next);
+        }
+    } while (acted);
+    // Any holes bubbled to the top can be absorbed into the free middle.
+    while (low_head != NULL && (low_head->length & HOLE)) {
+        low_head = low_head->next;
+    };
+
+    // Don't bother compacting the high side, there are no movable allocations and no holes there in
+    // current usage.
+
+    // Promote the embedded allocations to top-level ones, compacting them at the beginning of the
+    // now free region (or possibly in matching holes).
+    // The linked list is unordered, but allocations must be processed in order to avoid risking
+    // overwriting each other. To that end, repeatedly find the lowest element of the list, remove
+    // it from the list, and process it. This ad-hoc selection sort results in substantially shorter
+    // code than using the qsort() function from the C library.
+    while (MP_STATE_VM(first_embedded_allocation)) {
+        // First element is first candidate.
+        supervisor_allocation_node** pminnode = &MP_STATE_VM(first_embedded_allocation);
+        // Iterate from second element (if any) on.
+        for (supervisor_allocation_node** pnode = &(MP_STATE_VM(first_embedded_allocation)->next); *pnode != NULL; pnode = &(*pnode)->next) {
+            if (*pnode < *pminnode) {
+                pminnode = pnode;
+            }
+        }
+        // Remove from list.
+        supervisor_allocation_node* node = *pminnode;
+        *pminnode = node->next;
+        // Process.
+        size_t length = (node->length & ~FLAGS);
+        supervisor_allocation* alloc = allocation_from_ptr(&(node->data[0]));
+        assert(alloc != NULL);
+        // This may overwrite the header of node if it happened to be there already, but not the
+        // data.
+        supervisor_allocation_node* new_node = allocate_memory_node(length, false, true);
+        // There must be enough free space.
+        assert(new_node != NULL);
+        memmove(&(new_node->data[0]), &(node->data[0]), length);
+        alloc->ptr = &(new_node->data[0]);
+    }
+
+    // Notify clients that their movable allocations may have moved.
+    old_allocations = &old_allocations_array[0];
     #if CIRCUITPY_DISPLAYIO
     supervisor_display_move_memory();
     #endif
+    // Add calls to further clients here.
+    old_allocations = NULL;
 }

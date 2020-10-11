@@ -858,6 +858,9 @@ extern const struct _mp_obj_module_t wifi_module;
 
 #include "supervisor/flash_root_pointers.h"
 
+// From supervisor/memory.c
+struct _supervisor_allocation_node;
+
 #define CIRCUITPY_COMMON_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
@@ -869,6 +872,7 @@ extern const struct _mp_obj_module_t wifi_module;
     FLASH_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
+    struct _supervisor_allocation_node* first_embedded_allocation; \
 
 void supervisor_run_background_tasks_if_tick(void);
 #define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())

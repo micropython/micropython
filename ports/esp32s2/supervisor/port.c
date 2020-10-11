@@ -193,12 +193,8 @@ uint32_t *port_stack_get_top(void) {
     return port_stack_get_limit() + ESP_TASK_MAIN_STACK / (sizeof(uint32_t) / sizeof(StackType_t));
 }
 
-supervisor_allocation _fixed_stack;
-
-supervisor_allocation* port_fixed_stack(void) {
-    _fixed_stack.ptr = port_stack_get_limit();
-    _fixed_stack.length = (port_stack_get_top() - port_stack_get_limit()) * sizeof(uint32_t);
-    return &_fixed_stack;
+bool port_has_fixed_stack(void) {
+    return true;
 }
 
 // Place the word to save just after our BSS section that gets blanked.
