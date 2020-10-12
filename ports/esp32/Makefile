@@ -300,7 +300,7 @@ LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBSTDCXX_FILE_NAME = $(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)
 
 # Debugging/Optimization
-CFLAGS += -g
+CFLAGS += -ggdb
 ifeq ($(DEBUG), 1)
 COPT = -O0
 else
@@ -315,7 +315,7 @@ MPY_CROSS_FLAGS += -march=xtensawin
 # Enable SPIRAM support if CONFIG_ESP32_SPIRAM_SUPPORT=y in sdkconfig
 ifeq ($(CONFIG_ESP32_SPIRAM_SUPPORT),y)
 CFLAGS_COMMON += -mfix-esp32-psram-cache-issue
-LIBC_LIBM = $(ESPCOMP)/newlib/lib/libc-psram-workaround.a $(ESPCOMP)/newlib/lib/libm-psram-workaround.a
+LIBC_LIBM = $(ESPCOMP)/newlib/lib/libg-psram-workaround.a $(ESPCOMP)/newlib/lib/libm-psram-workaround.a
 else
 # Additional newlib symbols that can only be used with spiram disabled.
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
@@ -325,7 +325,7 @@ LDFLAGS += -T esp32.rom.newlib-data.ld
 else
 LDFLAGS += -T esp32.rom.spiram_incompatible_fns.ld
 endif
-LIBC_LIBM = $(ESPCOMP)/newlib/lib/libc.a $(ESPCOMP)/newlib/lib/libm.a
+LIBC_LIBM = $(ESPCOMP)/newlib/lib/libg.a $(ESPCOMP)/newlib/lib/libm.a
 endif
 
 ################################################################################
