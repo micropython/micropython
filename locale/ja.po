@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 20:14-0500\n"
+"POT-Creation-Date: 2020-10-06 13:26-0400\n"
 "PO-Revision-Date: 2020-09-25 18:20+0000\n"
 "Last-Translator: Taku Fukada <naninunenor@gmail.com>\n"
 "Language-Team: none\n"
@@ -276,6 +276,10 @@ msgstr "引数3つのpow()は非対応"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
 msgstr "ハードウェア割り込みチャネルは使用中"
+
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "ADC2 is being used by WiFi"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -1239,6 +1243,7 @@ msgid "No CCCD for this Characteristic"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "チップにDACがありません"
@@ -1438,6 +1443,7 @@ msgstr "パーミッション拒否"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
@@ -3175,6 +3181,7 @@ msgstr "pow()の3つ目の引数は0にできません"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow()の第3引数には整数が必要"
 
+#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3182,6 +3189,7 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr ""
 

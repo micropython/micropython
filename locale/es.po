@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-10-01 21:24+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"POT-Creation-Date: 2020-10-06 13:26-0400\n"
+"PO-Revision-Date: 2020-10-09 17:19+0000\n"
+"Last-Translator: dherrada <dylan.herrada@adafruit.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -277,6 +277,10 @@ msgstr "pow() con 3 argumentos no soportado"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
 msgstr "El canal EXTINT ya está siendo utilizado"
+
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "ADC2 is being used by WiFi"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -1247,6 +1251,7 @@ msgid "No CCCD for this Characteristic"
 msgstr "No hay CCCD para esta característica"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "El chip no tiene DAC"
@@ -1451,6 +1456,7 @@ msgstr "Permiso denegado"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
@@ -1709,7 +1715,7 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
+msgstr "La longitud de rgb_pins debe ser 6, 12, 18, 24, o 30"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -3219,6 +3225,7 @@ msgstr "el 3er argumento de pow() no puede ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() con 3 argumentos requiere enteros"
 
+#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3226,6 +3233,7 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "presionando botón de arranque al inicio.\n"
 
@@ -3604,7 +3612,7 @@ msgstr "el tiempo de espera del perro guardián debe ser mayor a 0"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr ""
+msgstr "el ancho debe ser mayor que cero"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
