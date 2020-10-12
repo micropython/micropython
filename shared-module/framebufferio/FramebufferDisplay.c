@@ -96,8 +96,6 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         common_hal_framebufferio_framebufferdisplay_set_rotation(self, rotation);
     }
 
-    supervisor_start_terminal(self->core.width, self->core.height);
-
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
     common_hal_framebufferio_framebufferdisplay_show(self, &circuitpython_splash);

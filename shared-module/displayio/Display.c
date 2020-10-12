@@ -107,8 +107,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         i += 2 + data_size;
     }
 
-    supervisor_start_terminal(width, height);
-
     // Always set the backlight type in case we're reusing memory.
     self->backlight_inout.base.type = &mp_type_NoneType;
     if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
