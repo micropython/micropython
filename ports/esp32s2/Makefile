@@ -269,7 +269,7 @@ menuconfig: $(BUILD)/esp-idf/config
 	$(Q)grep -Fvxf $(DEBUG_SDKCONFIG) -f $(FLASH_SDKCONFIG) $(BUILD)/sdkconfig.diff > boards/$(BOARD)/sdkconfig
 
 # qstr builds include headers so we need to make sure they are up to date
-$(HEADER_BUILD)/qstr.i.last: | $(BUILD)/esp-idf/config/sdkconfig.h
+$(HEADER_BUILD)/qstr.split: | $(BUILD)/esp-idf/config/sdkconfig.h
 
 ESP_IDF_COMPONENTS_LINK = freertos log hal esp_system esp_adc_cal esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp_rom esp-tls
 
