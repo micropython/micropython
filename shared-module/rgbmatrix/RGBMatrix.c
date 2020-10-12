@@ -190,6 +190,8 @@ void common_hal_rgbmatrix_rgbmatrix_set_paused(rgbmatrix_rgbmatrix_obj_t* self, 
         _PM_stop(&self->protomatter);
     } else if (!paused && self->paused) {
         _PM_resume(&self->protomatter);
+        _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
+        _PM_swapbuffer_maybe(&self->protomatter);
     }
     self->paused = paused;
 }
@@ -199,8 +201,10 @@ bool common_hal_rgbmatrix_rgbmatrix_get_paused(rgbmatrix_rgbmatrix_obj_t* self) 
 }
 
 void common_hal_rgbmatrix_rgbmatrix_refresh(rgbmatrix_rgbmatrix_obj_t* self) {
-    _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
-    _PM_swapbuffer_maybe(&self->protomatter);
+    if (!self->paused) {
+        _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
+        _PM_swapbuffer_maybe(&self->protomatter);
+    }
 }
 
 int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t* self) {
