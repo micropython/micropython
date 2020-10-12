@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-06 13:26-0400\n"
+"POT-Creation-Date: 2020-10-10 23:49-0700\n"
 "PO-Revision-Date: 2020-10-09 22:07+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
@@ -255,6 +255,10 @@ msgid "'return' outside function"
 msgstr "função externa 'return'"
 
 #: py/compile.c
+msgid "'yield from' inside async function"
+msgstr ""
+
+#: py/compile.c
 msgid "'yield' outside function"
 msgstr "função externa 'yield'"
 
@@ -297,6 +301,7 @@ msgid "All I2C peripherals are in use"
 msgstr "Todos os periféricos I2C estão em uso"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "Todos os FIFOs RX estão em uso"
 
@@ -917,6 +922,7 @@ msgid "File exists"
 msgstr "Arquivo já existe"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr "Os filtros são muito complexos"
 
@@ -955,7 +961,8 @@ msgid "Group full"
 msgstr "Grupo cheio"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr "O hardware está ocupado, tente os pinos alternativos"
 
@@ -1027,7 +1034,8 @@ msgid "Invalid %q pin"
 msgstr "Pino do %q inválido"
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
 msgstr "Seleção inválida dos pinos %q"
 
@@ -3517,6 +3525,10 @@ msgstr "tipo não é um tipo base aceitável"
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "o objeto tipo '%q' não possuí atributo '%q'"
+
+#: py/objgenerator.c
+msgid "type object 'generator' has no attribute '__await__'"
+msgstr ""
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"

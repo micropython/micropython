@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-06 13:26-0400\n"
+"POT-Creation-Date: 2020-10-10 23:49-0700\n"
 "PO-Revision-Date: 2020-09-25 18:20+0000\n"
 "Last-Translator: Taku Fukada <naninunenor@gmail.com>\n"
 "Language-Team: none\n"
@@ -253,6 +253,10 @@ msgid "'return' outside function"
 msgstr "関数外でのreturn"
 
 #: py/compile.c
+msgid "'yield from' inside async function"
+msgstr ""
+
+#: py/compile.c
 msgid "'yield' outside function"
 msgstr "関数外でのyield"
 
@@ -295,6 +299,7 @@ msgid "All I2C peripherals are in use"
 msgstr "全てのI2C周辺機器が使用中"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "全てのRX FIFOが使用中"
 
@@ -908,6 +913,7 @@ msgid "File exists"
 msgstr "ファイルが存在します"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr ""
 
@@ -944,7 +950,8 @@ msgid "Group full"
 msgstr "グループが一杯"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr "ハードウェアビジー。代替のピンを試してください"
 
@@ -1016,7 +1023,8 @@ msgid "Invalid %q pin"
 msgstr "不正な%qピン"
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
 msgstr "不正な%qピン選択"
 
@@ -3456,6 +3464,10 @@ msgstr "この型はベース型にできません"
 
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
+msgstr ""
+
+#: py/objgenerator.c
+msgid "type object 'generator' has no attribute '__await__'"
 msgstr ""
 
 #: py/objtype.c
