@@ -40,8 +40,6 @@
 
 #if MICROPY_ENABLE_COMPILER
 
-#define DEBUG_PRINT(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
-
 // TODO need to mangle __attr names
 
 #define INVALID_LABEL (0xffff)

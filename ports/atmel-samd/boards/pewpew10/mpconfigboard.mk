@@ -24,6 +24,3 @@ SUPEROPT_GC = 0
 FROZEN_MPY_DIRS += $(TOP)/frozen/pew-pewpew-standalone-10.x
 
 CFLAGS_BOARD = --param max-inline-insns-auto=15
-
-MICROPY_PY_ASYNC_AWAIT = 0
-
