@@ -180,6 +180,7 @@ jobs:
         - "arduino_zero"
         - "bast_pro_mini_m0"
         - "bdmicro_vina_d21"
+        - "bdmicro_vina_d51"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
         - "capablerobot_usbhub"
