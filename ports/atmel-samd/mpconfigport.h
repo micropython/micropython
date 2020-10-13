@@ -43,7 +43,6 @@
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define SPI_FLASH_MAX_BAUDRATE 8000000
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_FUNCTION_ATTRS                   (0)
 // MICROPY_PY_UJSON depends on MICROPY_PY_IO
 #define MICROPY_PY_IO                               (0)
@@ -81,7 +80,6 @@
 #endif
 #define SPI_FLASH_MAX_BAUDRATE 24000000
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
 #define MICROPY_PY_FUNCTION_ATTRS                   (1)
 // MICROPY_PY_UJSON depends on MICROPY_PY_IO
 #define MICROPY_PY_IO                               (1)

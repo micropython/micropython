@@ -30,7 +30,6 @@
 
 #include <stdint.h>
 
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT       (1)
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
 #define MICROPY_PY_IO                            (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS       (1)
