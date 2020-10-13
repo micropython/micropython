@@ -423,7 +423,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
         alarm.AlarmMask = RTC_ALARMMASK_ALL;
     }
 
-    alarm.AlarmTime.SubSeconds = rtc_clock_frequency -
+    alarm.AlarmTime.SubSeconds = rtc_clock_frequency - 1 -
                                  ((raw_ticks % 1024) * 32);
     alarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
     alarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
