@@ -102,6 +102,26 @@ STATIC mp_obj_t wifi_radio_stop_scanning_networks(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_scanning_networks_obj, wifi_radio_stop_scanning_networks);
 
+//|     def set_hostname(self, hostname: ReadableBuffer) -> None:
+//|         """Sets hostname for wifi interface. When the hostname is altered after interface started/connected
+//|            the changes would only be reflected once the interface restarts/reconnects."""
+//|         ...
+//|
+STATIC mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) {
+    mp_buffer_info_t hostname;
+    mp_get_buffer_raise(hostname_in, &hostname, MP_BUFFER_READ);
+
+    if (hostname.len < 1 || hostname.len > 63) {
+        mp_raise_ValueError(translate("Hostname must be between 1 and 63 characters"));
+    }
+
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_wifi_radio_set_hostname(self, hostname.buf);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_hostname_obj, wifi_radio_set_hostname);
+
 //|     def connect(self, ssid: ReadableBuffer, password: ReadableBuffer = b"", *, channel: Optional[int] = 0, timeout: Optional[float] = None) -> bool:
 //|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
 //|            automatically once one connection succeeds."""
@@ -215,6 +235,8 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_start_scanning_networks),    MP_ROM_PTR(&wifi_radio_start_scanning_networks_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_scanning_networks),    MP_ROM_PTR(&wifi_radio_stop_scanning_networks_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_set_hostname),    MP_ROM_PTR(&wifi_radio_set_hostname_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_connect),    MP_ROM_PTR(&wifi_radio_connect_obj) },
     // { MP_ROM_QSTR(MP_QSTR_connect_to_enterprise),    MP_ROM_PTR(&wifi_radio_connect_to_enterprise_obj) },
