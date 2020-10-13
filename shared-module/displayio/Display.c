@@ -347,8 +347,10 @@ void common_hal_displayio_display_set_rotation(displayio_display_obj_t* self, in
         self->core.height = tmp;
     }
     displayio_display_core_set_rotation(&self->core, rotation);
-    supervisor_stop_terminal();
-    supervisor_start_terminal(self->core.width, self->core.height);
+    if (self == &displays[0].display) {
+        supervisor_stop_terminal();
+        supervisor_start_terminal(self->core.width, self->core.height);
+    }
     if (self->core.current_group != NULL) {
         displayio_group_update_transform(self->core.current_group, &self->core.transform);
     }
