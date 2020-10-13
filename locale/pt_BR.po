@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-10 23:49-0700\n"
-"PO-Revision-Date: 2020-10-09 22:07+0000\n"
+"PO-Revision-Date: 2020-10-13 17:11+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -256,7 +256,7 @@ msgstr "função externa 'return'"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield a partir' de dentro da função async"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -3528,7 +3528,7 @@ msgstr "o objeto tipo '%q' não possuí atributo '%q'"
 
 #: py/objgenerator.c
 msgid "type object 'generator' has no attribute '__await__'"
-msgstr ""
+msgstr "o tipo do objeto 'generator' não possui qualquer atributo '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
