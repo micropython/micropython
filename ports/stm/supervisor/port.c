@@ -190,6 +190,7 @@ safe_mode_t port_init(void) {
     _hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
 
     HAL_RTC_Init(&_hrtc);
+    HAL_RTCEx_EnableBypassShadow(&_hrtc);
     HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
 
     // Turn off SysTick
@@ -328,9 +329,23 @@ volatile uint32_t cached_date = 0;
 volatile uint32_t seconds_to_minute = 0;
 volatile uint32_t cached_hours_minutes = 0;
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    uint32_t subseconds = rtc_clock_frequency - (uint32_t)(RTC->SSR);
+    // Disable IRQs to ensure we read all of the RTC registers as close in time as possible. Read
+    // SSR twice to make sure we didn't read across a tick.
+    __disable_irq();
+    uint32_t first_ssr = (uint32_t)(RTC->SSR);
     uint32_t time = (uint32_t)(RTC->TR & RTC_TR_RESERVED_MASK);
     uint32_t date = (uint32_t)(RTC->DR & RTC_DR_RESERVED_MASK);
+    uint32_t ssr = (uint32_t)(RTC->SSR);
+    while (ssr != first_ssr) {
+        first_ssr = ssr;
+        time = (uint32_t)(RTC->TR & RTC_TR_RESERVED_MASK);
+        date = (uint32_t)(RTC->DR & RTC_DR_RESERVED_MASK);
+        ssr = (uint32_t)(RTC->SSR);
+    }
+    __enable_irq();
+
+    uint32_t subseconds = rtc_clock_frequency - 1 - ssr;
+
     if (date != cached_date) {
         uint32_t year = (uint8_t)((date & (RTC_DR_YT | RTC_DR_YU)) >> 16U);
         uint8_t month = (uint8_t)((date & (RTC_DR_MT | RTC_DR_MU)) >> 8U);
@@ -349,6 +364,7 @@ uint64_t port_get_raw_ticks(uint8_t* subticks) {
         hours = (uint8_t)RTC_Bcd2ToByte(hours);
         minutes = (uint8_t)RTC_Bcd2ToByte(minutes);
         seconds_to_minute = 60 * (60 * hours + minutes);
+        cached_hours_minutes = hours_minutes;
     }
     uint8_t seconds = (uint8_t)(time & (RTC_TR_ST | RTC_TR_SU));
     seconds = (uint8_t)RTC_Bcd2ToByte(seconds);
