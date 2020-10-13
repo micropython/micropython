@@ -98,8 +98,7 @@ volatile bool hold_interrupt = false;
 #ifdef SAMD21
 static void rtc_set_continuous(bool continuous) {
     while (RTC->MODE0.STATUS.bit.SYNCBUSY);
-    // TODO: DaveP: Do we need the RREQ here?
-    RTC->MODE0.READREQ.reg = RTC_READREQ_RREQ | (continuous ? RTC_READREQ_RCONT : 0) | 0x0010;
+    RTC->MODE0.READREQ.reg = (continuous ? RTC_READREQ_RCONT : 0) | 0x0010;
     while (RTC->MODE0.STATUS.bit.SYNCBUSY);
 }
 
