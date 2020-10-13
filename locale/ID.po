@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-10-08 16:22+0000\n"
+"POT-Creation-Date: 2020-10-06 13:26-0400\n"
+"PO-Revision-Date: 2020-10-10 23:51+0000\n"
 "Last-Translator: oon arfiandwi <oon.arfiandwi@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ID\n"
@@ -274,6 +274,10 @@ msgstr "pow() 3-arg tidak didukung"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
 msgstr "Sebuah channel hardware interrupt sedang digunakan"
+
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "ADC2 is being used by WiFi"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -1246,6 +1250,7 @@ msgid "No CCCD for this Characteristic"
 msgstr "Tidak ada CCCD untuk Karakteristik ini"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Tidak ada DAC (Digital Analog Converter) di dalam chip"
@@ -1450,6 +1455,7 @@ msgstr "Izin ditolak"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
@@ -1606,15 +1612,15 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
-msgstr ""
+msgstr "Kesalahan Init SPI"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
-msgstr ""
+msgstr "Kesalahan Inisialisasi ulang SPI"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
-msgstr ""
+msgstr "Tingkat sampel harus positif"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #, c-format
@@ -1623,15 +1629,15 @@ msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
-msgstr ""
+msgstr "Pindai sudah dalam proses. Hentikan dengan stop_scan."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected CTS pin not valid"
-msgstr ""
+msgstr "Pin CTS yang dipilih tidak valid"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected RTS pin not valid"
-msgstr ""
+msgstr "Pin RTS yang dipilih tidak valid"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1648,14 +1654,14 @@ msgstr ""
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
-msgstr ""
+msgstr "Potongan dan nilai panjangnya berbeda."
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
 #: shared-bindings/displayio/TileGrid.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
-msgstr ""
+msgstr "Potongan tidak didukung"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
@@ -1663,7 +1669,7 @@ msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
-msgstr ""
+msgstr "Buffer sumber dan tujuan harus memiliki panjang yang sama"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -1671,15 +1677,15 @@ msgstr "Memisahkan dengan menggunakan sub-captures"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
-msgstr ""
+msgstr "Ukuran stack minimal harus 256"
 
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
-msgstr ""
+msgstr "Aliran tidak menemukan metode readinto() atau write()."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
-msgstr ""
+msgstr "Berikan setidaknya satu pin UART"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
@@ -1687,19 +1693,23 @@ msgstr ""
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
-msgstr ""
+msgstr "Waktu baca suhu habis"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Please increase the stack size if you know how, or if not:"
 msgstr ""
+"heap dari CircuitPython rusak karena stack terlalu kecil.\n"
+"Harap tambah ukuran stack jika Anda tahu caranya, atau jika tidak:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode.\n"
 msgstr ""
+"Modul `microcontroller` digunakan untukboot ke mode aman. Tekan reset untuk "
+"keluar dari mode aman.\n"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
@@ -3188,6 +3198,7 @@ msgstr ""
 msgid "pow() with 3 arguments requires integers"
 msgstr ""
 
+#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3195,6 +3206,7 @@ msgstr ""
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr ""
 

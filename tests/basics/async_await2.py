@@ -1,22 +1,22 @@
 # test await expression
 
-import sys
-if sys.implementation.name in ('micropython', 'circuitpython'):
-    # uPy allows normal generators to be awaitables
-    coroutine = lambda f: f
-else:
-    import types
-    coroutine = types.coroutine
+# uPy allows normal generators to be awaitables.
+# CircuitPython does not.
+# In CircuitPython you need to have an __await__ method on an awaitable like in CPython;
+#  and like in CPython, generators do not have __await__.
 
-@coroutine
-def wait(value):
-    print('wait value:', value)
-    msg = yield 'message from wait(%u)' % value
-    print('wait got back:', msg)
-    return 10
+class Awaitable:
+    def __init__(self, value):
+        self.value = value
+
+    def __await__(self):
+        print('wait value:', self.value)
+        msg = yield 'message from wait(%u)' % self.value
+        print('wait got back:', msg)
+        return 10
 
 async def f():
-    x = await wait(1)**2
+    x = await Awaitable(1)**2
     print('x =', x)
 
 coro = f()

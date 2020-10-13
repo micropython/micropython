@@ -31,8 +31,8 @@
 #define CIRCUITPY_INTERNAL_NVM_SIZE         (0)
 #define MICROPY_NLR_THUMB                   (0)
 
-#define MICROPY_PY_UJSON                 (1)
-#define MICROPY_USE_INTERNAL_PRINTF      (0)
+#define MICROPY_PY_UJSON                    (1)
+#define MICROPY_USE_INTERNAL_PRINTF         (0)
 
 #include "py/circuitpy_mpconfig.h"
 

@@ -90,8 +90,6 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
         // TODO: Clear
     }
 
-    supervisor_start_terminal(width, height);
-
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
     common_hal_displayio_epaperdisplay_show(self, &circuitpython_splash);
