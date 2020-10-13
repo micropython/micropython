@@ -39,6 +39,7 @@
 #define USBD_CDC_EP_OUT (0x02)
 #define USBD_CDC_EP_IN (0x82)
 #define USBD_CDC_CMD_MAX_SIZE (8)
+#define USBD_CDC_IN_OUT_MAX_SIZE (64)
 
 #define USBD_STR_0 (0x00)
 #define USBD_STR_MANUF (0x01)
@@ -70,7 +71,7 @@ static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
         TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, USBD_MAX_POWER_MA),
 
     TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
-        USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, CFG_TUD_CDC_RX_BUFSIZE),
+        USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
 };
 
 static const char *const usbd_desc_str[] = {
