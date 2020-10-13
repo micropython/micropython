@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-06 13:26-0400\n"
+"POT-Creation-Date: 2020-10-10 23:49-0700\n"
 "PO-Revision-Date: 2020-10-10 23:51+0000\n"
 "Last-Translator: oon arfiandwi <oon.arfiandwi@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -251,6 +251,10 @@ msgid "'return' outside function"
 msgstr "'return' diluar fungsi"
 
 #: py/compile.c
+msgid "'yield from' inside async function"
+msgstr ""
+
+#: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' diluar fungsi"
 
@@ -293,6 +297,7 @@ msgid "All I2C peripherals are in use"
 msgstr "Semua perangkat I2C sedang digunakan"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr ""
 
@@ -914,6 +919,7 @@ msgid "File exists"
 msgstr "File sudah ada"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr ""
 
@@ -951,7 +957,8 @@ msgid "Group full"
 msgstr "Grup penuh"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr "Perangkat keras sibuk, coba pin alternatif"
 
@@ -1023,7 +1030,8 @@ msgid "Invalid %q pin"
 msgstr "%q pada tidak valid"
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
 msgstr ""
 
@@ -3473,6 +3481,10 @@ msgstr ""
 
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
+msgstr ""
+
+#: py/objgenerator.c
+msgid "type object 'generator' has no attribute '__await__'"
 msgstr ""
 
 #: py/objtype.c
