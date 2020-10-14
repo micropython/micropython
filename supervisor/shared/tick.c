@@ -125,9 +125,7 @@ void supervisor_tick(void) {
 
 uint64_t supervisor_ticks_ms64() {
     uint64_t result;
-    common_hal_mcu_disable_interrupts();
     result = port_get_raw_ticks(NULL);
-    common_hal_mcu_enable_interrupts();
     result = result * 1000 / 1024;
     return result;
 }

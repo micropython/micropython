@@ -27,7 +27,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/busio/UART.h"
 
-#include "driver/uart.h"
+#include "components/driver/include/driver/uart.h"
 
 #include "mpconfigport.h"
 #include "lib/utils/interrupt_char.h"

@@ -31,8 +31,8 @@
 
 #include "py/mphal.h"
 
-#include "esp-idf/components/driver/include/driver/gpio.h"
-#include "esp-idf/components/soc/include/hal/gpio_hal.h"
+#include "components/driver/include/driver/gpio.h"
+#include "components/hal/include/hal/gpio_hal.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
 bool neopixel_in_use;

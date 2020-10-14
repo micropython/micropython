@@ -76,18 +76,14 @@ $(OBJ): | $(HEADER_BUILD)/qstrdefs.enum.h $(HEADER_BUILD)/mpversion.h
 # - if anything in QSTR_GLOBAL_DEPENDENCIES is newer, then process all source files ($^)
 # - else, if list of newer prerequisites ($?) is not empty, then process just these ($?)
 # - else, process all source files ($^) [this covers "make -B" which can set $? to empty]
-$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(SRC_QSTR_PREPROCESSOR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
+$(HEADER_BUILD)/qstr.split: $(SRC_QSTR) $(SRC_QSTR_PREPROCESSOR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h $(PY_SRC)/genlast.py
 	$(STEPECHO) "GEN $@"
-	$(Q)grep -lE "(MP_QSTR|translate)" $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) | xargs $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $(SRC_QSTR_PREPROCESSOR) >$(HEADER_BUILD)/qstr.i.last;
-
-$(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last $(PY_SRC)/makeqstrdefs.py
-	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdefs.py split $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)$(PYTHON3) $(PY_SRC)/genlast.py $(HEADER_BUILD)/qstr $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) --  $(SRC_QSTR_PREPROCESSOR) -- $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS)
 	$(Q)touch $@
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split $(PY_SRC)/makeqstrdefs.py
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdefs.py cat $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdefs.py cat - $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
 
 # $(sort $(var)) removes duplicates
 #

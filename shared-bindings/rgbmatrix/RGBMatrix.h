@@ -27,7 +27,7 @@
 #pragma once
 
 #include "shared-module/rgbmatrix/RGBMatrix.h"
-#include "lib/protomatter/core.h"
+#include "lib/protomatter/src/core.h"
 
 extern const mp_obj_type_t rgbmatrix_RGBMatrix_type;
 

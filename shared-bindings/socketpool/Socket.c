@@ -36,9 +36,6 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 
-#include "esp_log.h"
-static const char* TAG = "socket binding";
-
 //| class Socket:
 //|     """TCP, UDP and RAW socket. Cannot be created directly. Instead, call
 //|        `SocketPool.socket()`.
@@ -183,7 +180,6 @@ STATIC mp_obj_t socketpool_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 
     bool ok = common_hal_socketpool_socket_connect(self, host, hostlen, port);
     if (!ok) {
-        ESP_EARLY_LOGW(TAG, "socket connect failed");
         mp_raise_OSError(0);
     }
 

@@ -79,7 +79,6 @@
 
 #define MICROPY_PY_ARRAY                 (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN    (1)
-#define MICROPY_PY_ASYNC_AWAIT           (0)
 #define MICROPY_PY_ATTRTUPLE             (1)
 
 #define MICROPY_PY_BUILTINS_BYTEARRAY    (1)

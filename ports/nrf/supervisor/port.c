@@ -274,11 +274,15 @@ uint32_t port_get_saved_word(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    common_hal_mcu_disable_interrupts();
     uint32_t rtc = nrfx_rtc_counter_get(&rtc_instance);
+    uint32_t overflow_count = overflow_tracker.overflowed_ticks;
+    common_hal_mcu_enable_interrupts();
+
     if (subticks != NULL) {
         *subticks = (rtc % 32);
     }
-    return overflow_tracker.overflowed_ticks + rtc / 32;
+    return overflow_count + rtc / 32;
 }
 
 // Enable 1/1024 second tick.

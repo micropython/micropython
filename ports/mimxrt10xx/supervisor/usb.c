@@ -50,10 +50,6 @@ void init_usb_hardware(void) {
     phytx &= ~(USBPHY_TX_D_CAL_MASK | USBPHY_TX_TXCAL45DM_MASK | USBPHY_TX_TXCAL45DP_MASK);
     phytx |= USBPHY_TX_D_CAL(0x0C) | USBPHY_TX_TXCAL45DP(0x06) | USBPHY_TX_TXCAL45DM(0x06);
     usb_phy->TX = phytx;
-
-    // Temporarily disable the data cache until we can sort out all of the spots in TinyUSB that
-    // need the cache invalidated or cleaned.
-    SCB_DisableDCache();
 }
 
 void USB_OTG1_IRQHandler(void) {

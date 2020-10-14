@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 
-#include "esp-idf/components/esp_wifi/include/esp_wifi_types.h"
+#include "components/esp_wifi/include/esp_wifi_types.h"
 
 typedef struct {
     mp_obj_base_t base;

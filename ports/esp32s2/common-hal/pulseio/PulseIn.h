@@ -30,8 +30,8 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
-#include "driver/rmt.h"
-#include "rmt.h"
+#include "components/driver/include/driver/rmt.h"
+#include "peripherals/rmt.h"
 
 typedef struct {
     mp_obj_base_t base;

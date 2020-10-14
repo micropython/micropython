@@ -26,7 +26,7 @@
 
 //Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "FeatherS2"
+#define MICROPY_HW_BOARD_NAME       "FeatherS2 PreRelease"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
@@ -34,5 +34,5 @@
 
 #define AUTORESET_DELAY_MS 500
 
-#define MICROPY_HW_APA102_MOSI   (&pin_GPIO40)
-#define MICROPY_HW_APA102_SCK    (&pin_GPIO45)
+// #define MICROPY_HW_APA102_MOSI   (&pin_GPIO40)
+// #define MICROPY_HW_APA102_SCK    (&pin_GPIO45)
