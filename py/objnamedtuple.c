@@ -46,7 +46,7 @@ size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr n
     return (size_t)-1;
 }
 
-#if MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT
+#if MICROPY_PY_COLLECTIONS_ORDEREDDICT
 STATIC mp_obj_t namedtuple_asdict(mp_obj_t self_in) {
     mp_obj_namedtuple_t *self = MP_OBJ_TO_PTR(self_in);
     const qstr *fields = ((mp_obj_namedtuple_type_t*)self->tuple.base.type)->fields;
