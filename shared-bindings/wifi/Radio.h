@@ -45,6 +45,7 @@ typedef enum {
 extern bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled);
 
+extern mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname);
 
 extern mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self);
