@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-10 23:49-0700\n"
-"PO-Revision-Date: 2020-10-02 22:53+0000\n"
+"PO-Revision-Date: 2020-10-14 18:12+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -252,7 +252,7 @@ msgstr "'return' utanför funktion"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield from' i async-funktion"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -281,7 +281,7 @@ msgstr "En kanal för hårdvaruavbrott används redan"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr ""
+msgstr "ADC2 används av WiFi"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -3495,7 +3495,7 @@ msgstr "typobjektet '%q' har inget attribut '%q'"
 
 #: py/objgenerator.c
 msgid "type object 'generator' has no attribute '__await__'"
-msgstr ""
+msgstr "typobjekt 'generator' har inget attribut '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
