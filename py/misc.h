@@ -272,7 +272,12 @@ typedef union _mp_float_union_t {
 // Map MP_COMPRESSED_ROM_TEXT to the compressed strings.
 
 // Force usage of the MP_ERROR_TEXT macro by requiring an opaque type.
-typedef struct {} *mp_rom_error_text_t;
+typedef struct {
+    #ifdef __clang__
+    // Fix "error: empty struct has size 0 in C, size 1 in C++".
+    char dummy;
+    #endif
+} *mp_rom_error_text_t;
 
 #include <string.h>
 
