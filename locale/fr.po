@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 23:49-0700\n"
-"PO-Revision-Date: 2020-10-12 21:00+0000\n"
-"Last-Translator: Noel Gaetan <gaetan.noel@viacesi.fr>\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
+"PO-Revision-Date: 2020-10-15 18:17+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -46,7 +46,7 @@ msgstr "  Fichier \"%q\", ligne %d"
 
 #: main.c
 msgid " output:\n"
-msgstr " sortie :\n"
+msgstr " sortie :\n"
 
 #: py/objstr.c
 #, c-format
@@ -532,7 +532,7 @@ msgstr "Impossible de définir CCCD sur une caractéristique locale"
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
-"Un nouveau Adapter ne peut être créé ; Adapter; utilisez _bleio.adapter;"
+"Un nouveau Adapter ne peut être créé ; Adapter; utilisez _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -972,6 +972,10 @@ msgstr "Matériel occupé, essayez d'autres broches"
 msgid "Hardware in use, try alternative pins"
 msgstr "Matériel utilisé, essayez d'autres broches"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr ""
+
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "opération d'E/S sur un fichier fermé"
@@ -1053,6 +1057,7 @@ msgstr "Fichier BMP invalide"
 msgid "Invalid BSSID"
 msgstr "BSSID Invalide"
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Broche DAC non valide fournie"
@@ -1264,7 +1269,6 @@ msgid "No CCCD for this Characteristic"
 msgstr "Pas de CCCD pour cette caractéristique"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Pas de DAC sur la puce"
@@ -2812,6 +2816,10 @@ msgstr "format invalide"
 msgid "invalid format specifier"
 msgstr "spécification de format invalide"
 
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid key"
 msgstr "clé invalide"
@@ -3613,7 +3621,7 @@ msgstr "caractère de format '%c' (0x%x) non supporté à l'index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%q'"
-msgstr "type non supporté pour %q : '%q'"
+msgstr "type non supporté pour %q : '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
