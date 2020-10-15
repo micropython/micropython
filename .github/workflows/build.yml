@@ -28,7 +28,7 @@ jobs:
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
-        echo "::set-env name=CP_VERSION::$(git describe --dirty --tags)"
+        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
@@ -132,7 +132,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew install gettext awscli
-        echo "::set-env name=PATH::/usr/local/opt/gettext/bin:$PATH"
+        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
     - name: Versions
       run: |
         gcc --version
@@ -146,7 +146,7 @@ jobs:
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
-        echo "::set-env name=CP_VERSION::$(git describe --dirty --tags)"
+        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v2
@@ -243,6 +243,7 @@ jobs:
         - "metro_m0_express"
         - "metro_m4_airlift_lite"
         - "metro_m4_express"
+        - "metro_m7_1011"
         - "metro_nrf52840_express"
         - "mini_sam_m4"
         - "monster_m4sk"

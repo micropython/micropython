@@ -1,9 +1,10 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +25,19 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ANALOGIO_ANALOGOUT_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ANALOGIO_ANALOGOUT_H
 
-#include <stdbool.h>
-#include "py/gc.h"
-#include "py/misc.h"
-#include "supervisor/memory.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#define _PM_allocate common_hal_rgbmatrix_allocator_impl
-#define _PM_free(x) (common_hal_rgbmatrix_free_impl((x)), (x)=NULL, (void)0)
-extern void *common_hal_rgbmatrix_allocator_impl(size_t sz);
-extern void common_hal_rgbmatrix_free_impl(void *);
+#include "py/obj.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t * pin;
+    uint8_t channel;
+} analogio_analogout_obj_t;
+
+void analogout_reset(void);
+
+#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_ANALOGIO_ANALOGOUT_H

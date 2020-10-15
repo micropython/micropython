@@ -62,7 +62,6 @@ SECTIONS
 
         KEEP(*(.isr_vector))         /* Startup code */
     *(EXCLUDE_FILE(
-        *flexspi_nor_flash_ops.o
         *fsl_flexspi.o
     ) .text*)                /* .text* sections (code) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
@@ -84,7 +83,6 @@ SECTIONS
     {
         . = ALIGN(4);
         *(.data*)               /* .data* sections */
-        *flexspi_nor_flash_ops.o(.text*)
         *fsl_flexspi.o(.text*)
         . = ALIGN(4);
     } > OCRAM AT> FLASH_FIRMWARE
@@ -110,7 +108,6 @@ SECTIONS
     .itcm :
     {
         . = ALIGN(4);
-
         *(.itcm.*)
 
         . = ALIGN(4);

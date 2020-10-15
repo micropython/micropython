@@ -97,6 +97,7 @@ INC += -isystem esp-idf/components/lwip/include/apps/sntp
 INC += -isystem esp-idf/components/hal/include
 INC += -isystem esp-idf/components/hal/esp32s2/include
 INC += -isystem esp-idf/components/log/include/
+INC += -isystem esp-idf/components/driver/esp32s2/include
 INC += -isystem esp-idf/components/soc/include
 INC += -isystem esp-idf/components/soc/src/esp32s2/include
 INC += -isystem esp-idf/components/soc/soc/include
@@ -268,14 +269,13 @@ menuconfig: $(BUILD)/esp-idf/config
 	$(Q)grep -Fvxf $(DEBUG_SDKCONFIG) -f $(FLASH_SDKCONFIG) $(BUILD)/sdkconfig.diff > boards/$(BOARD)/sdkconfig
 
 # qstr builds include headers so we need to make sure they are up to date
-$(HEADER_BUILD)/qstr.i.last: | $(BUILD)/esp-idf/config/sdkconfig.h
+$(HEADER_BUILD)/qstr.split: | $(BUILD)/esp-idf/config/sdkconfig.h
 
-# Order here matters
-ESP_IDF_COMPONENTS_LINK = freertos log hal esp_system esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp_rom esp-tls
+ESP_IDF_COMPONENTS_LINK = freertos log hal esp_system esp_adc_cal esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp_rom esp-tls
 
 ESP_IDF_COMPONENTS_INCLUDE = driver freertos log soc
 
-INC += $(foreach component, $(ESP_IDF_COMPONENTS_INCLUDE), -Iesp-idf/components/$(component)/include)
+INC += $(foreach component, $(ESP_IDF_COMPONENTS_INCLUDE), -isystem esp-idf/components/$(component)/include)
 
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
 ESP_IDF_WIFI_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_WIFI_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)

@@ -36,7 +36,6 @@
 #include "freertos/event_groups.h"
 
 #include "components/esp_wifi/include/esp_wifi_types.h"
-#include "components/log/include/esp_log.h"
 
 typedef struct {
     mp_obj_base_t base;

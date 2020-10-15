@@ -105,13 +105,19 @@ void filesystem_init(bool create_allowed, bool force_create) {
 
         // set label
 #ifdef CIRCUITPY_DRIVE_LABEL
-        f_setlabel(&vfs_fat->fatfs, CIRCUITPY_DRIVE_LABEL);
+        res = f_setlabel(&vfs_fat->fatfs, CIRCUITPY_DRIVE_LABEL);
 #else
-        f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
+        res = f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
 #endif
+        if (res != FR_OK) {
+            return;
+        }
 
         // inhibit file indexing on MacOS
-        f_mkdir(&vfs_fat->fatfs, "/.fseventsd");
+        res = f_mkdir(&vfs_fat->fatfs, "/.fseventsd");
+        if (res != FR_OK) {
+            return;
+        }
         make_empty_file(&vfs_fat->fatfs, "/.metadata_never_index");
         make_empty_file(&vfs_fat->fatfs, "/.Trashes");
         make_empty_file(&vfs_fat->fatfs, "/.fseventsd/no_log");
@@ -119,7 +125,10 @@ void filesystem_init(bool create_allowed, bool force_create) {
         make_sample_code_file(&vfs_fat->fatfs);
 
         // create empty lib directory
-        f_mkdir(&vfs_fat->fatfs, "/lib");
+        res = f_mkdir(&vfs_fat->fatfs, "/lib");
+        if (res != FR_OK) {
+            return;
+        }
 
         // and ensure everything is flushed
         supervisor_flash_flush();
