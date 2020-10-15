@@ -859,6 +859,11 @@ STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         if ((flags & MP_STREAM_POLL_WR) && usbd_cdc_tx_half_empty(self->cdc_itf)) {
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_FLUSH) {
+        if (self->cdc_itf->tx_need_empty_packet) {
+            usbd_cdc_tx_always(self->cdc_itf, NULL, 0);
+        }
+        ret = 0;
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
@@ -1020,6 +1025,20 @@ const mp_obj_type_t pyb_usb_hid_type = {
     .protocol = &pyb_usb_hid_stream_p,
     .locals_dict = (mp_obj_dict_t *)&pyb_usb_hid_locals_dict,
 };
+
+/* return hid interface if hid is configured, NULL otherwise */
+usbd_hid_itf_t *usbd_hid_get() {
+    #if defined(USE_HOST_MODE)
+    return NULL;
+    #else
+    uint8_t usb_mode = USBD_GetMode(&usb_device.usbd_cdc_msc_hid_state) & USBD_MODE_IFACE_MASK;
+    if ((usb_mode == USBD_MODE_HID) || (usb_mode == USBD_MODE_CDC_HID) || (usb_mode == USBD_MODE_MSC_HID)) {
+        return &usb_device.usbd_hid_itf;
+    } else {
+        return NULL;
+    }
+    #endif
+}
 
 #endif // MICROPY_HW_USB_HID
 
