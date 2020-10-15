@@ -367,6 +367,24 @@ usbd_cdc_itf_t *usb_vcp_get(int idx) {
     return &usb_device.usbd_cdc_itf[idx];
 }
 
+#if MICROPY_HW_USB_HID
+
+// return hid interface if hid is configured, NULL otherwise
+usbd_hid_itf_t *usbd_hid_get(void) {
+    #if defined(USE_HOST_MODE)
+    return NULL;
+    #else
+    uint8_t usb_mode = USBD_GetMode(&usb_device.usbd_cdc_msc_hid_state) & USBD_MODE_IFACE_MASK;
+    if (usb_mode == USBD_MODE_HID || usb_mode == USBD_MODE_CDC_HID || usb_mode == USBD_MODE_MSC_HID) {
+        return &usb_device.usbd_hid_itf;
+    } else {
+        return NULL;
+    }
+    #endif
+}
+
+#endif
+
 /******************************************************************************/
 // MicroPython bindings for USB
 

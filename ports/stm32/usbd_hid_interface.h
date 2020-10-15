@@ -16,6 +16,8 @@ typedef struct _usbd_hid_itf_t {
     uint8_t report_in_buf[HID_DATA_FS_MAX_PACKET_SIZE];
 } usbd_hid_itf_t;
 
+usbd_hid_itf_t *usbd_hid_get(void);
+
 static inline int usbd_hid_rx_num(usbd_hid_itf_t *hid) {
     return hid->report_in_len != USBD_HID_REPORT_INVALID;
 }
