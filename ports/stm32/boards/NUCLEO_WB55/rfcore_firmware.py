@@ -180,6 +180,12 @@ _PATH_WS_BLE_HCI = "ws_ble_hci.bin"
 _ADDR_FUS = 0x080EC000
 _ADDR_WS_BLE_HCI = 0x080DC000
 
+# When installing the FUS/WS it can take a long time to return to the first
+# GET_STATE HCI command.
+# e.g. Installing stm32wb5x_BLE_Stack_full_fw.bin takes 3600ms to respond.
+_INSTALLING_FUS_GET_STATE_TIMEOUT = const(1000)
+_INSTALLING_WS_GET_STATE_TIMEOUT = const(6000)
+
 
 def log(msg, *args, **kwargs):
     print("[rfcore update]", msg.format(*args, **kwargs))
@@ -272,10 +278,10 @@ def _parse_vendor_response(data):
     return (op >> 10, op & 0x3FF, data[6], data[7] if len(data) > 7 else 0)
 
 
-def _run_sys_hci_cmd(ogf, ocf, buf=b""):
+def _run_sys_hci_cmd(ogf, ocf, buf=b"", timeout=0):
     try:
         ogf_out, ocf_out, status, result = _parse_vendor_response(
-            stm.rfcore_sys_hci(ogf, ocf, buf)
+            stm.rfcore_sys_hci(ogf, ocf, buf, timeout)
         )
     except OSError:
         # Timeout or FUS not active.
@@ -285,8 +291,8 @@ def _run_sys_hci_cmd(ogf, ocf, buf=b""):
     return (status, result)
 
 
-def fus_get_state():
-    return _run_sys_hci_cmd(_OGF_VENDOR, _OCF_FUS_GET_STATE)
+def fus_get_state(timeout=0):
+    return _run_sys_hci_cmd(_OGF_VENDOR, _OCF_FUS_GET_STATE, timeout=timeout)
 
 
 def fus_is_idle():
@@ -468,7 +474,7 @@ def resume():
         # followed by a (255,0), followed by (0, 0).
         elif state == _STATE_INSTALLING_FUS:
             log("Installing FUS...")
-            status, result = fus_get_state()
+            status, result = fus_get_state(_INSTALLING_FUS_GET_STATE_TIMEOUT)
             log("FUS state: {} {}", status, result)
             if 0x20 <= status <= 0x2F and result == 0:
                 # FUS_STATE_FUS_UPGRD_ONGOING
@@ -520,7 +526,7 @@ def resume():
         # As for _STATE_INSTALLING_FUS above.
         elif state == _STATE_INSTALLING_WS:
             log("Installing WS...")
-            status, result = fus_get_state()
+            status, result = fus_get_state(_INSTALLING_WS_GET_STATE_TIMEOUT)
             log("FUS state: {} {}", status, result)
             if 0x10 <= status <= 0x1F and result == 0:
                 # FUS_STATE_FW_UPGRD_ONGOING
