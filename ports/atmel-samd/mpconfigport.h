@@ -48,6 +48,7 @@
 #define MICROPY_PY_IO                               (0)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
 #define MICROPY_PY_UJSON                            (0)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_UERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
