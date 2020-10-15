@@ -189,23 +189,31 @@ class _Flash:
     _FLASH_KEY1 = 0x45670123
     _FLASH_KEY2 = 0xCDEF89AB
 
+    _FLASH_CR_STRT_MASK = 1 << 16
+    _FLASH_CR_LOCK_MASK = 1 << 31
+    _FLASH_SR_BSY_MASK = 1 << 16
+
     def wait_not_busy(self):
-        while machine.mem32[stm.FLASH + stm.FLASH_SR] & 1 << 16:
+        while machine.mem32[stm.FLASH + stm.FLASH_SR] & _Flash._FLASH_SR_BSY_MASK:
             machine.idle()
 
     def unlock(self):
-        machine.mem32[stm.FLASH + stm.FLASH_KEYR] = _Flash._FLASH_KEY1
-        machine.mem32[stm.FLASH + stm.FLASH_KEYR] = _Flash._FLASH_KEY2
+        if machine.mem32[stm.FLASH + stm.FLASH_CR] & _Flash._FLASH_CR_LOCK_MASK:
+            # Only unlock if already locked (i.e. FLASH_CR_LOCK is set).
+            machine.mem32[stm.FLASH + stm.FLASH_KEYR] = _Flash._FLASH_KEY1
+            machine.mem32[stm.FLASH + stm.FLASH_KEYR] = _Flash._FLASH_KEY2
+        else:
+            log("Flash was already unlocked.")
 
     def lock(self):
-        machine.mem32[stm.FLASH + stm.FLASH_CR] = 1 << 31  # LOCK
+        machine.mem32[stm.FLASH + stm.FLASH_CR] = _Flash._FLASH_CR_LOCK_MASK
 
     def erase_page(self, page):
         assert 0 <= page <= 255  # 1MiB range (4k page)
         self.wait_not_busy()
         cr = page << 3 | 1 << 1  # PNB  # PER
         machine.mem32[stm.FLASH + stm.FLASH_CR] = cr
-        machine.mem32[stm.FLASH + stm.FLASH_CR] = cr | 1 << 16  # STRT
+        machine.mem32[stm.FLASH + stm.FLASH_CR] = cr | _Flash._FLASH_CR_STRT_MASK
         self.wait_not_busy()
         machine.mem32[stm.FLASH + stm.FLASH_CR] = 0
 
@@ -472,8 +480,6 @@ def resume():
             elif status == 0:
                 log("FUS update successful")
                 _write_state(_STATE_CHECK_UPDATES)
-                # Need to force a reset after FUS install otherwise a subsequent flash copy will fail.
-                machine.reset()
             elif result == 0:
                 # See below (for equivalent path for WS install -- we
                 # sometimes see (255,0) right at the end).
