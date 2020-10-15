@@ -17,7 +17,10 @@
 
 #include "addr.h"
 
+// ESP32S2 build environment defines this already.
+#ifndef BIT
 #define BIT(n)  (1UL << (n))
+#endif
 
 /* Special own address types for LL privacy (used in adv & scan parameters) */
 #define BT_HCI_OWN_ADDR_RPA_OR_PUBLIC  0x02
