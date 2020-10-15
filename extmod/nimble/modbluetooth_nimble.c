@@ -42,6 +42,10 @@
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 
+// We need the definition of "struct ble_l2cap_chan".
+// See l2cap_channel_event() for details.
+#include "nimble/host/src/ble_l2cap_priv.h"
+
 #ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY NIMBLE"
 #endif
@@ -66,6 +70,7 @@ STATIC int8_t ble_hs_err_to_errno_table[] = {
     [BLE_HS_ETIMEOUT] = MP_ETIMEDOUT,
     [BLE_HS_EDONE] = MP_EIO,               // TODO: Maybe should be MP_EISCONN (connect uses this for "already connected").
     [BLE_HS_EBUSY] = MP_EBUSY,
+    [BLE_HS_EBADDATA] = MP_EINVAL,
 };
 
 STATIC int ble_hs_err_to_errno(int err) {
@@ -1109,5 +1114,332 @@ int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle) {
 }
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+
+// Fortunately NimBLE uses mbuf chains correctly with L2CAP COC (rather than
+// accessing the mbuf internals directly), so we can use a small block size to
+// avoid excessive fragmentation and rely on them chaining together for larger
+// payloads.
+#define L2CAP_BUF_BLOCK_SIZE (128)
+
+// This gives us enough room to have one MTU-size transmit buffer and two
+// MTU-sized receive buffers. Note that we use the local MTU to calculate
+// the buffer size. This means that if the peer MTU is larger, then
+// there might not be enough space in the pool to send a full peer-MTU
+// sized payload and mp_bluetooth_l2cap_send will return ENOMEM.
+#define L2CAP_BUF_SIZE_MTUS_PER_CHANNEL (3)
+
+typedef struct _mp_bluetooth_nimble_l2cap_channel_t {
+    struct ble_l2cap_chan *chan;
+    struct os_mbuf_pool sdu_mbuf_pool;
+    struct os_mempool sdu_mempool;
+    struct os_mbuf *rx_pending;
+    uint16_t mtu;
+    os_membuf_t sdu_mem[];
+} mp_bluetooth_nimble_l2cap_channel_t;
+
+STATIC void destroy_l2cap_channel() {
+    // Only free the l2cap channel if we're the one that initiated the connection.
+    // Listeners continue listening on the same channel.
+    if (!MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_listening) {
+        MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan = NULL;
+    }
+}
+
+STATIC int l2cap_channel_event(struct ble_l2cap_event *event, void *arg) {
+    DEBUG_printf("l2cap_channel_event: type=%d\n", event->type);
+    mp_bluetooth_nimble_l2cap_channel_t *chan = (mp_bluetooth_nimble_l2cap_channel_t *)arg;
+    struct ble_l2cap_chan_info info;
+
+    switch (event->type) {
+        case BLE_L2CAP_EVENT_COC_CONNECTED: {
+            DEBUG_printf("l2cap_channel_event: connect: conn_handle=%d status=%d\n", event->connect.conn_handle, event->connect.status);
+            chan->chan = event->connect.chan;
+
+            ble_l2cap_get_chan_info(event->connect.chan, &info);
+            if (event->connect.status == 0) {
+                mp_bluetooth_gattc_on_l2cap_connect(event->connect.conn_handle, info.scid, info.psm, info.our_coc_mtu, info.peer_coc_mtu);
+            } else {
+                mp_bluetooth_gattc_on_l2cap_disconnect(event->connect.conn_handle, info.scid, info.psm, event->connect.status);
+                destroy_l2cap_channel();
+            }
+            break;
+        }
+        case BLE_L2CAP_EVENT_COC_DISCONNECTED: {
+            DEBUG_printf("l2cap_channel_event: disconnect: conn_handle=%d\n", event->disconnect.conn_handle);
+            ble_l2cap_get_chan_info(event->disconnect.chan, &info);
+            mp_bluetooth_gattc_on_l2cap_disconnect(event->disconnect.conn_handle, info.scid, info.psm, 0);
+            destroy_l2cap_channel();
+            break;
+        }
+        case BLE_L2CAP_EVENT_COC_ACCEPT: {
+            DEBUG_printf("l2cap_channel_event: accept: conn_handle=%d peer_sdu_size=%d\n", event->accept.conn_handle, event->accept.peer_sdu_size);
+            chan->chan = event->accept.chan;
+            ble_l2cap_get_chan_info(event->accept.chan, &info);
+            int ret = mp_bluetooth_gattc_on_l2cap_accept(event->accept.conn_handle, info.scid, info.psm, info.our_coc_mtu, info.peer_coc_mtu);
+            if (ret != 0) {
+                return ret;
+            }
+            struct os_mbuf *sdu_rx = os_mbuf_get_pkthdr(&chan->sdu_mbuf_pool, 0);
+            assert(sdu_rx);
+            return ble_l2cap_recv_ready(chan->chan, sdu_rx);
+        }
+        case BLE_L2CAP_EVENT_COC_DATA_RECEIVED: {
+            DEBUG_printf("l2cap_channel_event: receive: conn_handle=%d len=%d\n", event->receive.conn_handle, OS_MBUF_PKTLEN(event->receive.sdu_rx));
+
+            if (chan->rx_pending) {
+                // Ideally this doesn't happen, as the sender should not get
+                // any more credits to send more data until we call
+                // ble_l2cap_recv_ready. However there might be multiple
+                // in-flight packets if the sender was able to send more than
+                // one before stalling.
+                DEBUG_printf("l2cap_channel_event: receive: appending to rx pending\n");
+                // Note: os_mbuf_concat will just join the two together, so
+                // sdu_rx is now "owned" by rx_pending.
+                os_mbuf_concat(chan->rx_pending, event->receive.sdu_rx);
+            } else {
+                // Normal case is when the first payload arrives since calling
+                // ble_l2cap_recv_ready.
+                DEBUG_printf("l2cap_event: receive: new payload\n");
+                // Take ownership of sdu_rx.
+                chan->rx_pending = event->receive.sdu_rx;
+            }
+
+            struct os_mbuf *sdu_rx = os_mbuf_get_pkthdr(&chan->sdu_mbuf_pool, 0);
+            assert(sdu_rx);
+
+            // ble_l2cap_coc_rx_fn invokes this event handler when a complete payload arrives.
+            // However, it NULLs chan->chan->coc_rx.sdu before doing so, expecting that
+            // ble_l2cap_recv_ready will be called to give it a new mbuf.
+            // This means that if another payload arrives before we call ble_l2cap_recv_ready
+            // then ble_l2cap_coc_rx_fn will NULL-deref coc_rx.sdu.
+
+            // Because we're not yet ready to grant new credits to the channel, we can't call
+            // ble_l2cap_recv_ready yet, so instead we just give it a new mbuf. This requires
+            // ble_l2cap_priv.h for the definition of chan->chan (i.e. struct ble_l2cap_chan).
+            chan->chan->coc_rx.sdu = sdu_rx;
+
+            ble_l2cap_get_chan_info(event->receive.chan, &info);
+            mp_bluetooth_gattc_on_l2cap_recv(event->receive.conn_handle, info.scid);
+            break;
+        }
+        case BLE_L2CAP_EVENT_COC_TX_UNSTALLED: {
+            DEBUG_printf("l2cap_channel_event: tx_unstalled: conn_handle=%d status=%d\n", event->tx_unstalled.conn_handle, event->tx_unstalled.status);
+            ble_l2cap_get_chan_info(event->receive.chan, &info);
+            // Map status to {0,1} (i.e. "sent everything", or "partial send").
+            mp_bluetooth_gattc_on_l2cap_send_ready(event->tx_unstalled.conn_handle, info.scid, event->tx_unstalled.status == 0 ? 0 : 1);
+            break;
+        }
+        case BLE_L2CAP_EVENT_COC_RECONFIG_COMPLETED: {
+            DEBUG_printf("l2cap_channel_event: reconfig_completed: conn_handle=%d\n", event->reconfigured.conn_handle);
+            break;
+        }
+        case BLE_L2CAP_EVENT_COC_PEER_RECONFIGURED: {
+            DEBUG_printf("l2cap_channel_event: peer_reconfigured: conn_handle=%d\n", event->reconfigured.conn_handle);
+            break;
+        }
+        default: {
+            DEBUG_printf("l2cap_channel_event: unknown event\n");
+            break;
+        }
+    }
+
+    return 0;
+}
+
+STATIC mp_bluetooth_nimble_l2cap_channel_t *get_l2cap_channel_for_conn_cid(uint16_t conn_handle, uint16_t cid) {
+    // TODO: Support more than one concurrent L2CAP channel. At the moment we
+    // just verify that the cid refers to the current channel.
+    mp_bluetooth_nimble_l2cap_channel_t *chan = MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan;
+
+    if (!chan) {
+        return NULL;
+    }
+
+    struct ble_l2cap_chan_info info;
+    ble_l2cap_get_chan_info(chan->chan, &info);
+
+    if (info.scid != cid || ble_l2cap_get_conn_handle(chan->chan) != conn_handle) {
+        return NULL;
+    }
+
+    return chan;
+}
+
+STATIC int create_l2cap_channel(uint16_t mtu, mp_bluetooth_nimble_l2cap_channel_t **out) {
+    if (MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan) {
+        // Only one L2CAP channel allowed.
+        // Additionally, if we're listening, then no connections may be initiated.
+        DEBUG_printf("create_l2cap_channel: channel already in use\n");
+        return MP_EALREADY;
+    }
+
+    // We want the TX and RX buffers to share a pool that is some multiple of
+    // the MTU size. Figure out how many blocks per MTU (rounding up), then
+    // multiply that by the "MTUs per channel" (set to 3 above).
+    const size_t buf_blocks = MP_CEIL_DIVIDE(mtu, L2CAP_BUF_BLOCK_SIZE) * L2CAP_BUF_SIZE_MTUS_PER_CHANNEL;
+
+    mp_bluetooth_nimble_l2cap_channel_t *chan = m_new_obj_var(mp_bluetooth_nimble_l2cap_channel_t, uint8_t, OS_MEMPOOL_SIZE(buf_blocks, L2CAP_BUF_BLOCK_SIZE) * sizeof(os_membuf_t));
+    MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan = chan;
+
+    // Will be set in BLE_L2CAP_EVENT_COC_CONNECTED or BLE_L2CAP_EVENT_COC_ACCEPT.
+    chan->chan = NULL;
+
+    chan->mtu = mtu;
+    chan->rx_pending = NULL;
+
+    int err = os_mempool_init(&chan->sdu_mempool, buf_blocks, L2CAP_BUF_BLOCK_SIZE, chan->sdu_mem, "l2cap_sdu_pool");
+    if (err != 0) {
+        DEBUG_printf("mp_bluetooth_l2cap_connect: os_mempool_init failed %d\n", err);
+        return MP_ENOMEM;
+    }
+
+    err = os_mbuf_pool_init(&chan->sdu_mbuf_pool, &chan->sdu_mempool, L2CAP_BUF_BLOCK_SIZE, buf_blocks);
+    if (err != 0) {
+        DEBUG_printf("mp_bluetooth_l2cap_connect: os_mbuf_pool_init failed %d\n", err);
+        return MP_ENOMEM;
+    }
+
+    *out = chan;
+    return 0;
+}
+
+int mp_bluetooth_l2cap_listen(uint16_t psm, uint16_t mtu) {
+    DEBUG_printf("mp_bluetooth_l2cap_listen: psm=%d, mtu=%d\n", psm, mtu);
+
+    mp_bluetooth_nimble_l2cap_channel_t *chan;
+    int err = create_l2cap_channel(mtu, &chan);
+    if (err != 0) {
+        return err;
+    }
+
+    MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_listening = true;
+
+    return ble_hs_err_to_errno(ble_l2cap_create_server(psm, mtu, &l2cap_channel_event, chan));
+}
+
+int mp_bluetooth_l2cap_connect(uint16_t conn_handle, uint16_t psm, uint16_t mtu) {
+    DEBUG_printf("mp_bluetooth_l2cap_connect: conn_handle=%d, psm=%d, mtu=%d\n", conn_handle, psm, mtu);
+
+    mp_bluetooth_nimble_l2cap_channel_t *chan;
+    int err = create_l2cap_channel(mtu, &chan);
+    if (err != 0) {
+        return err;
+    }
+
+    struct os_mbuf *sdu_rx = os_mbuf_get_pkthdr(&chan->sdu_mbuf_pool, 0);
+    assert(sdu_rx);
+    return ble_hs_err_to_errno(ble_l2cap_connect(conn_handle, psm, mtu, sdu_rx, &l2cap_channel_event, chan));
+}
+
+int mp_bluetooth_l2cap_disconnect(uint16_t conn_handle, uint16_t cid) {
+    DEBUG_printf("mp_bluetooth_l2cap_disconnect: conn_handle=%d, cid=%d\n", conn_handle, cid);
+    mp_bluetooth_nimble_l2cap_channel_t *chan = get_l2cap_channel_for_conn_cid(conn_handle, cid);
+    if (!chan) {
+        return MP_EINVAL;
+    }
+    return ble_hs_err_to_errno(ble_l2cap_disconnect(chan->chan));
+}
+
+int mp_bluetooth_l2cap_send(uint16_t conn_handle, uint16_t cid, const uint8_t *buf, size_t len, bool *stalled) {
+    DEBUG_printf("mp_bluetooth_l2cap_send: conn_handle=%d, cid=%d, len=%d\n", conn_handle, cid, (int)len);
+
+    mp_bluetooth_nimble_l2cap_channel_t *chan = get_l2cap_channel_for_conn_cid(conn_handle, cid);
+    if (!chan) {
+        return MP_EINVAL;
+    }
+
+    struct ble_l2cap_chan_info info;
+    ble_l2cap_get_chan_info(chan->chan, &info);
+    if (len > info.peer_coc_mtu) {
+        // This is verified by ble_l2cap_send anyway, but this lets us
+        // avoid copying a too-large buffer into an mbuf.
+        return MP_EINVAL;
+    }
+
+    if (len > (L2CAP_BUF_SIZE_MTUS_PER_CHANNEL - 1) * info.our_coc_mtu) {
+        // Always ensure there's at least one local MTU of space left in the buffer
+        // for the RX buffer.
+        return MP_EINVAL;
+    }
+
+    // Grab an mbuf from the pool, and append the incoming buffer to it.
+    struct os_mbuf *sdu_tx = os_mbuf_get_pkthdr(&chan->sdu_mbuf_pool, 0);
+    if (sdu_tx == NULL) {
+        return MP_ENOMEM;
+    }
+    int err = os_mbuf_append(sdu_tx, buf, len);
+    if (err) {
+        os_mbuf_free_chain(sdu_tx);
+        return MP_ENOMEM;
+    }
+
+    err = ble_l2cap_send(chan->chan, sdu_tx);
+    if (err == BLE_HS_ESTALLED) {
+        // Stalled means that this one will still send but any future ones
+        // will fail until we receive an unstalled event.
+        *stalled = true;
+        err = 0;
+    } else {
+        *stalled = false;
+    }
+
+    // Other error codes such as BLE_HS_EBUSY (we're stalled) or BLE_HS_EBADDATA (bigger than MTU).
+    return ble_hs_err_to_errno(err);
+}
+
+int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf, size_t *len) {
+    mp_bluetooth_nimble_l2cap_channel_t *chan = get_l2cap_channel_for_conn_cid(conn_handle, cid);
+    if (!chan) {
+        return MP_EINVAL;
+    }
+
+    MICROPY_PY_BLUETOOTH_ENTER
+    if (chan->rx_pending) {
+        size_t avail = OS_MBUF_PKTLEN(chan->rx_pending);
+
+        if (buf == NULL) {
+            // Can use this to implement a poll - just find out how much is available.
+            *len = avail;
+        } else {
+            // Have dest buffer and data available.
+            // Figure out how much we should copy.
+            *len = min(*len, avail);
+
+            // Extract the required number of bytes.
+            os_mbuf_copydata(chan->rx_pending, 0, *len, buf);
+
+            if (*len == avail) {
+                // That's all that's available -- free this mbuf and re-enable receiving.
+                os_mbuf_free_chain(chan->rx_pending);
+                chan->rx_pending = NULL;
+
+                // We've already given the channel a new mbuf in l2cap_channel_event above, so
+                // re-use that mbuf in the call to ble_l2cap_recv_ready. This will just
+                // give the channel more credits.
+                struct os_mbuf *sdu_rx = chan->chan->coc_rx.sdu;
+                assert(sdu_rx);
+                if (sdu_rx) {
+                    ble_l2cap_recv_ready(chan->chan, sdu_rx);
+                }
+            } else {
+                // Trim the used bytes from the start of the mbuf.
+                // Positive argument means "trim this many from head".
+                os_mbuf_adj(chan->rx_pending, *len);
+                // Clean up any empty mbufs at the head.
+                chan->rx_pending = os_mbuf_trim_front(chan->rx_pending);
+            }
+        }
+    } else {
+        // No pending data.
+        *len = 0;
+    }
+
+    MICROPY_PY_BLUETOOTH_EXIT
+    return 0;
+}
+
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE

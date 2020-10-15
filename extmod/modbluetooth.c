@@ -43,6 +43,10 @@
 #error modbluetooth requires MICROPY_ENABLE_SCHEDULER
 #endif
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS && !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+#error l2cap channels require synchronous modbluetooth events
+#endif
+
 #define MP_BLUETOOTH_CONNECT_DEFAULT_SCAN_DURATION_MS 2000
 
 #define MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN 5
@@ -785,6 +789,58 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gattc_exchange_mtu_obj, bluetooth
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+
+STATIC mp_obj_t bluetooth_ble_l2cap_listen(mp_obj_t self_in, mp_obj_t psm_in, mp_obj_t mtu_in) {
+    (void)self_in;
+    mp_int_t psm = mp_obj_get_int(psm_in);
+    mp_int_t mtu = mp_obj_get_int(mtu_in);
+    return bluetooth_handle_errno(mp_bluetooth_l2cap_listen(psm, mtu));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_l2cap_listen_obj, bluetooth_ble_l2cap_listen);
+
+STATIC mp_obj_t bluetooth_ble_l2cap_connect(size_t n_args, const mp_obj_t *args) {
+    mp_int_t conn_handle = mp_obj_get_int(args[1]);
+    mp_int_t psm = mp_obj_get_int(args[2]);
+    mp_int_t mtu = mp_obj_get_int(args[3]);
+    return bluetooth_handle_errno(mp_bluetooth_l2cap_connect(conn_handle, psm, mtu));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_l2cap_connect_obj, 4, 4, bluetooth_ble_l2cap_connect);
+
+STATIC mp_obj_t bluetooth_ble_l2cap_disconnect(mp_obj_t self_in, mp_obj_t conn_handle_in, mp_obj_t cid_in) {
+    (void)self_in;
+    mp_int_t conn_handle = mp_obj_get_int(conn_handle_in);
+    mp_int_t cid = mp_obj_get_int(cid_in);
+    return bluetooth_handle_errno(mp_bluetooth_l2cap_disconnect(conn_handle, cid));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(bluetooth_ble_l2cap_disconnect_obj, bluetooth_ble_l2cap_disconnect);
+
+STATIC mp_obj_t bluetooth_ble_l2cap_send(size_t n_args, const mp_obj_t *args) {
+    mp_int_t conn_handle = mp_obj_get_int(args[1]);
+    mp_int_t cid = mp_obj_get_int(args[2]);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
+    bool stalled = false;
+    bluetooth_handle_errno(mp_bluetooth_l2cap_send(conn_handle, cid, bufinfo.buf, bufinfo.len, &stalled));
+    // Return True if the channel is still ready to send.
+    return mp_obj_new_bool(!stalled);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_l2cap_send_obj, 4, 4, bluetooth_ble_l2cap_send);
+
+STATIC mp_obj_t bluetooth_ble_l2cap_recvinto(size_t n_args, const mp_obj_t *args) {
+    mp_int_t conn_handle = mp_obj_get_int(args[1]);
+    mp_int_t cid = mp_obj_get_int(args[2]);
+    mp_buffer_info_t bufinfo = {0};
+    if (args[3] != mp_const_none) {
+        mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_WRITE);
+    }
+    bluetooth_handle_errno(mp_bluetooth_l2cap_recvinto(conn_handle, cid, bufinfo.buf, &bufinfo.len));
+    return MP_OBJ_NEW_SMALL_INT(bufinfo.len);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_l2cap_recvinto_obj, 4, 4, bluetooth_ble_l2cap_recvinto);
+
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+
 // ----------------------------------------------------------------------------
 // Bluetooth object: Definition
 // ----------------------------------------------------------------------------
@@ -816,6 +872,13 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gattc_read), MP_ROM_PTR(&bluetooth_ble_gattc_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_write), MP_ROM_PTR(&bluetooth_ble_gattc_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_exchange_mtu), MP_ROM_PTR(&bluetooth_ble_gattc_exchange_mtu_obj) },
+    #endif
+    #if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+    { MP_ROM_QSTR(MP_QSTR_l2cap_listen), MP_ROM_PTR(&bluetooth_ble_l2cap_listen_obj) },
+    { MP_ROM_QSTR(MP_QSTR_l2cap_connect), MP_ROM_PTR(&bluetooth_ble_l2cap_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_l2cap_disconnect), MP_ROM_PTR(&bluetooth_ble_l2cap_disconnect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_l2cap_send), MP_ROM_PTR(&bluetooth_ble_l2cap_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_l2cap_recvinto), MP_ROM_PTR(&bluetooth_ble_l2cap_recvinto_obj) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_ble_locals_dict, bluetooth_ble_locals_dict_table);
@@ -1051,6 +1114,37 @@ void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value) {
     invoke_irq_handler(MP_BLUETOOTH_IRQ_MTU_EXCHANGED, args, 2, NULL_U8, 0, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
 }
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+mp_int_t mp_bluetooth_gattc_on_l2cap_accept(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu) {
+    uint16_t args[] = {conn_handle, cid, psm, our_mtu, peer_mtu};
+    mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_ACCEPT, args, 5, NULL_U8, 0, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
+    // Return non-zero from IRQ handler to fail the accept.
+    mp_int_t ret = 0;
+    mp_obj_get_int_maybe(result, &ret);
+    return ret;
+}
+
+void mp_bluetooth_gattc_on_l2cap_connect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t our_mtu, uint16_t peer_mtu) {
+    uint16_t args[] = {conn_handle, cid, psm, our_mtu, peer_mtu};
+    invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_CONNECT, args, 5, NULL_U8, 0, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
+}
+
+void mp_bluetooth_gattc_on_l2cap_disconnect(uint16_t conn_handle, uint16_t cid, uint16_t psm, uint16_t status) {
+    uint16_t args[] = {conn_handle, cid, psm, status};
+    invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_DISCONNECT, args, 4, NULL_U8, 0, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
+}
+
+void mp_bluetooth_gattc_on_l2cap_send_ready(uint16_t conn_handle, uint16_t cid, uint8_t status) {
+    uint16_t args[] = {conn_handle, cid};
+    invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_SEND_READY, args, 2, &status, 1, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
+}
+
+void mp_bluetooth_gattc_on_l2cap_recv(uint16_t conn_handle, uint16_t cid) {
+    uint16_t args[] = {conn_handle, cid};
+    invoke_irq_handler(MP_BLUETOOTH_IRQ_L2CAP_RECV, args, 2, NULL_U8, 0, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
+}
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 void mp_bluetooth_gap_on_scan_complete(void) {
     invoke_irq_handler(MP_BLUETOOTH_IRQ_SCAN_DONE, NULL_U16, 0, NULL_U8, 0, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
@@ -1203,6 +1297,23 @@ void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t valu
     schedule_ringbuf(atomic_state);
 }
 
+bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle) {
+    (void)conn_handle;
+    (void)value_handle;
+    // This must be handled synchronously and therefore cannot implemented with the ringbuffer.
+    return true;
+}
+
+void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    if (enqueue_irq(o, 2 + 2, MP_BLUETOOTH_IRQ_MTU_EXCHANGED)) {
+        ringbuf_put16(&o->ringbuf, conn_handle);
+        ringbuf_put16(&o->ringbuf, value);
+    }
+    schedule_ringbuf(atomic_state);
+}
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 void mp_bluetooth_gap_on_scan_complete(void) {
     MICROPY_PY_BLUETOOTH_ENTER
@@ -1322,25 +1433,7 @@ void mp_bluetooth_gattc_on_read_write_status(uint8_t event, uint16_t conn_handle
     }
     schedule_ringbuf(atomic_state);
 }
-
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
-
-bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle) {
-    (void)conn_handle;
-    (void)value_handle;
-    // This must be handled synchronously and therefore cannot implemented with the ringbuffer.
-    return true;
-}
-
-void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value) {
-    MICROPY_PY_BLUETOOTH_ENTER
-    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
-    if (enqueue_irq(o, 2 + 2, MP_BLUETOOTH_IRQ_MTU_EXCHANGED)) {
-        ringbuf_put16(&o->ringbuf, conn_handle);
-        ringbuf_put16(&o->ringbuf, value);
-    }
-    schedule_ringbuf(atomic_state);
-}
 
 #endif // MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 

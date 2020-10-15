@@ -499,6 +499,7 @@ endif
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
 include $(TOP)/extmod/nimble/nimble.mk
 SRC_C += mpnimbleport.c
 endif
