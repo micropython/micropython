@@ -130,16 +130,13 @@ bool common_hal_displayio_colorconverter_get_dither(displayio_colorconverter_t* 
 }
 
 void common_hal_displayio_colorconverter_make_transparent(displayio_colorconverter_t* self, uint32_t transparent_color) {
-    if (self->transparent_color) {
-        mp_raise_RuntimeError(translate("transparent_color value is already set"));
+    if (self->transparent_color >= 0x1000000) {
+        mp_raise_RuntimeError(translate("Only one color can be transparent at a time"));
     }
     self->transparent_color = transparent_color;
 }
 
-void common_hal_displayio_colorconverter_make_opaque(displayio_colorconverter_t* self, uint32_t transparent_color) {
-    if (self->transparent_color != transparent_color) {
-        mp_raise_RuntimeError(translate("transparent_color value is not transparent"));
-    }
+void common_hal_displayio_colorconverter_make_opaque(displayio_colorconverter_t* self) {
     // 0x1000000 will never equal a valid color
     self->transparent_color = 0x1000000;
 }

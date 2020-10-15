@@ -117,7 +117,7 @@ STATIC mp_obj_t displayio_colorconverter_make_transparent(mp_obj_t self_in, mp_o
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_int_t transparent_color;
-    if (!mp_obj_get_int_maybe(transparent_color_obj, &transparent_color)) {
+    if (!mp_obj_get_int(&transparent_color)) {
         mp_raise_ValueError(translate("transparent_color should be an int"));
     }
     common_hal_displayio_colorconverter_make_transparent(self, transparent_color);
@@ -125,20 +125,15 @@ STATIC mp_obj_t displayio_colorconverter_make_transparent(mp_obj_t self_in, mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_make_transparent_obj, displayio_colorconverter_make_transparent);
 
-//|     def make_opaque(self, pixel: int) -> None:
+//|     def make_opaque(self) -> None:
 //|         """Sets a pixel to opaque."""
 //|
-STATIC mp_obj_t displayio_colorconverter_make_opaque(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
+STATIC mp_obj_t displayio_colorconverter_make_opaque(mp_obj_t self_in) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
-
-    mp_int_t transparent_color;
-    if (!mp_obj_get_int_maybe(transparent_color_obj, &transparent_color)) {
-        mp_raise_ValueError(translate("transparent_color should be an int"));
-    }
-    common_hal_displayio_colorconverter_make_opaque(self, transparent_color);
+    common_hal_displayio_colorconverter_make_opaque(self);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_make_opaque_obj, displayio_colorconverter_make_opaque);
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_colorconverter_make_opaque_obj, displayio_colorconverter_make_opaque);
 
 STATIC const mp_rom_map_elem_t displayio_colorconverter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_convert), MP_ROM_PTR(&displayio_colorconverter_convert_obj) },
