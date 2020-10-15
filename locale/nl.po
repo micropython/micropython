@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 23:49-0700\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
 "PO-Revision-Date: 2020-09-09 16:05+0000\n"
 "Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
 "Language-Team: none\n"
@@ -961,6 +961,10 @@ msgstr "Hardware bezig, probeer alternatieve pinnen"
 msgid "Hardware in use, try alternative pins"
 msgstr "Hardware in gebruik, probeer alternatieve pinnen"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr ""
+
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "I/O actie op gesloten bestand"
@@ -1042,6 +1046,7 @@ msgstr "Ongeldig BMP bestand"
 msgid "Invalid BSSID"
 msgstr ""
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Ongeldige DAC pin opgegeven"
@@ -1253,7 +1258,6 @@ msgid "No CCCD for this Characteristic"
 msgstr "Geen CCCD voor deze Characteristic"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Geen DAC op de chip"
@@ -2783,6 +2787,10 @@ msgstr "ongeldig formaat"
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "ongeldige formaatspecificatie"
+
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"

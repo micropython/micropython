@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 23:49-0700\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -959,6 +959,10 @@ msgstr ""
 msgid "Hardware in use, try alternative pins"
 msgstr ""
 
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr ""
+
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "I/O operasyon sa saradong file"
@@ -1040,6 +1044,7 @@ msgstr "Mali ang BMP file"
 msgid "Invalid BSSID"
 msgstr ""
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr ""
@@ -1251,7 +1256,6 @@ msgid "No CCCD for this Characteristic"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Walang DAC sa chip"
@@ -2771,6 +2775,10 @@ msgstr "hindi wastong pag-format"
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "mali ang format specifier"
+
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"

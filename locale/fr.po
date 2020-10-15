@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 23:49-0700\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
 "PO-Revision-Date: 2020-10-15 18:17+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language: fr\n"
@@ -972,6 +972,10 @@ msgstr "Matériel occupé, essayez d'autres broches"
 msgid "Hardware in use, try alternative pins"
 msgstr "Matériel utilisé, essayez d'autres broches"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr ""
+
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "opération d'E/S sur un fichier fermé"
@@ -1053,6 +1057,7 @@ msgstr "Fichier BMP invalide"
 msgid "Invalid BSSID"
 msgstr "BSSID Invalide"
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Broche DAC non valide fournie"
@@ -1264,7 +1269,6 @@ msgid "No CCCD for this Characteristic"
 msgstr "Pas de CCCD pour cette caractéristique"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Pas de DAC sur la puce"
@@ -2811,6 +2815,10 @@ msgstr "format invalide"
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "spécification de format invalide"
+
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
