@@ -260,6 +260,9 @@ STATIC mp_obj_t socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args)
     mp_int_t len = bufinfo.len;
     if (n_args == 3) {
         mp_int_t given_len = mp_obj_get_int(args[2]);
+        if (given_len > len) {
+            mp_raise_ValueError(translate("buffer too small for requested bytes"));
+        }
         if (given_len > 0 && given_len < len) {
             len = given_len;
         }
