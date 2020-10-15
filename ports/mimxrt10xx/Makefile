@@ -147,7 +147,7 @@ SRC_SDK := \
 
 SRC_SDK := $(addprefix sdk/devices/$(CHIP_FAMILY)/, $(SRC_SDK))
 
-SRC_C = \
+SRC_C += \
 	background.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/flash_config.c \

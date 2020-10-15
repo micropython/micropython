@@ -12,7 +12,9 @@
 #define ZEPHYR_INCLUDE_BLUETOOTH_HCI_H_
 
 #include <stdbool.h>
-#include <string.h>
+// for __packed
+#include <sys/cdefs.h>
+
 #include "addr.h"
 
 #define BIT(n)  (1UL << (n))
