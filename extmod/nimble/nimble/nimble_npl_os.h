@@ -30,11 +30,24 @@
 // This is included by nimble/nimble_npl.h -- include that rather than this file directly.
 
 #include <stdint.h>
+#include <limits.h>
 
 // --- Configuration of NimBLE data structures --------------------------------
 
+// This is used at runtime to align allocations correctly.
 #define BLE_NPL_OS_ALIGNMENT (sizeof(uintptr_t))
 #define BLE_NPL_TIME_FOREVER (0xffffffff)
+
+// This is used at compile time to force struct member alignment. See
+// os_mempool.h for where this is used (none of these three macros are defined
+// by default).
+#define OS_CFG_ALIGN_4 (4)
+#define OS_CFG_ALIGN_8 (8)
+#if (ULONG_MAX == 0xffffffffffffffff)
+#define OS_CFG_ALIGNMENT (OS_CFG_ALIGN_8)
+#else
+#define OS_CFG_ALIGNMENT (OS_CFG_ALIGN_4)
+#endif
 
 typedef uint32_t ble_npl_time_t;
 typedef int32_t ble_npl_stime_t;
