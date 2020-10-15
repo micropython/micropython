@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-12 14:16+0530\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -948,7 +948,7 @@ msgid "Hardware in use, try alternative pins"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
-msgid "Hostname must be between 1 and 63 characters"
+msgid "Hostname must be between 1 and 253 characters"
 msgstr ""
 
 #: extmod/vfs_posix_file.c py/objstringio.c
@@ -2730,6 +2730,10 @@ msgstr ""
 
 #: py/objstr.c
 msgid "invalid format specifier"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
 msgstr ""
 
 #: extmod/modussl_axtls.c

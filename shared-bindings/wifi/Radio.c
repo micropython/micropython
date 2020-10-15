@@ -24,11 +24,13 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/wifi/__init__.h"
+
+#include <regex.h>
 #include <string.h>
 
-#include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/wifi/__init__.h"
+#include "py/objproperty.h"
 
 //| class Radio:
 //|     """Native wifi radio.
@@ -115,9 +117,16 @@ STATIC mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) 
     mp_buffer_info_t hostname;
     mp_get_buffer_raise(hostname_in, &hostname, MP_BUFFER_READ);
 
-    if (hostname.len < 1 || hostname.len > 63) {
-        mp_raise_ValueError(translate("Hostname must be between 1 and 63 characters"));
+    if (hostname.len < 1 || hostname.len > 253) {
+        mp_raise_ValueError(translate("Hostname must be between 1 and 253 characters"));
     }
+
+    regex_t regex; //validate hostname according to RFC 1123
+    regcomp(&regex,"^(([a-z0-9]|[a-z0-9][a-z0-9\\-]{0,61}[a-z0-9])\\.)*([a-z0-9]|[a-z0-9][a-z0-9\\-]{0,61}[a-z0-9])$", REG_EXTENDED | REG_ICASE | REG_NOSUB);
+    if (regexec(&regex, hostname.buf, 0, NULL, 0)) {
+        mp_raise_ValueError(translate("invalid hostname"));
+    }
+    regfree(&regex);
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_wifi_radio_set_hostname(self, hostname.buf);
