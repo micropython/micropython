@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-10 23:49-0700\n"
-"PO-Revision-Date: 2020-10-15 18:07+0000\n"
+"PO-Revision-Date: 2020-10-15 18:17+0000\n"
 "Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -532,7 +532,7 @@ msgstr "Impossible de définir CCCD sur une caractéristique locale"
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
-"Un nouveau Adapter ne peut être créé ; Adapter; utilisez _bleio.adapter;"
+"Un nouveau Adapter ne peut être créé ; Adapter; utilisez _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -3613,7 +3613,7 @@ msgstr "caractère de format '%c' (0x%x) non supporté à l'index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%q'"
-msgstr "type non supporté pour %q : '%q'"
+msgstr "type non supporté pour %q : '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
