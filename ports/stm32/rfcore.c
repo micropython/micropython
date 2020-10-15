@@ -68,9 +68,7 @@
 #define HCI_EVENT_COMMAND_COMPLETE     (0x0E) // <num packets><opcode 16><status><data...>
 #define HCI_EVENT_COMMAND_STATUS       (0x0F) // <status><num_packets><opcode 16>
 
-// There can be quite long delays during firmware update.
-#define SYS_ACK_TIMEOUT_MS (1000)
-
+#define SYS_ACK_TIMEOUT_MS (250)
 #define BLE_ACK_TIMEOUT_MS (250)
 
 // AN5185
@@ -449,12 +447,14 @@ STATIC void tl_hci_cmd(uint8_t *cmd, unsigned int ch, uint8_t hdr, uint16_t opco
     LL_C1_IPCC_SetFlag_CHx(IPCC, ch);
 }
 
-STATIC ssize_t tl_sys_wait_ack(const uint8_t *buf) {
+STATIC ssize_t tl_sys_wait_ack(const uint8_t *buf, mp_int_t timeout_ms) {
     uint32_t t0 = mp_hal_ticks_ms();
+
+    timeout_ms = MAX(SYS_ACK_TIMEOUT_MS, timeout_ms);
 
     // C2 will clear this bit to acknowledge the request.
     while (LL_C1_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_SYS)) {
-        if (mp_hal_ticks_ms() - t0 > SYS_ACK_TIMEOUT_MS) {
+        if (mp_hal_ticks_ms() - t0 > timeout_ms) {
             printf("tl_sys_wait_ack: timeout\n");
             return -MP_ETIMEDOUT;
         }
@@ -465,9 +465,9 @@ STATIC ssize_t tl_sys_wait_ack(const uint8_t *buf) {
     return (ssize_t)tl_parse_hci_msg(buf, NULL);
 }
 
-STATIC ssize_t tl_sys_hci_cmd_resp(uint16_t opcode, const uint8_t *buf, size_t len) {
+STATIC ssize_t tl_sys_hci_cmd_resp(uint16_t opcode, const uint8_t *buf, size_t len, mp_int_t timeout_ms) {
     tl_hci_cmd(ipcc_membuf_sys_cmd_buf, IPCC_CH_SYS, 0x10, opcode, buf, len);
-    return tl_sys_wait_ack(ipcc_membuf_sys_cmd_buf);
+    return tl_sys_wait_ack(ipcc_membuf_sys_cmd_buf, timeout_ms);
 }
 
 STATIC int tl_ble_wait_resp(void) {
@@ -559,7 +559,7 @@ void rfcore_ble_init(void) {
     tl_check_msg_ble(&ipcc_mem_ble_evt_queue, NULL);
 
     // Configure and reset the BLE controller
-    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), (const uint8_t *)&ble_init_params, sizeof(ble_init_params));
+    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), (const uint8_t *)&ble_init_params, sizeof(ble_init_params), 0);
     tl_ble_hci_cmd_resp(HCI_OPCODE(0x03, 0x0003), NULL, 0);
 }
 
@@ -675,20 +675,24 @@ STATIC mp_obj_t rfcore_fw_version(mp_obj_t fw_id_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rfcore_fw_version_obj, rfcore_fw_version);
 
-STATIC mp_obj_t rfcore_sys_hci(mp_obj_t ogf_in, mp_obj_t ocf_in, mp_obj_t cmd_in) {
+STATIC mp_obj_t rfcore_sys_hci(size_t n_args, const mp_obj_t *args) {
     if (ipcc_mem_dev_info_tab.fus.table_state == MAGIC_IPCC_MEM_INCORRECT) {
         mp_raise_OSError(MP_EINVAL);
     }
-    mp_int_t ogf = mp_obj_get_int(ogf_in);
-    mp_int_t ocf = mp_obj_get_int(ocf_in);
+    mp_int_t ogf = mp_obj_get_int(args[0]);
+    mp_int_t ocf = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo = {0};
-    mp_get_buffer_raise(cmd_in, &bufinfo, MP_BUFFER_READ);
-    ssize_t len = tl_sys_hci_cmd_resp(HCI_OPCODE(ogf, ocf), bufinfo.buf, bufinfo.len);
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+    mp_int_t timeout_ms = 0;
+    if (n_args >= 4) {
+        timeout_ms = mp_obj_get_int(args[3]);
+    }
+    ssize_t len = tl_sys_hci_cmd_resp(HCI_OPCODE(ogf, ocf), bufinfo.buf, bufinfo.len, timeout_ms);
     if (len < 0) {
         mp_raise_OSError(-len);
     }
     return mp_obj_new_bytes(ipcc_membuf_sys_cmd_buf, len);
 }
-MP_DEFINE_CONST_FUN_OBJ_3(rfcore_sys_hci_obj, rfcore_sys_hci);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rfcore_sys_hci_obj, 3, 4, rfcore_sys_hci);
 
 #endif // defined(STM32WB)
