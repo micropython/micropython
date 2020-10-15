@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,4 +24,19 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIME_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIME_H
+
+#include "py/runtime.h"
+
+typedef struct {
+    mp_obj_base_t base;
+    uint64_t time_to_alarm;
+} alarm_time_time_obj_t;
+
+extern const mp_obj_type_t alarm_time_time_type;
+
+void common_hal_alarm_time_time_construct(alarm_time_time_obj_t* self,
+                                          uint64_t ticks_ms);
+
+#endif //MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIME_H

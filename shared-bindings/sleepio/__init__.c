@@ -33,14 +33,15 @@
 //|
 //| Light sleep leaves the CPU and RAM powered so that CircuitPython can resume where it left off
 //| after being woken up. Light sleep is automatically done by CircuitPython when `time.sleep()` is
-//| called. To light sleep until a non-time alarm use `sleepio.sleep_until_alarm()`.
+//| called. To light sleep until a non-time alarm use `sleepio.sleep_until_alarm()`. Any active
+//| peripherals, such as I2C, are left on.
 //|
 //| Deep sleep shuts down power to nearly all of the chip including the CPU and RAM. This can save
 //| a more significant amount of power at the cost of starting CircuitPython from scratch when woken
 //| up. CircuitPython will enter deep sleep automatically when code exits without error. If an
 //| error causes CircuitPython to exit, error LED error flashes will be done periodically. To set
 //| alarms for deep sleep use `sleepio.set_alarms` they will apply to next deep sleep only."""
-
+//|
 
 //| wake_alarm: Alarm
 //| """The most recent alarm to wake us up from a sleep (light or deep.)"""
@@ -86,8 +87,9 @@ mp_map_elem_t sleepio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sleepio) },
 
     { MP_ROM_QSTR(MP_QSTR_wake_alarm), mp_const_none },
-    { MP_ROM_QSTR(MP_QSTR_sleep_until_alarm), mp_const_none },
-    { MP_ROM_QSTR(MP_QSTR_set_alarms), mp_const_none },
+
+    { MP_ROM_QSTR(MP_QSTR_sleep_until_alarm), sleepio_sleep_until_alarm_obj },
+    { MP_ROM_QSTR(MP_QSTR_set_alarms), sleepio_set_alarms_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(sleepio_module_globals, sleepio_module_globals_table);
 

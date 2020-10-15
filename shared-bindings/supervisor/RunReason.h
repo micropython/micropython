@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,3 +25,12 @@
  */
 
 #pragma once
+
+typedef enum {
+    RUN_REASON_STARTUP,
+    RUN_REASON_AUTORELOAD,
+    RUN_REASON_SUPERVISOR_RELOAD,
+    RUN_REASON_RELOAD_HOTKEY
+} supervisor_run_reason_t;
+
+extern const mp_obj_type_t canio_bus_state_type;
