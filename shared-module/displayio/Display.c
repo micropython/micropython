@@ -107,8 +107,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         i += 2 + data_size;
     }
 
-    supervisor_start_terminal(width, height);
-
     // Always set the backlight type in case we're reusing memory.
     self->backlight_inout.base.type = &mp_type_NoneType;
     if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
@@ -349,8 +347,10 @@ void common_hal_displayio_display_set_rotation(displayio_display_obj_t* self, in
         self->core.height = tmp;
     }
     displayio_display_core_set_rotation(&self->core, rotation);
-    supervisor_stop_terminal();
-    supervisor_start_terminal(self->core.width, self->core.height);
+    if (self == &displays[0].display) {
+        supervisor_stop_terminal();
+        supervisor_start_terminal(self->core.width, self->core.height);
+    }
     if (self->core.current_group != NULL) {
         displayio_group_update_transform(self->core.current_group, &self->core.transform);
     }

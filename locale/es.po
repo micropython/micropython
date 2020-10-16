@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-10-01 21:24+0000\n"
-"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
+"PO-Revision-Date: 2020-10-09 17:19+0000\n"
+"Last-Translator: dherrada <dylan.herrada@adafruit.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -254,6 +254,10 @@ msgid "'return' outside function"
 msgstr "'return' fuera de una función"
 
 #: py/compile.c
+msgid "'yield from' inside async function"
+msgstr ""
+
+#: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' fuera de una función"
 
@@ -278,6 +282,10 @@ msgstr "pow() con 3 argumentos no soportado"
 msgid "A hardware interrupt channel is already in use"
 msgstr "El canal EXTINT ya está siendo utilizado"
 
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "ADC2 is being used by WiFi"
+msgstr ""
+
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
@@ -292,6 +300,7 @@ msgid "All I2C peripherals are in use"
 msgstr "Todos los periféricos I2C están siendo usados"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "Todos los FIFOs de RX en uso"
 
@@ -911,6 +920,7 @@ msgid "File exists"
 msgstr "El archivo ya existe"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr "Filtros muy complejos"
 
@@ -948,13 +958,18 @@ msgid "Group full"
 msgstr "Group lleno"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr "Hardware ocupado, pruebe pines alternativos"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Hardware en uso, pruebe pines alternativos"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr ""
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1020,7 +1035,8 @@ msgid "Invalid %q pin"
 msgstr "Pin %q inválido"
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
 msgstr "selección inválida de pin %q"
 
@@ -1036,6 +1052,7 @@ msgstr "Archivo BMP inválido"
 msgid "Invalid BSSID"
 msgstr "BSSID inválido"
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Pin suministrado inválido para DAC"
@@ -1451,6 +1468,7 @@ msgstr "Permiso denegado"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
@@ -1709,7 +1727,7 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
+msgstr "La longitud de rgb_pins debe ser 6, 12, 18, 24, o 30"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2783,6 +2801,10 @@ msgstr "formato inválido"
 msgid "invalid format specifier"
 msgstr "especificador de formato inválido"
 
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid key"
 msgstr "llave inválida"
@@ -3219,6 +3241,7 @@ msgstr "el 3er argumento de pow() no puede ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() con 3 argumentos requiere enteros"
 
+#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3226,6 +3249,7 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "presionando botón de arranque al inicio.\n"
 
@@ -3496,6 +3520,10 @@ msgstr "type no es un tipo de base aceptable"
 msgid "type object '%q' has no attribute '%q'"
 msgstr "objeto de tipo '%q' no tiene atributo '%q'"
 
+#: py/objgenerator.c
+msgid "type object 'generator' has no attribute '__await__'"
+msgstr ""
+
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
 msgstr "type acepta 1 ó 3 argumentos"
@@ -3604,7 +3632,7 @@ msgstr "el tiempo de espera del perro guardián debe ser mayor a 0"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr ""
+msgstr "el ancho debe ser mayor que cero"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"

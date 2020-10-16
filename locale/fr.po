@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-09-16 13:47+0000\n"
-"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
+"PO-Revision-Date: 2020-10-15 18:17+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -46,7 +46,7 @@ msgstr "  Fichier \"%q\", ligne %d"
 
 #: main.c
 msgid " output:\n"
-msgstr " sortie :\n"
+msgstr " sortie :\n"
 
 #: py/objstr.c
 #, c-format
@@ -102,7 +102,7 @@ msgstr "%q doit être un tuple de longueur 2"
 
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
-msgstr ""
+msgstr "%q est hors de porté"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
@@ -255,6 +255,10 @@ msgid "'return' outside function"
 msgstr "'return' en dehors d'une fonction"
 
 #: py/compile.c
+msgid "'yield from' inside async function"
+msgstr ""
+
+#: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' en dehors d'une fonction"
 
@@ -279,6 +283,10 @@ msgstr "pow() non supporté avec 3 arguments"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Un canal d'interruptions matérielles est déjà utilisé"
 
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "ADC2 is being used by WiFi"
+msgstr "ADC2 est utilisé pars le Wifi"
+
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
@@ -293,8 +301,9 @@ msgid "All I2C peripherals are in use"
 msgstr "Tous les périphériques I2C sont utilisés"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr ""
+msgstr "Tout les RX FIFOs sont utilisé"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
@@ -523,7 +532,7 @@ msgstr "Impossible de définir CCCD sur une caractéristique locale"
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
 msgstr ""
-"Un nouveau Adapter ne peut être créé ; Adapter; utilisez _bleio.adapter;"
+"Un nouveau Adapter ne peut être créé ; Adapter; utilisez _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -660,7 +669,7 @@ msgstr "Code brut corrompu"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
-msgstr ""
+msgstr "Impossible d'initialisé la Camera"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -791,7 +800,7 @@ msgstr "La BCE ne fonctionne que sur 16 octets à la fois"
 
 #: ports/esp32s2/common-hal/busio/SPI.c
 msgid "ESP-IDF memory allocation failed"
-msgstr ""
+msgstr "ESP-IDF échec d'allocation de la mémoire"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
@@ -896,7 +905,7 @@ msgstr "Impossible de se connecter : délai d'expiration"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to init wifi"
-msgstr ""
+msgstr "Echec de l'initialisation du Wifi"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
@@ -916,6 +925,7 @@ msgid "File exists"
 msgstr "Le fichier existe"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr ""
 
@@ -953,13 +963,18 @@ msgid "Group full"
 msgstr "Groupe plein"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr "Matériel occupé, essayez d'autres broches"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Matériel utilisé, essayez d'autres broches"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr ""
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -971,7 +986,7 @@ msgstr "Erreur d'initialisation I2C"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut n'est pas disponible"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1025,7 +1040,8 @@ msgid "Invalid %q pin"
 msgstr "Broche invalide pour '%q'"
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
 msgstr ""
 
@@ -1039,8 +1055,9 @@ msgstr "Fichier BMP invalide"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr ""
+msgstr "BSSID Invalide"
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Broche DAC non valide fournie"
@@ -1089,7 +1106,7 @@ msgstr "Taille de bloc de formatage invalide"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
-msgstr ""
+msgstr "fréquence non Valide"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
@@ -1212,7 +1229,7 @@ msgstr "La valeur max. de x est %d lors d'une opération miroir"
 
 #: shared-bindings/canio/Message.c
 msgid "Messages limited to 8 bytes"
-msgstr ""
+msgstr "Message limité a 8 bytes"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
@@ -1324,11 +1341,11 @@ msgstr "Pas de support entier long"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more channels available"
-msgstr ""
+msgstr "Pas de canal supplémentaire disponible"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more timers available"
-msgstr ""
+msgstr "Pas d'horloge supplémentaire disponible"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1336,7 +1353,7 @@ msgstr "Plus de minuteurs disponibles sur cette broche."
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
-msgstr ""
+msgstr "Aucun réseau avec ce ssid"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1360,7 +1377,7 @@ msgstr "Affirmation de défaillance du Nordic Soft Device."
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
-msgstr ""
+msgstr "Chaîne IP non valide"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1458,6 +1475,7 @@ msgstr "Permission refusée"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
@@ -2798,6 +2816,10 @@ msgstr "format invalide"
 msgid "invalid format specifier"
 msgstr "spécification de format invalide"
 
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid key"
 msgstr "clé invalide"
@@ -3237,6 +3259,7 @@ msgstr "le 3e argument de pow() ne peut être 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() avec 3 arguments nécessite des entiers"
 
+#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3244,6 +3267,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr ""
 
@@ -3514,6 +3538,10 @@ msgstr "le type n'est pas un type de base accepté"
 msgid "type object '%q' has no attribute '%q'"
 msgstr "l'objet de type '%q' n'a pas d'attribut '%q'"
 
+#: py/objgenerator.c
+msgid "type object 'generator' has no attribute '__await__'"
+msgstr ""
+
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
 msgstr "le type prend 1 ou 3 arguments"
@@ -3593,7 +3621,7 @@ msgstr "caractère de format '%c' (0x%x) non supporté à l'index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%q'"
-msgstr "type non supporté pour %q: '%q'"
+msgstr "type non supporté pour %q : '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"

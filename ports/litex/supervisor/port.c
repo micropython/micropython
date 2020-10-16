@@ -128,7 +128,11 @@ uint32_t port_get_saved_word(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    return raw_ticks;
+    // Reading 64 bits may take two loads, so turn of interrupts while we do it.
+    irq_setie(false);
+    uint64_t raw_tick_snapshot = raw_ticks;
+    irq_setie(true);
+    return raw_tick_snapshot;
 }
 
 // Enable 1/1024 second tick.

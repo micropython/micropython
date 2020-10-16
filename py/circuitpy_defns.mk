@@ -45,7 +45,6 @@ BASE_CFLAGS = \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
-	-Wno-error=lto-type-mismatch \
 	-D__$(CHIP_VARIANT)__ \
 	-ffunction-sections \
 	-fdata-sections \
@@ -66,7 +65,6 @@ ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
 # and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
@@ -76,7 +74,6 @@ endif
 ifneq ($(FROZEN_MPY_DIRS),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
 
@@ -528,10 +525,10 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 $(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
-SRC_MOD += $(addprefix lib/protomatter/, \
+SRC_MOD += $(addprefix lib/protomatter/src/, \
 	core.c \
 )
-$(BUILD)/lib/protomatter/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
+$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.

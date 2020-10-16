@@ -162,7 +162,7 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 
 SRC_S = supervisor/cpu.s
 
-SRC_C = \
+SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \

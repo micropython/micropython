@@ -63,23 +63,10 @@
 //|     """Catchall exception for Bluetooth related errors."""
 //|     ...
 MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
-
 NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t* fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_BluetoothError, fmt, argptr);
-    va_end(argptr);
-    nlr_raise(exception);
-}
-//| class ConnectionError(BluetoothError):
-//|     """Raised when a connection is unavailable."""
-//|     ...
-//|
-MP_DEFINE_BLEIO_EXCEPTION(ConnectionError, bleio_BluetoothError)
-NORETURN void mp_raise_bleio_ConnectionError(const compressed_string_t* fmt, ...) {
-    va_list argptr;
-    va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_ConnectionError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
 }
@@ -93,6 +80,7 @@ MP_DEFINE_BLEIO_EXCEPTION(RoleError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_RoleError(const compressed_string_t* msg) {
     mp_raise_msg(&mp_type_bleio_RoleError, msg);
 }
+
 //| class SecurityError(BluetoothError):
 //|     """Raised when a security related error occurs."""
 //|     ...
@@ -183,7 +171,6 @@ STATIC const mp_rom_map_elem_t bleio_module_globals_table[] = {
 
     // Errors
     { MP_ROM_QSTR(MP_QSTR_BluetoothError),       OBJ_FROM_PTR(&mp_type_bleio_BluetoothError) },
-    { MP_ROM_QSTR(MP_QSTR_ConnectionError),      OBJ_FROM_PTR(&mp_type_bleio_ConnectionError) },
     { MP_ROM_QSTR(MP_QSTR_RoleError),            OBJ_FROM_PTR(&mp_type_bleio_RoleError) },
     { MP_ROM_QSTR(MP_QSTR_SecurityError),        OBJ_FROM_PTR(&mp_type_bleio_SecurityError) },
 

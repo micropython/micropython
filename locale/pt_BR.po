@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 20:14-0500\n"
-"PO-Revision-Date: 2020-10-02 22:53+0000\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
+"PO-Revision-Date: 2020-10-16 17:01+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.1-dev\n"
 
 #: main.c
 msgid ""
@@ -255,6 +255,10 @@ msgid "'return' outside function"
 msgstr "função externa 'return'"
 
 #: py/compile.c
+msgid "'yield from' inside async function"
+msgstr "'yield a partir' de dentro da função async"
+
+#: py/compile.c
 msgid "'yield' outside function"
 msgstr "função externa 'yield'"
 
@@ -279,6 +283,10 @@ msgstr "3-arg pow() não compatível"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Um canal de interrupção de hardware já está em uso"
 
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "ADC2 is being used by WiFi"
+msgstr "O ADC2 está sendo usado pelo WiFi"
+
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
@@ -293,6 +301,7 @@ msgid "All I2C peripherals are in use"
 msgstr "Todos os periféricos I2C estão em uso"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "Todos os FIFOs RX estão em uso"
 
@@ -913,6 +922,7 @@ msgid "File exists"
 msgstr "Arquivo já existe"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr "Os filtros são muito complexos"
 
@@ -951,13 +961,18 @@ msgid "Group full"
 msgstr "Grupo cheio"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr "O hardware está ocupado, tente os pinos alternativos"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "O hardware está em uso, tente os pinos alternativos"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr "O nome do host deve ter entre 1 e 253 caracteres"
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1023,7 +1038,8 @@ msgid "Invalid %q pin"
 msgstr "Pino do %q inválido"
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
 msgstr "Seleção inválida dos pinos %q"
 
@@ -1039,6 +1055,7 @@ msgstr "Arquivo BMP inválido"
 msgid "Invalid BSSID"
 msgstr "BSSID Inválido"
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "O pino DAC informado é inválido"
@@ -1455,6 +1472,7 @@ msgstr "Permissão negada"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
@@ -2794,6 +2812,10 @@ msgstr "formato inválido"
 msgid "invalid format specifier"
 msgstr "o especificador do formato é inválido"
 
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr "o nome do host é inválido"
+
 #: extmod/modussl_axtls.c
 msgid "invalid key"
 msgstr "chave inválida"
@@ -3234,6 +3256,7 @@ msgstr "O terceiro argumento pow() não pode ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "o pow() com 3 argumentos requer números inteiros"
 
+#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3241,6 +3264,7 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "pressionando o botão de boot na inicialização.\n"
 
@@ -3509,6 +3533,10 @@ msgstr "tipo não é um tipo base aceitável"
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "o objeto tipo '%q' não possuí atributo '%q'"
+
+#: py/objgenerator.c
+msgid "type object 'generator' has no attribute '__await__'"
+msgstr "o tipo do objeto 'generator' não possui qualquer atributo '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
