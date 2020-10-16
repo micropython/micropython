@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-29 20:14-0500\n"
+"POT-Creation-Date: 2020-10-16 13:56-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -285,6 +285,7 @@ msgid "All I2C peripherals are in use"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr ""
 
@@ -892,6 +893,7 @@ msgid "File exists"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr ""
 
@@ -928,7 +930,8 @@ msgid "Group full"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr ""
 
@@ -998,7 +1001,8 @@ msgid "Invalid %q pin"
 msgstr ""
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
 msgstr ""
 
@@ -2089,6 +2093,10 @@ msgstr ""
 msgid "buffer too small"
 msgstr ""
 
+#: shared-bindings/socketpool/Socket.c
+msgid "buffer too small for requested bytes"
+msgstr ""
+
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""
@@ -3144,6 +3152,7 @@ msgstr ""
 msgid "pow() with 3 arguments requires integers"
 msgstr ""
 
+#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3151,6 +3160,7 @@ msgstr ""
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr ""
 
