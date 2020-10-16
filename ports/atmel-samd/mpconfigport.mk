@@ -37,6 +37,9 @@ ifndef CIRCUITPY_TOUCHIO_USE_NATIVE
 CIRCUITPY_TOUCHIO_USE_NATIVE = 1
 endif
 
+# No room for HCI _bleio on SAMD21.
+CIRCUITPY_BLEIO_HCI = 0
+
 CIRCUITPY_SDCARDIO ?= 0
 
 # Not enough RAM for framebuffers
