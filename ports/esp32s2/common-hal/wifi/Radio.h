@@ -32,6 +32,7 @@
 #include "components/esp_event/include/esp_event.h"
 
 #include "shared-bindings/wifi/ScannedNetworks.h"
+#include "shared-bindings/wifi/Network.h"
 
 // Event bits for the Radio event group.
 #define WIFI_SCAN_DONE_BIT BIT0
@@ -47,6 +48,7 @@ typedef struct {
     EventGroupHandle_t event_group_handle;
     wifi_config_t sta_config;
     wifi_ap_record_t ap_info;
+    wifi_network_obj_t apnet;
     esp_netif_ip_info_t ip_info;
     esp_netif_dns_info_t dns_info;
     esp_netif_t *netif;
