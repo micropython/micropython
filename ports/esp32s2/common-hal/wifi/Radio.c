@@ -160,75 +160,19 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
         return mp_const_none;
     }
 
-    wifi_network_obj_t *apnet = m_new_obj(wifi_network_obj_t);
-    apnet->base.type = &wifi_network_type;
+    wifi_network_obj_t *ap_info = m_new_obj(wifi_network_obj_t);
+    ap_info->base.type = &wifi_network_type;
     // From esp_wifi.h, the possible return values (typos theirs):
     //    ESP_OK: succeed
     //    ESP_ERR_WIFI_CONN: The station interface don't initialized
     //    ESP_ERR_WIFI_NOT_CONNECT: The station is in disconnect status
-    if (esp_wifi_sta_get_ap_info(&self->apnet.record) != ESP_OK){
+    if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK){
         return mp_const_none;
     } else {
-        memcpy(&apnet->record, &self->apnet.record, sizeof(wifi_ap_record_t));
-        return MP_OBJ_FROM_PTR(apnet);
+        memcpy(&ap_info->record, &self->ap_info.record, sizeof(wifi_ap_record_t));
+        return MP_OBJ_FROM_PTR(ap_info);
     }
 }
-
-mp_obj_t common_hal_wifi_radio_get_ap_rssi(wifi_radio_obj_t *self) {
-    if (!esp_netif_is_netif_up(self->netif)) {
-        return mp_const_none;
-    }
-
-    // Make sure the interface is in STA mode
-    if (self->sta_mode){
-        return mp_const_none;
-    }
-
-    // From esp_wifi.h, the possible return values (typos theirs):
-    //    ESP_OK: succeed
-    //    ESP_ERR_WIFI_CONN: The station interface don't initialized
-    //    ESP_ERR_WIFI_NOT_CONNECT: The station is in disconnect status
-    if (esp_wifi_sta_get_ap_info(&self->ap_info) != ESP_OK){
-        return mp_const_none;
-    } else {
-        return mp_obj_new_int(self->ap_info.rssi);
-    }
-}
-
-// mp_obj_t common_hal_wifi_radio_get_ap_ssid(wifi_radio_obj_t *self) {
-//     if (!esp_netif_is_netif_up(self->netif)) {
-//         return mp_const_none;
-//     }
-
-//     // Make sure the interface is in STA mode
-//     if (self->sta_mode){
-//         return mp_const_none;
-//     }
-
-//     if (esp_wifi_sta_get_ap_info(&self->ap_info) != ESP_OK){
-//         return mp_const_none;
-//     } else {
-//         const char* cstr = (const char*) self->ap_info.ssid;
-//         return mp_obj_new_str(cstr, strlen(cstr));
-//     }
-// }
-
-// mp_obj_t common_hal_wifi_radio_get_ap_bssid(wifi_radio_obj_t *self) {
-//     if (!esp_netif_is_netif_up(self->netif)) {
-//         return mp_const_none;
-//     }
-
-//     // Make sure the interface is in STA mode
-//     if (self->sta_mode){
-//         return mp_const_none;
-//     }
-
-//     if (esp_wifi_sta_get_ap_info(&self->ap_info) != ESP_OK){
-//         return mp_const_none;
-//     } else {
-//         return mp_obj_new_bytes(self->ap_info.bssid, MAC_ADDRESS_LENGTH);
-//     }
-// }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
