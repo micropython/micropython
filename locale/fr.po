@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-15 16:06+0530\n"
-"PO-Revision-Date: 2020-10-15 18:17+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"PO-Revision-Date: 2020-10-17 15:35+0000\n"
+"Last-Translator: Noel Gaetan <gaetan.noel@viacesi.fr>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.1-dev\n"
 
 #: main.c
 msgid ""
@@ -23,7 +23,7 @@ msgid ""
 "Code done running. Waiting for reload.\n"
 msgstr ""
 "\n"
-"Fin d'éxecution du code. En attente de recharge.\n"
+"Fin d'exécution du code. En attente de rechargement.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -122,39 +122,39 @@ msgstr "'%q' argument requis"
 
 #: py/runtime.c
 msgid "'%q' object cannot assign attribute '%q'"
-msgstr "object '%q' ne peut assigner l'attribut '%q'"
+msgstr "l'objet '%q' ne peut avoir l'attribut '%q'"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr "object '%q' ne supporte pas '%q'"
+msgstr "l'objet '%q' ne supporte pas '%q'"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
-msgstr "objet '%q' ne supporte pas l'assignement d'objets"
+msgstr "l'objet '%q' ne supporte pas l'assignement d'objets"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr "object '%q' ne supported pas la suppression d'objet"
+msgstr "l'objet '%q' ne supporte pas la suppression d'objet"
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
-msgstr "object '%q' n'as pas d'attribut '%q'"
+msgstr "l'objet '%q' n'as pas d'attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr "object '%q' n'est pas un itérateur"
+msgstr "l'objet '%q' n'est pas un itérateur"
 
 #: py/objtype.c py/runtime.c
 msgid "'%q' object is not callable"
-msgstr "object '%q' ne peut pas être appelé"
+msgstr "l'objet '%q' ne peut pas être appelé"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr "objet '%q' n'est pas iterable"
+msgstr "l'objet '%q' n'est pas itérable"
 
 #: py/obj.c
 msgid "'%q' object is not subscriptable"
-msgstr "objet '%q' n'est pas souscriptable"
+msgstr "l'objet '%q' n'est pas souscriptable"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -169,7 +169,7 @@ msgstr "'%s' attend un registre"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr "'%s' attend un registre special"
+msgstr "'%s' attend un registre spécial"
 
 #: py/emitinlinethumb.c
 #, c-format
