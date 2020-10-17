@@ -33,6 +33,14 @@
 
 #define CIRCUITPY_SUPERVISOR_ALLOC_COUNT (12)
 
+// Using a zero length to mark an unused allocation makes the code a bit shorter (but makes it
+// impossible to support zero-length allocations).
+#define FREE 0
+
+// The lowest two bits of a valid length are always zero, so we can use them to mark an allocation
+// as freed by the client but not yet reclaimed into the FREE middle.
+#define HOLE 1
+
 static supervisor_allocation allocations[CIRCUITPY_SUPERVISOR_ALLOC_COUNT];
 // We use uint32_t* to ensure word (4 byte) alignment.
 uint32_t* low_address;
@@ -61,25 +69,31 @@ void free_memory(supervisor_allocation* allocation) {
     }
     if (allocation->ptr == high_address) {
         high_address += allocation->length / 4;
+        allocation->length = FREE;
         for (index++; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index++) {
-            if (allocations[index].ptr != NULL) {
+            if (!(allocations[index].length & HOLE)) {
                 break;
             }
+            // Division automatically shifts out the HOLE bit.
             high_address += allocations[index].length / 4;
+            allocations[index].length = FREE;
         }
     } else if (allocation->ptr + allocation->length / 4 == low_address) {
         low_address = allocation->ptr;
+        allocation->length = FREE;
         for (index--; index >= 0; index--) {
-            if (allocations[index].ptr != NULL) {
+            if (!(allocations[index].length & HOLE)) {
                 break;
             }
             low_address -= allocations[index].length / 4;
+            allocations[index].length = FREE;
         }
     } else {
         // Freed memory isn't in the middle so skip updating bounds. The memory will be added to the
-        // middle when the memory to the inside is freed.
+        // middle when the memory to the inside is freed. We still need its length, but setting
+        // only the lowest bit is nondestructive.
+        allocation->length |= HOLE;
     }
-    allocation->ptr = NULL;
 }
 
 supervisor_allocation* allocation_from_ptr(void *ptr) {
@@ -99,7 +113,7 @@ supervisor_allocation* allocate_remaining_memory(void) {
 }
 
 supervisor_allocation* allocate_memory(uint32_t length, bool high) {
-    if ((high_address - low_address) * 4 < (int32_t) length || length % 4 != 0) {
+    if (length == 0 || length % 4 != 0) {
         return NULL;
     }
     uint8_t index = 0;
@@ -108,15 +122,21 @@ supervisor_allocation* allocate_memory(uint32_t length, bool high) {
         index = CIRCUITPY_SUPERVISOR_ALLOC_COUNT - 1;
         direction = -1;
     }
+    supervisor_allocation* alloc;
     for (; index < CIRCUITPY_SUPERVISOR_ALLOC_COUNT; index += direction) {
-        if (allocations[index].ptr == NULL) {
+        alloc = &allocations[index];
+        if (alloc->length == FREE && (high_address - low_address) * 4 >= (int32_t) length) {
             break;
+        }
+        // If a hole matches in length exactly, we can reuse it.
+        if (alloc->length == (length | HOLE)) {
+            alloc->length = length;
+            return alloc;
         }
     }
     if (index >= CIRCUITPY_SUPERVISOR_ALLOC_COUNT) {
         return NULL;
     }
-    supervisor_allocation* alloc = &allocations[index];
     if (high) {
         high_address -= length / 4;
         alloc->ptr = high_address;
