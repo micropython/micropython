@@ -138,7 +138,6 @@ void common_hal_displayio_colorconverter_make_transparent(displayio_colorconvert
 
 void common_hal_displayio_colorconverter_make_opaque(displayio_colorconverter_t* self, uint32_t transparent_color) {
     (void) transparent_color;
-    
     // 0x1000000 will never equal a valid color
     self->transparent_color = 0x1000000;
 }
