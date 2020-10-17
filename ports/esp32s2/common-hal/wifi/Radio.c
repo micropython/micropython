@@ -53,6 +53,8 @@ static void start_station(wifi_radio_obj_t *self) {
     }
     esp_wifi_set_mode(next_mode);
 
+    self->sta_mode = 1;
+
     esp_wifi_set_config(WIFI_MODE_STA, &self->sta_config);
 }
 
@@ -156,7 +158,7 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
     }
 
     // Make sure the interface is in STA mode
-    if (self->sta_mode){
+    if (!self->sta_mode){
         return mp_const_none;
     }
 
