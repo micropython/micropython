@@ -78,10 +78,10 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         // verify that the matrix is big enough
         mp_get_index(mp_obj_get_type(self->framebuffer), self->bufinfo.len, MP_OBJ_NEW_SMALL_INT(self->bufsize-1), false);
     } else {
-        _PM_free(self->bufinfo.buf);
-        _PM_free(self->protomatter.rgbPins);
-        _PM_free(self->protomatter.addr);
-        _PM_free(self->protomatter.screenData);
+        common_hal_rgbmatrix_free_impl(self->bufinfo.buf);
+        common_hal_rgbmatrix_free_impl(self->protomatter.rgbPins);
+        common_hal_rgbmatrix_free_impl(self->protomatter.addr);
+        common_hal_rgbmatrix_free_impl(self->protomatter.screenData);
 
         self->framebuffer = NULL;
         self->bufinfo.buf = common_hal_rgbmatrix_allocator_impl(self->bufsize);
@@ -180,9 +180,6 @@ void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t* self) {
 
 void rgbmatrix_rgbmatrix_collect_ptrs(rgbmatrix_rgbmatrix_obj_t* self) {
     gc_collect_ptr(self->framebuffer);
-    gc_collect_ptr(self->protomatter.rgbPins);
-    gc_collect_ptr(self->protomatter.addr);
-    gc_collect_ptr(self->protomatter.screenData);
 }
 
 void common_hal_rgbmatrix_rgbmatrix_set_paused(rgbmatrix_rgbmatrix_obj_t* self, bool paused) {
@@ -217,18 +214,10 @@ int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t* self) {
 }
 
 void *common_hal_rgbmatrix_allocator_impl(size_t sz) {
-    if (gc_alloc_possible()) {
-        return m_malloc_maybe(sz + sizeof(void*), true);
-    } else {
-        supervisor_allocation *allocation = allocate_memory(align32_size(sz), false, false);
-        return allocation ? allocation->ptr : NULL;
-    }
+    supervisor_allocation *allocation = allocate_memory(align32_size(sz), false, true);
+    return allocation ? allocation->ptr : NULL;
 }
 
 void common_hal_rgbmatrix_free_impl(void *ptr_in) {
-    supervisor_allocation *allocation = allocation_from_ptr(ptr_in);
-
-    if (allocation) {
-        free_memory(allocation);
-    }
+    free_memory(allocation_from_ptr(ptr_in));
 }
