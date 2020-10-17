@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-15 16:06+0530\n"
-"PO-Revision-Date: 2020-10-09 17:19+0000\n"
-"Last-Translator: dherrada <dylan.herrada@adafruit.com>\n"
+"PO-Revision-Date: 2020-10-17 02:31+0000\n"
+"Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.1-dev\n"
 
 #: main.c
 msgid ""
@@ -255,7 +255,7 @@ msgstr "'return' fuera de una función"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield from' dentro función asincrónica"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -284,7 +284,7 @@ msgstr "El canal EXTINT ya está siendo utilizado"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr ""
+msgstr "ADC2 está siendo usado por WiFi"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -969,7 +969,7 @@ msgstr "Hardware en uso, pruebe pines alternativos"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Hostname must be between 1 and 253 characters"
-msgstr ""
+msgstr "Hostname debe ser entre 1 y 253 caracteres"
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -2803,7 +2803,7 @@ msgstr "especificador de formato inválido"
 
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
-msgstr ""
+msgstr "hostname inválido"
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
@@ -3522,7 +3522,7 @@ msgstr "objeto de tipo '%q' no tiene atributo '%q'"
 
 #: py/objgenerator.c
 msgid "type object 'generator' has no attribute '__await__'"
-msgstr ""
+msgstr "objeto tipo 'generator' no tiene un atributo '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
