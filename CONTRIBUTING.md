@@ -4,6 +4,8 @@ SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://g
 SPDX-License-Identifier: MIT
 -->
 
+ <https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md>
+
 # Contributing
 Please note that this project is released with a
 [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
