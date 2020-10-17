@@ -85,7 +85,10 @@ void displayio_display_core_construct(displayio_display_core_t* self,
     self->bus = bus;
 
 
-    supervisor_start_terminal(width, height);
+    // (offsetof core is equal in all display types)
+    if (self == &displays[0].display.core) {
+        supervisor_start_terminal(width, height);
+    }
 
     self->width = width;
     self->height = height;

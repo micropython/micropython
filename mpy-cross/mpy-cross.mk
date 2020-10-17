@@ -66,7 +66,7 @@ LDFLAGS += -static -static-libgcc -static-libstdc++
 endif
 
 # source files
-SRC_C = \
+SRC_C += \
 	main.c \
 	gccollect.c \
 	supervisor/stub/safe_mode.c \
