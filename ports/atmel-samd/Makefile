@@ -121,7 +121,7 @@ $(echo PERIPHERALS_CHIP_FAMILY=$(PERIPHERALS_CHIP_FAMILY))
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3 -Og
   # You may want to disable -flto if it interferes with debugging.
-  CFLAGS += -flto -flto-partition=none
+  CFLAGS += -flto
   # You may want to enable these flags to make setting breakpoints easier.
   # CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
@@ -144,7 +144,7 @@ else
     CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
   endif
 
-  CFLAGS += -flto -flto-partition=none
+  CFLAGS += -flto
 
   ifeq ($(CIRCUITPY_FULL_BUILD),0)
     CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
@@ -197,6 +197,7 @@ endif
 
 
 LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS += -flto=$(shell nproc)
 LIBS := -lgcc -lc
 
 # Use toolchain libm if we're not using our own.
