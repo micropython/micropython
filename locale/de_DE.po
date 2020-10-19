@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 23:49-0700\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
 "PO-Revision-Date: 2020-06-16 18:24+0000\n"
 "Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
 "Language: de_DE\n"
@@ -149,7 +149,7 @@ msgstr ""
 
 #: py/obj.c
 msgid "'%q' object is not subscriptable"
-msgstr ""
+msgstr "'%q' Objekt hat keine '__getitem__'-Methode (not subscriptable)"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -966,6 +966,10 @@ msgstr "Hardware beschäftigt, versuchen Sie alternative Pins"
 msgid "Hardware in use, try alternative pins"
 msgstr "Hardware in benutzung, probiere alternative Pins"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr ""
+
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "Lese/Schreibe-operation an geschlossener Datei"
@@ -1047,6 +1051,7 @@ msgstr "Ungültige BMP-Datei"
 msgid "Invalid BSSID"
 msgstr ""
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Ungültiger DAC-Pin angegeben"
@@ -1260,7 +1265,6 @@ msgid "No CCCD for this Characteristic"
 msgstr "Kein CCCD für diese Charakteristik"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Kein DAC im Chip vorhanden"
@@ -1982,14 +1986,16 @@ msgstr "WatchDogTimer läuft aktuell nicht"
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
+"WatchDogTimer.mode kann nicht geändert werden, nachdem "
+"er auf WatchDogMode.RESET gesetzt wurde"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr ""
+msgstr "WatchDogTimer.timeout muss größer als 0 sein"
 
 #: supervisor/shared/safe_mode.c
 msgid "Watchdog timer expired."
-msgstr ""
+msgstr "Watchdog timer abgelaufen "
 
 #: py/builtinhelp.c
 #, c-format
@@ -2009,11 +2015,11 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
-msgstr ""
+msgstr "WiFi Passwort muss zwischen 8 und 63 Zeichen lang sein"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
-msgstr "Schreiben nicht unterstüzt für die Characteristic"
+msgstr "Schreiben nicht unterstüzt für diese Charakteristik"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
@@ -2031,7 +2037,7 @@ msgstr "__init__() sollte None zurückgeben"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
-msgstr ""
+msgstr "__init__() sollte None zurückgeben, nicht '%q'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -2076,12 +2082,12 @@ msgstr "Argument hat falschen Typ"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
-msgstr ""
+msgstr "Argument muss ein ndarray sein"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
 msgid "argument num/types mismatch"
-msgstr "Anzahl/Type der Argumente passen nicht"
+msgstr "Anzahl/Typen der Argumente passen nicht"
 
 #: py/runtime.c
 msgid "argument should be a '%q' not a '%q'"
@@ -2183,7 +2189,7 @@ msgstr "bytes mit mehr als 8 bits werden nicht unterstützt"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
-msgstr ""
+msgstr "Byte-Länge ist kein vielfaches der Item-Größe"
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2226,7 +2232,7 @@ msgstr "kann keinem Ausdruck zuweisen"
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
-msgstr ""
+msgstr "kann %q nicht zu %q konvertieren"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2234,7 +2240,7 @@ msgstr "Kann '%q' Objekt nicht implizit nach %q konvertieren"
 
 #: py/obj.c
 msgid "can't convert to %q"
-msgstr ""
+msgstr "kann nicht zu %q konvertieren"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2288,7 +2294,7 @@ msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "can't set 512 block size"
-msgstr ""
+msgstr "Kann Blockgröße von 512 nicht setzen"
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -2724,11 +2730,11 @@ msgstr "Indizes müssen Integer, Slices oder Boolesche Listen sein"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "initial values must be iterable"
-msgstr ""
+msgstr "Ausgangswerte müssen iterierbar sein"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "initial_value length is wrong"
-msgstr ""
+msgstr "Länge von initial_value ist falsch"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2802,6 +2808,10 @@ msgstr "ungültiges Format"
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "ungültiger Formatbezeichner"
+
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
@@ -3118,7 +3128,7 @@ msgstr "Objekt nicht iterierbar"
 
 #: py/obj.c
 msgid "object of type '%q' has no len()"
-msgstr ""
+msgstr "Object vom Typ '%q' hat kein len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -3172,11 +3182,11 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
-msgstr ""
+msgstr "Außerhalb des Bereichs der Quelle"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
-msgstr ""
+msgstr "Außerhalb des Bereichs des Ziels"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
@@ -3388,7 +3398,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
+msgstr "Quell-Palette zu groß"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3416,7 +3426,7 @@ msgstr "stream operation ist nicht unterstützt"
 
 #: py/objstrunicode.c
 msgid "string indices must be integers, not %q"
-msgstr ""
+msgstr "String Indizes müssen Integer sein, nicht %q"
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3457,7 +3467,7 @@ msgstr "time.struct_time() nimmt eine 9-Sequenz an"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
-msgstr ""
+msgstr "Das Zeitlimit hat den maximal zulässigen Wert überschritten"
 
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
@@ -3469,11 +3479,11 @@ msgstr "timeout muss >= 0.0 sein"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
-msgstr ""
+msgstr "Zeitlimit beim warten auf v1 Karte"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v2 card"
-msgstr ""
+msgstr "Zeitlimit beim warten auf v2 Karte"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -3524,7 +3534,7 @@ msgstr "Typ vom Objekt '%q' hat kein Attribut '%q'"
 
 #: py/objgenerator.c
 msgid "type object 'generator' has no attribute '__await__'"
-msgstr ""
+msgstr "Das Typ-Objekt 'generator' hat kein Attribut '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
@@ -3569,7 +3579,7 @@ msgstr "unbekannter Konvertierungs specifier %c"
 
 #: py/objstr.c
 msgid "unknown format code '%c' for object of type '%q'"
-msgstr ""
+msgstr "Unbekannter Formatcode '%c' für Objekt vom Typ '%q'"
 
 #: py/compile.c
 msgid "unknown type"
@@ -3630,7 +3640,7 @@ msgstr "value_count muss größer als 0 sein"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
-msgstr ""
+msgstr "Vektoren müssen die selbe Länge haben"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"

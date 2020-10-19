@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 23:49-0700\n"
-"PO-Revision-Date: 2020-10-13 17:11+0000\n"
+"POT-Creation-Date: 2020-10-15 16:06+0530\n"
+"PO-Revision-Date: 2020-10-16 17:01+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.1-dev\n"
 
 #: main.c
 msgid ""
@@ -970,6 +970,10 @@ msgstr "O hardware está ocupado, tente os pinos alternativos"
 msgid "Hardware in use, try alternative pins"
 msgstr "O hardware está em uso, tente os pinos alternativos"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr "O nome do host deve ter entre 1 e 253 caracteres"
+
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "Operação I/O no arquivo fechado"
@@ -1051,6 +1055,7 @@ msgstr "Arquivo BMP inválido"
 msgid "Invalid BSSID"
 msgstr "BSSID Inválido"
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "O pino DAC informado é inválido"
@@ -1262,7 +1267,6 @@ msgid "No CCCD for this Characteristic"
 msgstr "Não há nenhum CCCD para esta característica"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Nenhum DAC no chip"
@@ -2807,6 +2811,10 @@ msgstr "formato inválido"
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "o especificador do formato é inválido"
+
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr "o nome do host é inválido"
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
