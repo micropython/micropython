@@ -344,6 +344,7 @@ SRC_C = \
 	esp32_partition.c \
 	esp32_rmt.c \
 	esp_espnow.c \
+	ring_buffer.c \
 	esp32_ulp.c \
 	modesp32.c \
 	espneopixel.c \

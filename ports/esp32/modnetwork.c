@@ -110,12 +110,17 @@ static inline void esp_exceptions(esp_err_t e) {
 
 #define ESP_EXCEPTIONS(x) do { esp_exceptions(x); } while (0);
 
+typedef struct _wlan_if_obj_t {
+    mp_obj_base_t base;
+    int if_id;
+} wlan_if_obj_t;
+
 const mp_obj_type_t wlan_if_type;
 STATIC const wlan_if_obj_t wlan_sta_obj = {{&wlan_if_type}, WIFI_IF_STA};
 STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 
 // Set to "true" if esp_wifi_start() was called
-bool wifi_started = false;
+static bool wifi_started = false;
 
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
@@ -240,16 +245,20 @@ STATIC void require_if(mp_obj_t wlan_if, int if_no) {
     }
 }
 
-STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
-    static int initialized = 0;
-    if (!initialized) {
+void esp_initialise_wifi() {
+    static int wifi_initialized = 0;
+    if (!wifi_initialized) {
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         ESP_LOGD("modnetwork", "Initializing WiFi");
         ESP_EXCEPTIONS(esp_wifi_init(&cfg));
         ESP_EXCEPTIONS(esp_wifi_set_storage(WIFI_STORAGE_RAM));
         ESP_LOGD("modnetwork", "Initialized");
-        initialized = 1;
+        wifi_initialized = 1;
     }
+}
+
+STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
+    esp_initialise_wifi();
 
     int idx = (n_args > 0) ? mp_obj_get_int(args[0]) : WIFI_IF_STA;
     if (idx == WIFI_IF_STA) {

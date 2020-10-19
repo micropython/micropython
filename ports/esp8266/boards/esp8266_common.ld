@@ -83,7 +83,6 @@ SECTIONS
         *libnet80211.a:(.literal.* .text.*)
         *libwpa.a:(.literal.* .text.*)
         *libwpa2.a:(.literal.* .text.*)
-        *libespnow.a:(.literal.* .text.*)
 
         /* we put some specific text in this section */
 
