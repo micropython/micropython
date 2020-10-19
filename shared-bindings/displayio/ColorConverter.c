@@ -122,7 +122,7 @@ STATIC mp_obj_t displayio_colorconverter_make_transparent(mp_obj_t self_in, mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_make_transparent_obj, displayio_colorconverter_make_transparent);
 
-//|     def make_opaque(self) -> None:
+//|     def make_opaque(self, pixel: int) -> None:
 //|         """Sets a pixel to opaque."""
 //|
 STATIC mp_obj_t displayio_colorconverter_make_opaque(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
