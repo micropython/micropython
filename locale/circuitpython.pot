@@ -2111,6 +2111,10 @@ msgstr ""
 msgid "buffer too small"
 msgstr ""
 
+#: shared-bindings/socketpool/Socket.c
+msgid "buffer too small for requested bytes"
+msgstr ""
+
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""

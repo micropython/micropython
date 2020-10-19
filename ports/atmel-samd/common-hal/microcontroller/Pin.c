@@ -223,9 +223,11 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
         // Special case for Metro M0 where the NeoPixel is also SWCLK
+#ifndef IGNORE_PIN_PA30
         if (MICROPY_HW_NEOPIXEL == &pin_PA30 && DSU->STATUSB.bit.DBGPRES == 1) {
             return false;
         }
+#endif
         return !neopixel_in_use;
     }
     #endif
