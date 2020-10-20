@@ -101,7 +101,7 @@ void common_hal_wifi_init(void) {
     self->netif = esp_netif_create_default_wifi_sta();
 
     // Even though we just called esp_netif_create_default_wifi_sta,
-    //   station mode isn't actually set until esp_wifi_set_mode()
+    //   station mode isn't actually ready for use until esp_wifi_set_mode()
     //   is called and the configuration is loaded via esp_wifi_set_config().
     // Set both convienence flags to false so it's not forgotten.
     self->sta_mode = 0;
