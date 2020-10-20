@@ -121,7 +121,7 @@ $(echo PERIPHERALS_CHIP_FAMILY=$(PERIPHERALS_CHIP_FAMILY))
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3 -Og
   # You may want to disable -flto if it interferes with debugging.
-  CFLAGS += -flto
+  CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
   # CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
@@ -144,7 +144,7 @@ else
     CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
   endif
 
-  CFLAGS += -flto
+  CFLAGS += -flto -flto-partition=none
 
   ifeq ($(CIRCUITPY_FULL_BUILD),0)
     CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
