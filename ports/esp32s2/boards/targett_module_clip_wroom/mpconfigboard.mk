@@ -1,5 +1,5 @@
 USB_VID = 0x1209
-USB_PID = 0x0011
+USB_PID = 0x3252
 USB_PRODUCT = "Targett Module Clip w/Wroom"
 USB_MANUFACTURER = "Targett"
 
