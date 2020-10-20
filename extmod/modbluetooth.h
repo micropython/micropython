@@ -147,6 +147,8 @@ typedef struct {
     uint8_t data[16];
 } mp_obj_bluetooth_uuid_t;
 
+const mp_obj_type_t mp_type_bluetooth_uuid;
+
 //////////////////////////////////////////////////////////////
 // API implemented by ports (i.e. called from modbluetooth.c):
 
