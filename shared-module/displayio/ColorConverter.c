@@ -27,6 +27,7 @@
 #include "shared-bindings/displayio/ColorConverter.h"
 
 #include "py/misc.h"
+#include "py/runtime.h"
 
 uint32_t displayio_colorconverter_dither_noise_1 (uint32_t n)
 {
@@ -128,8 +129,26 @@ bool common_hal_displayio_colorconverter_get_dither(displayio_colorconverter_t* 
     return self->dither;
 }
 
+void common_hal_displayio_colorconverter_make_transparent(displayio_colorconverter_t* self, uint32_t transparent_color) {
+    if (self->transparent_color >= 0x1000000) {
+        mp_raise_RuntimeError(translate("Only one color can be transparent at a time"));
+    }
+    self->transparent_color = transparent_color;
+}
+
+void common_hal_displayio_colorconverter_make_opaque(displayio_colorconverter_t* self, uint32_t transparent_color) {
+    (void) transparent_color;
+    // 0x1000000 will never equal a valid color
+    self->transparent_color = 0x1000000;
+}
+
 void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
     uint32_t pixel = input_pixel->pixel;
+
+    if (self->transparent_color == pixel) {
+        output_color->opaque = false;
+        return;
+    }
 
     if (self->dither){
         uint8_t randr = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y));

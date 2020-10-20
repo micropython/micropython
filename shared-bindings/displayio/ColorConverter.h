@@ -39,4 +39,7 @@ void common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *col
 void common_hal_displayio_colorconverter_set_dither(displayio_colorconverter_t* self, bool dither);
 bool common_hal_displayio_colorconverter_get_dither(displayio_colorconverter_t* self);
 
+void common_hal_displayio_colorconverter_make_transparent(displayio_colorconverter_t* self, uint32_t transparent_color);
+void common_hal_displayio_colorconverter_make_opaque(displayio_colorconverter_t* self, uint32_t transparent_color);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_COLORCONVERTER_H
