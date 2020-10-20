@@ -3277,7 +3277,7 @@ msgstr "yòubiān bìxū shì ndarray huò biāoliàng"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
-msgstr "Rchāifēn(wú ，N）"
+msgstr "Rchāifēn(wú,N)"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid ""
