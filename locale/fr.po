@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-16 13:56-0500\n"
+"POT-Creation-Date: 2020-10-16 19:50-0500\n"
 "PO-Revision-Date: 2020-10-17 15:35+0000\n"
 "Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
 "Language: fr\n"
@@ -1436,6 +1436,10 @@ msgid ""
 msgstr ""
 "Prise en charge uniquement des monochromes, 4 bpp ou 8 bpp indexés et 16 bpp "
 "ou plus : %d bpp fournis"
+
+#: shared-module/displayio/ColorConverter.c
+msgid "Only one color can be transparent at a time"
+msgstr ""
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"

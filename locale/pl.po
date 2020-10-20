@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-16 13:56-0500\n"
+"POT-Creation-Date: 2020-10-16 19:50-0500\n"
 "PO-Revision-Date: 2020-09-29 01:39+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
@@ -1417,6 +1417,10 @@ msgstr "Wspierane są tylko nieskompresowane pliki BMP: wielkość nagłówka %d
 msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
+msgstr ""
+
+#: shared-module/displayio/ColorConverter.c
+msgid "Only one color can be transparent at a time"
 msgstr ""
 
 #: shared-bindings/ipaddress/__init__.c

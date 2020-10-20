@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-16 13:56-0500\n"
+"POT-Creation-Date: 2020-10-16 19:50-0500\n"
 "PO-Revision-Date: 2020-10-14 18:12+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1423,6 +1423,10 @@ msgid ""
 msgstr ""
 "Endast monokrom, indexerad 4 bpp eller 8 bpp och 16 bpp eller högre BMP: er "
 "stöds: %d bpp angiven"
+
+#: shared-module/displayio/ColorConverter.c
+msgid "Only one color can be transparent at a time"
+msgstr ""
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"
