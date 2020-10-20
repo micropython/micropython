@@ -95,7 +95,6 @@ Differences from `MicroPython <https://github.com/micropython/micropython>`__
 CircuitPython:
 
 -  Supports native USB on all boards, allowing file editing without special tools.
--  Support status for ports is different.
 -  Floats (aka decimals) are enabled for all builds.
 -  Error messages are translated into 10+ languages.
 -  Does not support concurrency within Python (including interrupts and threading). Some concurrency
