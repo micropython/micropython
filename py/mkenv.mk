@@ -55,6 +55,8 @@ PYTHON3 ?= python3
 RM = rm
 RSYNC = rsync
 SED = sed
+# Linux has 'nproc', macOS has 'sysctl -n hw.logicalcpu', this is cross-platform
+NPROC = $(PYTHON) -c 'import multiprocessing as mp; print(mp.cpu_count())'
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
