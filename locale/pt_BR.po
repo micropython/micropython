@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-16 19:50-0500\n"
-"PO-Revision-Date: 2020-10-20 17:13+0000\n"
+"PO-Revision-Date: 2020-10-21 19:58+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1436,7 +1436,7 @@ msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
-msgstr ""
+msgstr "Apenas uma cor pode ser transparente de cada vez"
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"
