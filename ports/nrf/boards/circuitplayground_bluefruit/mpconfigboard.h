@@ -59,8 +59,8 @@
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_04)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_05)
 
-#define DEFAULT_SPI_BUS_SCK         (&pin_P0_05)
-#define DEFAULT_SPI_BUS_MOSI        (&pin_P1_03)
+#define DEFAULT_SPI_BUS_SCK         (&pin_P0_02)
+#define DEFAULT_SPI_BUS_MOSI        (&pin_P0_03)
 #define DEFAULT_SPI_BUS_MISO        (&pin_P0_29)
 
 #define DEFAULT_UART_BUS_RX         (&pin_P0_30)
