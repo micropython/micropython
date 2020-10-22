@@ -100,6 +100,13 @@ void common_hal_wifi_init(void) {
     wifi_radio_obj_t* self = &common_hal_wifi_radio_obj;
     self->netif = esp_netif_create_default_wifi_sta();
 
+    // Even though we just called esp_netif_create_default_wifi_sta,
+    //   station mode isn't actually ready for use until esp_wifi_set_mode()
+    //   is called and the configuration is loaded via esp_wifi_set_config().
+    // Set both convienence flags to false so it's not forgotten.
+    self->sta_mode = 0;
+    self->ap_mode = 0;
+
     self->event_group_handle = xEventGroupCreateStatic(&self->event_group);
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
                                                         ESP_EVENT_ANY_ID,
