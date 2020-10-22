@@ -44,7 +44,7 @@ def process_file(f):
             m = re_line.match(line)
             assert m is not None
             fname = m.group(1)
-            if not fname.endswith(".c"):
+            if os.path.splitext(fname)[1] not in [".c", ".cpp"]:
                 continue
             if fname != last_fname:
                 write_out(last_fname, output)
