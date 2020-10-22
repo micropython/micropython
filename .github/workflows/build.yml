@@ -131,7 +131,7 @@ jobs:
       run: echo "$GITHUB_CONTEXT"
     - name: Install dependencies
       run: |
-        brew install gettext awscli
+        brew install gettext
         echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
     - name: Versions
       run: |
@@ -425,6 +425,8 @@ jobs:
         - "espressif_saola_1_wrover"
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
+        - "targett_module_clip_wroom"
+        - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
         - "unexpectedmaker_feathers2_prerelease"
 

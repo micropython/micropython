@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-15 16:06+0530\n"
-"PO-Revision-Date: 2020-10-14 18:12+0000\n"
+"POT-Creation-Date: 2020-10-16 19:50-0500\n"
+"PO-Revision-Date: 2020-10-22 01:12+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.1\n"
 
 #: main.c
 msgid ""
@@ -961,7 +961,7 @@ msgstr "Hårdvaran används redan, prova alternativa pinnar"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Hostname must be between 1 and 253 characters"
-msgstr ""
+msgstr "Hostname måste vara mellan 1 och 253 tecken"
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1423,6 +1423,10 @@ msgid ""
 msgstr ""
 "Endast monokrom, indexerad 4 bpp eller 8 bpp och 16 bpp eller högre BMP: er "
 "stöds: %d bpp angiven"
+
+#: shared-module/displayio/ColorConverter.c
+msgid "Only one color can be transparent at a time"
+msgstr "Bara en färg kan vara genomskinlig i taget"
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"
@@ -2155,6 +2159,10 @@ msgstr "buffertsegmenten måste vara lika långa"
 msgid "buffer too small"
 msgstr "buffert för liten"
 
+#: shared-bindings/socketpool/Socket.c
+msgid "buffer too small for requested bytes"
+msgstr "buffertför liten för begärd längd"
+
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "buttons måste vara digitalio.DigitalInOut"
@@ -2787,7 +2795,7 @@ msgstr "ogiltig formatspecificerare"
 
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
-msgstr ""
+msgstr "Ogiltigt värdnamn"
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
