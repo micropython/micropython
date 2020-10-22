@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-15 16:06+0530\n"
+"POT-Creation-Date: 2020-10-16 19:50-0500\n"
 "PO-Revision-Date: 2020-10-17 15:35+0000\n"
 "Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
 "Language: fr\n"
@@ -1437,6 +1437,10 @@ msgstr ""
 "Prise en charge uniquement des monochromes, 4 bpp ou 8 bpp indexés et 16 bpp "
 "ou plus : %d bpp fournis"
 
+#: shared-module/displayio/ColorConverter.c
+msgid "Only one color can be transparent at a time"
+msgstr ""
+
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"
 msgstr "IP n'accepte que les entiers bruts"
@@ -2178,6 +2182,10 @@ msgstr "les tranches de tampon doivent être de longueurs égales"
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "tampon trop petit"
+
+#: shared-bindings/socketpool/Socket.c
+msgid "buffer too small for requested bytes"
+msgstr ""
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
