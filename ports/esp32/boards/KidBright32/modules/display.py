@@ -329,7 +329,7 @@ def show(value):
     raw(buffer)
 
 
-def scroll(value):
+def scroll(value, speed=0.06):
     value = str(value)
     value = bytearray(value)
     buffer = bytearray(16 + (len(value) * 6) + 16)
@@ -342,7 +342,7 @@ def scroll(value):
         buffer[16 + (len(value) * 6) + i] = 0
     for i in range(16 + (len(value) * 6)):
         raw(buffer[i:(i+16)])
-        sleep(0.1)
+        sleep(speed)
     clear()
 
 
