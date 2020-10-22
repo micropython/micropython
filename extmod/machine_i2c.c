@@ -302,11 +302,17 @@ STATIC int mp_machine_i2c_writeto(mp_obj_base_t *self, uint16_t addr, const uint
 /******************************************************************************/
 // MicroPython bindings for I2C
 
+STATIC void mp_machine_soft_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    mp_machine_soft_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "SoftI2C(scl=" MP_HAL_PIN_FMT ", sda=" MP_HAL_PIN_FMT ", freq=%u)",
+        mp_hal_pin_name(self->scl), mp_hal_pin_name(self->sda), 500000 / self->us_delay);
+}
+
 STATIC void machine_i2c_obj_init_helper(machine_i2c_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 255} },
     };
@@ -318,25 +324,10 @@ STATIC void machine_i2c_obj_init_helper(machine_i2c_obj_t *self, size_t n_args, 
     mp_hal_i2c_init(self, args[ARG_freq].u_int);
 }
 
-STATIC mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    // check the id argument, if given
-    if (n_args > 0) {
-        if (args[0] != MP_OBJ_NEW_SMALL_INT(-1)) {
-            #if defined(MICROPY_PY_MACHINE_I2C_MAKE_NEW)
-            // dispatch to port-specific constructor
-            extern mp_obj_t MICROPY_PY_MACHINE_I2C_MAKE_NEW(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args);
-            return MICROPY_PY_MACHINE_I2C_MAKE_NEW(type, n_args, n_kw, args);
-            #else
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid I2C peripheral"));
-            #endif
-        }
-        --n_args;
-        ++args;
-    }
-
+STATIC mp_obj_t mp_machine_soft_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // create new soft I2C object
     machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
-    self->base.type = &machine_i2c_type;
+    self->base.type = &mp_machine_soft_i2c_type;
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     machine_i2c_obj_init_helper(self, n_args, args, &kw_args);
@@ -700,10 +691,11 @@ STATIC const mp_machine_i2c_p_t mp_machine_soft_i2c_p = {
     .transfer = mp_machine_soft_i2c_transfer,
 };
 
-const mp_obj_type_t machine_i2c_type = {
+const mp_obj_type_t mp_machine_soft_i2c_type = {
     { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .make_new = machine_i2c_make_new,
+    .name = MP_QSTR_SoftI2C,
+    .print = mp_machine_soft_i2c_print,
+    .make_new = mp_machine_soft_i2c_make_new,
     .protocol = &mp_machine_soft_i2c_p,
     .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
 };

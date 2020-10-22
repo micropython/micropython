@@ -151,6 +151,8 @@ STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_ob
 }
 
 mp_obj_t machine_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    MP_MACHINE_SPI_CHECK_FOR_LEGACY_SOFTSPI_CONSTRUCTION(n_args, n_kw, args);
+
     // args[0] holds the id of the peripheral
     if (args[0] != MP_OBJ_NEW_SMALL_INT(1)) {
         // FlashROM is on SPI0, so far we don't support its usage
@@ -178,7 +180,7 @@ const mp_obj_type_t machine_hspi_type = {
     { &mp_type_type },
     .name = MP_QSTR_HSPI,
     .print = machine_hspi_print,
-    .make_new = mp_machine_spi_make_new, // delegate to master constructor
+    .make_new = machine_hspi_make_new,
     .protocol = &machine_hspi_p,
     .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };

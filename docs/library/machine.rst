@@ -79,7 +79,7 @@ Power related functions
    If *time_ms* is specified then this will be the maximum time in milliseconds that
    the sleep will last for.  Otherwise the sleep can last indefinitely.
 
-   With or without a timout, execution may resume at any time if there are events
+   With or without a timeout, execution may resume at any time if there are events
    that require processing.  Such events, or wake sources, should be configured before
    sleeping, like `Pin` change or `RTC` timeout.
 

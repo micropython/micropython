@@ -63,6 +63,7 @@
 // control over Python builtins
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
 #define MICROPY_PY_DESCRIPTORS              (1)
+#define MICROPY_PY_DELATTR_SETATTR          (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
@@ -145,11 +146,9 @@
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_I2C              (1)
-#define MICROPY_PY_MACHINE_I2C_MAKE_NEW     machine_hw_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
-#define MICROPY_PY_MACHINE_SPI_MAKE_NEW     machine_hw_spi_make_new
 #define MICROPY_HW_ENABLE_SDCARD            (1)
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (ets_get_cpu_frequency() * 1000000 / 200) // roughly

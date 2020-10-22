@@ -31,7 +31,7 @@ class BLEUART:
     def __init__(self, ble, name="mpy-uart", rxbuf=100):
         self._ble = ble
         self._ble.active(True)
-        self._ble.irq(handler=self._irq)
+        self._ble.irq(self._irq)
         ((self._tx_handle, self._rx_handle),) = self._ble.gatts_register_services((_UART_SERVICE,))
         # Increase the size of the rx buffer and enable append mode.
         self._ble.gatts_set_buffer(self._rx_handle, rxbuf, True)

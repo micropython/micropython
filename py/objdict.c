@@ -33,6 +33,18 @@
 #include "py/objtype.h"
 #include "py/objstr.h"
 
+const mp_obj_dict_t mp_const_empty_dict_obj = {
+    .base = { .type = &mp_type_dict },
+    .map = {
+        .all_keys_are_qstrs = 0,
+        .is_fixed = 1,
+        .is_ordered = 1,
+        .used = 0,
+        .alloc = 0,
+        .table = NULL,
+    }
+};
+
 STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
 
 // This is a helper function to iterate through a dictionary.  The state of

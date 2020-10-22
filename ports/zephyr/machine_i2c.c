@@ -37,12 +37,11 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
-
-STATIC const mp_obj_type_t machine_hard_i2c_type;
+#include "modmachine.h"
 
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
-    struct device *dev;
+    const struct device *dev;
     bool restart;
 } machine_hard_i2c_obj_t;
 
@@ -52,6 +51,8 @@ STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp
 }
 
 mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args);
+
     enum { ARG_id, ARG_scl, ARG_sda, ARG_freq, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -65,7 +66,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const char *dev_name = mp_obj_str_get_str(args[ARG_id].u_obj);
-    struct device *dev = device_get_binding(dev_name);
+    const struct device *dev = device_get_binding(dev_name);
 
     if (dev == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("device not found"));
@@ -97,7 +98,7 @@ STATIC int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t add
     struct i2c_msg msg;
     int ret;
 
-    msg.buf = (u8_t *)buf;
+    msg.buf = (uint8_t *)buf;
     msg.len = len;
     msg.flags = 0;
 
@@ -127,7 +128,7 @@ STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
     .transfer_single = machine_hard_i2c_transfer_single,
 };
 
-STATIC const mp_obj_type_t machine_hard_i2c_type = {
+const mp_obj_type_t machine_hard_i2c_type = {
     { &mp_type_type },
     .name = MP_QSTR_I2C,
     .print = machine_hard_i2c_print,

@@ -196,9 +196,13 @@ static uint16_t usbd_cdc_tx_send_length(usbd_cdc_itf_t *cdc) {
     return MIN(usbd_cdc_tx_buffer_size(cdc), to_end);
 }
 
-static void usbd_cdc_tx_buffer_put(usbd_cdc_itf_t *cdc, uint8_t data) {
+static void usbd_cdc_tx_buffer_put(usbd_cdc_itf_t *cdc, uint8_t data, bool check_overflow) {
     cdc->tx_buf[usbd_cdc_tx_buffer_mask(cdc->tx_buf_ptr_in)] = data;
     cdc->tx_buf_ptr_in++;
+    if (check_overflow && usbd_cdc_tx_buffer_size(cdc) > USBD_CDC_TX_DATA_SIZE) {
+        cdc->tx_buf_ptr_out++;
+        cdc->tx_buf_ptr_out_next = cdc->tx_buf_ptr_out;
+    }
 }
 
 static uint8_t *usbd_cdc_tx_buffer_getp(usbd_cdc_itf_t *cdc, uint16_t len) {
@@ -353,7 +357,7 @@ int usbd_cdc_tx(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len, uint32_t 
         }
 
         // Write data to device buffer
-        usbd_cdc_tx_buffer_put(cdc, buf[i]);
+        usbd_cdc_tx_buffer_put(cdc, buf[i], false);
     }
 
     usbd_cdc_try_tx(cdc);
@@ -386,7 +390,7 @@ void usbd_cdc_tx_always(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len) {
             }
         }
 
-        usbd_cdc_tx_buffer_put(cdc, buf[i]);
+        usbd_cdc_tx_buffer_put(cdc, buf[i], true);
     }
     usbd_cdc_try_tx(cdc);
 }

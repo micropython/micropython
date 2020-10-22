@@ -35,7 +35,7 @@ class BLETemperature:
     def __init__(self, ble, name="mpy-temp"):
         self._ble = ble
         self._ble.active(True)
-        self._ble.irq(handler=self._irq)
+        self._ble.irq(self._irq)
         ((self._handle,),) = self._ble.gatts_register_services((_ENV_SENSE_SERVICE,))
         self._connections = set()
         self._payload = advertising_payload(

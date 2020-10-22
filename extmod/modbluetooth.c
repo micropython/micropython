@@ -32,7 +32,6 @@
 #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/objarray.h"
-#include "py/objstr.h"
 #include "py/qstr.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
@@ -62,9 +61,8 @@ typedef struct {
     mp_obj_t irq_data_tuple;
     uint8_t irq_data_addr_bytes[6];
     uint16_t irq_data_data_alloc;
-    uint8_t *irq_data_data_bytes;
-    mp_obj_str_t irq_data_addr;
-    mp_obj_str_t irq_data_data;
+    mp_obj_array_t irq_data_addr;
+    mp_obj_array_t irq_data_data;
     mp_obj_bluetooth_uuid_t irq_data_uuid;
     ringbuf_t ringbuf;
     #if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
@@ -262,11 +260,9 @@ STATIC mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
         #endif
 
         // Pre-allocated buffers for address, payload and uuid.
-        o->irq_data_addr.base.type = &mp_type_bytes;
-        o->irq_data_addr.data = o->irq_data_addr_bytes;
+        mp_obj_memoryview_init(&o->irq_data_addr, 'B', 0, 0, o->irq_data_addr_bytes);
         o->irq_data_data_alloc = MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_BYTES_LEN(MICROPY_PY_BLUETOOTH_RINGBUF_SIZE);
-        o->irq_data_data.base.type = &mp_type_bytes;
-        o->irq_data_data.data = m_new(uint8_t, o->irq_data_data_alloc);
+        mp_obj_memoryview_init(&o->irq_data_data, 'B', 0, 0, m_new(uint8_t, o->irq_data_data_alloc));
         o->irq_data_uuid.base.type = &bluetooth_uuid_type;
 
         // Allocate the default ringbuf.
@@ -316,6 +312,8 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
             }
             case MP_QSTR_rxbuf:
                 return mp_obj_new_int(self->ringbuf.size);
+            case MP_QSTR_mtu:
+                return mp_obj_new_int(mp_bluetooth_get_preferred_mtu());
             default:
                 mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
@@ -350,7 +348,7 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                         // Get old buffer sizes and pointers
                         uint8_t *old_ringbuf_buf = self->ringbuf.buf;
                         size_t old_ringbuf_alloc = self->ringbuf.size;
-                        uint8_t *old_irq_data_buf = (uint8_t *)self->irq_data_data.data;
+                        uint8_t *old_irq_data_buf = (uint8_t *)self->irq_data_data.items;
                         size_t old_irq_data_alloc = self->irq_data_data_alloc;
 
                         // Atomically update the ringbuf and irq data
@@ -360,12 +358,17 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                         self->ringbuf.iget = 0;
                         self->ringbuf.iput = 0;
                         self->irq_data_data_alloc = irq_data_alloc;
-                        self->irq_data_data.data = irq_data;
+                        self->irq_data_data.items = irq_data;
                         MICROPY_PY_BLUETOOTH_EXIT
 
                         // Free old buffers
                         m_del(uint8_t, old_ringbuf_buf, old_ringbuf_alloc);
                         m_del(uint8_t, old_irq_data_buf, old_irq_data_alloc);
+                        break;
+                    }
+                    case MP_QSTR_mtu: {
+                        mp_int_t mtu = mp_obj_get_int(e->value);
+                        bluetooth_handle_errno(mp_bluetooth_set_preferred_mtu(mtu));
                         break;
                     }
                     case MP_QSTR_addr_mode: {
@@ -770,6 +773,13 @@ STATIC mp_obj_t bluetooth_ble_gattc_write(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gattc_write_obj, 4, 5, bluetooth_ble_gattc_write);
 
+STATIC mp_obj_t bluetooth_ble_gattc_exchange_mtu(mp_obj_t self_in, mp_obj_t conn_handle_in) {
+    (void)self_in;
+    uint16_t conn_handle = mp_obj_get_int(conn_handle_in);
+    return bluetooth_handle_errno(mp_bluetooth_gattc_exchange_mtu(conn_handle));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gattc_exchange_mtu_obj, bluetooth_ble_gattc_exchange_mtu);
+
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 // ----------------------------------------------------------------------------
@@ -802,6 +812,7 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_descriptors), MP_ROM_PTR(&bluetooth_ble_gattc_discover_descriptors_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_read), MP_ROM_PTR(&bluetooth_ble_gattc_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_gattc_write), MP_ROM_PTR(&bluetooth_ble_gattc_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gattc_exchange_mtu), MP_ROM_PTR(&bluetooth_ble_gattc_exchange_mtu_obj) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_ble_locals_dict, bluetooth_ble_locals_dict_table);
@@ -835,7 +846,7 @@ const mp_obj_module_t mp_module_ubluetooth = {
 
 #include <stdio.h>
 
-STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size_t n_u16, size_t n_u8, mp_obj_str_t *bytes_addr, size_t n_i8, mp_obj_bluetooth_uuid_t *uuid, mp_obj_str_t *bytes_data) {
+STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size_t n_u16, size_t n_u8, mp_obj_array_t *bytes_addr, size_t n_i8, mp_obj_bluetooth_uuid_t *uuid, mp_obj_array_t *bytes_data) {
     assert(ringbuf_avail(ringbuf) >= n_u16 * 2 + n_u8 + (bytes_addr ? 6 : 0) + n_i8 + (uuid ? 1 : 0) + (bytes_data ? 1 : 0));
     size_t j = 0;
 
@@ -848,8 +859,7 @@ STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size
     if (bytes_addr) {
         bytes_addr->len = 6;
         for (size_t i = 0; i < bytes_addr->len; ++i) {
-            // cast away const, this is actually bt->irq_addr_bytes.
-            ((uint8_t *)bytes_addr->data)[i] = ringbuf_get(ringbuf);
+            ((uint8_t *)bytes_addr->items)[i] = ringbuf_get(ringbuf);
         }
         data_tuple->items[j++] = MP_OBJ_FROM_PTR(bytes_addr);
     }
@@ -865,12 +875,11 @@ STATIC void ringbuf_extract(ringbuf_t *ringbuf, mp_obj_tuple_t *data_tuple, size
     #endif
     // The code that enqueues into the ringbuf should ensure that it doesn't
     // put more than bt->irq_data_data_alloc bytes into the ringbuf, because
-    // that's what's available here in bt->irq_data_bytes.
+    // that's what's available here.
     if (bytes_data) {
         bytes_data->len = ringbuf_get16(ringbuf);
         for (size_t i = 0; i < bytes_data->len; ++i) {
-            // cast away const, this is actually bt->irq_data_bytes.
-            ((uint8_t *)bytes_data->data)[i] = ringbuf_get(ringbuf);
+            ((uint8_t *)bytes_data->items)[i] = ringbuf_get(ringbuf);
         }
         data_tuple->items[j++] = MP_OBJ_FROM_PTR(bytes_data);
     }
@@ -911,6 +920,9 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_GATTS_INDICATE_DONE) {
             // conn_handle, value_handle, status
             ringbuf_extract(&o->ringbuf, data_tuple, 2, 1, NULL, 0, NULL, NULL);
+        } else if (event == MP_BLUETOOTH_IRQ_MTU_EXCHANGED) {
+            // conn_handle, mtu
+            ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, NULL, NULL);
         #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
         } else if (event == MP_BLUETOOTH_IRQ_SCAN_RESULT) {
             // addr_type, addr, adv_type, rssi, adv_data
@@ -1183,6 +1195,16 @@ bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_han
     }
 }
 #endif
+
+void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    if (enqueue_irq(o, 2 + 2, MP_BLUETOOTH_IRQ_MTU_EXCHANGED)) {
+        ringbuf_put16(&o->ringbuf, conn_handle);
+        ringbuf_put16(&o->ringbuf, value);
+    }
+    schedule_ringbuf(atomic_state);
+}
 
 void mp_bluetooth_gatts_db_create_entry(mp_gatts_db_t db, uint16_t handle, size_t len) {
     mp_map_elem_t *elem = mp_map_lookup(db, MP_OBJ_NEW_SMALL_INT(handle), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);

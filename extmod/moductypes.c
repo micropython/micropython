@@ -506,6 +506,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
                 return mp_obj_new_bytearray_by_ref(uctypes_struct_agg_size(sub, self->flags, &dummy), self->addr + offset);
             }
             // Fall thru to return uctypes struct object
+            MP_FALLTHROUGH
         }
         case PTR: {
             mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
@@ -627,7 +628,7 @@ STATIC mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                     return mp_obj_new_int((mp_int_t)(uintptr_t)p);
                 }
             }
-        /* fallthru */
+            MP_FALLTHROUGH
 
         default:
             return MP_OBJ_NULL;      // op not supported

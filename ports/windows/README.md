@@ -3,46 +3,73 @@ It is based on Unix port, and expected to remain so.
 The port requires additional testing, debugging, and patches. Please
 consider to contribute.
 
+All gcc-based builds use the gcc compiler from [Mingw-w64](mingw-w64.org),
+which is the advancement of the original mingw project. The latter is
+getting obsolete and is not actively supported by MicroPython.
+
+Build instruction assume you're in the ports/windows directory.
 
 Building on Debian/Ubuntu Linux system
 ---------------------------------------
 
-    sudo apt-get install gcc-mingw-w64
+    sudo apt-get install python3 build-essential gcc-mingw-w64
+    make -C ../../mpy-cross
     make CROSS_COMPILE=i686-w64-mingw32-
-
-If for some reason the mingw-w64 crosscompiler is not available, you can try
-mingw32 instead, but it comes with a really old gcc which may produce some
-spurious errors (you may need to disable -Werror):
-
-    sudo apt-get install mingw32 mingw32-binutils mingw32-runtime
-    make CROSS_COMPILE=i586-mingw32msvc-
 
 
 Building under Cygwin
 ---------------------
 
-Install following packages using cygwin's setup.exe:
+Install Cygwin, then install following packages using Cygwin's setup.exe:
 
 * mingw64-i686-gcc-core
 * mingw64-x86_64-gcc-core
 * make
 
+Also install the python3 package, or install Python globally for Windows (see below).
+
 Build using:
 
+    make -C ../../mpy-cross CROSS_COMPILE=i686-w64-mingw32-
     make CROSS_COMPILE=i686-w64-mingw32-
 
 Or for 64bit:
 
+    make -C ../../mpy-cross CROSS_COMPILE=x86_64-w64-mingw32-
     make CROSS_COMPILE=x86_64-w64-mingw32-
+
+
+Building under MSYS2
+--------------------
+
+Install MSYS2 from http://repo.msys2.org/distrib, start the msys2.exe shell and
+install the build tools:
+
+    pacman -Syuu
+    pacman -S make mingw-w64-x86_64-gcc pkg-config python3
+
+Start the mingw64.exe shell and build:
+
+    make -C ../../mpy-cross STRIP=echo SIZE=echo
+    make
 
 
 Building using MS Visual Studio 2013 (or higher)
 ------------------------------------------------
 
-In the IDE, open `micropython.vcxproj` and build.
+Install Python. There are several ways to do this, for example: download and install the
+latest Python 3 release from https://www.python.org/downloads/windows or from
+https://docs.conda.io/en/latest/miniconda.html,
+or open the Microsoft Store app and search for Python and install it.
+
+Install Visual Studio and the C++ toolset (for recent versions: install
+the free Visual Studio Community edition and the *Desktop development with C++* workload).
+
+In the IDE, open `micropython-cross.vcxproj` and `micropython.vcxproj` and build.
 
 To build from the command line:
 
+    msbuild ../../mpy-cross/mpy-cross.vcxproj
     msbuild micropython.vcxproj
 
 __Stack usage__
@@ -55,6 +82,19 @@ There are several ways to deal with this:
 - disable the /GL compiler flag by setting `WholeProgramOptimization` to "false"
 
 See [issue 2927](https://github.com/micropython/micropython/issues/2927) for more information.
+
+
+Running the tests
+-----------------
+
+This is similar for all ports:
+
+    cd ../../tests
+    python3 ./run-tests
+
+Depending on the combination of platform and Python version used it might be
+needed to first set the MICROPY_MICROPYTHON environment variable to
+the full path of micropython.exe.
 
 
 Running on Linux using Wine

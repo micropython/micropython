@@ -264,6 +264,11 @@ STATIC void btstack_packet_handler_att_server(uint8_t packet_type, uint16_t chan
         uint16_t value_handle = att_event_handle_value_indication_complete_get_attribute_handle(packet);
         uint8_t status = att_event_handle_value_indication_complete_get_status(packet);
         mp_bluetooth_gatts_on_indicate_complete(conn_handle, value_handle, status);
+    } else if (event_type == ATT_EVENT_MTU_EXCHANGE_COMPLETE) {
+        // This is triggered in peripheral mode, when exchange initiated by us or remote.
+        uint16_t conn_handle = att_event_mtu_exchange_complete_get_handle(packet);
+        uint16_t mtu = att_event_mtu_exchange_complete_get_MTU(packet);
+        mp_bluetooth_gatts_on_mtu_exchanged(conn_handle, mtu);
     } else if (event_type == HCI_EVENT_LE_META || event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         // Ignore, duplicated by att_server.c.
     } else {
@@ -339,8 +344,6 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         DEBUG_printf("  --> btstack # conns changed\n");
     } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
         DEBUG_printf("  --> hci vendor specific\n");
-    } else if (event_type == GATT_EVENT_MTU) {
-        DEBUG_printf("  --> hci MTU\n");
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_printf("  --> hci disconnect complete\n");
         uint16_t conn_handle = hci_event_disconnection_complete_get_connection_handle(packet);
@@ -621,6 +624,9 @@ int mp_bluetooth_init(void) {
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     gatt_client_init();
+
+    // We always require explicitly exchanging MTU with ble.gattc_exchange_mtu().
+    gatt_client_mtu_enable_auto_negotiation(false);
     #endif
 
     // Register for HCI events.
@@ -1042,6 +1048,24 @@ int mp_bluetooth_gatts_set_buffer(uint16_t value_handle, size_t len, bool append
     return mp_bluetooth_gatts_db_resize(MP_STATE_PORT(bluetooth_btstack_root_pointers)->gatts_db, value_handle, len, append);
 }
 
+int mp_bluetooth_get_preferred_mtu(void) {
+    if (!mp_bluetooth_is_active()) {
+        mp_raise_OSError(ERRNO_BLUETOOTH_NOT_ACTIVE);
+    }
+    return l2cap_max_le_mtu();
+}
+
+int mp_bluetooth_set_preferred_mtu(uint16_t mtu) {
+    if (!mp_bluetooth_is_active()) {
+        return ERRNO_BLUETOOTH_NOT_ACTIVE;
+    }
+    l2cap_set_max_le_mtu(mtu);
+    if (l2cap_max_le_mtu() != mtu) {
+        return MP_EINVAL;
+    }
+    return 0;
+}
+
 int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
     DEBUG_printf("mp_bluetooth_gap_disconnect\n");
     gap_disconnect(conn_handle);
@@ -1203,6 +1227,14 @@ int mp_bluetooth_gattc_write(uint16_t conn_handle, uint16_t value_handle, const 
     }
 
     return btstack_error_to_errno(err);
+}
+
+int mp_bluetooth_gattc_exchange_mtu(uint16_t conn_handle) {
+    DEBUG_printf("mp_bluetooth_exchange_mtu: conn_handle=%d mtu=%d\n", conn_handle, l2cap_max_le_mtu());
+
+    gatt_client_send_mtu_negotiation(&btstack_packet_handler_att_server, conn_handle);
+
+    return 0;
 }
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 

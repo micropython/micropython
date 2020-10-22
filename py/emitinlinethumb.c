@@ -108,7 +108,7 @@ STATIC mp_uint_t emit_inline_thumb_count_params(emit_inline_asm_t *emit, mp_uint
             return 0;
         }
         const char *p = qstr_str(MP_PARSE_NODE_LEAF_ARG(pn_params[i]));
-        if (!(strlen(p) == 2 && p[0] == 'r' && p[1] == '0' + i)) {
+        if (!(strlen(p) == 2 && p[0] == 'r' && (mp_uint_t)p[1] == '0' + i)) {
             emit_inline_thumb_error_msg(emit, MP_ERROR_TEXT("parameters must be registers in sequence r0 to r3"));
             return 0;
         }

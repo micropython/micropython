@@ -27,6 +27,20 @@
 #define MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H
 
 #include "py/obj.h"
+#include "py/mphal.h"
+
+// Temporary support for legacy construction of SoftI2C via I2C type.
+#define MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args) \
+    do { \
+        if (n_args == 0 || all_args[0] == MP_OBJ_NEW_SMALL_INT(-1)) { \
+            mp_print_str(MICROPY_ERROR_PRINTER, "Warning: I2C(-1, ...) is deprecated, use SoftI2C(...) instead\n"); \
+            if (n_args != 0) { \
+                --n_args; \
+                ++all_args; \
+            } \
+            return mp_machine_soft_i2c_type.make_new(&mp_machine_soft_i2c_type, n_args, n_kw, all_args); \
+        } \
+    } while (0)
 
 #define MP_MACHINE_I2C_FLAG_READ (0x01) // if not set then it's a write
 #define MP_MACHINE_I2C_FLAG_STOP (0x02)
@@ -56,7 +70,7 @@ typedef struct _mp_machine_soft_i2c_obj_t {
     mp_hal_pin_obj_t sda;
 } mp_machine_soft_i2c_obj_t;
 
-extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_type_t mp_machine_soft_i2c_type;
 extern const mp_obj_dict_t mp_machine_soft_i2c_locals_dict;
 
 int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);

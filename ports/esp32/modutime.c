@@ -44,7 +44,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     } else {
         seconds = mp_obj_get_int(args[0]);
     }
-    timeutils_seconds_since_2000_to_struct_time(seconds, &tm);
+    timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
     mp_obj_t tuple[8] = {
         tuple[0] = mp_obj_new_int(tm.tm_year),
         tuple[1] = mp_obj_new_int(tm.tm_mon),
@@ -85,6 +85,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
 
+    { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&time_localtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&time_localtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&time_mktime_obj) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&time_time_obj) },
@@ -96,6 +97,7 @@ STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
     { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time_ns), MP_ROM_PTR(&mp_utime_time_ns_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);

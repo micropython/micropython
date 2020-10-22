@@ -46,9 +46,11 @@ STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp
 }
 
 mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    MP_MACHINE_SPI_CHECK_FOR_LEGACY_SOFTSPI_CONSTRUCTION(n_args, n_kw, all_args);
+
     enum { ARG_id, ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
+        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 500000} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -137,7 +139,7 @@ const mp_obj_type_t machine_hard_spi_type = {
     { &mp_type_type },
     .name = MP_QSTR_SPI,
     .print = machine_hard_spi_print,
-    .make_new = mp_machine_spi_make_new, // delegate to master constructor
+    .make_new = machine_hard_spi_make_new,
     .protocol = &machine_hard_spi_p,
     .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };

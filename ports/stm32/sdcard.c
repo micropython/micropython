@@ -48,12 +48,14 @@
 
 #if defined(MICROPY_HW_SDMMC2_CK)
 #define SDIO SDMMC2
+#define SDMMC_IRQHandler SDMMC2_IRQHandler
 #define SDMMC_CLK_ENABLE() __HAL_RCC_SDMMC2_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE() __HAL_RCC_SDMMC2_CLK_DISABLE()
 #define SDMMC_IRQn SDMMC2_IRQn
 #define SDMMC_DMA dma_SDMMC_2
 #else
 #define SDIO SDMMC1
+#define SDMMC_IRQHandler SDMMC1_IRQHandler
 #define SDMMC_CLK_ENABLE() __HAL_RCC_SDMMC1_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE() __HAL_RCC_SDMMC1_CLK_DISABLE()
 #define SDMMC_IRQn SDMMC1_IRQn
@@ -86,8 +88,6 @@
 #define SDIO_HARDWARE_FLOW_CONTROL_ENABLE   SDMMC_HARDWARE_FLOW_CONTROL_ENABLE
 
 #if defined(STM32H7)
-#define GPIO_AF12_SDIO                      GPIO_AF12_SDIO1
-#define SDIO_IRQHandler                     SDMMC1_IRQHandler
 #define SDIO_TRANSFER_CLK_DIV               SDMMC_NSpeed_CLK_DIV
 #define SDIO_USE_GPDMA                      0
 #else
@@ -102,6 +102,7 @@
 #define SDMMC_CLK_ENABLE() __SDIO_CLK_ENABLE()
 #define SDMMC_CLK_DISABLE() __SDIO_CLK_DISABLE()
 #define SDMMC_IRQn SDIO_IRQn
+#define SDMMC_IRQHandler SDIO_IRQHandler
 #define SDMMC_DMA dma_SDIO_0
 #define SDIO_USE_GPDMA 1
 #define STATIC_AF_SDMMC_CK STATIC_AF_SDIO_CK
@@ -398,21 +399,11 @@ STATIC void sdmmc_irq_handler(void) {
     }
 }
 
-#if !defined(MICROPY_HW_SDMMC2_CK)
-void SDIO_IRQHandler(void) {
-    IRQ_ENTER(SDIO_IRQn);
+void SDMMC_IRQHandler(void) {
+    IRQ_ENTER(SDMMC_IRQn);
     sdmmc_irq_handler();
-    IRQ_EXIT(SDIO_IRQn);
+    IRQ_EXIT(SDMMC_IRQn);
 }
-#endif
-
-#if defined(STM32F7)
-void SDMMC2_IRQHandler(void) {
-    IRQ_ENTER(SDMMC2_IRQn);
-    sdmmc_irq_handler();
-    IRQ_EXIT(SDMMC2_IRQn);
-}
-#endif
 
 STATIC void sdcard_reset_periph(void) {
     // Fully reset the SDMMC peripheral before calling HAL SD DMA functions.
@@ -875,7 +866,9 @@ void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {
     vfs->base.type = &mp_fat_vfs_type;
     vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_NATIVE | MP_BLOCKDEV_FLAG_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
+    #if MICROPY_FATFS_MULTI_PARTITION
     vfs->fatfs.part = part;
+    #endif
     vfs->blockdev.readblocks[0] = MP_OBJ_FROM_PTR(&pyb_sdcard_readblocks_obj);
     vfs->blockdev.readblocks[1] = MP_OBJ_FROM_PTR(&pyb_sdcard_obj);
     vfs->blockdev.readblocks[2] = MP_OBJ_FROM_PTR(sdcard_read_blocks); // native version

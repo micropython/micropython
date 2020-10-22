@@ -1,6 +1,18 @@
 (16384, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 True
 /
+chdir x OSError
+chdir /x OSError
+listdir x OSError
+listdir /x OSError
+mkdir x OSError
+mkdir /x OSError
+remove x OSError
+remove /x OSError
+rmdir x OSError
+rmdir /x OSError
+stat x OSError
+stat /x OSError
 1 mount False False
 ['test_mnt']
 ('test_mnt', 16384, 0)

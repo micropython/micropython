@@ -445,6 +445,7 @@ STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 }
                 return MP_OBJ_NEW_SMALL_INT(hash);
             }
+            MP_FALLTHROUGH
         #endif
         default:
             return MP_OBJ_NULL;      // op not supported

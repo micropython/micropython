@@ -83,12 +83,8 @@ mp_vfs_mount_t *mp_vfs_lookup_path(const char *path, const char **path_out) {
             }
         }
 
-        // if we get here then there's nothing mounted on /
-
-        if (is_abs) {
-            // path began with / and was not found
-            return MP_VFS_NONE;
-        }
+        // if we get here then there's nothing mounted on /, so the path doesn't exist
+        return MP_VFS_NONE;
     }
 
     // a relative path within a mounted device

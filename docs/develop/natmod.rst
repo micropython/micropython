@@ -21,7 +21,8 @@ language which can be compiled to stand-alone machine code can be put into a
 
 A native .mpy module is built using the ``mpy_ld.py`` tool, which is found in the
 ``tools/`` directory of the project.  This tool takes a set of object files
-(.o files) and links them together to create a native .mpy files.
+(.o files) and links them together to create a native .mpy files.  It requires
+CPython 3 and the library pyelftools v0.25 or greater.
 
 Supported features and limitations
 ----------------------------------
@@ -178,6 +179,14 @@ The file ``Makefile`` contains:
 
 Compiling the module
 --------------------
+
+The prerequisite tools needed to build a native .mpy file are:
+
+* The MicroPython repository (at least the ``py/`` and ``tools/`` directories).
+* CPython 3, and the library pyelftools (eg ``pip install 'pyelftools>=0.25'``).
+* GNU make.
+* A C compiler for the target architecture (if C source is used).
+* Optionally ``mpy-cross``, built from the MicroPython repository (if .py source is used).
 
 Be sure to select the correct ``ARCH`` for the target you are going to run on.
 Then build with::
