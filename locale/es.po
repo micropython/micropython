@@ -1826,15 +1826,15 @@ msgstr "No se pudo encontrar el búfer para UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART De-init error"
-msgstr "Error de desinicialización de UARL"
+msgstr "Error de desinicialización de UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Init Error"
-msgstr "Error de inicialización de UARL"
+msgstr "Error de inicialización de UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART Re-init error"
-msgstr "Error de reinicialización de UARL"
+msgstr "Error de reinicialización de UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
