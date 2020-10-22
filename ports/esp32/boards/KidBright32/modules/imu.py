@@ -59,6 +59,10 @@ elif __device == LSM303AGR:
 def b2i(x, y):
     return (x << 8 | y) if not x & 0x80 else (-(((x ^ 255) << 8) | (y ^ 255) + 1))
 
+def i2b(n):
+    if n < 0:
+        n = (-n ^ 0xFFFF) + 1
+    return bytes([ (n >> 8) & 0xFF, n & 0xFF ])
 
 def update():
     global acc, gyro, mag, temp
@@ -155,9 +159,12 @@ def heading():
 
 
 def calibrate_compass():
-    global calibrateMagFlag
+    global calibrateMagFlag, mag_min, mag_max
     import display
     from time import sleep
+
+    mag_min = [ 99999, 99999, 99999 ]
+    mag_max = [ -99999, -99999, -99999 ]
 
     display.scroll("TILT TO FILL SCREEN")
 
@@ -226,17 +233,39 @@ def calibrate_compass():
     calibrateMagFlag = True
 
 def loadCalibrateFromSRAM():
-    return False
+    buff = i2c1.readfrom_mem(0x6F, 0x20 + 0, 13)
+    crc = 0
+    for i in range(12):
+        crc = crc + buff[i]
+    crc = crc & 0xFF
 
-def saveCalibrateIntoSRAM():
+    if crc != buff[12]:
+        return False
+
+    for i in range(3):
+        mag_min[i] = b2i(buff[(i * 2) + 0], buff[(i * 2) + 1]) / 100.0
+    for i in range(3):
+        mag_max[i] = b2i(buff[(i * 2) + 0 + 6], buff[(i * 2) + 1 + 6]) / 100.0
+
     return True
 
-def calCRC(data, size):
-    sum = b'\0'
-    for i in range(size):
-        sum += data[i]
-    sum = sum ^ 0xFF
-    return sum
+def saveCalibrateIntoSRAM():
+    buff = bytearray(13)
+    for i in range(3):
+        a = i2b(int(mag_min[i] * 100))
+        buff[(i * 2) + 0] = a[0]
+        buff[(i * 2) + 1] = a[1]
+    for i in range(3):
+        a = i2b(int(mag_max[i] * 100))
+        buff[(i * 2) + 0 + 6] = a[0]
+        buff[(i * 2) + 1 + 6] = a[1]
+    crc = 0
+    for i in range(12):
+        crc = crc + buff[i]
+    buff[12] = crc & 0xFF
+
+    i2c1.writeto_mem(0x6F, 0x20 + 0, buff)
+    return True
 
 def is_gesture(event, blocking=True):
     global __xStartCalc, __startCalcLowStrengthContinue
@@ -268,7 +297,7 @@ def is_gesture(event, blocking=True):
                 else:
                     lowStrengthContinue = False
                     break
-            return lowStrengthContinue;
+            return lowStrengthContinue
         else:
             if acc[3] < 500:
                 if not __startCalcLowStrengthContinue:
