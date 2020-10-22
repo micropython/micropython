@@ -484,10 +484,10 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 qstr qst = va_arg(args, qstr);
                 size_t len;
                 const char *str = (const char *)qstr_data(qst, &len);
-                if (prec < 0) {
-                    prec = len;
+                if (prec >= 0 && (size_t)prec < len) {
+                    len = prec;
                 }
-                chrs += mp_print_strn(print, str, prec, flags, fill, width);
+                chrs += mp_print_strn(print, str, len, flags, fill, width);
                 break;
             }
             case 's': {
@@ -499,10 +499,11 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                     break;
                 }
                 #endif
-                if (prec < 0) {
-                    prec = strlen(str);
+                size_t len = strlen(str);
+                if (prec >= 0 && (size_t)prec < len) {
+                    len = prec;
                 }
-                chrs += mp_print_strn(print, str, prec, flags, fill, width);
+                chrs += mp_print_strn(print, str, len, flags, fill, width);
                 break;
             }
             case 'd': {
