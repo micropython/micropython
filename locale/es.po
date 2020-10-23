@@ -168,7 +168,7 @@ msgstr "'%s' espera un registro"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr "'%s' espera un carácter"
+msgstr "'%s' espera un registro especial"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -239,7 +239,7 @@ msgstr "el objeto 'coroutine' no es un iterador"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
-msgstr "'data' requiere como minomo 2 argumentos"
+msgstr "'data' requiere como mínimo 2 argumentos"
 
 #: py/compile.c
 msgid "'data' requires integer arguments"
@@ -255,7 +255,7 @@ msgstr "'return' fuera de una función"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr "'yield from' dentro función asincrónica"
+msgstr "'yield from' dentro de una función asincrónica"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -289,7 +289,7 @@ msgstr "ADC2 está siendo usado por WiFi"
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
-msgstr "La dirección debe ser %d bytes de largo"
+msgstr "La dirección debe tener %d bytes de largo"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
@@ -318,9 +318,7 @@ msgstr "Todos los canales de eventos estan siendo usados"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
-msgstr ""
-"Todos los canales de eventos de sincronización (sync event channels) están "
-"siendo utilizados"
+msgstr "Todos los canales de eventos de sincronización (sync event channels) están siendo utilizados"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
@@ -347,7 +345,7 @@ msgstr "Ya se encuentra publicando."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Already have all-matches listener"
-msgstr "Ya se tiene un escucha todas-las-coincidencias"
+msgstr "Ya se tiene un escucha de todas las coincidencias"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -370,7 +368,7 @@ msgstr "Funcionalidad AnalogOut no soportada"
 
 #: shared-bindings/analogio/AnalogOut.c
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr "AnalogOut es solo de 16 bits. Value debe ser menos a 65536."
+msgstr "AnalogOut es solo de 16 bits. El valor debe ser menor que 65536."
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut not supported on given pin"
@@ -383,7 +381,7 @@ msgstr "Otro envío ya está activo"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr "Array debe contener media palabra (type 'H')"
+msgstr "El array debe contener medias palabras (escriba 'H')"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
@@ -4013,7 +4011,7 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgstr "Falló el iniciar borrado de flash, err 0x%04x"
 
 #~ msgid "Flash write failed"
-#~ msgstr "Falló la escritura"
+#~ msgstr "Falló la escritura flash"
 
 #~ msgid "Flash write failed to start, err 0x%04x"
 #~ msgstr "Falló el iniciar la escritura de flash, err 0x%04x"
@@ -4070,7 +4068,7 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgstr "Sin soporte PulseIn para %q"
 
 #~ msgid "No hardware support for analog out."
-#~ msgstr "Sin soporte de hardware para analog out"
+#~ msgstr "Sin soporte de hardware para salida analógica"
 
 #~ msgid "Not connected."
 #~ msgstr "No conectado."
@@ -4079,24 +4077,24 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgstr "Solo formato Windows, BMP sin comprimir soportado %d"
 
 #~ msgid "Only bit maps of 8 bit color or less are supported"
-#~ msgstr "Solo se admiten bit maps de color de 8 bits o menos"
+#~ msgstr "Solo se admiten mapas de bits de color de 8 bits o menos"
 
 #~ msgid ""
 #~ "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d "
 #~ "bpp given"
 #~ msgstr ""
 #~ "Solo se admiten BMP monocromos, indexados de 8bpp y 16bpp o superiores:%d "
-#~ "bppdado"
+#~ "bpp dado"
 
 #, fuzzy
 #~ msgid "Only slices with step=1 (aka None) are supported"
-#~ msgstr "solo se admiten segmentos con step=1 (alias None)"
+#~ msgstr "Solo se admiten segmentos con step=1 (alias None)"
 
 #~ msgid "Only true color (24 bpp or higher) BMP supported %x"
 #~ msgstr "Solo color verdadero (24 bpp o superior) BMP admitido %x"
 
 #~ msgid "Only tx supported on UART1 (GPIO2)."
-#~ msgstr "Solo tx soportada en UART1 (GPIO2)"
+#~ msgstr "Solo tx soportada en UART1 (GPIO2)."
 
 #~ msgid "PWM not supported on pin %d"
 #~ msgstr "El pin %d no soporta PWM"
@@ -4111,11 +4109,11 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgstr "Pines no válidos para SPI"
 
 #~ msgid "Pixel beyond bounds of buffer"
-#~ msgstr "Pixel beyond bounds of buffer"
+#~ msgstr "Píxel fuera de los límites del búfer"
 
 #, fuzzy
 #~ msgid "Range out of bounds"
-#~ msgstr "address fuera de límites"
+#~ msgstr "Rango fuera de límites"
 
 #~ msgid "STA must be active"
 #~ msgstr "STA debe estar activo"
@@ -4135,10 +4133,10 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgstr ""
 #~ "El heap de CircuitPython estaba corrupto porque el stack era demasiado "
 #~ "pequeño.\n"
-#~ "Aumente los límites del tamaño del stacj y presione reset (después de "
+#~ "Aumente los límites del tamaño del stack y presione reset (después de "
 #~ "expulsarCIRCUITPY).\n"
 #~ "Si no cambió el stack, entonces reporte un issue aquí con el contenido "
-#~ "desu unidad CIRCUITPY:\n"
+#~ "de su unidad CIRCUITPY:\n"
 
 #~ msgid ""
 #~ "The microcontroller's power dipped. Please make sure your power supply "
@@ -4191,7 +4189,7 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ "malo ha sucedido.\n"
 
 #~ msgid "bad GATT role"
-#~ msgstr "mal GATT role"
+#~ msgstr "rol de GATT malo"
 
 #~ msgid "bits must be 8"
 #~ msgstr "bits debe ser 8"
@@ -4224,7 +4222,7 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgstr "no se puede establecer STA config"
 
 #~ msgid "characteristics includes an object that is not a Characteristic"
-#~ msgstr "characteristics incluye un objeto que no es una Characteristica"
+#~ msgstr "characteristics incluye un objeto que no es una Characteristic"
 
 #~ msgid "color buffer must be a buffer or int"
 #~ msgstr "color buffer deber ser un buffer o un int"
