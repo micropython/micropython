@@ -29,41 +29,30 @@
 
 #include "driver/touch_pad.h"
 
-static const touch_pad_t touch_pad[] = {
-    TOUCH_PAD_NUM1,
-    TOUCH_PAD_NUM2,
-    TOUCH_PAD_NUM3,
-    TOUCH_PAD_NUM4,
-    TOUCH_PAD_NUM5,
-    TOUCH_PAD_NUM6,
-    TOUCH_PAD_NUM7,
-    TOUCH_PAD_NUM8,
-    TOUCH_PAD_NUM9,
-    TOUCH_PAD_NUM10,
-    TOUCH_PAD_NUM11,
-    TOUCH_PAD_NUM12,
-    TOUCH_PAD_NUM13,
-    TOUCH_PAD_NUM14
-};
-
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     uint32_t touch_value;
-    touch_pad_read_raw_data(touch_pad[self->pin], &touch_value);
+    touch_pad_read_raw_data((touch_pad_t)self->pin->touch_channel, &touch_value);
+    if (touch_value > UINT16_MAX) {
+        return UINT16_MAX;
+    }
     return touch_value;
 }
 
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
         const mcu_pin_obj_t *pin) {
-    if (!pin->has_touch) {
+    if (pin->touch_channel == TOUCH_PAD_MAX) {
         mp_raise_ValueError(translate("Invalid pin"));
     }
     claim_pin(pin);
 
     touch_pad_init();
-    touch_pad_config(touch_pad[pin->number]);
+    touch_pad_config((touch_pad_t)pin->touch_channel);
 
     touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
     touch_pad_fsm_start();
+
+    // wait for "raw data" to reset
+    mp_hal_delay_ms(10);
 
     // Initial values for pins will vary, depending on what peripherals the pins
     // share on-chip.
@@ -72,23 +61,21 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     // For simple finger touch, the values may vary as much as a factor of two,
     // but for touches using fruit or other objects, the difference is much less.
 
-    self->pin = pin->number;
+    self->pin = pin;
     self->threshold = get_raw_reading(self) + 100;
 }
 
 bool common_hal_touchio_touchin_deinited(touchio_touchin_obj_t* self) {
-    return self->pin == 0xff;
+    return self->pin == NULL;
 }
 
 void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
     }
-
-    //touch_pad_deinit();
-
-    reset_pin_number(self->pin);
-    self->pin = 0xff;
+    touch_pad_deinit();
+    reset_pin_number(self->pin->touch_channel);
+    self->pin = NULL;
 }
 
 bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self) {
