@@ -69,14 +69,36 @@ So, if your C code has writable data, make sure the data is defined globally,
 without an initialiser, and only written to within functions.
 
 Linker limitation: the native module is not linked against the symbol table of the
-full MicroPython firmware.  Rather, it is linked against an explicit table of exported
-symbols found in ``mp_fun_table`` (in ``py/nativeglue.h``), that is fixed at firmware
-build time.  It is thus not possible to simply call some arbitrary HAL/OS/RTOS/system
-function, for example.
+full MicroPython firmware.
+It is thus not possible to simply call some arbitrary HAL/OS/RTOS/system
+function. However, there are two limited linking mechanisms available:
+via the ``mp_fun_table`` and on some ports (initially esp32 only) the
+``mp_port_fun_table``.
 
-New symbols can be added to the end of the table and the firmware rebuilt.
-The symbols also need to be added to ``tools/mpy_ld.py``'s ``fun_table`` dict in the
-same location.  This allows ``mpy_ld.py`` to be able to pick the new symbols up and
+The ``mp_fun_table`` is the same on all ports and is defined in ``py/nativeglue.h``.
+It contains references to close to a hundred functions in MicroPython's core
+that can be used by native code. The functions are defined as a set of macros
+that turn what looks like a direct call (e.g. ``mp_printf(...)``) into
+indirect calls via ``mp_fun_table`` (e.g. ``(*mp_fun_table[72])(...)``).
+
+The ``mp_port_fun_table`` is a table available on some ports that
+exposes additional port-specific functions, typically ones coming from large
+RTOS or networking libraries, such as ESP-IDF in the esp32 case.
+The ``mp_port_fun_table`` may also expose some commonly used functions from
+the standard C library (libc).
+The ``mp_port_fun_table`` contains the addresses of the exposed functions
+and references in the native modules are "fixed-up" as part of the dynamic
+linking process.
+If a native module calls a function that does not exist (for example
+due to varying sets of libraries built into the firmware) the call
+will raise a ``RunTimeError``.
+A sample native module using the ``mp_port_fun_table`` can be found in
+``examples/natmod/esp32-heap``.
+
+New symbols can be added to the end of either table and the firmware rebuilt.
+In the case of the ``mp_fun_table`` the symbols also need to be added to
+``tools/mpy_ld.py``'s ``fun_table`` dict in the same location.
+This allows ``mpy_ld.py`` to be able to pick the new symbols up and
 provide relocations for them when the mpy is imported.  Finally, if the symbol is a
 function, a macro or stub should be added to ``py/dynruntime.h`` to make it easy to
 call the function.

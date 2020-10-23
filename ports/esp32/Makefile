@@ -1,3 +1,14 @@
+# get the directory where this makefile resides
+# fails if the path has a space :-(, if that happens define PORT_DIR in the parent makefile
+PORT_DIR ?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+PORT_DIR := $(PORT_DIR)
+$(info PORT_DIR=$(PORT_DIR))
+
+# if the parent makefile defines MPY_DIR then use that also for TOP (normally generated in mkenv.mk)
+ifneq ($(MPY_DIR),)
+TOP ?= $(MPY_DIR)
+endif
+
 # Select the board to build for: if not given on the command line,
 # then default to GENERIC.
 BOARD ?= GENERIC
@@ -5,15 +16,15 @@ BOARD ?= GENERIC
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
-BOARD_DIR ?= boards/$(BOARD)
+BOARD_DIR ?= $(PORT_DIR)/boards/$(BOARD)
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
-include ../../py/mkenv.mk
+include $(PORT_DIR)/../../py/mkenv.mk
 
 # Optional (not currently used for ESP32)
--include mpconfigport.mk
+-include $(PORT_DIR)/mpconfigport.mk
 
 ifneq ($(SDKCONFIG),)
 $(error Use the BOARD variable instead of SDKCONFIG)
@@ -129,6 +140,7 @@ include $(TOP)/extmod/nimble/nimble.mk
 endif
 
 # include sdkconfig to get needed configuration values
+SDKCONFIG := $(addprefix $(PORT_DIR)/, $(SDKCONFIG))
 include $(SDKCONFIG)
 
 ################################################################################
@@ -250,6 +262,32 @@ CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
 endif
 
+################################################################################
+# Generate sdkconfig.h from sdkconfig
+
+$(SDKCONFIG_COMBINED): $(SDKCONFIG)
+	$(Q)$(MKDIR) -p $(dir $@)
+	$(Q)$(CAT) $^ > $@
+
+$(SDKCONFIG_H): $(SDKCONFIG_COMBINED)
+	$(ECHO) "GEN $@"
+	$(Q)$(MKDIR) -p $(dir $@)
+	$(Q)$(PYTHON) $(ESPIDF)/tools/kconfig_new/confgen.py \
+		--output header $@ \
+		--config $< \
+		--kconfig $(ESPIDF)/Kconfig \
+		--env "IDF_TARGET=esp32" \
+		--env "IDF_CMAKE=n" \
+		--env "COMPONENT_KCONFIGS=$(ESPCOMP_KCONFIGS)" \
+		--env "COMPONENT_KCONFIGS_PROJBUILD=$(ESPCOMP_KCONFIGS_PROJBUILD)" \
+		--env "IDF_PATH=$(ESPIDF)"
+	$(Q)touch $@
+
+$(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H) $(BOARD_DIR)/mpconfigboard.h
+
+# The rest of this Makefile is not needed to build dynamic native modules
+ifndef MPY_DYNRUNTIME
+
 # these flags are common to C and C++ compilation
 CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields \
 	-mlongcalls -nostdlib \
@@ -351,6 +389,7 @@ SRC_C = \
 	mpthreadport.c \
 	machine_rtc.c \
 	machine_sdcard.c \
+	portnativeglue.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
 	$(SRC_MOD)
 
@@ -387,29 +426,6 @@ $(OBJ_MP): CFLAGS += -Wdouble-promotion -Wfloat-conversion
 SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
-
-################################################################################
-# Generate sdkconfig.h from sdkconfig
-
-$(SDKCONFIG_COMBINED): $(SDKCONFIG)
-	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(CAT) $^ > $@
-
-$(SDKCONFIG_H): $(SDKCONFIG_COMBINED)
-	$(ECHO) "GEN $@"
-	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(PYTHON) $(ESPIDF)/tools/kconfig_new/confgen.py \
-		--output header $@ \
-		--config $< \
-		--kconfig $(ESPIDF)/Kconfig \
-		--env "IDF_TARGET=esp32" \
-		--env "IDF_CMAKE=n" \
-		--env "COMPONENT_KCONFIGS=$(ESPCOMP_KCONFIGS)" \
-		--env "COMPONENT_KCONFIGS_PROJBUILD=$(ESPCOMP_KCONFIGS_PROJBUILD)" \
-		--env "IDF_PATH=$(ESPIDF)"
-	$(Q)touch $@
-
-$(HEADER_BUILD)/qstrdefs.generated.h: $(SDKCONFIG_H) $(BOARD_DIR)/mpconfigboard.h
 
 ################################################################################
 # List of object files from the ESP32 IDF components
@@ -780,6 +796,7 @@ $(BUILD)/application.elf: $(OBJ) $(LIB) $(BUILD)/esp32_out.ld $(BUILD)/esp32.pro
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $(APP_LD_ARGS)
 	$(Q)$(SIZE) $@
+	$(Q)$(SIZE) -A $@ | egrep iram0.text | sed -e 's/  */: /' -e 's;  *[^ ]*$$; of 131072;'
 
 define compile_cxx
 $(ECHO) "CXX $<"
@@ -796,6 +813,12 @@ endef
 vpath %.cpp . $(TOP)
 $(BUILD)/%.o: %.cpp
 	$(call compile_cxx)
+
+ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V3))
+$(BUILD)/portnativeglue.o: CFLAGS := $(filter-out -Werror, $(CFLAGS))
+else
+$(BUILD)/portnativeglue.o: CFLAGS += -Wno-builtin-declaration-mismatch
+endif
 
 ################################################################################
 # Declarations to build the bootloader
@@ -982,3 +1005,5 @@ $(BUILD)/partitions.bin: $(PART_SRC)
 ################################################################################
 
 include $(TOP)/py/mkrules.mk
+
+endif # MPY_DYNRUNTIME

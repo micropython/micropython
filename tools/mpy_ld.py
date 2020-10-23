@@ -428,7 +428,7 @@ def populate_got(env):
         if got_entry.name == "mp_fun_table":
             dest = "mp_fun_table"
         elif got_entry.name.startswith("mp_fun_table+0x"):
-            dest = int(got_entry.name.split("+")[1], 16) // env.arch.word_size
+            dest = ("fun_table", int(got_entry.name.split("+")[1], 16)) // env.arch.word_size
         elif got_entry.sec_name.startswith(".text"):
             dest = ".text"
         elif got_entry.sec_name.startswith(".rodata"):
@@ -437,6 +437,8 @@ def populate_got(env):
             dest = ".data.rel.ro"
         elif got_entry.sec_name.startswith(".bss"):
             dest = ".bss"
+        elif got_entry.sec_name == ".external.mp_port_fun_table":
+            dest = ("port_fun_table", got_entry.sym.port_fun_offset)
         else:
             assert 0, (got_entry.name, got_entry.sec_name)
         env.mpy_relocs.append((".text", env.got_section.addr + got_entry.offset, dest))
@@ -651,7 +653,7 @@ def do_relocation_data(env, text_addr, r):
             kind = sec.name
         elif sec.name == ".external.mp_fun_table":
             assert addr == 0
-            kind = s.mp_fun_table_offset
+            kind = ("fun_table", s.mp_fun_table_offset)
         else:
             assert 0, sec.name
         if env.arch.separate_rodata:
@@ -777,6 +779,7 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
             ]
         )
     }
+    port_fun_sec = Section(".external.mp_port_fun_table", b"", 0)
     for sym in env.unresolved_syms:
         assert sym["st_value"] == 0
         if sym.name == "_GLOBAL_OFFSET_TABLE_":
@@ -789,12 +792,20 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
             sym.section = env.qstr_obj_section
         elif sym.name in env.known_syms:
             sym.resolved = env.known_syms[sym.name]
+        elif sym.name in fun_table:
+            sym.section = mp_fun_table_sec
+            sym.mp_fun_table_offset = fun_table[sym.name]
+        elif sym.name in port_fun_entries:
+            sym.section = port_fun_sec
+            sym.port_fun_offset = port_fun_entries[sym.name]
+            log(
+                LOG_LEVEL_3,
+                "Port_fun_table reference: {} -> port_fun_sec+{}".format(
+                    sym.name, sym.port_fun_offset
+                ),
+            )
         else:
-            if sym.name in fun_table:
-                sym.section = mp_fun_table_sec
-                sym.mp_fun_table_offset = fun_table[sym.name]
-            else:
-                raise LinkError("{}: undefined symbol: {}".format(sym.filename, sym.name))
+            raise LinkError("{}: undefined symbol: {}".format(sym.filename, sym.name))
 
     # Align sections, assign their addresses, and create full_text
     env.full_text = bytearray(env.arch.asm_jump(8))  # dummy, to be filled in later
@@ -868,13 +879,35 @@ class MPYOutput:
             self.write_bytes(s)
 
     def write_reloc(self, base, offset, dest, n):
+        """
+        Write a relocation entry into the mpy that the dynamic linker will have to resolve
+        when the mpy is loaded. A relocation entry consists of a kind/op byte, followed by an
+        optional offset word, followed by an optional count word.
+        - base+offset is the location where the fixup is to be done, base is '.text' or 'rodata'.
+        - dest is the target whose address needs to be placed into the fixup: 0=string table,
+          1=rodata_const_table, 2=bss_const_table, 3..5: unused, 6=mp_fun_table,
+          7..126:entry in mp_fun_table, 1000..66535:entry in mp_port_fun_table.
+        - n is number of consecutive words to fix up.
+        """
         need_offset = not (base == self.prev_base and offset == self.prev_offset + 1)
         self.prev_offset = offset + n - 1
-        if dest <= 2:
+        index = None
+        if isinstance(dest, tuple):
+            if dest[0] == "port_fun_table":
+                # offset into mp_port_fun_table
+                assert dest[1] < 65536
+                index = dest[1]
+                dest = 126  # magic number for the loader to refer to mp_port_fun_table
+            elif dest[0] == "fun_table":
+                assert 6 <= dest[1] < 126
+                assert n == 1
+                dest = dest[1]
+            else:
+                assert 0, dest
+        elif dest <= 2:
             dest = (dest << 1) | (n > 1)
         else:
-            assert 6 <= dest <= 127
-            assert n == 1
+            assert dest == 6, dest  # only case left: mp_fun_table itself
         dest = dest << 1 | need_offset
         assert 0 <= dest <= 0xFE, dest
         self.write_bytes(bytes([dest]))
@@ -884,6 +917,8 @@ class MPYOutput:
             elif base == ".rodata":
                 base = 1
             self.write_uint(offset << 1 | base)
+        if index is not None:
+            self.write_uint(index)
         if n > 1:
             self.write_uint(n)
 
@@ -966,8 +1001,12 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
             kind = bss_const_table_idx
         elif kind == "mp_fun_table":
             kind = 6
+        elif isinstance(kind, tuple) and kind[0] == "fun_table":
+            kind = (kind[0], 7 + kind[1])
+        elif isinstance(kind, tuple) and kind[0] == "port_fun_table":
+            pass
         else:
-            kind = 7 + kind
+            assert 0, kind
         assert addr % env.arch.word_size == 0, addr
         offset = addr // env.arch.word_size
         if kind == prev_kind and base == prev_base and offset == prev_offset + 1:
@@ -987,6 +1026,28 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.write_bytes(b"\xff")
 
     out.close()
+
+
+################################################################################
+# Port-specific relocation table, which contains the addresses of a number of port-specific
+# functions compiled into the firmware. These entries are used by the dynamic linker to fix-up
+# relocation entries in dynamically loaded mpy modules.
+port_fun_entries = {}
+
+
+def load_port_fun(portfun_file):
+    """
+    Load list of port-specific functions from file used for C-#include: has a function name
+    followed by a comma on each line
+    """
+    ix = len(port_fun_entries)
+    with open(portfun_file) as f:
+        for l in f:
+            m = re.match(r"^([A-Za-z0-9_][A-Za-z0-9_]*),$", l)
+            if m:
+                port_fun_entries[m.group(1)] = ix
+                ix += 1
+    # print("port_fun_entries=", port_fun_entries)
 
 
 ################################################################################
@@ -1063,6 +1124,9 @@ def main():
     cmd_parser.add_argument("--preprocess", action="store_true", help="preprocess source files")
     cmd_parser.add_argument("--qstrs", default=None, help="file defining additional qstrs")
     cmd_parser.add_argument(
+        "--portfun", default=None, help="file defining port-specific functions"
+    )
+    cmd_parser.add_argument(
         "--output", "-o", default=None, help="output .mpy file (default to input with .o->.mpy)"
     )
     cmd_parser.add_argument("files", nargs="+", help="input files")
@@ -1070,6 +1134,9 @@ def main():
 
     global log_level
     log_level = args.verbose
+
+    if args.portfun:
+        load_port_fun(args.portfun)
 
     if args.preprocess:
         do_preprocess(args)
