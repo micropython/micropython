@@ -64,11 +64,8 @@ supervisor_allocation* allocate_remaining_memory(void);
 // supervisor_move_memory().
 supervisor_allocation* allocate_memory(uint32_t length, bool high_address, bool movable);
 
-static inline uint16_t align32_size(uint16_t size) {
-    if (size % 4 != 0) {
-        return (size & 0xfffc) + 0x4;
-    }
-    return size;
+static inline size_t align32_size(size_t size) {
+    return (size + 3) & ~3;
 }
 
 size_t get_allocation_length(supervisor_allocation* allocation);
