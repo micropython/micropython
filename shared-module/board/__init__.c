@@ -145,8 +145,11 @@ void reset_board_busses(void) {
         }
     }
     #endif
-    if (!display_using_i2c) {
-        i2c_singleton = NULL;
+    if (i2c_singleton != NULL) {
+        if (!display_using_i2c) {
+            common_hal_busio_i2c_deinit(i2c_singleton);
+            i2c_singleton = NULL;
+        }
     }
 #endif
 #if BOARD_SPI
@@ -169,9 +172,10 @@ void reset_board_busses(void) {
     // make sure SPI lock is not held over a soft reset
     if (spi_singleton != NULL) {
         common_hal_busio_spi_unlock(spi_singleton);
-    }
-    if (!display_using_spi) {
-        spi_singleton = NULL;
+        if (!display_using_spi) {
+            common_hal_busio_spi_deinit(spi_singleton);
+            spi_singleton = NULL;
+        }
     }
 #endif
 #if BOARD_UART
