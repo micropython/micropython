@@ -28,6 +28,12 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/board/__init__.h"
+#if BOARD_I2C
+#include "shared-bindings/busio/I2C.h"
+#endif
+#if BOARD_SPI
+#include "shared-bindings/busio/SPI.h"
+#endif
 
 //| """Board specific pin names
 //|
@@ -45,7 +51,7 @@
 #if BOARD_I2C
 mp_obj_t board_i2c(void) {
     mp_obj_t singleton = common_hal_board_get_i2c();
-    if (singleton != NULL) {
+    if (singleton != NULL && !common_hal_busio_i2c_deinited(singleton)) {
         return singleton;
     }
     assert_pin_free(DEFAULT_I2C_BUS_SDA);
@@ -69,7 +75,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
 #if BOARD_SPI
 mp_obj_t board_spi(void) {
     mp_obj_t singleton = common_hal_board_get_spi();
-    if (singleton != NULL) {
+    if (singleton != NULL && !common_hal_busio_spi_deinited(singleton)) {
         return singleton;
     }
     assert_pin_free(DEFAULT_SPI_BUS_SCK);
