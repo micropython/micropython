@@ -139,7 +139,7 @@ void reset_board_busses(void) {
     bool display_using_i2c = false;
     #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].i2cdisplay_bus.bus == i2c_singleton) {
+        if (displays[i].bus_base.type == &displayio_i2cdisplay_type && displays[i].i2cdisplay_bus.bus == i2c_singleton) {
             display_using_i2c = true;
             break;
         }
