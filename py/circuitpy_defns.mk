@@ -133,6 +133,9 @@ endif
 ifeq ($(CIRCUITPY_BOARD),1)
 SRC_PATTERNS += board/%
 endif
+ifeq ($(CIRCUITPY_BUSDEVICE),1)
+SRC_PATTERNS += busdevice/%
+endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/% bitbangio/OneWire.%
 endif
@@ -432,6 +435,8 @@ SRC_SHARED_MODULE_ALL = \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
 	board/__init__.c \
+	busdevice/__init__.c \
+	busdevice/I2CDevice.c \
 	busio/OneWire.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
