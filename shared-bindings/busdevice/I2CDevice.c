@@ -37,6 +37,7 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
+
 //| class I2CDevice:
 //|     """Two wire serial protocol"""
 //|
@@ -59,6 +60,10 @@ STATIC mp_obj_t busdevice_i2cdevice_make_new(const mp_obj_type_t *type, size_t n
     busio_i2c_obj_t* i2c = args[ARG_i2c].u_obj;
 
     common_hal_busdevice_i2cdevice_construct(self, i2c, args[ARG_device_address].u_int, args[ARG_probe].u_bool);
+    if (args[ARG_probe].u_bool == true) {
+        common_hal_busdevice_i2cdevice___probe_for_device(self);
+    }
+
     return (mp_obj_t)self;
 }
 
@@ -204,27 +209,30 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busdevice_i2cdevice_write_then_readinto_obj, 3, busde
 
 
 STATIC mp_obj_t busdevice_i2cdevice___probe_for_device(mp_obj_t self_in) {
-    //busdevice_i2cdevice_obj_t *self = self_in;
+    busdevice_i2cdevice_obj_t *self = self_in;
+    common_hal_busdevice_i2cdevice___probe_for_device(self);
 
-    //common_hal_busdevice_i2cdevice_lock(self_in);
+/*    common_hal_busdevice_i2cdevice_lock(self);
 
-/*
-    uint8_t buffer;
+
+    //uint8_t buffer;
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(&buffer, &bufinfo, MP_BUFFER_WRITE);
+    //mp_obj_t bufobj = MP_OBJ_FROM_PTR(&buffer)
+    mp_obj_t buffer = mp_obj_new_bytearray_of_zeros(1);
+
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_WRITE);
 
     uint8_t status = common_hal_busdevice_i2cdevice_readinto(self_in, (uint8_t*)bufinfo.buf, 1);
     if (status != 0) {
         common_hal_busdevice_i2cdevice_unlock(self_in);
         mp_raise_ValueError_varg(translate("No I2C device at address: %x"), self->device_address);
     }
+    
+    common_hal_busdevice_i2cdevice_unlock(self);
 */
-    //common_hal_busdevice_i2cdevice_unlock(self_in);
-
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busdevice_i2cdevice___probe_for_device_obj, busdevice_i2cdevice___probe_for_device);
-
 
 STATIC const mp_rom_map_elem_t busdevice_i2cdevice_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&busdevice_i2cdevice___enter___obj) },

@@ -45,14 +45,12 @@ extern const mp_obj_type_t busdevice_i2cdevice_type;
 
 // Initializes the hardware peripheral.
 extern void common_hal_busdevice_i2cdevice_construct(busdevice_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address, bool probe);
-extern void common_hal_busdevice_i2cdevice___enter__(busdevice_i2cdevice_obj_t *self);
-extern void common_hal_busdevice_i2cdevice___exit__(busdevice_i2cdevice_obj_t *self);
 extern uint8_t common_hal_busdevice_i2cdevice_readinto(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length);
 extern uint8_t common_hal_busdevice_i2cdevice_write(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length);
 extern uint8_t common_hal_busdevice_i2cdevice_write_then_readinto(busdevice_i2cdevice_obj_t *self, mp_obj_t out_buffer,
                                                                  mp_obj_t in_buffer, size_t out_length, size_t in_length);
-extern uint8_t common_hal_busdevice_i2cdevice___probe_for_device(busdevice_i2cdevice_obj_t *self);
 extern void common_hal_busdevice_i2cdevice_lock(busdevice_i2cdevice_obj_t *self);
 extern void common_hal_busdevice_i2cdevice_unlock(busdevice_i2cdevice_obj_t *self);
+extern void common_hal_busdevice_i2cdevice___probe_for_device(busdevice_i2cdevice_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_I2CDEVICE_H

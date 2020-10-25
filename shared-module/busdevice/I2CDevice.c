@@ -28,15 +28,12 @@
 #include "shared-bindings/busio/I2C.h"
 #include "py/mperrno.h"
 #include "py/nlr.h"
+#include "py/runtime.h"
 
 void common_hal_busdevice_i2cdevice_construct(busdevice_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address, bool probe) {
     self->i2c = i2c;
     self->device_address = device_address;
     self->probe = probe;
-
-    if (self->probe == true) {
-        common_hal_busdevice_i2cdevice___probe_for_device(self);
-    }
 }
 
 void common_hal_busdevice_i2cdevice_lock(busdevice_i2cdevice_obj_t *self) {
@@ -73,29 +70,19 @@ uint8_t common_hal_busdevice_i2cdevice_write_then_readinto(busdevice_i2cdevice_o
     return status;
 }
 
-uint8_t common_hal_busdevice_i2cdevice___probe_for_device(busdevice_i2cdevice_obj_t *self) {
+void common_hal_busdevice_i2cdevice___probe_for_device(busdevice_i2cdevice_obj_t *self) {
+    common_hal_busdevice_i2cdevice_lock(self);
 
+    mp_buffer_info_t bufinfo;
+    mp_obj_t buffer = mp_obj_new_bytearray_of_zeros(1);
 
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_WRITE);
 
-
-    // write ""
-
-
-/*
-            while not self.i2c.try_lock():
-            pass
-        try:
-            self.i2c.writeto(self.device_address, b"")
-        except OSError:
-            # some OS's dont like writing an empty bytesting...
-            # Retry by reading a byte
-            try:
-                result = bytearray(1)
-                self.i2c.readfrom_into(self.device_address, result)
-            except OSError:
-                raise ValueError("No I2C device at address: %x" % self.device_address)
-        finally:
-            self.i2c.unlock()
-*/
-    return 0;
+    uint8_t status = common_hal_busdevice_i2cdevice_readinto(self, (uint8_t*)bufinfo.buf, 1);
+    if (status != 0) {
+        common_hal_busdevice_i2cdevice_unlock(self);
+        mp_raise_ValueError_varg(translate("No I2C device at address: %x"), self->device_address);
+    }
+    
+    common_hal_busdevice_i2cdevice_unlock(self);
 }
