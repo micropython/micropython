@@ -7,7 +7,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-16 19:50-0500\n"
 "PO-Revision-Date: 2020-10-27 16:47+0000\n"
-"Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
+"Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
 "Language-Team: none\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
@@ -481,7 +481,7 @@ msgstr "Buffer lengte moet een veelvoud van 512 zijn"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr "Buffer moet een veelvoud van 512 zijn"
+msgstr "Buffer moet een veelvoud van 512 bytes zijn"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
