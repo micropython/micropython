@@ -73,7 +73,7 @@ msgstr "Der Index %q befindet sich außerhalb des Bereiches"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %q"
-msgstr ""
+msgstr "%q Indizes müssen Integer sein, nicht %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -81,7 +81,7 @@ msgstr "%q Liste muss eine Liste sein"
 
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q muss >= 0 sein"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -97,11 +97,11 @@ msgstr "%q muss ein Tupel der Länge 2 sein"
 
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
-msgstr ""
+msgstr "%q außerhalb des Bereichs"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
-msgstr ""
+msgstr "%q Pin ungültig"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -117,11 +117,11 @@ msgstr "'%q' Argument erforderlich"
 
 #: py/runtime.c
 msgid "'%q' object cannot assign attribute '%q'"
-msgstr ""
+msgstr "'%q' Objekt kann das Attribut '%q' nicht zuweisen"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "'%q' Objekt unterstützt '%q' nicht"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
@@ -129,11 +129,11 @@ msgstr ""
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr ""
+msgstr "'%q' objekt unterstützt das "
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
-msgstr ""
+msgstr "'%q' Objekt hat kein Attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
@@ -141,7 +141,7 @@ msgstr ""
 
 #: py/objtype.c py/runtime.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "'%q' Objekt ist kein callable"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
@@ -280,7 +280,7 @@ msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr ""
+msgstr "ADC2 wird vom WiFi benutzt"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -346,11 +346,11 @@ msgstr ""
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Läuft bereits"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
-msgstr ""
+msgstr "Sucht bereits nach wifi Netzwerken"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -390,7 +390,7 @@ msgstr "Es darf höchstens %d %q spezifiziert werden (nicht %d)"
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Versuche %d Blöcke zu allokieren"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
@@ -400,7 +400,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
-msgstr ""
+msgstr "Authentifizierungsfehler"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -478,11 +478,11 @@ msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein"
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr ""
+msgstr "Die Pufferlänge muss ein vielfaches von 512 sein"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr ""
+msgstr "Der Puffer muss ein vielfaches von 512 bytes sein"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
@@ -660,7 +660,7 @@ msgstr "Beschädigter raw code"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
-msgstr ""
+msgstr "Konnte Kamera nicht initialisieren"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -668,7 +668,7 @@ msgstr ""
 
 #: ports/cxd56/common-hal/sdioio/SDCard.c
 msgid "Could not initialize SDCard"
-msgstr ""
+msgstr "Konnte SDKarte nicht initialisieren"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c
@@ -701,7 +701,7 @@ msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
-msgstr ""
+msgstr "Konnte Adresse nicht setzen"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not start PWM"
@@ -818,7 +818,7 @@ msgstr "Characteristic wird erwartet"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "DigitanInOut wird erwartet"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
@@ -826,7 +826,7 @@ msgstr "Ein Service wird erwartet"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr ""
+msgstr "UART wird erwartet"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -853,7 +853,7 @@ msgstr "FFT ist nur für ndarrays definiert"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
-msgstr ""
+msgstr "SSL Handshake fehlgeschlagen"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -918,16 +918,16 @@ msgstr "Datei existiert"
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
-msgstr ""
+msgstr "Filter zu komplex"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
-msgstr ""
+msgstr "Format nicht unterstützt"
 
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
-msgstr ""
+msgstr "Framepuffer benötigt %d bytes"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
@@ -968,7 +968,7 @@ msgstr "Hardware in benutzung, probiere alternative Pins"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Hostname must be between 1 and 253 characters"
-msgstr ""
+msgstr "Der Hostname muss zwischen 1 und 253 Zeichen haben"
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -980,7 +980,7 @@ msgstr "I2C-Init-Fehler"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
-msgstr ""
+msgstr "I2SOut nicht verfügbar"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1026,12 +1026,12 @@ msgstr "Interner Fehler #%d"
 
 #: shared-bindings/sdioio/SDCard.c
 msgid "Invalid %q"
-msgstr ""
+msgstr "Ungültiger %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
-msgstr "Ungültiger %q pin"
+msgstr "Ungültiger %q Pin"
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
@@ -1049,7 +1049,7 @@ msgstr "Ungültige BMP-Datei"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr ""
+msgstr "Ungültige BSSID"
 
 #: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
@@ -1100,7 +1100,7 @@ msgstr "Ungültige format chunk size"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
-msgstr ""
+msgstr "Ungültige Frequenz"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
