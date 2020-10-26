@@ -214,7 +214,24 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_restart_obj, canio_can_restart);
 //|
 //|         An empty filter list causes all messages to be accepted.
 //|
-//|         Timeout dictates how long receive() and next() will block."""
+//|         Timeout dictates how long receive() and next() will block.
+//|
+//|         Platform specific notes:
+//|
+//|         SAM E5x supports two Listeners.  Filter blocks are shared between the two
+//|         listeners.  There are 4 standard filter blocks and 4 extended filter blocks.
+//|         Each block can either match 2 single addresses or a mask of addresses.
+//|         The number of filter blocks can be increased, up to a hardware maximum, by
+//|         rebuilding CircuitPython, but this decreases the CircuitPython free
+//|         memory even if canio is not used.
+//|
+//|         STM32F405 supports two Listeners.  Filter blocks are shared between the two listeners.
+//|         There are 14 filter blocks.  Each block can match 2 standard addresses with
+//|         mask or 1 extended address with mask.
+//|
+//|         ESP32S2 supports one Listener.  There is a single filter block, which can either match a
+//|         standard address with mask or an extended address with mask.
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
