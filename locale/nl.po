@@ -6,15 +6,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-16 19:50-0500\n"
-"PO-Revision-Date: 2020-09-09 16:05+0000\n"
-"Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
+"PO-Revision-Date: 2020-10-27 16:47+0000\n"
+"Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.2-dev\n"
 
 #: main.c
 msgid ""
@@ -98,7 +98,7 @@ msgstr "%q moet een tuple van lengte 2 zijn"
 
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
-msgstr ""
+msgstr "%q buiten bereik"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
@@ -252,7 +252,7 @@ msgstr "'return' buiten de functie"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield from' binnen asynchrone functie"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -281,7 +281,7 @@ msgstr "Een hardware interrupt kanaal is al in gebruik"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr ""
+msgstr "ADC2 wordt gebruikt door WiFi"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -299,7 +299,7 @@ msgstr "Alle I2C peripherals zijn in gebruik"
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr ""
+msgstr "Alle RX FIFO's zijn in gebruik"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
@@ -342,7 +342,7 @@ msgstr "Advertising is al bezig."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Already have all-matches listener"
-msgstr ""
+msgstr "Heeft al een luisteraar voor 'all-matches'"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
@@ -351,7 +351,7 @@ msgstr "Wordt al uitgevoerd"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
-msgstr ""
+msgstr "Zoekt al naar WiFi netwerken"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
@@ -399,7 +399,7 @@ msgstr "heap allocatie geprobeerd terwijl MicroPython VM niet draait."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
-msgstr ""
+msgstr "Authenticatiefout"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -617,7 +617,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap.\n"
-msgstr ""
+msgstr "CircuitPython kon het heap geheugen niet toewijzen.\n"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
@@ -658,7 +658,7 @@ msgstr "Corrupt raw code"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Could not initialize Camera"
-msgstr ""
+msgstr "Kon camera niet initialiseren"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
@@ -695,7 +695,7 @@ msgstr "Kan PWM niet herstarten"
 
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
-msgstr ""
+msgstr "Kon klok niet ophalen"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -789,7 +789,7 @@ msgstr "ECB werkt alleen met 16 bytes tegelijkertijd"
 
 #: ports/esp32s2/common-hal/busio/SPI.c
 msgid "ESP-IDF memory allocation failed"
-msgstr ""
+msgstr "ESP-IDF geheugen toewijzing mislukt"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
@@ -850,7 +850,7 @@ msgstr "FFT alleen voor ndarrays gedefineerd"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
-msgstr ""
+msgstr "SSL handdruk mislukt"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -877,11 +877,11 @@ msgstr "Mislukt een RX buffer van %d bytes te alloceren"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
-msgstr ""
+msgstr "Kon WiFi geheugen niet toewijzen"
 
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
-msgstr ""
+msgstr "Kon WiFi scan geheugen niet toewijzen"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
@@ -893,7 +893,7 @@ msgstr "Verbinding mislukt: timeout"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to init wifi"
-msgstr ""
+msgstr "Kon WiFi niet initialiseren"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
@@ -915,11 +915,11 @@ msgstr "Bestand bestaat"
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
-msgstr ""
+msgstr "Filters zijn te complex"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
-msgstr ""
+msgstr "Formaat wordt niet ondersteund"
 
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
@@ -963,7 +963,7 @@ msgstr "Hardware in gebruik, probeer alternatieve pinnen"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Hostname must be between 1 and 253 characters"
-msgstr ""
+msgstr "Hostnaam moet tussen 1 en 253 karakters zijn"
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -996,7 +996,7 @@ msgstr "Incorrecte buffer grootte"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
-msgstr ""
+msgstr "Invoer duurt te lang"
 
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
@@ -1044,7 +1044,7 @@ msgstr "Ongeldig BMP bestand"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr ""
+msgstr "Ongeldig BSSID"
 
 #: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
@@ -1095,7 +1095,7 @@ msgstr "Ongeldig formaat stuk grootte"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
-msgstr ""
+msgstr "Onjuiste frequentie"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
@@ -1218,7 +1218,7 @@ msgstr "Maximale x waarde indien gespiegeld is %d"
 
 #: shared-bindings/canio/Message.c
 msgid "Messages limited to 8 bytes"
-msgstr ""
+msgstr "Berichten zijn beperkt tot 8 bytes"
 
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
@@ -1330,11 +1330,11 @@ msgstr "Geen lange integer ondersteuning"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more channels available"
-msgstr ""
+msgstr "Geen kanalen meer beschikbaar"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more timers available"
-msgstr ""
+msgstr "Geen timers meer beschikbaar"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1342,7 +1342,7 @@ msgstr "Geen timers meer beschikbaar op deze pin."
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
-msgstr ""
+msgstr "Geen netwerk met dat SSID gevonden"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1366,7 +1366,7 @@ msgstr "Nordic Soft Device assertion mislukt."
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
-msgstr ""
+msgstr "Geen geldige IP string"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
@@ -1384,7 +1384,7 @@ msgstr "Opgeslagen code wordt niet uitgevoerd.\n"
 
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
-msgstr ""
+msgstr "Niet instelbaar"
 
 #: shared-bindings/util.c
 msgid ""
@@ -1403,11 +1403,11 @@ msgstr "Alleen 8 of 16 bit mono met "
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr ""
+msgstr "Alleen IPv4 SOCK_STREAM sockets worden ondersteund"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
-msgstr ""
+msgstr "Alleen IPv4 adressen worden ondersteund"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1428,15 +1428,15 @@ msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
-msgstr ""
+msgstr "Er kan maar één kleur per keer transparant zijn"
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"
-msgstr ""
+msgstr "Alleen raw int ondersteund voor IP"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
-msgstr ""
+msgstr "Geen sockets meer beschikbaar"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
@@ -1510,6 +1510,8 @@ msgid ""
 "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
 "instead"
 msgstr ""
+"Poort ondersteund geen PWM drager. Geef een pin, frequentie en inschakeltijd "
+"op"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -1519,6 +1521,8 @@ msgid ""
 "Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
 "instead"
 msgstr ""
+"Poort accepteert geen pin of frequentie. Stel een PWMOut Carrier samen en "
+"geef die op"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -1584,7 +1588,7 @@ msgstr "Verversing te snel"
 
 #: shared-bindings/canio/RemoteTransmissionRequest.c
 msgid "RemoteTransmissionRequests limited to 8 bytes"
-msgstr ""
+msgstr "RemoteTransmissionRequests is beperkt tot 8 bytes"
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
@@ -1657,11 +1661,11 @@ msgstr "Serializer in gebruik"
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
-msgstr ""
+msgstr "Context aan de serverkant kan geen hostnaam hebben"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
-msgstr ""
+msgstr "Afmeting niet ondersteund"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -1676,7 +1680,7 @@ msgstr "Slices niet ondersteund"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
-msgstr ""
+msgstr "SocketPool kan alleen met wifi.radio gebruikt worden"
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
@@ -1724,7 +1728,7 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
+msgstr "De lengte van rgb_pins moet 6, 12, 18, 24 of 30 zijn"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1783,7 +1787,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "To exit, please reset the board without "
-msgstr ""
+msgstr "Om te beëindigen, reset het bord zonder "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1856,7 +1860,7 @@ msgstr "Niet in staat buffers voor gesigneerde conversie te alloceren"
 
 #: ports/esp32s2/common-hal/busio/I2C.c
 msgid "Unable to create lock"
-msgstr ""
+msgstr "Kan vergrendeling niet maken"
 
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
@@ -1887,11 +1891,11 @@ msgstr "Onverwacht mrfx uuid type"
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr ""
+msgstr "Niet behandelde ESP TLS fout %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Unknown failure"
-msgstr ""
+msgstr "Onbekende fout"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2009,7 +2013,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
-msgstr ""
+msgstr "WiFi wachtwoord moet tussen 8 en 63 karakters bevatten"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -2164,7 +2168,7 @@ msgstr "buffer te klein"
 
 #: shared-bindings/socketpool/Socket.c
 msgid "buffer too small for requested bytes"
-msgstr ""
+msgstr "buffer te klein voor gevraagde bytes"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -2185,7 +2189,7 @@ msgstr "butes > 8 niet ondersteund"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
-msgstr ""
+msgstr "bytes lengte is geen veelvoud van itemgrootte"
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2503,11 +2507,11 @@ msgstr "uitzonderingen moeten afleiden van BaseException"
 
 #: shared-bindings/canio/CAN.c
 msgid "expected '%q' but got '%q'"
-msgstr ""
+msgstr "verwachtte '%q' maar ontving '%q'"
 
 #: shared-bindings/canio/CAN.c
 msgid "expected '%q' or '%q' but got '%q'"
-msgstr ""
+msgstr "verwachtte '%q' of '%q' maar ontving '%q'"
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -2721,7 +2725,7 @@ msgstr "oorspronkelijke waarden moeten itereerbaar zijn"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "initial_value length is wrong"
-msgstr ""
+msgstr "lengte van initial_value is onjuist"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -2798,7 +2802,7 @@ msgstr "ongeldige formaatspecificatie"
 
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
-msgstr ""
+msgstr "onjuiste hostnaam"
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
@@ -3162,11 +3166,11 @@ msgstr "ord() verwacht een teken (char) maar vond een string van lengte %d"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
-msgstr ""
+msgstr "buiten bereik van bron"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of target"
-msgstr ""
+msgstr "buiten bereik van doel"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
@@ -3175,7 +3179,7 @@ msgstr "overloop bij converteren van long int naar machine word"
 #: py/modstruct.c
 #, c-format
 msgid "pack expected %d items for packing (got %d)"
-msgstr ""
+msgstr "pack verwachtte %d elementen (ontving %d)"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
@@ -3244,7 +3248,7 @@ msgstr "pow() met 3 argumenten vereist integers"
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
-msgstr ""
+msgstr "druk bootknop in bij opstarten.\n"
 
 #: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
 #: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
@@ -3252,7 +3256,7 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
-msgstr ""
+msgstr "druk beide knoppen in bij opstarten.\n"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
@@ -3379,7 +3383,7 @@ msgstr "sosfilt vereist itereerbare argumenten"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
+msgstr "bronpalet te groot"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -3514,7 +3518,7 @@ msgstr "objecttype '%q' heeft geen attribuut '%q'"
 
 #: py/objgenerator.c
 msgid "type object 'generator' has no attribute '__await__'"
-msgstr ""
+msgstr "het type object 'generator' heeft geen attribuut '__await__'"
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
@@ -3624,7 +3628,7 @@ msgstr "watchdog time-out moet groter zijn dan 0"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr ""
+msgstr "breedte moet groter dan nul zijn"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
