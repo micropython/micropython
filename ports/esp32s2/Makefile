@@ -331,10 +331,10 @@ $(BUILD)/firmware.uf2: $(BUILD)/circuitpython-firmware.bin
 	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xbfdd4eee -b 0x0000 -c -o $@ $^
 
 flash: $(BUILD)/firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
 
 flash-circuitpython-only: $(BUILD)/circuitpython-firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x10000 $^
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x10000 $^
 
 include $(TOP)/py/mkrules.mk
 
