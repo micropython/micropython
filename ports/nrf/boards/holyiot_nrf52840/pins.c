@@ -54,8 +54,4 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
 };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> d0426b3438a934257c5351f7eb2d9cdd79881c03
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
