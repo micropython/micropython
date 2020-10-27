@@ -2934,6 +2934,14 @@ msgstr "max_length moet >0 zijn"
 msgid "maximum recursion depth exceeded"
 msgstr "maximale recursiediepte overschreden"
 
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter must be > 0"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter should be > 0"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3368,6 +3376,10 @@ msgstr "zachte herstart\n"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "sorteerargument moet een ndarray zijn"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "sorted axis can't be longer than 65535"
+msgstr ""
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
