@@ -83,6 +83,6 @@ void common_hal_busdevice_i2cdevice___probe_for_device(busdevice_i2cdevice_obj_t
         common_hal_busdevice_i2cdevice_unlock(self);
         mp_raise_ValueError_varg(translate("No I2C device at address: %x"), self->device_address);
     }
-    
+
     common_hal_busdevice_i2cdevice_unlock(self);
 }
