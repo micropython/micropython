@@ -46,7 +46,4 @@ typedef struct canio_can_obj {
     bool silent:1;
     bool auto_restart:1;
     bool fifo_in_use:1;
-    twai_filter_config_t f_config;
-    twai_general_config_t g_config;
-    twai_timing_config_t t_config;
 } canio_can_obj_t;

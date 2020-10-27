@@ -33,7 +33,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "supervisor/port.h"
-#include "hal/twai_ll.h"
 
 #include "hal/twai_types.h"
 
@@ -43,6 +42,10 @@ twai_timing_config_t get_t_config(int baudrate) {
     switch(baudrate) {
     case 1000000:
     {
+        // TWAI_TIMING_CONFIG_abc expands to a C designated initializer list
+        // { .brp = 4, ...}.  This is only acceptable to the compiler as an
+        // initializer and 'return TWAI_TIMING_CONFIG_1MBITS()` is not valid.
+        // Instead, introduce a temporary, named variable and return it.
         twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1MBITS();
         return t_config;
     }
@@ -116,7 +119,6 @@ twai_timing_config_t get_t_config(int baudrate) {
     }
 }
 
-__attribute__((optimize("O0")))
 void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent)
 {
 #define DIV_ROUND(a, b) (((a) + (b)/2) / (b))
@@ -129,7 +131,7 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
         mp_raise_ValueError(translate("loopback + silent mode not supported by peripheral"));
     }
 
-    self->t_config = get_t_config(baudrate);;
+    twai_timing_config_t t_config = get_t_config(baudrate);
     twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT(-1, -1, TWAI_MODE_NORMAL);
     g_config.tx_io = tx->number;
     g_config.rx_io = rx->number;
@@ -139,14 +141,10 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mc
     if (silent) {
         g_config.mode = TWAI_MODE_LISTEN_ONLY;
     }
-    self->g_config = g_config;
 
-    {
     twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
-    self->f_config = f_config;
-    }
 
-    esp_err_t result = twai_driver_install(&self->g_config, &self->t_config, &self->f_config);
+    esp_err_t result = twai_driver_install(&g_config, &t_config, &f_config);
     if (result == ESP_ERR_NO_MEM) {
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
     } else if (result == ESP_ERR_INVALID_ARG) {
