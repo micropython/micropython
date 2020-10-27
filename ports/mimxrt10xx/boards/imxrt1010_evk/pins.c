@@ -1,6 +1,6 @@
 #include "shared-bindings/board/__init__.h"
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO_09) },

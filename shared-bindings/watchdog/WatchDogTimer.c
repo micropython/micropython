@@ -66,6 +66,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
     if (current_mode == WATCHDOGMODE_NONE) {
         mp_raise_ValueError(translate("WatchDogTimer is not currently running"));
     }
+
     common_hal_watchdog_feed(self);
     return mp_const_none;
 }
@@ -78,12 +79,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watch
 //|
 STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    watchdog_watchdogmode_t current_mode = common_hal_watchdog_get_mode(self);
-
-    if (current_mode == WATCHDOGMODE_RESET) {
-        mp_raise_NotImplementedError(translate("WatchDogTimer cannot be deinitialized once mode is set to RESET"));
-    }
-
     common_hal_watchdog_deinit(self);
     return mp_const_none;
 }

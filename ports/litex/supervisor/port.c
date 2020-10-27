@@ -26,11 +26,13 @@
  */
 
 #include <stdint.h>
+#include "supervisor/board.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
-#include "boards/board.h"
 #include "irq.h"
 #include "csr.h"
+
+#include "shared-bindings/microcontroller/__init__.h"
 
 // Global millisecond tick count. 1024 per second because most RTCs are clocked with 32.768khz
 // crystals.
@@ -98,8 +100,8 @@ void reset_cpu(void) {
     for(;;) {}
 }
 
-supervisor_allocation* port_fixed_stack(void) {
-    return NULL;
+bool port_has_fixed_stack(void) {
+    return false;
 }
 
 uint32_t *port_heap_get_bottom(void) {
@@ -129,9 +131,9 @@ uint32_t port_get_saved_word(void) {
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
     // Reading 64 bits may take two loads, so turn of interrupts while we do it.
-    irq_setie(false);
+    common_hal_mcu_disable_interrupts();
     uint64_t raw_tick_snapshot = raw_ticks;
-    irq_setie(true);
+    common_hal_mcu_enable_interrupts();
     return raw_tick_snapshot;
 }
 
@@ -147,5 +149,5 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
 // TODO: Add sleep support if the SoC supports sleep.
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
 }

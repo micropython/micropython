@@ -34,36 +34,42 @@
 
 extern uint32_t _estack;
 
+// Requested size.
 static uint32_t next_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
 static uint32_t current_stack_size = 0;
-supervisor_allocation* stack_alloc = NULL;
+// Actual location and size, may be larger than requested.
+static uint32_t* stack_limit = NULL;
+static size_t stack_length = 0;
 
 #define EXCEPTION_STACK_SIZE 1024
 
 void allocate_stack(void) {
 
-    if (port_fixed_stack() != NULL) {
-        stack_alloc = port_fixed_stack();
-        current_stack_size = stack_alloc->length;
+    if (port_has_fixed_stack()) {
+        stack_limit = port_stack_get_limit();
+        stack_length = (port_stack_get_top() - stack_limit)*sizeof(uint32_t);
+        current_stack_size = stack_length;
     } else {
         mp_uint_t regs[10];
         mp_uint_t sp = cpu_get_regs_and_sp(regs);
 
         mp_uint_t c_size = (uint32_t) port_stack_get_top() - sp;
-        stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true);
+        supervisor_allocation* stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true, false);
         if (stack_alloc == NULL) {
-            stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true);
+            stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true, false);
             current_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
         } else {
             current_stack_size = next_stack_size;
         }
+        stack_limit = stack_alloc->ptr;
+        stack_length = get_allocation_length(stack_alloc);
     }
 
-    *stack_alloc->ptr = STACK_CANARY_VALUE;
+    *stack_limit = STACK_CANARY_VALUE;
 }
 
 inline bool stack_ok(void) {
-    return stack_alloc == NULL || *stack_alloc->ptr == STACK_CANARY_VALUE;
+    return stack_limit == NULL || *stack_limit == STACK_CANARY_VALUE;
 }
 
 inline void assert_heap_ok(void) {
@@ -77,16 +83,24 @@ void stack_init(void) {
 }
 
 void stack_resize(void) {
-    if (stack_alloc == NULL) {
+    if (stack_limit == NULL) {
         return;
     }
     if (next_stack_size == current_stack_size) {
-        *stack_alloc->ptr = STACK_CANARY_VALUE;
+        *stack_limit = STACK_CANARY_VALUE;
         return;
     }
-    free_memory(stack_alloc);
-    stack_alloc = NULL;
+    free_memory(allocation_from_ptr(stack_limit));
+    stack_limit = NULL;
     allocate_stack();
+}
+
+uint32_t* stack_get_bottom(void) {
+    return stack_limit;
+}
+
+size_t stack_get_length(void) {
+    return stack_length;
 }
 
 void set_next_stack_size(uint32_t size) {

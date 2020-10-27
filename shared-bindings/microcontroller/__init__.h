@@ -1,4 +1,3 @@
-
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
@@ -28,11 +27,11 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
 
-#include "py/mpconfig.h"
 #include "py/obj.h"
+#include "py/mpconfig.h"
 
 #include "common-hal/microcontroller/Processor.h"
-
+#include "shared-bindings/microcontroller/ResetReason.h"
 #include "shared-bindings/microcontroller/RunMode.h"
 
 extern void common_hal_mcu_delay_us(uint32_t);

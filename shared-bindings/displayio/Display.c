@@ -39,7 +39,7 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| _DisplayBus = Union[FourWire, ParallelBus, I2CDisplay]
+//| _DisplayBus = Union['FourWire', 'ParallelBus', 'I2CDisplay']
 //| """:py:class:`FourWire`, :py:class:`ParallelBus` or :py:class:`I2CDisplay`"""
 //|
 
@@ -58,24 +58,26 @@
 //|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplay`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
-//|         command byte followed by a byte to determine the parameter count and if a delay is need after.
-//|         When the top bit of the second byte is 1, the next byte will be the delay time in milliseconds.
-//|         The remaining 7 bits are the parameter count excluding any delay byte. The third through final
-//|         bytes are the remaining command parameters. The next byte will begin a new command definition.
-//|         Here is a portion of ILI9341 init code:
+//|         command byte followed by a byte to determine the parameter count and delay. When the top bit
+//|         of the second byte is 1 (0x80), a delay will occur after the command parameters are sent.
+//|         The remaining 7 bits are the parameter count excluding any delay byte. The bytes following
+//|         are the parameters. When the delay bit is set, a single byte after the parameters specifies
+//|         the delay duration in milliseconds. The value 0xff will lead to an extra long 500 ms delay
+//|         instead of 255 ms. The next byte will begin a new command definition.
+//|         Here is an example:
 //|
 //|         .. code-block:: python
 //|
 //|           init_sequence = (b"\xe1\x0f\x00\x0E\x14\x03\x11\x07\x31\xC1\x48\x08\x0F\x0C\x31\x36\x0F" # Set Gamma
 //|                            b"\x11\x80\x78"# Exit Sleep then delay 0x78 (120ms)
-//|                            b"\x29\x80\x78"# Display on then delay 0x78 (120ms)
+//|                            b"\x29\x81\xaa\x78"# Display on then delay 0x78 (120ms)
 //|                           )
 //|            display = displayio.Display(display_bus, init_sequence, width=320, height=240)
 //|
-//|         The first command is 0xe1 with 15 (0xf) parameters following. The second and third are 0x11 and
-//|         0x29 respectively with delays (0x80) of 120ms (0x78) and no parameters. Multiple byte literals
-//|         (b"") are merged together on load. The parens are needed to allow byte literals on subsequent
-//|         lines.
+//|         The first command is 0xe1 with 15 (0xf) parameters following. The second is 0x11 with 0
+//|         parameters and a 120ms (0x78) delay. The third command is 0x29 with one parameter 0xaa and a
+//|         120ms delay (0x78). Multiple byte literals (b"") are merged together on load. The parens
+//|         are needed to allow byte literals on subsequent lines.
 //|
 //|         The initialization sequence should always leave the display memory access inline with the scan
 //|         of the display to minimize tearing artifacts.

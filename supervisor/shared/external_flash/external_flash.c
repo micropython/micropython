@@ -338,7 +338,7 @@ static bool allocate_ram_cache(void) {
 
     uint32_t table_size = blocks_per_sector * pages_per_block * sizeof(uint32_t);
     // Attempt to allocate outside the heap first.
-    supervisor_cache = allocate_memory(table_size + SPI_FLASH_ERASE_SIZE, false);
+    supervisor_cache = allocate_memory(table_size + SPI_FLASH_ERASE_SIZE, false, false);
     if (supervisor_cache != NULL) {
         MP_STATE_VM(flash_ram_cache) = (uint8_t **) supervisor_cache->ptr;
         uint8_t* page_start = (uint8_t *) supervisor_cache->ptr + table_size;

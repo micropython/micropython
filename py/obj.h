@@ -640,6 +640,10 @@ extern const mp_obj_type_t mp_type_UnicodeError;
 extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ViperTypeError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
+#if CIRCUITPY_ALARM
+extern const mp_obj_type_t mp_type_DeepSleepRequest;
+#endif
+
 
 // Constant objects, globally accessible
 // The macros are for convenience only
@@ -679,6 +683,7 @@ mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
+extern mp_float_t uint64_to_float(uint64_t ui64);
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);

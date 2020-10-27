@@ -31,7 +31,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "supervisor/port.h"
 
 #include "fsl_device_registers.h"
@@ -334,11 +334,8 @@ uint32_t *port_stack_get_top(void) {
     return &_ld_stack_top;
 }
 
-supervisor_allocation _fixed_stack;
-supervisor_allocation* port_fixed_stack(void) {
-    _fixed_stack.ptr = port_stack_get_limit();
-    _fixed_stack.length = (port_stack_get_top() - port_stack_get_limit()) * sizeof(uint32_t);
-    return &_fixed_stack;
+bool port_has_fixed_stack(void) {
+    return true;
 }
 
 uint32_t *port_heap_get_bottom(void) {
@@ -406,7 +403,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     SNVS->HPCR |= SNVS_HPCR_HPTA_EN_MASK;
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
     // App note here: https://www.nxp.com/docs/en/application-note/AN12085.pdf
 
     // Clear the FPU interrupt because it can prevent us from sleeping.

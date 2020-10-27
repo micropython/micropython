@@ -7,7 +7,7 @@ This port adds the ESP32-S2 line of modules from Espressif to Circuitpython. ESP
 - **bindings/** contains some required bindings to the ESP-IDF for exceptions and memory.
 - **boards/** contains the configuration files for each development board and breakout available on the port.
 - **common-hal/** contains the port-specific module implementations, used by shared-module and shared-bindings.
-- **esp-idf/** contains the Espressif IoT development framework installation, includign all the drivers for the port.
+- **esp-idf/** contains the Espressif IoT development framework installation, including all the drivers for the port.
 - **modules/** contains information specific to certain ESP32-S2 hardware modules, such as the pins used for flash and RAM on the WROVER and WROOM.
 - **peripherals/** contains peripheral setup files and peripheral mapping information, sorted by family and sub-variant. Most files in this directory can be generated with the python scripts in **tools/**.
 - **supervisor/** contains port-specific implementations of internal flash, serial and USB, as well as the **port.c** file, which initializes the port at startup.
@@ -30,7 +30,7 @@ Connect these pins using a [USB adapter](https://www.adafruit.com/product/4090) 
 
 ## Building and flashing ##
 
-Before building or flashing the ESP32-S2, you must [install the esp-idf](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html). This must be re-done ever time the esp-idf is updated, but not every time you build. Run `cd ports/esp32s2` from `circuitpython/` to move to the esp32s2 port root, and run:
+Before building or flashing the ESP32-S2, you must [install the esp-idf](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html). This must be re-done every time the esp-idf is updated, but not every time you build. Run `cd ports/esp32s2` from `circuitpython/` to move to the esp32s2 port root, and run:
 
 ```
 ./esp-idf/install.sh

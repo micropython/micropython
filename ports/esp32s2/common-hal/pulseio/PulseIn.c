@@ -77,7 +77,9 @@ void pulsein_reset(void) {
     for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
         handles[i] = NULL;
     }
-    supervisor_disable_tick();
+    if (refcount != 0) {
+        supervisor_disable_tick();
+    }
     refcount = 0;
 }
 
@@ -122,8 +124,10 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
 
     // start RMT RX, and enable ticks so the core doesn't turn off.
     rmt_rx_start(channel, true);
-    supervisor_enable_tick();
     refcount++;
+    if (refcount == 1) {
+        supervisor_enable_tick();
+    }
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {

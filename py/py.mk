@@ -7,7 +7,7 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
-TRANSLATION := en_US
+TRANSLATION ?= en_US
 
 # If qstr autogeneration is not disabled we specify the output header
 # for all collected qstrings.
@@ -19,7 +19,7 @@ endif
 QSTR_GLOBAL_DEPENDENCIES += $(PY_SRC)/mpconfig.h mpconfigport.h
 
 # some code is performance bottleneck and compiled with other optimization options
-_CSUPEROPT = -O3
+CSUPEROPT = -O3
 
 # this sets the config file for FatFs
 CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
@@ -109,7 +109,7 @@ ifeq ($(CIRCUITPY_ULAB),1)
 SRC_MOD += $(patsubst $(TOP)/%,%,$(wildcard $(TOP)/extmod/ulab/code/*.c))
 SRC_MOD += $(patsubst $(TOP)/%,%,$(wildcard $(TOP)/extmod/ulab/code/*/*.c))
 CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1
-$(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-float-equal -Wno-sign-compare -DCIRCUITPY
+$(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
 endif
 
 # External modules written in C.

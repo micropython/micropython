@@ -86,7 +86,7 @@ ifeq ($(DEBUG), 1)
 	CFLAGS += -fno-inline -fno-ipa-sra
 else
 	CFLAGS += -DNDEBUG
-	OPTIMIZATION_FLAGS ?= -O2
+	OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
 	CFLAGS += -ggdb3
 	# TODO: Test with -flto
 	# CFLAGS += -flto
@@ -94,6 +94,9 @@ endif
 
 # to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
+
+# Add -ftree-vrp optimization and checking to all builds. It's not enabled for -Os by default.
+CFLAGS += -ftree-vrp
 
 # MCU Series is defined by the HAL package and doesn't need to be specified here
 C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)

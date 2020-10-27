@@ -116,8 +116,9 @@ STATIC void check_for_deinit(ps2io_ps2_obj_t *self) {
 //|         ...
 //|
 STATIC mp_obj_t ps2io_ps2_obj___exit__(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
-    common_hal_ps2io_ps2_deinit(args[0]);
+    mp_check_self(MP_OBJ_IS_TYPE(args[0], &ps2io_ps2_type));
+    ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    common_hal_ps2io_ps2_deinit(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ps2io_ps2___exit___obj, 4, 4, ps2io_ps2_obj___exit__);
