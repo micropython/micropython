@@ -36,9 +36,8 @@
 
 #include "py/obj.h"
 
-#include "common-hal/microcontroller/Pin.h"
 #include "shared-module/busdevice/I2CDevice.h"
-#include "shared-bindings/busio/I2C.h"
+//#include "shared-bindings/busio/I2C.h"
 
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t busdevice_i2cdevice_type;
