@@ -89,4 +89,8 @@ void gc_info(gc_info_t *info);
 void gc_dump_info(const mp_print_t *print);
 void gc_dump_alloc_table(const mp_print_t *print);
 
+#if MICROPY_TREZOR_MEMPERF
+extern size_t alloc_count;
+#endif
+
 #endif // MICROPY_INCLUDED_PY_GC_H

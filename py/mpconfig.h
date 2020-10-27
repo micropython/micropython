@@ -623,6 +623,11 @@ typedef uint64_t mp_uint_t;
 #define MICROPY_MEM_STATS (0)
 #endif
 
+// Whether to count GC allocations
+#ifndef MICROPY_TREZOR_MEMPERF
+#define MICROPY_TREZOR_MEMPERF (0)
+#endif
+
 // The mp_print_t printer used for debugging output
 #ifndef MICROPY_DEBUG_PRINTER
 #define MICROPY_DEBUG_PRINTER (&mp_plat_print)

@@ -38,6 +38,10 @@
 
 #if MICROPY_ENABLE_GC
 
+#if MICROPY_TREZOR_MEMPERF
+size_t alloc_count = 0;
+#endif
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
@@ -996,6 +1000,10 @@ found:
 
     #if EXTENSIVE_HEAP_PROFILING
     gc_dump_alloc_table(&mp_plat_print);
+    #endif
+
+    #if MICROPY_TREZOR_MEMPERF
+    ++alloc_count;
     #endif
 
     return ret_ptr;
