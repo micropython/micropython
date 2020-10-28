@@ -43,8 +43,10 @@
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (0)
 #endif
 
-#ifndef MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
-#define MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK (0)
+#ifndef MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+// This can be enabled if the BLE stack runs entirely in scheduler context
+// and therefore is able to call directly into the VM to run Python callbacks.
+#define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS (0)
 #endif
 
 // This is used to protect the ringbuffer.
@@ -261,10 +263,8 @@ void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle);
 // Call this when an acknowledgment is received for an indication.
 void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t value_handle, uint8_t status);
 
-#if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
 // Call this when a characteristic is read from. Return false to deny the read.
 bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle);
-#endif
 
 // Call this when an MTU exchange completes.
 void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value);

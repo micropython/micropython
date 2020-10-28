@@ -838,15 +838,15 @@ STATIC uint16_t att_read_callback(hci_con_handle_t connection_handle, uint16_t a
         return 0;
     }
 
-    #if MICROPY_PY_BLUETOOTH_GATTS_ON_READ_CALLBACK
     // Allow Python code to override value (by using gatts_write), or deny (by returning false) the read.
+    // Note this will be a no-op if the ringbuffer implementation is being used, as the Python callback cannot
+    // be executed synchronously. This is currently always the case for btstack.
     if ((buffer == NULL) && (buffer_size == 0)) {
         if (!mp_bluetooth_gatts_on_read_request(connection_handle, att_handle)) {
             DEBUG_printf("att_read_callback: read request denied\n");
             return 0;
         }
     }
-    #endif
 
     uint16_t ret = att_read_callback_handle_blob(entry->data, entry->data_len, offset, buffer, buffer_size);
     return ret;
