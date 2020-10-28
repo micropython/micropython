@@ -114,6 +114,7 @@ STATIC void reverse_addr_byte_order(uint8_t *addr_out, const uint8_t *addr_in) {
 
 STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(const ble_uuid_any_t *uuid) {
     mp_obj_bluetooth_uuid_t result;
+    result.base.type = &mp_type_bluetooth_uuid;
     switch (uuid->u.type) {
         case BLE_UUID_TYPE_16:
             result.type = MP_BLUETOOTH_UUID_TYPE_16;

@@ -135,7 +135,7 @@ _IRQ_GATTS_INDICATE_DONE = const(20)
 _IRQ_MTU_EXCHANGED = const(21)
 */
 
-// Common UUID type.
+// bluetooth.UUID type.
 // Ports are expected to map this to their own internal UUID types.
 // Internally the UUID data is little-endian, but the user should only
 // ever see this if they use the buffer protocol, e.g. in order to
@@ -146,6 +146,8 @@ typedef struct {
     uint8_t type;
     uint8_t data[16];
 } mp_obj_bluetooth_uuid_t;
+
+extern const mp_obj_type_t mp_type_bluetooth_uuid;
 
 //////////////////////////////////////////////////////////////
 // API implemented by ports (i.e. called from modbluetooth.c):
