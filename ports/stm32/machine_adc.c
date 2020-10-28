@@ -156,10 +156,16 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #endif
 
     #if ADC_V2
-    if (adc->CR == 0) {
-        // ADC hasn't been enabled so calibrate it
-        adc->CR |= ADC_CR_ADCAL;
-        while (adc->CR & ADC_CR_ADCAL) {
+    if (!(adc->CR & ADC_CR_ADEN)) {
+        // ADC isn't enabled so calibrate it now
+        #if defined(STM32F0) || defined(STM32L0)
+        LL_ADC_StartCalibration(adc);
+        #elif defined(STM32L4) || defined(STM32WB)
+        LL_ADC_StartCalibration(adc, LL_ADC_SINGLE_ENDED);
+        #else
+        LL_ADC_StartCalibration(adc, LL_ADC_CALIB_OFFSET_LINEARITY, LL_ADC_SINGLE_ENDED);
+        #endif
+        while (LL_ADC_IsCalibrationOnGoing(adc)) {
         }
     }
 
