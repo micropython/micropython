@@ -32,7 +32,32 @@
 #include "py/gc.h"
 #include "supervisor/shared/display.h"
 
-#define CIRCUITPY_SUPERVISOR_ALLOC_COUNT (12)
+enum {
+    CIRCUITPY_SUPERVISOR_ALLOC_COUNT =
+    // stack + heap
+    2
+#ifdef EXTERNAL_FLASH_DEVICES
+    + 1
+#endif
+#if CIRCUITPY_USB_MIDI
+    + 1
+#endif
+#if CIRCUITPY_DISPLAYIO
+    #if CIRCUITPY_TERMINALIO
+        + 1
+    #endif
+    + CIRCUITPY_DISPLAY_LIMIT * (
+        // Maximum needs of one display: max(4 if RGBMATRIX, 1 if SHARPDISPLAY, 0)
+        #if CIRCUITPY_RGBMATRIX
+            4
+        #elif CIRCUITPY_SHARPDISPLAY
+            1
+        #else
+            0
+        #endif
+    )
+#endif
+};
 
 // The lowest two bits of a valid length are always zero, so we can use them to mark an allocation
 // as a hole (freed by the client but not yet reclaimed into the free middle) and as movable.
