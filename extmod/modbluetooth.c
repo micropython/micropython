@@ -51,9 +51,8 @@
 // while still leaving room for a couple of normal (small, fixed size) events.
 #define MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_BYTES_LEN(ringbuf_size) (MAX((int)((ringbuf_size) / 2), (int)(ringbuf_size) - 64))
 
-STATIC const mp_obj_type_t bluetooth_ble_type;
-STATIC const mp_obj_type_t bluetooth_uuid_type;
-
+// bluetooth.BLE type. This is currently a singleton, however in the future
+// this could allow having multiple BLE interfaces on different UARTs.
 typedef struct {
     mp_obj_base_t base;
     mp_obj_t irq_handler;
@@ -69,6 +68,8 @@ typedef struct {
     mp_obj_t irq_read_request_data_tuple;
     #endif
 } mp_obj_bluetooth_ble_t;
+
+STATIC const mp_obj_type_t mp_type_bluetooth_ble;
 
 // TODO: this seems like it could be generic?
 STATIC mp_obj_t bluetooth_handle_errno(int err) {
@@ -88,7 +89,7 @@ STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     mp_obj_bluetooth_uuid_t *self = m_new_obj(mp_obj_bluetooth_uuid_t);
-    self->base.type = &bluetooth_uuid_type;
+    self->base.type = &mp_type_bluetooth_uuid;
 
     if (mp_obj_is_int(all_args[0])) {
         self->type = MP_BLUETOOTH_UUID_TYPE_16;
@@ -152,7 +153,7 @@ STATIC mp_obj_t bluetooth_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t bluetooth_uuid_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    if (!mp_obj_is_type(rhs_in, &bluetooth_uuid_type)) {
+    if (!mp_obj_is_type(rhs_in, &mp_type_bluetooth_uuid)) {
         return MP_OBJ_NULL;
     }
 
@@ -225,7 +226,7 @@ STATIC void ringbuf_get_uuid(ringbuf_t *ringbuf, mp_obj_bluetooth_uuid_t *uuid) 
 }
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
-STATIC const mp_obj_type_t bluetooth_uuid_type = {
+const mp_obj_type_t mp_type_bluetooth_uuid = {
     { &mp_type_type },
     .name = MP_QSTR_UUID,
     .make_new = bluetooth_uuid_make_new,
@@ -247,7 +248,7 @@ STATIC mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
     (void)all_args;
     if (MP_STATE_VM(bluetooth) == MP_OBJ_NULL) {
         mp_obj_bluetooth_ble_t *o = m_new0(mp_obj_bluetooth_ble_t, 1);
-        o->base.type = &bluetooth_ble_type;
+        o->base.type = &mp_type_bluetooth_ble;
 
         o->irq_handler = mp_const_none;
 
@@ -263,7 +264,7 @@ STATIC mp_obj_t bluetooth_ble_make_new(const mp_obj_type_t *type, size_t n_args,
         mp_obj_memoryview_init(&o->irq_data_addr, 'B', 0, 0, o->irq_data_addr_bytes);
         o->irq_data_data_alloc = MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_BYTES_LEN(MICROPY_PY_BLUETOOTH_RINGBUF_SIZE);
         mp_obj_memoryview_init(&o->irq_data_data, 'B', 0, 0, m_new(uint8_t, o->irq_data_data_alloc));
-        o->irq_data_uuid.base.type = &bluetooth_uuid_type;
+        o->irq_data_uuid.base.type = &mp_type_bluetooth_uuid;
 
         // Allocate the default ringbuf.
         ringbuf_alloc(&o->ringbuf, MICROPY_PY_BLUETOOTH_RINGBUF_SIZE);
@@ -441,7 +442,7 @@ STATIC mp_obj_t bluetooth_ble_gap_advertise(size_t n_args, const mp_obj_t *pos_a
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bluetooth_ble_gap_advertise_obj, 1, bluetooth_ble_gap_advertise);
 
 STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t characteristics_in, uint16_t **handles, size_t *num_handles) {
-    if (!mp_obj_is_type(uuid_in, &bluetooth_uuid_type)) {
+    if (!mp_obj_is_type(uuid_in, &mp_type_bluetooth_uuid)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid service UUID"));
     }
     mp_obj_bluetooth_uuid_t *service_uuid = MP_OBJ_TO_PTR(uuid_in);
@@ -482,7 +483,7 @@ STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t character
             mp_raise_ValueError(MP_ERROR_TEXT("invalid characteristic tuple"));
         }
         mp_obj_t uuid_obj = characteristic_items[0];
-        if (!mp_obj_is_type(uuid_obj, &bluetooth_uuid_type)) {
+        if (!mp_obj_is_type(uuid_obj, &mp_type_bluetooth_uuid)) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid characteristic UUID"));
         }
 
@@ -514,7 +515,7 @@ STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t character
                 mp_obj_t *descriptor_items;
                 mp_obj_get_array_fixed_n(descriptor_obj, 2, &descriptor_items);
                 mp_obj_t desc_uuid_obj = descriptor_items[0];
-                if (!mp_obj_is_type(desc_uuid_obj, &bluetooth_uuid_type)) {
+                if (!mp_obj_is_type(desc_uuid_obj, &mp_type_bluetooth_uuid)) {
                     mp_raise_ValueError(MP_ERROR_TEXT("invalid descriptor UUID"));
                 }
 
@@ -717,7 +718,7 @@ STATIC mp_obj_t bluetooth_ble_gattc_discover_services(size_t n_args, const mp_ob
     mp_int_t conn_handle = mp_obj_get_int(args[1]);
     mp_obj_bluetooth_uuid_t *uuid = NULL;
     if (n_args == 3 && args[2] != mp_const_none) {
-        if (!mp_obj_is_type(args[2], &bluetooth_uuid_type)) {
+        if (!mp_obj_is_type(args[2], &mp_type_bluetooth_uuid)) {
             mp_raise_TypeError(MP_ERROR_TEXT("UUID"));
         }
         uuid = MP_OBJ_TO_PTR(args[2]);
@@ -732,7 +733,7 @@ STATIC mp_obj_t bluetooth_ble_gattc_discover_characteristics(size_t n_args, cons
     mp_int_t end_handle = mp_obj_get_int(args[3]);
     mp_obj_bluetooth_uuid_t *uuid = NULL;
     if (n_args == 5 && args[4] != mp_const_none) {
-        if (!mp_obj_is_type(args[4], &bluetooth_uuid_type)) {
+        if (!mp_obj_is_type(args[4], &mp_type_bluetooth_uuid)) {
             mp_raise_TypeError(MP_ERROR_TEXT("UUID"));
         }
         uuid = MP_OBJ_TO_PTR(args[4]);
@@ -817,7 +818,7 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_ble_locals_dict, bluetooth_ble_locals_dict_table);
 
-STATIC const mp_obj_type_t bluetooth_ble_type = {
+STATIC const mp_obj_type_t mp_type_bluetooth_ble = {
     { &mp_type_type },
     .name = MP_QSTR_BLE,
     .make_new = bluetooth_ble_make_new,
@@ -826,8 +827,8 @@ STATIC const mp_obj_type_t bluetooth_ble_type = {
 
 STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ubluetooth) },
-    { MP_ROM_QSTR(MP_QSTR_BLE), MP_ROM_PTR(&bluetooth_ble_type) },
-    { MP_ROM_QSTR(MP_QSTR_UUID), MP_ROM_PTR(&bluetooth_uuid_type) },
+    { MP_ROM_QSTR(MP_QSTR_BLE), MP_ROM_PTR(&mp_type_bluetooth_ble) },
+    { MP_ROM_QSTR(MP_QSTR_UUID), MP_ROM_PTR(&mp_type_bluetooth_uuid) },
     { MP_ROM_QSTR(MP_QSTR_FLAG_READ), MP_ROM_INT(MP_BLUETOOTH_CHARACTERISTIC_FLAG_READ) },
     { MP_ROM_QSTR(MP_QSTR_FLAG_WRITE), MP_ROM_INT(MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE) },
     { MP_ROM_QSTR(MP_QSTR_FLAG_NOTIFY), MP_ROM_INT(MP_BLUETOOTH_CHARACTERISTIC_FLAG_NOTIFY) },

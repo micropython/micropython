@@ -75,6 +75,7 @@ STATIC int btstack_error_to_errno(int err) {
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 STATIC mp_obj_bluetooth_uuid_t create_mp_uuid(uint16_t uuid16, const uint8_t *uuid128) {
     mp_obj_bluetooth_uuid_t result;
+    result.base.type = &mp_type_bluetooth_uuid;
     if (uuid16 != 0) {
         result.data[0] = uuid16 & 0xff;
         result.data[1] = (uuid16 >> 8) & 0xff;
