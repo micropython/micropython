@@ -30,6 +30,7 @@
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
+#include "supervisor/shared/serial.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
@@ -102,14 +103,16 @@ void usb_irq_handler(void) {
 // tinyusb callbacks
 //--------------------------------------------------------------------+
 
-// Invoked when device is mounted
+// Invoked when device is plugged into a host
 void tud_mount_cb(void) {
     usb_msc_mount();
+    _workflow_active = true;
 }
 
-// Invoked when device is unmounted
+// Invoked when device is unplugged from the host
 void tud_umount_cb(void) {
     usb_msc_umount();
+    _workflow_active = false;
 }
 
 // Invoked when usb bus is suspended
@@ -117,10 +120,12 @@ void tud_umount_cb(void) {
 // USB Specs: Within 7ms, device must draw an average current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en) {
     _serial_connected = false;
+    _workflow_active = false;
 }
 
 // Invoked when usb bus is resumed
 void tud_resume_cb(void) {
+    _workflow_active = true;
 }
 
 // Invoked when cdc when line state changed e.g connected/disconnected

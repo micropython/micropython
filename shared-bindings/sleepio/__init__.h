@@ -3,8 +3,7 @@
 
 #include "py/obj.h"
 
-// This is implemented by shared-bindings so that implementations can set the
-// newest alarm source.
-extern void common_hal_sleepio_set_wake_alarm(mp_obj_t alarm);
+extern mp_obj_t common_hal_sleepio_get_wake_alarm(void);
+extern sleepio_reset_reason_t common_hal_sleepio_get_reset_reason(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_SLEEPIO___INIT___H

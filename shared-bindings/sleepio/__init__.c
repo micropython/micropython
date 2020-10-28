@@ -47,6 +47,10 @@
 //| """The most recent alarm to wake us up from a sleep (light or deep.)"""
 //|
 
+//| reset_reason: ResetReason
+//| """The reason the chip started up from reset state. This can may be power up or due to an alarm."""
+//|
+
 //| def sleep_until_alarm(alarm: Alarm, ...) -> Alarm:
 //|     """Performs a light sleep until woken by one of the alarms. The alarm that woke us up is
 //|        returned."""
@@ -54,14 +58,6 @@
 //|
 
 STATIC mp_obj_t sleepio_sleep_until_alarm(size_t n_args, const mp_obj_t *args) {
-    // mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
-    // vstr_t vstr;
-    // vstr_init_len(&vstr, size);
-    // byte *p = (byte*)vstr.buf;
-    // memset(p, 0, size);
-    // byte *end_p = &p[size];
-    // shared_modules_struct_pack_into(args[0], p, end_p, n_args - 1, &args[1]);
-    // return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(sleepio_sleep_until_alarm_obj, 1, MP_OBJ_FUN_ARGS_MAX, sleepio_sleep_until_alarm);
 
@@ -71,14 +67,6 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(sleepio_sleep_until_alarm_obj, 1, MP_OBJ_FUN
 //|     ...
 //|
 STATIC mp_obj_t sleepio_set_alarms(size_t n_args, const mp_obj_t *args) {
-    // mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
-    // vstr_t vstr;
-    // vstr_init_len(&vstr, size);
-    // byte *p = (byte*)vstr.buf;
-    // memset(p, 0, size);
-    // byte *end_p = &p[size];
-    // shared_modules_struct_pack_into(args[0], p, end_p, n_args - 1, &args[1]);
-    // return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(sleepio_set_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, sleepio_set_alarms);
 
@@ -87,13 +75,20 @@ mp_map_elem_t sleepio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sleepio) },
 
     { MP_ROM_QSTR(MP_QSTR_wake_alarm), mp_const_none },
+    { MP_ROM_QSTR(MP_QSTR_reset_reason), mp_const_none },
 
     { MP_ROM_QSTR(MP_QSTR_sleep_until_alarm), sleepio_sleep_until_alarm_obj },
     { MP_ROM_QSTR(MP_QSTR_set_alarms), sleepio_set_alarms_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(sleepio_module_globals, sleepio_module_globals_table);
 
+// These are called from common hal code to set the current wake alarm.
 void common_hal_sleepio_set_wake_alarm(mp_obj_t alarm) {
+    // sleepio_module_globals_table[1].value = alarm;
+}
+
+// These are called from common hal code to set the current wake alarm.
+void common_hal_sleepio_set_reset_reason(mp_obj_t reset_reason) {
     // sleepio_module_globals_table[1].value = alarm;
 }
 
