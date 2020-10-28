@@ -418,6 +418,7 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "adafruit_esp32s2_eink_portal"
         - "adafruit_metro_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
