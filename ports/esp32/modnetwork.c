@@ -330,7 +330,7 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    wifi_config_t wifi_sta_config = {{{0}}};
+    wifi_config_t wifi_sta_config = {0};
 
     // configure any parameters that are given
     if (n_args > 1) {
