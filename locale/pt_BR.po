@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-21 20:13-0500\n"
-"PO-Revision-Date: 2020-10-27 21:01+0000\n"
+"PO-Revision-Date: 2020-10-28 21:45+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -298,7 +298,7 @@ msgstr "O tipo do endereço está fora do alcance"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "Todos os periféricos CAN estão em uso"
 
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -426,7 +426,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
-msgstr ""
+msgstr "O Baudrate não é suportado pelo periférico"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -2932,7 +2932,7 @@ msgstr "o long int não é suportado nesta compilação"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
-msgstr ""
+msgstr "o loopback + o modo silencioso não é suportado pelo periférico"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -3555,12 +3555,12 @@ msgstr "a tupla/lista está com tamanho incorreto"
 #: ports/esp32s2/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
-msgstr ""
+msgstr "o twai_driver_install retornou um erro esp-idf #%d"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_start returned esp-idf error #%d"
-msgstr ""
+msgstr "o twai_start retornou um erro esp-idf #%d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
