@@ -76,22 +76,23 @@ STATIC mp_obj_t busdevice_i2cdevice_make_new(const mp_obj_type_t *type, size_t n
 
     busio_i2c_obj_t* i2c = args[ARG_i2c].u_obj;
 
-    common_hal_busdevice_i2cdevice_construct(self, i2c, args[ARG_device_address].u_int, args[ARG_probe].u_bool);
+    common_hal_busdevice_i2cdevice_construct(MP_OBJ_TO_PTR(self), i2c, args[ARG_device_address].u_int);
     if (args[ARG_probe].u_bool == true) {
-        common_hal_busdevice_i2cdevice___probe_for_device(self);
+        common_hal_busdevice_i2cdevice_probe_for_device(self);
     }
 
     return (mp_obj_t)self;
 }
 
 STATIC mp_obj_t busdevice_i2cdevice_obj___enter__(mp_obj_t self_in) {
-    common_hal_busdevice_i2cdevice_lock(self_in);
-    return self_in;
+    busdevice_i2cdevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_busdevice_i2cdevice_lock(self);
+    return self;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busdevice_i2cdevice___enter___obj, busdevice_i2cdevice_obj___enter__);
 
 STATIC mp_obj_t busdevice_i2cdevice_obj___exit__(size_t n_args, const mp_obj_t *args) {
-    common_hal_busdevice_i2cdevice_unlock(args[0]);
+    common_hal_busdevice_i2cdevice_unlock(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busdevice_i2cdevice___exit___obj, 4, 4, busdevice_i2cdevice_obj___exit__);
@@ -118,7 +119,7 @@ STATIC void readinto(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, int32_t s
         mp_raise_ValueError(translate("Buffer must be at least length 1"));
     }
 
-    uint8_t status = common_hal_busdevice_i2cdevice_readinto(self, ((uint8_t*)bufinfo.buf) + start, length);
+    uint8_t status = common_hal_busdevice_i2cdevice_readinto(MP_OBJ_TO_PTR(self), ((uint8_t*)bufinfo.buf) + start, length);
     if (status != 0) {
         mp_raise_OSError(status);
     }
@@ -127,7 +128,7 @@ STATIC void readinto(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, int32_t s
 STATIC mp_obj_t busdevice_i2cdevice_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
@@ -165,7 +166,7 @@ STATIC void write(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, int32_t star
         mp_raise_ValueError(translate("Buffer must be at least length 1"));
     }
 
-    uint8_t status = common_hal_busdevice_i2cdevice_write(self, ((uint8_t*)bufinfo.buf) + start, length);
+    uint8_t status = common_hal_busdevice_i2cdevice_write(MP_OBJ_TO_PTR(self), ((uint8_t*)bufinfo.buf) + start, length);
     if (status != 0) {
         mp_raise_OSError(status);
     }
@@ -174,7 +175,7 @@ STATIC void write(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, int32_t star
 STATIC mp_obj_t busdevice_i2cdevice_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
@@ -214,8 +215,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busdevice_i2cdevice_write_obj, 2, busdevice_i2cdevice
 STATIC mp_obj_t busdevice_i2cdevice_write_then_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_out_buffer,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_in_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_out_buffer,    MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_in_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_out_start,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_out_end,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
         { MP_QSTR_in_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -234,30 +235,13 @@ STATIC mp_obj_t busdevice_i2cdevice_write_then_readinto(size_t n_args, const mp_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busdevice_i2cdevice_write_then_readinto_obj, 3, busdevice_i2cdevice_write_then_readinto);
 
-//| def __probe_for_device(self):
-//|     """
-//|     Try to read a byte from an address,
-//|     if you get an OSError it means the device is not there
-//|     or that the device does not support these means of probing
-//|     """
-//|     ...
-//|
-STATIC mp_obj_t busdevice_i2cdevice___probe_for_device(mp_obj_t self_in) {
-    busdevice_i2cdevice_obj_t *self = self_in;
-    common_hal_busdevice_i2cdevice___probe_for_device(self);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(busdevice_i2cdevice___probe_for_device_obj, busdevice_i2cdevice___probe_for_device);
-
 STATIC const mp_rom_map_elem_t busdevice_i2cdevice_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&busdevice_i2cdevice___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&busdevice_i2cdevice___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&busdevice_i2cdevice_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&busdevice_i2cdevice_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_then_readinto), MP_ROM_PTR(&busdevice_i2cdevice_write_then_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR___probe_for_device), MP_ROM_PTR(&busdevice_i2cdevice___probe_for_device_obj) },
 };
-
 
 STATIC MP_DEFINE_CONST_DICT(busdevice_i2cdevice_locals_dict, busdevice_i2cdevice_locals_dict_table);
 

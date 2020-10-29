@@ -34,7 +34,6 @@ typedef struct {
     mp_obj_base_t base;
     busio_i2c_obj_t *i2c;
     uint8_t device_address;
-    bool probe;
 } busdevice_i2cdevice_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_I2CDEVICE_H

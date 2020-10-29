@@ -30,16 +30,17 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 
-void common_hal_busdevice_i2cdevice_construct(busdevice_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address, bool probe) {
+void common_hal_busdevice_i2cdevice_construct(busdevice_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address) {
     self->i2c = i2c;
     self->device_address = device_address;
-    self->probe = probe;
 }
 
 void common_hal_busdevice_i2cdevice_lock(busdevice_i2cdevice_obj_t *self) {
     bool success = false;
     while (!success) {
         success = common_hal_busio_i2c_try_lock(self->i2c);
+        RUN_BACKGROUND_TASKS;
+        mp_handle_pending();
     }
 }
 
@@ -48,29 +49,14 @@ void common_hal_busdevice_i2cdevice_unlock(busdevice_i2cdevice_obj_t *self) {
 }
 
 uint8_t common_hal_busdevice_i2cdevice_readinto(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length) {
-    uint8_t status = common_hal_busio_i2c_read(self->i2c, self->device_address, buffer, length);
-
-    return status;
+    return common_hal_busio_i2c_read(self->i2c, self->device_address, buffer, length);
 }
 
 uint8_t common_hal_busdevice_i2cdevice_write(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length) {
-    uint8_t status = common_hal_busio_i2c_write(self->i2c, self->device_address, buffer, length, true);
-
-    return status;
+    return common_hal_busio_i2c_write(self->i2c, self->device_address, buffer, length, true);
 }
 
-uint8_t common_hal_busdevice_i2cdevice_write_then_readinto(busdevice_i2cdevice_obj_t *self, mp_obj_t out_buffer, mp_obj_t in_buffer,
-                    size_t out_length, size_t in_length) {
-    uint8_t status = 0;
-
-    status = common_hal_busio_i2c_write(self->i2c, self->device_address, out_buffer, out_length, true);
-
-    status = common_hal_busio_i2c_read(self->i2c, self->device_address, in_buffer, in_length);
-
-    return status;
-}
-
-void common_hal_busdevice_i2cdevice___probe_for_device(busdevice_i2cdevice_obj_t *self) {
+void common_hal_busdevice_i2cdevice_probe_for_device(busdevice_i2cdevice_obj_t *self) {
     common_hal_busdevice_i2cdevice_lock(self);
 
     mp_buffer_info_t bufinfo;
