@@ -133,6 +133,10 @@ void nlr_jump_fail(void *val) {
     __fatal_error("");
 }
 
+void abort(void) {
+    __fatal_error("abort");
+}
+
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     (void)func;
