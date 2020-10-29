@@ -220,7 +220,7 @@ SRC_MOD += modjni.c
 endif
 
 # source files
-SRC_C = \
+SRC_C += \
 	main.c \
 	gccollect.c \
 	unix_mphal.c \
@@ -232,7 +232,6 @@ SRC_C = \
 	modtime.c \
 	moduselect.c \
 	alloc.c \
-	coverage.c \
 	fatfs_port.c \
 	mpbthciport.c \
 	mpbtstackport_common.c \
@@ -249,7 +248,6 @@ LIB_SRC_C += $(addprefix lib/,\
 	)
 
 SRC_CXX += \
-	coveragecpp.cpp \
 	$(SRC_MOD_CXX)
 
 OBJ = $(PY_O)
