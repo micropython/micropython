@@ -23,9 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include <string.h>
+
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/reload.h"
+#include "py/objstr.h"
 
 #include "lib/utils/interrupt_char.h"
 #include "supervisor/shared/autoreload.h"
@@ -112,6 +115,87 @@ STATIC mp_obj_t supervisor_set_next_stack_limit(mp_obj_t size_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_next_stack_limit_obj, supervisor_set_next_stack_limit);
 
+//| def set_next_code_file(filename: Optional[str], *, reload_on_success : bool = False, reload_on_error: bool = False, sticky_on_success: bool = False, sticky_on_error: bool = False, sticky_on_reload: bool = False) -> None:
+//|     """Set what file to run on the next vm run.
+//|
+//|     When not ``None``, the given ``filename`` is inserted at the front of the usual ['code.py',
+//|     'main.py'] search sequence.
+//|
+//|     The optional keyword arguments specify what happens after the specified file has run:
+//|
+//|     ``sticky_on_…`` determine whether the newly set filename and options stay in effect: If
+//|     True, further runs will continue to run that file (unless it says otherwise by calling
+//|     ``set_next_code_filename()`` itself). If False, the settings will only affect one run and
+//|     revert to the standard code.py/main.py afterwards.
+//|
+//|     ``reload_on_…`` determine how to continue: If False, wait in the usual "Code done running.
+//|     Waiting for reload. / Press any key to enter the REPL. Use CTRL-D to reload." state. If
+//|     True, reload immediately as if CTRL-D was pressed.
+//|
+//|     ``…_on_success`` take effect when the program runs to completion or calls ``sys.exit()``.
+//|
+//|     ``…_on_error`` take effect when the program exits with an exception, including the
+//|     KeyboardInterrupt caused by CTRL-C.
+//|
+//|     ``…_on_reload`` take effect when the program is interrupted by files being written to the USB
+//|     drive (auto-reload) or when it calls ``supervisor.reload()``.
+//|
+//|     These settings are stored in RAM, not in persistent memory, and will therefore only affect
+//|     soft reloads. Powering off or resetting the device will always revert to standard settings.
+//|
+//|     When called multiple times in the same run, only the last call takes effect, replacing any
+//|     settings made by previous ones. This is the main use of passing ``None`` as a filename: to
+//|     reset to the standard search sequence."""
+//|     ...
+//|
+STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = mp_const_none} },
+        { MP_QSTR_reload_on_success, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_reload_on_error, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_sticky_on_success, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_sticky_on_error, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_sticky_on_reload, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+    };
+    struct {
+        mp_arg_val_t filename;
+        mp_arg_val_t reload_on_success;
+        mp_arg_val_t reload_on_error;
+        mp_arg_val_t sticky_on_success;
+        mp_arg_val_t sticky_on_error;
+        mp_arg_val_t sticky_on_reload;
+    } args;
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+    if (!MP_OBJ_IS_STR_OR_BYTES(args.filename.u_obj) && args.filename.u_obj != mp_const_none) {
+        mp_raise_TypeError(translate("argument has wrong type"));
+    }
+    if (args.filename.u_obj == mp_const_none) args.filename.u_obj = mp_const_empty_bytes;
+    uint8_t options = 0;
+    if (args.reload_on_success.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS;
+    if (args.reload_on_error.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR;
+    if (args.sticky_on_success.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
+    if (args.sticky_on_error.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_ERROR;
+    if (args.sticky_on_reload.u_bool) options |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
+    size_t len;
+    const char* filename = mp_obj_str_get_data(args.filename.u_obj, &len);
+    free_memory(next_code_allocation);
+    if (options != 0 || len != 0) {
+        next_code_allocation = allocate_memory(align32_size(sizeof(next_code_info_t) + len + 1), false, true);
+        if (next_code_allocation == NULL) {
+            m_malloc_fail(sizeof(next_code_info_t) + len + 1);
+        }
+        next_code_info_t* next_code = (next_code_info_t*)next_code_allocation->ptr;
+        next_code->options = options | SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
+        memcpy(&next_code->filename, filename, len);
+        next_code->filename[len] = '\0';
+    }
+    else {
+        next_code_allocation = NULL;
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(supervisor_set_next_code_file_obj, 0, supervisor_set_next_code_file);
+
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
     { MP_ROM_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
@@ -121,7 +205,7 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reload),  MP_ROM_PTR(&supervisor_reload_obj) },
     { MP_ROM_QSTR(MP_QSTR_RunReason),  MP_ROM_PTR(&supervisor_run_reason_type) },
     { MP_ROM_QSTR(MP_QSTR_set_next_stack_limit),  MP_ROM_PTR(&supervisor_set_next_stack_limit_obj) },
-
+    { MP_ROM_QSTR(MP_QSTR_set_next_code_file),  MP_ROM_PTR(&supervisor_set_next_code_file_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_module_globals, supervisor_module_globals_table);

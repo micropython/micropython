@@ -29,6 +29,24 @@
 
 #include <stdbool.h>
 
+#include "supervisor/memory.h"
+
+enum {
+	SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS = 0x1,
+	SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR = 0x2,
+	SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS = 0x4,
+	SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_ERROR = 0x8,
+	SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD = 0x10,
+	SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET = 0x20,
+};
+
+typedef struct {
+    uint8_t options;
+    char filename[];
+} next_code_info_t;
+
+extern supervisor_allocation* next_code_allocation;
+
 extern volatile bool reload_requested;
 
 void autoreload_tick(void);

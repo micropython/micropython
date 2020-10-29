@@ -36,6 +36,8 @@ enum {
     CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT =
     // stack + heap
     2
+    // next_code_allocation
+    + 1
 #ifdef EXTERNAL_FLASH_DEVICES
     + 1
 #endif
