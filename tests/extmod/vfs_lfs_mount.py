@@ -67,6 +67,23 @@ def test(bdev, vfs_class):
     # umount
     uos.umount("/lfs")
 
+    # mount read-only
+    vfs = vfs_class(bdev)
+    uos.mount(vfs, "/lfs", readonly=True)
+
+    # test reading works
+    with open("/lfs/subdir/lfsmod2.py") as f:
+        print("lfsmod2.py:", f.read())
+
+    # test writing fails
+    try:
+        open("/lfs/test_write", "w")
+    except OSError as er:
+        print(repr(er))
+
+    # umount
+    uos.umount("/lfs")
+
     # clear imported modules
     usys.modules.clear()
 

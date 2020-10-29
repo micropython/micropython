@@ -2,7 +2,13 @@ test <class 'VfsLfs1'>
 hello from lfs
 package
 hello from lfs
+lfsmod2.py: print("hello from lfs")
+
+OSError(30,)
 test <class 'VfsLfs2'>
 hello from lfs
 package
 hello from lfs
+lfsmod2.py: print("hello from lfs")
+
+OSError(36,)
