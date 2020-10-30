@@ -68,10 +68,15 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     uint32_t start = 0;
     #endif
 
+    #ifdef MICROPY_BOARD_BEFORE_PYTHON_EXEC
+    MICROPY_BOARD_BEFORE_PYTHON_EXEC(input_kind, exec_flags);
+    #endif
+
     // by default a SystemExit exception returns 0
     pyexec_system_exit = 0;
 
     nlr_buf_t nlr;
+    nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun;
         #if MICROPY_MODULE_FROZEN_MPY
@@ -156,6 +161,10 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     if (exec_flags & EXEC_FLAG_PRINT_EOF) {
         mp_hal_stdout_tx_strn("\x04", 1);
     }
+
+    #ifdef MICROPY_BOARD_AFTER_PYTHON_EXEC
+    MICROPY_BOARD_AFTER_PYTHON_EXEC(input_kind, exec_flags, nlr.ret_val, &ret);
+    #endif
 
     return ret;
 }
