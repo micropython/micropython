@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 
 //| class Message:
-//|     def __init__(self, id: int, data: bytes, *, extended: bool = False):
+//|     def __init__(self, id: int, data: bytes, *, extended: bool = False) -> None:
 //|         """Construct a Message to send on a CAN bus.
 //|
 //|         :param int id: The numeric ID of the message

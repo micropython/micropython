@@ -82,7 +82,7 @@ STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socketpool_socket);
 
-//| def getaddrinfo(host: str, port: int, family: int = 0, type: int = 0, proto: int = 0, flags: int = 0) -> tuple:
+//| def getaddrinfo(host: str, port: int, family: int = 0, type: int = 0, proto: int = 0, flags: int = 0) -> Tuple[int, int, int, str, Tuple[str, int]]:
 //|     """Gets the address information for a hostname and port
 //|
 //|     Returns the appropriate family, socket type, socket protocol and

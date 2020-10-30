@@ -33,7 +33,7 @@
 //|     """Describe CAN bus messages to match"""
 //|
 //|
-//|     def __init__(self, id: int, *, mask: Optional[int] = None, extended: bool = False):
+//|     def __init__(self, id: int, *, mask: Optional[int] = None, extended: bool = False) -> None:
 //|         """Construct a Match with the given properties.
 //|
 //|         If mask is not None, then the filter is for any id which matches all
