@@ -79,7 +79,7 @@ const mp_obj_property_t wifi_radio_mac_address_obj = {
 };
 
 
-//|     def start_scanning_networks(self, *, start_channel=1, stop_channel=11) -> Iterable[Network]:
+//|     def start_scanning_networks(self, *, start_channel: int = 1, stop_channel: int = 11) -> Iterable[Network]:
 //|         """Scans for available wifi networks over the given channel range. Make sure the channels are allowed in your country."""
 //|         ...
 //|
@@ -283,7 +283,7 @@ const mp_obj_property_t wifi_radio_ap_info_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     def ping(self, ip, *, timeout: float = 0.5) -> float:
+//|     def ping(self, ip: ipaddress.IPv4Address, *, timeout: Optional[float] = 0.5) -> float:
 //|         """Ping an IP to test connectivity. Returns echo time in seconds.
 //|            Returns None when it times out."""
 //|         ...
