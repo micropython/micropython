@@ -61,6 +61,10 @@
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
 #include "components/soc/soc/esp32s2/include/soc/rtc_cntl_reg.h"
 
+#if CIRCUITPY_AUDIOBUSIO
+#include "i2s_common.h"
+#endif
+
 #define HEAP_SIZE (48 * 1024)
 
 uint32_t* heap;
@@ -151,6 +155,10 @@ void reset_port(void) {
 
 #if CIRCUITPY_PS2IO
     ps2_reset();
+#endif
+
+#if CIRCUITPY_AUDIOBUSIO
+    i2s_reset();
 #endif
 
 #if CIRCUITPY_PULSEIO
