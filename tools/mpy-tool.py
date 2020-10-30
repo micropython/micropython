@@ -830,6 +830,7 @@ def freeze_mpy(base_qstrs, raw_codes):
 
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
+    print('#include "py/objfloat.h"')
     print('#include "py/objstr.h"')
     print('#include "py/emitglue.h"')
     print('#include "py/nativeglue.h"')

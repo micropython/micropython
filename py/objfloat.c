@@ -39,25 +39,12 @@
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 
-// M_E and M_PI are not part of the math.h standard and may not be defined
-#ifndef M_E
-#define M_E (2.7182818284590452354)
-#endif
-#ifndef M_PI
-#define M_PI (3.14159265358979323846)
-#endif
-
-typedef struct _mp_obj_float_t {
-    mp_obj_base_t base;
-    mp_float_t value;
-} mp_obj_float_t;
+#include "py/objfloat.h"
 
 const mp_obj_float_t mp_const_float_e_obj = {{&mp_type_float}, (mp_float_t)M_E};
 const mp_obj_float_t mp_const_float_pi_obj = {{&mp_type_float}, (mp_float_t)M_PI};
 
 #endif
-
-#define MICROPY_FLOAT_ZERO MICROPY_FLOAT_CONST(0.0)
 
 #if MICROPY_FLOAT_HIGH_QUALITY_HASH
 // must return actual integer value if it fits in mp_int_t
