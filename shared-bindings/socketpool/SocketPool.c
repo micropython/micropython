@@ -57,8 +57,14 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(s);
 }
 
-
-//|     def socket(self, family: int, type: int, proto: int) -> socketpool.Socket:
+//|     AF_INET = 0
+//|     AF_INET6 = 1
+//|     SOCK_STREAM = 0
+//|     SOCK_DGRAM = 1
+//|     SOCK_RAW = 2
+//|     IPPROTO_TCP = 6
+//|
+//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = IPPROTO_TCP) -> socketpool.Socket:
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6
@@ -66,6 +72,7 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
 //|         :param ~int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)"""
 //|         ...
 //|
+
 STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 0, 5, false);
 
