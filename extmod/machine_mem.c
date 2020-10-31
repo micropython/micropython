@@ -63,8 +63,8 @@ STATIC void machine_mem_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     // TODO support slice index to read/write multiple values at once
     machine_mem_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (mp_obj_is_type(index, &mp_type_tuple)) {
-        mp_raise_TypeError(MP_ERROR_TEXT("Does not support slices"));
+    if (mp_obj_is_type(index, &mp_type_slice)) {
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Does not support slices"));
     }
     if (value == MP_OBJ_NULL) {
         // delete

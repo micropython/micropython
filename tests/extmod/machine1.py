@@ -26,3 +26,8 @@ try:
     del machine.mem8[0]
 except TypeError:
     print("TypeError")
+
+try:
+    machine.mem8[0:1]
+except NotImplementedError:
+    print("NotImplementedError")
