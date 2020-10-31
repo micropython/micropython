@@ -437,6 +437,7 @@ SRC_SHARED_MODULE_ALL = \
 	board/__init__.c \
 	busdevice/__init__.c \
 	busdevice/I2CDevice.c \
+	busdevice/SPIDevice.c \
 	busio/OneWire.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
