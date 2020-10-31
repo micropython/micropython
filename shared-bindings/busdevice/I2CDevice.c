@@ -39,27 +39,30 @@
 
 
 //| class I2CDevice:
-//|     """
-//|     Represents a single I2C device and manages locking the bus and the device
-//|     address.
-//|     :param ~busio.I2C i2c: The I2C bus the device is on
-//|     :param int device_address: The 7 bit device address
-//|     :param bool probe: Probe for the device upon object creation, default is true
-//|     .. note:: This class is **NOT** built into CircuitPython. See
-//|       :ref:`here for install instructions <bus_device_installation>`.
-//|     Example:
-//|     .. code-block:: python
-//|         import busio
-//|         from board import *
-//|         from adafruit_bus_device.i2c_device import I2CDevice
-//|         with busio.I2C(SCL, SDA) as i2c:
-//|             device = I2CDevice(i2c, 0x70)
-//|             bytes_read = bytearray(4)
-//|             with device:
-//|                 device.readinto(bytes_read)
-//|             # A second transaction
-//|             with device:
-//|                 device.write(bytes_read)"""
+//|     """I2C Device Manager"""
+//|
+//|     def __init__(self, scl: microcontroller.Pin, sda: microcontroller.Pin, *, frequency: int = 100000, timeout: int = 255) -> None:
+//|
+//|         """Represents a single I2C device and manages locking the bus and the device
+//|         address.
+//|         :param ~busio.I2C i2c: The I2C bus the device is on
+//|         :param int device_address: The 7 bit device address
+//|         :param bool probe: Probe for the device upon object creation, default is true
+//|         .. note:: This class is **NOT** built into CircuitPython. See
+//|             :ref:`here for install instructions <bus_device_installation>`.
+//|         Example:
+//|         .. code-block:: python
+//|             import busio
+//|             from board import *
+//|             from adafruit_bus_device.i2c_device import I2CDevice
+//|             with busio.I2C(SCL, SDA) as i2c:
+//|                 device = I2CDevice(i2c, 0x70)
+//|                 bytes_read = bytearray(4)
+//|                 with device:
+//|                     device.readinto(bytes_read)
+//|                 # A second transaction
+//|                 with device:
+//|                     device.write(bytes_read)"""
 //|     ...
 //|
 STATIC mp_obj_t busdevice_i2cdevice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -84,6 +87,10 @@ STATIC mp_obj_t busdevice_i2cdevice_make_new(const mp_obj_type_t *type, size_t n
     return (mp_obj_t)self;
 }
 
+//|     def __enter__(self) -> I2C:
+//|         """Context manager entry to lock bus."""
+//|         ...
+//|
 STATIC mp_obj_t busdevice_i2cdevice_obj___enter__(mp_obj_t self_in) {
     busdevice_i2cdevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busdevice_i2cdevice_lock(self);
@@ -91,13 +98,17 @@ STATIC mp_obj_t busdevice_i2cdevice_obj___enter__(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busdevice_i2cdevice___enter___obj, busdevice_i2cdevice_obj___enter__);
 
+//|     def __exit__(self) -> None:
+//|         """Automatically unlocks the bus on exit."""
+//|         ...
+//|
 STATIC mp_obj_t busdevice_i2cdevice_obj___exit__(size_t n_args, const mp_obj_t *args) {
     common_hal_busdevice_i2cdevice_unlock(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busdevice_i2cdevice___exit___obj, 4, 4, busdevice_i2cdevice_obj___exit__);
 
-//| def readinto(self, buf, *, start=0, end=None):
+//| def readinto(self, buf, *, start=0, end=None) -> None:
 //|         """
 //|         Read into ``buf`` from the device. The number of bytes read will be the
 //|         length of ``buf``.
@@ -143,18 +154,17 @@ STATIC mp_obj_t busdevice_i2cdevice_readinto(size_t n_args, const mp_obj_t *pos_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busdevice_i2cdevice_readinto_obj, 2, busdevice_i2cdevice_readinto);
 
-//|    def write(self, buf, *, start=0, end=None):
-//|        """
-//|        Write the bytes from ``buffer`` to the device, then transmit a stop
-//|        bit.
-//|        If ``start`` or ``end`` is provided, then the buffer will be sliced
-//|        as if ``buffer[start:end]``. This will not cause an allocation like
-//|        ``buffer[start:end]`` will so it saves memory.
-//|        :param bytearray buffer: buffer containing the bytes to write
-//|        :param int start: Index to start writing from
-//|        :param int end: Index to read up to but not include; if None, use ``len(buf)``
-//|        """
-//|        ...
+//| def write(self, buf, *, start=0, end=None) -> None:
+//|     """
+//|     Write the bytes from ``buffer`` to the device, then transmit a stop bit.
+//|     If ``start`` or ``end`` is provided, then the buffer will be sliced
+//|     as if ``buffer[start:end]``. This will not cause an allocation like
+//|     ``buffer[start:end]`` will so it saves memory.
+//|     :param bytearray buffer: buffer containing the bytes to write
+//|     :param int start: Index to start writing from
+//|     :param int end: Index to read up to but not include; if None, use ``len(buf)``
+//|     """
+//|     ...
 //|
 STATIC void write(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, int32_t start, mp_int_t end) {
     mp_buffer_info_t bufinfo;
@@ -190,7 +200,7 @@ STATIC mp_obj_t busdevice_i2cdevice_write(size_t n_args, const mp_obj_t *pos_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(busdevice_i2cdevice_write_obj, 2, busdevice_i2cdevice_write);
 
 
-//| def write_then_readinto(self, out_buffer, in_buffer, *, out_start=0, out_end=None, in_start=0, in_end=None):
+//| def write_then_readinto(self, out_buffer, in_buffer, *, out_start=0, out_end=None, in_start=0, in_end=None) -> None:
 //|         """
 //|         Write the bytes from ``out_buffer`` to the device, then immediately
 //|         reads into ``in_buffer`` from the device. The number of bytes read
