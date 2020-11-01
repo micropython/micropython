@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-// This file contains all of the Python API definitions for the
-// busio.SPI class.
-
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busdevice/SPIDevice.h"
 #include "shared-bindings/util.h"
@@ -42,27 +39,35 @@
 
 
 //| class SPIDevice:
-//|     """
-//|     Represents a single SPI device and manages locking the bus and the device
-//|     address.
-//|     :param ~busio.SPI spi: The SPI bus the device is on
-//|     :param int device_address: The 7 bit device address
-//|     :param bool probe: Probe for the device upon object creation, default is true
-//|     .. note:: This class is **NOT** built into CircuitPython. See
-//|       :ref:`here for install instructions <bus_device_installation>`.
-//|     Example:
-//|     .. code-block:: python
-//|         import busio
-//|         from board import *
-//|         from adafruit_bus_device.spi_device import SPIDevice
-//|         with busio.SPI(SCL, SDA) as spi:
-//|             device = SPIDevice(spi, 0x70)
-//|             bytes_read = bytearray(4)
-//|             with device:
-//|                 device.readinto(bytes_read)
-//|             # A second transaction
-//|             with device:
-//|                 device.write(bytes_read)"""
+//|     """SPI Device Manager"""
+//|
+//|     def __init__(self, spi: busio.SPI, chip_select: microcontroller.Pin, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, extra_clocks : int = 0) -> None:
+//|
+//|         """
+//|         Represents a single SPI device and manages locking the bus and the device address.
+//|         :param ~busio.SPI spi: The SPI bus the device is on
+//|         :param ~digitalio.DigitalInOut chip_select: The chip select pin object that implements the
+//|             DigitalInOut API.
+//|         :param int extra_clocks: The minimum number of clock cycles to cycle the bus after CS is high.
+//|             (Used for SD cards.)
+//|         Example:
+//|         .. code-block:: python
+//|             import busio
+//|             import digitalio
+//|             from board import *
+//|             from adafruit_bus_device.spi_device import SPIDevice
+//|             with busio.SPI(SCK, MOSI, MISO) as spi_bus:
+//|                 cs = digitalio.DigitalInOut(D10)
+//|                 device = SPIDevice(spi_bus, cs)
+//|                 bytes_read = bytearray(4)
+//|                 # The object assigned to spi in the with statements below
+//|                 # is the original spi_bus object. We are using the busio.SPI
+//|                 # operations busio.SPI.readinto() and busio.SPI.write().
+//|                 with device as spi:
+//|                     spi.readinto(bytes_read)
+//|                 # A second transaction
+//|                 with device as spi:
+//|                     spi.write(bytes_read)"""
 //|     ...
 //|
 STATIC mp_obj_t busdevice_spidevice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
