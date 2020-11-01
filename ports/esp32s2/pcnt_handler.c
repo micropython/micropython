@@ -24,17 +24,44 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNTER_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNTER_H
-
-#include "py/obj.h"
 #include "pcnt_handler.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t pin;
-    mp_int_t count;
-    pcnt_unit_t unit;
-} countio_counter_obj_t;
+#include "py/runtime.h"
+#include "supervisor/shared/translate.h"
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNT_H
+#define PCNT_UNIT_ACTIVE    1
+#define PCNT_UNIT_INACTIVE  0
+
+static uint8_t pcnt_state[4];
+
+void pcnt_handler_init(pcnt_config_t* pcnt_config) {
+    // Look for available pcnt unit
+    for (uint8_t i = 0; i<=3; i++) {
+        if (pcnt_state[i] == PCNT_UNIT_INACTIVE) {
+            pcnt_config->unit = (pcnt_unit_t)i;
+            pcnt_state[i] = PCNT_UNIT_ACTIVE;
+            break;
+        } else if (i == 3) {
+            mp_raise_RuntimeError(translate("No PCNT unit free"));
+        }
+    }
+
+    // Initialize PCNT unit
+    pcnt_unit_config(pcnt_config);
+
+    // Configure and enable the input filter
+    pcnt_set_filter_value(pcnt_config->unit, 100);
+    pcnt_filter_enable(pcnt_config->unit);
+
+    // Initialize PCNT's counter
+    pcnt_counter_pause(pcnt_config->unit);
+    pcnt_counter_clear(pcnt_config->unit);
+
+    // Everything is set up, now go to counting
+    pcnt_counter_resume(pcnt_config->unit);
+}
+
+void pcnt_handler_deinit(pcnt_unit_t* unit) {
+    pcnt_state[*unit] = PCNT_UNIT_INACTIVE;
+    *unit = PCNT_UNIT_MAX;
+}

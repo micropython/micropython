@@ -173,6 +173,7 @@ SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
+	pcnt_handler.c \
 	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \

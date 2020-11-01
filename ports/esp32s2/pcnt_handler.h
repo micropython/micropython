@@ -24,17 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNTER_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNTER_H
+#ifndef MICROPY_INCLUDED_ESP32S2_PCNT_HANDLER_H
+#define MICROPY_INCLUDED_ESP32S2_PCNT_HANDLER_H
 
-#include "py/obj.h"
-#include "pcnt_handler.h"
+#include "driver/pcnt.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t pin;
-    mp_int_t count;
-    pcnt_unit_t unit;
-} countio_counter_obj_t;
+extern void pcnt_handler_init(pcnt_config_t* pcnt_config);
+extern void pcnt_handler_deinit(pcnt_unit_t* unit);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNT_H
+#endif  // MICROPY_INCLUDED_ESP32S2_PCNT_HANDLER_H
