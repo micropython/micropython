@@ -48,10 +48,9 @@
 //|         :param ~busio.I2C i2c: The I2C bus the device is on
 //|         :param int device_address: The 7 bit device address
 //|         :param bool probe: Probe for the device upon object creation, default is true
-//|         .. note:: This class is **NOT** built into CircuitPython. See
-//|             :ref:`here for install instructions <bus_device_installation>`.
-//|         Example:
-//|         .. code-block:: python
+//|
+//|         Example::
+//|
 //|             import busio
 //|             from board import *
 //|             from adafruit_bus_device.i2c_device import I2CDevice

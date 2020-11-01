@@ -46,12 +46,11 @@
 //|         """
 //|         Represents a single SPI device and manages locking the bus and the device address.
 //|         :param ~busio.SPI spi: The SPI bus the device is on
-//|         :param ~digitalio.DigitalInOut chip_select: The chip select pin object that implements the
-//|             DigitalInOut API.
-//|         :param int extra_clocks: The minimum number of clock cycles to cycle the bus after CS is high.
-//|             (Used for SD cards.)
-//|         Example:
-//|         .. code-block:: python
+//|         :param ~digitalio.DigitalInOut chip_select: The chip select pin object that implements the DigitalInOut API.
+//|         :param int extra_clocks: The minimum number of clock cycles to cycle the bus after CS is high. (Used for SD cards.)
+//|
+//|         Example::
+//|
 //|             import busio
 //|             import digitalio
 //|             from board import *
