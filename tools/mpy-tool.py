@@ -855,6 +855,7 @@ def freeze_mpy(base_qstrs, raw_codes):
         print("#endif")
         print()
 
+    '''
     print("#if MICROPY_PY_BUILTINS_FLOAT")
     print("typedef struct _mp_obj_float_t {")
     print("    mp_obj_base_t base;")
@@ -862,6 +863,7 @@ def freeze_mpy(base_qstrs, raw_codes):
     print("} mp_obj_float_t;")
     print("#endif")
     print()
+    '''
 
     print("#if MICROPY_PY_BUILTINS_COMPLEX")
     print("typedef struct _mp_obj_complex_t {")
