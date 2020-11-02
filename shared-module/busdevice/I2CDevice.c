@@ -39,8 +39,8 @@ void common_hal_busdevice_i2cdevice_lock(busdevice_i2cdevice_obj_t *self) {
     bool success = false;
     while (!success) {
         success = common_hal_busio_i2c_try_lock(self->i2c);
-        RUN_BACKGROUND_TASKS;
-        mp_handle_pending();
+        //RUN_BACKGROUND_TASKS;
+        //mp_handle_pending();
     }
 }
 

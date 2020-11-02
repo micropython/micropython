@@ -33,6 +33,7 @@
 
 #include "shared-bindings/busdevice/__init__.h"
 #include "shared-bindings/busdevice/I2CDevice.h"
+#include "shared-bindings/busdevice/SPIDevice.h"
 
 
 //| """Hardware accelerated external bus access
@@ -46,6 +47,7 @@
 STATIC const mp_rom_map_elem_t busdevice_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_busdevice) },
     { MP_ROM_QSTR(MP_QSTR_I2CDevice),   MP_ROM_PTR(&busdevice_i2cdevice_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPIDevice),   MP_ROM_PTR(&busdevice_spidevice_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(busdevice_module_globals, busdevice_module_globals_table);

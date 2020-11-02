@@ -103,7 +103,7 @@ STATIC mp_obj_t busdevice_spidevice_make_new(const mp_obj_type_t *type, size_t n
 STATIC mp_obj_t busdevice_spidevice_obj___enter__(mp_obj_t self_in) {
     busdevice_spidevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_busdevice_spidevice_enter(self);
-    return self;
+    return self->spi;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(busdevice_spidevice___enter___obj, busdevice_spidevice_obj___enter__);
 
