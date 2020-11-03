@@ -414,30 +414,21 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         uint16_t value_handle = gatt_event_characteristic_value_query_result_get_value_handle(packet);
         uint16_t len = gatt_event_characteristic_value_query_result_get_value_length(packet);
         const uint8_t *data = gatt_event_characteristic_value_query_result_get_value(packet);
-        mp_uint_t atomic_state;
-        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, value_handle, len, &atomic_state);
-        mp_bluetooth_gattc_on_data_available_chunk(data, len);
-        mp_bluetooth_gattc_on_data_available_end(atomic_state);
+        mp_bluetooth_gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_READ_RESULT, conn_handle, value_handle, &data, &len, 1);
     } else if (event_type == GATT_EVENT_NOTIFICATION) {
         DEBUG_printf("  --> gatt notification\n");
         uint16_t conn_handle = gatt_event_notification_get_handle(packet);
         uint16_t value_handle = gatt_event_notification_get_value_handle(packet);
         uint16_t len = gatt_event_notification_get_value_length(packet);
         const uint8_t *data = gatt_event_notification_get_value(packet);
-        mp_uint_t atomic_state;
-        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_NOTIFY, conn_handle, value_handle, len, &atomic_state);
-        mp_bluetooth_gattc_on_data_available_chunk(data, len);
-        mp_bluetooth_gattc_on_data_available_end(atomic_state);
+        mp_bluetooth_gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_NOTIFY, conn_handle, value_handle, &data, &len, 1);
     } else if (event_type == GATT_EVENT_INDICATION) {
         DEBUG_printf("  --> gatt indication\n");
         uint16_t conn_handle = gatt_event_indication_get_handle(packet);
         uint16_t value_handle = gatt_event_indication_get_value_handle(packet);
         uint16_t len = gatt_event_indication_get_value_length(packet);
         const uint8_t *data = gatt_event_indication_get_value(packet);
-        mp_uint_t atomic_state;
-        len = mp_bluetooth_gattc_on_data_available_start(MP_BLUETOOTH_IRQ_GATTC_INDICATE, conn_handle, value_handle, len, &atomic_state);
-        mp_bluetooth_gattc_on_data_available_chunk(data, len);
-        mp_bluetooth_gattc_on_data_available_end(atomic_state);
+        mp_bluetooth_gattc_on_data_available(MP_BLUETOOTH_IRQ_GATTC_INDICATE, conn_handle, value_handle, &data, &len, 1);
     } else if (event_type == GATT_EVENT_CAN_WRITE_WITHOUT_RESPONSE) {
         uint16_t conn_handle = gatt_event_can_write_without_response_get_handle(packet);
         DEBUG_printf("  --> gatt can write without response %d\n", conn_handle);
