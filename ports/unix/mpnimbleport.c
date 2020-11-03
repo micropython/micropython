@@ -47,38 +47,28 @@ bool mp_bluetooth_hci_poll(void) {
     }
 
     if (mp_bluetooth_nimble_ble_state >= MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
-
-        // Pretend like we're running in IRQ context (i.e. other things can't be running at the same time).
-        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-
-        // Ask NimBLE to process UART data.
-        mp_bluetooth_nimble_hci_uart_process();
-
-        // Run pending background operations and events, but only after HCI sync.
+        // Run any timers.
         mp_bluetooth_nimble_os_callout_process();
-        mp_bluetooth_nimble_os_eventq_run_all();
 
-        MICROPY_END_ATOMIC_SECTION(atomic_state);
+        // Process incoming UART data, and run events as they are generated.
+        mp_bluetooth_nimble_hci_uart_process(true);
+
+        // Run any remaining events (e.g. if there was no UART data).
+        mp_bluetooth_nimble_os_eventq_run_all();
     }
 
     return true;
 }
 
+bool mp_bluetooth_hci_active(void) {
+    return mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF;
+}
+
 // Extra port-specific helpers.
 void mp_bluetooth_nimble_hci_uart_wfi(void) {
-    // DEBUG_printf("mp_bluetooth_nimble_hci_uart_wfi\n");
-    // TODO: this should do a select() on the uart_fd.
-}
-
-uint32_t mp_bluetooth_nimble_hci_uart_enter_critical(void) {
-    // DEBUG_printf("mp_bluetooth_nimble_hci_uart_enter_critical\n");
-    MICROPY_PY_BLUETOOTH_ENTER
-    return atomic_state; // Always 0xffffffff
-}
-
-void mp_bluetooth_nimble_hci_uart_exit_critical(uint32_t atomic_state) {
-    MICROPY_PY_BLUETOOTH_EXIT
-    // DEBUG_printf("mp_bluetooth_nimble_hci_uart_exit_critical\n");
+    // This is called while NimBLE is waiting in ble_npl_sem_pend, i.e. waiting for an HCI ACK.
+    // Do not need to run events here, only processing incoming HCI data.
+    mp_bluetooth_nimble_hci_uart_process(false);
 }
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE

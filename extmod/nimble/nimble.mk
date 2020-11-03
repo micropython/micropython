@@ -17,6 +17,13 @@ CFLAGS_MOD += -DMICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=$(MICROPY_BLUETOOTH_NIMBL
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY),0)
 
+# On all ports where we provide the full implementation (i.e. not just
+# bindings like on ESP32), then we don't need to use the ringbuffer. In this
+# case, all NimBLE events are run by the MicroPython scheduler. On Unix, the
+# scheduler is also responsible for polling the UART, whereas on STM32 the
+# UART is also polled by the RX IRQ.
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
+
 NIMBLE_LIB_DIR = lib/mynewt-nimble
 
 LIB_SRC_C += $(addprefix $(NIMBLE_LIB_DIR)/, \

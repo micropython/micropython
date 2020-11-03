@@ -43,6 +43,6 @@ void hal_uart_start_tx(uint32_t port);
 int hal_uart_close(uint32_t port);
 
 // --- Called by the MicroPython port when UART data is available -------------
-void mp_bluetooth_nimble_hci_uart_process(void);
+void mp_bluetooth_nimble_hci_uart_process(bool run_events);
 
 #endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_HAL_HAL_UART_H

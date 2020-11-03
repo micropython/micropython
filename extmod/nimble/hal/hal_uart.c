@@ -28,9 +28,12 @@
 #include "py/mphal.h"
 #include "nimble/ble.h"
 #include "extmod/nimble/hal/hal_uart.h"
+#include "extmod/nimble/nimble/nimble_npl_os.h"
 #include "extmod/mpbthci.h"
 
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
+
+#define HCI_TRACE (0)
 
 static hal_uart_tx_cb_t hal_uart_tx_cb;
 static void *hal_uart_tx_arg;
@@ -62,10 +65,10 @@ void hal_uart_start_tx(uint32_t port) {
         mp_bluetooth_hci_cmd_buf[len++] = data;
     }
 
-    #if 0
-    printf("[% 8d] BTUTX: %02x", mp_hal_ticks_ms(), hci_cmd_buf[0]);
-    for (int i = 1; i < len; ++i) {
-        printf(":%02x", hci_cmd_buf[i]);
+    #if HCI_TRACE
+    printf("< [% 8d] %02x", mp_hal_ticks_ms(), mp_bluetooth_hci_cmd_buf[0]);
+    for (size_t i = 1; i < len; ++i) {
+        printf(":%02x", mp_bluetooth_hci_cmd_buf[i]);
     }
     printf("\n");
     #endif
@@ -77,13 +80,21 @@ int hal_uart_close(uint32_t port) {
     return 0; // success
 }
 
-void mp_bluetooth_nimble_hci_uart_process(void) {
+void mp_bluetooth_nimble_hci_uart_process(bool run_events) {
     bool host_wake = mp_bluetooth_hci_controller_woken();
 
     int chr;
     while ((chr = mp_bluetooth_hci_uart_readchar()) >= 0) {
-        // printf("UART RX: %02x\n", data);
+        #if HCI_TRACE
+        printf("> %02x (%d)\n", chr);
+        #endif
         hal_uart_rx_cb(hal_uart_rx_arg, chr);
+
+        // Incoming data may result in events being enqueued. If we're in
+        // scheduler context then we can run those events immediately.
+        if (run_events) {
+            mp_bluetooth_nimble_os_eventq_run_all();
+        }
     }
 
     if (host_wake) {
