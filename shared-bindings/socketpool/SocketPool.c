@@ -57,12 +57,12 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(s);
 }
 
-//|     AF_INET = 0
-//|     AF_INET6 = 1
-//|     SOCK_STREAM = 0
-//|     SOCK_DGRAM = 1
-//|     SOCK_RAW = 2
-//|     IPPROTO_TCP = 6
+//|     AF_INET: int
+//|     AF_INET6: int
+//|     SOCK_STREAM: int
+//|     SOCK_DGRAM: int
+//|     SOCK_RAW: int
+//|     IPPROTO_TCP: int
 //|
 //|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = IPPROTO_TCP) -> socketpool.Socket:
 //|         """Create a new socket

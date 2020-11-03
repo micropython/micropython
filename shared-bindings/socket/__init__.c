@@ -49,12 +49,12 @@ STATIC const mp_obj_type_t socket_type;
 
 //| class socket:
 //|
-//|     AF_INET = 2
-//|     AF_INET6 = 10
-//|     SOCK_STREAM = 1
-//|     SOCK_DGRAM = 2
-//|     SOCK_RAW = 3
-//|     IPPROTO_TCP = 6
+//|     AF_INET: int
+//|     AF_INET6: int
+//|     SOCK_STREAM: int
+//|     SOCK_DGRAM: int
+//|     SOCK_RAW: int
+//|     IPPROTO_TCP: int
 //|
 //|     def __init__(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = IPPROTO_TCP) -> None:
 //|         """Create a new socket
