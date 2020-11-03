@@ -634,9 +634,9 @@ void IPCC_C1_RX_IRQHandler(void) {
 
         LL_C1_IPCC_ClearFlag_CHx(IPCC, IPCC_CH_BLE);
 
-        // Schedule PENDSV to process incoming HCI payload.
-        extern void mp_bluetooth_hci_poll_wrapper(uint32_t ticks_ms);
-        mp_bluetooth_hci_poll_wrapper(0);
+        // Queue up the scheduler to process UART data and run events.
+        extern void mp_bluetooth_hci_systick(uint32_t ticks_ms);
+        mp_bluetooth_hci_systick(0);
     }
 
     IRQ_EXIT(IPCC_C1_RX_IRQn);

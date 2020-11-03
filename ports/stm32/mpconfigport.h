@@ -420,9 +420,16 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
 #define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
 
-// Prevent the "Bluetooth task" from running (either NimBLE or btstack).
+#if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+// Bluetooth code only runs in the scheduler, no locking/mutex required.
+#define MICROPY_PY_BLUETOOTH_ENTER uint32_t atomic_state = 0;
+#define MICROPY_PY_BLUETOOTH_EXIT (void)atomic_state;
+#else
+// When async events are enabled, need to prevent PendSV execution racing with
+// scheduler execution.
 #define MICROPY_PY_BLUETOOTH_ENTER MICROPY_PY_PENDSV_ENTER
 #define MICROPY_PY_BLUETOOTH_EXIT  MICROPY_PY_PENDSV_EXIT
+#endif
 
 // We need an implementation of the log2 function which is not a macro
 #define MP_NEED_LOG2 (1)

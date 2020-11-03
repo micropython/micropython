@@ -382,6 +382,7 @@ int mp_bluetooth_init(void) {
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC;
 
     // Initialise NimBLE memory and data structures.
+    DEBUG_printf("mp_bluetooth_init: nimble_port_init\n");
     nimble_port_init();
 
     // Make sure that the HCI UART and event handling task is running.
@@ -402,6 +403,8 @@ int mp_bluetooth_init(void) {
         return MP_ETIMEDOUT;
     }
 
+    DEBUG_printf("mp_bluetooth_init: starting services\n");
+
     // By default, just register the default gap/gatt service.
     ble_svc_gap_init();
     ble_svc_gatt_init();
@@ -417,7 +420,7 @@ int mp_bluetooth_init(void) {
 }
 
 void mp_bluetooth_deinit(void) {
-    DEBUG_printf("mp_bluetooth_deinit\n");
+    DEBUG_printf("mp_bluetooth_deinit %d\n", mp_bluetooth_nimble_ble_state);
     if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
         return;
     }

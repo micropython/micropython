@@ -42,6 +42,7 @@ typedef int32_t ble_npl_stime_t;
 struct ble_npl_event {
     ble_npl_event_fn *fn;
     void *arg;
+    bool pending;
     struct ble_npl_event *prev;
     struct ble_npl_event *next;
 };
@@ -61,7 +62,6 @@ struct ble_npl_callout {
 
 struct ble_npl_mutex {
     volatile uint8_t locked;
-    volatile uint32_t atomic_state;
 };
 
 struct ble_npl_sem {
@@ -76,7 +76,5 @@ void mp_bluetooth_nimble_os_callout_process(void);
 // --- Must be provided by the MicroPython port -------------------------------
 
 void mp_bluetooth_nimble_hci_uart_wfi(void);
-uint32_t mp_bluetooth_nimble_hci_uart_enter_critical(void);
-void mp_bluetooth_nimble_hci_uart_exit_critical(uint32_t atomic_state);
 
 #endif // MICROPY_INCLUDED_STM32_NIMBLE_NIMBLE_NPL_OS_H
