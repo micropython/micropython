@@ -41,9 +41,11 @@
 #include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/mphal.h"
+#include "py/objstr.h"
 #include "py/mpthread.h"
 #include "extmod/vfs.h"
 #include "extmod/misc.h"
+#include "genhdr/mpversion.h"
 
 #ifdef __ANDROID__
 #define USE_STATFS 1
@@ -305,8 +307,34 @@ STATIC mp_obj_t mod_os_errno(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_os_errno_obj, 0, 1, mod_os_errno);
 
+STATIC const qstr os_uname_info_fields[] = {
+    MP_QSTR_sysname, MP_QSTR_nodename,
+    MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
+};
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, "unix");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, "unix");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_release_obj, MICROPY_VERSION_STRING);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_machine_obj, "unix");
+STATIC MP_DEFINE_ATTRTUPLE(
+    os_uname_info_obj,
+    os_uname_info_fields,
+    5,
+    MP_ROM_PTR(&os_uname_info_sysname_obj),
+    MP_ROM_PTR(&os_uname_info_nodename_obj),
+    MP_ROM_PTR(&os_uname_info_release_obj),
+    MP_ROM_PTR(&os_uname_info_version_obj),
+    MP_ROM_PTR(&os_uname_info_machine_obj)
+    );
+
+STATIC mp_obj_t os_uname(void) {
+    return MP_OBJ_FROM_PTR(&os_uname_info_obj);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
+
 STATIC const mp_rom_map_elem_t mp_module_os_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
+    { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
     { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mod_os_errno_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mod_os_stat_obj) },
     #if MICROPY_PY_OS_STATVFS
