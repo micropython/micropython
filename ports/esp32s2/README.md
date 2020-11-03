@@ -30,7 +30,7 @@ Connect these pins using a [USB adapter](https://www.adafruit.com/product/4090) 
 
 ## Building and flashing ##
 
-Before building or flashing the ESP32-S2, you must [install the esp-idf](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html). This must be re-done ever time the esp-idf is updated, but not every time you build. Run `cd ports/esp32s2` from `circuitpython/` to move to the esp32s2 port root, and run:
+Before building or flashing the ESP32-S2, you must [install the esp-idf](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html). This must be re-done every time the esp-idf is updated, but not every time you build. Run `cd ports/esp32s2` from `circuitpython/` to move to the esp32s2 port root, and run:
 
 ```
 ./esp-idf/install.sh
