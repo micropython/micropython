@@ -1125,31 +1125,34 @@ void mp_bluetooth_gattc_on_discover_complete(uint8_t event, uint16_t conn_handle
     schedule_ringbuf(atomic_state);
 }
 
-size_t mp_bluetooth_gattc_on_data_available_start(uint8_t event, uint16_t conn_handle, uint16_t value_handle, size_t data_len, mp_uint_t *atomic_state_out) {
+void mp_bluetooth_gattc_on_data_available(uint8_t event, uint16_t conn_handle, uint16_t value_handle, const uint8_t **data, uint16_t *data_len, size_t num) {
     MICROPY_PY_BLUETOOTH_ENTER
-    *atomic_state_out = atomic_state;
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
-    data_len = MIN(o->irq_data_data_alloc, data_len);
-    if (enqueue_irq(o, 2 + 2 + 2 + data_len, event)) {
+
+    // Get the total length of the fragmented buffers.
+    uint16_t total_len = 0;
+    for (size_t i = 0; i < num; ++i) {
+        total_len += data_len[i];
+    }
+
+    // Truncate the data at what we'll be able to pass to Python.
+    total_len = MIN(o->irq_data_data_alloc, total_len);
+
+    if (enqueue_irq(o, 2 + 2 + 2 + total_len, event)) {
         ringbuf_put16(&o->ringbuf, conn_handle);
         ringbuf_put16(&o->ringbuf, value_handle);
-        // Length field is 16-bit.
-        data_len = MIN(UINT16_MAX, data_len);
-        ringbuf_put16(&o->ringbuf, data_len);
-        return data_len;
-    } else {
-        return 0;
-    }
-}
 
-void mp_bluetooth_gattc_on_data_available_chunk(const uint8_t *data, size_t data_len) {
-    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
-    for (size_t i = 0; i < data_len; ++i) {
-        ringbuf_put(&o->ringbuf, data[i]);
-    }
-}
+        ringbuf_put16(&o->ringbuf, total_len);
 
-void mp_bluetooth_gattc_on_data_available_end(mp_uint_t atomic_state) {
+        // Copy total_len from the fragments to the ringbuffer.
+        uint16_t copied_bytes = 0;
+        for (size_t i = 0; i < num; ++i) {
+            for (size_t j = 0; i < data_len[i] && copied_bytes < total_len; ++j) {
+                ringbuf_put(&o->ringbuf, data[i][j]);
+                ++copied_bytes;
+            }
+        }
+    }
     schedule_ringbuf(atomic_state);
 }
 

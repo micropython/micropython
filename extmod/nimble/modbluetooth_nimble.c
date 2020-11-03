@@ -798,16 +798,35 @@ int mp_bluetooth_set_preferred_mtu(uint16_t mtu) {
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 STATIC void gattc_on_data_available(uint8_t event, uint16_t conn_handle, uint16_t value_handle, const struct os_mbuf *om) {
-    size_t len = OS_MBUF_PKTLEN(om);
-    mp_uint_t atomic_state;
-    len = mp_bluetooth_gattc_on_data_available_start(event, conn_handle, value_handle, len, &atomic_state);
-    while (len > 0 && om != NULL) {
-        size_t n = MIN(om->om_len, len);
-        mp_bluetooth_gattc_on_data_available_chunk(OS_MBUF_DATA(om, const uint8_t *), n);
-        len -= n;
+    // When the HCI data for an ATT payload arrives, the L2CAP channel will
+    // buffer it into its receive buffer. We set BLE_L2CAP_JOIN_RX_FRAGS=1 in
+    // syscfg.h so it should be rare that the mbuf is fragmented, but we do need
+    // to be able to handle it. We pass all the fragments up to modbluetooth.c
+    // which will create a temporary buffer on the MicroPython heap if necessary
+    // to re-assemble them.
+
+    // Count how many links are in the mbuf chain.
+    size_t n = 0;
+    const struct os_mbuf *elem = om;
+    while (elem) {
+        n += 1;
+        elem = SLIST_NEXT(elem, om_next);
+    }
+
+    // Grab data pointers and lengths for each of the links.
+    const uint8_t **data = mp_local_alloc(sizeof(uint8_t *) * n);
+    uint16_t *data_len = mp_local_alloc(sizeof(uint16_t) * n);
+    for (size_t i = 0; i < n; ++i) {
+        data[i] = OS_MBUF_DATA(om, const uint8_t *);
+        data_len[i] = om->om_len;
         om = SLIST_NEXT(om, om_next);
     }
-    mp_bluetooth_gattc_on_data_available_end(atomic_state);
+
+    // Pass all the fragments together.
+    mp_bluetooth_gattc_on_data_available(event, conn_handle, value_handle, data, data_len, n);
+
+    mp_local_free(data_len);
+    mp_local_free(data);
 }
 
 STATIC int gap_scan_cb(struct ble_gap_event *event, void *arg) {
