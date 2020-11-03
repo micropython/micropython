@@ -101,7 +101,7 @@ INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/uart/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/porting/nimble/include
 
-$(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-maybe-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format -Wno-sign-compare
+$(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-maybe-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format -Wno-sign-compare -Wno-old-style-declaration
 
 endif
 
