@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 23:49-0700\n"
+"POT-Creation-Date: 2020-10-21 20:13-0500\n"
 "PO-Revision-Date: 2020-10-05 12:12+0000\n"
 "Last-Translator: Michal Čihař <michal@cihar.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -290,11 +290,16 @@ msgstr ""
 msgid "Address type out of range"
 msgstr ""
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "All CAN peripherals are in use"
+msgstr ""
+
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "사용중인 모든 I2C주변 기기"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr ""
@@ -410,6 +415,10 @@ msgid ""
 msgstr ""
 "자동 새로 고침이 켜져 있습니다. USB를 통해 파일을 저장하여 실행하십시오. 비활"
 "성화하려면 REPL을 입력하십시오.\n"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "Baudrate not supported by peripheral"
+msgstr ""
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -779,7 +788,7 @@ msgstr ""
 msgid "ECB only operates on 16 bytes at a time"
 msgstr ""
 
-#: ports/esp32s2/common-hal/busio/SPI.c
+#: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr ""
 
@@ -905,6 +914,7 @@ msgid "File exists"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr ""
@@ -949,6 +959,10 @@ msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
 msgstr ""
 
 #: extmod/vfs_posix_file.c py/objstringio.c
@@ -1030,6 +1044,7 @@ msgstr ""
 msgid "Invalid BSSID"
 msgstr ""
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr ""
@@ -1118,7 +1133,7 @@ msgstr "오른쪽 채널 핀이 잘못되었습니다"
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
@@ -1241,7 +1256,6 @@ msgid "No CCCD for this Characteristic"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr ""
@@ -1402,6 +1416,10 @@ msgstr ""
 msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
+msgstr ""
+
+#: shared-module/displayio/ColorConverter.c
+msgid "Only one color can be transparent at a time"
 msgstr ""
 
 #: shared-bindings/ipaddress/__init__.c
@@ -2108,6 +2126,10 @@ msgstr ""
 msgid "buffer too small"
 msgstr ""
 
+#: shared-bindings/socketpool/Socket.c
+msgid "buffer too small for requested bytes"
+msgstr ""
+
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""
@@ -2733,6 +2755,10 @@ msgstr "형식가 유효하지 않습니다"
 msgid "invalid format specifier"
 msgstr "형식 지정자(format specifier)가 유효하지 않습니다"
 
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid key"
 msgstr "키가 유효하지 않습니다"
@@ -2826,6 +2852,10 @@ msgstr ""
 msgid "long int not supported in this build"
 msgstr ""
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "loopback + silent mode not supported by peripheral"
+msgstr ""
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr ""
@@ -2858,6 +2888,14 @@ msgstr ""
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter must be > 0"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter should be > 0"
 msgstr ""
 
 #: py/runtime.c
@@ -3170,6 +3208,8 @@ msgstr ""
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -3290,6 +3330,10 @@ msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "sorted axis can't be longer than 65535"
 msgstr ""
 
 #: extmod/ulab/code/filter/filter.c
@@ -3419,6 +3463,16 @@ msgstr ""
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
+msgstr ""
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_driver_install returned esp-idf error #%d"
+msgstr ""
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_start returned esp-idf error #%d"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c

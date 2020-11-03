@@ -48,6 +48,7 @@ void displayio_display_core_construct(displayio_display_core_t* self,
         uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row, uint8_t bytes_per_cell, bool reverse_pixels_in_byte, bool reverse_bytes_in_word) {
     self->colorspace.depth = color_depth;
     self->colorspace.grayscale = grayscale;
+    self->colorspace.grayscale_bit = 8 - color_depth;
     self->colorspace.pixels_in_byte_share_row = pixels_in_byte_share_row;
     self->colorspace.bytes_per_cell = bytes_per_cell;
     self->colorspace.reverse_pixels_in_byte = reverse_pixels_in_byte;
@@ -85,7 +86,10 @@ void displayio_display_core_construct(displayio_display_core_t* self,
     self->bus = bus;
 
 
-    supervisor_start_terminal(width, height);
+    // (offsetof core is equal in all display types)
+    if (self == &displays[0].display.core) {
+        supervisor_start_terminal(width, height);
+    }
 
     self->width = width;
     self->height = height;

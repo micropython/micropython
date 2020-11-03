@@ -45,7 +45,6 @@
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/Service.h"
-#include "shared-bindings/nvm/ByteArray.h"
 #include "shared-bindings/_bleio/Connection.h"
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/time/__init__.h"

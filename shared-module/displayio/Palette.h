@@ -37,6 +37,7 @@ typedef struct {
     uint8_t bytes_per_cell;
     uint8_t tricolor_hue;
     uint8_t tricolor_luma;
+    uint8_t grayscale_bit; // The lowest grayscale bit. Normally 8 - depth.
     bool grayscale;
     bool tricolor;
     bool pixels_in_byte_share_row;

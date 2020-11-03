@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 23:49-0700\n"
+"POT-Creation-Date: 2020-10-21 20:13-0500\n"
 "PO-Revision-Date: 2020-09-29 01:39+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
@@ -294,11 +294,16 @@ msgstr "Adres musi mieć %d bajtów"
 msgid "Address type out of range"
 msgstr ""
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "All CAN peripherals are in use"
+msgstr ""
+
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Wszystkie peryferia I2C w użyciu"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr ""
@@ -414,6 +419,10 @@ msgid ""
 msgstr ""
 "Samo-przeładowywanie włączone. Po prostu zapisz pliki przez USB aby je "
 "uruchomić, albo wejdź w konsolę aby wyłączyć.\n"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "Baudrate not supported by peripheral"
+msgstr ""
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -787,7 +796,7 @@ msgstr "Tryb sterowania nieużywany w trybie wejścia."
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "ECB działa tylko na 16 bajtach naraz"
 
-#: ports/esp32s2/common-hal/busio/SPI.c
+#: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr ""
 
@@ -913,6 +922,7 @@ msgid "File exists"
 msgstr "Plik istnieje"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr ""
@@ -958,6 +968,10 @@ msgstr "Sprzęt zajęty, wypróbuj alternatywne piny"
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Sprzęt w użyciu, wypróbuj alternatywne piny"
+
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
+msgstr ""
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1040,6 +1054,7 @@ msgstr "Zły BMP"
 msgid "Invalid BSSID"
 msgstr ""
 
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr ""
@@ -1128,7 +1143,7 @@ msgstr "Zła nóżka dla prawego kanału"
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
@@ -1252,7 +1267,6 @@ msgid "No CCCD for this Characteristic"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
 msgstr "Brak DAC"
@@ -1413,6 +1427,10 @@ msgstr "Wspierane są tylko nieskompresowane pliki BMP: wielkość nagłówka %d
 msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
+msgstr ""
+
+#: shared-module/displayio/ColorConverter.c
+msgid "Only one color can be transparent at a time"
 msgstr ""
 
 #: shared-bindings/ipaddress/__init__.c
@@ -2124,6 +2142,10 @@ msgstr "fragmenty bufora muszą mieć tę samą długość"
 msgid "buffer too small"
 msgstr "zbyt mały bufor"
 
+#: shared-bindings/socketpool/Socket.c
+msgid "buffer too small for requested bytes"
+msgstr ""
+
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
 msgstr "buttons musi być digitalio.DigitalInOut"
@@ -2750,6 +2772,10 @@ msgstr "zły format"
 msgid "invalid format specifier"
 msgstr "zła specyfikacja formatu"
 
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
+
 #: extmod/modussl_axtls.c
 msgid "invalid key"
 msgstr "zły klucz"
@@ -2843,6 +2869,10 @@ msgstr "zmienna lokalna użyta przed przypisaniem"
 msgid "long int not supported in this build"
 msgstr "long int jest nieobsługiwany"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "loopback + silent mode not supported by peripheral"
+msgstr ""
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr ""
@@ -2876,6 +2906,14 @@ msgstr "max_length musi być > 0"
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "przekroczono dozwoloną głębokość rekurencji"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter must be > 0"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter should be > 0"
+msgstr ""
 
 #: py/runtime.c
 #, c-format
@@ -3188,6 +3226,8 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -3309,6 +3349,10 @@ msgstr "programowy reset\n"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "sorted axis can't be longer than 65535"
 msgstr ""
 
 #: extmod/ulab/code/filter/filter.c
@@ -3439,6 +3483,16 @@ msgstr "indeks krotki poza zakresem"
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "krotka/lista ma złą długość"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_driver_install returned esp-idf error #%d"
+msgstr ""
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_start returned esp-idf error #%d"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c

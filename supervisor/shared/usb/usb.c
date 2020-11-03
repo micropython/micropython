@@ -116,7 +116,6 @@ void tud_umount_cb(void) {
 // remote_wakeup_en : if host allows us to perform remote wakeup
 // USB Specs: Within 7ms, device must draw an average current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en) {
-    _serial_connected = false;
 }
 
 // Invoked when usb bus is resumed
@@ -127,8 +126,6 @@ void tud_resume_cb(void) {
 // Use to reset to DFU when disconnect with 1200 bps
 void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
     (void) itf; // interface ID, not used
-
-    _serial_connected = dtr;
 
     // DTR = false is counted as disconnected
     if ( !dtr )

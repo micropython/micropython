@@ -23,6 +23,9 @@ CIRCUITPY_AUDIOCORE ?= 1
 CIRCUITPY_AUDIOMIXER ?= 1
 CIRCUITPY_AUDIOPWMIO ?= 1
 
+# Native BLEIO is not compatible with HCI _bleio.
+CIRCUITPY_BLEIO_HCI = 0
+
 CIRCUITPY_BLEIO ?= 1
 
 # No I2CPeripheral implementation

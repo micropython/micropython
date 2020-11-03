@@ -97,7 +97,8 @@ void board_init(void) {
         &pin_PA01, // busy_pin
         false, // busy_state
         5, // seconds_per_frame
-        false); // chip_select (don't always toggle chip select)
+        false, // chip_select (don't always toggle chip select)
+        false); // grayscale
 }
 
 bool board_requests_safe_mode(void) {

@@ -49,7 +49,19 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the startup and shutdown sequences at minimum."""
 //|
-//|     def __init__(self, display_bus: _DisplayBus, start_sequence: ReadableBuffer, stop_sequence: ReadableBuffer, *, width: int, height: int, ram_width: int, ram_height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, set_column_window_command: Optional[int] = None, set_row_window_command: Optional[int] = None, single_byte_bounds: bool = False, write_black_ram_command: int, black_bits_inverted: bool = False, write_color_ram_command: Optional[int] = None, color_bits_inverted: bool = False, highlight_color: int = 0x000000, refresh_display_command: int, refresh_time: float = 40, busy_pin: Optional[microcontroller.Pin] = None, busy_state: bool = True, seconds_per_frame: float = 180, always_toggle_chip_select: bool = False) -> None:
+//|     def __init__(self, display_bus: _DisplayBus,
+//|                  start_sequence: ReadableBuffer, stop_sequence: ReadableBuffer, *,
+//|                  width: int, height: int, ram_width: int, ram_height: int,
+//|                  colstart: int = 0, rowstart: int = 0, rotation: int = 0,
+//|                  set_column_window_command: Optional[int] = None,
+//|                  set_row_window_command: Optional[int] = None, single_byte_bounds: bool = False,
+//|                  write_black_ram_command: int, black_bits_inverted: bool = False,
+//|                  write_color_ram_command: Optional[int] = None,
+//|                  color_bits_inverted: bool = False, highlight_color: int = 0x000000,
+//|                  refresh_display_command: int, refresh_time: float = 40,
+//|                  busy_pin: Optional[microcontroller.Pin] = None, busy_state: bool = True,
+//|                  seconds_per_frame: float = 180, always_toggle_chip_select: bool = False,
+//|                  grayscale: bool = False) -> None:
 //|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
 //|         The ``start_sequence`` and ``stop_sequence`` are bitpacked to minimize the ram impact. Every
@@ -84,11 +96,18 @@
 //|         :param microcontroller.Pin busy_pin: Pin used to signify the display is busy
 //|         :param bool busy_state: State of the busy pin when the display is busy
 //|         :param float seconds_per_frame: Minimum number of seconds between screen refreshes
-//|         :param bool always_toggle_chip_select: When True, chip select is toggled every byte"""
+//|         :param bool always_toggle_chip_select: When True, chip select is toggled every byte
+//|         :param bool grayscale: When true, the color ram is the low bit of 2-bit grayscale"""
 //|         ...
 //|
 STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_display_bus, ARG_start_sequence, ARG_stop_sequence, ARG_width, ARG_height, ARG_ram_width, ARG_ram_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_set_column_window_command, ARG_set_row_window_command, ARG_set_current_column_command, ARG_set_current_row_command, ARG_write_black_ram_command, ARG_black_bits_inverted, ARG_write_color_ram_command, ARG_color_bits_inverted, ARG_highlight_color, ARG_refresh_display_command,  ARG_refresh_time, ARG_busy_pin, ARG_busy_state, ARG_seconds_per_frame, ARG_always_toggle_chip_select };
+    enum { ARG_display_bus, ARG_start_sequence, ARG_stop_sequence, ARG_width, ARG_height,
+           ARG_ram_width, ARG_ram_height, ARG_colstart, ARG_rowstart, ARG_rotation,
+           ARG_set_column_window_command, ARG_set_row_window_command, ARG_set_current_column_command,
+           ARG_set_current_row_command, ARG_write_black_ram_command, ARG_black_bits_inverted,
+           ARG_write_color_ram_command, ARG_color_bits_inverted, ARG_highlight_color,
+           ARG_refresh_display_command,  ARG_refresh_time, ARG_busy_pin, ARG_busy_state,
+           ARG_seconds_per_frame, ARG_always_toggle_chip_select, ARG_grayscale };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_start_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -115,6 +134,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
         { MP_QSTR_busy_state, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_seconds_per_frame, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NEW_SMALL_INT(180)} },
         { MP_QSTR_always_toggle_chip_select, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
+        { MP_QSTR_grayscale, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -151,11 +171,14 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
         self,
         display_bus,
         start_bufinfo.buf, start_bufinfo.len, stop_bufinfo.buf, stop_bufinfo.len,
-        args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_ram_width].u_int, args[ARG_ram_height].u_int, args[ARG_colstart].u_int, args[ARG_rowstart].u_int, rotation,
+        args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_ram_width].u_int, args[ARG_ram_height].u_int,
+        args[ARG_colstart].u_int, args[ARG_rowstart].u_int, rotation,
         args[ARG_set_column_window_command].u_int, args[ARG_set_row_window_command].u_int,
         args[ARG_set_current_column_command].u_int, args[ARG_set_current_row_command].u_int,
-        args[ARG_write_black_ram_command].u_int, args[ARG_black_bits_inverted].u_bool, write_color_ram_command, args[ARG_color_bits_inverted].u_bool, highlight_color, args[ARG_refresh_display_command].u_int, refresh_time,
-        busy_pin, args[ARG_busy_state].u_bool, seconds_per_frame, args[ARG_always_toggle_chip_select].u_bool
+        args[ARG_write_black_ram_command].u_int, args[ARG_black_bits_inverted].u_bool, write_color_ram_command,
+        args[ARG_color_bits_inverted].u_bool, highlight_color, args[ARG_refresh_display_command].u_int, refresh_time,
+        busy_pin, args[ARG_busy_state].u_bool, seconds_per_frame,
+        args[ARG_always_toggle_chip_select].u_bool, args[ARG_grayscale].u_bool
         );
 
     return self;
