@@ -63,6 +63,8 @@ void reset_pin_number(gpio_num_t pin_number) {
     never_reset_pins[pin_number / 32] &= ~(1 << pin_number % 32);
     in_use[pin_number / 32] &= ~(1 << pin_number % 32);
 
+    gpio_reset_pin(pin_number);
+
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin_number == MICROPY_HW_NEOPIXEL->number) {
         neopixel_in_use = false;
@@ -83,9 +85,7 @@ void reset_all_pins(void) {
             (never_reset_pins[i / 32] & (1 << i % 32)) != 0) {
             continue;
         }
-        gpio_set_direction(i, GPIO_MODE_DEF_INPUT);
-        gpio_pullup_dis(i);
-        gpio_pulldown_dis(i);
+        gpio_reset_pin(i);
     }
     in_use[0] = 0;
     in_use[1] = 0;
