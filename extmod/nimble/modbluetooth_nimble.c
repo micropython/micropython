@@ -53,7 +53,6 @@
 STATIC uint8_t nimble_address_mode = BLE_OWN_ADDR_RANDOM;
 
 #define NIMBLE_STARTUP_TIMEOUT 2000
-STATIC struct ble_npl_sem startup_sem;
 
 // Any BLE_HS_xxx code not in this table will default to MP_EIO.
 STATIC int8_t ble_hs_err_to_errno_table[] = {
@@ -210,8 +209,6 @@ STATIC void sync_cb(void) {
     ble_svc_gap_device_name_set(MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME);
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE;
-
-    ble_npl_sem_release(&startup_sem);
 }
 
 STATIC void gatts_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg) {
@@ -369,8 +366,6 @@ int mp_bluetooth_init(void) {
     ble_hs_cfg.gatts_register_cb = gatts_register_cb;
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
-    ble_npl_sem_init(&startup_sem, 0);
-
     MP_STATE_PORT(bluetooth_nimble_root_pointers) = m_new0(mp_bluetooth_nimble_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
 
@@ -383,16 +378,24 @@ int mp_bluetooth_init(void) {
     // Otherwise default implementation above calls ble_hci_uart_init().
     mp_bluetooth_nimble_port_hci_init();
 
+    // Static initialization is complete, can start processing events.
+    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC;
+
     // Initialise NimBLE memory and data structures.
     nimble_port_init();
 
     // Make sure that the HCI UART and event handling task is running.
     mp_bluetooth_nimble_port_start();
 
-    // Static initialization is complete, can start processing events.
-    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC;
-
-    ble_npl_sem_pend(&startup_sem, NIMBLE_STARTUP_TIMEOUT);
+    // Run the scheduler while we wait for stack startup.
+    // On non-ringbuffer builds (NimBLE on STM32/Unix) this will also poll the UART and run the event queue.
+    mp_uint_t timeout_start_ticks_ms = mp_hal_ticks_ms();
+    while (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
+        if (mp_hal_ticks_ms() - timeout_start_ticks_ms > NIMBLE_STARTUP_TIMEOUT) {
+            break;
+        }
+        MICROPY_EVENT_POLL_HOOK
+    }
 
     if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
         mp_bluetooth_deinit();
