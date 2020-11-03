@@ -389,7 +389,7 @@ def run_tests(test_files, instances_truth, instances_test):
                 print("### TRUTH ###")
                 print(output_truth, end="")
                 print("### DIFF ###")
-                print_diff(output_test, output_truth)
+                print_diff(output_truth, output_test)
 
         if cmd_args.show_output:
             print()
