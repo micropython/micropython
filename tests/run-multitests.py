@@ -6,6 +6,7 @@
 
 import sys, os, time, re, select
 import argparse
+import itertools
 import subprocess
 import tempfile
 
@@ -418,6 +419,13 @@ def main():
     cmd_parser.add_argument(
         "-i", "--instance", action="append", default=[], help="instance(s) to run the tests on"
     )
+    cmd_parser.add_argument(
+        "-p",
+        "--permutations",
+        type=int,
+        default=1,
+        help="repeat the test with this many permutations of the instance order",
+    )
     cmd_parser.add_argument("files", nargs="+", help="input test files")
     cmd_args = cmd_parser.parse_args()
 
@@ -450,8 +458,14 @@ def main():
     for _ in range(max_instances - len(instances_test)):
         instances_test.append(PyInstanceSubProcess([MICROPYTHON]))
 
+    all_pass = True
     try:
-        all_pass = run_tests(test_files, instances_truth, instances_test)
+        for i, instances_test_permutation in enumerate(itertools.permutations(instances_test)):
+            if i >= cmd_args.permutations:
+                break
+
+            all_pass &= run_tests(test_files, instances_truth, instances_test_permutation)
+
     finally:
         for i in instances_truth:
             i.close()
