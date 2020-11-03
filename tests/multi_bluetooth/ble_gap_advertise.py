@@ -46,7 +46,10 @@ def instance1():
         elif ev == _IRQ_SCAN_DONE:
             finished = True
 
-    ble.config(rxbuf=2000)
+    try:
+        ble.config(rxbuf=2000)
+    except:
+        pass
     ble.irq(irq)
     ble.gap_scan(2 * ADV_TIME_S * 1000, 10000, 10000)
     while not finished:
