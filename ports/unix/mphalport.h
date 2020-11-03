@@ -64,11 +64,6 @@ static inline int mp_hal_readline(vstr_t *vstr, const char *p) {
 
 #endif
 
-// TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
-// "The useconds argument shall be less than one million."
-static inline void mp_hal_delay_ms(mp_uint_t ms) {
-    usleep((ms) * 1000);
-}
 static inline void mp_hal_delay_us(mp_uint_t us) {
     usleep(us);
 }
