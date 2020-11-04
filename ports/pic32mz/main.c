@@ -111,7 +111,6 @@ int main(void)
 
   led_init();
 
-  uart_init();
 soft_reset:
 
   led_state(RED_LED, 1);
