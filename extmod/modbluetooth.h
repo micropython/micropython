@@ -145,6 +145,7 @@
 #define MP_BLUETOOTH_IRQ_L2CAP_RECV                     (25)
 #define MP_BLUETOOTH_IRQ_L2CAP_SEND_READY               (26)
 #define MP_BLUETOOTH_IRQ_CONNECTION_UPDATE              (27)
+#define MP_BLUETOOTH_IRQ_ENCRYPTION_UPDATE              (28)
 
 #define MP_BLUETOOTH_ADDRESS_MODE_PUBLIC (0)
 #define MP_BLUETOOTH_ADDRESS_MODE_RANDOM (1)
@@ -182,7 +183,8 @@ _IRQ_L2CAP_CONNECT = const(23)
 _IRQ_L2CAP_DISCONNECT = const(24)
 _IRQ_L2CAP_RECV = const(25)
 _IRQ_L2CAP_SEND_READY = const(26)
-_IRQ_GATTS_CONN_UPDATE = const(27)
+_IRQ_CONNECTION_UPDATE = const(27)
+_IRQ_ENCRYPTION_UPDATE = const(28)
 
 _FLAG_BROADCAST = const(0x0001)
 _FLAG_READ = const(0x0002)
@@ -338,6 +340,11 @@ void mp_bluetooth_gap_on_connected_disconnected(uint8_t event, uint16_t conn_han
 
 // Call this when any connection parameters have been changed.
 void mp_bluetooth_gap_on_connection_update(uint16_t conn_handle, uint16_t conn_interval, uint16_t conn_latency, uint16_t supervision_timeout, uint16_t status);
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+// Call this when any connection encryption has been changed (e.g. during pairing).
+void mp_bluetooth_gatts_on_encryption_update(uint16_t conn_handle, bool encrypted, bool authenticated, bool bonded, uint8_t key_size);
+#endif
 
 // Call this when a characteristic is written to.
 void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle);
