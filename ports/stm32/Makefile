@@ -657,7 +657,7 @@ $(BUILD)/firmware1.bin: $(BUILD)/firmware.elf
 	$(call GENERATE_BIN,$@,$^,$(TEXT1_SECTIONS))
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
-	$(call GENERATE_DFU,$(word 1,$^),$(TEXT0_ADDR),$(word 2,$^),$(TEXT1_ADDR),$@)
+	$(call GENERATE_DFU,$@,$(word 1,$^),$(TEXT0_ADDR),$(word 2,$^),$(TEXT1_ADDR))
 endif
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
