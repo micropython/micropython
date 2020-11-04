@@ -216,6 +216,10 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (1)
 
+#ifndef MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
+#define MICROPY_HW_STM32WB_FLASH_SYNCRONISATION (1)
+#endif
+
 #else
 #error Unsupported MCU series
 #endif

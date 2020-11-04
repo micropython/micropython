@@ -57,10 +57,12 @@
 #define OCF_CB_RESET             (0x03)
 #define OCF_CB_SET_EVENT_MASK2   (0x63)
 
-#define OGF_VENDOR               (0x3f)
-#define OCF_WRITE_CONFIG         (0x0c)
-#define OCF_SET_TX_POWER         (0x0f)
-#define OCF_BLE_INIT             (0x66)
+#define OGF_VENDOR                        (0x3f)
+#define OCF_WRITE_CONFIG                  (0x0c)
+#define OCF_SET_TX_POWER                  (0x0f)
+#define OCF_BLE_INIT                      (0x66)
+#define OCF_C2_FLASH_ERASE_ACTIVITY       (0x69)
+#define OCF_C2_SET_FLASH_ACTIVITY_CONTROL (0x73)
 
 #define HCI_OPCODE(ogf, ocf) ((ogf) << 10 | (ocf))
 
@@ -557,6 +559,10 @@ void rfcore_ble_init(void) {
     // Configure and reset the BLE controller.
     tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), (const uint8_t *)&ble_init_params, sizeof(ble_init_params), 0);
     tl_ble_hci_cmd_resp(HCI_OPCODE(0x03, 0x0003), NULL, 0);
+
+    // Enable PES rather than SEM7 to moderate flash access between the cores.
+    uint8_t buf = 0; // FLASH_ACTIVITY_CONTROL_PES
+    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_SET_FLASH_ACTIVITY_CONTROL), &buf, 1, 0);
 }
 
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
@@ -614,6 +620,16 @@ void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env)
 void rfcore_ble_set_txpower(uint8_t level) {
     uint8_t buf[2] = { 0x00, level };
     tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_SET_TX_POWER), buf, 2);
+}
+
+void rfcore_start_flash_erase(void) {
+    uint8_t buf = 1; // ERASE_ACTIVITY_ON
+    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_FLASH_ERASE_ACTIVITY), &buf, 1, 0);
+}
+
+void rfcore_end_flash_erase(void) {
+    uint8_t buf = 0; // ERASE_ACTIVITY_OFF
+    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_FLASH_ERASE_ACTIVITY), &buf, 1, 0);
 }
 
 // IPCC IRQ Handlers
