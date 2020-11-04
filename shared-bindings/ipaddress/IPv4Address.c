@@ -126,7 +126,7 @@ const mp_obj_property_t ipaddress_ipv4address_version_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __eq__(self, other: IPv4Address) -> bool:
+//|     def __eq__(self, other: object) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""
 //|         ...
 //|

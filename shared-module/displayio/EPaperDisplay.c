@@ -49,7 +49,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
         uint16_t set_column_window_command, uint16_t set_row_window_command,
         uint16_t set_current_column_command, uint16_t set_current_row_command,
         uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color, uint16_t refresh_display_command, mp_float_t refresh_time,
-        const mcu_pin_obj_t* busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool chip_select) {
+        const mcu_pin_obj_t* busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool chip_select, bool grayscale) {
     if (highlight_color != 0x000000) {
         self->core.colorspace.tricolor = true;
         self->core.colorspace.tricolor_hue = displayio_colorconverter_compute_hue(highlight_color);
@@ -72,6 +72,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
     self->refreshing = false;
     self->milliseconds_per_frame = seconds_per_frame * 1000;
     self->chip_select = chip_select ? CHIP_SELECT_TOGGLE_EVERY_BYTE : CHIP_SELECT_UNTOUCHED;
+    self->grayscale = grayscale;
 
     self->start_sequence = start_sequence;
     self->start_sequence_len = start_sequence_len;
@@ -230,17 +231,16 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
     uint32_t mask[mask_length];
 
     uint8_t passes = 1;
-    if (self->core.colorspace.tricolor) {
+    if (self->core.colorspace.tricolor || self->grayscale) {
         passes = 2;
     }
     for (uint8_t pass = 0; pass < passes; pass++) {
         uint16_t remaining_rows = displayio_area_height(&clipped);
 
-        // added false parameter at end for SH1107_addressing quirk
         if (self->set_row_window_command != NO_COMMAND) {
             displayio_display_core_set_region_to_update(&self->core, self->set_column_window_command,
             self->set_row_window_command, self->set_current_column_command, self->set_current_row_command,
-            false, self->chip_select, &clipped, false);
+            false, self->chip_select, &clipped, false /* SH1107_addressing */);
         }
 
         uint8_t write_command = self->write_black_ram_command;
@@ -270,8 +270,13 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
             memset(buffer, 0, buffer_size * sizeof(buffer[0]));
 
             self->core.colorspace.grayscale = true;
+            self->core.colorspace.grayscale_bit = 7;
             if (pass == 1) {
-                self->core.colorspace.grayscale = false;
+                if (self->grayscale) { // 4-color grayscale
+                    self->core.colorspace.grayscale_bit = 6;
+                } else { // Tri-color
+                    self->core.colorspace.grayscale = false;
+                }
             }
             displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
 
