@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Mark Komus
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,21 @@
  * THE SOFTWARE.
  */
 
-// Machine is the HAL for low-level, hardware accelerated functions. It is not
-// meant to simplify APIs, its only meant to unify them so that other modules
-// do not require port specific logic.
-//
-// This file includes externs for all functions a port should implement to
-// support the machine module.
-
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_SPIDEVICE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_SPIDEVICE_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_SPIDEVICE_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_SPIDEVICE_H
 
 #include "py/obj.h"
+#include "common-hal/busio/SPI.h"
+#include "common-hal/digitalio/DigitalInOut.h"
 
-#include "shared-module/busdevice/SPIDevice.h"
+typedef struct {
+    mp_obj_base_t base;
+    busio_spi_obj_t *spi;
+    uint32_t baudrate;
+    uint8_t polarity;
+    uint8_t phase;
+    uint8_t extra_clocks;
+    digitalio_digitalinout_obj_t *chip_select;
+} adafruit_bus_device_spidevice_obj_t;
 
-// Type object used in Python. Should be shared between ports.
-extern const mp_obj_type_t busdevice_spidevice_type;
-
-// Initializes the hardware peripheral.
-extern void common_hal_busdevice_spidevice_construct(busdevice_spidevice_obj_t *self, busio_spi_obj_t *spi,  digitalio_digitalinout_obj_t *cs,
-    uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t extra_clocks);
-extern void common_hal_busdevice_spidevice_enter(busdevice_spidevice_obj_t *self);
-extern void common_hal_busdevice_spidevice_exit(busdevice_spidevice_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_SPIDEVICE_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_SPIDEVICE_H

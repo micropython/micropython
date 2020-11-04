@@ -24,21 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_SPIDEVICE_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_SPIDEVICE_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_I2CDEVICE_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_I2CDEVICE_H
 
 #include "py/obj.h"
-#include "common-hal/busio/SPI.h"
-#include "common-hal/digitalio/DigitalInOut.h"
+#include "common-hal/busio/I2C.h"
 
 typedef struct {
     mp_obj_base_t base;
-    busio_spi_obj_t *spi;
-    uint32_t baudrate;
-    uint8_t polarity;
-    uint8_t phase;
-    uint8_t extra_clocks;
-    digitalio_digitalinout_obj_t *chip_select;
-} busdevice_spidevice_obj_t;
+    busio_i2c_obj_t *i2c;
+    uint8_t device_address;
+} adafruit_bus_device_i2cdevice_obj_t;
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_SPIDEVICE_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSDEVICE_I2CDEVICE_H

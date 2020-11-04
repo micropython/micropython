@@ -36,18 +36,18 @@
 
 #include "py/obj.h"
 
-#include "shared-module/busdevice/I2CDevice.h"
+#include "shared-module/adafruit_bus_device/I2CDevice.h"
 //#include "shared-bindings/busio/I2C.h"
 
 // Type object used in Python. Should be shared between ports.
-extern const mp_obj_type_t busdevice_i2cdevice_type;
+extern const mp_obj_type_t adafruit_bus_device_i2cdevice_type;
 
 // Initializes the hardware peripheral.
-extern void common_hal_busdevice_i2cdevice_construct(busdevice_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address);
-extern uint8_t common_hal_busdevice_i2cdevice_readinto(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length);
-extern uint8_t common_hal_busdevice_i2cdevice_write(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length);
-extern void common_hal_busdevice_i2cdevice_lock(busdevice_i2cdevice_obj_t *self);
-extern void common_hal_busdevice_i2cdevice_unlock(busdevice_i2cdevice_obj_t *self);
-extern void common_hal_busdevice_i2cdevice_probe_for_device(busdevice_i2cdevice_obj_t *self);
+extern void common_hal_adafruit_bus_device_i2cdevice_construct(adafruit_bus_device_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address);
+extern uint8_t common_hal_adafruit_bus_device_i2cdevice_readinto(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length);
+extern uint8_t common_hal_adafruit_bus_device_i2cdevice_write(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length);
+extern void common_hal_adafruit_bus_device_i2cdevice_lock(adafruit_bus_device_i2cdevice_obj_t *self);
+extern void common_hal_adafruit_bus_device_i2cdevice_unlock(adafruit_bus_device_i2cdevice_obj_t *self);
+extern void common_hal_adafruit_bus_device_i2cdevice_probe_for_device(adafruit_bus_device_i2cdevice_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE_I2CDEVICE_H

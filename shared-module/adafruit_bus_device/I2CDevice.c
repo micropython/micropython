@@ -24,18 +24,18 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/busdevice/I2CDevice.h"
+#include "shared-bindings/adafruit_bus_device/I2CDevice.h"
 #include "shared-bindings/busio/I2C.h"
 #include "py/mperrno.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
 
-void common_hal_busdevice_i2cdevice_construct(busdevice_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address) {
+void common_hal_adafruit_bus_device_i2cdevice_construct(adafruit_bus_device_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address) {
     self->i2c = i2c;
     self->device_address = device_address;
 }
 
-void common_hal_busdevice_i2cdevice_lock(busdevice_i2cdevice_obj_t *self) {
+void common_hal_adafruit_bus_device_i2cdevice_lock(adafruit_bus_device_i2cdevice_obj_t *self) {
     bool success = false;
     while (!success) {
         success = common_hal_busio_i2c_try_lock(self->i2c);
@@ -44,31 +44,31 @@ void common_hal_busdevice_i2cdevice_lock(busdevice_i2cdevice_obj_t *self) {
     }
 }
 
-void common_hal_busdevice_i2cdevice_unlock(busdevice_i2cdevice_obj_t *self) {
+void common_hal_adafruit_bus_device_i2cdevice_unlock(adafruit_bus_device_i2cdevice_obj_t *self) {
     common_hal_busio_i2c_unlock(self->i2c);
 }
 
-uint8_t common_hal_busdevice_i2cdevice_readinto(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length) {
+uint8_t common_hal_adafruit_bus_device_i2cdevice_readinto(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length) {
     return common_hal_busio_i2c_read(self->i2c, self->device_address, buffer, length);
 }
 
-uint8_t common_hal_busdevice_i2cdevice_write(busdevice_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length) {
+uint8_t common_hal_adafruit_bus_device_i2cdevice_write(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length) {
     return common_hal_busio_i2c_write(self->i2c, self->device_address, buffer, length, true);
 }
 
-void common_hal_busdevice_i2cdevice_probe_for_device(busdevice_i2cdevice_obj_t *self) {
-    common_hal_busdevice_i2cdevice_lock(self);
+void common_hal_adafruit_bus_device_i2cdevice_probe_for_device(adafruit_bus_device_i2cdevice_obj_t *self) {
+    common_hal_adafruit_bus_device_i2cdevice_lock(self);
 
     mp_buffer_info_t bufinfo;
     mp_obj_t buffer = mp_obj_new_bytearray_of_zeros(1);
 
     mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_WRITE);
 
-    uint8_t status = common_hal_busdevice_i2cdevice_readinto(self, (uint8_t*)bufinfo.buf, 1);
+    uint8_t status = common_hal_adafruit_bus_device_i2cdevice_readinto(self, (uint8_t*)bufinfo.buf, 1);
     if (status != 0) {
-        common_hal_busdevice_i2cdevice_unlock(self);
+        common_hal_adafruit_bus_device_i2cdevice_unlock(self);
         mp_raise_ValueError_varg(translate("No I2C device at address: %x"), self->device_address);
     }
 
-    common_hal_busdevice_i2cdevice_unlock(self);
+    common_hal_adafruit_bus_device_i2cdevice_unlock(self);
 }

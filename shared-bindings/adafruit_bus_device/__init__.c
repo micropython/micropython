@@ -31,30 +31,30 @@
 #include "py/mphal.h"
 #include "py/objproperty.h"
 
-#include "shared-bindings/busdevice/__init__.h"
-#include "shared-bindings/busdevice/I2CDevice.h"
-#include "shared-bindings/busdevice/SPIDevice.h"
+#include "shared-bindings/adafruit_bus_device/__init__.h"
+#include "shared-bindings/adafruit_bus_device/I2CDevice.h"
+#include "shared-bindings/adafruit_bus_device/SPIDevice.h"
 
-STATIC const mp_rom_map_elem_t busdevice_i2c_device_globals_table[] = {
+STATIC const mp_rom_map_elem_t adafruit_bus_device_i2c_device_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2c_device) },
-    { MP_ROM_QSTR(MP_QSTR_I2CDevice),   MP_ROM_PTR(&busdevice_i2cdevice_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2CDevice),   MP_ROM_PTR(&adafruit_bus_device_i2cdevice_type) },
 };
-STATIC MP_DEFINE_CONST_DICT(busdevice_i2c_device_globals, busdevice_i2c_device_globals_table);
+STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_i2c_device_globals, adafruit_bus_device_i2c_device_globals_table);
 
-const mp_obj_module_t busdevice_i2c_device_module = {
+const mp_obj_module_t adafruit_bus_device_i2c_device_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&busdevice_i2c_device_globals,
+    .globals = (mp_obj_dict_t*)&adafruit_bus_device_i2c_device_globals,
 };
 
-STATIC const mp_rom_map_elem_t busdevice_spi_device_globals_table[] = {
+STATIC const mp_rom_map_elem_t adafruit_bus_device_spi_device_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_spi_device) },
-    { MP_ROM_QSTR(MP_QSTR_SPIDevice),   MP_ROM_PTR(&busdevice_spidevice_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPIDevice),   MP_ROM_PTR(&adafruit_bus_device_spidevice_type) },
 };
-STATIC MP_DEFINE_CONST_DICT(busdevice_spi_device_globals, busdevice_spi_device_globals_table);
+STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_spi_device_globals, adafruit_bus_device_spi_device_globals_table);
 
-const mp_obj_module_t busdevice_spi_device_module = {
+const mp_obj_module_t adafruit_bus_device_spi_device_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&busdevice_spi_device_globals,
+    .globals = (mp_obj_dict_t*)&adafruit_bus_device_spi_device_globals,
 };
 
 //| """Hardware accelerated external bus access
@@ -64,15 +64,15 @@ const mp_obj_module_t busdevice_spi_device_module = {
 //| devices, it manages the chip select and protocol changes such as mode. For I2C, it
 //| manages the device address."""
 //|
-STATIC const mp_rom_map_elem_t busdevice_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_busdevice) },
-    { MP_ROM_QSTR(MP_QSTR_i2c_device),   MP_ROM_PTR(&busdevice_i2c_device_module) },
-    { MP_ROM_QSTR(MP_QSTR_spi_device),   MP_ROM_PTR(&busdevice_spi_device_module) },
+STATIC const mp_rom_map_elem_t adafruit_bus_device_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_adafruit_bus_device) },
+    { MP_ROM_QSTR(MP_QSTR_i2c_device),   MP_ROM_PTR(&adafruit_bus_device_i2c_device_module) },
+    { MP_ROM_QSTR(MP_QSTR_spi_device),   MP_ROM_PTR(&adafruit_bus_device_spi_device_module) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(busdevice_module_globals, busdevice_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_module_globals, adafruit_bus_device_module_globals_table);
 
-const mp_obj_module_t busdevice_module = {
+const mp_obj_module_t adafruit_bus_device_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&busdevice_module_globals,
+    .globals = (mp_obj_dict_t*)&adafruit_bus_device_module_globals,
 };

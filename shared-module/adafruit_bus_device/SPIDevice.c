@@ -24,14 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/busdevice/SPIDevice.h"
+#include "shared-bindings/adafruit_bus_device/SPIDevice.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/mperrno.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
 
-void common_hal_busdevice_spidevice_construct(busdevice_spidevice_obj_t *self, busio_spi_obj_t *spi,  digitalio_digitalinout_obj_t *cs,
+void common_hal_adafruit_bus_device_spidevice_construct(adafruit_bus_device_spidevice_obj_t *self, busio_spi_obj_t *spi,  digitalio_digitalinout_obj_t *cs,
     uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t extra_clocks) {
     self->spi = spi;
     self->baudrate = baudrate;
@@ -41,7 +41,7 @@ void common_hal_busdevice_spidevice_construct(busdevice_spidevice_obj_t *self, b
     self->chip_select = cs;
 }
 
-void common_hal_busdevice_spidevice_enter(busdevice_spidevice_obj_t *self) {
+void common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spidevice_obj_t *self) {
     bool success = false;
     while (!success) {
         success = common_hal_busio_spi_try_lock(self->spi);
@@ -56,7 +56,7 @@ void common_hal_busdevice_spidevice_enter(busdevice_spidevice_obj_t *self) {
     }
 }
 
-void common_hal_busdevice_spidevice_exit(busdevice_spidevice_obj_t *self) {
+void common_hal_adafruit_bus_device_spidevice_exit(adafruit_bus_device_spidevice_obj_t *self) {
     if (self->chip_select != MP_OBJ_NULL) {
         common_hal_digitalio_digitalinout_set_value(MP_OBJ_TO_PTR(self->chip_select), true);
     }

@@ -325,8 +325,8 @@ extern const struct _mp_obj_module_t board_module;
 #endif
 
 #if CIRCUITPY_BUSDEVICE
-extern const struct _mp_obj_module_t busdevice_module;
-#define BUSDEVICE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_busdevice), (mp_obj_t)&busdevice_module },
+extern const struct _mp_obj_module_t adafruit_bus_device_module;
+#define BUSDEVICE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_bus_device), (mp_obj_t)&adafruit_bus_device_module },
 #else
 #define BUSDEVICE_MODULE
 #endif

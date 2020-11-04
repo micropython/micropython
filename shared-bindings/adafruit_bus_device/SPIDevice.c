@@ -25,9 +25,9 @@
  */
 
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/busdevice/SPIDevice.h"
+#include "shared-bindings/adafruit_bus_device/SPIDevice.h"
 #include "shared-bindings/util.h"
-#include "shared-module/busdevice/SPIDevice.h"
+#include "shared-module/adafruit_bus_device/SPIDevice.h"
 #include "common-hal/digitalio/DigitalInOut.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
@@ -69,9 +69,9 @@
 //|                     spi.write(bytes_read)"""
 //|     ...
 //|
-STATIC mp_obj_t busdevice_spidevice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    busdevice_spidevice_obj_t *self = m_new_obj(busdevice_spidevice_obj_t);
-    self->base.type = &busdevice_spidevice_type;
+STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    adafruit_bus_device_spidevice_obj_t *self = m_new_obj(adafruit_bus_device_spidevice_obj_t);
+    self->base.type = &adafruit_bus_device_spidevice_type;
     enum { ARG_spi, ARG_chip_select, ARG_baudrate, ARG_polarity, ARG_phase, ARG_extra_clocks };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -86,7 +86,7 @@ STATIC mp_obj_t busdevice_spidevice_make_new(const mp_obj_type_t *type, size_t n
 
     busio_spi_obj_t* spi = args[ARG_spi].u_obj;
 
-    common_hal_busdevice_spidevice_construct(MP_OBJ_TO_PTR(self), spi, args[ARG_chip_select].u_obj, args[ARG_baudrate].u_int, args[ARG_polarity].u_int,
+    common_hal_adafruit_bus_device_spidevice_construct(MP_OBJ_TO_PTR(self), spi, args[ARG_chip_select].u_obj, args[ARG_baudrate].u_int, args[ARG_polarity].u_int,
         args[ARG_phase].u_int, args[ARG_extra_clocks].u_int);
 
     if (args[ARG_chip_select].u_obj != MP_OBJ_NULL) {
@@ -100,29 +100,29 @@ STATIC mp_obj_t busdevice_spidevice_make_new(const mp_obj_type_t *type, size_t n
     return (mp_obj_t)self;
 }
 
-STATIC mp_obj_t busdevice_spidevice_obj___enter__(mp_obj_t self_in) {
-    busdevice_spidevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_busdevice_spidevice_enter(self);
+STATIC mp_obj_t adafruit_bus_device_spidevice_obj___enter__(mp_obj_t self_in) {
+    adafruit_bus_device_spidevice_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_adafruit_bus_device_spidevice_enter(self);
     return self->spi;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(busdevice_spidevice___enter___obj, busdevice_spidevice_obj___enter__);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(adafruit_bus_device_spidevice___enter___obj, adafruit_bus_device_spidevice_obj___enter__);
 
-STATIC mp_obj_t busdevice_spidevice_obj___exit__(size_t n_args, const mp_obj_t *args) {
-    common_hal_busdevice_spidevice_exit(MP_OBJ_TO_PTR(args[0]));
+STATIC mp_obj_t adafruit_bus_device_spidevice_obj___exit__(size_t n_args, const mp_obj_t *args) {
+    common_hal_adafruit_bus_device_spidevice_exit(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busdevice_spidevice___exit___obj, 4, 4, busdevice_spidevice_obj___exit__);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adafruit_bus_device_spidevice___exit___obj, 4, 4, adafruit_bus_device_spidevice_obj___exit__);
 
-STATIC const mp_rom_map_elem_t busdevice_spidevice_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&busdevice_spidevice___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&busdevice_spidevice___exit___obj) },
+STATIC const mp_rom_map_elem_t adafruit_bus_device_spidevice_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&adafruit_bus_device_spidevice___enter___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&adafruit_bus_device_spidevice___exit___obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(busdevice_spidevice_locals_dict, busdevice_spidevice_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_spidevice_locals_dict, adafruit_bus_device_spidevice_locals_dict_table);
 
-const mp_obj_type_t busdevice_spidevice_type = {
+const mp_obj_type_t adafruit_bus_device_spidevice_type = {
    { &mp_type_type },
    .name = MP_QSTR_SPIDevice,
-   .make_new = busdevice_spidevice_make_new,
-   .locals_dict = (mp_obj_dict_t*)&busdevice_spidevice_locals_dict,
+   .make_new = adafruit_bus_device_spidevice_make_new,
+   .locals_dict = (mp_obj_dict_t*)&adafruit_bus_device_spidevice_locals_dict,
 };
