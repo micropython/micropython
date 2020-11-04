@@ -41,6 +41,10 @@ SRC_C = \
 	lib/mp-readline/readline.c \
 	board.c \
 	help.c \
+	delay.c \
+	interrupt.c \
+	sysclk.c \
+	timer.c \
 
 SRC_S = \
 #	gchelper.s \
