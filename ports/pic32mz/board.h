@@ -6,8 +6,6 @@
 #define RS_PIN     (10)
 
 #define SYS_FREQ 200000000 // 200MHz
-/* Convert milliseconds to core timer ticks */
-#define MS2TICKS(T) ((T) * 100000) /* Calculated for a 200MHz system */
 
 extern int _stack;
 extern int _heap;
@@ -25,7 +23,6 @@ void uart_init(void);
 int uart_rx_any(void);
 int uart_rx_char(void);
 void uart_tx_char(int chr);
-void _delay_us(unsigned int us);
 void print_str(char *s);
 void set_rs_pin(void);
 void clear_rs_pin(void);

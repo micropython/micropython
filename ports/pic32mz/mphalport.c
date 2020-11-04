@@ -25,16 +25,17 @@
  */
 
 #include <string.h>
+#include <stdint.h>
 #include "py/stream.h"
 #include "py/mphal.h"
 #include "board.h"
-#include <stdint.h>
-#include <xc.h>
+#include "timer.h"
+#include "delay.h"
+#include "interrupt.h"
 
 #define SYS_TICK_FREQ (1000) // 1kHz
 
 static int interrupt_char;
-static uint32_t global_tick = 0;
 
 void mp_hal_init(void) {
     MP_STATE_PORT(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
@@ -43,29 +44,15 @@ void mp_hal_init(void) {
 // use timer 1 as system tick at 1 ms.
 void mp_hal_init_ticks(void)
 {
-  T1CON = 0x0;
-  TMR1 = 0;
-
-  IEC0bits.T1IE = 0;
-
-  PR1 = SYS_FREQ / 2 / SYS_TICK_FREQ / 8;
-
-  T1CONbits.TCKPS = 0b01;
-
-  IFS0bits.T1IF = 0;
-  IPC1bits.T1IP = 3; // periority 3, if changed, change interrupt.c definition
-  IPC1bits.T1IS = 1;
-  IEC0bits.T1IE = 1;
-
-  T1CONbits.TON = 1;
+  init_timer1(SYS_TICK_FREQ, TMR_PRESCALE_1, 0);
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
-    return global_tick;
+    return interrupt_tick_get();
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-   _delay_us(1000 * ms);
+   delay_ms(ms);
 }
 
 void mp_hal_set_interrupt_char(int c) {

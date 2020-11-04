@@ -1,6 +1,6 @@
 /*
  * @Author AbdouSam
- * @brief, simple code to test-run micropython on a PIC32MZ 
+ * @brief, simple code to test micropython on a PIC32MZ 
  *
  * @configuration : The board tested on has the following pinout
  * - external 24Mhz Quartz
@@ -105,11 +105,6 @@
 #pragma config TSEQ =       0x0000
 #pragma config CSEQ =       0xffff
 
-void delay_ms(unsigned int ms)
-{
-  _delay_us(1000 * ms);
-}
-
 int main(void)
 {
   mpu_init();
@@ -157,7 +152,7 @@ void gc_collect(void) {
     // TODO possibly need to trace registers
     void *dummy;
     gc_collect_start();
-    // Node: stack is ascending
+
     gc_collect_root(&dummy, ((mp_uint_t)MP_STATE_THREAD(stack_top) - (mp_uint_t)&dummy) / sizeof(mp_uint_t));
     gc_collect_end();
 }

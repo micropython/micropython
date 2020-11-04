@@ -1,86 +1,13 @@
 #include "board.h"
+#include "sysclk.h"
+#include "interrupt.h"
+
 #include <xc.h>
 
-/**
- * @brief Read current cp0 timer, used to create delays
- */
-static uint32_t readcoretimer(void)
-{
-  volatile uint32_t timer;
-  
-  asm volatile("mfc0   %0, $9" : "=r"(timer));
-  
-  return timer;
-}
-
-/**
- * @brief Set current cp0 timer count
- */
-static void setcoretime(volatile uint32_t count)
-{
-  asm volatile("mtc0    %0, $9" : :"r"(count));
-}
-
-/*
- * @brief generate a delay
- */
-void _delay_us(unsigned int us)
-{
-  us *= SYS_FREQ / 1000000 / 2; //Core timer updates every 2 ticks
-  setcoretime(0);
-
-  while (us > readcoretimer());
-}
-
-/* 
- * @brief Set the clocks for different peripherals, initiate cache
- */
 void mpu_init(void)
 {
-  unsigned int cp0;
-
-  //Unlock sequence
-  asm volatile("di"); // disable all interrupts
-  SYSKEY = 0xAA996655;
-  SYSKEY = 0x556699AA;
-
-  //PB1DIV
-  //Peripheral Bus 1 cannot be turned off, so there's no need to turn it on
-  PB1DIVbits.PBDIV = 1; //Peripheral Bus 1 Clock Divisor Control (PBCLK1 is SYSCLK / 2)
-  
-  //PB2DIV
-  PB2DIVbits.PBDIV = 1;
-  PB2DIVbits.ON = 1; 
-
-  PB3DIVbits.PBDIV = 4;
-  PB3DIVbits.ON = 1; 
-
-  PB4DIVbits.PBDIV = 1; 
-  PB4DIVbits.ON = 1; 
-
-  PB5DIVbits.PBDIV = 1; 
-  PB5DIVbits.ON = 1; 
-
-  PB7DIVbits.PBDIV = 0; 
-  PB7DIVbits.ON = 1; 
-
-  PB8DIVbits.PBDIV = 1; 
-  PB8DIVbits.ON = 1; 
-
-  // PRECON - Set up prefetch
-  PRECONbits.PFMSECEN = 0; // Flash SEC Interrrupt Enable ( Do not generate interrupt when PFMSECbit is set)
-  PRECONbits.PREFEN = 0b11; // Predictive prefech Enable (for any address)
-  PRECONbits.PFMWS  = 0b010; // PFM Access Time Defined in Terms of SYSCLK Wait States
-
-  // Set up caching -system control coprocessor- register number 16
-  cp0 = _mfc0(16, 0);
-  cp0 &= ~0x07;
-  cp0 |= 0b011; // K0 = Cacheable, non-coherent, write-back, write-allocate
-  _mtc0(16, 0, cp0);
-
-  // Lock Sequence
-  SYSKEY = 0x33333333;
-  asm volatile("ei"); // enable interrupts
+  sysclk_init();
+  interrupt_init();
 }
 
 void led_init(void)
