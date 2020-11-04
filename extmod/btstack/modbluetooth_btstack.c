@@ -359,6 +359,35 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         DEBUG_printf("  --> btstack # conns changed\n");
     } else if (event_type == HCI_EVENT_VENDOR_SPECIFIC) {
         DEBUG_printf("  --> hci vendor specific\n");
+    } else if (event_type == SM_EVENT_AUTHORIZATION_RESULT ||
+               event_type == SM_EVENT_PAIRING_COMPLETE ||
+               // event_type == GAP_EVENT_DEDICATED_BONDING_COMPLETED || // No conn_handle
+               event_type == HCI_EVENT_ENCRYPTION_CHANGE) {
+        DEBUG_printf("  --> enc/auth/pair/bond change\n", );
+
+        hci_con_handle_t con_handle;
+        switch (event_type) {
+            case SM_EVENT_AUTHORIZATION_RESULT:
+                con_handle = sm_event_authorization_result_get_handle(packet);
+                break;
+            case SM_EVENT_PAIRING_COMPLETE:
+                con_handle = sm_event_pairing_complete_get_handle(packet);
+                break;
+            case HCI_EVENT_ENCRYPTION_CHANGE:
+                con_handle = hci_event_encryption_change_get_connection_handle(packet);
+                break;
+            default:
+                return;
+        }
+
+        hci_connection_t * hci_con = hci_connection_for_handle(con_handle);
+        sm_connection_t *desc = &hci_con->sm_connection;
+        mp_bluetooth_gatts_on_enc_update(con_handle,
+            desc->sm_connection_encrypted,
+            desc->sm_connection_authenticated,
+            desc->sm_le_db_index != -1,
+            desc->sm_actual_encryption_key_size);
+
     } else if (event_type == HCI_EVENT_DISCONNECTION_COMPLETE) {
         DEBUG_printf("  --> hci disconnect complete\n");
         uint16_t conn_handle = hci_event_disconnection_complete_get_connection_handle(packet);

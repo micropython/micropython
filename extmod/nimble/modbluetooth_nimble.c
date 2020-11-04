@@ -310,6 +310,17 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
             }
             break;
         }
+
+        case BLE_GAP_EVENT_ENC_CHANGE: {
+            DEBUG_printf("gap_event_cb: enc change: status=%d\n", event->enc_change.status);
+            struct ble_gap_conn_desc desc;
+            if (ble_gap_conn_find(event->enc_change.conn_handle, &desc) == 0) {
+                mp_bluetooth_gatts_on_enc_update(event->conn_update.conn_handle,
+                    desc.sec_state.encrypted, desc.sec_state.authenticated,
+                    desc.sec_state.bonded, desc.sec_state.key_size);
+            }
+            break;
+        }
     }
     return 0;
 }
@@ -959,6 +970,16 @@ STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
             break;
         }
 
+        case BLE_GAP_EVENT_ENC_CHANGE: {
+            DEBUG_printf("periph_gap_event_cb: enc change: status=%d\n", event->enc_change.status);
+            struct ble_gap_conn_desc desc;
+            if (ble_gap_conn_find(event->enc_change.conn_handle, &desc) == 0) {
+                mp_bluetooth_gatts_on_enc_update(event->conn_update.conn_handle,
+                    desc.sec_state.encrypted, desc.sec_state.authenticated,
+                    desc.sec_state.bonded, desc.sec_state.key_size);
+            }
+            break;
+        }
         default:
             break;
     }

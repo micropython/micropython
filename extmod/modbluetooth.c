@@ -928,6 +928,9 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         } else if (event == MP_BLUETOOTH_IRQ_GATTS_CONN_UPDATE) {
             // conn_handle, interval, latency, timeout, enc, auth, bonded, keysize
             ringbuf_extract(&o->ringbuf, data_tuple, 4, 0, NULL, 0, NULL, NULL);
+        } else if (event == MP_BLUETOOTH_IRQ_GATTS_ENC_UPDATE) {
+            // conn_handle, interval, latency, timeout, enc, auth, bonded, keysize
+            ringbuf_extract(&o->ringbuf, data_tuple, 1, 4, NULL, 0, NULL, NULL);
         #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
         } else if (event == MP_BLUETOOTH_IRQ_SCAN_RESULT) {
             // addr_type, addr, adv_type, rssi, adv_data
@@ -1046,6 +1049,11 @@ void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t valu
 void mp_bluetooth_gatts_on_conn_update(uint16_t conn_handle, uint16_t conn_itvl, uint16_t conn_latency, uint16_t supervision_timeout) {
     uint16_t args[] = {conn_handle, conn_itvl, conn_latency, supervision_timeout};
     invoke_irq_handler(MP_BLUETOOTH_IRQ_GATTS_CONN_UPDATE, args, 4, NULL_U8, 0, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
+}
+
+void mp_bluetooth_gatts_on_enc_update(uint16_t conn_handle, bool encrypted, bool authenticated, bool bonded, uint8_t key_size) {
+    uint8_t args[] = {encrypted, authenticated, bonded, key_size};
+    invoke_irq_handler(MP_BLUETOOTH_IRQ_GATTS_ENC_UPDATE, &conn_handle, 1, args, 4, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
 }
 
 bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle) {
@@ -1219,6 +1227,19 @@ void mp_bluetooth_gatts_on_conn_update(uint16_t conn_handle, uint16_t conn_itvl,
         ringbuf_put16(&o->ringbuf, conn_itvl);
         ringbuf_put16(&o->ringbuf, conn_latency);
         ringbuf_put16(&o->ringbuf, supervision_timeout);
+    }
+    schedule_ringbuf(atomic_state);
+}
+
+void mp_bluetooth_gatts_on_enc_update(uint16_t conn_handle, bool encrypted, bool authenticated, bool bonded, uint8_t key_size) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    if (enqueue_irq(o, 2 + 1 + 1 + 1 + 1, MP_BLUETOOTH_IRQ_GATTS_ENC_UPDATE)) {
+        ringbuf_put16(&o->ringbuf, conn_handle);
+        ringbuf_put(&o->ringbuf, encrypted);
+        ringbuf_put(&o->ringbuf, authenticated);
+        ringbuf_put(&o->ringbuf, bonded);
+        ringbuf_put(&o->ringbuf, key_size);
     }
     schedule_ringbuf(atomic_state);
 }
