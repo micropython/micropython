@@ -563,15 +563,57 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
-.PHONY: deploy
+define RUN_DFU
+	$(ECHO) "Writing $(1) to the board"
+	$(if $(filter $(USE_PYDFU),1),\
+	$(Q)$(PYTHON) $(PYDFU) --vid $(BOOTLOADER_DFU_USB_VID) --pid $(BOOTLOADER_DFU_USB_PID) -u $(1),
+	$(Q)$(DFU_UTIL) -a 0 -d $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) -D $(1))
+endef
+
+define RUN_STLINK
+	$(ECHO) "Writing $(1) to the board via ST-LINK"
+	$(Q)$(STFLASH) write $(1) $(2)
+endef
+
+define RUN_OPENOCD
+	$(ECHO) $(1) $(2) $(3) $(4)
+	$(ECHO) "Writing $(1) to the board via ST-LINK using OpenOCD"
+	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(1) $(2) $(3) $(4)"
+endef
+
+define GENERATE_ELF
+	$(ECHO) "LINK $(1)"
+	$(Q)$(LD) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
+	$(Q)$(SIZE) $(1)
+	$(if $(filter-out $(TEXT0_ADDR),0x08000000), \
+		$(ECHO) "INFO: this build requires mboot to be installed first")
+	$(if $(filter $(TEXT1_ADDR),0x90000000), \
+		$(ECHO) "INFO: this build places firmware in external QSPI flash")
+endef
+
+define GENERATE_BIN
+	$(ECHO) "GEN $(1)"
+	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(3)) $(2) $(1)
+endef
+
+define GENERATE_DFU
+	$(ECHO) "GEN $(1)"
+	$(Q)$(PYTHON) $(DFU) \
+	-D $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) \
+	$(if $(2),$(addprefix -b ,$(3):$(2))) \
+	$(if $(4),$(addprefix -b ,$(5):$(4))) \
+	$(1)
+endef
+
+define GENERATE_HEX
+	$(ECHO) "GEN $(1)"
+	$(Q)$(OBJCOPY) -O ihex $(2) $(1)
+endef
+
+.PHONY: deploy deploy-stlink deploy-openocd
 
 deploy: $(BUILD)/firmware.dfu
-	$(ECHO) "Writing $< to the board"
-ifeq ($(USE_PYDFU),1)
-	$(Q)$(PYTHON) $(PYDFU) --vid $(BOOTLOADER_DFU_USB_VID) --pid $(BOOTLOADER_DFU_USB_PID) -u $<
-else
-	$(Q)$(DFU_UTIL) -a 0 -d $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) -D $<
-endif
+	$(call RUN_DFU,$^)
 
 # A board should specify TEXT0_ADDR if to use a different location than the
 # default for the firmware memory location.  A board can also optionally define
@@ -583,18 +625,17 @@ ifeq ($(TEXT1_ADDR),)
 
 TEXT0_SECTIONS ?= .isr_vector .text .data
 
-deploy-stlink: $(BUILD)/firmware.dfu
-	$(ECHO) "Writing $(BUILD)/firmware.bin to the board via ST-LINK"
-	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(TEXT0_ADDR)
+deploy-stlink: $(BUILD)/firmware.bin
+	$(call RUN_STLINK,$^,$(TEXT0_ADDR))
 
-deploy-openocd: $(BUILD)/firmware.dfu
-	$(ECHO) "Writing $(BUILD)/firmware.bin to the board via ST-LINK using OpenOCD"
-	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware.bin $(TEXT0_ADDR)"
+deploy-openocd: $(BUILD)/firmware.bin
+	$(call RUN_OPENOCD,$^,$(TEXT0_ADDR))
 
-$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
-	$(ECHO) "Create $@"
-	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(TEXT0_SECTIONS)) $^ $(BUILD)/firmware.bin
-	$(Q)$(PYTHON) $(DFU) -D $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) -b $(TEXT0_ADDR):$(BUILD)/firmware.bin $@
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
+	$(call GENERATE_BIN,$@,$^,$(TEXT0_SECTIONS))
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
+	$(call GENERATE_DFU,$@,$^,$(TEXT0_ADDR))
 
 else
 # TEXT0_ADDR and TEXT1_ADDR are specified so split firmware between these locations
@@ -602,38 +643,28 @@ else
 TEXT0_SECTIONS ?= .isr_vector
 TEXT1_SECTIONS ?= .text .data
 
-deploy-stlink: $(BUILD)/firmware.dfu
-	$(ECHO) "Writing $(BUILD)/firmware0.bin to the board via ST-LINK"
-	$(Q)$(STFLASH) write $(BUILD)/firmware0.bin $(TEXT0_ADDR)
-	$(ECHO) "Writing $(BUILD)/firmware1.bin to the board via ST-LINK"
-	$(Q)$(STFLASH) --reset write $(BUILD)/firmware1.bin $(TEXT1_ADDR)
+deploy-stlink: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
+	$(call RUN_STLINK,$(word 1,$^),$(TEXT0_ADDR))
+	$(call RUN_STLINK,$(word 2,$^),$(TEXT1_ADDR))
 
-deploy-openocd: $(BUILD)/firmware.dfu
-	$(ECHO) "Writing $(BUILD)/firmware{0,1}.bin to the board via ST-LINK using OpenOCD"
-	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(BUILD)/firmware0.bin $(TEXT0_ADDR) $(BUILD)/firmware1.bin $(TEXT1_ADDR)"
+deploy-openocd: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
+	$(call RUN_OPENOCD,$(word 1,$^),$(TEXT0_ADDR),$(word 2,$^),$(TEXT1_ADDR))
 
-$(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
-	$(ECHO) "GEN $@"
-	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(TEXT0_SECTIONS)) $^ $(BUILD)/firmware0.bin
-	$(Q)$(OBJCOPY) -O binary $(addprefix -j ,$(TEXT1_SECTIONS)) $^ $(BUILD)/firmware1.bin
-	$(Q)$(PYTHON) $(DFU) -D $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) -b $(TEXT0_ADDR):$(BUILD)/firmware0.bin -b $(TEXT1_ADDR):$(BUILD)/firmware1.bin $@
+$(BUILD)/firmware0.bin: $(BUILD)/firmware.elf
+	$(call GENERATE_BIN,$@,$^,$(TEXT0_SECTIONS))
 
+$(BUILD)/firmware1.bin: $(BUILD)/firmware.elf
+	$(call GENERATE_BIN,$@,$^,$(TEXT1_SECTIONS))
+
+$(BUILD)/firmware.dfu: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
+	$(call GENERATE_DFU,$(word 1,$^),$(TEXT0_ADDR),$(word 2,$^),$(TEXT1_ADDR),$@)
 endif
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
-	$(ECHO) "GEN $@"
-	$(Q)$(OBJCOPY) -O ihex $< $@
+	$(call GENERATE_HEX,$@,$^)
 
 $(BUILD)/firmware.elf: $(OBJ)
-	$(ECHO) "LINK $@"
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LDFLAGS_MOD) $(LIBS)
-	$(Q)$(SIZE) $@
-ifneq ($(TEXT0_ADDR),0x08000000)
-	$(ECHO) "INFO: this build requires mboot to be installed first"
-endif
-ifeq ($(TEXT1_ADDR),0x90000000)
-	$(ECHO) "INFO: this build places firmware in external QSPI flash"
-endif
+	$(call GENERATE_ELF,$@,$^)
 
 PLLVALUES = boards/pllvalues.py
 MAKE_PINS = boards/make-pins.py
