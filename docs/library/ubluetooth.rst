@@ -202,6 +202,9 @@ Event Handling
             elif event == _IRQ_CONNECTION_UPDATE:
                 # The remote device has updated connection parameters.
                 conn_handle, conn_interval, conn_latency, supervision_timeout, status = data
+            elif event == _IRQ_ENCRYPTION_UPDATE:
+                # The encryption state has changed (likely as a result of pairing or bonding).
+                conn_handle, encrypted, authenticated, bonded, key_size = data
 
 The event codes are::
 
@@ -233,6 +236,7 @@ The event codes are::
     _IRQ_L2CAP_RECV = const(25)
     _IRQ_L2CAP_SEND_READY = const(26)
     _IRQ_CONNECTION_UPDATE = const(27)
+    _IRQ_ENCRYPTION_UPDATE = const(28)
 
 For the ``_IRQ_GATTS_READ_REQUEST`` event, the available return codes are::
 
