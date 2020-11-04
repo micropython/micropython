@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-01 11:11+0530\n"
+"POT-Creation-Date: 2020-11-04 21:18+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -294,6 +294,10 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
+msgstr ""
+
+#: ports/esp32s2/peripherals/pcnt_handler.c
+msgid "All PCNT units in use"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
@@ -1270,10 +1274,6 @@ msgstr ""
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
-msgstr ""
-
-#: ports/esp32s2/pcnt_handler.c
-msgid "No PCNT unit free"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c

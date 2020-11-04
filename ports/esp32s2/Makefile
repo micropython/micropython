@@ -173,7 +173,6 @@ SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
-	pcnt_handler.c \
 	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
@@ -189,6 +188,7 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
+	peripherals/pcnt_handler.c \
 	peripherals/pins.c \
 	peripherals/rmt.c \
 	supervisor/shared/memory.c
