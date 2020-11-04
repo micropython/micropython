@@ -45,6 +45,8 @@ SRC_C = \
 	interrupt.c \
 	sysclk.c \
 	timer.c \
+	uart.c \
+	gpio.c \
 
 SRC_S = \
 #	gchelper.s \
