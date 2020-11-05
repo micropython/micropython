@@ -6,7 +6,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-N = 3
+N = 5
 
 for endian in ("NATIVE", "LITTLE_ENDIAN", "BIG_ENDIAN"):
     for type_ in ("INT8", "UINT8", "INT16", "UINT16", "INT32", "UINT32", "INT64", "UINT64"):
@@ -15,5 +15,5 @@ for endian in ("NATIVE", "LITTLE_ENDIAN", "BIG_ENDIAN"):
         data = bytearray(sz)
         s = uctypes.struct(uctypes.addressof(data), desc, getattr(uctypes, endian))
         for i in range(N):
-            s.arr[i] = i
+            s.arr[i] = i - 2
         print(endian, type_, sz, *(s.arr[i] for i in range(N)))
