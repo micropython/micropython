@@ -203,7 +203,16 @@ void port_sleep_until_interrupt(void) {
     if (sleep_time_duration == 0) {
         return;
     }
-    vTaskDelayUntil(&sleep_time_set, sleep_time_duration);
+    // Need to run in a loop in order to check if CTRL-C was received
+     TickType_t start_ticks = 0;
+     while (sleep_time_duration > start_ticks ) {
+       vTaskDelayUntil(&sleep_time_set, 1);
+       if ( mp_hal_is_interrupted()  ) {
+         mp_handle_pending();
+       }
+       start_ticks = start_ticks + 1;
+      }
+
 }
 
 
