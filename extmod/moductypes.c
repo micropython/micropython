@@ -399,7 +399,7 @@ STATIC void set_aligned(uint val_type, void *p, mp_int_t index, mp_obj_t val) {
                 ((uint64_t *)p)[index] = (uint64_t)v;
             } else {
                 // TODO: Doesn't offer atomic store semantics, but should at least try
-                set_unaligned(val_type, p, MP_ENDIANNESS_BIG, val);
+                set_unaligned(val_type, (void *)&((uint64_t *)p)[index], MP_ENDIANNESS_BIG, val);
             }
             return;
         default:
