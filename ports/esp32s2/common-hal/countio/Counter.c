@@ -42,7 +42,8 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
         .neg_mode = PCNT_COUNT_DIS,   // Keep the counter value on the negative edge
     };
     // Initialize PCNT unit
-    pcnt_handler_init(&pcnt_config);
+    // This also sets pcnt_config.unit
+    peripherals_pcnt_init(&pcnt_config);
 
     self->pin = pin->number;
     self->unit = pcnt_config.unit;
@@ -57,7 +58,7 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t* self) {
         return;
     }
     reset_pin_number(self->pin);
-    pcnt_handler_deinit(&self->unit);
+    peripherals_pcnt_deinit(&self->unit);
 }
 
 mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t* self) {

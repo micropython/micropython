@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNTER_H
 
 #include "py/obj.h"
-#include "pcnt_handler.h"
+#include "peripherals/pcnt.h"
 
 typedef struct {
     mp_obj_base_t base;
