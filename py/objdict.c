@@ -291,6 +291,7 @@ STATIC mp_obj_t dict_get_helper(size_t n_args, const mp_obj_t *args, mp_map_look
             value = args[2];
         }
         if (lookup_kind == MP_MAP_LOOKUP_ADD_IF_NOT_FOUND) {
+            assert(elem);
             elem->value = value;
         }
     } else {
