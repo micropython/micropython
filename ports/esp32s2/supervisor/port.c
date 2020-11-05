@@ -30,6 +30,7 @@
 #include "supervisor/port.h"
 #include "boards/board.h"
 #include "modules/module.h"
+#include "py/runtime.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
