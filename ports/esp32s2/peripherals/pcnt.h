@@ -29,7 +29,7 @@
 
 #include "driver/pcnt.h"
 
-extern void peripherals_pcnt_init(pcnt_config_t* pcnt_config);
+extern int peripherals_pcnt_init(pcnt_config_t pcnt_config);
 extern void peripherals_pcnt_deinit(pcnt_unit_t* unit);
 
 #endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_PCNT_HANDLER_H

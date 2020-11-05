@@ -27,12 +27,15 @@
 #include "common-hal/countio/Counter.h"
 #include "common-hal/microcontroller/Pin.h"
 
+#include "py/runtime.h"
+#include "supervisor/shared/translate.h"
+
 void common_hal_countio_counter_construct(countio_counter_obj_t* self,
     const mcu_pin_obj_t* pin) {
     claim_pin(pin);
 
     // Prepare configuration for the PCNT unit
-    pcnt_config_t pcnt_config = {
+    const pcnt_config_t pcnt_config = {
         // Set PCNT input signal and control GPIOs
         .pulse_gpio_num = pin->number,
         .ctrl_gpio_num = PCNT_PIN_NOT_USED,
@@ -41,12 +44,15 @@ void common_hal_countio_counter_construct(countio_counter_obj_t* self,
         .pos_mode = PCNT_COUNT_INC,   // Count up on the positive edge
         .neg_mode = PCNT_COUNT_DIS,   // Keep the counter value on the negative edge
     };
+
     // Initialize PCNT unit
-    // This also sets pcnt_config.unit
-    peripherals_pcnt_init(&pcnt_config);
+    const int8_t unit = peripherals_pcnt_init(pcnt_config);
+    if (unit == -1) {
+        mp_raise_RuntimeError(translate("All PCNT units in use"));
+    }
 
     self->pin = pin->number;
-    self->unit = pcnt_config.unit;
+    self->unit = (pcnt_unit_t)unit;
 }
 
 bool common_hal_countio_counter_deinited(countio_counter_obj_t* self) {
