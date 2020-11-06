@@ -34,5 +34,6 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(esp_config_obj);
 
 void usocket_events_deinit(void);
+void esp_initialise_wifi(void);
 
 #endif
