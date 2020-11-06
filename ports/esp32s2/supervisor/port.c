@@ -30,6 +30,7 @@
 #include "supervisor/port.h"
 #include "boards/board.h"
 #include "modules/module.h"
+#include "py/runtime.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -54,6 +55,7 @@
 
 uint32_t* heap;
 uint32_t heap_size;
+extern TaskHandle_t xTaskToNotify;
 
 STATIC esp_timer_handle_t _tick_timer;
 
@@ -188,33 +190,27 @@ void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
 }
 
-TickType_t sleep_time_set;
 TickType_t sleep_time_duration;
+uint32_t NotifyValue = 0;
+BaseType_t notify_wait = 0;
+
 void port_interrupt_after_ticks(uint32_t ticks) {
-    sleep_time_set = xTaskGetTickCount();
-    sleep_time_duration = ticks / portTICK_PERIOD_MS;
-    // esp_sleep_enable_timer_wakeup(uint64_t time_in_us)
+    sleep_time_duration = (ticks * 100)/1024;
+    xTaskToNotify = xTaskGetCurrentTaskHandle();
 }
 
 void port_sleep_until_interrupt(void) {
-    // FreeRTOS delay here maybe.
-    // Light sleep shuts down BLE and wifi.
-    // esp_light_sleep_start()
+
     if (sleep_time_duration == 0) {
         return;
     }
-    // Need to run in a loop in order to check if CTRL-C was received
-     TickType_t start_ticks = 0;
-     while (sleep_time_duration > start_ticks ) {
-       vTaskDelayUntil(&sleep_time_set, 1);
-       if ( mp_hal_is_interrupted()  ) {
-         mp_handle_pending();
-       }
-       start_ticks = start_ticks + 1;
-      }
-
+    notify_wait = xTaskNotifyWait(0x01,0x01,&NotifyValue,
+                             sleep_time_duration );
+    if (NotifyValue == 1) {
+      xTaskToNotify = NULL;
+      mp_handle_pending();
+    }
 }
-
 
 // Wrap main in app_main that the IDF expects.
 extern void main(void);
