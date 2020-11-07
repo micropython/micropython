@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-04 21:18+0530\n"
-"PO-Revision-Date: 2020-10-28 21:45+0000\n"
+"PO-Revision-Date: 2020-11-08 10:26+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3.2-dev\n"
+"X-Generator: Weblate 4.3.2\n"
 
 #: main.c
 msgid ""
@@ -306,7 +306,7 @@ msgstr "Todos os periféricos I2C estão em uso"
 
 #: ports/esp32s2/peripherals/pcnt_handler.c
 msgid "All PCNT units in use"
-msgstr ""
+msgstr "Todas as unidades PCNT estão em uso"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/esp32s2/common-hal/canio/Listener.c
