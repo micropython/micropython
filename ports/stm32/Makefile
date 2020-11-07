@@ -576,7 +576,6 @@ define RUN_STLINK
 endef
 
 define RUN_OPENOCD
-	$(ECHO) $(1) $(2) $(3) $(4)
 	$(ECHO) "Writing $(1) to the board via ST-LINK using OpenOCD"
 	$(Q)$(OPENOCD) -f $(OPENOCD_CONFIG) -c "stm_flash $(1) $(2) $(3) $(4)"
 endef
