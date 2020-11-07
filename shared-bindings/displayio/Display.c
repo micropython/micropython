@@ -39,7 +39,7 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| _DisplayBus = Union[FourWire, ParallelBus, I2CDisplay]
+//| _DisplayBus = Union['FourWire', 'ParallelBus', 'I2CDisplay']
 //| """:py:class:`FourWire`, :py:class:`ParallelBus` or :py:class:`I2CDisplay`"""
 //|
 

@@ -36,6 +36,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA12) },
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA13) },
+
     { MP_ROM_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_PA14) },
     { MP_ROM_QSTR(MP_QSTR_D5), MP_ROM_PTR(&pin_PA16) },
     { MP_ROM_QSTR(MP_QSTR_D6), MP_ROM_PTR(&pin_PA18) },
@@ -45,14 +46,17 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_PA22) },
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA23) },
 
-    { MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_PB03) },
+    { MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_PB02) },
+    { MP_ROM_QSTR(MP_QSTR_NEOPIXEL_POWER), MP_ROM_PTR(&pin_PB03) },
 
-    { MP_ROM_QSTR(MP_QSTR_VOLTAGE_MONITOR), MP_ROM_PTR(&pin_PB01) },
-    { MP_ROM_QSTR(MP_QSTR_BATTERY), MP_ROM_PTR(&pin_PB01) },
+    { MP_ROM_QSTR(MP_QSTR_VOLTAGE_MONITOR), MP_ROM_PTR(&pin_PB00) },
+    { MP_ROM_QSTR(MP_QSTR_BATTERY), MP_ROM_PTR(&pin_PB00) },
+
+    { MP_ROM_QSTR(MP_QSTR_BOOST_ENABLE), MP_ROM_PTR(&pin_PB13) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_CAN_RX),  MP_ROM_PTR(&pin_PB15) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_CAN_TX),  MP_ROM_PTR(&pin_PB14) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_CAN_STANDBY),  MP_ROM_PTR(&pin_PB13) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_CAN_STANDBY),  MP_ROM_PTR(&pin_PB12) },
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },

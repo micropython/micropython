@@ -55,9 +55,8 @@ mp_obj_t common_hal_board_get_i2c(void) {
 }
 
 mp_obj_t common_hal_board_create_i2c(void) {
-    if (i2c_singleton != NULL) {
-        return i2c_singleton;
-    }
+    // All callers have either already verified this or come so early that it can't be otherwise.
+    assert(i2c_singleton == NULL || common_hal_busio_i2c_deinited(i2c_singleton));
     busio_i2c_obj_t *self = &i2c_obj;
     self->base.type = &busio_i2c_type;
 
@@ -79,9 +78,8 @@ mp_obj_t common_hal_board_get_spi(void) {
 }
 
 mp_obj_t common_hal_board_create_spi(void) {
-    if (spi_singleton != NULL) {
-        return spi_singleton;
-    }
+    // All callers have either already verified this or come so early that it can't be otherwise.
+    assert(spi_singleton == NULL || common_hal_busio_spi_deinited(spi_singleton));
     busio_spi_obj_t *self = &spi_obj;
     self->base.type = &busio_spi_type;
 
@@ -139,14 +137,17 @@ void reset_board_busses(void) {
     bool display_using_i2c = false;
     #if CIRCUITPY_DISPLAYIO
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].i2cdisplay_bus.bus == i2c_singleton) {
+        if (displays[i].bus_base.type == &displayio_i2cdisplay_type && displays[i].i2cdisplay_bus.bus == i2c_singleton) {
             display_using_i2c = true;
             break;
         }
     }
     #endif
-    if (!display_using_i2c) {
-        i2c_singleton = NULL;
+    if (i2c_singleton != NULL) {
+        if (!display_using_i2c) {
+            common_hal_busio_i2c_deinit(i2c_singleton);
+            i2c_singleton = NULL;
+        }
     }
 #endif
 #if BOARD_SPI
@@ -169,9 +170,10 @@ void reset_board_busses(void) {
     // make sure SPI lock is not held over a soft reset
     if (spi_singleton != NULL) {
         common_hal_busio_spi_unlock(spi_singleton);
-    }
-    if (!display_using_spi) {
-        spi_singleton = NULL;
+        if (!display_using_spi) {
+            common_hal_busio_spi_deinit(spi_singleton);
+            spi_singleton = NULL;
+        }
     }
 #endif
 #if BOARD_UART

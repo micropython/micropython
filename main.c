@@ -234,10 +234,12 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     common_hal_canio_reset();
     #endif
 
-    reset_port();
+    // reset_board_busses() first because it may release pins from the never_reset state, so that
+    // reset_port() can reset them.
     #if CIRCUITPY_BOARD
     reset_board_busses();
     #endif
+    reset_port();
     reset_board();
     reset_status_led();
 }

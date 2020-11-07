@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-16 19:50-0500\n"
-"PO-Revision-Date: 2020-10-22 20:48+0000\n"
+"POT-Creation-Date: 2020-11-04 21:18+0530\n"
+"PO-Revision-Date: 2020-10-28 21:45+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3.1\n"
+"X-Generator: Weblate 4.3.2-dev\n"
 
 #: main.c
 msgid ""
@@ -294,11 +294,20 @@ msgstr "Dìzhǐ bìxū shì %d zì jié zhǎng"
 msgid "Address type out of range"
 msgstr "Dìzhǐ lèixíng chāochū fànwéi"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "All CAN peripherals are in use"
+msgstr "suǒ yǒu CAN wài shè dōu zài shǐ yòng zhōng"
+
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Suǒyǒu I2C wàiwéi qì zhèngzài shǐyòng"
 
+#: ports/esp32s2/peripherals/pcnt_handler.c
+msgid "All PCNT units in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "Suǒyǒu shǐyòng zhōng de RX FIFO"
@@ -414,6 +423,10 @@ msgid ""
 msgstr ""
 "Zìdòng chóngxīn jiāzài. Zhǐ xū tōngguò USB bǎocún wénjiàn lái yùnxíng tāmen "
 "huò shūrù REPL jìnyòng.\n"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "Baudrate not supported by peripheral"
+msgstr "wài shè bù zhī chí de bō tè lā tè"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -785,7 +798,7 @@ msgstr "Fāngxiàng shūrù shí qūdòng móshì méiyǒu shǐyòng."
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "ECB yí cì zhǐ shǐ yòng 16 gè zì jié"
 
-#: ports/esp32s2/common-hal/busio/SPI.c
+#: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF nèicún fēnpèi shībài"
 
@@ -911,6 +924,7 @@ msgid "File exists"
 msgstr "Wénjiàn cúnzài"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr "guò lǜ qì tài fù zá"
@@ -1111,7 +1125,8 @@ msgid "Invalid phase"
 msgstr "Jiēduàn wúxiào"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Wúxiào de yǐn jiǎo"
@@ -1131,7 +1146,7 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
@@ -2883,6 +2898,10 @@ msgstr "fùzhí qián yǐnyòng de júbù biànliàng"
 msgid "long int not supported in this build"
 msgstr "cǐ bǎnběn bù zhīchí zhǎng zhěngshù"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "loopback + silent mode not supported by peripheral"
+msgstr "Wài shè bù zhī chí huán huí + jìng yīn mó shì"
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr "jīxíng de f-string"
@@ -2916,6 +2935,14 @@ msgstr "Max_length bìxū > 0"
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "chāochū zuìdà dìguī shēndù"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter must be > 0"
+msgstr "maxiter bì xū > 0"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter should be > 0"
+msgstr "maxiter yìng wéi > 0"
 
 #: py/runtime.c
 #, c-format
@@ -3227,6 +3254,8 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -3350,6 +3379,10 @@ msgstr "ruǎn chóngqǐ\n"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "páixù cānshù bìxū shì ndarray"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "sorted axis can't be longer than 65535"
+msgstr "pái xù zhóu bù néng chāo guò 65535"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
@@ -3479,6 +3512,16 @@ msgstr "yuán zǔ suǒyǐn chāochū fànwéi"
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "yuán zǔ/lièbiǎo chángdù cuòwù"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_driver_install returned esp-idf error #%d"
+msgstr "twai_driver_install fǎn huí esp-idf cuò wù #%d"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_start returned esp-idf error #%d"
+msgstr "twai_start fǎn huí esp -idf cuò wù #%d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c

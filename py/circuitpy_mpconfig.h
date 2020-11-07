@@ -197,6 +197,9 @@ typedef long mp_off_t;
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT    (CIRCUITPY_FULL_BUILD)
 #endif
+#ifndef MICROPY_PY_UBINASCII
+#define MICROPY_PY_UBINASCII                  (CIRCUITPY_FULL_BUILD)
+#endif
 // Opposite setting is deliberate.
 #define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
 #ifndef MICROPY_PY_URE
@@ -699,6 +702,12 @@ extern const struct _mp_obj_module_t ustack_module;
 #endif
 
 // These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
+#if MICROPY_PY_UBINASCII
+#define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
+#else
+#define BINASCII_MODULE
+#endif
+
 #if MICROPY_PY_UERRNO
 #define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
 #else
@@ -770,6 +779,7 @@ extern const struct _mp_obj_module_t wifi_module;
     AUDIOMIXER_MODULE \
     AUDIOMP3_MODULE \
     AUDIOPWMIO_MODULE \
+    BINASCII_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \

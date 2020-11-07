@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-16 19:50-0500\n"
-"PO-Revision-Date: 2020-10-21 19:58+0000\n"
+"POT-Creation-Date: 2020-11-04 21:18+0530\n"
+"PO-Revision-Date: 2020-10-28 21:45+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3.1\n"
+"X-Generator: Weblate 4.3.2-dev\n"
 
 #: main.c
 msgid ""
@@ -296,11 +296,20 @@ msgstr "O endereço deve ter %d bytes de comprimento"
 msgid "Address type out of range"
 msgstr "O tipo do endereço está fora do alcance"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "All CAN peripherals are in use"
+msgstr "Todos os periféricos CAN estão em uso"
+
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Todos os periféricos I2C estão em uso"
 
+#: ports/esp32s2/peripherals/pcnt_handler.c
+msgid "All PCNT units in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "Todos os FIFOs RX estão em uso"
@@ -418,6 +427,10 @@ msgid ""
 msgstr ""
 "O recarregamento automático está ativo. Simplesmente salve os arquivos via "
 "USB para executá-los ou digite REPL para desativar.\n"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "Baudrate not supported by peripheral"
+msgstr "O Baudrate não é suportado pelo periférico"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -796,7 +809,7 @@ msgstr "O modo do controlador não é usado quando a direção for inserida."
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "O BCE opera apenas com 16 bytes por vez"
 
-#: ports/esp32s2/common-hal/busio/SPI.c
+#: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr "Houve uma falha na alocação da memória ESP-IDF"
 
@@ -922,6 +935,7 @@ msgid "File exists"
 msgstr "Arquivo já existe"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr "Os filtros são muito complexos"
@@ -1124,7 +1138,8 @@ msgid "Invalid phase"
 msgstr "Fase Inválida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Pino inválido"
@@ -1144,7 +1159,7 @@ msgstr "Pino inválido para canal direito"
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
@@ -2920,6 +2935,10 @@ msgstr "a variável local referenciada antes da atribuição"
 msgid "long int not supported in this build"
 msgstr "o long int não é suportado nesta compilação"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "loopback + silent mode not supported by peripheral"
+msgstr "o loopback + o modo silencioso não é suportado pelo periférico"
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr "f-string malformado"
@@ -2953,6 +2972,14 @@ msgstr "max_length deve ser > 0"
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "a recursão máxima da profundidade foi excedida"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter must be > 0"
+msgstr "maxiter deve ser > 0"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter should be > 0"
+msgstr "maxiter pode ser > 0"
 
 #: py/runtime.c
 #, c-format
@@ -3271,6 +3298,8 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -3394,6 +3423,10 @@ msgstr "reinicialização soft\n"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "o argumento da classificação deve ser um ndarray"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "sorted axis can't be longer than 65535"
+msgstr "o eixo ordenado não pode ser maior do que 65535"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
@@ -3523,6 +3556,16 @@ msgstr "o índice da tupla está fora do intervalo"
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "a tupla/lista está com tamanho incorreto"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_driver_install returned esp-idf error #%d"
+msgstr "o twai_driver_install retornou um erro esp-idf #%d"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_start returned esp-idf error #%d"
+msgstr "o twai_start retornou um erro esp-idf #%d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c

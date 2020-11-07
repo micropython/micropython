@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-16 19:50-0500\n"
-"PO-Revision-Date: 2020-09-25 18:20+0000\n"
-"Last-Translator: Taku Fukada <naninunenor@gmail.com>\n"
+"POT-Creation-Date: 2020-11-04 21:18+0530\n"
+"PO-Revision-Date: 2020-11-06 20:29+0000\n"
+"Last-Translator: sporeball <sporeballdev@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.3.2\n"
 
 #: main.c
 msgid ""
@@ -162,12 +162,12 @@ msgstr "'%s' にはラベルが必要"
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
-msgstr ""
+msgstr "'%s'にはレジスタが必要"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr ""
+msgstr "'%s'には特別レジスタが必要"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -192,7 +192,7 @@ msgstr ""
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s'には{r0, r1, ...}が必要"
 
 #: py/emitinlinextensa.c
 #, c-format
@@ -246,7 +246,7 @@ msgstr "'data'には整数の引数が必要"
 
 #: py/compile.c
 msgid "'label' requires 1 argument"
-msgstr ""
+msgstr "'label'には１つの引数が必要"
 
 #: py/compile.c
 msgid "'return' outside function"
@@ -294,11 +294,20 @@ msgstr "アドレスは、%dバイト長でなければなりません"
 msgid "Address type out of range"
 msgstr "address_typeが範囲外"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "All CAN peripherals are in use"
+msgstr "全てのCAN周辺機器が使用中"
+
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "全てのI2C周辺機器が使用中"
 
+#: ports/esp32s2/peripherals/pcnt_handler.c
+msgid "All PCNT units in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "全てのRX FIFOが使用中"
@@ -414,6 +423,10 @@ msgid ""
 msgstr ""
 "オートリロードがオンです。ファイルをUSB経由で保存するだけで実行できます。REPL"
 "に入ると無効化します。\n"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "Baudrate not supported by peripheral"
+msgstr ""
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -787,7 +800,7 @@ msgstr "方向がinputのときドライブモードは使われません"
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "ECBは一度に16バイトの演算のみを行います"
 
-#: ports/esp32s2/common-hal/busio/SPI.c
+#: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr ""
 
@@ -812,19 +825,19 @@ msgstr "%qが必要"
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 msgid "Expected a Characteristic"
-msgstr ""
+msgstr "Characteristicが必要"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "DigitalInOutが必要"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
-msgstr ""
+msgstr "Serviceが必要"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr ""
+msgstr "UARTが必要"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -833,7 +846,7 @@ msgstr "UUIDが必要"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
-msgstr ""
+msgstr "Addressが必要"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -877,7 +890,7 @@ msgstr "%dバイトのRXバッファの確保に失敗"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
-msgstr ""
+msgstr "Wi-Fiのメモリの確保に失敗"
 
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
@@ -913,6 +926,7 @@ msgid "File exists"
 msgstr "ファイルが存在します"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr ""
@@ -1042,7 +1056,7 @@ msgstr "不正なBMPファイル"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr ""
+msgstr "不正なBSSID"
 
 #: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
@@ -1093,7 +1107,7 @@ msgstr "フォーマットチャンクのサイズが不正"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
-msgstr ""
+msgstr "不正な周波数"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
@@ -1113,7 +1127,8 @@ msgid "Invalid phase"
 msgstr "不正なphase"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "不正なピン"
@@ -1133,7 +1148,7 @@ msgstr "右チャネルのピンが不正"
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
@@ -1328,11 +1343,11 @@ msgstr "long integerに対応していません"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more channels available"
-msgstr ""
+msgstr "使えるチャネルがもうありません"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more timers available"
-msgstr ""
+msgstr "使えるタイマーがもうありません"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1648,7 +1663,7 @@ msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
-msgstr ""
+msgstr "サイズは対応していません"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -2866,6 +2881,10 @@ msgstr ""
 msgid "long int not supported in this build"
 msgstr "このビルドはlong intに非対応"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "loopback + silent mode not supported by peripheral"
+msgstr ""
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr "不正な形式のf-string"
@@ -2899,6 +2918,14 @@ msgstr "max_lengthは0より大きくなければなりません"
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "最大の再帰深度を超えました"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter must be > 0"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter should be > 0"
+msgstr ""
 
 #: py/runtime.c
 #, c-format
@@ -3212,6 +3239,8 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -3333,6 +3362,10 @@ msgstr "ソフトリブート\n"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "sorted axis can't be longer than 65535"
 msgstr ""
 
 #: extmod/ulab/code/filter/filter.c
@@ -3463,6 +3496,16 @@ msgstr ""
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "タプル/リストの長さが正しくありません"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_driver_install returned esp-idf error #%d"
+msgstr ""
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_start returned esp-idf error #%d"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c

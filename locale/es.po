@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-16 19:50-0500\n"
-"PO-Revision-Date: 2020-10-22 22:15+0000\n"
+"POT-Creation-Date: 2020-11-04 21:18+0530\n"
+"PO-Revision-Date: 2020-11-01 16:26+0000\n"
 "Last-Translator: Alvaro Figueroa <alvaro@greencore.co.cr>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3.1\n"
+"X-Generator: Weblate 4.3.2-dev\n"
 
 #: main.c
 msgid ""
@@ -33,7 +33,7 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 "\n"
-"Reporte un problema con el contenido de su unidad CIRCUITPY en\n"
+"Presente un problema con el contenido de su unidad CIRCUITPY en\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
 #: py/obj.c
@@ -295,11 +295,20 @@ msgstr "La dirección debe tener %d bytes de largo"
 msgid "Address type out of range"
 msgstr "Tipo de dirección fuera de rango"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "All CAN peripherals are in use"
+msgstr "Todos los periféricos CAN están en uso"
+
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Todos los periféricos I2C están siendo usados"
 
+#: ports/esp32s2/peripherals/pcnt_handler.c
+msgid "All PCNT units in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "Todos los FIFOs de RX en uso"
@@ -318,7 +327,9 @@ msgstr "Todos los canales de eventos estan siendo usados"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
-msgstr "Todos los canales de eventos de sincronización (sync event channels) están siendo utilizados"
+msgstr ""
+"Todos los canales de eventos de sincronización (sync event channels) están "
+"siendo utilizados"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
@@ -417,6 +428,10 @@ msgid ""
 msgstr ""
 "Auto-reload habilitado. Simplemente guarda los archivos via USB para "
 "ejecutarlos o entra al REPL para desabilitarlos.\n"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "Baudrate not supported by peripheral"
+msgstr "El periférico no maneja el Baudrate"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -792,7 +807,7 @@ msgstr "Modo Drive no se usa cuando la dirección es input."
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "ECB solo opera sobre 16 bytes a la vez"
 
-#: ports/esp32s2/common-hal/busio/SPI.c
+#: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr "Fallo ESP-IDF al tomar la memoria"
 
@@ -918,6 +933,7 @@ msgid "File exists"
 msgstr "El archivo ya existe"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr "Filtros muy complejos"
@@ -1119,7 +1135,8 @@ msgid "Invalid phase"
 msgstr "Fase inválida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Pin inválido"
@@ -1139,7 +1156,7 @@ msgstr "Pin inválido para canal derecho"
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
 #: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
@@ -2907,6 +2924,10 @@ msgstr "variable local referenciada antes de la asignación"
 msgid "long int not supported in this build"
 msgstr "long int no soportado en esta compilación"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "loopback + silent mode not supported by peripheral"
+msgstr ""
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr "cadena-f mal formada"
@@ -2940,6 +2961,14 @@ msgstr "max_lenght debe ser > 0"
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "profundidad máxima de recursión excedida"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter must be > 0"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter should be > 0"
+msgstr ""
 
 #: py/runtime.c
 #, c-format
@@ -3254,6 +3283,8 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -3377,6 +3408,10 @@ msgstr "reinicio suave\n"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "argumento de ordenado debe ser un ndarray"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "sorted axis can't be longer than 65535"
+msgstr ""
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
@@ -3507,6 +3542,16 @@ msgstr "tuple index fuera de rango"
 #: py/obj.c
 msgid "tuple/list has wrong length"
 msgstr "tupla/lista tiene una longitud incorrecta"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_driver_install returned esp-idf error #%d"
+msgstr ""
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_start returned esp-idf error #%d"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
@@ -4135,8 +4180,8 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ "pequeño.\n"
 #~ "Aumente los límites del tamaño del stack y presione reset (después de "
 #~ "expulsarCIRCUITPY).\n"
-#~ "Si no cambió el stack, entonces reporte un issue aquí con el contenido "
-#~ "de su unidad CIRCUITPY:\n"
+#~ "Si no cambió el stack, entonces reporte un issue aquí con el contenido de "
+#~ "su unidad CIRCUITPY:\n"
 
 #~ msgid ""
 #~ "The microcontroller's power dipped. Please make sure your power supply "
