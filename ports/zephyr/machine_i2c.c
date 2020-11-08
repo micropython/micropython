@@ -39,6 +39,8 @@
 #include "extmod/machine_i2c.h"
 #include "modmachine.h"
 
+#if MICROPY_PY_MACHINE_I2C
+
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
     const struct device *dev;
@@ -136,3 +138,5 @@ const mp_obj_type_t machine_hard_i2c_type = {
     .protocol = &machine_hard_i2c_p,
     .locals_dict = (mp_obj_dict_t *)&mp_machine_soft_i2c_locals_dict,
 };
+
+#endif /* MICROPY_PY_MACHINE_I2C */
