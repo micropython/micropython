@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,29 +25,22 @@
  */
 
 #include "common-hal/rotaryio/IncrementalEncoder.h"
+#include "common-hal/microcontroller/Pin.h"
 
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-#include "driver/pcnt.h"
+void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
+    const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
+    claim_pin(pin_a);
+    claim_pin(pin_b);
 
-static void pcnt_reset(int unit) {
-    // Initialize PCNT's counter
-    pcnt_counter_pause(unit);
-    pcnt_counter_clear(unit);
-
-    // Everything is set up, now go to counting
-    pcnt_counter_resume(unit);
-}
-
-static void pcnt_init(int unit, rotaryio_incrementalencoder_obj_t* self) {
     // Prepare configuration for the PCNT unit
-    pcnt_config_t pcnt_config = {
+    const pcnt_config_t pcnt_config = {
         // Set PCNT input signal and control GPIOs
-        .pulse_gpio_num = self->pin_a->number,
-        .ctrl_gpio_num = self->pin_b->number,
+        .pulse_gpio_num = pin_a->number,
+        .ctrl_gpio_num = pin_b->number,
         .channel = PCNT_CHANNEL_0,
-        .unit = unit,
         // What to do on the positive / negative edge of pulse input?
         .pos_mode = PCNT_COUNT_DEC,   // Count up on the positive edge
         .neg_mode = PCNT_COUNT_INC,   // Keep the counter value on the negative edge
@@ -55,61 +48,39 @@ static void pcnt_init(int unit, rotaryio_incrementalencoder_obj_t* self) {
         .lctrl_mode = PCNT_MODE_REVERSE, // Reverse counting direction if low
         .hctrl_mode = PCNT_MODE_KEEP,    // Keep the primary counter mode if high
     };
-    // Initialize PCNT unit
-    pcnt_unit_config(&pcnt_config);
 
-    // Configure channel 1
-    pcnt_config.pulse_gpio_num = self->pin_b->number;
-    pcnt_config.ctrl_gpio_num = self->pin_a->number;
-    pcnt_config.channel = PCNT_CHANNEL_1;
-    pcnt_config.pos_mode = PCNT_COUNT_INC;
-    pcnt_config.neg_mode = PCNT_COUNT_DEC;
-    pcnt_unit_config(&pcnt_config);
+     // Initialize PCNT unit
+    const int8_t unit = peripherals_pcnt_init(pcnt_config);
+    if (unit == -1) {
+        mp_raise_RuntimeError(translate("All PCNT units in use"));
+    }
 
-    // Configure and enable the input filter
-    pcnt_set_filter_value(unit, 100);
-    pcnt_filter_enable(unit);
-
-    pcnt_reset(unit);
-}
-
-void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t* self,
-    const mcu_pin_obj_t* pin_a, const mcu_pin_obj_t* pin_b) {
-    claim_pin(pin_a);
-    claim_pin(pin_b);
-
-    self->pin_a = pin_a;
-    self->pin_b = pin_b;
-
-    self->position = 0;
-
-    pcnt_init(PCNT_UNIT_0, self);
+    self->pin_a = pin_a->number;
+    self->pin_b = pin_b->number;
+    self->unit = (pcnt_unit_t)unit;
 }
 
 bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t* self) {
-    return self->pin_a == NULL;
+    return self->unit == PCNT_UNIT_MAX;
 }
 
 void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t* self) {
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
-
-    reset_pin_number(self->pin_a->number);
-    self->pin_a = NULL;
-
-    reset_pin_number(self->pin_b->number);
-    self->pin_b = NULL;
+    reset_pin_number(self->pin_a);
+    reset_pin_number(self->pin_b);
+    peripherals_pcnt_deinit(&self->unit);
 }
 
 mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t* self) {
-    int16_t count = 0;
-    pcnt_get_counter_value(PCNT_UNIT_0, &count);
-    return self->position+count;
+    int16_t count;
+    pcnt_get_counter_value(self->unit, &count);
+    return (count/2)+self->position;
 }
 
 void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t* self,
         mp_int_t new_position) {
     self->position = new_position;
-    pcnt_reset(PCNT_UNIT_0);
+    pcnt_counter_clear(self->unit);
 }
