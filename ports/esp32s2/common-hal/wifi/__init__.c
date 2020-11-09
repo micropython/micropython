@@ -31,13 +31,14 @@
 
 #include "py/runtime.h"
 
-#include "esp-idf/components/esp_wifi/include/esp_wifi.h"
+#include "components/esp_wifi/include/esp_wifi.h"
 
-#include "esp-idf/components/heap/include/esp_heap_caps.h"
+#include "components/heap/include/esp_heap_caps.h"
 
 wifi_radio_obj_t common_hal_wifi_radio_obj;
 
-#include "esp_log.h"
+#include "components/log/include/esp_log.h"
+
 static const char* TAG = "wifi";
 
 static void event_handler(void* arg, esp_event_base_t event_base,
@@ -98,6 +99,13 @@ void common_hal_wifi_init(void) {
 
     wifi_radio_obj_t* self = &common_hal_wifi_radio_obj;
     self->netif = esp_netif_create_default_wifi_sta();
+
+    // Even though we just called esp_netif_create_default_wifi_sta,
+    //   station mode isn't actually ready for use until esp_wifi_set_mode()
+    //   is called and the configuration is loaded via esp_wifi_set_config().
+    // Set both convienence flags to false so it's not forgotten.
+    self->sta_mode = 0;
+    self->ap_mode = 0;
 
     self->event_group_handle = xEventGroupCreateStatic(&self->event_group);
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,

@@ -71,7 +71,11 @@ STATIC void mcu_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     qstr name;
 
     get_pin_name(self, &package, &module, &name);
-    mp_printf(print, "%q.%q.%q", MP_QSTR_microcontroller, MP_QSTR_pin, name);
+    if (package){
+        mp_printf(print, "%q.%q.%q", package, module, name);
+    } else {
+        mp_printf(print, "%q.%q", module , name);
+    }
 }
 
 const mp_obj_type_t mcu_pin_type = {

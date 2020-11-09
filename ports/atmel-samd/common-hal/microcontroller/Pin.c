@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "atmel_start_pins.h"
@@ -221,9 +223,11 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t* pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
         // Special case for Metro M0 where the NeoPixel is also SWCLK
+#ifndef IGNORE_PIN_PA30
         if (MICROPY_HW_NEOPIXEL == &pin_PA30 && DSU->STATUSB.bit.DBGPRES == 1) {
             return false;
         }
+#endif
         return !neopixel_in_use;
     }
     #endif
@@ -255,4 +259,20 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
 
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
     reset_pin_number(pin_no);
+}
+
+mcu_pin_function_t *mcu_find_pin_function(mcu_pin_function_t *table, const mcu_pin_obj_t *pin, int instance, uint16_t name) {
+    if (!pin) {
+        return NULL;
+    }
+
+    for(; table->obj; table++) {
+        if (instance != -1 && instance != table->instance) {
+            continue;
+        }
+        if (pin == table->obj) {
+            return table;
+        }
+    }
+    mp_raise_ValueError_varg(translate("%q pin invalid"), name);
 }

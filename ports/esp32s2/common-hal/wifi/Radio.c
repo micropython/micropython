@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/wifi/Radio.h"
+#include "shared-bindings/wifi/Network.h"
 
 #include <string.h>
 
@@ -35,8 +36,10 @@
 #include "shared-bindings/wifi/ScannedNetworks.h"
 #include "shared-module/ipaddress/__init__.h"
 
-#include "esp-idf/components/esp_wifi/include/esp_wifi.h"
-#include "esp-idf/components/lwip/include/apps/ping/ping_sock.h"
+#include "components/esp_wifi/include/esp_wifi.h"
+#include "components/lwip/include/apps/ping/ping_sock.h"
+
+#define MAC_ADDRESS_LENGTH 6
 
 static void start_station(wifi_radio_obj_t *self) {
     if (self->sta_mode) {
@@ -49,6 +52,8 @@ static void start_station(wifi_radio_obj_t *self) {
         next_mode = WIFI_MODE_STA;
     }
     esp_wifi_set_mode(next_mode);
+
+    self->sta_mode = 1;
 
     esp_wifi_set_config(WIFI_MODE_STA, &self->sta_config);
 }
@@ -72,8 +77,6 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         return;
     }
 }
-
-#define MAC_ADDRESS_LENGTH 6
 
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
     uint8_t mac[MAC_ADDRESS_LENGTH];
@@ -104,14 +107,39 @@ void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
     self->current_scan = NULL;
 }
 
-wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout) {
+mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
+    const char *hostname = NULL;
+    esp_netif_get_hostname(self->netif, &hostname);
+    if (hostname == NULL) {
+        return mp_const_none;
+    }
+    return mp_obj_new_str(hostname, strlen(hostname));
+}
+
+void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname) {
+    esp_netif_set_hostname(self->netif, hostname);
+}
+
+wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t* bssid, size_t bssid_len) {
     // check enabled
+    start_station(self);
+
     wifi_config_t* config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);
     config->sta.ssid[ssid_len] = 0;
     memcpy(&config->sta.password, password, password_len);
     config->sta.password[password_len] = 0;
     config->sta.channel = channel;
+    // From esp_wifi_types.h:
+    //   Generally, station_config.bssid_set needs to be 0; and it needs
+    //   to be 1 only when users need to check the MAC address of the AP
+    if (bssid_len > 0){
+        memcpy(&config->sta.bssid, bssid, bssid_len);
+        config->sta.bssid[bssid_len] = 0;
+        config->sta.bssid_set = 1;
+    } else {
+        config->sta.bssid_set = 0;
+    }
     esp_wifi_set_config(ESP_IF_WIFI_STA, config);
     self->starting_retries = 5;
     self->retries_left = 5;
@@ -137,13 +165,66 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     return WIFI_RADIO_ERROR_NONE;
 }
 
+mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+
+    // Make sure the interface is in STA mode
+    if (!self->sta_mode){
+        return mp_const_none;
+    }
+
+    wifi_network_obj_t *ap_info = m_new_obj(wifi_network_obj_t);
+    ap_info->base.type = &wifi_network_type;
+    // From esp_wifi.h, the possible return values (typos theirs):
+    //    ESP_OK: succeed
+    //    ESP_ERR_WIFI_CONN: The station interface don't initialized
+    //    ESP_ERR_WIFI_NOT_CONNECT: The station is in disconnect status
+    if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK){
+        return mp_const_none;
+    } else {
+        memcpy(&ap_info->record, &self->ap_info.record, sizeof(wifi_ap_record_t));
+        return MP_OBJ_FROM_PTR(ap_info);
+    }
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.gw.addr);
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.netmask.addr);
+}
+
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
     }
-    esp_netif_ip_info_t ip_info;
-    esp_netif_get_ip_info(self->netif, &ip_info);
-    return common_hal_ipaddress_new_ipv4address(ip_info.ip.addr);
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.ip.addr);
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+
+    esp_netif_get_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &self->dns_info);
+
+    // dns_info is of type esp_netif_dns_info_t, which is just ever so slightly
+    // different than esp_netif_ip_info_t used for
+    // common_hal_wifi_radio_get_ipv4_address (includes both ipv4 and 6),
+    // so some extra jumping is required to get to the actual address
+    return common_hal_ipaddress_new_ipv4address(self->dns_info.ip.u_addr.ip4.addr);
 }
 
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {

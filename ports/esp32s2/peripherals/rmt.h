@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_RMT_H
 
 #include "py/mphal.h"
-#include "driver/rmt.h"
+#include "components/driver/include/driver/rmt.h"
 #include <stdint.h>
 
 void esp32s2_peripherals_rmt_reset(void);

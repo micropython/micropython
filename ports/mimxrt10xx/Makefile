@@ -75,7 +75,7 @@ INC += \
 
 # NDEBUG disables assert() statements. This reduces code size pretty dramatically, per tannewt.
 
-CFLAGS += -Os -DNDEBUG
+CFLAGS += -Os -DNDEBUG -ffreestanding
 
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
@@ -147,7 +147,7 @@ SRC_SDK := \
 
 SRC_SDK := $(addprefix sdk/devices/$(CHIP_FAMILY)/, $(SRC_SDK))
 
-SRC_C = \
+SRC_C += \
 	background.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/flash_config.c \

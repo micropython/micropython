@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 #include <stdbool.h>
+#include <string.h>
 
 #include "shared-bindings/busio/SPI.h"
 #include "py/mperrno.h"
@@ -125,15 +126,6 @@ STATIC int check_pins(busio_spi_obj_t *self,
     uint8_t sck_len = MP_ARRAY_SIZE(mcu_spi_sck_list);
     uint8_t mosi_len = MP_ARRAY_SIZE(mcu_spi_mosi_list);
     uint8_t miso_len = MP_ARRAY_SIZE(mcu_spi_miso_list);
-
-    //SCK is not optional. MOSI and MISO are
-    if (!sck) {
-        mp_raise_ValueError(translate("Must provide SCK pin"));
-    }
-
-    if (!miso && !mosi) {
-        mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
-    }
 
     // Loop over each possibility for SCK.  Check whether MISO and/or MOSI can be used on the same peripheral
     for (uint i = 0; i < sck_len; i++) {
@@ -340,7 +332,7 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     if (self->mosi == NULL) {
         mp_raise_ValueError(translate("No MOSI Pin"));
     }
-    HAL_StatusTypeDef result = HAL_SPI_Transmit (&self->handle, (uint8_t *)data, (uint16_t)len, HAL_MAX_DELAY);
+    HAL_StatusTypeDef result = HAL_SPI_Transmit(&self->handle, (uint8_t *)data, (uint16_t)len, HAL_MAX_DELAY);
     return result == HAL_OK;
 }
 
@@ -349,7 +341,13 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     if (self->miso == NULL) {
         mp_raise_ValueError(translate("No MISO Pin"));
     }
-    HAL_StatusTypeDef result = HAL_SPI_Receive (&self->handle, data, (uint16_t)len, HAL_MAX_DELAY);
+    HAL_StatusTypeDef result = HAL_OK;
+    if (self->mosi == NULL) {
+        result = HAL_SPI_Receive(&self->handle, data, (uint16_t)len, HAL_MAX_DELAY);
+    } else {
+        memset(data, write_value, len);
+        result = HAL_SPI_TransmitReceive(&self->handle, data, data, (uint16_t)len, HAL_MAX_DELAY);
+    }
     return result == HAL_OK;
 }
 
@@ -358,7 +356,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
     if (self->miso == NULL || self->mosi == NULL) {
         mp_raise_ValueError(translate("Missing MISO or MOSI Pin"));
     }
-    HAL_StatusTypeDef result = HAL_SPI_TransmitReceive (&self->handle,
+    HAL_StatusTypeDef result = HAL_SPI_TransmitReceive(&self->handle,
         (uint8_t *) data_out, data_in, (uint16_t)len,HAL_MAX_DELAY);
     return result == HAL_OK;
 }

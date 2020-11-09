@@ -17,3 +17,4 @@ is limited.
     ../ports/mimxrt10xx/README
     ../ports/nrf/README
     ../ports/stm/README
+    ../ports/esp32s2/README

@@ -39,7 +39,7 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| _DisplayBus = Union[FourWire, ParallelBus, I2CDisplay]
+//| _DisplayBus = Union['FourWire', 'ParallelBus', 'I2CDisplay']
 //| """:py:class:`FourWire`, :py:class:`ParallelBus` or :py:class:`I2CDisplay`"""
 //|
 
@@ -105,13 +105,22 @@
 //|         :param bool auto_brightness: If True, brightness is controlled via an ambient light sensor or other mechanism.
 //|         :param bool single_byte_bounds: Display column and row commands use single bytes
 //|         :param bool data_as_commands: Treat all init and boundary data as SPI commands. Certain displays require this.
+//|         :param bool SH1107_addressing: Special quirk for SH1107, use upper/lower column set and page set
 //|         :param bool auto_refresh: Automatically refresh the screen
 //|         :param int native_frames_per_second: Number of display refreshes per second that occur with the given init_sequence.
 //|         :param bool backlight_on_high: If True, pulling the backlight pin high turns the backlight on."""
 //|         ...
 //|
-STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row, ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command, ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands, ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high };
+STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args,
+                const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart,
+                ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row,
+                ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word,
+                ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command,
+                ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command,
+                ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands,
+                ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high,
+                ARG_SH1107_addressing };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_init_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -139,6 +148,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_auto_refresh, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_native_frames_per_second, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 60} },
         { MP_QSTR_backlight_on_high, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
+        { MP_QSTR_SH1107_addressing, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} }
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -180,7 +190,8 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         args[ARG_data_as_commands].u_bool,
         args[ARG_auto_refresh].u_bool,
         args[ARG_native_frames_per_second].u_int,
-        args[ARG_backlight_on_high].u_bool
+        args[ARG_backlight_on_high].u_bool,
+        args[ARG_SH1107_addressing].u_bool
         );
 
     return self;

@@ -29,8 +29,11 @@
 #define MICROPY_HW_BOARD_NAME       "FeatherS2"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+
 #define AUTORESET_DELAY_MS 500
 
-// Doesn't work with this on.
-// #define MICROPY_HW_APA102_MOSI   (&pin_GPIO44)
+// #define MICROPY_HW_APA102_MOSI   (&pin_GPIO40)
 // #define MICROPY_HW_APA102_SCK    (&pin_GPIO45)

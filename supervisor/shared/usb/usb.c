@@ -29,6 +29,7 @@
 #include "shared-module/usb_midi/__init__.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
+#include "supervisor/serial.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"

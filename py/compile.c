@@ -853,7 +853,7 @@ STATIC void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
         mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t*)pns_body->nodes[0];
         body_name = compile_funcdef_helper(comp, pns0, emit_options);
         scope_t *fscope = (scope_t*)pns0->nodes[4];
-        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
+        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_ASYNC;
     #endif
     } else {
         assert(MP_PARSE_NODE_STRUCT_KIND(pns_body) == PN_classdef); // should be
@@ -2632,6 +2632,12 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
         EMIT_ARG(yield, MP_EMIT_YIELD_VALUE);
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_yield_arg_from)) {
         pns = (mp_parse_node_struct_t*)pns->nodes[0];
+#if MICROPY_PY_ASYNC_AWAIT
+        if(comp->scope_cur->scope_flags & MP_SCOPE_FLAG_ASYNC) {
+            compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'yield from' inside async function"));
+            return;
+        }
+#endif
         compile_node(comp, pns->nodes[0]);
         compile_yield_from(comp);
     } else {
@@ -2648,7 +2654,14 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
     }
     compile_require_async_context(comp, pns);
     compile_atom_expr_normal(comp, pns);
-    compile_yield_from(comp);
+
+    // If it's an awaitable thing, need to reach for the __await__ method for the coroutine.
+    // async def functions' __await__ return themselves, which are able to receive a send(),
+    // while other types with custom __await__ implementations return async generators.
+    EMIT_ARG(load_method, MP_QSTR___await__, false);
+    EMIT_ARG(call_method, 0, 0, 0);
+    EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
+    EMIT_ARG(yield, MP_EMIT_YIELD_FROM);
 }
 #endif
 

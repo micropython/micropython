@@ -29,6 +29,8 @@
 #include "reset.h"
 #include "supervisor/filesystem.h"
 
+void NVIC_SystemReset(void) NORETURN;
+
 void reset(void) {
     filesystem_flush();
     NVIC_SystemReset();

@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/wifi/__init__.h"
 
-#include "esp-idf/components/lwip/lwip/src/include/lwip/netdb.h"
+#include "components/lwip/lwip/src/include/lwip/netdb.h"
 
 #include "bindings/espidf/__init__.h"
 

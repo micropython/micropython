@@ -35,7 +35,6 @@
 
 const mp_obj_type_t wifi_radio_type;
 
-
 typedef enum {
     WIFI_RADIO_ERROR_NONE,
     WIFI_RADIO_ERROR_UNKNOWN,
@@ -46,13 +45,20 @@ typedef enum {
 extern bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled);
 
+extern mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self);
+extern void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname);
+
 extern mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self);
 
 extern mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self);
 
-extern wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout);
+extern wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t* bssid, size_t bssid_len);
 
+extern mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self);
+extern mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self);
+extern mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self);
+extern mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self);
 
 extern mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout);

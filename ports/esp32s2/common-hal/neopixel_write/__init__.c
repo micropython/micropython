@@ -43,8 +43,8 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "shared-bindings/neopixel_write/__init__.h"
-#include "driver/rmt.h"
-#include "rmt.h"
+#include "components/driver/include/driver/rmt.h"
+#include "peripherals/rmt.h"
 
 #define WS2812_T0H_NS (350)
 #define WS2812_T0L_NS (1000)
@@ -125,4 +125,6 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
     // Free channel again
     esp32s2_peripherals_free_rmt(config.channel);
+    // Swap pin back to GPIO mode
+    gpio_set_direction(digitalinout->pin->number, GPIO_MODE_OUTPUT);
 }

@@ -79,7 +79,6 @@
 
 #define MICROPY_PY_ARRAY                 (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN    (1)
-#define MICROPY_PY_ASYNC_AWAIT           (0)
 #define MICROPY_PY_ATTRTUPLE             (1)
 
 #define MICROPY_PY_BUILTINS_BYTEARRAY    (1)
@@ -195,6 +194,12 @@ typedef long mp_off_t;
 #define MICROPY_PY_BUILTINS_STR_PARTITION     (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES    (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_UERRNO                     (CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT    (CIRCUITPY_FULL_BUILD)
+#endif
+#ifndef MICROPY_PY_UBINASCII
+#define MICROPY_PY_UBINASCII                  (CIRCUITPY_FULL_BUILD)
+#endif
 // Opposite setting is deliberate.
 #define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
 #ifndef MICROPY_PY_URE
@@ -327,6 +332,20 @@ extern const struct _mp_obj_module_t busio_module;
 #define BUSIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module },
 #else
 #define BUSIO_MODULE
+#endif
+
+#if CIRCUITPY_CAMERA
+extern const struct _mp_obj_module_t camera_module;
+#define CAMERA_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_camera), (mp_obj_t)&camera_module },
+#else
+#define CAMERA_MODULE
+#endif
+
+#if CIRCUITPY_CANIO
+extern const struct _mp_obj_module_t canio_module;
+#define CANIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_canio), (mp_obj_t)&canio_module },
+#else
+#define CANIO_MODULE
 #endif
 
 #if CIRCUITPY_COUNTIO
@@ -683,6 +702,12 @@ extern const struct _mp_obj_module_t ustack_module;
 #endif
 
 // These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
+#if MICROPY_PY_UBINASCII
+#define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
+#else
+#define BINASCII_MODULE
+#endif
+
 #if MICROPY_PY_UERRNO
 #define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
 #else
@@ -754,10 +779,13 @@ extern const struct _mp_obj_module_t wifi_module;
     AUDIOMIXER_MODULE \
     AUDIOMP3_MODULE \
     AUDIOPWMIO_MODULE \
+    BINASCII_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
     BUSIO_MODULE \
+    CAMERA_MODULE \
+    CANIO_MODULE \
     COUNTIO_MODULE \
     DIGITALIO_MODULE \
     DISPLAYIO_MODULE \

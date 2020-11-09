@@ -88,9 +88,6 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
 
 mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
-        if (num_blocks > 1) {
-            return 1; // error
-        }
         // fake the MBR so we can decide on our own partition table
 
         for (int i = 0; i < 446; i++) {
@@ -104,9 +101,13 @@ mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_bloc
 
         dest[510] = 0x55;
         dest[511] = 0xaa;
-
-        return 0; // ok
-
+        if (num_blocks > 1) {
+            dest += 512;
+            num_blocks -= 1;
+            // Fall through and do a read from flash.
+        } else {
+            return 0; // Done and ok.
+        }
     }
     return supervisor_flash_read_blocks(dest, block_num - PART1_START_BLOCK, num_blocks);
 }
@@ -159,16 +160,37 @@ STATIC mp_obj_t supervisor_flash_obj_writeblocks(mp_obj_t self, mp_obj_t block_n
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_writeblocks_obj, supervisor_flash_obj_writeblocks);
 
+bool flash_ioctl(size_t cmd, mp_int_t* out_value) {
+    *out_value = 0;
+    switch (cmd) {
+        case BP_IOCTL_INIT:
+            supervisor_flash_init();
+            break;
+        case BP_IOCTL_DEINIT:
+            supervisor_flash_flush();
+            break; // TODO properly
+        case BP_IOCTL_SYNC:
+            supervisor_flash_flush();
+            break;
+        case BP_IOCTL_SEC_COUNT:
+            *out_value = flash_get_block_count();
+            break;
+        case BP_IOCTL_SEC_SIZE:
+            *out_value = supervisor_flash_get_block_size();
+            break;
+        default:
+            return false;
+    }
+    return true;
+}
+
 STATIC mp_obj_t supervisor_flash_obj_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mp_int_t cmd = mp_obj_get_int(cmd_in);
-    switch (cmd) {
-        case BP_IOCTL_INIT: supervisor_flash_init(); return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_DEINIT: supervisor_flash_flush(); return MP_OBJ_NEW_SMALL_INT(0); // TODO properly
-        case BP_IOCTL_SYNC: supervisor_flash_flush(); return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_SEC_COUNT: return MP_OBJ_NEW_SMALL_INT(flash_get_block_count());
-        case BP_IOCTL_SEC_SIZE: return MP_OBJ_NEW_SMALL_INT(supervisor_flash_get_block_size());
-        default: return mp_const_none;
+    mp_int_t out_value;
+    if (flash_ioctl(cmd, &out_value)) {
+        return MP_OBJ_NEW_SMALL_INT(out_value);
     }
+    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_ioctl_obj, supervisor_flash_obj_ioctl);
 
@@ -200,4 +222,5 @@ void supervisor_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->writeblocks[2] = (mp_obj_t)flash_write_blocks; // native version
     vfs->u.ioctl[0] = (mp_obj_t)&supervisor_flash_obj_ioctl_obj;
     vfs->u.ioctl[1] = (mp_obj_t)&supervisor_flash_obj;
+    vfs->u.ioctl[2] = (mp_obj_t)flash_ioctl; // native version
 }

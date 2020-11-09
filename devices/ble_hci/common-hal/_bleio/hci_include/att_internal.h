@@ -11,7 +11,7 @@
 
 #include <stdbool.h>
 // for __packed
-#include <string.h>
+#include <sys/cdefs.h>
 
 #define BT_EATT_PSM		0x27
 #define BT_ATT_DEFAULT_LE_MTU	23

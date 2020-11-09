@@ -37,9 +37,6 @@
 #include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 
-#include "esp_log.h"
-static const char* TAG = "socketpool binding";
-
 //| class SocketPool:
 //|     """A pool of socket resources available for the given radio. Only one
 //|        SocketPool can be created for each radio.
@@ -60,8 +57,14 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(s);
 }
 
-
-//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = IPPROTO_TCP) -> None:
+//|     AF_INET: int
+//|     AF_INET6: int
+//|     SOCK_STREAM: int
+//|     SOCK_DGRAM: int
+//|     SOCK_RAW: int
+//|     IPPROTO_TCP: int
+//|
+//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = IPPROTO_TCP) -> socketpool.Socket:
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6
@@ -69,6 +72,7 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
 //|         :param ~int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)"""
 //|         ...
 //|
+
 STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 0, 5, false);
 
@@ -85,7 +89,7 @@ STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socketpool_socket);
 
-//| def getaddrinfo(host: str, port: int, family: int = 0, type: int = 0, proto: int = 0, flags: int = 0) -> tuple:
+//| def getaddrinfo(host: str, port: int, family: int = 0, type: int = 0, proto: int = 0, flags: int = 0) -> Tuple[int, int, int, str, Tuple[str, int]]:
 //|     """Gets the address information for a hostname and port
 //|
 //|     Returns the appropriate family, socket type, socket protocol and
@@ -122,7 +126,6 @@ STATIC mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t 
     }
 
     if (ip_str == mp_const_none) {
-        ESP_EARLY_LOGW(TAG, "no ip str");
         mp_raise_OSError(0);
     }
 

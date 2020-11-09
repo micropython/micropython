@@ -162,7 +162,7 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 
 SRC_S = supervisor/cpu.s
 
-SRC_C = \
+SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
@@ -201,7 +201,7 @@ all: $(BUILD)/firmware.spk
 $(FIRMWARE):
 	$(ECHO) ""
 	$(ECHO) "Download the spresense binaries zip archive from:"
-	$(ECHO) "https://developer.sony.com/file/download/download-spresense-firmware-v1-4-000"
+	$(ECHO) "https://developer.sony.com/file/download/download-spresense-firmware-v2-0-000"
 	$(ECHO) "Extract spresense binaries to $(FIRMWARE)"
 	$(ECHO) ""
 	$(ECHO) "run make flash-bootloader again to flash bootloader."

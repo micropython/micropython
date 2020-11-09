@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "boards/board.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "py/mphal.h"
@@ -50,125 +51,14 @@ extern uint32_t __fatfs_flash_length[];
 
 uint8_t  _flash_cache[SECTOR_SIZE] __attribute__((aligned(4)));
 uint32_t _flash_page_addr = NO_CACHE;
-static bool init_done = false;
-
-flexspi_device_config_t deviceconfig = {
-    .flexspiRootClk       = 133000000,
-    .flashSize            = (BOARD_FLASH_SIZE / 1024),
-    .CSIntervalUnit       = kFLEXSPI_CsIntervalUnit1SckCycle,
-    .CSInterval           = 2,
-    .CSHoldTime           = 3,
-    .CSSetupTime          = 3,
-    .dataValidTime        = 0,
-    .columnspace          = 0,
-    .enableWordAddress    = 0,
-    .AWRSeqIndex          = 0,
-    .AWRSeqNumber         = 0,
-    .ARDSeqIndex          = NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD,
-    .ARDSeqNumber         = 1,
-    .AHBWriteWaitUnit     = kFLEXSPI_AhbWriteWaitUnit2AhbCycle,
-    .AHBWriteWaitInterval = 0,
-};
-
-const uint32_t customLUT[CUSTOM_LUT_LENGTH] = {
-    /* Normal read mode -SDR */
-    /* Normal read mode -SDR */
-    [4 * NOR_CMD_LUT_SEQ_IDX_READ_NORMAL] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x03, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
-    [4 * NOR_CMD_LUT_SEQ_IDX_READ_NORMAL + 1] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x04, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
-
-    /* Fast read mode - SDR */
-    [4 * NOR_CMD_LUT_SEQ_IDX_READ_FAST] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x0B, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
-    [4 * NOR_CMD_LUT_SEQ_IDX_READ_FAST + 1] = FLEXSPI_LUT_SEQ(
-        kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_1PAD, 0x08, kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x04),
-
-    /* Fast read quad mode - SDR */
-    [4 * NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xEB, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_4PAD, 0x18),
-    [4 * NOR_CMD_LUT_SEQ_IDX_READ_FAST_QUAD + 1] = FLEXSPI_LUT_SEQ(
-        kFLEXSPI_Command_DUMMY_SDR, kFLEXSPI_4PAD, 0x06, kFLEXSPI_Command_READ_SDR, kFLEXSPI_4PAD, 0x04),
-
-    /* Read extend parameters */
-    [4 * NOR_CMD_LUT_SEQ_IDX_READSTATUS] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x81, kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x04),
-
-    /* Write Enable */
-    [4 * NOR_CMD_LUT_SEQ_IDX_WRITEENABLE] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x06, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
-
-    /* Erase Sector  */
-    [4 * NOR_CMD_LUT_SEQ_IDX_ERASESECTOR] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x20, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
-
-    /* Page Program - single mode */
-    [4 * NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_SINGLE] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x02, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
-    [4 * NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_SINGLE + 1] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_1PAD, 0x04, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
-
-    /* Page Program - quad mode */
-    [4 * NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x32, kFLEXSPI_Command_RADDR_SDR, kFLEXSPI_1PAD, 0x18),
-    [4 * NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD + 1] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_4PAD, 0x04, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
-
-    /* Read ID */
-    [4 * NOR_CMD_LUT_SEQ_IDX_READID] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x9F, kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x04),
-
-    /* Enable Quad mode */
-    [4 * NOR_CMD_LUT_SEQ_IDX_WRITESTATUSREG] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x31, kFLEXSPI_Command_WRITE_SDR, kFLEXSPI_1PAD, 0x04),
-
-    /* Read status register */
-    [4 * NOR_CMD_LUT_SEQ_IDX_READSTATUSREG] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0x05, kFLEXSPI_Command_READ_SDR, kFLEXSPI_1PAD, 0x04),
-
-    /* Erase whole chip */
-    [4 * NOR_CMD_LUT_SEQ_IDX_ERASECHIP] =
-        FLEXSPI_LUT_SEQ(kFLEXSPI_Command_SDR, kFLEXSPI_1PAD, 0xC7, kFLEXSPI_Command_STOP, kFLEXSPI_1PAD, 0),
-};
 
 extern status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
 extern status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src);
-extern status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId);
 extern status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base);
-extern status_t flexspi_nor_erase_chip(FLEXSPI_Type *base);
-extern void flexspi_nor_flash_init(FLEXSPI_Type *base);
 
-void supervisor_flash_init(void) {
-    if (init_done)
-        return;
-
-    SCB_DisableDCache();
-
-    status_t status;
-    uint8_t vendorID = 0;
-
-    flexspi_nor_flash_init(FLEXSPI);
-
-    /* Get vendor ID. */
-    status = flexspi_nor_get_vendor_id(FLEXSPI, &vendorID);
-    if (status != kStatus_Success) {
-        printf("flexspi_nor_get_vendor_id fail %ld\r\n", status);
-        return;
-    }
-
-    /* Enter quad mode. */
-    __disable_irq();
-    status = flexspi_nor_enable_quad_mode(FLEXSPI);
-    if (status != kStatus_Success)
-    {
-        printf("flexspi_nor_enable_quad_mode fail %ld\r\n", status);
-        return;
-    }
-    __enable_irq();
-
-    SCB_EnableDCache();
-
-    init_done = true;
+void PLACE_IN_ITCM(supervisor_flash_init)(void) {
+    // Update the LUT to make sure all entries are available.
+    FLEXSPI_UpdateLUT(FLEXSPI, 0, (const uint32_t*) &qspiflash_config.memConfig.lookupTable, 64);
 }
 
 static inline uint32_t lba2addr(uint32_t block) {
@@ -183,7 +73,7 @@ uint32_t supervisor_flash_get_block_count(void) {
     return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE;
 }
 
-void port_internal_flash_flush(void) {
+void PLACE_IN_ITCM(port_internal_flash_flush)(void) {
     if (_flash_page_addr == NO_CACHE) return;
     status_t status;
 
@@ -211,6 +101,7 @@ void port_internal_flash_flush(void) {
 
         DCACHE_CleanInvalidateByRange(_flash_page_addr, SECTOR_SIZE);
     }
+    _flash_page_addr = NO_CACHE;
 }
 
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {

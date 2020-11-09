@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x801F
+USB_PID = 0x80AF
 USB_PRODUCT = "uGame10"
 USB_MANUFACTURER = "Radomir Dopieralski"
 

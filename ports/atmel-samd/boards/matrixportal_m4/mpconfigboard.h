@@ -9,14 +9,14 @@
 
 // These are pins not to reset.
 // QSPI Data pins, PA23 is NeoPixel
-#define MICROPY_PORT_A (PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11 | PA23)
+#define MICROPY_PORT_A (PORT_PA08 | PORT_PA09 | PORT_PA10 | PORT_PA11 | PORT_PA23)
 // QSPI CS, QSPI SCK
 #define MICROPY_PORT_B (PORT_PB10 | PORT_PB11)
 #define MICROPY_PORT_C (0)
 #define MICROPY_PORT_D (0)
 
-#define DEFAULT_I2C_BUS_SCL (&pin_PB03)
-#define DEFAULT_I2C_BUS_SDA (&pin_PB02)
+#define DEFAULT_I2C_BUS_SCL (&pin_PB30)
+#define DEFAULT_I2C_BUS_SDA (&pin_PB31)
 
 #define DEFAULT_SPI_BUS_SCK (&pin_PA16)
 #define DEFAULT_SPI_BUS_MOSI (&pin_PA19)

@@ -48,7 +48,9 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         uint8_t set_row_command, uint8_t write_ram_command, uint8_t set_vertical_scroll,
         uint8_t* init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t* backlight_pin,
         uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
-        bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second, bool backlight_on_high) {
+        bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second,
+        bool backlight_on_high, bool SH1107_addressing) {
+
     // Turn off auto-refresh as we init.
     self->auto_refresh = false;
     uint16_t ram_width = 0x100;
@@ -68,6 +70,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
     self->first_manual_refresh = !auto_refresh;
     self->data_as_commands = data_as_commands;
     self->backlight_on_high = backlight_on_high;
+    self->SH1107_addressing = SH1107_addressing;
 
     self->native_frames_per_second = native_frames_per_second;
     self->native_ms_per_frame = 1000 / native_frames_per_second;
@@ -103,8 +106,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t* self,
         common_hal_time_delay_ms(delay_length_ms);
         i += 2 + data_size;
     }
-
-    supervisor_start_terminal(width, height);
 
     // Always set the backlight type in case we're reusing memory.
     self->backlight_inout.base.type = &mp_type_NoneType;
@@ -240,11 +241,17 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
     if (!displayio_display_core_clip_area(&self->core, area, &clipped)) {
         return true;
     }
-    uint16_t subrectangles = 1;
     uint16_t rows_per_buffer = displayio_area_height(&clipped);
     uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->core.colorspace.depth;
     uint16_t pixels_per_buffer = displayio_area_size(&clipped);
-    if (displayio_area_size(&clipped) > buffer_size * pixels_per_word) {
+
+    uint16_t subrectangles = 1;
+    // for SH1107 and other boundary constrained controllers
+    //      write one single row at a time
+    if (self->SH1107_addressing) {
+        subrectangles = rows_per_buffer;  // vertical (column mode) write each separately (height times)
+        rows_per_buffer = 1;
+    } else if (displayio_area_size(&clipped) > buffer_size * pixels_per_word) {
         rows_per_buffer = buffer_size * pixels_per_word / displayio_area_width(&clipped);
         if (rows_per_buffer == 0) {
             rows_per_buffer = 1;
@@ -286,7 +293,9 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
         }
         remaining_rows -= rows_per_buffer;
 
-        displayio_display_core_set_region_to_update(&self->core, self->set_column_command, self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false, &subrectangle);
+        displayio_display_core_set_region_to_update(&self->core, self->set_column_command,
+              self->set_row_command, NO_COMMAND, NO_COMMAND, self->data_as_commands, false,
+              &subrectangle, self->SH1107_addressing);
 
         uint16_t subrectangle_size_bytes;
         if (self->core.colorspace.depth >= 8) {
@@ -317,11 +326,10 @@ STATIC bool _refresh_area(displayio_display_obj_t* self, const displayio_area_t*
 }
 
 STATIC void _refresh_display(displayio_display_obj_t* self) {
-    if (!displayio_display_core_bus_free(&self->core)) {
-        // Can't acquire display bus; skip updating this display. Try next display.
+    if (!displayio_display_core_start_refresh(&self->core)) {
+        // A refresh on this bus is already in progress.  Try next display.
         return;
     }
-    displayio_display_core_start_refresh(&self->core);
     const displayio_area_t* current_area = _get_refresh_areas(self);
     while (current_area != NULL) {
         _refresh_area(self, current_area);
@@ -339,8 +347,10 @@ void common_hal_displayio_display_set_rotation(displayio_display_obj_t* self, in
         self->core.height = tmp;
     }
     displayio_display_core_set_rotation(&self->core, rotation);
-    supervisor_stop_terminal();
-    supervisor_start_terminal(self->core.width, self->core.height);
+    if (self == &displays[0].display) {
+        supervisor_stop_terminal();
+        supervisor_start_terminal(self->core.width, self->core.height);
+    }
     if (self->core.current_group != NULL) {
         displayio_group_update_transform(self->core.current_group, &self->core.transform);
     }
