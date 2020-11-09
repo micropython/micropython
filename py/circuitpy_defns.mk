@@ -283,6 +283,9 @@ endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
+ifeq ($(CIRCUITPY_MSGPACK),1)
+SRC_PATTERNS += msgpack/%
+endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS in SRC_COMMON_HAL
 SRC_COMMON_HAL_ALL = \
@@ -396,6 +399,7 @@ $(filter $(SRC_PATTERNS), \
 	fontio/Glyph.c \
 	math/__init__.c \
 	microcontroller/RunMode.c \
+	msgpack/__init__.c \
 )
 
 SRC_BINDINGS_ENUMS += \
