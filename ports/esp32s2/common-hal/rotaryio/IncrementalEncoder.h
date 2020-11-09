@@ -24,19 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
-
-#include "common-hal/microcontroller/Pin.h"
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H
 
 #include "py/obj.h"
+#include "peripherals/pcnt.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
-    uint16_t threshold;
-} touchio_touchin_obj_t;
+    uint8_t pin_a, pin_b;
+    mp_int_t position;
+    pcnt_unit_t unit;
+} rotaryio_incrementalencoder_obj_t;
 
-void touchin_reset(void);
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H

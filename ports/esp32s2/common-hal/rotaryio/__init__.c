@@ -1,0 +1,1 @@
+// No rotaryio module functions.
