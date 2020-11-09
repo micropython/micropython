@@ -40,7 +40,7 @@
 
 #if !defined(MICROPY_MACHINE_MEM_GET_READ_ADDR) || !defined(MICROPY_MACHINE_MEM_GET_WRITE_ADDR)
 STATIC uintptr_t machine_mem_get_addr(mp_obj_t addr_o, uint align) {
-    uintptr_t addr = mp_obj_int_get_truncated(addr_o);
+    uintptr_t addr = mp_obj_get_int_truncated(addr_o);
     if ((addr & (align - 1)) != 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("address %08x is not aligned to %d bytes"), addr, align);
     }
@@ -63,9 +63,6 @@ STATIC void machine_mem_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     // TODO support slice index to read/write multiple values at once
     machine_mem_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (mp_obj_is_type(index, &mp_type_slice)) {
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("Does not support slices"));
-    }
     if (value == MP_OBJ_NULL) {
         // delete
         return MP_OBJ_NULL; // op not supported
@@ -88,7 +85,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     } else {
         // store
         uintptr_t addr = MICROPY_MACHINE_MEM_GET_WRITE_ADDR(index, self->elem_size);
-        uint32_t val = mp_obj_get_int_truncated(value);
+        uint32_t val = mp_obj_int_get_truncated(value);
         switch (self->elem_size) {
             case 1:
                 (*(uint8_t *)addr) = val;

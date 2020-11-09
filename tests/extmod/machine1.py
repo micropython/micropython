@@ -29,5 +29,20 @@ except TypeError:
 
 try:
     machine.mem8[0:1]
-except NotImplementedError:
-    print("NotImplementedError")
+except TypeError:
+    print("TypeError")
+
+try:
+    machine.mem8[0:1] = 10
+except TypeError:
+    print("TypeError")
+
+try:
+    machine.mem8['hello']
+except TypeError:
+    print("TypeError")
+
+try:
+    machine.mem8['hello'] = 10
+except TypeError:
+    print("TypeError")
