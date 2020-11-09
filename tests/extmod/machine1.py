@@ -38,11 +38,11 @@ except TypeError:
     print("TypeError")
 
 try:
-    machine.mem8['hello']
+    machine.mem8["hello"]
 except TypeError:
     print("TypeError")
 
 try:
-    machine.mem8['hello'] = 10
+    machine.mem8["hello"] = 10
 except TypeError:
     print("TypeError")
