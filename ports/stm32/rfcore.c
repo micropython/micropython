@@ -32,6 +32,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
+#include "nimble/nimble_npl.h"
 #include "rtc.h"
 #include "rfcore.h"
 
@@ -72,8 +73,9 @@
 #define HCI_KIND_VENDOR_RESPONSE (0x11)
 #define HCI_KIND_VENDOR_EVENT (0x12)
 
-#define HCI_EVENT_COMMAND_COMPLETE     (0x0E) // <num packets><opcode 16><status><data...>
-#define HCI_EVENT_COMMAND_STATUS       (0x0F) // <status><num_packets><opcode 16>
+#define HCI_EVENT_COMMAND_COMPLETE            (0x0E) // <num packets><opcode 16><status><data...>
+#define HCI_EVENT_COMMAND_STATUS              (0x0F) // <status><num_packets><opcode 16>
+#define HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS (0x13) // <num>(<handle 16><completed 16>)*
 
 #define SYS_ACK_TIMEOUT_MS (250)
 #define BLE_ACK_TIMEOUT_MS (250)
@@ -82,6 +84,8 @@
 #define MAGIC_FUS_ACTIVE 0xA94656B9
 // AN5289
 #define MAGIC_IPCC_MEM_INCORRECT 0x3DE96F61
+
+volatile bool hci_acl_cmd_pending = false;
 
 typedef struct _tl_list_node_t {
     volatile struct _tl_list_node_t *next;
@@ -305,6 +309,11 @@ STATIC size_t tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
         case HCI_KIND_BT_EVENT: {
             info = "HCI_EVT";
 
+            // Acknowledgment of a pending ACL request, allow another one to be sent.
+            if (buf[1] == HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS) {
+                hci_acl_cmd_pending = false;
+            }
+
             len = 3 + buf[2];
             if (parse != NULL) {
 
@@ -424,8 +433,8 @@ STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_h
 
 STATIC void tl_hci_cmd(uint8_t *cmd, unsigned int ch, uint8_t hdr, uint16_t opcode, const uint8_t *buf, size_t len) {
     tl_list_node_t *n = (tl_list_node_t *)cmd;
-    n->next = n;
-    n->prev = n;
+    n->next = NULL;
+    n->prev = NULL;
     cmd[8] = hdr;
     cmd[9] = opcode;
     cmd[10] = opcode >> 8;
@@ -584,13 +593,25 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     } else if (src[0] == HCI_KIND_BT_ACL) {
         n = (tl_list_node_t *)&ipcc_membuf_ble_hci_acl_data_buf[0];
         ch = IPCC_CH_HCI_ACL;
+
+        // Give the previous ACL command up to 100ms to complete.
+        mp_uint_t timeout_start_ticks_ms = mp_hal_ticks_ms();
+        while (hci_acl_cmd_pending) {
+            if (mp_hal_ticks_ms() - timeout_start_ticks_ms > 100) {
+                break;
+            }
+            mp_bluetooth_nimble_hci_uart_wfi();
+        }
+
+        // Prevent sending another command until this one returns with HCI_EVENT_COMMAND_{COMPLETE,STATUS}.
+        hci_acl_cmd_pending = true;
     } else {
         printf("** UNEXPECTED HCI HDR: 0x%02x **\n", src[0]);
         return;
     }
 
-    n->next = n;
-    n->prev = n;
+    n->next = NULL;
+    n->prev = NULL;
     memcpy(n->body, src, len);
 
     // IPCC indicate.
