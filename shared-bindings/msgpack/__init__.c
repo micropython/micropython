@@ -35,12 +35,12 @@
 //| Example:
 //|    import msgpack
 //|    from io import StringIO
-//|    
+//|
 //|    s = StringIO()
 //|    msgpack.pack({'list': [True, False, None, 1, 'abc'], 'str': 'blah'}, s)
 //|    s.seek(0)
 //|    print(msgpack.unpack(s))"""
-//|    
+//|
 
 //| def pack(obj, stream):
 //|     """Pack obj to stream."""
