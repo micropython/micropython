@@ -24,19 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_PCNT_HANDLER_H
+#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_PCNT_HANDLER_H
 
-#include "common-hal/microcontroller/Pin.h"
+#include "driver/pcnt.h"
 
-#include "py/obj.h"
+extern int peripherals_pcnt_init(pcnt_config_t pcnt_config);
+extern void peripherals_pcnt_deinit(pcnt_unit_t* unit);
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
-    uint16_t threshold;
-} touchio_touchin_obj_t;
-
-void touchin_reset(void);
-
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_PCNT_HANDLER_H
