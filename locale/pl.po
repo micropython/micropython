@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-04 21:18+0530\n"
-"PO-Revision-Date: 2020-09-29 01:39+0000\n"
-"Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
+"PO-Revision-Date: 2020-11-10 20:52+0000\n"
+"Last-Translator: Szymon Jakubiak <sz.a.jakubiak@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -76,7 +76,7 @@ msgstr "%q poza zakresem"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %q"
-msgstr ""
+msgstr "%q indeksy muszą być liczbami typu int, a nie %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -104,7 +104,7 @@ msgstr "%q poza zakresem"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
-msgstr ""
+msgstr "%q nieprawidłowy pin"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
