@@ -42,7 +42,7 @@
 //|    print(msgpack.unpack(s))"""
 //|
 
-//| def pack(obj, stream):
+//| def pack(obj: Any, buffer: WriteableBuffer) -> None:
 //|     """Pack obj to stream."""
 //|     ...
 //|
@@ -54,7 +54,7 @@ STATIC mp_obj_t mod_msgpack_pack(mp_obj_t obj, mp_obj_t stream_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_msgpack_pack_obj, mod_msgpack_pack);
 
 
-//| def pack(obj, stream) -> obj:
+//| def unpack(buffer: ReadableBuffer) -> Any:
 //|     """Unpack and return one object (in msgpack format) from stream.
 //|     Call repeatedly to read multiple objects from the stream."""
 //|     ...
