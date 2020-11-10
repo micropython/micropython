@@ -30,6 +30,8 @@
 #include "supervisor/port.h"
 #include "boards/board.h"
 #include "modules/module.h"
+#include "py/runtime.h"
+#include "supervisor/esp_port.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -199,24 +201,27 @@ void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
 }
 
-TickType_t sleep_time_set;
 TickType_t sleep_time_duration;
+
 void port_interrupt_after_ticks(uint32_t ticks) {
-    sleep_time_set = xTaskGetTickCount();
-    sleep_time_duration = ticks / portTICK_PERIOD_MS;
-    // esp_sleep_enable_timer_wakeup(uint64_t time_in_us)
+    sleep_time_duration = (ticks * 100)/1024;
+    sleeping_circuitpython_task = xTaskGetCurrentTaskHandle();
 }
 
 void port_sleep_until_interrupt(void) {
-    // FreeRTOS delay here maybe.
-    // Light sleep shuts down BLE and wifi.
-    // esp_light_sleep_start()
+
+    uint32_t NotifyValue = 0;
+
     if (sleep_time_duration == 0) {
         return;
     }
-    vTaskDelayUntil(&sleep_time_set, sleep_time_duration);
+    xTaskNotifyWait(0x01,0x01,&NotifyValue,
+                             sleep_time_duration );
+    if (NotifyValue == 1) {
+      sleeping_circuitpython_task = NULL;
+      mp_handle_pending();
+    }
 }
-
 
 // Wrap main in app_main that the IDF expects.
 extern void main(void);
