@@ -37,3 +37,10 @@
 
 // #define MICROPY_HW_APA102_MOSI   (&pin_GPIO40)
 // #define MICROPY_HW_APA102_SCK    (&pin_GPIO45)
+
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
