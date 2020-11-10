@@ -121,16 +121,77 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
     return received;
 }
 
+mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t* self,
+    const char* host, size_t hostlen, uint8_t port, const uint8_t* buf, mp_uint_t len) {
+
+    struct sockaddr_in dest_addr;
+    dest_addr.sin_addr.s_addr = inet_addr(HOST_IP_ADDR);
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = htons(port);
+
+
+    const struct addrinfo hints = {
+        .ai_family = AF_INET,
+        .ai_socktype = SOCK_STREAM,
+    };
+    struct addrinfo *res;
+    int err = getaddrinfo(host, NULL, &hints, &res);
+    if (err != 0 || res == NULL) {
+        return mp_const_none;
+    }
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
+    struct in_addr *addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
+    #pragma GCC diagnostic pop
+    char ip_str[IP4ADDR_STRLEN_MAX];
+    inet_ntoa_r(*addr, ip_str, IP4ADDR_STRLEN_MAX);
+    mp_obj_t ip_obj = mp_obj_new_str(ip_str, strlen(ip_str));
+    freeaddrinfo(res);
+
+
+
+    int err = lwip_sendto(self->num, buf, len, 0 /* flags */,
+        (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+}
+
+mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* self,
+    const uint8_t* buf, mp_uint_t len, uint8_t* ip, uint8_t port) {
+
+    const struct addrinfo hints = {
+        .ai_family = AF_INET,
+        .ai_socktype = SOCK_STREAM,
+    };
+    struct addrinfo *res;
+    int err = getaddrinfo(host, NULL, &hints, &res);
+    if (err != 0 || res == NULL) {
+        return mp_const_none;
+    }
+
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
+    struct in_addr *addr = &((struct sockaddr_in *)res->ai_addr)->sin_addr;
+    #pragma GCC diagnostic pop
+    char ip_str[IP4ADDR_STRLEN_MAX];
+    inet_ntoa_r(*addr, ip_str, IP4ADDR_STRLEN_MAX);
+    mp_obj_t ip_obj = mp_obj_new_str(ip_str, strlen(ip_str));
+    freeaddrinfo(res);
+}
+
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
     self->connected = false;
     if (self->tcp != NULL) {
         esp_tls_conn_destroy(self->tcp);
         self->tcp = NULL;
     }
+    if (self->num >= 0) {
+        lwip_shutdown(self->num, 0);
+        lwip_close(self->num);
+    }
 }
 
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t* self) {
-    return self->tcp == NULL;
+    return self->tcp == NULL && self->num < 0;
 }
 
 
