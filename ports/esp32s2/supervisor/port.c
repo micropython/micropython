@@ -31,6 +31,7 @@
 #include "boards/board.h"
 #include "modules/module.h"
 #include "py/runtime.h"
+#include "supervisor/esp_port.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -55,7 +56,7 @@
 
 uint32_t* heap;
 uint32_t heap_size;
-extern TaskHandle_t sleeping_circuitpython_task;
+
 STATIC esp_timer_handle_t _tick_timer;
 
 extern void esp_restart(void) NORETURN;
