@@ -49,12 +49,12 @@
 //|     """
 //|
 
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Not currently dynamically supported. Access the sole instance through `microcontroller.watchdog`."""
 //|         ...
 //|
 
-//|     def feed(self):
+//|     def feed(self) -> None:
 //|         """Feed the watchdog timer. This must be called regularly, otherwise
 //|         the timer will expire."""
 //|         ...
@@ -71,7 +71,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watchdogtimer_feed);
 
-//|     def deinit(self):
+//|     def deinit(self) -> None:
 //|         """Stop the watchdog timer. This may raise an error if the watchdog
 //|         timer cannot be disabled on this platform."""
 //|         ...
@@ -89,7 +89,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_deinit_obj, watchdog_watchdogtimer_deinit);
 
-//|     timeout: float = ...
+//|     timeout: float
 //|     """The maximum number of seconds that can elapse between calls
 //|     to feed()"""
 //|
@@ -119,7 +119,7 @@ const mp_obj_property_t watchdog_watchdogtimer_timeout_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     mode: watchdog.WatchDogMode = ...
+//|     mode: WatchDogMode
 //|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode`.
 //|
 //|     Setting a WatchDogMode activates the WatchDog::

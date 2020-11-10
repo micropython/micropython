@@ -31,40 +31,38 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
+#include "timers.h"
 
 #include STM32_HAL_H
 
 #define STM32_GPIO_PORT_SIZE 16
-
 static pulseio_pulsein_obj_t* _objs[STM32_GPIO_PORT_SIZE];
 
-STATIC TIM_HandleTypeDef t6_handle;
+STATIC TIM_HandleTypeDef tim_handle;
 static uint32_t overflow_count = 0;
 STATIC uint8_t refcount = 0;
 
 static void assign_EXTI_Interrupt(pulseio_pulsein_obj_t* self, uint8_t num);
 
-void TIM6_IRQHandler(void)
+void pulsein_timer_event_handler(void)
 {
     // Detect TIM Update event
-    if (__HAL_TIM_GET_FLAG(&t6_handle, TIM_FLAG_UPDATE) != RESET)
+    if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET)
     {
-        if (__HAL_TIM_GET_IT_SOURCE(&t6_handle, TIM_IT_UPDATE) != RESET)
+        if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET)
         {
-            __HAL_TIM_CLEAR_IT(&t6_handle, TIM_IT_UPDATE);
+            __HAL_TIM_CLEAR_IT(&tim_handle, TIM_IT_UPDATE);
             overflow_count++;
         }
     }
 }
 
-static void pulsein_handler(uint8_t num) {
+static void pulsein_exti_event_handler(uint8_t num) {
     // Grab the current time first.
     uint32_t current_overflow = overflow_count;
-    uint32_t current_count = 0;
-    #if HAS_BASIC_TIM
-    current_count = TIM6->CNT;
-    #endif
+    uint32_t current_count = tim_handle.Instance->CNT;
 
     // Interrupt register must be cleared manually
     EXTI->PR = 1 << num;
@@ -105,17 +103,14 @@ void pulsein_reset(void) {
     }
     memset(_objs, 0, sizeof(_objs));
 
-    #if HAS_BASIC_TIM
-    __HAL_RCC_TIM6_CLK_DISABLE();
+    HAL_TIM_Base_DeInit(&tim_handle);
+    tim_clock_disable(stm_peripherals_timer_get_index(tim_handle.Instance));
+    memset(&tim_handle, 0, sizeof(tim_handle));
     refcount = 0;
-    #endif
 }
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu_pin_obj_t* pin,
                                              uint16_t maxlen, bool idle_state) {
-#if !(HAS_BASIC_TIM)
-    mp_raise_NotImplementedError(translate("PulseIn not supported on this chip"));
-#else
     // STM32 has one shared EXTI for each pin number, 0-15
     uint8_t p_num = pin->number;
     if(_objs[p_num]) {
@@ -141,24 +136,34 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     self->last_count = 0;
     self->last_overflow = 0;
 
-    if (HAL_TIM_Base_GetState(&t6_handle) == HAL_TIM_STATE_RESET) {
-    // Set the new period
-        t6_handle.Instance = TIM6;
-        t6_handle.Init.Prescaler = 168; // HCLK is 168 mhz so divide down to 1mhz
-        t6_handle.Init.Period = 0xffff;
-        HAL_TIM_Base_Init(&t6_handle);
+    if (HAL_TIM_Base_GetState(&tim_handle) == HAL_TIM_STATE_RESET) {
+        // Find a suitable timer
+        TIM_TypeDef * tim_instance = stm_peripherals_find_timer();
+        stm_peripherals_timer_reserve(tim_instance);
 
-        // TIM6 has limited HAL support, set registers manually
-        t6_handle.Instance->SR = 0; // Prevent the SR from triggering an interrupt
-        t6_handle.Instance->CR1 |= TIM_CR1_CEN; // Resume timer
-        t6_handle.Instance->CR1 |= TIM_CR1_URS; // Disable non-overflow interrupts
-        __HAL_TIM_ENABLE_IT(&t6_handle, TIM_IT_UPDATE);
+        // Set ticks to 1us
+        uint32_t source = stm_peripherals_timer_get_source_freq(tim_instance);
+        uint32_t prescaler = source/1000000;
+
+        // Enable clocks and IRQ, set callback
+        stm_peripherals_timer_preinit(tim_instance, 4, pulsein_timer_event_handler);
+
+        // Set the new period
+        tim_handle.Instance = tim_instance;
+        tim_handle.Init.Prescaler = prescaler - 1;
+        tim_handle.Init.Period = 0x10000 - 1; //65 ms period (maximum)
+        HAL_TIM_Base_Init(&tim_handle);
+
+        // Set registers manually
+        tim_handle.Instance->SR = 0; // Prevent the SR from triggering an interrupt
+        tim_handle.Instance->CR1 |= TIM_CR1_CEN; // Resume timer
+        tim_handle.Instance->CR1 |= TIM_CR1_URS; // Disable non-overflow interrupts
+        __HAL_TIM_ENABLE_IT(&tim_handle, TIM_IT_UPDATE);
 
         overflow_count = 0;
     }
     // Add to active PulseIns
     refcount++;
-#endif
 
     // EXTI pins can also be read as an input
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -170,7 +175,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     // Interrupt starts immediately
     assign_EXTI_Interrupt(self, pin->number);
     HAL_NVIC_EnableIRQ(self->irq);
-    claim_pin(pin);
+    common_hal_mcu_pin_claim(pin);
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
@@ -182,16 +187,13 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
         return;
     }
     //Remove pulsein slot from shared array
-    HAL_NVIC_DisableIRQ(self->irq);
     _objs[self->pin->number] = NULL;
     reset_pin_number(self->pin->port, self->pin->number);
     self->pin = NULL;
 
     refcount--;
     if (refcount == 0) {
-        #if HAS_BASIC_TIM
-        __HAL_RCC_TIM6_CLK_DISABLE();
-        #endif
+        stm_peripherals_timer_free(tim_handle.Instance);
     }
 }
 
@@ -247,7 +249,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_
     }
     if (index < 0 || index >= self->len) {
         HAL_NVIC_EnableIRQ(self->irq);
-        mp_raise_IndexError(translate("index out of range"));
+        mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_PulseIn);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     HAL_NVIC_EnableIRQ(self->irq);
@@ -256,7 +258,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     if (self->len == 0) {
-        mp_raise_IndexError(translate("pop from an empty PulseIn"));
+        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
     }
     HAL_NVIC_DisableIRQ(self->irq);
     uint16_t value = self->buffer[self->start];
@@ -299,23 +301,23 @@ static void assign_EXTI_Interrupt(pulseio_pulsein_obj_t* self, uint8_t num) {
 
 void EXTI0_IRQHandler(void)
 {
-    pulsein_handler(0);
+    pulsein_exti_event_handler(0);
 }
 void EXTI1_IRQHandler(void)
 {
-    pulsein_handler(1);
+    pulsein_exti_event_handler(1);
 }
 void EXTI2_IRQHandler(void)
 {
-    pulsein_handler(2);
+    pulsein_exti_event_handler(2);
 }
 void EXTI3_IRQHandler(void)
 {
-    pulsein_handler(3);
+    pulsein_exti_event_handler(3);
 }
 void EXTI4_IRQHandler(void)
 {
-    pulsein_handler(4);
+    pulsein_exti_event_handler(4);
 }
 
 void EXTI9_5_IRQHandler(void)
@@ -323,7 +325,7 @@ void EXTI9_5_IRQHandler(void)
     uint32_t pending = EXTI->PR;
     for (uint i = 5; i <= 9; i++) {
         if(pending & (1 << i)) {
-            pulsein_handler(i);
+            pulsein_exti_event_handler(i);
         }
     }
 }
@@ -333,7 +335,7 @@ void EXTI15_10_IRQHandler(void)
     uint32_t pending = EXTI->PR;
     for (uint i = 10; i <= 15; i++) {
         if(pending & (1 << i)) {
-            pulsein_handler(i);
+            pulsein_exti_event_handler(i);
         }
     }
 }

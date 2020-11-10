@@ -130,7 +130,7 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size_t len,
     return true;
 }
 
-bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
     SPI_EXCHANGE(self->spi_dev, data_out, data_in, len);
 
     return true;

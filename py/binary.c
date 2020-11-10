@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -126,7 +126,6 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, mp_uint_t index) {
             break;
         case BYTEARRAY_TYPECODE:
         case 'B':
-        case 'x':   // value will be discarded
             val = ((unsigned char*)p)[index];
             break;
         case 'h':
@@ -330,7 +329,11 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte **
         }
     }
 
-    mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
+    if (val_type == 'x') {
+        memset(p, 0, 1);
+    } else {
+        mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
+    }
 }
 
 void mp_binary_set_val_array(char typecode, void *p, mp_uint_t index, mp_obj_t val_in) {
@@ -379,8 +382,6 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, mp_uint_t index, m
         case 'B':
             ((unsigned char*)p)[index] = val;
             break;
-        case 'x':
-            ((unsigned char*)p)[index] = 0;
         case 'h':
             ((short*)p)[index] = val;
             break;

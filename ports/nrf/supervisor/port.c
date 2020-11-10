@@ -45,9 +45,9 @@
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
-#include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PulseIn.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/neopixel_write/__init__.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
@@ -63,6 +63,10 @@
 
 #ifdef CIRCUITPY_AUDIOPWMIO
 #include "common-hal/audiopwmio/PWMAudioOut.h"
+#endif
+
+#if defined(MICROPY_QSPI_CS)
+extern void qspi_disable(void);
 #endif
 
 static void power_warning_handler(void) {
@@ -192,9 +196,12 @@ void reset_port(void) {
 
 
 #if CIRCUITPY_PULSEIO
-    pwmout_reset();
     pulseout_reset();
     pulsein_reset();
+#endif
+
+#if CIRCUITPY_PWMIO
+    pwmout_reset();
 #endif
 
 #if CIRCUITPY_RTC
@@ -227,6 +234,8 @@ void reset_cpu(void) {
     uint32_t ticks = nrfx_rtc_counter_get(&rtc_instance);
     overflow_tracker.overflowed_ticks += ticks / 32;
     NVIC_SystemReset();
+    for (;;) {
+    }
 }
 
 // The uninitialized data section is placed directly after BSS, under the theory
@@ -265,11 +274,15 @@ uint32_t port_get_saved_word(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    common_hal_mcu_disable_interrupts();
     uint32_t rtc = nrfx_rtc_counter_get(&rtc_instance);
+    uint32_t overflow_count = overflow_tracker.overflowed_ticks;
+    common_hal_mcu_enable_interrupts();
+
     if (subticks != NULL) {
         *subticks = (rtc % 32);
     }
-    return overflow_tracker.overflowed_ticks + rtc / 32;
+    return overflow_count + rtc / 32;
 }
 
 // Enable 1/1024 second tick.
@@ -295,6 +308,10 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
 void port_sleep_until_interrupt(void) {
+#if defined(MICROPY_QSPI_CS)
+    qspi_disable();
+#endif
+
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (NVIC_GetPendingIRQ(FPU_IRQn)) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));
@@ -313,12 +330,21 @@ void port_sleep_until_interrupt(void) {
         // instruction will returned as long as an interrupt is
         // available, even though the actual handler won't fire until
         // we re-enable interrupts.
-        common_hal_mcu_disable_interrupts();
+        //
+        // We do not use common_hal_mcu_disable_interrupts here because
+        // we truly require that interrupts be disabled, while
+        // common_hal_mcu_disable_interrupts actually just masks the
+        // interrupts that are not required to allow the softdevice to
+        // function (whether or not SD is enabled)
+        int nested = __get_PRIMASK();
+        __disable_irq();
         if (!tud_task_event_ready()) {
             __DSB();
             __WFI();
         }
-        common_hal_mcu_enable_interrupts();
+        if (!nested) {
+            __enable_irq();
+        }
     }
 }
 

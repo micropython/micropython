@@ -38,7 +38,7 @@
 //| class Group:
 //|     """Manage a group of sprites and groups and how they are inter-related."""
 //|
-//|     def __init__(self, *, max_size: int = 4, scale: int = 1, x: int = 0, y: int = 0):
+//|     def __init__(self, *, max_size: int = 4, scale: int = 1, x: int = 0, y: int = 0) -> None:
 //|         """Create a Group of a given size and scale. Scale is in one dimension. For example, scale=2
 //|         leads to a layer's pixel being 2x2 pixels when in the group.
 //|
@@ -86,7 +86,7 @@ displayio_group_t* native_group(mp_obj_t group_obj) {
     return MP_OBJ_TO_PTR(native_group);
 }
 
-//|     hidden: Any = ...
+//|     hidden: bool
 //|     """True when the Group and all of it's layers are not visible. When False, the Group's layers
 //|     are visible if they haven't been hidden."""
 //|
@@ -111,7 +111,7 @@ const mp_obj_property_t displayio_group_hidden_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     scale: Any = ...
+//|     scale: int
 //|     """Scales each pixel within the Group in both directions. For example, when scale=2 each pixel
 //|     will be represented by 2x2 pixels."""
 //|
@@ -140,7 +140,7 @@ const mp_obj_property_t displayio_group_scale_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     x: Any = ...
+//|     x: int
 //|     """X position of the Group in the parent."""
 //|
 STATIC mp_obj_t displayio_group_obj_get_x(mp_obj_t self_in) {
@@ -165,7 +165,7 @@ const mp_obj_property_t displayio_group_x_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     y: Any = ...
+//|     y: int
 //|     """Y position of the Group in the parent."""
 //|
 STATIC mp_obj_t displayio_group_obj_get_y(mp_obj_t self_in) {
@@ -190,7 +190,7 @@ const mp_obj_property_t displayio_group_y_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def append(self, layer: Any) -> Any:
+//|     def append(self, layer: Union[vectorio.VectorShape, Group, TileGrid]) -> None:
 //|         """Append a layer to the group. It will be drawn above other layers."""
 //|         ...
 //|
@@ -201,12 +201,15 @@ STATIC mp_obj_t displayio_group_obj_append(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_append_obj, displayio_group_obj_append);
 
-//|     def insert(self, index: Any, layer: Any) -> Any:
+//|     def insert(self, index: int, layer: Union[vectorio.VectorShape, Group, TileGrid]) -> None:
 //|         """Insert a layer into the group."""
 //|         ...
 //|
 STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t layer) {
     displayio_group_t *self = native_group(self_in);
+    if ((size_t) MP_OBJ_SMALL_INT_VALUE(index_obj) == common_hal_displayio_group_get_len(self)){
+        return displayio_group_obj_append(self_in, layer);
+    }
     size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);
     common_hal_displayio_group_insert(self, index, layer);
     return mp_const_none;
@@ -214,7 +217,7 @@ STATIC mp_obj_t displayio_group_obj_insert(mp_obj_t self_in, mp_obj_t index_obj,
 MP_DEFINE_CONST_FUN_OBJ_3(displayio_group_insert_obj, displayio_group_obj_insert);
 
 
-//|     def index(self, layer: Any) -> Any:
+//|     def index(self, layer: Union[vectorio.VectorShape, Group, TileGrid]) -> int:
 //|         """Returns the index of the first copy of layer. Raises ValueError if not found."""
 //|         ...
 //|
@@ -228,7 +231,7 @@ STATIC mp_obj_t displayio_group_obj_index(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_index_obj, displayio_group_obj_index);
 
-//|     def pop(self, i: Any = -1) -> Any:
+//|     def pop(self, i: int = -1) -> Union[vectorio.VectorShape, Group, TileGrid]:
 //|         """Remove the ith item and return it."""
 //|         ...
 //|
@@ -251,7 +254,7 @@ STATIC mp_obj_t displayio_group_obj_pop(size_t n_args, const mp_obj_t *pos_args,
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_group_pop_obj, 1, displayio_group_obj_pop);
 
 
-//|     def remove(self, layer: Any) -> Any:
+//|     def remove(self, layer: Union[vectorio.VectorShape, Group, TileGrid]) -> None:
 //|         """Remove the first copy of layer. Raises ValueError if it is not present."""
 //|         ...
 //|
@@ -264,7 +267,10 @@ STATIC mp_obj_t displayio_group_obj_remove(mp_obj_t self_in, mp_obj_t layer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_remove_obj, displayio_group_obj_remove);
 
-//|     def __len__(self, ) -> Any:
+//|     def __bool__(self) -> bool:
+//|         ...
+//|
+//|     def __len__(self) -> int:
 //|         """Returns the number of layers in a Group"""
 //|         ...
 //|
@@ -278,7 +284,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|     def __getitem__(self, index: Any) -> Any:
+//|     def __getitem__(self, index: int) -> Union[vectorio.VectorShape, Group, TileGrid]:
 //|         """Returns the value at the given index.
 //|
 //|         This allows you to::
@@ -286,7 +292,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|           print(group[0])"""
 //|         ...
 //|
-//|     def __setitem__(self, index: Any, value: Any) -> Any:
+//|     def __setitem__(self, index: int, value: Union[vectorio.VectorShape, Group, TileGrid]) -> None:
 //|         """Sets the value at the given index.
 //|
 //|         This allows you to::
@@ -294,7 +300,7 @@ STATIC mp_obj_t group_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 //|           group[0] = sprite"""
 //|         ...
 //|
-//|     def __delitem__(self, index: Any) -> Any:
+//|     def __delitem__(self, index: int) -> None:
 //|         """Deletes the value at the given index.
 //|
 //|         This allows you to::

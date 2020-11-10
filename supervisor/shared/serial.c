@@ -55,7 +55,7 @@ void serial_early_init(void) {
     const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(DEBUG_UART_TX);
 
     common_hal_busio_uart_construct(&debug_uart, tx, rx, NULL, NULL, NULL,
-                                    false, 115200, 8, PARITY_NONE, 1, 1.0f, 64,
+                                    false, 115200, 8, UART_PARITY_NONE, 1, 1.0f, 64,
                                     buf_array, true);
     common_hal_busio_uart_never_reset(&debug_uart);
 #endif
@@ -69,7 +69,9 @@ bool serial_connected(void) {
 #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return true;
 #else
-    return tud_cdc_connected();
+    // True if DTR is asserted, and the USB connection is up.
+    // tud_cdc_get_line_state(): bit 0 is DTR, bit 1 is RTS
+    return (tud_cdc_get_line_state() & 1) && tud_ready();
 #endif
 }
 
@@ -99,7 +101,7 @@ void serial_write_substring(const char* text, uint32_t length) {
     if (length == 0) {
         return;
     }
-#if CIRCUITPY_DISPLAYIO
+#if CIRCUITPY_TERMINALIO
     int errcode;
     common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t*) text, length, &errcode);
 #endif

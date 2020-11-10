@@ -47,14 +47,17 @@
 //| The `microcontroller` module defines the pins from the perspective of the
 //| microcontroller. See `board` for board-specific pin mappings."""
 //|
+//| from nvm import ByteArray
+//| from watchdog import WatchDogTimer
+//|
 
-//| cpu: Processor = ...
+//| cpu: Processor
 //| """CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
 //| (clock frequency).
 //| This object is the sole instance of `microcontroller.Processor`."""
 //|
 
-//| def delay_us(delay: Any) -> Any:
+//| def delay_us(delay: int) -> None:
 //|     """Dedicated delay method used for very short delays. **Do not** do long delays
 //|     because this stops all other functions from completing. Think of this as an empty
 //|     ``while`` loop that runs for the specified ``(delay)`` time. If you have other
@@ -72,7 +75,7 @@ STATIC mp_obj_t mcu_delay_us(mp_obj_t delay_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_delay_us_obj, mcu_delay_us);
 
-//| def disable_interrupts() -> Any:
+//| def disable_interrupts() -> None:
 //|     """Disable all interrupts. Be very careful, this can stall everything."""
 //|     ...
 //|
@@ -82,7 +85,7 @@ STATIC mp_obj_t mcu_disable_interrupts(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_disable_interrupts_obj, mcu_disable_interrupts);
 
-//| def enable_interrupts() -> Any:
+//| def enable_interrupts() -> None:
 //|     """Enable the interrupts that were enabled at the last disable."""
 //|     ...
 //|
@@ -92,7 +95,7 @@ STATIC mp_obj_t mcu_enable_interrupts(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_enable_interrupts_obj, mcu_enable_interrupts);
 
-//| def on_next_reset(run_mode: microcontroller.RunMode) -> Any:
+//| def on_next_reset(run_mode: microcontroller.RunMode) -> None:
 //|     """Configure the run mode used the next time the microcontroller is reset but
 //|     not powered down.
 //|
@@ -117,7 +120,7 @@ STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mcu_on_next_reset_obj, mcu_on_next_reset);
 
-//| def reset() -> Any:
+//| def reset() -> None:
 //|     """Reset the microcontroller. After reset, the microcontroller will enter the
 //|     run mode last set by `on_next_reset`.
 //|
@@ -133,12 +136,18 @@ STATIC mp_obj_t mcu_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 
-//| nvm: Any = ...
+//| nvm: Optional[ByteArray]
 //| """Available non-volatile memory.
 //| This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
 //|
 //| :type: nvm.ByteArray or None"""
 //|
+
+//| watchdog: Optional[WatchDogTimer]
+//| """Available watchdog timer.
+//| This object is the sole instance of `watchdog.WatchDogTimer` when available or ``None`` otherwise."""
+//|
+
 
 //| """:mod:`microcontroller.pin` --- Microcontroller pin names
 //| --------------------------------------------------------

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,23 +37,21 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
-#include "esp-idf/components/spi_flash/include/esp_partition.h"
-
-#include "esp_log.h"
-
-
-static const char* TAG = "CircuitPython Internal Flash";
+#include "components/spi_flash/include/esp_partition.h"
 
 #include "supervisor/usb.h"
 
 STATIC const esp_partition_t * _partition;
 
+// TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
+#define SECTOR_SIZE 4096
+STATIC uint8_t _cache[SECTOR_SIZE];
+STATIC uint32_t _cache_lba = 0xffffffff;
+
 void supervisor_flash_init(void) {
     _partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA,
                                           ESP_PARTITION_SUBTYPE_DATA_FAT,
                                           NULL);
-
-    ESP_EARLY_LOGW(TAG, "fatfs partition %p", _partition);
 }
 
 uint32_t supervisor_flash_get_block_size(void) {
@@ -68,17 +66,11 @@ void port_internal_flash_flush(void) {
 
 }
 
-// TODO: Split the caching out of supervisor/shared/external_flash so we can use it.
-#define SECTOR_SIZE 4096
-STATIC uint8_t _cache[SECTOR_SIZE];
-STATIC uint32_t _cache_lba;
-
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
-    esp_err_t ok = esp_partition_read(_partition,
-                                      block * FILESYSTEM_BLOCK_SIZE,
-                                      dest,
-                                      num_blocks * FILESYSTEM_BLOCK_SIZE);
-    ESP_EARLY_LOGW(TAG, "read %d", ok);
+    esp_partition_read(_partition,
+                       block * FILESYSTEM_BLOCK_SIZE,
+                       dest,
+                       num_blocks * FILESYSTEM_BLOCK_SIZE);
     return 0;
 }
 
@@ -90,13 +82,11 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         uint32_t sector_offset = block_address / blocks_per_sector * SECTOR_SIZE;
         uint8_t block_offset = block_address % blocks_per_sector;
 
-        esp_err_t result;
         if (_cache_lba != block_address) {
-            result = esp_partition_read(_partition,
-                                        sector_offset,
-                                        _cache,
-                                        SECTOR_SIZE);
-            ESP_EARLY_LOGW(TAG, "flash read before write %d", result);
+            esp_partition_read(_partition,
+                               sector_offset,
+                               _cache,
+                               SECTOR_SIZE);
             _cache_lba = sector_offset;
         }
         for (uint8_t b = block_offset; b < blocks_per_sector; b++) {
@@ -109,11 +99,11 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
                    FILESYSTEM_BLOCK_SIZE);
             block++;
         }
-        result = esp_partition_erase_range(_partition, sector_offset, SECTOR_SIZE);
-        result = esp_partition_write(_partition,
-                                     sector_offset,
-                                     _cache,
-                                     SECTOR_SIZE);
+        esp_partition_erase_range(_partition, sector_offset, SECTOR_SIZE);
+        esp_partition_write(_partition,
+                            sector_offset,
+                            _cache,
+                            SECTOR_SIZE);
     }
 
     return 0; // success

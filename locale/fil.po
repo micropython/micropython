@@ -1,13 +1,11 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 17:10-0700\n"
+"POT-Creation-Date: 2020-11-04 21:18+0530\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -28,12 +26,6 @@ msgid ""
 "\n"
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"\n"
-"To exit, please reset the board without "
 msgstr ""
 
 #: py/obj.c
@@ -58,32 +50,53 @@ msgstr "%%c nangangailangan ng int o char"
 msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+msgid "%q failure: %d"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
 msgstr "%q ay ginagamit"
 
-#: py/obj.c
+#: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
+#: py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "%q indeks wala sa sakop"
 
 #: py/obj.c
-msgid "%q indices must be integers, not %s"
-msgstr "%q indeks ay dapat integers, hindi %s"
+msgid "%q indices must be integers, not %q"
+msgstr ""
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
 msgstr ""
 
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+msgid "%q must be >= 0"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c shared-bindings/vectorio/Circle.c
-#: shared-bindings/vectorio/Rectangle.c
+#: shared-bindings/displayio/Shape.c
+#: shared-bindings/memorymonitor/AllocationAlarm.c
+#: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 #, fuzzy
 msgid "%q must be >= 1"
 msgstr "aarehas na haba dapat ang buffer slices"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
+msgstr ""
+
+#: shared-bindings/canio/Match.c
+msgid "%q out of range"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/microcontroller/Pin.c
+msgid "%q pin invalid"
 msgstr ""
 
 #: shared-bindings/fontio/BuiltinFont.c
@@ -99,6 +112,42 @@ msgstr ""
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' argument kailangan"
+
+#: py/runtime.c
+msgid "'%q' object cannot assign attribute '%q'"
+msgstr ""
+
+#: py/proto.c
+msgid "'%q' object does not support '%q'"
+msgstr ""
+
+#: py/obj.c
+msgid "'%q' object does not support item assignment"
+msgstr ""
+
+#: py/obj.c
+msgid "'%q' object does not support item deletion"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%q' object has no attribute '%q'"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%q' object is not an iterator"
+msgstr ""
+
+#: py/objtype.c py/runtime.c
+msgid "'%q' object is not callable"
+msgstr ""
+
+#: py/runtime.c
+msgid "'%q' object is not iterable"
+msgstr ""
+
+#: py/obj.c
+msgid "'%q' object is not subscriptable"
+msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -150,48 +199,6 @@ msgstr "'%s' integer %d ay wala sa sakop ng %d..%d"
 msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 msgstr "'%s' integer 0x%x ay wala sa mask na sakop ng 0x%x"
 
-#: py/runtime.c
-msgid "'%s' object cannot assign attribute '%q'"
-msgstr ""
-
-#: py/proto.c
-msgid "'%s' object does not support '%q'"
-msgstr ""
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object does not support item assignment"
-msgstr "'%s' object hindi sumusuporta ng item assignment"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object does not support item deletion"
-msgstr "'%s' object ay hindi sumusuporta sa pagtanggal ng item"
-
-#: py/runtime.c
-msgid "'%s' object has no attribute '%q'"
-msgstr "'%s' object ay walang attribute '%q'"
-
-#: py/runtime.c
-#, c-format
-msgid "'%s' object is not an iterator"
-msgstr "'%s' object ay hindi iterator"
-
-#: py/objtype.c py/runtime.c
-#, c-format
-msgid "'%s' object is not callable"
-msgstr "'%s' object hindi matatawag"
-
-#: py/runtime.c
-#, c-format
-msgid "'%s' object is not iterable"
-msgstr "'%s' object ay hindi ma i-iterable"
-
-#: py/obj.c
-#, c-format
-msgid "'%s' object is not subscriptable"
-msgstr "'%s' object ay hindi maaaring i-subscript"
-
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
 msgstr "'=' Gindi pinapayagan ang alignment sa pag specify ng string format"
@@ -205,12 +212,12 @@ msgid "'align' requires 1 argument"
 msgstr "'align' kailangan ng 1 argument"
 
 #: py/compile.c
-msgid "'async for' or 'async with' outside async function"
-msgstr ""
-
-#: py/compile.c
 msgid "'await' outside function"
 msgstr "'await' sa labas ng function"
+
+#: py/compile.c
+msgid "'await', 'async for' or 'async with' outside async function"
+msgstr ""
 
 #: py/compile.c
 msgid "'break' outside loop"
@@ -219,6 +226,10 @@ msgstr "'break' sa labas ng loop"
 #: py/compile.c
 msgid "'continue' outside loop"
 msgstr "'continue' sa labas ng loop"
+
+#: py/objgenerator.c
+msgid "'coroutine' object is not an iterator"
+msgstr ""
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -235,6 +246,10 @@ msgstr "'label' kailangan ng 1 argument"
 #: py/compile.c
 msgid "'return' outside function"
 msgstr "'return' sa labas ng function"
+
+#: py/compile.c
+msgid "'yield from' inside async function"
+msgstr ""
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -261,7 +276,11 @@ msgstr "3-arg pow() hindi suportado"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Isang channel ng hardware interrupt ay ginagamit na"
 
-#: shared-bindings/_bleio/Address.c
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "ADC2 is being used by WiFi"
+msgstr ""
+
+#: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, fuzzy, c-format
 msgid "Address must be %d bytes long"
 msgstr "ang palette ay dapat 32 bytes ang haba"
@@ -270,15 +289,29 @@ msgstr "ang palette ay dapat 32 bytes ang haba"
 msgid "Address type out of range"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "All CAN peripherals are in use"
+msgstr ""
+
+#: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Lahat ng I2C peripherals ginagamit"
 
-#: ports/nrf/common-hal/busio/SPI.c
+#: ports/esp32s2/peripherals/pcnt_handler.c
+msgid "All PCNT units in use"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
+msgid "All RX FIFOs in use"
+msgstr ""
+
+#: ports/esp32s2/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
 msgstr "Lahat ng SPI peripherals ay ginagamit"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #, fuzzy
 msgid "All UART peripherals are in use"
 msgstr "Lahat ng I2C peripherals ginagamit"
@@ -291,23 +324,40 @@ msgstr "Lahat ng event channels ginagamit"
 msgid "All sync event channels in use"
 msgstr "Lahat ng sync event channels ay ginagamit"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 
+#: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/neopixel_write/__init__.c
+#: ports/esp32s2/common-hal/pulseio/PulseIn.c
+#: ports/esp32s2/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
+#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
 msgstr "Lahat ng timer ginagamit"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
+msgstr ""
+
+#: ports/atmel-samd/common-hal/canio/Listener.c
+msgid "Already have all-matches listener"
+msgstr ""
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#: shared-module/memorymonitor/AllocationSize.c
+msgid "Already running"
+msgstr ""
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "Already scanning for wifi networks"
 msgstr ""
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -341,12 +391,21 @@ msgstr "May halfwords (type 'H') dapat ang array"
 msgid "Array values should be single bytes."
 msgstr "Array values ay dapat single bytes."
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
+msgstr ""
+
+#: shared-module/memorymonitor/AllocationAlarm.c
+#, c-format
+msgid "Attempt to allocate %d blocks"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Authentication failure"
 msgstr ""
 
 #: main.c
@@ -360,6 +419,10 @@ msgid ""
 msgstr ""
 "Ang awtomatikong pag re-reload ay ON. i-save lamang ang mga files sa USB "
 "para patakbuhin sila o pasukin ang REPL para i-disable ito.\n"
+
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "Baudrate not supported by peripheral"
+msgstr ""
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -412,7 +475,7 @@ msgstr "Mali ang size ng buffer. Dapat %d bytes."
 msgid "Buffer is not a bytearray."
 msgstr ""
 
-#: shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
 msgstr ""
@@ -420,6 +483,15 @@ msgstr ""
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/sdioio/SDCard.c
+#: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
+msgid "Buffer length must be a multiple of 512"
+msgstr ""
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
@@ -462,7 +534,13 @@ msgstr ""
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
-#: shared-bindings/displayio/Bitmap.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/_bleio/Adapter.c
+msgid "Cannot create a new Adapter; use _bleio.adapter;"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
 msgstr "Hindi mabura ang values"
 
@@ -507,6 +585,7 @@ msgstr "Hindi ma-reset sa bootloader dahil walang bootloader."
 msgid "Cannot set value when direction is input."
 msgstr "Hindi ma i-set ang value kapag ang direksyon ay input."
 
+#: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Cannot specify RTS or CTS in RS485 mode"
 msgstr ""
@@ -523,7 +602,7 @@ msgstr "Hindi maaaring ilipat kapag walang MOSI at MISO pin."
 msgid "Cannot unambiguously get sizeof scalar"
 msgstr "Hindi puedeng hindi sigurado ang get sizeof scalar"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr ""
 
@@ -543,6 +622,10 @@ msgstr ""
 msgid ""
 "CircuitPython is in safe mode because you pressed the reset button during "
 "boot. Press again to exit safe mode.\n"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "CircuitPython was unable to allocate the heap.\n"
 msgstr ""
 
 #: shared-module/bitbangio/SPI.c
@@ -581,31 +664,52 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Could not initialize Camera"
+msgstr ""
+
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "Could not initialize GNSS"
+msgstr ""
+
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "Could not initialize SDCard"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Hindi ma-initialize ang UART"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize channel"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/esp32s2/common-hal/pwmio/PWMOut.c ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not initialize timer"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init channel"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not re-init timer"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not restart PWM"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/esp32s2/common-hal/neopixel_write/__init__.c
+msgid "Could not retrieve clock"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Could not set address"
+msgstr ""
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Could not start PWM"
 msgstr ""
 
@@ -694,6 +798,10 @@ msgstr "Drive mode ay hindi ginagamit kapag ang direksyon ay input."
 msgid "ECB only operates on 16 bytes at a time"
 msgstr ""
 
+#: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
+msgid "ESP-IDF memory allocation failed"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -705,8 +813,9 @@ msgstr "Ginagamit na ang EXTINT channel"
 msgid "Error in regex"
 msgstr "May pagkakamali sa REGEX"
 
-#: shared-bindings/aesio/aes.c shared-bindings/microcontroller/Pin.c
-#: shared-bindings/neopixel_write/__init__.c shared-bindings/pulseio/PulseOut.c
+#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
+#: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Umasa ng %q"
@@ -717,8 +826,16 @@ msgstr "Umasa ng %q"
 msgid "Expected a Characteristic"
 msgstr "Hindi mabasa and Characteristic."
 
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a DigitalInOut"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "Expected a UART"
 msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
@@ -740,8 +857,12 @@ msgstr ""
 msgid "Extended advertisements with scan response not supported."
 msgstr ""
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "FFT is defined for ndarrays only"
+msgstr ""
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Failed SSL handshake"
 msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
@@ -760,11 +881,20 @@ msgstr "Nabigong ilaan ang RX buffer"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 #, c-format
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Nabigong ilaan ang RX buffer ng %d bytes"
+
+#: ports/esp32s2/common-hal/wifi/__init__.c
+msgid "Failed to allocate Wifi memory"
+msgstr ""
+
+#: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
+msgid "Failed to allocate wifi scan memory"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
@@ -772,6 +902,10 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
+msgstr ""
+
+#: ports/esp32s2/common-hal/wifi/__init__.c
+msgid "Failed to init wifi"
 msgstr ""
 
 #: shared-module/audiomp3/MP3Decoder.c
@@ -791,11 +925,26 @@ msgstr ""
 msgid "File exists"
 msgstr "Mayroong file"
 
+#: ports/atmel-samd/common-hal/canio/Listener.c
+#: ports/esp32s2/common-hal/canio/Listener.c
+#: ports/stm/common-hal/canio/Listener.c
+msgid "Filters too complex"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Format not supported"
+msgstr ""
+
+#: shared-module/framebufferio/FramebufferDisplay.c
+#, c-format
+msgid "Framebuffer requires %d bytes"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
 
@@ -815,12 +964,17 @@ msgid "Group full"
 msgstr "Puno ang group"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Hostname must be between 1 and 253 characters"
 msgstr ""
 
 #: extmod/vfs_posix_file.c py/objstringio.c
@@ -831,9 +985,9 @@ msgstr "I/O operasyon sa saradong file"
 msgid "I2C Init Error"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr "Hindi supportado ang operasyong I2C"
+#: shared-bindings/audiobusio/I2SOut.c
+msgid "I2SOut not available"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -852,7 +1006,11 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr ""
 
-#: py/moduerrno.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+msgid "Input taking too long"
+msgstr ""
+
+#: ports/esp32s2/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
 msgstr "May mali sa Input/Output"
 
@@ -873,10 +1031,20 @@ msgstr ""
 msgid "Internal error #%d"
 msgstr ""
 
+#: shared-bindings/sdioio/SDCard.c
+msgid "Invalid %q"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Invalid %q pin"
 msgstr "Mali ang %q pin"
+
+#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
+#: ports/stm/common-hal/sdioio/SDCard.c
+msgid "Invalid %q pin selection"
+msgstr ""
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
@@ -886,27 +1054,20 @@ msgstr ""
 msgid "Invalid BMP file"
 msgstr "Mali ang BMP file"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid BSSID"
+msgstr ""
+
+#: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr ""
 
-#: ports/stm/common-hal/busio/I2C.c
-msgid "Invalid I2C pin selection"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/pulseio/PWMOut.c
-#: ports/cxd56/common-hal/pulseio/PWMOut.c
-#: ports/nrf/common-hal/pulseio/PWMOut.c shared-bindings/pulseio/PWMOut.c
+#: ports/atmel-samd/common-hal/pwmio/PWMOut.c
+#: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Mali ang PWM frequency"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Invalid SPI pin selection"
-msgstr ""
-
-#: ports/stm/common-hal/busio/UART.c
-msgid "Invalid UART pin selection"
-msgstr ""
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
@@ -944,7 +1105,11 @@ msgstr "Mali ang file"
 msgid "Invalid format chunk size"
 msgstr "Mali ang format ng chunk size"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+msgid "Invalid frequency"
+msgstr ""
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
 msgstr ""
 
@@ -963,7 +1128,8 @@ msgstr "Mali ang phase"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Mali ang pin"
 
@@ -978,15 +1144,18 @@ msgstr "Mali ang pin para sa kanang channel"
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
+#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
+#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid pins for PWMOut"
 msgstr ""
 
@@ -1060,6 +1229,10 @@ msgstr "Hindi ma-initialize ang MOSI pin."
 msgid "Maximum x value when mirrored is %d"
 msgstr ""
 
+#: shared-bindings/canio/Message.c
+msgid "Messages limited to 8 bytes"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "MicroPython NLR jump failed. Likely memory corruption."
 msgstr ""
@@ -1080,7 +1253,7 @@ msgstr ""
 msgid "Must be a %q subclass."
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
 msgstr ""
 
@@ -1107,21 +1280,25 @@ msgstr "Walang DAC sa chip"
 msgid "No DMA channel found"
 msgstr "Walang DMA channel na mahanap"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Walang RX pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/stm/common-hal/busio/UART.c
 msgid "No TX pin"
@@ -1164,8 +1341,20 @@ msgstr ""
 msgid "No long integer support"
 msgstr ""
 
-#: ports/stm/common-hal/pulseio/PWMOut.c
+#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+msgid "No more channels available"
+msgstr ""
+
+#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+msgid "No more timers available"
+msgstr ""
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "No network with that ssid"
 msgstr ""
 
 #: shared-module/touchio/TouchIn.c
@@ -1188,6 +1377,10 @@ msgstr ""
 msgid "Nordic Soft Device failure assertion."
 msgstr ""
 
+#: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
+msgid "Not a valid IP string"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #, fuzzy
@@ -1198,6 +1391,14 @@ msgstr "Hindi maka connect sa AP"
 #: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
 msgstr "Hindi playing"
+
+#: main.c
+msgid "Not running saved code.\n"
+msgstr ""
+
+#: shared-bindings/_bleio/__init__.c
+msgid "Not settable"
+msgstr ""
 
 #: shared-bindings/util.c
 msgid ""
@@ -1214,6 +1415,14 @@ msgstr "Odd na parity ay hindi supportado"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Tanging 8 o 16 na bit mono na may "
 
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 SOCK_STREAM sockets supported"
+msgstr ""
+
+#: ports/esp32s2/common-hal/wifi/__init__.c
+msgid "Only IPv4 addresses supported"
+msgstr ""
+
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
 msgid ""
@@ -1227,21 +1436,34 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
+#: shared-module/displayio/ColorConverter.c
+msgid "Only one color can be transparent at a time"
+msgstr ""
+
+#: shared-bindings/ipaddress/__init__.c
+msgid "Only raw int supported for ip"
+msgstr ""
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Out of sockets"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Oversample ay dapat multiple ng 8."
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 msgstr "PWM duty_cycle ay dapat sa loob ng 0 at 65535 (16 bit resolution)"
 
-#: shared-bindings/pulseio/PWMOut.c
+#: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 "PWM frequency hindi writable kapag variable_frequency ay False sa pag buo."
 
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
@@ -1253,6 +1475,7 @@ msgstr "Walang pahintulot"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
@@ -1287,8 +1510,19 @@ msgstr "Kasama ang kung ano pang modules na sa filesystem\n"
 msgid "Polygon needs at least 3 points"
 msgstr ""
 
-#: shared-bindings/ps2io/Ps2.c
-msgid "Pop from an empty Ps2 buffer"
+#: ports/esp32s2/common-hal/pulseio/PulseOut.c
+msgid ""
+"Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
+"instead"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/pulseio/PulseOut.c
+#: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/nrf/common-hal/pulseio/PulseOut.c
+#: ports/stm/common-hal/pulseio/PulseOut.c
+msgid ""
+"Port does not accept pins or frequency. Construct and pass a PWMOut Carrier "
+"instead"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
@@ -1305,14 +1539,6 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "Pull hindi ginagamit kapag ang direksyon ay output."
 
-#: ports/stm/common-hal/pulseio/PulseIn.c
-msgid "PulseIn not supported on this chip"
-msgstr ""
-
-#: ports/stm/common-hal/pulseio/PulseOut.c
-msgid "PulseOut not supported on this chip"
-msgstr ""
-
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
 msgstr ""
@@ -1321,12 +1547,13 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
+#: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
 msgstr ""
 
-#: ports/cxd56/common-hal/rtc/RTC.c ports/mimxrt10xx/common-hal/rtc/RTC.c
-#: ports/nrf/common-hal/rtc/RTC.c
+#: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
+#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "RTC calibration ay hindi supportado ng board na ito"
 
@@ -1343,6 +1570,7 @@ msgstr ""
 msgid "Random number generation error"
 msgstr ""
 
+#: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Read-only"
 msgstr "Basahin-lamang"
@@ -1360,6 +1588,10 @@ msgstr "Basahin-lamang"
 msgid "Refresh too soon"
 msgstr ""
 
+#: shared-bindings/canio/RemoteTransmissionRequest.c
+msgid "RemoteTransmissionRequests limited to 8 bytes"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr ""
@@ -1373,17 +1605,27 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr ""
 
 #: main.c
-msgid "Running in safe mode! Auto-reload is off.\n"
-msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
+msgid "Running in safe mode! "
+msgstr ""
 
-#: main.c
-msgid "Running in safe mode! Not running saved code.\n"
-msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
+#: shared-module/sdcardio/SDCard.c
+msgid "SD card CSD format not supported"
+msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, c-format
+msgid "SDIO GetCardInfo Error %d"
+msgstr ""
+
+#: ports/stm/common-hal/sdioio/SDCard.c
+#, c-format
+msgid "SDIO Init Error %d"
+msgstr ""
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Init Error"
@@ -1419,14 +1661,28 @@ msgstr ""
 msgid "Serializer in use"
 msgstr "Serializer ginagamit"
 
+#: shared-bindings/ssl/SSLContext.c
+msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Size not supported"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice at value iba't ibang haba."
 
 #: shared-bindings/displayio/Bitmap.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/TileGrid.c shared-bindings/pulseio/PulseIn.c
+#: shared-bindings/displayio/TileGrid.c
+#: shared-bindings/memorymonitor/AllocationSize.c
+#: shared-bindings/pulseio/PulseIn.c
 msgid "Slices not supported"
 msgstr "Hindi suportado ang Slices"
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "SocketPool can only be used with wifi.radio"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
@@ -1448,6 +1704,10 @@ msgstr "Stream kulang ng readinto() o write() method."
 msgid "Supply at least one UART pin"
 msgstr ""
 
+#: shared-bindings/gnss/GNSS.c
+msgid "System entry must be gnss.SatelliteSystem"
+msgstr ""
+
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
 msgstr ""
@@ -1462,6 +1722,10 @@ msgstr ""
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode.\n"
+msgstr ""
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -1507,6 +1771,15 @@ msgstr ""
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr ""
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid ""
+"Timer was reserved for internal use - declare PWM pins earlier in the program"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "To exit, please reset the board without "
+msgstr "Para lumabas, paki-reset ang board na wala ang "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -1577,6 +1850,10 @@ msgstr ""
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Hindi ma-allocate ang buffers para sa naka-sign na conversion"
 
+#: ports/esp32s2/common-hal/busio/I2C.c
+msgid "Unable to create lock"
+msgstr ""
+
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
@@ -1603,6 +1880,15 @@ msgstr "Hindi ma i-sulat sa NVM."
 #, fuzzy
 msgid "Unexpected nrfx uuid type"
 msgstr "hindi inaasahang indent"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+#, c-format
+msgid "Unhandled ESP TLS error %d %d %x %d"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "Unknown failure"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -1635,6 +1921,7 @@ msgid ""
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Hindi supportadong baudrate"
 
@@ -1715,6 +2002,10 @@ msgstr ""
 "\n"
 "Para makita ang listahan ng modules, `help(“modules”)`.\n"
 
+#: shared-bindings/wifi/Radio.c
+msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr ""
@@ -1732,15 +2023,14 @@ msgid "__init__() should return None"
 msgstr "__init __ () dapat magbalik na None"
 
 #: py/objtype.c
-#, c-format
-msgid "__init__() should return None, not '%s'"
-msgstr "__init__() dapat magbalink na None, hindi '%s'"
+msgid "__init__() should return None, not '%q'"
+msgstr ""
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
 msgstr "__new__ arg ay dapat na user-type"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c
+#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "a bytes-like object ay kailangan"
 
@@ -1753,15 +2043,15 @@ msgstr "abort() tinawag"
 msgid "address %08x is not aligned to %d bytes"
 msgstr "address %08x ay hindi pantay sa %d bytes"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "wala sa sakop ang address"
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr "walang laman ang address"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "arctan2 is implemented for scalars and ndarrays only"
 msgstr ""
 
@@ -1769,13 +2059,17 @@ msgstr ""
 msgid "arg is an empty sequence"
 msgstr "arg ay walang laman na sequence"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr ""
 
 #: py/runtime.c
 msgid "argument has wrong type"
 msgstr "may maling type ang argument"
+
+#: extmod/ulab/code/linalg/linalg.c
+msgid "argument must be ndarray"
+msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c shared-bindings/gamepad/GamePad.c
@@ -1786,7 +2080,7 @@ msgstr "hindi tugma ang argument num/types"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "argument ay dapat na '%q' hindi '%q'"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "arguments must be ndarrays"
 msgstr ""
 
@@ -1794,7 +2088,7 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr "array/bytes kinakailangan sa kanang bahagi"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr ""
 
@@ -1802,15 +2096,15 @@ msgstr ""
 msgid "attributes not supported yet"
 msgstr "attributes hindi sinusuportahan"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be -1, 0, None, or 1"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be -1, 0, or 1"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be None, 0, or 1"
 msgstr ""
 
@@ -1826,7 +2120,7 @@ msgstr "masamang pag convert na specifier"
 msgid "bad format string"
 msgstr "maling format ang string"
 
-#: py/binary.c
+#: py/binary.c py/objarray.c
 msgid "bad typecode"
 msgstr "masamang typecode"
 
@@ -1837,10 +2131,6 @@ msgstr "binary op %q hindi implemented"
 #: shared-bindings/busio/UART.c
 msgid "bits must be 7, 8 or 9"
 msgstr "bits ay dapat 7, 8 o 9"
-
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "bits ay dapat walo (8)"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -1868,9 +2158,9 @@ msgstr "aarehas na haba dapat ang buffer slices"
 msgid "buffer too small"
 msgstr "masyadong maliit ang buffer"
 
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "ang buffers ay dapat parehas sa haba"
+#: shared-bindings/socketpool/Socket.c
+msgid "buffer too small for requested bytes"
+msgstr ""
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1885,14 +2175,19 @@ msgid "byteorder is not a string"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "hindi sinusuportahan ang bytes > 8 bits"
+
+#: py/objarray.c
+msgid "bytes length not a multiple of item size"
+msgstr ""
 
 #: py/objstr.c
 msgid "bytes value out of range"
 msgstr "bytes value wala sa sakop"
 
-#: ports/atmel-samd/bindings/samd/Clock.c
+#: ports/atmel-samd/bindings/samd/Clock.c ports/atmel-samd/common-hal/rtc/RTC.c
 msgid "calibration is out of range"
 msgstr "kalibrasion ay wala sa sakop"
 
@@ -1925,48 +2220,18 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr "hindi ma i-assign sa expression"
 
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to complex"
-msgstr "hindi ma-convert %s sa complex"
-
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to float"
-msgstr "hindi ma-convert %s sa int"
-
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to int"
-msgstr "hindi ma-convert %s sa int"
+#: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
+#: shared-module/_pixelbuf/PixelBuf.c
+msgid "can't convert %q to %q"
+msgstr ""
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "hindi maaaring i-convert ang '%q' na bagay sa %q nang walang pahiwatig"
 
-#: py/objint.c
-msgid "can't convert NaN to int"
-msgstr "hindi ma i-convert NaN sa int"
-
-#: shared-bindings/i2cslave/I2CSlave.c
-msgid "can't convert address to int"
-msgstr "hindi ma i-convert ang address sa INT"
-
-#: py/objint.c
-msgid "can't convert inf to int"
-msgstr "hindi ma i-convert inf sa int"
-
 #: py/obj.c
-msgid "can't convert to complex"
-msgstr "hindi ma-convert sa complex"
-
-#: py/obj.c
-msgid "can't convert to float"
-msgstr "hindi ma-convert sa float"
-
-#: py/obj.c
-msgid "can't convert to int"
-msgstr "hindi ma-convert sa int"
+msgid "can't convert to %q"
+msgstr ""
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -1999,7 +2264,7 @@ msgstr "hindi puede ang maraming *x"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
-msgstr "hindi maaaring ma-convert ang '% qt' sa 'bool'"
+msgstr "hindi maaaring ma-convert ang ' %q' sa 'bool'"
 
 #: py/emitnative.c
 msgid "can't load from '%q'"
@@ -2016,6 +2281,10 @@ msgstr "hindi mapadala ang send throw sa isang kaka umpisang generator"
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr "hindi mapadala ang non-None value sa isang kaka umpisang generator"
+
+#: shared-module/sdcardio/SDCard.c
+msgid "can't set 512 block size"
+msgstr ""
 
 #: py/objnamedtuple.c
 msgid "can't set attribute"
@@ -2127,15 +2396,15 @@ msgstr "constant ay dapat na integer"
 msgid "conversion to object"
 msgstr "kombersyon to object"
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must be linear arrays"
 msgstr ""
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must be ndarrays"
 msgstr ""
 
-#: extmod/ulab/code/filter.c
+#: extmod/ulab/code/filter/filter.c
 msgid "convolve arguments must not be empty"
 msgstr ""
 
@@ -2143,19 +2412,23 @@ msgstr ""
 msgid "could not broadast input array from shape"
 msgstr ""
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr ""
 
-#: extmod/ulab/code/approx.c
+#: shared-module/sdcardio/SDCard.c
+msgid "couldn't determine SD card version"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
 msgstr ""
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "data must be of equal length"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "ddof must be smaller than length of data set"
 msgstr ""
 
@@ -2188,7 +2461,7 @@ msgstr "ang destination_length ay dapat na isang int >= 0"
 msgid "dict update sequence has wrong length"
 msgstr "may mali sa haba ng dict update sequence"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "diff argument must be an ndarray"
 msgstr ""
 
@@ -2230,6 +2503,14 @@ msgstr ""
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
 msgstr "ang mga exceptions ay dapat makuha mula sa BaseException"
+
+#: shared-bindings/canio/CAN.c
+msgid "expected '%q' but got '%q'"
+msgstr ""
+
+#: shared-bindings/canio/CAN.c
+msgid "expected '%q' or '%q' but got '%q'"
+msgstr ""
 
 #: py/objstr.c
 msgid "expected ':' after format specifier"
@@ -2292,11 +2573,11 @@ msgstr "file ay dapat buksan sa byte mode"
 msgid "filesystem must provide mount method"
 msgstr "ang filesystem dapat mag bigay ng mount method"
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "first argument must be a callable"
 msgstr ""
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "first argument must be a function"
 msgstr ""
 
@@ -2304,7 +2585,7 @@ msgstr ""
 msgid "first argument must be an iterable"
 msgstr ""
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "first argument must be an ndarray"
 msgstr ""
 
@@ -2312,15 +2593,11 @@ msgstr ""
 msgid "first argument to super() must be type"
 msgstr "unang argument ng super() ay dapat type"
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr "firstbit ay dapat MSB"
-
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "flip argument must be an ndarray"
 msgstr ""
 
@@ -2353,11 +2630,11 @@ msgstr "function na inaasahang %d ang argumento, ngunit %d ang nakuha"
 msgid "function got multiple values for argument '%q'"
 msgstr "ang function ay nakakuha ng maraming values para sa argument '%q'"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "function has the same sign at the ends of interval"
 msgstr ""
 
-#: extmod/ulab/code/compare.c
+#: extmod/ulab/code/compare/compare.c
 msgid "function is implemented for scalars and ndarrays only"
 msgstr ""
 
@@ -2379,7 +2656,7 @@ msgstr "function nangangailangan ng keyword argument '%q'"
 msgid "function missing required positional argument #%d"
 msgstr "function nangangailangan ng positional argument #%d"
 
-#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c shared-bindings/time/__init__.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
@@ -2429,10 +2706,7 @@ msgstr "mali ang padding"
 msgid "index is out of bounds"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index wala sa sakop"
 
@@ -2444,43 +2718,47 @@ msgstr "ang mga indeks ay dapat na integer"
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "initial values must be iterable"
+msgstr ""
+
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "initial_value length is wrong"
 msgstr ""
 
 #: py/compile.c
 msgid "inline assembler must be a function"
 msgstr "inline assembler ay dapat na function"
 
-#: extmod/ulab/code/create.c
+#: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
 msgstr ""
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
 msgstr ""
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input matrix is singular"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
 msgstr ""
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr ""
 
@@ -2492,7 +2770,7 @@ msgstr "int() arg 2 ay dapat >=2 at <= 36"
 msgid "integer required"
 msgstr "kailangan ng int"
 
-#: extmod/ulab/code/approx.c
+#: extmod/ulab/code/approx/approx.c
 msgid "interp is defined for 1D arrays of equal length"
 msgstr ""
 
@@ -2500,14 +2778,6 @@ msgstr ""
 #, c-format
 msgid "interval must be in range %s-%s"
 msgstr ""
-
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "maling I2C peripheral"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "hindi wastong SPI peripheral"
 
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
@@ -2528,6 +2798,10 @@ msgstr "hindi wastong pag-format"
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "mali ang format specifier"
+
+#: shared-bindings/wifi/Radio.c
+msgid "invalid hostname"
+msgstr ""
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
@@ -2570,7 +2844,7 @@ msgstr "issubclass() arg 2 ay dapat na class o tuple ng classes"
 msgid "iterables are not of the same length"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "iterations did not converge"
 msgstr ""
 
@@ -2626,6 +2900,10 @@ msgstr "local variable na reference bago na i-assign"
 msgid "long int not supported in this build"
 msgstr "long int hindi sinusuportahan sa build na ito"
 
+#: ports/esp32s2/common-hal/canio/CAN.c
+msgid "loopback + silent mode not supported by peripheral"
+msgstr ""
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr ""
@@ -2638,11 +2916,11 @@ msgstr "masyadong maliit ang buffer map"
 msgid "math domain error"
 msgstr "may pagkakamali sa math domain"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix dimensions do not match"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr ""
 
@@ -2652,9 +2930,21 @@ msgstr ""
 msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr ""
 
+#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
+msgid "max_length must be > 0"
+msgstr ""
+
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "lumagpas ang maximum recursion depth"
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter must be > 0"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
+msgid "maxiter should be > 0"
+msgstr ""
 
 #: py/runtime.c
 #, c-format
@@ -2669,7 +2959,7 @@ msgstr "abigo ang paglalaan ng memorya, ang heap ay naka-lock"
 msgid "module not found"
 msgstr "module hindi nakita"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "more degrees of freedom than data points"
 msgstr ""
 
@@ -2689,15 +2979,11 @@ msgstr "maraming inhertance hindi sinusuportahan"
 msgid "must raise an object"
 msgstr "dapat itaas ang isang object"
 
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
-msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
-
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
 msgstr "dapat gumamit ng keyword argument para sa key function"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "n must be between 0, and 9"
 msgstr ""
 
@@ -2730,6 +3016,10 @@ msgstr "negatibong power na walang float support"
 msgid "negative shift count"
 msgstr "negative shift count"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "no SD card"
+msgstr ""
+
 #: py/vm.c
 msgid "no active exception to reraise"
 msgstr "walang aktibong exception para i-reraise"
@@ -2749,6 +3039,10 @@ msgstr "walang module na '%q'"
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "no response from SD card"
 msgstr ""
 
 #: py/runtime.c
@@ -2787,18 +3081,17 @@ msgstr "hindi lahat ng arguments na i-convert habang string formatting"
 msgid "not enough arguments for format string"
 msgstr "kulang sa arguments para sa format string"
 
-#: extmod/ulab/code/poly.c
+#: extmod/ulab/code/poly/poly.c
 msgid "number of arguments must be 2, or 3"
 msgstr ""
 
-#: extmod/ulab/code/create.c
+#: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr ""
 
 #: py/obj.c
-#, c-format
-msgid "object '%s' is not a tuple or list"
-msgstr "object '%s' ay hindi tuple o list"
+msgid "object '%q' is not a tuple or list"
+msgstr ""
 
 #: py/obj.c
 msgid "object does not support item assignment"
@@ -2833,9 +3126,8 @@ msgid "object not iterable"
 msgstr "object hindi ma i-iterable"
 
 #: py/obj.c
-#, c-format
-msgid "object of type '%s' has no len()"
-msgstr "object na type '%s' walang len()"
+msgid "object of type '%q' has no len()"
+msgstr ""
 
 #: py/obj.c
 msgid "object with buffer protocol required"
@@ -2863,12 +3155,12 @@ msgstr ""
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
 
-#: extmod/ulab/code/compare.c extmod/ulab/code/ndarray.c
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr ""
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
 msgstr ""
 
@@ -2885,9 +3177,22 @@ msgstr "ord umaasa ng character"
 msgid "ord() expected a character, but string of length %d found"
 msgstr "ord() umaasa ng character pero string ng %d haba ang nakita"
 
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of source"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "out of range of target"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
 msgstr "overflow nagcoconvert ng long int sa machine word"
+
+#: py/modstruct.c
+#, c-format
+msgid "pack expected %d items for packing (got %d)"
+msgstr ""
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
@@ -2926,24 +3231,17 @@ msgstr "pixel_shader ay dapat displayio.Palette o displayio.ColorConverter"
 msgid "polygon can only be registered in one parent"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c
+#: ports/esp32s2/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "pop mula sa walang laman na PulseIn"
 
-#: py/objset.c
-msgid "pop from an empty set"
-msgstr "pop sa walang laman na set"
-
-#: py/objlist.c
-msgid "pop from empty list"
-msgstr "pop galing sa walang laman na list"
-
-#: py/objdict.c
-msgid "popitem(): dictionary is empty"
-msgstr "popitem(): dictionary ay walang laman"
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
+#: shared-bindings/ps2io/Ps2.c
+msgid "pop from empty %q"
+msgstr ""
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -2953,6 +3251,28 @@ msgstr "pow() 3rd argument ay hindi maaring 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() na may 3 argumento kailangan ng integers"
 
+#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
+#: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
+#: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+msgid "pressing boot button at start up.\n"
+msgstr ""
+
+#: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
+#: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
+#: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
+#: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
+msgid "pressing both buttons at start up.\n"
+msgstr ""
+
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "puno na ang pila (overflow)"
@@ -2961,7 +3281,7 @@ msgstr "puno na ang pila (overflow)"
 msgid "raw f-strings are not implemented"
 msgstr ""
 
-#: extmod/ulab/code/fft.c
+#: extmod/ulab/code/fft/fft.c
 msgid "real and imaginary parts must be of equal length"
 msgstr ""
 
@@ -3036,13 +3356,17 @@ msgstr "sign hindi maari sa integer format specifier 'c'"
 msgid "single '}' encountered in format string"
 msgstr "isang '}' nasalubong sa format string"
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "size is defined for ndarrays only"
 msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
 msgstr "sleep length ay dapat hindi negatibo"
+
+#: extmod/ulab/code/ndarray.c
+msgid "slice step can't be zero"
+msgstr ""
 
 #: py/objslice.c py/sequence.c
 msgid "slice step cannot be zero"
@@ -3056,8 +3380,28 @@ msgstr "small int overflow"
 msgid "soft reboot\n"
 msgstr "malambot na reboot\n"
 
-#: extmod/ulab/code/numerical.c
+#: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "sorted axis can't be longer than 65535"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "sos array must be of shape (n_section, 6)"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "sos[:, 3] should be all ones"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "sosfilt requires iterable arguments"
+msgstr ""
+
+#: shared-bindings/displayio/Bitmap.c
+msgid "source palette too large"
 msgstr ""
 
 #: py/objstr.c
@@ -3086,13 +3430,8 @@ msgid "stream operation not supported"
 msgstr "stream operation hindi sinusuportahan"
 
 #: py/objstrunicode.c
-msgid "string index out of range"
-msgstr "indeks ng string wala sa sakop"
-
-#: py/objstrunicode.c
-#, c-format
-msgid "string indices must be integers, not %s"
-msgstr "ang indeks ng string ay dapat na integer, hindi %s"
+msgid "string indices must be integers, not %q"
+msgstr ""
 
 #: py/stream.c
 msgid "string not supported; use bytes or bytearray"
@@ -3103,14 +3442,10 @@ msgid "struct: cannot index"
 msgstr "struct: hindi ma-index"
 
 #: extmod/moductypes.c
-msgid "struct: index out of range"
-msgstr "struct: index hindi maabot"
-
-#: extmod/moductypes.c
 msgid "struct: no fields"
 msgstr "struct: walang fields"
 
-#: py/objstr.c
+#: py/objarray.c py/objstr.c
 msgid "substring not found"
 msgstr "substring hindi nahanap"
 
@@ -3147,6 +3482,14 @@ msgstr ""
 msgid "timeout must be >= 0.0"
 msgstr "bits ay dapat walo (8)"
 
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v1 card"
+msgstr ""
+
+#: shared-module/sdcardio/SDCard.c
+msgid "timeout waiting for v2 card"
+msgstr ""
+
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
 msgstr "wala sa sakop ng timestamp ang platform time_t"
@@ -3164,7 +3507,11 @@ msgstr ""
 msgid "too many values to unpack (expected %d)"
 msgstr "masyadong maraming values para i-unpact (umaasa ng %d)"
 
-#: extmod/ulab/code/linalg.c py/objstr.c
+#: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays of equal length"
+msgstr ""
+
+#: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
 msgstr "indeks ng tuple wala sa sakop"
 
@@ -3172,12 +3519,19 @@ msgstr "indeks ng tuple wala sa sakop"
 msgid "tuple/list has wrong length"
 msgstr "mali ang haba ng tuple/list"
 
-#: shared-bindings/_pixelbuf/PixelBuf.c
-msgid "tuple/list required on RHS"
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_driver_install returned esp-idf error #%d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: shared-bindings/busio/UART.c
+#: ports/esp32s2/common-hal/canio/CAN.c
+#, c-format
+msgid "twai_start returned esp-idf error #%d"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx at rx hindi pwedeng parehas na None"
 
@@ -3192,6 +3546,10 @@ msgstr "hindi puede ang type para sa base type"
 #: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "type object '%q' ay walang attribute '%q'"
+
+#: py/objgenerator.c
+msgid "type object 'generator' has no attribute '__await__'"
+msgstr ""
 
 #: py/objtype.c
 msgid "type takes 1 or 3 arguments"
@@ -3231,9 +3589,8 @@ msgid "unknown conversion specifier %c"
 msgstr "hindi alam ang conversion specifier na %c"
 
 #: py/objstr.c
-#, c-format
-msgid "unknown format code '%c' for object of type '%s'"
-msgstr "hindi alam ang format code '%c' para sa object na ang type ay '%s'"
+msgid "unknown format code '%c' for object of type '%q'"
+msgstr ""
 
 #: py/compile.c
 msgid "unknown type"
@@ -3272,16 +3629,16 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "hindi sinusuportahan ang format character na '%c' (0x%x) sa index %d"
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%s'"
-msgstr "hindi sinusuportahang type para sa %q: '%s'"
+msgid "unsupported type for %q: '%q'"
+msgstr ""
 
 #: py/runtime.c
 msgid "unsupported type for operator"
 msgstr "hindi sinusuportahang type para sa operator"
 
 #: py/runtime.c
-msgid "unsupported types for %q: '%s', '%s'"
-msgstr "hindi sinusuportahang type para sa %q: '%s', '%s'"
+msgid "unsupported types for %q: '%q', '%q'"
+msgstr ""
 
 #: py/objint.c
 #, c-format
@@ -3292,15 +3649,23 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "vectors must have same lengths"
+msgstr ""
+
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
+msgstr ""
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "width must be greater than zero"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr ""
 
-#: extmod/ulab/code/linalg.c
+#: extmod/ulab/code/linalg/linalg.c
 msgid "wrong argument type"
 msgstr ""
 
@@ -3308,11 +3673,11 @@ msgstr ""
 msgid "wrong index type"
 msgstr ""
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
 msgstr ""
 
-#: py/objstr.c
+#: extmod/ulab/code/ulab_create.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "mali ang bilang ng argumento"
 
@@ -3324,7 +3689,7 @@ msgstr "maling number ng value na i-unpack"
 msgid "wrong operand type"
 msgstr ""
 
-#: extmod/ulab/code/vectorise.c
+#: extmod/ulab/code/vector/vectorise.c
 msgid "wrong output type"
 msgstr ""
 
@@ -3345,6 +3710,111 @@ msgstr "wala sa sakop ang address"
 #: py/objrange.c
 msgid "zero step"
 msgstr "zero step"
+
+#: extmod/ulab/code/filter/filter.c
+msgid "zi must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "zi must be of float type"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "zi must be of shape (n_section, 2)"
+msgstr ""
+
+#~ msgid "%q indices must be integers, not %s"
+#~ msgstr "%q indeks ay dapat integers, hindi %s"
+
+#~ msgid "'%s' object does not support item assignment"
+#~ msgstr "'%s' object hindi sumusuporta ng item assignment"
+
+#~ msgid "'%s' object does not support item deletion"
+#~ msgstr "'%s' object ay hindi sumusuporta sa pagtanggal ng item"
+
+#~ msgid "'%s' object has no attribute '%q'"
+#~ msgstr "'%s' object ay walang attribute '%q'"
+
+#~ msgid "'%s' object is not an iterator"
+#~ msgstr "'%s' object ay hindi iterator"
+
+#~ msgid "'%s' object is not callable"
+#~ msgstr "'%s' object hindi matatawag"
+
+#~ msgid "'%s' object is not iterable"
+#~ msgstr "'%s' object ay hindi ma i-iterable"
+
+#~ msgid "'%s' object is not subscriptable"
+#~ msgstr "'%s' object ay hindi maaaring i-subscript"
+
+#~ msgid "Running in safe mode! Auto-reload is off.\n"
+#~ msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
+
+#~ msgid "Running in safe mode! Not running saved code.\n"
+#~ msgstr "Tumatakbo sa safe mode! Hindi tumatakbo ang nai-save na code.\n"
+
+#~ msgid "__init__() should return None, not '%s'"
+#~ msgstr "__init__() dapat magbalink na None, hindi '%s'"
+
+#~ msgid "can't convert %s to complex"
+#~ msgstr "hindi ma-convert %s sa complex"
+
+#~ msgid "can't convert %s to float"
+#~ msgstr "hindi ma-convert %s sa int"
+
+#~ msgid "can't convert %s to int"
+#~ msgstr "hindi ma-convert %s sa int"
+
+#~ msgid "can't convert NaN to int"
+#~ msgstr "hindi ma i-convert NaN sa int"
+
+#~ msgid "can't convert address to int"
+#~ msgstr "hindi ma i-convert ang address sa INT"
+
+#~ msgid "can't convert inf to int"
+#~ msgstr "hindi ma i-convert inf sa int"
+
+#~ msgid "can't convert to complex"
+#~ msgstr "hindi ma-convert sa complex"
+
+#~ msgid "can't convert to float"
+#~ msgstr "hindi ma-convert sa float"
+
+#~ msgid "can't convert to int"
+#~ msgstr "hindi ma-convert sa int"
+
+#~ msgid "object '%s' is not a tuple or list"
+#~ msgstr "object '%s' ay hindi tuple o list"
+
+#~ msgid "object of type '%s' has no len()"
+#~ msgstr "object na type '%s' walang len()"
+
+#~ msgid "pop from an empty set"
+#~ msgstr "pop sa walang laman na set"
+
+#~ msgid "pop from empty list"
+#~ msgstr "pop galing sa walang laman na list"
+
+#~ msgid "popitem(): dictionary is empty"
+#~ msgstr "popitem(): dictionary ay walang laman"
+
+#~ msgid "string index out of range"
+#~ msgstr "indeks ng string wala sa sakop"
+
+#~ msgid "string indices must be integers, not %s"
+#~ msgstr "ang indeks ng string ay dapat na integer, hindi %s"
+
+#~ msgid "struct: index out of range"
+#~ msgstr "struct: index hindi maabot"
+
+#~ msgid "unknown format code '%c' for object of type '%s'"
+#~ msgstr "hindi alam ang format code '%c' para sa object na ang type ay '%s'"
+
+#~ msgid "unsupported type for %q: '%s'"
+#~ msgstr "hindi sinusuportahang type para sa %q: '%s'"
+
+#~ msgid "unsupported types for %q: '%s', '%s'"
+#~ msgstr "hindi sinusuportahang type para sa %q: '%s', '%s'"
 
 #~ msgid "AP required"
 #~ msgstr "AP kailangan"
@@ -3506,6 +3976,9 @@ msgstr "zero step"
 #~ msgid "GPIO16 does not support pull up."
 #~ msgstr "Walang pull down support ang GPI016."
 
+#~ msgid "I2C operation not supported"
+#~ msgstr "Hindi supportado ang operasyong I2C"
+
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Mali ang bit clock pin"
 
@@ -3617,9 +4090,6 @@ msgstr "zero step"
 #~ "Ang reset button ay pinindot habang nag boot ang CircuitPython. Pindutin "
 #~ "ulit para lumabas sa safe mode.\n"
 
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Para lumabas, paki-reset ang board na wala ang "
-
 #~ msgid "UART(%d) does not exist"
 #~ msgstr "Walang UART(%d)"
 
@@ -3647,8 +4117,14 @@ msgstr "zero step"
 #~ msgid "[addrinfo error %d]"
 #~ msgstr "[addrinfo error %d]"
 
+#~ msgid "bits must be 8"
+#~ msgstr "bits ay dapat walo (8)"
+
 #~ msgid "buffer too long"
 #~ msgstr "masyadong mahaba ng buffer"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "ang buffers ay dapat parehas sa haba"
 
 #~ msgid "can query only one param"
 #~ msgstr "maaaring i-query lamang ang isang param"
@@ -3680,6 +4156,9 @@ msgstr "zero step"
 #~ msgid "ffi_prep_closure_loc"
 #~ msgstr "ffi_prep_closure_loc"
 
+#~ msgid "firstbit must be MSB"
+#~ msgstr "firstbit ay dapat MSB"
+
 #~ msgid "flash location must be below 1MByte"
 #~ msgstr "dapat na mas mababa sa 1MB ang lokasyon ng flash"
 
@@ -3688,6 +4167,12 @@ msgstr "zero step"
 
 #~ msgid "impossible baudrate"
 #~ msgstr "impossibleng baudrate"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "maling I2C peripheral"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "hindi wastong SPI peripheral"
 
 #~ msgid "invalid alarm"
 #~ msgstr "mali ang alarm"
@@ -3710,6 +4195,9 @@ msgstr "zero step"
 #~ msgid "memory allocation failed, allocating %u bytes for native code"
 #~ msgstr ""
 #~ "nabigo ang paglalaan ng memorya, naglalaan ng %u bytes para sa native code"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "dapat tukuyin lahat ng SCK/MOSI/MISO"
 
 #, fuzzy
 #~ msgid "name must be a string"

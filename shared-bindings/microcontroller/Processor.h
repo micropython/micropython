@@ -31,7 +31,7 @@
 
 #include "common-hal/microcontroller/Processor.h"
 
-const mp_obj_type_t mcu_processor_type;
+extern const mp_obj_type_t mcu_processor_type;
 
 uint32_t common_hal_mcu_processor_get_frequency(void);
 float common_hal_mcu_processor_get_temperature(void);

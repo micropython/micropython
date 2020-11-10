@@ -62,6 +62,13 @@ SPRESENSE_SDK = spresense-exported-sdk
 
 FIRMWARE = $(SPRESENSE_SDK)/firmware
 
+BOOTLOADER_FILES += \
+	$(FIRMWARE)/AESM.espk \
+	$(FIRMWARE)/dnnrt-mp.espk \
+	$(FIRMWARE)/gnssfw.espk \
+	$(FIRMWARE)/loader.espk \
+	$(FIRMWARE)/sysutil.spk \
+
 # Platforms are: Linux, Darwin, MSYS, CYGWIN
 PLATFORM := $(firstword $(subst _, ,$(shell uname -s 2>/dev/null)))
 
@@ -91,8 +98,7 @@ INC += \
 	-I$(SPRESENSE_SDK)/nuttx/arch \
 	-I$(SPRESENSE_SDK)/nuttx/arch/chip \
 	-I$(SPRESENSE_SDK)/nuttx/arch/os \
-	-I$(SPRESENSE_SDK)/sdk/bsp/include \
-	-I$(SPRESENSE_SDK)/sdk/bsp/include/sdk \
+	-I$(SPRESENSE_SDK)/sdk/include \
 
 CFLAGS += \
 	$(INC) \
@@ -101,7 +107,6 @@ CFLAGS += \
 	-Dmain=spresense_main \
 	-D_estack=__stack \
 	-c \
-	-Os \
 	-pipe \
 	-std=gnu11 \
 	-mcpu=cortex-m4 \
@@ -117,6 +122,12 @@ CFLAGS += \
 	-fdata-sections \
 	-Wall \
 
+OPTIMIZATION_FLAGS ?= -O2
+
+# option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
+CFLAGS += $(OPTIMIZATION_FLAGS)
+
+
 LIBM = "${shell "$(CC)" $(CFLAGS) -print-file-name=libm.a}"
 
 LIBGCC = "${shell "$(CC)" $(CFLAGS) -print-libgcc-file-name}"
@@ -125,7 +136,7 @@ LDFLAGS = \
 	--entry=__start \
 	-nostartfiles \
 	-nodefaultlibs \
-	-T$(SPRESENSE_SDK)/nuttx/build/ramconfig.ld \
+	-T$(SPRESENSE_SDK)/nuttx/scripts/ramconfig.ld \
 	--gc-sections \
 	-Map=$(BUILD)/output.map \
 	-o $(BUILD)/firmware.elf \
@@ -133,14 +144,14 @@ LDFLAGS = \
 	-u spresense_main \
 	-u board_timerhook \
 	$(BUILD)/libmpy.a \
-	$(SPRESENSE_SDK)/sdk/libs/libapps.a \
-	$(SPRESENSE_SDK)/sdk/libs/libsdk.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libapps.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libnuttx.a \
 	$(LIBM) \
 	$(LIBGCC) \
 	--end-group \
 	-L$(BUILD) \
 
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_CXD56 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=512 $(CFLAGS_MOD)
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_CXD56 -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=512 $(CFLAGS_MOD)
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
                           $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
@@ -151,7 +162,7 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 
 SRC_S = supervisor/cpu.s
 
-SRC_C = \
+SRC_C += \
 	background.c \
 	fatfs_port.c \
 	mphalport.c \
@@ -190,7 +201,7 @@ all: $(BUILD)/firmware.spk
 $(FIRMWARE):
 	$(ECHO) ""
 	$(ECHO) "Download the spresense binaries zip archive from:"
-	$(ECHO) "https://developer.sony.com/file/download/download-spresense-firmware-v1-4-000"
+	$(ECHO) "https://developer.sony.com/file/download/download-spresense-firmware-v2-0-000"
 	$(ECHO) "Extract spresense binaries to $(FIRMWARE)"
 	$(ECHO) ""
 	$(ECHO) "run make flash-bootloader again to flash bootloader."
@@ -213,11 +224,11 @@ $(BUILD)/firmware.spk: $(BUILD)/firmware.elf $(MKSPK)
 
 flash: $(BUILD)/firmware.spk
 	$(ECHO) "Writing $< to the board"
-	$(SPRESENSE_SDK)/sdk/tools/flash.sh -c $(SERIAL) $(BUILD)/firmware.spk
+	tools/flash_writer.py -s -c $(SERIAL) -d -b 115200 -n $(BUILD)/firmware.spk
 
 flash-bootloader: $(SPRESENSE_SDK) $(FIRMWARE)
 	$(ECHO) "Writing loader to the board"
-	$(SPRESENSE_SDK)/sdk/tools/flash.sh -l $(FIRMWARE) -c $(SERIAL)
+	tools/flash_writer.py -s -c $(SERIAL) -d -b 115200 -n $(BOOTLOADER_FILES)
 
 include $(TOP)/py/mkrules.mk
 

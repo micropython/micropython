@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -113,6 +113,8 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         start = mp_hal_ticks_ms();
         mp_call_function_0(module_fun);
         mp_hal_set_interrupt_char(-1); // disable interrupt
+        // Handle any ctrl-c interrupt that arrived just in time
+        mp_handle_pending();
         nlr_pop();
         ret = 0;
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {

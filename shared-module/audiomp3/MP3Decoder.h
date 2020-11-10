@@ -28,6 +28,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MP3FILE_H
 #define MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MP3FILE_H
 
+#include "supervisor/background_callback.h"
 #include "extmod/vfs_fat.h"
 #include "py/obj.h"
 
@@ -36,6 +37,7 @@
 typedef struct {
     mp_obj_base_t base;
     struct _MP3DecInfo *decoder;
+    background_callback_t inbuf_fill_cb;
     uint8_t* inbuf;
     uint32_t inbuf_length;
     uint32_t inbuf_offset;

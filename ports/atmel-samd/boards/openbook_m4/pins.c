@@ -53,6 +53,10 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_EBSY),  MP_ROM_PTR(&pin_PA01) },
 
     // Special named pins
+    { MP_OBJ_NEW_QSTR(MP_QSTR_BATTERY),  MP_ROM_PTR(&pin_PB01) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_USB),  MP_ROM_PTR(&pin_PB00) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MICIN),  MP_ROM_PTR(&pin_PB04) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MICOUT),  MP_ROM_PTR(&pin_PA07) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL),  MP_ROM_PTR(&pin_PA15) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_LOCK_BUTTON),  MP_ROM_PTR(&pin_PA27) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_BUTTON_LATCH),  MP_ROM_PTR(&pin_PB12) },

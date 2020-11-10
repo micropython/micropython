@@ -29,6 +29,5 @@ CIRCUITPY_WATCHDOG = 1
 # Enable micropython.native
 #CIRCUITPY_ENABLE_MPY_NATIVE = 1
 
-# These defines must be overridden before mpconfigboard.h is included, which is
-# why they are passed on the command line.
-CFLAGS += -DSPIM3_BUFFER_SIZE=0 -DSOFTDEVICE_RAM_SIZE='(32*1024)' -DNRFX_SPIM3_ENABLED=0
+# Override optimization to keep binary small
+OPTIMIZATION_FLAGS = -Os

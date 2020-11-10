@@ -39,13 +39,13 @@
 //| """Supervisor settings"""
 //|
 
-//| runtime: Runtime = ...
+//| runtime: Runtime
 //| """Runtime information, such as ``runtime.serial_connected``
 //| (USB serial connection status).
 //| This object is the sole instance of `supervisor.Runtime`."""
 //|
 
-//| def enable_autoreload(self) -> None:
+//| def enable_autoreload() -> None:
 //|     """Enable autoreload based on USB file write activity."""
 //|     ...
 //|
@@ -55,7 +55,7 @@ STATIC mp_obj_t supervisor_enable_autoreload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_enable_autoreload_obj, supervisor_enable_autoreload);
 
-//| def disable_autoreload(self) -> None:
+//| def disable_autoreload() -> None:
 //|     """Disable autoreload based on USB file write activity until
 //|     `enable_autoreload` is called."""
 //|     ...
@@ -66,7 +66,7 @@ STATIC mp_obj_t supervisor_disable_autoreload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_autoreload_obj, supervisor_disable_autoreload);
 
-//| def set_rgb_status_brightness(self, brightness: int) -> None:
+//| def set_rgb_status_brightness(brightness: int) -> None:
 //|     """Set brightness of status neopixel from 0-255
 //|     `set_rgb_status_brightness` is called."""
 //|     ...
@@ -82,7 +82,7 @@ STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl){
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_set_rgb_status_brightness);
 
-//| def reload(self) -> None:
+//| def reload() -> None:
 //|     """Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL)."""
 //|     ...
 //|
@@ -93,7 +93,7 @@ STATIC mp_obj_t supervisor_reload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
 
-//| def set_next_stack_limit(self, size: int) -> None:
+//| def set_next_stack_limit(size: int) -> None:
 //|     """Set the size of the stack for the next vm run. If its too large, the default will be used."""
 //|     ...
 //|

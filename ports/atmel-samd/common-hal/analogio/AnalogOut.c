@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,28 +44,38 @@
 #include "hpl/pm/hpl_pm_base.h"
 #endif
 
+#define HAVE_ANALOGOUT ( \
+    (defined(PIN_PA02) && !defined(IGNORE_PA02)) || \
+    (defined(SAM_D5X_E5X) && defined(PIN_PA05) && !defined(IGNORE_PA05)) \
+)
+
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
         const mcu_pin_obj_t *pin) {
-    #if defined(SAMD21) && !defined(PIN_PA02)
+    #if !HAVE_ANALOGOUT
     mp_raise_NotImplementedError(translate("No DAC on chip"));
     #else
-    if (pin->number != PIN_PA02
-    #ifdef SAMD51
-        && pin->number != PIN_PA05
+
+    int channel = -1;
+
+    #if defined(PIN_PA02) && !defined(IGNORE_PIN_PA02)
+    if (pin->number != PIN_PA02) {
+        channel = 0;
+    }
     #endif
-    ) {
+    #if defined(PIN_PA05) && defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)
+    if (pin->number != PIN_PA05) {
+        channel = 1;
+    }
+    #endif
+
+    if(channel == -1) {
         mp_raise_ValueError(translate("AnalogOut not supported on given pin"));
         return;
     }
 
-    self->channel = 0;
-    #ifdef SAMD51
-    if (pin->number == PIN_PA05) {
-        self->channel = 1;
-    }
-    #endif
+    self->channel = channel;
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     hri_mclk_set_APBDMASK_DAC_bit(MCLK);
     #endif
 
@@ -80,16 +90,16 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
     // Don't double init the DAC on the SAMD51 when both outputs are in use. We use the free state
     // of each output pin to determine DAC state.
     int32_t result = ERR_NONE;
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     if (!common_hal_mcu_pin_is_free(&pin_PA02) || !common_hal_mcu_pin_is_free(&pin_PA05)) {
     #endif
         // Fake the descriptor if the DAC is already initialized.
         self->descriptor.device.hw = DAC;
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     } else {
     #endif
         result = dac_sync_init(&self->descriptor, DAC);
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     }
     #endif
     if (result != ERR_NONE) {
@@ -105,22 +115,26 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
+    #if !HAVE_ANALOGOUT
+    return false;
+    #else
     return self->deinited;
+    #endif
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
-    #if (defined(SAMD21) && defined(PIN_PA02)) || defined(SAMD51)
+    #if HAVE_ANALOGOUT
     if (common_hal_analogio_analogout_deinited(self)) {
         return;
     }
     dac_sync_disable_channel(&self->descriptor, self->channel);
     reset_pin_number(PIN_PA02);
     // Only deinit the DAC on the SAMD51 if both outputs are free.
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     if (common_hal_mcu_pin_is_free(&pin_PA02) && common_hal_mcu_pin_is_free(&pin_PA05)) {
     #endif
         dac_sync_deinit(&self->descriptor);
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     }
     #endif
     self->deinited = true;
@@ -130,12 +144,11 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
         uint16_t value) {
-    #if defined(SAMD21) && !defined(PIN_PA02)
-    return;
-    #endif
+    #if HAVE_ANALOGOUT
     // Input is 16 bit so make sure and set LEFTADJ to 1 so it takes the top
     // bits. This is currently done in asf4_conf/*/hpl_dac_config.h.
     dac_sync_write(&self->descriptor, self->channel, &value, 1);
+    #endif
 }
 
 void analogout_reset(void) {
@@ -143,11 +156,11 @@ void analogout_reset(void) {
     // if it was enabled, so do that instead if AudioOut is enabled.
 #if CIRCUITPY_AUDIOIO
     audioout_reset();
-#else
+#elif HAVE_ANALOGOUT
     #ifdef SAMD21
     while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY) {}
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     while (DAC->SYNCBUSY.reg & DAC_SYNCBUSY_SWRST) {}
     #endif
     DAC->CTRLA.reg |= DAC_CTRLA_SWRST;

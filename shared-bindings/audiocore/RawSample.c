@@ -38,13 +38,13 @@
 //| class RawSample:
 //|     """A raw audio sample buffer in memory"""
 //|
-//|     def __init__(self, buffer: array.array, *, channel_count: int = 1, sample_rate: int = 8000):
+//|     def __init__(self, buffer: ReadableBuffer, *, channel_count: int = 1, sample_rate: int = 8000) -> None:
 //|         """Create a RawSample based on the given buffer of signed values. If channel_count is more than
 //|         1 then each channel's samples should alternate. In other words, for a two channel buffer, the
 //|         first sample will be for channel 1, the second sample will be for channel two, the third for
 //|         channel 1 and so on.
 //|
-//|         :param array.array buffer: An `array.array` with samples
+//|         :param ~_typing.ReadableBuffer buffer: A buffer with samples
 //|         :param int channel_count: The number of channels in the buffer
 //|         :param int sample_rate: The desired playback sample rate
 //|
@@ -101,7 +101,7 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the AudioOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -118,13 +118,13 @@ STATIC void check_for_deinit(audioio_rawsample_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> RawSample:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -136,7 +136,7 @@ STATIC mp_obj_t audioio_rawsample_obj___exit__(size_t n_args, const mp_obj_t *ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_rawsample___exit___obj, 4, 4, audioio_rawsample_obj___exit__);
 
-//|     sample_rate: Any = ...
+//|     sample_rate: Optional[int]
 //|     """32 bit value that dictates how quickly samples are played in Hertz (cycles per second).
 //|     When the sample is looped, this can change the pitch output without changing the underlying
 //|     sample. This will not change the sample rate of any active playback. Call ``play`` again to

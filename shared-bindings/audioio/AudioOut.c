@@ -39,7 +39,7 @@
 //| class AudioOut:
 //|     """Output an analog audio signal"""
 //|
-//|     def __init__(self, left_channel: microcontroller.Pin, *, right_channel: microcontroller.Pin = None, quiescent_value: int = 0x8000):
+//|     def __init__(self, left_channel: microcontroller.Pin, *, right_channel: Optional[microcontroller.Pin] = None, quiescent_value: int = 0x8000) -> None:
 //|         """Create a AudioOut object associated with the given pin(s). This allows you to
 //|         play audio signals out on the given pin(s).
 //|
@@ -111,7 +111,7 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the AudioOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -127,13 +127,13 @@ STATIC void check_for_deinit(audioio_audioout_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> AudioOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -146,11 +146,11 @@ STATIC mp_obj_t audioio_audioout_obj___exit__(size_t n_args, const mp_obj_t *arg
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_audioout___exit___obj, 4, 4, audioio_audioout_obj___exit__);
 
 
-//|     def play(self, sample: Any, *, loop: Any = False) -> Any:
+//|     def play(self, sample: _typing.AudioSample, *, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|
-//|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiomixer.Mixer`.
+//|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, `audiomixer.Mixer` or `audiomp3.MP3Decoder`.
 //|
 //|         The sample itself should consist of 16 bit samples. Microcontrollers with a lower output
 //|         resolution will use the highest order bits to output. For example, the SAMD21 has a 10 bit
@@ -175,7 +175,7 @@ STATIC mp_obj_t audioio_audioout_obj_play(size_t n_args, const mp_obj_t *pos_arg
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audioio_audioout_play_obj, 1, audioio_audioout_obj_play);
 
-//|     def stop(self, ) -> Any:
+//|     def stop(self) -> None:
 //|         """Stops playback and resets to the start of the sample."""
 //|         ...
 //|
@@ -187,7 +187,7 @@ STATIC mp_obj_t audioio_audioout_obj_stop(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_stop_obj, audioio_audioout_obj_stop);
 
-//|     playing: Any = ...
+//|     playing: bool
 //|     """True when an audio sample is being output even if `paused`. (read-only)"""
 //|
 STATIC mp_obj_t audioio_audioout_obj_get_playing(mp_obj_t self_in) {
@@ -204,7 +204,7 @@ const mp_obj_property_t audioio_audioout_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def pause(self, ) -> Any:
+//|     def pause(self) -> None:
 //|         """Stops playback temporarily while remembering the position. Use `resume` to resume playback."""
 //|         ...
 //|
@@ -220,7 +220,7 @@ STATIC mp_obj_t audioio_audioout_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_pause_obj, audioio_audioout_obj_pause);
 
-//|     def resume(self, ) -> Any:
+//|     def resume(self) -> None:
 //|         """Resumes sample playback after :py:func:`pause`."""
 //|         ...
 //|
@@ -236,7 +236,7 @@ STATIC mp_obj_t audioio_audioout_obj_resume(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audioio_audioout_resume_obj, audioio_audioout_obj_resume);
 
-//|     paused: Any = ...
+//|     paused: bool
 //|     """True when playback is paused. (read-only)"""
 //|
 STATIC mp_obj_t audioio_audioout_obj_get_paused(mp_obj_t self_in) {

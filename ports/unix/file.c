@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,7 @@ extern const mp_obj_type_t mp_type_textio;
 STATIC void fdfile_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_fdfile_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<io.%s %d>", mp_obj_get_type_str(self_in), self->fd);
+    mp_printf(print, "<io.%q %d>", mp_obj_get_type_qstr(self_in), self->fd);
 }
 
 STATIC mp_uint_t fdfile_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {

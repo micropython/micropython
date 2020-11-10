@@ -35,10 +35,12 @@ void common_hal_displayio_palette_construct(displayio_palette_t* self, uint16_t 
 
 void common_hal_displayio_palette_make_opaque(displayio_palette_t* self, uint32_t palette_index) {
     self->colors[palette_index].transparent = false;
+    self->needs_refresh = true;
 }
 
 void common_hal_displayio_palette_make_transparent(displayio_palette_t* self, uint32_t palette_index) {
     self->colors[palette_index].transparent = true;
+    self->needs_refresh = true;
 }
 
 uint32_t common_hal_displayio_palette_get_len(displayio_palette_t* self) {

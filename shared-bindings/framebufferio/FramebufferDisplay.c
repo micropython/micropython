@@ -47,11 +47,10 @@
 //|     objects in CircuitPython, Display objects live until `displayio.release_displays()`
 //|     is called. This is done so that CircuitPython can use the display itself."""
 //|
-//|     def __init__(self, framebuffer: Any, *, rotation: int = 0, auto_refresh: bool = True):
+//|     def __init__(self, framebuffer: _typing.FrameBuffer, *, rotation: int = 0, auto_refresh: bool = True) -> None:
 //|         """Create a Display object with the given framebuffer (a buffer, array, ulab.array, etc)
 //|
-//|         :param framebuffer: The framebuffer that the display is connected to
-//|         :type framebuffer: any core object implementing the framebuffer protocol
+//|         :param ~_typing.FrameBuffer framebuffer: The framebuffer that the display is connected to
 //|         :param bool auto_refresh: Automatically refresh the screen
 //|         :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)"""
 //|         ...
@@ -94,7 +93,7 @@ static framebufferio_framebufferdisplay_obj_t* native_display(mp_obj_t display_o
     return MP_OBJ_TO_PTR(native_display);
 }
 
-//|     def show(self, group: Group) -> Any:
+//|     def show(self, group: displayio.Group) -> None:
 //|         """Switches to displaying the given group of layers. When group is None, the default
 //|         CircuitPython terminal will be shown.
 //|
@@ -116,7 +115,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_show(mp_obj_t self_in, mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_show_obj, framebufferio_framebufferdisplay_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1) -> Any:
+//|     def refresh(self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1) -> bool:
 //|         """When auto refresh is off, waits for the target frame rate and then refreshes the display,
 //|         returning True. If the call has taken too long since the last refresh call for the given
 //|         target frame rate, then the refresh returns False immediately without updating the screen to
@@ -151,7 +150,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_refresh(size_t n_args, cons
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_refresh_obj, 1, framebufferio_framebufferdisplay_obj_refresh);
 
-//|     auto_refresh: Any = ...
+//|     auto_refresh: bool
 //|     """True when the display is refreshed automatically."""
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_auto_refresh(mp_obj_t self_in) {
@@ -176,7 +175,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_auto_refresh_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     brightness: Any = ...
+//|     brightness: float
 //|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
 //|     `auto_brightness` is True, the value of `brightness` will change automatically.
 //|     If `brightness` is set, `auto_brightness` will be disabled and will be set to False."""
@@ -213,7 +212,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     auto_brightness: Any = ...
+//|     auto_brightness: bool
 //|     """True when the display brightness is adjusted automatically, based on an ambient
 //|     light sensor or other method. Note that some displays may have this set to True by default,
 //|     but not actually implement automatic brightness adjustment. `auto_brightness` is set to False
@@ -244,8 +243,8 @@ const mp_obj_property_t framebufferio_framebufferdisplay_auto_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     width: Any = ...
-//|	    """Gets the width of the framebuffer"""
+//|     width: int
+//|     """Gets the width of the framebuffer"""
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_width(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
@@ -260,8 +259,8 @@ const mp_obj_property_t framebufferio_framebufferdisplay_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: Any = ...
-//|	    """Gets the height of the framebuffer"""
+//|     height: int
+//|     """Gets the height of the framebuffer"""
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_height(mp_obj_t self_in) {
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
@@ -276,7 +275,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     rotation: Any = ...
+//|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_rotation(mp_obj_t self_in) {
@@ -299,8 +298,8 @@ const mp_obj_property_t framebufferio_framebufferdisplay_rotation_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     framebuffer: Any = ...
-//|	    """The framebuffer being used by the display"""
+//|     framebuffer: _typing.FrameBuffer
+//|     """The framebuffer being used by the display"""
 //|
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_framebuffer(mp_obj_t self_in) {
@@ -317,11 +316,11 @@ const mp_obj_property_t framebufferio_framebufferframebuffer_obj = {
 };
 
 
-//|     def fill_row(self, y: int, buffer: bytearray) -> Any:
+//|     def fill_row(self, y: int, buffer: WriteableBuffer) -> WriteableBuffer:
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area
-//|         :param bytearray buffer: The buffer in which to place the pixel data"""
+//|         :param ~_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
 //|         ...
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

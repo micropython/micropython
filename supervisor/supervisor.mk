@@ -2,6 +2,7 @@ SRC_SUPERVISOR = \
 	main.c \
 	supervisor/port.c \
 	supervisor/shared/autoreload.c \
+	supervisor/shared/background_callback.c \
 	supervisor/shared/board.c \
 	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
@@ -33,7 +34,7 @@ endif
 CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM)
 
 ifeq ($(CIRCUITPY_BLEIO),1)
-	SRC_SUPERVISOR += supervisor/shared/bluetooth.c
+	SRC_SUPERVISOR += supervisor/shared/bluetooth.c supervisor/bluetooth.c
 endif
 
 # Choose which flash filesystem impl to use.
@@ -109,22 +110,29 @@ ifeq ($(CIRCUITPY_DISPLAYIO), 1)
 	SRC_SUPERVISOR += \
 		supervisor/shared/display.c
 
-	SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+	ifeq ($(CIRCUITPY_TERMINALIO), 1)
+		SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+	endif
 endif
 ifndef USB_INTERFACE_NAME
 USB_INTERFACE_NAME = "CircuitPython"
 endif
 
-ifndef USB_DEVICES
-USB_DEVICES = "CDC,MSC,AUDIO,HID"
+USB_DEVICES_COMPUTED := CDC,MSC
+ifeq ($(CIRCUITPY_USB_MIDI),1)
+USB_DEVICES_COMPUTED := $(USB_DEVICES_COMPUTED),AUDIO
 endif
+ifeq ($(CIRCUITPY_USB_HID),1)
+USB_DEVICES_COMPUTED := $(USB_DEVICES_COMPUTED),HID
+endif
+USB_DEVICES ?= "$(USB_DEVICES_COMPUTED)"
 
 ifndef USB_HID_DEVICES
 USB_HID_DEVICES = "KEYBOARD,MOUSE,CONSUMER,GAMEPAD"
 endif
 
-ifndef USB_MSC_MAX_PACKET_SIZE
-USB_MSC_MAX_PACKET_SIZE = 64
+ifndef USB_HIGHSPEED
+USB_HIGHSPEED = 0
 endif
 
 ifndef USB_CDC_EP_NUM_NOTIFICATION
@@ -163,6 +171,10 @@ ifndef USB_MIDI_EP_NUM_IN
 USB_MIDI_EP_NUM_IN = 0
 endif
 
+ifndef USB_NUM_EP
+USB_NUM_EP = 0
+endif
+
 USB_DESCRIPTOR_ARGS = \
 	--manufacturer $(USB_MANUFACTURER)\
 	--product $(USB_PRODUCT)\
@@ -172,7 +184,7 @@ USB_DESCRIPTOR_ARGS = \
 	--interface_name $(USB_INTERFACE_NAME)\
 	--devices $(USB_DEVICES)\
 	--hid_devices $(USB_HID_DEVICES)\
-  --msc_max_packet_size $(USB_MSC_MAX_PACKET_SIZE)\
+	--max_ep $(USB_NUM_EP) \
 	--cdc_ep_num_notification $(USB_CDC_EP_NUM_NOTIFICATION)\
 	--cdc_ep_num_data_out $(USB_CDC_EP_NUM_DATA_OUT)\
 	--cdc_ep_num_data_in $(USB_CDC_EP_NUM_DATA_IN)\
@@ -187,6 +199,10 @@ USB_DESCRIPTOR_ARGS = \
 
 ifeq ($(USB_RENUMBER_ENDPOINTS), 0)
 USB_DESCRIPTOR_ARGS += --no-renumber_endpoints
+endif
+
+ifeq ($(USB_HIGHSPEED), 1)
+USB_DESCRIPTOR_ARGS += --highspeed
 endif
 
 $(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h

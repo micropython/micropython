@@ -1,31 +1,7 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * Original template for this file comes from:
- * Low level disk I/O module skeleton for FatFs, (C)ChaN, 2013
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2013, 2014 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/mpconfig.h"
 #if MICROPY_VFS && MICROPY_VFS_FAT
@@ -147,7 +123,7 @@ DRESULT disk_write (
 
 DRESULT disk_ioctl (
     bdev_t pdrv,      /* Physical drive nmuber (0..) */
-    BYTE cmd,        /* Control code */
+    BYTE cmd,         /* Control code */
     void *buff        /* Buffer to send/receive control data */
 )
 {
@@ -157,7 +133,7 @@ DRESULT disk_ioctl (
     }
 
     // First part: call the relevant method of the underlying block device
-    mp_obj_t ret = mp_const_none;
+    mp_int_t out_value = 0;
     if (vfs->flags & FSUSER_HAVE_IOCTL) {
         // new protocol with ioctl
         static const uint8_t op_map[8] = {
@@ -168,9 +144,19 @@ DRESULT disk_ioctl (
         };
         uint8_t bp_op = op_map[cmd & 7];
         if (bp_op != 0) {
-            vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(bp_op);
-            vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
-            ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+            if (vfs->flags & FSUSER_NATIVE) {
+                bool (*f)(size_t, mp_int_t*) = (void*)(uintptr_t)vfs->u.ioctl[2];
+                if (!f(bp_op, (mp_int_t*) &out_value)) {
+                    return RES_ERROR;
+                }
+            } else {
+                vfs->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(bp_op);
+                vfs->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(0); // unused
+                mp_obj_t ret = mp_call_method_n_kw(2, 0, vfs->u.ioctl);
+                if (ret != mp_const_none) {
+                    out_value = mp_obj_get_int(ret);
+                }
+            }
         }
     } else {
         // old protocol with sync and count
@@ -181,10 +167,13 @@ DRESULT disk_ioctl (
                 }
                 break;
 
-            case GET_SECTOR_COUNT:
-                ret = mp_call_method_n_kw(0, 0, vfs->u.old.count);
+            case GET_SECTOR_COUNT: {
+                mp_obj_t ret = mp_call_method_n_kw(0, 0, vfs->u.old.count);
+                if (ret != mp_const_none) {
+                    out_value = mp_obj_get_int(ret);
+                }
                 break;
-
+            }
             case GET_SECTOR_SIZE:
                 // old protocol has fixed sector size of 512 bytes
                 break;
@@ -201,16 +190,16 @@ DRESULT disk_ioctl (
             return RES_OK;
 
         case GET_SECTOR_COUNT: {
-            *((DWORD*)buff) = mp_obj_get_int(ret);
+            *((DWORD*)buff) = out_value;
             return RES_OK;
         }
 
         case GET_SECTOR_SIZE: {
-            if (ret == mp_const_none) {
+            if (out_value == 0) {
                 // Default sector size
                 *((WORD*)buff) = 512;
             } else {
-                *((WORD*)buff) = mp_obj_get_int(ret);
+                *((WORD*)buff) = out_value;
             }
             #if _MAX_SS != _MIN_SS
             // need to store ssize because we use it in disk_read/disk_write
@@ -226,7 +215,7 @@ DRESULT disk_ioctl (
         case IOCTL_INIT:
         case IOCTL_STATUS: {
             DSTATUS stat;
-            if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
+            if (out_value != 0) {
                 // error initialising
                 stat = STA_NOINIT;
             } else if (vfs->writeblocks[0] == MP_OBJ_NULL) {

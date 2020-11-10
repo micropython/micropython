@@ -29,7 +29,9 @@
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/displayio/Group.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#if CIRCUITPY_PWMIO
+#include "shared-bindings/pwmio/PWMOut.h"
+#endif
 
 #include "shared-module/displayio/area.h"
 #include "shared-module/displayio/display_core.h"
@@ -39,7 +41,9 @@ typedef struct {
     displayio_display_core_t core;
     union {
         digitalio_digitalinout_obj_t backlight_inout;
-        pulseio_pwmout_obj_t backlight_pwm;
+        #if CIRCUITPY_PWMIO
+        pwmio_pwmout_obj_t backlight_pwm;
+        #endif
     };
     uint64_t last_backlight_refresh;
     uint64_t last_refresh_call;
@@ -56,6 +60,8 @@ typedef struct {
     bool auto_brightness;
     bool updating_backlight;
     bool backlight_on_high;
+    // new quirk for sh1107
+    bool SH1107_addressing;
 } displayio_display_obj_t;
 
 void displayio_display_background(displayio_display_obj_t* self);

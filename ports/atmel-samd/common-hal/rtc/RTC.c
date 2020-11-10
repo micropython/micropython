@@ -68,7 +68,11 @@ int common_hal_rtc_get_calibration(void) {
 
 void common_hal_rtc_set_calibration(int calibration) {
     if (calibration > 127 || calibration < -127) {
+#if CIRCUITPY_FULL_BUILD
         mp_raise_ValueError(translate("calibration value out of range +/-127"));
+#else
+        mp_raise_ValueError(translate("calibration is out of range"));
+#endif
     }
 
     hri_rtcmode0_write_FREQCORR_SIGN_bit(RTC, calibration < 0 ? 0 : 1);

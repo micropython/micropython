@@ -1,28 +1,7 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2014 Paul Sokolovsky
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// Copyright (c) 2014 Paul Sokolovsky
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+//
+// SPDX-License-Identifier: MIT
 
 #include <assert.h>
 #include <string.h>
@@ -541,7 +520,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_ob
             uint val_type = GET_TYPE(arr_sz, VAL_TYPE_BITS);
             arr_sz &= VALUE_MASK(VAL_TYPE_BITS);
             if (index >= arr_sz) {
-                nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, translate("struct: index out of range")));
+                mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_struct);
             }
 
             if (t->len == 2) {

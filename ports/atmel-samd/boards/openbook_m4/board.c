@@ -76,13 +76,13 @@ void board_init(void) {
         sizeof(start_sequence),
         stop_sequence,
         sizeof(stop_sequence),
-        400, // width
-        300, // height
-        400, // RAM width
-        300, // RAM height
+        300, // width
+        400, // height
+        300, // RAM width
+        400, // RAM height
         0, // colstart
         0, // rowstart
-        0, // rotation
+        270, // rotation
         NO_COMMAND, // set_column_window_command
         NO_COMMAND, // set_row_window_command
         NO_COMMAND, // set_current_column_command
@@ -97,7 +97,8 @@ void board_init(void) {
         &pin_PA01, // busy_pin
         false, // busy_state
         5, // seconds_per_frame
-        false); // chip_select (don't always toggle chip select)
+        false, // chip_select (don't always toggle chip select)
+        false); // grayscale
 }
 
 bool board_requests_safe_mode(void) {

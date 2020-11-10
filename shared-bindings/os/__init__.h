@@ -32,7 +32,7 @@
 
 #include "py/objtuple.h"
 
-const mp_rom_obj_tuple_t common_hal_os_uname_info_obj;
+extern const mp_rom_obj_tuple_t common_hal_os_uname_info_obj;
 
 mp_obj_t common_hal_os_uname(void);
 void common_hal_os_chdir(const char* path);

@@ -32,6 +32,9 @@
 #include "audio_dma.h"
 #include "py/obj.h"
 
+// Some boards don't implement I2SOut, so suppress any routines from here.
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+
 // We don't bit pack because we'll only have two at most. Its better to save code size instead.
 typedef struct {
     mp_obj_base_t base;
@@ -47,5 +50,7 @@ typedef struct {
 } audiobusio_i2sout_obj_t;
 
 void i2sout_reset(void);
+
+#endif // CIRCUITPY_AUDIOBUSIO_I2SOUT
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_I2SOUT_H

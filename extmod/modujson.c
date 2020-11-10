@@ -1,31 +1,12 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2014-2016 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: Copyright (c) 2014-2016 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdio.h>
 
+#include "py/binary.h"
+#include "py/objarray.h"
 #include "py/objlist.h"
 #include "py/objstringio.h"
 #include "py/parsenum.h"
@@ -74,6 +55,8 @@ typedef struct _ujson_stream_t {
     mp_obj_t stream_obj;
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     int errcode;
+    mp_obj_t python_readinto[2 + 1];
+    mp_obj_array_t bytearray_obj;
     byte cur;
 } ujson_stream_t;
 
@@ -94,9 +77,39 @@ STATIC byte ujson_stream_next(ujson_stream_t *s) {
     return s->cur;
 }
 
+STATIC mp_uint_t ujson_python_readinto(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {
+    ujson_stream_t* s = obj;
+    s->bytearray_obj.items = buf;
+    s->bytearray_obj.len = size;
+    *errcode = 0;
+    mp_obj_t ret = mp_call_method_n_kw(1, 0, s->python_readinto);
+    if (ret == mp_const_none) {
+        *errcode = MP_EAGAIN;
+        return MP_STREAM_ERROR;
+    }
+    return mp_obj_get_int(ret);
+}
+
 STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
-    const mp_stream_p_t *stream_p = mp_get_stream_raise(stream_obj, MP_STREAM_OP_READ);
-    ujson_stream_t s = {stream_obj, stream_p->read, 0, 0};
+    const mp_stream_p_t *stream_p = mp_proto_get(MP_QSTR_protocol_stream, stream_obj);
+    ujson_stream_t s;
+    if (stream_p == NULL) {
+        mp_load_method(stream_obj, MP_QSTR_readinto, s.python_readinto);
+        s.bytearray_obj.base.type = &mp_type_bytearray;
+        s.bytearray_obj.typecode = BYTEARRAY_TYPECODE;
+        s.bytearray_obj.free = 0;
+        // len and items are set at read time
+        s.python_readinto[2] = MP_OBJ_FROM_PTR(&s.bytearray_obj);
+        s.stream_obj = &s;
+        s.read = ujson_python_readinto;
+    } else {
+        stream_p = mp_get_stream_raise(stream_obj, MP_STREAM_OP_READ);
+        s.stream_obj = stream_obj;
+        s.read = stream_p->read;
+        s.errcode = 0;
+        s.cur = 0;
+    }
+
     JSON_DEBUG("got JSON stream\n");
     vstr_t vstr;
     vstr_init(&vstr, 8);

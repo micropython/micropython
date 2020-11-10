@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@
 //|        dac = analogio.AnalogOut(pin.PA02)          # output on pin PA02
 //|         dac.value = 32768                           # makes PA02 1.65V"""
 //|
-//|     def __init__(self, pin: microcontroller.Pin):
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
 //|         """Use the AnalogOut on the given pin.
 //|
 //|         :param ~microcontroller.Pin pin: the pin to output to"""
@@ -66,7 +66,7 @@ STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Turn off the AnalogOut and release the pin for other use."""
 //|         ...
 //|
@@ -79,13 +79,13 @@ STATIC mp_obj_t analogio_analogout_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogout_deinit_obj, analogio_analogout_deinit);
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> AnalogOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -97,7 +97,7 @@ STATIC mp_obj_t analogio_analogout___exit__(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogout___exit___obj, 4, 4, analogio_analogout___exit__);
 
-//|     value: Any = ...
+//|     value: int
 //|     """The value on the analog pin between 0 and 65535 inclusive (16-bit). (write-only)
 //|
 //|     Even if the underlying digital to analog converter (DAC) is lower

@@ -1,9 +1,11 @@
+.. role:: strike
+
 Design Guide
 ============
 
 This guide covers a variety of development practices for CircuitPython core and library APIs. These
 APIs are both `built-into CircuitPython
-<https://github.com/adafruit/circuitpython/tree/master/shared-bindings>`_ and those that are
+<https://github.com/adafruit/circuitpython/tree/main/shared-bindings>`_ and those that are
 `distributed on GitHub <https://github.com/search?utf8=%E2%9C%93&q=topic%3Acircuitpython&type=>`_
 and in the `Adafruit <https://github.com/adafruit/Adafruit_CircuitPython_Bundle>`_ and `Community
 <https://github.com/adafruit/CircuitPython_Community_Bundle/>`_ bundles. Consistency with these
@@ -45,6 +47,41 @@ Community created libraries should have the repo format ``CircuitPython_<name>``
 not have the ``adafruit_`` module or package prefix.
 
 Both should have the CircuitPython repository topic on GitHub.
+
+Terminology
+-----------
+
+As our Code of Conduct states, we strive to use "welcoming and inclusive
+language." Whether it is in documentation or in code, the words we use matter.
+This means we disfavor language that due to historical and social context can
+make community members and potential community members feel unwelcome.
+
+There are specific terms to avoid except where technical limitations require it.
+While specific cases may call for other terms, consider using these suggested
+terms first:
+
++--------------------+---------------------+
+| Preferred          | Deprecated          |
++====================+=====================+
+| Main (device)      | :strike:`Master`    |
++--------------------+---------------------+
+| Peripheral         | :strike:`Slave`     |
++--------------------+                     +
+| Sensor             |                     |
++--------------------+                     +
+| Secondary (device) |                     |
++--------------------+---------------------+
+| Denylist           | :strike:`Blacklist` |
++--------------------+---------------------+
+| Allowlist          | :strike:`Whitelist` |
++--------------------+---------------------+
+
+Note that "technical limitations" refers e.g., to the situation where an
+upstream library or URL has to contain those substrings in order to work.
+However, when it comes to documentation and the names of parameters and
+properties in CircuitPython, we will use alternate terms even if this breaks
+tradition with past practice.
+
 
 .. _lifetime-and-contextmanagers:
 
@@ -447,6 +484,19 @@ struct.pack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use `struct.pack_into` instead of `struct.pack`.
+
+Use of MicroPython ``const()``
+--------------------------------------------------------------------------------
+The MicroPython ``const()`` feature, as discussed in `this forum post
+<https://forum.micropython.org/viewtopic.php?t=450>`_, and in `this issue thread
+<https://github.com/micropython/micropython/issues/573>`_, provides some
+optimizations that can be useful on smaller, memory constrained devices. However,
+when using ``const()``, keep in mind these general guide lines:
+
+- Always use via an import, ex: ``from micropython import const``
+- Limit use to global (module level) variables only.
+- If user will not need access to variable, prefix name with a leading
+  underscore, ex: ``_SOME_CONST``.
 
 Sensor properties and units
 --------------------------------------------------------------------------------

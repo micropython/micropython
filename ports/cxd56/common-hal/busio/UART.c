@@ -56,7 +56,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
     const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
     const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
-    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
     bool sigint_enabled) {
     struct termios tio;
@@ -69,7 +69,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Could not initialize UART"));
     }
 
-    if (parity != PARITY_NONE) {
+    if (parity != BUSIO_UART_PARITY_NONE) {
         mp_raise_ValueError(translate("Could not initialize UART"));
     }
 

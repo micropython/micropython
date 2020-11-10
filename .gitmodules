@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 [submodule "lib/axtls"]
 	path = lib/axtls
 	url = https://github.com/pfalcon/axtls
@@ -140,6 +144,12 @@
 [submodule "frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center"]
 	path = frozen/Adafruit_CircuitPython_BLE_Apple_Notification_Center
 	url = https://github.com/adafruit/Adafruit_CircuitPython_BLE_Apple_Notification_Center
+[submodule "frozen/Adafruit_CircuitPython_RFM9x"]
+	path = frozen/Adafruit_CircuitPython_RFM9x
+	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM9x.git
+[submodule "frozen/Adafruit_CircuitPython_RFM69"]
+	path = frozen/Adafruit_CircuitPython_RFM69
+	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM69.git
 [submodule "ports/esp32s2/esp-idf"]
 	path = ports/esp32s2/esp-idf
-	url = https://github.com/tannewt/esp-idf.git
+	url = https://github.com/espressif/esp-idf.git

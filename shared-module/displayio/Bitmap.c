@@ -105,6 +105,32 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
     return 0;
 }
 
+void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16_t y, displayio_bitmap_t *source,
+                            int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_index, bool skip_index_none) {
+    // Copy complete "source" bitmap into "self" bitmap at location x,y in the "self"
+    // Add a boolean to determine if all values are copied, or only if non-zero
+    // If skip_value is encountered in the source bitmap, it will not be copied.
+    // If skip_value is `None`, then all pixels are copied.
+
+    if (self->read_only) {
+        mp_raise_RuntimeError(translate("Read-only object"));
+    }
+
+    // simplest version - use internal functions for get/set pixels
+    for (int16_t i=0; i < (x2-x1) ; i++) {
+        if ( (x+i >= 0) && (x+i < self->width) ) {
+            for (int16_t j=0; j < (y2-y1) ; j++){
+                if ((y+j >= 0) && (y+j < self->height) ) {
+                    uint32_t value = common_hal_displayio_bitmap_get_pixel(source, x1+i, y1+j);
+                    if ( (skip_index_none) || (value != skip_index) ) { // write if skip_value_none is True
+                            common_hal_displayio_bitmap_set_pixel(self, x+i, y+j, value);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
     if (self->read_only) {
         mp_raise_RuntimeError(translate("Read-only object"));

@@ -16,8 +16,6 @@
 #define MICROPY_PORT_C (0)
 #define MICROPY_PORT_D (0)
 
-#define EXTERNAL_FLASH_QSPI_DUAL
-
 #define BOARD_HAS_CRYSTAL 1
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA13)

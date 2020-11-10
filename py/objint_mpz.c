@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,6 +105,12 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
     *fmt_size = mpz_as_str_inpl(&self->mpz, base, prefix, base_char, comma, str);
 
     return str;
+}
+
+mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(mpz_num_bits(&self->mpz));
 }
 
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {

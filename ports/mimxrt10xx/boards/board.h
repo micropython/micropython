@@ -33,6 +33,7 @@
 
 #include "py/mpconfig.h"
 #include "fsl_common.h"
+#include "fsl_flexspi_nor_config.h"
 
 // Initializes board related state once on start up.
 void board_init(void);
@@ -44,5 +45,12 @@ bool board_requests_safe_mode(void);
 
 // Reset the state of off MCU components such as neopixels.
 void reset_board(void);
+
+#define SEQUENCE(first, second, third, fourth) first, second, third, fourth
+#define TWO_EMPTY_STEPS 0x00000000
+#define EMPTY_SEQUENCE SEQUENCE(TWO_EMPTY_STEPS, TWO_EMPTY_STEPS, TWO_EMPTY_STEPS, TWO_EMPTY_STEPS)
+
+// FlexSPI configuration that stores command info.
+extern const flexspi_nor_config_t qspiflash_config;
 
 #endif  // MICROPY_INCLUDED_MIMXRT10XX_BOARDS_BOARD_H

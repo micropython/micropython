@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,6 @@
 #define MICROPY_VFS_FAT                (1)
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_PY_FRAMEBUF            (1)
-#define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
 
 // TODO these should be generic, not bound to fatfs
 #define mp_type_fileio mp_type_vfs_posix_fileio

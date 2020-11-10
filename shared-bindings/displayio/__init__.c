@@ -50,7 +50,7 @@
 //|
 
 
-//| def release_displays() -> Any:
+//| def release_displays() -> None:
 //|     """Releases any actively used displays so their busses and pins can be used again. This will also
 //|     release the builtin display on boards that have one. You will need to reinitialize it yourself
 //|     afterwards. This may take seconds to complete if an active EPaperDisplay is refreshing.

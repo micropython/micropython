@@ -45,7 +45,7 @@
 //|     level converters must be used to connect the I/O lines to pins
 //|     of 3.3V boards."""
 //|
-//|     def __init__(self, data_pin: microcontroller.Pin, clock_pin: microcontroller.Pin):
+//|     def __init__(self, data_pin: microcontroller.Pin, clock_pin: microcontroller.Pin) -> None:
 //|         """Create a Ps2 object associated with the given pins.
 //|
 //|         :param ~microcontroller.Pin data_pin: Pin tied to data wire.
@@ -87,7 +87,7 @@ STATIC mp_obj_t ps2io_ps2_make_new(const mp_obj_type_t *type, size_t n_args, con
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the Ps2 and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -104,13 +104,13 @@ STATIC void check_for_deinit(ps2io_ps2_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Ps2:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -122,7 +122,7 @@ STATIC mp_obj_t ps2io_ps2_obj___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ps2io_ps2___exit___obj, 4, 4, ps2io_ps2_obj___exit__);
 
-//|     def popleft(self, ) -> Any:
+//|     def popleft(self) -> int:
 //|         """Removes and returns the oldest received byte. When buffer
 //|         is empty, raises an IndexError exception."""
 //|         ...
@@ -133,13 +133,13 @@ STATIC mp_obj_t ps2io_ps2_obj_popleft(mp_obj_t self_in) {
 
     int b = common_hal_ps2io_ps2_popleft(self);
     if (b < 0) {
-        mp_raise_IndexError(translate("Pop from an empty Ps2 buffer"));
+        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_Ps2_space_buffer);
     }
     return MP_OBJ_NEW_SMALL_INT(b);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_popleft_obj, ps2io_ps2_obj_popleft);
 
-//|     def sendcmd(self, byte: int) -> Any:
+//|     def sendcmd(self, byte: int) -> int:
 //|         """Sends a command byte to PS/2. Returns the response byte, typically
 //|         the general ack value (0xFA). Some commands return additional data
 //|         which is available through :py:func:`popleft()`.
@@ -164,7 +164,7 @@ STATIC mp_obj_t ps2io_ps2_obj_sendcmd(mp_obj_t self_in, mp_obj_t ob) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(ps2io_ps2_sendcmd_obj, ps2io_ps2_obj_sendcmd);
 
-//|     def clear_errors(self, ) -> Any:
+//|     def clear_errors(self) -> None:
 //|         """Returns and clears a bitmap with latest recorded communication errors.
 //|
 //|         Reception errors (arise asynchronously, as data is received):
@@ -202,7 +202,9 @@ STATIC mp_obj_t ps2io_ps2_obj_clear_errors(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_clear_errors_obj, ps2io_ps2_obj_clear_errors);
 
-//|     def __len__(self, ) -> Any:
+//|     def __bool__(self) -> bool: ...
+//|
+//|     def __len__(self) -> int:
 //|         """Returns the number of received bytes in buffer, available
 //|         to :py:func:`popleft()`."""
 //|         ...

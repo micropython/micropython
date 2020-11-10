@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
     const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
     const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
-    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
     bool sigint_enabled) {
 
@@ -105,7 +105,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 continue;
             }
 #endif
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 	    if (potential_sercom->USART.CTRLA.bit.ENABLE != 0 ||
                 !(tx->sercom[i].pad == 0)) {
                 continue;
@@ -195,7 +195,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                                  SERCOM_USART_CTRLA_FORM_Msk);
     sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_TXPO(tx_pad / 2) |
                                SERCOM_USART_CTRLA_RXPO(rx_pad) |
-                               (parity == PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
+                               (parity == BUSIO_UART_PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
 
     // Enable tx and/or rx based on whether the pins were specified.
     // CHSIZE is 0 for 8 bits, 5, 6, 7 for 5, 6, 7 bits. 1 for 9 bits, but we don't support that.
@@ -206,7 +206,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                                  SERCOM_USART_CTRLB_CHSIZE_Msk);
     sercom->USART.CTRLB.reg |= (have_tx ? SERCOM_USART_CTRLB_TXEN : 0) |
                                (have_rx ? SERCOM_USART_CTRLB_RXEN : 0) |
-                               (parity == PARITY_ODD ? SERCOM_USART_CTRLB_PMODE : 0) |
+                               (parity == BUSIO_UART_PARITY_ODD ? SERCOM_USART_CTRLB_PMODE : 0) |
                                (stop > 1 ? SERCOM_USART_CTRLB_SBMODE : 0) |
                                SERCOM_USART_CTRLB_CHSIZE(bits % 8);
 

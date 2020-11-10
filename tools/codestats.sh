@@ -1,4 +1,9 @@
 #!/bin/sh
+
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 #
 # This script generates statistics (build size, speed) for successive
 # revisions of the code.  It checks out git commits one an a time, compiles
@@ -90,9 +95,9 @@ else
     last_rev="v1.0"
 fi
 
-# get a list of hashes between last revision (exclusive) and master
-hashes=$(git log --format=format:"%H" --reverse ${last_rev}..master)
-#hashes=$(git log --format=format:"%H" --reverse ${last_rev}..master | $AWK '{if (NR % 10 == 0) print $0}') # do every 10th one
+# get a list of hashes between last revision (exclusive) and main
+hashes=$(git log --format=format:"%H" --reverse ${last_rev}..main)
+#hashes=$(git log --format=format:"%H" --reverse ${last_rev}..main | $AWK '{if (NR % 10 == 0) print $0}') # do every 10th one
 
 for hash in $hashes; do
 
@@ -182,6 +187,6 @@ EOF
 
 done
 
-# checkout master and cleanup
-git checkout master
+# checkout main and cleanup
+git checkout main
 $RM $pystoneavg

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -137,6 +137,7 @@ STATIC const byte *find_qstr(qstr q) {
     while (q < pool->total_prev_len) {
         pool = pool->prev;
     }
+    assert(q - pool->total_prev_len < pool->len);
     return pool->qstrs[q - pool->total_prev_len];
 }
 

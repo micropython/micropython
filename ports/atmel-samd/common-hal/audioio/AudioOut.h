@@ -36,7 +36,7 @@ typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *left_channel;
     audio_dma_t left_dma;
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     const mcu_pin_obj_t *right_channel;
     audio_dma_t right_dma;
     #endif

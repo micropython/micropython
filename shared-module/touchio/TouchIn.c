@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared-bindings/touchio/TouchIn.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 // This is a capacitive touch sensing routine using a single digital
 // pin.  The pin should be connected to the sensing pad, and to ground
@@ -67,7 +68,7 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 }
 
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self, const mcu_pin_obj_t *pin) {
-    claim_pin(pin);
+    common_hal_mcu_pin_claim(pin);
     self->digitalinout = m_new_obj(digitalio_digitalinout_obj_t);
     self->digitalinout->base.type = &digitalio_digitalinout_type;
 

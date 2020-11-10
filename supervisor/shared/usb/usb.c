@@ -27,7 +27,9 @@
 #include "py/objstr.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-module/usb_midi/__init__.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/port.h"
+#include "supervisor/serial.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
@@ -63,14 +65,18 @@ void usb_init(void) {
     tusb_init();
 
 #if MICROPY_KBD_EXCEPTION
-    // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() callback will be invoked when Ctrl+C is received
-    // This callback always got invoked regardless of mp_interrupt_char value since we only set it once here
+    // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() usb_callback will be invoked when Ctrl+C is received
+    // This usb_callback always got invoked regardless of mp_interrupt_char value since we only set it once here
     tud_cdc_set_wanted_char(CHAR_CTRL_C);
 #endif
 
 #if CIRCUITPY_USB_MIDI
     usb_midi_init();
 #endif
+}
+
+void usb_disconnect(void) {
+    tud_disconnect();
 }
 
 void usb_background(void) {
@@ -80,6 +86,16 @@ void usb_background(void) {
         #endif
         tud_cdc_write_flush();
     }
+}
+
+static background_callback_t usb_callback;
+static void usb_background_do(void* unused) {
+    usb_background();
+}
+
+void usb_irq_handler(void) {
+    tud_int_handler(0);
+    background_callback_add(&usb_callback, usb_background_do, NULL);
 }
 
 //--------------------------------------------------------------------+

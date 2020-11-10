@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/gc.h"
+#include "supervisor/usb.h"
 
 #include "csr.h"
 #include "generated/soc.h"
@@ -49,7 +50,7 @@ void isr(void) {
 
 #ifdef CFG_TUSB_MCU
     if (irqs & (1 << USB_INTERRUPT))
-        tud_int_handler(0);
+        usb_irq_handler();
 #endif
     if (irqs & (1 << TIMER0_INTERRUPT))
         SysTick_Handler();

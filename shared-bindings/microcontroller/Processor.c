@@ -44,13 +44,13 @@
 //|        print(microcontroller.cpu.temperature)"""
 //|
 
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """You cannot create an instance of `microcontroller.Processor`.
 //|         Use `microcontroller.cpu` to access the sole instance available."""
 //|         ...
 //|
 
-//|     frequency: int = ...
+//|     frequency: int
 //|     """The CPU operating frequency in Hertz. (read-only)"""
 //|
 STATIC mp_obj_t mcu_processor_get_frequency(mp_obj_t self) {
@@ -67,7 +67,7 @@ const mp_obj_property_t mcu_processor_frequency_obj = {
     },
 };
 
-//|     temperature: Any = ...
+//|     temperature: Optional[float]
 //|     """The on-chip temperature, in Celsius, as a float. (read-only)
 //|
 //|     Is `None` if the temperature is not available."""
@@ -87,7 +87,7 @@ const mp_obj_property_t mcu_processor_temperature_obj = {
     },
 };
 
-//|     uid: Any = ...
+//|     uid: bytearray
 //|     """The unique id (aka serial number) of the chip as a `bytearray`. (read-only)"""
 //|
 STATIC mp_obj_t mcu_processor_get_uid(mp_obj_t self) {
@@ -106,7 +106,7 @@ const mp_obj_property_t mcu_processor_uid_obj = {
     },
 };
 
-//|     voltage: Any = ...
+//|     voltage: Optional[float]
 //|     """The input voltage to the microcontroller, as a float. (read-only)
 //|
 //|     Is `None` if the voltage is not available."""

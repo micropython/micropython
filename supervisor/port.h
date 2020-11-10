@@ -44,7 +44,7 @@ extern uint32_t _ebss;
 safe_mode_t port_init(void);
 
 // Reset the microcontroller completely.
-void reset_cpu(void);
+void reset_cpu(void) NORETURN;
 
 // Reset the microcontroller state.
 void reset_port(void);
@@ -53,7 +53,7 @@ void reset_port(void);
 void reset_board(void);
 
 // Reset to the bootloader
-void reset_to_bootloader(void);
+void reset_to_bootloader(void) NORETURN;
 
 // Get stack limit address
 uint32_t *port_stack_get_limit(void);
@@ -68,6 +68,8 @@ uint32_t *port_heap_get_bottom(void);
 
 // Get heap top address
 uint32_t *port_heap_get_top(void);
+
+supervisor_allocation* port_fixed_heap(void);
 
 // Save and retrieve a word from memory that is preserved over reset. Used for safe mode.
 void port_set_saved_word(uint32_t);
@@ -91,4 +93,12 @@ void port_interrupt_after_ticks(uint32_t ticks);
 // Sleep the CPU until an interrupt is received.
 void port_sleep_until_interrupt(void);
 
+// Execute port specific actions during background tasks.
+void port_background_task(void);
+
+// Take port specific actions at the beginning and end of background tasks.
+// This is used e.g., to set a monitoring pin for debug purposes.  "Actual
+// work" should be done in port_background_task() instead.
+void port_start_background_task(void);
+void port_finish_background_task(void);
 #endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

@@ -1,6 +1,6 @@
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Michael Schroeder
+# SPDX-FileCopyrightText: Copyright (c) 2019 Michael Schroeder
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,36 @@
 
 import json
 import os
+import pathlib
 import re
 import subprocess
 import sys
 
+from concurrent.futures import ThreadPoolExecutor
 
 SUPPORTED_PORTS = ['atmel-samd', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'stm']
+
+def get_circuitpython_root_dir():
+    """ The path to the root './circuitpython' directory
+    """
+    file_path = pathlib.Path(__file__).resolve()
+    root_dir = file_path.parent.parent
+
+    return root_dir
 
 def get_shared_bindings():
     """ Get a list of modules in shared-bindings based on folder names
     """
-    return [item for item in os.listdir("./shared-bindings")]
+    shared_bindings_dir = get_circuitpython_root_dir() / "shared-bindings"
+    return [item.name for item in shared_bindings_dir.iterdir()] + ["ulab"]
 
 
 def read_mpconfig():
     """ Open 'circuitpy_mpconfig.mk' and return the contents.
     """
     configs = []
-    with open("py/circuitpy_mpconfig.mk") as mpconfig:
+    cpy_mpcfg = get_circuitpython_root_dir() / "py" / "circuitpy_mpconfig.mk"
+    with open(cpy_mpcfg) as mpconfig:
         configs = mpconfig.read()
 
     return configs
@@ -120,36 +132,46 @@ def lookup_setting(settings, key, default=''):
         key = value[2:-1]
     return value
 
-def support_matrix_by_board():
+def all_ports_all_boards(ports=SUPPORTED_PORTS):
+    for port in ports:
+
+        port_dir = get_circuitpython_root_dir() / "ports" / port
+        for entry in (port_dir / "boards").iterdir():
+            if not entry.is_dir():
+                continue
+            yield (port, entry)
+
+def support_matrix_by_board(use_branded_name=True):
     """ Compiles a list of the available core modules available for each
         board.
     """
     base = build_module_map()
 
-    boards = dict()
-    for port in SUPPORTED_PORTS:
+    def support_matrix(arg):
+        port, entry = arg
+        port_dir = get_circuitpython_root_dir() / "ports" / port
+        settings = get_settings_from_makefile(str(port_dir), entry.name)
 
-        port_dir = "ports/{}/boards".format(port)
-        for entry in os.scandir(port_dir):
-            if not entry.is_dir():
-                continue
-            board_modules = []
-
-            settings = get_settings_from_makefile(f'ports/{port}', entry.name)
-
-            with open(os.path.join(entry.path, "mpconfigboard.h")) as get_name:
+        if use_branded_name:
+            with open(entry / "mpconfigboard.h") as get_name:
                 board_contents = get_name.read()
-            board_name_re = re.search("(?<=MICROPY_HW_BOARD_NAME)\s+(.+)",
+            board_name_re = re.search(r"(?<=MICROPY_HW_BOARD_NAME)\s+(.+)",
                                       board_contents)
             if board_name_re:
                 board_name = board_name_re.group(1).strip('"')
+        else:
+            board_name = entry.name
 
-            board_modules = []
-            for module in base:
-                key = f'CIRCUITPY_{module.upper()}'
-                if int(lookup_setting(settings, key, '0')):
-                    board_modules.append(base[module]['name'])
-            boards[board_name] = sorted(board_modules)
+        board_modules = []
+        for module in base:
+            key = f'CIRCUITPY_{module.upper()}'
+            if int(lookup_setting(settings, key, '0')):
+                board_modules.append(base[module]['name'])
+
+        return (board_name, sorted(board_modules))
+
+    executor = ThreadPoolExecutor(max_workers=os.cpu_count())
+    boards = dict(sorted(executor.map(support_matrix, all_ports_all_boards())))
 
     #print(json.dumps(boards, indent=2))
     return boards

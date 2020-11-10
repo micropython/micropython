@@ -27,12 +27,22 @@
 #include "supervisor/shared/tick.h"
 
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "supervisor/linker.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/stack.h"
 
-static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
+#if CIRCUITPY_BLEIO
+#include "supervisor/shared/bluetooth.h"
+#include "common-hal/_bleio/__init__.h"
+#endif
+
+#if CIRCUITPY_DISPLAYIO
+#include "shared-module/displayio/__init__.h"
+#endif
 
 #if CIRCUITPY_GAMEPAD
 #include "shared-module/gamepad/__init__.h"
@@ -40,6 +50,10 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
+#endif
+
+#if CIRCUITPY_NETWORK
+#include "shared-module/network/__init__.h"
 #endif
 
 #include "shared-bindings/microcontroller/__init__.h"
@@ -50,6 +64,44 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 #else
 #define WATCHDOG_EXCEPTION_CHECK() 0
 #endif
+
+static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
+
+static background_callback_t tick_callback;
+
+volatile uint64_t last_finished_tick = 0;
+
+void supervisor_background_tasks(void *unused) {
+    port_start_background_task();
+
+    assert_heap_ok();
+
+    #if CIRCUITPY_DISPLAYIO
+    displayio_background();
+    #endif
+
+    #if CIRCUITPY_NETWORK
+    network_module_background();
+    #endif
+    filesystem_background();
+
+    #if CIRCUITPY_BLEIO
+    supervisor_bluetooth_background();
+    bleio_background();
+    #endif
+
+    port_background_task();
+
+    assert_heap_ok();
+
+    last_finished_tick = port_get_raw_ticks(NULL);
+
+    port_finish_background_task();
+}
+
+bool supervisor_background_tasks_ok(void) {
+    return port_get_raw_ticks(NULL) - last_finished_tick < 1024;
+}
 
 void supervisor_tick(void) {
 #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
@@ -68,13 +120,12 @@ void supervisor_tick(void) {
         #endif
     }
 #endif
+    background_callback_add(&tick_callback, supervisor_background_tasks, NULL);
 }
 
 uint64_t supervisor_ticks_ms64() {
     uint64_t result;
-    common_hal_mcu_disable_interrupts();
     result = port_get_raw_ticks(NULL);
-    common_hal_mcu_enable_interrupts();
     result = result * 1000 / 1024;
     return result;
 }
@@ -83,14 +134,9 @@ uint32_t supervisor_ticks_ms32() {
     return supervisor_ticks_ms64();
 }
 
-extern void run_background_tasks(void);
 
 void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
-    // TODO: Add a global that can be set by anyone to indicate we should run background tasks. That
-    // way we can short circuit the background tasks early. We used to do it based on time but it
-    // breaks cases where we wake up for a short period and then sleep. If we skipped the last
-    // background task or more before sleeping we may end up starving a task like USB.
-    run_background_tasks();
+    background_callback_run_all();
 }
 
 void mp_hal_delay_ms(mp_uint_t delay) {
@@ -102,11 +148,7 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     while (remaining > 0) {
         RUN_BACKGROUND_TASKS;
         // Check to see if we've been CTRL-Ced by autoreload or the user.
-        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
-           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception)) ||
-           WATCHDOG_EXCEPTION_CHECK()) {
-            break;
-        }
+        mp_handle_pending();
         remaining = end_tick - port_get_raw_ticks(NULL);
         // We break a bit early so we don't risk setting the alarm before the time when we call
         // sleep.

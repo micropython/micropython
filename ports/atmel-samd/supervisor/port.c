@@ -40,11 +40,17 @@
 #include "hpl/gclk/hpl_gclk_base.h"
 #include "hpl/pm/hpl_pm_base.h"
 
-#ifdef SAMD21
+#if defined(SAMD21)
 #include "hri/hri_pm_d21.h"
-#endif
-#ifdef SAMD51
+#elif defined(SAME54)
+#include "hri/hri_rstc_e54.h"
+#elif defined(SAME51)
+#include "sam.h"
+#include "hri/hri_rstc_e51.h"
+#elif defined(SAMD51)
 #include "hri/hri_rstc_d51.h"
+#else
+#error Unknown chip family
 #endif
 
 #include "common-hal/analogio/AnalogIn.h"
@@ -56,7 +62,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rtc/RTC.h"
 
@@ -85,7 +91,27 @@
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
-#include "shared-module/_pew/PewPew.h"
+#if CIRCUITPY_PEW
+#include "common-hal/_pew/PewPew.h"
+#endif
+volatile bool hold_interrupt = false;
+#ifdef SAMD21
+static void rtc_set_continuous(bool continuous) {
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+    RTC->MODE0.READREQ.reg = (continuous ? RTC_READREQ_RCONT : 0) | 0x0010;
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+}
+
+void rtc_start_pulsein(void) {
+    rtc_set_continuous(true);
+    hold_interrupt = true;
+}
+
+void rtc_end_pulsein(void) {
+    hold_interrupt = false;
+    rtc_set_continuous(false);
+}
+#endif
 
 extern volatile bool mp_msc_enabled;
 
@@ -144,7 +170,7 @@ static void rtc_init(void) {
                      RTC_MODE0_CTRL_MODE_COUNT32 |
                      RTC_MODE0_CTRL_PRESCALER_DIV2;
 #endif
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
     hri_mclk_set_APBAMASK_RTC_bit(MCLK);
     RTC->MODE0.CTRLA.bit.SWRST = true;
     while (RTC->MODE0.SYNCBUSY.bit.SWRST != 0) {}
@@ -167,7 +193,7 @@ static void rtc_init(void) {
     NVIC_SetPriority(USB_IRQn, 1);
     #endif
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     NVIC_SetPriority(USB_0_IRQn, 1);
     NVIC_SetPriority(USB_1_IRQn, 1);
     NVIC_SetPriority(USB_2_IRQn, 1);
@@ -184,11 +210,10 @@ static void rtc_init(void) {
 safe_mode_t port_init(void) {
 #if defined(SAMD21)
 
-    // Set brownout detection to ~2.7V. Default from factory is 1.7V,
-    // which is too low for proper operation of external SPI flash chips (they are 2.7-3.6V).
+    // Set brownout detection.
     // Disable while changing level.
     SYSCTRL->BOD33.bit.ENABLE = 0;
-    SYSCTRL->BOD33.bit.LEVEL = 39;  // 2.77V with hysteresis off. Table 37.20 in datasheet.
+    SYSCTRL->BOD33.bit.LEVEL = SAMD21_BOD33_LEVEL;
     SYSCTRL->BOD33.bit.ENABLE = 1;
 
     #ifdef ENABLE_MICRO_TRACE_BUFFER
@@ -202,12 +227,11 @@ safe_mode_t port_init(void) {
     #endif
 #endif
 
-#if defined(SAMD51)
-    // Set brownout detection to ~2.7V. Default from factory is 1.7V,
-    // which is too low for proper operation of external SPI flash chips (they are 2.7-3.6V).
+#if defined(SAM_D5X_E5X)
+    // Set brownout detection.
     // Disable while changing level.
     SUPC->BOD33.bit.ENABLE = 0;
-    SUPC->BOD33.bit.LEVEL = 200;  // 2.7V: 1.5V + LEVEL * 6mV.
+    SUPC->BOD33.bit.LEVEL = SAMD5x_E5x_BOD33_LEVEL;
     SUPC->BOD33.bit.ENABLE = 1;
 
     // MPU (Memory Protection Unit) setup.
@@ -281,7 +305,7 @@ safe_mode_t port_init(void) {
         return BROWNOUT;
     }
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     if (RSTC->RCAUSE.bit.BODVDD == 1 || RSTC->RCAUSE.bit.BODCORE == 1) {
         return BROWNOUT;
     }
@@ -302,8 +326,10 @@ void reset_port(void) {
     audioout_reset();
 #endif
 #if CIRCUITPY_AUDIOBUSIO
-    i2sout_reset();
     //pdmin_reset();
+#endif
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+    i2sout_reset();
 #endif
 
 #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
@@ -313,6 +339,8 @@ void reset_port(void) {
 #if CIRCUITPY_PULSEIO
     pulsein_reset();
     pulseout_reset();
+#endif
+#if CIRCUITPY_PWMIO
     pwmout_reset();
 #endif
 
@@ -339,7 +367,7 @@ void reset_port(void) {
 
     // Output clocks for debugging.
     // not supported by SAMD51G; uncomment for SAMD51J or update for 51G
-    // #ifdef SAMD51
+    // #ifdef SAM_D5X_E5X
     // gpio_set_pin_function(PIN_PA10, GPIO_PIN_FUNCTION_M); // GCLK4, D3
     // gpio_set_pin_function(PIN_PA11, GPIO_PIN_FUNCTION_M); // GCLK5, A4
     // gpio_set_pin_function(PIN_PB14, GPIO_PIN_FUNCTION_M); // GCLK0, D5
@@ -386,7 +414,7 @@ uint32_t *port_heap_get_top(void) {
 #ifdef SAMD21
 uint32_t* safe_word = (uint32_t*) (HMCRAMC0_ADDR + HMCRAMC0_SIZE - 0x2000);
 #endif
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 uint32_t* safe_word = (uint32_t*) (HSRAM_ADDR + HSRAM_SIZE - 0x2000);
 #endif
 
@@ -403,6 +431,42 @@ uint32_t port_get_saved_word(void) {
 static volatile uint64_t overflowed_ticks = 0;
 static volatile bool _ticks_enabled = false;
 
+static uint32_t _get_count(uint32_t* overflow_count) {
+    #ifdef SAM_D5X_E5X
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
+    #endif
+    #ifdef SAMD21
+    // Request a read so we don't stall the bus later. See section 14.3.1.5 Read Request
+    RTC->MODE0.READREQ.reg = RTC_READREQ_RREQ | 0x0010;
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {}
+    #endif
+    // Disable interrupts so we can grab the count and the overflow.
+    common_hal_mcu_disable_interrupts();
+    uint32_t count = RTC->MODE0.COUNT.reg;
+    if (overflow_count != NULL) {
+        *overflow_count = overflowed_ticks;
+    }
+    common_hal_mcu_enable_interrupts();
+
+    return count;
+}
+
+static void _port_interrupt_after_ticks(uint32_t ticks) {
+    uint32_t current_ticks = _get_count(NULL);
+    if (ticks > 1 << 28) {
+        // We'll interrupt sooner with an overflow.
+        return;
+    }
+#ifdef SAMD21
+    if (hold_interrupt) {
+        return;
+    }
+#endif
+    RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
+    RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
+    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
+}
+
 void RTC_Handler(void) {
     uint32_t intflag = RTC->MODE0.INTFLAG.reg;
     if (intflag & RTC_MODE0_INTFLAG_OVF) {
@@ -410,7 +474,7 @@ void RTC_Handler(void) {
         // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
         // tick.
         overflowed_ticks += (1L<< (32 - 4));
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     } else if (intflag & RTC_MODE0_INTFLAG_PER2) {
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_PER2;
         // Do things common to all ports when the tick occurs
@@ -425,51 +489,42 @@ void RTC_Handler(void) {
             supervisor_tick();
             // Check _ticks_enabled again because a tick handler may have turned it off.
             if (_ticks_enabled) {
-                port_interrupt_after_ticks(1);
+                _port_interrupt_after_ticks(1);
             }
         }
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
         #endif
     }
 }
 
-static uint32_t _get_count(void) {
-    #ifdef SAMD51
-    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
-    #endif
-    #ifdef SAMD21
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {}
-    #endif
-
-    return RTC->MODE0.COUNT.reg;
-}
-
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    uint32_t current_ticks = _get_count();
+    uint32_t overflow_count;
+    uint32_t current_ticks = _get_count(&overflow_count);
     if (subticks != NULL) {
         *subticks = (current_ticks % 16) * 2;
     }
 
-    return overflowed_ticks + current_ticks / 16;
+    return overflow_count + current_ticks / 16;
 }
 
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // PER2 will generate an interrupt every 32 ticks of the source 32.768 clock.
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_PER2;
     #endif
     #ifdef SAMD21
+    // TODO: Switch to using the PER *event* from the RTC to generate an interrupt via EVSYS.
     _ticks_enabled = true;
-    port_interrupt_after_ticks(1);
+    _port_interrupt_after_ticks(1);
     #endif
 }
 
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_PER2;
     #endif
     #ifdef SAMD21
@@ -478,19 +533,18 @@ void port_disable_tick(void) {
     #endif
 }
 
+// This is called by sleep, we ignore it when our ticks are enabled because
+// they'll wake us up earlier. If we don't, we'll mess up ticks by overwriting
+// the next RTC wake up time.
 void port_interrupt_after_ticks(uint32_t ticks) {
-    uint32_t current_ticks = _get_count();
-    if (ticks > 1 << 28) {
-        // We'll interrupt sooner with an overflow.
+    if (_ticks_enabled) {
         return;
     }
-    RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
-    RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
-    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
+    _port_interrupt_after_ticks(ticks);
 }
 
 void port_sleep_until_interrupt(void) {
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (__get_FPSCR()  & ~(0x9f)) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));
@@ -498,7 +552,7 @@ void port_sleep_until_interrupt(void) {
     }
     #endif
     common_hal_mcu_disable_interrupts();
-    if (!tud_task_event_ready()) {
+    if (!tud_task_event_ready() && !hold_interrupt) {
         __DSB();
         __WFI();
     }

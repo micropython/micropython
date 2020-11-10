@@ -31,6 +31,7 @@
 #include "py/obj.h"
 #include "shared-module/audiocore/RawSample.h"
 #include "shared-module/audiocore/WaveFile.h"
+#include "supervisor/background_callback.h"
 
 typedef struct {
     mp_obj_t sample;
@@ -49,6 +50,7 @@ typedef struct {
     uint8_t* second_buffer;
     bool first_descriptor_free;
     DmacDescriptor* second_descriptor;
+    background_callback_t callback;
 } audio_dma_t;
 
 typedef enum {

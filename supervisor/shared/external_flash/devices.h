@@ -618,4 +618,23 @@ typedef struct {
     .write_status_register_split = false, \
     .single_status_byte = true, \
 }
+
+// Settings for the Micron N25Q256A 256Mb (32MiB) QSPI flash.
+// Datasheet: https://www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/n25q/n25q_256mb_3v.pdf
+#define N25Q256A {\
+    /* .total_size = (1 << 25), 32 MiB does not work at this time, as assumptions about 3-byte addresses abound */ \
+    .total_size = (1 << 24), /* 16 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x20, \
+    .memory_type = 0xBA, \
+    .capacity = 0x19, \
+    .max_clock_speed_mhz = 108, \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+}
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_DEVICES_H

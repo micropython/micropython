@@ -39,7 +39,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/busio/SPI.h"
 
@@ -53,7 +53,9 @@
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
+#if CIRCUITPY_PEW
 #include "shared-module/_pew/PewPew.h"
+#endif
 #include "supervisor/shared/tick.h"
 
 #include "clocks.h"
@@ -70,7 +72,8 @@
 #define NO_EXECUTION 1
 #define EXECUTION 0
 
-// Shareable if the memory system manages coherency.
+// Shareable if the memory system manages coherency. This means shared between memory bus masters,
+// not just CPUs.
 #define NOT_SHAREABLE 0
 #define SHAREABLE 1
 
@@ -205,9 +208,11 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     MPU->RBAR = ARM_MPU_RBAR(13, 0x20000000U);
     MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_32KB);
 
-    // This is OCRAM.
+    // This is OCRAM. We mark it as shareable so that it isn't cached. This makes USB work at the
+    // cost of 1/4 speed OCRAM accesses. It will leave more room for caching data from the flash
+    // too which might be a net win.
     MPU->RBAR = ARM_MPU_RBAR(14, 0x20200000U);
-    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512KB);
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512KB);
 
     // We steal 64k from FlexRAM for ITCM and DTCM so disable those memory regions here.
     MPU->RBAR = ARM_MPU_RBAR(15, 0x20280000U);
@@ -287,6 +292,8 @@ void reset_port(void) {
 
 #if CIRCUITPY_PULSEIO
     pulseout_reset();
+#endif
+#if CIRCUITPY_PWMIO
     pwmout_reset();
 #endif
 
@@ -318,17 +325,20 @@ void reset_cpu(void) {
     reset();
 }
 
-supervisor_allocation* port_fixed_stack(void) {
-    return NULL;
-}
-
 extern uint32_t _ld_heap_start, _ld_heap_end, _ld_stack_top, _ld_stack_bottom;
 uint32_t *port_stack_get_limit(void) {
-    return &_ld_heap_start;
+    return &_ld_stack_bottom;
 }
 
 uint32_t *port_stack_get_top(void) {
     return &_ld_stack_top;
+}
+
+supervisor_allocation _fixed_stack;
+supervisor_allocation* port_fixed_stack(void) {
+    _fixed_stack.ptr = port_stack_get_limit();
+    _fixed_stack.length = (port_stack_get_top() - port_stack_get_limit()) * sizeof(uint32_t);
+    return &_fixed_stack;
 }
 
 uint32_t *port_heap_get_bottom(void) {

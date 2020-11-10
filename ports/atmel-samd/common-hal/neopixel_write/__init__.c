@@ -31,7 +31,13 @@
 
 #include "supervisor/port.h"
 
-#ifdef SAMD51
+#if defined(SAME54)
+#include "hri/hri_cmcc_e54.h"
+#include "hri/hri_nvmctrl_e54.h"
+#elif defined(SAME51)
+#include "hri/hri_cmcc_e51.h"
+#include "hri/hri_nvmctrl_e51.h"
+#elif defined(SAMD51)
 #include "hri/hri_cmcc_d51.h"
 #include "hri/hri_nvmctrl_d51.h"
 #endif
@@ -53,7 +59,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
                  #ifdef SAMD21
                  "        movs r6, #3; d2: sub r6, #1; bne d2;" // delay 3
                  #endif
-                 #ifdef SAMD51
+                 #ifdef SAM_D5X_E5X
                  "        movs r6, #3; d2: subs r6, #1; bne d2;" // delay 3
                  #endif
                  "        tst r4, r5;"                          // mask&r5
@@ -63,14 +69,14 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
                  #ifdef SAMD21
                  "        movs r6, #6; d0: sub r6, #1; bne d0;" // delay 6
                  #endif
-                 #ifdef SAMD51
+                 #ifdef SAM_D5X_E5X
                  "        movs r6, #6; d0: subs r6, #1; bne d0;" // delay 6
                  #endif
                  "        str r1, [r0, #0];"   // clr (possibly again, doesn't matter)
                  #ifdef SAMD21
                  "        asr     r4, r4, #1;" // mask >>= 1
                  #endif
-                 #ifdef SAMD51
+                 #ifdef SAM_D5X_E5X
                  "        asrs     r4, r4, #1;" // mask >>= 1
                  #endif
                  "        beq     nextbyte;"
@@ -78,7 +84,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
                  #ifdef SAMD21
                  "        movs r6, #2; d1: sub r6, #1; bne d1;" // delay 2
                  #endif
-                 #ifdef SAMD51
+                 #ifdef SAM_D5X_E5X
                  "        movs r6, #2; d1: subs r6, #1; bne d1;" // delay 2
                  #endif
                  "        b       loopBit;"
@@ -108,7 +114,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     mp_hal_disable_all_interrupts();
 
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // When this routine is positioned at certain addresses, the timing logic
     // below can be too fast by about 2.5x. This is some kind of (un)fortunate code
     // positioning with respect to a cache line.
@@ -135,7 +141,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     volatile uint32_t *clr = &(port->OUTCLR.reg);
     neopixel_send_buffer_core(clr, pinMask, pixels, numBytes);
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // Turn instruction, data, and NVM caches back on.
     hri_cmcc_clear_CFG_reg(CMCC, CMCC_CFG_DCDIS | CMCC_CFG_ICDIS);
     hri_nvmctrl_clear_CTRLA_CACHEDIS0_bit(NVMCTRL);

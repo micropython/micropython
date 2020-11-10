@@ -32,7 +32,7 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseOut.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
@@ -41,19 +41,20 @@
 //|        pulsed signal consists of timed on and off periods. Unlike PWM, there is no set duration
 //|        for on and off pairs."""
 //|
-//|     def __init__(self, carrier: pulseio.PWMOut):
+//|     def __init__(self, carrier: pwmio.PWMOut) -> None:
 //|         """Create a PulseOut object associated with the given PWMout object.
 //|
-//|         :param ~pulseio.PWMOut carrier: PWMOut that is set to output on the desired pin.
+//|         :param ~pwmio.PWMOut carrier: PWMOut that is set to output on the desired pin.
 //|
 //|         Send a short series of pulses::
 //|
 //|           import array
 //|           import pulseio
+//|           import pwmio
 //|           import board
 //|
 //|           # 50% duty cycle at 38kHz.
-//|           pwm = pulseio.PWMOut(board.D13, frequency=38000, duty_cycle=32768)
+//|           pwm = pwmio.PWMOut(board.D13, frequency=38000, duty_cycle=32768)
 //|           pulse = pulseio.PulseOut(pwm)
 //|           #                             on   off     on    off    on
 //|           pulses = array.array('H', [65000, 1000, 65000, 65000, 1000])
@@ -64,24 +65,32 @@
 //|           pulse.send(pulses)"""
 //|         ...
 //|
-STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
-    mp_obj_t carrier_obj = args[0];
-
-    if (!MP_OBJ_IS_TYPE(carrier_obj, &pulseio_pwmout_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), pulseio_pwmout_type.name);
-    }
-
-    // create Pulse object from the given pin
+STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     pulseio_pulseout_obj_t *self = m_new_obj(pulseio_pulseout_obj_t);
     self->base.type = &pulseio_pulseout_type;
 
-    common_hal_pulseio_pulseout_construct(self, (pulseio_pwmout_obj_t *)MP_OBJ_TO_PTR(carrier_obj));
-
+    mp_obj_t carrier_obj = pos_args[0];
+    if (MP_OBJ_IS_TYPE(carrier_obj, &pwmio_pwmout_type)) {
+        // Use a PWMOut Carrier
+        mp_arg_check_num(n_args, kw_args, 1, 1, false);
+        common_hal_pulseio_pulseout_construct(self, (pwmio_pwmout_obj_t *)MP_OBJ_TO_PTR(carrier_obj), NULL, 0, 0);
+    } else {
+        // Use a Pin, frequency, and duty cycle
+        enum { ARG_pin, ARG_frequency};
+        static const mp_arg_t allowed_args[] = {
+            { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
+            { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 38000} },
+            { MP_QSTR_duty_cycle, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1<<15} },
+        };
+        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+        mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+        const mcu_pin_obj_t* pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
+        common_hal_pulseio_pulseout_construct(self, NULL, pin, args[ARG_frequency].u_int, args[ARG_frequency].u_int);
+    }
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the PulseOut and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -92,13 +101,13 @@ STATIC mp_obj_t pulseio_pulseout_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulseout_deinit_obj, pulseio_pulseout_deinit);
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> PulseOut:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -110,7 +119,7 @@ STATIC mp_obj_t pulseio_pulseout_obj___exit__(size_t n_args, const mp_obj_t *arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulseout___exit___obj, 4, 4, pulseio_pulseout_obj___exit__);
 
-//|     def send(self, pulses: array.array) -> Any:
+//|     def send(self, pulses: ReadableBuffer) -> None:
 //|         """Pulse alternating on and off durations in microseconds starting with on.
 //|         ``pulses`` must be an `array.array` with data type 'H' for unsigned
 //|         halfword (two bytes).

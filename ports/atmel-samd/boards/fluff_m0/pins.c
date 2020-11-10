@@ -13,7 +13,9 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PA31) },
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PA00) },
+    { MP_ROM_QSTR(MP_QSTR_SDO), MP_ROM_PTR(&pin_PA00) },
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PA30) },
+    { MP_ROM_QSTR(MP_QSTR_SDI), MP_ROM_PTR(&pin_PA30) },
 
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_PA11) },
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PA11) },
@@ -31,6 +33,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_PA19) },
     { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA17) },
     { MP_ROM_QSTR(MP_QSTR_D14), MP_ROM_PTR(&pin_PA27) },
+    { MP_ROM_QSTR(MP_QSTR_EN), MP_ROM_PTR(&pin_PA27) },
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_PA28) },
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },

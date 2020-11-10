@@ -39,14 +39,14 @@
 //| class BuiltinFont:
 //|     """A font built into CircuitPython"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Creation not supported. Available fonts are defined when CircuitPython is built. See the
 //|         `Adafruit_CircuitPython_Bitmap_Font <https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font>`_
 //|         library for dynamically loaded fonts."""
 //|         ...
 //|
 
-//|     bitmap: Any = ...
+//|     bitmap: displayio.Bitmap
 //|     """Bitmap containing all font glyphs starting with ASCII and followed by unicode. Use
 //|     `get_glyph` in most cases. This is useful for use with `displayio.TileGrid` and
 //|     `terminalio.Terminal`."""
@@ -64,7 +64,7 @@ const mp_obj_property_t fontio_builtinfont_bitmap_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def get_bounding_box(self, ) -> Any:
+//|     def get_bounding_box(self) -> Tuple[int, int]:
 //|         """Returns the maximum bounds of all glyphs in the font in a tuple of two values: width, height."""
 //|         ...
 //|
@@ -76,7 +76,7 @@ STATIC mp_obj_t fontio_builtinfont_obj_get_bounding_box(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(fontio_builtinfont_get_bounding_box_obj, fontio_builtinfont_obj_get_bounding_box);
 
 
-//|     def get_glyph(self, codepoint: Any) -> Any:
+//|     def get_glyph(self, codepoint: int) -> Glyph:
 //|         """Returns a `fontio.Glyph` for the given codepoint or None if no glyph is available."""
 //|         ...
 //|

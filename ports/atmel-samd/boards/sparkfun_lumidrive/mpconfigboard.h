@@ -35,9 +35,6 @@
 #define IGNORE_PIN_PA12     1
 #define IGNORE_PIN_PA15     1
 #define IGNORE_PIN_PA16     1
-#define IGNORE_PIN_PA21     1
-#define IGNORE_PIN_PA22     1
-#define IGNORE_PIN_PA23     1
 #define IGNORE_PIN_PA27     1
 #define IGNORE_PIN_PA28     1
 

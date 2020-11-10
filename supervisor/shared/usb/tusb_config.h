@@ -47,8 +47,6 @@
 //--------------------------------------------------------------------+
 // COMMON CONFIGURATION
 //--------------------------------------------------------------------+
-#define CFG_TUSB_RHPORT0_MODE       OPT_MODE_DEVICE
-
 #ifndef CFG_TUSB_DEBUG
 #define CFG_TUSB_DEBUG              0
 #endif
@@ -58,22 +56,12 @@
 #define CFG_TUSB_OS                 OPT_OS_NONE
 #endif
 //#define CFG_TUD_TASK_QUEUE_SZ     16
-//#define CFG_TUD_TASK_PRIO         0
-//#define CFG_TUD_TASK_STACK_SZ     150
 
 //--------------------------------------------------------------------+
 // DEVICE CONFIGURATION
 //--------------------------------------------------------------------+
 
 #define CFG_TUD_ENDOINT0_SIZE       64
-
-/*------------- Descriptors -------------*/
-/* Enable auto generated descriptor, tinyusb will try its best to create
- * descriptor ( device, configuration, hid ) that matches enabled CFG_* in this file
- *
- * Note: All CFG_TUD_DESC_* are relevant only if CFG_TUD_DESC_AUTO is enabled
- */
-#define CFG_TUD_DESC_AUTO           0
 
 //------------- CLASS -------------//
 #define CFG_TUD_CDC                 1
@@ -85,23 +73,6 @@
 /*------------------------------------------------------------------*/
 /* CLASS DRIVER
  *------------------------------------------------------------------*/
-
-/* TX is sent automatically on every Start of Frame event ~ 1ms.
- * If not enabled, application must call tud_cdc_flush() periodically
- * Note: Enabled this could overflow device task, if it does, define
- * CFG_TUD_TASK_QUEUE_SZ with large value
- */
-#define CFG_TUD_CDC_FLUSH_ON_SOF    0
-
-
-/*------------- MSC -------------*/
-// Number of supported Logical Unit Number (At least 1)
-#define CFG_TUD_MSC_MAXLUN          1
-
-// Number of Blocks
-#define CFG_TUD_MSC_BLOCK_NUM       (256*1024)/512
-
-
 
 // Product revision string included in Inquiry response, max 4 bytes
 #define CFG_TUD_MSC_PRODUCT_REV     "1.0"

@@ -35,29 +35,19 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
-static bool running_background_tasks = false;
+#if CIRCUITPY_PULSEIO
+#include "common-hal/pulseio/PulseIn.h"
+#endif
 
-void background_tasks_reset(void) {
-    running_background_tasks = false;
+
+void port_background_task(void) {
+    // Zero delay in case FreeRTOS wants to switch to something else.
+    vTaskDelay(0);
+    #if CIRCUITPY_PULSEIO
+    pulsein_background();
+    #endif
 }
 
-void run_background_tasks(void) {
-    // Don't call ourselves recursively.
-    if (running_background_tasks) {
-        return;
-    }
+void port_start_background_task(void) {}
 
-    // Delay for 1 tick so that we don't starve the idle task.
-    // TODO: 1 tick is 10ms which is a long time! Can we delegate to idle for a minimal amount of
-    // time?
-    vTaskDelay(1);
-    running_background_tasks = true;
-    filesystem_background();
-
-    // #if CIRCUITPY_DISPLAYIO
-    // displayio_background();
-    // #endif
-    running_background_tasks = false;
-
-    assert_heap_ok();
-}
+void port_finish_background_task(void) {}

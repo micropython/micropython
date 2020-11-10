@@ -29,7 +29,6 @@
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/displayio/Group.h"
-#include "shared-bindings/pulseio/PWMOut.h"
 
 #include "shared-module/displayio/area.h"
 #include "shared-module/displayio/display_core.h"
@@ -56,6 +55,7 @@ typedef struct {
     bool black_bits_inverted;
     bool color_bits_inverted;
     bool refreshing;
+    bool grayscale;
     display_chip_select_behavior_t chip_select;
 } displayio_epaperdisplay_obj_t;
 

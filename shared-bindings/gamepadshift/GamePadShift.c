@@ -36,7 +36,7 @@
 //| class GamePadShift:
 //|     """Scan buttons for presses through a shift register"""
 //|
-//|     def __init__(self, clock: Any, data: Any, latch: Any):
+//|     def __init__(self, clock: digitalio.DigitalInOut, data: digitalio.DigitalInOut, latch: digitalio.DigitalInOut) -> None:
 //|         """Initializes button scanning routines.
 //|
 //|         The ``clock``, ``data`` and ``latch`` parameters are ``DigitalInOut``
@@ -82,7 +82,7 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(gamepad_singleton);
 }
 
-//|     def get_pressed(self, ) -> Any:
+//|     def get_pressed(self) -> int:
 //|         """Get the status of buttons pressed since the last call and clear it.
 //|
 //|         Returns an 8-bit number, with bits that correspond to buttons,
@@ -100,7 +100,7 @@ STATIC mp_obj_t gamepadshift_get_pressed(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gamepadshift_get_pressed_obj, gamepadshift_get_pressed);
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Disable button scanning."""
 //|         ...
 //|

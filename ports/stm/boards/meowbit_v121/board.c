@@ -106,12 +106,13 @@ void board_init(void) {
         &pin_PB03,
         NO_BRIGHTNESS_COMMAND,
         1.0f, // brightness (ignored)
-        true, // auto_brightness
+        false, // auto_brightness
         false, // single_byte_bounds
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
-        true); // backlight_on_high
+        true, // backlight_on_high
+        false); // SH1107_addressing
 }
 
 bool board_requests_safe_mode(void) {

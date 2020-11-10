@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -274,7 +274,7 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     mp_check_self(MP_OBJ_IS_TYPE(args[0], &mp_type_list));
     mp_obj_list_t *self = mp_instance_cast_to_native_base(args[0], &mp_type_list);
     if (self->len == 0) {
-        mp_raise_IndexError(translate("pop from empty list"));
+        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_list);
     }
     size_t index = mp_get_index(self->base.type, self->len, n_args == 1 ? MP_OBJ_NEW_SMALL_INT(-1) : args[1], false);
     mp_obj_t ret = self->items[index];

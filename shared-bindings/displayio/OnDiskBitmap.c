@@ -69,7 +69,7 @@
 //|           while True:
 //|               pass"""
 //|
-//|     def __init__(self, file: file):
+//|     def __init__(self, file: typing.BinaryIO) -> None:
 //|         """Create an OnDiskBitmap object with the given file.
 //|
 //|         :param file file: The open bitmap file"""
@@ -89,7 +89,7 @@ STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     width: Any = ...
+//|     width: int
 //|     """Width of the bitmap. (read only)"""
 //|
 STATIC mp_obj_t displayio_ondiskbitmap_obj_get_width(mp_obj_t self_in) {
@@ -108,7 +108,7 @@ const mp_obj_property_t displayio_ondiskbitmap_width_obj = {
 
 };
 
-//|     height: Any = ...
+//|     height: int
 //|     """Height of the bitmap. (read only)"""
 //|
 STATIC mp_obj_t displayio_ondiskbitmap_obj_get_height(mp_obj_t self_in) {

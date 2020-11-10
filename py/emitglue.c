@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -152,7 +152,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
 
     // check for generator functions and if so wrap in generator object
     if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
-        fun = mp_obj_new_gen_wrap(fun);
+        fun = mp_obj_new_gen_wrap(fun, (rc->scope_flags & MP_SCOPE_FLAG_ASYNC) != 0);
     }
 
     return fun;

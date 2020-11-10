@@ -29,7 +29,7 @@
 
 #include "common-hal/nvm/ByteArray.h"
 
-const mp_obj_type_t nvm_bytearray_type;
+extern const mp_obj_type_t nvm_bytearray_type;
 
 uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self);
 

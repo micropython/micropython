@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -303,7 +303,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
                   (mp_obj_t)&mp_const_none_obj, \
                   (mp_obj_t)&mp_const_none_obj}, }
 
-// These macros are used to define constant map/dict objects
+// These macros are used to define constant or mutable map/dict objects
 // You can put "static" in front of the definition to make it local
 
 #define MP_DEFINE_CONST_MAP(map_name, table_name) \
@@ -326,6 +326,29 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
             .used = MP_ARRAY_SIZE(table_name), \
             .alloc = MP_ARRAY_SIZE(table_name), \
             .table = (mp_map_elem_t*)(mp_rom_map_elem_t*)table_name, \
+        }, \
+    }
+
+#define MP_DEFINE_MUTABLE_MAP(map_name, table_name) \
+    mp_map_t map_name = { \
+        .all_keys_are_qstrs = 1, \
+        .is_fixed = 1, \
+        .is_ordered = 1, \
+        .used = MP_ARRAY_SIZE(table_name), \
+        .alloc = MP_ARRAY_SIZE(table_name), \
+        .table = table_name, \
+    }
+
+#define MP_DEFINE_MUTABLE_DICT(dict_name, table_name) \
+    mp_obj_dict_t dict_name = {                 \
+        .base = {&mp_type_dict}, \
+        .map = { \
+            .all_keys_are_qstrs = 1, \
+            .is_fixed = 1, \
+            .is_ordered = 1, \
+            .used = MP_ARRAY_SIZE(table_name), \
+            .alloc = MP_ARRAY_SIZE(table_name), \
+            .table = table_name, \
         }, \
     }
 
@@ -604,6 +627,8 @@ extern const mp_obj_type_t mp_type_NameError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_OSError;
 extern const mp_obj_type_t mp_type_TimeoutError;
+extern const mp_obj_type_t mp_type_ConnectionError;
+extern const mp_obj_type_t mp_type_BrokenPipeError;
 extern const mp_obj_type_t mp_type_OverflowError;
 extern const mp_obj_type_t mp_type_RuntimeError;
 extern const mp_obj_type_t mp_type_StopAsyncIteration;
@@ -665,7 +690,7 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_viper(size_t n_args, void *fun_data, mp_uint_t type_sig);
 mp_obj_t mp_obj_new_fun_asm(size_t n_args, void *fun_data, mp_uint_t type_sig);
-mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
+mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun, bool is_coroutine);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items);
 mp_obj_t mp_obj_new_list(size_t n, mp_obj_t *items);
@@ -680,6 +705,7 @@ mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items);
 
 mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
 const char *mp_obj_get_type_str(mp_const_obj_t o_in);
+#define mp_obj_get_type_qstr(o_in) (mp_obj_get_type((o_in))->name)
 bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo); // arguments should be type objects
 mp_obj_t mp_instance_cast_to_native_base(mp_obj_t self_in, mp_const_obj_t native_type);
 
