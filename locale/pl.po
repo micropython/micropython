@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-04 21:18+0530\n"
 "PO-Revision-Date: 2020-11-10 20:52+0000\n"
-"Last-Translator: Szymon Jakubiak <sz.a.jakubiak@gmail.com>\n"
+"Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
@@ -1206,7 +1206,7 @@ msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
-msgstr "Layer musi dziedziczyć z Group albo TileGrid"
+msgstr "Layer musi dziedziczyć z Group albo TileGrid."
 
 #: py/objslice.c
 msgid "Length must be an int"
