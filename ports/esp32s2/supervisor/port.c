@@ -148,7 +148,18 @@ uint32_t *port_stack_get_limit(void) {
 }
 
 uint32_t *port_stack_get_top(void) {
-    return port_stack_get_limit() + CONFIG_ESP_MAIN_TASK_STACK_SIZE / (sizeof(uint32_t) / sizeof(StackType_t));
+    // The sizeof-arithmetic is so that the pointer arithmetic is done on units
+    // of uint32_t instead of units of StackType_t.  StackType_t is an alias
+    // for a byte sized type.
+    //
+    // The main stack is bigger than CONFIG_ESP_MAIN_TASK_STACK_SIZE -- an
+    // "extra" size is added to it (TASK_EXTRA_STACK_SIZE).  This total size is
+    // available as ESP_TASK_MAIN_STACK.  Presumably TASK_EXTRA_STACK_SIZE is
+    // additional stack that can be used by the esp-idf runtime.  But what's
+    // important for us is that some very outermost stack frames, such as
+    // pyexec_friendly_repl, could lie inside the "extra" area and be invisible
+    // to the garbage collector.
+    return port_stack_get_limit() + ESP_TASK_MAIN_STACK / (sizeof(uint32_t) / sizeof(StackType_t));
 }
 
 supervisor_allocation _fixed_stack;
