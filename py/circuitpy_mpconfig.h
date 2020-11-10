@@ -815,6 +815,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     _EVE_MODULE \
     MEMORYMONITOR_MODULE \
     MICROCONTROLLER_MODULE \
+    MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
       SOCKET_MODULE \
@@ -846,7 +847,6 @@ extern const struct _mp_obj_module_t msgpack_module;
     USTACK_MODULE \
     WATCHDOG_MODULE \
     WIFI_MODULE \
-    MSGPACK_MODULE \
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.

@@ -465,6 +465,7 @@ SRC_SHARED_MODULE_ALL = \
 	memorymonitor/AllocationAlarm.c \
 	memorymonitor/AllocationSize.c \
 	network/__init__.c \
+	msgpack/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \
