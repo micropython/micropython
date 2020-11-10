@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2016 Glenn Ruben Bakke
+ *
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +25,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#include "nrfx/hal/nrf_gpio.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+#define MICROPY_HW_BOARD_NAME       "AtelierDuMaker nRF52840 Breakout"
+#define MICROPY_HW_MCU_NAME         "nRF52840"
 
-#include "py/mpconfig.h"
-
-#ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "lib/oofatfs/ff.h"
-
-extern FIL* boot_output_file;
-#endif
-
-void serial_early_init(void);
-void serial_init(void);
-void serial_write(const char* text);
-// Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char* text, uint32_t length);
-char serial_read(void);
-bool serial_bytes_available(void);
-bool serial_connected(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#define MICROPY_HW_LED_STATUS       (&pin_P0_19)

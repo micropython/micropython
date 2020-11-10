@@ -24,27 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#include "boards/board.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+void board_init(void) {
+}
 
-#include "py/mpconfig.h"
+bool board_requests_safe_mode(void) {
+  return false;
+}
 
-#ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "lib/oofatfs/ff.h"
+void reset_board(void) {
 
-extern FIL* boot_output_file;
-#endif
-
-void serial_early_init(void);
-void serial_init(void);
-void serial_write(const char* text);
-// Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char* text, uint32_t length);
-char serial_read(void);
-bool serial_bytes_available(void);
-bool serial_connected(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+}

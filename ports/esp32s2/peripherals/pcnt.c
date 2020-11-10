@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#include "peripherals/pcnt.h"
 
-#include <stdbool.h>
-#include <stdint.h>
+#define PCNT_UNIT_ACTIVE    1
+#define PCNT_UNIT_INACTIVE  0
 
-#include "py/mpconfig.h"
+static uint8_t pcnt_state[4];
 
-#ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "lib/oofatfs/ff.h"
+int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
+    // Look for available pcnt unit
+    for (uint8_t i = 0; i<=3; i++) {
+        if (pcnt_state[i] == PCNT_UNIT_INACTIVE) {
+            pcnt_config.unit = (pcnt_unit_t)i;
+            pcnt_state[i] = PCNT_UNIT_ACTIVE;
+            break;
+        } else if (i == 3) {
+            return -1;
+        }
+    }
 
-extern FIL* boot_output_file;
-#endif
+    // Initialize PCNT unit
+    pcnt_unit_config(&pcnt_config);
 
-void serial_early_init(void);
-void serial_init(void);
-void serial_write(const char* text);
-// Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char* text, uint32_t length);
-char serial_read(void);
-bool serial_bytes_available(void);
-bool serial_connected(void);
+    // Configure and enable the input filter
+    pcnt_set_filter_value(pcnt_config.unit, 100);
+    pcnt_filter_enable(pcnt_config.unit);
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+    // Initialize PCNT's counter
+    pcnt_counter_pause(pcnt_config.unit);
+    pcnt_counter_clear(pcnt_config.unit);
+
+    // Everything is set up, now go to counting
+    pcnt_counter_resume(pcnt_config.unit);
+
+    return pcnt_config.unit;
+}
+
+void peripherals_pcnt_deinit(pcnt_unit_t* unit) {
+    pcnt_state[*unit] = PCNT_UNIT_INACTIVE;
+    *unit = PCNT_UNIT_MAX;
+}

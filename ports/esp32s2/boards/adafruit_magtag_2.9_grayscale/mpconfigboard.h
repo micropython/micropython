@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+//Micropython setup
 
-#include <stdbool.h>
-#include <stdint.h>
+#define MICROPY_HW_BOARD_NAME       "MagTag"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#include "py/mpconfig.h"
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO1)
 
-#ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "lib/oofatfs/ff.h"
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 
-extern FIL* boot_output_file;
-#endif
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
-void serial_early_init(void);
-void serial_init(void);
-void serial_write(const char* text);
-// Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char* text, uint32_t length);
-char serial_read(void);
-bool serial_bytes_available(void);
-bool serial_connected(void);
+#define AUTORESET_DELAY_MS 500
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO34)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO33)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
