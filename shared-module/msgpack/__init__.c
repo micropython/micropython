@@ -369,4 +369,3 @@ mp_obj_t common_hal_msgpack_unpack(mp_obj_t stream_obj) {
     msgpack_stream_t stream = get_stream(stream_obj, MP_STREAM_OP_WRITE);
     return unpack(&stream);
 }
-
