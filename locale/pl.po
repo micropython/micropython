@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-04 21:18+0530\n"
-"PO-Revision-Date: 2020-11-10 21:10+0000\n"
+"PO-Revision-Date: 2020-11-11 19:13+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -1817,7 +1817,7 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
-msgstr ""
+msgstr "Błąd zapisu UART"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
@@ -2014,7 +2014,7 @@ msgstr "__init__() powinien zwracać None"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
-msgstr ""
+msgstr "__init__() powinno zwrócić None, a nie '%q'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -3057,11 +3057,11 @@ msgstr "nie dość argumentów przy formatowaniu"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "number of arguments must be 2, or 3"
-msgstr ""
+msgstr "liczba argumentów musi wynosić 2 lub 3"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
-msgstr ""
+msgstr "liczba punktów musi wynosić co najmniej 2"
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
@@ -3374,7 +3374,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
+msgstr "źródłowa paleta jest zbyt duża"
 
 #: py/objstr.c
 msgid "start/end indices"
