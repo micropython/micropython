@@ -55,8 +55,7 @@
 
 uint32_t* heap;
 uint32_t heap_size;
-extern TaskHandle_t xTaskToNotify;
-
+extern TaskHandle_t sleeping_circuitpython_task;
 STATIC esp_timer_handle_t _tick_timer;
 
 extern void esp_restart(void) NORETURN;
@@ -191,23 +190,23 @@ void port_disable_tick(void) {
 }
 
 TickType_t sleep_time_duration;
-uint32_t NotifyValue = 0;
-BaseType_t notify_wait = 0;
 
 void port_interrupt_after_ticks(uint32_t ticks) {
     sleep_time_duration = (ticks * 100)/1024;
-    xTaskToNotify = xTaskGetCurrentTaskHandle();
+    sleeping_circuitpython_task = xTaskGetCurrentTaskHandle();
 }
 
 void port_sleep_until_interrupt(void) {
 
+    uint32_t NotifyValue = 0;
+
     if (sleep_time_duration == 0) {
         return;
     }
-    notify_wait = xTaskNotifyWait(0x01,0x01,&NotifyValue,
+    xTaskNotifyWait(0x01,0x01,&NotifyValue,
                              sleep_time_duration );
     if (NotifyValue == 1) {
-      xTaskToNotify = NULL;
+      sleeping_circuitpython_task = NULL;
       mp_handle_pending();
     }
 }

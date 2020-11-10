@@ -52,7 +52,7 @@
 StackType_t  usb_device_stack[USBD_STACK_SIZE];
 StaticTask_t usb_device_taskdef;
 
-TaskHandle_t xTaskToNotify = NULL;
+TaskHandle_t sleeping_circuitpython_task = NULL;
 
 // USB Device Driver task
 // This top level thread process all usb events and invoke callbacks
@@ -129,8 +129,10 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char)
     if (mp_interrupt_char == wanted_char) {
         tud_cdc_read_flush();    // flush read fifo
         mp_keyboard_interrupt();
-        if (xTaskToNotify != NULL) {
-          xTaskNotifyGive(xTaskToNotify);
+        // CircuitPython's VM is run in a separate FreeRTOS task from TinyUSB.
+        // So, we must notify the other task when a CTRL-C is received.
+        if (sleeping_circuitpython_task != NULL) {
+          xTaskNotifyGive(sleeping_circuitpython_task);
         }
     }
 }
