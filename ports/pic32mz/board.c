@@ -12,7 +12,7 @@ void mpu_init(void) {
     // i use rs485 convert, RS_pin need to be set.
     gpio_state_set(RS_PIN, true);
 
-    uart_init(PIC32_UART_4, NO_PARITY_8_BIT_DATA, ONE_STOP_BIT, 115200);
+    uart_init(UART_ATTACHED_TO_REPL, NO_PARITY_8_BIT_DATA, ONE_STOP_BIT, REPL_BAUD_RATE);
 
 }
 
