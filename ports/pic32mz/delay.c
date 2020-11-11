@@ -1,9 +1,7 @@
 #include "delay.h"
 #include "sysclk.h"
 
-/**
- * @brief Read current cp0 timer, used to create delays
- */
+// @brief Read current cp0 timer, used to create delays
 static uint32_t readcoretimer(void)
 {
   volatile uint32_t timer;
@@ -13,17 +11,12 @@ static uint32_t readcoretimer(void)
   return timer;
 }
 
-/**
- * @brief Set current cp0 timer count
- */
+// @brief Set current cp0 timer count
 static void setcoretime(volatile uint32_t count)
 {
   asm volatile("mtc0    %0, $9" : :"r"(count));
 }
 
-/*
- * @brief generate a delay
- */
 void delay_us(uint32_t us)
 {
   us *= SYS_FREQ / 1000000 / 2; //Core timer updates every 2 ticks

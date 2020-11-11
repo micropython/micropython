@@ -1,18 +1,3 @@
-/*
- * @Author AbdouSam
- * @brief, simple code to test micropython on a PIC32MZ 
- *
- * @configuration : The board tested on has the following pinout
- * - external 24Mhz Quartz
- * - UART on ...
- * - RED led on ...
- * - Green led on ...
- *
- * @speed: the MCU is set with the pragmas to run at a speed of 200Mhz
- * with or without external Quartz (without external quartz the accuracy
- * of timing is awful)
- */
-
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -30,7 +15,7 @@
 //#define CONFIG_CPU_USE_FRC
 
 
-/*** DEVCFG0 ***/
+// DEVCFG0 
 #pragma config DEBUG =      OFF
 #pragma config JTAGEN =     OFF
 #pragma config ICESEL =     ICS_PGx1
@@ -47,7 +32,7 @@
 #pragma config EJTAGBEN =   NORMAL
 #pragma config CP =         OFF // code protect
 
-/*** DEVCFG1 ***/
+// DEVCFG1 
 
 #pragma config FNOSC =      SPLL
 #pragma config DMTINTV =    WIN_127_128
@@ -70,7 +55,7 @@
 #pragma config DMTCNT =     DMT31
 #pragma config FDMTEN =     OFF // Deadman timer
 
-/*** DEVCFG2 ***/
+// DEVCFG2 
 
 #ifdef CONFIG_CPU_USE_FRC
 #pragma config FPLLIDIV =   DIV_1
@@ -90,7 +75,7 @@
 #pragma config FPLLODIV =   DIV_2
 #pragma config UPLLFSEL =   FREQ_24MHZ
 
-/*** DEVCFG3 ***/
+// DEVCFG3 
 
 #pragma config USERID =     0xffff
 #pragma config FMIIEN =     OFF
@@ -100,7 +85,7 @@
 #pragma config IOL1WAY =    ON
 #pragma config FUSBIDIO =   OFF
 
-/*** BF1SEQ0 ***/
+// BF1SEQ0 
 
 #pragma config TSEQ =       0x0000
 #pragma config CSEQ =       0xffff
