@@ -73,6 +73,7 @@ add_custom_command(
     DEPENDS ${MICROPY_MODULEDEFS}
         ${MICROPY_SOURCE_QSTR}
     VERBATIM
+    COMMAND_EXPAND_LISTS
 )
 
 add_custom_command(
@@ -81,6 +82,7 @@ add_custom_command(
     COMMAND touch ${MICROPY_QSTR_DEFS_SPLIT}
     DEPENDS ${MICROPY_QSTR_DEFS_LAST}
     VERBATIM
+    COMMAND_EXPAND_LISTS
 )
 
 add_custom_command(
@@ -88,6 +90,7 @@ add_custom_command(
     COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat qstr _ ${MICROPY_GENHDR_DIR}/qstr ${MICROPY_QSTR_DEFS_COLLECTED}
     DEPENDS ${MICROPY_QSTR_DEFS_SPLIT}
     VERBATIM
+    COMMAND_EXPAND_LISTS
 )
 
 add_custom_command(
@@ -95,6 +98,7 @@ add_custom_command(
     COMMAND cat ${MICROPY_PY_QSTRDEFS} ${MICROPY_QSTR_DEFS_COLLECTED} | sed "s/^Q(.*)/\"&\"/" | ${CMAKE_C_COMPILER} -E ${MICROPY_CPP_FLAGS} - | sed "s/^\\\"\\(Q(.*)\\)\\\"/\\1/" > ${MICROPY_QSTR_DEFS_PREPROCESSED}
     DEPENDS ${MICROPY_QSTR_DEFS_COLLECTED}
     VERBATIM
+    COMMAND_EXPAND_LISTS
 )
 
 add_custom_command(
@@ -102,6 +106,7 @@ add_custom_command(
     COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdata.py ${MICROPY_QSTR_DEFS_PREPROCESSED} > ${MICROPY_QSTR_DEFS_GENERATED}
     DEPENDS ${MICROPY_QSTR_DEFS_PREPROCESSED}
     VERBATIM
+    COMMAND_EXPAND_LISTS
 )
 
 # Build frozen code if enabled
