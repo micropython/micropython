@@ -55,7 +55,7 @@ uint8_t displayio_colorconverter_compute_luma(uint32_t color_rgb888) {
     uint32_t r8 = (color_rgb888 >> 16);
     uint32_t g8 = (color_rgb888 >> 8) & 0xff;
     uint32_t b8 = color_rgb888 & 0xff;
-    return (r8 * 19) / 255 + (g8 * 182) / 255 + (b8 + 54) / 255;
+    return (r8 * 19 + g8 * 182 + b8 * 54) / 255;
 }
 
 uint8_t displayio_colorconverter_compute_chroma(uint32_t color_rgb888) {

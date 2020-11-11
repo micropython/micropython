@@ -43,7 +43,8 @@
 #include <string.h>
 
 void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t* self,
-        mp_obj_t bus, uint8_t* start_sequence, uint16_t start_sequence_len, uint8_t* stop_sequence, uint16_t stop_sequence_len,
+        mp_obj_t bus, const uint8_t* start_sequence, uint16_t start_sequence_len,
+        const uint8_t* stop_sequence, uint16_t stop_sequence_len,
         uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height,
         int16_t colstart, int16_t rowstart, uint16_t rotation,
         uint16_t set_column_window_command, uint16_t set_row_window_command,
@@ -133,14 +134,15 @@ STATIC void wait_for_busy(displayio_epaperdisplay_obj_t* self) {
     }
 }
 
-STATIC void send_command_sequence(displayio_epaperdisplay_obj_t* self, bool should_wait_for_busy, uint8_t* sequence, uint32_t sequence_len) {
+STATIC void send_command_sequence(displayio_epaperdisplay_obj_t* self,
+        bool should_wait_for_busy, const uint8_t* sequence, uint32_t sequence_len) {
     uint32_t i = 0;
     while (i < sequence_len) {
-        uint8_t *cmd = sequence + i;
+        const uint8_t *cmd = sequence + i;
         uint8_t data_size = *(cmd + 1);
         bool delay = (data_size & DELAY) != 0;
         data_size &= ~DELAY;
-        uint8_t *data = cmd + 2;
+        const uint8_t *data = cmd + 2;
         displayio_display_core_begin_transaction(&self->core);
         self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, cmd, 1);
         self->core.send(self->core.bus, DISPLAY_DATA, self->chip_select, data, data_size);
@@ -375,8 +377,8 @@ void release_epaperdisplay(displayio_epaperdisplay_obj_t* self) {
 
 void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t* self) {
     displayio_display_core_collect_ptrs(&self->core);
-    gc_collect_ptr(self->start_sequence);
-    gc_collect_ptr(self->stop_sequence);
+    gc_collect_ptr((void *) self->start_sequence);
+    gc_collect_ptr((void *) self->stop_sequence);
 }
 
 bool maybe_refresh_epaperdisplay(void) {
