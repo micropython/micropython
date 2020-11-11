@@ -65,11 +65,12 @@
 //|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
 //|         The ``start_sequence`` and ``stop_sequence`` are bitpacked to minimize the ram impact. Every
-//|         command begins with a command byte followed by a byte to determine the parameter count and if
-//|         a delay is need after. When the top bit of the second byte is 1, the next byte will be the
-//|         delay time in milliseconds. The remaining 7 bits are the parameter count excluding any delay
-//|         byte. The third through final bytes are the remaining command parameters. The next byte will
-//|         begin a new command definition.
+//|         command begins with a command byte followed by a byte to determine the parameter count and
+//|         delay. When the top bit of the second byte is 1 (0x80), a delay will occur after the command
+//|         parameters are sent. The remaining 7 bits are the parameter count excluding any delay
+//|         byte. The bytes following are the parameters. When the delay bit is set, a single byte after
+//|         the parameters specifies the delay duration in milliseconds. The value 0xff will lead to an
+//|         extra long 500 ms delay instead of 255 ms. The next byte will begin a new command definition.
 //|
 //|         :param display_bus: The bus that the display is connected to
 //|         :type _DisplayBus: displayio.FourWire or displayio.ParallelBus
