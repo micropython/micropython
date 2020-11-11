@@ -29,7 +29,8 @@ endif
 
 LDFLAGS = -mprocessor=$(MCU)
 LDFLAGS+= -no-legacy-libc 
-LDFLAGS+= -Wl,--script="$(LD_FILE)",--gc-sections,--no-code-in-dinit,--no-dinit-in-serial-mem,-Map=$@.map
+LDFLAGS+= -Wl,--script="$(LD_FILE)"
+LDFLAGS+= -Wl,--gc-sections,--no-code-in-dinit,--no-dinit-in-serial-mem,-Map=$@.map
 LDFLAGS+= -Wl,--defsym=_min_heap_size=$(MIN_HEAP_SIZE),--defsym=_min_stack_size=$(MIN_STACK_SIZE)
 LIBS = -lc -lm
 
