@@ -28,6 +28,10 @@
 
 #include "py/mpconfig.h"
 
+#ifndef MICROPY_BOARD_EARLY_INIT
+#define MICROPY_BOARD_EARLY_INIT()
+#endif
+
 #ifndef MICROPY_BOARD_BEFORE_SOFT_RESET_LOOP
 #define MICROPY_BOARD_BEFORE_SOFT_RESET_LOOP boardctrl_before_soft_reset_loop
 #endif

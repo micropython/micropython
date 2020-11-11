@@ -385,10 +385,7 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_RCC_D2SRAM3_CLK_ENABLE();
     #endif
 
-
-    #if defined(MICROPY_BOARD_EARLY_INIT)
     MICROPY_BOARD_EARLY_INIT();
-    #endif
 
     // basic sub-system init
     #if defined(STM32WB)
