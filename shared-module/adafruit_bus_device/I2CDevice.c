@@ -29,6 +29,7 @@
 #include "py/mperrno.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "lib/utils/interrupt_char.h"
 
 void common_hal_adafruit_bus_device_i2cdevice_construct(adafruit_bus_device_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address) {
     self->i2c = i2c;
@@ -36,11 +37,15 @@ void common_hal_adafruit_bus_device_i2cdevice_construct(adafruit_bus_device_i2cd
 }
 
 void common_hal_adafruit_bus_device_i2cdevice_lock(adafruit_bus_device_i2cdevice_obj_t *self) {
-    bool success = false;
+    bool success = common_hal_busio_i2c_try_lock(self->i2c);
+
     while (!success) {
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            break;
+        }
+
         success = common_hal_busio_i2c_try_lock(self->i2c);
-        //RUN_BACKGROUND_TASKS;
-        //mp_handle_pending();
     }
 }
 
