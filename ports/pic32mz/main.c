@@ -12,10 +12,9 @@
 #include "mphalport.h"
 
 // uncomment This define is to set the  µC to run on internal clock
-//#define CONFIG_CPU_USE_FRC
+// #define CONFIG_CPU_USE_FRC
 
-
-// DEVCFG0 
+// DEVCFG0
 #pragma config DEBUG =      OFF
 #pragma config JTAGEN =     OFF
 #pragma config ICESEL =     ICS_PGx1
@@ -32,7 +31,7 @@
 #pragma config EJTAGBEN =   NORMAL
 #pragma config CP =         OFF // code protect
 
-// DEVCFG1 
+// DEVCFG1
 
 #pragma config FNOSC =      SPLL
 #pragma config DMTINTV =    WIN_127_128
@@ -55,7 +54,7 @@
 #pragma config DMTCNT =     DMT31
 #pragma config FDMTEN =     OFF // Deadman timer
 
-// DEVCFG2 
+// DEVCFG2
 
 #ifdef CONFIG_CPU_USE_FRC
 #pragma config FPLLIDIV =   DIV_1
@@ -75,7 +74,7 @@
 #pragma config FPLLODIV =   DIV_2
 #pragma config UPLLFSEL =   FREQ_24MHZ
 
-// DEVCFG3 
+// DEVCFG3
 
 #pragma config USERID =     0xffff
 #pragma config FMIIEN =     OFF
@@ -85,50 +84,49 @@
 #pragma config IOL1WAY =    ON
 #pragma config FUSBIDIO =   OFF
 
-// BF1SEQ0 
+// BF1SEQ0
 
 #pragma config TSEQ =       0x0000
 #pragma config CSEQ =       0xffff
 
-int main(void)
-{
-  mpu_init();
+int main(void) {
+    mpu_init();
 
-  led_init();
+    led_init();
 
 soft_reset:
 
-  led_state(RED_LED, 1);
-  led_state(ORANGE_LED, 1);
-  mp_hal_delay_ms(150);
-  led_state(RED_LED, 0);
+    led_state(RED_LED, 1);
+    led_state(ORANGE_LED, 1);
+    mp_hal_delay_ms(150);
+    led_state(RED_LED, 0);
 
-  // init MicroPython runtime
-  int stack_dummy;
-  MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
-  gc_init(PIC32_HEAP_START, PIC32_HEAP_END);
-  mp_init();
-  mp_hal_init();
-  readline_init0();
+    // init MicroPython runtime
+    int stack_dummy;
+    MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
+    gc_init(PIC32_HEAP_START, PIC32_HEAP_END);
+    mp_init();
+    mp_hal_init();
+    readline_init0();
 
-  // REPL loop
-  for (;;) {
-    led_toggle(RED_LED);
-    led_toggle(ORANGE_LED);
-    if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
-        if (pyexec_raw_repl() != 0) {
-            break;
-        }
-    } else {
-        if (pyexec_friendly_repl() != 0) {
-            break;
+    // REPL loop
+    for (;;) {
+        led_toggle(RED_LED);
+        led_toggle(ORANGE_LED);
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+            if (pyexec_raw_repl() != 0) {
+                break;
+            }
+        } else {
+            if (pyexec_friendly_repl() != 0) {
+                break;
+            }
         }
     }
-  }
-  
-  printf("MPY: soft reboot\n");
-  mp_deinit();
-  goto soft_reset;
+
+    printf("MPY: soft reboot\n");
+    mp_deinit();
+    goto soft_reset;
 
 
 }

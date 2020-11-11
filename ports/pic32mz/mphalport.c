@@ -42,9 +42,8 @@ void mp_hal_init(void) {
 }
 
 // use timer 1 as system tick at 1 ms.
-void mp_hal_init_ticks(void)
-{
-  init_timer1(SYS_TICK_FREQ, TMR_PRESCALE_1, 0);
+void mp_hal_init_ticks(void) {
+    init_timer1(SYS_TICK_FREQ, TMR_PRESCALE_1, 0);
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
@@ -52,7 +51,7 @@ mp_uint_t mp_hal_ticks_ms(void) {
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-   delay_ms(ms);
+    delay_ms(ms);
 }
 
 void mp_hal_set_interrupt_char(int c) {
