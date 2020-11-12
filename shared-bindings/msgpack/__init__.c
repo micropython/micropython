@@ -34,12 +34,12 @@
 //|
 //| Example:
 //|    import msgpack
-//|    from io import StringIO
+//|    from io import BytesIO
 //|
-//|    s = StringIO()
-//|    msgpack.pack({'list': [True, False, None, 1, 'abc'], 'str': 'blah'}, s)
-//|    s.seek(0)
-//|    print(msgpack.unpack(s))"""
+//|    b = BytesIO()
+//|    msgpack.pack({'list': [True, False, None, 1, 'abc'], 'str': 'blah'}, b)
+//|    b.seek(0)
+//|    print(msgpack.unpack(b))"""
 //|
 
 //| def pack(obj: Any, buffer: WriteableBuffer) -> None:

@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <inttypes.h>
 
 #include "py/binary.h"
 #include "py/objarray.h"
@@ -66,13 +67,37 @@ STATIC void read(msgpack_stream_t *s, void *buf, mp_uint_t size) {
     }
 }
 
+/*
 STATIC uint32_t read_bytes(msgpack_stream_t *s, mp_uint_t n_bytes) {
     uint32_t res = 0;
     read(s, &res, n_bytes);
     return res;
 }
+*/
+STATIC uint8_t read1(msgpack_stream_t *s) {
+    uint8_t res = 0;
+    read(s, &res, 1);
+    return res;
+}
 
-size_t read_size(msgpack_stream_t *s, uint8_t len_index) {
+STATIC uint16_t read2(msgpack_stream_t *s) {
+    uint16_t res = 0;
+    read(s, &res, 2);
+    int n = 1;
+    if (*(char *)&n == 1) res = __builtin_bswap16(res);
+    return res;
+}
+
+STATIC uint32_t read4(msgpack_stream_t *s) {
+    uint32_t res = 0;
+    read(s, &res, 4);
+    int n = 1;
+    if (*(char *)&n == 1) res = __builtin_bswap32(res);
+    return res;
+}
+
+/*
+STATIC size_t read_size(msgpack_stream_t *s, uint8_t len_index) {
     size_t n_bytes = 4;
     switch (len_index) {
         case 0:  n_bytes = 1;  break;
@@ -81,6 +106,17 @@ size_t read_size(msgpack_stream_t *s, uint8_t len_index) {
     }
     size_t res = 0;
     read(s, &res, n_bytes);
+    return res;
+}
+*/
+
+STATIC size_t read_size(msgpack_stream_t *s, uint8_t len_index) {
+    size_t res;
+    switch (len_index) {
+        case 0:  res = (size_t)read1(s);  break;
+        case 1:  res = (size_t)read2(s);  break;
+        case 2:  res = (size_t)read4(s);  break;
+    }
     return res;
 }
 
@@ -97,20 +133,33 @@ STATIC void write(msgpack_stream_t *s, const void *buf, mp_uint_t size) {
     }
 }
 
-STATIC void write_bytes(msgpack_stream_t *s, mp_uint_t n_bytes, uint32_t obj) {
-    write(s, &obj, n_bytes);
+STATIC void write1(msgpack_stream_t *s, uint8_t obj) {
+    write(s, &obj, 1);
 }
 
-void write_size(msgpack_stream_t *s, uint8_t code, size_t size) {
+STATIC void write2(msgpack_stream_t *s, uint16_t obj) {
+    int n = 1;
+    if (*(char *)&n == 1) obj = __builtin_bswap16(obj);
+    write(s, &obj, 2);
+}
+
+STATIC void write4(msgpack_stream_t *s, uint32_t obj) {
+    int n = 1;
+    if (*(char *)&n == 1) obj = __builtin_bswap32(obj);
+    write(s, &obj, 4);
+}
+
+// compute and write msgpack size code (array structures)
+STATIC void write_size(msgpack_stream_t *s, uint8_t code, size_t size) {
     if ((uint8_t)size == size) {
-        write_bytes(s, 1, code);
-        write_bytes(s, 1, size);
+        write1(s, code);
+        write1(s, size);
     } else if ((uint16_t)size == size) {
-        write_bytes(s, 1, code+1);
-        write_bytes(s, 2, size);
+        write1(s, code+1);
+        write2(s, size);
     } else {
-        write_bytes(s, 1, code+2);
-        write_bytes(s, 4, size);
+        write1(s, code+2);
+        write4(s, size);
     }
 }
 
@@ -136,61 +185,61 @@ STATIC mp_map_elem_t *dict_iter_next(mp_obj_dict_t *dict, size_t *cur) {
 
 STATIC void pack_int(msgpack_stream_t *s, int32_t x) {
     if (x > -32 && x < 128) {
-        write_bytes(s, 1, x);
+        write1(s, x);
     } else if ((int8_t)x == x) {
-        write_bytes(s, 1, 0xd0);
-        write_bytes(s, 1, x);
+        write1(s, 0xd0);
+        write1(s, x);
     } else if ((int16_t)x == x) {
-        write_bytes(s, 1, 0xd1);
-        write_bytes(s, 2, x);
+        write1(s, 0xd1);
+        write2(s, x);
     } else {
-        write_bytes(s, 1, 0xd2);
-        write_bytes(s, 4, x);
+        write1(s, 0xd2);
+        write4(s, x);
     }
 }
 
 void pack_bin(msgpack_stream_t *s, const uint8_t* data, size_t len) {
     write_size(s, 0xc4, len);
     for (size_t i=0;  i<len;  i++) {
-        write_bytes(s, 1, data[i]);
+        write1(s, data[i]);
     }
 }
 
 void pack_str(msgpack_stream_t *s, const char* str, size_t len) {
     // size_t len = strlen(str);
     if (len < 32) {
-        write_bytes(s, 1, 0b10100000 | (uint8_t)len);
+        write1(s, 0b10100000 | (uint8_t)len);
     } else {
         write_size(s, 0xd9, len);
     }
     for (size_t l=0;  l<len;  l++) {
-        write_bytes(s, 1, str[l]);
+        write1(s, str[l]);
     }
 }
 
 void pack_array(msgpack_stream_t *s, size_t len) {
     // only writes the header, manually write the objects after calling pack_array!
     if (len < 16) {
-        write_bytes(s, 1, 0b10010000 | (uint8_t)len);
+        write1(s, 0b10010000 | (uint8_t)len);
     } else if (len < 0x10000) {
-        write_bytes(s, 1, 0xdc);
-        write_bytes(s, 2, len);
+        write1(s, 0xdc);
+        write2(s, len);
     } else {
-        write_bytes(s, 1, 0xdd);
-        write_bytes(s, 4, len);
+        write1(s, 0xdd);
+        write4(s, len);
     }
 }
 
 void pack_dict(msgpack_stream_t *s, size_t len) {
     // only writes the header, manually write the objects after calling pack_array!
     if (len < 16) {
-        write_bytes(s, 1, 0b10000000 | (uint8_t)len);
+        write1(s, 0b10000000 | (uint8_t)len);
     } else if (len < 0x10000) {
-        write_bytes(s, 1, 0xde);
-        write_bytes(s, 2, len);
+        write1(s, 0xde);
+        write2(s, len);
     } else {
-        write_bytes(s, 1, 0xdf);
-        write_bytes(s, 4, len);
+        write1(s, 0xdf);
+        write4(s, len);
     }
 }
 
@@ -234,15 +283,17 @@ void pack(mp_obj_t obj, msgpack_stream_t *s) {
             pack(next->value, s);
         }
     } else if (mp_obj_is_float(obj)) {
-        mp_float_t f = mp_obj_float_get(obj);
-        write_bytes(s, 1, 0xca);
-        write(s, &f, 4);
+        union Float { mp_float_t f;  uint32_t u; };
+        union Float data;
+        data.f = mp_obj_float_get(obj);
+        write1(s, 0xca);
+        write4(s, data.u);
     } else if (obj == mp_const_none) {
-        write_bytes(s, 1, 0xc0);
+        write1(s, 0xc0);
     } else if (obj == mp_const_false) {
-        write_bytes(s, 1, 0xc2);
+        write1(s, 0xc2);
     } else if (obj == mp_const_true) {
-        write_bytes(s, 1, 0xc3);
+        write1(s, 0xc3);
     } else {
         mp_raise_ValueError(translate("no packer"));
     }
@@ -252,7 +303,7 @@ void pack(mp_obj_t obj, msgpack_stream_t *s) {
 // unpacker
 
 mp_obj_t unpack(msgpack_stream_t *s) {
-    uint8_t code = read_bytes(s, 1);
+    uint8_t code = read1(s);
     if (((code & 0b10000000) == 0) || ((code & 0b11100000) == 0b11100000)) {
         // int
         return MP_OBJ_NEW_SMALL_INT((int8_t)code);
@@ -298,17 +349,24 @@ mp_obj_t unpack(msgpack_stream_t *s) {
             read(s, p, size);
             return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
         }
+        case 0xcc:
+            return MP_OBJ_NEW_SMALL_INT(read1(s));
+        case 0xcd:
+            return MP_OBJ_NEW_SMALL_INT(read2(s));
+        case 0xce:
+            return MP_OBJ_NEW_SMALL_INT(read4(s));
         case 0xca: {
-            float f;
-            read(s, &f, 4);
-            return mp_obj_new_float(f);
+            union Float { mp_float_t f;  uint32_t u; };
+            union Float data;
+            data.u = read4(s);
+            return mp_obj_new_float(data.f);
         }
         case 0xd0:
-            return MP_OBJ_NEW_SMALL_INT((int8_t)read_bytes(s, 1));
+            return MP_OBJ_NEW_SMALL_INT((int8_t)read1(s));
         case 0xd1:
-            return MP_OBJ_NEW_SMALL_INT((int16_t)read_bytes(s, 2));
+            return MP_OBJ_NEW_SMALL_INT((int16_t)read2(s));
         case 0xd2:
-            return MP_OBJ_NEW_SMALL_INT((int32_t)read_bytes(s, 4));
+            return MP_OBJ_NEW_SMALL_INT((int32_t)read4(s));
         case 0xd9:
         case 0xda:
         case 0xdb: {
@@ -345,9 +403,6 @@ mp_obj_t unpack(msgpack_stream_t *s) {
         case 0xc8:      // ext 16
         case 0xc9:      // ext 32
         case 0xcb:      // float 64
-        case 0xcc:      // uint 8
-        case 0xcd:      // uint 16
-        case 0xce:      // uint 32
         case 0xcf:      // uint 64
         case 0xd3:      // int 64
         case 0xd4:      // fixenxt 1
