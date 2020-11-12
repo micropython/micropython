@@ -52,6 +52,7 @@ bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t* self
 
 // Returns time in milliseconds.
 uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaperdisplay_obj_t* self);
+bool common_hal_displayio_epaperdisplay_get_busy(displayio_epaperdisplay_obj_t* self);
 
 uint16_t common_hal_displayio_epaperdisplay_get_width(displayio_epaperdisplay_obj_t* self);
 uint16_t common_hal_displayio_epaperdisplay_get_height(displayio_epaperdisplay_obj_t* self);

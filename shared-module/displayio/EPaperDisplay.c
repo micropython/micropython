@@ -360,6 +360,11 @@ void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self) {
     }
 }
 
+bool common_hal_displayio_epaperdisplay_get_busy(displayio_epaperdisplay_obj_t* self) {
+    displayio_epaperdisplay_background(self);
+    return self->refreshing;
+}
+
 void release_epaperdisplay(displayio_epaperdisplay_obj_t* self) {
     if (self->refreshing) {
         wait_for_busy(self);
