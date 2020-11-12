@@ -85,7 +85,7 @@ STATIC mp_obj_t machine_mem_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t va
     } else {
         // store
         uintptr_t addr = MICROPY_MACHINE_MEM_GET_WRITE_ADDR(index, self->elem_size);
-        uint32_t val = mp_obj_int_get_truncated(value);
+        uint32_t val = mp_obj_get_int_truncated(value);
         switch (self->elem_size) {
             case 1:
                 (*(uint8_t *)addr) = val;
