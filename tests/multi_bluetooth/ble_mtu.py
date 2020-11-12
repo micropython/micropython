@@ -88,7 +88,7 @@ def wait_for_event(event, timeout_ms):
     while time.ticks_diff(time.ticks_ms(), t0) < timeout_ms:
         if event in waiting_events:
             result = waiting_events[event]
-            del waiting_events[event]
+            waiting_events.pop(event)
             return result
         machine.idle()
     raise ValueError("Timeout waiting for {}".format(event))
