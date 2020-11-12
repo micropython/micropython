@@ -435,6 +435,11 @@ msgstr "Di bawah frame rate minimum"
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bit clock dan word harus memiliki kesamaan pada clock unit"
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "Kedalaman bit harus kelipatan 8."
