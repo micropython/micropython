@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-24 15:40-0500\n"
+"POT-Creation-Date: 2020-12-01 18:38-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3050,6 +3050,10 @@ msgstr ""
 msgid "no module named '%q'"
 msgstr ""
 
+#: shared-module/msgpack/__init__.c
+msgid "no packer"
+msgstr ""
+
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/displayio/ParallelBus.c
 msgid "no reset pin available"
@@ -3061,6 +3065,10 @@ msgstr ""
 
 #: py/runtime.c
 msgid "no such attribute"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "no unpacker found"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Connection.c
