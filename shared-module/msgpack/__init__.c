@@ -67,13 +67,6 @@ STATIC void read(msgpack_stream_t *s, void *buf, mp_uint_t size) {
     }
 }
 
-/*
-STATIC uint32_t read_bytes(msgpack_stream_t *s, mp_uint_t n_bytes) {
-    uint32_t res = 0;
-    read(s, &res, n_bytes);
-    return res;
-}
-*/
 STATIC uint8_t read1(msgpack_stream_t *s) {
     uint8_t res = 0;
     read(s, &res, 1);
@@ -95,20 +88,6 @@ STATIC uint32_t read4(msgpack_stream_t *s) {
     if (*(char *)&n == 1) res = __builtin_bswap32(res);
     return res;
 }
-
-/*
-STATIC size_t read_size(msgpack_stream_t *s, uint8_t len_index) {
-    size_t n_bytes = 4;
-    switch (len_index) {
-        case 0:  n_bytes = 1;  break;
-        case 1:  n_bytes = 2;  break;
-        case 2:  n_bytes = 4;  break;
-    }
-    size_t res = 0;
-    read(s, &res, n_bytes);
-    return res;
-}
-*/
 
 STATIC size_t read_size(msgpack_stream_t *s, uint8_t len_index) {
     size_t res;
