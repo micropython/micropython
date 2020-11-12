@@ -114,20 +114,22 @@ void rtc_init_start(bool force_init) {
     rtc_need_init_finalise = false;
 
     if (!force_init) {
+        bool rtc_running = false;
         uint32_t bdcr = RCC->BDCR;
         if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL | RCC_BDCR_LSEON | RCC_BDCR_LSERDY))
             == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0 | RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
             // LSE is enabled & ready --> no need to (re-)init RTC
+            rtc_running = true;
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
             // Clear source Reset Flag
             __HAL_RCC_CLEAR_RESET_FLAGS();
             // provide some status information
-            rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
-            return;
+            rtc_info |= 0x40000;
         } else if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL))
                    == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_1)) {
             // LSI configured as the RTC clock source --> no need to (re-)init RTC
+            rtc_running = true;
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
             // Clear source Reset Flag
@@ -135,7 +137,39 @@ void rtc_init_start(bool force_init) {
             // Turn the LSI on (it may need this even if the RTC is running)
             RCC->CSR |= RCC_CSR_LSION;
             // provide some status information
-            rtc_info |= 0x80000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+            rtc_info |= 0x80000;
+        }
+
+        if (rtc_running) {
+            // Provide information about the registers that indicated the RTC is running.
+            rtc_info |= (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+
+            // Check that the sync and async prescaler values are correct.  If the RTC
+            // gets into a state where they are wrong then it will run slow or fast and
+            // never be corrected.  In such a situation, attempt to reconfigure the values
+            // without changing the data/time.
+            if (LL_RTC_GetSynchPrescaler(RTC) != RTC_SYNCH_PREDIV
+                || LL_RTC_GetAsynchPrescaler(RTC) != RTC_ASYNCH_PREDIV) {
+                // Values are wrong, attempt to enter RTC init mode and change them.
+                LL_RTC_DisableWriteProtection(RTC);
+                LL_RTC_EnableInitMode(RTC);
+                uint32_t ticks_ms = HAL_GetTick();
+                while (HAL_GetTick() - ticks_ms < RTC_TIMEOUT_VALUE) {
+                    if (LL_RTC_IsActiveFlag_INIT(RTC)) {
+                        // Reconfigure the RTC prescaler register PRER.
+                        LL_RTC_SetSynchPrescaler(RTC, RTC_SYNCH_PREDIV);
+                        LL_RTC_SetAsynchPrescaler(RTC, RTC_ASYNCH_PREDIV);
+                        LL_RTC_DisableInitMode(RTC);
+                        break;
+                    }
+                }
+                LL_RTC_EnableWriteProtection(RTC);
+
+                // Provide information that the prescaler was changed.
+                rtc_info |= 0x100000;
+            }
+
+            // The RTC is up and running, so return without any further configuration.
             return;
         }
     }
