@@ -36,6 +36,8 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 
+#include "lib/netutils/netutils.h"
+
 //| class Socket:
 //|     """TCP, UDP and RAW socket. Cannot be created directly. Instead, call
 //|        `SocketPool.socket()`.
@@ -298,7 +300,7 @@ STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_
     mp_int_t port = mp_obj_get_int(addr_items[1]);
 
     mp_int_t ret = common_hal_socketpool_socket_sendto(self, host, hostlen, port, bufinfo.buf, bufinfo.len);
-    if (!ok) {
+    if (!ret) {
         mp_raise_OSError(0);
     }
 
@@ -324,11 +326,11 @@ STATIC mp_obj_t socketpool_socket_recvfrom_into(mp_obj_t self_in, mp_obj_t data_
     byte ip[4];
     mp_uint_t port;
     mp_int_t ret = common_hal_socketpool_socket_recvfrom_into(self,
-        (byte*)bufinfo.buf, len, ip, &port);
+        (byte*)bufinfo.buf, bufinfo.len, ip, &port);
     mp_obj_t tuple_contents[2];
     tuple_contents[0] = mp_obj_new_int_from_uint(ret);
     tuple_contents[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
-    return mp_obj_new_tuple(2, tuple);
+    return mp_obj_new_tuple(2, tuple_contents);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_recvfrom_into_obj, socketpool_socket_recvfrom_into);
 
