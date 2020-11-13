@@ -90,11 +90,12 @@ STATIC uint32_t read4(msgpack_stream_t *s) {
 }
 
 STATIC size_t read_size(msgpack_stream_t *s, uint8_t len_index) {
-    size_t res;
+    size_t res = 0;
     switch (len_index) {
         case 0:  res = (size_t)read1(s);  break;
         case 1:  res = (size_t)read2(s);  break;
         case 2:  res = (size_t)read4(s);  break;
+        default: mp_raise_ValueError(translate("too big"));
     }
     return res;
 }
