@@ -28,3 +28,11 @@ try:
     A().f.x = 1
 except AttributeError:
     print('AttributeError')
+
+# equality tests
+i = A()         # need methods to be bound from the same instance
+m = i.f
+print(m == i.f)
+print(m != i.f)
+print(m == i.g)
+print(m != i.g)

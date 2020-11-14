@@ -95,6 +95,28 @@ STATIC void bound_meth_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 #endif
 
+STATIC mp_obj_t bound_meth_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+    // We only implement equality tests
+    if (op != MP_BINARY_OP_EQUAL) {
+        return MP_OBJ_NULL; // op not supported
+    }
+
+    // Check types. It is tricky to sub-class a bound method so we can keep this very simple)
+    const mp_obj_type_t *lhs_type = mp_obj_get_type(lhs_in);
+    const mp_obj_type_t *rhs_type = mp_obj_get_type(rhs_in);
+    if (lhs_type->make_new || lhs_type->binary_op != bound_meth_binary_op || lhs_type != rhs_type) {
+        return MP_OBJ_NULL;
+    }
+
+    mp_obj_bound_meth_t *lhs = MP_OBJ_TO_PTR(lhs_in);
+    mp_obj_bound_meth_t *rhs = MP_OBJ_TO_PTR(rhs_in);
+    if (mp_obj_equal(lhs->meth, rhs->meth)) {
+        return mp_obj_new_bool(mp_obj_equal(lhs->self, rhs->self));
+    }
+
+    return mp_const_false;
+}
+
 STATIC const mp_obj_type_t mp_type_bound_meth = {
     { &mp_type_type },
     .name = MP_QSTR_bound_method,
@@ -102,6 +124,7 @@ STATIC const mp_obj_type_t mp_type_bound_meth = {
     .print = bound_meth_print,
     #endif
     .call = bound_meth_call,
+    .binary_op = bound_meth_binary_op,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = bound_meth_attr,
     #endif
