@@ -245,6 +245,23 @@ const mp_obj_property_t displayio_epaperdisplay_time_to_refresh_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     busy: bool
+//|     """True when the display is refreshing. This uses the ``busy_pin`` when available or the
+//|        ``refresh_time`` otherwise."""
+//|
+STATIC mp_obj_t displayio_epaperdisplay_obj_get_busy(mp_obj_t self_in) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    return mp_obj_new_bool(common_hal_displayio_epaperdisplay_get_busy(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_busy_obj, displayio_epaperdisplay_obj_get_busy);
+
+const mp_obj_property_t displayio_epaperdisplay_busy_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_busy_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|     width: int
 //|     """Gets the width of the display in pixels"""
 //|
@@ -301,6 +318,7 @@ STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_epaperdisplay_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_epaperdisplay_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_bus), MP_ROM_PTR(&displayio_epaperdisplay_bus_obj) },
+    { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&displayio_epaperdisplay_busy_obj) },
     { MP_ROM_QSTR(MP_QSTR_time_to_refresh), MP_ROM_PTR(&displayio_epaperdisplay_time_to_refresh_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_epaperdisplay_locals_dict, displayio_epaperdisplay_locals_dict_table);

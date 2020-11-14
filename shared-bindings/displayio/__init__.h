@@ -42,7 +42,8 @@ typedef enum {
 typedef bool (*display_bus_bus_reset)(mp_obj_t bus);
 typedef bool (*display_bus_bus_free)(mp_obj_t bus);
 typedef bool (*display_bus_begin_transaction)(mp_obj_t bus);
-typedef void (*display_bus_send)(mp_obj_t bus, display_byte_type_t byte_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length);
+typedef void (*display_bus_send)(mp_obj_t bus, display_byte_type_t byte_type,
+    display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length);
 typedef void (*display_bus_end_transaction)(mp_obj_t bus);
 
 void common_hal_displayio_release_displays(void);
