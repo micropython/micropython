@@ -442,6 +442,11 @@ msgstr "Inférieur à la fréquence d'images minimale"
 msgid "Bit clock and word select must share a clock unit"
 msgstr "'bit clock' et 'word select' doivent partager une horloge"
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "La profondeur de bit doit être un multiple de 8."
