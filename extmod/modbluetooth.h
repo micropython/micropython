@@ -114,6 +114,7 @@
 #define MP_BLUETOOTH_IRQ_L2CAP_DISCONNECT               (24)
 #define MP_BLUETOOTH_IRQ_L2CAP_RECV                     (25)
 #define MP_BLUETOOTH_IRQ_L2CAP_SEND_READY               (26)
+#define MP_BLUETOOTH_IRQ_CONNECTION_UPDATE              (27)
 
 #define MP_BLUETOOTH_ADDRESS_MODE_PUBLIC (0)
 #define MP_BLUETOOTH_ADDRESS_MODE_RANDOM (1)
@@ -151,6 +152,7 @@ _IRQ_L2CAP_CONNECT = const(23)
 _IRQ_L2CAP_DISCONNECT = const(24)
 _IRQ_L2CAP_RECV = const(25)
 _IRQ_L2CAP_SEND_READY = const(26)
+_IRQ_GATTS_CONN_UPDATE = const(27)
 */
 
 // bluetooth.UUID type.
@@ -280,6 +282,9 @@ int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf
 
 // Notify modbluetooth that a connection/disconnection event has occurred.
 void mp_bluetooth_gap_on_connected_disconnected(uint8_t event, uint16_t conn_handle, uint8_t addr_type, const uint8_t *addr);
+
+// Call this when any connection parameters have been changed.
+void mp_bluetooth_gap_on_connection_update(uint16_t conn_handle, uint16_t conn_interval, uint16_t conn_latency, uint16_t supervision_timeout, uint16_t status);
 
 // Call this when a characteristic is written to.
 void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle);
