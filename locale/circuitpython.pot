@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-01 18:38-0800\n"
+"POT-Creation-Date: 2020-12-01 18:39-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3526,6 +3526,10 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "too big"
 msgstr ""
 
 #: shared-module/struct/__init__.c
