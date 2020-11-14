@@ -41,6 +41,7 @@
 #include "common-hal/busio/UART.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
+#include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
@@ -117,6 +118,10 @@ void reset_port(void) {
 
 #if CIRCUITPY_RTC
     rtc_reset();
+#endif
+
+#if CIRCUITPY_WATCHDOG
+    watchdog_reset();
 #endif
 
 #if CIRCUITPY_WIFI
