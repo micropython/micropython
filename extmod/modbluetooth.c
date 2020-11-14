@@ -979,6 +979,9 @@ STATIC mp_obj_t bluetooth_ble_invoke_irq(mp_obj_t none_in) {
         if (event == MP_BLUETOOTH_IRQ_CENTRAL_CONNECT || event == MP_BLUETOOTH_IRQ_PERIPHERAL_CONNECT || event == MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT || event == MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT) {
             // conn_handle, addr_type, addr
             ringbuf_extract(&o->ringbuf, data_tuple, 1, 1, &o->irq_data_addr, 0, NULL, NULL);
+        } else if (event == MP_BLUETOOTH_IRQ_CONNECTION_UPDATE) {
+            // conn_handle, conn_interval, conn_latency, supervision_timeout, status
+            ringbuf_extract(&o->ringbuf, data_tuple, 5, 0, NULL, 0, NULL, NULL);
         } else if (event == MP_BLUETOOTH_IRQ_GATTS_WRITE) {
             // conn_handle, value_handle
             ringbuf_extract(&o->ringbuf, data_tuple, 2, 0, NULL, 0, NULL, NULL);
@@ -1091,6 +1094,11 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
 
 void mp_bluetooth_gap_on_connected_disconnected(uint8_t event, uint16_t conn_handle, uint8_t addr_type, const uint8_t *addr) {
     invoke_irq_handler(event, &conn_handle, 1, &addr_type, 1, addr, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
+}
+
+void mp_bluetooth_gap_on_connection_update(uint16_t conn_handle, uint16_t conn_interval, uint16_t conn_latency, uint16_t supervision_timeout, uint16_t status) {
+    uint16_t args[] = {conn_handle, conn_interval, conn_latency, supervision_timeout, status};
+    invoke_irq_handler(MP_BLUETOOTH_IRQ_CONNECTION_UPDATE, args, 5, NULL_U8, 0, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
 }
 
 void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle) {
@@ -1272,6 +1280,19 @@ void mp_bluetooth_gap_on_connected_disconnected(uint8_t event, uint16_t conn_han
         for (int i = 0; i < 6; ++i) {
             ringbuf_put(&o->ringbuf, addr[i]);
         }
+    }
+    schedule_ringbuf(atomic_state);
+}
+
+void mp_bluetooth_gap_on_connection_update(uint16_t conn_handle, uint16_t conn_interval, uint16_t conn_latency, uint16_t supervision_timeout, uint16_t status) {
+    MICROPY_PY_BLUETOOTH_ENTER
+    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+    if (enqueue_irq(o, 2 + 2 + 2 + 2 + 2, MP_BLUETOOTH_IRQ_CONNECTION_UPDATE)) {
+        ringbuf_put16(&o->ringbuf, conn_handle);
+        ringbuf_put16(&o->ringbuf, conn_interval);
+        ringbuf_put16(&o->ringbuf, conn_latency);
+        ringbuf_put16(&o->ringbuf, supervision_timeout);
+        ringbuf_put16(&o->ringbuf, status);
     }
     schedule_ringbuf(atomic_state);
 }

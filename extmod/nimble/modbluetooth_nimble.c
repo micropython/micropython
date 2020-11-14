@@ -303,6 +303,19 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
             }
             break;
         }
+
+        case BLE_GAP_EVENT_PHY_UPDATE_COMPLETE:
+            DEBUG_printf("gap_event_cb: phy update: %d\n", event->phy_updated.tx_phy);
+            break;
+
+        case BLE_GAP_EVENT_CONN_UPDATE: {
+            DEBUG_printf("gap_event_cb: connection update: status=%d\n", event->conn_update.status);
+            struct ble_gap_conn_desc desc;
+            if (ble_gap_conn_find(event->conn_update.conn_handle, &desc) == 0) {
+                mp_bluetooth_gap_on_connection_update(event->conn_update.conn_handle, desc.conn_itvl, desc.conn_latency, desc.supervision_timeout, event->conn_update.status == 0 ? 0 : 1);
+            }
+            break;
+        }
     }
     return 0;
 }
@@ -938,13 +951,13 @@ STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
             break;
         }
 
-        case BLE_GAP_EVENT_CONN_UPDATE:
-            // TODO
+        case BLE_GAP_EVENT_CONN_UPDATE: {
+            DEBUG_printf("peripheral_gap_event_cb: connection update: status=%d\n", event->conn_update.status);
+            if (ble_gap_conn_find(event->conn_update.conn_handle, &desc) == 0) {
+                mp_bluetooth_gap_on_connection_update(event->conn_update.conn_handle, desc.conn_itvl, desc.conn_latency, desc.supervision_timeout, event->conn_update.status == 0 ? 0 : 1);
+            }
             break;
-
-        case BLE_GAP_EVENT_CONN_UPDATE_REQ:
-            // TODO
-            break;
+        }
 
         case BLE_GAP_EVENT_MTU: {
             if (event->mtu.channel_id == BLE_L2CAP_CID_ATT) {
