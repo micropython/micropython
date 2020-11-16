@@ -39,7 +39,7 @@
 
 #define MSC_FLASH_BLOCK_SIZE    512
 
-static bool ejected[1] = {true};
+static bool ejected[1] = {false};
 
 void usb_msc_mount(void) {
     // Reset the ejection tracking every time we're plugged into USB. This allows for us to battery

@@ -442,6 +442,11 @@ msgstr "Por debajo de taza mínima de refrescamiento"
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bit clock y word select deben compartir una unidad de reloj"
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "Bits depth debe ser múltiplo de 8."

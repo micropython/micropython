@@ -443,6 +443,11 @@ msgstr ""
 "O clock de bits e a seleção de palavras devem compartilhar uma unidade de "
 "clock"
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "A profundidade de bits deve ser o múltiplo de 8."

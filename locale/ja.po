@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-04 21:18+0530\n"
-"PO-Revision-Date: 2020-11-06 20:29+0000\n"
+"PO-Revision-Date: 2020-11-12 22:51+0000\n"
 "Last-Translator: sporeball <sporeballdev@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3.2\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -436,6 +436,11 @@ msgstr "最低のフレームレート未満"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "bit clockとword selectはクロックユニットを共有しなければなりません"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -2786,7 +2791,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
-msgstr ""
+msgstr "不正なホスト名"
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"

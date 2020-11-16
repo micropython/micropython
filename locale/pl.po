@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-04 21:18+0530\n"
-"PO-Revision-Date: 2020-09-29 01:39+0000\n"
+"PO-Revision-Date: 2020-11-11 19:13+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -76,7 +76,7 @@ msgstr "%q poza zakresem"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %q"
-msgstr ""
+msgstr "%q indeksy muszą być liczbami typu int, a nie %q"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -104,7 +104,7 @@ msgstr "%q poza zakresem"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
-msgstr ""
+msgstr "nieprawidłowy pin %q"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -254,7 +254,7 @@ msgstr "'return' poza funkcją"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield from' wewnątrz funkcji asynchronicznej"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -283,7 +283,7 @@ msgstr "Kanał przerwań sprzętowych w użyciu"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr ""
+msgstr "ADC2 jest używany przez WiFi"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -436,6 +436,11 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Zegar bitowy i wybór słowa muszą współdzielić jednostkę zegara"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -1033,7 +1038,7 @@ msgstr "Błąd wewnętrzny #%d"
 
 #: shared-bindings/sdioio/SDCard.c
 msgid "Invalid %q"
-msgstr ""
+msgstr "Nieprawidłowe %q"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1107,7 +1112,7 @@ msgstr "Zła wielkość fragmentu formatu"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
-msgstr ""
+msgstr "Nieprawidłowa częstotliwość"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
@@ -1206,7 +1211,7 @@ msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass."
-msgstr "Layer musi dziedziczyć z Group albo TileGrid"
+msgstr "Layer musi dziedziczyć z Group albo TileGrid."
 
 #: py/objslice.c
 msgid "Length must be an int"
@@ -1344,7 +1349,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more channels available"
-msgstr ""
+msgstr "Brak dostępnych kanałów"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more timers available"
@@ -1436,7 +1441,7 @@ msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
-msgstr ""
+msgstr "W danym momencie przezroczysty może być tylko jeden kolor"
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only raw int supported for ip"
@@ -1505,7 +1510,7 @@ msgstr "Oraz moduły w systemie plików\n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
-msgstr ""
+msgstr "Wielokąt musi mieć co najmniej 3 punkty"
 
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
 msgid ""
@@ -1817,7 +1822,7 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
-msgstr ""
+msgstr "Błąd zapisu UART"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB Busy"
@@ -2014,7 +2019,7 @@ msgstr "__init__() powinien zwracać None"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
-msgstr ""
+msgstr "__init__() powinno zwrócić None, a nie '%q'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -3057,11 +3062,11 @@ msgstr "nie dość argumentów przy formatowaniu"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "number of arguments must be 2, or 3"
-msgstr ""
+msgstr "liczba argumentów musi wynosić 2 lub 3"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
-msgstr ""
+msgstr "liczba punktów musi wynosić co najmniej 2"
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
@@ -3374,7 +3379,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
-msgstr ""
+msgstr "źródłowa paleta jest zbyt duża"
 
 #: py/objstr.c
 msgid "start/end indices"
