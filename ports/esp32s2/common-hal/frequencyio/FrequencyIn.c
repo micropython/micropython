@@ -84,12 +84,9 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
         .pulse_gpio_num = pin->number,
         .ctrl_gpio_num = PCNT_PIN_NOT_USED,
         .channel = PCNT_CHANNEL_0,
-        .lctrl_mode = PCNT_MODE_DISABLE,
-        .hctrl_mode = PCNT_MODE_KEEP,
+        // What to do on the positive / negative edge of pulse input?
         .pos_mode = PCNT_COUNT_INC,  // count both rising and falling edges
         .neg_mode = PCNT_COUNT_INC,
-        .counter_h_lim = 0,
-        .counter_l_lim = 0,
     };
 
     // Initialize PCNT unit
@@ -129,7 +126,7 @@ void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t* se
 }
 
 uint32_t common_hal_frequencyio_frequencyin_get_item(frequencyio_frequencyin_obj_t* self) {
-    return (1000 / (self->capture_period / self->frequency));
+    return self->frequency;
 }
 
 void common_hal_frequencyio_frequencyin_pause(frequencyio_frequencyin_obj_t* self) {
