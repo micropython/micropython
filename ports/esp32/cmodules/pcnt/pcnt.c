@@ -336,7 +336,7 @@ STATIC mp_obj_t pcnt_PCNT_del(mp_obj_t self_obj)
 
     pcnts[self->unit] = NULL;
 
-    m_del_obj(pcnt_PCNT_obj_t, self); // ???
+    ////m_del_obj(pcnt_PCNT_obj_t, self); // ???
 
     return MP_ROM_NONE;
 }
@@ -826,7 +826,7 @@ STATIC mp_obj_t pcnt_PCNT_set_filter_value(mp_obj_t self_obj, mp_obj_t filter_va
 
     if ((value < 0) || (value > 1023))
         //mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Correct 10-bits filter value is [0..1023]"));
-        mp_raise_msg(&esp_err_EspError_type, MP_ERROR_TEXT("Correct 10-bits filter value is [0..1023]"));
+        mp_raise_msg(&mp_type_EspError, MP_ERROR_TEXT("Correct 10-bits filter value is [0..1023]"));
 
     esp_err_t err = pcnt_set_filter_value(self->unit, value);  
     if (err != ESP_OK)

@@ -57,7 +57,7 @@ typedef struct _mp_obj_esp_err_EspError_t {
     mp_obj_base_t base;
 } mp_obj_esp_err_EspError_t;
 
-/*STATIC */const mp_obj_type_t mp_type_EspError;
+const mp_obj_type_t mp_type_EspError;
 /*
 // Defining EspError methods
 // def EspError.__init__(self, error_code: int=0, error_msg: str='')
