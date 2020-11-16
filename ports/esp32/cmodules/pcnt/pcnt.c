@@ -1123,7 +1123,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     err = pcnt_unit_config(&self->r_enc_config);
     if (err != ESP_OK)
         raise_esp_error(err);
-
+/*
     self->r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
     self->r_enc_config.pulse_gpio_num = self->bPinNumber; //make prior control into signal
     self->r_enc_config.ctrl_gpio_num = self->aPinNumber;  //and prior signal into control
@@ -1161,7 +1161,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     err = pcnt_unit_config(&self->r_enc_config);
     if (err != ESP_OK)
         raise_esp_error(err);
-/*
+*/
     if (et == FULL) {
         // set up second channel for full quad
         self->r_enc_config.pulse_gpio_num = self->bPinNumber; //make prior control into signal
@@ -1202,7 +1202,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
         if (err != ESP_OK)
             raise_esp_error(err);
     }
-*/
+
     // Filter out bounces and noise
     err = pcnt_set_filter_value(self->unit, 1023);  // Filter Runt Pulses
     if (err != ESP_OK)
