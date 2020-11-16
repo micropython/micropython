@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,12 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
+#ifndef MICROPY_INCLUDED_ESP32S2_SUPERVISOR_PORT_H
+#define MICROPY_INCLUDED_ESP32S2_SUPERVISOR_PORT_H
 
-#define MICROPY_HW_BOARD_NAME       "EInk Portal"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO1)
+extern TaskHandle_t sleeping_circuitpython_task;
 
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
-
-#define AUTORESET_DELAY_MS 500
-
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO34)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO33)
-
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+#endif // MICROPY_INCLUDED_ESP32S2_SUPERVISOR_PORT_H

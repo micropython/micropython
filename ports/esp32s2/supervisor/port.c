@@ -30,6 +30,8 @@
 #include "supervisor/port.h"
 #include "boards/board.h"
 #include "modules/module.h"
+#include "py/runtime.h"
+#include "supervisor/esp_port.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -47,6 +49,7 @@
 #include "shared-bindings/rtc/__init__.h"
 
 #include "peripherals/rmt.h"
+#include "peripherals/pcnt.h"
 #include "components/heap/include/esp_heap_caps.h"
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
 
@@ -115,6 +118,10 @@ void reset_port(void) {
     uart_reset();
 #endif
 
+#if defined(CIRCUITPY_COUNTIO) || defined(CIRCUITPY_ROTARYIO)
+    peripherals_pcnt_reset();
+#endif
+
 #if CIRCUITPY_RTC
     rtc_reset();
 #endif
@@ -148,7 +155,18 @@ uint32_t *port_stack_get_limit(void) {
 }
 
 uint32_t *port_stack_get_top(void) {
-    return port_stack_get_limit() + CONFIG_ESP_MAIN_TASK_STACK_SIZE / (sizeof(uint32_t) / sizeof(StackType_t));
+    // The sizeof-arithmetic is so that the pointer arithmetic is done on units
+    // of uint32_t instead of units of StackType_t.  StackType_t is an alias
+    // for a byte sized type.
+    //
+    // The main stack is bigger than CONFIG_ESP_MAIN_TASK_STACK_SIZE -- an
+    // "extra" size is added to it (TASK_EXTRA_STACK_SIZE).  This total size is
+    // available as ESP_TASK_MAIN_STACK.  Presumably TASK_EXTRA_STACK_SIZE is
+    // additional stack that can be used by the esp-idf runtime.  But what's
+    // important for us is that some very outermost stack frames, such as
+    // pyexec_friendly_repl, could lie inside the "extra" area and be invisible
+    // to the garbage collector.
+    return port_stack_get_limit() + ESP_TASK_MAIN_STACK / (sizeof(uint32_t) / sizeof(StackType_t));
 }
 
 supervisor_allocation _fixed_stack;
@@ -188,24 +206,27 @@ void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
 }
 
-TickType_t sleep_time_set;
 TickType_t sleep_time_duration;
+
 void port_interrupt_after_ticks(uint32_t ticks) {
-    sleep_time_set = xTaskGetTickCount();
-    sleep_time_duration = ticks / portTICK_PERIOD_MS;
-    // esp_sleep_enable_timer_wakeup(uint64_t time_in_us)
+    sleep_time_duration = (ticks * 100)/1024;
+    sleeping_circuitpython_task = xTaskGetCurrentTaskHandle();
 }
 
 void port_sleep_until_interrupt(void) {
-    // FreeRTOS delay here maybe.
-    // Light sleep shuts down BLE and wifi.
-    // esp_light_sleep_start()
+
+    uint32_t NotifyValue = 0;
+
     if (sleep_time_duration == 0) {
         return;
     }
-    vTaskDelayUntil(&sleep_time_set, sleep_time_duration);
+    xTaskNotifyWait(0x01,0x01,&NotifyValue,
+                             sleep_time_duration );
+    if (NotifyValue == 1) {
+      sleeping_circuitpython_task = NULL;
+      mp_handle_pending();
+    }
 }
-
 
 // Wrap main in app_main that the IDF expects.
 extern void main(void);

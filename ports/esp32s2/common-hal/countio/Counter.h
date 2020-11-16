@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
-#include "mpconfigboard.h"
-#include "shared-bindings/microcontroller/Pin.h"
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNTER_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNTER_H
 
-void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
+#include "py/obj.h"
+#include "peripherals/pcnt.h"
 
-    // Debug UART
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
-}
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t pin;
+    mp_int_t count;
+    pcnt_unit_t unit;
+} countio_counter_obj_t;
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-
-}
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_COUNTIO_COUNT_H

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,17 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
-#define MICROPY_HW_BOARD_NAME       "microS2"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H
 
-#define MICROPY_HW_LED (&pin_GPIO21)
-#define MICROPY_HW_BUTTON (&pin_GPIO0)
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
+#include "py/obj.h"
+#include "peripherals/pcnt.h"
 
-// Default bus pins
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO1)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO2)
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t pin_a, pin_b;
+    mp_int_t position;
+    pcnt_unit_t unit;
+} rotaryio_incrementalencoder_obj_t;
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
-
-#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
-#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
-
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-
-// Explanation of how a user got into safe mode.
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
-
-#define AUTORESET_DELAY_MS 500
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H

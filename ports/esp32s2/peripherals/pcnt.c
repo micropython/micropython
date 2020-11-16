@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,45 @@
  * THE SOFTWARE.
  */
 
-//Micropython setup
-#define MICROPY_HW_BOARD_NAME       "microS2"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#include "peripherals/pcnt.h"
 
-#define MICROPY_HW_LED (&pin_GPIO21)
-#define MICROPY_HW_BUTTON (&pin_GPIO0)
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
+#define PCNT_UNIT_ACTIVE    1
+#define PCNT_UNIT_INACTIVE  0
 
-// Default bus pins
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO1)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO2)
+static uint8_t pcnt_unit_state[4];
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+void peripherals_pcnt_reset(void) {
+    for (uint8_t i = 0; i<=3; i++) {
+        pcnt_unit_state[i] = PCNT_UNIT_INACTIVE;
+    }
+}
 
-#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
-#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
+int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
+    // Look for available pcnt unit
+    for (uint8_t i = 0; i<=3; i++) {
+        if (pcnt_unit_state[i] == PCNT_UNIT_INACTIVE) {
+            pcnt_config.unit = (pcnt_unit_t)i;
+            pcnt_unit_state[i] = PCNT_UNIT_ACTIVE;
+            break;
+        } else if (i == 3) {
+            return -1;
+        }
+    }
 
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+    // Initialize PCNT unit
+    pcnt_unit_config(&pcnt_config);
 
-// Explanation of how a user got into safe mode.
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+    // Initialize PCNT's counter
+    pcnt_counter_pause(pcnt_config.unit);
+    pcnt_counter_clear(pcnt_config.unit);
 
-#define AUTORESET_DELAY_MS 500
+    // Everything is set up, now go to counting
+    pcnt_counter_resume(pcnt_config.unit);
+
+    return pcnt_config.unit;
+}
+
+void peripherals_pcnt_deinit(pcnt_unit_t* unit) {
+    pcnt_unit_state[*unit] = PCNT_UNIT_INACTIVE;
+    *unit = PCNT_UNIT_MAX;
+}
