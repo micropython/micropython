@@ -39,7 +39,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
-#include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
 //| """Pin references and cpu functionality
@@ -136,6 +135,13 @@ STATIC mp_obj_t mcu_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 
+STATIC mp_obj_t mcu_sleep(void) {
+    common_hal_mcu_deep_sleep();
+    // We won't actually get here because mcu is going into sleep.
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_sleep_obj, mcu_sleep);
+
 //| nvm: Optional[ByteArray]
 //| """Available non-volatile memory.
 //| This object is the sole instance of `nvm.ByteArray` when available or ``None`` otherwise.
@@ -171,6 +177,8 @@ STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_on_next_reset), MP_ROM_PTR(&mcu_on_next_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&mcu_reset_obj) },
+    //ToDo: Remove MP_QSTR_sleep when sleep on code.py exit implemented.
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mcu_sleep_obj) },
     #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
     { MP_ROM_QSTR(MP_QSTR_nvm),  MP_ROM_PTR(&common_hal_mcu_nvm_obj) },
     #else

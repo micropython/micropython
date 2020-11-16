@@ -105,27 +105,34 @@ void usb_irq_handler(void) {
 // Invoked when device is mounted
 void tud_mount_cb(void) {
     usb_msc_mount();
+    _workflow_active = true;
 }
 
 // Invoked when device is unmounted
 void tud_umount_cb(void) {
     usb_msc_umount();
+    _workflow_active = false;
 }
 
 // Invoked when usb bus is suspended
 // remote_wakeup_en : if host allows us to perform remote wakeup
 // USB Specs: Within 7ms, device must draw an average current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en) {
+    _serial_connected = false;
+    _workflow_active = false;
 }
 
 // Invoked when usb bus is resumed
 void tud_resume_cb(void) {
+    _workflow_active = true;
 }
 
 // Invoked when cdc when line state changed e.g connected/disconnected
 // Use to reset to DFU when disconnect with 1200 bps
 void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
     (void) itf; // interface ID, not used
+
+    _serial_connected = dtr;
 
     // DTR = false is counted as disconnected
     if ( !dtr )

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,3 +25,12 @@
  */
 
 #pragma once
+
+typedef enum {
+    RESET_REASON_POWER_APPLIED,
+    RESET_REASON_SOFTWARE,
+    RESET_REASON_DEEP_SLEEP_ALARM,
+    RESET_REASON_BUTTON,
+} sleep_reset_reason_t;
+
+extern const mp_obj_type_t sleep_reset_reason_type;

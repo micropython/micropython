@@ -81,6 +81,10 @@ void common_hal_mcu_reset(void) {
     boardctl(BOARDIOC_RESET, 0);
 }
 
+void common_hal_mcu_deep_sleep(void) {
+    //deep sleep call here
+}
+
 STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_UART2_RXD), MP_ROM_PTR(&pin_UART2_RXD) },
     { MP_ROM_QSTR(MP_QSTR_UART2_TXD), MP_ROM_PTR(&pin_UART2_TXD) },

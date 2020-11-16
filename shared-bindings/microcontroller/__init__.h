@@ -28,8 +28,8 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H
 
-#include "py/mpconfig.h"
 #include "py/obj.h"
+#include "py/mpconfig.h"
 
 #include "common-hal/microcontroller/Processor.h"
 
@@ -42,6 +42,8 @@ extern void common_hal_mcu_enable_interrupts(void);
 
 extern void common_hal_mcu_on_next_reset(mcu_runmode_t runmode);
 extern void common_hal_mcu_reset(void);
+
+extern void common_hal_mcu_deep_sleep(void);
 
 extern const mp_obj_dict_t mcu_pin_globals;
 

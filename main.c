@@ -57,6 +57,9 @@
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/serial.h"
+#include "supervisor/usb.h"
+
+#include "shared-bindings/microcontroller/__init__.h"
 
 #include "boards/board.h"
 
@@ -83,6 +86,10 @@
 
 #if CIRCUITPY_CANIO
 #include "common-hal/canio/CAN.h"
+#endif
+
+#if CIRCUITPY_SLEEP
+#include "shared-bindings/sleep/__init__.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -312,6 +319,14 @@ bool run_code_py(safe_mode_t safe_mode) {
     bool refreshed_epaper_display = false;
     #endif
     rgb_status_animation_t animation;
+    bool ok = result->return_code != PYEXEC_EXCEPTION;
+    #if CIRCUITPY_SLEEP
+    // If USB isn't enumerated then deep sleep.
+    if (ok && !supervisor_workflow_active() && supervisor_ticks_ms64() > CIRCUITPY_USB_ENUMERATION_DELAY * 1024) {
+        common_hal_sleep_deep_sleep();
+    }
+    #endif
+    // Show the animation every N seconds.
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
         RUN_BACKGROUND_TASKS;
@@ -344,8 +359,24 @@ bool run_code_py(safe_mode_t safe_mode) {
             refreshed_epaper_display = maybe_refresh_epaperdisplay();
         }
         #endif
-
-        tick_rgb_status_animation(&animation);
+        bool animation_done = tick_rgb_status_animation(&animation);
+        if (animation_done && supervisor_workflow_active()) {
+            #if CIRCUITPY_SLEEP
+            int64_t remaining_enumeration_wait = CIRCUITPY_USB_ENUMERATION_DELAY * 1024 - supervisor_ticks_ms64();
+            // If USB isn't enumerated then deep sleep after our waiting period.
+            if (ok && remaining_enumeration_wait < 0) {
+                common_hal_sleep_deep_sleep();
+                return; // Doesn't actually get here.
+            }
+            #endif
+            // Wake up every so often to flash the error code.
+            if (!ok) {
+                port_interrupt_after_ticks(CIRCUITPY_FLASH_ERROR_PERIOD * 1024);
+            } else {
+                port_interrupt_after_ticks(remaining_enumeration_wait);
+            }
+            port_sleep_until_interrupt();
+        }
     }
 }
 
@@ -392,7 +423,9 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         if (!skip_boot_output) {
             // Wait 1.5 seconds before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
             // in case power is momentary or will fail shortly due to, say a low, battery.
-            mp_hal_delay_ms(1500);
+            if (common_hal_sleep_get_reset_reason() == RESET_REASON_POWER_VALID) {
+                mp_hal_delay_ms(1500);
+            }
 
             // USB isn't up, so we can write the file.
             filesystem_set_internal_writable_by_usb(false);
@@ -511,7 +544,7 @@ int __attribute__((used)) main(void) {
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
-                serial_write_compressed(translate("soft reboot\n"));
+                serial_write_compressed(translate("\n\n------ soft reboot ------\n"));
             }
             first_run = false;
             skip_repl = run_code_py(safe_mode);

@@ -52,6 +52,10 @@ safe_mode_t wait_for_safe_mode_reset(void) {
         current_safe_mode = safe_mode;
         return safe_mode;
     }
+    if (common_hal_sleep_get_reset_reason() != RESET_REASON_POWER_VALID &&
+        common_hal_sleep_get_reset_reason() != RESET_REASON_BUTTON) {
+        return NO_SAFE_MODE;
+    }
     port_set_saved_word(SAFE_MODE_DATA_GUARD | (MANUAL_SAFE_MODE << 8));
     // Wait for a while to allow for reset.
     temp_status_color(SAFE_MODE);

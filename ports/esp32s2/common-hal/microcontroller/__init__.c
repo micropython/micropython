@@ -25,8 +25,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "py/runtime.h"
 
 #include "common-hal/microcontroller/Pin.h"
@@ -40,6 +40,8 @@
 #include "supervisor/shared/safe_mode.h"
 
 #include "freertos/FreeRTOS.h"
+
+#include "esp_sleep.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
 
@@ -75,6 +77,10 @@ void common_hal_mcu_reset(void) {
     filesystem_flush(); //TODO: implement as part of flash improvements
     // NVIC_SystemReset();
     while(1);
+}
+
+void common_hal_mcu_deep_sleep(void) {
+    esp_deep_sleep_start();
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
