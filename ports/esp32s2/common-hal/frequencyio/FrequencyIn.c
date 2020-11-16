@@ -35,7 +35,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-static void frequencyin_interrupt_handler(void *self_in) {
+static void IRAM_ATTR frequencyin_interrupt_handler(void *self_in) {
     frequencyio_frequencyin_obj_t* self = self_in;
     // get counter value
     int16_t count;
@@ -44,6 +44,10 @@ static void frequencyin_interrupt_handler(void *self_in) {
 
     // reset counter
     pcnt_counter_clear(self->unit);
+
+    // reset interrupt
+    TIMERG0.int_clr.t0 = 1;
+    TIMERG0.hw_timer[0].config.alarm_en = 1;
 }
 
 static void init_timer(frequencyio_frequencyin_obj_t* self, uint16_t capture_period) {
@@ -62,7 +66,7 @@ static void init_timer(frequencyio_frequencyin_obj_t* self, uint16_t capture_per
     timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
     timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, capture_period * 1000000);
     timer_enable_intr(TIMER_GROUP_0, TIMER_0);
-    timer_isr_register(TIMER_GROUP_0, TIMER_0, &frequencyin_interrupt_handler, (void *)self, 0, &self->handle);
+    timer_isr_register(TIMER_GROUP_0, TIMER_0, frequencyin_interrupt_handler, (void *)self, ESP_INTR_FLAG_IRAM, &self->handle);
 
     // Start timer
     timer_start(TIMER_GROUP_0, TIMER_0);
