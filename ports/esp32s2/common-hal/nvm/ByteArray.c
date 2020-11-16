@@ -56,7 +56,7 @@ static nvs_handle get_nvs_handle(void) {
 bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
         uint32_t start_index, uint8_t* values, uint32_t len) {
     char index[9];
-    sprintf(index, "%i", start_index);
+    sprintf(index, "%i", start_index - CIRCUITPY_INTERNAL_NVM_START_ADDR);
     // start nvs
     nvs_handle handle = get_nvs_handle();
     bool status = ((nvs_set_u8(handle, (const char *)index, *values) == ESP_OK) && (nvs_commit(handle) == ESP_OK));
@@ -69,7 +69,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
 void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
         uint32_t start_index, uint32_t len, uint8_t* values) {
     char index[9];
-    sprintf(index, "%i", start_index);
+    sprintf(index, "%i", start_index - CIRCUITPY_INTERNAL_NVM_START_ADDR);
     // start nvs
     nvs_handle handle = get_nvs_handle();
     if (nvs_get_u8(handle, (const char *)index, values) != ESP_OK) {
