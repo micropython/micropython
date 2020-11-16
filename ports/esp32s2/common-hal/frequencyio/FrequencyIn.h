@@ -36,7 +36,8 @@ typedef struct {
     pcnt_unit_t unit;
     intr_handle_t handle;
     uint8_t pin;
-    uint32_t frequency;
+    uint8_t multiplier;
+    uint16_t frequency;
     uint16_t capture_period;
 } frequencyio_frequencyin_obj_t;
 

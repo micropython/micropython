@@ -26,16 +26,21 @@
 
 #include "shared-bindings/frequencyio/FrequencyIn.h"
 
-#include <stdint.h>
-
 #include "py/runtime.h"
 
-#include "supervisor/shared/tick.h"
-#include "shared-bindings/time/__init__.h"
+static void IRAM_ATTR pcnt_overflow_handler(void *self_in) {
+    frequencyio_frequencyin_obj_t* self = self_in;
+    // reset counter
+    pcnt_counter_clear(self->unit);
 
-#include "common-hal/microcontroller/Pin.h"
+    // increase multiplier
+    self->multiplier++;
 
-static void IRAM_ATTR frequencyin_interrupt_handler(void *self_in) {
+    // reset interrupt
+    PCNT.int_clr.val = BIT(self->unit);
+}
+
+static void IRAM_ATTR timer_interrupt_handler(void *self_in) {
     frequencyio_frequencyin_obj_t* self = self_in;
     // get counter value
     int16_t count;
@@ -50,9 +55,41 @@ static void IRAM_ATTR frequencyin_interrupt_handler(void *self_in) {
     TIMERG0.hw_timer[0].config.alarm_en = 1;
 }
 
-static void init_timer(frequencyio_frequencyin_obj_t* self, uint16_t capture_period) {
+static void init_pcnt(frequencyio_frequencyin_obj_t* self) {
+    // Prepare configuration for the PCNT unit
+    const pcnt_config_t pcnt_config = {
+        // Set PCNT input signal and control GPIOs
+        .pulse_gpio_num = self->pin,
+        .ctrl_gpio_num = PCNT_PIN_NOT_USED,
+        .channel = PCNT_CHANNEL_0,
+        // What to do on the positive / negative edge of pulse input?
+        .pos_mode = PCNT_COUNT_INC,  // count both rising and falling edges
+        .neg_mode = PCNT_COUNT_INC,
+        // Set counter limit
+        .counter_h_lim = INT16_MAX,
+        .counter_l_lim = 0,
+    };
+
+    // Initialize PCNT unit
+    const int8_t unit = peripherals_pcnt_init(pcnt_config);
+    if (unit == -1) {
+        mp_raise_RuntimeError(translate("All PCNT units in use"));
+    }
+
+    // set the GPIO back to high-impedance, as pcnt_unit_config sets it as pull-up
+    gpio_set_pull_mode(self->pin, GPIO_FLOATING);
+
+    self->unit = (pcnt_unit_t)unit;
+
+    // enable pcnt interrupt
+    pcnt_event_enable(self->unit, PCNT_EVT_H_LIM);
+    pcnt_isr_register(pcnt_overflow_handler, (void *)self, ESP_INTR_FLAG_IRAM, &self->handle);
+    pcnt_intr_enable(self->unit);
+}
+
+static void init_timer(frequencyio_frequencyin_obj_t* self) {
     // Prepare configuration for the timer module
-    timer_config_t config = {
+    const timer_config_t config = {
         .alarm_en = true,
         .counter_en = false,
         .intr_type = TIMER_INTR_LEVEL,
@@ -64,9 +101,9 @@ static void init_timer(frequencyio_frequencyin_obj_t* self, uint16_t capture_per
     // Initialize timer module
     timer_init(TIMER_GROUP_0, TIMER_0, &config);
     timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0);
-    timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, capture_period * 1000000);
+    timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, self->capture_period * 1000000);
+    timer_isr_register(TIMER_GROUP_0, TIMER_0, timer_interrupt_handler, (void *)self, ESP_INTR_FLAG_IRAM, &self->handle);
     timer_enable_intr(TIMER_GROUP_0, TIMER_0);
-    timer_isr_register(TIMER_GROUP_0, TIMER_0, frequencyin_interrupt_handler, (void *)self, ESP_INTR_FLAG_IRAM, &self->handle);
 
     // Start timer
     timer_start(TIMER_GROUP_0, TIMER_0);
@@ -78,32 +115,14 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
         mp_raise_ValueError(translate("Invalid capture period. Valid range: 1 - 500"));
     }
 
-    // Prepare configuration for the PCNT unit
-    const pcnt_config_t pcnt_config = {
-        // Set PCNT input signal and control GPIOs
-        .pulse_gpio_num = pin->number,
-        .ctrl_gpio_num = PCNT_PIN_NOT_USED,
-        .channel = PCNT_CHANNEL_0,
-        // What to do on the positive / negative edge of pulse input?
-        .pos_mode = PCNT_COUNT_INC,  // count both rising and falling edges
-        .neg_mode = PCNT_COUNT_INC,
-    };
-
-    // Initialize PCNT unit
-    const int8_t unit = peripherals_pcnt_init(pcnt_config);
-    if (unit == -1) {
-        mp_raise_RuntimeError(translate("All PCNT units in use"));
-    }
-
-    // set the GPIO back to high-impedance, as pcnt_unit_config sets it as pull-up
-    gpio_set_pull_mode(pin->number, GPIO_FLOATING);
-
-    // initialize timer
-    init_timer(self, capture_period);
-
     self->pin = pin->number;
-    self->unit = (pcnt_unit_t)unit;
+    self->handle = NULL;
+    self->multiplier = 0;
     self->capture_period = capture_period;
+
+    // initialize pcnt and timer
+    init_pcnt(self);
+    init_timer(self);
 
     claim_pin(pin);
 }
@@ -118,15 +137,15 @@ void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t* se
     }
     reset_pin_number(self->pin);
     peripherals_pcnt_deinit(&self->unit);
+    timer_deinit(TIMER_GROUP_0, TIMER_0);
     if (self->handle) {
-        timer_deinit(TIMER_GROUP_0, TIMER_0);
         esp_intr_free(self->handle);
         self->handle = NULL;
     }
 }
 
 uint32_t common_hal_frequencyio_frequencyin_get_item(frequencyio_frequencyin_obj_t* self) {
-    return self->frequency;
+    return (self->frequency + (self->multiplier * INT16_MAX));
 }
 
 void common_hal_frequencyio_frequencyin_pause(frequencyio_frequencyin_obj_t* self) {
