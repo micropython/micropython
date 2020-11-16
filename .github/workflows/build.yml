@@ -14,7 +14,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - name: Dump GitHub context
       env:
@@ -165,7 +165,7 @@ jobs:
 
 
   build-arm:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
@@ -368,7 +368,7 @@ jobs:
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
   build-riscv:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
