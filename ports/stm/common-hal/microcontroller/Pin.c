@@ -35,6 +35,10 @@
 #ifdef MICROPY_HW_NEOPIXEL
 bool neopixel_in_use;
 #endif
+#ifdef MICROPY_HW_APA102_MOSI
+bool apa102_sck_in_use;
+bool apa102_mosi_in_use;
+#endif
 
 #if defined(LQFP144)
     #define GPIO_PORT_COUNT 7
@@ -66,6 +70,10 @@ void reset_all_pins(void) {
     #ifdef MICROPY_HW_NEOPIXEL
     neopixel_in_use = false;
     #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    apa102_sck_in_use = false;
+    apa102_mosi_in_use = false;
+    #endif
 }
 
 // Mark pin as free and return it to a quiescent state.
@@ -81,6 +89,15 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin_port == MICROPY_HW_NEOPIXEL->port && pin_number == MICROPY_HW_NEOPIXEL->number) {
         neopixel_in_use = false;
+        rgb_led_status_init();
+        return;
+    }
+    #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    if ((pin_port == MICROPY_HW_APA102_MOSI->port && pin_number == MICROPY_HW_APA102_MOSI->number)
+        || (pin_port == MICROPY_HW_APA102_SCK->port && pin_number == MICROPY_HW_APA102_MOSI->number)) {
+        apa102_mosi_in_use = false;
+        apa102_sck_in_use = false;
         rgb_led_status_init();
         return;
     }
@@ -108,6 +125,14 @@ void claim_pin(const mcu_pin_obj_t* pin) {
         neopixel_in_use = true;
     }
     #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    if (pin == MICROPY_HW_APA102_MOSI) {
+        apa102_mosi_in_use = true;
+    }
+    if (pin == MICROPY_HW_APA102_SCK) {
+        apa102_sck_in_use = true;
+    }
+    #endif
 }
 
 bool pin_number_is_free(uint8_t pin_port, uint8_t pin_number) {
@@ -118,6 +143,14 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
         return !neopixel_in_use;
+    }
+    #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    if (pin == MICROPY_HW_APA102_MOSI) {
+        return !apa102_mosi_in_use;
+    }
+    if (pin == MICROPY_HW_APA102_SCK) {
+        return !apa102_sck_in_use;
     }
     #endif
 
