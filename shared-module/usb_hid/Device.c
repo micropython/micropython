@@ -25,7 +25,7 @@
  */
 
 #include <string.h>
-#include "tick.h"
+
 #include "py/runtime.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "shared-module/usb_hid/Device.h"
@@ -84,14 +84,17 @@ uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type,
 
 // Callbacks invoked when receive Set_Report request through control endpoint
 void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize) {
+    if (report_type == HID_REPORT_TYPE_INVALID) {
+        report_id = buffer[0];
+        buffer++;
+        bufsize--;
+    } else if (report_type != HID_REPORT_TYPE_OUTPUT) {
+        return;
+    }
+
     usb_hid_device_obj_t* hid_device = get_hid_device(report_id);
 
-    if ( report_type == HID_REPORT_TYPE_OUTPUT ) {
-        // Check if it is Keyboard device
-        if (hid_device->usage_page == HID_USAGE_PAGE_DESKTOP &&
-                hid_device->usage == HID_USAGE_DESKTOP_KEYBOARD) {
-            // This is LED indicator (CapsLock, NumLock)
-            // TODO Light up some LED here
-        }
+    if (hid_device && hid_device->out_report_length >= bufsize) {
+        memcpy(hid_device->out_report_buffer, buffer, bufsize);
     }
 }

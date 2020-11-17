@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,7 +135,7 @@ STATIC void mp_help_print_modules(void) {
 
     // let the user know there may be other modules available from the filesystem
     const compressed_string_t* compressed = translate("Plus any modules on the filesystem\n");
-    char decompressed[compressed->length];
+    char decompressed[decompress_length(compressed)];
     decompress(compressed, decompressed);
     mp_print_str(MP_PYTHON_PRINTER, decompressed);
 }
@@ -181,7 +181,7 @@ STATIC mp_obj_t mp_builtin_help(size_t n_args, const mp_obj_t *args) {
         // print a general help message. Translate only works on single strings on one line.
         const compressed_string_t* compressed =
             translate("Welcome to Adafruit CircuitPython %s!\n\nPlease visit learn.adafruit.com/category/circuitpython for project guides.\n\nTo list built-in modules please do `help(\"modules\")`.\n");
-        char decompressed[compressed->length];
+        char decompressed[decompress_length(compressed)];
         decompress(compressed, decompressed);
         mp_printf(MP_PYTHON_PRINTER, decompressed, MICROPY_GIT_TAG);
     } else {

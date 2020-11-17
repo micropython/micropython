@@ -1,6 +1,8 @@
 # test concurrent mutating access to a shared bytearray object
 #
-# MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+# SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+#
+# SPDX-License-Identifier: MIT
 
 import _thread
 
@@ -42,4 +44,3 @@ count = [0 for _ in range(256)]
 for b in ba:
     count[b] += 1
 print(count)
-

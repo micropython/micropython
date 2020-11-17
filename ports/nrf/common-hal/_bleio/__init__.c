@@ -39,6 +39,7 @@
 #include "supervisor/shared/bluetooth.h"
 
 #include "common-hal/_bleio/__init__.h"
+#include "common-hal/_bleio/bonding.h"
 
 void check_nrf_error(uint32_t err_code) {
     if (err_code == NRF_SUCCESS) {
@@ -49,7 +50,7 @@ void check_nrf_error(uint32_t err_code) {
             mp_raise_msg(&mp_type_TimeoutError, NULL);
             return;
         case BLE_ERROR_INVALID_CONN_HANDLE:
-            mp_raise_bleio_ConnectionError(translate("Not connected"));
+            mp_raise_ConnectionError(translate("Not connected"));
             return;
         default:
             mp_raise_bleio_BluetoothError(translate("Unknown soft device error: %04x"), err_code);
@@ -87,6 +88,8 @@ void check_sec_status(uint8_t sec_status) {
     }
 }
 
+bool vm_used_ble;
+
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
     if (!common_hal_bleio_adapter_get_enabled(&common_hal_bleio_adapter_obj)) {
@@ -112,14 +115,14 @@ bleio_adapter_obj_t common_hal_bleio_adapter_obj = {
 
 void common_hal_bleio_check_connected(uint16_t conn_handle) {
     if (conn_handle == BLE_CONN_HANDLE_INVALID) {
-        mp_raise_bleio_ConnectionError(translate("Not connected"));
+        mp_raise_ConnectionError(translate("Not connected"));
     }
 }
 
 // GATTS read of a Characteristic or Descriptor.
 size_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle, uint8_t* buf, size_t len) {
-    // conn_handle might be BLE_CONN_HANDLE_INVALID if we're not connected, but that's OK, because
-    // we can still read and write the local value.
+    // conn_handle is ignored unless this is a system attribute.
+    // If we're not connected, that's OK, because we can still read and write the local value.
 
     ble_gatts_value_t gatts_value = {
         .p_value = buf,
@@ -132,8 +135,8 @@ size_t common_hal_bleio_gatts_read(uint16_t handle, uint16_t conn_handle, uint8_
 }
 
 void common_hal_bleio_gatts_write(uint16_t handle, uint16_t conn_handle, mp_buffer_info_t *bufinfo) {
-    // conn_handle might be BLE_CONN_HANDLE_INVALID if we're not connected, but that's OK, because
-    // we can still read and write the local value.
+    // conn_handle is ignored unless this is a system attribute.
+    // If we're not connected, that's OK, because we can still read and write the local value.
 
     ble_gatts_value_t gatts_value = {
         .p_value = bufinfo->buf,
@@ -239,6 +242,10 @@ void common_hal_bleio_gattc_write(uint16_t handle, uint16_t conn_handle, mp_buff
         check_nrf_error(err_code);
     }
 
+}
+
+void bleio_background(void) {
+    bonding_background();
 }
 
 void common_hal_bleio_gc_collect(void) {

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2017 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -368,7 +368,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        mp_raise_msg(&mp_type_KeyError, translate("pop from an empty set"));
+        mp_raise_msg_varg(&mp_type_KeyError, translate("pop from empty %q"), MP_QSTR_set);
     }
     return obj;
 }
@@ -450,6 +450,7 @@ STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 return MP_OBJ_NEW_SMALL_INT(hash);
             }
 #endif
+            /* FALLTHROUGH */
         default: return MP_OBJ_NULL; // op not supported
     }
 }

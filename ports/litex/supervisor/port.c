@@ -27,16 +27,47 @@
 
 #include <stdint.h>
 #include "supervisor/port.h"
+#include "supervisor/shared/tick.h"
 #include "boards/board.h"
-#include "tick.h"
 #include "irq.h"
 #include "csr.h"
+
+// Global millisecond tick count. 1024 per second because most RTCs are clocked with 32.768khz
+// crystals.
+volatile uint64_t raw_ticks = 0;
+volatile int subsecond = 0;
+__attribute__((section(".ramtext")))
+void SysTick_Handler(void) {
+    timer0_ev_pending_write(1);
+    raw_ticks += 1;
+    subsecond += 1;
+    // We track subsecond ticks so that we can increment raw_ticks one extra every 40 ms. We do this
+    // every 40 except 0 to make it 24 increments and not 25.
+    if (subsecond == 1000) {
+        subsecond = 0;
+    } else if (subsecond % 40 == 0) {
+        raw_ticks += 1;
+    }
+    supervisor_tick();
+}
+
+static void tick_init(void) {
+    int t;
+
+    timer0_en_write(0);
+    t = CONFIG_CLOCK_FREQUENCY / 1000; // 1000 kHz tick
+    timer0_reload_write(t);
+    timer0_load_write(t);
+    timer0_en_write(1);
+    timer0_ev_enable_write(1);
+    timer0_ev_pending_write(1);
+    irq_setmask(irq_getmask() | (1 << TIMER0_INTERRUPT));
+}
 
 safe_mode_t port_init(void) {
     irq_setmask(0);
     irq_setie(1);
     tick_init();
-    board_init();
     return NO_SAFE_MODE;
 }
 
@@ -54,9 +85,21 @@ void reset_port(void) {
 
 void reset_to_bootloader(void) {
     reboot_ctrl_write(0xac);
+    for(;;) {}
 }
 
 void reset_cpu(void) {
+    // "You can reset Fomu by writing a special value to the CSR_REBOOT_CTRL
+    // register at 0xe0006000L. All writes to this register must start with
+    // 0xac, to ensure random values aren’t written. We can reboot Fomu by
+    // simply writing this value" --
+    //     https://workshop.fomu.im/en/latest/riscv.html
+    reboot_ctrl_write(0xac);
+    for(;;) {}
+}
+
+supervisor_allocation* port_fixed_stack(void) {
+    return NULL;
 }
 
 uint32_t *port_heap_get_bottom(void) {
@@ -82,4 +125,27 @@ void port_set_saved_word(uint32_t value) {
 
 uint32_t port_get_saved_word(void) {
     return _ebss;
+}
+
+uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    // Reading 64 bits may take two loads, so turn of interrupts while we do it.
+    irq_setie(false);
+    uint64_t raw_tick_snapshot = raw_ticks;
+    irq_setie(true);
+    return raw_tick_snapshot;
+}
+
+// Enable 1/1024 second tick.
+void port_enable_tick(void) {
+}
+
+// Disable 1/1024 second tick.
+void port_disable_tick(void) {
+}
+
+void port_interrupt_after_ticks(uint32_t ticks) {
+}
+
+// TODO: Add sleep support if the SoC supports sleep.
+void port_sleep_until_interrupt(void) {
 }

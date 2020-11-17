@@ -40,7 +40,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "tick.h"
+#define DISPLAYIO_CORE_DEBUG(...) (void)0
+// #define DISPLAYIO_CORE_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
 void displayio_display_core_construct(displayio_display_core_t* self,
         mp_obj_t bus, uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart, uint16_t rotation,
@@ -84,7 +85,10 @@ void displayio_display_core_construct(displayio_display_core_t* self,
     self->bus = bus;
 
 
-    supervisor_start_terminal(width, height);
+    // (offsetof core is equal in all display types)
+    if (self == &displays[0].display.core) {
+        supervisor_start_terminal(width, height);
+    }
 
     self->width = width;
     self->height = height;
@@ -196,7 +200,7 @@ bool displayio_display_core_get_dither(displayio_display_core_t* self){
 }
 
 bool displayio_display_core_bus_free(displayio_display_core_t *self) {
-    return self->bus_free(self->bus);
+    return !self->bus || self->bus_free(self->bus);
 }
 
 bool displayio_display_core_begin_transaction(displayio_display_core_t* self) {
@@ -207,7 +211,10 @@ void displayio_display_core_end_transaction(displayio_display_core_t* self) {
     self->end_transaction(self->bus);
 }
 
-void displayio_display_core_set_region_to_update(displayio_display_core_t* self, uint8_t column_command, uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command, bool data_as_commands, bool always_toggle_chip_select, displayio_area_t* area) {
+void displayio_display_core_set_region_to_update(displayio_display_core_t* self, uint8_t column_command,
+              uint8_t row_command, uint16_t set_current_column_command, uint16_t set_current_row_command,
+              bool data_as_commands, bool always_toggle_chip_select,
+              displayio_area_t* area, bool SH1107_addressing) {
     uint16_t x1 = area->x1;
     uint16_t x2 = area->x2;
     uint16_t y1 = area->y1;
@@ -252,8 +259,17 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
         data[data_length++] = x2 >> 8;
         data[data_length++] = x2 & 0xff;
     }
+    // Quirk for SH1107 "SH1107_addressing"
+    //     Note... column is y!  page is x!
+    //     Page address command = 0xB0
+    if (SH1107_addressing) {
+        // set the page to our x value
+        data[0] = 0xB0 | (x1 & 0x0F);
+        data_length = 1;
+    }
     self->send(self->bus, data_type, chip_select, data, data_length);
     displayio_display_core_end_transaction(self);
+
     if (set_current_column_command != NO_COMMAND) {
         uint8_t command = set_current_column_command;
         displayio_display_core_begin_transaction(self);
@@ -282,7 +298,16 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
         data[data_length++] = y2 >> 8;
         data[data_length++] = y2 & 0xff;
     }
+    // Quirk for SH1107 "SH1107_addressing"
+    //     Note... column is y!  page is x!
+    //     Column lower command = 0x00, Column upper command = 0x10
+    if (SH1107_addressing) {
+        data[0] = y1 & 0x0F; // 0x00 to 0x0F
+        data[1] = (y1 >> 4 & 0x0F) | 0x10; // 0x10 to 0x17
+        data_length = 2;
+    }
     self->send(self->bus, data_type, chip_select, data, data_length);
+
     displayio_display_core_end_transaction(self);
 
     if (set_current_row_command != NO_COMMAND) {
@@ -294,15 +319,26 @@ void displayio_display_core_set_region_to_update(displayio_display_core_t* self,
     }
 }
 
-void displayio_display_core_start_refresh(displayio_display_core_t* self) {
+bool displayio_display_core_start_refresh(displayio_display_core_t* self) {
+    if (!displayio_display_core_bus_free(self)) {
+        // Can't acquire display bus; skip updating this display. Try next display.
+        return false;
+    }
+    if (self->refresh_in_progress) {
+        return false;
+    }
+    self->refresh_in_progress = true;
     self->last_refresh = supervisor_ticks_ms64();
+    return true;
 }
 
 void displayio_display_core_finish_refresh(displayio_display_core_t* self) {
     if (self->current_group != NULL) {
+        DISPLAYIO_CORE_DEBUG("displayiocore group_finish_refresh\n");
         displayio_group_finish_refresh(self->current_group);
     }
     self->full_refresh = false;
+    self->refresh_in_progress = false;
     self->last_refresh = supervisor_ticks_ms64();
 }
 

@@ -26,10 +26,10 @@
  */
 
 
-#include "tick.h"
 #include "supervisor/usb.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
+#include "lib/tinyusb/src/device/usbd.h"
 
 #include "py/mpconfig.h"
 
@@ -63,13 +63,13 @@ STATIC void init_usb_vbus_sense(void) {
 }
 
 void init_usb_hardware(void) {
-    //TODO: if future chips overload this with options, move to peripherals management. 
+    //TODO: if future chips overload this with options, move to peripherals management.
 
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     /**USB_OTG_FS GPIO Configuration
     PA10     ------> USB_OTG_FS_ID
     PA11     ------> USB_OTG_FS_DM
-    PA12     ------> USB_OTG_FS_DP 
+    PA12     ------> USB_OTG_FS_DP
     */
     __HAL_RCC_GPIOA_CLK_ENABLE();
 
@@ -86,6 +86,8 @@ void init_usb_hardware(void) {
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 11);
     never_reset_pin_number(0, 12);
+    claim_pin(0, 11);
+    claim_pin(0, 12);
 
     /* Configure VBUS Pin */
     #if  !(BOARD_NO_VBUS_SENSE)
@@ -94,6 +96,7 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 9);
+    claim_pin(0, 9);
     #endif
 
     /* This for ID line debug */
@@ -108,6 +111,7 @@ void init_usb_hardware(void) {
     #endif
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     never_reset_pin_number(0, 10);
+    claim_pin(0, 10);
 
     #ifdef STM32F412Zx
     /* Configure POWER_SWITCH IO pin (F412 ONLY)*/
@@ -116,8 +120,8 @@ void init_usb_hardware(void) {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
     never_reset_pin_number(0, 8);
+    claim_pin(0, 8);
     #endif
-
 
     #if CPY_STM32H7
     HAL_PWREx_EnableUSBVoltageDetector();
@@ -128,4 +132,8 @@ void init_usb_hardware(void) {
     #endif
 
     init_usb_vbus_sense();
+}
+
+void OTG_FS_IRQHandler(void) {
+  usb_irq_handler();
 }

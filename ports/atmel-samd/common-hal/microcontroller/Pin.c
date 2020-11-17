@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "atmel_start_pins.h"
@@ -45,7 +47,7 @@ bool speaker_enable_in_use;
 
 #define PORT_COUNT (PORT_BITS / 32 + 1)
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 #define SWD_MUX GPIO_PIN_FUNCTION_H
 #endif
 #ifdef SAMD21
@@ -80,7 +82,7 @@ void reset_all_pins(void) {
 
     // Configure SWD. SWDIO will be automatically switched on PA31 when a signal is input on
     // SWCLK.
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     gpio_set_pin_function(PIN_PA30, MUX_PA30H_CM4_SWCLK);
     #endif
     #ifdef SAMD21
@@ -106,15 +108,19 @@ void reset_all_pins(void) {
 }
 
 void never_reset_pin_number(uint8_t pin_number) {
+    if (pin_number >= PORT_BITS) {
+        return;
+    }
+
     never_reset_pins[GPIO_PORT(pin_number)] |= 1 << GPIO_PIN(pin_number);
 }
 
 void reset_pin_number(uint8_t pin_number) {
-    never_reset_pins[GPIO_PORT(pin_number)] &= ~(1 << GPIO_PIN(pin_number));
-
     if (pin_number >= PORT_BITS) {
         return;
     }
+
+    never_reset_pins[GPIO_PORT(pin_number)] &= ~(1 << GPIO_PIN(pin_number));
 
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin_number == MICROPY_HW_NEOPIXEL->number) {
@@ -136,7 +142,7 @@ void reset_pin_number(uint8_t pin_number) {
     #endif
 
     if (pin_number == PIN_PA30
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         ) {
         #endif
         #ifdef SAMD21
@@ -199,7 +205,7 @@ bool pin_number_is_free(uint8_t pin_number) {
             return false;
         }
         if (pin_number == PIN_PA30
-            #ifdef SAMD51
+            #ifdef SAM_D5X_E5X
             ) {
             #endif
             #ifdef SAMD21
@@ -251,4 +257,20 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
 
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
     reset_pin_number(pin_no);
+}
+
+mcu_pin_function_t *mcu_find_pin_function(mcu_pin_function_t *table, const mcu_pin_obj_t *pin, int instance, uint16_t name) {
+    if (!pin) {
+        return NULL;
+    }
+
+    for(; table->obj; table++) {
+        if (instance != -1 && instance != table->instance) {
+            continue;
+        }
+        if (pin == table->obj) {
+            return table;
+        }
+    }
+    mp_raise_ValueError_varg(translate("%q pin invalid"), name);
 }

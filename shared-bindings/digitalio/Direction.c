@@ -38,23 +38,19 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
-//| .. currentmodule:: digitalio
+//| class Direction:
+//|     """Defines the direction of a digital pin"""
 //|
-//| :class:`Direction` -- defines the direction of a digital pin
-//| =============================================================
+//|     def __init__(self) -> None:
+//|         """Enum-like class to define which direction the digital values are
+//|         going."""
+//|         ...
 //|
-//| .. class:: Direction
+//|     INPUT: Direction
+//|     """Read digital data in"""
 //|
-//|     Enum-like class to define which direction the digital values are
-//|     going.
-//|
-//|     .. data:: INPUT
-//|
-//|       Read digital data in
-//|
-//|     .. data:: OUTPUT
-//|
-//|       Write digital data out
+//|     OUTPUT: Direction
+//|     """Write digital data out"""
 //|
 const mp_obj_type_t digitalio_direction_type;
 

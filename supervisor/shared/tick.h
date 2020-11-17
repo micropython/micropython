@@ -28,6 +28,7 @@
 #define __INCLUDED_SUPERVISOR_TICK_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /** @brief To be called once every ms
  *
@@ -36,13 +37,6 @@
  * interrupt context.
  */
 extern void supervisor_tick(void);
-/** @brief Cause background tasks to be called soon
- *
- * Normally, background tasks are only run once per tick.  For other cases where
- * an event noticed from an interrupt context needs to be completed by a background
- * task activity, the interrupt can call supervisor_fake_tick.
- */
-extern void supervisor_fake_tick(void);
 /** @brief Get the lower 32 bits of the time in milliseconds
  *
  * This can be more efficient than supervisor_ticks_ms64, for sites where a wraparound
@@ -63,5 +57,16 @@ extern uint64_t supervisor_ticks_ms64(void);
  * macro.
  */
 extern void supervisor_run_background_if_tick(void);
+
+extern void supervisor_enable_tick(void);
+extern void supervisor_disable_tick(void);
+
+/**
+ * @brief Return true if tick-based background tasks ran within the last 1s
+ *
+ * Note that when ticks are not enabled, this function can return false; this is
+ * intended.
+ */
+extern bool supervisor_background_tasks_ok(void);
 
 #endif

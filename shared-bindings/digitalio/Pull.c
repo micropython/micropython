@@ -26,25 +26,21 @@
 
 #include "shared-bindings/digitalio/Pull.h"
 
-//| .. currentmodule:: digitalio
+//| class Pull:
+//|     """Defines the pull of a digital input pin"""
 //|
-//| :class:`Pull` -- defines the pull of a digital input pin
-//| =============================================================
+//|     def __init__(self) -> None:
+//|         """Enum-like class to define the pull value, if any, used while reading
+//|         digital values in."""
+//|         ...
 //|
-//| .. class:: Pull
+//|     UP: Pull
+//|     """When the input line isn't being driven the pull up can pull the state
+//|     of the line high so it reads as true."""
 //|
-//|     Enum-like class to define the pull value, if any, used while reading
-//|     digital values in.
-//|
-//|     .. data:: UP
-//|
-//|       When the input line isn't being driven the pull up can pull the state
-//|       of the line high so it reads as true.
-//|
-//|     .. data:: DOWN
-//|
-//|       When the input line isn't being driven the pull down can pull the
-//|       state of the line low so it reads as false.
+//|     DOWN: Pull
+//|     """When the input line isn't being driven the pull down can pull the
+//|     state of the line low so it reads as false."""
 //|
 const mp_obj_type_t digitalio_pull_type;
 

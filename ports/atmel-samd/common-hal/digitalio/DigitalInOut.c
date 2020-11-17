@@ -73,7 +73,7 @@ void common_hal_digitalio_digitalinout_switch_to_input(
     common_hal_digitalio_digitalinout_set_pull(self, pull);
 }
 
-void common_hal_digitalio_digitalinout_switch_to_output(
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t* self, bool value,
         digitalio_drive_mode_t drive_mode) {
     const uint8_t pin = self->pin->number;
@@ -86,6 +86,7 @@ void common_hal_digitalio_digitalinout_switch_to_output(
 
     // Direction is set in set_value. We don't need to do it here.
     common_hal_digitalio_digitalinout_set_value(self, value);
+    return DIGITALINOUT_OK;
 }
 
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
@@ -128,7 +129,7 @@ bool common_hal_digitalio_digitalinout_get_value(
     }
 }
 
-void common_hal_digitalio_digitalinout_set_drive_mode(
+digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
         digitalio_digitalinout_obj_t* self,
         digitalio_drive_mode_t drive_mode) {
     bool value = common_hal_digitalio_digitalinout_get_value(self);
@@ -138,6 +139,7 @@ void common_hal_digitalio_digitalinout_set_drive_mode(
     if (value) {
         common_hal_digitalio_digitalinout_set_value(self, value);
     }
+    return DIGITALINOUT_OK;
 }
 
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(

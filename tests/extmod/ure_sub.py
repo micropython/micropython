@@ -27,11 +27,11 @@ print(re.sub('a', A(), 'aBCBABCDabcda.'))
 
 print(
     re.sub(
-        r'def\s+([a-zA-Z_][a-zA-Z_0-9]*)\s*\(\s*\):', 
-        'static PyObject*\npy_\\1(void){\n  return;\n}\n', 
+        r'def\s+([a-zA-Z_][a-zA-Z_0-9]*)\s*\(\s*\):',
+        'static PyObject*\npy_\\1(void){\n  return;\n}\n',
         '\n\ndef myfunc():\n\ndef myfunc1():\n\ndef myfunc2():'
     )
-) 
+)
 
 print(
     re.compile(

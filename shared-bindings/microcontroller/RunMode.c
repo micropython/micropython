@@ -26,34 +26,28 @@
 
 #include "shared-bindings/microcontroller/RunMode.h"
 
-//| .. currentmodule:: microcontroller
+//| class RunMode:
+//|     """run state of the microcontroller"""
 //|
-//| :class:`RunMode` -- run state of the microcontroller
-//| =============================================================
+//|     def __init__(self) -> None:
+//|         """Enum-like class to define the run mode of the microcontroller and
+//|         CircuitPython."""
 //|
-//| .. class:: RunMode()
+//|     NORMAL: RunMode
+//|     """Run CircuitPython as normal.
 //|
-//|     Enum-like class to define the run mode of the microcontroller and
-//|     CircuitPython.
+//|     :type microcontroller.RunMode:"""
 //|
-//|     .. attribute:: NORMAL
+//|     SAFE_MODE: RunMode
+//|     """Run CircuitPython in safe mode. User code will not be run and the
+//|     file system will be writeable over USB.
 //|
-//|       Run CircuitPython as normal.
+//|     :type microcontroller.RunMode:"""
 //|
-//|       :type microcontroller.RunMode:
+//|     BOOTLOADER: RunMode
+//|     """Run the bootloader.
 //|
-//|     .. attribute:: SAFE_MODE
-//|
-//|       Run CircuitPython in safe mode. User code will not be run and the
-//|       file system will be writeable over USB.
-//|
-//|       :type microcontroller.RunMode:
-//|
-//|     .. attribute:: BOOTLOADER
-//|
-//|       Run the bootloader.
-//|
-//|       :type microcontroller.RunMode:
+//|     :type microcontroller.RunMode:"""
 //|
 const mp_obj_type_t mcu_runmode_type;
 

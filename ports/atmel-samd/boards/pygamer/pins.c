@@ -44,7 +44,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI),  MP_ROM_PTR(&pin_PB23) },
 
     // SDCS, dup of D4
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CS),  MP_ROM_PTR(&pin_PA14) },    
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CS),  MP_ROM_PTR(&pin_PA14) },
 
     // Special named pins
     { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL),  MP_ROM_PTR(&pin_PA15) },

@@ -43,44 +43,21 @@
 #include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
-//| :mod:`displayio` --- Native display driving
-//| =========================================================================
-//|
-//| .. module:: displayio
-//|   :synopsis: Native helpers for driving displays
-//|   :platform: SAMD21, SAMD51, nRF52
+//| """Native helpers for driving displays
 //|
 //| The `displayio` module contains classes to manage display output
-//| including synchronizing with refresh rates and partial updating.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     Bitmap
-//|     ColorConverter
-//|     Display
-//|     EPaperDisplay
-//|     FourWire
-//|     Group
-//|     I2CDisplay
-//|     OnDiskBitmap
-//|     Palette
-//|     ParallelBus
-//|     Shape
-//|     TileGrid
+//| including synchronizing with refresh rates and partial updating."""
 //|
 
 
-//| .. function:: release_displays()
+//| def release_displays() -> None:
+//|     """Releases any actively used displays so their busses and pins can be used again. This will also
+//|     release the builtin display on boards that have one. You will need to reinitialize it yourself
+//|     afterwards. This may take seconds to complete if an active EPaperDisplay is refreshing.
 //|
-//|   Releases any actively used displays so their busses and pins can be used again. This will also
-//|   release the builtin display on boards that have one. You will need to reinitialize it yourself
-//|   afterwards. This may take seconds to complete if an active EPaperDisplay is refreshing.
-//|
-//|   Use this once in your code.py if you initialize a display. Place it right before the
-//|   initialization so the display is active as long as possible.
+//|     Use this once in your code.py if you initialize a display. Place it right before the
+//|     initialization so the display is active as long as possible."""
+//|     ...
 //|
 STATIC mp_obj_t displayio_release_displays(void) {
     common_hal_displayio_release_displays();

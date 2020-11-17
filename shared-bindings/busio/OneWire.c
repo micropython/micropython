@@ -34,33 +34,32 @@
 #include "shared-bindings/busio/OneWire.h"
 #include "shared-bindings/util.h"
 
-//| .. currentmodule:: busio
+//| class OneWire:
+//|     """Lowest-level of the Maxim OneWire protocol"""
 //|
-//| :class:`OneWire` -- Lowest-level of the Maxim OneWire protocol
-//| =================================================================
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
+//|         """(formerly Dallas Semi) OneWire protocol.
 //|
-//| :class:`~busio.OneWire` implements the timing-sensitive foundation of the Maxim
-//| (formerly Dallas Semi) OneWire protocol.
+//|         Protocol definition is here: https://www.maximintegrated.com/en/app-notes/index.mvp/id/126
 //|
-//| Protocol definition is here: https://www.maximintegrated.com/en/app-notes/index.mvp/id/126
+//|         .. class:: OneWire(pin)
 //|
-//| .. class:: OneWire(pin)
+//|           Create a OneWire object associated with the given pin. The object
+//|           implements the lowest level timing-sensitive bits of the protocol.
 //|
-//|   Create a OneWire object associated with the given pin. The object
-//|   implements the lowest level timing-sensitive bits of the protocol.
+//|           :param ~microcontroller.Pin pin: Pin connected to the OneWire bus
 //|
-//|   :param ~microcontroller.Pin pin: Pin connected to the OneWire bus
+//|           Read a short series of pulses::
 //|
-//|   Read a short series of pulses::
+//|             import busio
+//|             import board
 //|
-//|     import busio
-//|     import board
-//|
-//|     onewire = busio.OneWire(board.D7)
-//|     onewire.reset()
-//|     onewire.write_bit(True)
-//|     onewire.write_bit(False)
-//|     print(onewire.read_bit())
+//|             onewire = busio.OneWire(board.D7)
+//|             onewire.reset()
+//|             onewire.write_bit(True)
+//|             onewire.write_bit(False)
+//|             print(onewire.read_bit())"""
+//|         ...
 //|
 STATIC mp_obj_t busio_onewire_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pin };
@@ -78,9 +77,9 @@ STATIC mp_obj_t busio_onewire_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitialize the OneWire bus and release any hardware resources for reuse.
+//|     def deinit(self) -> None:
+//|         """Deinitialize the OneWire bus and release any hardware resources for reuse."""
+//|         ...
 //|
 STATIC mp_obj_t busio_onewire_deinit(mp_obj_t self_in) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -95,16 +94,16 @@ STATIC void check_for_deinit(busio_onewire_obj_t *self) {
     }
 }
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self) -> OneWire:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t busio_onewire_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -113,12 +112,12 @@ STATIC mp_obj_t busio_onewire_obj___exit__(size_t n_args, const mp_obj_t *args) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_onewire___exit___obj, 4, 4, busio_onewire_obj___exit__);
 
-//|   .. method:: reset()
+//|     def reset(self) -> bool:
+//|         """Reset the OneWire bus and read presence
 //|
-//|     Reset the OneWire bus and read presence
-//|
-//|     :returns: False when at least one device is present
-//|     :rtype: bool
+//|         :returns: False when at least one device is present
+//|         :rtype: bool"""
+//|         ...
 //|
 STATIC mp_obj_t busio_onewire_obj_reset(mp_obj_t self_in) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -128,12 +127,12 @@ STATIC mp_obj_t busio_onewire_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_onewire_reset_obj, busio_onewire_obj_reset);
 
-//|   .. method:: read_bit()
+//|     def read_bit(self) -> bool:
+//|         """Read in a bit
 //|
-//|     Read in a bit
-//|
-//|     :returns: bit state read
-//|     :rtype: bool
+//|         :returns: bit state read
+//|         :rtype: bool"""
+//|         ...
 //|
 STATIC mp_obj_t busio_onewire_obj_read_bit(mp_obj_t self_in) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -143,9 +142,9 @@ STATIC mp_obj_t busio_onewire_obj_read_bit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_onewire_read_bit_obj, busio_onewire_obj_read_bit);
 
-//|   .. method:: write_bit(value)
-//|
-//|     Write out a bit based on value.
+//|     def write_bit(self, value: bool) -> None:
+//|         """Write out a bit based on value."""
+//|         ...
 //|
 STATIC mp_obj_t busio_onewire_obj_write_bit(mp_obj_t self_in, mp_obj_t bool_obj) {
     busio_onewire_obj_t *self = MP_OBJ_TO_PTR(self_in);

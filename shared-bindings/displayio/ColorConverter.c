@@ -36,18 +36,15 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: displayio
+//| class ColorConverter:
+//|     """Converts one color format to another."""
 //|
-//| :class:`ColorConverter` -- Converts one color format to another
-//| =========================================================================================
+//|     def __init__(self, *, dither: bool = False) -> None:
+//|         """Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
+//|         currently.
+//|         :param bool dither: Adds random noise to dither the output image"""
+//|         ...
 //|
-//| Converts one color format to another.
-//|
-//| .. class:: ColorConverter(*, dither=False)
-//|
-//|   Create a ColorConverter object to convert color formats. Only supports RGB888 to RGB565
-//|   currently.
-//|   :param bool dither: Adds random noise to dither the output image
 
 // TODO(tannewt): Add support for other color formats.
 //|
@@ -68,9 +65,9 @@ STATIC mp_obj_t displayio_colorconverter_make_new(const mp_obj_type_t *type, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: convert(color)
-//|
-//|   Converts the given RGB888 color to RGB565
+//|     def convert(self, color: int) -> int:
+//|         """Converts the given RGB888 color to RGB565"""
+//|         ...
 //|
 STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
@@ -87,10 +84,9 @@ STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_convert_obj, displayio_colorconverter_obj_convert);
 
-//|   .. attribute:: dither
-//|
-//|     When true the color converter dithers the output by adding random noise when
-//|     truncating to display bitdepth
+//|     dither: bool
+//|     """When true the color converter dithers the output by adding random noise when
+//|     truncating to display bitdepth"""
 //|
 STATIC mp_obj_t displayio_colorconverter_obj_get_dither(mp_obj_t self_in) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
@@ -126,4 +122,3 @@ const mp_obj_type_t displayio_colorconverter_type = {
     .make_new = displayio_colorconverter_make_new,
     .locals_dict = (mp_obj_dict_t*)&displayio_colorconverter_locals_dict,
 };
-

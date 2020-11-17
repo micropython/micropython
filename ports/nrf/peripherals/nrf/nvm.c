@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2019 Nick Moore for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,6 +40,8 @@
 
 STATIC bool sd_is_enabled(void) {
     uint8_t sd_en = 0;
+    if (__get_PRIMASK())
+        return false;
     (void) sd_softdevice_is_enabled(&sd_en);
     return sd_en;
 }

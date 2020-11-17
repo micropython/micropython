@@ -27,8 +27,21 @@
 
 #include "boards/board.h"
 #include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 void board_init(void) {
+    // SWD Pins
+    common_hal_never_reset_pin(&pin_GPIO_AD_13);//SWDIO
+    common_hal_never_reset_pin(&pin_GPIO_AD_12);//SWCLK
+
+    // FLEX flash
+    common_hal_never_reset_pin(&pin_GPIO_SD_12);
+    common_hal_never_reset_pin(&pin_GPIO_SD_11);
+    common_hal_never_reset_pin(&pin_GPIO_SD_10);
+    common_hal_never_reset_pin(&pin_GPIO_SD_09);
+    common_hal_never_reset_pin(&pin_GPIO_SD_08);
+    common_hal_never_reset_pin(&pin_GPIO_SD_07);
+    common_hal_never_reset_pin(&pin_GPIO_SD_06);
 }
 
 bool board_requests_safe_mode(void) {

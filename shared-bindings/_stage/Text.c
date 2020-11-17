@@ -30,25 +30,23 @@
 #include "Text.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: _stage
+//| class Text:
+//|     """Keep information about a single grid of text"""
 //|
-//| :class:`Text` -- Keep information about a single text of text
-//| ==============================================================
+//|     def __init__(self, width: int, height: int, font: ReadableBuffer, palette: ReadableBuffer, chars: ReadableBuffer) -> None:
+//|         """Keep internal information about a grid of text
+//|         in a format suitable for fast rendering
+//|         with the ``render()`` function.
 //|
-//| .. class:: Text(width, height, font, palette, chars)
+//|         :param int width: The width of the grid in tiles, or 1 for sprites.
+//|         :param int height: The height of the grid in tiles, or 1 for sprites.
+//|         :param ~_typing.ReadableBuffer font: The font data of the characters.
+//|         :param ~_typing.ReadableBuffer palette: The color palette to be used.
+//|         :param ~_typing.ReadableBuffer chars: The contents of the character grid.
 //|
-//|     Keep internal information about a text of text
-//|     in a format suitable for fast rendering
-//|     with the ``render()`` function.
-//|
-//|     :param int width: The width of the grid in tiles, or 1 for sprites.
-//|     :param int height: The height of the grid in tiles, or 1 for sprites.
-//|     :param bytearray font: The font data of the characters.
-//|     :param bytearray palette: The color palette to be used.
-//|     :param bytearray chars: The contents of the character grid.
-//|
-//|     This class is intended for internal use in the ``stage`` library and
-//|     it shouldn't be used on its own.
+//|         This class is intended for internal use in the ``stage`` library and
+//|         it shouldn't be used on its own."""
+//|         ...
 //|
 STATIC mp_obj_t text_make_new(const mp_obj_type_t *type, size_t n_args,
         const mp_obj_t *args, mp_map_t *kw_args) {
@@ -84,9 +82,9 @@ STATIC mp_obj_t text_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     .. method:: move(x, y)
-//|
-//|     Set the offset of the text to the specified values.
+//|     def move(self, x: int, y: int) -> None:
+//|         """Set the offset of the text to the specified values."""
+//|         ...
 //|
 STATIC mp_obj_t text_move(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
     text_obj_t *self = MP_OBJ_TO_PTR(self_in);

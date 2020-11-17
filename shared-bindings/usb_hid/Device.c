@@ -27,27 +27,25 @@
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
 
-//| .. currentmodule:: usb_hid
+//| class Device:
+//|     """HID Device
 //|
-//| :class:`Device` -- HID Device
-//| ============================================
+//|     Usage::
 //|
-//| Usage::
+//|        import usb_hid
 //|
-//|    import usb_hid
+//|        mouse = usb_hid.devices[0]
 //|
-//|    mouse = usb_hid.devices[0]
-//|
-//|    mouse.send_report()
+//|        mouse.send_report()"""
 //|
 
-//| .. class:: Device()
+//|     def __init__(self) -> None:
+//|         """Not currently dynamically supported."""
+//|         ...
 //|
-//|   Not currently dynamically supported.
-//|
-//|   .. method:: send_report(buf)
-//|
-//|     Send a HID report.
+//|     def send_report(self, buf: ReadableBuffer) -> None:
+//|         """Send a HID report."""
+//|         ...
 //|
 STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -60,9 +58,27 @@ STATIC mp_obj_t usb_hid_device_send_report(mp_obj_t self_in, mp_obj_t buffer) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_hid_device_send_report_obj, usb_hid_device_send_report);
 
-//|   .. attribute:: usage_page
+//|     last_received_report: bytes
+//|     """The HID OUT report as a `bytes`. (read-only). `None` if nothing received."""
 //|
-//|     The usage page of the device as an `int`. Can be thought of a category. (read-only)
+STATIC mp_obj_t usb_hid_device_obj_get_last_received_report(mp_obj_t self_in) {
+    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->out_report_buffer == 0) {
+        return mp_const_none;
+    }
+    return mp_obj_new_bytes(self->out_report_buffer, self->out_report_length);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_last_received_report_obj, usb_hid_device_obj_get_last_received_report);
+
+const mp_obj_property_t usb_hid_device_last_received_report_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&usb_hid_device_get_last_received_report_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|     usage_page: int
+//|     """The usage page of the device as an `int`. Can be thought of a category. (read-only)"""
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -77,12 +93,11 @@ const mp_obj_property_t usb_hid_device_usage_page_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: usage
-//|
-//|     The functionality of the device as an int. (read-only)
+//|     usage: int
+//|     """The functionality of the device as an int. (read-only)
 //|
 //|     For example, Keyboard is 0x06 within the generic desktop usage page 0x01.
-//|     Mouse is 0x02 within the same usage page.
+//|     Mouse is 0x02 within the same usage page."""
 //|
 STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -99,9 +114,10 @@ const mp_obj_property_t usb_hid_device_usage_obj = {
 };
 
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_send_report),    MP_ROM_PTR(&usb_hid_device_send_report_obj) },
-    { MP_ROM_QSTR(MP_QSTR_usage_page),     MP_ROM_PTR(&usb_hid_device_usage_page_obj)},
-    { MP_ROM_QSTR(MP_QSTR_usage),          MP_ROM_PTR(&usb_hid_device_usage_obj)},
+    { MP_ROM_QSTR(MP_QSTR_send_report),          MP_ROM_PTR(&usb_hid_device_send_report_obj) },
+    { MP_ROM_QSTR(MP_QSTR_last_received_report), MP_ROM_PTR(&usb_hid_device_last_received_report_obj) },
+    { MP_ROM_QSTR(MP_QSTR_usage_page),           MP_ROM_PTR(&usb_hid_device_usage_page_obj)},
+    { MP_ROM_QSTR(MP_QSTR_usage),                MP_ROM_PTR(&usb_hid_device_usage_obj)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);

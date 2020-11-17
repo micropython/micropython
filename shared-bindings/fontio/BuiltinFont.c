@@ -36,25 +36,20 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: fontio
+//| class BuiltinFont:
+//|     """A font built into CircuitPython"""
 //|
-//| :class:`BuiltinFont` -- A font built into CircuitPython
-//| =========================================================================================
-//|
-//| A font built into CircuitPython.
-//|
-//| .. class:: BuiltinFont()
-//|
-//|   Creation not supported. Available fonts are defined when CircuitPython is built. See the
-//|   `Adafruit_CircuitPython_Bitmap_Font <https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font>`_
-//|   library for dynamically loaded fonts.
+//|     def __init__(self) -> None:
+//|         """Creation not supported. Available fonts are defined when CircuitPython is built. See the
+//|         `Adafruit_CircuitPython_Bitmap_Font <https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font>`_
+//|         library for dynamically loaded fonts."""
+//|         ...
 //|
 
-//|   .. attribute:: bitmap
-//|
-//|     Bitmap containing all font glyphs starting with ASCII and followed by unicode. Use
+//|     bitmap: displayio.Bitmap
+//|     """Bitmap containing all font glyphs starting with ASCII and followed by unicode. Use
 //|     `get_glyph` in most cases. This is useful for use with `displayio.TileGrid` and
-//|     `terminalio.Terminal`.
+//|     `terminalio.Terminal`."""
 //|
 STATIC mp_obj_t fontio_builtinfont_obj_get_bitmap(mp_obj_t self_in) {
     fontio_builtinfont_t *self = MP_OBJ_TO_PTR(self_in);
@@ -69,9 +64,9 @@ const mp_obj_property_t fontio_builtinfont_bitmap_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: get_bounding_box()
-//|
-//|     Returns the maximum bounds of all glyphs in the font in a tuple of two values: width, height.
+//|     def get_bounding_box(self) -> Tuple[int, int]:
+//|         """Returns the maximum bounds of all glyphs in the font in a tuple of two values: width, height."""
+//|         ...
 //|
 STATIC mp_obj_t fontio_builtinfont_obj_get_bounding_box(mp_obj_t self_in) {
     fontio_builtinfont_t *self = MP_OBJ_TO_PTR(self_in);
@@ -81,9 +76,9 @@ STATIC mp_obj_t fontio_builtinfont_obj_get_bounding_box(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(fontio_builtinfont_get_bounding_box_obj, fontio_builtinfont_obj_get_bounding_box);
 
 
-//|   .. method:: get_glyph(codepoint)
-//|
-//|     Returns a `fontio.Glyph` for the given codepoint or None if no glyph is available.
+//|     def get_glyph(self, codepoint: int) -> Glyph:
+//|         """Returns a `fontio.Glyph` for the given codepoint or None if no glyph is available."""
+//|         ...
 //|
 STATIC mp_obj_t fontio_builtinfont_obj_get_glyph(mp_obj_t self_in, mp_obj_t codepoint_obj) {
     fontio_builtinfont_t *self = MP_OBJ_TO_PTR(self_in);

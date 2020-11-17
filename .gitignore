@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 # Compiled Sources
 ###################
 *.o
@@ -14,6 +18,7 @@
 ############
 dist/
 *.egg-info
+.eggs
 
 # Logs and Databases
 ######################
@@ -51,6 +56,8 @@ _build
 # Generated rst files
 ######################
 genrst/
+/autoapi/
+/shared-bindings/*/**/*.rst
 
 # ctags and similar
 ###################
@@ -73,3 +80,9 @@ TAGS
 *.mo
 
 .vscode
+.idea
+
+# Python Virtual Environments
+####################
+.venv
+.env

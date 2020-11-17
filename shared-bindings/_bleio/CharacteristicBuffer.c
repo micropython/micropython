@@ -37,28 +37,25 @@
 
 STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self) {
     if (!common_hal_bleio_characteristic_buffer_connected(self)) {
-        mp_raise_bleio_ConnectionError(translate("Not connected"));
+        mp_raise_ConnectionError(translate("Not connected"));
     }
 }
 
-//| .. currentmodule:: _bleio
+//| class CharacteristicBuffer:
+//|     """Accumulates a Characteristic's incoming values in a FIFO buffer."""
 //|
-//| :class:`CharacteristicBuffer` -- BLE Service incoming values buffer.
-//| =====================================================================
+//|     def __init__(self, characteristic: Characteristic, *, timeout: int = 1, buffer_size: int = 64) -> None:
 //|
-//| Accumulates a Characteristic's incoming values in a FIFO buffer.
+//|         """Monitor the given Characteristic. Each time a new value is written to the Characteristic
+//|         add the newly-written bytes to a FIFO buffer.
 //|
-//| .. class:: CharacteristicBuffer(characteristic, *, timeout=1, buffer_size=64)
-//|
-//|   Monitor the given Characteristic. Each time a new value is written to the Characteristic
-//|   add the newly-written bytes to a FIFO buffer.
-//|
-//|   :param Characteristic characteristic: The Characteristic to monitor.
-//|     It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
-//|     in a remote Service that a Central has connected to.
-//|   :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters.
-//|   :param int buffer_size: Size of ring buffer that stores incoming data coming from client.
-//|     Must be >= 1.
+//|         :param Characteristic characteristic: The Characteristic to monitor.
+//|           It may be a local Characteristic provided by a Peripheral Service, or a remote Characteristic
+//|           in a remote Service that a Central has connected to.
+//|         :param int timeout:  the timeout in seconds to wait for the first character and between subsequent characters.
+//|         :param int buffer_size: Size of ring buffer that stores incoming data coming from client.
+//|           Must be >= 1."""
+//|         ...
 //|
 STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_characteristic, ARG_timeout, ARG_buffer_size, };
@@ -103,29 +100,29 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|   .. method:: read(nbytes=None)
+//|     def read(self, nbytes: Optional[int] = None) -> Optional[bytes]:
+//|         """Read characters.  If ``nbytes`` is specified then read at most that many
+//|         bytes. Otherwise, read everything that arrives until the connection
+//|         times out. Providing the number of bytes expected is highly recommended
+//|         because it will be faster.
 //|
-//|     Read characters.  If ``nbytes`` is specified then read at most that many
-//|     bytes. Otherwise, read everything that arrives until the connection
-//|     times out. Providing the number of bytes expected is highly recommended
-//|     because it will be faster.
+//|         :return: Data read
+//|         :rtype: bytes or None"""
+//|         ...
 //|
-//|     :return: Data read
-//|     :rtype: bytes or None
+//|     def readinto(self, buf: WriteableBuffer) -> Optional[int]:
+//|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
-//|   .. method:: readinto(buf)
+//|         :return: number of bytes read and stored into ``buf``
+//|         :rtype: int or None (on a non-blocking error)"""
+//|         ...
 //|
-//|     Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
+//|     def readline(self) -> bytes:
+//|         """Read a line, ending in a newline character.
 //|
-//|     :return: number of bytes read and stored into ``buf``
-//|     :rtype: int or None (on a non-blocking error)
-//|
-//|   .. method:: readline()
-//|
-//|     Read a line, ending in a newline character.
-//|
-//|     :return: the line read
-//|     :rtype: int or None
+//|         :return: the line read
+//|         :rtype: int or None"""
+//|         ...
 //|
 
 // These three methods are used by the shared stream methods.
@@ -170,9 +167,8 @@ STATIC mp_uint_t bleio_characteristic_buffer_ioctl(mp_obj_t self_in, mp_uint_t r
     return ret;
 }
 
-//|   .. attribute:: in_waiting
-//|
-//|     The number of bytes in the input buffer, available to be read
+//|     in_waiting: int
+//|     """The number of bytes in the input buffer, available to be read"""
 //|
 STATIC mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -188,9 +184,9 @@ const mp_obj_property_t bleio_characteristic_buffer_in_waiting_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: reset_input_buffer()
-//|
-//|     Discard any unread characters in the input buffer.
+//|     def reset_input_buffer(self) -> None:
+//|         """Discard any unread characters in the input buffer."""
+//|         ...
 //|
 STATIC mp_obj_t bleio_characteristic_buffer_obj_reset_input_buffer(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -200,9 +196,9 @@ STATIC mp_obj_t bleio_characteristic_buffer_obj_reset_input_buffer(mp_obj_t self
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_reset_input_buffer_obj, bleio_characteristic_buffer_obj_reset_input_buffer);
 
-//|   .. method:: deinit()
-//|
-//|     Disable permanently.
+//|     def deinit(self) -> None:
+//|         """Disable permanently."""
+//|         ...
 //|
 STATIC mp_obj_t bleio_characteristic_buffer_deinit(mp_obj_t self_in) {
     bleio_characteristic_buffer_obj_t *self = MP_OBJ_TO_PTR(self_in);

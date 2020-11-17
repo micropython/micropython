@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2020 Lucian Copeland for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +25,12 @@
 import csv
 import sys
 
-# Use: parse_pins_csv.py Filename.csv 
+# Use: parse_pins_csv.py Filename.csv
 # Designed for use with .csv files from Micropython, or in identical format
 # created via Datasheet peripheral tables with a Sheets program.
-# 
-# See examples/nucleo_h743.csv for example formatting. 
-        
+#
+# See examples/nucleo_h743.csv for example formatting.
+
 # Open target file
 with open(sys.argv[1]) as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')

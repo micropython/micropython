@@ -40,7 +40,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "tick.h"
+#define fb_getter_default(method, default_value) \
+    (self->framebuffer_protocol->method \
+        ? self->framebuffer_protocol->method(self->framebuffer) \
+        : (default_value))
 
 void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t* self,
         mp_obj_t framebuffer,
@@ -53,35 +56,50 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 
     uint16_t ram_width = 0x100;
     uint16_t ram_height = 0x100;
-
+    uint16_t depth = fb_getter_default(get_color_depth, 16);
     displayio_display_core_construct(
         &self->core,
         NULL,
         self->framebuffer_protocol->get_width(self->framebuffer),
         self->framebuffer_protocol->get_height(self->framebuffer),
-        ram_width, 
+        ram_width,
         ram_height,
         0,
         0,
-        rotation,
-        self->framebuffer_protocol->get_color_depth(self->framebuffer),
-        false,
-        false,
-        self->framebuffer_protocol->get_bytes_per_cell(self->framebuffer),
-        false,
-        false);
+        0, // rotation
+        depth,
+        fb_getter_default(get_grayscale, (depth < 8)),
+        fb_getter_default(get_pixels_in_byte_share_row, false),
+        fb_getter_default(get_bytes_per_cell, 2),
+        fb_getter_default(get_reverse_pixels_in_byte, false),
+        fb_getter_default(get_reverse_pixels_in_word, false)
+    );
+
+    self->first_pixel_offset = fb_getter_default(get_first_pixel_offset, 0);
+    self->row_stride = fb_getter_default(get_row_stride, 0);
+    if (self->row_stride == 0) {
+        self->row_stride = self->core.width * self->core.colorspace.depth/8;
+    }
+
+    self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
+    size_t framebuffer_size = self->first_pixel_offset + self->row_stride * self->core.height;
+    if (self->bufinfo.len < framebuffer_size) {
+        mp_raise_IndexError_varg(translate("Framebuffer requires %d bytes"), framebuffer_size);
+    }
 
     self->first_manual_refresh = !auto_refresh;
 
-    self->native_frames_per_second = self->framebuffer_protocol->get_native_frames_per_second(self->framebuffer);
+    self->native_frames_per_second = fb_getter_default(get_native_frames_per_second, 60);
     self->native_ms_per_frame = 1000 / self->native_frames_per_second;
 
-    supervisor_start_terminal(self->core.width, self->core.height);
+    if (rotation != 0) {
+        common_hal_framebufferio_framebufferdisplay_set_rotation(self, rotation);
+    }
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
     common_hal_framebufferio_framebufferdisplay_show(self, &circuitpython_splash);
-    self->auto_refresh = auto_refresh;
+    common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, auto_refresh);
 }
 
 bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t* self, displayio_group_t* root_group) {
@@ -111,7 +129,7 @@ bool common_hal_framebufferio_framebufferdisplay_set_auto_brightness(framebuffer
 }
 
 mp_float_t common_hal_framebufferio_framebufferdisplay_get_brightness(framebufferio_framebufferdisplay_obj_t* self) {
-    if (self->framebuffer_protocol->set_brightness) {
+    if (self->framebuffer_protocol->get_brightness) {
         return self->framebuffer_protocol->get_brightness(self->framebuffer);
     }
     return -1;
@@ -140,7 +158,8 @@ STATIC const displayio_area_t* _get_refresh_areas(framebufferio_framebufferdispl
     return NULL;
 }
 
-STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const displayio_area_t* area) {
+#define MARK_ROW_DIRTY(r) (dirty_row_bitmask[r/8] |= (1 << (r & 7)))
+STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const displayio_area_t* area, uint8_t *dirty_row_bitmask) {
     uint16_t buffer_size = 128; // In uint32_ts
 
     displayio_area_t clipped;
@@ -149,6 +168,14 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
         return true;
     }
     uint16_t subrectangles = 1;
+
+    // If pixels are packed by row then rows are on byte boundaries
+    if (self->core.colorspace.depth < 8 && self->core.colorspace.pixels_in_byte_share_row) {
+        int div = 8 / self->core.colorspace.depth;
+        clipped.x1 = (clipped.x1 / div) * div;
+        clipped.x2 = ((clipped.x2 + div - 1) / div) * div;
+    }
+
     uint16_t rows_per_buffer = displayio_area_height(&clipped);
     uint8_t pixels_per_word = (sizeof(uint32_t) * 8) / self->core.colorspace.depth;
     uint16_t pixels_per_buffer = displayio_area_size(&clipped);
@@ -189,6 +216,7 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
             .x2 = clipped.x2,
             .y2 = clipped.y1 + rows_per_buffer * (j + 1)
         };
+
         if (remaining_rows < rows_per_buffer) {
             subrectangle.y2 = subrectangle.y1 + remaining_rows;
         }
@@ -199,12 +227,18 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
 
         displayio_display_core_fill_area(&self->core, &subrectangle, mask, buffer);
 
-        // COULDDO: this arithmetic only supports multiple-of-8 bpp
-        uint8_t *dest = self->bufinfo.buf + (subrectangle.y1 * self->core.width + subrectangle.x1) * (self->core.colorspace.depth / 8);
+        uint8_t *buf = (uint8_t *)self->bufinfo.buf, *endbuf = buf + self->bufinfo.len;
+        (void)endbuf; // Hint to compiler that endbuf is "used" even if NDEBUG
+        buf += self->first_pixel_offset;
+
+        size_t rowstride = self->row_stride;
+        uint8_t *dest = buf + subrectangle.y1 * rowstride + subrectangle.x1 * self->core.colorspace.depth / 8;
         uint8_t *src = (uint8_t*)buffer;
-        size_t rowsize = (subrectangle.x2 - subrectangle.x1) * (self->core.colorspace.depth / 8);
-        size_t rowstride = self->core.width * (self->core.colorspace.depth/8);
+        size_t rowsize = (subrectangle.x2 - subrectangle.x1) * self->core.colorspace.depth / 8;
+
         for (uint16_t i = subrectangle.y1; i < subrectangle.y2; i++) {
+            assert(dest >= buf && dest < endbuf && dest+rowsize <= endbuf);
+            MARK_ROW_DIRTY(i);
             memcpy(dest, src, rowsize);
             dest += rowstride;
             src += rowsize;
@@ -218,15 +252,23 @@ STATIC bool _refresh_area(framebufferio_framebufferdisplay_obj_t* self, const di
 }
 
 STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t* self) {
-    displayio_display_core_start_refresh(&self->core);
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
+    if(!self->bufinfo.buf) {
+        return;
+    }
+    displayio_display_core_start_refresh(&self->core);
     const displayio_area_t* current_area = _get_refresh_areas(self);
-    while (current_area != NULL) {
-        _refresh_area(self, current_area);
-        current_area = current_area->next;
+    if (current_area) {
+        uint8_t dirty_row_bitmask[(self->core.height + 7) / 8];
+        memset(dirty_row_bitmask, 0, sizeof(dirty_row_bitmask));
+        self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
+        while (current_area != NULL) {
+            _refresh_area(self, current_area, dirty_row_bitmask);
+            current_area = current_area->next;
+        }
+        self->framebuffer_protocol->swapbuffers(self->framebuffer, dirty_row_bitmask);
     }
     displayio_display_core_finish_refresh(&self->core);
-    self->framebuffer_protocol->swapbuffers(self->framebuffer);
 }
 
 void common_hal_framebufferio_framebufferdisplay_set_rotation(framebufferio_framebufferdisplay_obj_t* self, int rotation){
@@ -238,8 +280,10 @@ void common_hal_framebufferio_framebufferdisplay_set_rotation(framebufferio_fram
         self->core.height = tmp;
     }
     displayio_display_core_set_rotation(&self->core, rotation);
-    supervisor_stop_terminal();
-    supervisor_start_terminal(self->core.width, self->core.height);
+    if (self == &displays[0].framebuffer_display) {
+        supervisor_stop_terminal();
+        supervisor_start_terminal(self->core.width, self->core.height);
+    }
     if (self->core.current_group != NULL) {
         displayio_group_update_transform(self->core.current_group, &self->core.transform);
     }
@@ -282,6 +326,13 @@ bool common_hal_framebufferio_framebufferdisplay_get_auto_refresh(framebufferio_
 void common_hal_framebufferio_framebufferdisplay_set_auto_refresh(framebufferio_framebufferdisplay_obj_t* self,
                                                    bool auto_refresh) {
     self->first_manual_refresh = !auto_refresh;
+    if (auto_refresh != self->auto_refresh) {
+        if (auto_refresh) {
+            supervisor_enable_tick();
+        } else {
+            supervisor_disable_tick();
+        }
+    }
     self->auto_refresh = auto_refresh;
 }
 
@@ -299,16 +350,24 @@ void framebufferio_framebufferdisplay_background(framebufferio_framebufferdispla
 }
 
 void release_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
+    common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, false);
     release_display_core(&self->core);
     self->framebuffer_protocol->deinit(self->framebuffer);
-}
-
-void reset_framebufferdisplay(framebufferio_framebufferdisplay_obj_t* self) {
-    self->auto_refresh = true;
-    common_hal_framebufferio_framebufferdisplay_show(self, NULL);
+    self->base.type = &mp_type_NoneType;
 }
 
 void framebufferio_framebufferdisplay_collect_ptrs(framebufferio_framebufferdisplay_obj_t* self) {
     gc_collect_ptr(self->framebuffer);
     displayio_display_core_collect_ptrs(&self->core);
+}
+
+void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj_t* self) {
+    mp_obj_type_t *fb_type = mp_obj_get_type(self->framebuffer);
+    if(fb_type != NULL && fb_type != &mp_type_NoneType) {
+        common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, true);
+        common_hal_framebufferio_framebufferdisplay_show(self, NULL);
+        self->core.full_refresh = true;
+    } else {
+        release_framebufferdisplay(self);
+    }
 }

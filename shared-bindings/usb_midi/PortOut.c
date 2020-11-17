@@ -35,28 +35,24 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
-
-//| .. currentmodule:: usb_midi
+//| class PortOut:
+//|     """Sends midi messages to a computer over USB"""
 //|
-//| :class:`PortOut` -- sends midi messages to a computer over USB
-//| ==============================================================
+//|     def __init__(self) -> None:
+//|         """You cannot create an instance of `usb_midi.PortOut`.
 //|
-//| .. class:: PortOut()
-//|
-//|   You cannot create an instance of `usb_midi.PortOut`.
-//|
-//|   PortOut objects are constructed for every corresponding entry in the USB
-//|   descriptor and added to the ``usb_midi.ports`` tuple.
+//|         PortOut objects are constructed for every corresponding entry in the USB
+//|         descriptor and added to the ``usb_midi.ports`` tuple."""
 //|
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|   .. method:: write(buf)
+//|     def write(self, buf: ReadableBuffer) -> Optional[int]:
+//|         """Write the buffer of bytes to the bus.
 //|
-//|     Write the buffer of bytes to the bus.
-//|
-//|     :return: the number of bytes written
-//|     :rtype: int or None
+//|         :return: the number of bytes written
+//|         :rtype: int or None"""
+//|         ...
 //|
 
 STATIC mp_uint_t usb_midi_portout_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {

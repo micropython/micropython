@@ -35,51 +35,46 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: pulseio
+//| class PulseIn:
+//|     """Measure a series of active and idle pulses. This is commonly used in infrared receivers
+//|        and low cost temperature sensors (DHT). The pulsed signal consists of timed active and
+//|        idle periods. Unlike PWM, there is no set duration for active and idle pairs."""
 //|
-//| :class:`PulseIn` -- Read a series of pulse durations
-//| ========================================================
+//|     def __init__(self, pin: microcontroller.Pin, maxlen: int = 2, *, idle_state: bool = False) -> None:
+//|         """Create a PulseIn object associated with the given pin. The object acts as
+//|         a read-only sequence of pulse lengths with a given max length. When it is
+//|         active, new pulse lengths are added to the end of the list. When there is
+//|         no more room (len() == `maxlen`) the oldest pulse length is removed to
+//|         make room.
 //|
-//| PulseIn is used to measure a series of active and idle pulses. This is
-//| commonly used in infrared receivers and low cost temperature sensors (DHT).
-//| The pulsed signal consists of timed active and idle periods. Unlike PWM,
-//| there is no set duration for active and idle pairs.
+//|         :param ~microcontroller.Pin pin: Pin to read pulses from.
+//|         :param int maxlen: Maximum number of pulse durations to store at once
+//|         :param bool idle_state: Idle state of the pin. At start and after `resume`
+//|           the first recorded pulse will the opposite state from idle.
 //|
-//| .. class:: PulseIn(pin, maxlen=2, *, idle_state=False)
+//|         Read a short series of pulses::
 //|
-//|   Create a PulseIn object associated with the given pin. The object acts as
-//|   a read-only sequence of pulse lengths with a given max length. When it is
-//|   active, new pulse lengths are added to the end of the list. When there is
-//|   no more room (len() == `maxlen`) the oldest pulse length is removed to
-//|   make room.
+//|           import pulseio
+//|           import board
 //|
-//|   :param ~microcontroller.Pin pin: Pin to read pulses from.
-//|   :param int maxlen: Maximum number of pulse durations to store at once
-//|   :param bool idle_state: Idle state of the pin. At start and after `resume`
-//|     the first recorded pulse will the opposite state from idle.
+//|           pulses = pulseio.PulseIn(board.D7)
 //|
-//|   Read a short series of pulses::
+//|           # Wait for an active pulse
+//|           while len(pulses) == 0:
+//|               pass
+//|           # Pause while we do something with the pulses
+//|           pulses.pause()
 //|
-//|     import pulseio
-//|     import board
+//|           # Print the pulses. pulses[0] is an active pulse unless the length
+//|           # reached max length and idle pulses are recorded.
+//|           print(pulses)
 //|
-//|     pulses = pulseio.PulseIn(board.D7)
+//|           # Clear the rest
+//|           pulses.clear()
 //|
-//|     # Wait for an active pulse
-//|     while len(pulses) == 0:
-//|         pass
-//|     # Pause while we do something with the pulses
-//|     pulses.pause()
-//|
-//|     # Print the pulses. pulses[0] is an active pulse unless the length
-//|     # reached max length and idle pulses are recorded.
-//|     print(pulses)
-//|
-//|     # Clear the rest
-//|     pulses.clear()
-//|
-//|     # Resume with an 80 microsecond active pulse
-//|     pulses.resume(80)
+//|           # Resume with an 80 microsecond active pulse
+//|           pulses.resume(80)"""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pin, ARG_maxlen, ARG_idle_state };
@@ -101,9 +96,9 @@ STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitialises the PulseIn and releases any hardware resources for reuse.
+//|     def deinit(self) -> None:
+//|         """Deinitialises the PulseIn and releases any hardware resources for reuse."""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pulsein_deinit(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -118,16 +113,16 @@ STATIC void check_for_deinit(pulseio_pulsein_obj_t *self) {
     }
 }
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self) -> PulseIn:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pulsein_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -136,9 +131,9 @@ STATIC mp_obj_t pulseio_pulsein_obj___exit__(size_t n_args, const mp_obj_t *args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulsein___exit___obj, 4, 4, pulseio_pulsein_obj___exit__);
 
-//|   .. method:: pause()
-//|
-//|     Pause pulse capture
+//|     def pause(self) -> None:
+//|         """Pause pulse capture"""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_pause(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -149,16 +144,16 @@ STATIC mp_obj_t pulseio_pulsein_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_pause_obj, pulseio_pulsein_obj_pause);
 
-//|   .. method:: resume(trigger_duration=0)
+//|     def resume(self, trigger_duration: int = 0) -> None:
+//|         """Resumes pulse capture after an optional trigger pulse.
 //|
-//|     Resumes pulse capture after an optional trigger pulse.
+//|         .. warning:: Using trigger pulse with a device that drives both high and
+//|           low signals risks a short. Make sure your device is open drain (only
+//|           drives low) when using a trigger pulse. You most likely added a
+//|           "pull-up" resistor to your circuit to do this.
 //|
-//|     .. warning:: Using trigger pulse with a device that drives both high and
-//|       low signals risks a short. Make sure your device is open drain (only
-//|       drives low) when using a trigger pulse. You most likely added a
-//|       "pull-up" resistor to your circuit to do this.
-//|
-//|     :param int trigger_duration: trigger pulse duration in microseconds
+//|         :param int trigger_duration: trigger pulse duration in microseconds"""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_resume(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_trigger_duration };
@@ -176,9 +171,9 @@ STATIC mp_obj_t pulseio_pulsein_obj_resume(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pulseio_pulsein_resume_obj, 1, pulseio_pulsein_obj_resume);
 
-//|   .. method:: clear()
-//|
-//|     Clears all captured pulses
+//|     def clear(self) -> None:
+//|         """Clears all captured pulses"""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_clear(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -189,9 +184,9 @@ STATIC mp_obj_t pulseio_pulsein_obj_clear(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_clear_obj, pulseio_pulsein_obj_clear);
 
-//|   .. method:: popleft()
-//|
-//|     Removes and returns the oldest read pulse.
+//|     def popleft(self) -> int:
+//|         """Removes and returns the oldest read pulse."""
+//|         ...
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_popleft(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -201,10 +196,9 @@ STATIC mp_obj_t pulseio_pulsein_obj_popleft(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_popleft_obj, pulseio_pulsein_obj_popleft);
 
-//|   .. attribute:: maxlen
-//|
-//|     The maximum length of the PulseIn. When len() is equal to maxlen,
-//|     it is unclear which pulses are active and which are idle.
+//|     maxlen: int
+//|     """The maximum length of the PulseIn. When len() is equal to maxlen,
+//|     it is unclear which pulses are active and which are idle."""
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_get_maxlen(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -221,10 +215,9 @@ const mp_obj_property_t pulseio_pulsein_maxlen_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: paused
-//|
-//|     True when pulse capture is paused as a result of :py:func:`pause` or an error during capture
-//|     such as a signal that is too fast.
+//|     paused: bool
+//|     """True when pulse capture is paused as a result of :py:func:`pause` or an error during capture
+//|     such as a signal that is too fast."""
 //|
 STATIC mp_obj_t pulseio_pulsein_obj_get_paused(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -241,14 +234,16 @@ const mp_obj_property_t pulseio_pulsein_paused_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: __len__()
+//|     def __bool__(self) -> bool: ...
 //|
-//|     Returns the current pulse length
+//|     def __len__(self) -> int:
+//|         """Returns the current pulse length
 //|
-//|     This allows you to::
+//|         This allows you to::
 //|
-//|       pulses = pulseio.PulseIn(pin)
-//|       print(len(pulses))
+//|           pulses = pulseio.PulseIn(pin)
+//|           print(len(pulses))"""
+//|         ...
 //|
 STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -261,14 +256,14 @@ STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|   .. method:: __getitem__(index)
+//|     def __getitem__(self, index: int) -> Optional[int]:
+//|         """Returns the value at the given index or values in slice.
 //|
-//|     Returns the value at the given index or values in slice.
+//|         This allows you to::
 //|
-//|     This allows you to::
-//|
-//|       pulses = pulseio.PulseIn(pin)
-//|       print(pulses[0])
+//|           pulses = pulseio.PulseIn(pin)
+//|           print(pulses[0])"""
+//|         ...
 //|
 STATIC mp_obj_t pulsein_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     if (value == mp_const_none) {

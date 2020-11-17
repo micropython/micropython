@@ -23,6 +23,3 @@
 // Enable the use of 2 displays
 
 #define CIRCUITPY_DISPLAY_LIMIT (2)
-
-
-

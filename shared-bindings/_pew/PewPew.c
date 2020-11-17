@@ -31,36 +31,36 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
 #include "PewPew.h"
-#include "shared-module/_pew/PewPew.h"
+#include "common-hal/_pew/PewPew.h"
 #include "supervisor/shared/translate.h"
 
-
-//| .. currentmodule:: _pew
+//| class PewPew:
+//|     """This is an internal module to be used by the ``pew.py`` library from
+//|     https://github.com/pewpew-game/pew-pewpew-standalone-10.x to handle the
+//|     LED matrix display and buttons on the ``pewpew10`` board.
 //|
-//| :class:`PewPew` -- LED matrix and button driver
-//| ===============================================
+//|     Usage::
 //|
-//| This is an internal module to be used by the ``pew.py`` library from
-//| https://github.com/pewpew-game/pew-pewpew-standalone-10.x to handle the
-//| LED matrix display and buttons on the ``pewpew10`` board.
+//|         This singleton class is instantiated by the ``pew`` library, and
+//|         used internally by it. All user-visible interactions are done through
+//|         that library."""
 //|
-//| Usage::
+//|     def __init__(
+//|         self,
+//|         buffer: ReadableBuffer,
+//|         rows: List[digitalio.DigitalInOut],
+//|         cols: List[digitalio.DigitalInOut],
+//|         buttons: digitalio.DigitalInOut,
+//|     ) -> None:
+//|         """Initializes matrix scanning routines.
 //|
-//|     This singleton class is instantiated by the ``pew`` library, and
-//|     used internally by it. All user-visible interactions are done through
-//|     that library.
-//|
-
-//| .. class:: PewPew(buffer, rows, cols, buttons)
-//|
-//|     Initializes matrix scanning routines.
-//|
-//|     The ``buffer`` is a 64 byte long ``bytearray`` that stores what should
-//|     be displayed on the matrix. ``rows`` and ``cols`` are both lists of
-//|     eight ``DigitalInputOutput`` objects that are connected to the matrix
-//|     rows and columns. ``buttons`` is a ``DigitalInputOutput`` object that
-//|     is connected to the common side of all buttons (the other sides of the
-//|     buttons are connected to rows of the matrix).
+//|         The ``buffer`` is a 64 byte long ``bytearray`` that stores what should
+//|         be displayed on the matrix. ``rows`` and ``cols`` are both lists of
+//|         eight ``DigitalInputOutput`` objects that are connected to the matrix
+//|         rows and columns. ``buttons`` is a ``DigitalInputOutput`` object that
+//|         is connected to the common side of all buttons (the other sides of the
+//|         buttons are connected to rows of the matrix)."""
+//|         ...
 //|
 STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args,
         const mp_obj_t *pos_args, mp_map_t *kw_args) {

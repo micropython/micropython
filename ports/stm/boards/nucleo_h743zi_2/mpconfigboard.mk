@@ -2,7 +2,6 @@ USB_VID = 0x239A
 USB_PID = 0x8098
 USB_PRODUCT = "Nucleo H743ZI - CPy"
 USB_MANUFACTURER = "STMicroelectronics"
-USB_DEVICES = "CDC,MSC"
 
 INTERNAL_FLASH_FILESYSTEM = 1
 
@@ -10,6 +9,5 @@ MCU_SERIES = H7
 MCU_VARIANT = STM32H743xx
 MCU_PACKAGE = LQFP144
 
-LD_COMMON = boards/common_tcm.ld 
+LD_COMMON = boards/common_tcm.ld
 LD_FILE = boards/STM32H743_fs.ld
-

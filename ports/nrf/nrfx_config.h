@@ -5,7 +5,7 @@
 #define NRFX_POWER_ENABLED 1
 #define NRFX_POWER_DEFAULT_CONFIG_IRQ_PRIORITY 7
 
-// NOTE: THIS WORKAROUND CAUSES BLE CODE TO CRASH.
+// NOTE: THIS WORKAROUND CAUSES BLE CODE TO CRASH. DO NOT USE.
 // It doesn't work with the SoftDevice.
 // See https://devzone.nordicsemi.com/f/nordic-q-a/33982/sdk-15-software-crash-during-spi-session
 // Turn on nrfx supported workarounds for errata in Rev1 of nRF52840
@@ -41,11 +41,13 @@
 #define NRFX_SPIM1_ENABLED 1
 #endif
 #define NRFX_SPIM2_ENABLED 1
+#ifndef NRFX_SPIM3_ENABLED
 #if defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
     #define NRFX_SPIM_EXTENDED_ENABLED 1
     #define NRFX_SPIM3_ENABLED 1
 #elif CIRCUITPY_NRF_NUM_I2C == 2
     #define NRFX_SPIM3_ENABLED 0
+#endif
 #endif
 
 
@@ -119,5 +121,12 @@
 
 // NVM controller
 #define NRFX_NVMC_ENABLED 1
+
+// Watchdog timer
+#define NRFX_WDT_ENABLED 1
+#define NRFX_WDT0_ENABLED 1
+// This IRQ indicates the system will reboot shortly, so give
+// it a high priority.
+#define NRFX_WDT_DEFAULT_CONFIG_IRQ_PRIORITY 2
 
 #endif // NRFX_CONFIG_H__

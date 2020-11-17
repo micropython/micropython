@@ -45,4 +45,6 @@
 #define SPI_FLASH_MAX_BAUDRATE 8000000
 #endif
 
+void supervisor_external_flash_flush(void);
+
 #endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_EXTERNAL_FLASH_EXTERNAL_FLASH_H

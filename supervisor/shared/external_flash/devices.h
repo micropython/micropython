@@ -64,6 +64,15 @@ typedef struct {
     // True when the status register is a single byte. This implies the Quad Enable bit is in the
     // first byte and the Read Status Register 2 command (0x35) is unsupported.
     bool single_status_byte: 1;
+
+    // Does not support using a ready bit within the status register
+    bool no_ready_bit: 1;
+
+    // Does not support the erase command (0x20)
+    bool no_erase_cmd: 1;
+
+    // Device does not have a reset command
+    bool no_reset_cmd: 1;
 } external_flash_device;
 
 // Settings for the Adesto Tech AT25DF081A 1MiB SPI flash. It's on the SAMD21
@@ -168,6 +177,24 @@ typedef struct {
     .manufacturer_id = 0xc8, \
     .memory_type = 0x40, \
     .capacity = 0x17, \
+    .max_clock_speed_mhz = 104, /* if we need 120 then we can turn on high performance mode */ \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = true, \
+    .single_status_byte = false, \
+}
+
+// Settings for the Gigadevice GD25S512MD 64MiB SPI flash.
+// Datasheet: http://www.gigadevice.com/datasheet/gd25s512md/
+#define GD25S512MD {\
+    .total_size = (1 << 26), /* 64 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xc8, \
+    .memory_type = 0x40, \
+    .capacity = 0x19, \
     .max_clock_speed_mhz = 104, /* if we need 120 then we can turn on high performance mode */ \
     .quad_enable_bit_mask = 0x02, \
     .has_sector_protection = false, \
@@ -426,6 +453,27 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Settings for the Everspin MR20H40 / MR25H40 magnetic non-volatile RAM
+// Datasheet: https://www.everspin.com/supportdocs/MR25H40CDFR
+#define MR2xH40 {\
+    .total_size = (1 << 22), /* 4 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0xef, /*no JDEC*/ \
+    .memory_type = 0x40, /*no JDEC*/ \
+    .capacity = 0x14, /*no JDEC*/ \
+    .max_clock_speed_mhz = 10, \
+    .quad_enable_bit_mask = 0x00, \
+    .has_sector_protection = false, \
+    .supports_fast_read = false, \
+    .supports_qspi = false, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+    .no_ready_bit = true, \
+    .no_erase_cmd = true, \
+    .no_reset_cmd = true, \
+}
+
 // Settings for the Macronix MX25L1606 2MiB SPI flash.
 // Datasheet:
 #define MX25L1606  {\
@@ -564,6 +612,25 @@ typedef struct {
     .max_clock_speed_mhz = 133, \
     .quad_enable_bit_mask = 0x02, \
     .has_sector_protection = true, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+}
+
+// Settings for the Micron N25Q256A 256Mb (32MiB) QSPI flash.
+// Datasheet: https://www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/n25q/n25q_256mb_3v.pdf
+#define N25Q256A {\
+    /* .total_size = (1 << 25), 32 MiB does not work at this time, as assumptions about 3-byte addresses abound */ \
+    .total_size = (1 << 24), /* 16 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x20, \
+    .memory_type = 0xBA, \
+    .capacity = 0x19, \
+    .max_clock_speed_mhz = 108, \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
     .supports_fast_read = true, \
     .supports_qspi = true, \
     .supports_qspi_writes = true, \

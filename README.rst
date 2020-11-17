@@ -3,7 +3,7 @@ CircuitPython
 
 .. image:: https://s3.amazonaws.com/adafruit-circuit-python/CircuitPython_Repo_header_logo.png
 
-|Build Status| |Doc Status| |License| |Discord|
+|Build Status| |Doc Status| |License| |Discord| |Weblate|
 
 `circuitpython.org <https://circuitpython.org>`__ \| `Get CircuitPython <#get-circuitpython>`__ \|
 `Documentation <#documentation>`__ \| `Contributing <#contributing>`__ \|
@@ -55,12 +55,12 @@ Contributing
 ------------
 
 See
-`CONTRIBUTING.md <https://github.com/adafruit/circuitpython/blob/master/CONTRIBUTING.md>`__
+`CONTRIBUTING.md <https://github.com/adafruit/circuitpython/blob/main/CONTRIBUTING.md>`__
 for full guidelines but please be aware that by contributing to this
 project you are agreeing to the `Code of
-Conduct <https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md>`__.
+Conduct <https://github.com/adafruit/circuitpython/blob/main/CODE_OF_CONDUCT.md>`__.
 Contributors who follow the `Code of
-Conduct <https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md>`__
+Conduct <https://github.com/adafruit/circuitpython/blob/main/CODE_OF_CONDUCT.md>`__
 are welcome to submit pull requests and they will be promptly reviewed
 by project admins. Please join the
 `Discord <https://adafru.it/discord>`__ too.
@@ -96,7 +96,6 @@ CircuitPython:
 
 -  Supports native USB on all boards, allowing file editing without special tools.
 -  Supports only SAMD21, SAMD51, nRF52840, CXD56, STM32F4 and i.MX RT ports.
--  Tracks MicroPython's releases (not master).
 -  Floats (aka decimals) are enabled for all builds.
 -  Error messages are translated into 10+ languages.
 -  Does not support concurrency within Python (including interrupts and threading). Some concurrency
@@ -211,11 +210,13 @@ The remaining port directories not listed above are in the repo to maintain comp
 
 `back to top <#circuitpython>`__
 
-.. |Build Status| image:: https://travis-ci.com/adafruit/circuitpython.svg?branch=master
-   :target: https://travis-ci.org/adafruit/circuitpython
+.. |Build Status| image:: https://github.com/adafruit/circuitpython/workflows/Build%20CI/badge.svg
+   :target: https://github.com/adafruit/circuitpython/actions?query=branch%3Amain
 .. |Doc Status| image:: https://readthedocs.org/projects/circuitpython/badge/?version=latest
    :target: http://circuitpython.readthedocs.io/
 .. |Discord| image:: https://img.shields.io/discord/327254708534116352.svg
    :target: https://adafru.it/discord
 .. |License| image:: https://img.shields.io/badge/License-MIT-brightgreen.svg
    :target: https://choosealicense.com/licenses/mit/
+.. |Weblate| image:: https://hosted.weblate.org/widgets/circuitpython/-/svg-badge.svg
+   :target: https://hosted.weblate.org/engage/circuitpython/?utm_source=widget

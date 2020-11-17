@@ -32,4 +32,10 @@
 #define FLASH_SIZE                  (0x80000) //512K
 #define FLASH_PAGE_SIZE             (0x4000)  //16K
 
-#define BOARD_OSC_DIV (8)
+#define HSE_VALUE ((uint32_t)8000000)
+#define BOARD_HSE_SOURCE (RCC_HSE_BYPASS) // ST boards use the STLink clock signal
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
+
+// The schematic has a 32k crystal that isn't fitted. Uncommented the line below if you add it.
+// #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
+// #define LSE_VALUE  ((uint32_t)32000U)

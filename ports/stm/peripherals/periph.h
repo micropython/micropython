@@ -51,8 +51,8 @@ typedef struct {
 // Timer Peripheral
 
 typedef struct {
-    uint8_t tim_index:4; 
-    uint8_t altfn_index:4; 
+    uint8_t tim_index:4;
+    uint8_t altfn_index:4;
     uint8_t channel_index:4;
     const mcu_pin_obj_t * pin;
 } mcu_tim_pin_obj_t;
@@ -106,6 +106,13 @@ typedef struct {
 #endif
 
 // F7 Series
+
+#ifdef STM32F746xx
+#define HAS_DAC 0
+#define HAS_TRNG 0
+#define HAS_BASIC_TIM 0
+#include "stm32f7/stm32f746xx/periph.h"
+#endif
 
 #ifdef STM32F767xx
 #define HAS_DAC 0

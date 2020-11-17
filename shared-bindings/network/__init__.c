@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,20 +38,18 @@
 
 #if CIRCUITPY_NETWORK
 
-//| :mod:`network` --- Network Interface Management
-//| ===============================================
+//| """Network Interface Management
 //|
-//| .. module:: network
-//|   :synopsis: Network Interface Management
-//|   :platform: SAMD
+//| .. warning:: This module is disabled in 6.x and will removed in 7.x. Please use networking
+//|              libraries instead.
 //|
 //| This module provides a registry of configured NICs.
 //| It is used by the 'socket' module to look up a suitable
-//| NIC when a socket is created.
+//| NIC when a socket is created."""
 //|
-//| .. function:: route()
-//|
-//|   Returns a list of all configured NICs.
+//| def route() -> List[object]:
+//|     """Returns a list of all configured NICs."""
+//|     ...
 //|
 
 STATIC mp_obj_t network_route(void) {

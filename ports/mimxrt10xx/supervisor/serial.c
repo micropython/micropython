@@ -90,4 +90,3 @@ void serial_write_substring(const char *text, uint32_t len) {
 
     LPUART_WriteBlocking(uart_instance, (uint8_t*)text, len);
 }
-

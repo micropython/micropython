@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_ll_gpio.h"
@@ -57,7 +57,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t* self,
     } else {
         mp_raise_ValueError(translate("Invalid ADC Unit value"));
     }
-    claim_pin(pin);
+    common_hal_mcu_pin_claim(pin);
     self->pin = pin;
 }
 

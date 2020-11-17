@@ -29,8 +29,9 @@
 
 #include "timer_handler.h"
 
+#include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
-#include "shared-module/_pew/PewPew.h"
+#include "common-hal/_pew/PewPew.h"
 #include "common-hal/frequencyio/FrequencyIn.h"
 
 extern void _PM_IRQ_HANDLER(void);
@@ -49,6 +50,11 @@ void shared_timer_handler(bool is_tc, uint8_t index) {
     if (is_tc) {
         uint8_t handler = tc_handler[index];
         switch(handler) {
+            case TC_HANDLER_PULSEIN:
+            #if CIRCUITPY_PULSEIO
+                pulsein_timer_interrupt_handler(index);
+            #endif
+                break;
             case TC_HANDLER_PULSEOUT:
             #if CIRCUITPY_PULSEIO
                 pulseout_interrupt_handler(index);

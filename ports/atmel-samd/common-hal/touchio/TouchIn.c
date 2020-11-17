@@ -42,7 +42,6 @@
 #include "samd/clocks.h"
 #include "samd/pins.h"
 
-#include "tick.h"
 #include "adafruit_ptc.h"
 
 bool touch_enabled = false;

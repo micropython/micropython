@@ -10,6 +10,7 @@
 // START_LD_DEFINES
 
 /*FLASH_SIZE=*/                                     FLASH_SIZE;
+/*RAM_START_ADDR=*/                                 RAM_START_ADDR;
 /*RAM_SIZE=*/                                       RAM_SIZE;
 
 /*MBR_START_ADDR=*/                                 MBR_START_ADDR;
@@ -41,5 +42,11 @@
 /*BOOTLOADER_SETTINGS_START_ADDR=*/                 BOOTLOADER_SETTINGS_START_ADDR;
 /*BOOTLOADER_SETTINGS_SIZE=*/                       BOOTLOADER_SETTINGS_SIZE;
 
+/*SOFTDEVICE_RAM_START_ADDR=*/                      SOFTDEVICE_RAM_START_ADDR;
 /*SOFTDEVICE_RAM_SIZE=*/                            SOFTDEVICE_RAM_SIZE;
-/*SPIM3_BUFFER_SIZE=*/                              SPIM3_BUFFER_SIZE;
+
+/*SPIM3_BUFFER_RAM_START_ADDR=*/                    SPIM3_BUFFER_RAM_START_ADDR;
+/*SPIM3_BUFFER_RAM_SIZE=*/                          SPIM3_BUFFER_RAM_SIZE;
+
+/*APP_RAM_START_ADDR=*/                             APP_RAM_START_ADDR;
+/*APP_RAM_SIZE=*/                                   APP_RAM_SIZE;

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,25 +46,23 @@
 #include "shared-module/network/__init__.h"
 #include "shared-module/wiznet/wiznet5k.h"
 
-//| .. currentmodule:: wiznet
+//| class WIZNET5K:
+//|     """Wrapper for Wiznet 5500 Ethernet interface"""
 //|
-//| :class:`WIZNET5K` -- wrapper for Wiznet 5500 Ethernet interface
-//| ===============================================================
+//|     def __init__(self, spi: busio.SPI, cs: microcontroller.Pin, rst: microcontroller.Pin, dhcp: bool = True) -> None:
+//|         """Create a new WIZNET5500 interface using the specified pins
 //|
-//| .. class:: WIZNET5K(spi, cs, rst, dhcp=True)
+//|         :param ~busio.SPI spi: spi bus to use
+//|         :param ~microcontroller.Pin cs: pin to use for Chip Select
+//|         :param ~microcontroller.Pin rst: pin to use for Reset (optional)
+//|         :param bool dhcp: boolean flag, whether to start DHCP automatically (optional, keyword only, default True)
 //|
-//|   Create a new WIZNET5500 interface using the specified pins
-//|
-//|   :param ~busio.SPI spi: spi bus to use
-//|   :param ~microcontroller.Pin cs: pin to use for Chip Select
-//|   :param ~microcontroller.Pin rst: pin to use for Reset (optional)
-//|   :param bool dhcp: boolean flag, whether to start DHCP automatically (optional, keyword only, default True)
-//|
-//|   * The reset pin is optional: if supplied it is used to reset the
-//|     wiznet board before initialization.
-//|   * The SPI bus will be initialized appropriately by this library.
-//|   * At present, the WIZNET5K object is a singleton, so only one WizNet
-//|     interface is supported at a time.
+//|         * The reset pin is optional: if supplied it is used to reset the
+//|           wiznet board before initialization.
+//|         * The SPI bus will be initialized appropriately by this library.
+//|         * At present, the WIZNET5K object is a singleton, so only one WizNet
+//|           interface is supported at a time."""
+//|         ...
 //|
 
 STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -86,9 +84,8 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, cons
     return ret;
 }
 
-//| .. attribute:: connected
-//|
-//|   (boolean, readonly) is this device physically connected?
+//|     connected: bool
+//|     """(boolean, readonly) is this device physically connected?"""
 //|
 
 STATIC mp_obj_t wiznet5k_connected_get_value(mp_obj_t self_in) {
@@ -104,11 +101,10 @@ const mp_obj_property_t wiznet5k_connected_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//| .. attribute:: dhcp
+//|     dhcp: bool
+//|     """(boolean, readwrite) is DHCP active on this device?
 //|
-//|   (boolean, readwrite) is DHCP active on this device?
-//|
-//|   * set to True to activate DHCP, False to turn it off
+//|     * set to True to activate DHCP, False to turn it off"""
 //|
 
 STATIC mp_obj_t wiznet5k_dhcp_get_value(mp_obj_t self_in) {
@@ -138,13 +134,13 @@ const mp_obj_property_t wiznet5k_dhcp_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//| .. method:: ifconfig(params=None)
+//|     def ifconfig(self, params: Optional[Tuple[str, str, str, str]] = None) -> Optional[Tuple[str, str, str, str]]:
+//|         """Called without parameters, returns a tuple of
+//|         (ip_address, subnet_mask, gateway_address, dns_server)
 //|
-//|   Called without parameters, returns a tuple of
-//|   (ip_address, subnet_mask, gateway_address, dns_server)
-//|
-//|   Or can be called with the same tuple to set those parameters.
-//|   Setting ifconfig parameters turns DHCP off, if it was on.
+//|         Or can be called with the same tuple to set those parameters.
+//|         Setting ifconfig parameters turns DHCP off, if it was on."""
+//|         ...
 //|
 
 STATIC mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {

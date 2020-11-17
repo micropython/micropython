@@ -70,7 +70,7 @@ void common_hal_digitalio_digitalinout_switch_to_input(digitalio_digitalinout_ob
     board_gpio_config(self->pin->number, 0, true, true, pull);
 }
 
-void common_hal_digitalio_digitalinout_switch_to_output(digitalio_digitalinout_obj_t *self, bool value, digitalio_drive_mode_t drive_mode) {
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(digitalio_digitalinout_obj_t *self, bool value, digitalio_drive_mode_t drive_mode) {
     self->input = false;
     self->open_drain = drive_mode == DRIVE_MODE_OPEN_DRAIN;
     board_gpio_write(self->pin->number, -1);
@@ -80,6 +80,7 @@ void common_hal_digitalio_digitalinout_switch_to_output(digitalio_digitalinout_o
         board_gpio_write(self->pin->number, 0);
     }
     common_hal_digitalio_digitalinout_set_value(self, value);
+    return DIGITALINOUT_OK;
 }
 
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(digitalio_digitalinout_obj_t *self) {
@@ -104,7 +105,7 @@ bool common_hal_digitalio_digitalinout_get_value(digitalio_digitalinout_obj_t *s
     return board_gpio_read(self->pin->number);
 }
 
-void common_hal_digitalio_digitalinout_set_drive_mode(digitalio_digitalinout_obj_t *self, digitalio_drive_mode_t drive_mode) {
+digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(digitalio_digitalinout_obj_t *self, digitalio_drive_mode_t drive_mode) {
     if (drive_mode == DRIVE_MODE_PUSH_PULL) {
         board_gpio_write(self->pin->number, -1);
         board_gpio_config(self->pin->number, 0, false, true, PIN_FLOAT);
@@ -115,6 +116,7 @@ void common_hal_digitalio_digitalinout_set_drive_mode(digitalio_digitalinout_obj
         board_gpio_write(self->pin->number, 0);
         self->open_drain = true;
     }
+    return DIGITALINOUT_OK;
 }
 
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(digitalio_digitalinout_obj_t *self) {

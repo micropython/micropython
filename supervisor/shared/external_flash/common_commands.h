@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,5 +43,6 @@
 #define CMD_QUAD_READ 0x6b
 #define CMD_ENABLE_RESET 0x66
 #define CMD_RESET 0x99
+#define CMD_WAKE 0xab
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_EXTERNAL_FLASH_COMMON_COMMANDS_H

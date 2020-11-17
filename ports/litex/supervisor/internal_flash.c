@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,6 +37,7 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
+#include "supervisor/flash.h"
 #include "supervisor/usb.h"
 
 #include "csr.h"
@@ -270,7 +271,7 @@ uint32_t supervisor_flash_get_block_count(void) {
 }
 
 __attribute__((section(".ramtext")))
-void supervisor_flash_flush(void) {
+void port_internal_flash_flush(void) {
     // Skip if data is the same, or if there is no data in the cache
     if (_flash_page_addr == NO_CACHE)
         return;
@@ -347,4 +348,3 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
 
 void supervisor_flash_release_cache(void) {
 }
-

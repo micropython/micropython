@@ -49,9 +49,9 @@ static void _intr_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
 
     self->state = new_state;
 
-    // logic from the atmel-samd port: provides some damping and scales movement 
-    // down by 4:1.  
-    if (self->quarter >= 4) { 
+    // logic from the atmel-samd port: provides some damping and scales movement
+    // down by 4:1.
+    if (self->quarter >= 4) {
         self->position++;
         self->quarter = 0;
     } else if (self->quarter <= -4) {

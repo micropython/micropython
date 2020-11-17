@@ -27,6 +27,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "mpconfigport.h"
+
+// Some boards don't implement I2SOut, so suppress any routines from here.
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+
 #include "extmod/vfs_fat.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
@@ -59,13 +64,13 @@
 #define SERCTRL(name) I2S_SERCTRL_ ## name
 #endif
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 #define SERCTRL(name) I2S_TXCTRL_ ## name
 #endif
 
 void i2sout_reset(void) {
     // Make sure the I2S peripheral is running so we can see if the resources we need are free.
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // Connect the clock units to the 2mhz clock. It can't disable without it.
     connect_gclk_to_peripheral(5, I2S_GCLK_ID_0);
     connect_gclk_to_peripheral(5, I2S_GCLK_ID_1);
@@ -76,7 +81,7 @@ void i2sout_reset(void) {
     }
 
     // Make sure the I2S peripheral is running so we can see if the resources we need are free.
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // Connect the clock units to the 2mhz clock by default. They can't reset without it.
     disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_0);
     disconnect_gclk_from_peripheral(5, I2S_GCLK_ID_1);
@@ -132,7 +137,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
         serializer = 1;
     }
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // Only clock unit 0 can be used for transmission.
     if (bit_clock == &pin_PA10 || bit_clock == &pin_PB16) { // I2S SCK[0]
         bc_clock_unit = 0;
@@ -170,14 +175,14 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
             mp_raise_RuntimeError(translate("Serializer in use"));
         }
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         if (I2S->CTRLA.bit.TXEN == 1) {
             mp_raise_RuntimeError(translate("Serializer in use"));
         }
         #endif
     }
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_J
     #endif
     #ifdef SAMD21
@@ -254,7 +259,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     #ifdef SAMD21
     uint32_t serctrl = (self->clock_unit << I2S_SERCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_TX) | I2S_SERCTRL_TXSAME_SAME | I2S_SERCTRL_EXTEND_MSBIT | I2S_SERCTRL_TXDEFAULT_ONE | I2S_SERCTRL_SLOTADJ_LEFT;
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     uint32_t serctrl = (self->clock_unit << I2S_RXCTRL_CLKSEL_Pos) | I2S_TXCTRL_TXSAME_SAME;
     #endif
     if (audiosample_channel_count(sample) == 1) {
@@ -277,7 +282,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     #ifdef SAMD21
     I2S->SERCTRL[self->serializer].reg = serctrl;
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     I2S->TXCTRL.reg = serctrl;
     #endif
 
@@ -291,7 +296,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     uint32_t tx_register = (uint32_t) &I2S->DATA[self->serializer].reg;
     uint8_t dmac_id = I2S_DMAC_ID_TX_0 + self->serializer;
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     uint32_t tx_register = (uint32_t) &I2S->TXDATA.reg;
     uint8_t dmac_id = I2S_DMAC_ID_TX_0;
     #endif
@@ -316,7 +321,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
     I2S->CTRLA.vec.SEREN = 1 << self->serializer;
     while ((I2S->SYNCBUSY.vec.SEREN & (1 << self->serializer)) != 0) {}
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     I2S->CTRLA.bit.TXEN = 1;
     while (I2S->SYNCBUSY.bit.TXEN == 1) {}
     #endif
@@ -333,7 +338,7 @@ void common_hal_audiobusio_i2sout_resume(audiobusio_i2sout_obj_t* self) {
     #ifdef SAMD21
     I2S->INTFLAG.reg = I2S_INTFLAG_TXUR0 << self->serializer;
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     I2S->INTFLAG.reg = I2S_INTFLAG_TXUR0 | I2S_INTFLAG_TXUR1;
     #endif
 
@@ -351,7 +356,7 @@ void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
     I2S->CTRLA.vec.SEREN &= ~(1 << self->serializer);
     while ((I2S->SYNCBUSY.vec.SEREN & (1 << self->serializer)) != 0) {}
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     I2S->CTRLA.bit.TXEN = 0;
     while (I2S->SYNCBUSY.bit.TXEN == 1) {}
     #endif
@@ -368,7 +373,7 @@ void common_hal_audiobusio_i2sout_stop(audiobusio_i2sout_obj_t* self) {
     disconnect_gclk_from_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
     disable_clock_generator(self->gclk);
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     connect_gclk_to_peripheral(5, I2S_GCLK_ID_0 + self->clock_unit);
     #endif
 
@@ -382,3 +387,5 @@ bool common_hal_audiobusio_i2sout_get_playing(audiobusio_i2sout_obj_t* self) {
     }
     return still_playing;
 }
+
+#endif // CIRCUITPY_AUDIOBUSIO_I2SOUT

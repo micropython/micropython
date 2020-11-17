@@ -35,22 +35,7 @@
 #include "shared-bindings/audiocore/WaveFile.h"
 //#include "shared-bindings/audiomixer/Mixer.h"
 
-//| :mod:`audiocore` --- Support for audio samples and mixer
-//| ========================================================
-//|
-//| .. module:: audiocore
-//|   :synopsis: Support for audio samples and mixer
-//|   :platform: SAMD21
-//|
-//| The `audiocore` module contains core classes for audio IO
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     RawSample
-//|     WaveFile
+//| """Support for audio samples"""
 //|
 
 STATIC const mp_rom_map_elem_t audiocore_module_globals_table[] = {

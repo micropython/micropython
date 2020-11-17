@@ -1,0 +1,9 @@
+# No newlines in this file so they are preserved in the board sdkconfig.
+# CONFIG_ESPTOOLPY_FLASHSIZE_1MB is not set
+# CONFIG_ESPTOOLPY_FLASHSIZE_2MB is not set
+# CONFIG_ESPTOOLPY_FLASHSIZE_4MB is not set
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+# CONFIG_ESPTOOLPY_FLASHSIZE_16MB is not set
+CONFIG_ESPTOOLPY_FLASHSIZE="8MB"
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="esp-idf-config/partitions-8MB.csv"
+CONFIG_PARTITION_TABLE_FILENAME="esp-idf-config/partitions-8MB.csv"

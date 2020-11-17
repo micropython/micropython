@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +35,10 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
+#include "supervisor/flash.h"
 #include "supervisor/shared/safe_mode.h"
+
+#include STM32_HAL_H
 
 typedef struct {
     uint32_t base_address;
@@ -122,7 +125,7 @@ STATIC uint32_t get_bank(uint32_t addr) {
 }
 #endif
 
-//Return the sector of a given flash address. 
+//Return the sector of a given flash address.
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     if (addr >= flash_layout[0].base_address) {
         uint32_t sector_index = 0;
@@ -158,7 +161,7 @@ uint32_t supervisor_flash_get_block_count(void) {
     return INTERNAL_FLASH_FILESYSTEM_NUM_BLOCKS;
 }
 
-void supervisor_flash_flush(void) {
+void port_internal_flash_flush(void) {
     if (_cache_flash_addr == NO_CACHE) return;
 
     #if defined(STM32H7)
@@ -174,13 +177,13 @@ void supervisor_flash_flush(void) {
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
     // get the sector information
     uint32_t sector_size;
-    uint32_t sector_start_addr;
+    uint32_t sector_start_addr = 0xffffffff;
     #if defined(STM32H7)
     EraseInitStruct.Banks = get_bank(_cache_flash_addr);
     #endif
     EraseInitStruct.Sector = flash_get_sector_info(_cache_flash_addr, &sector_start_addr, &sector_size);
     EraseInitStruct.NbSectors = 1;
-    if (sector_size > sizeof(_flash_cache)) {
+    if (sector_size > sizeof(_flash_cache) || sector_start_addr == 0xffffffff) {
         reset_into_safe_mode(FLASH_WRITE_FAIL);
     }
 
@@ -202,7 +205,7 @@ void supervisor_flash_flush(void) {
         #if defined(STM32H7)
         for (uint32_t i = 0; i < (sector_size / 32); i++) {
             // Note that the STM32H7 HAL interface differs by taking an address, not 64 bit data
-            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, sector_start_addr, 
+            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, sector_start_addr,
                                   (uint32_t)cache_addr) != HAL_OK) {
                 // error occurred during flash write
                 HAL_FLASH_Lock(); // lock the flash
@@ -216,7 +219,7 @@ void supervisor_flash_flush(void) {
         #else // STM32F4
         // program the flash word by word
         for (uint32_t i = 0; i < sector_size / 4; i++) {
-            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, sector_start_addr, 
+            if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, sector_start_addr,
                                   (uint64_t)*cache_addr) != HAL_OK) {
                 // error occurred during flash write
                 HAL_FLASH_Lock(); // lock the flash
@@ -260,7 +263,7 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
     if (count < num_blocks && _cache_flash_addr == sector_start_addr) {
         // Read is contained in the cache, so just read cache
         memcpy(dest, (_flash_cache + (src-sector_start_addr)), FILESYSTEM_BLOCK_SIZE*num_blocks);
-    } else { 
+    } else {
         // The read spans multiple sectors or is in another sector
         // Must write out anything in cache before trying to read.
         supervisor_flash_flush();
@@ -318,4 +321,3 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
 
 void supervisor_flash_release_cache(void) {
 }
-

@@ -521,7 +521,7 @@ SVCALL(SD_BLE_UUID_VS_ADD, uint32_t, sd_ble_uuid_vs_add(ble_uuid128_t const *p_v
 
 
 /**@brief Remove a Vendor Specific base UUID.
- * 
+ *
  * @details This call removes a Vendor Specific base UUID that has been added with @ref sd_ble_uuid_vs_add. This function allows
  * the application to reuse memory allocated for Vendor Specific base UUIDs.
  *

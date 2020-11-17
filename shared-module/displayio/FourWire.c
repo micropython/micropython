@@ -36,8 +36,6 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/display_core.h"
 
-#include "tick.h"
-
 void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t* self,
     busio_spi_obj_t* spi, const mcu_pin_obj_t* command,
     const mcu_pin_obj_t* chip_select, const mcu_pin_obj_t* reset, uint32_t baudrate,
@@ -78,7 +76,9 @@ void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
 
     common_hal_reset_pin(self->command.pin);
     common_hal_reset_pin(self->chip_select.pin);
-    common_hal_reset_pin(self->reset.pin);
+    if (self->reset.pin) {
+        common_hal_reset_pin(self->reset.pin);
+    }
 }
 
 bool common_hal_displayio_fourwire_reset(mp_obj_t obj) {
@@ -87,9 +87,9 @@ bool common_hal_displayio_fourwire_reset(mp_obj_t obj) {
         return false;
     }
     common_hal_digitalio_digitalinout_set_value(&self->reset, false);
-    common_hal_time_delay_ms(1);
+    common_hal_mcu_delay_us(1000);
     common_hal_digitalio_digitalinout_set_value(&self->reset, true);
-    common_hal_time_delay_ms(1);
+    common_hal_mcu_delay_us(1000);
     return true;
 }
 

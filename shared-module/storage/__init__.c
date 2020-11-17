@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Josef Gajdusek
  * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
@@ -30,6 +30,7 @@
 
 #include "extmod/vfs.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
@@ -159,6 +160,8 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
 }
 
 void common_hal_storage_erase_filesystem(void) {
+    usb_disconnect();
+    mp_hal_delay_ms(1000);
     filesystem_init(false, true); // Force a re-format.
     common_hal_mcu_reset();
     // We won't actually get here, since we're resetting.

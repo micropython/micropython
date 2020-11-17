@@ -33,7 +33,7 @@
 #define MICROPY_HW_BOARD_NAME       "Teknikio Bluebird"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
-#define MICROPY_HW_NEOPIXEL         (&pin_P0_26)
+#define MICROPY_HW_NEOPIXEL         (&pin_P1_15)
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_27)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_26)

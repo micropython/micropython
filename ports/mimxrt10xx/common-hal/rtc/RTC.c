@@ -72,5 +72,6 @@ int common_hal_rtc_get_calibration(void) {
 }
 
 void common_hal_rtc_set_calibration(int calibration) {
+    // SNVS has HPCALB_VAL bits for calibration.
     mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
 }

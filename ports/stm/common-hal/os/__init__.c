@@ -32,15 +32,15 @@
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 #include "peripherals/periph.h"
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
     MP_QSTR_release, MP_QSTR_version, MP_QSTR_machine
 };
-STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, "stm32f4");
-STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, "stm32f4");
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_sysname_obj, STM32_SERIES_LOWER);
+STATIC const MP_DEFINE_STR_OBJ(os_uname_info_nodename_obj, STM32_SERIES_LOWER);
 
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_release_obj, MICROPY_VERSION_STRING);
 STATIC const MP_DEFINE_STR_OBJ(os_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE);
@@ -72,16 +72,20 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
     if (HAL_RNG_Init(&handle) != HAL_OK) mp_raise_ValueError(translate("RNG Init Error"));
 
     //Assign bytes
-    for (uint i = 0; i < length; i++) {
-        uint32_t temp;
+    uint32_t i = 0;
+    while (i < length) {
+        uint32_t new_random;
         uint32_t start = HAL_GetTick();
         //the HAL function has a timeout, but it isn't long enough, and isn't adjustable
         while(!(__HAL_RNG_GET_FLAG(&handle,RNG_FLAG_DRDY)) && ((HAL_GetTick() - start) < RNG_TIMEOUT));
-        //
-        if (HAL_RNG_GenerateRandomNumber(&handle, &temp) != HAL_OK) {
+        if (HAL_RNG_GenerateRandomNumber(&handle, &new_random) != HAL_OK) {
             mp_raise_ValueError(translate("Random number generation error"));
         }
-        *buffer = (uint8_t)temp;
+        for (int j = 0; j < 4 && i < length; j++) {
+            buffer[i] = new_random & 0xff;
+            i++;
+            new_random >>= 8;
+        }
     }
 
     //shut down the peripheral

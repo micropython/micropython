@@ -28,25 +28,13 @@
 #include "shared-bindings/framebufferio/__init__.h"
 #include "shared-bindings/framebufferio/FramebufferDisplay.h"
 
-//| :mod:`framebufferio` --- Native framebuffer display driving
-//| =========================================================================
-//|
-//| .. module:: framebufferio
-//|   :synopsis: Native helpers for driving displays
-//|   :platform: SAMD51, nRF52
+//| """Native framebuffer display driving
 //|
 //| The `framebufferio` module contains classes to manage display output
 //| including synchronizing with refresh rates and partial updating.
 //| It is used in conjunction with classes from `displayio` to actually
 //| place items on the display; and classes like `RGBMatrix` to actually
-//| drive the display.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     FramebufferDisplay
+//| drive the display."""
 //|
 
 #if CIRCUITPY_FRAMEBUFFERIO
@@ -60,4 +48,3 @@ const mp_obj_module_t framebufferio_module = {
     .globals = (mp_obj_dict_t*)&framebufferio_module_globals,
 };
 #endif
-

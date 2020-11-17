@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,26 +36,24 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/util.h"
 
-//| .. currentmodule:: analogio
+//| class AnalogIn:
+//|     """Read analog voltage levels
 //|
-//| :class:`AnalogIn` -- read analog voltage
-//| ============================================
+//|     Usage::
 //|
-//| Usage::
+//|        import analogio
+//|        from board import *
 //|
-//|    import analogio
-//|    from board import *
-//|
-//|    adc = analogio.AnalogIn(A1)
-//|    val = adc.value
+//|        adc = analogio.AnalogIn(A1)
+//|        val = adc.value"""
 //|
 
-//| .. class:: AnalogIn(pin)
+//|     def __init__(self, pin: microcontroller.Pin) -> None:
+//|         """Use the AnalogIn on the given pin. The reference voltage varies by
+//|         platform so use ``reference_voltage`` to read the configured setting.
 //|
-//|   Use the AnalogIn on the given pin. The reference voltage varies by
-//|   platform so use ``reference_voltage`` to read the configured setting.
-//|
-//|   :param ~microcontroller.Pin pin: the pin to read from
+//|         :param ~microcontroller.Pin pin: the pin to read from"""
+//|         ...
 //|
 STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
         mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -72,9 +70,9 @@ STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Turn off the AnalogIn and release the pin for other use.
+//|     def deinit(self) -> None:
+//|         """Turn off the AnalogIn and release the pin for other use."""
+//|         ...
 //|
 STATIC mp_obj_t analogio_analogin_deinit(mp_obj_t self_in) {
    analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -88,16 +86,16 @@ STATIC void check_for_deinit(analogio_analogin_obj_t *self) {
         raise_deinited_error();
     }
 }
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self) -> AnalogIn:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t analogio_analogin___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -106,12 +104,11 @@ STATIC mp_obj_t analogio_analogin___exit__(size_t n_args, const mp_obj_t *args) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(analogio_analogin___exit___obj, 4, 4, analogio_analogin___exit__);
 
-//|   .. attribute:: value
-//|
-//|     The value on the analog pin between 0 and 65535 inclusive (16-bit). (read-only)
+//|     value: int
+//|     """The value on the analog pin between 0 and 65535 inclusive (16-bit). (read-only)
 //|
 //|     Even if the underlying analog to digital converter (ADC) is lower
-//|     resolution, the value is 16-bit.
+//|     resolution, the value is 16-bit."""
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_value(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -127,10 +124,9 @@ const mp_obj_property_t analogio_analogin_value_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: reference_voltage
-//|
-//|     The maximum voltage measurable (also known as the reference voltage) as a
-//|     `float` in Volts.
+//|     reference_voltage: Optional[float]
+//|     """The maximum voltage measurable (also known as the reference voltage) as a
+//|     `float` in Volts."""
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);

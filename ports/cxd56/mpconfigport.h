@@ -27,12 +27,14 @@
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
-#define MICROPY_PY_SYS_PLATFORM "CXD56"
+#define MICROPY_PY_SYS_PLATFORM                 "CXD56"
 
 // 64kiB stack
-#define CIRCUITPY_DEFAULT_STACK_SIZE            0x10000
+#define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
 
 #include "py/circuitpy_mpconfig.h"
+
+#define MICROPY_BYTES_PER_GC_BLOCK              (32)
 
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \

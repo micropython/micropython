@@ -26,6 +26,10 @@
 
 #include "supervisor/serial.h"
 
+void serial_early_init(void) {
+
+}
+
 void serial_init(void) {
 
 }

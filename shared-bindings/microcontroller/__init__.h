@@ -49,10 +49,13 @@ extern const mcu_processor_obj_t common_hal_mcu_processor_obj;
 
 
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
-
 #include "common-hal/nvm/ByteArray.h"
 extern const nvm_bytearray_obj_t common_hal_mcu_nvm_obj;
+#endif
 
+#if CIRCUITPY_WATCHDOG
+#include "common-hal/watchdog/WatchDogTimer.h"
+extern watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj;
 #endif
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MICROCONTROLLER___INIT___H

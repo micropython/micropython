@@ -25,6 +25,7 @@
  */
 
 #include <arch/board/board.h>
+#include <sys/time.h>
 
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -51,7 +52,9 @@ static int pulsein_set_config(pulseio_pulsein_obj_t *self, bool first_edge) {
 
 static int pulsein_interrupt_handler(int irq, FAR void *context, FAR void *arg) {
     // Grab the current time first.
-    uint32_t current_us = mp_hal_ticks_us();
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    uint64_t current_us = ((uint64_t) tv.tv_sec) * 1000000 + tv.tv_usec;
 
     pulseio_pulsein_obj_t *self = pulsein_objects[irq - CXD56_IRQ_EXDEVICE_0];
 
@@ -157,7 +160,7 @@ void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     if (self->len == 0) {
-        mp_raise_IndexError(translate("pop from an empty PulseIn"));
+        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
     }
     common_hal_mcu_disable_interrupts();
     uint16_t value = self->buffer[self->start];
@@ -187,7 +190,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_
     }
     if (index < 0 || index >= self->len) {
         common_hal_mcu_enable_interrupts();
-        mp_raise_IndexError(translate("index out of range"));
+        mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_PulseIn);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     common_hal_mcu_enable_interrupts();

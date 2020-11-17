@@ -15,7 +15,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -136,12 +136,12 @@
 #define	__P(p)	()
 #endif
 
-/* 
+/*
  * set X_TLOSS = pi*2**52, which is possibly defined in <values.h>
  * (one may replace the following line by "#include <values.h>")
  */
 
-#define X_TLOSS		1.41484755040568800000e+16 
+#define X_TLOSS		1.41484755040568800000e+16
 
 /* Functions that are not documented, and are not in <math.h>.  */
 
@@ -154,13 +154,13 @@ extern float scalbf __P((float, float));
 extern float significandf __P((float));
 
 /* ieee style elementary float functions */
-extern float __ieee754_sqrtf __P((float));			
-extern float __ieee754_acosf __P((float));			
-extern float __ieee754_acoshf __P((float));			
-extern float __ieee754_logf __P((float));			
-extern float __ieee754_atanhf __P((float));			
-extern float __ieee754_asinf __P((float));			
-extern float __ieee754_atan2f __P((float,float));			
+extern float __ieee754_sqrtf __P((float));
+extern float __ieee754_acosf __P((float));
+extern float __ieee754_acoshf __P((float));
+extern float __ieee754_logf __P((float));
+extern float __ieee754_atanhf __P((float));
+extern float __ieee754_asinf __P((float));
+extern float __ieee754_atan2f __P((float,float));
 extern float __ieee754_expf __P((float));
 extern float __ieee754_coshf __P((float));
 extern float __ieee754_fmodf __P((float,float));
@@ -188,7 +188,7 @@ extern float __ieee754_scalbf __P((float,float));
 extern float __kernel_sinf __P((float,float,int));
 extern float __kernel_cosf __P((float,float));
 extern float __kernel_tanf __P((float,float,int));
-extern int   __kernel_rem_pio2f __P((float*,float*,int,int,int,const __int32_t*));
+extern int   __kernel_rem_pio2f __P((float*,float*,int,int,int,const __uint8_t*));
 
 /* A union which permits us to convert between a float and a 32 bit
    int.  */

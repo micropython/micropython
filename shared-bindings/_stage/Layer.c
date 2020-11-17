@@ -30,25 +30,23 @@
 #include "Layer.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: _stage
+//| class Layer:
+//|     """Keep information about a single layer of graphics"""
 //|
-//| :class:`Layer` -- Keep information about a single layer of graphics
-//| ===================================================================
+//|     def __init__(self, width: int, height: int, graphic: ReadableBuffer, palette: ReadableBuffer, grid: ReadableBuffer) -> None:
+//|         """Keep internal information about a layer of graphics (either a
+//|         ``Grid`` or a ``Sprite``) in a format suitable for fast rendering
+//|         with the ``render()`` function.
 //|
-//| .. class:: Layer(width, height, graphic, palette, [grid])
+//|         :param int width: The width of the grid in tiles, or 1 for sprites.
+//|         :param int height: The height of the grid in tiles, or 1 for sprites.
+//|         :param ~_typing.ReadableBuffer graphic: The graphic data of the tiles.
+//|         :param ~_typing.ReadableBuffer palette: The color palette to be used.
+//|         :param ~_typing.ReadableBuffer grid: The contents of the grid map.
 //|
-//|     Keep internal information about a layer of graphics (either a
-//|     ``Grid`` or a ``Sprite``) in a format suitable for fast rendering
-//|     with the ``render()`` function.
-//|
-//|     :param int width: The width of the grid in tiles, or 1 for sprites.
-//|     :param int height: The height of the grid in tiles, or 1 for sprites.
-//|     :param bytearray graphic: The graphic data of the tiles.
-//|     :param bytearray palette: The color palette to be used.
-//|     :param bytearray grid: The contents of the grid map.
-//|
-//|     This class is intended for internal use in the ``stage`` library and
-//|     it shouldn't be used on its own.
+//|         This class is intended for internal use in the ``stage`` library and
+//|         it shouldn't be used on its own."""
+//|         ...
 //|
 STATIC mp_obj_t layer_make_new(const mp_obj_type_t *type, size_t n_args,
         const mp_obj_t *args, mp_map_t *kw_args) {
@@ -90,9 +88,9 @@ STATIC mp_obj_t layer_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     .. method:: move(x, y)
-//|
-//|     Set the offset of the layer to the specified values.
+//|     def move(self, x: int, y: int) -> None:
+//|         """Set the offset of the layer to the specified values."""
+//|         ...
 //|
 STATIC mp_obj_t layer_move(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
     layer_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -102,10 +100,10 @@ STATIC mp_obj_t layer_move(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(layer_move_obj, layer_move);
 
-//|     .. method:: frame(frame, rotation)
-//|
-//|     Set the animation frame of the sprite, and optionally rotation its
-//|     graphic.
+//|     def frame(self, frame: int, rotation: int) -> None:
+//|         """Set the animation frame of the sprite, and optionally rotation its
+//|         graphic."""
+//|         ...
 //|
 STATIC mp_obj_t layer_frame(mp_obj_t self_in, mp_obj_t frame_in,
                             mp_obj_t rotation_in) {

@@ -35,9 +35,10 @@
 #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
 #include "lib/oofatfs/ff.h"
 
-FIL* boot_output_file;
+extern FIL* boot_output_file;
 #endif
 
+void serial_early_init(void);
 void serial_init(void);
 void serial_write(const char* text);
 // Only writes up to given length. Does not check for null termination at all.

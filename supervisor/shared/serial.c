@@ -32,27 +32,76 @@
 #include "shared-bindings/terminalio/Terminal.h"
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "tusb.h"
+
+/*
+ * Note: DEBUG_UART currently only works on STM32,
+ * enabling on another platform will cause a crash.
+ */
+
+#if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+#include "shared-bindings/busio/UART.h"
+busio_uart_obj_t debug_uart;
+byte buf_array[64];
+#endif
+
+void serial_early_init(void) {
+#if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    debug_uart.base.type = &busio_uart_type;
+
+    const mcu_pin_obj_t* rx = MP_OBJ_TO_PTR(DEBUG_UART_RX);
+    const mcu_pin_obj_t* tx = MP_OBJ_TO_PTR(DEBUG_UART_TX);
+
+    common_hal_busio_uart_construct(&debug_uart, tx, rx, NULL, NULL, NULL,
+                                    false, 115200, 8, UART_PARITY_NONE, 1, 1.0f, 64,
+                                    buf_array, true);
+    common_hal_busio_uart_never_reset(&debug_uart);
+#endif
+}
 
 void serial_init(void) {
     usb_init();
 }
 
 bool serial_connected(void) {
-    return tud_cdc_connected();
+#if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    return true;
+#else
+    // True if DTR is asserted, and the USB connection is up.
+    // tud_cdc_get_line_state(): bit 0 is DTR, bit 1 is RTS
+    return (tud_cdc_get_line_state() & 1) && tud_ready();
+#endif
 }
 
 char serial_read(void) {
+#if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    if (tud_cdc_connected() && tud_cdc_available() > 0) {
+        return (char) tud_cdc_read_char();
+    }
+    int uart_errcode;
+    char text;
+    common_hal_busio_uart_read(&debug_uart, (uint8_t*) &text, 1, &uart_errcode);
+    return text;
+#else
     return (char) tud_cdc_read_char();
+#endif
 }
 
 bool serial_bytes_available(void) {
+#if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    return common_hal_busio_uart_rx_characters_available(&debug_uart) || (tud_cdc_available() > 0);
+#else
     return tud_cdc_available() > 0;
+#endif
 }
 
 void serial_write_substring(const char* text, uint32_t length) {
-#if CIRCUITPY_DISPLAYIO
+    if (length == 0) {
+        return;
+    }
+#if CIRCUITPY_TERMINALIO
     int errcode;
     common_hal_terminalio_terminal_write(&supervisor_terminal, (const uint8_t*) text, length, &errcode);
 #endif
@@ -62,6 +111,11 @@ void serial_write_substring(const char* text, uint32_t length) {
         count += tud_cdc_write(text + count, length - count);
         usb_background();
     }
+
+#if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    int uart_errcode;
+    common_hal_busio_uart_write(&debug_uart, (const uint8_t*) text, length, &uart_errcode);
+#endif
 }
 
 void serial_write(const char* text) {

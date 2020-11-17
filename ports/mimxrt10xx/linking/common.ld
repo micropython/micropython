@@ -21,7 +21,7 @@ MEMORY
     /* This can't move because the bootrom looks at this address. */
     FLASH_IVT (rx)        : ORIGIN = 0x60001000, LENGTH = 4K
     /* Place the ISRs 48k in to leave room for the bootloader when it is available. */
-    FLASH_TEXT (rx)        : ORIGIN = 0x6000C000, LENGTH = code_size - 48K
+    FLASH_FIRMWARE (rx)   : ORIGIN = 0x6000C000, LENGTH = code_size - 48K
     FLASH_FATFS (r)       : ORIGIN = 0x60100000, LENGTH = _ld_flash_size - code_size - _ld_reserved_flash_size
     /* Teensy uses the last bit of flash for recovery. */
     RESERVED_FLASH        : ORIGIN = 0x60100000 + _ld_flash_size - _ld_reserved_flash_size, LENGTH = _ld_reserved_flash_size
@@ -62,12 +62,11 @@ SECTIONS
 
         KEEP(*(.isr_vector))         /* Startup code */
     *(EXCLUDE_FILE(
-        *flexspi_nor_flash_ops.o
         *fsl_flexspi.o
     ) .text*)                /* .text* sections (code) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
         . = ALIGN(4);
-    } > FLASH_TEXT
+    } > FLASH_FIRMWARE
 
     .ARM.exidx :
     {
@@ -75,7 +74,7 @@ SECTIONS
         *(.gnu.linkonce.armexidx.*)
         _etext = .;        /* define a global symbol at end of code */
         __etext = .;       /* define a global symbol at end of code */
-    } > FLASH_TEXT
+    } > FLASH_FIRMWARE
 
     _ld_filesystem_start = ORIGIN(FLASH_FATFS);
     _ld_filesystem_end = _ld_filesystem_start + LENGTH(FLASH_FATFS);
@@ -84,10 +83,9 @@ SECTIONS
     {
         . = ALIGN(4);
         *(.data*)               /* .data* sections */
-        *flexspi_nor_flash_ops.o(.text*)
         *fsl_flexspi.o(.text*)
         . = ALIGN(4);
-    } > OCRAM AT> FLASH_TEXT
+    } > OCRAM AT> FLASH_FIRMWARE
     _ld_ocram_data_destination = ADDR(.data);
     _ld_ocram_data_flash_copy = LOADADDR(.data);
     _ld_ocram_data_size = SIZEOF(.data);
@@ -110,11 +108,10 @@ SECTIONS
     .itcm :
     {
         . = ALIGN(4);
-
         *(.itcm.*)
 
         . = ALIGN(4);
-    } > ITCM AT> FLASH_TEXT
+    } > ITCM AT> FLASH_FIRMWARE
     _ld_itcm_destination = ADDR(.itcm);
     _ld_itcm_flash_copy = LOADADDR(.itcm);
     _ld_itcm_size = SIZEOF(.itcm);
@@ -126,7 +123,7 @@ SECTIONS
         *(.dtcm_data.*)
 
         . = ALIGN(4);
-    } > DTCM AT> FLASH_TEXT
+    } > DTCM AT> FLASH_FIRMWARE
     _ld_dtcm_data_destination = ADDR(.dtcm_data);
     _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
     _ld_dtcm_data_size = SIZEOF(.dtcm_data);

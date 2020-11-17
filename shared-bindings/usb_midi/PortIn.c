@@ -35,39 +35,36 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
-
-//| .. currentmodule:: usb_midi
+//| class PortIn:
+//|     """Receives midi commands over USB"""
 //|
-//| :class:`PortIn` -- receives midi commands over USB
-//| ===================================================
+//|     def __init__(self) -> None:
+//|         """You cannot create an instance of `usb_midi.PortIn`.
 //|
-//| .. class:: PortIn()
-//|
-//|   You cannot create an instance of `usb_midi.PortIn`.
-//|
-//|   PortIn objects are constructed for every corresponding entry in the USB
-//|   descriptor and added to the ``usb_midi.ports`` tuple.
+//|         PortIn objects are constructed for every corresponding entry in the USB
+//|         descriptor and added to the ``usb_midi.ports`` tuple."""
+//|         ...
 //|
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|   .. method:: read(nbytes=None)
+//|     def read(self, nbytes: Optional[int] = None) -> Optional[bytes]:
+//|         """Read characters.  If ``nbytes`` is specified then read at most that many
+//|         bytes. Otherwise, read everything that arrives until the connection
+//|         times out. Providing the number of bytes expected is highly recommended
+//|         because it will be faster.
 //|
-//|     Read characters.  If ``nbytes`` is specified then read at most that many
-//|     bytes. Otherwise, read everything that arrives until the connection
-//|     times out. Providing the number of bytes expected is highly recommended
-//|     because it will be faster.
+//|         :return: Data read
+//|         :rtype: bytes or None"""
+//|         ...
 //|
-//|     :return: Data read
-//|     :rtype: bytes or None
+//|     def readinto(self, buf: WriteableBuffer, nbytes: Optional[int] = None) -> Optional[bytes]:
+//|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
+//|         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
 //|
-//|   .. method:: readinto(buf, nbytes=None)
-//|
-//|     Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
-//|     that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
-//|
-//|     :return: number of bytes read and stored into ``buf``
-//|     :rtype: bytes or None
+//|         :return: number of bytes read and stored into ``buf``
+//|         :rtype: bytes or None"""
+//|         ...
 //|
 
 // These three methods are used by the shared stream methods.

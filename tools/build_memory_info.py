@@ -1,28 +1,9 @@
 #!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
-# This file is part of the MicroPython project, http://micropython.org/
-#
-# The MIT License (MIT)
-#
-# Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# SPDX-License-Identifier: MIT
 
 import re
 import sys
@@ -52,7 +33,7 @@ regions = {}
 with open(sys.argv[1], "r") as f:
     for line in f:
         line = line.strip()
-        if line.startswith(("FLASH_FIRMWARE", "FLASH", "RAM")):
+        if line.startswith(("FLASH_FIRMWARE", "RAM")):
             regions[line.split()[0]] = line.split("=")[-1]
 
 for region in regions:
@@ -63,17 +44,15 @@ for region in regions:
     space = M_PATTERN.sub(M_REPLACE, space)
     regions[region] = int(eval(space))
 
-# TODO Remove check for both FLASH_FIRMWARE and FLASH after all ports are converted to use FLASH_FIRMWARE.
-try:
-    firmware_region = regions["FLASH_FIRMWARE"]
-except KeyError:
-    firmware_region = regions["FLASH"]
+firmware_region = regions["FLASH_FIRMWARE"]
 ram_region = regions["RAM"]
 
-free_flash = firmware_region - text - data
-free_ram = ram_region - data - bss
-print("{} bytes free in flash firmware space out of {} bytes ({}kB).".format(free_flash, firmware_region, firmware_region / 1024))
-print("{} bytes free in ram for stack and heap out of {} bytes ({}kB).".format(free_ram, ram_region, ram_region / 1024))
+used_flash = data + text
+free_flash = firmware_region - used_flash
+used_ram = data + bss
+free_ram = ram_region - used_ram
+print("{} bytes used, {} bytes free in flash firmware space out of {} bytes ({}kB).".format(used_flash, free_flash, firmware_region, firmware_region / 1024))
+print("{} bytes used, {} bytes free in ram for stack and heap out of {} bytes ({}kB).".format(used_ram, free_ram, ram_region, ram_region / 1024))
 print()
 
 # Check that we have free flash space. GCC doesn't fail when the text + data

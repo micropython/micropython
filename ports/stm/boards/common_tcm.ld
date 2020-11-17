@@ -1,18 +1,18 @@
 /* Memory layout for cases with itcm and dtcm
 
-    FLASH_ISR   .isr_vector
-    FLASH_TEXT  .text
-    FLASH_TEXT  .data
-    FLASH_FS    // ignored for fs use
+    FLASH_ISR       .isr_vector
+    FLASH_FIRMWARE  .text
+    FLASH_FIRMWARE  .data
+    FLASH_FS        // ignored for fs use
 
-    RAM         .data
-    RAM         .bss
-    RAM         .heap
+    RAM             .data
+    RAM             .bss
+    RAM             .heap
 
-    ITCM        .itcm
-    DTCM        .dtcm_data
-    DTCM        .dtcm_bss
-    DTCM        .stack
+    ITCM            .itcm
+    DTCM            .dtcm_data
+    DTCM            .dtcm_bss
+    DTCM            .stack
 */
 
 ENTRY(Reset_Handler)
@@ -44,7 +44,7 @@ SECTIONS
 
         . = ALIGN(4);
         _etext = .;        /* define a global symbol at end of code */
-    } >FLASH_TEXT
+    } >FLASH_FIRMWARE
 
     /* used by the startup to initialize data */
     _sidata = LOADADDR(.data);
@@ -61,7 +61,7 @@ SECTIONS
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
-    } >RAM AT> FLASH_TEXT
+    } >RAM AT> FLASH_FIRMWARE
     _ld_d1_ram_data_destination = ADDR(.data);
     _ld_d1_ram_data_flash_copy = LOADADDR(.data);
     _ld_d1_ram_data_size = SIZEOF(.data);
@@ -98,7 +98,7 @@ SECTIONS
         *(.itcm.*)
 
         . = ALIGN(4);
-    } > ITCM AT> FLASH_TEXT
+    } > ITCM AT> FLASH_FIRMWARE
     _ld_itcm_destination = ADDR(.itcm);
     _ld_itcm_flash_copy = LOADADDR(.itcm);
     _ld_itcm_size = SIZEOF(.itcm);
@@ -110,7 +110,7 @@ SECTIONS
         *(.dtcm_data.*)
 
         . = ALIGN(4);
-    } > DTCM AT> FLASH_TEXT
+    } > DTCM AT> FLASH_FIRMWARE
     _ld_dtcm_data_destination = ADDR(.dtcm_data);
     _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
     _ld_dtcm_data_size = SIZEOF(.dtcm_data);
@@ -133,7 +133,7 @@ SECTIONS
         . += _ld_default_stack_size;
     } > DTCM
     _ld_stack_top = ORIGIN(DTCM) + LENGTH(DTCM);
-    
+
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }

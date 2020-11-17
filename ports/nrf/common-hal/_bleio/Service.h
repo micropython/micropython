@@ -39,12 +39,13 @@ typedef struct bleio_service_obj {
     bool is_remote;
     bool is_secondary;
     bleio_uuid_obj_t *uuid;
+    // The connection object is set only when this is a remote service.
+    // A local service doesn't know the connection.
     mp_obj_t connection;
     mp_obj_list_t *characteristic_list;
     // Range of attribute handles of this remote service.
     uint16_t start_handle;
     uint16_t end_handle;
-    struct bleio_service_obj* next;
 } bleio_service_obj_t;
 
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection);

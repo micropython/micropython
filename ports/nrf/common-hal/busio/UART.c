@@ -35,7 +35,6 @@
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
 
-#include "tick.h"
 #include "nrfx_uarte.h"
 #include <string.h>
 
@@ -99,7 +98,7 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
 
     switch ( event->type ) {
         case NRFX_UARTE_EVT_RX_DONE:
-            ringbuf_put_n(&self->rbuf, event->data.rxtx.p_data, event->data.rxtx.bytes);
+            ringbuf_put_n(&self->ringbuf, event->data.rxtx.p_data, event->data.rxtx.bytes);
 
             // keep receiving
             (void) nrfx_uarte_rx(self->uarte, &self->rx_char, 1);
@@ -113,7 +112,7 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
             // Possible Error source is Overrun, Parity, Framing, Break
             // uint32_t errsrc = event->data.error.error_mask;
 
-            ringbuf_put_n(&self->rbuf, event->data.error.rxtx.p_data, event->data.error.rxtx.bytes);
+            ringbuf_put_n(&self->ringbuf, event->data.error.rxtx.p_data, event->data.error.rxtx.bytes);
 
             // Keep receiving
             (void) nrfx_uarte_rx(self->uarte, &self->rx_char, 1);
@@ -134,8 +133,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
     const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
     const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
-    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
-    mp_float_t timeout, uint16_t receiver_buffer_size) {
+    uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
+    mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
+    bool sigint_enabled) {
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
@@ -162,7 +162,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Invalid buffer size"));
     }
 
-    if ( parity == PARITY_ODD ) {
+    if ( parity == BUSIO_UART_PARITY_ODD ) {
         mp_raise_ValueError(translate("Odd parity is not supported"));
     }
 
@@ -176,7 +176,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         .interrupt_priority = 7,
         .hal_cfg = {
             .hwfc = NRF_UARTE_HWFC_DISABLED,
-            .parity = (parity == PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED
+            .parity = (parity == BUSIO_UART_PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED
         }
     };
 
@@ -191,9 +191,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         // pointers like this are NOT moved, allocating the buffer
         // in the long-lived pool is not strictly necessary)
         // (This is a macro.)
-        ringbuf_alloc(&self->rbuf, receiver_buffer_size, true);
-
-        if ( !self->rbuf.buf ) {
+        if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
             nrfx_uarte_uninit(self->uarte);
             mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
         }
@@ -227,10 +225,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         reset_pin_number(self->rx_pin_number);
         self->tx_pin_number = NO_PIN;
         self->rx_pin_number = NO_PIN;
-
-        gc_free(self->rbuf.buf);
-        self->rbuf.size = 0;
-        self->rbuf.iput = self->rbuf.iget = 0;
+        ringbuf_free(&self->ringbuf);
     }
 }
 
@@ -240,11 +235,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         mp_raise_ValueError(translate("No RX pin"));
     }
 
-    size_t rx_bytes = 0;
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Wait for all bytes received or timeout
-    while ( (ringbuf_count(&self->rbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
+    while ( (ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
         RUN_BACKGROUND_TASKS;
         // Allow user to break out of a timeout with a KeyboardInterrupt.
         if ( mp_hal_is_interrupted() ) {
@@ -255,12 +249,8 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     // prevent conflict with uart irq
     NVIC_DisableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
 
-    // copy received data
-    rx_bytes = ringbuf_count(&self->rbuf);
-    rx_bytes = MIN(rx_bytes, len);
-    for ( uint16_t i = 0; i < rx_bytes; i++ ) {
-        data[i] = ringbuf_get(&self->rbuf);
-    }
+    // Copy as much received data as available, up to len bytes.
+    size_t rx_bytes = ringbuf_get_n(&self->ringbuf, data, len);
 
     NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
 
@@ -317,13 +307,13 @@ void common_hal_busio_uart_set_timeout(busio_uart_obj_t *self, mp_float_t timeou
 }
 
 uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
-    return ringbuf_count(&self->rbuf);
+    return ringbuf_num_filled(&self->ringbuf);
 }
 
 void common_hal_busio_uart_clear_rx_buffer(busio_uart_obj_t *self) {
     // prevent conflict with uart irq
     NVIC_DisableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
-    ringbuf_clear(&self->rbuf);
+    ringbuf_clear(&self->ringbuf);
     NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
 }
 

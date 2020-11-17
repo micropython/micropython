@@ -28,12 +28,18 @@
 #ifndef MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_MIMXRT1021_PERIPH_H
 #define MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_MIMXRT1021_PERIPH_H
 
+extern LPI2C_Type *mcu_i2c_banks[4];
+
 extern const mcu_periph_obj_t mcu_i2c_sda_list[8];
 extern const mcu_periph_obj_t mcu_i2c_scl_list[8];
+
+extern LPSPI_Type *mcu_spi_banks[4];
 
 extern const mcu_periph_obj_t mcu_spi_sck_list[8];
 extern const mcu_periph_obj_t mcu_spi_mosi_list[8];
 extern const mcu_periph_obj_t mcu_spi_miso_list[8];
+
+extern LPUART_Type *mcu_uart_banks[8];
 
 extern const mcu_periph_obj_t mcu_uart_rx_list[16];
 extern const mcu_periph_obj_t mcu_uart_tx_list[16];

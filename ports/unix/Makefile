@@ -134,7 +134,7 @@ SRC_MOD += modjni.c
 endif
 
 # source files
-SRC_C = \
+SRC_C += \
 	main.c \
 	gccollect.c \
 	unix_mphal.c \
@@ -161,8 +161,6 @@ PY_EXTMOD_O_BASENAME += \
 	extmod/machine_pinbase.o \
 	extmod/machine_signal.o \
 	extmod/machine_pulse.o \
-	extmod/machine_i2c.o \
-	extmod/machine_spi.o
 
 LIB_SRC_C = $(addprefix lib/,\
 	$(LIB_SRC_C_EXTRA) \

@@ -21,7 +21,7 @@ except TypeError:
 def gen3():
     yield 123
     yield 456
-        
+
 g3 = gen3()
 print(next(g3))
 try:

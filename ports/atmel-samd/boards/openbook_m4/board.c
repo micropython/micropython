@@ -32,7 +32,6 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
-#include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -77,13 +76,13 @@ void board_init(void) {
         sizeof(start_sequence),
         stop_sequence,
         sizeof(stop_sequence),
-        400, // width
-        300, // height
-        400, // RAM width
-        300, // RAM height
+        300, // width
+        400, // height
+        300, // RAM width
+        400, // RAM height
         0, // colstart
         0, // rowstart
-        0, // rotation
+        270, // rotation
         NO_COMMAND, // set_column_window_command
         NO_COMMAND, // set_row_window_command
         NO_COMMAND, // set_current_column_command

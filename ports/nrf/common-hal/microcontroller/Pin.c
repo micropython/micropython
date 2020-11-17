@@ -93,6 +93,7 @@ void reset_pin_number(uint8_t pin_number) {
 
     // Clear claimed bit.
     claimed_pins[nrf_pin_port(pin_number)] &= ~(1 << nrf_relative_pin_number(pin_number));
+    never_reset_pins[nrf_pin_port(pin_number)] &= ~(1 << nrf_relative_pin_number(pin_number));
 
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin_number == MICROPY_HW_NEOPIXEL->number) {
@@ -122,6 +123,9 @@ void reset_pin_number(uint8_t pin_number) {
 
 
 void never_reset_pin_number(uint8_t pin_number) {
+    if (pin_number == NO_PIN) {
+        return;
+    }
     never_reset_pins[nrf_pin_port(pin_number)] |= 1 << nrf_relative_pin_number(pin_number);
 }
 

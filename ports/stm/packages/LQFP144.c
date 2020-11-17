@@ -154,6 +154,6 @@ STATIC const mp_rom_map_elem_t mcu_pin_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_PE01), MP_ROM_PTR(&pin_PE01) },
   // PDR_ON -----------------------------------------*/
   // VDD --------------------------------------------*/
-  
+
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_globals_table);

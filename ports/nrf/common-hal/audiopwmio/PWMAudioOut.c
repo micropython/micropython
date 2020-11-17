@@ -32,10 +32,11 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "common-hal/audiopwmio/PWMAudioOut.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
 
 // TODO: This should be the same size as PWMOut.c:pwms[], but there's no trivial way to accomplish that
@@ -67,26 +68,32 @@ STATIC void activate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if (!active_audio[i]) {
             active_audio[i] = self;
+            supervisor_enable_tick();
             break;
         }
     }
 }
 STATIC void deactivate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
+    // Turn off the interrupts to the CPU.
+    self->pwm->INTENCLR = PWM_INTENSET_SEQSTARTED0_Msk | PWM_INTENSET_SEQSTARTED1_Msk;
     for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if (active_audio[i] == self) {
             active_audio[i] = NULL;
+            supervisor_disable_tick();
         }
     }
 }
 
 void audiopwmout_reset() {
     for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
+        if (active_audio[i]) {
+            supervisor_disable_tick();
+        }
         active_audio[i] = NULL;
     }
 }
 
 STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
-    self->pwm->EVENTS_SEQSTARTED[1-buf] = 0;
     uint16_t *dev_buffer = self->buffers[buf];
     uint8_t *buffer;
     uint32_t buffer_length;
@@ -143,12 +150,27 @@ STATIC void audiopwmout_background_obj(audiopwmio_pwmaudioout_obj_t *self) {
         if (stopped)
             self->pwm->TASKS_STOP = 1;
     } else if (!self->paused && !self->single_buffer) {
-        if (self->pwm->EVENTS_SEQSTARTED[0]) fill_buffers(self, 1);
-        if (self->pwm->EVENTS_SEQSTARTED[1]) fill_buffers(self, 0);
+        if (self->pwm->EVENTS_SEQSTARTED[0]) {
+            fill_buffers(self, 1);
+            self->pwm->EVENTS_SEQSTARTED[0] = 0;
+        }
+        if (self->pwm->EVENTS_SEQSTARTED[1]) {
+            fill_buffers(self, 0);
+            self->pwm->EVENTS_SEQSTARTED[1] = 0;
+        }
+        NVIC_ClearPendingIRQ(self->pwm_irq);
     }
 }
 
 void audiopwmout_background() {
+    // Check the NVIC first because it is part of the CPU and fast to read.
+    if (!NVIC_GetPendingIRQ(PWM0_IRQn) &&
+        !NVIC_GetPendingIRQ(PWM1_IRQn) &&
+        !NVIC_GetPendingIRQ(PWM2_IRQn) &&
+        !NVIC_GetPendingIRQ(PWM3_IRQn)) {
+        return;
+    }
+    // Check our objects because the PWM could be active for some other reason.
     for (size_t i=0; i < MP_ARRAY_SIZE(active_audio); i++) {
         if (!active_audio[i]) continue;
         audiopwmout_background_obj(active_audio[i]);
@@ -158,7 +180,8 @@ void audiopwmout_background() {
 // Caller validates that pins are free.
 void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t* self,
         const mcu_pin_obj_t* left_channel, const mcu_pin_obj_t* right_channel, uint16_t quiescent_value) {
-    self->pwm = pwmout_allocate(256, PWM_PRESCALER_PRESCALER_DIV_1, true, NULL, NULL);
+    self->pwm = pwmout_allocate(256, PWM_PRESCALER_PRESCALER_DIV_1, true, NULL, NULL,
+                                &self->pwm_irq);
     if (!self->pwm) {
         mp_raise_RuntimeError(translate("All timers in use"));
     }
@@ -260,6 +283,9 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t* self, 
     self->pwm->EVENTS_SEQEND[0] = 0;
     self->pwm->EVENTS_SEQEND[1] = 0;
     self->pwm->EVENTS_STOPPED = 0;
+    // Enable the SEQSTARTED interrupts so that they wake the CPU and keep it awake until serviced.
+    // We don't enable them in the NVIC because we don't actually want an interrupt routine to run.
+    self->pwm->INTENSET = PWM_INTENSET_SEQSTARTED0_Msk | PWM_INTENSET_SEQSTARTED1_Msk;
     self->pwm->TASKS_SEQSTART[0] = 1;
     self->playing = true;
     self->paused = false;

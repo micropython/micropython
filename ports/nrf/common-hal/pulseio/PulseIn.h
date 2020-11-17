@@ -44,8 +44,8 @@ typedef struct {
 
     volatile uint16_t start;
     volatile uint16_t len;
-    volatile uint16_t last_us;
-    volatile uint64_t last_ms;
+    volatile size_t last_overflow;
+    volatile size_t last_count;
 } pulseio_pulsein_obj_t;
 
 void pulsein_reset(void);

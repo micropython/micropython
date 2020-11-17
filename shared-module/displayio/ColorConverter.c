@@ -110,7 +110,7 @@ void common_hal_displayio_colorconverter_convert(displayio_colorconverter_t *sel
     displayio_input_pixel_t input_pixel;
     input_pixel.pixel = input_color;
     input_pixel.x = input_pixel.y = input_pixel.tile = input_pixel.tile_x = input_pixel.tile_y = 0;
-    
+
     displayio_output_pixel_t output_pixel;
     output_pixel.pixel = 0;
     output_pixel.opaque = false;
@@ -130,7 +130,7 @@ bool common_hal_displayio_colorconverter_get_dither(displayio_colorconverter_t* 
 
 void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
     uint32_t pixel = input_pixel->pixel;
-    
+
     if (self->dither){
         uint8_t randr = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y));
         uint8_t randg = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x+33,input_pixel->tile_y));
@@ -193,4 +193,3 @@ bool displayio_colorconverter_needs_refresh(displayio_colorconverter_t *self) {
 
 void displayio_colorconverter_finish_refresh(displayio_colorconverter_t *self) {
 }
-

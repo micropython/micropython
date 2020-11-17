@@ -30,54 +30,46 @@
 #include "py/runtime.h"
 #include "lib/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/translate.h"
 
-#include "nrfx_rtc.h"
-#include "nrf_clock.h"
+// This is the time in seconds since 2000 that the RTC was started.
+__attribute__((section(".uninitialized"))) static uint32_t rtc_offset[3];
 
-// We clock the RTC very slowly (8Hz) so that it won't overflow often.
-// But the counter is only 24 bits, so overflow is about every 24 days ...
-// For testing, set this to 32768 and it'll overflow every few minutes
+// These values are placed before and after the current RTC count.  They are
+// used to determine if the RTC count is valid.  These randomly-generated values
+// will be set when the RTC value is set in order to mark the RTC as valid. If
+// the system crashes or reboots, these values will remain undisturbed and the
+// RTC offset will remain valid.
+//
+// If Circuit Python is updated or these symbols shift around, the prefix and
+// suffix will no longer match, and the time will no longer be valid.
+#define RTC_OFFSET_CHECK_PREFIX 0x25ea7e2a
+#define RTC_OFFSET_CHECK_SUFFIX 0x2b80b69e
 
-#define RTC_CLOCK_HZ (8)
-
-volatile static uint32_t rtc_offset = 0;
-
-const nrfx_rtc_t rtc_instance = NRFX_RTC_INSTANCE(2);
-
-const nrfx_rtc_config_t rtc_config = {
-	.prescaler = RTC_FREQ_TO_PRESCALER(RTC_CLOCK_HZ),
-	.reliable = 0,
-	.tick_latency = 0,
-	.interrupt_priority = 6
-};
-
-void rtc_handler(nrfx_rtc_int_type_t int_type) {
-    if (int_type == NRFX_RTC_INT_OVERFLOW) {
-        rtc_offset += (1L<<24) / RTC_CLOCK_HZ;
-    }
-}
-
-void rtc_init(void) {
-    if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
-        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
-    }
-    nrfx_rtc_counter_clear(&rtc_instance);
-    nrfx_rtc_init(&rtc_instance, &rtc_config, rtc_handler);
-    nrfx_rtc_enable(&rtc_instance);
-    nrfx_rtc_overflow_enable(&rtc_instance, 1);
+void common_hal_rtc_init(void) {
+    // If the prefix and suffix are not valid, zero-initialize the RTC offset.
+    if ((rtc_offset[0] != RTC_OFFSET_CHECK_PREFIX) || (rtc_offset[2] != RTC_OFFSET_CHECK_SUFFIX))
+        rtc_offset[1] = 0;
 }
 
 void common_hal_rtc_get_time(timeutils_struct_time_t *tm) {
-    uint32_t t = rtc_offset + (nrfx_rtc_counter_get(&rtc_instance) / RTC_CLOCK_HZ );
-    timeutils_seconds_since_2000_to_struct_time(t, tm);
+    uint64_t ticks_s = port_get_raw_ticks(NULL) / 1024;
+    timeutils_seconds_since_2000_to_struct_time(rtc_offset[1] + ticks_s, tm);
 }
 
 void common_hal_rtc_set_time(timeutils_struct_time_t *tm) {
-    rtc_offset = timeutils_seconds_since_2000(
+    uint64_t ticks_s = port_get_raw_ticks(NULL) / 1024;
+    uint32_t epoch_s = timeutils_seconds_since_2000(
         tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec
     );
-    nrfx_rtc_counter_clear(&rtc_instance);
+    rtc_offset[1] = epoch_s - ticks_s;
+
+    // Set the prefix and suffix in order to indicate the time is valid.  This
+    // must be done after the offset is updated, in case there is a crash or
+    // power failure.
+    rtc_offset[0] = RTC_OFFSET_CHECK_PREFIX;
+    rtc_offset[2] = RTC_OFFSET_CHECK_SUFFIX;
 }
 
 int common_hal_rtc_get_calibration(void) {
@@ -87,4 +79,3 @@ int common_hal_rtc_get_calibration(void) {
 void common_hal_rtc_set_calibration(int calibration) {
     mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
 }
-

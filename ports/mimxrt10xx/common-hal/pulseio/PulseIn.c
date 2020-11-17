@@ -38,8 +38,6 @@
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "supervisor/shared/translate.h"
 
-#include "tick.h"
-
 // TODO
 //static void pulsein_set_config(pulseio_pulsein_obj_t* self, bool first_edge) {
 //    uint32_t sense_setting;
@@ -66,7 +64,7 @@
 //    // last ms.
 //    current_us = 1000 - current_us;
 //    pulseio_pulsein_obj_t* self = get_eic_channel_data(channel);
-//    if (!background_tasks_ok() || self->errored_too_fast) {
+//    if (!supervisor_background_tasks_ok() || self->errored_too_fast) {
 //        self->errored_too_fast = true;
 //        common_hal_pulseio_pulsein_pause(self);
 //        return;
@@ -203,7 +201,7 @@ void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t* self) {
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
 //    if (self->len == 0) {
-//        mp_raise_IndexError(translate("pop from an empty PulseIn"));
+//        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
 //    }
 //    common_hal_mcu_disable_interrupts();
 //    uint16_t value = self->buffer[self->start];
@@ -239,7 +237,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self,
 //    }
 //    if (index < 0 || index >= self->len) {
 //        common_hal_mcu_enable_interrupts();
-//        mp_raise_IndexError(translate("index out of range"));
+//        mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_PulseIn);
 //    }
 //    uint16_t value = self->buffer[(self->start + index) % self->maxlen];
 //    common_hal_mcu_enable_interrupts();

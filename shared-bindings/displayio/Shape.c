@@ -34,22 +34,18 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: displayio
+//| class Shape:
+//|     """Represents a shape made by defining boundaries that may be mirrored."""
 //|
-//| :class:`Shape` -- Represents a shape by defining its bounds on each row
-//| ==========================================================================
+//|     def __init__(self, width: int, height: int, *, mirror_x: bool = False, mirror_y: bool = False) -> None:
+//|         """Create a Shape object with the given fixed size. Each pixel is one bit and is stored by the
+//|         column boundaries of the shape on each row. Each row's boundary defaults to the full row.
 //|
-//| Represents any shape made by defining boundaries that may be mirrored.
-//|
-//| .. class:: Shape(width, height, *, mirror_x=False, mirror_y=False)
-//|
-//|   Create a Shape object with the given fixed size. Each pixel is one bit and is stored by the
-//|   column boundaries of the shape on each row. Each row's boundary defaults to the full row.
-//|
-//|   :param int width: The number of pixels wide
-//|   :param int height: The number of pixels high
-//|   :param bool mirror_x: When true the left boundary is mirrored to the right.
-//|   :param bool mirror_y: When true the top boundary is mirrored to the bottom.
+//|         :param int width: The number of pixels wide
+//|         :param int height: The number of pixels high
+//|         :param bool mirror_x: When true the left boundary is mirrored to the right.
+//|         :param bool mirror_y: When true the top boundary is mirrored to the bottom."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_width, ARG_height, ARG_mirror_x, ARG_mirror_y };
@@ -83,9 +79,9 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 
-//|   .. method:: set_boundary(y, start_x, end_x)
-//|
-//|     Loads pre-packed data into the given row.
+//|     def set_boundary(self, y: int, start_x: int, end_x: int) -> None:
+//|         """Loads pre-packed data into the given row."""
+//|         ...
 //|
 STATIC mp_obj_t displayio_shape_obj_set_boundary(size_t n_args, const mp_obj_t *args) {
     (void) n_args;

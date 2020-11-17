@@ -30,24 +30,6 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/stack.h"
 
-static bool running_background_tasks = false;
-
-void background_tasks_reset(void) {
-    running_background_tasks = false;
-}
-
-void run_background_tasks(void) {
-    // Don't call ourselves recursively.
-    if (running_background_tasks) {
-        return;
-    }
-
-    assert_heap_ok();
-    running_background_tasks = true;
-
-    usb_background();
-    filesystem_background();
-
-    running_background_tasks = false;
-    assert_heap_ok();
-}
+void port_background_task(void) {}
+void port_start_background_task(void) {}
+void port_finish_background_task(void) {}

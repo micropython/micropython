@@ -24,6 +24,15 @@
  * THE SOFTWARE.
  */
 
+#if !CIRCUITPY_BLE_FILE_SERVICE
+void supervisor_start_bluetooth(void) {
+}
+
+void supervisor_bluetooth_background(void) {
+}
+
+#else
+
 #include <string.h>
 
 #include "extmod/vfs.h"
@@ -40,6 +49,8 @@
 #include "supervisor/shared/autoreload.h"
 
 #include "py/mpstate.h"
+
+
 
 bleio_service_obj_t supervisor_ble_service;
 bleio_uuid_obj_t supervisor_ble_service_uuid;
@@ -63,10 +74,7 @@ mp_obj_t service_list_items[1];
 mp_obj_list_t characteristic_list;
 mp_obj_t characteristic_list_items[4];
 
-void supervisor_bluetooth_start_advertising(void) {
-    #if !CIRCUITPY_BLE_FILE_SERVICE
-    return;
-    #endif
+STATIC void supervisor_bluetooth_start_advertising(void) {
     bool is_connected = common_hal_bleio_adapter_get_connected(&common_hal_bleio_adapter_obj);
     if (is_connected) {
         return;
@@ -74,6 +82,7 @@ void supervisor_bluetooth_start_advertising(void) {
     // TODO: switch to Adafruit short UUID for the advertisement and add manufacturing data to distinguish ourselves from arduino.
     _common_hal_bleio_adapter_start_advertising(&common_hal_bleio_adapter_obj,
                                                    true,
+                                                   false, 0,
                                                    1.0,
                                                    circuitpython_advertising_data,
                                                    sizeof(circuitpython_advertising_data),
@@ -82,10 +91,6 @@ void supervisor_bluetooth_start_advertising(void) {
 }
 
 void supervisor_start_bluetooth(void) {
-    #if !CIRCUITPY_BLE_FILE_SERVICE
-    return;
-    #endif
-
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, true);
 
     supervisor_ble_service_uuid.base.type = &bleio_uuid_type;
@@ -176,7 +181,7 @@ volatile bool new_filename;
 volatile bool run_ble_background;
 bool was_connected;
 
-void update_file_length(void) {
+STATIC void update_file_length(void) {
     int32_t file_length = -1;
     mp_buffer_info_t bufinfo;
     bufinfo.buf = &file_length;
@@ -187,7 +192,7 @@ void update_file_length(void) {
     common_hal_bleio_characteristic_set_value(&supervisor_ble_length_characteristic, &bufinfo);
 }
 
-void open_current_file(void) {
+STATIC void open_current_file(void) {
     if (active_file.obj.fs != 0) {
         return;
     }
@@ -202,7 +207,7 @@ void open_current_file(void) {
     update_file_length();
 }
 
-void close_current_file(void) {
+STATIC void close_current_file(void) {
     f_close(&active_file);
 }
 
@@ -210,9 +215,6 @@ uint32_t current_command[1024 / sizeof(uint32_t)];
 volatile size_t current_offset;
 
 void supervisor_bluetooth_background(void) {
-    #if !CIRCUITPY_BLE_FILE_SERVICE
-    return;
-    #endif
     if (!run_ble_background) {
         return;
     }
@@ -304,54 +306,4 @@ void supervisor_bluetooth_background(void) {
     }
 }
 
-// This happens in an interrupt so we need to be quick.
-bool supervisor_bluetooth_hook(ble_evt_t *ble_evt) {
-    #if !CIRCUITPY_BLE_FILE_SERVICE
-    return false;
-    #endif
-    // Catch writes to filename or contents. Length is read-only.
-
-    bool done = false;
-    switch (ble_evt->header.evt_id) {
-        case BLE_GAP_EVT_CONNECTED:
-            // We run our background task even if it wasn't us connected to because we may want to
-            // advertise if the user code stopped advertising.
-            run_ble_background = true;
-            break;
-        case BLE_GAP_EVT_DISCONNECTED:
-            run_ble_background = true;
-            break;
-        case BLE_GATTS_EVT_WRITE: {
-            // A client wrote to a characteristic.
-
-            ble_gatts_evt_write_t *evt_write = &ble_evt->evt.gatts_evt.params.write;
-            // Event handle must match the handle for my characteristic.
-            if (evt_write->handle == supervisor_ble_contents_characteristic.handle) {
-                // Handle events
-                //write_to_ringbuf(self, evt_write->data, evt_write->len);
-                // First packet includes a uint16_t le for length at the start.
-                uint16_t current_length = ((uint16_t*) current_command)[0];
-                memcpy(((uint8_t*) current_command) + current_offset, evt_write->data, evt_write->len);
-                current_offset += evt_write->len;
-                current_length = ((uint16_t*) current_command)[0];
-                if (current_offset == current_length) {
-                    run_ble_background = true;
-                    done = true;
-                }
-            } else if (evt_write->handle == supervisor_ble_filename_characteristic.handle) {
-                new_filename = true;
-                run_ble_background = true;
-                done = true;
-            } else {
-                return done;
-            }
-            break;
-        }
-
-        default:
-            // For debugging.
-            // mp_printf(&mp_plat_print, "Unhandled peripheral event: 0x%04x\n", ble_evt->header.evt_id);
-            break;
-    }
-    return done;
-}
+#endif // #else

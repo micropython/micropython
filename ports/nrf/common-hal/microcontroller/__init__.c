@@ -50,36 +50,34 @@ void common_hal_mcu_delay_us(uint32_t delay) {
 
 static volatile uint32_t nesting_count = 0;
 static uint8_t is_nested_critical_region;
-static uint8_t sd_is_enabled = false;
 void common_hal_mcu_disable_interrupts() {
-    sd_softdevice_is_enabled(&sd_is_enabled);
-    if (sd_is_enabled) {
+    if (nesting_count == 0) {
+        // Unlike __disable_irq(), this should only be called the first time
+        // "is_nested_critical_region" is sd's equivalent of our nesting count
+        // so a nested call would store 0 in the global and make the later
+        // exit call not actually reenable interrupts
+        //
+        // This only disables interrupts of priority 2 through 7; levels 0, 1,
+        // and 4, are exclusive to softdevice and should never be used, so
+        // this limitation is not important.
         sd_nvic_critical_region_enter(&is_nested_critical_region);
-    } else {
-        __disable_irq();
-        __DMB();
-        nesting_count++;
     }
+    __DMB();
+    nesting_count++;
 }
 
 void common_hal_mcu_enable_interrupts() {
-    // Don't check here if SD is enabled, because we'll crash if interrupts
-    // were turned off and sd_softdevice_is_enabled is called.
-    if (sd_is_enabled) {
-        sd_nvic_critical_region_exit(is_nested_critical_region);
-    } else {
-        if (nesting_count == 0) {
-            // This is very very bad because it means there was mismatched disable/enables so we
-            // crash.
-            reset_into_safe_mode(HARD_CRASH);
-        }
-        nesting_count--;
-        if (nesting_count > 0) {
-            return;
-        }
-        __DMB();
-        __enable_irq();
+    if (nesting_count == 0) {
+        // This is very very bad because it means there was mismatched disable/enables so we
+        // crash.
+        reset_into_safe_mode(HARD_CRASH);
     }
+    nesting_count--;
+    if (nesting_count > 0) {
+        return;
+    }
+    __DMB();
+    sd_nvic_critical_region_exit(is_nested_critical_region);
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
@@ -94,7 +92,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
 
 void common_hal_mcu_reset(void) {
     filesystem_flush();
-    NVIC_SystemReset();
+    reset_cpu();
 }
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
@@ -106,7 +104,6 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
 };
 
 #if CIRCUITPY_INTERNAL_NVM_SIZE > 0
-
 // The singleton nvm.ByteArray object.
 const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     .base = {
@@ -114,6 +111,17 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     },
     .start_address = (uint8_t*) CIRCUITPY_INTERNAL_NVM_START_ADDR,
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
+};
+#endif
+
+#if CIRCUITPY_WATCHDOG
+// The singleton watchdog.WatchDogTimer object.
+watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
+    .base = {
+        .type = &watchdog_watchdogtimer_type,
+    },
+    .timeout = 0.0f,
+    .mode = WATCHDOGMODE_NONE,
 };
 #endif
 

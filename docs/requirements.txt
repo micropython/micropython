@@ -1,3 +1,7 @@
-sphinx==1.8.5
-recommonmark==0.5.0
+sphinx<4
+recommonmark==0.6.0
 sphinxcontrib-svg2pdfconverter==0.1.0
+astroid
+sphinx-autoapi
+isort
+black

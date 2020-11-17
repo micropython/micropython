@@ -34,7 +34,7 @@
 
 #include "fsl_gpio.h"
 
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "supervisor/shared/translate.h"
 
@@ -74,7 +74,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
 
 void common_hal_digitalio_digitalinout_never_reset(
         digitalio_digitalinout_obj_t *self) {
-    never_reset_pin_number(self->pin->number);
+    common_hal_never_reset_pin(self->pin);
 }
 
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t* self) {
@@ -85,7 +85,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t* self
     if (common_hal_digitalio_digitalinout_deinited(self)) {
         return;
     }
-    reset_pin_number(self->pin->number);
+    common_hal_reset_pin(self->pin);
     self->pin = NULL;
 }
 
@@ -97,7 +97,7 @@ void common_hal_digitalio_digitalinout_switch_to_input(
     common_hal_digitalio_digitalinout_set_pull(self, pull);
 }
 
-void common_hal_digitalio_digitalinout_switch_to_output(
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t* self, bool value,
         digitalio_drive_mode_t drive_mode) {
     self->output = true;
@@ -108,6 +108,7 @@ void common_hal_digitalio_digitalinout_switch_to_output(
 
     const gpio_pin_config_t config = { kGPIO_DigitalOutput, value, kGPIO_NoIntmode };
     GPIO_PinInit(self->pin->gpio, self->pin->number, &config);
+    return DIGITALINOUT_OK;
 }
 
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
@@ -125,7 +126,7 @@ bool common_hal_digitalio_digitalinout_get_value(
     return GPIO_PinRead(self->pin->gpio, self->pin->number);
 }
 
-void common_hal_digitalio_digitalinout_set_drive_mode(
+digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
         digitalio_digitalinout_obj_t* self,
         digitalio_drive_mode_t drive_mode) {
     bool value = common_hal_digitalio_digitalinout_get_value(self);
@@ -138,6 +139,7 @@ void common_hal_digitalio_digitalinout_set_drive_mode(
     if (value) {
         common_hal_digitalio_digitalinout_set_value(self, value);
     }
+    return DIGITALINOUT_OK;
 }
 
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(

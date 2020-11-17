@@ -1664,7 +1664,7 @@ SVCALL(SD_BLE_GAP_ADDR_GET, uint32_t, sd_ble_gap_addr_get(ble_gap_addr_t *p_addr
  *
  * @retval ::NRF_SUCCESS                  Address successfully retrieved.
  * @retval ::NRF_ERROR_INVALID_ADDR       Invalid or NULL pointer supplied.
- * @retval ::BLE_ERROR_INVALID_ADV_HANDLE The provided advertising handle was not found. 
+ * @retval ::BLE_ERROR_INVALID_ADV_HANDLE The provided advertising handle was not found.
  * @retval ::NRF_ERROR_INVALID_STATE      The advertising set is currently not advertising.
  */
 SVCALL(SD_BLE_GAP_ADV_ADDR_GET, uint32_t, sd_ble_gap_adv_addr_get(uint8_t adv_handle, ble_gap_addr_t *p_addr));

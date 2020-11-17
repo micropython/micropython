@@ -33,8 +33,6 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-#include "tick.h"
-
 void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* self,
     const mcu_pin_obj_t* data0, const mcu_pin_obj_t* command, const mcu_pin_obj_t* chip_select,
     const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset) {

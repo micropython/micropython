@@ -38,9 +38,11 @@ typedef struct {
     LPSPI_Type *spi;
     bool has_lock;
     uint32_t baudrate;
-    const mcu_periph_obj_t *clock_pin;
-    const mcu_periph_obj_t *mosi_pin;
-    const mcu_periph_obj_t *miso_pin;
+    const mcu_periph_obj_t *clock;
+    const mcu_periph_obj_t *mosi;
+    const mcu_periph_obj_t *miso;
 } busio_spi_obj_t;
+
+void spi_reset(void);
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H

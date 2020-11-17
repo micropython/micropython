@@ -31,28 +31,41 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
-#include "tick.h"
+#include "timers.h"
 
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
 
 #define STM32_GPIO_PORT_SIZE 16
-
 static pulseio_pulsein_obj_t* _objs[STM32_GPIO_PORT_SIZE];
+
+STATIC TIM_HandleTypeDef tim_handle;
+static uint32_t overflow_count = 0;
+STATIC uint8_t refcount = 0;
 
 static void assign_EXTI_Interrupt(pulseio_pulsein_obj_t* self, uint8_t num);
 
-static void pulsein_handler(uint8_t num) {
+void pulsein_timer_event_handler(void)
+{
+    // Detect TIM Update event
+    if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET)
+    {
+        if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET)
+        {
+            __HAL_TIM_CLEAR_IT(&tim_handle, TIM_IT_UPDATE);
+            overflow_count++;
+        }
+    }
+}
+
+static void pulsein_exti_event_handler(uint8_t num) {
+    // Grab the current time first.
+    uint32_t current_overflow = overflow_count;
+    uint32_t current_count = tim_handle.Instance->CNT;
+
     // Interrupt register must be cleared manually
     EXTI->PR = 1 << num;
-
-    // Grab the current time first.
-    uint32_t current_us;
-    uint64_t current_ms;
-    current_tick(&current_ms, &current_us);
-
-    // current_tick gives us the remaining us until the next tick but we want the number since the last ms.
-    current_us = 1000 - current_us;
 
     pulseio_pulsein_obj_t* self = _objs[num];
     if ( !self ) return;
@@ -64,22 +77,9 @@ static void pulsein_handler(uint8_t num) {
             self->first_edge = false;
         }
     } else {
-        uint32_t ms_diff = current_ms - self->last_ms;
-        uint16_t us_diff = current_us - self->last_us;
-        uint32_t total_diff = us_diff;
-
-        if (self->last_us > current_us) {
-            total_diff = 1000 + current_us - self->last_us;
-            if (ms_diff > 1) {
-                total_diff += (ms_diff - 1) * 1000;
-            }
-        } else {
-            total_diff += ms_diff * 1000;
-        }
-        uint16_t duration = 0xffff;
-        if (total_diff < duration) {
-            duration = total_diff;
-        }
+        uint32_t total_diff = current_count + 0x10000 * (current_overflow - self->last_overflow) - self->last_count;
+        // Cap duration at 16 bits.
+        uint16_t duration = MIN(0xffff, total_diff);
 
         uint16_t i = (self->start + self->len) % self->maxlen;
         self->buffer[i] = duration;
@@ -90,8 +90,8 @@ static void pulsein_handler(uint8_t num) {
         }
     }
 
-    self->last_ms = current_ms;
-    self->last_us = current_us;
+    self->last_count = current_count;
+    self->last_overflow = current_overflow;
 }
 
 void pulsein_reset(void) {
@@ -102,6 +102,11 @@ void pulsein_reset(void) {
         }
     }
     memset(_objs, 0, sizeof(_objs));
+
+    HAL_TIM_Base_DeInit(&tim_handle);
+    tim_clock_disable(stm_peripherals_timer_get_index(tim_handle.Instance));
+    memset(&tim_handle, 0, sizeof(tim_handle));
+    refcount = 0;
 }
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu_pin_obj_t* pin,
@@ -116,10 +121,10 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     // Allocate pulse buffer
     self->buffer = (uint16_t *) m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
-        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), 
+        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"),
                           maxlen * sizeof(uint16_t));
     }
-    
+
     // Set internal variables
     self->pin = pin;
     self->maxlen = maxlen;
@@ -128,8 +133,37 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     self->len = 0;
     self->first_edge = true;
     self->paused = false;
-    self->last_us = 0;
-    self->last_ms = 0;
+    self->last_count = 0;
+    self->last_overflow = 0;
+
+    if (HAL_TIM_Base_GetState(&tim_handle) == HAL_TIM_STATE_RESET) {
+        // Find a suitable timer
+        TIM_TypeDef * tim_instance = stm_peripherals_find_timer();
+        stm_peripherals_timer_reserve(tim_instance);
+
+        // Set ticks to 1us
+        uint32_t source = stm_peripherals_timer_get_source_freq(tim_instance);
+        uint32_t prescaler = source/1000000;
+
+        // Enable clocks and IRQ, set callback
+        stm_peripherals_timer_preinit(tim_instance, 4, pulsein_timer_event_handler);
+
+        // Set the new period
+        tim_handle.Instance = tim_instance;
+        tim_handle.Init.Prescaler = prescaler - 1;
+        tim_handle.Init.Period = 0x10000 - 1; //65 ms period (maximum)
+        HAL_TIM_Base_Init(&tim_handle);
+
+        // Set registers manually
+        tim_handle.Instance->SR = 0; // Prevent the SR from triggering an interrupt
+        tim_handle.Instance->CR1 |= TIM_CR1_CEN; // Resume timer
+        tim_handle.Instance->CR1 |= TIM_CR1_URS; // Disable non-overflow interrupts
+        __HAL_TIM_ENABLE_IT(&tim_handle, TIM_IT_UPDATE);
+
+        overflow_count = 0;
+    }
+    // Add to active PulseIns
+    refcount++;
 
     // EXTI pins can also be read as an input
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -141,7 +175,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t* self, const mcu
     // Interrupt starts immediately
     assign_EXTI_Interrupt(self, pin->number);
     HAL_NVIC_EnableIRQ(self->irq);
-    claim_pin(pin);
+    common_hal_mcu_pin_claim(pin);
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t* self) {
@@ -153,10 +187,14 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t* self) {
         return;
     }
     //Remove pulsein slot from shared array
-    HAL_NVIC_DisableIRQ(self->irq);
     _objs[self->pin->number] = NULL;
     reset_pin_number(self->pin->port, self->pin->number);
     self->pin = NULL;
+
+    refcount--;
+    if (refcount == 0) {
+        stm_peripherals_timer_free(tim_handle.Instance);
+    }
 }
 
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t* self) {
@@ -191,8 +229,8 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t* self, uint16_t tri
 
     self->first_edge = true;
     self->paused = false;
-    self->last_ms = 0;
-    self->last_us = 0;
+    self->last_count = 0;
+    self->last_overflow = 0;
 
     HAL_NVIC_EnableIRQ(self->irq);
 }
@@ -211,7 +249,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_
     }
     if (index < 0 || index >= self->len) {
         HAL_NVIC_EnableIRQ(self->irq);
-        mp_raise_IndexError(translate("index out of range"));
+        mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_PulseIn);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     HAL_NVIC_EnableIRQ(self->irq);
@@ -220,7 +258,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t* self, int16_
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t* self) {
     if (self->len == 0) {
-        mp_raise_IndexError(translate("pop from an empty PulseIn"));
+        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
     }
     HAL_NVIC_DisableIRQ(self->irq);
     uint16_t value = self->buffer[self->start];
@@ -263,23 +301,23 @@ static void assign_EXTI_Interrupt(pulseio_pulsein_obj_t* self, uint8_t num) {
 
 void EXTI0_IRQHandler(void)
 {
-    pulsein_handler(0);
+    pulsein_exti_event_handler(0);
 }
 void EXTI1_IRQHandler(void)
 {
-    pulsein_handler(1);
+    pulsein_exti_event_handler(1);
 }
 void EXTI2_IRQHandler(void)
 {
-    pulsein_handler(2);
+    pulsein_exti_event_handler(2);
 }
 void EXTI3_IRQHandler(void)
 {
-    pulsein_handler(3);
+    pulsein_exti_event_handler(3);
 }
 void EXTI4_IRQHandler(void)
 {
-    pulsein_handler(4);
+    pulsein_exti_event_handler(4);
 }
 
 void EXTI9_5_IRQHandler(void)
@@ -287,7 +325,7 @@ void EXTI9_5_IRQHandler(void)
     uint32_t pending = EXTI->PR;
     for (uint i = 5; i <= 9; i++) {
         if(pending & (1 << i)) {
-            pulsein_handler(i);
+            pulsein_exti_event_handler(i);
         }
     }
 }
@@ -297,7 +335,7 @@ void EXTI15_10_IRQHandler(void)
     uint32_t pending = EXTI->PR;
     for (uint i = 10; i <= 15; i++) {
         if(pending & (1 << i)) {
-            pulsein_handler(i);
+            pulsein_exti_event_handler(i);
         }
     }
 }

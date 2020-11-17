@@ -46,7 +46,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
 }
 
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t *self) {
-    return self->pin == mp_const_none;
+    return self->pin == NULL;
 }
 
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self) {
@@ -55,7 +55,7 @@ void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self
     }
 
     // reset_pin_number(0, self->pin->number);
-    self->pin = mp_const_none;
+    self->pin = NULL;
 }
 
 void common_hal_digitalio_digitalinout_switch_to_input(
@@ -64,12 +64,13 @@ void common_hal_digitalio_digitalinout_switch_to_input(
     touch_oe_write(touch_oe_read() & ~(1 << self->pin->number));
 }
 
-void common_hal_digitalio_digitalinout_switch_to_output(
+digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t *self, bool value,
         digitalio_drive_mode_t drive_mode) {
     (void)drive_mode;
     common_hal_digitalio_digitalinout_set_value(self, value);
     touch_oe_write(touch_oe_read() | (1 << self->pin->number));
+    return DIGITALINOUT_OK;
 }
 
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
@@ -92,11 +93,12 @@ bool common_hal_digitalio_digitalinout_get_value(
     return !!(touch_i_read() & (1 << self->pin->number));
 }
 
-void common_hal_digitalio_digitalinout_set_drive_mode(
+digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
         digitalio_digitalinout_obj_t *self,
         digitalio_drive_mode_t drive_mode) {
     (void)self;
     (void)drive_mode;
+    return DIGITALINOUT_OK;
 }
 
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(

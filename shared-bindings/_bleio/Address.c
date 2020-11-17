@@ -34,22 +34,18 @@
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-module/_bleio/Address.h"
 
-//| .. currentmodule:: _bleio
-//|
-//| :class:`Address` -- BLE address
-//| =========================================================
-//|
-//| Encapsulates the address of a BLE device.
+//| class Address:
+//|     """Encapsulates the address of a BLE device."""
 //|
 
-//| .. class:: Address(address, address_type)
+//|     def __init__(self, address: ReadableBuffer, address_type: int) -> None:
+//|         """Create a new Address object encapsulating the address value.
+//|         The value itself can be one of:
 //|
-//|   Create a new Address object encapsulating the address value.
-//|   The value itself can be one of:
-//|
-//|   :param buf address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
-//|   :param int address_type: one of the integer values: `PUBLIC`, `RANDOM_STATIC`,
-//|     `RANDOM_PRIVATE_RESOLVABLE`, or `RANDOM_PRIVATE_NON_RESOLVABLE`.
+//|         :param ~_typing.ReadableBuffer address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
+//|         :param int address_type: one of the integer values: `PUBLIC`, `RANDOM_STATIC`,
+//|           `RANDOM_PRIVATE_RESOLVABLE`, or `RANDOM_PRIVATE_NON_RESOLVABLE`."""
+//|         ...
 //|
 STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_address_type };
@@ -81,9 +77,8 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. attribute:: address_bytes
-//|
-//|     The bytes that make up the device address (read-only).
+//|     address_bytes: bytes
+//|     """The bytes that make up the device address (read-only).
 //|
 //|     Note that the ``bytes`` object returned is in little-endian order:
 //|     The least significant byte is ``address_bytes[0]``. So the address will
@@ -91,13 +86,13 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     or use `str()` on the :py:class:`~_bleio.Attribute` object itself, the address will be printed
 //|     in the expected order. For example:
 //|
-//|     .. code-block:: pycon
+//|     .. code-block:: python
 //|
 //|       >>> import _bleio
 //|       >>> _bleio.adapter.address
 //|       <Address c8:1d:f5:ed:a8:35>
 //|       >>> _bleio.adapter.address.address_bytes
-//|       b'5\xa8\xed\xf5\x1d\xc8'
+//|       b'5\\xa8\\xed\\xf5\\x1d\\xc8'"""
 //|
 STATIC mp_obj_t bleio_address_get_address_bytes(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -113,12 +108,11 @@ const mp_obj_property_t bleio_address_address_bytes_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: type
-//|     
-//|     The address type (read-only).
+//|     type: int
+//|     """The address type (read-only).
 //|
 //|     One of the integer values: `PUBLIC`, `RANDOM_STATIC`, `RANDOM_PRIVATE_RESOLVABLE`,
-//|     or `RANDOM_PRIVATE_NON_RESOLVABLE`.
+//|     or `RANDOM_PRIVATE_NON_RESOLVABLE`."""
 //|
 STATIC mp_obj_t bleio_address_get_type(mp_obj_t self_in) {
     bleio_address_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -134,9 +128,9 @@ const mp_obj_property_t bleio_address_type_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: __eq__(other)
-//|
-//|     Two Address objects are equal if their addresses and address types are equal.
+//|     def __eq__(self, other: object) -> bool:
+//|         """Two Address objects are equal if their addresses and address types are equal."""
+//|         ...
 //|
 STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     switch (op) {
@@ -160,9 +154,9 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
     }
 }
 
-//|   .. method:: __hash__()
-//|
-//|     Returns a hash for the Address data.
+//|     def __hash__(self) -> int:
+//|         """Returns a hash for the Address data."""
+//|         ...
 //|
 STATIC mp_obj_t bleio_address_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
@@ -193,22 +187,18 @@ STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
               buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
 }
 
-//|   .. data:: PUBLIC
+//|     PUBLIC: int
+//|     """A publicly known address, with a company ID (high 24 bits)and company-assigned part (low 24 bits)."""
 //|
-//|      A publicly known address, with a company ID (high 24 bits)and company-assigned part (low 24 bits).
+//|     RANDOM_STATIC: int
+//|     """A randomly generated address that does not change often. It may never change or may change after
+//|      a power cycle."""
 //|
-//|   .. data:: RANDOM_STATIC
+//|     RANDOM_PRIVATE_RESOLVABLE: int
+//|     """An address that is usable when the peer knows the other device's secret Identity Resolving Key (IRK)."""
 //|
-//|      A randomly generated address that does not change often. It may never change or may change after
-//|      a power cycle.
-//|
-//|   .. data:: RANDOM_PRIVATE_RESOLVABLE
-//|
-//|      An address that is usable when the peer knows the other device's secret Identity Resolving Key (IRK).
-//|
-//|   .. data:: RANDOM_PRIVATE_NON_RESOLVABLE
-//|
-//|      A randomly generated address that changes on every connection.
+//|     RANDOM_PRIVATE_NON_RESOLVABLE: int
+//|     """A randomly generated address that changes on every connection."""
 //|
 STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_address_bytes),                 MP_ROM_PTR(&bleio_address_address_bytes_obj) },

@@ -38,10 +38,8 @@
 #include "shared-module/framebufferio/__init__.h"
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 
-//| .. currentmodule:: rgbmatrix
-//|
-//| :class:`RGBMatrix` --  Driver for HUB75-style RGB LED matrices
-//| ================================================================
+//| class RGBMatrix:
+//|     """Displays an in-memory framebuffer to a HUB75-style RGB LED matrix."""
 //|
 
 extern Protomatter_core *_PM_protoPtr;
@@ -52,13 +50,10 @@ STATIC uint8_t validate_pin(mp_obj_t obj) {
 }
 
 STATIC void validate_pins(qstr what, uint8_t* pin_nos, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
-    mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq));
-    if (len > max_pins) {
-        mp_raise_ValueError_varg(translate("At most %d %q may be specified (not %d)"), max_pins, what, len);
-    }
-    *count_out = len;
-    for (mp_int_t i=0; i<len; i++) {
-        pin_nos[i] = validate_pin(mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+    mcu_pin_obj_t *pins[max_pins];
+    validate_list_is_free_pins(what, pins, max_pins, seq, count_out);
+    for (mp_int_t i=0; i<*count_out; i++) {
+        pin_nos[i] = common_hal_mcu_pin_number(pins[i]);
     }
 }
 
@@ -77,6 +72,10 @@ STATIC void claim_and_never_reset_pins(mp_obj_t seq) {
 STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_t rgb_pin_count, bool allow_inefficient) {
     uint32_t port = clock_pin / 32;
     uint32_t bit_mask = 1 << (clock_pin % 32);
+
+    if (rgb_pin_count <= 0 || rgb_pin_count % 6 != 0 || rgb_pin_count > 30) {
+        mp_raise_ValueError_varg(translate("The length of rgb_pins must be 6, 12, 18, 24, or 30"));
+    }
 
     for (uint8_t i = 0; i < rgb_pin_count; i++) {
         uint32_t pin_port = rgb_pins[i] / 32;
@@ -133,45 +132,42 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//| :class:`~rgbmatrix.RGBMatrix` displays an in-memory framebuffer to an LED matrix.
+//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: Sequence[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0) -> None:
+//|         """Create a RGBMatrix object with the given attributes.  The height of
+//|         the display is determined by the number of rgb and address pins:
+//|         len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4
+//|         address lines, the display will be 32 pixels tall.  If the optional height
+//|         parameter is specified and is not 0, it is checked against the calculated
+//|         height.
 //|
-//| .. class:: RGBMatrix(*, width, bit_depth, rgb_pins, addr_pins, clock_pin, latch_pin, output_enable_pin, doublebuffer=True, framebuffer=None, height=0)
+//|         Up to 30 RGB pins and 8 address pins are supported.
 //|
-//|   Create a RGBMatrix object with the given attributes.  The height of
-//|   the display is determined by the number of rgb and address pins:
-//|   len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4
-//|   address lines, the display will be 32 pixels tall.  If the optional height
-//|   parameter is specified and is not 0, it is checked against the calculated
-//|   height.
+//|         The RGB pins must be within a single "port" and performance and memory
+//|         usage are best when they are all within "close by" bits of the port.
+//|         The clock pin must also be on the same port as the RGB pins.  See the
+//|         documentation of the underlying protomatter C library for more
+//|         information.  Generally, Adafruit's interface boards are designed so
+//|         that these requirements are met when matched with the intended
+//|         microcontroller board.  For instance, the Feather M4 Express works
+//|         together with the RGB Matrix Feather.
 //|
-//|   Up to 30 RGB pins and 8 address pins are supported.
+//|         The framebuffer is in "RGB565" format.
 //|
-//|   The RGB pins must be within a single "port" and performance and memory
-//|   usage are best when they are all within "close by" bits of the port.
-//|   The clock pin must also be on the same port as the RGB pins.  See the
-//|   documentation of the underlying protomatter C library for more
-//|   information.  Generally, Adafruit's interface boards are designed so
-//|   that these requirements are met when matched with the intended
-//|   microcontroller board.  For instance, the Feather M4 Express works
-//|   together with the RGB Matrix Feather.
+//|         "RGB565" means that it is organized as a series of 16-bit numbers
+//|         where the highest 5 bits are interpreted as red, the next 6 as
+//|         green, and the final 5 as blue.  The object can be any buffer, but
+//|         `array.array` and `ulab.array` objects are most often useful.
+//|         To update the content, modify the framebuffer and call refresh.
 //|
-//|   The framebuffer is in "RGB565" format.
+//|         If a framebuffer is not passed in, one is allocated and initialized
+//|         to all black.  In any case, the framebuffer can be retrieved
+//|         by passing the RGBMatrix object to memoryview().
 //|
-//|   "RGB565" means that it is organized as a series of 16-bit numbers
-//|   where the highest 5 bits are interpreted as red, the next 6 as
-//|   green, and the final 5 as blue.  The object can be any buffer, but
-//|   `array.array` and `ulab.array` objects are most often useful.
-//|   To update the content, modify the framebuffer and call refresh.
+//|         If doublebuffer is False, some memory is saved, but the display may
+//|         flicker during updates.
 //|
-//|   If a framebuffer is not passed in, one is allocated and initialized
-//|   to all black.  In any case, the framebuffer can be retrieved
-//|   by passing the RGBMatrix object to memoryview().
-//|
-//|   If doublebuffer is False, some memory is saved, but the display may
-//|   flicker during updates.
-//|
-//|   A RGBMatrix is often used in conjunction with a
-//|   `framebufferio.FramebufferDisplay`.
+//|         A RGBMatrix is often used in conjunction with a
+//|         `framebufferio.FramebufferDisplay`."""
 //|
 
 STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -201,6 +197,11 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     uint8_t clock_pin = validate_pin(args[ARG_clock_pin].u_obj);
     uint8_t latch_pin = validate_pin(args[ARG_latch_pin].u_obj);
     uint8_t output_enable_pin = validate_pin(args[ARG_output_enable_pin].u_obj);
+    int bit_depth = args[ARG_bit_depth].u_int;
+
+    if (bit_depth <= 0 || bit_depth > 6) {
+        mp_raise_ValueError_varg(translate("Bit depth must be from 1 to 6 inclusive, not %d"), bit_depth);
+    }
 
     validate_pins(MP_QSTR_rgb_pins, rgb_pins, MP_ARRAY_SIZE(self->rgb_pins), args[ARG_rgb_list].u_obj, &rgb_count);
     validate_pins(MP_QSTR_addr_pins, addr_pins, MP_ARRAY_SIZE(self->addr_pins), args[ARG_addr_list].u_obj, &addr_count);
@@ -218,6 +219,10 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         }
     }
 
+    if (args[ARG_width].u_int <= 0) {
+        mp_raise_ValueError(translate("width must be greater than zero"));
+    }
+
     preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);
 
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
@@ -229,7 +234,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
 
     common_hal_rgbmatrix_rgbmatrix_construct(self,
         args[ARG_width].u_int,
-        args[ARG_bit_depth].u_int,
+        bit_depth,
         rgb_count, rgb_pins,
         addr_count, addr_pins,
         clock_pin, latch_pin, output_enable_pin,
@@ -245,11 +250,11 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit
-//|
-//|     Free the resources (pins, timers, etc.) associated with this
-//|     rgbmatrix instance.  After deinitialization, no further operations
-//|     may be performed.
+//|     def deinit(self) -> None:
+//|         """Free the resources (pins, timers, etc.) associated with this
+//|         rgbmatrix instance.  After deinitialization, no further operations
+//|         may be performed."""
+//|         ...
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_deinit(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
@@ -260,15 +265,14 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_deinit_obj, rgbmatrix_rgbmatrix_deinit);
 
 static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
-    if (!self->core.rgbPins) {
+    if (!self->protomatter.rgbPins) {
         raise_deinited_error();
     }
 }
 
-//|   .. attribute:: brightness
-//|
-//|     In the current implementation, 0.0 turns the display off entirely
-//|     and any other value up to 1.0 turns the display on fully.
+//|     brightness: float
+//|     """In the current implementation, 0.0 turns the display off entirely
+//|     and any other value up to 1.0 turns the display on fully."""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_brightness(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
@@ -297,10 +301,10 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: refresh()
-//|
-//|     Transmits the color data in the buffer to the pixels so that
-//|     they are shown.
+//|     def refresh(self) -> None:
+//|         """Transmits the color data in the buffer to the pixels so that
+//|         they are shown."""
+//|         ...
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
@@ -310,9 +314,8 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_refresh(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_refresh_obj, rgbmatrix_rgbmatrix_refresh);
 
-//|   .. attribute:: width
-//|
-//|     The width of the display, in pixels
+//|     width: int
+//|     """The width of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
@@ -327,9 +330,8 @@ const mp_obj_property_t rgbmatrix_rgbmatrix_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: height
-//|
-//|     The height of the display, in pixels
+//|     height: int
+//|     """The height of the display, in pixels"""
 //|
 STATIC mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t*)self_in;
@@ -363,7 +365,8 @@ STATIC void rgbmatrix_rgbmatrix_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *
 
 // These version exists so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
-STATIC void rgbmatrix_rgbmatrix_swapbuffers(mp_obj_t self_in) {
+STATIC void rgbmatrix_rgbmatrix_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
+    (void)dirty_row_bitmap;
     common_hal_rgbmatrix_rgbmatrix_refresh(self_in);
 }
 

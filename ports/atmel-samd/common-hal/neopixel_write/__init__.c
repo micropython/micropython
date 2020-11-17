@@ -29,9 +29,15 @@
 
 #include "shared-bindings/neopixel_write/__init__.h"
 
-#include "tick.h"
+#include "supervisor/port.h"
 
-#ifdef SAMD51
+#if defined(SAME54)
+#include "hri/hri_cmcc_e54.h"
+#include "hri/hri_nvmctrl_e54.h"
+#elif defined(SAME51)
+#include "hri/hri_cmcc_e51.h"
+#include "hri/hri_nvmctrl_e51.h"
+#elif defined(SAMD51)
 #include "hri/hri_cmcc_d51.h"
 #include "hri/hri_nvmctrl_d51.h"
 #endif
@@ -53,7 +59,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
                  #ifdef SAMD21
                  "        movs r6, #3; d2: sub r6, #1; bne d2;" // delay 3
                  #endif
-                 #ifdef SAMD51
+                 #ifdef SAM_D5X_E5X
                  "        movs r6, #3; d2: subs r6, #1; bne d2;" // delay 3
                  #endif
                  "        tst r4, r5;"                          // mask&r5
@@ -63,14 +69,14 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
                  #ifdef SAMD21
                  "        movs r6, #6; d0: sub r6, #1; bne d0;" // delay 6
                  #endif
-                 #ifdef SAMD51
+                 #ifdef SAM_D5X_E5X
                  "        movs r6, #6; d0: subs r6, #1; bne d0;" // delay 6
                  #endif
                  "        str r1, [r0, #0];"   // clr (possibly again, doesn't matter)
                  #ifdef SAMD21
                  "        asr     r4, r4, #1;" // mask >>= 1
                  #endif
-                 #ifdef SAMD51
+                 #ifdef SAM_D5X_E5X
                  "        asrs     r4, r4, #1;" // mask >>= 1
                  #endif
                  "        beq     nextbyte;"
@@ -78,7 +84,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
                  #ifdef SAMD21
                  "        movs r6, #2; d1: sub r6, #1; bne d1;" // delay 2
                  #endif
-                 #ifdef SAMD51
+                 #ifdef SAM_D5X_E5X
                  "        movs r6, #2; d1: subs r6, #1; bne d1;" // delay 2
                  #endif
                  "        b       loopBit;"
@@ -91,8 +97,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
                  "");
 }
 
-uint64_t next_start_tick_ms = 0;
-uint32_t next_start_tick_us = 1000;
+uint64_t next_start_raw_ticks = 0;
 
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // This is adapted directly from the Adafruit NeoPixel library SAMD21G18A code:
@@ -101,15 +106,15 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     uint32_t  pinMask;
     PortGroup* port;
 
-    // This must be called while interrupts are on in case we're waiting for a
-    // future ms tick.
-    wait_until(next_start_tick_ms, next_start_tick_us);
+    // Wait to make sure we don't append onto the last transmission. This should only be a tick or
+    // two.
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {}
 
     // Turn off interrupts of any kind during timing-sensitive code.
     mp_hal_disable_all_interrupts();
 
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // When this routine is positioned at certain addresses, the timing logic
     // below can be too fast by about 2.5x. This is some kind of (un)fortunate code
     // positioning with respect to a cache line.
@@ -136,7 +141,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
     volatile uint32_t *clr = &(port->OUTCLR.reg);
     neopixel_send_buffer_core(clr, pinMask, pixels, numBytes);
 
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     // Turn instruction, data, and NVM caches back on.
     hri_cmcc_clear_CFG_reg(CMCC, CMCC_CFG_DCDIS | CMCC_CFG_ICDIS);
     hri_nvmctrl_clear_CTRLA_CACHEDIS0_bit(NVMCTRL);
@@ -144,18 +149,10 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t* digitalinout,
 
     #endif
 
-    // ticks_ms may be out of date at this point because we stopped the
-    // interrupt. We'll risk it anyway.
-    current_tick(&next_start_tick_ms, &next_start_tick_us);
-    if (next_start_tick_us < 100) {
-        next_start_tick_ms += 1;
-        next_start_tick_us = 100 - next_start_tick_us;
-    } else {
-        next_start_tick_us -= 100;
-    }
+    // Update the next start.
+    next_start_raw_ticks = port_get_raw_ticks(NULL) + 4;
 
     // Turn on interrupts after timing-sensitive code.
     mp_hal_enable_all_interrupts();
 
 }
-

@@ -31,7 +31,6 @@
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
-#include "tick.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -92,7 +91,8 @@ void board_init(void) {
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
-        false); // backlight_on_high
+        false, // backlight_on_high
+        false); // SH1107_addressing
 }
 
 bool board_requests_safe_mode(void) {

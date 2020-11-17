@@ -29,6 +29,7 @@
 #include "py/mpstate.h"
 #include "shared-bindings/gamepad/__init__.h"
 #include "shared-bindings/gamepad/GamePad.h"
+#include "supervisor/shared/tick.h"
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
@@ -59,5 +60,8 @@ void gamepad_tick(void) {
 }
 
 void gamepad_reset(void) {
+    if (MP_STATE_VM(gamepad_singleton)) {
+        supervisor_disable_tick();
+    }
     MP_STATE_VM(gamepad_singleton) = NULL;
 }

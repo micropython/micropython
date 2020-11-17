@@ -4,7 +4,7 @@ The `Electronut Labs Papyr` board is based on the `nRF52840` SoC from
 Nordic Semiconductors. It has an e-ink display on it, along with a CR2477
 battery holder.
 
-Papyr can be programmed with the [`Adafruit nRF52 bootloader`](https://github.com/adafruit/Adafruit_nRF52_Bootloader) to 
+Papyr can be programmed with the [`Adafruit nRF52 bootloader`](https://github.com/adafruit/Adafruit_nRF52_Bootloader) to
 
 Schematic, datasheet default pin mapping etc. can be found over [here](https://docs.electronut.in/papyr/). The default pin mapping can be found in the board directory.
 

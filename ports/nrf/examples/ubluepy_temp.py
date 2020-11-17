@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2017 Glenn Ruben Bakke
+# SPDX-FileCopyrightText: Copyright (c) 2017 Glenn Ruben Bakke
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ def event_handler(id, handle, data):
     global periph
     global serv_env_sense
     global notif_enabled
- 
+
     if id == constants.EVT_GAP_CONNECTED:
         # indicated 'connected'
         LED(1).on()
@@ -50,7 +50,7 @@ def event_handler(id, handle, data):
             notif_enabled = True
             # start low power timer
             rtc.start()
-        else: 
+        else:
             notif_enabled = False
             # stop low power timer
             rtc.stop()
@@ -68,7 +68,7 @@ def send_temp(timer_id):
 # start off with LED(1) off
 LED(1).off()
 
-# use RTC1 as RTC0 is used by bluetooth stack 
+# use RTC1 as RTC0 is used by bluetooth stack
 # set up RTC callback every 5 second
 rtc = RTC(1, period=5, mode=RTC.PERIODIC, callback=send_temp)
 
@@ -76,7 +76,7 @@ notif_enabled = False
 
 uuid_env_sense = UUID("0x181A") # Environmental Sensing service
 uuid_temp = UUID("0x2A6E") # Temperature characteristic
- 
+
 serv_env_sense = Service(uuid_env_sense)
 
 temp_props = Characteristic.PROP_NOTIFY | Characteristic.PROP_READ
@@ -89,4 +89,3 @@ periph = Peripheral()
 periph.addService(serv_env_sense)
 periph.setConnectionHandler(event_handler)
 periph.advertise(device_name="micr_temp", services=[serv_env_sense])
-

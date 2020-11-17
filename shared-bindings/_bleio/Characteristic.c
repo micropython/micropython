@@ -33,45 +33,41 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-//| .. currentmodule:: _bleio
+//| class Characteristic:
+//|     """Stores information about a BLE service characteristic and allows reading
+//|        and writing of the characteristic's value."""
 //|
-//| :class:`Characteristic` -- BLE service characteristic
-//| =========================================================
-//|
-//| Stores information about a BLE service characteristic and allows reading
-//| and writing of the characteristic's value.
-//|
-//| .. class:: Characteristic
-//|
-//|   There is no regular constructor for a Characteristic. A new local Characteristic can be created
-//|   and attached to a Service by calling `add_to_service()`.
-//|   Remote Characteristic objects are created by `Connection.discover_remote_services()`
-//|   as part of remote Services.
+//|     def __init__(self) -> None:
+//|         """There is no regular constructor for a Characteristic. A new local Characteristic can be created
+//|         and attached to a Service by calling `add_to_service()`.
+//|         Remote Characteristic objects are created by `Connection.discover_remote_services()`
+//|         as part of remote Services."""
+//|         ...
 //|
 
-//|   .. method:: add_to_service(service, uuid, *, properties=0, read_perm=Attribute.OPEN, write_perm=Attribute.OPEN, max_length=20, fixed_length=False, initial_value=None)
+//|     def add_to_service(self, service: Service, uuid: UUID, *, properties: int = 0, read_perm: int = Attribute.OPEN, write_perm: int = Attribute.OPEN, max_length: int = 20, fixed_length: bool = False, initial_value: Optional[ReadableBuffer] = None) -> Characteristic:
+//|         """Create a new Characteristic object, and add it to this Service.
 //|
-//|     Create a new Characteristic object, and add it to this Service.
+//|         :param Service service: The service that will provide this characteristic
+//|         :param UUID uuid: The uuid of the characteristic
+//|         :param int properties: The properties of the characteristic,
+//|            specified as a bitmask of these values bitwise-or'd together:
+//|            `BROADCAST`, `INDICATE`, `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`.
+//|         :param int read_perm: Specifies whether the characteristic can be read by a client, and if so, which
+//|            security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
+//|            `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
+//|            `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
+//|         :param int write_perm: Specifies whether the characteristic can be written by a client, and if so, which
+//|            security mode is required. Values allowed are the same as ``read_perm``.
+//|         :param int max_length: Maximum length in bytes of the characteristic value. The maximum allowed is
+//|          is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
+//|          number of data bytes that fit in a single BLE 4.x ATT packet.
+//|         :param bool fixed_length: True if the characteristic value is of fixed length.
+//|         :param ~_typing.ReadableBuffer initial_value: The initial value for this characteristic. If not given, will be
+//|          filled with zeros.
 //|
-//|     :param Service service: The service that will provide this characteristic
-//|     :param UUID uuid: The uuid of the characteristic
-//|     :param int properties: The properties of the characteristic,
-//|        specified as a bitmask of these values bitwise-or'd together:
-//|        `BROADCAST`, `INDICATE`, `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`.
-//|     :param int read_perm: Specifies whether the characteristic can be read by a client, and if so, which
-//|        security mode is required. Must be one of the integer values `Attribute.NO_ACCESS`, `Attribute.OPEN`,
-//|        `Attribute.ENCRYPT_NO_MITM`, `Attribute.ENCRYPT_WITH_MITM`, `Attribute.LESC_ENCRYPT_WITH_MITM`,
-//|        `Attribute.SIGNED_NO_MITM`, or `Attribute.SIGNED_WITH_MITM`.
-//|     :param int write_perm: Specifies whether the characteristic can be written by a client, and if so, which
-//|        security mode is required. Values allowed are the same as ``read_perm``.
-//|     :param int max_length: Maximum length in bytes of the characteristic value. The maximum allowed is
-//|      is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
-//|      number of data bytes that fit in a single BLE 4.x ATT packet.
-//|     :param bool fixed_length: True if the characteristic value is of fixed length.
-//|     :param buf initial_value: The initial value for this characteristic. If not given, will be
-//|      filled with zeros.
-//|
-//|     :return: the new Characteristic.
+//|         :return: the new Characteristic."""
+//|         ...
 //|
 STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // class is arg[0], which we can ignore.
@@ -113,11 +109,14 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     const bleio_attribute_security_mode_t write_perm = args[ARG_write_perm].u_int;
     common_hal_bleio_attribute_security_mode_check_valid(write_perm);
 
-    const mp_int_t max_length = args[ARG_max_length].u_int;
+    const mp_int_t max_length_int = args[ARG_max_length].u_int;
+    if (max_length_int <= 0) {
+        mp_raise_ValueError(translate("max_length must be > 0"));
+    }
+    const size_t max_length = (size_t) max_length_int;
     const bool fixed_length =  args[ARG_fixed_length].u_bool;
     mp_obj_t initial_value = args[ARG_initial_value].u_obj;
 
-    // Length will be validated in common_hal.
     mp_buffer_info_t initial_value_bufinfo;
     if (initial_value == mp_const_none) {
         if (fixed_length && max_length > 0) {
@@ -126,7 +125,12 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
             initial_value = mp_const_empty_bytes;
         }
     }
+
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
+    if (initial_value_bufinfo.len > max_length ||
+        (fixed_length && initial_value_bufinfo.len != max_length)) {
+            mp_raise_ValueError(translate("initial_value length is wrong"));
+    }
 
     bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
     characteristic->base.type = &bleio_characteristic_type;
@@ -145,11 +149,10 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_characteristic_add_to_service_obj, 
 
 
 
-//|   .. attribute:: properties
-//|
-//|     An int bitmask representing which properties are set, specified as bitwise or'ing of
+//|     properties: int
+//|     """An int bitmask representing which properties are set, specified as bitwise or'ing of
 //|     of these possible values.
-//|     `BROADCAST`, `INDICATE`, `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`.
+//|     `BROADCAST`, `INDICATE`, `NOTIFY`, `READ`, `WRITE`, `WRITE_NO_RESPONSE`."""
 //|
 STATIC mp_obj_t bleio_characteristic_get_properties(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -165,11 +168,10 @@ const mp_obj_property_t bleio_characteristic_properties_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: uuid
+//|     uuid: Optional[UUID]
+//|     """The UUID of this characteristic. (read-only)
 //|
-//|     The UUID of this characteristic. (read-only)
-//|
-//|     Will be ``None`` if the 128-bit UUID for this characteristic is not known.
+//|     Will be ``None`` if the 128-bit UUID for this characteristic is not known."""
 //|
 STATIC mp_obj_t bleio_characteristic_get_uuid(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -186,9 +188,8 @@ const mp_obj_property_t bleio_characteristic_uuid_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: value
-//|
-//|     The value of this characteristic.
+//|     value: bytearray
+//|     """The value of this characteristic."""
 //|
 STATIC mp_obj_t bleio_characteristic_get_value(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -218,28 +219,15 @@ const mp_obj_property_t bleio_characteristic_value_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: descriptors
-//|
-//|     A tuple of :py:class:`Descriptor` that describe this characteristic. (read-only)
+//|     descriptors: Descriptor
+//|     """A tuple of :py:class:`Descriptor` objects related to this characteristic. (read-only)"""
 //|
 STATIC mp_obj_t bleio_characteristic_get_descriptors(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // Return list as a tuple so user won't be able to change it.
-    bleio_descriptor_obj_t *descriptors = common_hal_bleio_characteristic_get_descriptor_list(self);
-    bleio_descriptor_obj_t *head = descriptors;
-    size_t len = 0;
-    while (head != NULL) {
-        len++;
-        head = head->next;
-    }
-    mp_obj_tuple_t * t = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
-    head = descriptors;
-    for (size_t i = len - 1; i >= 0; i--) {
-        t->items[i] = MP_OBJ_FROM_PTR(head);
-        head = head->next;
-    }
-    return MP_OBJ_FROM_PTR(t);
+    return MP_OBJ_FROM_PTR(common_hal_bleio_characteristic_get_descriptors(self));
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_get_descriptors_obj, bleio_characteristic_get_descriptors);
 
 const mp_obj_property_t bleio_characteristic_descriptors_obj = {
@@ -249,9 +237,8 @@ const mp_obj_property_t bleio_characteristic_descriptors_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. attribute:: service (read-only)
-//|
-//|     The Service this Characteristic is a part of.
+//|     service: Service
+//|     """The Service this Characteristic is a part of."""
 //|
 STATIC mp_obj_t bleio_characteristic_get_service(mp_obj_t self_in) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -267,12 +254,12 @@ const mp_obj_property_t bleio_characteristic_service_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|   .. method:: set_cccd(*, notify=False, indicate=False)
+//|     def set_cccd(self, *, notify: bool = False, indicate: bool = False) -> None:
+//|         """Set the remote characteristic's CCCD to enable or disable notification and indication.
 //|
-//|     Set the remote characteristic's CCCD to enable or disable notification and indication.
-//|
-//|     :param bool notify: True if Characteristic should receive notifications of remote writes
-//|     :param float indicate: True if Characteristic should receive indications of remote writes
+//|         :param bool notify: True if Characteristic should receive notifications of remote writes
+//|         :param float indicate: True if Characteristic should receive indications of remote writes"""
+//|         ...
 //|
 STATIC mp_obj_t bleio_characteristic_set_cccd(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bleio_characteristic_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -300,29 +287,23 @@ STATIC const mp_rom_map_elem_t bleio_characteristic_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_set_cccd),       MP_ROM_PTR(&bleio_characteristic_set_cccd_obj) },
 
     // Bitmask constants to represent properties
-//|   .. data:: BROADCAST
+//|     BROADCAST: int
+//|     """property: allowed in advertising packets"""
 //|
-//|      property: allowed in advertising packets
+//|     INDICATE: int
+//|     """property: server will indicate to the client when the value is set and wait for a response"""
 //|
-//|   .. data:: INDICATE
+//|     NOTIFY: int
+//|     """property: server will notify the client when the value is set"""
 //|
-//|      property: server will indicate to the client when the value is set and wait for a response
+//|     READ: int
+//|     """property: clients may read this characteristic"""
 //|
-//|   .. data:: NOTIFY
+//|     WRITE: int
+//|     """property: clients may write this characteristic; a response will be sent back"""
 //|
-//|      property: server will notify the client when the value is set
-//|
-//|   .. data:: READ
-//|
-//|      property: clients may read this characteristic
-//|
-//|   .. data:: WRITE
-//|
-//|      property: clients may write this characteristic; a response will be sent back
-//|
-//|   .. data:: WRITE_NO_RESPONSE
-//|
-//|      property: clients may write this characteristic; no response will be sent back
+//|     WRITE_NO_RESPONSE: int
+//|     """property: clients may write this characteristic; no response will be sent back"""
 //|
     { MP_ROM_QSTR(MP_QSTR_BROADCAST),         MP_ROM_INT(CHAR_PROP_BROADCAST) },
     { MP_ROM_QSTR(MP_QSTR_INDICATE),          MP_ROM_INT(CHAR_PROP_INDICATE) },

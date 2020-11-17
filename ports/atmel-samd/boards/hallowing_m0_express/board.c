@@ -32,8 +32,6 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/busio/SPI.h"
 
-#include "tick.h"
-
 displayio_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
@@ -112,7 +110,8 @@ void board_init(void) {
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
-        true); // backlight_on_high
+        true, // backlight_on_high
+        false); // not SH1107
 }
 
 bool board_requests_safe_mode(void) {

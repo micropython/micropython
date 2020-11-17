@@ -29,52 +29,40 @@
 #include "shared-bindings/_bleio/Characteristic.h"
 #include "shared-bindings/_bleio/UUID.h"
 
-//
-
-//| .. currentmodule:: _bleio
+//| class Attribute:
+//|     """Definitions associated with all BLE attributes: characteristics, descriptors, etc.
 //|
-//| :class:`Attribute` -- BLE Attribute
-//| =========================================================
+//|     :py:class:`~_bleio.Attribute` is, notionally, a superclass of
+//|     :py:class:`~Characteristic` and :py:class:`~Descriptor`,
+//|     but is not defined as a Python superclass of those classes."""
 //|
-//| Definitions associated with all BLE attributes: characteristics, descriptors, etc.
-//| :py:class:`~_bleio.Attribute` is, notionally, a superclass of
-//| :py:class:`~Characteristic` and :py:class:`~Descriptor`,
-//| but is not defined as a Python superclass of those classes.
-//|
-//| .. class:: Attribute()
-//|
-//|   You cannot create an instance of :py:class:`~_bleio.Attribute`.
+//|     def __init__(self) -> None:
+//|         """You cannot create an instance of :py:class:`~_bleio.Attribute`."""
+//|         ...
 //|
 
 STATIC const mp_rom_map_elem_t bleio_attribute_locals_dict_table[] = {
 
-//|   .. data:: NO_ACCESS
+//|     NO_ACCESS: int
+//|     """security mode: access not allowed"""
 //|
-//|      security mode: access not allowed
+//|     OPEN: int
+//|     """security_mode: no security (link is not encrypted)"""
 //|
-//|   .. data:: OPEN
+//|     ENCRYPT_NO_MITM: int
+//|     """security_mode: unauthenticated encryption, without man-in-the-middle protection"""
 //|
-//|      security_mode: no security (link is not encrypted)
+//|     ENCRYPT_WITH_MITM: int
+//|     """security_mode: authenticated encryption, with man-in-the-middle protection"""
 //|
-//|   .. data:: ENCRYPT_NO_MITM
+//|     LESC_ENCRYPT_WITH_MITM: int
+//|     """security_mode: LESC encryption, with man-in-the-middle protection"""
 //|
-//|      security_mode: unauthenticated encryption, without man-in-the-middle protection
+//|     SIGNED_NO_MITM: int
+//|     """security_mode: unauthenticated data signing, without man-in-the-middle protection"""
 //|
-//|   .. data:: ENCRYPT_WITH_MITM
-//|
-//|      security_mode: authenticated encryption, with man-in-the-middle protection
-//|
-//|   .. data:: LESC_ENCRYPT_WITH_MITM
-//|
-//|      security_mode: LESC encryption, with man-in-the-middle protection
-//|
-//|   .. data:: SIGNED_NO_MITM
-//|
-//|      security_mode: unauthenticated data signing, without man-in-the-middle protection
-//|
-//|   .. data:: SIGNED_WITH_MITM
-//|
-//|      security_mode: authenticated data signing, without man-in-the-middle protection
+//|     SIGNED_WITH_MITM: int
+//|     """security_mode: authenticated data signing, without man-in-the-middle protection"""
 //|
     { MP_ROM_QSTR(MP_QSTR_NO_ACCESS),              MP_ROM_INT(SECURITY_MODE_NO_ACCESS) },
     { MP_ROM_QSTR(MP_QSTR_OPEN),                   MP_ROM_INT(SECURITY_MODE_OPEN) },

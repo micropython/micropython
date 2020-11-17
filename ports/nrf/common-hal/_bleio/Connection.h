@@ -53,7 +53,7 @@ typedef struct {
     uint16_t conn_handle;
     bool is_central;
     // Remote services discovered when this peripheral is acting as a client.
-    bleio_service_obj_t *remote_service_list;
+    mp_obj_list_t *remote_service_list;
     // The advertising data and scan response buffers are held by us, not by the SD, so we must
     // maintain them and not change it. If we need to change the contents during advertising,
     // there are tricks to get the SD to notice (see DevZone - TBS).
@@ -67,7 +67,7 @@ typedef struct {
     ble_gap_conn_params_t conn_params;
     volatile bool conn_params_updating;
     uint16_t mtu;
-    // Request that CCCD values for this conenction be saved, using sys_attr values.
+    // Request that CCCD values for this connection be saved, using sys_attr values.
     volatile bool do_bond_cccds;
     // Request that security key info for this connection be saved.
     volatile bool do_bond_keys;
@@ -83,9 +83,11 @@ typedef struct {
     uint8_t disconnect_reason;
 } bleio_connection_obj_t;
 
+void bleio_connection_clear(bleio_connection_internal_t *self);
 bool connection_on_ble_evt(ble_evt_t *ble_evt, void *self_in);
 
 uint16_t bleio_connection_get_conn_handle(bleio_connection_obj_t *self);
 mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t* connection);
+bleio_connection_internal_t *bleio_conn_handle_to_connection(uint16_t conn_handle);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_CONNECTION_H

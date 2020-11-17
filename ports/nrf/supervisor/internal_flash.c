@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,7 @@ uint32_t supervisor_flash_get_block_count(void) {
     return CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE / FILESYSTEM_BLOCK_SIZE ;
 }
 
-void supervisor_flash_flush(void) {
+void port_internal_flash_flush(void) {
     if (_flash_page_addr == NO_CACHE) return;
 
     // Skip if data is the same

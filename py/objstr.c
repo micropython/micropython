@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1076,7 +1076,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 }
                 field_name = str_to_int(field_name, field_name_top, &index);
                 if ((uint)index >= n_args - 1) {
-                    mp_raise_IndexError(translate("tuple index out of range"));
+                    mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_tuple);
                 }
                 arg = args[index + 1];
                 *arg_i = -1;
@@ -1104,7 +1104,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 }
             }
             if ((uint)*arg_i >= n_args - 1) {
-                mp_raise_IndexError(translate("tuple index out of range"));
+                mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_tuple);
             }
             arg = args[(*arg_i) + 1];
             (*arg_i)++;
@@ -1280,8 +1280,8 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         terse_str_format_value_error();
                     } else {
                         mp_raise_ValueError_varg(
-                            translate("unknown format code '%c' for object of type '%s'"),
-                            type, mp_obj_get_type_str(arg));
+                            translate("unknown format code '%c' for object of type '%q'"),
+                            type, mp_obj_get_type_qstr(arg));
                     }
             }
         }
@@ -1352,8 +1352,8 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         terse_str_format_value_error();
                     } else {
                         mp_raise_ValueError_varg(
-                            translate("unknown format code '%c' for object of type '%s'"),
-                            type, mp_obj_get_type_str(arg));
+                            translate("unknown format code '%c' for object of type '%q'"),
+                            type, mp_obj_get_type_qstr(arg));
                     }
             }
         } else {
@@ -1388,8 +1388,8 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                         terse_str_format_value_error();
                     } else {
                         mp_raise_ValueError_varg(
-                            translate("unknown format code '%c' for object of type '%s'"),
-                            type, mp_obj_get_type_str(arg));
+                            translate("unknown format code '%c' for object of type '%q'"),
+                            type, mp_obj_get_type_qstr(arg));
                     }
             }
         }
@@ -2133,7 +2133,7 @@ STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
     if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
         mp_raise_TypeError(translate("can't convert to str implicitly"));
     } else {
-        const qstr src_name = mp_obj_get_type(self_in)->name;
+        const qstr src_name = mp_obj_get_type_qstr(self_in);
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
             translate("can't convert '%q' object to %q implicitly"),
             src_name, src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str));

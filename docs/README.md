@@ -5,7 +5,7 @@ The latest documentation can be found at:
 http://circuitpython.readthedocs.io/en/latest/
 
 The documentation you see there is generated from the files in the whole tree:
-https://github.com/adafruit/circuitpython/tree/master
+https://github.com/adafruit/circuitpython/tree/main
 
 Building the documentation locally
 ----------------------------------
@@ -34,10 +34,10 @@ All commands will, by default, run with `-E` (forces a rebuild from scratch of d
 
     # will turn OFF the force rebuild
     make html FORCE=
-    
+
     # will turn OFF the verbosity
     make html VERBOSE=
-    
+
     # will turn OFF the force rebuild and make it doubly verbose when running
     make html FORCE= VERBOSE="-v -v"
 

@@ -36,38 +36,36 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: ps2io
+//| class Ps2:
+//|     """Communicate with a PS/2 keyboard or mouse
 //|
-//| :class:`Ps2` -- Communicate with a PS/2 keyboard or mouse
-//| =========================================================
+//|     Ps2 implements the PS/2 keyboard/mouse serial protocol, used in
+//|     legacy devices. It is similar to UART but there are only two
+//|     lines (Data and Clock). PS/2 devices are 5V, so bidirectional
+//|     level converters must be used to connect the I/O lines to pins
+//|     of 3.3V boards."""
 //|
-//| Ps2 implements the PS/2 keyboard/mouse serial protocol, used in
-//| legacy devices. It is similar to UART but there are only two
-//| lines (Data and Clock). PS/2 devices are 5V, so bidirectional
-//| level converters must be used to connect the I/O lines to pins
-//| of 3.3V boards.
+//|     def __init__(self, data_pin: microcontroller.Pin, clock_pin: microcontroller.Pin) -> None:
+//|         """Create a Ps2 object associated with the given pins.
 //|
-//| .. class:: Ps2(data_pin, clock_pin)
+//|         :param ~microcontroller.Pin data_pin: Pin tied to data wire.
+//|         :param ~microcontroller.Pin clock_pin: Pin tied to clock wire.
+//|           This pin must support interrupts.
 //|
-//|   Create a Ps2 object associated with the given pins.
+//|         Read one byte from PS/2 keyboard and turn on Scroll Lock LED::
 //|
-//|   :param ~microcontroller.Pin data_pin: Pin tied to data wire.
-//|   :param ~microcontroller.Pin clock_pin: Pin tied to clock wire.
-//|     This pin must support interrupts.
+//|           import ps2io
+//|           import board
 //|
-//|   Read one byte from PS/2 keyboard and turn on Scroll Lock LED::
+//|           kbd = ps2io.Ps2(board.D10, board.D11)
 //|
-//|     import ps2io
-//|     import board
+//|           while len(kbd) == 0:
+//|               pass
 //|
-//|     kbd = ps2io.Ps2(board.D10, board.D11)
-//|
-//|     while len(kbd) == 0:
-//|         pass
-//|
-//|     print(kbd.popleft())
-//|     print(kbd.sendcmd(0xed))
-//|     print(kbd.sendcmd(0x01))
+//|           print(kbd.popleft())
+//|           print(kbd.sendcmd(0xed))
+//|           print(kbd.sendcmd(0x01))"""
+//|         ...
 //|
 STATIC mp_obj_t ps2io_ps2_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_datapin, ARG_clkpin };
@@ -89,9 +87,9 @@ STATIC mp_obj_t ps2io_ps2_make_new(const mp_obj_type_t *type, size_t n_args, con
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitialises the Ps2 and releases any hardware resources for reuse.
+//|     def deinit(self) -> None:
+//|         """Deinitialises the Ps2 and releases any hardware resources for reuse."""
+//|         ...
 //|
 STATIC mp_obj_t ps2io_ps2_deinit(mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -106,16 +104,16 @@ STATIC void check_for_deinit(ps2io_ps2_obj_t *self) {
     }
 }
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self) -> Ps2:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t ps2io_ps2_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -124,10 +122,10 @@ STATIC mp_obj_t ps2io_ps2_obj___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ps2io_ps2___exit___obj, 4, 4, ps2io_ps2_obj___exit__);
 
-//|   .. method:: popleft()
-//|
-//|     Removes and returns the oldest received byte. When buffer
-//|     is empty, raises an IndexError exception.
+//|     def popleft(self) -> int:
+//|         """Removes and returns the oldest received byte. When buffer
+//|         is empty, raises an IndexError exception."""
+//|         ...
 //|
 STATIC mp_obj_t ps2io_ps2_obj_popleft(mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -135,24 +133,24 @@ STATIC mp_obj_t ps2io_ps2_obj_popleft(mp_obj_t self_in) {
 
     int b = common_hal_ps2io_ps2_popleft(self);
     if (b < 0) {
-        mp_raise_IndexError(translate("Pop from an empty Ps2 buffer"));
+        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_Ps2_space_buffer);
     }
     return MP_OBJ_NEW_SMALL_INT(b);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_popleft_obj, ps2io_ps2_obj_popleft);
 
-//|   .. method:: sendcmd(byte)
+//|     def sendcmd(self, byte: int) -> int:
+//|         """Sends a command byte to PS/2. Returns the response byte, typically
+//|         the general ack value (0xFA). Some commands return additional data
+//|         which is available through :py:func:`popleft()`.
 //|
-//|     Sends a command byte to PS/2. Returns the response byte, typically
-//|     the general ack value (0xFA). Some commands return additional data
-//|     which is available through :py:func:`popleft()`.
+//|         Raises a RuntimeError in case of failure. The root cause can be found
+//|         by calling :py:func:`clear_errors()`. It is advisable to call
+//|         :py:func:`clear_errors()` before :py:func:`sendcmd()` to flush any
+//|         previous errors.
 //|
-//|     Raises a RuntimeError in case of failure. The root cause can be found
-//|     by calling :py:func:`clear_errors()`. It is advisable to call
-//|     :py:func:`clear_errors()` before :py:func:`sendcmd()` to flush any
-//|     previous errors.
-//|
-//|     :param int byte: byte value of the command
+//|         :param int byte: byte value of the command"""
+//|         ...
 //|
 STATIC mp_obj_t ps2io_ps2_obj_sendcmd(mp_obj_t self_in, mp_obj_t ob) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -166,35 +164,35 @@ STATIC mp_obj_t ps2io_ps2_obj_sendcmd(mp_obj_t self_in, mp_obj_t ob) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(ps2io_ps2_sendcmd_obj, ps2io_ps2_obj_sendcmd);
 
-//|   .. method:: clear_errors()
+//|     def clear_errors(self) -> None:
+//|         """Returns and clears a bitmap with latest recorded communication errors.
 //|
-//|     Returns and clears a bitmap with latest recorded communication errors.
+//|         Reception errors (arise asynchronously, as data is received):
 //|
-//|     Reception errors (arise asynchronously, as data is received):
+//|         0x01: start bit not 0
 //|
-//|     0x01: start bit not 0
+//|         0x02: timeout
 //|
-//|     0x02: timeout
+//|         0x04: parity bit error
 //|
-//|     0x04: parity bit error
+//|         0x08: stop bit not 1
 //|
-//|     0x08: stop bit not 1
+//|         0x10: buffer overflow, newest data discarded
 //|
-//|     0x10: buffer overflow, newest data discarded
+//|         Transmission errors (can only arise in the course of sendcmd()):
 //|
-//|     Transmission errors (can only arise in the course of sendcmd()):
+//|         0x100: clock pin didn't go to LO in time
 //|
-//|     0x100: clock pin didn't go to LO in time
+//|         0x200: clock pin didn't go to HI in time
 //|
-//|     0x200: clock pin didn't go to HI in time
+//|         0x400: data pin didn't ACK
 //|
-//|     0x400: data pin didn't ACK
+//|         0x800: clock pin didn't ACK
 //|
-//|     0x800: clock pin didn't ACK
+//|         0x1000: device didn't respond to RTS
 //|
-//|     0x1000: device didn't respond to RTS
-//|
-//|     0x2000: device didn't send a response byte in time
+//|         0x2000: device didn't send a response byte in time"""
+//|         ...
 //|
 STATIC mp_obj_t ps2io_ps2_obj_clear_errors(mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -204,10 +202,12 @@ STATIC mp_obj_t ps2io_ps2_obj_clear_errors(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ps2io_ps2_clear_errors_obj, ps2io_ps2_obj_clear_errors);
 
-//|   .. method:: __len__()
+//|     def __bool__(self) -> bool: ...
 //|
-//|     Returns the number of received bytes in buffer, available
-//|     to :py:func:`popleft()`.
+//|     def __len__(self) -> int:
+//|         """Returns the number of received bytes in buffer, available
+//|         to :py:func:`popleft()`."""
+//|         ...
 //|
 STATIC mp_obj_t ps2_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     ps2io_ps2_obj_t *self = MP_OBJ_TO_PTR(self_in);

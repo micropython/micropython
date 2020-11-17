@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -119,6 +119,8 @@ size_t m_get_peak_bytes_allocated(void);
 
 // align ptr to the nearest multiple of "alignment"
 #define MP_ALIGN(ptr, alignment) (void*)(((uintptr_t)(ptr) + ((alignment) - 1)) & ~((alignment) - 1))
+
+#define sizeof_field(TYPE, MEMBER) sizeof((((TYPE *)0)->MEMBER))
 
 /** unichar / UTF-8 *********************************************/
 

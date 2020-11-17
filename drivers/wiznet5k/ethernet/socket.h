@@ -2,43 +2,43 @@
 //
 //! \file socket.h
 //! \brief SOCKET APIs Header file.
-//! \details SOCKET APIs like as berkeley socket api. 
+//! \details SOCKET APIs like as berkeley socket api.
 //! \version 1.0.2
 //! \date 2013/10/21
 //! \par  Revision history
 //!       <2014/05/01> V1.0.2. Refer to M20140501
 //!         1. Modify the comment : SO_REMAINED -> PACK_REMAINED
-//!         2. Add the comment as zero byte udp data reception in getsockopt(). 
+//!         2. Add the comment as zero byte udp data reception in getsockopt().
 //!       <2013/10/21> 1st Release
 //! \author MidnightCow
 //! \copyright
 //!
 //! Copyright (c)  2013, WIZnet Co., LTD.
 //! All rights reserved.
-//! 
-//! Redistribution and use in source and binary forms, with or without 
-//! modification, are permitted provided that the following conditions 
-//! are met: 
-//! 
-//!     * Redistributions of source code must retain the above copyright 
-//! notice, this list of conditions and the following disclaimer. 
+//!
+//! Redistribution and use in source and binary forms, with or without
+//! modification, are permitted provided that the following conditions
+//! are met:
+//!
+//!     * Redistributions of source code must retain the above copyright
+//! notice, this list of conditions and the following disclaimer.
 //!     * Redistributions in binary form must reproduce the above copyright
 //! notice, this list of conditions and the following disclaimer in the
-//! documentation and/or other materials provided with the distribution. 
-//!     * Neither the name of the <ORGANIZATION> nor the names of its 
-//! contributors may be used to endorse or promote products derived 
-//! from this software without specific prior written permission. 
-//! 
+//! documentation and/or other materials provided with the distribution.
+//!     * Neither the name of the <ORGANIZATION> nor the names of its
+//! contributors may be used to endorse or promote products derived
+//! from this software without specific prior written permission.
+//!
 //! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+//! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 //! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-//! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-//! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+//! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+//! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+//! CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 //! SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-//! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-//! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF 
+//! INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+//! CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+//! ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 //! THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
@@ -92,7 +92,7 @@
 #define SOCK_BUSY             0        ///< Socket is busy on processing the operation. Valid only Non-block IO Mode.
 #define SOCK_FATAL            -1000    ///< Result is fatal error about socket process.
 
-#define SOCK_ERROR            0        
+#define SOCK_ERROR            0
 #define SOCKERR_SOCKNUM       (SOCK_ERROR - 1)     ///< Invalid socket number
 #define SOCKERR_SOCKOPT       (SOCK_ERROR - 2)     ///< Invalid socket option
 #define SOCKERR_SOCKINIT      (SOCK_ERROR - 3)     ///< Socket is not initialized
@@ -113,7 +113,7 @@
  * SOCKET FLAG
  */
 #define SF_ETHER_OWN           (Sn_MR_MFEN)        ///< In \ref Sn_MR_MACRAW, Receive only the packet as broadcast, multicast and own packet
-#define SF_IGMP_VER2           (Sn_MR_MC)          ///< In \ref Sn_MR_UDP with \ref SF_MULTI_ENABLE, Select IGMP version 2.   
+#define SF_IGMP_VER2           (Sn_MR_MC)          ///< In \ref Sn_MR_UDP with \ref SF_MULTI_ENABLE, Select IGMP version 2.
 #define SF_TCP_NODELAY         (Sn_MR_ND)          ///< In \ref Sn_MR_TCP, Use to nodelayed ack.
 #define SF_MULTI_ENABLE        (Sn_MR_MULTI)       ///< In \ref Sn_MR_UDP, Enable multicast mode.
 
@@ -184,7 +184,7 @@ int8_t  WIZCHIP_EXPORT(listen)(uint8_t sn);
  * @ingroup WIZnet_socket_APIs
  * @brief Try to connect a server.
  * @details It requests connection to the server with destination IP address and port number passed as parameter.\n
- * @note It is valid only in TCP client mode. 
+ * @note It is valid only in TCP client mode.
  *       In block io mode, it does not return until connection is completed.
  *       In Non-block io mode, it return @ref SOCK_BUSY immediately.
  *
@@ -286,7 +286,7 @@ int32_t WIZCHIP_EXPORT(recv)(uint8_t sn, uint8_t * buf, uint16_t len);
  *                        @ref SOCKERR_PORTZERO    - Server port zero\n
  *                        @ref SOCKERR_SOCKCLOSED  - Socket unexpectedly closed \n
  *                        @ref SOCKERR_TIMEOUT     - Timeout occurred \n
- *                        @ref SOCK_BUSY           - Socket is busy. 
+ *                        @ref SOCK_BUSY           - Socket is busy.
  */
 int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t * addr, uint16_t port);
 
@@ -294,7 +294,7 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t 
  * @ingroup WIZnet_socket_APIs
  * @brief Receive datagram of UDP or MACRAW
  * @details This function is an application I/F function which is used to receive the data in other then TCP mode. \n
- *          This function is used to receive UDP and MAC_RAW mode, and handle the header as well. 
+ *          This function is used to receive UDP and MAC_RAW mode, and handle the header as well.
  *          This function can divide to received the packet data.
  *          On the MACRAW SOCKET, the addr and port parameters are ignored.
  * @note    In block io mode, it doesn't return until data reception is completed - data is filled as <I>len</I> in socket buffer
@@ -302,7 +302,7 @@ int32_t WIZCHIP_EXPORT(sendto)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_t 
  *
  * @param sn   Socket number. It should be <b>0 ~ @ref \_WIZCHIP_SOCK_NUM_</b>.
  * @param buf  Pointer buffer to read incoming data.
- * @param len  The max data length of data in buf. 
+ * @param len  The max data length of data in buf.
  *             When the received packet size <= len, receives data as packet sized.
  *             When others, receives data as len.
  * @param addr Pointer variable of destination IP address. It should be allocated 4 bytes.
@@ -366,7 +366,7 @@ typedef enum
 /**
  * @ingroup DATA_TYPE
  * @brief The type of socket option in @ref setsockopt() or @ref getsockopt()
- */ 
+ */
 typedef enum
 {
    SO_FLAG,           ///< Valid only in getsockopt(), For set flag of socket refer to <I>flag</I> in @ref socket().
@@ -375,11 +375,11 @@ typedef enum
    SO_MSS,              ///< Set/Get MSS. @ref Sn_MSSR ( @ref setSn_MSSR(), @ref getSn_MSSR() )
    SO_DESTIP,           ///< Set/Get the destination IP address. @ref Sn_DIPR ( @ref setSn_DIPR(), @ref getSn_DIPR() )
    SO_DESTPORT,         ///< Set/Get the destination Port number. @ref Sn_DPORT ( @ref setSn_DPORT(), @ref getSn_DPORT() )
-#if _WIZCHIP_ != 5100   
+#if _WIZCHIP_ != 5100
    SO_KEEPALIVESEND,    ///< Valid only in setsockopt. Manually send keep-alive packet in TCP mode
-   #if _WIZCHIP_ > 5200   
+   #if _WIZCHIP_ > 5200
       SO_KEEPALIVEAUTO, ///< Set/Get keep-alive auto transmission timer in TCP mode
-   #endif      
+   #endif
 #endif
    SO_SENDBUF,          ///< Valid only in getsockopt. Get the free data size of Socekt TX buffer. @ref Sn_TX_FSR, @ref getSn_TX_FSR()
    SO_RECVBUF,          ///< Valid only in getsockopt. Get the received data size in socket RX buffer. @ref Sn_RX_RSR, @ref getSn_RX_RSR()
@@ -400,34 +400,34 @@ typedef enum
  *                  <tr> <td> @b cstype </td> <td> @b data type</td><td>@b value</td></tr>
  *                  <tr> <td> @ref CS_SET_IOMODE \n @ref CS_GET_IOMODE </td> <td> uint8_t </td><td>@ref SOCK_IO_BLOCK @ref SOCK_IO_NONBLOCK</td></tr>
  *                  <tr> <td> @ref CS_GET_MAXTXBUF \n @ref CS_GET_MAXRXBUF </td> <td> uint16_t </td><td> 0 ~ 16K </td></tr>
- *                  <tr> <td> @ref CS_CLR_INTERRUPT \n @ref CS_GET_INTERRUPT \n @ref CS_SET_INTMASK \n @ref CS_GET_INTMASK </td> <td> @ref sockint_kind </td><td> @ref SIK_CONNECTED, etc.  </td></tr> 
+ *                  <tr> <td> @ref CS_CLR_INTERRUPT \n @ref CS_GET_INTERRUPT \n @ref CS_SET_INTMASK \n @ref CS_GET_INTMASK </td> <td> @ref sockint_kind </td><td> @ref SIK_CONNECTED, etc.  </td></tr>
  *             </table>
  *  @return @b Success @ref SOCK_OK \n
  *          @b fail    @ref SOCKERR_ARG         - Invalid argument\n
  */
 int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg);
 
-/** 
+/**
  * @ingroup WIZnet_socket_APIs
  *  @brief set socket options
  *  @details Set socket option like as TTL, MSS, TOS, and so on. Refer to @ref sockopt_type.
- *               
+ *
  *  @param sn socket number
  *  @param sotype socket option type. refer to @ref sockopt_type
  *  @param arg Data type and value is determined according to <I>sotype</I>. \n
  *             <table>
- *                  <tr> <td> @b sotype </td> <td> @b data type</td><td>@b value</td></tr> 
+ *                  <tr> <td> @b sotype </td> <td> @b data type</td><td>@b value</td></tr>
  *                  <tr> <td> @ref SO_TTL </td> <td> uint8_t </td><td> 0 ~ 255 </td> </tr>
  *                  <tr> <td> @ref SO_TOS </td> <td> uint8_t </td><td> 0 ~ 255 </td> </tr>
  *                  <tr> <td> @ref SO_MSS </td> <td> uint16_t </td><td> 0 ~ 65535 </td> </tr>
- *                  <tr> <td> @ref SO_DESTIP </td> <td> uint8_t[4] </td><td>  </td></tr> 
- *                  <tr> <td> @ref SO_DESTPORT </td> <td> uint16_t </td><td> 0 ~ 65535 </td></tr> 
- *                  <tr> <td> @ref SO_KEEPALIVESEND </td> <td> null </td><td> null </td></tr> 
- *                  <tr> <td> @ref SO_KEEPALIVEAUTO </td> <td> uint8_t </td><td> 0 ~ 255 </td></tr> 
+ *                  <tr> <td> @ref SO_DESTIP </td> <td> uint8_t[4] </td><td>  </td></tr>
+ *                  <tr> <td> @ref SO_DESTPORT </td> <td> uint16_t </td><td> 0 ~ 65535 </td></tr>
+ *                  <tr> <td> @ref SO_KEEPALIVESEND </td> <td> null </td><td> null </td></tr>
+ *                  <tr> <td> @ref SO_KEEPALIVEAUTO </td> <td> uint8_t </td><td> 0 ~ 255 </td></tr>
  *             </table>
- * @return 
+ * @return
  * - @b Success : @ref SOCK_OK \n
- * - @b Fail 
+ * - @b Fail
  *  - @ref SOCKERR_SOCKNUM     - Invalid Socket number \n
  *  - @ref SOCKERR_SOCKMODE    - Invalid socket mode \n
  *  - @ref SOCKERR_SOCKOPT     - Invalid socket option or its value \n
@@ -435,7 +435,7 @@ int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg);
  */
 int8_t  WIZCHIP_EXPORT(setsockopt)(uint8_t sn, sockopt_type sotype, void* arg);
 
-/** 
+/**
  * @ingroup WIZnet_socket_APIs
  *  @brief get socket options
  *  @details Get socket option like as FLAG, TTL, MSS, and so on. Refer to @ref sockopt_type
@@ -447,24 +447,24 @@ int8_t  WIZCHIP_EXPORT(setsockopt)(uint8_t sn, sockopt_type sotype, void* arg);
  *                  <tr> <td> @ref SO_FLAG </td> <td> uint8_t </td><td> @ref SF_ETHER_OWN, etc... </td> </tr>
  *                  <tr> <td> @ref SO_TOS </td> <td> uint8_t </td><td> 0 ~ 255 </td> </tr>
  *                  <tr> <td> @ref SO_MSS </td> <td> uint16_t </td><td> 0 ~ 65535 </td> </tr>
- *                  <tr> <td> @ref SO_DESTIP </td> <td> uint8_t[4] </td><td>  </td></tr> 
- *                  <tr> <td> @ref SO_DESTPORT </td> <td> uint16_t </td><td>  </td></tr> 
- *                  <tr> <td> @ref SO_KEEPALIVEAUTO </td> <td> uint8_t </td><td> 0 ~ 255 </td></tr> 
- *                  <tr> <td> @ref SO_SENDBUF </td> <td> uint16_t </td><td> 0 ~ 65535 </td></tr>  
- *                  <tr> <td> @ref SO_RECVBUF </td> <td> uint16_t </td><td> 0 ~ 65535 </td></tr>  
- *                  <tr> <td> @ref SO_STATUS </td> <td> uint8_t </td><td> @ref SOCK_ESTABLISHED, etc.. </td></tr>  
+ *                  <tr> <td> @ref SO_DESTIP </td> <td> uint8_t[4] </td><td>  </td></tr>
+ *                  <tr> <td> @ref SO_DESTPORT </td> <td> uint16_t </td><td>  </td></tr>
+ *                  <tr> <td> @ref SO_KEEPALIVEAUTO </td> <td> uint8_t </td><td> 0 ~ 255 </td></tr>
+ *                  <tr> <td> @ref SO_SENDBUF </td> <td> uint16_t </td><td> 0 ~ 65535 </td></tr>
+ *                  <tr> <td> @ref SO_RECVBUF </td> <td> uint16_t </td><td> 0 ~ 65535 </td></tr>
+ *                  <tr> <td> @ref SO_STATUS </td> <td> uint8_t </td><td> @ref SOCK_ESTABLISHED, etc.. </td></tr>
  *                  <tr> <td> @ref SO_REMAINSIZE </td> <td> uint16_t </td><td> 0~ 65535 </td></tr>
  *                  <tr> <td> @ref SO_PACKINFO </td> <td> uint8_t </td><td> @ref PACK_FIRST, etc... </td></tr>
  *             </table>
- * @return 
+ * @return
  * - @b Success : @ref SOCK_OK \n
- * - @b Fail 
+ * - @b Fail
  *  - @ref SOCKERR_SOCKNUM     - Invalid Socket number \n
  *  - @ref SOCKERR_SOCKOPT     - Invalid socket option or its value \n
  *  - @ref SOCKERR_SOCKMODE    - Invalid socket mode \n
  * @note
  *   The option as PACK_REMAINED and SO_PACKINFO is valid only in NON-TCP mode and after call @ref recvfrom(). \n
- *   When SO_PACKINFO value is PACK_FIRST and the return value of recvfrom() is zero, 
+ *   When SO_PACKINFO value is PACK_FIRST and the return value of recvfrom() is zero,
  *   This means the zero byte UDP data(UDP Header only) received.
   */
 int8_t  WIZCHIP_EXPORT(getsockopt)(uint8_t sn, sockopt_type sotype, void* arg);

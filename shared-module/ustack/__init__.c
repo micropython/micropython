@@ -49,4 +49,3 @@ uint32_t shared_module_ustack_stack_size() {
 uint32_t shared_module_ustack_stack_usage() {
   return mp_stack_usage();
 }
-

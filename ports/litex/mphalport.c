@@ -27,38 +27,16 @@
 
 #include <string.h>
 
+#include "lib/tinyusb/src/device/usbd.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/gc.h"
+#include "supervisor/usb.h"
 
 #include "csr.h"
 #include "generated/soc.h"
 
 #include "irq.h"
-
-#ifdef CFG_TUSB_MCU
-    void hal_dcd_isr(uint8_t rhport);
-#endif
-
-/*------------------------------------------------------------------*/
-/* delay
- *------------------------------------------------------------------*/
-void mp_hal_delay_ms(mp_uint_t delay) {
-    uint64_t start_tick = supervisor_ticks_ms64();
-    uint64_t duration = 0;
-    while (duration < delay) {
-        #ifdef MICROPY_VM_HOOK_LOOP
-            MICROPY_VM_HOOK_LOOP
-        #endif
-        // Check to see if we've been CTRL-Ced by autoreload or the user.
-        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) ||
-           MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
-            break;
-        }
-        duration = (supervisor_ticks_ms64() - start_tick);
-        // TODO(tannewt): Go to sleep for a little while while we wait.
-    }
-}
 
 void mp_hal_delay_us(mp_uint_t delay) {
     mp_hal_delay_ms(delay / 1000);
@@ -72,7 +50,7 @@ void isr(void) {
 
 #ifdef CFG_TUSB_MCU
     if (irqs & (1 << USB_INTERRUPT))
-        hal_dcd_isr(0);
+        usb_irq_handler();
 #endif
     if (irqs & (1 << TIMER0_INTERRUPT))
         SysTick_Handler();

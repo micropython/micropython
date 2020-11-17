@@ -29,9 +29,14 @@
 
 #include <stdbool.h>
 
-// Ports must call this as frequently as they can in order to keep the USB connection
-// alive and responsive.
+// Ports must call this as frequently as they can in order to keep the USB
+// connection alive and responsive.  Normally this is called from background
+// tasks after the USB IRQ handler is executed, but in specific circumstances
+// it may be necessary to call it directly.
 void usb_background(void);
+
+// Ports must call this from their particular USB IRQ handler
+void usb_irq_handler(void);
 
 // Only inits the USB peripheral clocks and pins. The peripheral will be initialized by
 // TinyUSB.
@@ -40,6 +45,7 @@ void init_usb_hardware(void);
 // Shared implementation.
 bool usb_enabled(void);
 void usb_init(void);
+void usb_disconnect(void);
 
 // Propagate plug/unplug events to the MSC logic.
 void usb_msc_mount(void);

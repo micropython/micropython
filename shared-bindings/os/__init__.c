@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Josef Gajdusek
  * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
  *
@@ -37,31 +37,36 @@
 #include "py/runtime.h"
 #include "shared-bindings/os/__init__.h"
 
-//| :mod:`os` --- functions that an OS normally provides
-//| ========================================================
-//|
-//| .. module:: os
-//|   :synopsis: functions that an OS normally provides
-//|   :platform: SAMD21
+//| """functions that an OS normally provides
 //|
 //| The `os` module is a strict subset of the CPython `cpython:os` module. So,
 //| code written in CircuitPython will work in CPython but not necessarily the
-//| other way around.
+//| other way around."""
 //|
+//| import typing
 
-//| .. function:: uname()
+//| def uname() -> _Uname:
+//|     """Returns a named tuple of operating specific and CircuitPython port
+//|     specific information."""
+//|     ...
 //|
-//|   Returns a named tuple of operating specific and CircuitPython port
-//|   specific information.
+//| class _Uname(typing.NamedTuple):
+//|     """The type of values that :py:func:`.uname()` returns"""
+//|
+//|     sysname: str
+//|     nodename: str
+//|     release: str
+//|     version: str
+//|     machine: str
 //|
 STATIC mp_obj_t os_uname(void) {
     return common_hal_os_uname();
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
-//| .. function:: chdir(path)
-//|
-//|   Change current directory.
+//| def chdir(path: str) -> None:
+//|     """Change current directory."""
+//|     ...
 //|
 mp_obj_t os_chdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
@@ -70,18 +75,18 @@ mp_obj_t os_chdir(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
 
-//| .. function:: getcwd()
-//|
-//|   Get the current directory.
+//| def getcwd() -> str:
+//|     """Get the current directory."""
+//|     ...
 //|
 mp_obj_t os_getcwd(void) {
     return common_hal_os_getcwd();
 }
 MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 
-//| .. function:: listdir([dir])
-//|
-//|   With no argument, list the current directory.  Otherwise list the given directory.
+//| def listdir(dir: str) -> str:
+//|     """With no argument, list the current directory.  Otherwise list the given directory."""
+//|     ...
 //|
 mp_obj_t os_listdir(size_t n_args, const mp_obj_t *args) {
     const char* path;
@@ -94,9 +99,9 @@ mp_obj_t os_listdir(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
 
-//| .. function:: mkdir(path)
-//|
-//|   Create a new directory.
+//| def mkdir(path: str) -> None:
+//|     """Create a new directory."""
+//|     ...
 //|
 mp_obj_t os_mkdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
@@ -105,9 +110,9 @@ mp_obj_t os_mkdir(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 
-//| .. function:: remove(path)
-//|
-//|   Remove a file.
+//| def remove(path: str) -> None:
+//|     """Remove a file."""
+//|     ...
 //|
 mp_obj_t os_remove(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
@@ -116,9 +121,9 @@ mp_obj_t os_remove(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
 
-//| .. function:: rmdir(path)
-//|
-//|   Remove a directory.
+//| def rmdir(path: str) -> None:
+//|     """Remove a directory."""
+//|     ...
 //|
 mp_obj_t os_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
     const char *old_path = mp_obj_str_get_str(old_path_in);
@@ -128,9 +133,9 @@ mp_obj_t os_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
 
-//| .. function:: rename(old_path, new_path)
-//|
-//|   Rename a file.
+//| def rename(old_path: str, new_path: str) -> str:
+//|     """Rename a file."""
+//|     ...
 //|
 mp_obj_t os_rmdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
@@ -139,14 +144,14 @@ mp_obj_t os_rmdir(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 
-//| .. function:: stat(path)
+//| def stat(path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
+//|     """Get the status of a file or directory.
 //|
-//|   Get the status of a file or directory.
-//|
-//|   .. note:: On builds without long integers, the number of seconds
-//|      for contemporary dates will not fit in a small integer.
-//|      So the time fields return 946684800,
-//|      which is the number of seconds corresponding to 1999-12-31.
+//|     .. note:: On builds without long integers, the number of seconds
+//|        for contemporary dates will not fit in a small integer.
+//|        So the time fields return 946684800,
+//|        which is the number of seconds corresponding to 1999-12-31."""
+//|     ...
 //|
 mp_obj_t os_stat(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
@@ -154,26 +159,26 @@ mp_obj_t os_stat(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
-//| .. function:: statvfs(path)
+//| def statvfs(path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
+//|     """Get the status of a fileystem.
 //|
-//|   Get the status of a fileystem.
+//|     Returns a tuple with the filesystem information in the following order:
 //|
-//|   Returns a tuple with the filesystem information in the following order:
+//|          * ``f_bsize`` -- file system block size
+//|          * ``f_frsize`` -- fragment size
+//|          * ``f_blocks`` -- size of fs in f_frsize units
+//|          * ``f_bfree`` -- number of free blocks
+//|          * ``f_bavail`` -- number of free blocks for unpriviliged users
+//|          * ``f_files`` -- number of inodes
+//|          * ``f_ffree`` -- number of free inodes
+//|          * ``f_favail`` -- number of free inodes for unpriviliged users
+//|          * ``f_flag`` -- mount flags
+//|          * ``f_namemax`` -- maximum filename length
 //|
-//|        * ``f_bsize`` -- file system block size
-//|        * ``f_frsize`` -- fragment size
-//|        * ``f_blocks`` -- size of fs in f_frsize units
-//|        * ``f_bfree`` -- number of free blocks
-//|        * ``f_bavail`` -- number of free blocks for unpriviliged users
-//|        * ``f_files`` -- number of inodes
-//|        * ``f_ffree`` -- number of free inodes
-//|        * ``f_favail`` -- number of free inodes for unpriviliged users
-//|        * ``f_flag`` -- mount flags
-//|        * ``f_namemax`` -- maximum filename length
-//|
-//|   Parameters related to inodes: ``f_files``, ``f_ffree``, ``f_avail``
-//|   and the ``f_flags`` parameter may return ``0`` as they can be unavailable
-//|   in a port-specific implementation.
+//|     Parameters related to inodes: ``f_files``, ``f_ffree``, ``f_avail``
+//|     and the ``f_flags`` parameter may return ``0`` as they can be unavailable
+//|     in a port-specific implementation."""
+//|     ...
 //|
 mp_obj_t os_statvfs(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
@@ -181,9 +186,9 @@ mp_obj_t os_statvfs(mp_obj_t path_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(os_statvfs_obj, os_statvfs);
 
-//| .. function:: sync()
-//|
-//|   Sync all filesystems.
+//| def sync() -> None:
+//|     """Sync all filesystems."""
+//|     ...
 //|
 STATIC mp_obj_t os_sync(void) {
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
@@ -194,10 +199,10 @@ STATIC mp_obj_t os_sync(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 
-//| .. function:: urandom(size)
-//|
-//|   Returns a string of *size* random bytes based on a hardware True Random
-//|   Number Generator. When not available, it will raise a NotImplementedError.
+//| def urandom(size: int) -> str:
+//|     """Returns a string of *size* random bytes based on a hardware True Random
+//|     Number Generator. When not available, it will raise a NotImplementedError."""
+//|     ...
 //|
 STATIC mp_obj_t os_urandom(mp_obj_t size_in) {
     mp_int_t size = mp_obj_get_int(size_in);
@@ -229,9 +234,9 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
 
-//| .. data:: sep
 //|
-//|   Separator used to delineate path components such as folder and file names.
+//| sep: str
+//| """Separator used to delineate path components such as folder and file names."""
 //|
     { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
 };

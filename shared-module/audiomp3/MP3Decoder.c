@@ -36,11 +36,12 @@
 
 #include "shared-module/audiomp3/MP3Decoder.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/background_callback.h"
 #include "lib/mp3/src/mp3common.h"
 
 #define MAX_BUFFER_LEN (MAX_NSAMP * MAX_NGRAN * MAX_NCHAN * sizeof(int16_t))
 
-/** Fill the input buffer if it is less than half full.
+/** Fill the input buffer unconditionally.
  *
  * Returns true if the input buffer contains any useful data,
  * false otherwise.  (The input buffer will be padded to the end with
@@ -50,10 +51,7 @@
  *
  * Sets self->eof if any read of the file returns 0 bytes
  */
-STATIC bool mp3file_update_inbuf(audiomp3_mp3file_obj_t* self) {
-    // If buffer is over half full, do nothing
-    if (self->inbuf_offset < self->inbuf_length/2) return true;
-
+STATIC bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t* self) {
     // If we didn't previously reach the end of file, we can try reading now
     if (!self->eof) {
 
@@ -87,6 +85,26 @@ STATIC bool mp3file_update_inbuf(audiomp3_mp3file_obj_t* self) {
     return self->inbuf_offset < self->inbuf_length;
 }
 
+/** Update the inbuf from a background callback.
+ *
+ * This variant is introduced so that at the site of the
+ * add_background_callback_core call, the prototype matches.
+ */
+STATIC void mp3file_update_inbuf_cb(void* self) {
+    mp3file_update_inbuf_always(self);
+}
+
+/** Fill the input buffer if it is less than half full.
+ *
+ * Returns the same as mp3file_update_inbuf_always.
+ */
+STATIC bool mp3file_update_inbuf_half(audiomp3_mp3file_obj_t* self) {
+    // If buffer is over half full, do nothing
+    if (self->inbuf_offset < self->inbuf_length/2) return true;
+
+    return mp3file_update_inbuf_always(self);
+}
+
 #define READ_PTR(self) (self->inbuf + self->inbuf_offset)
 #define BYTES_LEFT(self) (self->inbuf_length - self->inbuf_offset)
 #define CONSUME(self, n) (self->inbuf_offset += n)
@@ -94,7 +112,7 @@ STATIC bool mp3file_update_inbuf(audiomp3_mp3file_obj_t* self) {
 // http://id3.org/d3v2.3.0
 // http://id3.org/id3v2.3.0
 STATIC void mp3file_skip_id3v2(audiomp3_mp3file_obj_t* self) {
-    mp3file_update_inbuf(self);
+    mp3file_update_inbuf_half(self);
     if (BYTES_LEFT(self) < 10) {
         return;
     }
@@ -129,11 +147,11 @@ STATIC void mp3file_skip_id3v2(audiomp3_mp3file_obj_t* self) {
  */
 STATIC bool mp3file_find_sync_word(audiomp3_mp3file_obj_t* self) {
     do {
-        mp3file_update_inbuf(self);
+        mp3file_update_inbuf_half(self);
         int offset = MP3FindSyncWord(READ_PTR(self), BYTES_LEFT(self));
         if (offset >= 0) {
             CONSUME(self, offset);
-            mp3file_update_inbuf(self);
+            mp3file_update_inbuf_half(self);
             return true;
         }
         CONSUME(self, MAX(0, BYTES_LEFT(self) - 16));
@@ -209,12 +227,14 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t* self,
 }
 
 void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t* self, pyb_file_obj_t* file) {
+    background_callback_begin_critical_section();
+
     self->file = file;
     f_lseek(&self->file->fp, 0);
     self->inbuf_offset = self->inbuf_length;
     self->eof = 0;
     self->other_channel = -1;
-    mp3file_update_inbuf(self);
+    mp3file_update_inbuf_half(self);
     mp3file_find_sync_word(self);
     // It **SHOULD** not be necessary to do this; the buffer should be filled
     // with fresh content before it is returned by get_buffer().  The fact that
@@ -224,7 +244,9 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t* self, pyb_file
     memset(self->buffers[0], 0, MAX_BUFFER_LEN);
     memset(self->buffers[1], 0, MAX_BUFFER_LEN);
     MP3FrameInfo fi;
-    if(!mp3file_get_next_frame_info(self, &fi)) {
+    bool result = mp3file_get_next_frame_info(self, &fi);
+    background_callback_end_critical_section();
+    if (!result) {
         mp_raise_msg(&mp_type_RuntimeError,
                      translate("Failed to parse MP3 file"));
     }
@@ -277,13 +299,15 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t* self,
     }
     // We don't reset the buffer index in case we're looping and we have an odd number of buffer
     // loads
+    background_callback_begin_critical_section();
     f_lseek(&self->file->fp, 0);
     self->inbuf_offset = self->inbuf_length;
     self->eof = 0;
     self->other_channel = -1;
-    mp3file_update_inbuf(self);
+    mp3file_update_inbuf_half(self);
     mp3file_skip_id3v2(self);
     mp3file_find_sync_word(self);
+    background_callback_end_critical_section();
 }
 
 audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* self,
@@ -321,6 +345,14 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t* 
     uint8_t *inbuf = READ_PTR(self);
     int err = MP3Decode(self->decoder, &inbuf, &bytes_left, buffer, 0);
     CONSUME(self, BYTES_LEFT(self) - bytes_left);
+
+    if (self->inbuf_offset >= 512) {
+        background_callback_add(
+            &self->inbuf_fill_cb,
+            mp3file_update_inbuf_cb,
+            self);
+    }
+
     if (err) {
         return GET_BUFFER_DONE;
     }

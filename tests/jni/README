@@ -9,4 +9,3 @@ of JVM.
 For example, for OpenJDK 7 on x86_64, following may work:
 
 LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server ./run-tests jni/*.py
-

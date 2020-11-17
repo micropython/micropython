@@ -35,43 +35,41 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: frequencyio
+//| class FrequencyIn:
+//|     """Read a frequency signal
 //|
-//| :class:`FrequencyIn` -- Read a frequency signal
-//| ========================================================
+//|     FrequencyIn is used to measure the frequency, in hertz, of a digital signal
+//|     on an incoming pin. Accuracy has shown to be within 10%, if not better. It
+//|     is recommended to utilize an average of multiple samples to smooth out readings.
 //|
-//| FrequencyIn is used to measure the frequency, in hertz, of a digital signal
-//| on an incoming pin. Accuracy has shown to be within 10%, if not better. It
-//| is recommended to utilize an average of multiple samples to smooth out readings.
+//|     Frequencies below 1KHz are not currently detectable.
 //|
-//| Frequencies below 1KHz are not currently detectable.
+//|     FrequencyIn will not determine pulse width (use ``PulseIn``)."""
 //|
-//| FrequencyIn will not determine pulse width (use ``PulseIn``).
+//|     def __init__(self, pin: microcontroller.Pin, capture_period: int = 10) -> None:
+//|         """Create a FrequencyIn object associated with the given pin.
 //|
-//| .. class:: FrequencyIn(pin, capture_period=10)
+//|         :param ~microcontroller.Pin pin: Pin to read frequency from.
+//|         :param int capture_period: Keyword argument to set the measurement period, in
+//|                                    milliseconds. Default is 10ms; range is 1ms - 500ms.
 //|
-//|   Create a FrequencyIn object associated with the given pin.
+//|         Read the incoming frequency from a pin::
 //|
-//|   :param ~microcontroller.Pin pin: Pin to read frequency from.
-//|   :param int capture_period: Keyword argument to set the measurement period, in
-//|                              milliseconds. Default is 10ms; range is 1ms - 500ms.
+//|           import frequencyio
+//|           import board
 //|
-//|   Read the incoming frequency from a pin::
+//|           frequency = frequencyio.FrequencyIn(board.D11)
 //|
-//|     import frequencyio
-//|     import board
+//|           # Loop while printing the detected frequency
+//|           while True:
+//|               print(frequency.value)
 //|
-//|     frequency = frequencyio.FrequencyIn(board.D11)
-//|
-//|     # Loop while printing the detected frequency
-//|     while True:
-//|         print(frequency.value)
-//|
-//|         # Optional clear() will reset the value
-//|         # to zero. Without this, if the incoming
-//|         # signal stops, the last reading will remain
-//|         # as the value.
-//|         frequency.clear()
+//|               # Optional clear() will reset the value
+//|               # to zero. Without this, if the incoming
+//|               # signal stops, the last reading will remain
+//|               # as the value.
+//|               frequency.clear()"""
+//|         ...
 //|
 STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size_t n_args,
          const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -96,9 +94,9 @@ STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitialises the FrequencyIn and releases any hardware resources for reuse.
+//|     def deinit(self) -> None:
+//|         """Deinitialises the FrequencyIn and releases any hardware resources for reuse."""
+//|         ...
 //|
 STATIC mp_obj_t frequencyio_frequencyin_deinit(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -113,16 +111,16 @@ STATIC void check_for_deinit(frequencyio_frequencyin_obj_t *self) {
     }
 }
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self) -> FrequencyIn:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t frequencyio_frequencyin_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -131,9 +129,9 @@ STATIC mp_obj_t frequencyio_frequencyin_obj___exit__(size_t n_args, const mp_obj
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(frequencyio_frequencyin___exit___obj, 4, 4, frequencyio_frequencyin_obj___exit__);
 
-//|   .. method:: pause()
-//|
-//|     Pause frequency capture.
+//|     def pause(self) -> None:
+//|         """Pause frequency capture."""
+//|         ...
 //|
 STATIC mp_obj_t frequencyio_frequencyin_obj_pause(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -144,9 +142,9 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_pause_obj, frequencyio_frequencyin_obj_pause);
 
-//|   .. method:: resume()
-//|
-//|     Resumes frequency capture.
+//|     def resume(self) -> None:
+//|         """Resumes frequency capture."""
+//|         ...
 //|
 STATIC mp_obj_t frequencyio_frequencyin_obj_resume(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -157,9 +155,9 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_resume(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_resume_obj, frequencyio_frequencyin_obj_resume);
 
-//|   .. method:: clear()
-//|
-//|     Clears the last detected frequency capture value.
+//|     def clear(self) -> None:
+//|         """Clears the last detected frequency capture value."""
+//|         ...
 //|
 
 STATIC mp_obj_t frequencyio_frequencyin_obj_clear(mp_obj_t self_in) {
@@ -171,14 +169,13 @@ STATIC mp_obj_t frequencyio_frequencyin_obj_clear(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(frequencyio_frequencyin_clear_obj, frequencyio_frequencyin_obj_clear);
 
-//|   .. attribute:: capture_period
-//|
-//|     The capture measurement period. Lower incoming frequencies will be measured
+//|     capture_period: int
+//|     """The capture measurement period. Lower incoming frequencies will be measured
 //|     more accurately with longer capture periods. Higher frequencies are more
 //|     accurate with shorter capture periods.
 //|
-//|   .. note:: When setting a new ``capture_period``, all previous capture information is
-//|             cleared with a call to ``clear()``.
+//|     .. note:: When setting a new ``capture_period``, all previous capture information is
+//|               cleared with a call to ``clear()``."""
 //|
 STATIC mp_obj_t frequencyio_frequencyin_obj_get_capture_period(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -204,9 +201,9 @@ const mp_obj_property_t frequencyio_frequencyin_capture_period_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: __get__(index)
-//|
-//|     Returns the value of the last frequency captured.
+//|     def __get__(self, index: int) -> int:
+//|         """Returns the value of the last frequency captured."""
+//|         ...
 //|
 STATIC mp_obj_t frequencyio_frequencyin_obj_get_value(mp_obj_t self_in) {
     frequencyio_frequencyin_obj_t *self = MP_OBJ_TO_PTR(self_in);

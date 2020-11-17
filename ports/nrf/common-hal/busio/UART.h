@@ -41,7 +41,7 @@ typedef struct {
     uint32_t baudrate;
     uint32_t timeout_ms;
 
-    ringbuf_t rbuf;
+    ringbuf_t ringbuf;
     uint8_t rx_char; // EasyDMA buf
 
     uint8_t tx_pin_number;

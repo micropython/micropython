@@ -9,7 +9,6 @@
     margin: 4px;
 }
 
-
 /* custom CSS to sticky the ' viewing outdated version'
    warning
 */
@@ -36,4 +35,8 @@ body {
    .wy-table-responsive {
       overflow: visible !important;
    }
+}
+
+.strike {
+    text-decoration: line-through;
 }

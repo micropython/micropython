@@ -314,4 +314,3 @@ void common_hal__eve_VertexTranslateY(common_hal__eve_t *eve, uint32_t y) {
 void common_hal__eve_Vertex2ii(common_hal__eve_t *eve, uint32_t x, uint32_t y, uint32_t handle, uint32_t cell) {
     C4(eve, ((2 << 30) | (((x) & 511) << 21) | (((y) & 511) << 12) | (((handle) & 31) << 7) | (((cell) & 127) << 0)));
 }
-

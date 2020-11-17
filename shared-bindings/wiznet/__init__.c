@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,21 +35,12 @@
 
 #include "shared-module/network/__init__.h"
 
-//| :mod:`wiznet` --- Support for WizNet hardware
-//| =============================================
+//| """Support for WizNet hardware, including the WizNet 5500 Ethernet adaptor.
 //|
-//| .. module:: wiznet
-//|   :synopsis: Support for WizNet hardware
-//|   :platform: SAMD
 //|
-//| Support for WizNet hardware, including the WizNet 5500 Ethernet adaptor.
-//|
-//| Libraries
-//|
-//| .. toctree::
-//|   :maxdepth: 3
-//|
-//|   wiznet5k
+//| .. warning:: This module is disabled in 6.x and will removed in 7.x. Please use networking
+//|              libraries instead.
+//| """
 //|
 
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
@@ -66,4 +57,3 @@ const mp_obj_module_t wiznet_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_wiznet_globals,
 };
-

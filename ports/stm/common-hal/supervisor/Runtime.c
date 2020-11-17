@@ -35,4 +35,3 @@ bool common_hal_get_serial_connected(void) {
 bool common_hal_get_serial_bytes_available(void) {
   return (bool) serial_bytes_available();
 }
-

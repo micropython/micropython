@@ -39,26 +39,34 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: bitbangio
+//| class SPI:
+//|     """A 3-4 wire serial protocol
 //|
-//| :class:`SPI` -- a 3-4 wire serial protocol
-//| -----------------------------------------------
+//|     SPI is a serial protocol that has exclusive pins for data in and out of the
+//|     main device.  It is typically faster than :py:class:`~bitbangio.I2C` because a
+//|     separate pin is used to select a device rather than a transmitted
+//|     address. This class only manages three of the four SPI lines: `!clock`,
+//|     `!MOSI`, `!MISO`. Its up to the client to manage the appropriate
+//|     select line, often abbreviated `!CS` or `!SS`. (This is common because
+//|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
+//|     and therefore the hardware.)"""
 //|
-//| SPI is a serial protocol that has exclusive pins for data in and out of the
-//| master.  It is typically faster than :py:class:`~bitbangio.I2C` because a
-//| separate pin is used to control the active slave rather than a transmitted
-//| address. This class only manages three of the four SPI lines: `!clock`,
-//| `!MOSI`, `!MISO`. Its up to the client to manage the appropriate slave
-//| select line. (This is common because multiple slaves can share the `!clock`,
-//| `!MOSI` and `!MISO` lines and therefore the hardware.)
+//|     def __init__(self, clock: microcontroller.Pin, MOSI: Optional[microcontroller.Pin] = None, MISO: Optional[microcontroller.Pin] = None) -> None:
+//|         """Construct an SPI object on the given pins.
 //|
-//| .. class:: SPI(clock, MOSI=None, MISO=None)
+//|         .. seealso:: Using this class directly requires careful lock management.
+//|             Instead, use :class:`~adafruit_bus_device.spi_device.SPIDevice` to
+//|             manage locks.
 //|
-//|    Construct an SPI object on the given pins.
+//|         .. seealso:: Using this class to directly read registers requires manual
+//|             bit unpacking. Instead, use an existing driver or make one with
+//|             :ref:`Register <register-module-reference>` data descriptors.
 //|
-//|   :param ~microcontroller.Pin clock: the pin to use for the clock.
-//|   :param ~microcontroller.Pin MOSI: the Master Out Slave In pin.
-//|   :param ~microcontroller.Pin MISO: the Master In Slave Out pin.
+//|
+//|         :param ~microcontroller.Pin clock: the pin to use for the clock.
+//|         :param ~microcontroller.Pin MOSI: the Main Out Selected In pin.
+//|         :param ~microcontroller.Pin MISO: the Main In Selected Out pin."""
+//|         ...
 //|
 
 // TODO(tannewt): Support LSB SPI.
@@ -82,9 +90,9 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     return (mp_obj_t)self;
 }
 
-//|   .. method:: deinit()
-//|
-//|      Turn off the SPI bus.
+//|     def deinit(self) -> None:
+//|         """Turn off the SPI bus."""
+//|         ...
 //|
 STATIC mp_obj_t bitbangio_spi_obj_deinit(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -99,16 +107,16 @@ STATIC void check_for_deinit(bitbangio_spi_obj_t *self) {
     }
 }
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self) -> SPI:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t bitbangio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -124,15 +132,15 @@ static void check_lock(bitbangio_spi_obj_t *self) {
     }
 }
 
-//|   .. method:: configure(*, baudrate=100000, polarity=0, phase=0, bits=8)
+//|     def configure(self, *, baudrate: int = 100000, polarity: int = 0, phase: int = 0, bits: int = 8) -> None:
+//|         """Configures the SPI bus. Only valid when locked.
 //|
-//|     Configures the SPI bus. Only valid when locked.
-//|
-//|     :param int baudrate: the clock rate in Hertz
-//|     :param int polarity: the base state of the clock line (0 or 1)
-//|     :param int phase: the edge of the clock that data is captured. First (0)
-//|       or second (1). Rising or falling depends on clock polarity.
-//|     :param int bits: the number of bits per word
+//|         :param int baudrate: the clock rate in Hertz
+//|         :param int polarity: the base state of the clock line (0 or 1)
+//|         :param int phase: the edge of the clock that data is captured. First (0)
+//|           or second (1). Rising or falling depends on clock polarity.
+//|         :param int bits: the number of bits per word"""
+//|         ...
 //|
 STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits };
@@ -166,12 +174,12 @@ STATIC mp_obj_t bitbangio_spi_configure(size_t n_args, const mp_obj_t *pos_args,
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_configure_obj, 1, bitbangio_spi_configure);
 
-//|   .. method:: try_lock()
+//|     def try_lock(self) -> bool:
+//|         """Attempts to grab the SPI lock. Returns True on success.
 //|
-//|     Attempts to grab the SPI lock. Returns True on success.
-//|
-//|     :return: True when lock has been grabbed
-//|     :rtype: bool
+//|         :return: True when lock has been grabbed
+//|         :rtype: bool"""
+//|         ...
 //|
 STATIC mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -180,9 +188,9 @@ STATIC mp_obj_t bitbangio_spi_obj_try_lock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_try_lock_obj, bitbangio_spi_obj_try_lock);
 
-//|   .. method:: unlock()
-//|
-//|     Releases the SPI lock.
+//|     def unlock(self) -> None:
+//|         """Releases the SPI lock."""
+//|         ...
 //|
 STATIC mp_obj_t bitbangio_spi_obj_unlock(mp_obj_t self_in) {
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -192,10 +200,10 @@ STATIC mp_obj_t bitbangio_spi_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 
-//|   .. method:: write(buf)
-//|
-//|     Write the data contained in ``buf``. Requires the SPI being locked.
-//|     If the buffer is empty, nothing happens.
+//|     def write(self, buf: ReadableBuffer) -> None:
+//|         """Write the data contained in ``buf``. Requires the SPI being locked.
+//|         If the buffer is empty, nothing happens."""
+//|         ...
 //|
 // TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
@@ -216,11 +224,11 @@ STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
 MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 
 
-//|   .. method:: readinto(buf)
-//|
-//|     Read into the buffer specified by ``buf`` while writing zeroes.
-//|     Requires the SPI being locked.
-//|     If the number of bytes to read is 0, nothing happens.
+//|     def readinto(self, buf: WriteableBuffer) -> None:
+//|         """Read into the buffer specified by ``buf`` while writing zeroes.
+//|         Requires the SPI being locked.
+//|         If the number of bytes to read is 0, nothing happens."""
+//|         ...
 //|
 // TODO(tannewt): Add support for start and end kwargs.
 STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
@@ -240,19 +248,19 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_readinto_obj, 2, 2, bitbangio_spi_readinto);
 
-//|   .. method:: write_readinto(buffer_out, buffer_in, *, out_start=0, out_end=None, in_start=0, in_end=None)
+//|     def write_readinto(self, buffer_out: ReadableBuffer, buffer_in: WriteableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
+//|         """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
+//|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
+//|         must be equal.
+//|         If buffer slice lengths are both 0, nothing happens.
 //|
-//|     Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
-//|     The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
-//|     must be equal.
-//|     If buffer slice lengths are both 0, nothing happens.
-//|
-//|     :param bytearray buffer_out: Write out the data in this buffer
-//|     :param bytearray buffer_in: Read data into this buffer
-//|     :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
-//|     :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
-//|     :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
-//|     :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``
+//|         :param ~_typing.ReadableBuffer buffer_out: Write out the data in this buffer
+//|         :param ~_typing.WriteableBuffer buffer_in: Read data into this buffer
+//|         :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
+//|         :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
+//|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
+//|         :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``"""
+//|         ...
 //|
 STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer_out, ARG_buffer_in, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };

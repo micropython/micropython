@@ -180,17 +180,17 @@ static inline bool _NRFX_IRQ_IS_PENDING(IRQn_Type irq_number)
     return (NVIC_GetPendingIRQ(irq_number) == 1);
 }
 
-//#include <nordic_common.h>
-//#include <app_util_platform.h>
+void common_hal_mcu_disable_interrupts(void);
+void common_hal_mcu_enable_interrupts(void);
 /**
  * @brief Macro for entering into a critical section.
  */
-#define NRFX_CRITICAL_SECTION_ENTER()   CRITICAL_REGION_ENTER()
+#define NRFX_CRITICAL_SECTION_ENTER()   common_hal_mcu_disable_interrupts()
 
 /**
  * @brief Macro for exiting from a critical section.
  */
-#define NRFX_CRITICAL_SECTION_EXIT()    CRITICAL_REGION_EXIT()
+#define NRFX_CRITICAL_SECTION_EXIT()    common_hal_mcu_enable_interrupts()
 
 //------------------------------------------------------------------------------
 

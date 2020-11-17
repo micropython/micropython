@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
 #define MICROPY_INCLUDED_SUPERVISOR_SAFE_MODE_H
 
+#include "py/mpconfig.h"
+
 typedef enum {
   NO_SAFE_MODE = 0,
   BROWNOUT,
@@ -41,12 +43,14 @@ typedef enum {
   NORDIC_SOFT_DEVICE_ASSERT,
   FLASH_WRITE_FAIL,
   MEM_MANAGE,
+  WATCHDOG_RESET,
+  NO_HEAP,
 } safe_mode_t;
 
 safe_mode_t wait_for_safe_mode_reset(void);
 
 void safe_mode_on_next_reset(safe_mode_t reason);
-void reset_into_safe_mode(safe_mode_t reason);
+void reset_into_safe_mode(safe_mode_t reason) NORETURN;
 
 void print_safe_mode_message(safe_mode_t reason);
 

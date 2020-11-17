@@ -43,6 +43,8 @@ bool stack_ok(void);
 // exception when the stack has likely overwritten a portion of the heap.
 void assert_heap_ok(void);
 
+#ifndef STACK_CANARY_VALUE
 #define STACK_CANARY_VALUE 0x017829ef
+#endif
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_STACK_H

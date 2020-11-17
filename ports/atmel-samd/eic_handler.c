@@ -27,6 +27,7 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rotaryio/IncrementalEncoder.h"
+#include "common-hal/countio/Counter.h"
 #include "shared-bindings/microcontroller/__init__.h"
 //#include "samd/external_interrupts.h"
 #include "eic_handler.h"
@@ -56,6 +57,12 @@ void shared_eic_handler(uint8_t channel) {
 #if CIRCUITPY_ROTARYIO
     case EIC_HANDLER_INCREMENTAL_ENCODER:
         incrementalencoder_interrupt_handler(channel);
+        break;
+#endif
+
+#if CIRCUITPY_COUNTIO
+    case EIC_HANDLER_COUNTER:
+        counter_interrupt_handler(channel);
         break;
 #endif
 

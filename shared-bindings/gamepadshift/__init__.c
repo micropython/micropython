@@ -30,17 +30,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
 
-//| :mod:`gamepadshift` --- Tracks button presses read through a shift register
-//| ===========================================================================
-//|
-//| .. module:: gamepadshift
-//|   :synopsis: Tracks button presses read through a shift register
-//|   :platform: SAMD21, SAMD51
-//|
-//| .. toctree::
-//|     :maxdepth: 3
-//|
-//|     GamePadShift
+//| """Tracks button presses read through a shift register"""
 //|
 STATIC const mp_rom_map_elem_t gamepadshift_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gamepadshift) },

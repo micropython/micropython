@@ -42,8 +42,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "tick.h"
-
 void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t* self,
         mp_obj_t bus, uint8_t* start_sequence, uint16_t start_sequence_len, uint8_t* stop_sequence, uint16_t stop_sequence_len,
         uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height,
@@ -91,8 +89,6 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t*
     if (highlight_color == 0x00 && write_color_ram_command != NO_COMMAND) {
         // TODO: Clear
     }
-
-    supervisor_start_terminal(width, height);
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
@@ -189,6 +185,7 @@ void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t* self)
     displayio_display_core_begin_transaction(&self->core);
     self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, &self->refresh_display_command, 1);
     displayio_display_core_end_transaction(&self->core);
+    supervisor_enable_tick();
     self->refreshing = true;
 
     displayio_display_core_finish_refresh(&self->core);
@@ -239,8 +236,11 @@ bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, c
     for (uint8_t pass = 0; pass < passes; pass++) {
         uint16_t remaining_rows = displayio_area_height(&clipped);
 
+        // added false parameter at end for SH1107_addressing quirk
         if (self->set_row_window_command != NO_COMMAND) {
-            displayio_display_core_set_region_to_update(&self->core, self->set_column_window_command, self->set_row_window_command, self->set_current_column_command, self->set_current_row_command, false, self->chip_select, &clipped);
+            displayio_display_core_set_region_to_update(&self->core, self->set_column_window_command,
+            self->set_row_window_command, self->set_current_column_command, self->set_current_row_command,
+            false, self->chip_select, &clipped, false);
         }
 
         uint8_t write_command = self->write_black_ram_command;
@@ -303,6 +303,7 @@ bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t* s
 
     if (self->refreshing && self->busy.base.type == &digitalio_digitalinout_type) {
         if (common_hal_digitalio_digitalinout_get_value(&self->busy) != self->busy_state) {
+            supervisor_disable_tick();
             self->refreshing = false;
             // Run stop sequence but don't wait for busy because busy is set when sleeping.
             send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);
@@ -344,6 +345,7 @@ void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self) {
             refresh_done = supervisor_ticks_ms64() - self->core.last_refresh > self->refresh_time;
         }
         if (refresh_done) {
+            supervisor_disable_tick();
             self->refreshing = false;
             // Run stop sequence but don't wait for busy because busy is set when sleeping.
             send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);
@@ -354,6 +356,7 @@ void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t* self) {
 void release_epaperdisplay(displayio_epaperdisplay_obj_t* self) {
     if (self->refreshing) {
         wait_for_busy(self);
+        supervisor_disable_tick();
         self->refreshing = false;
         // Run stop sequence but don't wait for busy because busy is set when sleeping.
         send_command_sequence(self, false, self->stop_sequence, self->stop_sequence_len);

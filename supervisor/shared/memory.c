@@ -129,5 +129,7 @@ supervisor_allocation* allocate_memory(uint32_t length, bool high) {
 }
 
 void supervisor_move_memory(void) {
+    #if CIRCUITPY_DISPLAYIO
     supervisor_display_move_memory();
+    #endif
 }

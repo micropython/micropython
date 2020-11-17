@@ -41,9 +41,8 @@
 #include "samd/pins.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/ps2io/Ps2.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/translate.h"
-
-#include "tick.h"
 
 #define STATE_IDLE 0
 #define STATE_RECV 1
@@ -168,24 +167,21 @@ static void delay_us(uint32_t t) {
 
 void ps2_interrupt_handler(uint8_t channel) {
     // Grab the current time first.
-    uint32_t current_us;
-    uint64_t current_ms;
-    current_tick(&current_ms, &current_us);
+    uint64_t current_tick = port_get_raw_ticks(NULL);
 
     ps2io_ps2_obj_t* self = get_eic_channel_data(channel);
     int data_bit = gpio_get_pin_level(self->data_pin) ? 1 : 0;
 
     // test for timeout
     if (self->state != STATE_IDLE) {
-        int64_t diff_ms = current_ms - self->last_int_ms;
-        if (diff_ms >= 2) { // a.k.a. > 1.001ms
+        int64_t diff_ms = current_tick - self->last_raw_ticks;
+        if (diff_ms > 1) { // a.k.a. > 1.001ms
             self->last_errors |= ERROR_TIMEOUT;
             self->state = STATE_IDLE;
         }
     }
 
-    self->last_int_us = current_us;
-    self->last_int_ms = current_ms;
+    self->last_raw_ticks = current_tick;
 
     if (self->state == STATE_IDLE) {
         self->bits = 0;

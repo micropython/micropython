@@ -35,44 +35,40 @@
 #include "shared-bindings/audiocore/RawSample.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: audiocore
+//| class RawSample:
+//|     """A raw audio sample buffer in memory"""
 //|
-//| :class:`RawSample` -- A raw audio sample buffer
-//| ========================================================
+//|     def __init__(self, buffer: ReadableBuffer, *, channel_count: int = 1, sample_rate: int = 8000) -> None:
+//|         """Create a RawSample based on the given buffer of signed values. If channel_count is more than
+//|         1 then each channel's samples should alternate. In other words, for a two channel buffer, the
+//|         first sample will be for channel 1, the second sample will be for channel two, the third for
+//|         channel 1 and so on.
 //|
-//| An in-memory sound sample
+//|         :param ~_typing.ReadableBuffer buffer: A buffer with samples
+//|         :param int channel_count: The number of channels in the buffer
+//|         :param int sample_rate: The desired playback sample rate
 //|
-//| .. class:: RawSample(buffer, *, channel_count=1, sample_rate=8000)
+//|         Simple 8ksps 440 Hz sin wave::
 //|
-//|   Create a RawSample based on the given buffer of signed values. If channel_count is more than
-//|   1 then each channel's samples should alternate. In other words, for a two channel buffer, the
-//|   first sample will be for channel 1, the second sample will be for channel two, the third for
-//|   channel 1 and so on.
+//|           import audiocore
+//|           import audioio
+//|           import board
+//|           import array
+//|           import time
+//|           import math
 //|
-//|   :param array.array buffer: An `array.array` with samples
-//|   :param int channel_count: The number of channels in the buffer
-//|   :param int sample_rate: The desired playback sample rate
+//|           # Generate one period of sine wav.
+//|           length = 8000 // 440
+//|           sine_wave = array.array("h", [0] * length)
+//|           for i in range(length):
+//|               sine_wave[i] = int(math.sin(math.pi * 2 * i / length) * (2 ** 15))
 //|
-//|   Simple 8ksps 440 Hz sin wave::
-//|
-//|     import audiocore
-//|     import audioio
-//|     import board
-//|     import array
-//|     import time
-//|     import math
-//|
-//|     # Generate one period of sine wav.
-//|     length = 8000 // 440
-//|     sine_wave = array.array("h", [0] * length)
-//|     for i in range(length):
-//|         sine_wave[i] = int(math.sin(math.pi * 2 * i / 18) * (2 ** 15))
-//|
-//|     dac = audioio.AudioOut(board.SPEAKER)
-//|     sine_wave = audiocore.RawSample(sine_wave)
-//|     dac.play(sine_wave, loop=True)
-//|     time.sleep(1)
-//|     dac.stop()
+//|           dac = audioio.AudioOut(board.SPEAKER)
+//|           sine_wave = audiocore.RawSample(sine_wave)
+//|           dac.play(sine_wave, loop=True)
+//|           time.sleep(1)
+//|           dac.stop()"""
+//|         ...
 //|
 STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_channel_count, ARG_sample_rate };
@@ -105,9 +101,9 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|   .. method:: deinit()
-//|
-//|      Deinitialises the AudioOut and releases any hardware resources for reuse.
+//|     def deinit(self) -> None:
+//|         """Deinitialises the AudioOut and releases any hardware resources for reuse."""
+//|         ...
 //|
 STATIC mp_obj_t audioio_rawsample_deinit(mp_obj_t self_in) {
     audioio_rawsample_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -122,16 +118,16 @@ STATIC void check_for_deinit(audioio_rawsample_obj_t *self) {
     }
 }
 
-//|   .. method:: __enter__()
-//|
-//|      No-op used by Context Managers.
+//|     def __enter__(self) -> RawSample:
+//|         """No-op used by Context Managers."""
+//|         ...
 //|
 //  Provided by context manager helper.
 
-//|   .. method:: __exit__()
-//|
-//|      Automatically deinitializes the hardware when exiting a context. See
-//|      :ref:`lifetime-and-contextmanagers` for more info.
+//|     def __exit__(self) -> None:
+//|         """Automatically deinitializes the hardware when exiting a context. See
+//|         :ref:`lifetime-and-contextmanagers` for more info."""
+//|         ...
 //|
 STATIC mp_obj_t audioio_rawsample_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
@@ -140,12 +136,11 @@ STATIC mp_obj_t audioio_rawsample_obj___exit__(size_t n_args, const mp_obj_t *ar
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audioio_rawsample___exit___obj, 4, 4, audioio_rawsample_obj___exit__);
 
-//|   .. attribute:: sample_rate
-//|
-//|     32 bit value that dictates how quickly samples are played in Hertz (cycles per second).
+//|     sample_rate: Optional[int]
+//|     """32 bit value that dictates how quickly samples are played in Hertz (cycles per second).
 //|     When the sample is looped, this can change the pitch output without changing the underlying
 //|     sample. This will not change the sample rate of any active playback. Call ``play`` again to
-//|     change it.
+//|     change it."""
 //|
 STATIC mp_obj_t audioio_rawsample_obj_get_sample_rate(mp_obj_t self_in) {
     audioio_rawsample_obj_t *self = MP_OBJ_TO_PTR(self_in);

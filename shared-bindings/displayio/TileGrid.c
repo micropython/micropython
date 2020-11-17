@@ -40,33 +40,30 @@
 #include "shared-bindings/displayio/Shape.h"
 #include "supervisor/shared/translate.h"
 
-//| .. currentmodule:: displayio
+//| class TileGrid:
+//|     """A grid of tiles sourced out of one bitmap
 //|
-//| :class:`TileGrid` -- A grid of tiles sourced out of one bitmap
-//| ==========================================================================
+//|     Position a grid of tiles sourced from a bitmap and pixel_shader combination. Multiple grids
+//|     can share bitmaps and pixel shaders.
 //|
-//| Position a grid of tiles sourced from a bitmap and pixel_shader combination. Multiple grids
-//| can share bitmaps and pixel shaders.
+//|     A single tile grid is also known as a Sprite."""
 //|
-//| A single tile grid is also known as a Sprite.
+//|     def __init__(self, bitmap: Bitmap, *, pixel_shader: Union[ColorConverter, Palette], width: int = 1, height: int = 1, tile_width: Optional[int] = None, tile_height: Optional[int] = None, default_tile: int = 0, x: int = 0, y: int = 0) -> None:
+//|         """Create a TileGrid object. The bitmap is source for 2d pixels. The pixel_shader is used to
+//|         convert the value and its location to a display native pixel color. This may be a simple color
+//|         palette lookup, a gradient, a pattern or a color transformer.
 //|
-//| .. class:: TileGrid(bitmap, *, pixel_shader, width=1, height=1, tile_width=None, tile_height=None, default_tile=0, x=0, y=0)
+//|         tile_width and tile_height match the height of the bitmap by default.
 //|
-//|   Create a TileGrid object. The bitmap is source for 2d pixels. The pixel_shader is used to
-//|   convert the value and its location to a display native pixel color. This may be a simple color
-//|   palette lookup, a gradient, a pattern or a color transformer.
-//|
-//|   tile_width and tile_height match the height of the bitmap by default.
-//|
-//|   :param displayio.Bitmap bitmap: The bitmap storing one or more tiles.
-//|   :param displayio.Palette pixel_shader: The pixel shader that produces colors from values
-//|   :param int width: Width of the grid in tiles.
-//|   :param int height: Height of the grid in tiles.
-//|   :param int tile_width: Width of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
-//|   :param int tile_height: Height of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
-//|   :param int default_tile: Default tile index to show.
-//|   :param int x: Initial x position of the left edge within the parent.
-//|   :param int y: Initial y position of the top edge within the parent.
+//|         :param Bitmap bitmap: The bitmap storing one or more tiles.
+//|         :param ColorConverter or Palette pixel_shader: The pixel shader that produces colors from values
+//|         :param int width: Width of the grid in tiles.
+//|         :param int height: Height of the grid in tiles.
+//|         :param int tile_width: Width of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
+//|         :param int tile_height: Height of a single tile in pixels. Defaults to the full Bitmap and must evenly divide into the Bitmap's dimensions.
+//|         :param int default_tile: Default tile index to show.
+//|         :param int x: Initial x position of the left edge within the parent.
+//|         :param int y: Initial y position of the top edge within the parent."""
 //|
 STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_pixel_shader, ARG_width, ARG_height, ARG_tile_width, ARG_tile_height, ARG_default_tile, ARG_x, ARG_y };
@@ -144,9 +141,8 @@ static displayio_tilegrid_t* native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
 }
-//|   .. attribute:: hidden
-//|
-//|     True when the TileGrid is hidden. This may be False even when a part of a hidden Group.
+//|     hidden: bool
+//|     """True when the TileGrid is hidden. This may be False even when a part of a hidden Group."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_hidden(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
@@ -169,9 +165,8 @@ const mp_obj_property_t displayio_tilegrid_hidden_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: x
-//|
-//|     X position of the left edge in the parent.
+//|     x: int
+//|     """X position of the left edge in the parent."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_x(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
@@ -195,9 +190,8 @@ const mp_obj_property_t displayio_tilegrid_x_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: y
-//|
-//|     Y position of the top edge in the parent.
+//|     y: int
+//|     """Y position of the top edge in the parent."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_y(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
@@ -221,9 +215,8 @@ const mp_obj_property_t displayio_tilegrid_y_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: flip_x
-//|
-//|     If true, the left edge rendered will be the right edge of the right-most tile.
+//|     flip_x: bool
+//|     """If true, the left edge rendered will be the right edge of the right-most tile."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_flip_x(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
@@ -246,9 +239,8 @@ const mp_obj_property_t displayio_tilegrid_flip_x_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: flip_y
-//|
-//|     If true, the top edge rendered will be the bottom edge of the bottom-most tile.
+//|     flip_y: bool
+//|     """If true, the top edge rendered will be the bottom edge of the bottom-most tile."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_flip_y(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
@@ -272,10 +264,9 @@ const mp_obj_property_t displayio_tilegrid_flip_y_obj = {
 };
 
 
-//|   .. attribute:: transpose_xy
-//|
-//|     If true, the TileGrid's axis will be swapped. When combined with mirroring, any 90 degree
-//|     rotation can be achieved along with the corresponding mirrored version.
+//|     transpose_xy: bool
+//|     """If true, the TileGrid's axis will be swapped. When combined with mirroring, any 90 degree
+//|     rotation can be achieved along with the corresponding mirrored version."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_transpose_xy(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
@@ -298,9 +289,8 @@ const mp_obj_property_t displayio_tilegrid_transpose_xy_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. attribute:: pixel_shader
-//|
-//|     The pixel shader of the tilegrid.
+//|     pixel_shader: Union[ColorConverter, Palette]
+//|     """The pixel shader of the tilegrid."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_pixel_shader(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
@@ -327,27 +317,27 @@ const mp_obj_property_t displayio_tilegrid_pixel_shader_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|   .. method:: __getitem__(index)
+//|     def __getitem__(self, index: Union[Tuple[int, int], int]) -> int:
+//|         """Returns the tile index at the given index. The index can either be an x,y tuple or an int equal
+//|         to ``y * width + x``.
 //|
-//|     Returns the tile index at the given index. The index can either be an x,y tuple or an int equal
-//|     to ``y * width + x``.
+//|         This allows you to::
 //|
-//|     This allows you to::
+//|           print(grid[0])"""
+//|         ...
 //|
-//|       print(grid[0])
+//|     def __setitem__(self, index: Union[Tuple[int, int], int], value: int) -> None:
+//|         """Sets the tile index at the given index. The index can either be an x,y tuple or an int equal
+//|         to ``y * width + x``.
 //|
-//|   .. method:: __setitem__(index, tile_index)
+//|         This allows you to::
 //|
-//|     Sets the tile index at the given index. The index can either be an x,y tuple or an int equal
-//|     to ``y * width + x``.
+//|           grid[0] = 10
 //|
-//|     This allows you to::
+//|         or::
 //|
-//|       grid[0] = 10
-//|
-//|     or::
-//|
-//|       grid[0,0] = 10
+//|           grid[0,0] = 10"""
+//|         ...
 //|
 STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);

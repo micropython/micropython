@@ -8,4 +8,3 @@ print(a, b)
 
 a = b = c = 3
 print(a, b, c)
-

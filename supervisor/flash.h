@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 #ifdef EXTERNAL_FLASH_DEVICE_COUNT
 #include "supervisor/shared/external_flash/external_flash.h"
 #else
-#include "supervisor/internal_flash.h"
+#include "supervisor/shared/internal_flash.h"
 #endif
 
 void supervisor_flash_init(void);
