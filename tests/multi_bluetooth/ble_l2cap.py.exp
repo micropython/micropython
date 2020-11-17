@@ -1,0 +1,23 @@
+--- instance0 ---
+gap_advertise
+_IRQ_CENTRAL_CONNECT
+l2cap_listen
+_IRQ_L2CAP_ACCEPT 22 450 450
+_IRQ_L2CAP_CONNECT 22 450 450
+l2cap_recvinto 3640
+l2cap_send 16 400
+_IRQ_L2CAP_DISCONNECT 22 0
+received 3640 3640
+_IRQ_CENTRAL_DISCONNECT
+--- instance1 ---
+gap_connect
+_IRQ_PERIPHERAL_CONNECT
+l2cap_connect
+_IRQ_L2CAP_CONNECT 22 450 450
+l2cap_send 16 400
+l2cap_recvinto 3640
+l2cap_disconnect
+_IRQ_L2CAP_DISCONNECT 22 0
+received 3640 3640
+gap_disconnect: True
+_IRQ_PERIPHERAL_DISCONNECT

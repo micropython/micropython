@@ -184,7 +184,7 @@ Event Handling
                 conn_handle, mtu = data
             elif event == _IRQ_L2CAP_ACCEPT:
                 # A new channel has been accepted.
-                # Return a non-zero integer to reject the connection, or None to accept.
+                # Return a non-zero integer to reject the connection, or zero (or None) to accept.
                 conn_handle, cid, psm, our_mtu, peer_mtu = data
             elif event == _IRQ_L2CAP_CONNECT:
                 # A new channel is now connected (either as a result of connecting or accepting).
