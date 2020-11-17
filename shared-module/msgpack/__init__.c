@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stddef.h>
 #include <stdio.h>
 #include <inttypes.h>
 
