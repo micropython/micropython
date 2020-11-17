@@ -29,7 +29,7 @@
 #include "nrf_rtc.h"
 
 void board_init(void) {
-  
+
 }
 
 bool board_requests_safe_mode(void) {
