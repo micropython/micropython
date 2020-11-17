@@ -419,7 +419,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
   build-xtensa:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
