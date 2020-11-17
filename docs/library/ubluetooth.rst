@@ -6,8 +6,9 @@
 
 This module provides an interface to a Bluetooth controller on a board.
 Currently this supports Bluetooth Low Energy (BLE) in Central, Peripheral,
-Broadcaster, and Observer roles, as well as GATT Server and Client. A device
-may operate in multiple roles concurrently.
+Broadcaster, and Observer roles, as well as GATT Server and Client and L2CAP
+connection-oriented-channels. A device may operate in multiple roles
+concurrently.
 
 This API is intended to match the low-level Bluetooth protocol and provide
 building-blocks for higher-level abstractions such as specific device types.
@@ -72,9 +73,9 @@ Configuration
       Increasing this allows better handling of bursty incoming data (for
       example scan results) and the ability to receive larger characteristic values.
 
-    - ``'mtu'``: Get/set the MTU that will be used during an MTU exchange. The
+    - ``'mtu'``: Get/set the MTU that will be used during a ATT MTU exchange. The
       resulting MTU will be the minimum of this and the remote device's MTU.
-      MTU exchange will not happen automatically (unless the remote device initiates
+      ATT MTU exchange will not happen automatically (unless the remote device initiates
       it), and must be manually initiated with
       :meth:`gattc_exchange_mtu<BLE.gattc_exchange_mtu>`.
       Use the ``_IRQ_MTU_EXCHANGED`` event to discover the MTU for a given connection.
@@ -179,8 +180,25 @@ Event Handling
                 # Note: Status will be zero on successful acknowledgment, implementation-specific value otherwise.
                 conn_handle, value_handle, status = data
             elif event == _IRQ_MTU_EXCHANGED:
-                # MTU exchange complete (either initiated by us or the remote device).
+                # ATT MTU exchange complete (either initiated by us or the remote device).
                 conn_handle, mtu = data
+            elif event == _IRQ_L2CAP_ACCEPT:
+                # A new channel has been accepted.
+                # Return a non-zero integer to reject the connection, or zero (or None) to accept.
+                conn_handle, cid, psm, our_mtu, peer_mtu = data
+            elif event == _IRQ_L2CAP_CONNECT:
+                # A new channel is now connected (either as a result of connecting or accepting).
+                conn_handle, cid, psm, our_mtu, peer_mtu = data
+            elif event == _IRQ_L2CAP_DISCONNECT:
+                # Existing channel has disconnected (status is zero), or a connection attempt failed (non-zero status).
+                conn_handle, cid, psm, status = data
+            elif event == _IRQ_L2CAP_RECV:
+                # New data is available on the channel. Use l2cap_recvinto to read.
+                conn_handle, cid = data
+            elif event == _IRQ_L2CAP_SEND_READY:
+                # A previous l2cap_send that returned False has now completed and the channel is ready to send again.
+                # If status is non-zero, then the transmit buffer overflowed and the application should re-send the data.
+                conn_handle, cid, status = data
 
 The event codes are::
 
@@ -206,6 +224,11 @@ The event codes are::
     _IRQ_GATTC_INDICATE = const(19)
     _IRQ_GATTS_INDICATE_DONE = const(20)
     _IRQ_MTU_EXCHANGED = const(21)
+    _IRQ_L2CAP_ACCEPT = const(22)
+    _IRQ_L2CAP_CONNECT = const(23)
+    _IRQ_L2CAP_DISCONNECT = const(24)
+    _IRQ_L2CAP_RECV = const(25)
+    _IRQ_L2CAP_SEND_READY = const(26)
 
 In order to save space in the firmware, these constants are not included on the
 :mod:`ubluetooth` module. Add the ones that you need from the list above to your
@@ -491,6 +514,89 @@ device name from the device information service).
     **Note:** MTU exchange is typically initiated by the central. When using
     the BlueKitchen stack in the central role, it does not support a remote
     peripheral initiating the MTU exchange. NimBLE works for both roles.
+
+
+L2CAP connection-oriented-channels
+----------------------------------
+
+    This feature allows for socket-like data exchange between two BLE devices.
+    Once the devices are connected via GAP, either device can listen for the
+    other to connect on a numeric PSM (Protocol/Service Multiplexer).
+
+    **Note:** This is currently only supported when using the NimBLE stack on
+    STM32 and Unix (not ESP32). Only one L2CAP channel may be active at a given
+    time (i.e. you cannot connect while listening).
+
+    Active L2CAP channels are identified by the connection handle that they were
+    established on and a CID (channel ID).
+
+    Connection-oriented channels have built-in credit-based flow control. Unlike
+    ATT, where devices negotiate a shared MTU, both the listening and connecting
+    devices each set an independent MTU which limits the maximum amount of
+    outstanding data that the remote device can send before it is fully consumed
+    in :meth:`l2cap_recvinto <BLE.l2cap_recvinto>`.
+
+.. method:: BLE.l2cap_listen(psm, mtu, /)
+
+    Start listening for incoming L2CAP channel requests on the specified *psm*
+    with the local MTU set to *mtu*.
+
+    When a remote device initiates a connection, the ``_IRQ_L2CAP_ACCEPT``
+    event will be raised, which gives the listening server a chance to reject
+    the incoming connection (by returning a non-zero integer).
+
+    Once the connection is accepted, the ``_IRQ_L2CAP_CONNECT`` event will be
+    raised, allowing the server to obtain the channel id (CID) and the local and
+    remote MTU.
+
+    **Note:** It is not currently possible to stop listening.
+
+.. method:: BLE.l2cap_connect(conn_handle, psm, mtu, /)
+
+    Connect to a listening peer on the specified *psm* with local MTU set to *mtu*.
+
+    On successful connection, the the ``_IRQ_L2CAP_CONNECT`` event will be
+    raised, allowing the client to obtain the CID and the local and remote (peer) MTU.
+
+    An unsuccessful connection will raise the ``_IRQ_L2CAP_DISCONNECT`` event
+    with a non-zero status.
+
+.. method:: BLE.l2cap_disconnect(conn_handle, cid, /)
+
+    Disconnect an active L2CAP channel with the specified *conn_handle* and
+    *cid*.
+
+.. method:: BLE.l2cap_send(conn_handle, cid, buf, /)
+
+    Send the specified *buf* (which must support the buffer protocol) on the
+    L2CAP channel identified by *conn_handle* and *cid*.
+
+    The specified buffer cannot be larger than the remote (peer) MTU, and no
+    more than twice the size of the local MTU.
+
+    This will return ``False`` if the channel is now "stalled", which means that
+    :meth:`l2cap_send <BLE.l2cap_send>` must not be called again until the
+    ``_IRQ_L2CAP_SEND_READY`` event is received (which will happen when the
+    remote device grants more credits, typically after it has received and
+    processed the data).
+
+.. method:: BLE.l2cap_recvinto(conn_handle, cid, buf, /)
+
+    Receive data from the specified *conn_handle* and *cid* into the provided
+    *buf* (which must support the buffer protocol, e.g. bytearray or
+    memoryview).
+
+    Returns the number of bytes read from the channel.
+
+    If *buf* is None, then returns the number of bytes available.
+
+    **Note:** After receiving the ``_IRQ_L2CAP_RECV`` event, the application should
+    continue calling :meth:`l2cap_recvinto <BLE.l2cap_recvinto>` until no more
+    bytes are available in the receive buffer (typically up to the size of the
+    remote (peer) MTU).
+
+    Until the receive buffer is empty, the remote device will not be granted
+    more channel credits and will be unable to send any more data.
 
 
 class UUID
