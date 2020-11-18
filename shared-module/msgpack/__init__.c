@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stddef.h>
 #include <stdio.h>
 #include <inttypes.h>
 
@@ -57,7 +56,7 @@ STATIC msgpack_stream_t get_stream(mp_obj_t stream_obj, int flags) {
 ////////////////////////////////////////////////////////////////
 // readers
 
-STATIC void read(msgpack_stream_t *s, void *buf, mp_uint_t size) {
+STATIC void read_bytes(msgpack_stream_t *s, void *buf, mp_uint_t size) {
     if (size == 0) return;
     mp_uint_t ret = s->read(s->stream_obj, buf, size, &s->errcode);
     if (s->errcode != 0) {
@@ -70,13 +69,13 @@ STATIC void read(msgpack_stream_t *s, void *buf, mp_uint_t size) {
 
 STATIC uint8_t read1(msgpack_stream_t *s) {
     uint8_t res = 0;
-    read(s, &res, 1);
+    read_bytes(s, &res, 1);
     return res;
 }
 
 STATIC uint16_t read2(msgpack_stream_t *s) {
     uint16_t res = 0;
-    read(s, &res, 2);
+    read_bytes(s, &res, 2);
     int n = 1;
     if (*(char *)&n == 1) res = __builtin_bswap16(res);
     return res;
@@ -84,7 +83,7 @@ STATIC uint16_t read2(msgpack_stream_t *s) {
 
 STATIC uint32_t read4(msgpack_stream_t *s) {
     uint32_t res = 0;
-    read(s, &res, 4);
+    read_bytes(s, &res, 4);
     int n = 1;
     if (*(char *)&n == 1) res = __builtin_bswap32(res);
     return res;
@@ -104,7 +103,7 @@ STATIC size_t read_size(msgpack_stream_t *s, uint8_t len_index) {
 ////////////////////////////////////////////////////////////////
 // writers
 
-STATIC void write(msgpack_stream_t *s, const void *buf, mp_uint_t size) {
+STATIC void write_bytes(msgpack_stream_t *s, const void *buf, mp_uint_t size) {
     mp_uint_t ret = s->write(s->stream_obj, buf, size, &s->errcode);
     if (s->errcode != 0) {
         mp_raise_OSError(s->errcode);
@@ -115,19 +114,19 @@ STATIC void write(msgpack_stream_t *s, const void *buf, mp_uint_t size) {
 }
 
 STATIC void write1(msgpack_stream_t *s, uint8_t obj) {
-    write(s, &obj, 1);
+    write_bytes(s, &obj, 1);
 }
 
 STATIC void write2(msgpack_stream_t *s, uint16_t obj) {
     int n = 1;
     if (*(char *)&n == 1) obj = __builtin_bswap16(obj);
-    write(s, &obj, 2);
+    write_bytes(s, &obj, 2);
 }
 
 STATIC void write4(msgpack_stream_t *s, uint32_t obj) {
     int n = 1;
     if (*(char *)&n == 1) obj = __builtin_bswap32(obj);
-    write(s, &obj, 4);
+    write_bytes(s, &obj, 4);
 }
 
 // compute and write msgpack size code (array structures)
@@ -294,7 +293,7 @@ mp_obj_t unpack(msgpack_stream_t *s) {
         size_t len = code & 0b11111;
         // allocate on stack; len < 32
         char str[len];
-        read(s, &str, len);
+        read_bytes(s, &str, len);
         return mp_obj_new_str(str, len);
     }
     if ((code & 0b11110000) == 0b10010000) {
@@ -327,7 +326,7 @@ mp_obj_t unpack(msgpack_stream_t *s) {
             vstr_t vstr;
             vstr_init_len(&vstr, size);
             byte *p = (byte*)vstr.buf;
-            read(s, p, size);
+            read_bytes(s, p, size);
             return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
         }
         case 0xcc:
@@ -356,7 +355,7 @@ mp_obj_t unpack(msgpack_stream_t *s) {
             vstr_t vstr;
             vstr_init_len(&vstr, size);
             byte *p = (byte*)vstr.buf;
-            read(s, p, size);
+            read_bytes(s, p, size);
             return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
         }
         case 0xde:
