@@ -66,7 +66,8 @@ typedef enum {
     MP_HARD_RESET,
     MP_WDT_RESET,
     MP_DEEPSLEEP_RESET,
-    MP_SOFT_RESET
+    MP_SOFT_RESET,
+    MP_BROWNOUT_RESET
 } reset_reason_t;
 
 STATIC bool is_soft_reset = 0;
@@ -171,8 +172,11 @@ STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_
     }
     switch (esp_reset_reason()) {
         case ESP_RST_POWERON:
-        case ESP_RST_BROWNOUT:
             return MP_OBJ_NEW_SMALL_INT(MP_PWRON_RESET);
+            break;
+
+        case ESP_RST_BROWNOUT:
+            return MP_OBJ_NEW_SMALL_INT(MP_BROWNOUT_RESET);
             break;
 
         case ESP_RST_INT_WDT:
@@ -316,6 +320,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET), MP_ROM_INT(MP_WDT_RESET) },
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET), MP_ROM_INT(MP_DEEPSLEEP_RESET) },
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET), MP_ROM_INT(MP_SOFT_RESET) },
+    { MP_ROM_QSTR(MP_QSTR_BROWNOUT_RESET), MP_ROM_INT(MP_BROWNOUT_RESET) },
 
     // Wake reasons
     { MP_ROM_QSTR(MP_QSTR_wake_reason), MP_ROM_PTR(&machine_wake_reason_obj) },
