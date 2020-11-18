@@ -453,6 +453,9 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
     if (status == 0) {
         uint16_t count = 0;
         ESP_EXCEPTIONS(esp_wifi_scan_get_ap_num(&count));
+        if (count == 0) {
+            return list;
+        }
         wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
         ESP_EXCEPTIONS(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
         for (uint16_t i = 0; i < count; i++) {
