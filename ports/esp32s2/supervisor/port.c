@@ -50,6 +50,7 @@
 
 #include "peripherals/rmt.h"
 #include "peripherals/pcnt.h"
+#include "peripherals/timer.h"
 #include "components/heap/include/esp_heap_caps.h"
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
 
@@ -103,15 +104,6 @@ void reset_port(void) {
     analogout_reset();
 #endif
 
-#if CIRCUITPY_PULSEIO
-    esp32s2_peripherals_rmt_reset();
-    pulsein_reset();
-#endif
-
-#if CIRCUITPY_PWMIO
-    pwmout_reset();
-#endif
-
 #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
@@ -120,6 +112,19 @@ void reset_port(void) {
 
 #if defined(CIRCUITPY_COUNTIO) || defined(CIRCUITPY_ROTARYIO)
     peripherals_pcnt_reset();
+#endif
+
+#if CIRCUITPY_FREQUENCYIO
+    peripherals_timer_reset();
+#endif
+
+#if CIRCUITPY_PULSEIO
+    esp32s2_peripherals_rmt_reset();
+    pulsein_reset();
+#endif
+
+#if CIRCUITPY_PWMIO
+    pwmout_reset();
 #endif
 
 #if CIRCUITPY_RTC
