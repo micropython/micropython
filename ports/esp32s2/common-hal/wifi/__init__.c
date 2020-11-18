@@ -143,7 +143,6 @@ void wifi_reset(void) {
                                                           radio->handler_instance_got_ip));
     ESP_ERROR_CHECK(esp_wifi_deinit());
     esp_netif_destroy(radio->netif);
-    ESP_ERROR_CHECK(esp_event_loop_delete_default());
     radio->netif = NULL;
 }
 
