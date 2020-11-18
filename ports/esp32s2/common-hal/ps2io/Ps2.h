@@ -53,8 +53,6 @@ typedef struct {
 
     bool waiting_cmd_response;
     uint8_t cmd_response;
-
-    intr_handle_t handle;
 } ps2io_ps2_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PS2IO_PS2_H

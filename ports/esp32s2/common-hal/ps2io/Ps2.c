@@ -55,18 +55,18 @@ static void IRAM_ATTR ps2_interrupt_handler(void *self_in);
 static void ps2_set_config(ps2io_ps2_obj_t* self) {
     // turn on falling edge interrupt
     gpio_set_intr_type(self->clk_pin, GPIO_INTR_NEGEDGE);
-    gpio_isr_register(ps2_interrupt_handler, (void *)self, ESP_INTR_FLAG_IRAM, &self->handle);
-    gpio_intr_enable(self->clk_pin);
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void*)self);
 }
 
 static void disable_interrupt(ps2io_ps2_obj_t* self) {
     // turn off fallling edge interrupt
-    gpio_intr_disable(self->clk_pin);
+    gpio_isr_handler_remove(self->clk_pin);
 }
 
 static void resume_interrupt(ps2io_ps2_obj_t* self) {
     self->state = STATE_IDLE;
-    gpio_intr_enable(self->clk_pin);
+    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void*)self);
 }
 
 static void clk_hi(ps2io_ps2_obj_t* self) {
@@ -252,10 +252,7 @@ void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t* self) {
     if (common_hal_ps2io_ps2_deinited(self)) {
         return;
     }
-    if (self->handle) {
-        esp_intr_free(self->handle);
-        self->handle = NULL;
-    }
+    gpio_uninstall_isr_service();
     reset_pin_number(self->clk_pin);
     reset_pin_number(self->data_pin);
     self->clk_pin = GPIO_NUM_MAX;
