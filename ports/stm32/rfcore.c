@@ -32,7 +32,6 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
-#include "nimble/nimble_npl.h"
 #include "rtc.h"
 #include "rfcore.h"
 
@@ -40,11 +39,22 @@
 
 #include "stm32wbxx_ll_ipcc.h"
 
-#define DEBUG_printf(...) // printf("rfcore: " __VA_ARGS__)
+#if MICROPY_PY_BLUETOOTH
+
+#if MICROPY_BLUETOOTH_NIMBLE
+// For mp_bluetooth_nimble_hci_uart_wfi
+#include "nimble/nimble_npl.h"
+#else
+#error "STM32WB must use NimBLE."
+#endif
 
 #if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-#error "STM32WB must use synchronous events in the BLE implementation."
+#error "STM32WB must use synchronous BLE events."
 #endif
+
+#endif
+
+#define DEBUG_printf(...) // printf("rfcore: " __VA_ARGS__)
 
 // Define to 1 to print traces of HCI packets
 #define HCI_TRACE (0)
@@ -600,7 +610,9 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
             if (mp_hal_ticks_ms() - timeout_start_ticks_ms > 100) {
                 break;
             }
+            #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE
             mp_bluetooth_nimble_hci_uart_wfi();
+            #endif
         }
 
         // Prevent sending another command until this one returns with HCI_EVENT_COMMAND_{COMPLETE,STATUS}.
@@ -653,7 +665,9 @@ void rfcore_end_flash_erase(void) {
     tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_FLASH_ERASE_ACTIVITY), &buf, 1, 0);
 }
 
+/******************************************************************************/
 // IPCC IRQ Handlers
+
 void IPCC_C1_TX_IRQHandler(void) {
     IRQ_ENTER(IPCC_C1_TX_IRQn);
     IRQ_EXIT(IPCC_C1_TX_IRQn);
@@ -667,9 +681,11 @@ void IPCC_C1_RX_IRQHandler(void) {
     if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
         LL_C1_IPCC_ClearFlag_CHx(IPCC, IPCC_CH_BLE);
 
+        #if MICROPY_PY_BLUETOOTH
         // Queue up the scheduler to process UART data and run events.
         extern void mp_bluetooth_hci_systick(uint32_t ticks_ms);
         mp_bluetooth_hci_systick(0);
+        #endif
     }
 
     IRQ_EXIT(IPCC_C1_RX_IRQn);
