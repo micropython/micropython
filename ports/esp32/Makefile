@@ -384,7 +384,7 @@ LIB_SRC_C = $(addprefix lib/,\
 
 #esp-idf generated module
 ESPIDFMOD_SOURCE = $(TOP)/lib/lv_bindings/driver/esp32/espidf.h
-ALL_ESPIDFMOD_SRC = $(shell find $(subst -I,,$(INC_ESPCOMP)) -type f) $(ESPIDFMOD_SOURCE) $(SDKCONFIG_H)
+ALL_ESPIDFMOD_SRC = $(shell find $(subst -I,,$(INC_ESPCOMP)) -type f) $(TOP)/lib/lv_bindings/driver/esp32/*.h $(ESPIDFMOD_SOURCE) $(SDKCONFIG_H)
 ESPIDFMOD_MODULE = $(BUILD)/espidfmod/mp_espidf.c
 ESPIDFMOD_PP = $(BUILD)/espidfmod/mp_espidf.pp.c
 CFLAGS_MOD += $(ESPIDFMOD_CFLAGS) -Wno-deprecated-declarations
@@ -399,6 +399,7 @@ LIB_SRC_C += \
 	lib/lv_bindings/driver/esp32/modlvesp32.c \
 	lib/lv_bindings/driver/esp32/modrtch.c \
 	lib/lv_bindings/driver/esp32/espidf.c \
+	lib/lv_bindings/driver/esp32/sh2lib.c \
 	$(ESPIDFMOD_MODULE)
 	
 #	lib/lv_bindings/driver/esp32/modxpt2046.c
