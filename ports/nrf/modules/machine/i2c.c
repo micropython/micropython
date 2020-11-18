@@ -167,7 +167,7 @@ const mp_obj_type_t machine_hard_i2c_type = {
     .print = machine_hard_i2c_print,
     .make_new = machine_hard_i2c_make_new,
     .protocol = &machine_hard_i2c_p,
-    .locals_dict = (mp_obj_dict_t*)&mp_machine_soft_i2c_locals_dict,
+    .locals_dict = (mp_obj_dict_t*)&mp_machine_i2c_locals_dict,
 };
 
 #endif // MICROPY_PY_MACHINE_I2C
