@@ -28,16 +28,17 @@
 #define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H
 
 #include "py/obj.h"
-#include "driver/timer.h"
 #include "peripherals/pcnt.h"
+#include "peripherals/timer.h"
 
 typedef struct {
     mp_obj_base_t base;
     pcnt_unit_t unit;
+    timer_index_t timer;
     intr_handle_t handle;
     uint8_t pin;
     uint8_t multiplier;
-    uint16_t frequency;
+    uint32_t frequency;
     uint16_t capture_period;
 } frequencyio_frequencyin_obj_t;
 
