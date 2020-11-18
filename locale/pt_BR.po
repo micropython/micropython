@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-10 15:30+0530\n"
-"PO-Revision-Date: 2020-11-08 10:26+0000\n"
+"PO-Revision-Date: 2020-11-18 00:28+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3.2\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -447,7 +447,7 @@ msgstr ""
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr ""
+msgstr "A profundidade dos bits deve ser de 1 até 6 inclusive, porém não %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -1025,7 +1025,7 @@ msgstr "O tamanho do buffer está incorreto"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
-msgstr ""
+msgstr "A inicialização falhou devido à falta de memória"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -3705,7 +3705,7 @@ msgstr "os vetores devem ter os mesmos comprimentos"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
-msgstr ""
+msgstr "o watchdog não foi inicializado"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
