@@ -7,4 +7,4 @@
 
 #define BIT_MASK(x, mask, val) *x = (*x & ~mask) | (val & mask)
 
-#endif //MICROPY_INCLUDED_PIC32BIT_HELPERS_H
+#endif // MICROPY_INCLUDED_PIC32BIT_HELPERS_H

@@ -13,7 +13,7 @@ extern int _heap;
 
 // Heap start / end definitions
 #define PIC32_HEAP_START &_heap
-#define PIC32_HEAP_END &_stack - 16*1024
+#define PIC32_HEAP_END &_stack - 16 * 1024
 
 void mpu_init(void);
 

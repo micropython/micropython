@@ -16,7 +16,7 @@
   #error "Pin Count Inavailable in this series"
 #endif
 
-#define is_regindex_valid(x) if (x > GPIO_MAP_REG_MAX) return (ERRMAX)
+#define is_regindex_valid(x) if (x > GPIO_MAP_REG_MAX) return ERRMAX
 
 static const uint32_t ports_direction[] =
 {

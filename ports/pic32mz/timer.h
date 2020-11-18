@@ -3,37 +3,37 @@
 
 enum
 {
-  PIC32_TIMER_1,
-  PIC32_TIMER_2,
-  PIC32_TIMER_3,
-  PIC32_TIMER_4,
-  PIC32_TIMER_5,
-  PIC32_TIMER_6,
-  PIC32_TIMER_7,
-  PIC32_TIMER_8,
-  PIC32_TIMER_9,
+    PIC32_TIMER_1,
+    PIC32_TIMER_2,
+    PIC32_TIMER_3,
+    PIC32_TIMER_4,
+    PIC32_TIMER_5,
+    PIC32_TIMER_6,
+    PIC32_TIMER_7,
+    PIC32_TIMER_8,
+    PIC32_TIMER_9,
 };
 
 typedef enum
 {
-  TMR1_PRESCALE_1   = 0b00,
-  TMR1_PRESCALE_8   = 0b01,
-  TMR1_PRESCALE_64  = 0b10,
-  TMR1_PRESCALE_256 = 0b11,
+    TMR1_PRESCALE_1   = 0b00,
+    TMR1_PRESCALE_8   = 0b01,
+    TMR1_PRESCALE_64  = 0b10,
+    TMR1_PRESCALE_256 = 0b11,
 }timer1_prescaler_t;
 
 // timers from 2 to 9.
 
 typedef enum
 {
-  TMR_PRESCALE_1   = 0b000,
-  TMR_PRESCALE_2   = 0b001,
-  TMR_PRESCALE_4   = 0b010,
-  TMR_PRESCALE_8   = 0b011,
-  TMR_PRESCALE_16  = 0b100,
-  TMR_PRESCALE_32  = 0b101,
-  TMR_PRESCALE_64  = 0b110,
-  TMR_PRESCALE_256 = 0b111,
+    TMR_PRESCALE_1   = 0b000,
+    TMR_PRESCALE_2   = 0b001,
+    TMR_PRESCALE_4   = 0b010,
+    TMR_PRESCALE_8   = 0b011,
+    TMR_PRESCALE_16  = 0b100,
+    TMR_PRESCALE_32  = 0b101,
+    TMR_PRESCALE_64  = 0b110,
+    TMR_PRESCALE_256 = 0b111,
 }timers_prescaler_t;
 
 void init_timer1(uint32_t freq, timer1_prescaler_t prescaler, uint8_t sub_periority);
