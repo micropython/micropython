@@ -36,13 +36,14 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
-#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/pulseio/PulseIn.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/pwmio/PWMOut.h"
+#include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
@@ -126,6 +127,10 @@ void reset_port(void) {
     rtc_reset();
 #endif
 
+#if CIRCUITPY_WATCHDOG
+    watchdog_reset();
+#endif
+
 #if CIRCUITPY_WIFI
     wifi_reset();
 #endif
@@ -186,14 +191,14 @@ uint32_t port_get_saved_word(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    struct timeval tv_now;
-    gettimeofday(&tv_now, NULL);
-    // convert usec back to ticks
-    uint64_t all_subticks = (uint64_t)(tv_now.tv_usec * 2) / 71;
+    // Convert microseconds to subticks of 1/32768 seconds
+    // 32768/1000000 = 64/15625 in lowest terms
+    // this arithmetic overflows after 570 years
+    int64_t all_subticks = esp_timer_get_time() * 512 / 15625;
     if (subticks != NULL) {
         *subticks = all_subticks % 32;
     }
-    return (uint64_t)tv_now.tv_sec * 1024L + all_subticks / 32;
+    return all_subticks / 32;
 }
 
 // Enable 1/1024 second tick.
