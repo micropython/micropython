@@ -1514,6 +1514,10 @@ NORETURN void m_malloc_fail(size_t num_bytes) {
         translate("memory allocation failed, allocating %u bytes"), (uint)num_bytes);
 }
 
+NORETURN void mp_raise_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
+}
+
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
@@ -1580,7 +1584,7 @@ NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...) {
 }
 
 NORETURN void mp_raise_OSError(int errno_) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_)));
+    mp_raise_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
 }
 
 NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg) {
@@ -1607,7 +1611,7 @@ NORETURN void mp_raise_ConnectionError(const compressed_string_t *msg) {
 }
 
 NORETURN void mp_raise_BrokenPipeError(void) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_BrokenPipeError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE)));
+    mp_raise_arg1(&mp_type_BrokenPipeError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE));
 }
 
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {

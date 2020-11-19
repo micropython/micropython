@@ -96,7 +96,7 @@ STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         exc = mp_obj_new_exception(&mp_type_SystemExit);
     } else {
-        exc = mp_obj_new_exception_arg1(&mp_type_SystemExit, args[0]);
+        mp_raise_arg1(&mp_type_SystemExit, args[0]);
     }
     nlr_raise(exc);
 }
