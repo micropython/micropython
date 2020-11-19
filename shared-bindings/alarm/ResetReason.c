@@ -28,7 +28,7 @@
 
 #include "shared-bindings/alarm/ResetReason.h"
 
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, POWER_VALID, RESET_REASON_POWER_VALID);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, POWER_VALID, RESET_REASON_POWER_ON);
 MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, SOFTWARE, RESET_REASON_SOFTWARE);
 MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, DEEP_SLEEP_ALARM, RESET_REASON_DEEP_SLEEP_ALARM);
 MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, EXTERNAL, RESET_REASON_EXTERNAL);
@@ -36,23 +36,31 @@ MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, EXTERNAL, RESET_REASON_EX
 //| class ResetReason:
 //|     """The reason the chip was last reset"""
 //|
-//|     POWER_VALID: object
-//|     """The chip was reset and started once power levels were valid."""
+//|     POWER_ON: object
+//|     """The chip was started from power off."""
+//|
+//|     BROWNOUT: object
+//|     """The chip was reset due to voltage brownout."""
 //|
 //|     SOFTWARE: object
 //|     """The chip was reset from software."""
 //|
 //|     DEEP_SLEEP_ALARM: object
-//|     """The chip was reset for deep sleep and started by an alarm."""
+//|     """The chip was reset for deep sleep and restarted by an alarm."""
 //|
-//|     EXTERNAL: object
-//|     """The chip was reset by an external input such as a button."""
+//|     RESET_PIN: object
+//|     """The chip was reset by a signal on its reset pin. The pin might be connected to a reset buton."""
+//|
+//|     WATCHDOG: object
+//|     """The chip was reset by its watchdog timer."""
 //|
 MAKE_ENUM_MAP(alarm_reset_reason) {
-    MAKE_ENUM_MAP_ENTRY(reset_reason, POWER_VALID),
+    MAKE_ENUM_MAP_ENTRY(reset_reason, POWER_ON),
+    MAKE_ENUM_MAP_ENTRY(reset_reason, BROWNOUT),
     MAKE_ENUM_MAP_ENTRY(reset_reason, SOFTWARE),
     MAKE_ENUM_MAP_ENTRY(reset_reason, DEEP_SLEEP_ALARM),
-    MAKE_ENUM_MAP_ENTRY(reset_reason, EXTERNAL),
+    MAKE_ENUM_MAP_ENTRY(reset_reason, RESET_PIN),
+    MAKE_ENUM_MAP_ENTRY(reset_reason, WATCHDOG),
 };
 STATIC MP_DEFINE_CONST_DICT(alarm_reset_reason_locals_dict, alarm_reset_reason_locals_table);
 

@@ -63,6 +63,10 @@
 
 #include "boards/board.h"
 
+#if CIRCUITPY_ALARM
+#include "shared-bindings/alarm/__init__.h"
+#endif
+
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
@@ -86,10 +90,6 @@
 
 #if CIRCUITPY_CANIO
 #include "common-hal/canio/CAN.h"
-#endif
-
-#if CIRCUITPY_SLEEP
-#include "shared-bindings/sleep/__init__.h"
 #endif
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
@@ -320,7 +320,7 @@ bool run_code_py(safe_mode_t safe_mode) {
     #endif
     rgb_status_animation_t animation;
     bool ok = result->return_code != PYEXEC_EXCEPTION;
-    #if CIRCUITPY_SLEEP
+    #if CIRCUITPY_ALARM
     // If USB isn't enumerated then deep sleep.
     if (ok && !supervisor_workflow_active() && supervisor_ticks_ms64() > CIRCUITPY_USB_ENUMERATION_DELAY * 1024) {
         common_hal_sleep_deep_sleep();
@@ -361,7 +361,7 @@ bool run_code_py(safe_mode_t safe_mode) {
         #endif
         bool animation_done = tick_rgb_status_animation(&animation);
         if (animation_done && supervisor_workflow_active()) {
-            #if CIRCUITPY_SLEEP
+            #if CIRCUITPY_ALARM
             int64_t remaining_enumeration_wait = CIRCUITPY_USB_ENUMERATION_DELAY * 1024 - supervisor_ticks_ms64();
             // If USB isn't enumerated then deep sleep after our waiting period.
             if (ok && remaining_enumeration_wait < 0) {
@@ -423,9 +423,13 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         if (!skip_boot_output) {
             // Wait 1.5 seconds before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
             // in case power is momentary or will fail shortly due to, say a low, battery.
-            if (common_hal_sleep_get_reset_reason() == RESET_REASON_POWER_VALID) {
+#if CIRCUITPY_ALARM
+            if (common_hal_sleep_get_reset_reason() == RESET_REASON_POWER_ON) {
+#endif
                 mp_hal_delay_ms(1500);
+#if CIRCUITPY_ALARM
             }
+#endif
 
             // USB isn't up, so we can write the file.
             filesystem_set_internal_writable_by_usb(false);

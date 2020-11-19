@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 @microDev1 (GitHub)
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +25,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
+#include "esp_sleep.h"
 
-typedef enum {
-    RESET_REASON_POWER_ON,
-    RESET_REASON_BROWNOUT,
-    RESET_REASON_SOFTWARE,
-    RESET_REASON_DEEP_SLEEP_ALARM,
-    RESET_REASON_RESET_PIN,
-    RESET_REASON_WATCHDOG,
-} alarm_reset_reason_t;
+#include "shared-bindings/alarm/time/DurationAlarm.h"
 
-extern const mp_obj_type_t alarm_reset_reason_type;
+void common_hal_alarm_time_duration_alarm_construct(alarm_time_duration_alarm_obj_t *self, mp_float_t duration) {
+    self->duration = duration;
+}
 
-extern alarm_reset_reason_t common_hal_alarm_get_reset_reason(void);
+mp_float_t common_hal_alarm_time_duration_alarm_get_duration(alarm_time_duration_alarm_obj_t *self) {
+    return self->duration;
+}
+void common_hal_alarm_time_duration_alarm_enable(alarm_time_duration_alarm_obj_t *self)
+    if (esp_sleep_enable_timer_wakeup((uint64_t) (self->duration * 1000000)) == ESP_ERR_INVALID_ARG) {
+        mp_raise_ValueError(translate("duration out of range"));
+    }
+}
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
+void common_hal_alarm_time_duration_alarm_disable (alarm_time_duration_alarm_obj_t *self) {
+    (void) self;
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
+}

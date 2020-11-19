@@ -367,7 +367,6 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
     status->found_main = found_main;
     status->total_exception_cycle = 0;
     status->ok = result->return_code != PYEXEC_EXCEPTION;
-    status->cycles = 0;
     if (status->ok) {
         // If this isn't an exception, skip exception sorting and handling
         return;
@@ -419,9 +418,8 @@ bool tick_rgb_status_animation(rgb_status_animation_t* status) {
         // All is good. Ramp ALL_DONE up and down.
         if (tick_diff > ALL_GOOD_CYCLE_MS) {
             status->pattern_start = supervisor_ticks_ms32();
-            status->cycles++;
             new_status_color(BLACK);
-            return status->cycles;
+            return true;
         }
 
         uint16_t brightness = tick_diff * 255 / (ALL_GOOD_CYCLE_MS / 2);
@@ -436,8 +434,7 @@ bool tick_rgb_status_animation(rgb_status_animation_t* status) {
     } else {
         if (tick_diff > status->total_exception_cycle) {
             status->pattern_start = supervisor_ticks_ms32();
-            status->cycles++;
-            return;
+            return true;
         }
         // First flash the file color.
         if (tick_diff < EXCEPTION_TYPE_LENGTH_MS) {

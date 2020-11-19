@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 @microDev1 (GitHub)
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +25,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
+#include "esp_sleep.h"
 
-typedef enum {
-    RESET_REASON_POWER_ON,
-    RESET_REASON_BROWNOUT,
-    RESET_REASON_SOFTWARE,
-    RESET_REASON_DEEP_SLEEP_ALARM,
-    RESET_REASON_RESET_PIN,
-    RESET_REASON_WATCHDOG,
-} alarm_reset_reason_t;
+#include "shared-bindings/alarm/time/DurationAlarm.h"
 
-extern const mp_obj_type_t alarm_reset_reason_type;
+void common_hal_alarm_pin_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, mcu_pin_obj_t *pin, bool level, bool edge, bool pull) {
+    self->pin = pin;
+    self->level = level;
+    self->edge = edge;
+    self->pull = pull;
 
-extern alarm_reset_reason_t common_hal_alarm_get_reset_reason(void);
+mcu_pin_obj_t *common_hal_alarm_pin_pin_alarm_get_pin(alarm_pin_pin_alarm_obj_t *self) {
+    return self->pin;
+}
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
+bool common_hal_alarm_pin_pin_alarm_get_level(alarm_pin_pin_alarm_obj_t *self) {
+    return self->level;
+}
+
+bool common_hal_alarm_pin_pin_alarm_get_edge(alarm_pin_pin_alarm_obj_t *self) {
+    return self->edge;
+}
+
+bool common_hal_alarm_pin_pin_alarm_get_pull(alarm_pin_pin_alarm_obj_t *self) {
+    return self->pull;
+}

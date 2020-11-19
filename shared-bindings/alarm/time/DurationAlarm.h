@@ -31,4 +31,10 @@
 
 extern const mp_obj_type_t alarm_time_duration_alarm_type;
 
+extern void common_hal_alarm_time_duration_alarm_construct(alarm_time_duration_alarm_obj_t *self, mp_float_t duration);
+extern mp_float_t common_hal_alarm_time_duration_alarm_get_duration(alarm_time_duration_alarm_obj_t *self);
+
+extern void common_hal_alarm_time_duration_alarm_enable(alarm_time_duration_alarm_obj_t *self);
+extern void common_hal_alarm_time_duration_alarm_disable (alarm_time_duration_alarm_obj_t *self);
+
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_DURATION_ALARM_H

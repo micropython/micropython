@@ -91,10 +91,14 @@ STATIC mp_obj_t alarm_pin_pin_alarm_binary_op(mp_binary_op_t op, mp_obj_t lhs_in
             if (MP_OBJ_IS_TYPE(rhs_in, &alarm_pin_pin_alarm_type)) {
                 // Pins are singletons, so we can compare them directly.
                 return mp_obj_new_bool(
-                    common_hal_pin_pin_alarm_get_pin(lhs_in) == common_hal_pin_pin_alarm_get_pin(rhs_in) &&
-                    common_hal_pin_pin_alarm_get_level(lhs_in) == common_hal_pin_pin_alarm_get_level(rhs_in) &&
-                    common_hal_pin_pin_alarm_get_edge(lhs_in) == common_hal_pin_pin_alarm_get_edge(rhs_in) &&
-                    common_hal_pin_pin_alarm_get_pull(lhs_in) == common_hal_pin_pin_alarm_get_pull(rhs_in))
+                    common_hal_alarm_pin_pin_alarm_get_pin(lhs_in) ==
+                    common_hal_alarm_pin_pin_alarm_get_pin(rhs_in) &&
+                    common_hal_alarm_pin_pin_alarm_get_level(lhs_in) ==
+                    common_hal_alarm_pin_pin_alarm_get_level(rhs_in) &&
+                    common_hal_alarm_pin_pin_alarm_get_edge(lhs_in) ==
+                    common_hal_alarm_pin_pin_alarm_get_edge(rhs_in) &&
+                    common_hal_alarm_pin_pin_alarm_get_pull(lhs_in) ==
+                    common_hal_alarm_pin_pin_alarm_get_pull(rhs_in));
             }
             return mp_const_false;
 

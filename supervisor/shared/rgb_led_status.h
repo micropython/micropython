@@ -76,6 +76,6 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
                                bool found_main,
                                safe_mode_t safe_mode,
                                rgb_status_animation_t* status);
-void tick_rgb_status_animation(rgb_status_animation_t* status);
+bool tick_rgb_status_animation(rgb_status_animation_t* status);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_RGB_LED_STATUS_H
