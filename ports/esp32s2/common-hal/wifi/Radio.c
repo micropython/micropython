@@ -142,6 +142,11 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     } else {
         config->sta.bssid_set = 0;
     }
+    // if channel and bssid both not set, do a full scan instead of fast scan
+    // this will ensure that the best AP is chosen automatically
+    if ((self->sta.bssid_set == 0) && (self->sta.channel == NULL)) {
+        config.scan_method = WIFI_ALL_CHANNEL_SCAN;
+    }
     esp_wifi_set_config(ESP_IF_WIFI_STA, config);
     self->starting_retries = 5;
     self->retries_left = 5;
