@@ -56,6 +56,7 @@
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
+#include "supervisor/shared/workflow.h"
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
 
@@ -91,6 +92,12 @@
 #if CIRCUITPY_CANIO
 #include "common-hal/canio/CAN.h"
 #endif
+
+// How long to wait for host to enumerate (secs).
+#define CIRCUITPY_USB_ENUMERATION_DELAY 1
+
+// How long to flash errors on the RGB status LED before going to sleep (secs)
+#define CIRCUITPY_FLASH_ERROR_PERIOD 10
 
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
@@ -319,11 +326,11 @@ bool run_code_py(safe_mode_t safe_mode) {
     bool refreshed_epaper_display = false;
     #endif
     rgb_status_animation_t animation;
-    bool ok = result->return_code != PYEXEC_EXCEPTION;
+    bool ok = result.return_code != PYEXEC_EXCEPTION;
     #if CIRCUITPY_ALARM
     // If USB isn't enumerated then deep sleep.
     if (ok && !supervisor_workflow_active() && supervisor_ticks_ms64() > CIRCUITPY_USB_ENUMERATION_DELAY * 1024) {
-        common_hal_sleep_deep_sleep();
+        common_hal_mcu_deep_sleep();
     }
     #endif
     // Show the animation every N seconds.
@@ -365,8 +372,8 @@ bool run_code_py(safe_mode_t safe_mode) {
             int64_t remaining_enumeration_wait = CIRCUITPY_USB_ENUMERATION_DELAY * 1024 - supervisor_ticks_ms64();
             // If USB isn't enumerated then deep sleep after our waiting period.
             if (ok && remaining_enumeration_wait < 0) {
-                common_hal_sleep_deep_sleep();
-                return; // Doesn't actually get here.
+                common_hal_mcu_deep_sleep();
+                return false; // Doesn't actually get here.
             }
             #endif
             // Wake up every so often to flash the error code.
@@ -424,7 +431,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
             // Wait 1.5 seconds before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
             // in case power is momentary or will fail shortly due to, say a low, battery.
 #if CIRCUITPY_ALARM
-            if (common_hal_sleep_get_reset_reason() == RESET_REASON_POWER_ON) {
+            if (common_hal_alarm_get_reset_reason() == RESET_REASON_POWER_ON) {
 #endif
                 mp_hal_delay_ms(1500);
 #if CIRCUITPY_ALARM

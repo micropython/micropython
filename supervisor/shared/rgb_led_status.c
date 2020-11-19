@@ -483,4 +483,5 @@ bool tick_rgb_status_animation(rgb_status_animation_t* status) {
         }
     }
     #endif
+    return false;  // Animation is not finished.
 }

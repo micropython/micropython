@@ -24,9 +24,11 @@
  * THE SOFTWARE.
  */
 
+#include <stdbool.h>
+
 // Set by the shared USB code.
 volatile bool _workflow_active;
 
-bool workflow_active(void) {
+bool supervisor_workflow_active(void) {
     return _workflow_active;
 }

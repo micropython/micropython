@@ -35,6 +35,22 @@ void common_hal_alarm_disable_all(void) {
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
+mp_obj_t common_hal_alarm_get_reset_reason(void) {
+    switch (esp_sleep_get_wakeup_cause()) {
+        case ESP_SLEEP_WAKEUP_TIMER:
+            return RESET_REASON_DEEP_SLEEP_ALARM;
+        case ESP_SLEEP_WAKEUP_EXT0:
+            return RESET_REASON_DEEP_SLEEP_ALARM;
+        case ESP_SLEEP_WAKEUP_TOUCHPAD:
+            //TODO: implement TouchIO
+        case ESP_SLEEP_WAKEUP_UNDEFINED:
+        default:
+            return mp_const_none;
+            break;
+    }
+}
+
+
 mp_obj_t common_hal_alarm_get_wake_alarm(void) {
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_TIMER: ;

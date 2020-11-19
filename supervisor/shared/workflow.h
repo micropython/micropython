@@ -27,3 +27,5 @@
 #pragma once
 
 extern volatile bool _workflow_active;
+
+extern bool supervisor_workflow_active(void);

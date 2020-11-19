@@ -34,11 +34,9 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/alarm/pin/__init__.h"
-#include "shared-bindings/alarm/time/__init__.h"
-
 STATIC mp_obj_t alarm_sleep_until_alarm(size_t n_args, const mp_obj_t *args) {
     // TODO
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_sleep_until_alarm_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_sleep_until_alarm);
 
@@ -51,6 +49,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_sleep_until_alarm_obj, 1, MP_OBJ_FUN_A
 //|
 STATIC mp_obj_t alarm_restart_on_alarm(size_t n_args, const mp_obj_t *args) {
     // TODO
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_restart_on_alarm_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_restart_on_alarm);
 
@@ -102,7 +101,6 @@ mp_map_elem_t alarm_module_globals_table[] = {
 };
 STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
 
-// These are called from common_hal code to set the current wake alarm.
 void common_hal_alarm_set_wake_alarm(mp_obj_t alarm) {
     // Equivalent of:
     // alarm.wake_alarm = alarm
@@ -113,7 +111,16 @@ void common_hal_alarm_set_wake_alarm(mp_obj_t alarm) {
     }
 }
 
-// These are called from common hal code to set the current wake alarm.
+alarm_reset_reason_t common_hal_alarm_get_reset_reason(void) {
+    mp_map_elem_t *elem =
+        mp_map_lookup(&alarm_module_globals_table, MP_ROM_QSTR(MP_QSTR_reset_reason), MP_MAP_LOOKUP);
+    if (elem) {
+        return elem->value;
+    } else {
+        return mp_const_none;
+    }
+}
+
 void common_hal_alarm_set_reset_reason(mp_obj_t reset_reason) {
     // Equivalent of:
     // alarm.reset_reason = reset_reason
