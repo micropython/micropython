@@ -160,7 +160,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_sleep_obj, mcu_sleep);
 //|
 //| .. module:: microcontroller.pin
 //|   :synopsis: Microcontroller pin names
-//|   :platform: SAMD21
 //|
 //| References to pins as named by the microcontroller"""
 //|

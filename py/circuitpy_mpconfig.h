@@ -250,27 +250,6 @@ extern const struct _mp_obj_module_t alarm_module;
 #define ALARM_MODULE
 #endif
 
-#if CIRCUITPY_ALARM_IO
-extern const struct _mp_obj_module_t alarm_io_module;
-#define ALARM_IO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_io), (mp_obj_t)&alarm_io_module },
-#else
-#define ALARM_IO_MODULE
-#endif
-
-#if CIRCUITPY_ALARM_TIME
-extern const struct _mp_obj_module_t alarm_time_module;
-#define ALARM_TIME_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_time), (mp_obj_t)&alarm_time_module },
-#else
-#define ALARM_TIME_MODULE
-#endif
-
-#if CIRCUITPY_ALARM_TOUCH
-extern const struct _mp_obj_module_t alarm_touch_module;
-#define ALARM_TOUCH_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_alarm_touch), (mp_obj_t)&alarm_touch_module },
-#else
-#define ALARM_TOUCH_MODULE
-#endif
-
 #if CIRCUITPY_ANALOGIO
 #define ANALOGIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module },
 extern const struct _mp_obj_module_t analogio_module;
@@ -642,13 +621,6 @@ extern const struct _mp_obj_module_t sharpdisplay_module;
 #define SHARPDISPLAY_MODULE
 #endif
 
-#if CIRCUITPY_SLEEP
-extern const struct _mp_obj_module_t sleep_module;
-#define SLEEP_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_sleep),(mp_obj_t)&sleep_module },
-#else
-#define SLEEP_MODULE
-#endif
-
 #if CIRCUITPY_SOCKETPOOL
 extern const struct _mp_obj_module_t socketpool_module;
 #define SOCKETPOOL_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_socketpool), (mp_obj_t)&socketpool_module },
@@ -807,9 +779,6 @@ extern const struct _mp_obj_module_t wifi_module;
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     AESIO_MODULE \
     ALARM_MODULE \
-    ALARM_IO_MODULE \
-    ALARM_TIME_MODULE \
-    ALARM_TOUCH_MODULE \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \
@@ -862,7 +831,6 @@ extern const struct _mp_obj_module_t wifi_module;
     SDCARDIO_MODULE \
     SDIOIO_MODULE \
     SHARPDISPLAY_MODULE \
-    SLEEP_MODULE \
     SOCKETPOOL_MODULE \
     SSL_MODULE \
     STAGE_MODULE \

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,11 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_DURATION_ALARM_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_DURATION_ALARM_H
 
-typedef enum {
-    RESET_REASON_POWER_APPLIED,
-    RESET_REASON_SOFTWARE,
-    RESET_REASON_DEEP_SLEEP_ALARM,
-    RESET_REASON_BUTTON,
-} sleep_reset_reason_t;
+#include "py/obj.h"
 
-extern const mp_obj_type_t sleep_reset_reason_type;
+extern const mp_obj_type_t alarm_time_duration_alarm_type;
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_DURATION_ALARM_H

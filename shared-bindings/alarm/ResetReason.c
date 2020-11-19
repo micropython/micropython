@@ -26,12 +26,12 @@
 
 #include "py/enum.h"
 
-#include "shared-bindings/sleep/ResetReason.h"
+#include "shared-bindings/alarm/ResetReason.h"
 
-MAKE_ENUM_VALUE(sleep_reset_reason_type, reset_reason, POWER_VALID, RESET_REASON_POWER_VALID);
-MAKE_ENUM_VALUE(sleep_reset_reason_type, reset_reason, SOFTWARE, RESET_REASON_SOFTWARE);
-MAKE_ENUM_VALUE(sleep_reset_reason_type, reset_reason, DEEP_SLEEP_ALARM, RESET_REASON_DEEP_SLEEP_ALARM);
-MAKE_ENUM_VALUE(sleep_reset_reason_type, reset_reason, EXTERNAL, RESET_REASON_EXTERNAL);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, POWER_VALID, RESET_REASON_POWER_VALID);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, SOFTWARE, RESET_REASON_SOFTWARE);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, DEEP_SLEEP_ALARM, RESET_REASON_DEEP_SLEEP_ALARM);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, EXTERNAL, RESET_REASON_EXTERNAL);
 
 //| class ResetReason:
 //|     """The reason the chip was last reset"""
@@ -48,14 +48,14 @@ MAKE_ENUM_VALUE(sleep_reset_reason_type, reset_reason, EXTERNAL, RESET_REASON_EX
 //|     EXTERNAL: object
 //|     """The chip was reset by an external input such as a button."""
 //|
-MAKE_ENUM_MAP(sleep_reset_reason) {
+MAKE_ENUM_MAP(alarm_reset_reason) {
     MAKE_ENUM_MAP_ENTRY(reset_reason, POWER_VALID),
     MAKE_ENUM_MAP_ENTRY(reset_reason, SOFTWARE),
     MAKE_ENUM_MAP_ENTRY(reset_reason, DEEP_SLEEP_ALARM),
     MAKE_ENUM_MAP_ENTRY(reset_reason, EXTERNAL),
 };
-STATIC MP_DEFINE_CONST_DICT(sleep_reset_reason_locals_dict, sleep_reset_reason_locals_table);
+STATIC MP_DEFINE_CONST_DICT(alarm_reset_reason_locals_dict, alarm_reset_reason_locals_table);
 
-MAKE_PRINTER(sleep, sleep_reset_reason);
+MAKE_PRINTER(alarm, alarm_reset_reason);
 
-MAKE_ENUM_TYPE(sleep, ResetReason, sleep_reset_reason);
+MAKE_ENUM_TYPE(alarm, ResetReason, alarm_reset_reason);

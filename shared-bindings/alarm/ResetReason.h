@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,19 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIME_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIME_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
 
-#include "py/runtime.h"
+typedef enum {
+    RESET_REASON_POWER_APPLIED,
+    RESET_REASON_SOFTWARE,
+    RESET_REASON_DEEP_SLEEP_ALARM,
+    RESET_REASON_BUTTON,
+} alarm_reset_reason_t;
 
-typedef struct {
-    mp_obj_base_t base;
-    uint64_t time_to_alarm;
-} alarm_time_time_obj_t;
+extern const mp_obj_type_t alarm_reset_reason_type;
 
-extern const mp_obj_type_t alarm_time_time_type;
-
-void common_hal_alarm_time_time_construct(alarm_time_time_obj_t* self,
-                                          uint64_t ticks_ms);
-
-#endif //MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIME_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
