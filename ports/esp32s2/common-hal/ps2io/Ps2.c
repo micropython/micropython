@@ -48,102 +48,15 @@
 #define ERROR_TX_RTS 0x1000
 #define ERROR_TX_NORESP 0x2000
 
-static void IRAM_ATTR ps2_interrupt_handler(void *self_in);
-
-static void ps2_set_config(ps2io_ps2_obj_t* self) {
-    // turn on falling edge interrupt
-    gpio_set_intr_type(self->clk_pin, GPIO_INTR_NEGEDGE);
-    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
-    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void*)self);
-}
-
-static void disable_interrupt(ps2io_ps2_obj_t* self) {
-    // turn off fallling edge interrupt
-    gpio_isr_handler_remove(self->clk_pin);
-}
-
-static void resume_interrupt(ps2io_ps2_obj_t* self) {
-    self->state = STATE_IDLE;
-    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void*)self);
-}
-
-static void clk_hi(ps2io_ps2_obj_t* self) {
-    // external pull-up
-    gpio_set_direction(self->clk_pin, GPIO_MODE_INPUT);
-    gpio_pullup_dis(self->clk_pin);
-}
-
-static bool wait_clk_lo(ps2io_ps2_obj_t* self, uint32_t us) {
-    clk_hi(self);
-    common_hal_mcu_delay_us(1);
-    while (gpio_get_level(self->clk_pin) && us) {
-        --us;
-        common_hal_mcu_delay_us(1);
-    }
-    return us;
-}
-
-static bool wait_clk_hi(ps2io_ps2_obj_t* self, uint32_t us) {
-    clk_hi(self);
-    common_hal_mcu_delay_us(1);
-    while (!gpio_get_level(self->clk_pin) && us) {
-        --us;
-        common_hal_mcu_delay_us(1);
-    }
-    return us;
-}
-
-static void clk_lo(ps2io_ps2_obj_t* self) {
-    gpio_pullup_dis(self->clk_pin);
-    gpio_set_direction(self->clk_pin, GPIO_MODE_OUTPUT);
-    gpio_set_level(self->clk_pin, 0);
-}
-
-static void data_hi(ps2io_ps2_obj_t* self) {
-    // external pull-up
-    gpio_set_direction(self->data_pin, GPIO_MODE_INPUT);
-    gpio_pullup_dis(self->data_pin);
-}
-
-static bool wait_data_lo(ps2io_ps2_obj_t* self, uint32_t us) {
-    data_hi(self);
-    common_hal_mcu_delay_us(1);
-    while (gpio_get_level(self->data_pin) && us) {
-        --us;
-        common_hal_mcu_delay_us(1);
-    }
-    return us;
-}
-
-static bool wait_data_hi(ps2io_ps2_obj_t* self, uint32_t us) {
-    data_hi(self);
-    common_hal_mcu_delay_us(1);
-    while (!gpio_get_level(self->data_pin) && us) {
-        --us;
-        common_hal_mcu_delay_us(1);
-    }
-    return us;
-}
-
-static void data_lo(ps2io_ps2_obj_t* self) {
-    gpio_pullup_dis(self->data_pin);
-    gpio_set_direction(self->data_pin, GPIO_MODE_OUTPUT);
-    gpio_set_level(self->data_pin, 0);
-}
-
-static void idle(ps2io_ps2_obj_t* self) {
-    clk_hi(self);
-    data_hi(self);
-}
-
-static void inhibit(ps2io_ps2_obj_t* self) {
-    clk_lo(self);
-    data_hi(self);
+void ps2_reset(void) {
+    gpio_uninstall_isr_service();
 }
 
 static void delay_us(uint32_t t) {
     common_hal_mcu_delay_us(t);
 }
+
+/* interrupt handling */
 
 static void IRAM_ATTR ps2_interrupt_handler(void *self_in) {
     // Grab the current time first.
@@ -222,11 +135,99 @@ static void IRAM_ATTR ps2_interrupt_handler(void *self_in) {
     }
 }
 
-void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t* self,
-        const mcu_pin_obj_t* data_pin, const mcu_pin_obj_t* clk_pin) {
+static void enable_interrupt(ps2io_ps2_obj_t* self) {
+    // turn on falling edge interrupt
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    gpio_set_intr_type(self->clk_pin, GPIO_INTR_NEGEDGE);
+    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void*)self);
+}
+
+static void disable_interrupt(ps2io_ps2_obj_t* self) {
+    // turn off fallling edge interrupt
+    gpio_isr_handler_remove(self->clk_pin);
+}
+
+static void resume_interrupt(ps2io_ps2_obj_t* self) {
+    self->state = STATE_IDLE;
+    gpio_isr_handler_add(self->clk_pin, ps2_interrupt_handler, (void*)self);
+}
+
+/* gpio handling */
+
+static void clk_hi(ps2io_ps2_obj_t* self) {
+    // external pull-up
+    gpio_set_direction(self->clk_pin, GPIO_MODE_INPUT);
+}
+
+static bool wait_clk_lo(ps2io_ps2_obj_t* self, uint32_t us) {
+    clk_hi(self);
+    delay_us(1);
+    while (gpio_get_level(self->clk_pin) && us) {
+        --us;
+        delay_us(1);
+    }
+    return us;
+}
+
+static bool wait_clk_hi(ps2io_ps2_obj_t* self, uint32_t us) {
+    clk_hi(self);
+    delay_us(1);
+    while (!gpio_get_level(self->clk_pin) && us) {
+        --us;
+        delay_us(1);
+    }
+    return us;
+}
+
+static void clk_lo(ps2io_ps2_obj_t* self) {
+    gpio_set_direction(self->clk_pin, GPIO_MODE_OUTPUT);
+    gpio_set_level(self->clk_pin, 0);
+}
+
+static void data_hi(ps2io_ps2_obj_t* self) {
+    // external pull-up
+    gpio_set_direction(self->data_pin, GPIO_MODE_INPUT);
+}
+
+static bool wait_data_lo(ps2io_ps2_obj_t* self, uint32_t us) {
+    data_hi(self);
+    delay_us(1);
+    while (gpio_get_level(self->data_pin) && us) {
+        --us;
+        delay_us(1);
+    }
+    return us;
+}
+
+static bool wait_data_hi(ps2io_ps2_obj_t* self, uint32_t us) {
+    data_hi(self);
+    delay_us(1);
+    while (!gpio_get_level(self->data_pin) && us) {
+        --us;
+        delay_us(1);
+    }
+    return us;
+}
+
+static void data_lo(ps2io_ps2_obj_t* self) {
+    gpio_set_direction(self->data_pin, GPIO_MODE_OUTPUT);
+    gpio_set_level(self->data_pin, 0);
+}
+
+static void idle(ps2io_ps2_obj_t* self) {
     clk_hi(self);
     data_hi(self);
+}
 
+static void inhibit(ps2io_ps2_obj_t* self) {
+    clk_lo(self);
+    data_hi(self);
+}
+
+/* ps2io module functions */
+
+void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t* self,
+        const mcu_pin_obj_t* data_pin, const mcu_pin_obj_t* clk_pin) {
     self->clk_pin = (gpio_num_t)clk_pin->number;
     self->data_pin = (gpio_num_t)data_pin->number;
     self->state = STATE_IDLE;
@@ -235,11 +236,11 @@ void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t* self,
     self->bufposw = 0;
     self->waiting_cmd_response = false;
 
+    idle(self);
+    enable_interrupt(self);
+
     claim_pin(clk_pin);
     claim_pin(data_pin);
-
-    // set config will enable the interrupt.
-    ps2_set_config(self);
 }
 
 bool common_hal_ps2io_ps2_deinited(ps2io_ps2_obj_t* self) {
@@ -255,10 +256,6 @@ void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t* self) {
     reset_pin_number(self->data_pin);
     self->clk_pin = GPIO_NUM_MAX;
     self->data_pin = GPIO_NUM_MAX;
-}
-
-void ps2_reset(void) {
-    gpio_uninstall_isr_service();
 }
 
 uint16_t common_hal_ps2io_ps2_get_len(ps2io_ps2_obj_t* self) {
@@ -291,6 +288,8 @@ uint16_t common_hal_ps2io_ps2_clear_errors(ps2io_ps2_obj_t* self) {
 
 int16_t common_hal_ps2io_ps2_sendcmd(ps2io_ps2_obj_t* self, uint8_t b) {
     disable_interrupt(self);
+
+    /* terminate a transmission if we have */
     inhibit(self);
     delay_us(100);
 
@@ -321,6 +320,7 @@ int16_t common_hal_ps2io_ps2_sendcmd(ps2io_ps2_obj_t* self, uint8_t b) {
         }
     }
 
+    /* Parity bit */
     delay_us(15);
     if (parity) {
         data_hi(self);
