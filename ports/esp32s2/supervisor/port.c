@@ -41,6 +41,7 @@
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
+#include "common-hal/ps2io/Ps2.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
@@ -102,6 +103,10 @@ void reset_port(void) {
 
 #if CIRCUITPY_ANALOGIO
     analogout_reset();
+#endif
+
+#if CIRCUITPY_PS2IO
+    ps2_reset();
 #endif
 
 #if CIRCUITPY_PULSEIO

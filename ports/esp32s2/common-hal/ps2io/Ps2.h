@@ -55,4 +55,6 @@ typedef struct {
     uint8_t cmd_response;
 } ps2io_ps2_obj_t;
 
+void ps2_reset(void);
+
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PS2IO_PS2_H

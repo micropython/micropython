@@ -26,9 +26,7 @@
 
 #include "common-hal/ps2io/Ps2.h"
 
-#include "py/runtime.h"
 #include "supervisor/port.h"
-#include "shared-bindings/ps2io/Ps2.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
 #define STATE_IDLE 0
@@ -257,6 +255,10 @@ void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t* self) {
     reset_pin_number(self->data_pin);
     self->clk_pin = GPIO_NUM_MAX;
     self->data_pin = GPIO_NUM_MAX;
+}
+
+void ps2_reset(void) {
+    gpio_uninstall_isr_service();
 }
 
 uint16_t common_hal_ps2io_ps2_get_len(ps2io_ps2_obj_t* self) {
