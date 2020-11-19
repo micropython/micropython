@@ -2134,10 +2134,8 @@ STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
         mp_raise_TypeError(translate("can't convert to str implicitly"));
     } else {
         const qstr src_name = mp_obj_get_type_qstr(self_in);
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            translate("can't convert '%q' object to %q implicitly"),
-            src_name, src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str));
-    }
+        mp_raise_TypeError_varg(translate("can't convert '%q' object to %q implicitly"),
+            src_name, src_name == MP_QSTR_str ? MP_QSTR_bytes : MP_QSTR_str);
 }
 
 // use this if you will anyway convert the string to a qstr
