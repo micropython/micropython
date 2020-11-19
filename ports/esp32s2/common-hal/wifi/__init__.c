@@ -59,6 +59,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 ESP_EARLY_LOGW(TAG, "reason %d 0x%02x", reason, reason);
                 if (radio->retries_left > 0 &&
                         (reason == WIFI_REASON_AUTH_EXPIRE ||
+                         reason == WIFI_REASON_NOT_AUTHED ||
                          reason == WIFI_REASON_ASSOC_EXPIRE ||
                          reason == WIFI_REASON_CONNECTION_FAIL ||
                          reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)) {
