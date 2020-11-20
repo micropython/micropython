@@ -26,15 +26,11 @@
 #ifndef MICROPY_INCLUDED_ESP_ERROR_H
 #define MICROPY_INCLUDED_ESP_ERROR_H
 
-//#include "py/obj.h"
-
-//extern const mp_obj_type_t mp_type_EspError;
-
-#define raise_esp_error(e) mp_raise_msg_varg(&mp_type_EspError, MP_ERROR_TEXT("%d(0x%X) - %s"), e, e, esp_err_to_name(e));
+#define mp_raise_EspError(e) mp_raise_msg_varg(&mp_type_EspError, MP_ERROR_TEXT("%d(0x%X) - %s"), e, e, esp_err_to_name(e));
 
 static inline void esp_exceptions(esp_err_t e) {
     if (e != ESP_OK) {
-        raise_esp_error(e)
+        mp_raise_EspError(e)
     }
 }
 

@@ -52,7 +52,7 @@ ESP_EXCEPTIONS(pcnt_event_disable(self->unit, evt_type))
 
 esp_err_t err = pcnt_event_disable(self->unit, evt_type);
 if (err != ESP_OK)
-    raise_esp_error(err);
+    mp_raise_EspError(err);
 */
 
 // Defining classes
