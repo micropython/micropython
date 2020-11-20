@@ -86,10 +86,20 @@ STATIC mp_obj_t esp_err_EspError_print(const mp_print_t *print, mp_obj_t self_ob
 }
 */
 
+STATIC mp_obj_t esp_err_EspError_esp_err_to_name(mp_obj_t self_obj, mp_obj_t err_obj) {
+	//mp_obj_esp_err_EspError_t *self = MP_OBJ_TO_PTR(self_obj);
+	mp_int_t err = mp_obj_get_int(err_obj);
+
+    const char *s = esp_err_to_name(err);
+
+    return mp_obj_new_str(s, strlen(s));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_err_EspError_esp_err_to_name_obj, esp_err_EspError_esp_err_to_name);
+
 // EspError stuff
 // Register class methods
 STATIC const mp_rom_map_elem_t esp_err_EspError_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_ESP_ERR_FLASH_BASE), MP_ROM_INT(ESP_ERR_FLASH_BASE) },
+    //{ MP_ROM_QSTR(MP_QSTR_ESP_ERR_FLASH_BASE), MP_ROM_INT(ESP_ERR_FLASH_BASE) },
     { MP_ROM_QSTR(MP_QSTR_ESP_ERR_INVALID_ARG), MP_ROM_INT(ESP_ERR_INVALID_ARG) },
     { MP_ROM_QSTR(MP_QSTR_ESP_ERR_INVALID_CRC), MP_ROM_INT(ESP_ERR_INVALID_CRC) },
     { MP_ROM_QSTR(MP_QSTR_ESP_ERR_INVALID_MAC), MP_ROM_INT(ESP_ERR_INVALID_MAC) },
@@ -105,6 +115,7 @@ STATIC const mp_rom_map_elem_t esp_err_EspError_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ESP_ERR_WIFI_BASE), MP_ROM_INT(ESP_ERR_WIFI_BASE) },
     { MP_ROM_QSTR(MP_QSTR_ESP_FAIL), MP_ROM_INT(ESP_FAIL) },
     { MP_ROM_QSTR(MP_QSTR_ESP_OK), MP_ROM_INT(ESP_OK) },
+    { MP_ROM_QSTR(MP_QSTR_err_to_name), MP_ROM_PTR(&esp_err_EspError_esp_err_to_name_obj) }, \
 };
 STATIC MP_DEFINE_CONST_DICT(esp_err_EspError_locals_dict, esp_err_EspError_locals_dict_table);
 
