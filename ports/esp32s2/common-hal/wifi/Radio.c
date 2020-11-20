@@ -146,6 +146,8 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     // This will ensure that the best AP in range is chosen automatically
     if ((config->sta.bssid_set == 0) && (config->sta.channel == 0)) {
         config->sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+    } else {
+        config->sta.scan_method = WIFI_FAST_SCAN;
     }
     esp_wifi_set_config(ESP_IF_WIFI_STA, config);
     self->starting_retries = 5;
