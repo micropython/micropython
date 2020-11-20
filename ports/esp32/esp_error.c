@@ -87,8 +87,8 @@ STATIC mp_obj_t esp_err_EspError_print(const mp_print_t *print, mp_obj_t self_ob
 */
 
 STATIC mp_obj_t esp_err_EspError_esp_err_to_name(mp_obj_t self_obj, mp_obj_t err_obj) {
-	// mp_obj_esp_err_EspError_t *self = MP_OBJ_TO_PTR(self_obj);
-	mp_int_t err = mp_obj_get_int(err_obj);
+    // mp_obj_esp_err_EspError_t *self = MP_OBJ_TO_PTR(self_obj);
+    mp_int_t err = mp_obj_get_int(err_obj);
 
     const char *s = esp_err_to_name(err);
 
@@ -126,7 +126,7 @@ const mp_obj_type_t mp_type_EspError = {
 
     // .make_new = esp_err_EspError_make_new,
     // .print = esp_err_EspError_print,
-    .locals_dict = (mp_obj_dict_t*)&esp_err_EspError_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&esp_err_EspError_locals_dict,
 
     .print = mp_obj_exception_print,
     .make_new = mp_obj_exception_make_new,
