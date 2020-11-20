@@ -326,3 +326,11 @@ supports 32-bit signed integers and blobs.
 .. method:: NVS.commit()
 
     Commits changes made by *set_xxx* methods to flash.
+
+Classes specific to the ESP32
+-----------------------------
+
+.. toctree::
+  :maxdepth: 1
+
+  ../esp32/pcnt.rst

@@ -331,6 +331,25 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value) {
     return true;
 }
 
+int64_t mp_obj_get_ll_int(mp_obj_t arg_in) {
+    if (mp_obj_is_small_int(arg_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(arg_in);
+    } else if (mp_obj_is_type(arg_in, &mp_type_int)) {
+        mp_obj_int_t *arg = arg_in;
+        int len = arg->mpz.len;
+        uint64_t res = 0;
+        for (int i = len - 1; i >= 0; --i) {
+            res = (res << MPZ_DIG_SIZE) + arg->mpz.dig[i];
+        }
+        if (arg->mpz.neg) {
+            return -res;
+        }
+        return res;
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("expected integer"));
+    }
+}
+
 #if MICROPY_PY_BUILTINS_FLOAT
 bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
     mp_float_t val;
