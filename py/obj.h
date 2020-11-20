@@ -666,6 +666,7 @@ extern const mp_obj_type_t mp_type_UnicodeError;
 extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ViperTypeError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
+extern const mp_obj_type_t mp_type_EspError; // it used in ESP32 port only, not visible in other ports
 
 // Constant objects, globally accessible: None, False, True
 // These should always be accessed via the below macros.
