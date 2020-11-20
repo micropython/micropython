@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 #include <alloca.h>
-#include "esp_system.h"
 
 #if !MICROPY_ESP_IDF_4
 #include "rom/ets_sys.h"
@@ -142,15 +141,16 @@
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
-#define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (esp_random())
 #define MICROPY_PY_OS_DUPTERM               (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_I2C_MAKE_NEW     machine_hw_i2c_make_new
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
+#define MICROPY_PY_MACHINE_SPI_MAKE_NEW     machine_hw_spi_make_new
 #define MICROPY_HW_ENABLE_SDCARD            (1)
 #define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
 #define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (ets_get_cpu_frequency() * 1000000 / 200) // roughly
