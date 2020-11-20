@@ -65,12 +65,12 @@ STATIC mp_obj_t espidf_heap_caps_get_largest_free_block(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_heap_caps_get_largest_free_block_obj, espidf_heap_caps_get_largest_free_block);
 
-//| class MemoryError(MemoryError):
-//|     """Raised when an ESP IDF memory allocation fails."""
+//| class IDFError(OSError):
+//|     """Raised for certain generic ESP IDF errors."""
 //|     ...
 //|
-NORETURN void mp_raise_espidf_MemoryError(void) {
-    nlr_raise(mp_obj_new_exception(&mp_type_espidf_MemoryError));
+NORETURN void mp_raise_espidf_IDFError(void) {
+    nlr_raise(mp_obj_new_exception(&mp_type_espidf_IDFError));
 }
 
 void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
@@ -81,6 +81,24 @@ void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
         mp_print_str(print, ".");
     }
     mp_obj_exception_print(print, o_in, kind);
+}
+
+const mp_obj_type_t mp_type_espidf_IDFError = {
+    { &mp_type_type },
+    .name = MP_QSTR_IDFError,
+    .print = espidf_exception_print,
+    .make_new = mp_obj_exception_make_new,
+    .attr = mp_obj_exception_attr,
+    .parent = &mp_type_OSError,
+};
+
+
+//| class MemoryError(MemoryError):
+//|     """Raised when an ESP IDF memory allocation fails."""
+//|     ...
+//|
+NORETURN void mp_raise_espidf_MemoryError(void) {
+    nlr_raise(mp_obj_new_exception(&mp_type_espidf_MemoryError));
 }
 
 const mp_obj_type_t mp_type_espidf_MemoryError = {
@@ -99,6 +117,7 @@ STATIC const mp_rom_map_elem_t espidf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_heap_caps_get_free_size), MP_ROM_PTR(&espidf_heap_caps_get_free_size_obj)},
     { MP_ROM_QSTR(MP_QSTR_heap_caps_get_largest_free_block), MP_ROM_PTR(&espidf_heap_caps_get_largest_free_block_obj)},
 
+    { MP_ROM_QSTR(MP_QSTR_IDFError), MP_ROM_PTR(&mp_type_espidf_IDFError) },
     { MP_ROM_QSTR(MP_QSTR_MemoryError),      MP_ROM_PTR(&mp_type_espidf_MemoryError) },
 };
 

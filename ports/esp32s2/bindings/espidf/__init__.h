@@ -27,6 +27,7 @@
 #ifndef MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
 #define MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
 
+extern const mp_obj_type_t mp_type_espidf_IDFError;
 extern const mp_obj_type_t mp_type_espidf_MemoryError;
 
 NORETURN void mp_raise_espidf_MemoryError(void);
