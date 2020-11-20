@@ -197,7 +197,7 @@ jobs:
         - "circuitplayground_express_crickit"
         - "circuitplayground_express_displayio"
         - "clue_nrf52840_express"
-	- "cp_sapling_m0"
+        - "cp_sapling_m0"
         - "cp32-m4"
         - "datalore_ip_m4"
         - "datum_distance"
