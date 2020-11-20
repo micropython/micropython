@@ -209,3 +209,5 @@ Classes
    machine.WDT.rst
    machine.SD.rst
    machine.SDCard.rst
+   machine.Counter.rst
+   machine.Encoder.rst

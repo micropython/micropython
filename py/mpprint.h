@@ -79,4 +79,10 @@ int mp_printf(const mp_print_t *print, const char *fmt, ...);
 int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
+#define _DBG(level, ...) \
+    if (level >= DBG_LEVEL) { \
+        mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
+        mp_printf(MP_PYTHON_PRINTER, "\n"); \
+    }
+
 #endif // MICROPY_INCLUDED_PY_MPPRINT_H
