@@ -44,8 +44,8 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/pulse
 #include "py/runtime.h"
 #include "driver/pcnt.h"
 
-#include "../esp_error.h"
-#include "pcnt_.h"
+#include "esp_error.h"
+#include "esp32_pcnt.h"
 
 //---------------------------------------
 static int machine_pin_get_gpio(mp_obj_t pin_in)
@@ -1305,7 +1305,6 @@ STATIC const mp_obj_type_t esp32_quad_type = {
     //.parent = &esp32_pcnt_type,
 };
 
-#if 0
 //====================================================================================
 // module stuff
 // Set up the module properties
@@ -1360,6 +1359,5 @@ const mp_obj_module_t pcnt_cmodule = {
 };
 // Register the module
 MP_REGISTER_MODULE(MP_QSTR_pcnt, pcnt_cmodule, MODULE_PCNT_ENABLED);
-#endif
 
 #endif // MODULE_PCNT_ENABLED
