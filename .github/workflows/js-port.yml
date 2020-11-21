@@ -33,7 +33,7 @@ jobs:
       - name: Build mpy-cross
         run: make -j $(nproc) -C mpy-cross
       - name: Build the javascript port
-        run: make -j $(nproc) -C ports/javascript V=1
+        run: make -j $(nproc) -C ports/javascript
       - name: Install node modules
         run: npm install
         working-directory: ports/javascript
