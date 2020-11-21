@@ -1,0 +1,25 @@
+name: Build lv_micropython stm32 port
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: arm-none-eabi-gcc
+      uses: fiam/arm-none-eabi-gcc@v1
+      with:
+        release: '9-2019-q4' # The arm-none-eabi-gcc release to use.
+    - name: Update submodules
+      run: git submodule update --init --recursive  
+    - name: Build mpy-cross
+      run: make -j $(nproc) -C mpy-cross
+    - name: Build the unix port
+      run: make -j $(nproc) -C ports/stm32 BOARD=STM32F7DISC
