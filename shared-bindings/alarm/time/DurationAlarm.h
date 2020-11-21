@@ -29,6 +29,8 @@
 
 #include "py/obj.h"
 
+#include "common-hal/alarm/time/DurationAlarm.h"
+
 extern const mp_obj_type_t alarm_time_duration_alarm_type;
 
 extern void common_hal_alarm_time_duration_alarm_construct(alarm_time_duration_alarm_obj_t *self, mp_float_t duration);

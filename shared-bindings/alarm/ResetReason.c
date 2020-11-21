@@ -24,17 +24,24 @@
  * THE SOFTWARE.
  */
 
+#include "py/obj.h"
 #include "py/enum.h"
 
 #include "shared-bindings/alarm/ResetReason.h"
 
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, POWER_VALID, RESET_REASON_POWER_ON);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, INVALID, RESET_REASON_INVALID);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, POWER_ON, RESET_REASON_POWER_ON);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, BROWNOUT, RESET_REASON_BROWNOUT);
 MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, SOFTWARE, RESET_REASON_SOFTWARE);
 MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, DEEP_SLEEP_ALARM, RESET_REASON_DEEP_SLEEP_ALARM);
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, EXTERNAL, RESET_REASON_EXTERNAL);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, RESET_PIN, RESET_REASON_RESET_PIN);
+MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, WATCHDOG, RESET_REASON_WATCHDOG);
 
 //| class ResetReason:
 //|     """The reason the chip was last reset"""
+//|
+//|     INVALID: object
+//|     """Invalid reason: indicates an internal error."""
 //|
 //|     POWER_ON: object
 //|     """The chip was started from power off."""
@@ -55,6 +62,7 @@ MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, EXTERNAL, RESET_REASON_EX
 //|     """The chip was reset by its watchdog timer."""
 //|
 MAKE_ENUM_MAP(alarm_reset_reason) {
+    MAKE_ENUM_MAP_ENTRY(reset_reason, INVALID),
     MAKE_ENUM_MAP_ENTRY(reset_reason, POWER_ON),
     MAKE_ENUM_MAP_ENTRY(reset_reason, BROWNOUT),
     MAKE_ENUM_MAP_ENTRY(reset_reason, SOFTWARE),

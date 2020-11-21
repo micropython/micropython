@@ -27,7 +27,11 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
 
+#include "py/obj.h"
+#include "py/enum.h"
+
 typedef enum {
+    RESET_REASON_INVALID,
     RESET_REASON_POWER_ON,
     RESET_REASON_BROWNOUT,
     RESET_REASON_SOFTWARE,
@@ -36,8 +40,8 @@ typedef enum {
     RESET_REASON_WATCHDOG,
 } alarm_reset_reason_t;
 
-extern const mp_obj_type_t alarm_reset_reason_type;
+extern const cp_enum_obj_t reset_reason_INVALID_obj;
 
-extern alarm_reset_reason_t common_hal_alarm_get_reset_reason(void);
+extern const mp_obj_type_t alarm_reset_reason_type;
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H

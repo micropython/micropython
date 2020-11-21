@@ -27,6 +27,8 @@
 
 #include "esp_sleep.h"
 
+#include "py/runtime.h"
+
 #include "shared-bindings/alarm/time/DurationAlarm.h"
 
 void common_hal_alarm_time_duration_alarm_construct(alarm_time_duration_alarm_obj_t *self, mp_float_t duration) {
@@ -36,7 +38,8 @@ void common_hal_alarm_time_duration_alarm_construct(alarm_time_duration_alarm_ob
 mp_float_t common_hal_alarm_time_duration_alarm_get_duration(alarm_time_duration_alarm_obj_t *self) {
     return self->duration;
 }
-void common_hal_alarm_time_duration_alarm_enable(alarm_time_duration_alarm_obj_t *self)
+
+void common_hal_alarm_time_duration_alarm_enable(alarm_time_duration_alarm_obj_t *self) {
     if (esp_sleep_enable_timer_wakeup((uint64_t) (self->duration * 1000000)) == ESP_ERR_INVALID_ARG) {
         mp_raise_ValueError(translate("duration out of range"));
     }

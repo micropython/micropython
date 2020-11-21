@@ -359,8 +359,6 @@ SRC_COMMON_HAL_ALL = \
 	rtc/__init__.c \
 	sdioio/SDCard.c \
 	sdioio/__init__.c \
-	sleepio/__init__.c \
-	sleepio/ResetReason.c \
 	socketpool/__init__.c \
 	socketpool/SocketPool.c \
 	socketpool/Socket.c \
@@ -395,9 +393,10 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Address.c \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
-	canio/Match.c \
 	_eve/__init__.c \
+	alarm/ResetReason.c \
 	camera/ImageFormat.c \
+	canio/Match.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -414,9 +413,6 @@ SRC_SHARED_MODULE_ALL = \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_bleio/ScanResults.c \
-	canio/Match.c \
-	canio/Message.c \
-	canio/RemoteTransmissionRequest.c \
 	_eve/__init__.c \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
@@ -441,6 +437,9 @@ SRC_SHARED_MODULE_ALL = \
 	bitbangio/__init__.c \
 	board/__init__.c \
 	busio/OneWire.c \
+	canio/Match.c \
+	canio/Message.c \
+	canio/RemoteTransmissionRequest.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \

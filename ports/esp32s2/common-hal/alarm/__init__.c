@@ -26,8 +26,8 @@
  */
 
 #include "shared-bindings/alarm/__init__.h"
-#include "shared-bindings/alarm_io/__init__.h"
-#include "shared-bindings/alarm_time/__init__.h"
+#include "shared-bindings/alarm/pin/PinAlarm.h"
+#include "shared-bindings/alarm/time/DurationAlarm.h"
 
 #include "esp_sleep.h"
 
@@ -35,41 +35,47 @@ void common_hal_alarm_disable_all(void) {
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
-mp_obj_t common_hal_alarm_get_reset_reason(void) {
+alarm_reset_reason_t common_hal_alarm_get_reset_reason(void) {
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_TIMER:
             return RESET_REASON_DEEP_SLEEP_ALARM;
+
         case ESP_SLEEP_WAKEUP_EXT0:
             return RESET_REASON_DEEP_SLEEP_ALARM;
+
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
             //TODO: implement TouchIO
         case ESP_SLEEP_WAKEUP_UNDEFINED:
         default:
-            return mp_const_none;
-            break;
+            return RESET_REASON_INVALID;
     }
 }
 
 
 mp_obj_t common_hal_alarm_get_wake_alarm(void) {
     switch (esp_sleep_get_wakeup_cause()) {
-        case ESP_SLEEP_WAKEUP_TIMER: ;
-            //Wake up from timer.
-            alarm_time_obj_t *timer = m_new_obj(alarm_time_obj_t);
-            timer->base.type = &alarm_time_type;
+        case ESP_SLEEP_WAKEUP_TIMER: {
+            // Wake up from timer.
+            alarm_time_duration_alarm_obj_t *timer = m_new_obj(alarm_time_duration_alarm_obj_t);
+            timer->base.type = &alarm_time_duration_alarm_type;
             return timer;
-        case ESP_SLEEP_WAKEUP_EXT0: ;
-            //Wake up from GPIO
-            alarm_io_obj_t *ext0 = m_new_obj(alarm_io_obj_t);
-            ext0->base.type = &alarm_io_type;
+        }
+
+        case ESP_SLEEP_WAKEUP_EXT0: {
+            // Wake up from GPIO
+            alarm_pin_pin_alarm_obj_t *ext0 = m_new_obj(alarm_pin_pin_alarm_obj_t);
+            ext0->base.type = &alarm_pin_pin_alarm_type;
             return ext0;
+        }
+
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
-            //TODO: implement TouchIO
-            //Wake up from touch on pad, esp_sleep_get_touchpad_wakeup_status()
+            // TODO: implement TouchIO
+            // Wake up from touch on pad, esp_sleep_get_touchpad_wakeup_status()
             break;
+
         case ESP_SLEEP_WAKEUP_UNDEFINED:
         default:
-            //Not a deep sleep reset
+            // Not a deep sleep reset.
             break;
     }
     return mp_const_none;

@@ -27,6 +27,7 @@
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/alarm/pin/PinAlarm.h"
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -58,8 +59,7 @@
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t alarm_pin_pin_alarm_make_new(const mp_obj_type_t *type,
-        mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t alarm_pin_pin_alarm_make_new(const mp_obj_type_t *type, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     alarm_pin_pin_alarm_obj_t *self = m_new_obj(alarm_pin_pin_alarm_obj_t);
     self->base.type = &alarm_pin_pin_alarm_type;
     enum { ARG_pin, ARG_level, ARG_edge, ARG_pull };
@@ -74,7 +74,7 @@ STATIC mp_obj_t alarm_pin_pin_alarm_make_new(const mp_obj_type_t *type,
 
     const mcu_pin_obj_t* pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 
-    common_hal_alarm_pin_pin_pin_alarm_construct(
+    common_hal_alarm_pin_pin_alarm_construct(
         self, pin, args[ARG_level].u_bool, args[ARG_edge].u_bool, args[ARG_pull].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
@@ -110,11 +110,12 @@ STATIC mp_obj_t alarm_pin_pin_alarm_binary_op(mp_binary_op_t op, mp_obj_t lhs_in
 STATIC const mp_rom_map_elem_t alarm_pin_pin_alarm_locals_dict_table[] = {
 };
 
-STATIC MP_DEFINE_CONST_DICT(alarm_pin_pin_alarm_locals, alarm_pin_pin_alarm_locals_dict);
+STATIC MP_DEFINE_CONST_DICT(alarm_pin_pin_alarm_locals_dict, alarm_pin_pin_alarm_locals_dict_table);
 
 const mp_obj_type_t alarm_pin_pin_alarm_type = {
     { &mp_type_type },
     .name = MP_QSTR_PinAlarm,
     .make_new = alarm_pin_pin_alarm_make_new,
-    .locals_dict = (mp_obj_t)&alarm_pin_pin_alarm_locals,
+    .binary_op = alarm_pin_pin_alarm_binary_op,
+    .locals_dict = (mp_obj_t)&alarm_pin_pin_alarm_locals_dict,
 };

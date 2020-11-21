@@ -30,6 +30,7 @@
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #if CIRCUITPY_ALARM
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/ResetReason.h"
 #endif
 

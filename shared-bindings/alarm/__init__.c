@@ -34,6 +34,11 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include "shared-bindings/alarm/__init__.h"
+#include "shared-bindings/alarm/ResetReason.h"
+#include "shared-bindings/alarm/pin/PinAlarm.h"
+#include "shared-bindings/alarm/time/DurationAlarm.h"
+
 STATIC mp_obj_t alarm_sleep_until_alarm(size_t n_args, const mp_obj_t *args) {
     // TODO
     return mp_const_none;
@@ -56,47 +61,47 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_restart_on_alarm_obj, 1, MP_OBJ_FUN_AR
 //| """The `alarm.pin` module contains alarm attributes and classes related to pins
 //| """
 //|
-mp_map_elem_t alarm_pin_globals_table[] = {
+STATIC const mp_map_elem_t alarm_pin_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pin) },
 
-    { MP_ROM_QSTR(MP_QSTR_PinAlarm), MP_ROM_PTR(&alarm_pin_pin_alarm_type) },
+    { MP_ROM_QSTR(MP_QSTR_PinAlarm), MP_OBJ_FROM_PTR(&alarm_pin_pin_alarm_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(alarm_pin_globals, alarm_pin_globals_table);
 
-const mp_obj_module_t alarm_pin_module = {
+STATIC const mp_obj_module_t alarm_pin_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&alarm_pinn_globals,
+    .globals = (mp_obj_dict_t*)&alarm_pin_globals,
 };
 
 //| """The `alarm.time` module contains alarm attributes and classes related to time-keeping.
 //| """
 //|
-mp_map_elem_t alarm_time_globals_table[] = {
+STATIC const mp_map_elem_t alarm_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
-    { MP_ROM_QSTR(MP_QSTR_DurationAlarm), MP_ROM_PTR(&alarm_time_duration_alarm_type) },
+    { MP_ROM_QSTR(MP_QSTR_DurationAlarm), MP_OBJ_FROM_PTR(&alarm_time_duration_alarm_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(alarm_time_globals, alarm_time_globals_table);
 
-const mp_obj_module_t alarm_time_module = {
+STATIC const mp_obj_module_t alarm_time_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&alarm_time_globals,
 };
 
-mp_map_elem_t alarm_module_globals_table[] = {
+STATIC mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_alarm) },
 
     // wake_alarm and reset_reason are mutable attributes.
     { MP_ROM_QSTR(MP_QSTR_wake_alarm), mp_const_none },
-    { MP_ROM_QSTR(MP_QSTR_reset_reason), mp_const_none },
+    { MP_ROM_QSTR(MP_QSTR_reset_reason), MP_OBJ_FROM_PTR(&reset_reason_INVALID_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_sleep_until_alarm), MP_ROM_PTR(&alarm_sleep_until_alarm_obj) },
-    { MP_ROM_QSTR(MP_QSTR_restart_on_alarm), MP_ROM_PTR(&alarm_restart_on_alarm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_until_alarm), MP_OBJ_FROM_PTR(&alarm_sleep_until_alarm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_restart_on_alarm), MP_OBJ_FROM_PTR(&alarm_restart_on_alarm_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_pin), MP_ROM_PTR(&alarm_pin_module) },
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&alarm_time_module) }
+    { MP_ROM_QSTR(MP_QSTR_pin), MP_OBJ_FROM_PTR(&alarm_pin_module) },
+    { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) }
 
 };
 STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
@@ -105,19 +110,9 @@ void common_hal_alarm_set_wake_alarm(mp_obj_t alarm) {
     // Equivalent of:
     // alarm.wake_alarm = alarm
     mp_map_elem_t *elem =
-        mp_map_lookup(&alarm_module_globals_table, MP_ROM_QSTR(MP_QSTR_wake_alarm), MP_MAP_LOOKUP);
+        mp_map_lookup(&alarm_module_globals.map, MP_ROM_QSTR(MP_QSTR_wake_alarm), MP_MAP_LOOKUP);
     if (elem) {
         elem->value = alarm;
-    }
-}
-
-alarm_reset_reason_t common_hal_alarm_get_reset_reason(void) {
-    mp_map_elem_t *elem =
-        mp_map_lookup(&alarm_module_globals_table, MP_ROM_QSTR(MP_QSTR_reset_reason), MP_MAP_LOOKUP);
-    if (elem) {
-        return elem->value;
-    } else {
-        return mp_const_none;
     }
 }
 
@@ -125,7 +120,7 @@ void common_hal_alarm_set_reset_reason(mp_obj_t reset_reason) {
     // Equivalent of:
     // alarm.reset_reason = reset_reason
     mp_map_elem_t *elem =
-        mp_map_lookup(&alarm_module_globals_table, MP_ROM_QSTR(MP_QSTR_reset_reason), MP_MAP_LOOKUP);
+        mp_map_lookup(&alarm_module_globals.map, MP_ROM_QSTR(MP_QSTR_reset_reason), MP_MAP_LOOKUP);
     if (elem) {
         elem->value = reset_reason;
     }

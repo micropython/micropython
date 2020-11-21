@@ -26,7 +26,7 @@
 
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
-#include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/alarm/time/DurationAlarm.h"
 
 #include "py/nlr.h"
 #include "py/obj.h"
@@ -49,8 +49,8 @@ STATIC mp_obj_t alarm_time_duration_alarm_make_new(const mp_obj_type_t *type,
         mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
-    alarm_pin_duration_alarm_obj_t *self = m_new_obj(alarm_pin_duration_alarm_obj_t);
-    self->base.type = &alarm_pin_pin_alarm_type;
+    alarm_time_duration_alarm_obj_t *self = m_new_obj(alarm_time_duration_alarm_obj_t);
+    self->base.type = &alarm_time_duration_alarm_type;
 
     mp_float_t secs = mp_obj_get_float(args[0]);
 
@@ -60,7 +60,7 @@ STATIC mp_obj_t alarm_time_duration_alarm_make_new(const mp_obj_type_t *type,
 }
 
 //|     def __eq__(self, other: object) -> bool:
-//|         """Two DurationAlarm objects are equal if their durations are the same."""
+//|         """Two DurationAlarm objects are equal if their durations differ by less than a millisecond."""
 //|         ...
 //|
 STATIC mp_obj_t alarm_time_duration_alarm_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
@@ -68,8 +68,8 @@ STATIC mp_obj_t alarm_time_duration_alarm_binary_op(mp_binary_op_t op, mp_obj_t 
         case MP_BINARY_OP_EQUAL:
             if (MP_OBJ_IS_TYPE(rhs_in, &alarm_time_duration_alarm_type)) {
                 return mp_obj_new_bool(
-                    common_hal_alarm_time_duration_alarm_get_duration(lhs_in) ==
-                    common_hal_alarm_time_duration_alarm_get_duration(rhs_in));
+                    abs(common_hal_alarm_time_duration_alarm_get_duration(lhs_in) -
+                        common_hal_alarm_time_duration_alarm_get_duration(rhs_in)) < 0.001f);
             }
             return mp_const_false;
 
@@ -87,5 +87,6 @@ const mp_obj_type_t alarm_time_duration_alarm_type = {
     { &mp_type_type },
     .name = MP_QSTR_DurationAlarm,
     .make_new = alarm_time_duration_alarm_make_new,
-    .locals_dict = (mp_obj_t)&alarm_time_duration_alarm_locals,
+    .binary_op = alarm_time_duration_alarm_binary_op,
+    .locals_dict = (mp_obj_t)&alarm_time_duration_alarm_locals_dict,
 };
