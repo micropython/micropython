@@ -1,0 +1,48 @@
+name: Build Javascript port
+env:
+  EM_VERSION: 2.0.4
+  EM_CACHE_FOLDER: 'emsdk-cache'
+on:
+  push:
+    branches: [ lvgl_javascript ]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Setup cache
+        id: cache-system-libraries
+        uses: actions/cache@v2
+        with:
+          path: ${{env.EM_CACHE_FOLDER}}
+          key: ${{env.EM_VERSION}}-${{ runner.os }}
+      - uses: mymindstorm/setup-emsdk@v7
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+      - name: Update submodules
+        run: git submodule update --init --recursive  
+      - name: Build mpy-cross
+        run: make -j $(nproc) -C mpy-cross
+      - name: Build the javascript port
+        run: make -j $(nproc) -C ports/javascript
+      - name: Install node modules
+        run: npm install
+        working-directory: ports/javascript
+      - name: Build workers
+        run: npm run clean
+        working-directory: ports/javascript
+      - name: Build frontend
+        run: npm run bundle
+        working-directory: ports/javascript
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@3.7.1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_MESSAGE: ${{ env.GITHUB_SHA }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: ports/javascript # The folder the action should deploy.
+          CLEAN: true # Automatically remove deleted files from the deploy branch
