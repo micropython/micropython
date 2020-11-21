@@ -25,6 +25,8 @@ jobs:
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+      - name: Build SDL2
+        run: embuilder build sdl2
       - name: Update submodules
         run: git submodule update --init --recursive  
       - name: Build mpy-cross
