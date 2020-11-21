@@ -7,6 +7,7 @@ TEXT1_ADDR = 0x08020000
 
 # MicroPython settings
 MICROPY_PY_LWIP = 1
-MICROPY_PY_USSL = 1
-MICROPY_SSL_MBEDTLS = 1
+# Disabled by embeddedt to save
+#MICROPY_PY_USSL = 1
+#MICROPY_SSL_MBEDTLS = 1
 MICROPY_PY_LVGL = 1
