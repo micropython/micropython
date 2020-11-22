@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/wifi/Radio.h"
+#include "shared-bindings/wifi/Network.h"
 
 #include <string.h>
 
@@ -38,6 +39,8 @@
 #include "components/esp_wifi/include/esp_wifi.h"
 #include "components/lwip/include/apps/ping/ping_sock.h"
 
+#define MAC_ADDRESS_LENGTH 6
+
 static void start_station(wifi_radio_obj_t *self) {
     if (self->sta_mode) {
         return;
@@ -49,6 +52,8 @@ static void start_station(wifi_radio_obj_t *self) {
         next_mode = WIFI_MODE_STA;
     }
     esp_wifi_set_mode(next_mode);
+
+    self->sta_mode = 1;
 
     esp_wifi_set_config(WIFI_MODE_STA, &self->sta_config);
 }
@@ -67,13 +72,13 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         return;
     }
     if (!self->started && enabled) {
+	// esp_wifi_start() would default to soft-AP, thus setting it to station
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
         ESP_ERROR_CHECK(esp_wifi_start());
         self->started = true;
         return;
     }
 }
-
-#define MAC_ADDRESS_LENGTH 6
 
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
     uint8_t mac[MAC_ADDRESS_LENGTH];
@@ -162,13 +167,66 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     return WIFI_RADIO_ERROR_NONE;
 }
 
+mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+
+    // Make sure the interface is in STA mode
+    if (!self->sta_mode){
+        return mp_const_none;
+    }
+
+    wifi_network_obj_t *ap_info = m_new_obj(wifi_network_obj_t);
+    ap_info->base.type = &wifi_network_type;
+    // From esp_wifi.h, the possible return values (typos theirs):
+    //    ESP_OK: succeed
+    //    ESP_ERR_WIFI_CONN: The station interface don't initialized
+    //    ESP_ERR_WIFI_NOT_CONNECT: The station is in disconnect status
+    if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK){
+        return mp_const_none;
+    } else {
+        memcpy(&ap_info->record, &self->ap_info.record, sizeof(wifi_ap_record_t));
+        return MP_OBJ_FROM_PTR(ap_info);
+    }
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.gw.addr);
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.netmask.addr);
+}
+
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
     if (!esp_netif_is_netif_up(self->netif)) {
         return mp_const_none;
     }
-    esp_netif_ip_info_t ip_info;
-    esp_netif_get_ip_info(self->netif, &ip_info);
-    return common_hal_ipaddress_new_ipv4address(ip_info.ip.addr);
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return common_hal_ipaddress_new_ipv4address(self->ip_info.ip.addr);
+}
+
+mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return mp_const_none;
+    }
+
+    esp_netif_get_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &self->dns_info);
+
+    // dns_info is of type esp_netif_dns_info_t, which is just ever so slightly
+    // different than esp_netif_ip_info_t used for
+    // common_hal_wifi_radio_get_ipv4_address (includes both ipv4 and 6),
+    // so some extra jumping is required to get to the actual address
+    return common_hal_ipaddress_new_ipv4address(self->dns_info.ip.u_addr.ip4.addr);
 }
 
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {

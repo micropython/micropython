@@ -14,7 +14,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - name: Dump GitHub context
       env:
@@ -37,7 +37,7 @@ jobs:
       run: |
         sudo apt-get install -y eatmydata
         sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
-        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort black awscli
+        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort black awscli mypy
     - name: Versions
       run: |
         gcc --version
@@ -67,8 +67,8 @@ jobs:
     - name: mpy Tests
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
       working-directory: tests
-    - name: Stubs
-      run: make stubs -j2
+    - name: Build and Validate Stubs
+      run: make check-stubs -j2
     - uses: actions/upload-artifact@v2
       with:
         name: stubs
@@ -111,12 +111,15 @@ jobs:
       with:
         name: mpy-cross.static-x64-windows
         path: mpy-cross/mpy-cross.static.exe
-    - name: Upload mpy-cross builds to S3
+    - name: Upload stubs and mpy-cross builds to S3
       run: |
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-amd64-linux-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
+        zip -9r circuitpython-stubs.zip circuitpython-stubs
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp circuitpython-stubs.zip s3://adafruit-circuit-python/bin/stubs/circuitpython-stubs-${{ env.CP_VERSION }}.zip --no-progress --region us-east-1
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
@@ -157,19 +160,21 @@ jobs:
       run: |
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-catalina-${{ env.CP_VERSION }} --no-progress --region us-east-1
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
 
   build-arm:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
       matrix:
         board:
         - "8086_commander"
+        - "ADM_B_NRF52840_1"
         - "TG-Watch02A"
         - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
@@ -360,12 +365,13 @@ jobs:
     - name: Upload to S3
       run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
   build-riscv:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
@@ -408,16 +414,18 @@ jobs:
     - name: Upload to S3
       run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
   build-xtensa:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
       matrix:
         board:
+        - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
@@ -425,6 +433,8 @@ jobs:
         - "espressif_saola_1_wrover"
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
+        - "targett_module_clip_wroom"
+        - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
         - "unexpectedmaker_feathers2_prerelease"
 
@@ -499,6 +509,7 @@ jobs:
     - name: Upload to S3
       run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))

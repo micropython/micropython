@@ -326,7 +326,7 @@ static void setup_dma(audiobusio_pdmin_obj_t* self, uint32_t length,
 // higher sample rate than specified.  Then after the audio is
 // recorded, a more expensive filter non-real-time filter could be
 // used to down-sample and low-pass.
-uint16_t sinc_filter [OVERSAMPLING] = {
+const uint16_t sinc_filter [OVERSAMPLING] = {
     0, 2, 9, 21, 39, 63, 94, 132,
     179, 236, 302, 379, 467, 565, 674, 792,
     920, 1055, 1196, 1341, 1487, 1633, 1776, 1913,

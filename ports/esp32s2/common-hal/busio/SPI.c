@@ -357,6 +357,9 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     } else {
         hal->dma_enabled = 0;
         burst_length = sizeof(hal->hw->data_buf);
+        // When switching to non-DMA, we need to make sure DMA is off. Otherwise,
+        // the S2 will transmit zeroes instead of our data.
+        spi_ll_txdma_disable(hal->hw);
     }
 
     // This rounds up.

@@ -186,7 +186,7 @@ typedef long mp_off_t;
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_FULL_BUILD)
 #define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
-#define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
+#define MICROPY_MODULE_WEAK_LINKS             (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_COMPLEX           (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_FROZENSET         (CIRCUITPY_FULL_BUILD)
@@ -196,6 +196,9 @@ typedef long mp_off_t;
 #define MICROPY_PY_UERRNO                     (CIRCUITPY_FULL_BUILD)
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT    (CIRCUITPY_FULL_BUILD)
+#endif
+#ifndef MICROPY_PY_UBINASCII
+#define MICROPY_PY_UBINASCII                  (CIRCUITPY_FULL_BUILD)
 #endif
 // Opposite setting is deliberate.
 #define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
@@ -699,6 +702,12 @@ extern const struct _mp_obj_module_t ustack_module;
 #endif
 
 // These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
+#if MICROPY_PY_UBINASCII
+#define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
+#else
+#define BINASCII_MODULE
+#endif
+
 #if MICROPY_PY_UERRNO
 #define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
 #else
@@ -770,6 +779,7 @@ extern const struct _mp_obj_module_t wifi_module;
     AUDIOMIXER_MODULE \
     AUDIOMP3_MODULE \
     AUDIOPWMIO_MODULE \
+    BINASCII_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \

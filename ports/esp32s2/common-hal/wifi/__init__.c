@@ -88,17 +88,27 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     }
 }
 
-static bool wifi_inited;
+static bool wifi_inited, wifi_ever_inited;
 
 void common_hal_wifi_init(void) {
     wifi_inited = true;
     common_hal_wifi_radio_obj.base.type = &wifi_radio_type;
 
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    if (!wifi_ever_inited) {
+        ESP_ERROR_CHECK(esp_netif_init());
+        ESP_ERROR_CHECK(esp_event_loop_create_default());
+    }
+    wifi_ever_inited = true;
 
     wifi_radio_obj_t* self = &common_hal_wifi_radio_obj;
     self->netif = esp_netif_create_default_wifi_sta();
+
+    // Even though we just called esp_netif_create_default_wifi_sta,
+    //   station mode isn't actually ready for use until esp_wifi_set_mode()
+    //   is called and the configuration is loaded via esp_wifi_set_config().
+    // Set both convienence flags to false so it's not forgotten.
+    self->sta_mode = 0;
+    self->ap_mode = 0;
 
     self->event_group_handle = xEventGroupCreateStatic(&self->event_group);
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
@@ -137,7 +147,6 @@ void wifi_reset(void) {
     ESP_ERROR_CHECK(esp_wifi_deinit());
     esp_netif_destroy(radio->netif);
     radio->netif = NULL;
-    ESP_ERROR_CHECK(esp_netif_deinit());
 }
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t* esp_ip_address) {

@@ -98,8 +98,12 @@ void reset_to_bootloader(void) {
     }
 }
 
+supervisor_allocation _fixed_stack;
+
 supervisor_allocation* port_fixed_stack(void) {
-    return NULL;
+    _fixed_stack.ptr = port_stack_get_limit();
+    _fixed_stack.length = (port_stack_get_top() - port_stack_get_limit()) * sizeof(uint32_t);
+    return &_fixed_stack;
 }
 
 uint32_t *port_stack_get_limit(void) {

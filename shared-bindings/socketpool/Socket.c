@@ -161,7 +161,7 @@ STATIC mp_obj_t socketpool_socket_close(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_close_obj, socketpool_socket_close);
 
-//|     def connect(self, address: tuple) -> None:
+//|     def connect(self, address: Tuple[str, int]) -> None:
 //|         """Connect a socket to a remote address
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
@@ -257,6 +257,9 @@ STATIC mp_obj_t socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args)
     mp_int_t len = bufinfo.len;
     if (n_args == 3) {
         mp_int_t given_len = mp_obj_get_int(args[2]);
+        if (given_len > len) {
+            mp_raise_ValueError(translate("buffer too small for requested bytes"));
+        }
         if (given_len > 0 && given_len < len) {
             len = given_len;
         }
