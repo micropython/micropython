@@ -618,6 +618,7 @@ Add ISR handler for specified unit.
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_isr_handler_add(mp_obj_t self_obj, mp_obj_t isr_handler_obj, mp_obj_t _args_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     void *isr_handler = MP_OBJ_TO_PTR(isr_handler_obj);
@@ -631,6 +632,7 @@ STATIC mp_obj_t pcnt_PCNT_isr_handler_add(mp_obj_t self_obj, mp_obj_t isr_handle
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pcnt_PCNT_isr_handler_add_obj, pcnt_PCNT_isr_handler_add);
+*/
 
 // def PCNT.isr_handler_remove(self)
 /*
@@ -641,6 +643,7 @@ Delete ISR handler for specified unit.
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_isr_handler_remove(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
@@ -652,6 +655,7 @@ STATIC mp_obj_t pcnt_PCNT_isr_handler_remove(mp_obj_t self_obj) {
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_isr_handler_remove_obj, pcnt_PCNT_isr_handler_remove);
+*/
 
 // def PCNT.isr_register(self, fn: int, arg: int, intr_alloc_flags: int, handle: int)
 /*
