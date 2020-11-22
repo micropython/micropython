@@ -46,6 +46,8 @@ void peripherals_timer_reset(void) {
 }
 
 void peripherals_timer_init(const timer_config_t * config, timer_index_t * timer) {
+    bool break_loop = false;
+
     // get free timer
     for (uint8_t i = 0; i < 2; i++) {
         for (uint8_t j = 0; j < 2; j++) {
@@ -53,16 +55,17 @@ void peripherals_timer_init(const timer_config_t * config, timer_index_t * timer
                 timer->idx = (timer_idx_t)j;
                 timer->group = (timer_group_t)i;
                 timer_state[i][j] = TIMER_BUSY;
-                goto init_timer;
+                break_loop = true;
+                break;
             } else if (i == 1 && j == 1) {
                 timer->idx = TIMER_MAX;
                 timer->group = TIMER_GROUP_MAX;
                 return;
             }
         }
+        if (break_loop) {break;}
     }
 
-init_timer:
     // initialize timer module
     timer_init(timer->group, timer->idx, config);
     timer_set_counter_value(timer->group, timer->idx, 0);
