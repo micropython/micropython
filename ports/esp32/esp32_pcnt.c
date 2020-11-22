@@ -37,6 +37,15 @@ See also
 https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/pulse_count_event
 */
 
+/*
+ESP32 Quadrature Counter based on Pulse Counter(PCNT)
+Based on 
+https://github.com/madhephaestus/ESP32Encoder
+https://github.com/bboser/MicroPython_ESP32_psRAM_LoBo/blob/quad_decoder/MicroPython_BUILD/components/micropython/esp32/machine_dec.c
+See also
+https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotary_encoder
+*/
+
 #define MODULE_PCNT_ENABLED (1) // you may relocate this line to the mpconfigport.h
 #if MODULE_PCNT_ENABLED
 
@@ -115,29 +124,29 @@ STATIC const mp_obj_type_t pcnt_PinPull_type = {
 };
 
 // ====================================================================================
-// class EncoderType(object):
+// class ClockMultiplier(object):
 // enumaration
-typedef struct _mp_obj_EncoderType_t {
+typedef struct _mp_obj_ClockMultiplier_t {
     mp_obj_base_t base;
-} mp_obj_EncoderType_t;
+} mp_obj_ClockMultiplier_t;
 
-// EncoderType constants
-// EncoderType stuff
-STATIC const mp_rom_map_elem_t quad_EncoderType_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_FULL), MP_ROM_INT(FULL) },
-    { MP_ROM_QSTR(MP_QSTR_HALF), MP_ROM_INT(HALF) },
-    { MP_ROM_QSTR(MP_QSTR_SINGLE), MP_ROM_INT(SINGLE) },
+// ClockMultiplier constants
+// ClockMultiplier stuff
+STATIC const mp_rom_map_elem_t quad_ClockMultiplier_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_X4), MP_ROM_INT(X4) },
+    { MP_ROM_QSTR(MP_QSTR_X2), MP_ROM_INT(X2) },
+    { MP_ROM_QSTR(MP_QSTR_X1), MP_ROM_INT(X1) },
 };
-STATIC MP_DEFINE_CONST_DICT(quad_EncoderType_locals_dict, quad_EncoderType_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(quad_ClockMultiplier_locals_dict, quad_ClockMultiplier_locals_dict_table);
 
-STATIC const mp_obj_type_t quad_EncoderType_type = {
+STATIC const mp_obj_type_t quad_ClockMultiplier_type = {
     { &mp_type_type },
-    .name = MP_QSTR_EncoderType,
-    .locals_dict = (void *)&quad_EncoderType_locals_dict,
+    .name = MP_QSTR_ClockMultiplier,
+    .locals_dict = (void *)&quad_ClockMultiplier_locals_dict,
 };
 
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
-static pcnt_PCNT_obj_t *pcnts[PCNT_UNIT_MAX] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+static pcnt_PCNT_obj_t *pcnts[PCNT_UNIT_MAX] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 // ***********************************
 /* Decode what PCNT's unit originated an interrupt
@@ -183,7 +192,7 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
         }
     }
     if (index == PCNT_UNIT_MAX) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Too many encoders, FAIL!"));
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Too many counters, FAIL!"));
         return;
     }
 
@@ -294,7 +303,7 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 STATIC const mp_obj_type_t esp32_pcnt_type;
 
 // Defining PCNT methods
-// def PCNT.__init__(aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED, pin_pull_type: PinPull=DOWN)
+// def PCNT.__init__(edge:int, pulsePinNumber: int, dirPinNumber: int=PCNT_PIN_NOT_USED, pin_pull_type: PinPull=DOWN)
 STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
@@ -1044,9 +1053,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_resume_obj, pcnt_PCNT_resume);
 // PCNT stuff
 // Register class methods
 STATIC const mp_rom_map_elem_t pcnt_PCNT_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_unit_config), MP_ROM_PTR(&pcnt_PCNT_unit_config_obj) },
+    //{ MP_ROM_QSTR(MP_QSTR_unit_config), MP_ROM_PTR(&pcnt_PCNT_unit_config_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&pcnt_PCNT_del_obj) },
-
+    /*
     { MP_ROM_QSTR(MP_QSTR_intr_disable), MP_ROM_PTR(&pcnt_PCNT_intr_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_intr_enable), MP_ROM_PTR(&pcnt_PCNT_intr_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_isr_handler_add), MP_ROM_PTR(&pcnt_PCNT_isr_handler_add_obj) },
@@ -1058,12 +1067,13 @@ STATIC const mp_rom_map_elem_t pcnt_PCNT_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_set_mode), MP_ROM_PTR(&pcnt_PCNT_set_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_pin), MP_ROM_PTR(&pcnt_PCNT_set_pin_obj) },
-
+    */
+    /*
     { MP_ROM_QSTR(MP_QSTR_event_disable), MP_ROM_PTR(&pcnt_PCNT_event_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_event_enable), MP_ROM_PTR(&pcnt_PCNT_event_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_event_value), MP_ROM_PTR(&pcnt_PCNT_get_event_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_event_value), MP_ROM_PTR(&pcnt_PCNT_set_event_value_obj) },
-
+    */
     { MP_ROM_QSTR(MP_QSTR_filter_disable), MP_ROM_PTR(&pcnt_PCNT_filter_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_filter_enable), MP_ROM_PTR(&pcnt_PCNT_filter_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_filter_value), MP_ROM_PTR(&pcnt_PCNT_get_filter_value_obj) },
@@ -1099,7 +1109,7 @@ STATIC const mp_obj_type_t esp32_pcnt_type = {
 STATIC const mp_obj_type_t esp32_quad_type;
 
 // -------------------------------------------------------------------------------------------------------------
-static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum encType et) {
+static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum clockMultiplier cm) {
     if (self->attached) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Already attached, FAIL!"));
         return;
@@ -1112,7 +1122,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
         }
     }
     if (index == PCNT_UNIT_MAX) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Too many encoders, FAIL!"));
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Too many counters, FAIL!"));
         return;
     }
 
@@ -1140,7 +1150,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     self->r_enc_config.unit = self->unit;
     self->r_enc_config.channel = PCNT_CHANNEL_0;
 
-    self->r_enc_config.pos_mode = (et != SINGLE) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // Count Only On Rising-Edges
+    self->r_enc_config.pos_mode = (cm != X1) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // Count Only On Rising-Edges
     self->r_enc_config.neg_mode = PCNT_COUNT_INC;   // Discard Falling-Edge
 
     self->r_enc_config.lctrl_mode = PCNT_MODE_KEEP;    // Rising A on HIGH B = CW Step
@@ -1159,7 +1169,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     self->r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
     self->r_enc_config.pulse_gpio_num = self->bPinNumber; //make prior control into signal
     self->r_enc_config.ctrl_gpio_num = self->aPinNumber;  //and prior signal into control
-    if (et == FULL) { // set up second channel for full quad
+    if (cm == X4) { // set up second channel for full quad
         //self->r_enc_config.pulse_gpio_num = self->bPinNumber; //make prior control into signal
         //self->r_enc_config.ctrl_gpio_num = self->aPinNumber;  //and prior signal into control
 
@@ -1194,7 +1204,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     if (err != ESP_OK)
         mp_raise_EspError(err);
 */
-    if (et == FULL) {
+    if (cm == X4) {
         // set up second channel for full quad
         self->r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
         self->r_enc_config.ctrl_gpio_num = self->aPinNumber;    // and prior signal into control
@@ -1288,11 +1298,11 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 
 // -------------------------------------------------------------------------------------------------------------
 // Defining QUAD methods
-// def QUAD.__init__(encoder_type: EncoderType, aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED, pin_pull_type: PinPull=DOWN)
+// def QUAD.__init__(clock_multiplier: ClockMultiplier, aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED, pin_pull_type: PinPull=DOWN)
 STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
-    int encoder_type = mp_obj_get_int(args[0]);
+    int clock_multiplier = mp_obj_get_int(args[0]);
     gpio_num_t pin_a = machine_pin_get_gpio(args[1]);
     gpio_num_t pin_b = PCNT_PIN_NOT_USED;
     if (n_args + n_kw >= 3) {
@@ -1316,7 +1326,7 @@ STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, si
     }
     self->unit = (pcnt_unit_t)-1;
 
-    attach_quad(self, pin_a, pin_b, encoder_type);
+    attach_quad(self, pin_a, pin_b, clock_multiplier);
 
     // not sure what this is for or if it's needed
     // mp_map_t kw_args;
@@ -1360,6 +1370,7 @@ STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PCNT_CHANNEL_1), MP_ROM_INT(PCNT_CHANNEL_1) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_CHANNEL_MAX), MP_ROM_INT(PCNT_CHANNEL_MAX) },
     */
+    /*
     { MP_ROM_QSTR(MP_QSTR_PCNT_COUNT_DEC), MP_ROM_INT(PCNT_COUNT_DEC) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_COUNT_DIS), MP_ROM_INT(PCNT_COUNT_DIS) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_COUNT_INC), MP_ROM_INT(PCNT_COUNT_INC) },
@@ -1369,12 +1380,13 @@ STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PCNT_EVT_THRES_0), MP_ROM_INT(PCNT_EVT_THRES_0) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_PCNT_EVT_THRES_1), MP_ROM_INT(PCNT_EVT_THRES_1) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_EVT_ZERO), MP_ROM_INT(PCNT_EVT_ZERO) },
-
+    */
+    /*
     { MP_ROM_QSTR(MP_QSTR_PCNT_MODE_DISABLE), MP_ROM_INT(PCNT_MODE_DISABLE) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_MODE_KEEP), MP_ROM_INT(PCNT_MODE_KEEP) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_MODE_MAX), MP_ROM_INT(PCNT_MODE_MAX) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_MODE_REVERSE), MP_ROM_INT(PCNT_MODE_REVERSE) },
-
+    */
     { MP_ROM_QSTR(MP_QSTR_PCNT_PIN_NOT_USED), MP_ROM_INT(PCNT_PIN_NOT_USED) },
     /*
     { MP_ROM_QSTR(MP_QSTR_PCNT_PORT_0), MP_ROM_INT(PCNT_PORT_0) },
@@ -1391,7 +1403,7 @@ STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
     */
     { MP_ROM_QSTR(MP_QSTR_PinPull), MP_ROM_PTR(&pcnt_PinPull_type) },
     { MP_ROM_QSTR(MP_QSTR_Edge), MP_ROM_PTR(&pcnt_Edge_type) },
-    { MP_ROM_QSTR(MP_QSTR_EncoderType), MP_ROM_PTR(&quad_EncoderType_type) },
+    { MP_ROM_QSTR(MP_QSTR_ClockMultiplier), MP_ROM_PTR(&quad_ClockMultiplier_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(pcnt_globals, pcnt_globals_table);
 

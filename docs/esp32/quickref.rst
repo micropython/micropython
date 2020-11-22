@@ -385,6 +385,52 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), start=0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
+PCNT
+----
+
+The PCNT (Pulse Counter) counts the number of rising and/or falling edges of an input signal.  
+It is a 64-bit signed hardware-based counter.  PCNT and QUAD share the same hardware peripheral, 
+the total available number of PCNT and QUAD counters is up to 8.
+
+See :ref:`pcnt.PCNT <pcnt.PCNT>` for details.  Simplest usage is::
+
+    import pcnt
+
+    cnt = pcnt.PCNT(pcnt.Edge.RAISE, 17)
+    #              (kind of counted edges - count rase edges, 
+    #               pulse signal input pin number is GPIO17)
+
+    _c = None
+    while True:
+        c = cnt.count()  # get the counter value
+        if _c != c:
+            _c = c
+            print('Counter =', c)
+
+QUAD
+----
+
+The QUAD (Quadrature Counter) counts quadrature-encoded pulses
+(two square wave signals with ~50% duty cycle and ~90-degree phase difference between them).  
+It is a 64-bit signed hardware-based counter.  PCNT and QUAD share the same hardware peripheral,
+the total available number of PCNT and QUAD counters is up to 8.
+
+See :ref:`pcnt.QUAD <pcnt.QUAD>` for details.  Simplest usage is::
+
+    import pcnt
+
+    cnt = pcnt.QUAD(pcnt.ClockMultiplier.X2, 17, 16)
+    #              (clock multiplier is two (X2),
+    #               pulse signal input A pin number is GPIO17,
+    #               pulse signal input B pin number is GPIO16)
+
+    _c = None
+    while True:
+        c = cnt.count()  # get the counter value
+        if _c != c:
+            _c = c
+            print('Counter =', c)
+
 OneWire driver
 --------------
 
