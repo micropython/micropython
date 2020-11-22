@@ -22,7 +22,7 @@ def time():
     try:
         s.settimeout(1)
         res = s.sendto(NTP_QUERY, addr)
-        msg = s.recv(48)
+        msg = s.recvfrom(48)[0]
     finally:
         s.close()
     val = struct.unpack("!I", msg[40:44])[0]
