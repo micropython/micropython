@@ -25,9 +25,11 @@
  */
 
 #include "shared-bindings/touchio/TouchIn.h"
-#include "py/runtime.h"
 
+#include "py/runtime.h"
 #include "driver/touch_pad.h"
+
+bool touch_inited = false;
 
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     uint32_t touch_value;
@@ -45,11 +47,14 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     }
     claim_pin(pin);
 
-    touch_pad_init();
-    touch_pad_config((touch_pad_t)pin->touch_channel);
+    if (!touch_inited) {
+        touch_pad_init();
+        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+        touch_pad_fsm_start();
+        touch_inited = true;
+    }
 
-    touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
-    touch_pad_fsm_start();
+    touch_pad_config((touch_pad_t)pin->touch_channel);
 
     // wait for "raw data" to reset
     mp_hal_delay_ms(10);
@@ -79,8 +84,7 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
 }
 
 bool common_hal_touchio_touchin_get_value(touchio_touchin_obj_t *self) {
-    uint16_t reading = get_raw_reading(self);
-    return reading > self->threshold;
+    return get_raw_reading(self) > self->threshold;
 }
 
 uint16_t common_hal_touchio_touchin_get_raw_value(touchio_touchin_obj_t *self) {
