@@ -191,7 +191,7 @@ WebBluetooth mode can also be configured by editing `bluetooth_conf.h` and set `
 
 ## Pins numbering scheme for nrf52840-base boards
 
-Software Pins 0-31 correspond to physical pins 0.x and software Pins 32-48
+Software Pins 0-31 correspond to physical pins 0.x and software Pins 32-47
 correspond to physical pins 1.x.
 
 Example:
