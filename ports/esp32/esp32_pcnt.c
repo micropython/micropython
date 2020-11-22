@@ -385,6 +385,7 @@ Disable PCNT event of PCNT unit
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_event_disable(mp_obj_t self_obj, mp_obj_t evt_type_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
@@ -397,6 +398,7 @@ STATIC mp_obj_t pcnt_PCNT_event_disable(mp_obj_t self_obj, mp_obj_t evt_type_obj
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_event_disable_obj, pcnt_PCNT_event_disable);
+*/
 
 // def PCNT.event_enable(self, evt_type: int)
 /*
@@ -409,6 +411,7 @@ Enable PCNT event of PCNT unit
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_event_enable(mp_obj_t self_obj, mp_obj_t evt_type_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
@@ -421,6 +424,7 @@ STATIC mp_obj_t pcnt_PCNT_event_enable(mp_obj_t self_obj, mp_obj_t evt_type_obj)
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_event_enable_obj, pcnt_PCNT_event_enable);
+*/
 
 // def PCNT.filter_disable(self)
 /*
@@ -475,6 +479,7 @@ Get pulse counter value
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_get_counter_value(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
@@ -484,6 +489,7 @@ STATIC mp_obj_t pcnt_PCNT_get_counter_value(mp_obj_t self_obj) {
     return MP_OBJ_NEW_SMALL_INT(count);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_get_counter_value_obj, pcnt_PCNT_get_counter_value);
+*/
 
 // def PCNT.get_event_value(self, evt_type: int) -> int
 /*
@@ -499,6 +505,7 @@ Get PCNT event value of PCNT unit
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_get_event_value(mp_obj_t self_obj, mp_obj_t evt_type_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
@@ -512,6 +519,7 @@ STATIC mp_obj_t pcnt_PCNT_get_event_value(mp_obj_t self_obj, mp_obj_t evt_type_o
     return MP_OBJ_NEW_SMALL_INT(count);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_get_event_value_obj, pcnt_PCNT_get_event_value);
+*/
 
 // def PCNT.get_filter_value(self) -> int
 /*
@@ -546,6 +554,7 @@ Disable PCNT interrupt for PCNT unit
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_intr_disable(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
@@ -557,6 +566,7 @@ STATIC mp_obj_t pcnt_PCNT_intr_disable(mp_obj_t self_obj) {
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_intr_disable_obj, pcnt_PCNT_intr_disable);
+*/
 
 // def PCNT.intr_enable(self)
 /*
@@ -570,6 +580,7 @@ Enable PCNT interrupt for PCNT unit
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_intr_enable(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
@@ -581,6 +592,7 @@ STATIC mp_obj_t pcnt_PCNT_intr_enable(mp_obj_t self_obj) {
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_intr_enable_obj, pcnt_PCNT_intr_enable);
+*/
 
 // def PCNT.isr_handler_add(self, isr_handler: int, _args: int)
 /*
@@ -660,6 +672,7 @@ Register PCNT interrupt handler, the handler is an ISR.
      - ESP_ERR_NOT_FOUND Can not find the interrupt that matches the flags.
      - ESP_ERR_INVALID_ARG Function pointer error.
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_isr_register(size_t n_args, const mp_obj_t *args) {
     // pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     void *fn = MP_OBJ_TO_PTR(args[1]);
@@ -675,6 +688,7 @@ STATIC mp_obj_t pcnt_PCNT_isr_register(size_t n_args, const mp_obj_t *args) {
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_isr_register_obj, 5, 5, pcnt_PCNT_isr_register);
+*/
 
 // def PCNT.isr_service_install(self, intr_alloc_flags: int)
 /*
@@ -693,6 +707,7 @@ Install PCNT ISR service.
      - ESP_ERR_NO_MEM No memory to install this service
      - ESP_ERR_INVALID_STATE ISR service already installed
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_isr_service_install(mp_obj_t self_obj, mp_obj_t intr_alloc_flags_obj) {
     // pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     mp_int_t intr_alloc_flags = mp_obj_get_int(intr_alloc_flags_obj);
@@ -705,6 +720,7 @@ STATIC mp_obj_t pcnt_PCNT_isr_service_install(mp_obj_t self_obj, mp_obj_t intr_a
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_isr_service_install_obj, pcnt_PCNT_isr_service_install);
+*/
 
 // def PCNT.isr_unregister(self, handle: int)
 /*
@@ -738,6 +754,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_isr_unregister_obj, pcnt_PCNT_isr_unr
 /*
 Uninstall PCNT ISR service, freeing related resources.
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_pcnt_isr_service_uninstall(mp_obj_t self_obj) {
     // pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
@@ -746,6 +763,7 @@ STATIC mp_obj_t pcnt_PCNT_pcnt_isr_service_uninstall(mp_obj_t self_obj) {
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_pcnt_isr_service_uninstall_obj, pcnt_PCNT_pcnt_isr_service_uninstall);
+*/
 
 // def PCNT.set_event_value(self, evt_type: int, value: int)
 /*
@@ -761,6 +779,7 @@ Set PCNT event value of PCNT unit
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_set_event_value(mp_obj_t self_obj, mp_obj_t evt_type_obj, mp_obj_t value_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
@@ -774,6 +793,7 @@ STATIC mp_obj_t pcnt_PCNT_set_event_value(mp_obj_t self_obj, mp_obj_t evt_type_o
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pcnt_PCNT_set_event_value_obj, pcnt_PCNT_set_event_value);
+*/
 
 // def PCNT.set_filter_value(self, filter_val: int)
 /*
@@ -822,6 +842,7 @@ Set PCNT counter mode
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_set_mode(size_t n_args, const mp_obj_t *args) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t channel = mp_obj_get_int(args[1]);
@@ -838,6 +859,7 @@ STATIC mp_obj_t pcnt_PCNT_set_mode(size_t n_args, const mp_obj_t *args) {
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_set_mode_obj, 6, 6, pcnt_PCNT_set_mode);
+*/
 
 // def PCNT.set_pin(self, channel: int, pulse_io: int, ctrl_io: int)
 /*
@@ -854,6 +876,7 @@ Set the signal input to PCNT_PIN_NOT_USED if unused.
      - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_set_pin(size_t n_args, const mp_obj_t *args) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t channel = mp_obj_get_int(args[1]);
@@ -868,6 +891,7 @@ STATIC mp_obj_t pcnt_PCNT_set_pin(size_t n_args, const mp_obj_t *args) {
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_set_pin_obj, 4, 4, pcnt_PCNT_set_pin);
+*/
 
 // def PCNT.unit_config(self, pcnt_config: int)
 /*
@@ -882,6 +906,7 @@ Configure Pulse Counter unit
      - ESP_ERR_INVALID_STATE pcnt driver already initialized
      - ESP_ERR_INVALID_ARG Parameter error
 */
+/*
 STATIC mp_obj_t pcnt_PCNT_unit_config(mp_obj_t self_obj, mp_obj_t pcnt_config_obj) {
     // pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     pcnt_config_t *pcnt_config = MP_OBJ_TO_PTR(pcnt_config_obj);
@@ -894,7 +919,7 @@ STATIC mp_obj_t pcnt_PCNT_unit_config(mp_obj_t self_obj, mp_obj_t pcnt_config_ob
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_unit_config_obj, pcnt_PCNT_unit_config);
-
+*/
 // ====================================================================================
 STATIC mp_obj_t pcnt_PCNT_set_count(mp_obj_t self_obj, mp_obj_t value_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);

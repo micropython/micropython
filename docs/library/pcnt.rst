@@ -11,7 +11,8 @@ The length of ignored pulses is provided in APB_CLK clock cycles.
 * Note: Filter value is a 10-bit value, so the maximum filter value should be limited to 1023.
 Maximum filtered glitches delay is 1023 * 12.5 ns = 12.7875 us.
 Big filter make cutbacks the input frequency: 1 / (12.7875 us * 2) = 39.1 kHz.
-* Note: Do not neglect circuitry methods to reduce noise (filtering, shielding, short conductors, etc.).
+* Note: Do not neglect circuitry methods to reduce noise (right powering and grounding, filtering, shielding, 
+short conductors, twisted pair cable, differential signals, etc.).
 
 There is only one interrupt for the peripheral, and that is managed by the pcnt module.
 The user has no interrupt interface, and no interrupts are generated on each pulse.
