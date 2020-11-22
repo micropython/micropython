@@ -30,10 +30,7 @@
 #define CIRCUITPY_INTERNAL_NVM_SIZE        (0x4000)
 #define CIRCUITPY_INTERNAL_NVM_START_ADDR  (0x08010000)
 #define CIRCUITPY_INTERNAL_NVM_SECTOR      FLASH_SECTOR_4
-
-// Putting the entire flash sector in the NVM byte array buffer
-// would take up too much RAM. This limits how much of the sector we use.
-#define NVM_BYTEARRAY_BUFFER_SIZE   512
+#define NVM_BYTEARRAY_BUFFER_SIZE          512
 
 // Flash config
 #define FLASH_SIZE                  (0x80000)
@@ -47,7 +44,6 @@
 #define SPI_FLASH_CS_PIN            (&pin_PB12)
 
 // Status LEDs
-#define MICROPY_HW_LED_STATUS       (&pin_PA02)
 #define MICROPY_HW_APA102_MOSI      (&pin_PB08)
 #define MICROPY_HW_APA102_SCK       (&pin_PB00)
 

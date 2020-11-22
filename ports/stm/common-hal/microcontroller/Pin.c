@@ -71,8 +71,8 @@ void reset_all_pins(void) {
     neopixel_in_use = false;
     #endif
     #ifdef MICROPY_HW_APA102_MOSI
-        apa102_sck_in_use = false;
-        apa102_mosi_in_use = false;
+    apa102_sck_in_use = false;
+    apa102_mosi_in_use = false;
     #endif
 }
 
@@ -98,13 +98,13 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
     }
     #endif
     #ifdef MICROPY_HW_APA102_MOSI
-        if ((pin_port == MICROPY_HW_APA102_MOSI->port && pin_number == MICROPY_HW_APA102_MOSI->number) || (pin_port == MICROPY_HW_APA102_SCK->port && pin_number == MICROPY_HW_APA102_MOSI->number))
-        {
-            apa102_mosi_in_use = false;
-            apa102_sck_in_use = false;
-            rgb_led_status_init();
-            return;
-        }
+    if ((pin_port == MICROPY_HW_APA102_MOSI->port && pin_number == MICROPY_HW_APA102_MOSI->number) || (pin_port == MICROPY_HW_APA102_SCK->port && pin_number == MICROPY_HW_APA102_MOSI->number))
+    {
+        apa102_mosi_in_use = false;
+        apa102_sck_in_use = false;
+        rgb_led_status_init();
+        return;
+    }
     #endif
 }
 
@@ -141,14 +141,14 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
     }
     #endif
     #ifdef MICROPY_HW_APA102_MOSI
-        if (pin == MICROPY_HW_APA102_MOSI)
-        {
-            return !apa102_mosi_in_use;
-        }
-        if (pin == MICROPY_HW_APA102_SCK)
-        {
-            return !apa102_sck_in_use;
-        }
+    if (pin == MICROPY_HW_APA102_MOSI)
+    {
+        return !apa102_mosi_in_use;
+    }
+    if (pin == MICROPY_HW_APA102_SCK)
+    {
+        return !apa102_sck_in_use;
+    }
     #endif
 
     return pin_number_is_free(pin->port, pin->number);
@@ -174,14 +174,14 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
     }
     #endif
     #ifdef MICROPY_HW_APA102_MOSI
-        if (pin == MICROPY_HW_APA102_MOSI)
-        {
-            apa102_mosi_in_use = true;
-        }
-        if (pin == MICROPY_HW_APA102_SCK)
-        {
-            apa102_sck_in_use = true;
-        }
+    if (pin == MICROPY_HW_APA102_MOSI)
+    {
+        apa102_mosi_in_use = true;
+    }
+    if (pin == MICROPY_HW_APA102_SCK)
+    {
+        apa102_sck_in_use = true;
+    }
     #endif
 }
 
