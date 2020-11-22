@@ -91,15 +91,11 @@ const mp_obj_property_t supervisor_serial_bytes_available_obj = {
 
 
 //|     run_reason: RunReason
-//|     """Returns why the Python VM was run this time."""
+//|     """Returns why CircuitPython started running this particular time.
 //|
 STATIC mp_obj_t supervisor_get_run_reason(mp_obj_t self) {
-    if (!common_hal_get_serial_bytes_available()) {
-        return mp_const_false;
-    }
-    else {
-        return mp_const_true;
-    }
+    mp_raise_NotImplementedError(NULL);
+    return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_get_run_reason_obj, supervisor_get_run_reason);
 

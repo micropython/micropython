@@ -29,11 +29,9 @@
 
 #include "py/obj.h"
 
-#include "shared-bindings/alarm/ResetReason.h"
-
 extern void common_hal_alarm_set_wake_alarm(mp_obj_t alarm);
 
-extern alarm_reset_reason_t common_hal_alarm_get_reset_reason(void);
-extern void common_hal_alarm_set_reset_reason(mp_obj_t reset_reason);
+extern mp_obj_t common_hal_alarm_restart_on_alarm(size_t n_alarms, const mp_obj_t *alarms);
+extern mp_obj_t alarm_sleep_until_alarm(size_t n_alarms, const mp_obj_t *alarms);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H

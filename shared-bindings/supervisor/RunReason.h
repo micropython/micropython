@@ -30,7 +30,7 @@ typedef enum {
     RUN_REASON_STARTUP,
     RUN_REASON_AUTORELOAD,
     RUN_REASON_SUPERVISOR_RELOAD,
-    RUN_REASON_RELOAD_HOTKEY
+    RUN_REASON_REPL_RELOAD,
 } supervisor_run_reason_t;
 
-extern const mp_obj_type_t canio_bus_state_type;
+extern const mp_obj_type_t supervisor_run_reason_type;

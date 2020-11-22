@@ -28,8 +28,9 @@
 #include <math.h>
 #include <string.h>
 
-#include "common-hal/microcontroller/Processor.h"
 #include "py/runtime.h"
+
+#include "common-hal/microcontroller/Processor.h"
 #include "supervisor/shared/translate.h"
 
 #include "soc/efuse_reg.h"
@@ -73,4 +74,24 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_1_REG);
     *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
     *ptr-- = swap_nibbles(mac_address_part & 0xff);
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    switch (esp_sleep_get_wakeup_cause()) {
+        case ESP_SLEEP_WAKEUP_TIMER:
+            return RESET_REASON_DEEP_SLEEP_ALARM;
+
+        case ESP_SLEEP_WAKEUP_EXT0:
+            return RESET_REASON_DEEP_SLEEP_ALARM;
+
+        case ESP_SLEEP_WAKEUP_TOUCHPAD:
+            //TODO: implement TouchIO
+        case ESP_SLEEP_WAKEUP_UNDEFINED:
+        default:
+            return RESET_REASON_POWER_APPLIED;
+    }
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    return RESET_REASON_POWER_ON;
 }

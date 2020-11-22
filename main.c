@@ -330,7 +330,7 @@ bool run_code_py(safe_mode_t safe_mode) {
     #if CIRCUITPY_ALARM
     // If USB isn't enumerated then deep sleep.
     if (ok && !supervisor_workflow_active() && supervisor_ticks_ms64() > CIRCUITPY_USB_ENUMERATION_DELAY * 1024) {
-        common_hal_mcu_deep_sleep();
+        common_hal_alarm_restart_on_alarm(0, NULL);
     }
     #endif
     // Show the animation every N seconds.
@@ -430,14 +430,9 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         if (!skip_boot_output) {
             // Wait 1.5 seconds before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
             // in case power is momentary or will fail shortly due to, say a low, battery.
-#if CIRCUITPY_ALARM
-            if (common_hal_alarm_get_reset_reason() == RESET_REASON_POWER_ON) {
-#endif
+            if (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON) {
                 mp_hal_delay_ms(1500);
-#if CIRCUITPY_ALARM
             }
-#endif
-
             // USB isn't up, so we can write the file.
             filesystem_set_internal_writable_by_usb(false);
             f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);

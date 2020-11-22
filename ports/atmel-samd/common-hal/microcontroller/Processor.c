@@ -65,6 +65,7 @@
 
 #include "py/mphal.h"
 #include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "samd/adc.h"
 
@@ -348,4 +349,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
             raw_id[4 * i + k] = (*(id_addresses[i]) >> k * 8) & 0xff;
         }
     }
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    return RESET_REASON_POWER_ON;
 }

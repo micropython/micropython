@@ -32,7 +32,7 @@
 #include "py/mpconfig.h"
 
 #include "common-hal/microcontroller/Processor.h"
-
+#include "shared-bindings/microcontroller/ResetReason.h"
 #include "shared-bindings/microcontroller/RunMode.h"
 
 extern void common_hal_mcu_delay_us(uint32_t);
@@ -42,8 +42,6 @@ extern void common_hal_mcu_enable_interrupts(void);
 
 extern void common_hal_mcu_on_next_reset(mcu_runmode_t runmode);
 extern void common_hal_mcu_reset(void);
-
-extern void common_hal_mcu_deep_sleep(void);
 
 extern const mp_obj_dict_t mcu_pin_globals;
 

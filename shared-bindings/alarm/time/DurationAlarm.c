@@ -34,14 +34,13 @@
 #include "supervisor/shared/translate.h"
 
 //| class DurationAlarm:
-//|     """Trigger an alarm at a specified interval from now.
+//|     """Trigger an alarm at a specified interval from now."""
 //|
 //|     def __init__(self, secs: float) -> None:
-//|         """Create an alarm that will be triggered in `secs` seconds **from the time
-//|         the alarm is created**. The alarm is not active until it is listed in an
-//|         `alarm`-enabling function, such as `alarm.sleep()` or
-//|         `alarm.wake_after_exit()`. But the interval starts immediately upon
-//|         instantiation.
+//|         """Create an alarm that will be triggered in `secs` seconds from the time
+//|         sleep starts. The alarm is not active until it is listed in an
+//|         `alarm`-enabling function, such as `alarm.sleep_until_alarm()` or
+//|         `alarm.restart_on_alarm()`.
 //|         """
 //|         ...
 //|

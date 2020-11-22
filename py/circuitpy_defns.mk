@@ -394,7 +394,6 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_eve/__init__.c \
-	alarm/ResetReason.c \
 	camera/ImageFormat.c \
 	canio/Match.c \
 	digitalio/Direction.c \
@@ -402,6 +401,7 @@ $(filter $(SRC_PATTERNS), \
 	digitalio/Pull.c \
 	fontio/Glyph.c \
 	math/__init__.c \
+	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
 )
 

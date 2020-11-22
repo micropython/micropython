@@ -27,42 +27,37 @@
 #include "py/obj.h"
 #include "py/enum.h"
 
-#include "shared-bindings/alarm/ResetReason.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, INVALID, RESET_REASON_INVALID);
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, POWER_ON, RESET_REASON_POWER_ON);
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, BROWNOUT, RESET_REASON_BROWNOUT);
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, SOFTWARE, RESET_REASON_SOFTWARE);
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, DEEP_SLEEP_ALARM, RESET_REASON_DEEP_SLEEP_ALARM);
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, RESET_PIN, RESET_REASON_RESET_PIN);
-MAKE_ENUM_VALUE(alarm_reset_reason_type, reset_reason, WATCHDOG, RESET_REASON_WATCHDOG);
+MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, POWER_ON, RESET_REASON_POWER_ON);
+MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, BROWNOUT, RESET_REASON_BROWNOUT);
+MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, SOFTWARE, RESET_REASON_SOFTWARE);
+MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, DEEP_SLEEP_ALARM, RESET_REASON_DEEP_SLEEP_ALARM);
+MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, RESET_PIN, RESET_REASON_RESET_PIN);
+MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, WATCHDOG, RESET_REASON_WATCHDOG);
 
 //| class ResetReason:
-//|     """The reason the chip was last reset"""
-//|
-//|     INVALID: object
-//|     """Invalid reason: indicates an internal error."""
+//|     """The reason the microntroller was last reset"""
 //|
 //|     POWER_ON: object
-//|     """The chip was started from power off."""
+//|     """The microntroller was started from power off."""
 //|
 //|     BROWNOUT: object
-//|     """The chip was reset due to voltage brownout."""
+//|     """The microntroller was reset due to too low a voltage."""
 //|
 //|     SOFTWARE: object
-//|     """The chip was reset from software."""
+//|     """The microntroller was reset from software."""
 //|
 //|     DEEP_SLEEP_ALARM: object
-//|     """The chip was reset for deep sleep and restarted by an alarm."""
+//|     """The microntroller was reset for deep sleep and restarted by an alarm."""
 //|
 //|     RESET_PIN: object
-//|     """The chip was reset by a signal on its reset pin. The pin might be connected to a reset buton."""
+//|     """The microntroller was reset by a signal on its reset pin. The pin might be connected to a reset button."""
 //|
 //|     WATCHDOG: object
-//|     """The chip was reset by its watchdog timer."""
+//|     """The chip microcontroller reset by its watchdog timer."""
 //|
-MAKE_ENUM_MAP(alarm_reset_reason) {
-    MAKE_ENUM_MAP_ENTRY(reset_reason, INVALID),
+MAKE_ENUM_MAP(mcu_reset_reason) {
     MAKE_ENUM_MAP_ENTRY(reset_reason, POWER_ON),
     MAKE_ENUM_MAP_ENTRY(reset_reason, BROWNOUT),
     MAKE_ENUM_MAP_ENTRY(reset_reason, SOFTWARE),
@@ -70,8 +65,8 @@ MAKE_ENUM_MAP(alarm_reset_reason) {
     MAKE_ENUM_MAP_ENTRY(reset_reason, RESET_PIN),
     MAKE_ENUM_MAP_ENTRY(reset_reason, WATCHDOG),
 };
-STATIC MP_DEFINE_CONST_DICT(alarm_reset_reason_locals_dict, alarm_reset_reason_locals_table);
+STATIC MP_DEFINE_CONST_DICT(mcu_reset_reason_locals_dict, mcu_reset_reason_locals_table);
 
-MAKE_PRINTER(alarm, alarm_reset_reason);
+MAKE_PRINTER(alarm, mcu_reset_reason);
 
-MAKE_ENUM_TYPE(alarm, ResetReason, alarm_reset_reason);
+MAKE_ENUM_TYPE(alarm, ResetReason, mcu_reset_reason);

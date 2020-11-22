@@ -25,9 +25,12 @@
  */
 
 #include <math.h>
-#include "common-hal/microcontroller/Processor.h"
 #include "py/runtime.h"
+
+#include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 #include "supervisor/shared/translate.h"
+
 #include STM32_HAL_H
 
 #if CPY_STM32F4
@@ -137,4 +140,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
         ((uint32_t*) raw_id)[i] = STM32_UUID[i];
     }
     #endif
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    return RESET_REASON_POWER_ON;
 }

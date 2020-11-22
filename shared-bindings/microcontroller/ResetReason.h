@@ -24,24 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MCU__RESET_REASON__H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_MCU__RESET_REASON__H
 
 #include "py/obj.h"
 #include "py/enum.h"
 
 typedef enum {
-    RESET_REASON_INVALID,
     RESET_REASON_POWER_ON,
     RESET_REASON_BROWNOUT,
     RESET_REASON_SOFTWARE,
     RESET_REASON_DEEP_SLEEP_ALARM,
     RESET_REASON_RESET_PIN,
     RESET_REASON_WATCHDOG,
-} alarm_reset_reason_t;
+} mcu_reset_reason_t;
 
-extern const cp_enum_obj_t reset_reason_INVALID_obj;
+extern const cp_enum_obj_t reset_reason_POWER_ON_obj;
+extern const cp_enum_obj_t reset_reason_BROWNOUT_obj;
+extern const cp_enum_obj_t reset_reason_SOFTWARE_obj;
+extern const cp_enum_obj_t reset_reason_DEEP_SLEEP_ALARM_obj;
+extern const cp_enum_obj_t reset_reason_RESET_PIN_obj;
+extern const cp_enum_obj_t reset_reason_WATCHDOG_obj;
 
-extern const mp_obj_type_t alarm_reset_reason_type;
+extern const mp_obj_type_t mcu_reset_reason_type;
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM__RESET_REASON__H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_MCU__RESET_REASON__H

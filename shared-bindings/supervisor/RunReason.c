@@ -28,35 +28,35 @@
 
 #include "shared-bindings/supervisor/RunReason.h"
 
-MAKE_ENUM_VALUE(canio_bus_state_type, run_reason, ERROR_ACTIVE, RUN_REASON_STARTUP);
-MAKE_ENUM_VALUE(canio_bus_state_type, bus_state, ERROR_PASSIVE, RUN_REASON_AUTORELOAD);
-MAKE_ENUM_VALUE(canio_bus_state_type, bus_state, ERROR_WARNING, RUN_REASON_SUPERVISOR_RELOAD);
-MAKE_ENUM_VALUE(canio_bus_state_type, bus_state, BUS_OFF, RUN_REASON_RELOAD_HOTKEY);
+MAKE_ENUM_VALUE(supervisor_run_reason_type, run_reason, STARTUP, RUN_REASON_STARTUP);
+MAKE_ENUM_VALUE(supervisor_run_reason_type, run_reason, AUTORELOAD, RUN_REASON_AUTORELOAD);
+MAKE_ENUM_VALUE(supervisor_run_reason_type, run_reason, SUPERVISOR_RELOAD, RUN_REASON_SUPERVISOR_RELOAD);
+MAKE_ENUM_VALUE(supervisor_run_reason_type, run_reason, REPL_RELOAD, RUN_REASON_REPL_RELOAD);
 
 //| class RunReason:
-//|     """The state of the CAN bus"""
+//|     """The reason that CircuitPython started running."""
 //|
 //|     STARTUP: object
-//|     """The first VM was run after the microcontroller started up. See `microcontroller.start_reason`
-//|        for more detail why the microcontroller was started."""
+//|     """CircuitPython started the microcontroller started up. See `microcontroller.cpu.reset_reason`
+//|        for more detail on why the microcontroller was started."""
 //|
 //|     AUTORELOAD: object
-//|     """The VM was run due to a USB write to the filesystem."""
+//|     """CircuitPython restarted due to a USB write to the filesystem."""
 //|
 //|     SUPERVISOR_RELOAD: object
-//|     """The VM was run due to a call to `supervisor.reload()`."""
+//|     """CircuitPython restarted due to a call to `supervisor.reload()`."""
 //|
-//|     RELOAD_HOTKEY: object
-//|     """The VM was run due CTRL-D."""
+//|     REPL_RELOAD: object
+//|     """CircuitPython started due to the user typing CTRL-D in the REPL."""
 //|
-MAKE_ENUM_MAP(canio_bus_state) {
-    MAKE_ENUM_MAP_ENTRY(bus_state, ERROR_ACTIVE),
-    MAKE_ENUM_MAP_ENTRY(bus_state, ERROR_PASSIVE),
-    MAKE_ENUM_MAP_ENTRY(bus_state, ERROR_WARNING),
-    MAKE_ENUM_MAP_ENTRY(bus_state, BUS_OFF),
+MAKE_ENUM_MAP(run_reason) {
+    MAKE_ENUM_MAP_ENTRY(run_reason, STARTUP),
+    MAKE_ENUM_MAP_ENTRY(run_reason, AUTORELOAD),
+    MAKE_ENUM_MAP_ENTRY(run_reason, SUPERVISOR_RELOAD),
+    MAKE_ENUM_MAP_ENTRY(run_reason, REPL_RELOAD),
 };
-STATIC MP_DEFINE_CONST_DICT(canio_bus_state_locals_dict, canio_bus_state_locals_table);
+STATIC MP_DEFINE_CONST_DICT(supervisor_run_reason_locals_dict, supervisor_run_reason_locals_table);
 
-MAKE_PRINTER(canio, canio_bus_state);
+MAKE_PRINTER(supervisor, supervisor_run_reason);
 
-MAKE_ENUM_TYPE(canio, BusState, canio_bus_state);
+MAKE_ENUM_TYPE(supervisor, RunReason, supervisor_run_reason);

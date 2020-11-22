@@ -54,13 +54,12 @@ FrameBuffer = Union[rgbmatrix.RGBMatrix]
 """
 
 Alarm = Union[
-    alarm_time.Time, alarm_pin.PinLevel, alarm_touch.PinTouch
+    alarm.pin.PinAlarm, alarm.time.DurationAlarm
 ]
-"""Classes that implement the audiosample protocol
+"""Classes that implement alarms for sleeping and asynchronous notification.
 
-  - `alarm_time.Time`
-  - `alarm_pin.PinLevel`
-  - `alarm_touch.PinTouch`
+  - `alarm.pin.PinAlarm`
+  - `alarm.time.DurationAlarm`
 
-  You can play use these alarms to wake from light or deep sleep.
+  You can use these alarms to wake from light or deep sleep.
 """

@@ -67,6 +67,23 @@ const mp_obj_property_t mcu_processor_frequency_obj = {
     },
 };
 
+//| reset_reason: `microcontroller.ResetReason`
+//| """The reason the microcontroller started up from reset state."""
+//|
+STATIC mp_obj_t mcu_processor_get_reset_reason(mp_obj_t self) {
+    return cp_enum_find(&mcu_reset_reason_type, common_hal_mcu_processor_get_reset_reason());
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_reset_reason_obj, mcu_processor_get_reset_reason);
+
+const mp_obj_property_t mcu_reset_reason_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&mcu_processor_get_reason_reason_obj,  // getter
+              (mp_obj_t)&mp_const_none_obj,            // no setter
+              (mp_obj_t)&mp_const_none_obj,            // no deleter
+    },
+};
+
 //|     temperature: Optional[float]
 //|     """The on-chip temperature, in Celsius, as a float. (read-only)
 //|
@@ -128,6 +145,7 @@ const mp_obj_property_t mcu_processor_voltage_obj = {
 
 STATIC const mp_rom_map_elem_t mcu_processor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&mcu_processor_frequency_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset_reason), MP_ROM_PTR(&mcu_processor_reset_reason_obj) },
     { MP_ROM_QSTR(MP_QSTR_temperature), MP_ROM_PTR(&mcu_processor_temperature_obj) },
     { MP_ROM_QSTR(MP_QSTR_uid), MP_ROM_PTR(&mcu_processor_uid_obj) },
     { MP_ROM_QSTR(MP_QSTR_voltage), MP_ROM_PTR(&mcu_processor_voltage_obj) },

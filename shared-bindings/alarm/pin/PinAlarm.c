@@ -35,27 +35,27 @@
 #include "supervisor/shared/translate.h"
 
 //| class PinAlarm:
-//|     """Trigger an alarm when a pin changes state.
+//|     """Trigger an alarm when a pin changes state."""
 //|
 //|     def __init__(self, pin: microcontroller.Pin, level: bool, *, edge: bool = False, pull: bool = False) -> None:
 //|         """Create an alarm triggered by a `~microcontroller.Pin` level. The alarm is not active
-//|         until it is listed in an `alarm`-enabling function, such as `alarm.sleep()` or
-//|         `alarm.wake_after_exit()`.
-
+//|         until it is listed in an `alarm`-enabling function, such as `alarm.sleep_until_alarm()` or
+//|         `alarm.restart_on_alarm()`.
+//|
 //|         :param ~microcontroller.Pin pin: The pin to monitor. On some ports, the choice of pin
-//|           may be limited due to hardware restrictions, particularly for deep-sleep alarms.
+//|         may be limited due to hardware restrictions, particularly for deep-sleep alarms.
 //|         :param bool level: When active, trigger when the level is high (``True``) or low (``False``).
-//|           On some ports, multiple `PinAlarm` objects may need to have coordinated levels
-//|           for deep-sleep alarms
+//|         On some ports, multiple `PinAlarm` objects may need to have coordinated levels
+//|         for deep-sleep alarms.
 //|         :param bool edge: If ``True``, trigger only when there is a transition to the specified
-//|           value of `level`. If ``True``, if the alarm becomes active when the pin level already
-//|           matches `level`, the alarm is not triggered: the pin must transition from ``not level``
-//|           to ``level`` to trigger the alarm. On some ports, edge-triggering may not be available,
-//|           particularly for deep-sleep alarms.
+//|         value of `level`. If ``True``, if the alarm becomes active when the pin level already
+//|         matches `level`, the alarm is not triggered: the pin must transition from ``not level``
+//|         to ``level`` to trigger the alarm. On some ports, edge-triggering may not be available,
+//|         particularly for deep-sleep alarms.
 //|         :param bool pull: Enable a pull-up or pull-down which pulls the pin to level opposite
-//|           opposite that of `level`. For instance, if `level` is set to ``True``, setting `pull`
-//|           to ``True`` will enable a pull-down, to hold the pin low normally until an outside signal
-//|           pulls it high.
+//|         opposite that of `level`. For instance, if `level` is set to ``True``, setting `pull`
+//|         to ``True`` will enable a pull-down, to hold the pin low normally until an outside signal
+//|         pulls it high.
 //|         """
 //|         ...
 //|
