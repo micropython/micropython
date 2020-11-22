@@ -39,7 +39,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/pulse
 
 /*
 ESP32 Quadrature Counter based on Pulse Counter(PCNT)
-Based on 
+Based on
 https://github.com/madhephaestus/ESP32Encoder
 https://github.com/bboser/MicroPython_ESP32_psRAM_LoBo/blob/quad_decoder/MicroPython_BUILD/components/micropython/esp32/machine_dec.c
 See also
@@ -373,73 +373,6 @@ STATIC void pcnt_PCNT_print(const mp_print_t *print, mp_obj_t self_obj, mp_print
     }
     mp_printf(print, ", pin_pull_type=%u)", self->useInternalWeakPullResistors);
 }
-
-// def PCNT.counter_clear(self)
-/*
-Clear and reset PCNT counter value to zero
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_counter_clear(mp_obj_t self_obj) {
-	pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
-    esp_err_t err = pcnt_counter_clear(self->unit);
-    if (err != ESP_OK)
-       mp_raise_EspError(err);
-    self->count = 0;
-
-	return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_counter_clear_obj, pcnt_PCNT_counter_clear);
-*/
-
-// def PCNT.counter_pause(self)
-/*
-Pause PCNT counter of PCNT unit
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_counter_pause(mp_obj_t self_obj) {
-	pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
-    esp_err_t err = pcnt_counter_pause(self->unit);
-    if (err != ESP_OK)
-       mp_raise_EspError(err);
-
-	return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_counter_pause_obj, pcnt_PCNT_counter_pause);
-*/
-
-// def PCNT.counter_resume(self)
-/*
-Resume counting for PCNT counter
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_counter_resume(mp_obj_t self_obj) {
-	pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
-    esp_err_t err = pcnt_counter_resume(self->unit);
-    if (err != ESP_OK)
-       mp_raise_EspError(err);
-
-	return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_counter_resume_obj, pcnt_PCNT_counter_resume);
-*/
 
 // def PCNT.event_disable(self, evt_type: int)
 /*
@@ -1053,7 +986,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_resume_obj, pcnt_PCNT_resume);
 // PCNT stuff
 // Register class methods
 STATIC const mp_rom_map_elem_t pcnt_PCNT_locals_dict_table[] = {
-    //{ MP_ROM_QSTR(MP_QSTR_unit_config), MP_ROM_PTR(&pcnt_PCNT_unit_config_obj) },
+    // { MP_ROM_QSTR(MP_QSTR_unit_config), MP_ROM_PTR(&pcnt_PCNT_unit_config_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&pcnt_PCNT_del_obj) },
     /*
     { MP_ROM_QSTR(MP_QSTR_intr_disable), MP_ROM_PTR(&pcnt_PCNT_intr_disable_obj) },
@@ -1079,12 +1012,8 @@ STATIC const mp_rom_map_elem_t pcnt_PCNT_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_filter_value), MP_ROM_PTR(&pcnt_PCNT_get_filter_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_filter_value), MP_ROM_PTR(&pcnt_PCNT_set_filter_value_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_get_counter_value), MP_ROM_PTR(&pcnt_PCNT_get_counter_value_obj) },
-    /*
-    { MP_ROM_QSTR(MP_QSTR_counter_clear), MP_ROM_PTR(&pcnt_PCNT_counter_clear_obj) },
-    { MP_ROM_QSTR(MP_QSTR_counter_pause), MP_ROM_PTR(&pcnt_PCNT_counter_pause_obj) },
-    { MP_ROM_QSTR(MP_QSTR_counter_resume), MP_ROM_PTR(&pcnt_PCNT_counter_resume_obj) },
-    */
+    // { MP_ROM_QSTR(MP_QSTR_get_counter_value), MP_ROM_PTR(&pcnt_PCNT_get_counter_value_obj) },
+
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&pcnt_PCNT_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_count_and_clear), MP_ROM_PTR(&pcnt_PCNT_count_and_clear_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&pcnt_PCNT_clear_obj) },

@@ -115,21 +115,22 @@ Enumarations
    |    X2 - Count the leading and trailing edges from one channel.
    |    X4 - Count both leading and trailing edges of both channels.
 
+::
 
     import pcnt
 
     try:
         cnt = pcnt.QUAD(pcnt.ClockMultiplier.X4, 17, 16, PinPull.UP)
-        
+
         flt = cnt.get_filter_value()  # return current filter value.
         cnt.set_filter_value(100)     # filter delay is 
         cnt.filter_disable()          #
         cnt.filter_enable()           #
-        c = cnt.count_and_clear()
+        c = cnt.count_and_clear()     # get counter and clear it
         cnt.clear()
         cnt.pause()
         cnt.resume()
-        cnt.set_count(12345)
+        cnt.set_count(12345)          # set the counter value
 
         _c = None
         while True:
