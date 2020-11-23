@@ -26,17 +26,19 @@
  */
 
 #include "py/objtuple.h"
+#include "py/runtime.h"
 
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/DurationAlarm.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
 #include "esp_sleep.h"
 
 STATIC mp_obj_tuple_t *_deep_sleep_alarms;
 
 void alarm_reset(void) {
-    _deep_sleep_alarms = &mp_const_empty_tuple;
+    _deep_sleep_alarms = mp_const_empty_tuple;
 }
 
 void common_hal_alarm_disable_all(void) {
@@ -94,8 +96,8 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 }
 
 void common_hal_deep_sleep_with_alarms(void) {
-    for (size_t i = 0; i < _deep_sleep_alarms.len; i++) {
-        mp_obj_t alarm = _deep_sleep_alarms.items[i]
+    for (size_t i = 0; i < _deep_sleep_alarms->len; i++) {
+        mp_obj_t alarm = _deep_sleep_alarms->items[i];
         if (MP_OBJ_IS_TYPE(alarm, &alarm_time_duration_alarm_type)) {
             alarm_time_duration_alarm_obj_t *duration_alarm = MP_OBJ_TO_PTR(alarm);
             esp_sleep_enable_timer_wakeup(

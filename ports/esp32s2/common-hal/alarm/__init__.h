@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
 
-#include "py/obj.h"
+void alarm_reset(void);
 
-extern mp_obj_t common_hal_alarm_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
-extern void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms);
-
-// Used by wake-up code.
-extern void common_hal_alarm_set_wake_alarm(mp_obj_t alarm);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H

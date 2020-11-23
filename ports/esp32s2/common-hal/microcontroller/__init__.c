@@ -42,6 +42,7 @@
 #include "freertos/FreeRTOS.h"
 
 #include "esp_sleep.h"
+#include "esp_wifi.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
