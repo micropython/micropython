@@ -42,9 +42,11 @@
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 // We need the definition of "struct ble_l2cap_chan".
 // See l2cap_channel_event() for details.
 #include "nimble/host/src/ble_l2cap_priv.h"
+#endif
 
 #ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY NIMBLE"
