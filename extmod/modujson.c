@@ -85,6 +85,7 @@ STATIC byte ujson_stream_next(ujson_stream_t *s) {
 #define CIRCUITPY_JSON_READ_CHUNK_SIZE 64
 
 STATIC mp_uint_t ujson_python_readinto(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {
+    (void) size; // Ignore size because we know it's always 1.
     ujson_stream_t* s = obj;
 
     if (s->start == s->end) {
