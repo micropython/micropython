@@ -88,14 +88,17 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     }
 }
 
-static bool wifi_inited;
+static bool wifi_inited, wifi_ever_inited;
 
 void common_hal_wifi_init(void) {
     wifi_inited = true;
     common_hal_wifi_radio_obj.base.type = &wifi_radio_type;
 
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    if (!wifi_ever_inited) {
+        ESP_ERROR_CHECK(esp_netif_init());
+        ESP_ERROR_CHECK(esp_event_loop_create_default());
+    }
+    wifi_ever_inited = true;
 
     wifi_radio_obj_t* self = &common_hal_wifi_radio_obj;
     self->netif = esp_netif_create_default_wifi_sta();
@@ -143,7 +146,6 @@ void wifi_reset(void) {
                                                           radio->handler_instance_got_ip));
     ESP_ERROR_CHECK(esp_wifi_deinit());
     esp_netif_destroy(radio->netif);
-    ESP_ERROR_CHECK(esp_event_loop_delete_default());
     radio->netif = NULL;
 }
 

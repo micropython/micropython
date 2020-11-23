@@ -44,7 +44,7 @@
 #include "esp_sleep.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
-
+    mp_hal_delay_us(delay);
 }
 
 volatile uint32_t nesting_count = 0;
