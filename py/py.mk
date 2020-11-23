@@ -109,7 +109,7 @@ ifeq ($(CIRCUITPY_ULAB),1)
 SRC_MOD += $(patsubst $(TOP)/%,%,$(wildcard $(TOP)/extmod/ulab/code/*.c))
 SRC_MOD += $(patsubst $(TOP)/%,%,$(wildcard $(TOP)/extmod/ulab/code/*/*.c))
 CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1
-$(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-float-equal -Wno-sign-compare -DCIRCUITPY
+$(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
 endif
 
 # External modules written in C.
