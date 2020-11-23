@@ -93,6 +93,9 @@ void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
 }
 
 void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
+    if (self->mode == WATCHDOGMODE_RESET) {
+        mp_raise_NotImplementedError(translate("WatchDogTimer cannot be deinitialized once mode is set to RESET"));
+    }
     if (timer) {
         timer_free();
     }

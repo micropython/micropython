@@ -39,7 +39,7 @@ extern const mp_obj_type_t displayio_epaperdisplay_type;
 #define NO_COMMAND 0x100
 
 void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t* self,
-        mp_obj_t bus, uint8_t* start_sequence, uint16_t start_sequence_len, uint8_t* stop_sequence, uint16_t stop_sequence_len,
+        mp_obj_t bus, const uint8_t* start_sequence, uint16_t start_sequence_len, const uint8_t* stop_sequence, uint16_t stop_sequence_len,
         uint16_t width, uint16_t height, uint16_t ram_width, uint16_t ram_height, int16_t colstart, int16_t rowstart, uint16_t rotation,
         uint16_t set_column_window_command, uint16_t set_row_window_command,
         uint16_t set_current_column_command, uint16_t set_current_row_command,
@@ -52,9 +52,12 @@ bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t* self
 
 // Returns time in milliseconds.
 uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaperdisplay_obj_t* self);
+bool common_hal_displayio_epaperdisplay_get_busy(displayio_epaperdisplay_obj_t* self);
 
 uint16_t common_hal_displayio_epaperdisplay_get_width(displayio_epaperdisplay_obj_t* self);
 uint16_t common_hal_displayio_epaperdisplay_get_height(displayio_epaperdisplay_obj_t* self);
+uint16_t common_hal_displayio_epaperdisplay_get_rotation(displayio_epaperdisplay_obj_t* self);
+void common_hal_displayio_epaperdisplay_set_rotation(displayio_epaperdisplay_obj_t* self, int rotation);
 
 mp_obj_t common_hal_displayio_epaperdisplay_get_bus(displayio_epaperdisplay_obj_t* self);
 

@@ -42,7 +42,7 @@
 #include "freertos/FreeRTOS.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
-
+    mp_hal_delay_us(delay);
 }
 
 volatile uint32_t nesting_count = 0;
@@ -84,6 +84,17 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
         .type = &mcu_processor_type,
     },
 };
+
+#if CIRCUITPY_WATCHDOG
+// The singleton watchdog.WatchDogTimer object.
+watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
+    .base = {
+        .type = &watchdog_watchdogtimer_type,
+    },
+    .timeout = 0.0f,
+    .mode = WATCHDOGMODE_NONE,
+};
+#endif
 
 // This maps MCU pin names to pin objects.
 STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {

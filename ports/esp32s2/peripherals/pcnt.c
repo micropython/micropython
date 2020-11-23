@@ -29,14 +29,20 @@
 #define PCNT_UNIT_ACTIVE    1
 #define PCNT_UNIT_INACTIVE  0
 
-static uint8_t pcnt_state[4];
+static uint8_t pcnt_unit_state[4];
+
+void peripherals_pcnt_reset(void) {
+    for (uint8_t i = 0; i<=3; i++) {
+        pcnt_unit_state[i] = PCNT_UNIT_INACTIVE;
+    }
+}
 
 int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
     // Look for available pcnt unit
     for (uint8_t i = 0; i<=3; i++) {
-        if (pcnt_state[i] == PCNT_UNIT_INACTIVE) {
+        if (pcnt_unit_state[i] == PCNT_UNIT_INACTIVE) {
             pcnt_config.unit = (pcnt_unit_t)i;
-            pcnt_state[i] = PCNT_UNIT_ACTIVE;
+            pcnt_unit_state[i] = PCNT_UNIT_ACTIVE;
             break;
         } else if (i == 3) {
             return -1;
@@ -45,10 +51,6 @@ int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
 
     // Initialize PCNT unit
     pcnt_unit_config(&pcnt_config);
-
-    // Configure and enable the input filter
-    pcnt_set_filter_value(pcnt_config.unit, 100);
-    pcnt_filter_enable(pcnt_config.unit);
 
     // Initialize PCNT's counter
     pcnt_counter_pause(pcnt_config.unit);
@@ -61,6 +63,6 @@ int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
 }
 
 void peripherals_pcnt_deinit(pcnt_unit_t* unit) {
-    pcnt_state[*unit] = PCNT_UNIT_INACTIVE;
+    pcnt_unit_state[*unit] = PCNT_UNIT_INACTIVE;
     *unit = PCNT_UNIT_MAX;
 }

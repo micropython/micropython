@@ -15,3 +15,5 @@ MCU_PACKAGE = UFQFPN48
 
 LD_COMMON = boards/common_nvm.ld
 LD_FILE = boards/STM32F411_nvm.ld
+
+CIRCUITPY_ULAB = 0

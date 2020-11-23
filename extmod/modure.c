@@ -43,7 +43,7 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
     mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t no = mp_obj_get_int(no_in);
     if (no < 0 || no >= self->num_matches) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, no_in));
+        mp_raise_arg1(&mp_type_IndexError, no_in);
     }
 
     const char *start = self->caps[no * 2];
@@ -82,7 +82,7 @@ STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span
     if (n_args == 2) {
         no = mp_obj_get_int(args[1]);
         if (no < 0 || no >= self->num_matches) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, args[1]));
+            mp_raise_arg1(&mp_type_IndexError, args[1]);
         }
     }
 
@@ -326,7 +326,7 @@ STATIC mp_obj_t re_sub_helper(mp_obj_t self_in, size_t n_args, const mp_obj_t *a
                     }
 
                     if (match_no >= (unsigned int)match->num_matches) {
-                        nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, MP_OBJ_NEW_SMALL_INT(match_no)));
+                        mp_raise_arg1(&mp_type_IndexError, MP_OBJ_NEW_SMALL_INT(match_no));
                     }
 
                     const char *start_match = match->caps[match_no * 2];

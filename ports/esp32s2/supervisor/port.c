@@ -30,6 +30,8 @@
 #include "supervisor/port.h"
 #include "boards/board.h"
 #include "modules/module.h"
+#include "py/runtime.h"
+#include "supervisor/esp_port.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -41,12 +43,15 @@
 #include "common-hal/busio/UART.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
+#include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/rtc/__init__.h"
 
 #include "peripherals/rmt.h"
+#include "peripherals/pcnt.h"
+#include "peripherals/timer.h"
 #include "components/heap/include/esp_heap_caps.h"
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
 
@@ -100,6 +105,20 @@ void reset_port(void) {
     analogout_reset();
 #endif
 
+#if CIRCUITPY_BUSIO
+    i2c_reset();
+    spi_reset();
+    uart_reset();
+#endif
+
+#if defined(CIRCUITPY_COUNTIO) || defined(CIRCUITPY_ROTARYIO)
+    peripherals_pcnt_reset();
+#endif
+
+#if CIRCUITPY_FREQUENCYIO
+    peripherals_timer_reset();
+#endif
+
 #if CIRCUITPY_PULSEIO
     esp32s2_peripherals_rmt_reset();
     pulsein_reset();
@@ -109,14 +128,12 @@ void reset_port(void) {
     pwmout_reset();
 #endif
 
-#if CIRCUITPY_BUSIO
-    i2c_reset();
-    spi_reset();
-    uart_reset();
-#endif
-
 #if CIRCUITPY_RTC
     rtc_reset();
+#endif
+
+#if CIRCUITPY_WATCHDOG
+    watchdog_reset();
 #endif
 
 #if CIRCUITPY_WIFI
@@ -179,14 +196,14 @@ uint32_t port_get_saved_word(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    struct timeval tv_now;
-    gettimeofday(&tv_now, NULL);
-    // convert usec back to ticks
-    uint64_t all_subticks = (uint64_t)(tv_now.tv_usec * 2) / 71;
+    // Convert microseconds to subticks of 1/32768 seconds
+    // 32768/1000000 = 64/15625 in lowest terms
+    // this arithmetic overflows after 570 years
+    int64_t all_subticks = esp_timer_get_time() * 512 / 15625;
     if (subticks != NULL) {
         *subticks = all_subticks % 32;
     }
-    return (uint64_t)tv_now.tv_sec * 1024L + all_subticks / 32;
+    return all_subticks / 32;
 }
 
 // Enable 1/1024 second tick.
@@ -199,24 +216,27 @@ void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
 }
 
-TickType_t sleep_time_set;
 TickType_t sleep_time_duration;
+
 void port_interrupt_after_ticks(uint32_t ticks) {
-    sleep_time_set = xTaskGetTickCount();
-    sleep_time_duration = ticks / portTICK_PERIOD_MS;
-    // esp_sleep_enable_timer_wakeup(uint64_t time_in_us)
+    sleep_time_duration = (ticks * 100)/1024;
+    sleeping_circuitpython_task = xTaskGetCurrentTaskHandle();
 }
 
 void port_sleep_until_interrupt(void) {
-    // FreeRTOS delay here maybe.
-    // Light sleep shuts down BLE and wifi.
-    // esp_light_sleep_start()
+
+    uint32_t NotifyValue = 0;
+
     if (sleep_time_duration == 0) {
         return;
     }
-    vTaskDelayUntil(&sleep_time_set, sleep_time_duration);
+    xTaskNotifyWait(0x01,0x01,&NotifyValue,
+                             sleep_time_duration );
+    if (NotifyValue == 1) {
+      sleeping_circuitpython_task = NULL;
+      mp_handle_pending();
+    }
 }
-
 
 // Wrap main in app_main that the IDF expects.
 extern void main(void);
