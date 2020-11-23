@@ -28,7 +28,7 @@
 
 typedef enum {
     RUN_REASON_STARTUP,
-    RUN_REASON_AUTORELOAD,
+    RUN_REASON_AUTO_RELOAD,
     RUN_REASON_SUPERVISOR_RELOAD,
     RUN_REASON_REPL_RELOAD,
 } supervisor_run_reason_t;

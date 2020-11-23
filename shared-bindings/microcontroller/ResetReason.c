@@ -35,6 +35,7 @@ MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, SOFTWARE, RESET_REASON_SOFT
 MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, DEEP_SLEEP_ALARM, RESET_REASON_DEEP_SLEEP_ALARM);
 MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, RESET_PIN, RESET_REASON_RESET_PIN);
 MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, WATCHDOG, RESET_REASON_WATCHDOG);
+MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, UNKNOWN, RESET_REASON_UNKNOWN);
 
 //| class ResetReason:
 //|     """The reason the microntroller was last reset"""
@@ -55,7 +56,10 @@ MAKE_ENUM_VALUE(mcu_reset_reason_type, reset_reason, WATCHDOG, RESET_REASON_WATC
 //|     """The microntroller was reset by a signal on its reset pin. The pin might be connected to a reset button."""
 //|
 //|     WATCHDOG: object
-//|     """The chip microcontroller reset by its watchdog timer."""
+//|     """The microcontroller was reset by its watchdog timer."""
+//|
+//|     UNKNOWN: object
+//|     """The microntroller restarted for an unknown reason."""
 //|
 MAKE_ENUM_MAP(mcu_reset_reason) {
     MAKE_ENUM_MAP_ENTRY(reset_reason, POWER_ON),
@@ -64,6 +68,7 @@ MAKE_ENUM_MAP(mcu_reset_reason) {
     MAKE_ENUM_MAP_ENTRY(reset_reason, DEEP_SLEEP_ALARM),
     MAKE_ENUM_MAP_ENTRY(reset_reason, RESET_PIN),
     MAKE_ENUM_MAP_ENTRY(reset_reason, WATCHDOG),
+    MAKE_ENUM_MAP_ENTRY(reset_reason, UNKNOWN),
 };
 STATIC MP_DEFINE_CONST_DICT(mcu_reset_reason_locals_dict, mcu_reset_reason_locals_table);
 

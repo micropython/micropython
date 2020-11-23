@@ -29,9 +29,10 @@
 
 #include "py/obj.h"
 
-extern void common_hal_alarm_set_wake_alarm(mp_obj_t alarm);
+extern mp_obj_t common_hal_alarm_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
+extern mp_obj_t common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms);
 
-extern mp_obj_t common_hal_alarm_restart_on_alarm(size_t n_alarms, const mp_obj_t *alarms);
-extern mp_obj_t alarm_sleep_until_alarm(size_t n_alarms, const mp_obj_t *alarms);
+// Used by wake-up code.
+extern void common_hal_alarm_set_wake_alarm(mp_obj_t alarm);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H

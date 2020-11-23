@@ -25,10 +25,10 @@
  */
 
 #include <stdbool.h>
-
-// Set by the shared USB code.
-volatile bool _workflow_active;
+#include "tusb.h"
 
 bool supervisor_workflow_active(void) {
-    return _workflow_active;
+    // Eventually there might be other non-USB workflows, such as BLE.
+    // tud_ready() checks for usb mounted and not suspended.
+    return tud_ready();
 }

@@ -29,6 +29,7 @@
 
 #include "py/obj.h"
 
+#include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
 extern const mp_obj_type_t mcu_processor_type;

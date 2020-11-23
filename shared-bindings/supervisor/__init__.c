@@ -88,6 +88,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_s
 //|
 STATIC mp_obj_t supervisor_reload(void) {
     reload_requested = true;
+    supervisor_set_run_reason(RUN_REASON_SUPERVISOR_RELOAD);
     mp_raise_reload_exception();
     return mp_const_none;
 }

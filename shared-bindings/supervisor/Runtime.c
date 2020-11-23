@@ -25,8 +25,12 @@
  */
 
 #include <stdbool.h>
+#include "py/enum.h"
 #include "py/objproperty.h"
+#include "shared-bindings/supervisor/RunReason.h"
 #include "shared-bindings/supervisor/Runtime.h"
+
+STATIC supervisor_run_reason_t _run_reason;
 
 //TODO: add USB, REPL to description once they're operational
 //| class Runtime:
@@ -94,8 +98,7 @@ const mp_obj_property_t supervisor_serial_bytes_available_obj = {
 //|     """Returns why CircuitPython started running this particular time.
 //|
 STATIC mp_obj_t supervisor_get_run_reason(mp_obj_t self) {
-    mp_raise_NotImplementedError(NULL);
-    return mp_const_none;
+    return cp_enum_find(&supervisor_run_reason_type, _run_reason);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_get_run_reason_obj, supervisor_get_run_reason);
 
@@ -106,6 +109,9 @@ const mp_obj_property_t supervisor_run_reason_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
+    _run_reason = run_reason;
+}
 
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_serial_connected), MP_ROM_PTR(&supervisor_serial_connected_obj) },

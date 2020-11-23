@@ -28,13 +28,14 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PIN_ALARM_H
 
 #include "py/obj.h"
+#include "py/objtuple.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/alarm/pin/PinAlarm.h"
 
 extern const mp_obj_type_t alarm_pin_pin_alarm_type;
 
-extern void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, const mcu_pin_obj_t *pin, bool level, bool edge, bool pull);
-extern const mcu_pin_obj_t *common_hal_alarm_pin_pin_alarm_get_pin(alarm_pin_pin_alarm_obj_t *self);
+void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, const mp_obj_t pins[], size_t num_pins, bool value, bool all_same_value, bool edge, bool pull);
+extern const mp_obj_tuple_t *common_hal_alarm_pin_pin_alarm_get_pins(alarm_pin_pin_alarm_obj_t *self);
 extern bool common_hal_alarm_pin_pin_alarm_get_level(alarm_pin_pin_alarm_obj_t *self);
 extern bool common_hal_alarm_pin_pin_alarm_get_edge(alarm_pin_pin_alarm_obj_t *self);
 extern bool common_hal_alarm_pin_pin_alarm_get_pull(alarm_pin_pin_alarm_obj_t *self);

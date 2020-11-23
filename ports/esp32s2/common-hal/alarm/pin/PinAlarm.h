@@ -24,13 +24,14 @@
  * THE SOFTWARE.
  */
 
-
 #include "py/obj.h"
+#include "py/objtuple.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
-    bool level;
+    mp_obj_tuple_t *pins;
+    bool value;
+    bool all_same_value;
     bool edge;
     bool pull;
 } alarm_pin_pin_alarm_obj_t;

@@ -56,6 +56,19 @@
 //| This object is the sole instance of `microcontroller.Processor`."""
 //|
 
+//| def deep_sleep() -> None:
+//|     Go into deep sleep. If the board is connected via USB, disconnect USB first.
+//|
+//|     The board will awake from deep sleep only if the reset button is pressed
+//|     or it is awoken by an alarm set by `alarm.set_deep_sleep_alarms()`.
+//|     ...
+//|
+STATIC mp_obj_t mcu_deep_sleep(void){
+
+      return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mcu_deep_sleep_obj, mcu_deep_sleep);
+
 //| def delay_us(delay: int) -> None:
 //|     """Dedicated delay method used for very short delays. **Do not** do long delays
 //|     because this stops all other functions from completing. Think of this as an empty
@@ -164,6 +177,7 @@ const mp_obj_module_t mcu_pin_module = {
 STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_microcontroller) },
     { MP_ROM_QSTR(MP_QSTR_cpu),  MP_ROM_PTR(&common_hal_mcu_processor_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deep_sleep), MP_ROM_PTR(&mcu_deep_sleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_delay_us), MP_ROM_PTR(&mcu_delay_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_interrupts), MP_ROM_PTR(&mcu_disable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },

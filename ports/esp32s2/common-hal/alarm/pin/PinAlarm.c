@@ -30,19 +30,24 @@
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, const mcu_pin_obj_t *pin, bool level, bool edge, bool pull) {
-    self->pin = pin;
-    self->level = level;
+void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, const mp_obj_t pins[], size_t num_pins, bool value, bool all_same_value, bool edge, bool pull) {
+    self->pins = mp_obj_new_tuple(num_pins, pins);
+    self->value = value;
+    self->all_same_value = all_same_value;
     self->edge = edge;
     self->pull = pull;
 }
 
-const mcu_pin_obj_t *common_hal_alarm_pin_pin_alarm_get_pin(alarm_pin_pin_alarm_obj_t *self) {
-    return self->pin;
+const mp_obj_tuple_t *common_hal_alarm_pin_pin_alarm_get_pins(alarm_pin_pin_alarm_obj_t *self) {
+    return self->pins;
 }
 
-bool common_hal_alarm_pin_pin_alarm_get_level(alarm_pin_pin_alarm_obj_t *self) {
-    return self->level;
+bool common_hal_alarm_pin_pin_alarm_get_value(alarm_pin_pin_alarm_obj_t *self) {
+    return self->value;
+}
+
+bool common_hal_alarm_pin_pin_alarm_get_all_same_value(alarm_pin_pin_alarm_obj_t *self) {
+    return self->all_same_value;
 }
 
 bool common_hal_alarm_pin_pin_alarm_get_edge(alarm_pin_pin_alarm_obj_t *self) {

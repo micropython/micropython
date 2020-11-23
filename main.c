@@ -61,6 +61,8 @@
 #include "supervisor/usb.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Processor.h"
+#include "shared-bindings/supervisor/Runtime.h"
 
 #include "boards/board.h"
 
@@ -327,24 +329,27 @@ bool run_code_py(safe_mode_t safe_mode) {
     #endif
     rgb_status_animation_t animation;
     bool ok = result.return_code != PYEXEC_EXCEPTION;
-    #if CIRCUITPY_ALARM
     // If USB isn't enumerated then deep sleep.
     if (ok && !supervisor_workflow_active() && supervisor_ticks_ms64() > CIRCUITPY_USB_ENUMERATION_DELAY * 1024) {
-        common_hal_alarm_restart_on_alarm(0, NULL);
+        common_hal_mcu_deep_sleep();
     }
-    #endif
     // Show the animation every N seconds.
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
         RUN_BACKGROUND_TASKS;
         if (reload_requested) {
+            supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
             reload_requested = false;
             return true;
         }
 
         if (serial_connected() && serial_bytes_available()) {
             // Skip REPL if reload was requested.
-            return (serial_read() == CHAR_CTRL_D);
+            bool ctrl_d = serial_read() == CHAR_CTRL_D;
+            if (ctrl_d) {
+                supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
+            }
+            return (ctrl_d);
         }
 
         if (!serial_connected_before_animation && serial_connected()) {
@@ -520,6 +525,9 @@ int __attribute__((used)) main(void) {
     // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
     reset_board();
+
+    // This is first time we are running CircuitPython after a reset or power-up.
+    supervisor_set_run_reason(RUN_REASON_STARTUP);
 
     // If not in safe mode turn on autoreload by default but before boot.py in case it wants to change it.
     if (safe_mode == NO_SAFE_MODE) {

@@ -76,9 +76,9 @@ STATIC mp_obj_t mcu_processor_get_reset_reason(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_reset_reason_obj, mcu_processor_get_reset_reason);
 
-const mp_obj_property_t mcu_reset_reason_obj = {
+const mp_obj_property_t mcu_processor_reset_reason_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&mcu_processor_get_reason_reason_obj,  // getter
+    .proxy = {(mp_obj_t)&mcu_processor_get_reset_reason_obj,  // getter
               (mp_obj_t)&mp_const_none_obj,            // no setter
               (mp_obj_t)&mp_const_none_obj,            // no deleter
     },
