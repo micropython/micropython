@@ -52,6 +52,8 @@
 StackType_t  usb_device_stack[USBD_STACK_SIZE];
 StaticTask_t usb_device_taskdef;
 
+TaskHandle_t sleeping_circuitpython_task = NULL;
+
 // USB Device Driver task
 // This top level thread process all usb events and invoke callbacks
 void usb_device_task(void* param)
@@ -113,4 +115,24 @@ void init_usb_hardware(void) {
                              5,
                              usb_device_stack,
                              &usb_device_taskdef);
+}
+/**
+ * Callback invoked when received an "wanted" char.
+ * @param itf           Interface index (for multiple cdc interfaces)
+ * @param wanted_char   The wanted char (set previously)
+ */
+void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char)
+{
+    (void) itf; // not used
+    // Workaround for using lib/utils/interrupt_char.c
+    // Compare mp_interrupt_char with wanted_char and ignore if not matched
+    if (mp_interrupt_char == wanted_char) {
+        tud_cdc_read_flush();    // flush read fifo
+        mp_keyboard_interrupt();
+        // CircuitPython's VM is run in a separate FreeRTOS task from TinyUSB.
+        // So, we must notify the other task when a CTRL-C is received.
+        if (sleeping_circuitpython_task != NULL) {
+          xTaskNotifyGive(sleeping_circuitpython_task);
+        }
+    }
 }

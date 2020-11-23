@@ -49,7 +49,7 @@
 //|             loopback: bool = False,
 //|             silent: bool = False,
 //|             auto_restart: bool = False,
-//|         ):
+//|         ) -> None:
 //|         """A common shared-bus protocol.  The rx and tx pins are generally
 //|         connected to a transceiver which controls the H and L pins on a
 //|         shared bus.
@@ -171,7 +171,7 @@ STATIC const mp_obj_property_t canio_can_receive_error_count_obj = {
               (mp_obj_t)mp_const_none},
 };
 
-//|     state: State
+//|     state: BusState
 //|     """The current state of the bus. (read-only)"""
 STATIC mp_obj_t canio_can_state_get(mp_obj_t self_in) {
     canio_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -291,7 +291,7 @@ STATIC const mp_obj_property_t canio_can_loopback_obj = {
 };
 
 
-//|     def send(message: Union[RemoteTransmissionRequest, Message]) -> None:
+//|     def send(self, message: Union[RemoteTransmissionRequest, Message]) -> None:
 //|         """Send a message on the bus with the given data and id.
 //|         If the message could not be sent due to a full fifo or a bus error condition, RuntimeError is raised.
 //|         """
@@ -352,7 +352,7 @@ STATIC mp_obj_t canio_can_enter(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_can_enter_obj, canio_can_enter);
 
-//|     def __exit__(self, unused1, unused2, unused3) -> None:
+//|     def __exit__(self, unused1: Optional[Type[BaseException]], unused2: Optional[BaseException], unused3: Optional[TracebackType]) -> None:
 //|         """Calls deinit()"""
 //|         ...
 STATIC mp_obj_t canio_can_exit(size_t num_args, const mp_obj_t args[]) {

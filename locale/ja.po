@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-21 20:13-0500\n"
-"PO-Revision-Date: 2020-09-25 18:20+0000\n"
-"Last-Translator: Taku Fukada <naninunenor@gmail.com>\n"
+"POT-Creation-Date: 2020-11-10 15:30+0530\n"
+"PO-Revision-Date: 2020-11-12 22:51+0000\n"
+"Last-Translator: sporeball <sporeballdev@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -162,12 +162,12 @@ msgstr "'%s' にはラベルが必要"
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
-msgstr ""
+msgstr "'%s'にはレジスタが必要"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr ""
+msgstr "'%s'には特別レジスタが必要"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -192,7 +192,7 @@ msgstr ""
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s'には{r0, r1, ...}が必要"
 
 #: py/emitinlinextensa.c
 #, c-format
@@ -246,7 +246,7 @@ msgstr "'data'には整数の引数が必要"
 
 #: py/compile.c
 msgid "'label' requires 1 argument"
-msgstr ""
+msgstr "'label'には１つの引数が必要"
 
 #: py/compile.c
 msgid "'return' outside function"
@@ -296,11 +296,16 @@ msgstr "address_typeが範囲外"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "全てのCAN周辺機器が使用中"
 
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "全てのI2C周辺機器が使用中"
+
+#: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
+msgid "All PCNT units in use"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/esp32s2/common-hal/canio/Listener.c
@@ -432,6 +437,11 @@ msgstr "最低のフレームレート未満"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "bit clockとword selectはクロックユニットを共有しなければなりません"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -821,19 +831,19 @@ msgstr "%qが必要"
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
 msgid "Expected a Characteristic"
-msgstr ""
+msgstr "Characteristicが必要"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a DigitalInOut"
-msgstr ""
+msgstr "DigitalInOutが必要"
 
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
-msgstr ""
+msgstr "Serviceが必要"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected a UART"
-msgstr ""
+msgstr "UARTが必要"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 #: shared-bindings/_bleio/Service.c
@@ -842,7 +852,7 @@ msgstr "UUIDが必要"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Expected an Address"
-msgstr ""
+msgstr "Addressが必要"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -886,7 +896,7 @@ msgstr "%dバイトのRXバッファの確保に失敗"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
-msgstr ""
+msgstr "Wi-Fiのメモリの確保に失敗"
 
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
@@ -1002,6 +1012,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "バッファサイズが正しくありません"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "Initialization failed due to lack of memory"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr ""
@@ -1052,7 +1066,7 @@ msgstr "不正なBMPファイル"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr ""
+msgstr "不正なBSSID"
 
 #: ports/esp32s2/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
@@ -1103,7 +1117,7 @@ msgstr "フォーマットチャンクのサイズが不正"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency"
-msgstr ""
+msgstr "不正な周波数"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Invalid frequency supplied"
@@ -1123,7 +1137,8 @@ msgid "Invalid phase"
 msgstr "不正なphase"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "不正なピン"
@@ -1338,11 +1353,11 @@ msgstr "long integerに対応していません"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more channels available"
-msgstr ""
+msgstr "使えるチャネルがもうありません"
 
 #: ports/esp32s2/common-hal/pwmio/PWMOut.c
 msgid "No more timers available"
-msgstr ""
+msgstr "使えるタイマーがもうありません"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "No more timers available on this pin."
@@ -1658,7 +1673,7 @@ msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
-msgstr ""
+msgstr "サイズは対応していません"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
@@ -2781,7 +2796,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
-msgstr ""
+msgstr "不正なホスト名"
 
 #: extmod/modussl_axtls.c
 msgid "invalid key"
@@ -3227,6 +3242,7 @@ msgstr "pow()の3つ目の引数は0にできません"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow()の第3引数には整数が必要"
 
+#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
@@ -3443,6 +3459,7 @@ msgstr "threshouldは0から65536まで"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time()は9要素のシーケンスを受け取ります"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "タイムアウト長は対応する最大値を超えています"
@@ -3624,6 +3641,10 @@ msgstr "value_countは0より大きくなければなりません"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
+msgstr ""
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "watchdog not initialized"
 msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c

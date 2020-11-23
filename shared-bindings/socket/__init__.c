@@ -49,19 +49,20 @@ STATIC const mp_obj_type_t socket_type;
 
 //| class socket:
 //|
-//|     def __init__(self, family: int, type: int, proto: int) -> None:
+//|     AF_INET: int
+//|     AF_INET6: int
+//|     SOCK_STREAM: int
+//|     SOCK_DGRAM: int
+//|     SOCK_RAW: int
+//|     IPPROTO_TCP: int
+//|
+//|     def __init__(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = IPPROTO_TCP) -> None:
 //|         """Create a new socket
 //|
 //|         :param int family: AF_INET or AF_INET6
 //|         :param int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
 //|         :param int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)"""
 //|         ...
-//|
-//|     AF_INET: int
-//|     AF_INET6: int
-//|     SOCK_STREAM: int
-//|     SOCK_DGRAM: int
-//|     SOCK_RAW: int
 //|
 
 STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {

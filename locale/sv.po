@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-21 20:13-0500\n"
-"PO-Revision-Date: 2020-10-26 02:36+0000\n"
+"POT-Creation-Date: 2020-11-10 15:30+0530\n"
+"PO-Revision-Date: 2020-11-20 22:28+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3.2-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -294,11 +294,16 @@ msgstr "Adresstyp utanför intervallet"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "All I2C-kringutrustning används"
 
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "All I2C-kringutrustning används"
+
+#: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
+msgid "All PCNT units in use"
+msgstr "Alla PCNT-enheter används"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/esp32s2/common-hal/canio/Listener.c
@@ -415,12 +420,12 @@ msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
-"Autoladdning är på. Spara bara filer via USB för att köra dem eller ange "
-"REPL för att inaktivera.\n"
+"Autoladdning är på. Spara filer via USB för att köra dem eller ange REPL för "
+"att inaktivera.\n"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
-msgstr ""
+msgstr "Baudrate stöds inte av kringutrustning"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -430,6 +435,11 @@ msgstr "Under minsta bildfrekvens"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bitklocka och ordval måste dela en klockenhet"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr "Bitdjup måste vara inom 1 till 6, inte %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -1002,6 +1012,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Fel buffertstorlek"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "Initialization failed due to lack of memory"
+msgstr "Initieringen misslyckades på grund av minnesbrist"
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr "Indata tar för lång tid"
@@ -1123,7 +1137,8 @@ msgid "Invalid phase"
 msgstr "Ogiltig fas"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Ogiltig pinne"
@@ -2220,7 +2235,7 @@ msgstr "kan bara ha upp till 4 parametrar att Xtensa assembly"
 
 #: py/persistentcode.c
 msgid "can only save bytecode"
-msgstr "kan bara spara bytekod"
+msgstr "kan bara spara bytecode"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
@@ -2905,7 +2920,7 @@ msgstr "long int stöds inte i denna build"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
-msgstr ""
+msgstr "loopback + tyst läge stöds inte av kringutrustning"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -2943,11 +2958,11 @@ msgstr "maximal rekursionsdjup överskriden"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "maxiter must be > 0"
-msgstr ""
+msgstr "maxiter måste vara > 0"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "maxiter should be > 0"
-msgstr ""
+msgstr "maxiter bör vara > 0"
 
 #: py/runtime.c
 #, c-format
@@ -3253,6 +3268,7 @@ msgstr "pow() 3: e argument kan inte vara 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() med 3 argument kräver heltal"
 
+#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
@@ -3388,7 +3404,7 @@ msgstr "argumentet sort måste vara en ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sorted axis can't be longer than 65535"
-msgstr ""
+msgstr "sorterad axel kan inte vara längre än 65535"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
@@ -3470,6 +3486,7 @@ msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kräver en 9-sekvens"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "timeout-längd överskred det maximala värde som stöds"
@@ -3522,12 +3539,12 @@ msgstr "tupel/lista har fel längd"
 #: ports/esp32s2/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
-msgstr ""
+msgstr "twai_driver_install returnerade esp-idf-fel #%d"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_start returned esp-idf error #%d"
-msgstr ""
+msgstr "twai_start returnerade esp-idf-fel #%d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
@@ -3652,6 +3669,10 @@ msgstr "value_count måste vara > 0"
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
 msgstr "vektorer måste ha samma längd"
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "watchdog not initialized"
+msgstr "watchdog är inte initierad"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"

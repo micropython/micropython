@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-21 20:13-0500\n"
-"PO-Revision-Date: 2020-10-27 21:01+0000\n"
-"Last-Translator: Adolfo Jayme Barrientos <fitojb@ubuntu.com>\n"
+"POT-Creation-Date: 2020-11-10 15:30+0530\n"
+"PO-Revision-Date: 2020-11-15 16:28+0000\n"
+"Last-Translator: RubenD <rubendariopm14@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3.2-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -297,11 +297,16 @@ msgstr "Tipo de dirección fuera de rango"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "Todos los periféricos CAN están en uso"
 
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Todos los periféricos I2C están siendo usados"
+
+#: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
+msgid "All PCNT units in use"
+msgstr "Todas las unidades PCNT en uso"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/esp32s2/common-hal/canio/Listener.c
@@ -427,7 +432,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
-msgstr ""
+msgstr "El periférico no maneja el Baudrate"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -437,6 +442,11 @@ msgstr "Por debajo de taza mínima de refrescamiento"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bit clock y word select deben compartir una unidad de reloj"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr "Bit depth tiene que ser de 1 a 6 inclusivo, no %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -1010,6 +1020,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Tamaño incorrecto del buffer"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "Initialization failed due to lack of memory"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr "La entrada está durando mucho tiempo"
@@ -1131,7 +1145,8 @@ msgid "Invalid phase"
 msgstr "Fase inválida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Pin inválido"
@@ -3271,6 +3286,7 @@ msgstr "el 3er argumento de pow() no puede ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() con 3 argumentos requiere enteros"
 
+#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
@@ -3488,6 +3504,7 @@ msgstr "limite debe ser en el rango 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() toma un sequencio 9"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr ""
@@ -3671,6 +3688,10 @@ msgstr "value_count debe ser > 0"
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
 msgstr "los vectores deben tener el mismo tamaño"
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "watchdog not initialized"
+msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"

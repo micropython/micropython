@@ -123,7 +123,7 @@ STATIC mp_obj_t canio_listener_enter(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_enter_obj, canio_listener_enter);
 
-//|     def __exit__(self, unused1, unused2, unused3) -> None:
+//|     def __exit__(self, unused1: Optional[Type[BaseException]], unused2: Optional[BaseException], unused3: Optional[TracebackType]) -> None:
 //|         """Calls deinit()"""
 //|         ...
 STATIC mp_obj_t canio_listener_exit(size_t num_args, const mp_obj_t args[]) {

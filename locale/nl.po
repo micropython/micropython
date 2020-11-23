@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-21 20:13-0500\n"
+"POT-Creation-Date: 2020-11-10 15:30+0530\n"
 "PO-Revision-Date: 2020-10-27 16:47+0000\n"
 "Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
 "Language-Team: none\n"
@@ -300,6 +300,11 @@ msgstr ""
 msgid "All I2C peripherals are in use"
 msgstr "Alle I2C peripherals zijn in gebruik"
 
+#: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
+msgid "All PCNT units in use"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/esp32s2/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -430,6 +435,11 @@ msgstr "Onder de minimum frame rate"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bit clock en word select moeten een clock eenheid delen"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -1004,6 +1014,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr "Incorrecte buffer grootte"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "Initialization failed due to lack of memory"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
 msgstr "Invoer duurt te lang"
@@ -1125,7 +1139,8 @@ msgid "Invalid phase"
 msgstr "Ongeldige fase"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
+#: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
 msgstr "Ongeldige pin"
@@ -3260,6 +3275,7 @@ msgstr "derde argument van pow() mag geen 0 zijn"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() met 3 argumenten vereist integers"
 
+#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
@@ -3477,6 +3493,7 @@ msgstr "drempelwaarde moet in het bereik 0-65536 liggen"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() accepteert een 9-rij"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "time-outduur is groter dan de ondersteunde maximale waarde"
@@ -3659,6 +3676,10 @@ msgstr "value_count moet groter dan 0 zijn"
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
 msgstr "vectoren moeten van gelijke lengte zijn"
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "watchdog not initialized"
+msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"

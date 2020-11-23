@@ -125,4 +125,6 @@ void common_hal_neopixel_write (const digitalio_digitalinout_obj_t* digitalinout
 
     // Free channel again
     esp32s2_peripherals_free_rmt(config.channel);
+    // Swap pin back to GPIO mode
+    gpio_set_direction(digitalinout->pin->number, GPIO_MODE_OUTPUT);
 }

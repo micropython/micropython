@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
-#include "mpconfigboard.h"
-#include "shared-bindings/microcontroller/Pin.h"
+#ifndef MICROPY_INCLUDED_ESP32S2_SUPERVISOR_PORT_H
+#define MICROPY_INCLUDED_ESP32S2_SUPERVISOR_PORT_H
 
-void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
-    // Debug UART
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
-}
+extern TaskHandle_t sleeping_circuitpython_task;
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-
-}
+#endif // MICROPY_INCLUDED_ESP32S2_SUPERVISOR_PORT_H
