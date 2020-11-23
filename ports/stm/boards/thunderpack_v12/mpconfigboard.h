@@ -28,14 +28,16 @@
 
 // Non-volatile memory config
 #define CIRCUITPY_INTERNAL_NVM_SIZE        (0x4000)
-#define CIRCUITPY_INTERNAL_NVM_START_ADDR  (0x08010000)
-#define CIRCUITPY_INTERNAL_NVM_SECTOR      FLASH_SECTOR_4
+#define CIRCUITPY_INTERNAL_NVM_START_ADDR  (0x0800C000)
+#define CIRCUITPY_INTERNAL_NVM_SECTOR      FLASH_SECTOR_3
 #define NVM_BYTEARRAY_BUFFER_SIZE          512
 
 // Flash config
-#define FLASH_SIZE                  (0x80000)
-#define FLASH_PAGE_SIZE             (0x4000)
-#define BOARD_FLASH_SIZE            (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE- 0x2000 - 0xC000)
+#define FLASH_SIZE                          (0x80000)
+#define FLASH_PAGE_SIZE                     (0x4000)
+#define BOARD_FLASH_SIZE                    (FLASH_SIZE - CIRCUITPY_INTERNAL_NVM_SIZE- 0x2000 - 0xC000)
+#define INTERNAL_FLASH_FILESYSTEM_SIZE       0x8000
+#define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08004000
 
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PB15)
