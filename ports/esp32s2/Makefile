@@ -188,6 +188,7 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
+	peripherals/timer.c \
 	peripherals/pcnt.c \
 	peripherals/pins.c \
 	peripherals/rmt.c \
