@@ -7,7 +7,7 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
-TRANSLATION := en_US
+TRANSLATION ?= en_US
 
 # If qstr autogeneration is not disabled we specify the output header
 # for all collected qstrings.
