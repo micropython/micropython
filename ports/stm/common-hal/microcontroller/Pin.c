@@ -35,7 +35,7 @@
 #ifdef MICROPY_HW_NEOPIXEL
 bool neopixel_in_use;
 #endif
-#ifdef MICROPY_HW_APA102_MOSI
+#if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
 bool apa102_sck_in_use;
 bool apa102_mosi_in_use;
 #endif
@@ -70,7 +70,7 @@ void reset_all_pins(void) {
     #ifdef MICROPY_HW_NEOPIXEL
     neopixel_in_use = false;
     #endif
-    #ifdef MICROPY_HW_APA102_MOSI
+    #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
     apa102_sck_in_use = false;
     apa102_mosi_in_use = false;
     #endif
@@ -97,8 +97,11 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
         return;
     }
     #endif
-    #ifdef MICROPY_HW_APA102_MOSI
-    if ((pin_port == MICROPY_HW_APA102_MOSI->port && pin_number == MICROPY_HW_APA102_MOSI->number) || (pin_port == MICROPY_HW_APA102_SCK->port && pin_number == MICROPY_HW_APA102_MOSI->number))
+    #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
+    if (
+        (pin_port == MICROPY_HW_APA102_MOSI->port && pin_number == MICROPY_HW_APA102_MOSI->number)
+        || (pin_port == MICROPY_HW_APA102_SCK->port && pin_number == MICROPY_HW_APA102_MOSI->number)
+    )
     {
         apa102_mosi_in_use = false;
         apa102_sck_in_use = false;
@@ -140,7 +143,7 @@ bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
         return !neopixel_in_use;
     }
     #endif
-    #ifdef MICROPY_HW_APA102_MOSI
+    #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
     if (pin == MICROPY_HW_APA102_MOSI)
     {
         return !apa102_mosi_in_use;
@@ -173,7 +176,7 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
         neopixel_in_use = true;
     }
     #endif
-    #ifdef MICROPY_HW_APA102_MOSI
+    #if defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
     if (pin == MICROPY_HW_APA102_MOSI)
     {
         apa102_mosi_in_use = true;

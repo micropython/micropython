@@ -48,7 +48,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
 
     // Erase flash sector
     HAL_FLASH_Unlock();
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR );
     FLASH_Erase_Sector(CIRCUITPY_INTERNAL_NVM_SECTOR, VOLTAGE_RANGE_3);
 
     // Write bytes to flash
