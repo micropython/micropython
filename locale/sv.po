@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-10 15:30+0530\n"
-"PO-Revision-Date: 2020-11-15 16:28+0000\n"
+"PO-Revision-Date: 2020-11-20 22:28+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1014,7 +1014,7 @@ msgstr "Fel buffertstorlek"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
-msgstr ""
+msgstr "Initieringen misslyckades på grund av minnesbrist"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -3672,7 +3672,7 @@ msgstr "vektorer måste ha samma längd"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
-msgstr ""
+msgstr "watchdog är inte initierad"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"

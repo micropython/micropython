@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2017 Damien P. George
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,18 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H
+#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H
 
-#include "py/runtime.h"
+#include "driver/timer.h"
 
-#if MICROPY_ENABLE_PYSTACK
+typedef struct {
+    timer_idx_t idx;
+    timer_group_t group;
+} timer_index_t;
 
-void mp_pystack_init(void *start, void *end) {
-    MP_STATE_THREAD(pystack_start) = start;
-    MP_STATE_THREAD(pystack_end) = end;
-    MP_STATE_THREAD(pystack_cur) = start;
-}
+extern void peripherals_timer_init(const timer_config_t * config, timer_index_t * timer);
+extern void peripherals_timer_deinit(timer_index_t * timer);
+extern void peripherals_timer_reset(void);
 
-void *mp_pystack_alloc(size_t n_bytes) {
-    n_bytes = (n_bytes + (MICROPY_PYSTACK_ALIGN - 1)) & ~(MICROPY_PYSTACK_ALIGN - 1);
-    #if MP_PYSTACK_DEBUG
-    n_bytes += MICROPY_PYSTACK_ALIGN;
-    #endif
-    if (MP_STATE_THREAD(pystack_cur) + n_bytes > MP_STATE_THREAD(pystack_end)) {
-        // out of memory in the pystack
-        mp_raise_arg1(&mp_type_RuntimeError,
-            MP_OBJ_NEW_QSTR(MP_QSTR_pystack_space_exhausted));
-    }
-    void *ptr = MP_STATE_THREAD(pystack_cur);
-    MP_STATE_THREAD(pystack_cur) += n_bytes;
-    #if MP_PYSTACK_DEBUG
-    *(size_t*)(MP_STATE_THREAD(pystack_cur) - MICROPY_PYSTACK_ALIGN) = n_bytes;
-    #endif
-    return ptr;
-}
-
-#endif
+#endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H
