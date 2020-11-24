@@ -94,6 +94,14 @@
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_AUTHENTICATED        (0x2000)
 #define MP_BLUETOOTH_CHARACTERISTIC_FLAG_WRITE_AUTHORIZED           (0x4000)
 
+// Return values from _IRQ_GATTS_READ_REQUEST.
+#define MP_BLUETOOTH_GATTS_NO_ERROR                           (0x00)
+#define MP_BLUETOOTH_GATTS_ERROR_READ_NOT_PERMITTED           (0x02)
+#define MP_BLUETOOTH_GATTS_ERROR_WRITE_NOT_PERMITTED          (0x03)
+#define MP_BLUETOOTH_GATTS_ERROR_INSUFFICIENT_AUTHENTICATION  (0x05)
+#define MP_BLUETOOTH_GATTS_ERROR_INSUFFICIENT_AUTHORIZATION   (0x08)
+#define MP_BLUETOOTH_GATTS_ERROR_INSUFFICIENT_ENCRYPTION      (0x0f)
+
 // For mp_bluetooth_gattc_write, the mode parameter
 #define MP_BLUETOOTH_WRITE_MODE_NO_RESPONSE     (0)
 #define MP_BLUETOOTH_WRITE_MODE_WITH_RESPONSE   (1)
@@ -185,6 +193,13 @@ _FLAG_READ_AUTHORIZED = const(0x0800)
 _FLAG_WRITE_ENCRYPTED = const(0x1000)
 _FLAG_WRITE_AUTHENTICATED = const(0x2000)
 _FLAG_WRITE_AUTHORIZED = const(0x4000)
+
+_GATTS_NO_ERROR = const(0x00)
+_GATTS_ERROR_READ_NOT_PERMITTED = const(0x02)
+_GATTS_ERROR_WRITE_NOT_PERMITTED = const(0x03)
+_GATTS_ERROR_INSUFFICIENT_AUTHENTICATION = const(0x05)
+_GATTS_ERROR_INSUFFICIENT_AUTHORIZATION = const(0x08)
+_GATTS_ERROR_INSUFFICIENT_ENCRYPTION = const(0x0f)
 */
 
 // bluetooth.UUID type.
@@ -324,8 +339,9 @@ void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle);
 // Call this when an acknowledgment is received for an indication.
 void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t value_handle, uint8_t status);
 
-// Call this when a characteristic is read from. Return false to deny the read.
-bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle);
+// Call this when a characteristic is read from (giving the handler a chance to update the stored value).
+// Return 0 to allow the read, otherwise a non-zero rejection reason (see MP_BLUETOOTH_GATTS_ERROR_*).
+mp_int_t mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle);
 
 // Call this when an MTU exchange completes.
 void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value);

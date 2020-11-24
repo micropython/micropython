@@ -608,12 +608,13 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
     mp_bluetooth_gatts_db_entry_t *entry;
     switch (ctxt->op) {
         case BLE_GATT_ACCESS_OP_READ_CHR:
-        case BLE_GATT_ACCESS_OP_READ_DSC:
+        case BLE_GATT_ACCESS_OP_READ_DSC: {
             // Allow Python code to override (by using gatts_write), or deny (by returning false) the read.
             // Note this will be a no-op if the ringbuffer implementation is being used (i.e. the stack isn't
             // run in the scheduler). The ringbuffer is not used on STM32 and Unix-H4 only.
-            if (!mp_bluetooth_gatts_on_read_request(conn_handle, value_handle)) {
-                return BLE_ATT_ERR_READ_NOT_PERMITTED;
+            int req = mp_bluetooth_gatts_on_read_request(conn_handle, value_handle);
+            if (req) {
+                return req;
             }
 
             entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle);
@@ -626,6 +627,7 @@ static int characteristic_access_cb(uint16_t conn_handle, uint16_t value_handle,
             }
 
             return 0;
+        }
         case BLE_GATT_ACCESS_OP_WRITE_CHR:
         case BLE_GATT_ACCESS_OP_WRITE_DSC:
             entry = mp_bluetooth_gatts_db_lookup(MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db, value_handle);
