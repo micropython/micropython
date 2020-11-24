@@ -65,11 +65,12 @@
 //|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
 //|
 //|         The ``start_sequence`` and ``stop_sequence`` are bitpacked to minimize the ram impact. Every
-//|         command begins with a command byte followed by a byte to determine the parameter count and if
-//|         a delay is need after. When the top bit of the second byte is 1, the next byte will be the
-//|         delay time in milliseconds. The remaining 7 bits are the parameter count excluding any delay
-//|         byte. The third through final bytes are the remaining command parameters. The next byte will
-//|         begin a new command definition.
+//|         command begins with a command byte followed by a byte to determine the parameter count and
+//|         delay. When the top bit of the second byte is 1 (0x80), a delay will occur after the command
+//|         parameters are sent. The remaining 7 bits are the parameter count excluding any delay
+//|         byte. The bytes following are the parameters. When the delay bit is set, a single byte after
+//|         the parameters specifies the delay duration in milliseconds. The value 0xff will lead to an
+//|         extra long 500 ms delay instead of 255 ms. The next byte will begin a new command definition.
 //|
 //|         :param display_bus: The bus that the display is connected to
 //|         :type _DisplayBus: displayio.FourWire or displayio.ParallelBus
@@ -244,6 +245,23 @@ const mp_obj_property_t displayio_epaperdisplay_time_to_refresh_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     busy: bool
+//|     """True when the display is refreshing. This uses the ``busy_pin`` when available or the
+//|        ``refresh_time`` otherwise."""
+//|
+STATIC mp_obj_t displayio_epaperdisplay_obj_get_busy(mp_obj_t self_in) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    return mp_obj_new_bool(common_hal_displayio_epaperdisplay_get_busy(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_busy_obj, displayio_epaperdisplay_obj_get_busy);
+
+const mp_obj_property_t displayio_epaperdisplay_busy_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_busy_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|     width: int
 //|     """Gets the width of the display in pixels"""
 //|
@@ -276,6 +294,29 @@ const mp_obj_property_t displayio_epaperdisplay_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     rotation: int
+//|     """The rotation of the display as an int in degrees."""
+//|
+STATIC mp_obj_t displayio_epaperdisplay_obj_get_rotation(mp_obj_t self_in) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_epaperdisplay_get_rotation(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_rotation_obj, displayio_epaperdisplay_obj_get_rotation);
+STATIC mp_obj_t displayio_epaperdisplay_obj_set_rotation(mp_obj_t self_in, mp_obj_t value) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    common_hal_displayio_epaperdisplay_set_rotation(self, mp_obj_get_int(value));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_set_rotation_obj, displayio_epaperdisplay_obj_set_rotation);
+
+
+const mp_obj_property_t displayio_epaperdisplay_rotation_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_rotation_obj,
+              (mp_obj_t)&displayio_epaperdisplay_set_rotation_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|     bus: _DisplayBus
 //|     """The bus being used by the display"""
 //|
@@ -299,7 +340,9 @@ STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_epaperdisplay_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_epaperdisplay_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rotation), MP_ROM_PTR(&displayio_epaperdisplay_rotation_obj) },
     { MP_ROM_QSTR(MP_QSTR_bus), MP_ROM_PTR(&displayio_epaperdisplay_bus_obj) },
+    { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&displayio_epaperdisplay_busy_obj) },
     { MP_ROM_QSTR(MP_QSTR_time_to_refresh), MP_ROM_PTR(&displayio_epaperdisplay_time_to_refresh_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_epaperdisplay_locals_dict, displayio_epaperdisplay_locals_dict_table);

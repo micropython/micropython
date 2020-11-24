@@ -346,12 +346,12 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
         }
     }
 
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(translate("ord expects a character"));
-    } else {
+    #else
         mp_raise_TypeError_varg(
             translate("ord() expected a character, but string of length %d found"), (int)len);
-    }
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_ord_obj, mp_builtin_ord);
 

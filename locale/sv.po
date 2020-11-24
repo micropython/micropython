@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-04 21:18+0530\n"
-"PO-Revision-Date: 2020-11-05 20:26+0000\n"
+"POT-Creation-Date: 2020-11-10 15:30+0530\n"
+"PO-Revision-Date: 2020-11-20 22:28+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3.2\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -300,9 +300,10 @@ msgstr "All I2C-kringutrustning används"
 msgid "All I2C peripherals are in use"
 msgstr "All I2C-kringutrustning används"
 
-#: ports/esp32s2/peripherals/pcnt_handler.c
+#: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
-msgstr ""
+msgstr "Alla PCNT-enheter används"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/esp32s2/common-hal/canio/Listener.c
@@ -434,6 +435,11 @@ msgstr "Under minsta bildfrekvens"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bitklocka och ordval måste dela en klockenhet"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+#, c-format
+msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+msgstr "Bitdjup måste vara inom 1 till 6, inte %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -1005,6 +1011,10 @@ msgstr ""
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
 msgstr "Fel buffertstorlek"
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "Initialization failed due to lack of memory"
+msgstr "Initieringen misslyckades på grund av minnesbrist"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -3258,6 +3268,7 @@ msgstr "pow() 3: e argument kan inte vara 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() med 3 argument kräver heltal"
 
+#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
@@ -3475,6 +3486,7 @@ msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kräver en 9-sekvens"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "timeout-längd överskred det maximala värde som stöds"
@@ -3657,6 +3669,10 @@ msgstr "value_count måste vara > 0"
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
 msgstr "vektorer måste ha samma längd"
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "watchdog not initialized"
+msgstr "watchdog är inte initierad"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"

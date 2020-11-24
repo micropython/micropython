@@ -43,7 +43,7 @@
 #include "freertos/FreeRTOS.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
-
+    mp_hal_delay_us(delay);
 }
 
 volatile uint32_t nesting_count = 0;
@@ -94,6 +94,17 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
     },
     .start_address = (uint8_t*) CIRCUITPY_INTERNAL_NVM_START_ADDR,
     .len = CIRCUITPY_INTERNAL_NVM_SIZE,
+};
+#endif
+
+#if CIRCUITPY_WATCHDOG
+// The singleton watchdog.WatchDogTimer object.
+watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
+    .base = {
+        .type = &watchdog_watchdogtimer_type,
+    },
+    .timeout = 0.0f,
+    .mode = WATCHDOGMODE_NONE,
 };
 #endif
 
