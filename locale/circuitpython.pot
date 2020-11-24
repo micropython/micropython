@@ -1265,6 +1265,10 @@ msgstr ""
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr ""
 
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
+msgstr ""
+
 #: py/parse.c
 msgid "Name too long"
 msgstr ""

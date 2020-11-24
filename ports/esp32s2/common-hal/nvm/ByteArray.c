@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,48 +26,72 @@
 
 #include "common-hal/nvm/ByteArray.h"
 
-#include "stm32f4xx_hal.h"
-
-#include "supervisor/shared/stack.h"
-
-#include <stdint.h>
-#include <string.h>
+#include "py/runtime.h"
+#include "nvs_flash.h"
 
 uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
     return self->len;
 }
 
+static void get_nvs_handle(nvs_handle_t * nvs_handle) {
+    // Initialize NVS
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
+
+    // Open NVS handle
+    if (nvs_open("CPY", NVS_READWRITE, nvs_handle) != ESP_OK) {
+        mp_raise_RuntimeError(translate("NVS Error"));
+    }
+}
+
 bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
         uint32_t start_index, uint8_t* values, uint32_t len) {
-    // Copy flash to buffer
-    uint8_t buffer[self->len];
-    memcpy(buffer, self->start_address, self->len);
+    char index[9];
 
-    // Set bytes in buffer
-    memmove(buffer + start_index, values, len);
+    // start nvs
+    nvs_handle_t handle;
+    get_nvs_handle(&handle);
 
-    // Erase flash sector
-    HAL_FLASH_Unlock();
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR );
-    FLASH_Erase_Sector(CIRCUITPY_INTERNAL_NVM_SECTOR, VOLTAGE_RANGE_3);
-
-    // Write bytes to flash
-    uint32_t i;
-    uint32_t flash_addr = (uint32_t)self->start_address;
-    for (i = 0; i < self->len; i++, flash_addr++) {
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, flash_addr, buffer[i]) != HAL_OK) {
-            HAL_FLASH_Lock();
+    // stage flash changes
+    for (uint32_t i = 0; i < len; i++) {
+        sprintf(index, "%i", start_index + i);
+        if (nvs_set_u8(handle, (const char *)index, values[i]) != ESP_OK) {
             return false;
         }
     }
 
-    // Finish up
-    HAL_FLASH_Lock();
+    // commit flash changes
+    if (nvs_commit(handle) != ESP_OK) {
+        return false;
+    }
+
+    // close nvs
+    nvs_close(handle);
     return true;
 }
 
-// NVM memory is memory mapped so reading it is easy.
 void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t* values) {
-    memcpy(values, self->start_address + start_index, len);
+        uint32_t start_index, uint32_t len, uint8_t* values) {
+    char index[9];
+
+    // start nvs
+    nvs_handle_t handle;
+    get_nvs_handle(&handle);
+
+    // get from flash
+    for (uint32_t i = 0; i < len; i++) {
+        sprintf(index, "%i", start_index + i);
+        if (nvs_get_u8(handle, (const char *)index, &values[i]) != ESP_OK) {
+            mp_raise_RuntimeError(translate("NVS Error"));
+        }
+    }
+
+    // close nvs
+    nvs_close(handle);
 }
