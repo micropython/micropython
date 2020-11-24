@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "CP Sapling M0"
+#define MICROPY_HW_BOARD_NAME "CP Sapling M0 w/ SPI Flash"
 #define MICROPY_HW_MCU_NAME "samd21e18"
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA15)
