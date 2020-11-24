@@ -276,7 +276,7 @@ STATIC mp_obj_t socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_recv_into_obj, 2, 3, socketpool_socket_recv_into);
 
-//|     def sendto(self, bytes: ReadableBuffer, address: tuple) -> int:
+//|     def sendto(self, bytes: ReadableBuffer, address: Tuple[str, int]) -> int:
 //|         """Send some bytes to a specific address.
 //|         Suits sockets of type SOCK_DGRAM
 //|
@@ -308,7 +308,7 @@ STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(socketpool_socket_sendto_obj, socketpool_socket_sendto);
 
-//|     def recvfrom_into(self, buffer) -> Tuple[int, tuple]:
+//|     def recvfrom_into(self, buffer: WriteableBuffer) -> Tuple[int, Tuple[str, int]]:
 //|         """Reads some bytes from a remote address.
 //|
 //|         Returns a tuple containing
