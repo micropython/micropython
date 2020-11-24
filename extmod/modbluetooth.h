@@ -319,6 +319,11 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle);
 int mp_bluetooth_get_preferred_mtu(void);
 int mp_bluetooth_set_preferred_mtu(uint16_t mtu);
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+// Initiate pairing on the specified connection.
+int mp_bluetooth_gap_pair(uint16_t conn_handle);
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 // Start a discovery (scan). Set duration to zero to run continuously.
 int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_t window_us, bool active_scan);

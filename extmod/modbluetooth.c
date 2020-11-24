@@ -682,6 +682,15 @@ STATIC mp_obj_t bluetooth_ble_gap_disconnect(mp_obj_t self_in, mp_obj_t conn_han
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_disconnect_obj, bluetooth_ble_gap_disconnect);
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+STATIC mp_obj_t bluetooth_ble_gap_pair(mp_obj_t self_in, mp_obj_t conn_handle_in) {
+    (void)self_in;
+    uint16_t conn_handle = mp_obj_get_int(conn_handle_in);
+    return bluetooth_handle_errno(mp_bluetooth_gap_pair(conn_handle));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_pair_obj, bluetooth_ble_gap_pair);
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
 // ----------------------------------------------------------------------------
 // Bluetooth object: GATTS (Peripheral/Advertiser role)
 // ----------------------------------------------------------------------------
@@ -883,6 +892,9 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gap_scan), MP_ROM_PTR(&bluetooth_ble_gap_scan_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_gap_disconnect), MP_ROM_PTR(&bluetooth_ble_gap_disconnect_obj) },
+    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+    { MP_ROM_QSTR(MP_QSTR_gap_pair), MP_ROM_PTR(&bluetooth_ble_gap_pair_obj) },
+    #endif
     // GATT Server (i.e. peripheral/advertiser role)
     { MP_ROM_QSTR(MP_QSTR_gatts_register_services), MP_ROM_PTR(&bluetooth_ble_gatts_register_services_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_read), MP_ROM_PTR(&bluetooth_ble_gatts_read_obj) },

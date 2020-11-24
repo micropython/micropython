@@ -860,6 +860,13 @@ int mp_bluetooth_set_preferred_mtu(uint16_t mtu) {
     return 0;
 }
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+int mp_bluetooth_gap_pair(uint16_t conn_handle) {
+    DEBUG_printf("mp_bluetooth_gap_pair: conn_handle=%d\n", conn_handle);
+    return ble_hs_err_to_errno(ble_gap_security_initiate(conn_handle));
+}
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
 STATIC void gattc_on_data_available(uint8_t event, uint16_t conn_handle, uint16_t value_handle, const struct os_mbuf *om) {
