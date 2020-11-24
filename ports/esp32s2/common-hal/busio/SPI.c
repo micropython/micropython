@@ -204,6 +204,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // hal->dummy_bits = 0;
     // hal->addr = 0;
 
+    claim_pin(self->clock_pin);
+    if (self->MOSI_pin != NULL) {
+        claim_pin(self->MOSI_pin);
+    }
+    if (self->MISO_pin != NULL) {
+        claim_pin(self->MISO_pin);
+    }
+
     hal->io_mode = SPI_LL_IO_MODE_NORMAL;
 
     common_hal_busio_spi_configure(self, 250000, 0, 0, 8);
