@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-04 21:18+0530\n"
-"PO-Revision-Date: 2020-11-15 16:28+0000\n"
+"POT-Creation-Date: 2020-11-10 15:30+0530\n"
+"PO-Revision-Date: 2020-11-19 01:28+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -302,7 +302,8 @@ msgstr "suǒ yǒu CAN wài shè dōu zài shǐ yòng zhōng"
 msgid "All I2C peripherals are in use"
 msgstr "Suǒyǒu I2C wàiwéi qì zhèngzài shǐyòng"
 
-#: ports/esp32s2/peripherals/pcnt_handler.c
+#: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr "suǒ yǒu zhèng zài shǐ yòng zhōng de PCNT dān yuán"
 
@@ -1008,6 +1009,10 @@ msgstr ""
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
 msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè"
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "Initialization failed due to lack of memory"
+msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -3252,6 +3257,7 @@ msgstr "pow() 3 cān shǔ bùnéng wéi 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
+#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
@@ -3469,6 +3475,7 @@ msgstr "yùzhí bìxū zài fànwéi 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() xūyào 9 xùliè"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "chāoshí shíjiān chāoguò zuìdà zhīchí zhí"
@@ -3651,6 +3658,10 @@ msgstr "zhí jìshù bìxū wèi > 0"
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
 msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "watchdog not initialized"
+msgstr "wèi chū shǐ huà jiān shì qì"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"

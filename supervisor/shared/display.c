@@ -60,18 +60,21 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
 
     #if CIRCUITPY_TERMINALIO
     displayio_tilegrid_t* grid = &supervisor_terminal_text_grid;
-    uint16_t width_in_tiles = (width_px - blinka_bitmap.width) / grid->tile_width;
+    bool tall = height_px > width_px;
+    uint16_t terminal_width_px = tall ? width_px : width_px - blinka_bitmap.width;
+    uint16_t terminal_height_px = tall ? height_px - blinka_bitmap.height : height_px ;
+    uint16_t width_in_tiles = terminal_width_px / grid->tile_width;
     // determine scale based on h
     if (width_in_tiles < 80) {
         scale = 1;
     }
 
-    width_in_tiles = (width_px - blinka_bitmap.width * scale) / (grid->tile_width * scale);
+    width_in_tiles = terminal_width_px / (grid->tile_width * scale);
     if (width_in_tiles < 1) {
         width_in_tiles = 1;
     }
-    uint16_t height_in_tiles = height_px / (grid->tile_height * scale);
-    uint16_t remaining_pixels = height_px % (grid->tile_height * scale);
+    uint16_t height_in_tiles = terminal_height_px / (grid->tile_height * scale);
+    uint16_t remaining_pixels = tall ? 0 : terminal_height_px % (grid->tile_height * scale);
     if (height_in_tiles < 1 || remaining_pixels > 0) {
         height_in_tiles += 1;
     }
@@ -91,7 +94,8 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     if (tiles == NULL) {
         return;
     }
-    grid->y = 0;
+    grid->y = tall ? blinka_bitmap.height : 0;
+    grid->x = tall ? 0 : blinka_bitmap.width;
     grid->top_left_y = 0;
     if (remaining_pixels > 0) {
         grid->y -= (grid->tile_height - remaining_pixels);

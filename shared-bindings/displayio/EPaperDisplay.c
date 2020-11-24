@@ -294,6 +294,29 @@ const mp_obj_property_t displayio_epaperdisplay_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
+//|     rotation: int
+//|     """The rotation of the display as an int in degrees."""
+//|
+STATIC mp_obj_t displayio_epaperdisplay_obj_get_rotation(mp_obj_t self_in) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_epaperdisplay_get_rotation(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_rotation_obj, displayio_epaperdisplay_obj_get_rotation);
+STATIC mp_obj_t displayio_epaperdisplay_obj_set_rotation(mp_obj_t self_in, mp_obj_t value) {
+    displayio_epaperdisplay_obj_t *self = native_display(self_in);
+    common_hal_displayio_epaperdisplay_set_rotation(self, mp_obj_get_int(value));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_set_rotation_obj, displayio_epaperdisplay_obj_set_rotation);
+
+
+const mp_obj_property_t displayio_epaperdisplay_rotation_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_epaperdisplay_get_rotation_obj,
+              (mp_obj_t)&displayio_epaperdisplay_set_rotation_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 //|     bus: _DisplayBus
 //|     """The bus being used by the display"""
 //|
@@ -317,6 +340,7 @@ STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_epaperdisplay_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_epaperdisplay_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rotation), MP_ROM_PTR(&displayio_epaperdisplay_rotation_obj) },
     { MP_ROM_QSTR(MP_QSTR_bus), MP_ROM_PTR(&displayio_epaperdisplay_bus_obj) },
     { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&displayio_epaperdisplay_busy_obj) },
     { MP_ROM_QSTR(MP_QSTR_time_to_refresh), MP_ROM_PTR(&displayio_epaperdisplay_time_to_refresh_obj) },

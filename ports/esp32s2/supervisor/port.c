@@ -52,6 +52,7 @@
 
 #include "peripherals/rmt.h"
 #include "peripherals/pcnt.h"
+#include "peripherals/timer.h"
 #include "components/heap/include/esp_heap_caps.h"
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
 
@@ -128,6 +129,19 @@ void reset_port(void) {
     peripherals_pcnt_reset();
 #endif
 
+#if CIRCUITPY_FREQUENCYIO
+    peripherals_timer_reset();
+#endif
+
+#if CIRCUITPY_PULSEIO
+    esp32s2_peripherals_rmt_reset();
+    pulsein_reset();
+#endif
+
+#if CIRCUITPY_PWMIO
+    pwmout_reset();
+#endif
+
 #if CIRCUITPY_RTC
     rtc_reset();
 #endif
@@ -196,14 +210,14 @@ uint32_t port_get_saved_word(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    struct timeval tv_now;
-    gettimeofday(&tv_now, NULL);
-    // convert usec back to ticks
-    uint64_t all_subticks = (uint64_t)(tv_now.tv_usec * 2) / 71;
+    // Convert microseconds to subticks of 1/32768 seconds
+    // 32768/1000000 = 64/15625 in lowest terms
+    // this arithmetic overflows after 570 years
+    int64_t all_subticks = esp_timer_get_time() * 512 / 15625;
     if (subticks != NULL) {
         *subticks = all_subticks % 32;
     }
-    return (uint64_t)tv_now.tv_sec * 1024L + all_subticks / 32;
+    return all_subticks / 32;
 }
 
 // Enable 1/1024 second tick.

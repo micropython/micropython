@@ -337,7 +337,11 @@ const uint16_t sinc_filter [OVERSAMPLING] = {
     94, 63, 39, 21, 9, 2, 0, 0
 };
 
-#define REPEAT_16_TIMES(X) X X X X X X X X X X X X X X X X
+#ifdef SAMD21
+#define REPEAT_16_TIMES(X) do { for(uint8_t j=0; j<4; j++) { X X X X } } while (0)
+#else
+#define REPEAT_16_TIMES(X) do { X X X X X X X X X X X X X X X X } while(0)
+#endif
 
 static uint16_t filter_sample(uint32_t pdm_samples[4]) {
     uint16_t running_sum = 0;
@@ -354,7 +358,7 @@ static uint16_t filter_sample(uint32_t pdm_samples[4]) {
                 filter_ptr++;
                 pdm_sample <<= 1;
             }
-            )
+            );
     }
     return running_sum;
 }

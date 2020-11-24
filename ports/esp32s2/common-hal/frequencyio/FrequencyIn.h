@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2017 Damien P. George
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H
 
-#include "py/runtime.h"
+#include "py/obj.h"
+#include "peripherals/pcnt.h"
+#include "peripherals/timer.h"
 
-#if MICROPY_ENABLE_PYSTACK
+typedef struct {
+    mp_obj_base_t base;
+    pcnt_unit_t unit;
+    timer_index_t timer;
+    intr_handle_t handle;
+    uint8_t pin;
+    uint8_t multiplier;
+    uint32_t frequency;
+    uint16_t capture_period;
+} frequencyio_frequencyin_obj_t;
 
-void mp_pystack_init(void *start, void *end) {
-    MP_STATE_THREAD(pystack_start) = start;
-    MP_STATE_THREAD(pystack_end) = end;
-    MP_STATE_THREAD(pystack_cur) = start;
-}
-
-void *mp_pystack_alloc(size_t n_bytes) {
-    n_bytes = (n_bytes + (MICROPY_PYSTACK_ALIGN - 1)) & ~(MICROPY_PYSTACK_ALIGN - 1);
-    #if MP_PYSTACK_DEBUG
-    n_bytes += MICROPY_PYSTACK_ALIGN;
-    #endif
-    if (MP_STATE_THREAD(pystack_cur) + n_bytes > MP_STATE_THREAD(pystack_end)) {
-        // out of memory in the pystack
-        mp_raise_arg1(&mp_type_RuntimeError,
-            MP_OBJ_NEW_QSTR(MP_QSTR_pystack_space_exhausted));
-    }
-    void *ptr = MP_STATE_THREAD(pystack_cur);
-    MP_STATE_THREAD(pystack_cur) += n_bytes;
-    #if MP_PYSTACK_DEBUG
-    *(size_t*)(MP_STATE_THREAD(pystack_cur) - MICROPY_PYSTACK_ALIGN) = n_bytes;
-    #endif
-    return ptr;
-}
-
-#endif
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H

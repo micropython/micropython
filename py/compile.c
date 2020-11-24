@@ -2486,21 +2486,21 @@ STATIC void compile_atom_brace(compiler_t *comp, mp_parse_node_struct_t *pns) {
                     compile_node(comp, pn_i);
                     if (is_dict) {
                         if (!is_key_value) {
-                            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                                 compile_syntax_error(comp, (mp_parse_node_t)pns, translate("invalid syntax"));
-                            } else {
+                            #else
                                 compile_syntax_error(comp, (mp_parse_node_t)pns, translate("expecting key:value for dict"));
-                            }
+                            #endif
                             return;
                         }
                         EMIT(store_map);
                     } else {
                         if (is_key_value) {
-                            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                                 compile_syntax_error(comp, (mp_parse_node_t)pns, translate("invalid syntax"));
-                            } else {
+                            #else
                                 compile_syntax_error(comp, (mp_parse_node_t)pns, translate("expecting just a value for set"));
-                            }
+                            #endif
                             return;
                         }
                     }
