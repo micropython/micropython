@@ -199,6 +199,9 @@ Event Handling
                 # A previous l2cap_send that returned False has now completed and the channel is ready to send again.
                 # If status is non-zero, then the transmit buffer overflowed and the application should re-send the data.
                 conn_handle, cid, status = data
+            elif event == _IRQ_CONNECTION_UPDATE:
+                # The remote device has updated connection parameters.
+                conn_handle, conn_interval, conn_latency, supervision_timeout, status = data
 
 The event codes are::
 
@@ -229,6 +232,7 @@ The event codes are::
     _IRQ_L2CAP_DISCONNECT = const(24)
     _IRQ_L2CAP_RECV = const(25)
     _IRQ_L2CAP_SEND_READY = const(26)
+    _IRQ_CONNECTION_UPDATE = const(27)
 
 In order to save space in the firmware, these constants are not included on the
 :mod:`ubluetooth` module. Add the ones that you need from the list above to your
