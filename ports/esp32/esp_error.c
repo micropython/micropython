@@ -46,7 +46,7 @@ https://github.com/espressif/esp-idf/blob/master/components/esp_common/include/e
 
 #include "esp_error.h"
 
-ESP_EXCEPTIONS(pcnt_event_disable(self->unit, evt_type))
+ESP_EXCEPTIONS(pcnt_event_disable(self->unit, evt_type));
 
 // is equivalent to
 

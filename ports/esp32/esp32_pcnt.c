@@ -69,12 +69,6 @@ static int machine_pin_get_gpio(mp_obj_t pin_in) {
 }
 // ---------------------------------------
 
-/*
-// Example exception for C code
-err = pcnt_counter_pause(self->unit);
-if (err != ESP_OK)
-    mp_raise_EspError(err);
-*/
 //  mp_printf(MP_PYTHON_PRINTER, MP_ERROR_TEXT("_pin_pull_type=%u "), self->useInternalWeakPullResistors);
 //  mp_printf(MP_PYTHON_PRINTER, "_pin_pull_type=%u \n", self->useInternalWeakPullResistors);
 
@@ -241,59 +235,28 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     self->r_enc_config.counter_h_lim = _INT16_MAX;
     self->r_enc_config.counter_l_lim = _INT16_MIN;
 
-    esp_err_t err;
-    err = pcnt_unit_config(&self->r_enc_config);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_unit_config(&self->r_enc_config));
 
     // Filter out bounces and noise
-    err = pcnt_set_filter_value(self->unit, 1023);  // Filter Runt Pulses
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
-    err = pcnt_filter_enable(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_set_filter_value(self->unit, 1023));  // Filter Runt Pulses
+    ESP_EXCEPTIONS(pcnt_filter_enable(self->unit));
 
     // Enable events on maximum and minimum limit values
-    err = pcnt_event_enable(self->unit, PCNT_EVT_H_LIM);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
-    err = pcnt_event_enable(self->unit, PCNT_EVT_L_LIM);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
+    ESP_EXCEPTIONS(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
 
-    err = pcnt_counter_pause(self->unit); // Initial PCNT init
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_counter_pause(self->unit)); // Initial PCNT init
     // Register ISR handler and enable interrupts for PCNT unit
     if (pcnt_isr_handle == NULL) {
-        err = pcnt_isr_register(pcnt_intr_handler, (void *)NULL, (int)0, (pcnt_isr_handle_t *)&pcnt_isr_handle);
-        if (err != ESP_OK) {
-            mp_raise_EspError(err);
-        }
+        ESP_EXCEPTIONS(pcnt_isr_register(pcnt_intr_handler, (void *)NULL, (int)0, (pcnt_isr_handle_t *)&pcnt_isr_handle));
         if (pcnt_isr_handle == NULL) {
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Encoder wrap interrupt failed"));
         }
     }
-    err = pcnt_intr_enable(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
-    err = pcnt_counter_clear(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_intr_enable(self->unit));
+    ESP_EXCEPTIONS(pcnt_counter_clear(self->unit));
     self->count = 0;
-    err = pcnt_counter_resume(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_counter_resume(self->unit));
 
     pcnts[index] = self;
     self->attached = true;
@@ -343,14 +306,9 @@ STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, siz
 STATIC mp_obj_t pcnt_PCNT_del(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    esp_err_t err = pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
-    err = pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
+    ESP_EXCEPTIONS(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
+
     gpio_pullup_dis(self->aPinNumber);
     gpio_pullup_dis(self->bPinNumber);
     gpio_pulldown_dis(self->aPinNumber);
@@ -390,10 +348,7 @@ STATIC mp_obj_t pcnt_PCNT_event_disable(mp_obj_t self_obj, mp_obj_t evt_type_obj
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
 
-    esp_err_t err = pcnt_event_disable(self->unit, evt_type);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_event_disable(self->unit, evt_type));
 
     return MP_ROM_NONE;
 }
@@ -416,10 +371,7 @@ STATIC mp_obj_t pcnt_PCNT_event_enable(mp_obj_t self_obj, mp_obj_t evt_type_obj)
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
 
-    esp_err_t err = pcnt_event_enable(self->unit, evt_type);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_event_enable(self->unit, evt_type));
 
     return MP_ROM_NONE;
 }
@@ -438,10 +390,7 @@ Disable PCNT input filter
 STATIC mp_obj_t pcnt_PCNT_filter_disable(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    esp_err_t err = pcnt_filter_disable(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_filter_disable(self->unit));
 
     return MP_ROM_NONE;
 }
@@ -459,10 +408,7 @@ Enable PCNT input filter
 STATIC mp_obj_t pcnt_PCNT_filter_enable(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    esp_err_t err = pcnt_filter_enable(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_filter_enable(self->unit));
 
     return MP_ROM_NONE;
 }
@@ -511,10 +457,7 @@ STATIC mp_obj_t pcnt_PCNT_get_event_value(mp_obj_t self_obj, mp_obj_t evt_type_o
     mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
 
     int16_t count;
-    esp_err_t err = pcnt_get_event_value(self->unit, evt_type, &count);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_get_event_value(self->unit, evt_type, &count));
 
     return MP_OBJ_NEW_SMALL_INT(count);
 }
@@ -536,10 +479,7 @@ STATIC mp_obj_t pcnt_PCNT_get_filter_value(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
     uint16_t count;
-    esp_err_t err = pcnt_get_filter_value(self->unit, &count);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_get_filter_value(self->unit, &count));
 
     return MP_OBJ_NEW_SMALL_INT(count);
 }
@@ -558,10 +498,7 @@ Disable PCNT interrupt for PCNT unit
 STATIC mp_obj_t pcnt_PCNT_intr_disable(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    esp_err_t err = pcnt_intr_disable(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_intr_disable(self->unit));
 
     return MP_ROM_NONE;
 }
@@ -584,10 +521,7 @@ Enable PCNT interrupt for PCNT unit
 STATIC mp_obj_t pcnt_PCNT_intr_enable(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    esp_err_t err = pcnt_intr_enable(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_intr_enable(self->unit));
 
     return MP_ROM_NONE;
 }
@@ -624,10 +558,7 @@ STATIC mp_obj_t pcnt_PCNT_isr_handler_add(mp_obj_t self_obj, mp_obj_t isr_handle
     void *isr_handler = MP_OBJ_TO_PTR(isr_handler_obj);
     void *_args = MP_OBJ_TO_PTR(_args_obj);
 
-    esp_err_t err = pcnt_isr_handler_add(self->unit, isr_handler, _args);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_isr_handler_add(self->unit, isr_handler, _args));
 
     return MP_ROM_NONE;
 }
@@ -647,10 +578,7 @@ Delete ISR handler for specified unit.
 STATIC mp_obj_t pcnt_PCNT_isr_handler_remove(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    esp_err_t err = pcnt_isr_handler_remove(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_isr_handler_remove(self->unit));
 
     return MP_ROM_NONE;
 }
@@ -684,10 +612,7 @@ STATIC mp_obj_t pcnt_PCNT_isr_register(size_t n_args, const mp_obj_t *args) {
     mp_int_t intr_alloc_flags = mp_obj_get_int(args[3]);
     pcnt_isr_handle_t *handle = MP_OBJ_TO_PTR(args[4]);
 
-    esp_err_t err = pcnt_isr_register(fn, arg, intr_alloc_flags, handle);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_isr_register(fn, arg, intr_alloc_flags, handle));
 
     return MP_ROM_NONE;
 }
@@ -716,10 +641,7 @@ STATIC mp_obj_t pcnt_PCNT_isr_service_install(mp_obj_t self_obj, mp_obj_t intr_a
     // pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     mp_int_t intr_alloc_flags = mp_obj_get_int(intr_alloc_flags_obj);
 
-    esp_err_t err = pcnt_isr_service_install(intr_alloc_flags);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_isr_service_install(intr_alloc_flags));
 
     return MP_ROM_NONE;
 }
@@ -745,7 +667,7 @@ STATIC mp_obj_t pcnt_PCNT_isr_unregister(mp_obj_t self_obj, mp_obj_t handle_obj)
 	pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 	mp_int_t handle = mp_obj_get_int(handle_obj);
 
-	esp_err_t err = pcnt_isr_unregister(handle);
+	ESP_EXCEPTIONS(pcnt_isr_unregister(handle));
     if (err != ESP_OK)
        mp_raise_EspError(err);
 
@@ -789,10 +711,7 @@ STATIC mp_obj_t pcnt_PCNT_set_event_value(mp_obj_t self_obj, mp_obj_t evt_type_o
     mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
     mp_int_t value = mp_obj_get_int(value_obj);
 
-    esp_err_t err = pcnt_set_event_value(self->unit, evt_type, value);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_set_event_value(self->unit, evt_type, value));
 
     return MP_ROM_NONE;
 }
@@ -822,10 +741,7 @@ STATIC mp_obj_t pcnt_PCNT_set_filter_value(mp_obj_t self_obj, mp_obj_t filter_va
         mp_raise_msg(&mp_type_EspError, MP_ERROR_TEXT("Correct 10-bits filter value is [0..1023]"));
     }
 
-    esp_err_t err = pcnt_set_filter_value(self->unit, value);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_set_filter_value(self->unit, value));
 
     return MP_ROM_NONE;
 }
@@ -855,10 +771,7 @@ STATIC mp_obj_t pcnt_PCNT_set_mode(size_t n_args, const mp_obj_t *args) {
     mp_int_t hctrl_mode = mp_obj_get_int(args[4]);
     mp_int_t lctrl_mode = mp_obj_get_int(args[5]);
 
-    esp_err_t err = pcnt_set_mode(self->unit, channel, pos_mode, neg_mode, hctrl_mode, lctrl_mode);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_set_mode(self->unit, channel, pos_mode, neg_mode, hctrl_mode, lctrl_mode));
 
     return MP_ROM_NONE;
 }
@@ -887,10 +800,7 @@ STATIC mp_obj_t pcnt_PCNT_set_pin(size_t n_args, const mp_obj_t *args) {
     mp_int_t pulse_io = mp_obj_get_int(args[2]);
     mp_int_t ctrl_io = mp_obj_get_int(args[3]);
 
-    esp_err_t err = pcnt_set_pin(self->unit, channel, pulse_io, ctrl_io);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_set_pin(self->unit, channel, pulse_io, ctrl_io));
 
     return MP_ROM_NONE;
 }
@@ -915,10 +825,7 @@ STATIC mp_obj_t pcnt_PCNT_unit_config(mp_obj_t self_obj, mp_obj_t pcnt_config_ob
     // pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
     pcnt_config_t *pcnt_config = MP_OBJ_TO_PTR(pcnt_config_obj);
 
-    esp_err_t err = pcnt_unit_config(pcnt_config);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_unit_config(pcnt_config));
 
     return MP_ROM_NONE;
 }
@@ -930,10 +837,7 @@ STATIC mp_obj_t pcnt_PCNT_set_count(mp_obj_t self_obj, mp_obj_t value_obj) {
     int64_t value = mp_obj_get_int(value_obj);
 
     int16_t count;
-    esp_err_t err = pcnt_get_counter_value(self->unit, &count);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_get_counter_value(self->unit, &count));
     self->count = value - count;
 
     return MP_ROM_NONE;
@@ -956,15 +860,8 @@ STATIC mp_obj_t pcnt_PCNT_count_and_clear(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
     int16_t count;
-    esp_err_t err;
-    err = pcnt_get_counter_value(self->unit, &count);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
-    err = pcnt_counter_clear(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_get_counter_value(self->unit, &count));
+    ESP_EXCEPTIONS(pcnt_counter_clear(self->unit));
     int64_t _count = self->count + count;
     self->count = 0;
     return mp_obj_new_int_from_ll(_count);
@@ -975,10 +872,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_count_and_clear_obj, pcnt_PCNT_count_
 STATIC mp_obj_t pcnt_PCNT_clear(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    esp_err_t err = pcnt_counter_clear(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_counter_clear(self->unit));
     self->count = 0;
 
     return MP_ROM_NONE;
@@ -989,10 +883,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_clear_obj, pcnt_PCNT_clear);
 STATIC mp_obj_t pcnt_PCNT_pause(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    esp_err_t err = pcnt_counter_pause(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_counter_pause(self->unit));
 
     return MP_ROM_NONE;
 }
@@ -1002,10 +893,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_pause_obj, pcnt_PCNT_pause);
 STATIC mp_obj_t pcnt_PCNT_resume(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    esp_err_t err = pcnt_counter_resume(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_counter_resume(self->unit));
 
     return MP_ROM_NONE;
 }
@@ -1118,11 +1006,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     self->r_enc_config.counter_h_lim = _INT16_MAX;
     self->r_enc_config.counter_l_lim = _INT16_MIN;
 
-    esp_err_t err;
-    err = pcnt_unit_config(&self->r_enc_config);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_unit_config(&self->r_enc_config));
 /*
     self->r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
     self->r_enc_config.pulse_gpio_num = self->bPinNumber; //make prior control into signal
@@ -1158,7 +1042,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
         //self->r_enc_config.counter_h_lim = _INT16_MAX;
         //self->r_enc_config.counter_l_lim = _INT16_MIN ;
     }
-    err = pcnt_unit_config(&self->r_enc_config);
+    ESP_EXCEPTIONS(pcnt_unit_config(&self->r_enc_config));
     if (err != ESP_OK)
         mp_raise_EspError(err);
 */
@@ -1179,10 +1063,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
         self->r_enc_config.counter_h_lim = _INT16_MAX;
         self->r_enc_config.counter_l_lim = _INT16_MIN;
 
-        err = pcnt_unit_config(&self->r_enc_config);
-        if (err != ESP_OK) {
-            mp_raise_EspError(err);
-        }
+        ESP_EXCEPTIONS(pcnt_unit_config(&self->r_enc_config));
     } else { // make sure channel 1 is not set when not full quad
         self->r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
         self->r_enc_config.ctrl_gpio_num = self->aPinNumber;    // and prior signal into control
@@ -1199,56 +1080,29 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
         self->r_enc_config.counter_h_lim = _INT16_MAX;
         self->r_enc_config.counter_l_lim = _INT16_MIN;
 
-        err = pcnt_unit_config(&self->r_enc_config);
-        if (err != ESP_OK) {
-            mp_raise_EspError(err);
-        }
+        ESP_EXCEPTIONS(pcnt_unit_config(&self->r_enc_config));
     }
 
     // Filter out bounces and noise
-    err = pcnt_set_filter_value(self->unit, 1023);  // Filter Runt Pulses
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
-    err = pcnt_filter_enable(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_set_filter_value(self->unit, 1023));  // Filter Runt Pulses
+    ESP_EXCEPTIONS(pcnt_filter_enable(self->unit));
 
     /* Enable events on maximum and minimum limit values */
-    err = pcnt_event_enable(self->unit, PCNT_EVT_H_LIM);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
-    err = pcnt_event_enable(self->unit, PCNT_EVT_L_LIM);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
+    ESP_EXCEPTIONS(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
 
-    err = pcnt_counter_pause(self->unit); // Initial PCNT init
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_counter_pause(self->unit)); // Initial PCNT init
     /* Register ISR handler and enable interrupts for PCNT unit */
     if (pcnt_isr_handle == NULL) {
-        err = pcnt_isr_register(pcnt_intr_handler, (void *)NULL, (int)0, (pcnt_isr_handle_t *)&pcnt_isr_handle);
-        if ((err != ESP_OK) || (pcnt_isr_handle == NULL)) {
+        ESP_EXCEPTIONS(pcnt_isr_register(pcnt_intr_handler, (void *)NULL, (int)0, (pcnt_isr_handle_t *)&pcnt_isr_handle));
+        if (pcnt_isr_handle == NULL) {
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Encoder wrap interrupt failed"));
         }
     }
-    err = pcnt_intr_enable(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
-    err = pcnt_counter_clear(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_intr_enable(self->unit));
+    ESP_EXCEPTIONS(pcnt_counter_clear(self->unit));
     self->count = 0;
-    err = pcnt_counter_resume(self->unit);
-    if (err != ESP_OK) {
-        mp_raise_EspError(err);
-    }
+    ESP_EXCEPTIONS(pcnt_counter_resume(self->unit));
 
     pcnts[index] = self;
     self->attached = true;
