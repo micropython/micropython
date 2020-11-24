@@ -1,7 +1,6 @@
 /*
-    GNU linker script for STM32F411 with nvm and an external flash chip, and reserves
-    more space for the CircuitPython firmware and less for the filesystem
-    (since the filesystem will be on the external flash chip).
+    GNU linker script for STM32F411 with nvm and an external flash chip.
+    No space is reserved for a filesystem.
 */
 
 /* Specify the memory areas */
@@ -9,9 +8,8 @@ MEMORY
 {
     FLASH (rx)          : ORIGIN = 0x08000000, LENGTH = 512K /* entire flash */
     FLASH_ISR (rx)      : ORIGIN = 0x08000000, LENGTH = 16K /* sector 0 */
-    FLASH_FS (rx)       : ORIGIN = 0x08004000, LENGTH = 32K /* sectors 1,2 are 16K */
-    FLASH_NVM (rwx)     : ORIGIN = 0x0800C000, LENGTH = 16K /* sector 3 is 16K */
-    FLASH_FIRMWARE (rx) : ORIGIN = 0x08010000, LENGTH = 448K /* sector 4 is 64K, sectors 5,6,7 are 128K */
+    FLASH_NVM (rwx)     : ORIGIN = 0x08004000, LENGTH = 16K /* sector 1 is 16K */
+    FLASH_FIRMWARE (rx) : ORIGIN = 0x08008000, LENGTH = 480K /* sector 2,3 is 16k, sector 4 is 64K, sectors 5,6,7 are 128K */
     RAM (xrw)           : ORIGIN = 0x20000000, LENGTH = 128K
 }
 
