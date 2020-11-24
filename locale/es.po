@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 10:10-0600\n"
+"POT-Creation-Date: 2020-11-11 16:30+0530\n"
 "PO-Revision-Date: 2020-11-15 16:28+0000\n"
 "Last-Translator: RubenD <rubendariopm14@gmail.com>\n"
 "Language-Team: \n"
@@ -1283,6 +1283,10 @@ msgstr "Debe proporcionar un pin MISO o MOSI"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Debe usar un múltiplo de 6 pines rgb, no %d"
+
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
+msgstr ""
 
 #: py/parse.c
 msgid "Name too long"
