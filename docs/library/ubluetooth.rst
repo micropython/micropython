@@ -368,6 +368,15 @@ Central & Peripheral Roles
     Returns ``False`` if the connection handle wasn't connected, and ``True``
     otherwise.
 
+.. method:: BLE.gap_pair(conn_handle, /)
+
+    Initiate pairing with the remote device.
+
+    Before calling this, ensure that the ``io``, ``mitm``, ``le_secure``, and
+    ``bond`` configuration options are set (via :meth:`config<BLE.config>`).
+
+    On successful pairing, the ``_IRQ_ENCRYPTION_UPDATED`` event will be raised.
+
 
 GATT Server
 -----------
