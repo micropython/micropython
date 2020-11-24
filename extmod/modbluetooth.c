@@ -1113,10 +1113,13 @@ void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t valu
     invoke_irq_handler(MP_BLUETOOTH_IRQ_GATTS_INDICATE_DONE, args, 2, &status, 1, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
 }
 
-bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle) {
+mp_int_t mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle) {
     uint16_t args[] = {conn_handle, value_handle};
     mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_GATTS_READ_REQUEST, args, 2, NULL, 0, NULL_ADDR, NULL_I8, 0, NULL_UUID, NULL_DATA, 0);
-    return result == mp_const_none || mp_obj_is_true(result);
+    // Return non-zero from IRQ handler to fail the read.
+    mp_int_t ret = 0;
+    mp_obj_get_int_maybe(result, &ret);
+    return ret;
 }
 
 void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value) {
@@ -1320,11 +1323,11 @@ void mp_bluetooth_gatts_on_indicate_complete(uint16_t conn_handle, uint16_t valu
     schedule_ringbuf(atomic_state);
 }
 
-bool mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle) {
+mp_int_t mp_bluetooth_gatts_on_read_request(uint16_t conn_handle, uint16_t value_handle) {
     (void)conn_handle;
     (void)value_handle;
     // This must be handled synchronously and therefore cannot implemented with the ringbuffer.
-    return true;
+    return MP_BLUETOOTH_GATTS_NO_ERROR;
 }
 
 void mp_bluetooth_gatts_on_mtu_exchanged(uint16_t conn_handle, uint16_t value) {
