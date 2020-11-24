@@ -552,6 +552,24 @@ void mp_bluetooth_set_address_mode(uint8_t addr_mode) {
     }
 }
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+void mp_bluetooth_set_bonding(bool enabled) {
+    ble_hs_cfg.sm_bonding = enabled;
+}
+
+void mp_bluetooth_set_mitm_protection(bool enabled) {
+    ble_hs_cfg.sm_mitm = enabled;
+}
+
+void mp_bluetooth_set_le_secure(bool enabled) {
+    ble_hs_cfg.sm_sc = enabled;
+}
+
+void mp_bluetooth_set_io_capability(uint8_t capability) {
+    ble_hs_cfg.sm_io_cap = capability;
+}
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
 size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf) {
     const char *name = ble_svc_gap_device_name();
     *buf = (const uint8_t *)name;
