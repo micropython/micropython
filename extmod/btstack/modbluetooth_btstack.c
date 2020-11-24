@@ -53,6 +53,11 @@ STATIC const uint16_t BTSTACK_GAP_DEVICE_NAME_HANDLE = 3;
 
 volatile int mp_bluetooth_btstack_state = MP_BLUETOOTH_BTSTACK_STATE_OFF;
 
+// sm_set_authentication_requirements is set-only, so cache current value.
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+STATIC uint8_t mp_bluetooth_btstack_sm_auth_req = 0;
+#endif
+
 #define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
 
 STATIC int btstack_error_to_errno(int err) {
@@ -794,6 +799,39 @@ void mp_bluetooth_set_address_mode(uint8_t addr_mode) {
             mp_raise_OSError(MP_EINVAL);
     }
 }
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+void mp_bluetooth_set_bonding(bool enabled) {
+    if (enabled) {
+        mp_bluetooth_btstack_sm_auth_req |= SM_AUTHREQ_BONDING;
+    } else {
+        mp_bluetooth_btstack_sm_auth_req &= ~SM_AUTHREQ_BONDING;
+    }
+    sm_set_authentication_requirements(mp_bluetooth_btstack_sm_auth_req);
+}
+
+void mp_bluetooth_set_mitm_protection(bool enabled) {
+    if (enabled) {
+        mp_bluetooth_btstack_sm_auth_req |= SM_AUTHREQ_MITM_PROTECTION;
+    } else {
+        mp_bluetooth_btstack_sm_auth_req &= ~SM_AUTHREQ_MITM_PROTECTION;
+    }
+    sm_set_authentication_requirements(mp_bluetooth_btstack_sm_auth_req);
+}
+
+void mp_bluetooth_set_le_secure(bool enabled) {
+    if (enabled) {
+        mp_bluetooth_btstack_sm_auth_req |= SM_AUTHREQ_SECURE_CONNECTION;
+    } else {
+        mp_bluetooth_btstack_sm_auth_req &= ~SM_AUTHREQ_SECURE_CONNECTION;
+    }
+    sm_set_authentication_requirements(mp_bluetooth_btstack_sm_auth_req);
+}
+
+void mp_bluetooth_set_io_capability(uint8_t capability) {
+    sm_set_io_capabilities(capability);
+}
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
 size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf) {
     uint8_t *value = NULL;

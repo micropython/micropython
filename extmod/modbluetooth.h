@@ -152,6 +152,13 @@
 #define MP_BLUETOOTH_ADDRESS_MODE_RPA (2)
 #define MP_BLUETOOTH_ADDRESS_MODE_NRPA (3)
 
+// These match the spec values, can be used directly by the stack.
+#define MP_BLUETOOTH_IO_CAPABILITY_DISPLAY_ONLY        (0)
+#define MP_BLUETOOTH_IO_CAPABILITY_DISPLAY_YESNO       (1)
+#define MP_BLUETOOTH_IO_CAPABILITY_KEYBOARD_ONLY       (2)
+#define MP_BLUETOOTH_IO_CAPABILITY_NO_INPUT_OUTPUT     (3)
+#define MP_BLUETOOTH_IO_CAPABILITY_KEYBOARD_DISPLAY    (4)
+
 /*
 These aren't included in the module for space reasons, but can be used
 in your Python code if necessary.
@@ -208,6 +215,12 @@ _GATTS_ERROR_WRITE_NOT_PERMITTED = const(0x03)
 _GATTS_ERROR_INSUFFICIENT_AUTHENTICATION = const(0x05)
 _GATTS_ERROR_INSUFFICIENT_AUTHORIZATION = const(0x08)
 _GATTS_ERROR_INSUFFICIENT_ENCRYPTION = const(0x0f)
+
+_IO_CAPABILITY_DISPLAY_ONLY = const(0)
+_IO_CAPABILITY_DISPLAY_YESNO = const(1)
+_IO_CAPABILITY_KEYBOARD_ONLY = const(2)
+_IO_CAPABILITY_NO_INPUT_OUTPUT = const(3)
+_IO_CAPABILITY_KEYBOARD_DISPLAY = const(4)
 */
 
 // bluetooth.UUID type.
@@ -253,6 +266,17 @@ void mp_bluetooth_get_current_address(uint8_t *addr_type, uint8_t *addr);
 
 // Sets the addressing mode to use.
 void mp_bluetooth_set_address_mode(uint8_t addr_mode);
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+// Set bonding flag in pairing requests (i.e. persist security keys).
+void mp_bluetooth_set_bonding(bool enabled);
+// Require MITM protection.
+void mp_bluetooth_set_mitm_protection(bool enabled);
+// Require LE Secure pairing (rather than Legacy Pairing)
+void mp_bluetooth_set_le_secure(bool enabled);
+// I/O capabilities for authentication (see MP_BLUETOOTH_IO_CAPABILITY_*).
+void mp_bluetooth_set_io_capability(uint8_t capability);
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
 // Get or set the GAP device name that will be used by service 0x1800, characteristic 0x2a00.
 size_t mp_bluetooth_gap_get_device_name(const uint8_t **buf);

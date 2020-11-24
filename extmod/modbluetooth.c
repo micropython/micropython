@@ -387,6 +387,28 @@ STATIC mp_obj_t bluetooth_ble_config(size_t n_args, const mp_obj_t *args, mp_map
                         mp_bluetooth_set_address_mode(addr_mode);
                         break;
                     }
+                    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+                    case MP_QSTR_bond: {
+                        bool bonding_enabled = mp_obj_is_true(e->value);
+                        mp_bluetooth_set_bonding(bonding_enabled);
+                        break;
+                    }
+                    case MP_QSTR_mitm: {
+                        bool mitm_protection = mp_obj_is_true(e->value);
+                        mp_bluetooth_set_mitm_protection(mitm_protection);
+                        break;
+                    }
+                    case MP_QSTR_io: {
+                        mp_int_t io_capability = mp_obj_get_int(e->value);
+                        mp_bluetooth_set_io_capability(io_capability);
+                        break;
+                    }
+                    case MP_QSTR_le_secure: {
+                        bool le_secure_required = mp_obj_is_true(e->value);
+                        mp_bluetooth_set_le_secure(le_secure_required);
+                        break;
+                    }
+                    #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
                     default:
                         mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
                 }
