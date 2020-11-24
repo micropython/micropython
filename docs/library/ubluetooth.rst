@@ -119,9 +119,9 @@ Event Handling
                 # A client has written to this characteristic or descriptor.
                 conn_handle, attr_handle = data
             elif event == _IRQ_GATTS_READ_REQUEST:
-                # A client has issued a read. Note: this is a hard IRQ.
-                # Return None to deny the read.
-                # Note: This event is not supported on ESP32.
+                # A client has issued a read. Note: this is only supported on STM32.
+                # Return a non-zero integer to deny the read (see below), or zero (or None)
+                # to accept the read.
                 conn_handle, attr_handle = data
             elif event == _IRQ_SCAN_RESULT:
                 # A single scan result.
@@ -233,6 +233,15 @@ The event codes are::
     _IRQ_L2CAP_RECV = const(25)
     _IRQ_L2CAP_SEND_READY = const(26)
     _IRQ_CONNECTION_UPDATE = const(27)
+
+For the ``_IRQ_GATTS_READ_REQUEST`` event, the available return codes are::
+
+    _GATTS_NO_ERROR = const(0x00)
+    _GATTS_ERROR_READ_NOT_PERMITTED = const(0x02)
+    _GATTS_ERROR_WRITE_NOT_PERMITTED = const(0x03)
+    _GATTS_ERROR_INSUFFICIENT_AUTHENTICATION = const(0x05)
+    _GATTS_ERROR_INSUFFICIENT_AUTHORIZATION = const(0x08)
+    _GATTS_ERROR_INSUFFICIENT_ENCRYPTION = const(0x0f)
 
 In order to save space in the firmware, these constants are not included on the
 :mod:`ubluetooth` module. Add the ones that you need from the list above to your
@@ -419,6 +428,8 @@ writes from a client to a given characteristic, use
         _FLAG_WRITE_ENCRYPTED = const(0x1000)
         _FLAG_WRITE_AUTHENTICATED = const(0x2000)
         _FLAG_WRITE_AUTHORIZED = const(0x4000)
+
+    As for the IRQs above, any required constants should be added to your Python code.
 
 .. method:: BLE.gatts_read(value_handle, /)
 
