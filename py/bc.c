@@ -27,7 +27,6 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include <assert.h>
 
 #include "py/runtime.h"
 #include "py/bc0.h"

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Paul Sokolovsky
+ * Copyright (c) 2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,24 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+#include "extmod/utime_mphal.h"
 
-// This is universal iterator type which calls "iternext" method stored in
-// particular object instance. (So, each instance of this time can have its
-// own iteration behavior.) Having this type saves to define type objects
-// for various internal iterator objects.
+STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
 
-// Any instance should have these 2 fields at the beginning
-typedef struct _mp_obj_polymorph_iter_t {
-    mp_obj_base_t base;
-    mp_fun_1_t iternext;
-} mp_obj_polymorph_iter_t;
+    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mp_utime_sleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mp_utime_ticks_ms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
+};
 
-STATIC mp_obj_t polymorph_it_iternext(mp_obj_t self_in) {
-    mp_obj_polymorph_iter_t *self = MP_OBJ_TO_PTR(self_in);
-    // Redirect call to object instance's iternext method
-    return self->iternext(self_in);
-}
+STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
 
-const mp_obj_type_t mp_type_polymorph_iter = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = polymorph_it_iternext,
+const mp_obj_module_t mp_module_utime = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&time_module_globals,
 };

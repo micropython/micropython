@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
+
 #include "py/profile.h"
 #include "py/bc0.h"
 #include "py/gc.h"

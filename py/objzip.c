@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <assert.h>
+#include <stddef.h>
 
 #include "py/objtuple.h"
 #include "py/runtime.h"

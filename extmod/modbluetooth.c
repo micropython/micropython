@@ -36,6 +36,7 @@
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
 #include <string.h>
+#include <assert.h>
 
 #if MICROPY_PY_BLUETOOTH
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Paul Sokolovsky
+ * Copyright (c) 2020 Emil Renner Berthing
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_GD32VF103_PIN_H
+#define MICROPY_GD32VF103_PIN_H
 
-#include "py/runtime.h"
+#include "py/obj.h"
 
-// This is universal iterator type which calls "iternext" method stored in
-// particular object instance. (So, each instance of this time can have its
-// own iteration behavior.) Having this type saves to define type objects
-// for various internal iterator objects.
+#include "lib/gpio.h"
 
-// Any instance should have these 2 fields at the beginning
-typedef struct _mp_obj_polymorph_iter_t {
+extern const mp_obj_type_t pin_type;
+
+typedef struct {
     mp_obj_base_t base;
-    mp_fun_1_t iternext;
-} mp_obj_polymorph_iter_t;
+} pin_obj_t;
 
-STATIC mp_obj_t polymorph_it_iternext(mp_obj_t self_in) {
-    mp_obj_polymorph_iter_t *self = MP_OBJ_TO_PTR(self_in);
-    // Redirect call to object instance's iternext method
-    return self->iternext(self_in);
+extern const pin_obj_t pin_base[80];
+
+static inline gpio_pin_t pin_from_obj(const pin_obj_t *obj) {
+    ptrdiff_t v = obj - pin_base;
+    return GPIO_PIN(v >> 4, v & 0xf);
 }
 
-const mp_obj_type_t mp_type_polymorph_iter = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = polymorph_it_iternext,
-};
+#endif // MICROPY_GD32VF103_PIN_H

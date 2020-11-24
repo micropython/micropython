@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Paul Sokolovsky
+ * Copyright (c) 2019 Emil Renner Berthing
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,48 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+#include <stdint.h>
+#include <stddef.h>
 
-// This is universal iterator type which calls "iternext" method stored in
-// particular object instance. (So, each instance of this time can have its
-// own iteration behavior.) Having this type saves to define type objects
-// for various internal iterator objects.
+#include "py/mphal.h"
 
-// Any instance should have these 2 fields at the beginning
-typedef struct _mp_obj_polymorph_iter_t {
-    mp_obj_base_t base;
-    mp_fun_1_t iternext;
-} mp_obj_polymorph_iter_t;
+#include "lib/mtimer.h"
 
-STATIC mp_obj_t polymorph_it_iternext(mp_obj_t self_in) {
-    mp_obj_polymorph_iter_t *self = MP_OBJ_TO_PTR(self_in);
-    // Redirect call to object instance's iternext method
-    return self->iternext(self_in);
+/* sanity check */
+#if MICROPY_PY_UTIME_TICKS_PERIOD != (1U << 30)
+#error This implementation is only correct for MICROPY_PY_UTIME_TICKS_PERIOD == 2^30
+#endif
+
+void mp_hal_delay_ms(mp_uint_t ms) {
+    mtimer_delay(ms * (MTIMER_FREQ / 1000));
 }
 
-const mp_obj_type_t mp_type_polymorph_iter = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = polymorph_it_iternext,
-};
+void mp_hal_delay_us(mp_uint_t us) {
+    mtimer_delay(us * (MTIMER_FREQ / 1000000));
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    uint64_t mtime = mtimer_mtime();
+
+    /* return (mtime / (CORECLOCK/4000)) % 2^30
+     * using a / b = a * (2^34 / b) / 2^34
+     */
+    mtime *= ((4000ULL << 34) - 1) / CORECLOCK + 1;
+    return mtime >> 34;
+}
+
+mp_uint_t mp_hal_ticks_us(void) {
+    uint64_t mtime = mtimer_mtime();
+
+    /* return (mtime / (CORECLOCK/4000000)) % 2^30
+     * using a / b = a * (2^34 / b) / 2^34
+     */
+    mtime *= ((4000000ULL << 34) - 1) / CORECLOCK + 1;
+    return mtime >> 34;
+}
+
+mp_uint_t mp_hal_ticks_cpu(void) {
+    return MTIMER->mtime_lo % MICROPY_PY_UTIME_TICKS_PERIOD;
+}
+
+/* vim: set ts=4 sw=4 et: */

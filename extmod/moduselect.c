@@ -29,6 +29,7 @@
 #if MICROPY_PY_USELECT
 
 #include <stdio.h>
+#include <assert.h>
 
 #include "py/runtime.h"
 #include "py/obj.h"

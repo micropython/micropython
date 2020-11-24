@@ -28,6 +28,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "py/objlist.h"
 #include "py/runtime.h"

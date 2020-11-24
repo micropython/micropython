@@ -28,6 +28,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "py/objlist.h"
 #include "py/runtime.h"

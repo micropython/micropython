@@ -174,6 +174,7 @@ NORETURN void mp_raise_recursion_depth(void);
 #else
 // A port may define to raise TypeError for example
 #ifndef mp_check_self
+#include <assert.h>
 #define mp_check_self(pred) assert(pred)
 #endif
 #endif

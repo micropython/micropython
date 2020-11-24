@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <poll.h>
+#include <assert.h>
 
 #include "py/runtime.h"
 #include "py/stream.h"

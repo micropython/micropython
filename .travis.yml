@@ -157,7 +157,7 @@ jobs:
         - MICROPYPATH=examples/natmod/features2 ./ports/unix/micropython-coverage -m features2
         - (cd tests && ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py)
         # run coveralls coverage analysis (try to, even if some builds/tests failed)
-        - (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options '\-o build-coverage/' --include py --include extmod)
+        - '[ "x$NOCOVERALLS" != x ] || (cd ports/unix && coveralls --root ../.. --build-root . --gcov $(which gcov) --gcov-options ''\-o build-coverage/'' --include py --include extmod)'
       after_failure:
         - tests/run-tests --print-failures
 
@@ -394,3 +394,15 @@ jobs:
       script:
         - make ${MAKEOPTS} -C ports/powerpc UART=potato
         - make ${MAKEOPTS} -C ports/powerpc UART=lpc_serial
+
+    # gd32vf103 port
+    - stage: test
+      name: "gd32vf103 port build"
+      os: linux
+      dist: focal
+      install:
+        - sudo apt-get install gcc-riscv64-unknown-elf gcc-riscv64-linux-gnu
+      script:
+        - make ${MAKEOPTS} -C ports/gd32vf103 submodules
+        - make ${MAKEOPTS} -C ports/gd32vf103 BUILD=build-baremetal
+        - make ${MAKEOPTS} -C ports/gd32vf103 BUILD=build-linux CROSS_COMPILE=riscv64-linux-gnu-

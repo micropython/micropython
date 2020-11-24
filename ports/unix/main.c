@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <signal.h>
+#include <limits.h>
 
 #include "py/compile.h"
 #include "py/runtime.h"

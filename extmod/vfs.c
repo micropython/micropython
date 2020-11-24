@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <assert.h>
 
 #include "py/runtime.h"
 #include "py/objstr.h"

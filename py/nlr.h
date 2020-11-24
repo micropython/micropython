@@ -29,9 +29,6 @@
 // non-local return
 // exception handling, basically a stack of setjmp/longjmp buffers
 
-#include <limits.h>
-#include <assert.h>
-
 #include "py/mpconfig.h"
 
 #define MICROPY_NLR_NUM_REGS_X86            (6)
@@ -79,6 +76,9 @@
     #define MICROPY_NLR_POWERPC (1)
     // this could be less but using 128 for safety
     #define MICROPY_NLR_NUM_REGS (128)
+#elif defined(__riscv_xlen) && __riscv_xlen == 32
+    #define MICROPY_NLR_RISCV32 (1)
+    #define MICROPY_NLR_NUM_REGS (14)
 #else
     #define MICROPY_NLR_SETJMP (1)
     //#warning "No native NLR support for this arch, using setjmp implementation"
@@ -150,6 +150,7 @@ NORETURN void nlr_jump_fail(void *val);
 #ifndef MICROPY_DEBUG_NLR
 #define nlr_raise(val) nlr_jump(MP_OBJ_TO_PTR(val))
 #else
+#include <assert.h>
 #include "mpstate.h"
 #define nlr_raise(val) \
     do { \
