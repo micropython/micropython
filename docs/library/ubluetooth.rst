@@ -80,6 +80,24 @@ Configuration
       :meth:`gattc_exchange_mtu<BLE.gattc_exchange_mtu>`.
       Use the ``_IRQ_MTU_EXCHANGED`` event to discover the MTU for a given connection.
 
+    - ``'bond'``: Sets whether bonding will be enabled during pairing. When
+      enabled, pairing requests will set the "bond" flag and the keys will be stored
+      by both devices.
+
+    - ``'mitm'``: Sets whether MITM-protection is required for pairing.
+
+    - ``'io'``: Sets the I/O capabilities of this device.
+
+      Available options are::
+
+        _IO_CAPABILITY_DISPLAY_ONLY = const(0)
+        _IO_CAPABILITY_DISPLAY_YESNO = const(1)
+        _IO_CAPABILITY_KEYBOARD_ONLY = const(2)
+        _IO_CAPABILITY_NO_INPUT_OUTPUT = const(3)
+        _IO_CAPABILITY_KEYBOARD_DISPLAY = const(4)
+
+    - ``'le_secure'``: Sets whether "LE Secure" pairing is required. Default is "Legacy Pairing".
+
 Event Handling
 --------------
 
