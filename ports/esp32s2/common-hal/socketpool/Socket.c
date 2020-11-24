@@ -187,6 +187,7 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
     if (self->num >= 0) {
         lwip_shutdown(self->num, 0);
         lwip_close(self->num);
+        self->num = -1;
     }
 }
 
