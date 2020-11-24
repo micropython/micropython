@@ -1167,6 +1167,14 @@ int mp_bluetooth_gap_disconnect(uint16_t conn_handle) {
     return 0;
 }
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+int mp_bluetooth_gap_pair(uint16_t conn_handle) {
+    DEBUG_printf("mp_bluetooth_gap_pair: conn_handle=%d\n", conn_handle);
+    sm_request_pairing(conn_handle);
+    return 0;
+}
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 STATIC btstack_timer_source_t scan_duration_timeout;
 
