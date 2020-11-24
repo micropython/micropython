@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-11 16:30+0530\n"
-"PO-Revision-Date: 2020-11-24 22:45+0000\n"
+"PO-Revision-Date: 2020-11-24 23:22+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1289,7 +1289,7 @@ msgstr "Deve utilizar um múltiplo de 6 pinos rgb, não %d"
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
-msgstr ""
+msgstr "Erro NVS"
 
 #: py/parse.c
 msgid "Name too long"
