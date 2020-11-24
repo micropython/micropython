@@ -26,6 +26,12 @@
 
 #pragma once
 
-extern volatile bool _workflow_active;
+extern void supervisor_workflow_reset(void);
 
 extern bool supervisor_workflow_active(void);
+
+extern bool supervisor_workflow_get_allow_deep_sleep_when_connected(void);
+extern void supervisor_workflow_set_allow_deep_sleep_when_connected(bool allow);
+
+extern bool supervisor_workflow_get_allow_deep_sleep_on_error(void);
+extern void supervisor_workflow_set_allow_deep_sleep_on_error(bool allow);

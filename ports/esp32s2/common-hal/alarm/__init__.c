@@ -95,7 +95,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
     _deep_sleep_alarms = mp_obj_new_tuple(n_alarms, alarms);
 }
 
-void common_hal_deep_sleep_with_alarms(void) {
+void common_hal_alarm_enable_deep_sleep_alarms(void) {
     for (size_t i = 0; i < _deep_sleep_alarms->len; i++) {
         mp_obj_t alarm = _deep_sleep_alarms->items[i];
         if (MP_OBJ_IS_TYPE(alarm, &alarm_time_duration_alarm_type)) {
@@ -105,6 +105,4 @@ void common_hal_deep_sleep_with_alarms(void) {
         }
         // TODO: handle pin alarms
     }
-
-    common_hal_mcu_deep_sleep();
 }

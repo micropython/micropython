@@ -25,8 +25,11 @@
  */
 
 #include <stdbool.h>
+#include "py/obj.h"
 #include "py/enum.h"
+#include "py/runtime.h"
 #include "py/objproperty.h"
+
 #include "shared-bindings/supervisor/RunReason.h"
 #include "shared-bindings/supervisor/Runtime.h"
 

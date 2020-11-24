@@ -80,11 +80,9 @@ void common_hal_mcu_reset(void) {
     while(1);
 }
 
-void common_hal_mcu_deep_sleep(void) {
+void NORETURN common_hal_mcu_deep_sleep(void) {
     // Shut down wifi cleanly.
     esp_wifi_stop();
-
-    // Does not return.
     esp_deep_sleep_start();
 }
 

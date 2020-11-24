@@ -47,17 +47,17 @@
 #include "mpconfigboard.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/cpu.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
-#include "supervisor/filesystem.h"
+#include "supervisor/serial.h"
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
-#include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
+#include "supervisor/shared/status_leds.h"
+#include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
-#include "supervisor/serial.h"
 #include "supervisor/usb.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
@@ -65,6 +65,8 @@
 #include "shared-bindings/supervisor/Runtime.h"
 
 #include "boards/board.h"
+
+#include "esp_log.h"
 
 #if CIRCUITPY_ALARM
 #include "shared-bindings/alarm/__init__.h"
@@ -101,26 +103,6 @@
 // How long to flash errors on the RGB status LED before going to sleep (secs)
 #define CIRCUITPY_FLASH_ERROR_PERIOD 10
 
-void do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-    if (lex == NULL) {
-        //printf("MemoryError: lexer could not allocate memory\n");
-        return;
-    }
-
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        qstr source_name = lex->source_name;
-        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
-        mp_call_function_0(module_fun);
-        nlr_pop();
-    } else {
-        // uncaught exception
-        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-    }
-}
-
 #if MICROPY_ENABLE_PYSTACK
 static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
 #endif
@@ -131,9 +113,13 @@ static void reset_devices(void) {
 #endif
 }
 
-void start_mp(supervisor_allocation* heap) {
+STATIC void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
+    supervisor_workflow_reset();
+#if CIRCUITPY_ALARM
+    alarm_reset();
+#endif
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
@@ -182,7 +168,7 @@ void start_mp(supervisor_allocation* heap) {
     #endif
 }
 
-void stop_mp(void) {
+STATIC void stop_mp(void) {
     #if CIRCUITPY_NETWORK
     network_module_deinit();
     #endif
@@ -207,7 +193,7 @@ void stop_mp(void) {
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
-const char* first_existing_file_in_list(const char * const * filenames) {
+STATIC const char* first_existing_file_in_list(const char * const * filenames) {
     for (int i = 0; filenames[i] != (char*)""; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat == MP_IMPORT_STAT_FILE) {
@@ -217,7 +203,7 @@ const char* first_existing_file_in_list(const char * const * filenames) {
     return NULL;
 }
 
-bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result) {
+STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result) {
     const char* filename = first_existing_file_in_list(filenames);
     if (filename == NULL) {
         return false;
@@ -231,7 +217,7 @@ bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result
     return true;
 }
 
-void cleanup_after_vm(supervisor_allocation* heap) {
+STATIC void cleanup_after_vm(supervisor_allocation* heap) {
     // Reset port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
     // Turn off the display and flush the fileystem before the heap disappears.
@@ -260,7 +246,7 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     reset_status_led();
 }
 
-void print_code_py_status_message(safe_mode_t safe_mode) {
+STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     if (autoreload_is_enabled()) {
         serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
     } else {
@@ -272,7 +258,7 @@ void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-bool run_code_py(safe_mode_t safe_mode) {
+STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
     if (serial_connected_at_start) {
@@ -318,6 +304,8 @@ bool run_code_py(safe_mode_t safe_mode) {
         }
     }
 
+    // Program has finished running.
+
     // Display a different completion message if the user has no USB attached (cannot save files)
     if (!serial_connected_at_start) {
         serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
@@ -329,11 +317,26 @@ bool run_code_py(safe_mode_t safe_mode) {
     #endif
     rgb_status_animation_t animation;
     bool ok = result.return_code != PYEXEC_EXCEPTION;
-    // If USB isn't enumerated then deep sleep.
-    if (ok && !supervisor_workflow_active() && supervisor_ticks_ms64() > CIRCUITPY_USB_ENUMERATION_DELAY * 1024) {
-        common_hal_mcu_deep_sleep();
-    }
-    // Show the animation every N seconds.
+
+    ESP_LOGI("main", "common_hal_alarm_enable_deep_sleep_alarms()");
+    // Decide whether to deep sleep.
+    #if CIRCUITPY_ALARM
+    // Enable pin or time alarms before sleeping.
+    common_hal_alarm_enable_deep_sleep_alarms();
+    #endif
+
+    // Normally we won't deep sleep if there was an error or if we are connected to a host
+    // but either of those can be enabled.
+    // *********DON'T SLEEP IF USB HASN'T HAD TIME TO ENUMERATE.
+    bool will_deep_sleep =
+        (ok || supervisor_workflow_get_allow_deep_sleep_on_error()) &&
+        (!supervisor_workflow_active() || supervisor_workflow_get_allow_deep_sleep_when_connected());
+
+    ESP_LOGI("main", "ok %d", will_deep_sleep);
+    ESP_LOGI("main", "...on_error() %d", supervisor_workflow_get_allow_deep_sleep_on_error());
+    ESP_LOGI("main", "supervisor_workflow_active() %d", supervisor_workflow_active());
+    ESP_LOGI("main", "...when_connected() %d", supervisor_workflow_get_allow_deep_sleep_when_connected());
+    will_deep_sleep = false;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
         RUN_BACKGROUND_TASKS;
@@ -356,9 +359,12 @@ bool run_code_py(safe_mode_t safe_mode) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
             }
-            print_safe_mode_message(safe_mode);
-            serial_write("\n");
-            serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
+            // We won't be going into the REPL if we're going to sleep.
+            if (!will_deep_sleep) {
+                print_safe_mode_message(safe_mode);
+                serial_write("\n");
+                serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
+            }
         }
         if (serial_connected_before_animation && !serial_connected()) {
             serial_connected_at_start = false;
@@ -371,16 +377,22 @@ bool run_code_py(safe_mode_t safe_mode) {
             refreshed_epaper_display = maybe_refresh_epaperdisplay();
         }
         #endif
-        bool animation_done = tick_rgb_status_animation(&animation);
-        if (animation_done && supervisor_workflow_active()) {
-            #if CIRCUITPY_ALARM
+
+        bool animation_done = false;
+        if (will_deep_sleep && ok) {
+            // Skip animation if everything is OK.
+            animation_done = true;
+        } else {
+            animation_done = tick_rgb_status_animation(&animation);
+        }
+        // Do an error animation only once before deep-sleeping.
+        if (animation_done && will_deep_sleep) {
             int64_t remaining_enumeration_wait = CIRCUITPY_USB_ENUMERATION_DELAY * 1024 - supervisor_ticks_ms64();
             // If USB isn't enumerated then deep sleep after our waiting period.
             if (ok && remaining_enumeration_wait < 0) {
                 common_hal_mcu_deep_sleep();
-                return false; // Doesn't actually get here.
+                // Does not return.
             }
-            #endif
             // Wake up every so often to flash the error code.
             if (!ok) {
                 port_interrupt_after_ticks(CIRCUITPY_FLASH_ERROR_PERIOD * 1024);
@@ -394,7 +406,7 @@ bool run_code_py(safe_mode_t safe_mode) {
 
 FIL* boot_output_file;
 
-void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
+STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
@@ -473,7 +485,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     }
 }
 
-int run_repl(void) {
+STATIC int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();

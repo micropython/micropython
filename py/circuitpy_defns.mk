@@ -403,6 +403,7 @@ $(filter $(SRC_PATTERNS), \
 	math/__init__.c \
 	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
+	supervisor/RunReason.c \
 )
 
 SRC_BINDINGS_ENUMS += \
