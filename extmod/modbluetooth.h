@@ -54,6 +54,12 @@
 #define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (0)
 #endif
 
+// A port can optionally enable support for pairing and bonding.
+// Requires MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS.
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+#define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (0)
+#endif
+
 // This is used to protect the ringbuffer.
 // A port may no-op this if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS is enabled.
 #ifndef MICROPY_PY_BLUETOOTH_ENTER

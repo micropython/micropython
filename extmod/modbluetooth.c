@@ -47,6 +47,10 @@
 #error l2cap channels require synchronous modbluetooth events
 #endif
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING && !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+#error pairing and bonding require synchronous modbluetooth events
+#endif
+
 #define MP_BLUETOOTH_CONNECT_DEFAULT_SCAN_DURATION_MS 2000
 
 #define MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN 5
