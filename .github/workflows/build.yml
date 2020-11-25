@@ -199,6 +199,7 @@ jobs:
         - "clue_nrf52840_express"
         - "cp32-m4"
         - "cp_sapling_m0"
+        - "cp_sapling_m0_spiflash"
         - "datalore_ip_m4"
         - "datum_distance"
         - "datum_imu"
