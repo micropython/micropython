@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 10:10-0600\n"
-"PO-Revision-Date: 2020-11-18 00:28+0000\n"
+"POT-Creation-Date: 2020-11-11 16:30+0530\n"
+"PO-Revision-Date: 2020-11-24 23:22+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -878,7 +878,7 @@ msgstr "O FFT é definido apenas para ndarrays"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "FFT is implemented for linear arrays only"
-msgstr ""
+msgstr "O FFT é implementado apenas para matrizes lineares"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
@@ -1286,6 +1286,10 @@ msgstr "Deve informar os pinos MISO ou MOSI"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Deve utilizar um múltiplo de 6 pinos rgb, não %d"
+
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
+msgstr "Erro NVS"
 
 #: py/parse.c
 msgid "Name too long"
@@ -2114,7 +2118,7 @@ msgstr "O argumento argsort deve ser um ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr ""
+msgstr "argsort não é implementado para matrizes achatadas"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -2139,7 +2143,7 @@ msgstr "os argumentos devem ser ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr ""
+msgstr "a matriz e comprimento do índice devem ser iguais"
 
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -2147,7 +2151,7 @@ msgstr "matriz/bytes são necessários no lado direito"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
-msgstr ""
+msgstr "tentativa de obter (arg)min/(arg)max da sequência vazia"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
@@ -2159,15 +2163,15 @@ msgstr "atributos ainda não suportados"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis is out of bounds"
-msgstr ""
+msgstr "o eixo está fora dos limites"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be None, or an integer"
-msgstr ""
+msgstr "eixo deve ser Nenhum ou um número inteiro"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis too long"
-msgstr ""
+msgstr "o eixo é muito longo"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2376,7 +2380,7 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
-msgstr ""
+msgstr "não pode lançar a saída com a regra de fundição"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -2478,7 +2482,7 @@ msgstr "não foi possível determinar a versão do cartão SD"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
-msgstr ""
+msgstr "a cruz é definida para matrizes 1D de comprimento 3"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
@@ -2522,7 +2526,7 @@ msgstr "O argumento diff deve ser um ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "differentiation order out of range"
-msgstr ""
+msgstr "ordem de diferenciação fora do alcance"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -2641,7 +2645,7 @@ msgstr "o primeiro argumento deve ser uma função"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr ""
+msgstr "o primeiro argumento deve ser um tuple de ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
@@ -2698,7 +2702,7 @@ msgstr "a função tem o mesmo sinal nas extremidades do intervalo"
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr ""
+msgstr "A função é definida apenas para ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -2794,7 +2798,7 @@ msgstr "o assembler em linha deve ser uma função"
 
 #: extmod/ulab/code/ndarray.c
 msgid "input and output shapes are not compatible"
-msgstr ""
+msgstr "as formas de entrada e saída não são compatíveis"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
@@ -2806,7 +2810,7 @@ msgstr "comprimento da matriz da entrada deve ter potência de 2"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input arrays are not compatible"
-msgstr ""
+msgstr "as matrizes da entrada não são compatíveis"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
@@ -2822,19 +2826,19 @@ msgstr "a matriz da entrada é singular"
 
 #: extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr ""
+msgstr "a entrada deve ser um ndarray denso"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input must be a tensor of rank 2"
-msgstr ""
+msgstr "a entrada dos dados deve ser um tensor de nível 2"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
-msgstr ""
+msgstr "a entrada deve ser um ndarray"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "input must be one-dimensional"
-msgstr ""
+msgstr "a entrada deve ser unidimensional"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
@@ -2850,7 +2854,7 @@ msgstr "os vetores da entrada devem ter o mesmo comprimento"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "inputs are not iterable"
-msgstr ""
+msgstr "as entradas não são iteráveis"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -3025,7 +3029,7 @@ msgstr "max_length deve ser > 0"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
-msgstr ""
+msgstr "O número máximo de dimensões são 4"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3162,7 +3166,7 @@ msgstr "um arg não-palavra-chave após a palavra-chave arg"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
-msgstr ""
+msgstr "a norma é definida para matrizes 1D e 2D"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
@@ -3230,7 +3234,7 @@ msgstr "sequência com comprimento ímpar"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
-msgstr ""
+msgstr "o offset é muito grande"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3257,11 +3261,11 @@ msgstr "os operandos não puderam ser transmitidos juntos"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
+msgstr "A operação é implementada apenas para matrizes booleanas 1D"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented for flattened array"
-msgstr ""
+msgstr "a operação não é implementada para a matriz achatada"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3403,7 +3407,7 @@ msgstr "o comprimento solicitado %d, porém o objeto tem comprimento %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
-msgstr ""
+msgstr "os resultados não podem ser lançados para um determinado tipo"
 
 #: py/compile.c
 msgid "return annotation must be an identifier"
@@ -3425,7 +3429,7 @@ msgstr "rgb_pins[%d] não está na mesma porta que o clock"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "roll argument must be an ndarray"
-msgstr ""
+msgstr "argumento de enrolar deve ser um ndarray"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -3453,7 +3457,7 @@ msgstr "compilação de script não suportada"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
-msgstr ""
+msgstr "a forma deve ser uma tupla"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3602,7 +3606,7 @@ msgstr "timestamp fora do intervalo para a plataforma time_t"
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
-msgstr ""
+msgstr "os tobytes podem ser invocados apenas nas matrizes densas"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
@@ -3781,11 +3785,11 @@ msgstr "a janela deve ser <= intervalo"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "wrong axis index"
-msgstr ""
+msgstr "índice do eixo errado"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "wrong axis specified"
-msgstr ""
+msgstr "um eixo errado foi definido"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
