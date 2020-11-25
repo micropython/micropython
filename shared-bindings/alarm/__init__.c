@@ -38,7 +38,7 @@
 //|
 //| Light sleep leaves the CPU and RAM powered so that CircuitPython can resume where it left off
 //| after being woken up. CircuitPython automatically goes into a light sleep when `time.sleep()` is
-//| called. To light sleep until a non-time alarm use `alarm.sleep_until_alarm()`. Any active
+//| called. To light sleep until a non-time alarm use `alarm.sleep_until_alarms()`. Any active
 //| peripherals, such as I2C, are left on.
 //|
 //| Deep sleep shuts down power to nearly all of the chip including the CPU and RAM. This can save
@@ -51,7 +51,7 @@
 //|
 //| An error includes an uncaught exception, or sys.exit() called with a non-zero argument
 //|
-//| To set alarms for deep sleep use `alarm.restart_on_alarm()` they will apply to next deep sleep only."""
+//| To set alarms for deep sleep use `alarm.set_deep_sleep_alarms()` they will apply to next deep sleep only."""
 //|
 //| wake_alarm: Alarm
 //| """The most recent alarm to wake us up from a sleep (light or deep.)"""

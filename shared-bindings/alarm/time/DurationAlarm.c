@@ -37,10 +37,10 @@
 //|     """Trigger an alarm at a specified interval from now."""
 //|
 //|     def __init__(self, secs: float) -> None:
-//|         """Create an alarm that will be triggered in `secs` seconds from the time
+//|         """Create an alarm that will be triggered in ``secs`` seconds from the time
 //|         sleep starts. The alarm is not active until it is listed in an
-//|         `alarm`-enabling function, such as `alarm.sleep_until_alarm()` or
-//|         `alarm.restart_on_alarm()`.
+//|         `alarm`-enabling function, such as `alarm.sleep_until_alarms()` or
+//|         `alarm.set_deep_sleep_alarms()`.
 //|         """
 //|         ...
 //|

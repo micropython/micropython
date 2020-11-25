@@ -98,7 +98,7 @@
 #endif
 
 // How long to wait for host to enumerate (secs).
-#define CIRCUITPY_USB_ENUMERATION_DELAY 1
+#define CIRCUITPY_USB_ENUMERATION_DELAY 5
 
 // How long to flash errors on the RGB status LED before going to sleep (secs)
 #define CIRCUITPY_FLASH_ERROR_PERIOD 10
@@ -319,26 +319,28 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool ok = result.return_code != PYEXEC_EXCEPTION;
 
     ESP_LOGI("main", "common_hal_alarm_enable_deep_sleep_alarms()");
-    // Decide whether to deep sleep.
     #if CIRCUITPY_ALARM
     // Enable pin or time alarms before sleeping.
     common_hal_alarm_enable_deep_sleep_alarms();
     #endif
 
-    // Normally we won't deep sleep if there was an error or if we are connected to a host
-    // but either of those can be enabled.
-    // *********DON'T SLEEP IF USB HASN'T HAD TIME TO ENUMERATE.
-    bool will_deep_sleep =
-        (ok || supervisor_workflow_get_allow_deep_sleep_on_error()) &&
-        (!supervisor_workflow_active() || supervisor_workflow_get_allow_deep_sleep_when_connected());
 
-    ESP_LOGI("main", "ok %d", will_deep_sleep);
-    ESP_LOGI("main", "...on_error() %d", supervisor_workflow_get_allow_deep_sleep_on_error());
-    ESP_LOGI("main", "supervisor_workflow_active() %d", supervisor_workflow_active());
-    ESP_LOGI("main", "...when_connected() %d", supervisor_workflow_get_allow_deep_sleep_when_connected());
-    will_deep_sleep = false;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
+        // Normally we won't deep sleep if there was an error or if we are connected to a host
+        // but either of those can be enabled.
+        // It's ok to deep sleep if we're not connected to a host, but we need to make sure
+        // we're giving enough time for USB enumeration to happen.
+        bool deep_sleep_allowed =
+            (ok || supervisor_workflow_get_allow_deep_sleep_on_error()) &&
+            (!supervisor_workflow_active() || supervisor_workflow_get_allow_deep_sleep_when_connected()) &&
+            (supervisor_ticks_ms64() > CIRCUITPY_USB_ENUMERATION_DELAY * 1024);
+
+        ESP_LOGI("main", "ok %d", deep_sleep_allowed);
+        ESP_LOGI("main", "...on_error() %d", supervisor_workflow_get_allow_deep_sleep_on_error());
+        ESP_LOGI("main", "supervisor_workflow_active() %d", supervisor_workflow_active());
+        ESP_LOGI("main", "...when_connected() %d", supervisor_workflow_get_allow_deep_sleep_when_connected());
+        ESP_LOGI("main", "supervisor_ticks_ms64() %lld", supervisor_ticks_ms64());
         RUN_BACKGROUND_TASKS;
         if (reload_requested) {
             supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
@@ -360,7 +362,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 print_code_py_status_message(safe_mode);
             }
             // We won't be going into the REPL if we're going to sleep.
-            if (!will_deep_sleep) {
+            if (!deep_sleep_allowed) {
                 print_safe_mode_message(safe_mode);
                 serial_write("\n");
                 serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
@@ -379,27 +381,31 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         #endif
 
         bool animation_done = false;
-        if (will_deep_sleep && ok) {
+
+        if (deep_sleep_allowed && ok) {
             // Skip animation if everything is OK.
             animation_done = true;
         } else {
             animation_done = tick_rgb_status_animation(&animation);
         }
         // Do an error animation only once before deep-sleeping.
-        if (animation_done && will_deep_sleep) {
-            int64_t remaining_enumeration_wait = CIRCUITPY_USB_ENUMERATION_DELAY * 1024 - supervisor_ticks_ms64();
-            // If USB isn't enumerated then deep sleep after our waiting period.
-            if (ok && remaining_enumeration_wait < 0) {
+        if (animation_done) {
+            if (deep_sleep_allowed) {
                 common_hal_mcu_deep_sleep();
                 // Does not return.
             }
+
             // Wake up every so often to flash the error code.
             if (!ok) {
                 port_interrupt_after_ticks(CIRCUITPY_FLASH_ERROR_PERIOD * 1024);
             } else {
-                port_interrupt_after_ticks(remaining_enumeration_wait);
+                int64_t remaining_enumeration_wait =
+                    CIRCUITPY_USB_ENUMERATION_DELAY * 1024 - supervisor_ticks_ms64();
+                if (remaining_enumeration_wait > 0) {
+                    port_interrupt_after_ticks(remaining_enumeration_wait);
+                }
+                port_sleep_until_interrupt();
             }
-            port_sleep_until_interrupt();
         }
     }
 }

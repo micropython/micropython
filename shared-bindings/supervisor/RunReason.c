@@ -37,7 +37,7 @@ MAKE_ENUM_VALUE(supervisor_run_reason_type, run_reason, REPL_RELOAD, RUN_REASON_
 //|     """The reason that CircuitPython started running."""
 //|
 //|     STARTUP: object
-//|     """CircuitPython started the microcontroller started up. See `microcontroller.cpu.reset_reason`
+//|     """CircuitPython started the microcontroller started up. See `microcontroller.Processor.reset_reason`
 //|        for more detail on why the microcontroller was started."""
 //|
 //|     AUTO_RELOAD: object

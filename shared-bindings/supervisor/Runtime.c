@@ -98,7 +98,7 @@ const mp_obj_property_t supervisor_serial_bytes_available_obj = {
 
 
 //|     run_reason: RunReason
-//|     """Returns why CircuitPython started running this particular time.
+//|     """Returns why CircuitPython started running this particular time."""
 //|
 STATIC mp_obj_t supervisor_get_run_reason(mp_obj_t self) {
     return cp_enum_find(&supervisor_run_reason_type, _run_reason);

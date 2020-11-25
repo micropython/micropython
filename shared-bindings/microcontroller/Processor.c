@@ -67,8 +67,8 @@ const mp_obj_property_t mcu_processor_frequency_obj = {
     },
 };
 
-//| reset_reason: `microcontroller.ResetReason`
-//| """The reason the microcontroller started up from reset state."""
+//|     reset_reason: microcontroller.ResetReason
+//|     """The reason the microcontroller started up from reset state."""
 //|
 STATIC mp_obj_t mcu_processor_get_reset_reason(mp_obj_t self) {
     return cp_enum_find(&mcu_reset_reason_type, common_hal_mcu_processor_get_reset_reason());

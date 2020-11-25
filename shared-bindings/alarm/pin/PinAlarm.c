@@ -38,26 +38,26 @@
 //|     """Trigger an alarm when a pin changes state."""
 //|
 //|     def __init__(self, *pins: microcontroller.Pin, value: bool, all_same_value: bool = False, edge: bool = False, pull: bool = False) -> None:
-//|         """Create an alarm triggered by a `~microcontroller.Pin` level. The alarm is not active
-//|         until it is listed in an `alarm`-enabling function, such as `alarm.sleep_until_alarm()` or
-//|         `alarm.restart_on_alarm()`.
+//|         """Create an alarm triggered by a `microcontroller.Pin` level. The alarm is not active
+//|         until it is listed in an `alarm`-enabling function, such as `alarm.sleep_until_alarms()` or
+//|         `alarm.set_deep_sleep_alarms()`.
 //|
-//|         :param pins: The pins to monitor. On some ports, the choice of pins
-//|         may be limited due to hardware restrictions, particularly for deep-sleep alarms.
+//|         :param microcontroller.Pin \*pins: The pins to monitor. On some ports, the choice of pins
+//|           may be limited due to hardware restrictions, particularly for deep-sleep alarms.
 //|         :param bool value: When active, trigger when the pin value is high (``True``) or low (``False``).
-//|         On some ports, multiple `PinAlarm` objects may need to have coordinated values
-//|         for deep-sleep alarms.
-//|         :param bool all_same_value: If ``True``, all pins listed must be at `value` to trigger the alarm.
-//|         If ``False``, any one of the pins going to `value` will trigger the alarm.
+//|           On some ports, multiple `PinAlarm` objects may need to have coordinated values
+//|           for deep-sleep alarms.
+//|         :param bool all_same_value: If ``True``, all pins listed must be at ``value`` to trigger the alarm.
+//|           If ``False``, any one of the pins going to ``value`` will trigger the alarm.
 //|         :param bool edge: If ``True``, trigger only when there is a transition to the specified
-//|         value of `value`. If ``True``, if the alarm becomes active when the pin value already
-//|         matches `value`, the alarm is not triggered: the pin must transition from ``not value``
-//|         to ``value`` to trigger the alarm. On some ports, edge-triggering may not be available,
-//|         particularly for deep-sleep alarms.
-//|         :param bool pull: Enable a pull-up or pull-down which pulls the pin to value opposite
-//|         opposite that of `value`. For instance, if `value` is set to ``True``, setting `pull`
-//|         to ``True`` will enable a pull-down, to hold the pin low normally until an outside signal
-//|         pulls it high.
+//|           value of ``value``. If ``True``, if the alarm becomes active when the pin value already
+//|           matches ``value``, the alarm is not triggered: the pin must transition from ``not value``
+//|           to ``value`` to trigger the alarm. On some ports, edge-triggering may not be available,
+//|           particularly for deep-sleep alarms.
+//|         :param bool pull: Enable a pull-up or pull-down which pulls the pin to the level opposite
+//|           opposite that of ``value``. For instance, if ``value`` is set to ``True``, setting ``pull``
+//|           to ``True`` will enable a pull-down, to hold the pin low normally until an outside signal
+//|           pulls it high.
 //|         """
 //|         ...
 //|
