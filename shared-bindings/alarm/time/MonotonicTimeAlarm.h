@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 @microDev1 (GitHub)
  * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,27 +24,16 @@
  * THE SOFTWARE.
  */
 
-#include "esp_sleep.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_MONOTONIC_TIME_ALARM_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_MONOTINIC_TIME_ALARM_H
 
-#include "py/runtime.h"
+#include "py/obj.h"
 
-#include "shared-bindings/alarm/time/DurationAlarm.h"
+#include "common-hal/alarm/time/MonotonicTimeAlarm.h"
 
-void common_hal_alarm_time_duration_alarm_construct(alarm_time_duration_alarm_obj_t *self, mp_float_t duration) {
-    self->duration = duration;
-}
+extern const mp_obj_type_t alarm_time_monotonic_time_alarm_type;
 
-mp_float_t common_hal_alarm_time_duration_alarm_get_duration(alarm_time_duration_alarm_obj_t *self) {
-    return self->duration;
-}
+extern void common_hal_alarm_time_monotonic_time_alarm_construct(alarm_time_monotonic_time_alarm_obj_t *self, mp_float_t monotonic_time);
+extern mp_float_t common_hal_alarm_time_monotonic_time_alarm_get_monotonic_time(alarm_time_monotonic_time_alarm_obj_t *self);
 
-void common_hal_alarm_time_duration_alarm_enable(alarm_time_duration_alarm_obj_t *self) {
-    if (esp_sleep_enable_timer_wakeup((uint64_t) (self->duration * 1000000)) == ESP_ERR_INVALID_ARG) {
-        mp_raise_ValueError(translate("duration out of range"));
-    }
-}
-
-void common_hal_alarm_time_duration_alarm_disable (alarm_time_duration_alarm_obj_t *self) {
-    (void) self;
-    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
-}
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_MONOTONIC_TIME_ALARM_H

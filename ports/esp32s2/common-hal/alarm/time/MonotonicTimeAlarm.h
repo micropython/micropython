@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 @microDev1 (GitHub)
  * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,5 +29,5 @@
 
 typedef struct {
     mp_obj_base_t base;
-    mp_float_t duration;  // seconds
-} alarm_time_duration_alarm_obj_t;
+    mp_float_t monotonic_time;      // values compatible with time.monotonic_time()
+} alarm_time_monotonic_time_alarm_obj_t;

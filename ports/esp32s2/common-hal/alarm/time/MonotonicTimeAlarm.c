@@ -24,19 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_DURATION_ALARM_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_DURATION_ALARM_H
+#include "esp_sleep.h"
 
-#include "py/obj.h"
+#include "py/runtime.h"
 
-#include "common-hal/alarm/time/DurationAlarm.h"
+#include "shared-bindings/alarm/time/MonotonicTimeAlarm.h"
 
-extern const mp_obj_type_t alarm_time_duration_alarm_type;
+void common_hal_alarm_time_monotonic_time_alarm_construct(alarm_time_monotonic_time_alarm_obj_t *self, mp_float_t monotonic_time) {
+    self->monotonic_time = monotonic_time;
+}
 
-extern void common_hal_alarm_time_duration_alarm_construct(alarm_time_duration_alarm_obj_t *self, mp_float_t duration);
-extern mp_float_t common_hal_alarm_time_duration_alarm_get_duration(alarm_time_duration_alarm_obj_t *self);
-
-extern void common_hal_alarm_time_duration_alarm_enable(alarm_time_duration_alarm_obj_t *self);
-extern void common_hal_alarm_time_duration_alarm_disable (alarm_time_duration_alarm_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_DURATION_ALARM_H
+mp_float_t common_hal_alarm_time_monotonic_time_alarm_get_monotonic_time(alarm_time_monotonic_time_alarm_obj_t *self) {
+    return self->monotonic_time;
+}

@@ -321,7 +321,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     ESP_LOGI("main", "common_hal_alarm_enable_deep_sleep_alarms()");
     #if CIRCUITPY_ALARM
     // Enable pin or time alarms before sleeping.
-    common_hal_alarm_enable_deep_sleep_alarms();
+    // If immediate_wake is true, then there's alarm that would trigger immediately,
+    // so don't sleep.
+    bool immediate_wake = !common_hal_alarm_enable_deep_sleep_alarms();
     #endif
 
 
@@ -332,6 +334,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         // It's ok to deep sleep if we're not connected to a host, but we need to make sure
         // we're giving enough time for USB enumeration to happen.
         bool deep_sleep_allowed =
+            !immediate_wake &&
             (ok || supervisor_workflow_get_allow_deep_sleep_on_error()) &&
             (!supervisor_workflow_active() || supervisor_workflow_get_allow_deep_sleep_when_connected()) &&
             (supervisor_ticks_ms64() > CIRCUITPY_USB_ENUMERATION_DELAY * 1024);
@@ -576,7 +579,7 @@ int __attribute__((used)) main(void) {
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
-                serial_write_compressed(translate("\n\n------ soft reboot ------\n"));
+                serial_write_compressed(translate("soft reboot\n"));
             }
             first_run = false;
             skip_repl = run_code_py(safe_mode);

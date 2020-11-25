@@ -35,8 +35,8 @@
 extern const mp_obj_type_t alarm_pin_pin_alarm_type;
 
 void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, const mp_obj_t pins[], size_t num_pins, bool value, bool all_same_value, bool edge, bool pull);
-extern const mp_obj_tuple_t *common_hal_alarm_pin_pin_alarm_get_pins(alarm_pin_pin_alarm_obj_t *self);
-extern bool common_hal_alarm_pin_pin_alarm_get_level(alarm_pin_pin_alarm_obj_t *self);
+extern mp_obj_tuple_t *common_hal_alarm_pin_pin_alarm_get_pins(alarm_pin_pin_alarm_obj_t *self);
+extern bool common_hal_alarm_pin_pin_alarm_get_value(alarm_pin_pin_alarm_obj_t *self);
 extern bool common_hal_alarm_pin_pin_alarm_get_edge(alarm_pin_pin_alarm_obj_t *self);
 extern bool common_hal_alarm_pin_pin_alarm_get_pull(alarm_pin_pin_alarm_obj_t *self);
 

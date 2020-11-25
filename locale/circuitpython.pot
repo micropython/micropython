@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-21 12:36-0500\n"
+"POT-Creation-Date: 2020-11-25 15:08-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,13 +16,6 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-#: main.c
-msgid ""
-"\n"
-"\n"
-"------ soft reboot ------\n"
-msgstr ""
 
 #: main.c
 msgid ""
@@ -849,6 +842,10 @@ msgstr ""
 msgid "Expected an Address"
 msgstr ""
 
+#: shared-bindings/alarm/__init__.c
+msgid "Expected an alarm"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -1440,6 +1437,10 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "Only one alarm.time alarm can be set."
+msgstr ""
+
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr ""
@@ -1495,6 +1496,10 @@ msgstr ""
 
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "PinAlarm deep sleep not yet implemented"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -2449,10 +2454,6 @@ msgstr ""
 msgid "division by zero"
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/time/DurationAlarm.c
-msgid "duration out of range"
-msgstr ""
-
 #: py/objdeque.c
 msgid "empty"
 msgstr ""
@@ -3352,6 +3353,10 @@ msgstr ""
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
+msgstr ""
+
+#: main.c
+msgid "soft reboot\n"
 msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c

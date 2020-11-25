@@ -29,7 +29,7 @@
 
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
-#include "shared-bindings/alarm/time/DurationAlarm.h"
+#include "shared-bindings/alarm/time/MonotonicTimeAlarm.h"
 
 //| """Power-saving light and deep sleep. Alarms can be set to wake up from sleep.
 //|
@@ -60,7 +60,7 @@
 void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
         if (MP_OBJ_IS_TYPE(objs[i], &alarm_pin_pin_alarm_type) ||
-            MP_OBJ_IS_TYPE(objs[i], &alarm_time_duration_alarm_type)) {
+            MP_OBJ_IS_TYPE(objs[i], &alarm_time_monotonic_time_alarm_type)) {
             continue;
         }
         mp_raise_TypeError_varg(translate("Expected an alarm"));
@@ -86,7 +86,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_sleep_until_alarms_obj, 1, MP_OBJ_FUN_
 //|     When awakened, the microcontroller will restart and run ``boot.py`` and ``code.py``
 //|     from the beginning.
 //|
-//|     The alarm that caused the wake-up is available as `alarm.wake_alarm`.
+//|     An alarm equivalent to the one that caused the wake-up is available as `alarm.wake_alarm`.
+//|     Its type and/or attributes may not correspond exactly to the original alarm.
+//|     For time-base alarms, currently, an `alarm.time.MonotonicTimeAlarm()` is created.
 //|
 //|     If you call this routine more than once, only the last set of alarms given will be used.
 //|     """
@@ -121,7 +123,7 @@ STATIC const mp_obj_module_t alarm_pin_module = {
 STATIC const mp_map_elem_t alarm_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
-    { MP_ROM_QSTR(MP_QSTR_DurationAlarm), MP_OBJ_FROM_PTR(&alarm_time_duration_alarm_type) },
+    { MP_ROM_QSTR(MP_QSTR_MonotonicTimeAlarm), MP_OBJ_FROM_PTR(&alarm_time_monotonic_time_alarm_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(alarm_time_globals, alarm_time_globals_table);

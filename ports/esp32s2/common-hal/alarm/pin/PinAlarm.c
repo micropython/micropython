@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 @microDev1 (GitHub)
  * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,7 +37,7 @@ void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, c
     self->pull = pull;
 }
 
-const mp_obj_tuple_t *common_hal_alarm_pin_pin_alarm_get_pins(alarm_pin_pin_alarm_obj_t *self) {
+mp_obj_tuple_t *common_hal_alarm_pin_pin_alarm_get_pins(alarm_pin_pin_alarm_obj_t *self) {
     return self->pins;
 }
 

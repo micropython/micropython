@@ -25,13 +25,15 @@
  * THE SOFTWARE.
  */
 
+#include "py/obj.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
-#include "shared-bindings/alarm/time/DurationAlarm.h"
+#include "shared-bindings/alarm/time/MonotonicTimeAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/time/__init__.h"
 
 #include "esp_sleep.h"
 
@@ -49,8 +51,8 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_TIMER: {
             // Wake up from timer.
-            alarm_time_duration_alarm_obj_t *timer = m_new_obj(alarm_time_duration_alarm_obj_t);
-            timer->base.type = &alarm_time_duration_alarm_type;
+            alarm_time_monotonic_time_alarm_obj_t *timer = m_new_obj(alarm_time_monotonic_time_alarm_obj_t);
+            timer->base.type = &alarm_time_monotonic_time_alarm_type;
             return timer;
         }
 
@@ -84,7 +86,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pin_alarm_type)) {
             mp_raise_NotImplementedError(translate("PinAlarm deep sleep not yet implemented"));
         }
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_duration_alarm_type)) {
+        else if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_monotonic_time_alarm_type)) {
             if (time_alarm_set) {
                 mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
             }
@@ -95,14 +97,25 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
     _deep_sleep_alarms = mp_obj_new_tuple(n_alarms, alarms);
 }
 
-void common_hal_alarm_enable_deep_sleep_alarms(void) {
+// Return false if we should wake up immediately because a time alarm is in the past
+// or otherwise already triggered.
+bool common_hal_alarm_enable_deep_sleep_alarms(void) {
     for (size_t i = 0; i < _deep_sleep_alarms->len; i++) {
         mp_obj_t alarm = _deep_sleep_alarms->items[i];
-        if (MP_OBJ_IS_TYPE(alarm, &alarm_time_duration_alarm_type)) {
-            alarm_time_duration_alarm_obj_t *duration_alarm = MP_OBJ_TO_PTR(alarm);
-            esp_sleep_enable_timer_wakeup(
-                (uint64_t) (duration_alarm->duration * 1000000.0f));
+        if (MP_OBJ_IS_TYPE(alarm, &alarm_pin_pin_alarm_type)) {
+            // TODO: handle pin alarms
+            mp_raise_NotImplementedError(translate("PinAlarm deep sleep not yet implemented"));
         }
-        // TODO: handle pin alarms
+        else if (MP_OBJ_IS_TYPE(alarm, &alarm_time_monotonic_time_alarm_type)) {
+            alarm_time_monotonic_time_alarm_obj_t *monotonic_time_alarm = MP_OBJ_TO_PTR(alarm);
+            mp_float_t now = uint64_to_float(common_hal_time_monotonic());
+            // Compute a relative time in the future from now.
+            mp_float_t duration_secs = now - monotonic_time_alarm->monotonic_time;
+            if (duration_secs <= 0.0f) {
+                return false;
+            }
+            esp_sleep_enable_timer_wakeup((uint64_t) (duration_secs * 1000000));
+        }
     }
+    return true;
 }

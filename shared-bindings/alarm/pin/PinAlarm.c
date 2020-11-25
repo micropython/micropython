@@ -31,6 +31,7 @@
 
 #include "py/nlr.h"
 #include "py/obj.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
@@ -39,7 +40,7 @@
 //|
 //|     def __init__(self, *pins: microcontroller.Pin, value: bool, all_same_value: bool = False, edge: bool = False, pull: bool = False) -> None:
 //|         """Create an alarm triggered by a `microcontroller.Pin` level. The alarm is not active
-//|         until it is listed in an `alarm`-enabling function, such as `alarm.sleep_until_alarms()` or
+//|         until it is passed to an `alarm`-enabling function, such as `alarm.sleep_until_alarms()` or
 //|         `alarm.set_deep_sleep_alarms()`.
 //|
 //|         :param microcontroller.Pin \*pins: The pins to monitor. On some ports, the choice of pins
@@ -88,7 +89,41 @@ STATIC mp_obj_t alarm_pin_pin_alarm_make_new(const mp_obj_type_t *type, mp_uint_
     return MP_OBJ_FROM_PTR(self);
 }
 
+//|     pins: Tuple[microcontroller.pin]
+//|     """The trigger pins."""
+//|
+STATIC mp_obj_t alarm_pin_pin_alarm_obj_get_pins(mp_obj_t self_in) {
+    alarm_pin_pin_alarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return common_hal_alarm_pin_pin_alarm_get_pins(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pin_alarm_get_pins_obj, alarm_pin_pin_alarm_obj_get_pins);
+
+const mp_obj_property_t alarm_pin_pin_alarm_pins_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&alarm_pin_pin_alarm_get_pins_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+//|     value: Tuple[microcontroller.pin]
+//|     """The value on which to trigger."""
+//|
+STATIC mp_obj_t alarm_pin_pin_alarm_obj_get_value(mp_obj_t self_in) {
+    alarm_pin_pin_alarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(common_hal_alarm_pin_pin_alarm_get_value(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pin_alarm_get_value_obj, alarm_pin_pin_alarm_obj_get_value);
+
+const mp_obj_property_t alarm_pin_pin_alarm_value_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&alarm_pin_pin_alarm_get_value_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
 STATIC const mp_rom_map_elem_t alarm_pin_pin_alarm_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_pins), MP_ROM_PTR(&alarm_pin_pin_alarm_pins_obj) },
+    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&alarm_pin_pin_alarm_value_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(alarm_pin_pin_alarm_locals_dict, alarm_pin_pin_alarm_locals_dict_table);

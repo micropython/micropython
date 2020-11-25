@@ -51,9 +51,9 @@
 //|     ...
 //|
 STATIC mp_obj_t time_monotonic(void) {
+    // Returns ms ticks.
     uint64_t time64 = common_hal_time_monotonic();
-    // 4294967296 = 2^32
-    return mp_obj_new_float(((uint32_t) (time64 >> 32) * 4294967296.0f + (uint32_t) (time64 & 0xffffffff)) / 1000.0f);
+    return mp_obj_new_float(uint64_to_float(time64) / 1000.0f);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 
