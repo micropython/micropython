@@ -269,6 +269,7 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
 
     switch (event->type) {
         case BLE_GAP_EVENT_CONNECT:
+            DEBUG_printf("gap_event_cb: connect: status=%d\n", event->connect.status);
             if (event->connect.status == 0) {
                 // Connection established.
                 ble_gap_conn_find(event->connect.conn_handle, &desc);
@@ -282,6 +283,7 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
 
         case BLE_GAP_EVENT_DISCONNECT:
             // Disconnect.
+            DEBUG_printf("gap_event_cb: disconnect: reason=%d\n", event->disconnect.reason);
             reverse_addr_byte_order(addr, event->disconnect.conn.peer_id_addr.val);
             mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_CENTRAL_DISCONNECT, event->disconnect.conn.conn_handle, event->disconnect.conn.peer_id_addr.type, addr);
             break;
@@ -310,7 +312,6 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
 
         case BLE_GAP_EVENT_CONN_UPDATE: {
             DEBUG_printf("gap_event_cb: connection update: status=%d\n", event->conn_update.status);
-            struct ble_gap_conn_desc desc;
             if (ble_gap_conn_find(event->conn_update.conn_handle, &desc) == 0) {
                 mp_bluetooth_gap_on_connection_update(event->conn_update.conn_handle, desc.conn_itvl, desc.conn_latency, desc.supervision_timeout, event->conn_update.status == 0 ? 0 : 1);
             }
@@ -320,7 +321,6 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
         case BLE_GAP_EVENT_ENC_CHANGE: {
             DEBUG_printf("gap_event_cb: enc change: status=%d\n", event->enc_change.status);
             #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-            struct ble_gap_conn_desc desc;
             if (ble_gap_conn_find(event->enc_change.conn_handle, &desc) == 0) {
                 mp_bluetooth_gatts_on_encryption_update(event->conn_update.conn_handle,
                     desc.sec_state.encrypted, desc.sec_state.authenticated,
@@ -329,6 +329,27 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
             #endif
             break;
         }
+
+        case BLE_GAP_EVENT_REPEAT_PAIRING: {
+            // We recognized this peer but the peer doesn't recognize us.
+            DEBUG_printf("gap_event_cb: repeat pairing: conn_handle=%d\n", event->repeat_pairing.conn_handle);
+
+            // TODO: Consider returning BLE_GAP_REPEAT_PAIRING_IGNORE (and
+            // possibly an API to configure this).
+
+            // Delete the old bond.
+            int rc = ble_gap_conn_find(event->repeat_pairing.conn_handle, &desc);
+            if (rc == 0) {
+                ble_store_util_delete_peer(&desc.peer_id_addr);
+            }
+
+            // Allow re-pairing.
+            return BLE_GAP_REPEAT_PAIRING_RETRY;
+        }
+
+        default:
+            DEBUG_printf("gap_event_cb: unknown type %d\n", event->type);
+            break;
     }
     return 0;
 }
@@ -969,6 +990,7 @@ STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
     switch (event->type) {
         case BLE_GAP_EVENT_CONNECT:
+            DEBUG_printf("peripheral_gap_event_cb: status=%d\n", event->connect.status);
             if (event->connect.status == 0) {
                 // Connection established.
                 ble_gap_conn_find(event->connect.conn_handle, &desc);
@@ -982,6 +1004,7 @@ STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
         case BLE_GAP_EVENT_DISCONNECT:
             // Disconnect.
+            DEBUG_printf("peripheral_gap_event_cb: reason=%d\n", event->disconnect.reason);
             reverse_addr_byte_order(addr, event->disconnect.conn.peer_id_addr.val);
             mp_bluetooth_gap_on_connected_disconnected(MP_BLUETOOTH_IRQ_PERIPHERAL_DISCONNECT, event->disconnect.conn.conn_handle, event->disconnect.conn.peer_id_addr.type, addr);
 
@@ -1022,9 +1045,12 @@ STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
             #endif
             break;
         }
+
         default:
+            DEBUG_printf("peripheral_gap_event_cb: unknown type %d\n", event->type);
             break;
     }
+
     return 0;
 }
 
@@ -1515,5 +1541,147 @@ int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf
 }
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+
+STATIC int ble_store_ram_read(int obj_type, const union ble_store_key *key, union ble_store_value *value) {
+    DEBUG_printf("ble_store_ram_read: %d\n", obj_type);
+    const uint8_t *key_data;
+    size_t key_data_len;
+
+    switch (obj_type) {
+        case BLE_STORE_OBJ_TYPE_PEER_SEC: {
+            if (ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)) {
+                // <type=peer,addr,*> (single)
+                // Find the entry for this specific peer.
+                assert(key->sec.idx == 0);
+                assert(!key->sec.ediv_rand_present);
+                key_data = (const uint8_t *)&key->sec.peer_addr;
+                key_data_len = sizeof(ble_addr_t);
+            } else {
+                // <type=peer,*> (with index)
+                // Iterate all known peers.
+                assert(!key->sec.ediv_rand_present);
+                key_data = NULL;
+                key_data_len = 0;
+            }
+            break;
+        }
+        case BLE_STORE_OBJ_TYPE_OUR_SEC: {
+            // <type=our,addr,ediv_rand>
+            // Find our secret for this remote device, matching this ediv/rand key.
+            assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
+            assert(key->sec.idx == 0);
+            assert(key->sec.ediv_rand_present);
+            key_data = (const uint8_t *)&key->sec.peer_addr;
+            key_data_len = sizeof(ble_addr_t);
+            break;
+        }
+        case BLE_STORE_OBJ_TYPE_CCCD: {
+            // TODO: Implement CCCD persistence.
+            DEBUG_printf("ble_store_ram_read: CCCD not supported.\n");
+            return -1;
+        }
+        default:
+            return BLE_HS_ENOTSUP;
+    }
+
+    const uint8_t *value_data;
+    size_t value_data_len;
+    if (!mp_bluetooth_gap_on_get_secret(obj_type, key->sec.idx, key_data, key_data_len, &value_data, &value_data_len)) {
+        DEBUG_printf("ble_store_ram_read: Key not found: type=%d, index=%u, key=0x%p, len=" UINT_FMT "\n", obj_type, key->sec.idx, key_data, key_data_len);
+        return BLE_HS_ENOENT;
+    }
+
+    if (value_data_len != sizeof(struct ble_store_value_sec)) {
+        DEBUG_printf("ble_store_ram_read: Invalid key data: actual=" UINT_FMT " expected=" UINT_FMT "\n", value_data_len, sizeof(struct ble_store_value_sec));
+        return BLE_HS_ENOENT;
+    }
+
+    memcpy((uint8_t *)&value->sec, value_data, sizeof(struct ble_store_value_sec));
+
+    DEBUG_printf("ble_store_ram_read: found secret\n");
+
+    if (obj_type == BLE_STORE_OBJ_TYPE_OUR_SEC) {
+        // TODO: Verify ediv_rand matches.
+    }
+
+    return 0;
+}
+
+STATIC int ble_store_ram_write(int obj_type, const union ble_store_value *val) {
+    DEBUG_printf("ble_store_ram_write: %d\n", obj_type);
+    switch (obj_type) {
+        case BLE_STORE_OBJ_TYPE_PEER_SEC:
+        case BLE_STORE_OBJ_TYPE_OUR_SEC: {
+            // <type=peer,addr,edivrand>
+
+            struct ble_store_key_sec key_sec;
+            const struct ble_store_value_sec *value_sec = &val->sec;
+            ble_store_key_from_value_sec(&key_sec, value_sec);
+
+            assert(ble_addr_cmp(&key_sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
+            assert(key_sec.ediv_rand_present);
+
+            if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key_sec.peer_addr, sizeof(ble_addr_t), (const uint8_t *)value_sec, sizeof(struct ble_store_value_sec))) {
+                DEBUG_printf("Failed to write key: type=%d\n", obj_type);
+                return BLE_HS_ESTORE_CAP;
+            }
+
+            DEBUG_printf("ble_store_ram_read: wrote secret\n");
+
+            return 0;
+        }
+        case BLE_STORE_OBJ_TYPE_CCCD: {
+            // TODO: Implement CCCD persistence.
+            DEBUG_printf("ble_store_ram_read: CCCD not supported.\n");
+            // Just pretend we wrote it.
+            return 0;
+        }
+        default:
+            return BLE_HS_ENOTSUP;
+    }
+}
+
+STATIC int ble_store_ram_delete(int obj_type, const union ble_store_key *key) {
+    DEBUG_printf("ble_store_ram_delete: %d\n", obj_type);
+    switch (obj_type) {
+        case BLE_STORE_OBJ_TYPE_PEER_SEC:
+        case BLE_STORE_OBJ_TYPE_OUR_SEC: {
+            // <type=peer,addr,*>
+
+            assert(ble_addr_cmp(&key->sec.peer_addr, BLE_ADDR_ANY)); // Must have address.
+            // ediv_rand is optional (will not be present for delete).
+
+            if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key->sec.peer_addr, sizeof(ble_addr_t), NULL, 0)) {
+                DEBUG_printf("Failed to write key: type=%d\n", obj_type);
+                return BLE_HS_ENOENT;
+            }
+
+            DEBUG_printf("ble_store_ram_read: deleted secret\n");
+
+            return 0;
+        }
+        case BLE_STORE_OBJ_TYPE_CCCD: {
+            // TODO: Implement CCCD persistence.
+            DEBUG_printf("ble_store_ram_read: CCCD not supported.\n");
+            // Just pretend it wasn't there.
+            return BLE_HS_ENOENT;
+        }
+        default:
+            return BLE_HS_ENOTSUP;
+    }
+}
+
+// nimble_port_init always calls ble_store_ram_init. We provide this alternative
+// implementation rather than the one in nimble/store/ram/src/ble_store_ram.c.
+// TODO: Consider re-implementing nimble_port_init instead.
+void ble_store_ram_init(void) {
+    ble_hs_cfg.store_read_cb = ble_store_ram_read;
+    ble_hs_cfg.store_write_cb = ble_store_ram_write;
+    ble_hs_cfg.store_delete_cb = ble_store_ram_delete;
+}
+
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE

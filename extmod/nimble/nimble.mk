@@ -83,7 +83,6 @@ LIB_SRC_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 		ble_store_util.c \
 		ble_uuid.c \
 		) \
-	nimble/host/store/ram/src/ble_store_ram.c \
 	nimble/host/util/src/addr.c \
 	nimble/transport/uart/src/ble_hci_uart.c \
 	$(addprefix porting/nimble/src/, \
@@ -95,6 +94,7 @@ LIB_SRC_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 		os_msys_init.c \
 		) \
 	)
+	# nimble/host/store/ram/src/ble_store_ram.c \
 
 EXTMOD_SRC_C += $(addprefix $(NIMBLE_EXTMOD_DIR)/, \
 	nimble/nimble_npl_os.c \
