@@ -146,6 +146,8 @@
 #define MP_BLUETOOTH_IRQ_L2CAP_SEND_READY               (26)
 #define MP_BLUETOOTH_IRQ_CONNECTION_UPDATE              (27)
 #define MP_BLUETOOTH_IRQ_ENCRYPTION_UPDATE              (28)
+#define MP_BLUETOOTH_IRQ_GET_SECRET                     (29)
+#define MP_BLUETOOTH_IRQ_SET_SECRET                     (30)
 
 #define MP_BLUETOOTH_ADDRESS_MODE_PUBLIC (0)
 #define MP_BLUETOOTH_ADDRESS_MODE_RANDOM (1)
@@ -158,6 +160,12 @@
 #define MP_BLUETOOTH_IO_CAPABILITY_KEYBOARD_ONLY       (2)
 #define MP_BLUETOOTH_IO_CAPABILITY_NO_INPUT_OUTPUT     (3)
 #define MP_BLUETOOTH_IO_CAPABILITY_KEYBOARD_DISPLAY    (4)
+
+// These match NimBLE BLE_SM_IOACT_.
+#define MP_BLUETOOTH_PASSKEY_ACTION_NONE                (0)
+#define MP_BLUETOOTH_PASSKEY_ACTION_INPUT               (2)
+#define MP_BLUETOOTH_PASSKEY_ACTION_DISPLAY             (3)
+#define MP_BLUETOOTH_PASSKEY_ACTION_NUMERIC_COMPARISON  (4)
 
 /*
 These aren't included in the module for space reasons, but can be used
@@ -192,6 +200,8 @@ _IRQ_L2CAP_RECV = const(25)
 _IRQ_L2CAP_SEND_READY = const(26)
 _IRQ_CONNECTION_UPDATE = const(27)
 _IRQ_ENCRYPTION_UPDATE = const(28)
+_IRQ_GET_SECRET = const(29)
+_IRQ_SET_SECRET = const(30)
 
 _FLAG_BROADCAST = const(0x0001)
 _FLAG_READ = const(0x0002)
@@ -373,7 +383,13 @@ void mp_bluetooth_gap_on_connection_update(uint16_t conn_handle, uint16_t conn_i
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 // Call this when any connection encryption has been changed (e.g. during pairing).
 void mp_bluetooth_gatts_on_encryption_update(uint16_t conn_handle, bool encrypted, bool authenticated, bool bonded, uint8_t key_size);
-#endif
+
+// Call this when you need the application to manage persistent key data.
+// For get, if key is NULL, then the implementation must return the index'th matching key. Otherwise it should return a specific key.
+// For set, if value is NULL, then delete.
+bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *key, size_t key_len, const uint8_t **value, size_t *value_len);
+bool mp_bluetooth_gap_on_set_secret(uint8_t type, const uint8_t *key, size_t key_len, const uint8_t *value, size_t value_len);
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
 // Call this when a characteristic is written to.
 void mp_bluetooth_gatts_on_write(uint16_t conn_handle, uint16_t value_handle);
