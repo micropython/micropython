@@ -103,6 +103,11 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
         }
         if (available > 0) {
             status = esp_tls_conn_read(self->tcp, (void*) buf + received, available);
+            if (status == 0) {
+                // Reading zero when something is available indicates a closed
+                // connection. (The available bytes could have been TLS internal.)
+                break;
+            }
             if (status > 0) {
                 received += status;
             }
