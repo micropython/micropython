@@ -184,7 +184,7 @@ typedef long mp_off_t;
 // Turning off FULL_BUILD removes some functionality to reduce flash size on tiny SAMD21s
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_BUILTINS_POW3)
 #define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
 #define MICROPY_MODULE_WEAK_LINKS             (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)

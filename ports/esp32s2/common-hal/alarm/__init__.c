@@ -31,10 +31,11 @@
 
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
-#include "shared-bindings/alarm/time/MonotonicTimeAlarm.h"
+#include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/time/__init__.h"
 
+#include "esp_log.h"
 #include "esp_sleep.h"
 
 STATIC mp_obj_tuple_t *_deep_sleep_alarms;
@@ -51,8 +52,8 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_TIMER: {
             // Wake up from timer.
-            alarm_time_monotonic_time_alarm_obj_t *timer = m_new_obj(alarm_time_monotonic_time_alarm_obj_t);
-            timer->base.type = &alarm_time_monotonic_time_alarm_type;
+            alarm_time_time_alarm_obj_t *timer = m_new_obj(alarm_time_time_alarm_obj_t);
+            timer->base.type = &alarm_time_time_alarm_type;
             return timer;
         }
 
@@ -86,7 +87,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pin_alarm_type)) {
             mp_raise_NotImplementedError(translate("PinAlarm deep sleep not yet implemented"));
         }
-        else if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_monotonic_time_alarm_type)) {
+        else if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_time_alarm_type)) {
             if (time_alarm_set) {
                 mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
             }
@@ -106,15 +107,15 @@ bool common_hal_alarm_enable_deep_sleep_alarms(void) {
             // TODO: handle pin alarms
             mp_raise_NotImplementedError(translate("PinAlarm deep sleep not yet implemented"));
         }
-        else if (MP_OBJ_IS_TYPE(alarm, &alarm_time_monotonic_time_alarm_type)) {
-            alarm_time_monotonic_time_alarm_obj_t *monotonic_time_alarm = MP_OBJ_TO_PTR(alarm);
-            mp_float_t now = uint64_to_float(common_hal_time_monotonic());
-            // Compute a relative time in the future from now.
-            mp_float_t duration_secs = now - monotonic_time_alarm->monotonic_time;
-            if (duration_secs <= 0.0f) {
+        else if (MP_OBJ_IS_TYPE(alarm, &alarm_time_time_alarm_type)) {
+            alarm_time_time_alarm_obj_t *time_alarm = MP_OBJ_TO_PTR(alarm);
+            mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
+            // Compute how long to actually sleep, considering hte time now.
+            mp_float_t wakeup_in_secs = time_alarm->monotonic_time - now_secs;
+            if (wakeup_in_secs <= 0.0f) {
                 return false;
             }
-            esp_sleep_enable_timer_wakeup((uint64_t) (duration_secs * 1000000));
+            esp_sleep_enable_timer_wakeup((uint64_t) (wakeup_in_secs * 1000000));
         }
     }
     return true;

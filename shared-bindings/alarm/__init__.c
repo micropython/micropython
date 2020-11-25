@@ -29,7 +29,7 @@
 
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
-#include "shared-bindings/alarm/time/MonotonicTimeAlarm.h"
+#include "shared-bindings/alarm/time/TimeAlarm.h"
 
 //| """Power-saving light and deep sleep. Alarms can be set to wake up from sleep.
 //|
@@ -42,12 +42,9 @@
 //| peripherals, such as I2C, are left on.
 //|
 //| Deep sleep shuts down power to nearly all of the chip including the CPU and RAM. This can save
-//| a more significant amount of power, but CircuitPython must start ``code.py`` from the beginning when woken
-//| up. If the board is not actively connected to a host computer (usually via USB),
-//| CircuitPython will enter deep sleep automatically when the current program finishes its last statement
-//| or calls ``sys.exit()``.
-//| If the board is connected, the board will not enter deep sleep unless `supervisor.exit_and_deep_sleep()`
-//| is called explicitly.
+//| a more significant amount of power, but CircuitPython must start ``code.py`` from the beginning when
+//| awakened.
+
 //|
 //| An error includes an uncaught exception, or sys.exit() called with a non-zero argument
 //|
@@ -60,7 +57,7 @@
 void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
         if (MP_OBJ_IS_TYPE(objs[i], &alarm_pin_pin_alarm_type) ||
-            MP_OBJ_IS_TYPE(objs[i], &alarm_time_monotonic_time_alarm_type)) {
+            MP_OBJ_IS_TYPE(objs[i], &alarm_time_time_alarm_type)) {
             continue;
         }
         mp_raise_TypeError_varg(translate("Expected an alarm"));
@@ -68,8 +65,8 @@ void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
 }
 
 //| def sleep_until_alarms(*alarms: Alarm) -> Alarm:
-//|     """Performs a light sleep until woken by one of the alarms. The alarm caused the wake-up
-//|        is returned, and is also available as `alarm.wake_alarm`
+//|     """Go into a light sleep until awakened one of the alarms. The alarm causing the wake-up
+//|        is returned, and is also available as `alarm.wake_alarm`.
 //|     """
 //|     ...
 //|
@@ -80,26 +77,26 @@ STATIC mp_obj_t alarm_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_sleep_until_alarms);
 
-//| def set_deep_sleep_alarms(*alarms: Alarm) -> None:
-//|     """Set one or more alarms to wake up from a deep sleep.
+//| def exit_and_deep_sleep_until_alarms(*alarms: Alarm) -> None:
+//|     """Exit the program and go into a deep sleep, until awakened by one of the alarms.
 //|
-//|     When awakened, the microcontroller will restart and run ``boot.py`` and ``code.py``
+//|     When awakened, the microcontroller will restart and will run ``boot.py`` and ``code.py``
 //|     from the beginning.
 //|
 //|     An alarm equivalent to the one that caused the wake-up is available as `alarm.wake_alarm`.
 //|     Its type and/or attributes may not correspond exactly to the original alarm.
-//|     For time-base alarms, currently, an `alarm.time.MonotonicTimeAlarm()` is created.
+//|     For time-base alarms, currently, an `alarm.time.TimeAlarm()` is created.
 //|
-//|     If you call this routine more than once, only the last set of alarms given will be used.
+//|     If no alarms are specified, the microcontroller will deep sleep until reset.
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t alarm_set_deep_sleep_alarms(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
     validate_objs_are_alarms(n_args, args);
-    common_hal_alarm_set_deep_sleep_alarms(n_args, args);
+    common_hal_exit_and_deep_sleep_until_alarms(n_args, args);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_set_deep_sleep_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_set_deep_sleep_alarms);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_exit_and_deep_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_exit_and_deep_sleep_until_alarms);
 
 //| """The `alarm.pin` module contains alarm attributes and classes related to pins.
 //| """
@@ -123,7 +120,7 @@ STATIC const mp_obj_module_t alarm_pin_module = {
 STATIC const mp_map_elem_t alarm_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
-    { MP_ROM_QSTR(MP_QSTR_MonotonicTimeAlarm), MP_OBJ_FROM_PTR(&alarm_time_monotonic_time_alarm_type) },
+    { MP_ROM_QSTR(MP_QSTR_TimeAlarm), MP_OBJ_FROM_PTR(&alarm_time_time_alarm_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(alarm_time_globals, alarm_time_globals_table);
@@ -140,7 +137,8 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wake_alarm), mp_const_none },
 
     { MP_ROM_QSTR(MP_QSTR_sleep_until_alarms), MP_OBJ_FROM_PTR(&alarm_sleep_until_alarms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_deep_sleep_alarms), MP_OBJ_FROM_PTR(&alarm_set_deep_sleep_alarms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_exit_and_deep_sleep_until_alarms),
+                                               MP_OBJ_FROM_PTR(&alarm_exit_and_deep_sleep_until_alarms_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_pin), MP_OBJ_FROM_PTR(&alarm_pin_module) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) }

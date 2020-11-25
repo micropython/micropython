@@ -303,7 +303,7 @@ SRC_COMMON_HAL_ALL = \
 	_pew/__init__.c \
 	alarm/__init__.c \
 	alarm/pin/PinAlarm.c \
-	alarm/time/MonotonicTimeAlarm.c \
+	alarm/time/TimeAlarm.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \

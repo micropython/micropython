@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,37 @@
  * THE SOFTWARE.
  */
 
-#include "esp_sleep.h"
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PS2IO_PS2_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PS2IO_PS2_H
 
-#include "py/runtime.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "shared-bindings/alarm/time/MonotonicTimeAlarm.h"
+#include "py/obj.h"
+#include "driver/gpio.h"
 
-void common_hal_alarm_time_monotonic_time_alarm_construct(alarm_time_monotonic_time_alarm_obj_t *self, mp_float_t monotonic_time) {
-    self->monotonic_time = monotonic_time;
-}
+typedef struct {
+    mp_obj_base_t base;
+    gpio_num_t clk_pin;
+    gpio_num_t data_pin;
 
-mp_float_t common_hal_alarm_time_monotonic_time_alarm_get_monotonic_time(alarm_time_monotonic_time_alarm_obj_t *self) {
-    return self->monotonic_time;
-}
+    uint8_t state;
+    uint64_t last_raw_ticks;
+
+    uint16_t bits;
+    bool parity;
+    uint8_t bitcount;
+
+    uint8_t buffer[16];
+    uint8_t bufcount;
+    uint8_t bufposr;
+    uint8_t bufposw;
+
+    uint16_t last_errors;
+
+    bool waiting_cmd_response;
+    uint8_t cmd_response;
+} ps2io_ps2_obj_t;
+
+void ps2_reset(void);
+
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PS2IO_PS2_H

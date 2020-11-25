@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,15 @@
  * THE SOFTWARE.
  */
 
+#include "boards/board.h"
 
-#include "py/obj.h"
+void board_init(void) {
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    mp_float_t monotonic_time;      // values compatible with time.monotonic_time()
-} alarm_time_monotonic_time_alarm_obj_t;
+bool board_requests_safe_mode(void) {
+  return false;
+}
+
+void reset_board(void) {
+
+}

@@ -28,33 +28,18 @@
 #include "py/mpconfig.h"
 #include "tusb.h"
 
-STATIC bool _allow_deep_sleep_when_connected;
-STATIC bool _allow_deep_sleep_on_error;
-
-
 void supervisor_workflow_reset(void) {
-    _allow_deep_sleep_when_connected = false;
-    _allow_deep_sleep_on_error = false;
 }
 
+// Return true as soon as USB communication with host has started,
+// even before enumeration is done.
+bool supervisor_workflow_connecting(void) {
+    return tud_connected();
+}
+
+// Return true if host has completed connection to us (such as USB enumeration).
 bool supervisor_workflow_active(void) {
     // Eventually there might be other non-USB workflows, such as BLE.
     // tud_ready() checks for usb mounted and not suspended.
     return tud_ready();
-}
-
-bool supervisor_workflow_get_allow_deep_sleep_when_connected(void) {
-    return _allow_deep_sleep_when_connected;
-}
-
-void supervisor_workflow_set_allow_deep_sleep_when_connected(bool allow) {
-    _allow_deep_sleep_when_connected = allow;
-}
-
-bool supervisor_workflow_get_allow_deep_sleep_on_error(void) {
-    return _allow_deep_sleep_on_error;
-}
-
-void supervisor_workflow_set_allow_deep_sleep_on_error(bool allow) {
-    _allow_deep_sleep_on_error = allow;
 }

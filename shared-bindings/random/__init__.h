@@ -29,7 +29,7 @@
 
 // This depends on shared_module because nearly all functionality is port
 // agnostic. The random module only depends on the common_hal_os_urandom or
-// common_hal_time_monotonic to seed it initially.
+// common_hal_time_monotonic_ms to seed it initially.
 
 void shared_modules_random_seed(mp_uint_t seed);
 mp_uint_t shared_modules_random_getrandbits(uint8_t n);

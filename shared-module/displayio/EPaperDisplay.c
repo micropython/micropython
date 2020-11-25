@@ -198,6 +198,29 @@ mp_obj_t common_hal_displayio_epaperdisplay_get_bus(displayio_epaperdisplay_obj_
     return self->core.bus;
 }
 
+void common_hal_displayio_epaperdisplay_set_rotation(displayio_epaperdisplay_obj_t* self, int rotation){
+    bool transposed = (self->core.rotation == 90 || self->core.rotation == 270);
+    bool will_transposed = (rotation == 90 || rotation == 270);
+    if(transposed != will_transposed) {
+        int tmp = self->core.width;
+        self->core.width = self->core.height;
+        self->core.height = tmp;
+    }
+    displayio_display_core_set_rotation(&self->core, rotation);
+    if (self == &displays[0].epaper_display) {
+        supervisor_stop_terminal();
+        supervisor_start_terminal(self->core.width, self->core.height);
+    }
+    if (self->core.current_group != NULL) {
+        displayio_group_update_transform(self->core.current_group, &self->core.transform);
+    }
+}
+
+uint16_t common_hal_displayio_epaperdisplay_get_rotation(displayio_epaperdisplay_obj_t* self){
+    return self->core.rotation;
+}
+
+
 bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t* self, const displayio_area_t* area) {
     uint16_t buffer_size = 128; // In uint32_ts
 
