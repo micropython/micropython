@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 10:10-0600\n"
-"PO-Revision-Date: 2020-11-12 22:51+0000\n"
-"Last-Translator: sporeball <sporeballdev@gmail.com>\n"
+"POT-Creation-Date: 2020-11-11 16:30+0530\n"
+"PO-Revision-Date: 2020-11-25 01:11+0000\n"
+"Last-Translator: Mitsuharu Aoyama <mitsuharuaoyama@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -182,7 +182,7 @@ msgstr ""
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
-msgstr ""
+msgstr "'%s' には整数が必要"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -1275,6 +1275,10 @@ msgstr "MISOピンまたはMOSIピンが必要"
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "%d個でなく6の倍数個のrgbピンを使ってください"
+
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
+msgstr ""
 
 #: py/parse.c
 msgid "Name too long"

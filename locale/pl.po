@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 10:10-0600\n"
+"POT-Creation-Date: 2020-11-11 16:30+0530\n"
 "PO-Revision-Date: 2020-11-11 19:13+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
@@ -1275,6 +1275,10 @@ msgstr "Należy podać pin MISO lub MOSI"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
+msgstr ""
+
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
 msgstr ""
 
 #: py/parse.c
