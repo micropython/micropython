@@ -31,6 +31,13 @@
 
 bool touch_inited = false;
 
+void touchin_reset(void) {
+    if (touch_inited) {
+        touch_pad_deinit();
+        touch_inited = false;
+    }
+}
+
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     uint32_t touch_value;
     touch_pad_read_raw_data((touch_pad_t)self->pin->touch_channel, &touch_value);
@@ -78,7 +85,6 @@ void common_hal_touchio_touchin_deinit(touchio_touchin_obj_t* self) {
     if (common_hal_touchio_touchin_deinited(self)) {
         return;
     }
-    touch_pad_deinit();
     reset_pin_number(self->pin->touch_channel);
     self->pin = NULL;
 }
