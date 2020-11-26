@@ -104,6 +104,8 @@ INC += -isystem esp-idf/components/soc/soc/include
 INC += -isystem esp-idf/components/soc/soc/esp32s2/include
 INC += -isystem esp-idf/components/heap/include
 INC += -isystem esp-idf/components/esp_system/include
+INC += -isystem esp-idf/components/spi_flash/include
+INC += -isystem esp-idf/components/nvs_flash/include
 INC += -I$(BUILD)/esp-idf/config
 
 CFLAGS += -DHAVE_CONFIG_H \
@@ -188,6 +190,7 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
+	peripherals/timer.c \
 	peripherals/pcnt.c \
 	peripherals/pins.c \
 	peripherals/rmt.c \

@@ -35,6 +35,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "shared-bindings/nvm/ByteArray.h"
 
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/safe_mode.h"
@@ -42,7 +43,7 @@
 #include "freertos/FreeRTOS.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
-
+    mp_hal_delay_us(delay);
 }
 
 volatile uint32_t nesting_count = 0;
@@ -84,6 +85,17 @@ const mcu_processor_obj_t common_hal_mcu_processor_obj = {
         .type = &mcu_processor_type,
     },
 };
+
+#if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+// The singleton nvm.ByteArray object.
+const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
+    .base = {
+        .type = &nvm_bytearray_type,
+    },
+    .start_address = (uint8_t*) CIRCUITPY_INTERNAL_NVM_START_ADDR,
+    .len = CIRCUITPY_INTERNAL_NVM_SIZE,
+};
+#endif
 
 #if CIRCUITPY_WATCHDOG
 // The singleton watchdog.WatchDogTimer object.

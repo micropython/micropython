@@ -56,6 +56,8 @@ bool common_hal_displayio_epaperdisplay_get_busy(displayio_epaperdisplay_obj_t* 
 
 uint16_t common_hal_displayio_epaperdisplay_get_width(displayio_epaperdisplay_obj_t* self);
 uint16_t common_hal_displayio_epaperdisplay_get_height(displayio_epaperdisplay_obj_t* self);
+uint16_t common_hal_displayio_epaperdisplay_get_rotation(displayio_epaperdisplay_obj_t* self);
+void common_hal_displayio_epaperdisplay_set_rotation(displayio_epaperdisplay_obj_t* self, int rotation);
 
 mp_obj_t common_hal_displayio_epaperdisplay_get_bus(displayio_epaperdisplay_obj_t* self);
 
