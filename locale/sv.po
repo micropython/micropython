@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-11 16:30+0530\n"
+"POT-Creation-Date: 2020-11-24 15:40-0500\n"
 "PO-Revision-Date: 2020-11-20 22:28+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -301,6 +301,7 @@ msgid "All I2C peripherals are in use"
 msgstr "All I2C-kringutrustning används"
 
 #: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr "Alla PCNT-enheter används"
@@ -337,6 +338,7 @@ msgstr "Alla timers för denna pinne är i bruk"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
@@ -1100,6 +1102,7 @@ msgid "Invalid byteorder string"
 msgstr "Ogiltig byteorder-sträng"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Ogiltig inspelningsperiod. Giltigt intervall: 1 - 500"
 
@@ -1433,13 +1436,13 @@ msgstr "Udda paritet stöds inte"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Endast 8 eller 16 bitars mono med "
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
-msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr "Endast IPv4 SOCK_STREAM sockets stöds"
-
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Endast IPv4-adresser stöds"
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 sockets supported"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -3806,6 +3809,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Endast IPv4 SOCK_STREAM sockets stöds"
 
 #~ msgid "arctan2 is implemented for scalars and ndarrays only"
 #~ msgstr "arctan2 är enbart implementerad för scalar och ndarray"

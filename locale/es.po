@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-11 16:30+0530\n"
+"POT-Creation-Date: 2020-11-24 15:40-0500\n"
 "PO-Revision-Date: 2020-11-26 03:11+0000\n"
 "Last-Translator: Daniel Bravo Darriba <bravodarriba@gmail.com>\n"
 "Language-Team: \n"
@@ -304,6 +304,7 @@ msgid "All I2C peripherals are in use"
 msgstr "Todos los periféricos I2C están siendo usados"
 
 #: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr "Todas las unidades PCNT en uso"
@@ -342,6 +343,7 @@ msgstr "Todos los timers para este pin están siendo utilizados"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
@@ -1108,6 +1110,7 @@ msgid "Invalid byteorder string"
 msgstr "Cadena de byteorder inválida"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Inválido periodo de captura. Rango válido: 1 - 500"
 
@@ -1440,13 +1443,13 @@ msgstr "Paridad impar no soportada"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Solo mono de 8 ó 16 bit con "
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
-msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr "Solo hay capacidad para enchufes IPv4 SOCK_STREAM"
-
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Solo hay capacidad para direcciones IPv4"
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 sockets supported"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1775,8 +1778,8 @@ msgid ""
 msgstr ""
 "La alimentación del microntrolador cayó. Asegúrate que tu fuente de "
 "alimentación\n"
-"pueda aportar suficiente energía para todo el circuito y presiona reset ("
-"luego de\n"
+"pueda aportar suficiente energía para todo el circuito y presiona reset "
+"(luego de\n"
 "expulsar CIRCUITPY)\n"
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -3826,6 +3829,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Solo hay capacidad para enchufes IPv4 SOCK_STREAM"
 
 #~ msgid "arctan2 is implemented for scalars and ndarrays only"
 #~ msgstr "arctan2 se encuentra implementado solo para escalares y ndarrays"

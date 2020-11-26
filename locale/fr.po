@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-11 16:30+0530\n"
+"POT-Creation-Date: 2020-11-24 15:40-0500\n"
 "PO-Revision-Date: 2020-11-24 22:45+0000\n"
 "Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
 "Language: fr\n"
@@ -305,6 +305,7 @@ msgid "All I2C peripherals are in use"
 msgstr "Tous les périphériques I2C sont utilisés"
 
 #: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr "Toutes les unités PCNT sont utilisées"
@@ -341,6 +342,7 @@ msgstr "Tous les timers pour cette broche sont utilisés"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
@@ -1113,6 +1115,7 @@ msgid "Invalid byteorder string"
 msgstr "Chaîne d'octets non valide"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Période de capture invalide. Gamme valide : 1 à 500"
 
@@ -1445,13 +1448,13 @@ msgstr "Parité impaire non supportée"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Uniquement 8 ou 16 bit mono avec "
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
-msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr "Seules les sockets IPv4 SOCK_STREAM sont prises en charge"
-
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Seules les adresses IPv4 sont prises en charge"
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 sockets supported"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -3847,6 +3850,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Seules les sockets IPv4 SOCK_STREAM sont prises en charge"
 
 #~ msgid "arctan2 is implemented for scalars and ndarrays only"
 #~ msgstr ""
