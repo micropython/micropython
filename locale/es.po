@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-24 15:40-0500\n"
-"PO-Revision-Date: 2020-11-26 03:11+0000\n"
-"Last-Translator: Daniel Bravo Darriba <bravodarriba@gmail.com>\n"
+"PO-Revision-Date: 2020-11-27 18:34+0000\n"
+"Last-Translator: Iván Montiel Cardona <ivan_montiel2013@hotmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -1449,7 +1449,7 @@ msgstr "Solo hay capacidad para direcciones IPv4"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Solo se admiten sockets IPv4"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
