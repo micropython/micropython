@@ -953,6 +953,20 @@ STATIC bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
 }
 #endif
 
+#if ENABLE_SPECIAL_ACCESSORS
+STATIC bool check_if_special_accessor(mp_obj_t key, mp_obj_t value) {
+    return (key == MP_OBJ_NEW_QSTR(MP_QSTR___setattr__) || key == MP_OBJ_NEW_QSTR(MP_QSTR___delattr__)
+            #if MICROPY_PY_DESCRIPTORS
+            || key == MP_OBJ_NEW_QSTR(MP_QSTR___get__) || key == MP_OBJ_NEW_QSTR(MP_QSTR___set__) ||
+            key == MP_OBJ_NEW_QSTR(MP_QSTR___delete__)
+            #endif
+            #if MICROPY_PY_BUILTINS_PROPERTY
+            || mp_obj_is_type(value, &mp_type_property)
+            #endif
+            );
+}
+#endif
+
 STATIC void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
@@ -1069,7 +1083,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 #if ENABLE_SPECIAL_ACCESSORS
                 // Check if we add any special accessor methods with this store
                 if (!(self->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
-                    if (check_for_special_accessors(MP_OBJ_NEW_QSTR(attr), dest[1])) {
+                    if (check_if_special_accessor(MP_OBJ_NEW_QSTR(attr), dest[1])) {
                         if (self->flags & MP_TYPE_FLAG_IS_SUBCLASSED) {
                             // This class is already subclassed so can't have special accessors added
                             mp_raise_msg(&mp_type_AttributeError, MP_ERROR_TEXT("can't add special method to already-subclassed class"));
