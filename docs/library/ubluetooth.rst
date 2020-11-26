@@ -234,6 +234,13 @@ Event Handling
                 # Save a secret to the store for this sec_type and key.
                 sec_type, key, value = data
                 return True
+            elif event == _IRQ_PASSKEY_ACTION:
+                # Respond to a passkey request during pairing.
+                # See gap_passkey() for details.
+                # action will be an action that is compatible with the configured "io" config.
+                # passkey will be non-zero if action is "numeric comparison".
+                conn_handle, action, passkey = data
+
 
 The event codes are::
 
@@ -277,6 +284,13 @@ For the ``_IRQ_GATTS_READ_REQUEST`` event, the available return codes are::
     _GATTS_ERROR_INSUFFICIENT_AUTHENTICATION = const(0x05)
     _GATTS_ERROR_INSUFFICIENT_AUTHORIZATION = const(0x08)
     _GATTS_ERROR_INSUFFICIENT_ENCRYPTION = const(0x0f)
+
+For the ``_IRQ_PASSKEY_ACTION`` event, the available actions are::
+
+    _PASSKEY_ACTION_NONE = const(0)
+    _PASSKEY_ACTION_INPUT = const(2)
+    _PASSKEY_ACTION_DISPLAY = const(3)
+    _PASSKEY_ACTION_NUMERIC_COMPARISON = const(4)
 
 In order to save space in the firmware, these constants are not included on the
 :mod:`ubluetooth` module. Add the ones that you need from the list above to your
@@ -690,6 +704,22 @@ Pairing and bonding
     ``bond`` configuration options are set (via :meth:`config<BLE.config>`).
 
     On successful pairing, the ``_IRQ_ENCRYPTION_UPDATE`` event will be raised.
+
+.. method:: BLE.gap_passkey(conn_handle, action, passkey, /)
+
+    Respond to a ``_IRQ_PASSKEY_ACTION`` event for the specified *conn_handle*
+    and *action*.
+
+    The *passkey* is a numeric value and will depend on on the
+    *action* (which will depend on what I/O capability has been set):
+
+        * When the *action* is ``_PASSKEY_ACTION_INPUT``, then the application should
+          prompt the user to enter the passkey that is shown on the remote device.
+        * When the *action* is ``_PASSKEY_ACTION_DISPLAY``, then the application should
+          generate a random 6-digit passkey and show it to the user.
+        * When the *action* is ``_PASSKEY_ACTION_NUMERIC_COMPARISON``, then the application
+          should show the passkey that was provided in the ``_IRQ_PASSKEY_ACTION`` event
+          and then respond with either ``0`` (cancel pairing), or ``1`` (accept pairing).
 
 
 class UUID
