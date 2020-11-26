@@ -689,6 +689,14 @@ STATIC mp_obj_t bluetooth_ble_gap_pair(mp_obj_t self_in, mp_obj_t conn_handle_in
     return bluetooth_handle_errno(mp_bluetooth_gap_pair(conn_handle));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_pair_obj, bluetooth_ble_gap_pair);
+
+STATIC mp_obj_t bluetooth_ble_gap_passkey(size_t n_args, const mp_obj_t *args) {
+    uint16_t conn_handle = mp_obj_get_int(args[1]);
+    uint8_t action = mp_obj_get_int(args[2]);
+    mp_int_t passkey = mp_obj_get_int(args[3]);
+    return bluetooth_handle_errno(mp_bluetooth_gap_passkey(conn_handle, action, passkey));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_passkey_obj, 4, 4, bluetooth_ble_gap_passkey);
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
 // ----------------------------------------------------------------------------
@@ -894,6 +902,7 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gap_disconnect), MP_ROM_PTR(&bluetooth_ble_gap_disconnect_obj) },
     #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
     { MP_ROM_QSTR(MP_QSTR_gap_pair), MP_ROM_PTR(&bluetooth_ble_gap_pair_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gap_passkey), MP_ROM_PTR(&bluetooth_ble_gap_passkey_obj) },
     #endif
     // GATT Server (i.e. peripheral/advertiser role)
     { MP_ROM_QSTR(MP_QSTR_gatts_register_services), MP_ROM_PTR(&bluetooth_ble_gatts_register_services_obj) },
@@ -1166,6 +1175,11 @@ bool mp_bluetooth_gap_on_set_secret(uint8_t type, const uint8_t *key, size_t key
     size_t data_len[] = {key_len, value_len};
     mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_SET_SECRET, args, 1, 0, NULL_ADDR, NULL_UUID, data, data_len, 2);
     return mp_obj_is_true(result);
+}
+
+void mp_bluetooth_gap_on_passkey_action(uint16_t conn_handle, uint8_t action, mp_int_t passkey) {
+    mp_int_t args[] = { conn_handle, action, passkey };
+    invoke_irq_handler(MP_BLUETOOTH_IRQ_PASSKEY_ACTION, args, 2, 1, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 

@@ -347,6 +347,16 @@ STATIC int gap_event_cb(struct ble_gap_event *event, void *arg) {
             return BLE_GAP_REPEAT_PAIRING_RETRY;
         }
 
+        case BLE_GAP_EVENT_PASSKEY_ACTION: {
+            DEBUG_printf("gap_event_cb: passkey action: conn_handle=%d action=%d num=" UINT_FMT "\n", event->passkey.conn_handle, event->passkey.params.action, (mp_uint_t)event->passkey.params.numcmp);
+
+            #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+            mp_bluetooth_gap_on_passkey_action(event->passkey.conn_handle, event->passkey.params.action, event->passkey.params.numcmp);
+            #endif
+
+            return 0;
+        }
+
         default:
             DEBUG_printf("gap_event_cb: unknown type %d\n", event->type);
             break;
@@ -885,6 +895,33 @@ int mp_bluetooth_set_preferred_mtu(uint16_t mtu) {
 int mp_bluetooth_gap_pair(uint16_t conn_handle) {
     DEBUG_printf("mp_bluetooth_gap_pair: conn_handle=%d\n", conn_handle);
     return ble_hs_err_to_errno(ble_gap_security_initiate(conn_handle));
+}
+
+int mp_bluetooth_gap_passkey(uint16_t conn_handle, uint8_t action, mp_int_t passkey) {
+    struct ble_sm_io io = {0};
+
+    switch (action) {
+        case MP_BLUETOOTH_PASSKEY_ACTION_INPUT: {
+            io.passkey = passkey;
+            break;
+        }
+        case MP_BLUETOOTH_PASSKEY_ACTION_DISPLAY: {
+            io.passkey = passkey;
+            break;
+        }
+        case MP_BLUETOOTH_PASSKEY_ACTION_NUMERIC_COMPARISON: {
+            io.numcmp_accept = passkey != 0;
+            break;
+        }
+        default: {
+            return MP_EINVAL;
+        }
+    }
+
+    io.action = action;
+
+    DEBUG_printf("mp_bluetooth_gap_passkey: injecting IO: conn_handle=%d, action=%d, passkey=" UINT_FMT ", numcmp_accept=%d\n", conn_handle, io.action, (mp_uint_t)io.passkey, io.numcmp_accept);
+    return ble_hs_err_to_errno(ble_sm_inject_io(conn_handle, &io));
 }
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
