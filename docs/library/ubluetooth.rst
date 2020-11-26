@@ -8,7 +8,7 @@ This module provides an interface to a Bluetooth controller on a board.
 Currently this supports Bluetooth Low Energy (BLE) in Central, Peripheral,
 Broadcaster, and Observer roles, as well as GATT Server and Client and L2CAP
 connection-oriented-channels. A device may operate in multiple roles
-concurrently.
+concurrently. Pairing (and bonding) is supported on some ports.
 
 This API is intended to match the low-level Bluetooth protocol and provide
 building-blocks for higher-level abstractions such as specific device types.
@@ -96,7 +96,8 @@ Configuration
         _IO_CAPABILITY_NO_INPUT_OUTPUT = const(3)
         _IO_CAPABILITY_KEYBOARD_DISPLAY = const(4)
 
-    - ``'le_secure'``: Sets whether "LE Secure" pairing is required. Default is "Legacy Pairing".
+    - ``'le_secure'``: Sets whether "LE Secure" pairing is required. Default is
+      false (i.e. allow "Legacy Pairing").
 
 Event Handling
 --------------
@@ -223,6 +224,16 @@ Event Handling
             elif event == _IRQ_ENCRYPTION_UPDATE:
                 # The encryption state has changed (likely as a result of pairing or bonding).
                 conn_handle, encrypted, authenticated, bonded, key_size = data
+            elif event == _IRQ_GET_SECRET:
+                # Return a stored secret.
+                # If key is None, return the index'th value of this sec_type.
+                # Otherwise return the corresponding value for this sec_type and key.
+                sec_type, index, key = data
+                return value
+            elif event == _IRQ_SET_SECRET:
+                # Save a secret to the store for this sec_type and key.
+                sec_type, key, value = data
+                return True
 
 The event codes are::
 
@@ -255,6 +266,8 @@ The event codes are::
     _IRQ_L2CAP_SEND_READY = const(26)
     _IRQ_CONNECTION_UPDATE = const(27)
     _IRQ_ENCRYPTION_UPDATE = const(28)
+    _IRQ_GET_SECRET = const(29)
+    _IRQ_SET_SECRET = const(30)
 
 For the ``_IRQ_GATTS_READ_REQUEST`` event, the available return codes are::
 
@@ -367,15 +380,6 @@ Central & Peripheral Roles
 
     Returns ``False`` if the connection handle wasn't connected, and ``True``
     otherwise.
-
-.. method:: BLE.gap_pair(conn_handle, /)
-
-    Initiate pairing with the remote device.
-
-    Before calling this, ensure that the ``io``, ``mitm``, ``le_secure``, and
-    ``bond`` configuration options are set (via :meth:`config<BLE.config>`).
-
-    On successful pairing, the ``_IRQ_ENCRYPTION_UPDATED`` event will be raised.
 
 
 GATT Server
@@ -662,6 +666,31 @@ L2CAP connection-oriented-channels
 
     Until the receive buffer is empty, the remote device will not be granted
     more channel credits and will be unable to send any more data.
+
+
+Pairing and bonding
+-------------------
+
+    Pairing allows a connection to be encrypted and authenticated via exchange
+    of secrets (with optional MITM protection via passkey authentication).
+
+    Bonding is the process of storing those secrets into non-volatile storage.
+    When bonded, a device is able to resolve a resolvable private address (RPA)
+    from another device based on the stored identity resolving key (IRK).
+    To support bonding, an application must implement the ``_IRQ_GET_SECRET``
+    and ``_IRQ_SET_SECRET`` events.
+
+    **Note:** This is currently only supported when using the NimBLE stack on
+    STM32 and Unix (not ESP32).
+
+.. method:: BLE.gap_pair(conn_handle, /)
+
+    Initiate pairing with the remote device.
+
+    Before calling this, ensure that the ``io``, ``mitm``, ``le_secure``, and
+    ``bond`` configuration options are set (via :meth:`config<BLE.config>`).
+
+    On successful pairing, the ``_IRQ_ENCRYPTION_UPDATE`` event will be raised.
 
 
 class UUID
