@@ -16,12 +16,12 @@ class RAMBlockDevice:
     def __init__(self, blocks):
         self.data = bytearray(blocks * self.ERASE_BLOCK_SIZE)
 
-    def readblocks(self, block, buf, off):
+    def readblocks(self, block, buf, off=0):
         addr = block * self.ERASE_BLOCK_SIZE + off
         for i in range(len(buf)):
             buf[i] = self.data[addr + i]
 
-    def writeblocks(self, block, buf, off):
+    def writeblocks(self, block, buf, off=0):
         addr = block * self.ERASE_BLOCK_SIZE + off
         for i in range(len(buf)):
             self.data[addr + i] = buf[i]
@@ -35,8 +35,16 @@ class RAMBlockDevice:
             return 0
 
 
-def test(bdev, vfs_class):
+def test(vfs_class):
     print("test", vfs_class)
+
+    bdev = RAMBlockDevice(30)
+
+    # mount bdev unformatted
+    try:
+        uos.mount(bdev, "/lfs")
+    except Exception as er:
+        print(repr(er))
 
     # mkfs
     vfs_class.mkfs(bdev)
@@ -84,11 +92,15 @@ def test(bdev, vfs_class):
     # umount
     uos.umount("/lfs")
 
+    # mount bdev again
+    uos.mount(bdev, "/lfs")
+
+    # umount
+    uos.umount("/lfs")
+
     # clear imported modules
     usys.modules.clear()
 
-
-bdev = RAMBlockDevice(30)
 
 # initialise path
 import usys
@@ -98,5 +110,5 @@ usys.path.append("/lfs")
 usys.path.append("")
 
 # run tests
-test(bdev, uos.VfsLfs1)
-test(bdev, uos.VfsLfs2)
+test(uos.VfsLfs1)
+test(uos.VfsLfs2)
