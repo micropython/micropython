@@ -41,7 +41,7 @@
 //|     def __init__(self, *pins: microcontroller.Pin, value: bool, all_same_value: bool = False, edge: bool = False, pull: bool = False) -> None:
 //|         """Create an alarm triggered by a `microcontroller.Pin` level. The alarm is not active
 //|         until it is passed to an `alarm`-enabling function, such as `alarm.sleep_until_alarms()` or
-//|         `alarm.set_deep_sleep_alarms()`.
+//|         `alarm.exit_and_deep_sleep_until_alarms()`.
 //|
 //|         :param microcontroller.Pin \*pins: The pins to monitor. On some ports, the choice of pins
 //|           may be limited due to hardware restrictions, particularly for deep-sleep alarms.

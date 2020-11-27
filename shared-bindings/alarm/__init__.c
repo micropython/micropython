@@ -30,6 +30,15 @@
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
+#include "shared-bindings/time/__init__.h"
+#include "supervisor/shared/rgb_led_status.h"
+#include "supervisor/shared/workflow.h"
+
+// Wait this long to see if USB is being connected (enumeration starting).
+#define CIRCUITPY_USB_CONNECTING_DELAY 1
+// Wait this long before going into deep sleep if connected. This
+// allows the user to ctrl-C before deep sleep starts.
+#define CIRCUITPY_USB_CONNECTED_DEEP_SLEEP_DELAY 5
 
 //| """Power-saving light and deep sleep. Alarms can be set to wake up from sleep.
 //|
@@ -44,16 +53,12 @@
 //| Deep sleep shuts down power to nearly all of the chip including the CPU and RAM. This can save
 //| a more significant amount of power, but CircuitPython must start ``code.py`` from the beginning when
 //| awakened.
+//| """
 
-//|
-//| An error includes an uncaught exception, or sys.exit() called with a non-zero argument
-//|
-//| To set alarms for deep sleep use `alarm.set_deep_sleep_alarms()` they will apply to next deep sleep only."""
 //|
 //| wake_alarm: Alarm
 //| """The most recent alarm to wake us up from a sleep (light or deep.)"""
 //|
-
 void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
         if (MP_OBJ_IS_TYPE(objs[i], &alarm_pin_pin_alarm_type) ||
@@ -88,12 +93,38 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_sleep_until_alarms_obj, 1, MP_OBJ_FUN_
 //|     For time-base alarms, currently, an `alarm.time.TimeAlarm()` is created.
 //|
 //|     If no alarms are specified, the microcontroller will deep sleep until reset.
+//|
+//|     If CircuitPython is unconnected to a host computer, go into deep sleep immediately.
+//|     But if it already connected or in the process of connecting to a host computer, wait at least
+//|     five seconds after starting code.py before entering deep sleep.
+//|     This allows interrupting a program that would otherwise go into deep sleep too quickly
+//|     to interrupt from the keyboard.
 //|     """
 //|     ...
 //|
 STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
     validate_objs_are_alarms(n_args, args);
-    common_hal_exit_and_deep_sleep_until_alarms(n_args, args);
+
+    int64_t connecting_delay_msec = CIRCUITPY_USB_CONNECTING_DELAY * 1024 - supervisor_ticks_ms64();
+    if (connecting_delay_msec > 0) {
+        common_hal_time_delay_ms(connecting_delay_msec * 1000 / 1024);
+    }
+
+    // If connected, wait for the program to be running at least as long as
+    // CIRCUITPY_USB_CONNECTED_DEEP_SLEEP_DELAY. This allows a user to ctrl-C the running
+    // program in case it is in a tight deep sleep loop that would otherwise be difficult
+    // or impossible to interrupt.
+    // Indicate that we're delaying with the SAFE_MODE color.
+    int64_t delay_before_sleeping_msec =
+        supervisor_ticks_ms64() - CIRCUITPY_USB_CONNECTED_DEEP_SLEEP_DELAY * 1000;
+    if (supervisor_workflow_connecting() && delay_before_sleeping_msec > 0) {
+        temp_status_color(SAFE_MODE);
+        common_hal_time_delay_ms(delay_before_sleeping_msec);
+        clear_temp_status();
+    }
+
+    common_hal_alarm_exit_and_deep_sleep_until_alarms(n_args, args);
+    // Does not return.
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_exit_and_deep_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_exit_and_deep_sleep_until_alarms);

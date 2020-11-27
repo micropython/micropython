@@ -66,9 +66,6 @@
 
 #include "boards/board.h"
 
-// REMOVE ***********
-#include "esp_log.h"
-
 #if CIRCUITPY_ALARM
 #include "shared-bindings/alarm/__init__.h"
 #endif
@@ -97,12 +94,6 @@
 #if CIRCUITPY_CANIO
 #include "common-hal/canio/CAN.h"
 #endif
-
-// How long to wait for host to start connecting..
-#define CIRCUITPY_USB_CONNECTING_DELAY 1
-
-// How long to flash errors on the RGB status LED before going to sleep (secs)
-#define CIRCUITPY_FLASH_ERROR_PERIOD 10
 
 #if MICROPY_ENABLE_PYSTACK
 static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
@@ -259,17 +250,6 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-// Should we go into deep sleep when program finishes?
-// Normally we won't deep sleep if there was an error or if we are connected to a host
-// but either of those can be enabled.
-// It's ok to deep sleep if we're not connected to a host, but we need to make sure
-// we're giving enough time for USB to start to connect
-STATIC bool deep_sleep_allowed(void) {
-    return
-        (ok || supervisor_workflow_get_allow_deep_sleep_on_error()) &&
-        !supervisor_workflow_connecting()
-        (supervisor_ticks_ms64() > CIRCUITPY_USB_CONNECTING_DELAY * 1024);
-
 STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
@@ -290,10 +270,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     if (safe_mode == NO_SAFE_MODE) {
         new_status_color(MAIN_RUNNING);
 
-        static const char * const supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        static const char * const supported_filenames[] = STRING_LIST(
+            "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
-        static const char * const double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
-                                                    "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
+        static const char * const double_extension_filenames[] = STRING_LIST(
+            "code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
+            "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
         #endif
 
         stack_resize();
@@ -319,7 +301,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     // Program has finished running.
 
     // Display a different completion message if the user has no USB attached (cannot save files)
-    if (!serial_connected_at_start && !deep_sleep_allowed()) {
+    if (!serial_connected_at_start) {
         serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
     }
 
@@ -327,16 +309,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     #if CIRCUITPY_DISPLAYIO
     bool refreshed_epaper_display = false;
     #endif
+
     rgb_status_animation_t animation;
-    bool ok = result.return_code != PYEXEC_EXCEPTION;
-
-    #if CIRCUITPY_ALARM
-    // Enable pin or time alarms before sleeping.
-    // If immediate_wake is true, then there's an alarm that would trigger immediately,
-    // so don't sleep.
-    bool immediate_wake = !common_hal_alarm_enable_deep_sleep_alarms();
-    #endif
-
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
 
@@ -360,12 +334,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
             }
-            // We won't be going into the REPL if we're going to sleep.
-            if (!deep_sleep_allowed()) {
-                print_safe_mode_message(safe_mode);
-                serial_write("\n");
-                serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
-            }
+
+            print_safe_mode_message(safe_mode);
+            serial_write("\n");
+            serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
         }
         if (serial_connected_before_animation && !serial_connected()) {
             serial_connected_at_start = false;
@@ -379,37 +351,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
-        bool animation_done = false;
-
-        if (deep_sleep_allowed() && ok) {
-            // Skip animation if everything is OK.
-            animation_done = true;
-        } else {
-            animation_done = tick_rgb_status_animation(&animation);
-        }
-        // Do an error animation only once before deep-sleeping.
-        if (animation_done) {
-            if (immediate_wake) {
-                // Don't sleep, we are already supposed to wake up.
-                return true;
-            }
-            if (deep_sleep_allowed()) {
-                common_hal_mcu_deep_sleep();
-                // Does not return.
-            }
-
-            // Wake up every so often to flash the error code.
-            if (!ok) {
-                port_interrupt_after_ticks(CIRCUITPY_FLASH_ERROR_PERIOD * 1024);
-            } else {
-                int64_t remaining_connecting_wait =
-                    CIRCUITPY_USB_CONNECTING_DELAY * 1024 - supervisor_ticks_ms64();
-                if (remaining_connecting_wait > 0) {
-                    port_interrupt_after_ticks(remaining_connecting_wait);
-                }
-                port_sleep_until_interrupt();
-            }
-        }
+        tick_rgb_status_animation(&animation);
     }
 }
 

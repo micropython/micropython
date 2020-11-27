@@ -32,8 +32,7 @@
 #include "common-hal/alarm/__init__.h"
 
 extern mp_obj_t common_hal_alarm_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
-extern bool common_hal_alarm_enable_deep_sleep_alarms(void);
-extern void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms);
+extern void common_hal_alarm_exit_and_deep_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
 
 // Used by wake-up code.
 extern void common_hal_alarm_set_wake_alarm(mp_obj_t alarm);

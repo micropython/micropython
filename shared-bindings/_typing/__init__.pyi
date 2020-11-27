@@ -54,12 +54,12 @@ FrameBuffer = Union[rgbmatrix.RGBMatrix]
 """
 
 Alarm = Union[
-    alarm.pin.PinAlarm, alarm.time.DurationAlarm
+    alarm.pin.PinAlarm, alarm.time.TimeAlarm
 ]
 """Classes that implement alarms for sleeping and asynchronous notification.
 
   - `alarm.pin.PinAlarm`
-  - `alarm.time.DurationAlarm`
+  - `alarm.time.TimeAlarm`
 
   You can use these alarms to wake from light or deep sleep.
 """

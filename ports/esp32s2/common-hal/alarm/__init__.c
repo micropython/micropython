@@ -1,4 +1,4 @@
-/*
+ /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
@@ -77,12 +77,10 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
     return mp_const_none;
 }
 
-mp_obj_t common_hal_alarm_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
-    mp_raise_NotImplementedError(NULL);
-}
-
-void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+STATIC void setup_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     bool time_alarm_set = false;
+    alarm_time_time_alarm_obj_t *time_alarm = MP_OBJ_NULL;
+
     for (size_t i = 0; i < n_alarms; i++) {
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pin_alarm_type)) {
             mp_raise_NotImplementedError(translate("PinAlarm deep sleep not yet implemented"));
@@ -91,32 +89,32 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
             if (time_alarm_set) {
                 mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
             }
+            time_alarm  = MP_OBJ_TO_PTR(alarms[i]);
             time_alarm_set = true;
         }
     }
 
-    _deep_sleep_alarms = mp_obj_new_tuple(n_alarms, alarms);
+    if (time_alarm != MP_OBJ_NULL) {
+        // Compute how long to actually sleep, considering the time now.
+        mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
+        mp_float_t wakeup_in_secs = MAX(0.0f, time_alarm->monotonic_time - now_secs);
+        esp_sleep_enable_timer_wakeup((uint64_t) (wakeup_in_secs * 1000000));
+    }
 }
 
-// Return false if we should wake up immediately because a time alarm is in the past
-// or otherwise already triggered.
-bool common_hal_alarm_enable_deep_sleep_alarms(void) {
-    for (size_t i = 0; i < _deep_sleep_alarms->len; i++) {
-        mp_obj_t alarm = _deep_sleep_alarms->items[i];
-        if (MP_OBJ_IS_TYPE(alarm, &alarm_pin_pin_alarm_type)) {
-            // TODO: handle pin alarms
-            mp_raise_NotImplementedError(translate("PinAlarm deep sleep not yet implemented"));
-        }
-        else if (MP_OBJ_IS_TYPE(alarm, &alarm_time_time_alarm_type)) {
-            alarm_time_time_alarm_obj_t *time_alarm = MP_OBJ_TO_PTR(alarm);
-            mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
-            // Compute how long to actually sleep, considering hte time now.
-            mp_float_t wakeup_in_secs = time_alarm->monotonic_time - now_secs;
-            if (wakeup_in_secs <= 0.0f) {
-                return false;
-            }
-            esp_sleep_enable_timer_wakeup((uint64_t) (wakeup_in_secs * 1000000));
-        }
-    }
-    return true;
+mp_obj_t common_hal_alarm_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+    setup_alarms(n_alarms, alarms);
+
+    // Shut down wifi cleanly.
+    esp_wifi_stop();
+    esp_light_sleep_start();
+    return common_hal_alarm_get_wake_alarm();
+}
+
+void common_hal_alarm_exit_and_deep_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+    setup_alarms(n_alarms, alarms);
+
+    // Shut down wifi cleanly.
+    esp_wifi_stop();
+    esp_deep_sleep_start();
 }
