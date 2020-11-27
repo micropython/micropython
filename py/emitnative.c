@@ -2831,7 +2831,6 @@ STATIC void emit_native_yield(emit_t *emit, int kind) {
     if (emit->do_viper_types) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("native yield"));
     }
-    emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
 
     need_stack_settled(emit);
 
@@ -2853,7 +2852,13 @@ STATIC void emit_native_yield(emit_t *emit, int kind) {
     emit_native_mov_state_reg(emit, OFFSETOF_CODE_STATE_SP, REG_TEMP0);
 
     // Put return type in return value slot
-    ASM_MOV_REG_IMM(emit->as, REG_TEMP0, MP_VM_RETURN_YIELD);
+    mp_vm_return_kind_t ret_kind = MP_VM_RETURN_YIELD;
+    #if MICROPY_PY_ASYNC_AWAIT
+    if ((emit->scope->scope_flags & MP_SCOPE_FLAG_ASYNCGENERATOR) && kind == MP_EMIT_YIELD_FROM) {
+        ret_kind = MP_VM_RETURN_YIELD_FROM;
+    }
+    #endif
+    ASM_MOV_REG_IMM(emit->as, REG_TEMP0, ret_kind);
     ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_RET_VAL(emit), REG_TEMP0);
 
     // Save re-entry PC

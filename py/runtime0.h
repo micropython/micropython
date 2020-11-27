@@ -26,19 +26,23 @@
 #ifndef MICROPY_INCLUDED_PY_RUNTIME0_H
 #define MICROPY_INCLUDED_PY_RUNTIME0_H
 
-// The first four must fit in 8 bits, see emitbc.c
-// The remaining must fit in 16 bits, see scope.h
-#define MP_SCOPE_FLAG_ALL_SIG      (0x0f)
+// The first five must fit in 7 bits, see mp_raw_code_t.scope_flags.
+// The remaining must fit in 16 bits, see scope_t.scope_flags.
+#define MP_SCOPE_FLAG_ALL_SIG      (0x1f)
+
 #define MP_SCOPE_FLAG_GENERATOR    (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
 #define MP_SCOPE_FLAG_VARARGS      (0x04)
 #define MP_SCOPE_FLAG_DEFKWARGS    (0x08)
-#define MP_SCOPE_FLAG_REFGLOBALS   (0x10) // used only if native emitter enabled
-#define MP_SCOPE_FLAG_HASCONSTS    (0x20) // used only if native emitter enabled
-#define MP_SCOPE_FLAG_VIPERRET_POS    (6) // 3 bits used for viper return type, to pass from compiler to native emitter
-#define MP_SCOPE_FLAG_VIPERRELOC   (0x10) // used only when loading viper from .mpy
-#define MP_SCOPE_FLAG_VIPERRODATA  (0x20) // used only when loading viper from .mpy
-#define MP_SCOPE_FLAG_VIPERBSS     (0x40) // used only when loading viper from .mpy
+#define MP_SCOPE_FLAG_ASYNCGENERATOR (0x10)
+
+#define MP_SCOPE_FLAG_REFGLOBALS   (0x20) // used only if native emitter enabled
+#define MP_SCOPE_FLAG_HASCONSTS    (0x40) // used only if native emitter enabled
+#define MP_SCOPE_FLAG_VIPERRET_POS    (7) // 3 bits used for viper return type, to pass from compiler to native emitter
+#define MP_SCOPE_FLAG_VIPERRELOC   (0x20) // used only when loading viper from .mpy
+#define MP_SCOPE_FLAG_VIPERRODATA  (0x40) // used only when loading viper from .mpy
+#define MP_SCOPE_FLAG_VIPERBSS     (0x80) // used only when loading viper from .mpy
+#define MP_SCOPE_FLAG_ASYNCDEF     (0x8000) // used ony by the compiler
 
 // types for native (viper) function signature
 #define MP_NATIVE_TYPE_OBJ  (0x00)

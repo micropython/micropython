@@ -32,6 +32,7 @@
 typedef enum {
     MP_VM_RETURN_NORMAL,
     MP_VM_RETURN_YIELD,
+    MP_VM_RETURN_YIELD_FROM, // used only by the native emitter
     MP_VM_RETURN_EXCEPTION,
 } mp_vm_return_kind_t;
 

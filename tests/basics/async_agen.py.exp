@@ -1,0 +1,22 @@
+<class 'SyntaxError'>
+<class 'SyntaxError'>
+<class 'SyntaxError'>
+True
+1
+2
+<class 'StopAsyncIteration'>
+<class 'StopAsyncIteration'>
+run_task finished with StopIteration()
+got 0
+wait 2
+wait 1
+got 1
+wait 2
+wait 1
+got 2
+wait 2
+wait 1
+got 3
+wait 2
+wait 1
+run_task finished with StopIteration()

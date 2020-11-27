@@ -800,7 +800,6 @@ void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args) {
 void mp_emit_bc_yield(emit_t *emit, int kind) {
     MP_STATIC_ASSERT(MP_BC_YIELD_VALUE + 1 == MP_BC_YIELD_FROM);
     emit_write_bytecode_byte(emit, -kind, MP_BC_YIELD_VALUE + kind);
-    emit->scope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
 }
 
 void mp_emit_bc_start_except_handler(emit_t *emit) {
