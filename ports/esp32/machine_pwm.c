@@ -32,6 +32,8 @@
 #include "modmachine.h"
 #include "mphalport.h"
 
+#include "esp_error.h"
+
 // Forward dec'l
 extern const mp_obj_type_t machine_pwm_type;
 
@@ -79,7 +81,7 @@ STATIC void pwm_init(void) {
         timers[x].freq_hz = -1;
         timers[x].speed_mode = PWMODE;
         timers[x].timer_num = x;
-}
+    }
 }
 
 STATIC int set_freq(int newval, ledc_timer_config_t *timer) {
@@ -134,33 +136,34 @@ STATIC int found_timer(int freq, bool same_freq_only) {
     return free_timer_found;
 }
 
-// return if the timer is in use in addition to curr_channel
+// return true if the timer is in use in addition to curr_channel
 STATIC bool is_timer_in_use(int curr_channel, int timer) {
-    bool used = false;
     int i;
     for (i = 0; i < LEDC_CHANNEL_MAX; ++i) {
-        if (i != curr_channel && chan_timer[i] == timer) {
-            used = true;
-            break;
+        if ((i != curr_channel) && (chan_timer[i] == timer)) {
+            return true;
         }
     }
-
-    return used;
+    return false;
 }
 
 /******************************************************************************/
-STATIC int get_duty(esp32_pwm_obj_t *self) {
-    int duty;
+STATIC uint32_t get_resolution(esp32_pwm_obj_t *self) {
+    return timers[chan_timer[self->channel]].duty_resolution;
+}
+
+STATIC uint32_t get_duty(esp32_pwm_obj_t *self) {
+    uint32_t duty;
     duty = ledc_get_duty(PWMODE, self->channel);
     duty <<= PWRES - timers[chan_timer[self->channel]].duty_resolution;
     return duty;
 }
 
-STATIC void set_duty(esp32_pwm_obj_t *self, int duty) {
+STATIC void set_duty(esp32_pwm_obj_t *self, uint32_t duty) {
     duty &= ((1 << PWRES) - 1);
     duty >>= PWRES - timers[chan_timer[self->channel]].duty_resolution;
-    ledc_set_duty(PWMODE, self->channel, duty);
-    ledc_update_duty(PWMODE, self->channel);
+    ESP_EXCEPTIONS(ledc_set_duty(PWMODE, self->channel, duty));
+    ESP_EXCEPTIONS(ledc_update_duty(PWMODE, self->channel));
 }
 
 /******************************************************************************/
@@ -171,8 +174,10 @@ STATIC void esp32_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     esp32_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "PWM(%u", self->pin);
     if (self->active) {
-        mp_printf(print, ", freq=%u, duty=%u", timers[chan_timer[self->channel]].freq_hz,
-            get_duty(self));
+        uint32_t duty;
+        duty = ledc_get_duty(PWMODE, self->channel);
+        mp_printf(print, ", freq=%u, duty=%u(%u/%u)", timers[chan_timer[self->channel]].freq_hz,
+            get_duty(self), duty, 1<<get_resolution(self));
     }
     mp_printf(print, ")");
 }
@@ -250,12 +255,6 @@ STATIC void esp32_pwm_init_helper(esp32_pwm_obj_t *self,
     // Set duty cycle?
     int dval = args[ARG_duty].u_int;
     if (dval != -1) {
-        /*
-        dval &= ((1 << PWRES) - 1);
-        dval >>= PWRES - timers[timer].duty_resolution;
-        ledc_set_duty(PWMODE, channel, dval);
-        ledc_update_duty(PWMODE, channel);
-        */
         set_duty(self, dval);
     }
 }
@@ -304,8 +303,8 @@ STATIC mp_obj_t esp32_pwm_deinit(mp_obj_t self_in) {
             ledc_timer_rst(PWMODE, chan_timer[chan]);
             // Flag it unused
             timers[chan_timer[chan]].freq_hz = -1;
-            chan_timer[chan] = -1;
         }
+        chan_timer[chan] = -1; // channel now don't use a timer!!!
 
         // Mark it unused, and tell the hardware to stop routing
         chan_gpio[chan] = -1;
@@ -354,7 +353,7 @@ STATIC mp_obj_t esp32_pwm_freq(size_t n_args, const mp_obj_t *args) {
         chan_timer[self->channel] = new_timer;
 
         if (ledc_bind_channel_timer(PWMODE, self->channel, new_timer) != ESP_OK) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to bind timer to channel"));
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("failed to bind timer to channel"));
         }
 
         if (!current_in_use) {
@@ -374,32 +373,18 @@ STATIC mp_obj_t esp32_pwm_freq(size_t n_args, const mp_obj_t *args) {
     }
     return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_pwm_freq_obj, 1, 2, esp32_pwm_freq);
 
 STATIC mp_obj_t esp32_pwm_duty(size_t n_args, const mp_obj_t *args) {
     esp32_pwm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    int duty;
 
     if (n_args == 1) {
         // get
-        /*
-        duty = ledc_get_duty(PWMODE, self->channel);
-        duty <<= PWRES - timers[chan_timer[self->channel]].duty_resolution;
-        return MP_OBJ_NEW_SMALL_INT(duty);
-        */
         return MP_OBJ_NEW_SMALL_INT(get_duty(self));
     }
 
     // set
-    duty = mp_obj_get_int(args[1]);
-    /*
-    duty &= ((1 << PWRES) - 1);
-    duty >>= PWRES - timers[chan_timer[self->channel]].duty_resolution;
-    ledc_set_duty(PWMODE, self->channel, duty);
-    ledc_update_duty(PWMODE, self->channel);
-    */
-    set_duty(self, duty);
+    set_duty(self, mp_obj_get_int(args[1]));
 
     return mp_const_none;
 }
