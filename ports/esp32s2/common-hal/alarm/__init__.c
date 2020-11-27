@@ -37,6 +37,7 @@
 
 #include "esp_log.h"
 #include "esp_sleep.h"
+#include "esp_wifi.h"
 
 STATIC mp_obj_tuple_t *_deep_sleep_alarms;
 
@@ -77,13 +78,14 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
     return mp_const_none;
 }
 
-STATIC void setup_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+// Set up light sleep or deep sleep alarms.
+STATIC void setup_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     bool time_alarm_set = false;
     alarm_time_time_alarm_obj_t *time_alarm = MP_OBJ_NULL;
 
     for (size_t i = 0; i < n_alarms; i++) {
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pin_alarm_type)) {
-            mp_raise_NotImplementedError(translate("PinAlarm deep sleep not yet implemented"));
+            mp_raise_NotImplementedError(translate("PinAlarm not yet implemented"));
         }
         else if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_time_alarm_type)) {
             if (time_alarm_set) {
@@ -98,23 +100,82 @@ STATIC void setup_alarms(size_t n_alarms, const mp_obj_t *alarms) {
         // Compute how long to actually sleep, considering the time now.
         mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
         mp_float_t wakeup_in_secs = MAX(0.0f, time_alarm->monotonic_time - now_secs);
-        esp_sleep_enable_timer_wakeup((uint64_t) (wakeup_in_secs * 1000000));
+        const uint64_t sleep_for_us = (uint64_t) (wakeup_in_secs * 1000000);
+        ESP_LOGI("ALARM", "Sleep for us: %lld", sleep_for_us);
+        esp_sleep_enable_timer_wakeup(sleep_for_us);
     }
 }
 
+mp_obj_t common_hal_alarm_wait_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+    if (n_alarms == 0) {
+        return mp_const_none;
+    }
+
+    bool time_alarm_set = false;
+    alarm_time_time_alarm_obj_t *time_alarm = MP_OBJ_NULL;
+
+    for (size_t i = 0; i < n_alarms; i++) {
+        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pin_alarm_type)) {
+            mp_raise_NotImplementedError(translate("PinAlarm not yet implemented"));
+        }
+        else if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_time_alarm_type)) {
+            if (time_alarm_set) {
+                mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
+            }
+            time_alarm  = MP_OBJ_TO_PTR(alarms[i]);
+            time_alarm_set = true;
+        }
+    }
+
+    ESP_LOGI("ALARM", "waiting for alarms");
+
+    if (time_alarm_set && n_alarms == 1) {
+        // If we're only checking time, avoid a polling loop, so maybe we can save some power.
+        const mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
+        const mp_float_t wakeup_in_secs = MAX(0.0f, time_alarm->monotonic_time - now_secs);
+        const uint32_t delay_ms = (uint32_t) (wakeup_in_secs * 1000.0f);
+        ESP_LOGI("ALARM", "Delay for ms: %d", delay_ms);
+        common_hal_time_delay_ms((uint32_t) delay_ms);
+    } else {
+        // Poll for alarms.
+        while (true) {
+            RUN_BACKGROUND_TASKS;
+            // Allow ctrl-C interrupt.
+            if (mp_hal_is_interrupted()) {
+                return mp_const_none;
+            }
+
+            // TODO: Check PinAlarms.
+
+            if (time_alarm != MP_OBJ_NULL &&
+                common_hal_time_monotonic_ms() * 1000.f >= time_alarm->monotonic_time) {
+                return time_alarm;
+            }
+        }
+    }
+
+    return mp_const_none;
+}
+
 mp_obj_t common_hal_alarm_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
-    setup_alarms(n_alarms, alarms);
+    if (n_alarms == 0) {
+        return mp_const_none;
+    }
+
+    setup_sleep_alarms(n_alarms, alarms);
 
     // Shut down wifi cleanly.
     esp_wifi_stop();
+    ESP_LOGI("ALARM", "start light sleep");
     esp_light_sleep_start();
     return common_hal_alarm_get_wake_alarm();
 }
 
 void common_hal_alarm_exit_and_deep_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
-    setup_alarms(n_alarms, alarms);
+    setup_sleep_alarms(n_alarms, alarms);
 
     // Shut down wifi cleanly.
     esp_wifi_stop();
+    ESP_LOGI("ALARM", "start deep sleep");
     esp_deep_sleep_start();
 }

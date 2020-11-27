@@ -33,8 +33,10 @@ void supervisor_workflow_reset(void) {
 
 // Return true as soon as USB communication with host has started,
 // even before enumeration is done.
+// Not that some chips don't notice when USB is unplugged after first being plugged in,
+// so this is not perfect, but tud_suspended() check helps.
 bool supervisor_workflow_connecting(void) {
-    return tud_connected();
+    return tud_connected() && !tud_suspended();
 }
 
 // Return true if host has completed connection to us (such as USB enumeration).

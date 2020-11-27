@@ -31,6 +31,7 @@
 
 #include "common-hal/alarm/__init__.h"
 
+extern mp_obj_t common_hal_alarm_wait_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
 extern mp_obj_t common_hal_alarm_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
 extern void common_hal_alarm_exit_and_deep_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
 

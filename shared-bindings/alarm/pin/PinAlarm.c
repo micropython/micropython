@@ -56,7 +56,7 @@
 //|           to ``value`` to trigger the alarm. On some ports, edge-triggering may not be available,
 //|           particularly for deep-sleep alarms.
 //|         :param bool pull: Enable a pull-up or pull-down which pulls the pin to the level opposite
-//|           opposite that of ``value``. For instance, if ``value`` is set to ``True``, setting ``pull``
+//|           that of ``value``. For instance, if ``value`` is set to ``True``, setting ``pull``
 //|           to ``True`` will enable a pull-down, to hold the pin low normally until an outside signal
 //|           pulls it high.
 //|         """
@@ -89,7 +89,7 @@ STATIC mp_obj_t alarm_pin_pin_alarm_make_new(const mp_obj_type_t *type, mp_uint_
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     pins: Tuple[microcontroller.pin]
+//|     pins: Tuple[microcontroller.Pin]
 //|     """The trigger pins."""
 //|
 STATIC mp_obj_t alarm_pin_pin_alarm_obj_get_pins(mp_obj_t self_in) {
@@ -105,7 +105,7 @@ const mp_obj_property_t alarm_pin_pin_alarm_pins_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     value: Tuple[microcontroller.pin]
+//|     value: Tuple[microcontroller.Pin]
 //|     """The value on which to trigger."""
 //|
 STATIC mp_obj_t alarm_pin_pin_alarm_obj_get_value(mp_obj_t self_in) {
