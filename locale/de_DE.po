@@ -5,15 +5,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-11 16:30+0530\n"
-"PO-Revision-Date: 2020-06-16 18:24+0000\n"
-"Last-Translator: Andreas Buchen <andreas.buchen@gmail.com>\n"
+"POT-Creation-Date: 2020-11-24 15:40-0500\n"
+"PO-Revision-Date: 2020-11-26 03:11+0000\n"
+"Last-Translator: Daniel Bravo Darriba <bravodarriba@gmail.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.1.1-dev\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -57,7 +57,7 @@ msgstr "%d Adress-Pins und %d rgb-Pins zeigen eine Höhe von %d, nicht von %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q Fehler: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -300,6 +300,7 @@ msgid "All I2C peripherals are in use"
 msgstr "Alle I2C-Peripheriegeräte sind in Benutzung"
 
 #: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr ""
@@ -336,6 +337,7 @@ msgstr "Alle timer für diesen Pin werden bereits benutzt"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
@@ -1107,6 +1109,7 @@ msgid "Invalid byteorder string"
 msgstr "Ungültige Byteorder String"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Ungültiger Aufnahmezeitraum. Gültiger Bereich: 1 - 500"
 
@@ -1441,12 +1444,12 @@ msgstr "Eine ungerade Parität wird nicht unterstützt"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Nur 8 oder 16 bit mono mit "
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
-msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr ""
-
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
+msgstr ""
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 sockets supported"
 msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
