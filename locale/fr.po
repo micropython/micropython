@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 10:10-0600\n"
-"PO-Revision-Date: 2020-11-20 22:28+0000\n"
-"Last-Translator: Noel Gaetan <gaetan.noel@viacesi.fr>\n"
+"POT-Creation-Date: 2020-11-24 15:40-0500\n"
+"PO-Revision-Date: 2020-11-24 22:45+0000\n"
+"Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -305,6 +305,7 @@ msgid "All I2C peripherals are in use"
 msgstr "Tous les périphériques I2C sont utilisés"
 
 #: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr "Toutes les unités PCNT sont utilisées"
@@ -341,6 +342,7 @@ msgstr "Tous les timers pour cette broche sont utilisés"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
@@ -881,7 +883,7 @@ msgstr "La FFT est définie pour les ndarrays uniquement"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "FFT is implemented for linear arrays only"
-msgstr ""
+msgstr "FFT n'est implémenté que pour les tableaux linéaires"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
@@ -1113,6 +1115,7 @@ msgid "Invalid byteorder string"
 msgstr "Chaîne d'octets non valide"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Période de capture invalide. Gamme valide : 1 à 500"
 
@@ -1289,6 +1292,10 @@ msgstr "Doit fournir une broche MISO ou MOSI"
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
 
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
+msgstr ""
+
 #: py/parse.c
 msgid "Name too long"
 msgstr "Nom trop long"
@@ -1441,13 +1448,13 @@ msgstr "Parité impaire non supportée"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Uniquement 8 ou 16 bit mono avec "
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
-msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr "Seules les sockets IPv4 SOCK_STREAM sont prises en charge"
-
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Seules les adresses IPv4 sont prises en charge"
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 sockets supported"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -2116,7 +2123,7 @@ msgstr "L'argument argsort doit être un ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr ""
+msgstr "argsort n'est pas mis en œuvre pour les tableaux aplatis"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -2141,7 +2148,7 @@ msgstr "les arguments doivent être des ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr ""
+msgstr "la longueur du tableau et de l'index doit être égale"
 
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -2149,7 +2156,7 @@ msgstr "tableau/octets requis à droite"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
-msgstr ""
+msgstr "tentative d’obtenir (arg)min/(arg)max d'une séquence vide"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
@@ -2161,15 +2168,15 @@ msgstr "attribut pas encore supporté"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis is out of bounds"
-msgstr ""
+msgstr "axis est hors limites"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be None, or an integer"
-msgstr ""
+msgstr "axis doit être None ou un entier"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis too long"
-msgstr ""
+msgstr "axis trop long"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2485,7 +2492,7 @@ msgstr "impossible de déterminer la version de la carte SD"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
-msgstr ""
+msgstr "cross est défini pour les tableaux 1D de longueur 3"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
@@ -2528,7 +2535,7 @@ msgstr "l'argument diff doit être un ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "differentiation order out of range"
-msgstr ""
+msgstr "differentiation order hors plage"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -2649,7 +2656,7 @@ msgstr "le premier argument doit être une fonction"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr ""
+msgstr "le premier argument doit être un tuple de ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
@@ -2706,7 +2713,7 @@ msgstr "la fonction a le même signe aux extrémités de l’intervalle"
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr ""
+msgstr "La fonction n'est définie que pour les ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -2803,7 +2810,7 @@ msgstr "l'assembleur doit être une fonction"
 
 #: extmod/ulab/code/ndarray.c
 msgid "input and output shapes are not compatible"
-msgstr ""
+msgstr "les formes d'entrée et de sortie ne sont pas compatibles"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
@@ -2815,7 +2822,7 @@ msgstr "la longueur du tableau d'entrée doit être une puissance de 2"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input arrays are not compatible"
-msgstr ""
+msgstr "les tableaux d'entrée ne sont pas compatibles"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
@@ -2831,11 +2838,11 @@ msgstr "la matrice d'entrée est singulière"
 
 #: extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr ""
+msgstr "l'entrée doit être un tableau dense"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input must be a tensor of rank 2"
-msgstr ""
+msgstr "l'entrée doit être un tenseur de rang 2"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
@@ -3843,6 +3850,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Seules les sockets IPv4 SOCK_STREAM sont prises en charge"
 
 #~ msgid "arctan2 is implemented for scalars and ndarrays only"
 #~ msgstr ""

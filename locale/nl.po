@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 10:10-0600\n"
+"POT-Creation-Date: 2020-11-24 15:40-0500\n"
 "PO-Revision-Date: 2020-10-27 16:47+0000\n"
 "Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
 "Language-Team: none\n"
@@ -301,6 +301,7 @@ msgid "All I2C peripherals are in use"
 msgstr "Alle I2C peripherals zijn in gebruik"
 
 #: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr ""
@@ -337,6 +338,7 @@ msgstr "Alle timers voor deze pin zijn in gebruik"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
@@ -1102,6 +1104,7 @@ msgid "Invalid byteorder string"
 msgstr "Ongeldige byteorder string"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Ongeldige vastlegging periode. Geldig bereik: 1 - 500"
 
@@ -1278,6 +1281,10 @@ msgstr "MISO of MOSI moeten worden gegeven"
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Een meervoud van 6 rgb pinnen moet worden gebruikt, niet %d"
 
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
+msgstr ""
+
 #: py/parse.c
 msgid "Name too long"
 msgstr "Naam te lang"
@@ -1430,13 +1437,13 @@ msgstr "Oneven pariteit is niet ondersteund"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Alleen 8 of 16 bit mono met "
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
-msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr "Alleen IPv4 SOCK_STREAM sockets worden ondersteund"
-
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Alleen IPv4 adressen worden ondersteund"
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 sockets supported"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -3809,6 +3816,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Alleen IPv4 SOCK_STREAM sockets worden ondersteund"
 
 #~ msgid "arctan2 is implemented for scalars and ndarrays only"
 #~ msgstr "arctan2 is alleen geïmplementeerd voor scalars en ndarrays"

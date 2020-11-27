@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 10:10-0600\n"
-"PO-Revision-Date: 2020-11-12 22:51+0000\n"
+"POT-Creation-Date: 2020-11-24 15:40-0500\n"
+"PO-Revision-Date: 2020-11-27 18:34+0000\n"
 "Last-Translator: sporeball <sporeballdev@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -182,7 +182,7 @@ msgstr ""
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
-msgstr ""
+msgstr "'%s' には整数が必要"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -303,6 +303,7 @@ msgid "All I2C peripherals are in use"
 msgstr "全てのI2C周辺機器が使用中"
 
 #: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr ""
@@ -339,6 +340,7 @@ msgstr "このピン用の全てのタイマが使用中"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
@@ -1100,6 +1102,7 @@ msgid "Invalid byteorder string"
 msgstr "不正なバイトオーダー文字列"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "不正なキャプチャ周期。有効な周期は1-500"
 
@@ -1276,6 +1279,10 @@ msgstr "MISOピンまたはMOSIピンが必要"
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "%d個でなく6の倍数個のrgbピンを使ってください"
 
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
+msgstr ""
+
 #: py/parse.c
 msgid "Name too long"
 msgstr "名前が長すぎます"
@@ -1428,12 +1435,12 @@ msgstr "奇数パリティには対応していません"
 msgid "Only 8 or 16 bit mono with "
 msgstr "8または16ビットの "
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
-msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr ""
-
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
+msgstr ""
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 sockets supported"
 msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
@@ -3750,7 +3757,7 @@ msgstr ""
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
-msgstr ""
+msgstr "xが範囲外"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
