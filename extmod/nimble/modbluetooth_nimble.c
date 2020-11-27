@@ -189,6 +189,59 @@ STATIC void set_random_address(bool nrpa) {
     assert(rc == 0);
 }
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+// For ble_hs_pvcy_set_our_irk
+#include "nimble/host/src/ble_hs_pvcy_priv.h"
+// For ble_hs_hci_util_rand
+#include "nimble/host/src/ble_hs_hci_priv.h"
+// For ble_hs_misc_restore_irks
+#include "nimble/host/src/ble_hs_priv.h"
+
+// Must be distinct to BLE_STORE_OBJ_TYPE_ in ble_store.h.
+#define SECRET_TYPE_OUR_IRK 10
+
+STATIC int load_irk(void) {
+    // NimBLE unconditionally loads a fixed IRK on startup.
+    // See https://github.com/apache/mynewt-nimble/issues/887
+
+    // Dummy key to use for the store.
+    // Technically the secret type is enough as there will only be
+    // one IRK so the key doesn't matter, but a NULL (None) key means "search".
+    const uint8_t key[3] = {'i', 'r', 'k'};
+
+    int rc;
+    const uint8_t *irk;
+    size_t irk_len;
+    if (mp_bluetooth_gap_on_get_secret(SECRET_TYPE_OUR_IRK, 0, key, sizeof(key), &irk, &irk_len) && irk_len == 16) {
+        DEBUG_printf("load_irk: Applying IRK from store.\n");
+        rc = ble_hs_pvcy_set_our_irk(irk);
+        if (rc) {
+            return rc;
+        }
+    } else {
+        DEBUG_printf("load_irk: Generating new IRK.\n");
+        uint8_t rand_irk[16];
+        rc = ble_hs_hci_util_rand(rand_irk, 16);
+        if (rc) {
+            return rc;
+        }
+        DEBUG_printf("load_irk: Saving new IRK.\n");
+        if (!mp_bluetooth_gap_on_set_secret(SECRET_TYPE_OUR_IRK, key, sizeof(key), rand_irk, 16)) {
+            return BLE_HS_EINVAL;
+        }
+        DEBUG_printf("load_irk: Applying new IRK.\n");
+        rc = ble_hs_pvcy_set_our_irk(rand_irk);
+        if (rc) {
+            return rc;
+        }
+    }
+
+    // Loading an IRK will clear all peer IRKs, so reload them from the store.
+    rc = ble_hs_misc_restore_irks();
+    return rc;
+}
+#endif
+
 STATIC void sync_cb(void) {
     int rc;
     (void)rc;
@@ -198,6 +251,11 @@ STATIC void sync_cb(void) {
     if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
         return;
     }
+
+    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+    rc = load_irk();
+    assert(rc == 0);
+    #endif
 
     if (has_public_address()) {
         nimble_address_mode = BLE_OWN_ADDR_PUBLIC;
