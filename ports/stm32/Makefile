@@ -134,6 +134,8 @@ LDFLAGS += --gc-sections
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -DPENDSV_DEBUG
 COPT = -O0
+# Disable text compression in debug builds
+MICROPY_ROM_TEXT_COMPRESSION = 0
 else
 COPT += -Os -DNDEBUG
 endif
