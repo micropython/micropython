@@ -30,8 +30,10 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_PA22)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA23)},
 
-    // UART
+    // ESP UART
+    {MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RX), MP_ROM_PTR(&pin_PB17)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PB17)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_ESP_TX), MP_ROM_PTR(&pin_PB16)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PB16)},
 
     // I2C

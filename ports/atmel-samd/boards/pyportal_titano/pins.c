@@ -59,8 +59,11 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RESET), MP_ROM_PTR(&pin_PB17) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RTS), MP_ROM_PTR(&pin_PA15) },
 
-    // UART
+    // ESP UART
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_TX), MP_ROM_PTR(&pin_PB12) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PB12) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RX), MP_ROM_PTR(&pin_PB13) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PB13) },
 
     // SPI
