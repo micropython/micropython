@@ -147,15 +147,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 //| This object is the sole instance of `watchdog.WatchDogTimer` when available or ``None`` otherwise."""
 //|
 
-
-//| """:mod:`microcontroller.pin` --- Microcontroller pin names
-//| --------------------------------------------------------
-//|
-//| .. module:: microcontroller.pin
-//|   :synopsis: Microcontroller pin names
-//|
-//| References to pins as named by the microcontroller"""
-//|
 const mp_obj_module_t mcu_pin_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mcu_pin_globals,

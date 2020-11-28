@@ -2,6 +2,9 @@
 
 from typing import Union
 
+import alarm
+import alarm.pin
+import alarm.time
 import array
 import audiocore
 import audiomixer
@@ -61,5 +64,5 @@ Alarm = Union[
   - `alarm.pin.PinAlarm`
   - `alarm.time.TimeAlarm`
 
-  You can use these alarms to wake from light or deep sleep.
+  You can use these alarms to wake up from light or deep sleep.
 """

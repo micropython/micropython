@@ -43,7 +43,7 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //| class TimeAlarm:
 //|     """Trigger an alarm when the specified time is reached."""
 //|
-//|     def __init__(self, monotonic_time: Optional[Float] = None, epoch_time: Optional[int] = None) -> None:
+//|     def __init__(self, monotonic_time: Optional[float] = None, epoch_time: Optional[int] = None) -> None:
 //|         """Create an alarm that will be triggered when `time.monotonic()` would equal
 //|         ``monotonic_time``, or when `time.time()` would equal ``epoch_time``.
 //|         Only one of the two arguments can be given.
