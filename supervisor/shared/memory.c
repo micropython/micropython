@@ -134,9 +134,7 @@ supervisor_allocation* allocation_from_ptr(void *ptr) {
 }
 
 supervisor_allocation* allocate_remaining_memory(void) {
-    uint32_t* low_address = low_head ? low_head->data + low_head->length / 4 : port_heap_get_bottom();
-    uint32_t* high_address = high_head ? (uint32_t*)high_head : port_heap_get_top();
-    return allocate_memory((high_address - low_address) * 4 - sizeof(supervisor_allocation_node), false, false);
+    return allocate_memory((uint32_t)-1, false, false);
 }
 
 static supervisor_allocation_node* find_hole(supervisor_allocation_node* node, size_t length) {
@@ -152,6 +150,12 @@ static supervisor_allocation_node* allocate_memory_node(uint32_t length, bool hi
     // supervisor_move_memory() currently does not support movable allocations on the high side, it
     // must be extended first if this is ever needed.
     assert(!(high && movable));
+    uint32_t* low_address = low_head ? low_head->data + low_head->length / 4 : port_heap_get_bottom();
+    uint32_t* high_address = high_head ? (uint32_t*)high_head : port_heap_get_top();
+    // Special case for allocate_remaining_memory(), avoids computing low/high_address twice.
+    if (length == (uint32_t)-1) {
+        length = (high_address - low_address) * 4 - sizeof(supervisor_allocation_node);
+    }
     if (length == 0 || length % 4 != 0) {
         return NULL;
     }
@@ -159,8 +163,6 @@ static supervisor_allocation_node* allocate_memory_node(uint32_t length, bool hi
     supervisor_allocation_node* node = find_hole(high ? high_head : low_head, length);
     if (!node) {
         // 2. Enough free space in the middle?
-        uint32_t* low_address = low_head ? low_head->data + low_head->length / 4 : port_heap_get_bottom();
-        uint32_t* high_address = high_head ? (uint32_t*)high_head : port_heap_get_top();
         if ((high_address - low_address) * 4 >= (int32_t)(sizeof(supervisor_allocation_node) + length)) {
             if (high) {
                 high_address -= (sizeof(supervisor_allocation_node) + length) / 4;
