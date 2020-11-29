@@ -342,13 +342,9 @@ def run_tests(pyb, tests, args, result_dir):
         'struct_endian',
     )
 
-    # Some tests shouldn't be run under Travis CI
-    if os.getenv('TRAVIS') == 'true':
-        skip_tests.add('basics/memoryerror.py')
-        skip_tests.add('thread/thread_gc1.py') # has reliability issues
-        skip_tests.add('thread/thread_lock4.py') # has reliability issues
-        skip_tests.add('thread/stress_heap.py') # has reliability issues
-        skip_tests.add('thread/stress_recurse.py') # has reliability issues
+    # Some tests shouldn't be run on GitHub Actions
+    if os.getenv('GITHUB_ACTIONS') == 'true':
+        skip_tests.add('thread/stress_schedule.py') # has reliability issues
 
     if upy_float_precision == 0:
         skip_tests.add('extmod/uctypes_le_float.py')
