@@ -1,6 +1,6 @@
 # this file is executed "inline" in the global context, so all imported names
 # are available afterwards.
-from struct_access import update_structs, set_accessors, partial_struct
+from struct_access import update_structs, set_accessors, partial_struct, lookup_struct
 from kernel_ffi import p8, p16, p32, p64, symbol
 from all import structs
 

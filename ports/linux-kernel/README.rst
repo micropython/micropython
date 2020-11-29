@@ -180,13 +180,23 @@ You can find it `here <https://github.com/Jongy/struct_layout>`_.
 To use it, you need to pass ``STRUCT_LAYOUT=1`` to ``make`` when building the module. It's optional
 because it's an external dependency, yet it is highly recommended you use it ;)
 
-To make a struct from a pointer, you can create "struct casting" functions:
+To make a struct from a pointer, you can "call" the struct object with a pointer:
+
+.. code-block:: python
+
+    # lookup_struct is available globally
+    task_struct = lookup_struct("task_struct")
+    print(task_struct)  # Struct(72704, 'task_struct', ...)
+    task_struct(0x1234)
+
+You can also use the old method, using the caster function ``partial_struct``:
 
 .. code-block:: python
 
     # partial_struct is available globally
     net_device = partial_struct("net_device")
     task_struct = partial_struct("task_struct")
+    print(task_struct)  # <closure <function p at ... > >
 
 Now, working with it:
 
