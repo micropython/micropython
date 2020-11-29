@@ -33,7 +33,7 @@
 #include "supervisor/shared/display.h"
 
 enum {
-    CIRCUITPY_SUPERVISOR_ALLOC_COUNT =
+    CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT =
     // stack + heap
     2
 #ifdef EXTERNAL_FLASH_DEVICES
@@ -42,6 +42,9 @@ enum {
 #if CIRCUITPY_USB_MIDI
     + 1
 #endif
+    ,
+    CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =
+    0
 #if CIRCUITPY_DISPLAYIO
     #if CIRCUITPY_TERMINALIO
         + 1
@@ -57,6 +60,8 @@ enum {
         #endif
     )
 #endif
+    ,
+    CIRCUITPY_SUPERVISOR_ALLOC_COUNT = CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT + CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT
 };
 
 // The lowest two bits of a valid length are always zero, so we can use them to mark an allocation
@@ -147,6 +152,9 @@ static supervisor_allocation_node* find_hole(supervisor_allocation_node* node, s
 }
 
 static supervisor_allocation_node* allocate_memory_node(uint32_t length, bool high, bool movable) {
+    if (CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT == 0) {
+        assert(!movable);
+    }
     // supervisor_move_memory() currently does not support movable allocations on the high side, it
     // must be extended first if this is ever needed.
     assert(!(high && movable));
@@ -223,6 +231,11 @@ size_t get_allocation_length(supervisor_allocation* allocation) {
 }
 
 void supervisor_move_memory(void) {
+    // This whole function is not needed when there are no movable allocations, let it be optimized
+    // out.
+    if (CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT == 0) {
+        return;
+    }
     // This must be called exactly after freeing the heap, so that the embedded allocations, if any,
     // are now in the free region.
     assert(MP_STATE_VM(first_embedded_allocation) == NULL || (low_head < MP_STATE_VM(first_embedded_allocation) && MP_STATE_VM(first_embedded_allocation) < high_head));
