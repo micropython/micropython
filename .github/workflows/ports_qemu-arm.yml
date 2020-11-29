@@ -11,6 +11,7 @@ on:
       - 'lib/**'
       - 'drivers/**'
       - 'ports/qemu-arm/**'
+      - 'tests/**'
 
 jobs:
   build_and_test:
@@ -19,7 +20,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install packages
       run: source tools/ci.sh && ci_qemu_arm_setup
-    - name: Build
+    - name: Build and run test suite
       run: source tools/ci.sh && ci_qemu_arm_build
     - name: Print failures
       if: failure()

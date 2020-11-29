@@ -11,6 +11,7 @@ on:
       - 'lib/**'
       - 'examples/**'
       - 'ports/unix/**'
+      - 'tests/**'
 
 jobs:
   minimal:
