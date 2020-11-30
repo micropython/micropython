@@ -32,13 +32,23 @@ async def main():
     # Create a task that raises and uses the custom exception handler
     asyncio.create_task(task(0))
     print("sleep")
-    await asyncio.sleep(0)
+    for _ in range(2):
+        await asyncio.sleep(0)
 
     # Create 2 tasks to test order of printing exception
     asyncio.create_task(task(1))
     asyncio.create_task(task(2))
     print("sleep")
+    for _ in range(2):
+        await asyncio.sleep(0)
+
+    # Create a task, let it run, then await it (no exception should be printed)
+    t = asyncio.create_task(task(3))
     await asyncio.sleep(0)
+    try:
+        await t
+    except ValueError as er:
+        print(repr(er))
 
     print("done")
 

@@ -21,9 +21,9 @@ async def wait_for(aw, timeout, sleep=core.sleep):
         pass
     finally:
         # Cancel the "cancel" task if it's still active (optimisation instead of cancel_task.cancel())
-        if cancel_task.coro is not None:
+        if cancel_task.coro is not cancel_task:
             core._task_queue.remove(cancel_task)
-    if cancel_task.coro is None:
+    if cancel_task.coro is cancel_task:
         # Cancel task ran to completion, ie there was a timeout
         raise core.TimeoutError
     return ret
