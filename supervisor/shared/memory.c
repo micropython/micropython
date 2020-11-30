@@ -105,23 +105,23 @@ void free_memory(supervisor_allocation* allocation) {
     else {
         // Check if it's in the list of embedded allocations.
         supervisor_allocation_node** emb = &MP_STATE_VM(first_embedded_allocation);
-        while (*emb != NULL) {
-            if (*emb == node) {
-                // Found, remove it from the list.
-                *emb = node->next;
-                m_free(node
-#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-                    , sizeof(supervisor_allocation_node) + (node->length & ~FLAGS)
-#endif
-                );
-                goto done;
-            }
+        while (*emb != NULL && *emb != node) {
             emb = &((*emb)->next);
         }
-        // Else it must be within the low or high ranges and becomes a hole.
-        node->length = ((node->length & ~FLAGS) | HOLE);
+        if (*emb != NULL) {
+            // Found, remove it from the list.
+            *emb = node->next;
+            m_free(node
+#if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+                , sizeof(supervisor_allocation_node) + (node->length & ~FLAGS)
+#endif
+            );
+        }
+        else {
+            // Else it must be within the low or high ranges and becomes a hole.
+            node->length = ((node->length & ~FLAGS) | HOLE);
+        }
     }
-done:
     allocation->ptr = NULL;
 }
 
