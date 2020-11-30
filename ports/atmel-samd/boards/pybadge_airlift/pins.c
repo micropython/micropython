@@ -30,12 +30,6 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_PA22)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PA23)},
 
-    // ESP UART
-    {MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RX), MP_ROM_PTR(&pin_PB17)},
-    {MP_OBJ_NEW_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PB17)},
-    {MP_OBJ_NEW_QSTR(MP_QSTR_ESP_TX), MP_ROM_PTR(&pin_PB16)},
-    {MP_OBJ_NEW_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PB16)},
-
     // I2C
     {MP_OBJ_NEW_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA12)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA13)},
@@ -60,6 +54,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_ESP_GPIO0), MP_ROM_PTR(&pin_PA31)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_ESP_BUSY), MP_ROM_PTR(&pin_PA00)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RESET), MP_ROM_PTR(&pin_PB12)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_ESP_TX), MP_ROM_PTR(&pin_PB16)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RX), MP_ROM_PTR(&pin_PB17)},
 
     // TFT control pins
     {MP_OBJ_NEW_QSTR(MP_QSTR_TFT_LITE), MP_ROM_PTR(&pin_PA01)},
@@ -71,7 +67,6 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     {MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj)},
     {MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj)},
-    {MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj)},
 
     {MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].display)}};
 MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
