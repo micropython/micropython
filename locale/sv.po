@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-24 15:40-0500\n"
-"PO-Revision-Date: 2020-11-20 22:28+0000\n"
+"PO-Revision-Date: 2020-11-30 18:06+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -871,7 +871,7 @@ msgstr "FFT är enbart definierade för ndarrays"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "FFT is implemented for linear arrays only"
-msgstr ""
+msgstr "FTT är enbart implementerad för linjära matriser"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
@@ -1282,7 +1282,7 @@ msgstr "Måste använda ett multipel av 6 rgb-pinnar, inte %d"
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
-msgstr ""
+msgstr "NVS-fel"
 
 #: py/parse.c
 msgid "Name too long"
@@ -1442,7 +1442,7 @@ msgstr "Endast IPv4-adresser stöds"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Endast IPv4-socket stöds"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -2099,7 +2099,7 @@ msgstr "argumentet argsort måste vara en ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr ""
+msgstr "argsort är inte implementerad för tillplattade matriser"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -2124,7 +2124,7 @@ msgstr "argumenten måste vara ndarray"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr ""
+msgstr "array och indexlängd måste vara lika"
 
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -2132,7 +2132,7 @@ msgstr "array/bytes krävs på höger sida"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
-msgstr ""
+msgstr "försök att läsa (arg)min/(arg)max av tom sekvens"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
@@ -2144,15 +2144,15 @@ msgstr "attribut stöds inte än"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis is out of bounds"
-msgstr ""
+msgstr "axis är utanför gränsen"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be None, or an integer"
-msgstr ""
+msgstr "axis måste vara None eller ett heltal"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis too long"
-msgstr ""
+msgstr "axis för lång"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2359,7 +2359,7 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
-msgstr ""
+msgstr "kan inte casta utdata med regel"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -2459,7 +2459,7 @@ msgstr "kan inte avgöra SD-kortversion"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
-msgstr ""
+msgstr "cross är definierad för 1D-matriser med längd 3"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
@@ -2503,7 +2503,7 @@ msgstr "argumentet diff måste vara en ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "differentiation order out of range"
-msgstr ""
+msgstr "differentieringsordning utanför intervallet"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -2622,7 +2622,7 @@ msgstr "första argumentet måste vara en funktion"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr ""
+msgstr "första argumentet måste vara en tupel av ndarray"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
@@ -2679,7 +2679,7 @@ msgstr "funktionen har samma teckenvärden vid slutet av intervall"
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr ""
+msgstr "funktionen är enbart definierad för ndarray"
 
 #: py/argcheck.c
 #, c-format
@@ -2775,7 +2775,7 @@ msgstr "inline assembler måste vara en funktion"
 
 #: extmod/ulab/code/ndarray.c
 msgid "input and output shapes are not compatible"
-msgstr ""
+msgstr "indata- och utdataformer är inte kompatibla"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
@@ -2787,7 +2787,7 @@ msgstr "indataarraylängden måste vara en multipel av 2"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input arrays are not compatible"
-msgstr ""
+msgstr "indatamatriser är inte kompatibla"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
@@ -2803,19 +2803,19 @@ msgstr "indatamatrisen är singulär"
 
 #: extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr ""
+msgstr "indata måste vara en dense ndarray"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input must be a tensor of rank 2"
-msgstr ""
+msgstr "indata måste vara en tensor av rank 2"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
-msgstr ""
+msgstr "indata måste vara en ndarray"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "input must be one-dimensional"
-msgstr ""
+msgstr "indata måste vara endimensionell"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
@@ -2831,7 +2831,7 @@ msgstr "indatavektorer måste ha samma längd"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "inputs are not iterable"
-msgstr ""
+msgstr "indata är inte iterbara"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -3006,7 +3006,7 @@ msgstr "max_length måste vara > 0"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
-msgstr ""
+msgstr "maximalt antal dimensioner är 4"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3141,7 +3141,7 @@ msgstr "icke nyckelord arg efter nyckelord arg"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
-msgstr ""
+msgstr "norm är definierad för 1D- och 2D-matriser"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
@@ -3209,7 +3209,7 @@ msgstr "sträng har udda längd"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
-msgstr ""
+msgstr "offset är för stor"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3235,11 +3235,11 @@ msgstr "operander kan inte sändas tillsammans"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
+msgstr "operationen är enbart implementerad för 1D Boolean-matriser"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented for flattened array"
-msgstr ""
+msgstr "operationen inte implementeras för tillplattad matris"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3378,7 +3378,7 @@ msgstr "begärd längd %d men objektet har längden %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
-msgstr ""
+msgstr "resultaten kan inte castas till angiven typ"
 
 #: py/compile.c
 msgid "return annotation must be an identifier"
@@ -3400,7 +3400,7 @@ msgstr "rgb_pins[%d] är inte på samma port som en klocka"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "roll argument must be an ndarray"
-msgstr ""
+msgstr "argumentet roll måste vara en ndarray"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -3428,7 +3428,7 @@ msgstr "skriptkompilering stöds inte"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
-msgstr ""
+msgstr "shape måste vara en tuple"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3577,7 +3577,7 @@ msgstr "timestamp utom räckvidd för plattformens \"time_t\""
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
-msgstr ""
+msgstr "tobyte kan enbart anropas för täta matriser"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
@@ -3756,11 +3756,11 @@ msgstr "window måste vara <= interval"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "wrong axis index"
-msgstr ""
+msgstr "fel axelindex"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "wrong axis specified"
-msgstr ""
+msgstr "fel axel angiven"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"

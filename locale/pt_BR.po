@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-24 15:40-0500\n"
-"PO-Revision-Date: 2020-11-24 23:22+0000\n"
+"PO-Revision-Date: 2020-11-30 18:06+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1451,7 +1451,7 @@ msgstr "Somente os endereços IPv4 são suportados"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Apenas soquetes IPv4 são suportados"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
