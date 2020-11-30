@@ -167,6 +167,12 @@ STATIC mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
+STATIC mp_obj_t task_done(mp_obj_t self_in) {
+    mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(TASK_IS_DONE(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_done_obj, task_done);
+
 STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     // Check if task is already finished.
@@ -242,6 +248,9 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             if (self->waiting != mp_const_none && self->waiting != mp_const_false) {
                 dest[0] = self->waiting;
             }
+        } else if (attr == MP_QSTR_done) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_done_obj);
+            dest[1] = self_in;
         } else if (attr == MP_QSTR_cancel) {
             dest[0] = MP_OBJ_FROM_PTR(&task_cancel_obj);
             dest[1] = self_in;

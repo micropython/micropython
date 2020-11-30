@@ -148,6 +148,9 @@ class Task:
             # Set calling task's data to this task that it waits on, to double-link it.
             core.cur_task.data = self
 
+    def done(self):
+        return self.coro is self
+
     def cancel(self):
         # Check if task is already finished.
         if self.coro is self:
