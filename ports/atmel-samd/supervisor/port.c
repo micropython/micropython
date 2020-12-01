@@ -390,8 +390,8 @@ void reset_cpu(void) {
     reset();
 }
 
-supervisor_allocation* port_fixed_stack(void) {
-    return NULL;
+bool port_has_fixed_stack(void) {
+    return false;
 }
 
 uint32_t *port_stack_get_limit(void) {
