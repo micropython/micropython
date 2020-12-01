@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-24 15:40-0500\n"
 "PO-Revision-Date: 2020-12-01 19:53+0000\n"
-"Last-Translator: Szymon Jakubiak <sz.a.jakubiak@gmail.com>\n"
+"Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
@@ -3197,7 +3197,7 @@ msgstr "tylko fragmenty ze step=1 (lub None) są wspierane"
 #: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
 #: extmod/ulab/code/vector/vectorise.c
 msgid "operands could not be broadcast together"
-msgstr ""
+msgstr "operandy nie mogły być rozgłaszane razem"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
@@ -3433,7 +3433,7 @@ msgstr "programowy reset\n"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr ""
+msgstr "argument sort musi być ndarray"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
@@ -3741,7 +3741,7 @@ msgstr "zła liczba wartości do rozpakowania"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
-msgstr ""
+msgstr "zły typ operandu"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong output type"
