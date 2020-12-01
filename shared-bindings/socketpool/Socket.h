@@ -35,6 +35,10 @@ void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_u
 bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const char* host, size_t hostlen, mp_int_t port);
 mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);
+mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t* self,
+    const char* host, size_t hostlen, uint8_t port, const uint8_t* buf, mp_uint_t len);
+mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* self,
+    uint8_t* buf, mp_uint_t len, uint8_t* ip, uint *port);
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self);
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t* self);
 bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t* self);

@@ -30,17 +30,19 @@ Connect these pins using a [USB adapter](https://www.adafruit.com/product/4090) 
 
 ## Building and flashing ##
 
-Before building or flashing the ESP32-S2, you must [install the esp-idf](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html). This must be re-done ever time the esp-idf is updated, but not every time you build. Run `cd ports/esp32s2` from `circuitpython/` to move to the esp32s2 port root, and run:
+Before building or flashing the ESP32-S2, you must [install the esp-idf](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html). This must be re-done every time the esp-idf is updated, but not every time you build. Run `cd ports/esp32s2` from `circuitpython/` to move to the esp32s2 port root, and run:
 
 ```
 ./esp-idf/install.sh
 ```
 
-Additionally, any time you open a new bash environment for building or flashing, you must add the esp-idf tools to your path:
+After this initial installation, you must add the esp-idf tools to your path. You must also do this **any time you open a new bash environment for building or flashing**:
 
 ```
 . esp-idf/export.sh
 ```
+
+When Circuitpython updates the ESP-IDF to a new release, you may need to run this installation process again. The exact commands used may also vary based on your bash environment.
 
 Building boards such as the Saola is typically done through `make flash`. The default port is `tty.SLAB_USBtoUART`, which will only work on certain Mac setups. On most machines, both Mac and Linux, you will need to set the port yourself by running `ls /dev/tty.usb*` and selecting the one that only appears when your development board is plugged in. An example make command with the port setting is as follows:
 

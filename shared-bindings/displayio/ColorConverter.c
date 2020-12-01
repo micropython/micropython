@@ -116,7 +116,7 @@ const mp_obj_property_t displayio_colorconverter_dither_obj = {
 STATIC mp_obj_t displayio_colorconverter_make_transparent(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t transparent_color = mp_obj_get_int(&transparent_color);
+    mp_int_t transparent_color = mp_obj_get_int(transparent_color_obj);
     common_hal_displayio_colorconverter_make_transparent(self, transparent_color);
     return mp_const_none;
 }
@@ -128,7 +128,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_make_transparent_obj, display
 STATIC mp_obj_t displayio_colorconverter_make_opaque(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t transparent_color = mp_obj_get_int(&transparent_color);
+    mp_int_t transparent_color = mp_obj_get_int(transparent_color_obj);
     common_hal_displayio_colorconverter_make_opaque(self, transparent_color);
     return mp_const_none;
 }

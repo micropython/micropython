@@ -102,17 +102,17 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const 
         n_kw = kw_args->used;
     }
     if (n_args + n_kw != num_fields) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
-        } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL) {
+        #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
             mp_raise_TypeError_varg(
                 translate("function takes %d positional arguments but %d were given"),
                 num_fields, n_args + n_kw);
-        } else if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED) {
+        #else
             mp_raise_TypeError_varg(
                 translate("%q() takes %d positional arguments but %d were given"),
                 type->base.name, num_fields, n_args + n_kw);
-        }
+        #endif
     }
 
     // Create a tuple and set the type to this namedtuple
@@ -128,20 +128,20 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const 
         qstr kw = mp_obj_str_get_qstr(kw_args->table[i].key);
         size_t id = mp_obj_namedtuple_find_field(type, kw);
         if (id == (size_t)-1) {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_arg_error_terse_mismatch();
-            } else {
+            #else
                 mp_raise_TypeError_varg(
                     translate("unexpected keyword argument '%q'"), kw);
-            }
+            #endif
         }
         if (tuple->items[id] != MP_OBJ_NULL) {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_arg_error_terse_mismatch();
-            } else {
+            #else
                 mp_raise_TypeError_varg(
                     translate("function got multiple values for argument '%q'"), kw);
-            }
+            #endif
         }
         tuple->items[id] = kw_args->table[i].value;
     }

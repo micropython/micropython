@@ -55,7 +55,7 @@ uint8_t displayio_colorconverter_compute_luma(uint32_t color_rgb888) {
     uint32_t r8 = (color_rgb888 >> 16);
     uint32_t g8 = (color_rgb888 >> 8) & 0xff;
     uint32_t b8 = color_rgb888 & 0xff;
-    return (r8 * 19) / 255 + (g8 * 182) / 255 + (b8 + 54) / 255;
+    return (r8 * 19 + g8 * 182 + b8 * 54) / 255;
 }
 
 uint8_t displayio_colorconverter_compute_chroma(uint32_t color_rgb888) {
@@ -165,9 +165,9 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
             g8 = MIN(255,g8 + (randg&0x03));
         } else {
             int bitmask = 0xFF >> colorspace->depth;
-            b8 = MIN(255,b8 + (randb&bitmask));
-            r8 = MIN(255,r8 + (randr&bitmask));
-            g8 = MIN(255,g8 + (randg&bitmask));
+            b8 = MIN(255,b8 + (randb & bitmask));
+            r8 = MIN(255,r8 + (randr & bitmask));
+            g8 = MIN(255,g8 + (randg & bitmask));
         }
         pixel = r8 << 16 | g8 << 8 | b8;
     }
@@ -196,7 +196,8 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
         return;
     }  else if (colorspace->grayscale && colorspace->depth <= 8) {
         uint8_t luma = displayio_colorconverter_compute_luma(pixel);
-        output_color->pixel = luma >> (8 - colorspace->depth);
+        size_t bitmask = (1 << colorspace->depth) - 1;
+        output_color->pixel = (luma >> colorspace->grayscale_bit) & bitmask;
         output_color->opaque = true;
         return;
     }

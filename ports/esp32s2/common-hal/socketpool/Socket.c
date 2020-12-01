@@ -32,6 +32,11 @@
 #include "py/runtime.h"
 #include "supervisor/shared/tick.h"
 
+#include "components/lwip/lwip/src/include/lwip/err.h"
+#include "components/lwip/lwip/src/include/lwip/sockets.h"
+#include "components/lwip/lwip/src/include/lwip/sys.h"
+#include "components/lwip/lwip/src/include/lwip/netdb.h"
+
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_uint_t timeout_ms) {
     self->timeout_ms = timeout_ms;
 }
@@ -79,15 +84,15 @@ mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const
 
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len) {
     size_t received = 0;
-    ssize_t last_read = 1;
+    int status = 0;
     uint64_t start_ticks = supervisor_ticks_ms64();
     int sockfd;
     esp_err_t err = esp_tls_get_conn_sockfd(self->tcp, &sockfd);
     if (err != ESP_OK) {
         mp_raise_OSError(MP_EBADF);
     }
-    while (received < len &&
-           last_read > 0 &&
+    while (received == 0 &&
+           status >= 0 &&
            (self->timeout_ms == 0 || supervisor_ticks_ms64() - start_ticks <= self->timeout_ms) &&
            !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
@@ -95,30 +100,87 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
         if (available == 0) {
             // This reads the raw socket buffer and is used for non-TLS connections
             // and between encrypted TLS blocks.
-            int status = lwip_ioctl(sockfd, FIONREAD, &available);
-            if (status < 0) {
-                last_read = status;
-                break;
-            }
+            status = lwip_ioctl(sockfd, FIONREAD, &available);
         }
         size_t remaining = len - received;
         if (available > remaining) {
             available = remaining;
         }
         if (available > 0) {
-            last_read = esp_tls_conn_read(self->tcp, (void*) buf + received, available);
-            received += last_read;
+            status = esp_tls_conn_read(self->tcp, (void*) buf + received, available);
+            if (status == 0) {
+                // Reading zero when something is available indicates a closed
+                // connection. (The available bytes could have been TLS internal.)
+                break;
+            }
+            if (status > 0) {
+                received += status;
+            }
         }
     }
 
-    if (last_read == 0) {
+    if (received == 0) {
         // socket closed
         common_hal_socketpool_socket_close(self);
     }
-    if (last_read < 0) {
+    if (status < 0) {
         mp_raise_BrokenPipeError();
     }
     return received;
+}
+
+mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t* self,
+    const char* host, size_t hostlen, uint8_t port, const uint8_t* buf, mp_uint_t len) {
+
+    // Get the IP address string
+    const struct addrinfo hints = {
+        .ai_family = AF_INET,
+        .ai_socktype = SOCK_STREAM,
+    };
+    struct addrinfo *result;
+    int error = lwip_getaddrinfo(host, NULL, &hints, &result);
+    if (error != 0 || result == NULL) {
+        return 0;
+    }
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
+    struct in_addr *addr = &((struct sockaddr_in *)result->ai_addr)->sin_addr;
+    #pragma GCC diagnostic pop
+    char ip_str[IP4ADDR_STRLEN_MAX];
+    inet_ntoa_r(*addr, ip_str, IP4ADDR_STRLEN_MAX);
+    freeaddrinfo(result);
+
+    // Set parameters
+    struct sockaddr_in dest_addr;
+    dest_addr.sin_addr.s_addr = inet_addr((const char *)ip_str);
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = htons(port);
+
+    int bytes_sent = lwip_sendto(self->num, buf, len, 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+    if (bytes_sent < 0) {
+        mp_raise_BrokenPipeError();
+        return 0;
+    }
+    return bytes_sent;
+}
+
+mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* self,
+    uint8_t* buf, mp_uint_t len, uint8_t* ip, uint *port) {
+
+    struct sockaddr_in source_addr;
+    socklen_t socklen = sizeof(source_addr);
+    int bytes_received = lwip_recvfrom(self->num, buf, len - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+
+    memcpy((void *)ip, (void*)&source_addr.sin_addr.s_addr, sizeof source_addr.sin_addr.s_addr);
+    *port = source_addr.sin_port;
+
+    if (bytes_received < 0) {
+        mp_raise_BrokenPipeError();
+        return 0;
+    } else {
+        buf[bytes_received] = 0; // Null-terminate whatever we received
+        return bytes_received;
+    }
 }
 
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
@@ -127,10 +189,15 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
         esp_tls_conn_destroy(self->tcp);
         self->tcp = NULL;
     }
+    if (self->num >= 0) {
+        lwip_shutdown(self->num, 0);
+        lwip_close(self->num);
+        self->num = -1;
+    }
 }
 
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t* self) {
-    return self->tcp == NULL;
+    return self->tcp == NULL && self->num < 0;
 }
 
 

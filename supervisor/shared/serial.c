@@ -47,8 +47,6 @@ busio_uart_obj_t debug_uart;
 byte buf_array[64];
 #endif
 
-volatile bool _serial_connected;
-
 void serial_early_init(void) {
 #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     debug_uart.base.type = &busio_uart_type;
@@ -71,7 +69,9 @@ bool serial_connected(void) {
 #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
     return true;
 #else
-    return _serial_connected;
+    // True if DTR is asserted, and the USB connection is up.
+    // tud_cdc_get_line_state(): bit 0 is DTR, bit 1 is RTS
+    return (tud_cdc_get_line_state() & 1) && tud_ready();
 #endif
 }
 
