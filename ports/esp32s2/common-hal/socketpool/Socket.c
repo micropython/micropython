@@ -64,6 +64,18 @@ bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const c
         } else {
             mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, result);
         }
+    } else {
+        // Connection successful, set the timeout on the underlying socket. We can't rely on the IDF
+        // to do it because the config structure is only used for TLS connections. Generally, we
+        // shouldn't hit this timeout because we try to only read available data. However, there is
+        // always a chance that we try to read something that is used internally.
+        int fd;
+        esp_tls_get_conn_sockfd(self->tcp, &fd);
+        struct timeval tv;
+        tv.tv_sec = 2 * 60; // Two minutes
+        tv.tv_usec = 0;
+        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
     }
 
     return self->connected;
@@ -122,9 +134,6 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
     if (received == 0) {
         // socket closed
         common_hal_socketpool_socket_close(self);
-    }
-    if (status < 0) {
-        mp_raise_BrokenPipeError();
     }
     return received;
 }
