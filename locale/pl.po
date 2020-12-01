@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-24 15:40-0500\n"
 "PO-Revision-Date: 2020-12-01 19:56+0000\n"
-"Last-Translator: Szymon Jakubiak <sz.a.jakubiak@gmail.com>\n"
+"Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
@@ -132,7 +132,7 @@ msgstr "'%q' obiekt nie wspiera dopisywania elementów"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr "'%q' obiekt nie umożliwia kasowania elementów"
+msgstr "obiekt '%q' nie wspiera usuwania elementów"
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
