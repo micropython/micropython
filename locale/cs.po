@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-24 15:40-0500\n"
-"PO-Revision-Date: 2020-11-30 18:06+0000\n"
+"PO-Revision-Date: 2020-12-02 20:29+0000\n"
 "Last-Translator: vkuthan <vit.kuthan@seznam.cz>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: cs\n"
@@ -122,35 +122,35 @@ msgstr ""
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "Objekt '%q' nepodporuje '%q'"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
-msgstr ""
+msgstr "Objekt '%q' nepodporuje přiřazení položek"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr ""
+msgstr "Objekt '%q' nepodporuje mazání položek"
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
-msgstr ""
+msgstr "Objekt '%q' nemá žádný atribut"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "Objekt '%q' není iterátor"
 
 #: py/objtype.c py/runtime.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "Objekt '%q' nelze volat"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
+msgstr "Objekt '%q' není iterovatelný"
 
 #: py/obj.c
 msgid "'%q' object is not subscriptable"
-msgstr ""
+msgstr "Objekt '%q' nelze zapsat"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -170,17 +170,17 @@ msgstr ""
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an FPU register"
-msgstr ""
+msgstr "'%s' očekává register FPU"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an address of the form [a, b]"
-msgstr ""
+msgstr "'%s' očekává adresu ve formátu [a, b]"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
-msgstr ""
+msgstr "'%s' očekává integer (celé číslo)"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -190,7 +190,7 @@ msgstr ""
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s' očekává {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
