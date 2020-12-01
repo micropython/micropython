@@ -9,24 +9,44 @@ async def wait_for(aw, timeout, sleep=core.sleep):
     if timeout is None:
         return await aw
 
-    def cancel(aw, timeout, sleep):
-        await sleep(timeout)
-        aw.cancel()
+    def runner(waiter, aw):
+        nonlocal status, result
+        try:
+            result = await aw
+            s = True
+        except BaseException as er:
+            s = er
+        if status is None:
+            # The waiter is still waiting, set status for it and cancel it.
+            status = s
+            waiter.cancel()
 
-    cancel_task = core.create_task(cancel(aw, timeout, sleep))
+    # Run aw in a separate runner task that manages its exceptions.
+    status = None
+    result = None
+    runner_task = core.create_task(runner(core.cur_task, aw))
+
     try:
-        ret = await aw
-    except core.CancelledError:
-        # Ignore CancelledError from aw, it's probably due to timeout
-        pass
-    finally:
-        # Cancel the "cancel" task if it's still active (optimisation instead of cancel_task.cancel())
-        if cancel_task.coro is not cancel_task:
-            core._task_queue.remove(cancel_task)
-    if cancel_task.coro is cancel_task:
-        # Cancel task ran to completion, ie there was a timeout
-        raise core.TimeoutError
-    return ret
+        # Wait for the timeout to elapse.
+        await sleep(timeout)
+    except core.CancelledError as er:
+        if status is True:
+            # aw completed successfully and cancelled the sleep, so return aw's result.
+            return result
+        elif status is None:
+            # This wait_for was cancelled externally, so cancel aw and re-raise.
+            status = True
+            runner_task.cancel()
+            raise er
+        else:
+            # aw raised an exception, propagate it out to the caller.
+            raise status
+
+    # The sleep finished before aw, so cancel aw and raise TimeoutError.
+    status = True
+    runner_task.cancel()
+    await runner_task
+    raise core.TimeoutError
 
 
 def wait_for_ms(aw, timeout):

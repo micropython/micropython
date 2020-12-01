@@ -434,7 +434,10 @@ def run_tests(pyb, tests, args, result_dir):
         skip_tests.add('basics/scope_implicit.py') # requires checking for unbound local
         skip_tests.add('basics/try_finally_return2.py') # requires raise_varargs
         skip_tests.add('basics/unboundlocal.py') # requires checking for unbound local
+        skip_tests.add('extmod/uasyncio_event.py') # unknown issue
         skip_tests.add('extmod/uasyncio_lock.py') # requires async with
+        skip_tests.add('extmod/uasyncio_micropython.py') # unknown issue
+        skip_tests.add('extmod/uasyncio_wait_for.py') # unknown issue
         skip_tests.add('misc/features.py') # requires raise_varargs
         skip_tests.add('misc/print_exception.py') # because native doesn't have proper traceback info
         skip_tests.add('misc/sys_exc_info.py') # sys.exc_info() is not supported for native
