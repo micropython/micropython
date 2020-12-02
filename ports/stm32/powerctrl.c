@@ -32,7 +32,11 @@
 
 #if defined(STM32H7)
 #define RCC_SR          RSR
+#if defined(STM32H743xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
+#elif defined(STM32H747xx)
+#define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
+#endif
 #define RCC_SR_RMVF     RCC_RSR_RMVF
 #else
 #define RCC_SR          CSR
