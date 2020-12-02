@@ -517,6 +517,9 @@ void powerctrl_enter_stop_mode(void) {
     #endif
 
     #if defined(STM32H7)
+    // Save RCC CR to re-enable OSCs and PLLs after wake up from low power mode.
+    uint32_t rcc_cr = RCC->CR;
+
     // Save the current voltage scaling level to restore after exiting low power mode.
     uint32_t vscaling = POWERCTRL_GET_VOLTAGE_SCALING();
 
@@ -607,9 +610,39 @@ void powerctrl_enter_stop_mode(void) {
     #endif
 
     #if defined(STM32H7)
-    // Enable PLL3 for USB
-    RCC->CR |= RCC_CR_PLL3ON;
-    while (!(RCC->CR & RCC_CR_PLL3RDY)) {
+    // Enable HSI
+    if (rcc_cr & RCC_CR_HSION) {
+        RCC->CR |= RCC_CR_HSION;
+        while (!(RCC->CR & RCC_CR_HSIRDY)) {
+        }
+    }
+
+    // Enable CSI
+    if (rcc_cr & RCC_CR_CSION) {
+        RCC->CR |= RCC_CR_CSION;
+        while (!(RCC->CR & RCC_CR_CSIRDY)) {
+        }
+    }
+
+    // Enable HSI48
+    if (rcc_cr & RCC_CR_HSI48ON) {
+        RCC->CR |= RCC_CR_HSI48ON;
+        while (!(RCC->CR & RCC_CR_HSI48RDY)) {
+        }
+    }
+
+    // Enable PLL2
+    if (rcc_cr & RCC_CR_PLL2ON) {
+        RCC->CR |= RCC_CR_PLL2ON;
+        while (!(RCC->CR & RCC_CR_PLL2RDY)) {
+        }
+    }
+
+    // Enable PLL3
+    if (rcc_cr & RCC_CR_PLL3ON) {
+        RCC->CR |= RCC_CR_PLL3ON;
+        while (!(RCC->CR & RCC_CR_PLL3RDY)) {
+        }
     }
     #endif
 
