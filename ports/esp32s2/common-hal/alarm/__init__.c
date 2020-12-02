@@ -29,15 +29,16 @@
 #include "py/objtuple.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/time/__init__.h"
+#include "shared-bindings/wifi/__init__.h"
+
+#include "common-hal/alarm/__init__.h"
 
 #include "esp_log.h"
 #include "esp_sleep.h"
-#include "esp_wifi.h"
 
 STATIC mp_obj_tuple_t *_deep_sleep_alarms;
 
@@ -101,7 +102,7 @@ STATIC void setup_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms) {
         mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
         mp_float_t wakeup_in_secs = MAX(0.0f, time_alarm->monotonic_time - now_secs);
         const uint64_t sleep_for_us = (uint64_t) (wakeup_in_secs * 1000000);
-        ESP_LOGI("ALARM", "Sleep for us: %lld", sleep_for_us);
+        ESP_LOGI("ALARM", "will sleep for us: %lld", sleep_for_us);
         esp_sleep_enable_timer_wakeup(sleep_for_us);
     }
 }
@@ -157,25 +158,41 @@ mp_obj_t common_hal_alarm_wait_until_alarms(size_t n_alarms, const mp_obj_t *ala
     return mp_const_none;
 }
 
-mp_obj_t common_hal_alarm_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
+// Is it safe to do a light sleep? Check whether WiFi is on or there are
+// other ongoing tasks that should not be shut down.
+static bool light_sleep_ok(void) {
+    return !common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj);
+}
+
+mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     if (n_alarms == 0) {
         return mp_const_none;
     }
 
-    setup_sleep_alarms(n_alarms, alarms);
-
-    // Shut down wifi cleanly.
-    esp_wifi_stop();
-    ESP_LOGI("ALARM", "start light sleep");
-    esp_light_sleep_start();
-    return common_hal_alarm_get_wake_alarm();
+    if (light_sleep_ok()) {
+        ESP_LOGI("ALARM", "start light sleep");
+        setup_sleep_alarms(n_alarms, alarms);
+        esp_light_sleep_start();
+        return common_hal_alarm_get_wake_alarm();
+    } else {
+        // Don't do an ESP32 light sleep.
+        return common_hal_alarm_wait_until_alarms(n_alarms, alarms);
+    }
 }
 
 void common_hal_alarm_exit_and_deep_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     setup_sleep_alarms(n_alarms, alarms);
 
-    // Shut down wifi cleanly.
-    esp_wifi_stop();
+    // Raise an exception, which will be processed in main.c.
+    mp_raise_arg1(&mp_type_DeepSleepRequest, NULL);
+}
+
+void common_hal_alarm_prepare_for_deep_sleep(void) {
+    // Turn off WiFi and anything else that should be shut down cleanly.
+    common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, false);
+}
+
+void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     ESP_LOGI("ALARM", "start deep sleep");
     esp_deep_sleep_start();
 }

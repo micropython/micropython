@@ -291,11 +291,21 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             }
         }
         #endif
+
+        // TODO: on deep sleep, make sure display is refreshed before sleeping (for e-ink).
+
         cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             return reload_requested;
         }
+
+        #if CIRCUITPY_ALARM
+        if (result.return_code & PYEXEC_DEEP_SLEEP) {
+            common_hal_alarm_enter_deep_sleep();
+            // Does not return.
+        }
+        #endif
     }
 
     // Program has finished running.

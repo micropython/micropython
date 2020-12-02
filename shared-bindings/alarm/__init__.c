@@ -43,19 +43,21 @@
 //|
 //| Provides alarms that trigger based on time intervals or on external events, such as pin
 //| changes.
-//| The program can simply wait for these alarms, or go into a sleep state and
-//| and be awoken when they trigger.
+//| The program can simply wait for these alarms, or go to sleep and be awoken when they trigger.
 //|
 //| There are two supported levels of sleep: light sleep and deep sleep.
 //|
-//| Light sleep leaves the CPU and RAM powered so the program can resume after sleeping.
-//|
-//| *However, note that on some platforms, light sleep will shut down some communications, including
-//| WiFi and/or Bluetooth.*
+//| Light sleep keeps sufficient state so the program can resume after sleeping.
+//| It does not shut down WiFi, BLE, or other communications, or ongoing activities such
+//| as audio playback. It reduces power consumption to the extent possible that leaves
+//| these continuing activities running. In some cases there may be no decrease in power consumption.
 //|
 //| Deep sleep shuts down power to nearly all of the microcontroller including the CPU and RAM. This can save
 //| a more significant amount of power, but CircuitPython must restart ``code.py`` from the beginning when
 //| awakened.
+//|
+//| For both light sleep and deep sleep, if CircuitPython is connected to a host computer,
+//| maintaining the connection takes priority and power consumption may not be reduced.
 //| """
 
 //|
@@ -75,45 +77,39 @@ void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     }
 }
 
-//| def wait_until_alarms(*alarms: Alarm) -> Alarm:
-//|     """Wait for one of the alarms to trigger. The triggering alarm is returned.
-//|     is returned, and is also available as `alarm.wake_alarm`. Nothing is shut down
-//|     or interrupted. Power consumption will be reduced if possible.
-//|
-//|     If no alarms are specified, return immediately.
-//|     """
-//|     ...
-//|
-STATIC mp_obj_t alarm_wait_until_alarms(size_t n_args, const mp_obj_t *args) {
-    validate_objs_are_alarms(n_args, args);
-    common_hal_alarm_wait_until_alarms(n_args, args);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_wait_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_wait_until_alarms);
-
-//| def sleep_until_alarms(*alarms: Alarm) -> Alarm:
+//| def light_sleep_until_alarms(*alarms: Alarm) -> Alarm:
 //|     """Go into a light sleep until awakened one of the alarms. The alarm causing the wake-up
 //|     is returned, and is also available as `alarm.wake_alarm`.
 //|
-//|     Some functionality may be shut down during sleep. On ESP32-S2, WiFi is turned off,
-//|     and existing connections are broken.
-//|
 //|     If no alarms are specified, return immediately.
 //|
-//|     **If CircuitPython is connected to a host computer,** `alarm.sleep_until_alarms()`
-//|     **does not go into light sleep.**
-//|     Instead, light sleep is simulated by doing `alarm.wait_until_alarms()`,
+//|     **If CircuitPython is connected to a host computer, the connection will be maintained,
+//|     and the microcontroller may not actually go into a light sleep.**
 //|     This allows the user to interrupt an existing program with ctrl-C,
-//|     and to edit the files in CIRCUITPY, which would not be possible in true light sleep
+//|     and to edit the files in CIRCUITPY, which would not be possible in true light sleep.
+//|     Thus, to use light sleep and save significant power,
+//      it may be necessary to disconnect from the host.
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t alarm_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
     validate_objs_are_alarms(n_args, args);
-    common_hal_alarm_sleep_until_alarms(n_args, args);
+
+    // See if we are connected to a host.
+    // Make sure we have been awake long enough for USB to connect (enumeration delay).
+    int64_t connecting_delay_msec = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - supervisor_ticks_ms64();
+    if (connecting_delay_msec > 0) {
+        common_hal_time_delay_ms(connecting_delay_msec * 1000 / 1024);
+    }
+
+    if (supervisor_workflow_active()) {
+        common_hal_alarm_wait_until_alarms(n_args, args);
+    } else {
+        common_hal_alarm_light_sleep_until_alarms(n_args, args);
+    }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_sleep_until_alarms);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_light_sleep_until_alarms);
 
 //| def exit_and_deep_sleep_until_alarms(*alarms: Alarm) -> None:
 //|     """Exit the program and go into a deep sleep, until awakened by one of the alarms.
@@ -130,11 +126,10 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_sleep_until_alarms_obj, 1, MP_OBJ_FUN_
 //|     If no alarms are specified, the microcontroller will deep sleep until reset.
 //|
 //|     **If CircuitPython is connected to a host computer, `alarm.exit_and_deep_sleep_until_alarms()`
-//|     does not go into deep sleep.**
-//|     Instead, deep sleep is simulated by first doing `alarm.wait_until_alarms()`,
-//|     and then, when an alarm triggers, by restarting CircuitPython.
+//|     then the connection will be maintained, and the system will not go into deep sleep.**
 //|     This allows the user to interrupt an existing program with ctrl-C,
 //|     and to edit the files in CIRCUITPY, which would not be possible in true deep sleep.
+//|     Thus, to use deep sleep and save significant power, you will need to disconnect from the host.
 //|
 //|     Here is skeletal example that deep-sleeps and restarts every 60 seconds:
 //|
@@ -156,6 +151,10 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_sleep_until_alarms_obj, 1, MP_OBJ_FUN_
 STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
     validate_objs_are_alarms(n_args, args);
 
+    // Shut down WiFi, etc.
+    common_hal_alarm_prepare_for_deep_sleep();
+
+    // See if we are connected to a host.
     // Make sure we have been awake long enough for USB to connect (enumeration delay).
     int64_t connecting_delay_msec = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - supervisor_ticks_ms64();
     if (connecting_delay_msec > 0) {
@@ -163,6 +162,7 @@ STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_o
     }
 
     if (supervisor_workflow_active()) {
+        // Simulate deep sleep by waiting for an alarm and then restarting when done.
         common_hal_alarm_wait_until_alarms(n_args, args);
         reload_requested = true;
         supervisor_set_run_reason(RUN_REASON_STARTUP);
@@ -175,9 +175,6 @@ STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_exit_and_deep_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_exit_and_deep_sleep_until_alarms);
 
-//| """The `alarm.pin` module contains alarm attributes and classes related to pins.
-//| """
-//|
 STATIC const mp_map_elem_t alarm_pin_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pin) },
 
@@ -191,9 +188,6 @@ STATIC const mp_obj_module_t alarm_pin_module = {
     .globals = (mp_obj_dict_t*)&alarm_pin_globals,
 };
 
-//| """The `alarm.time` module contains alarm attributes and classes related to time-keeping.
-//| """
-//|
 STATIC const mp_map_elem_t alarm_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
@@ -213,7 +207,7 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
     // wake_alarm is a mutable attribute.
     { MP_ROM_QSTR(MP_QSTR_wake_alarm), mp_const_none },
 
-    { MP_ROM_QSTR(MP_QSTR_sleep_until_alarms), MP_OBJ_FROM_PTR(&alarm_sleep_until_alarms_obj) },
+    { MP_ROM_QSTR(MP_QSTR_light_sleep_until_alarms), MP_OBJ_FROM_PTR(&alarm_light_sleep_until_alarms_obj) },
     { MP_ROM_QSTR(MP_QSTR_exit_and_deep_sleep_until_alarms),
                                                MP_OBJ_FROM_PTR(&alarm_exit_and_deep_sleep_until_alarms_obj) },
 

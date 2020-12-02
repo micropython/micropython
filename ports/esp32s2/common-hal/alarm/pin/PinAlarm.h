@@ -29,7 +29,7 @@
 
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_tuple_t *pins;
+    mcu_pin_obj_t *pin;
     bool value;
     bool all_same_value;
     bool edge;
