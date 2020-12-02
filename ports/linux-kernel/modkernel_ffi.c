@@ -118,7 +118,7 @@ STATIC unsigned long convert_arg(mp_obj_t obj, size_t i) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
             "argument %d is not int/bool/None/str/bytes/Symbol"
 #ifdef INCLUDE_STRUCT_LAYOUT
-            "/StructPtr"
+            "/*Ptr"
 #endif
             , (int)i));
     }
