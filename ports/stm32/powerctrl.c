@@ -32,9 +32,9 @@
 
 #if defined(STM32H7)
 #define RCC_SR          RSR
-#if defined (STM32H743xx)
+#if defined(STM32H743xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
-#elif defined (STM32H747xx)
+#elif defined(STM32H747xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
 #endif
 #define RCC_SR_RMVF     RCC_RSR_RMVF
@@ -42,8 +42,8 @@
 // If the current voltage scale is VOLTAGE_SCALE1 and PWER_ODEN bit is set return VOLTAGE_SCALE0
 // otherwise the current voltage scaling (level VOS1 to VOS3) set in PWER_CSR is returned instead.
 #define POWERCTRL_GET_VOLTAGE_SCALING()     \
-    (((PWR->CSR1 & PWR_CSR1_ACTVOS) && (SYSCFG->PWRCR & SYSCFG_PWRCR_ODEN)) ?\
-     PWR_REGULATOR_VOLTAGE_SCALE0 : (PWR->CSR1 & PWR_CSR1_ACTVOS))
+    (((PWR->CSR1 & PWR_CSR1_ACTVOS) && (SYSCFG->PWRCR & SYSCFG_PWRCR_ODEN)) ? \
+    PWR_REGULATOR_VOLTAGE_SCALE0 : (PWR->CSR1 & PWR_CSR1_ACTVOS))
 #else
 #define RCC_SR          CSR
 #define RCC_SR_SFTRSTF  RCC_CSR_SFTRSTF
