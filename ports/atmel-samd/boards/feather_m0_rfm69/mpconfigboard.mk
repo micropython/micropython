@@ -21,11 +21,11 @@ CIRCUITPY_SAMD = 0
 CIRCUITPY_USB_MIDI = 0
 CIRCUITPY_USB_HID = 0
 CIRCUITPY_TOUCHIO = 0
+CIRCUITPY_BUSDEVICE = 1
 CFLAGS_INLINE_LIMIT = 35
 
 # Make more room.
 SUPEROPT_GC = 0
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_RFM69

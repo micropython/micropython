@@ -336,6 +336,13 @@ extern const struct _mp_obj_module_t board_module;
 #define BOARD_UART_ROOT_POINTER
 #endif
 
+#if CIRCUITPY_BUSDEVICE
+extern const struct _mp_obj_module_t adafruit_bus_device_module;
+#define BUSDEVICE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_bus_device), (mp_obj_t)&adafruit_bus_device_module },
+#else
+#define BUSDEVICE_MODULE
+#endif
+
 #if CIRCUITPY_BUSIO
 extern const struct _mp_obj_module_t busio_module;
 #define BUSIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module },
@@ -792,6 +799,7 @@ extern const struct _mp_obj_module_t wifi_module;
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
+    BUSDEVICE_MODULE \
     BUSIO_MODULE \
     CAMERA_MODULE \
     CANIO_MODULE \
