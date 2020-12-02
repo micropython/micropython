@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-24 15:40-0500\n"
+"POT-Creation-Date: 2020-11-27 23:57-0500\n"
 "PO-Revision-Date: 2020-11-27 18:34+0000\n"
 "Last-Translator: sporeball <sporeballdev@gmail.com>\n"
 "Language-Team: none\n"
@@ -856,6 +856,10 @@ msgstr "UUIDが必要"
 msgid "Expected an Address"
 msgstr "Addressが必要"
 
+#: shared-bindings/alarm/__init__.c
+msgid "Expected an alarm"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -1000,6 +1004,10 @@ msgstr "I2C初期化エラー"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOutが利用できません"
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1456,6 +1464,10 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "Only one alarm.time alarm can be set."
+msgstr ""
+
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr ""
@@ -1513,6 +1525,10 @@ msgstr "ピンはハードウェア割り込みに対応していなければな
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
 msgstr "ピン番号はすでにEXTIによって予約されています"
+
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "PinAlarm not yet implemented"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1575,7 +1591,7 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr "このボードはRTCのキャリブレーションに非対応"
 
-#: shared-bindings/time/__init__.c
+#: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "このボードはRTCに対応していません"
 
@@ -1721,6 +1737,10 @@ msgstr "ストリームにreadinto()またはwrite()メソッドがありませ�
 msgid "Supply at least one UART pin"
 msgstr "少なくとも1つのUARTピンが必要"
 
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Supply one of monotonic_time or epoch_time"
+msgstr ""
+
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
 msgstr "system引数はgnss.SatelliteSystemでなければなりません"
@@ -1789,6 +1809,10 @@ msgstr "タイル値が範囲外"
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "タイルの幅はビットマップの幅を割り切れる値でなければなりません"
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Time is in the past."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -2509,6 +2533,10 @@ msgstr ""
 msgid "end_x should be an int"
 msgstr "end_xは整数でなければなりません"
 
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "epoch_time not supported on this board"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
@@ -2878,6 +2906,10 @@ msgstr ""
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "数字として不正な構文"
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "io must be rtc io"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3569,6 +3601,10 @@ msgstr "アンパックする値が多すぎます (%d個を期待)"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapzは同じ長さの1次元arrayに対して定義されています"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "trigger level must be 0 or 1"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
 msgstr ""
@@ -3709,6 +3745,10 @@ msgstr "value_countは0より大きくなければなりません"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "wakeup conflict"
 msgstr ""
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
