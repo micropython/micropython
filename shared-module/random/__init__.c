@@ -44,7 +44,7 @@ STATIC uint32_t yasmarang(void)
 {
     if (yasmarang_pad == 0xeda4baba) {
         if (!common_hal_os_urandom((uint8_t *)&yasmarang_pad, sizeof(uint32_t))) {
-            yasmarang_pad = common_hal_time_monotonic() & 0xffffffff;
+            yasmarang_pad = common_hal_time_monotonic_ms() & 0xffffffff;
         }
     }
    yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;

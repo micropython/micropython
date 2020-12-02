@@ -14,6 +14,7 @@ LONGINT_IMPL = MPZ
 
 # These modules are implemented in ports/<port>/common-hal:
 CIRCUITPY_FULL_BUILD = 1
+CIRCUITPY_ALARM = 1
 CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_AUDIOIO = 0
 CIRCUITPY_CANIO = 1

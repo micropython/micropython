@@ -47,18 +47,28 @@
 #include "mpconfigboard.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/cpu.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
-#include "supervisor/filesystem.h"
+#include "supervisor/serial.h"
 #include "supervisor/shared/autoreload.h"
-#include "supervisor/shared/translate.h"
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/safe_mode.h"
-#include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/stack.h"
-#include "supervisor/serial.h"
+#include "supervisor/shared/status_leds.h"
+#include "supervisor/shared/translate.h"
+#include "supervisor/shared/workflow.h"
+#include "supervisor/usb.h"
+
+#include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Processor.h"
+#include "shared-bindings/supervisor/Runtime.h"
 
 #include "boards/board.h"
+
+#if CIRCUITPY_ALARM
+#include "shared-bindings/alarm/__init__.h"
+#endif
 
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
@@ -85,26 +95,6 @@
 #include "common-hal/canio/CAN.h"
 #endif
 
-void do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-    if (lex == NULL) {
-        //printf("MemoryError: lexer could not allocate memory\n");
-        return;
-    }
-
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        qstr source_name = lex->source_name;
-        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, MP_EMIT_OPT_NONE, true);
-        mp_call_function_0(module_fun);
-        nlr_pop();
-    } else {
-        // uncaught exception
-        mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-    }
-}
-
 #if MICROPY_ENABLE_PYSTACK
 static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
 #endif
@@ -115,9 +105,13 @@ static void reset_devices(void) {
 #endif
 }
 
-void start_mp(supervisor_allocation* heap) {
+STATIC void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
+    supervisor_workflow_reset();
+#if CIRCUITPY_ALARM
+    alarm_reset();
+#endif
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
@@ -166,7 +160,7 @@ void start_mp(supervisor_allocation* heap) {
     #endif
 }
 
-void stop_mp(void) {
+STATIC void stop_mp(void) {
     #if CIRCUITPY_NETWORK
     network_module_deinit();
     #endif
@@ -191,7 +185,7 @@ void stop_mp(void) {
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
-const char* first_existing_file_in_list(const char * const * filenames) {
+STATIC const char* first_existing_file_in_list(const char * const * filenames) {
     for (int i = 0; filenames[i] != (char*)""; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat == MP_IMPORT_STAT_FILE) {
@@ -201,7 +195,7 @@ const char* first_existing_file_in_list(const char * const * filenames) {
     return NULL;
 }
 
-bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result) {
+STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result) {
     const char* filename = first_existing_file_in_list(filenames);
     if (filename == NULL) {
         return false;
@@ -215,7 +209,7 @@ bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result
     return true;
 }
 
-void cleanup_after_vm(supervisor_allocation* heap) {
+STATIC void cleanup_after_vm(supervisor_allocation* heap) {
     // Reset port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
     // Turn off the display and flush the fileystem before the heap disappears.
@@ -244,7 +238,7 @@ void cleanup_after_vm(supervisor_allocation* heap) {
     reset_status_led();
 }
 
-void print_code_py_status_message(safe_mode_t safe_mode) {
+STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     if (autoreload_is_enabled()) {
         serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
     } else {
@@ -256,7 +250,7 @@ void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-bool run_code_py(safe_mode_t safe_mode) {
+STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
     if (serial_connected_at_start) {
@@ -276,10 +270,12 @@ bool run_code_py(safe_mode_t safe_mode) {
     if (safe_mode == NO_SAFE_MODE) {
         new_status_color(MAIN_RUNNING);
 
-        static const char * const supported_filenames[] = STRING_LIST("code.txt", "code.py", "main.py", "main.txt");
+        static const char * const supported_filenames[] = STRING_LIST(
+            "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
-        static const char * const double_extension_filenames[] = STRING_LIST("code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
-                                                    "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
+        static const char * const double_extension_filenames[] = STRING_LIST(
+            "code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
+            "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
         #endif
 
         stack_resize();
@@ -295,12 +291,24 @@ bool run_code_py(safe_mode_t safe_mode) {
             }
         }
         #endif
+
+        // TODO: on deep sleep, make sure display is refreshed before sleeping (for e-ink).
+
         cleanup_after_vm(heap);
 
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             return reload_requested;
         }
+
+        #if CIRCUITPY_ALARM
+        if (result.return_code & PYEXEC_DEEP_SLEEP) {
+            common_hal_alarm_enter_deep_sleep();
+            // Does not return.
+        }
+        #endif
     }
+
+    // Program has finished running.
 
     // Display a different completion message if the user has no USB attached (cannot save files)
     if (!serial_connected_at_start) {
@@ -311,24 +319,32 @@ bool run_code_py(safe_mode_t safe_mode) {
     #if CIRCUITPY_DISPLAYIO
     bool refreshed_epaper_display = false;
     #endif
+
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
     while (true) {
+
         RUN_BACKGROUND_TASKS;
         if (reload_requested) {
+            supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
             reload_requested = false;
             return true;
         }
 
         if (serial_connected() && serial_bytes_available()) {
             // Skip REPL if reload was requested.
-            return (serial_read() == CHAR_CTRL_D);
+            bool ctrl_d = serial_read() == CHAR_CTRL_D;
+            if (ctrl_d) {
+                supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
+            }
+            return (ctrl_d);
         }
 
         if (!serial_connected_before_animation && serial_connected()) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
             }
+
             print_safe_mode_message(safe_mode);
             serial_write("\n");
             serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
@@ -351,7 +367,7 @@ bool run_code_py(safe_mode_t safe_mode) {
 
 FIL* boot_output_file;
 
-void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
+STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a
     // file.
     if (filesystem_present() && safe_mode == NO_SAFE_MODE && MP_STATE_VM(vfs_mount_table) != NULL) {
@@ -392,8 +408,9 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         if (!skip_boot_output) {
             // Wait 1.5 seconds before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
             // in case power is momentary or will fail shortly due to, say a low, battery.
-            mp_hal_delay_ms(1500);
-
+            if (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON) {
+                mp_hal_delay_ms(1500);
+            }
             // USB isn't up, so we can write the file.
             filesystem_set_internal_writable_by_usb(false);
             f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
@@ -429,7 +446,7 @@ void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     }
 }
 
-int run_repl(void) {
+STATIC int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
@@ -478,6 +495,9 @@ int __attribute__((used)) main(void) {
     // Port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
     reset_board();
+
+    // This is first time we are running CircuitPython after a reset or power-up.
+    supervisor_set_run_reason(RUN_REASON_STARTUP);
 
     // If not in safe mode turn on autoreload by default but before boot.py in case it wants to change it.
     if (safe_mode == NO_SAFE_MODE) {

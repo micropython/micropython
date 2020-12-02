@@ -25,8 +25,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/mphal.h"
 #include "py/obj.h"
+#include "py/mphal.h"
 #include "py/runtime.h"
 
 #include "common-hal/microcontroller/Pin.h"

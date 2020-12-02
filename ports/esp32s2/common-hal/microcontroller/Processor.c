@@ -28,9 +28,14 @@
 #include <math.h>
 #include <string.h>
 
-#include "common-hal/microcontroller/Processor.h"
 #include "py/runtime.h"
+
+#include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 #include "supervisor/shared/translate.h"
+
+#include "esp_sleep.h"
+#include "esp_system.h"
 
 #include "soc/efuse_reg.h"
 
@@ -73,4 +78,45 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_1_REG);
     *ptr-- = swap_nibbles(mac_address_part & 0xff); mac_address_part >>= 8;
     *ptr-- = swap_nibbles(mac_address_part & 0xff);
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    switch (esp_reset_reason()) {
+        case ESP_RST_POWERON:
+            return RESET_REASON_POWER_ON;
+
+        case ESP_RST_SW:
+        case ESP_RST_PANIC:
+            return RESET_REASON_SOFTWARE;
+
+        case ESP_RST_INT_WDT:
+        case ESP_RST_TASK_WDT:
+        case ESP_RST_WDT:
+            return RESET_REASON_WATCHDOG;
+
+        case ESP_RST_BROWNOUT:
+            return RESET_REASON_BROWNOUT;
+
+        case ESP_RST_SDIO:
+        case ESP_RST_EXT:
+            return RESET_REASON_RESET_PIN;
+
+        case ESP_RST_DEEPSLEEP:
+            switch (esp_sleep_get_wakeup_cause()) {
+                case ESP_SLEEP_WAKEUP_TIMER:
+                case ESP_SLEEP_WAKEUP_EXT0:
+                case ESP_SLEEP_WAKEUP_EXT1:
+                case ESP_SLEEP_WAKEUP_TOUCHPAD:
+                    return RESET_REASON_DEEP_SLEEP_ALARM;
+
+                case ESP_SLEEP_WAKEUP_UNDEFINED:
+                default:
+                    return RESET_REASON_UNKNOWN;
+            }
+
+        case ESP_RST_UNKNOWN:
+        default:
+            return RESET_REASON_UNKNOWN;
+
+    }
 }
