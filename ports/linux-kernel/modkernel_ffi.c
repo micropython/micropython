@@ -106,8 +106,21 @@ STATIC unsigned long convert_arg(mp_obj_t obj, size_t i) {
     } else if (mp_obj_is_symbol(obj)) {
         return ((sym_obj_t*)MP_OBJ_TO_PTR(obj))->value;
     } else {
+#ifdef INCLUDE_STRUCT_LAYOUT
+        // attempt to load the ____ptr field of StructPtr et al
+        mp_obj_t dest[2];
+        mp_load_method_maybe(obj, MP_QSTR_____ptr, dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            return mp_obj_int_get_uint_checked(dest[0]);
+        }
+#endif
+
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-            "argument %d is not int/bool/None/str/bytes/Symbol", (int)i));
+            "argument %d is not int/bool/None/str/bytes/Symbol"
+#ifdef INCLUDE_STRUCT_LAYOUT
+            "/StructPtr"
+#endif
+            , (int)i));
     }
 }
 
