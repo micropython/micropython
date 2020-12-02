@@ -689,6 +689,10 @@ void powerctrl_enter_standby_mode(void) {
     // save RTC interrupts
     uint32_t save_irq_bits = RTC->CR & CR_BITS;
 
+    // disable register write protection
+    RTC->WPR = 0xca;
+    RTC->WPR = 0x53;
+
     // disable RTC interrupts
     RTC->CR &= ~CR_BITS;
 
@@ -713,6 +717,9 @@ void powerctrl_enter_standby_mode(void) {
 
     // enable previously-enabled RTC interrupts
     RTC->CR |= save_irq_bits;
+
+    // enable register write protection
+    RTC->WPR = 0xff;
 
     #if defined(STM32F7)
     // Enable the internal (eg RTC) wakeup sources
