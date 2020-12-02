@@ -411,14 +411,15 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
     #endif
 }
 
-void tick_rgb_status_animation(rgb_status_animation_t* status) {
+bool tick_rgb_status_animation(rgb_status_animation_t* status) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     uint32_t tick_diff = supervisor_ticks_ms32() - status->pattern_start;
     if (status->ok) {
         // All is good. Ramp ALL_DONE up and down.
         if (tick_diff > ALL_GOOD_CYCLE_MS) {
             status->pattern_start = supervisor_ticks_ms32();
-            tick_diff = 0;
+            new_status_color(BLACK);
+            return true;
         }
 
         uint16_t brightness = tick_diff * 255 / (ALL_GOOD_CYCLE_MS / 2);
@@ -433,7 +434,7 @@ void tick_rgb_status_animation(rgb_status_animation_t* status) {
     } else {
         if (tick_diff > status->total_exception_cycle) {
             status->pattern_start = supervisor_ticks_ms32();
-            tick_diff = 0;
+            return true;
         }
         // First flash the file color.
         if (tick_diff < EXCEPTION_TYPE_LENGTH_MS) {
@@ -482,4 +483,5 @@ void tick_rgb_status_animation(rgb_status_animation_t* status) {
         }
     }
     #endif
+    return false;  // Animation is not finished.
 }

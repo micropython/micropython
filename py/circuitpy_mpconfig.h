@@ -245,6 +245,13 @@ extern const struct _mp_obj_module_t aesio_module;
 #define AESIO_MODULE
 #endif
 
+#if CIRCUITPY_ALARM
+extern const struct _mp_obj_module_t alarm_module;
+#define ALARM_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_alarm), (mp_obj_t)&alarm_module },
+#else
+#define ALARM_MODULE
+#endif
+
 #if CIRCUITPY_ANALOGIO
 #define ANALOGIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module },
 extern const struct _mp_obj_module_t analogio_module;
@@ -609,7 +616,6 @@ extern const struct _mp_obj_module_t sdioio_module;
 #define SDIOIO_MODULE
 #endif
 
-
 #if CIRCUITPY_SHARPDISPLAY
 extern const struct _mp_obj_module_t sharpdisplay_module;
 #define SHARPDISPLAY_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_sharpdisplay),(mp_obj_t)&sharpdisplay_module },
@@ -781,6 +787,7 @@ extern const struct _mp_obj_module_t msgpack_module;
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     AESIO_MODULE \
+    ALARM_MODULE \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \

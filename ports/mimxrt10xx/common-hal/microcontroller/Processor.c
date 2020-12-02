@@ -28,6 +28,7 @@
 #include <math.h>
 
 #include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "fsl_tempmon.h"
 #include "fsl_ocotp.h"
@@ -69,4 +70,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
         }
     }
     OCOTP_Deinit(OCOTP);
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    return RESET_REASON_UNKNOWN;
 }
