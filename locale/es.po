@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-24 15:40-0500\n"
+"POT-Creation-Date: 2020-11-27 23:57-0500\n"
 "PO-Revision-Date: 2020-11-27 18:34+0000\n"
 "Last-Translator: Iván Montiel Cardona <ivan_montiel2013@hotmail.com>\n"
 "Language-Team: \n"
@@ -863,6 +863,10 @@ msgstr "Se esperaba un UUID"
 msgid "Expected an Address"
 msgstr "Se esperaba una dirección"
 
+#: shared-bindings/alarm/__init__.c
+msgid "Expected an alarm"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -1008,6 +1012,10 @@ msgstr "I2C Error de inicio"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut no disponible"
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1468,6 +1476,10 @@ msgstr ""
 "Solo se admiten BMP monocromáticos, indexados de 4 bpp u 8 bpp y 16 bpp o "
 "más: %d bpp proporcionados"
 
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "Only one alarm.time alarm can be set."
+msgstr ""
+
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Solo un color puede ser transparente a la vez"
@@ -1526,6 +1538,10 @@ msgstr "El pin debe admitir interrupciones de hardware"
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
 msgstr "Número de pin ya reservado por EXTI"
+
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "PinAlarm not yet implemented"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1596,7 +1612,7 @@ msgstr "Se especifica inversión de RS485 si no está en modo RS485"
 msgid "RTC calibration is not supported on this board"
 msgstr "Calibración de RTC no es soportada en esta placa"
 
-#: shared-bindings/time/__init__.c
+#: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "RTC no soportado en esta placa"
 
@@ -1742,6 +1758,10 @@ msgstr "A Stream le falta el método readinto() o write()."
 msgid "Supply at least one UART pin"
 msgstr "Suministre al menos un pin UART"
 
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Supply one of monotonic_time or epoch_time"
+msgstr ""
+
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
 msgstr "La entrada del sistema debe ser gnss.SatelliteSystem"
@@ -1813,6 +1833,10 @@ msgstr "Valor de mosaico fuera de límites"
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "Ancho del Tile debe dividir exactamente el ancho de mapa de bits"
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Time is in the past."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -2551,6 +2575,10 @@ msgstr "el final del formato mientras se busca el especificador de conversión"
 msgid "end_x should be an int"
 msgstr "end_x debe ser un int"
 
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "epoch_time not supported on this board"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
@@ -2919,6 +2947,10 @@ msgstr "sintaxis inválida para entero con base %d"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "sintaxis inválida para número"
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "io must be rtc io"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3616,6 +3648,10 @@ msgstr "demasiados valores para descomprimir (%d esperado)"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz está definido para arreglos 1D de igual tamaño"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "trigger level must be 0 or 1"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
 msgstr "tuple index fuera de rango"
@@ -3757,6 +3793,10 @@ msgstr "value_count debe ser > 0"
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
 msgstr "los vectores deben tener el mismo tamaño"
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "wakeup conflict"
+msgstr ""
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
