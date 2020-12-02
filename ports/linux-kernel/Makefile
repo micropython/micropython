@@ -74,10 +74,12 @@ MPY_CROSS_FLAGS += -msmall-int-bits=32 -X heapsize=4m
 MPY_TOOL_FLAGS += -mmpz-dig-size=32
 
 STRUCT_LAYOUT_DIR := $(abspath $(TOP)/../struct_layout/)
+NEEDED_VERSION := 7e05a9b7904575db87778ef28baf06675a9c29fb
 
 $(STRUCT_LAYOUT_DIR)/all.py:
 	@if [ ! -d $(STRUCT_LAYOUT_DIR) ]; then echo; echo "struct_layout not fonund at $(STRUCT_LAYOUT_DIR), please follow \
 	the instructions in the README to clone it"; echo; exit 1; fi
+	@if [ `git -C $(STRUCT_LAYOUT_DIR) rev-parse HEAD` != $(NEEDED_VERSION) ]; then echo; echo "Please update struct_layout to commit $(NEEDED_VERSION)"; echo; exit 1; fi
 	$(MAKE) -C $(STRUCT_LAYOUT_DIR) linux_all KDIR=$(KDIR)
 
 clean_struct_layout:
