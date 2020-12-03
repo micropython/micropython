@@ -534,6 +534,12 @@ int i2c_find_peripheral(mp_obj_t id) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
         }
     }
+
+    // check if the I2C is reserved for system use or not
+    if (MICROPY_HW_I2C_IS_RESERVED(i2c_id)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) is reserved"), i2c_id);
+    }
+
     return i2c_id;
 }
 

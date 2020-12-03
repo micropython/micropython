@@ -203,6 +203,11 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) doesn't exist"), can_idx);
     }
 
+    // check if the CAN is reserved for system use or not
+    if (MICROPY_HW_CAN_IS_RESERVED(can_idx)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) is reserved"), can_idx);
+    }
+
     pyb_can_obj_t *self;
     if (MP_STATE_PORT(pyb_can_obj_all)[can_idx - 1] == NULL) {
         self = m_new_obj(pyb_can_obj_t);
