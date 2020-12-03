@@ -502,6 +502,11 @@ void powerctrl_enter_stop_mode(void) {
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();
 
+    // Disable SysTick Interrupt
+    // Note: This seems to be required at least on the H7 REV Y,
+    // otherwise the MCU will leave stop mode immediately on entry.
+    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+
     #if defined(MICROPY_BOARD_ENTER_STOP)
     MICROPY_BOARD_ENTER_STOP
     #endif
@@ -658,6 +663,9 @@ void powerctrl_enter_stop_mode(void) {
     #if defined(MICROPY_BOARD_LEAVE_STOP)
     MICROPY_BOARD_LEAVE_STOP
     #endif
+
+    // Enable SysTick Interrupt
+    SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
 
     // Enable IRQs now that all clocks are reconfigured
     enable_irq(irq_state);
