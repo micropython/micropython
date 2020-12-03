@@ -24,15 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_BOARD_H
-#define MICROPY_INCLUDED_SUPERVISOR_BOARD_H
+#ifndef MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_H
+#define MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_H
 
-#include "py/mpconfig.h"
+#include <stddef.h>
 
-#ifdef USER_NEOPIXELS_PIN
+#include "shared-bindings/microcontroller/Pin.h"
 
-void board_reset_user_neopixels(void);
+void board_reset_user_neopixels(mcu_pin_obj_t* pin, size_t count);
 
-#endif
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_BOARD_H
+#endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_H

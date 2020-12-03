@@ -27,7 +27,7 @@
 
 #include <stdint.h>
 #include "supervisor/port.h"
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "lib/timeutils/timeutils.h"
 
 #include "common-hal/microcontroller/Pin.h"
@@ -436,7 +436,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     alarmed_already = false;
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (__get_FPSCR()  & ~(0x9f)) {
         __set_FPSCR(__get_FPSCR()  & ~(0x9f));

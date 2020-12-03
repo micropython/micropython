@@ -265,7 +265,7 @@ update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
 	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done
 
-one-of-each: samd21 samd51 esp32s2 litex mimxrt10xx nrf stm
+one-of-each: samd21 litex mimxrt10xx nrf stm
 
 samd21:
 	$(MAKE) -C ports/atmel-samd BOARD=trinket_m0

@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "py/mpconfig.h"
 #include "shared-bindings/nvm/ByteArray.h"
 #include "common-hal/microcontroller/Pin.h"

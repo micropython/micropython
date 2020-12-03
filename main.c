@@ -46,6 +46,7 @@
 #include "background.h"
 #include "mpconfigboard.h"
 #include "supervisor/background_callback.h"
+#include "supervisor/board.h"
 #include "supervisor/cpu.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/memory.h"
@@ -63,8 +64,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/supervisor/Runtime.h"
-
-#include "boards/board.h"
 
 #if CIRCUITPY_ALARM
 #include "shared-bindings/alarm/__init__.h"
@@ -303,13 +302,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             return reload_requested;
         }
-
-        #if CIRCUITPY_ALARM
-        if (result.return_code & PYEXEC_DEEP_SLEEP) {
-            common_hal_alarm_enter_deep_sleep();
-            // Does not return.
-        }
-        #endif
     }
 
     // Program has finished running.
@@ -326,23 +318,46 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 
     rgb_status_animation_t animation;
     prep_rgb_status_animation(&result, found_main, safe_mode, &animation);
+    bool asleep = false;
     while (true) {
-
         RUN_BACKGROUND_TASKS;
         if (reload_requested) {
+            #if CIRCUITPY_ALARM
+            if (asleep) {
+                board_init();
+            }
+            #endif
             supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
             reload_requested = false;
             return true;
         }
 
         if (serial_connected() && serial_bytes_available()) {
+            #if CIRCUITPY_ALARM
+            if (asleep) {
+                board_init();
+            }
+            #endif
             // Skip REPL if reload was requested.
             bool ctrl_d = serial_read() == CHAR_CTRL_D;
             if (ctrl_d) {
                 supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
             }
-            return (ctrl_d);
+            return ctrl_d;
         }
+
+        // Check for a deep sleep alarm and restart the VM. This can happen if
+        // an alarm alerts faster than our USB delay or if we pretended to deep
+        // sleep.
+        #if CIRCUITPY_ALARM
+        if (asleep && alarm_woken_from_sleep()) {
+            serial_write_compressed(translate("Woken up by alarm.\n"));
+            board_init();
+            supervisor_set_run_reason(RUN_REASON_STARTUP);
+            // TODO: Reset any volatile memory the user may have access to.
+            return true;
+        }
+        #endif
 
         if (!serial_connected_before_animation && serial_connected()) {
             if (!serial_connected_at_start) {
@@ -351,7 +366,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 
             print_safe_mode_message(safe_mode);
             serial_write("\n");
-            serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload."));
+            serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload.\n"));
         }
         if (serial_connected_before_animation && !serial_connected()) {
             serial_connected_at_start = false;
@@ -360,12 +375,47 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 
         // Refresh the ePaper display if we have one. That way it'll show an error message.
         #if CIRCUITPY_DISPLAYIO
+        // Don't refresh the display if we're about to deep sleep.
+        #if CIRCUITPY_ALARM
+        refreshed_epaper_display = refreshed_epaper_display || result.return_code & PYEXEC_DEEP_SLEEP;
+        #endif
         if (!refreshed_epaper_display) {
             refreshed_epaper_display = maybe_refresh_epaperdisplay();
         }
         #endif
 
-        tick_rgb_status_animation(&animation);
+        // Sleep until our next interrupt.
+        #if CIRCUITPY_ALARM
+        if (result.return_code & PYEXEC_DEEP_SLEEP) {
+            // Make sure we have been awake long enough for USB to connect (enumeration delay).
+            int64_t connecting_delay_ticks = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - port_get_raw_ticks(NULL);
+            if (connecting_delay_ticks > 0) {
+                // Set when we've waited long enough so that we wake up from the
+                // sleep_until_interrupt below and loop around to the real deep
+                // sleep in the else clause.
+                port_interrupt_after_ticks(connecting_delay_ticks);
+            // Deep sleep if we're not connected to a host.
+            } else if (!asleep) {
+                asleep = true;
+                new_status_color(BLACK);
+                board_deinit();
+                if (!supervisor_workflow_active()) {
+                    // Enter true deep sleep. When we wake up we'll be back at the
+                    // top of main(), not in this loop.
+                    alarm_enter_deep_sleep();
+                    // Does not return.
+                } else {
+                    serial_write_compressed(translate("Pretending to deep sleep until alarm, any key or file write.\n"));
+                }
+            }
+        }
+        #endif
+
+        if (!asleep) {
+            tick_rgb_status_animation(&animation);
+        } else {
+            port_idle_until_interrupt();
+        }
     }
 }
 
