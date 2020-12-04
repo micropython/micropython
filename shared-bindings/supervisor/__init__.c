@@ -32,7 +32,9 @@
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/shared/workflow.h"
 
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/supervisor/Runtime.h"
 
@@ -88,6 +90,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_s
 //|
 STATIC mp_obj_t supervisor_reload(void) {
     reload_requested = true;
+    supervisor_set_run_reason(RUN_REASON_SUPERVISOR_RELOAD);
     mp_raise_reload_exception();
     return mp_const_none;
 }
@@ -111,9 +114,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_next_stack_limit_obj, supervisor_set_ne
 
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_autoreload),  MP_ROM_PTR(&supervisor_disable_autoreload_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_autoreload),  MP_ROM_PTR(&supervisor_disable_autoreload_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_runtime),  MP_ROM_PTR(&common_hal_supervisor_runtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_reload),  MP_ROM_PTR(&supervisor_reload_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_next_stack_limit),  MP_ROM_PTR(&supervisor_set_next_stack_limit_obj) },

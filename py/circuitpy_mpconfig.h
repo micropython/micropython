@@ -184,11 +184,13 @@ typedef long mp_off_t;
 // Turning off FULL_BUILD removes some functionality to reduce flash size on tiny SAMD21s
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_BUILTINS_POW3)
 #define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
-#define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
+#define MICROPY_MODULE_WEAK_LINKS             (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_PY_BUILTINS_COMPLEX
 #define MICROPY_PY_BUILTINS_COMPLEX           (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_PY_BUILTINS_FROZENSET         (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_CENTER        (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_PARTITION     (CIRCUITPY_FULL_BUILD)
@@ -241,6 +243,13 @@ extern const struct _mp_obj_module_t aesio_module;
 #define AESIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_aesio), (mp_obj_t)&aesio_module },
 #else
 #define AESIO_MODULE
+#endif
+
+#if CIRCUITPY_ALARM
+extern const struct _mp_obj_module_t alarm_module;
+#define ALARM_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_alarm), (mp_obj_t)&alarm_module },
+#else
+#define ALARM_MODULE
 #endif
 
 #if CIRCUITPY_ANALOGIO
@@ -325,6 +334,13 @@ extern const struct _mp_obj_module_t board_module;
 #else
 #define BOARD_MODULE
 #define BOARD_UART_ROOT_POINTER
+#endif
+
+#if CIRCUITPY_BUSDEVICE
+extern const struct _mp_obj_module_t adafruit_bus_device_module;
+#define BUSDEVICE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_bus_device), (mp_obj_t)&adafruit_bus_device_module },
+#else
+#define BUSDEVICE_MODULE
 #endif
 
 #if CIRCUITPY_BUSIO
@@ -607,7 +623,6 @@ extern const struct _mp_obj_module_t sdioio_module;
 #define SDIOIO_MODULE
 #endif
 
-
 #if CIRCUITPY_SHARPDISPLAY
 extern const struct _mp_obj_module_t sharpdisplay_module;
 #define SHARPDISPLAY_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_sharpdisplay),(mp_obj_t)&sharpdisplay_module },
@@ -772,6 +787,7 @@ extern const struct _mp_obj_module_t wifi_module;
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     AESIO_MODULE \
+    ALARM_MODULE \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \
@@ -783,6 +799,7 @@ extern const struct _mp_obj_module_t wifi_module;
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
+    BUSDEVICE_MODULE \
     BUSIO_MODULE \
     CAMERA_MODULE \
     CANIO_MODULE \
@@ -858,17 +875,20 @@ extern const struct _mp_obj_module_t wifi_module;
 
 #include "supervisor/flash_root_pointers.h"
 
+// From supervisor/memory.c
+struct _supervisor_allocation_node;
+
 #define CIRCUITPY_COMMON_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
     mp_obj_t rtc_time_source; \
     GAMEPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
-    mp_obj_t terminal_tilegrid_tiles; \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
+    struct _supervisor_allocation_node* first_embedded_allocation; \
 
 void supervisor_run_background_tasks_if_tick(void);
 #define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())

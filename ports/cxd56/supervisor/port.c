@@ -98,8 +98,8 @@ void reset_to_bootloader(void) {
     }
 }
 
-supervisor_allocation* port_fixed_stack(void) {
-    return NULL;
+bool port_has_fixed_stack(void) {
+    return true;
 }
 
 uint32_t *port_stack_get_limit(void) {

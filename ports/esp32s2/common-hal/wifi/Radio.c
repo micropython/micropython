@@ -72,6 +72,8 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         return;
     }
     if (!self->started && enabled) {
+	// esp_wifi_start() would default to soft-AP, thus setting it to station
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
         ESP_ERROR_CHECK(esp_wifi_start());
         self->started = true;
         return;
@@ -136,9 +138,16 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     if (bssid_len > 0){
         memcpy(&config->sta.bssid, bssid, bssid_len);
         config->sta.bssid[bssid_len] = 0;
-        config->sta.bssid_set = 1;
+        config->sta.bssid_set = true;
     } else {
-        config->sta.bssid_set = 0;
+        config->sta.bssid_set = false;
+    }
+    // If channel is 0 (default/unset) and BSSID is not given, do a full scan instead of fast scan
+    // This will ensure that the best AP in range is chosen automatically
+    if ((config->sta.bssid_set == 0) && (config->sta.channel == 0)) {
+        config->sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+    } else {
+        config->sta.scan_method = WIFI_FAST_SCAN;
     }
     esp_wifi_set_config(ESP_IF_WIFI_STA, config);
     self->starting_retries = 5;

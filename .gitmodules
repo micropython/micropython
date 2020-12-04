@@ -152,4 +152,7 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM69.git
 [submodule "ports/esp32s2/esp-idf"]
 	path = ports/esp32s2/esp-idf
-	url = https://github.com/espressif/esp-idf.git
+	url = https://github.com/jepler/esp-idf.git
+[submodule "ports/esp32s2/certificates/nina-fw"]
+	path = ports/esp32s2/certificates/nina-fw
+	url = https://github.com/adafruit/nina-fw.git

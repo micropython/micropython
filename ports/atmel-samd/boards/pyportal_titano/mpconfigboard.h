@@ -22,9 +22,6 @@
 #define DEFAULT_SPI_BUS_MOSI (&pin_PA12)
 #define DEFAULT_SPI_BUS_MISO (&pin_PA14)
 
-#define DEFAULT_UART_BUS_RX (&pin_PB13)
-#define DEFAULT_UART_BUS_TX (&pin_PB12)
-
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1

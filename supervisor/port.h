@@ -61,15 +61,14 @@ uint32_t *port_stack_get_limit(void);
 // Get stack top address
 uint32_t *port_stack_get_top(void);
 
-supervisor_allocation* port_fixed_stack(void);
+// True if stack is not located inside heap (at the top)
+bool port_has_fixed_stack(void);
 
 // Get heap bottom address
 uint32_t *port_heap_get_bottom(void);
 
 // Get heap top address
 uint32_t *port_heap_get_top(void);
-
-supervisor_allocation* port_fixed_heap(void);
 
 // Save and retrieve a word from memory that is preserved over reset. Used for safe mode.
 void port_set_saved_word(uint32_t);
