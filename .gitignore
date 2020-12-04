@@ -42,3 +42,10 @@ user.props
 # Generated rst files
 ######################
 genrst/
+
+
+.DS_Store
+.vscode
+circuitpython-stubs
+shared-bindings/
+shared-module/
