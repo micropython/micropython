@@ -450,7 +450,7 @@ $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES) $(SRC_MOD) 
+SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES) $(SRC_MOD)
 
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
