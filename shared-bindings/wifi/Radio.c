@@ -48,7 +48,9 @@
 //|
 
 //|     enabled: bool
-//|     """True when the wifi radio is enabled."""
+//|     """``True`` when the wifi radio is enabled.
+//|     If you set the value to ``False``, any open sockets will be closed.
+//|     """
 //|
 STATIC mp_obj_t wifi_radio_get_enabled(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_wifi_radio_get_enabled(self));
