@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-27 23:57-0500\n"
-"PO-Revision-Date: 2020-12-05 23:29+0000\n"
+"PO-Revision-Date: 2020-12-07 20:26+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -3635,7 +3635,6 @@ msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz är definierad för 1D-matriser med samma längd"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
-#, fuzzy
 msgid "trigger level must be 0 or 1"
 msgstr "triggernivå måste vara 0 eller 1"
 
@@ -3782,7 +3781,6 @@ msgid "vectors must have same lengths"
 msgstr "vektorer måste ha samma längd"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
-#, fuzzy
 msgid "wakeup conflict"
 msgstr "wakeup-konflikt"
 
