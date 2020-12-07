@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Bernhard Boser
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_MSGPACK___INIT___H
-#define MICROPY_INCLUDED_SHARED_MODULE_MSGPACK___INIT___H
 
-#include "py/stream.h"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK_EXTTYPE___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK_EXTTYPE___INIT___H
 
-void common_hal_msgpack_pack(mp_obj_t obj, mp_obj_t stream_obj, mp_obj_t default_handler);
-mp_obj_t common_hal_msgpack_unpack(mp_obj_t stream_obj, mp_obj_t ext_hook, bool use_list);
+#include "py/obj.h"
 
-#endif
+typedef struct {
+    mp_obj_base_t base;
+    int32_t code;
+    mp_obj_t data;
+} mod_msgpack_extype_obj_t;
+
+extern const mp_obj_type_t mod_msgpack_exttype_type;
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK_EXTTYPE___INIT___H

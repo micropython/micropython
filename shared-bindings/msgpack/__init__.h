@@ -29,6 +29,6 @@
 
 #include "py/obj.h"
 
-// Nothing now.
+// nothing for now
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MSGPACK___INIT___H
