@@ -95,6 +95,10 @@
 #include "common-hal/canio/CAN.h"
 #endif
 
+#if CIRCUITPY_WIFI
+#include "shared-bindings/wifi/__init__.h"
+#endif
+
 #if MICROPY_ENABLE_PYSTACK
 static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)]);
 #endif
@@ -558,6 +562,10 @@ void gc_collect(void) {
 
     #if CIRCUITPY_BLEIO
     common_hal_bleio_gc_collect();
+    #endif
+
+    #if CIRCUITPY_WIFI
+    common_hal_wifi_gc_collect();
     #endif
 
     // This naively collects all object references from an approximate stack

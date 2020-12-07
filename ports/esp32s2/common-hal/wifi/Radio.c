@@ -31,6 +31,7 @@
 
 #include "common-hal/wifi/__init__.h"
 #include "lib/utils/interrupt_char.h"
+#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
@@ -261,4 +262,9 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
     esp_ping_delete_session(ping);
 
     return elapsed_time;
+}
+
+void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self) {
+    // Only bother to scan the actual object references.
+    gc_collect_ptr(self->current_scan);
 }
