@@ -28,7 +28,6 @@
 #ifndef ESP32S2_MPCONFIGPORT_H__
 #define ESP32S2_MPCONFIGPORT_H__
 
-#define CIRCUITPY_INTERNAL_NVM_SIZE         (0)
 #define MICROPY_NLR_THUMB                   (0)
 
 #define MICROPY_PY_UJSON                    (1)
@@ -36,11 +35,15 @@
 
 #include "py/circuitpy_mpconfig.h"
 
-
 #define MICROPY_PORT_ROOT_POINTERS \
 	CIRCUITPY_COMMON_ROOT_POINTERS
 #define MICROPY_NLR_SETJMP                  (1)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
 
+#define CIRCUITPY_INTERNAL_NVM_START_ADDR (0x9000)
+
+#ifndef CIRCUITPY_INTERNAL_NVM_SIZE
+#define CIRCUITPY_INTERNAL_NVM_SIZE (20 * 1024)
+#endif
 
 #endif  // __INCLUDED_ESP32S2_MPCONFIGPORT_H

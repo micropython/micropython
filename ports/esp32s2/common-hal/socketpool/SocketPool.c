@@ -61,15 +61,14 @@ socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_
         socket_type = SOCK_RAW;
     }
 
-    if (socket_type == SOCK_DGRAM || socket_type == SOCK_RAW ||
-            addr_family == AF_INET6 || ipproto == IPPROTO_IPV6) {
-        mp_raise_NotImplementedError(translate("Only IPv4 SOCK_STREAM sockets supported"));
+    if (addr_family == AF_INET6 || ipproto == IPPROTO_IPV6) {
+        mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
     }
 
     int socknum = -1;
     esp_tls_t* tcp_handle = NULL;
     if (socket_type == SOCK_DGRAM || socket_type == SOCK_RAW) {
-        // socknum = lwip_socket(addr_family, socket_type, ipproto);
+        socknum = lwip_socket(addr_family, socket_type, ipproto);
     } else {
         tcp_handle = esp_tls_init();
 

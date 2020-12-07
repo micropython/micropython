@@ -24,8 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/microcontroller/Processor.h"
 #include "py/runtime.h"
+
+#include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 #include "supervisor/shared/translate.h"
 
 #include "nrfx_saadc.h"
@@ -118,4 +120,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     for (int i=0; i<2; i++) {
         ((uint32_t*) raw_id)[i] = NRF_FICR->DEVICEID[i];
     }
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    return RESET_REASON_UNKNOWN;
 }

@@ -138,9 +138,9 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     if (bssid_len > 0){
         memcpy(&config->sta.bssid, bssid, bssid_len);
         config->sta.bssid[bssid_len] = 0;
-        config->sta.bssid_set = 1;
+        config->sta.bssid_set = true;
     } else {
-        config->sta.bssid_set = 0;
+        config->sta.bssid_set = false;
     }
     // If channel is 0 (default/unset) and BSSID is not given, do a full scan instead of fast scan
     // This will ensure that the best AP in range is chosen automatically

@@ -96,7 +96,7 @@ void reset_all_pins(void) {
 }
 
 void claim_pin(const mcu_pin_obj_t* pin) {
-    in_use[pin->number / 32] |= (1 << pin->number % 32);
+    in_use[pin->number / 32] |= (1 << (pin->number % 32));
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin == MICROPY_HW_NEOPIXEL) {
         neopixel_in_use = true;
@@ -116,7 +116,7 @@ bool pin_number_is_free(gpio_num_t pin_number) {
     #endif
 
     uint8_t offset = pin_number / 32;
-    uint8_t mask = 1 << pin_number % 32;
+    uint32_t mask = 1 << (pin_number % 32);
     return (never_reset_pins[offset] & mask) == 0 && (in_use[offset] & mask) == 0;
 }
 

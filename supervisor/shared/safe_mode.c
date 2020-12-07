@@ -29,6 +29,8 @@
 #include "mphalport.h"
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "supervisor/serial.h"
 #include "supervisor/shared/rgb_led_colors.h"
@@ -51,6 +53,12 @@ safe_mode_t wait_for_safe_mode_reset(void) {
         port_set_saved_word(SAFE_MODE_DATA_GUARD);
         current_safe_mode = safe_mode;
         return safe_mode;
+    }
+
+    const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
+    if (reset_reason != RESET_REASON_POWER_ON &&
+        reset_reason != RESET_REASON_RESET_PIN) {
+        return NO_SAFE_MODE;
     }
     port_set_saved_word(SAFE_MODE_DATA_GUARD | (MANUAL_SAFE_MODE << 8));
     // Wait for a while to allow for reset.

@@ -41,8 +41,10 @@
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
+#include "common-hal/ps2io/Ps2.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
+#include "common-hal/touchio/TouchIn.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
@@ -105,6 +107,19 @@ void reset_port(void) {
     analogout_reset();
 #endif
 
+#if CIRCUITPY_PS2IO
+    ps2_reset();
+#endif
+
+#if CIRCUITPY_PULSEIO
+    esp32s2_peripherals_rmt_reset();
+    pulsein_reset();
+#endif
+
+#if CIRCUITPY_PWMIO
+    pwmout_reset();
+#endif
+
 #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
@@ -130,6 +145,10 @@ void reset_port(void) {
 
 #if CIRCUITPY_RTC
     rtc_reset();
+#endif
+
+#if CIRCUITPY_TOUCHIO_USE_NATIVE
+    touchin_reset();
 #endif
 
 #if CIRCUITPY_WATCHDOG
@@ -179,12 +198,8 @@ uint32_t *port_stack_get_top(void) {
     return port_stack_get_limit() + ESP_TASK_MAIN_STACK / (sizeof(uint32_t) / sizeof(StackType_t));
 }
 
-supervisor_allocation _fixed_stack;
-
-supervisor_allocation* port_fixed_stack(void) {
-    _fixed_stack.ptr = port_stack_get_limit();
-    _fixed_stack.length = (port_stack_get_top() - port_stack_get_limit()) * sizeof(uint32_t);
-    return &_fixed_stack;
+bool port_has_fixed_stack(void) {
+    return true;
 }
 
 // Place the word to save just after our BSS section that gets blanked.

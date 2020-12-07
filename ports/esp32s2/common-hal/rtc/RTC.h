@@ -24,11 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_RTC_RTC_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_RTC_RTC_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_RTC_RTC_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_RTC_RTC_H
 
 extern void rtc_init(void);
 extern void rtc_reset(void);
 extern void common_hal_rtc_init(void);
 
-#endif  // MICROPY_INCLUDED_NRF_COMMON_HAL_RTC_RTC_H
+#endif  // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_RTC_RTC_H
