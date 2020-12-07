@@ -49,8 +49,7 @@
 
 #ifdef FMC_SDRAM_BANK
 
-static void sdram_init_seq(SDRAM_HandleTypeDef
-    *hsdram, FMC_SDRAM_CommandTypeDef *command);
+static void sdram_init_seq(SDRAM_HandleTypeDef *hsdram, FMC_SDRAM_CommandTypeDef *command);
 extern void __fatal_error(const char *msg);
 
 bool sdram_init(void) {
@@ -252,6 +251,25 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     mpu_config_region(MPU_REGION_SDRAM2, SDRAM_START_ADDRESS, MPU_CONFIG_SDRAM(SDRAM_MPU_REGION_SIZE));
     mpu_config_end(irq_state);
     #endif
+}
+
+void sdram_enter_low_power(void) {
+    // Enter self-refresh mode.
+    // In self-refresh mode the SDRAM retains data with external clocking.
+    FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_SELFREFRESH_MODE |     // Command Mode
+        FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
+        (0 << 5U) |                                                  // Auto Refresh Number -1
+        (0 << 9U));                                                  // Mode Register Definition
+}
+
+void sdram_leave_low_power(void) {
+    // Exit self-refresh mode.
+    // Self-refresh mode is exited when the device is accessed or the mode bits are
+    // set to Normal mode, so technically it's not necessary to call this functions.
+    FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_NORMAL_MODE |          // Command Mode
+        FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
+        (0 << 5U) |                                                  // Auto Refresh Number - 1
+        (0 << 9U));                                                  // Mode Register Definition
 }
 
 bool sdram_test(bool fast) {
