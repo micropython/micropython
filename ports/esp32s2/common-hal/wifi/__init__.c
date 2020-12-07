@@ -47,7 +47,14 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     if (event_base == WIFI_EVENT) {
         switch (event_id) {
             case WIFI_EVENT_SCAN_DONE:
+                ESP_EARLY_LOGW(TAG, "scan");
                 xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
+                break;
+            case WIFI_EVENT_STA_START:
+                ESP_EARLY_LOGW(TAG, "start");
+                break;
+            case WIFI_EVENT_STA_STOP:
+                ESP_EARLY_LOGW(TAG, "stop");
                 break;
             case WIFI_EVENT_STA_CONNECTED:
                 ESP_EARLY_LOGW(TAG, "connected");
@@ -74,8 +81,6 @@ static void event_handler(void* arg, esp_event_base_t event_base,
             }
 
             // Cases to handle later.
-            // case WIFI_EVENT_STA_START:
-            // case WIFI_EVENT_STA_STOP:
             // case WIFI_EVENT_STA_AUTHMODE_CHANGE:
             default:
                 break;
