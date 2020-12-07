@@ -425,6 +425,11 @@ void SystemClock_Config(void) {
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, TICK_INT_PRIORITY, 0));
     #endif
+
+    #if defined(STM32H7) && !defined(NDEBUG)
+    // Enable the Debug Module in low-power modes.
+    DBGMCU->CR |= (DBGMCU_CR_DBG_SLEEPD1 | DBGMCU_CR_DBG_STOPD1 | DBGMCU_CR_DBG_STANDBYD1);
+    #endif
 }
 
 #endif
