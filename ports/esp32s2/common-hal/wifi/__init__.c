@@ -160,3 +160,7 @@ void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t* esp_ip_addre
 
     IP_ADDR4(esp_ip_address, bytes[0], bytes[1], bytes[2], bytes[3]);
 }
+
+void common_hal_wifi_gc_collect(void) {
+    common_hal_wifi_radio_gc_collect(&common_hal_wifi_radio_obj);
+}
