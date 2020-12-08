@@ -391,7 +391,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             int64_t connecting_delay_ticks = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - port_get_raw_ticks(NULL);
             if (connecting_delay_ticks > 0) {
                 // Set when we've waited long enough so that we wake up from the
-                // sleep_until_interrupt below and loop around to the real deep
+                // port_idle_until_interrupt below and loop around to the real deep
                 // sleep in the else clause.
                 port_interrupt_after_ticks(connecting_delay_ticks);
             // Deep sleep if we're not connected to a host.
@@ -414,6 +414,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         if (!asleep) {
             tick_rgb_status_animation(&animation);
         } else {
+            // This waits until a pretend deep sleep alarm occurs. They are set
+            // during common_hal_alarm_set_deep_sleep_alarms. On some platforms
+            // it may also return due to another interrupt, that's why we check
+            // for deep sleep alarms above. If it wasn't a deep sleep alarm,
+            // then we'll idle here again.
             port_idle_until_interrupt();
         }
     }

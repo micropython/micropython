@@ -51,6 +51,7 @@ mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *
     }
     alarm_time_time_alarm_obj_t *timer = m_new_obj(alarm_time_time_alarm_obj_t);
     timer->base.type = &alarm_time_time_alarm_type;
+    // TODO: Set monotonic_time based on the RTC state.
     return timer;
 }
 

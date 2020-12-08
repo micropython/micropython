@@ -33,7 +33,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 
-void board_reset_user_neopixels(mcu_pin_obj_t* pin, size_t count) {
+void board_reset_user_neopixels(const mcu_pin_obj_t* pin, size_t count) {
     // Turn off on-board NeoPixel string
     uint8_t empty[count * 3];
     memset(empty, 0, count);

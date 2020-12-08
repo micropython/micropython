@@ -31,6 +31,6 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 
-void board_reset_user_neopixels(mcu_pin_obj_t* pin, size_t count);
+void board_reset_user_neopixels(const mcu_pin_obj_t* pin, size_t count);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_SHARED_BOARD_H

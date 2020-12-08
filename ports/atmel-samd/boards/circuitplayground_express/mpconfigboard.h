@@ -30,8 +30,6 @@
 // Increase stack size slightly due to CPX library import nesting
 #define CIRCUITPY_DEFAULT_STACK_SIZE  (4248) //divisible by 8
 
-#define USER_NEOPIXELS_PIN      (&pin_PB23)
-
 #define DEFAULT_I2C_BUS_SCL (&pin_PB03)
 #define DEFAULT_I2C_BUS_SDA (&pin_PB02)
 
