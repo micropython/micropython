@@ -85,7 +85,7 @@
 //|     """Ouput object to buffer in msgpack format.
 //|     :param object obj: Object to convert to msgpack format.
 //|     :param ~_typing.WriteableBuffer buffer: buffer to write into
-//|     :param Optional[~_typing.Function] default:
+//|     :param Optional[~_typing.Callable[[object], None]] default:
 //|           function called for python objects that do not have
 //|           a representation in msgpack format.
 //|     """
@@ -113,7 +113,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mod_msgpack_pack_obj, 1, mod_msgpack_pack);
 //| def unpack(buffer: ReadableBuffer, *, ext_hook: Function=None, use_list: bool=True) -> object:
 //|     """Unpack and return one object from buffer.
 //|     :param ~_typing.ReadableBuffer buffer: buffer to read from
-//|     :param Optional[~_typing.Function] ext_hook: function called for objects in
+//|     :param Optional[~_typing.Callable[[int, bytes], object]] ext_hook: function called for objects in
 //|            msgpack ext format.
 //|     :param Optional[bool] use_list: return array as list or tuple (use_list=False).
 //|     :return object: object read from buffer.
