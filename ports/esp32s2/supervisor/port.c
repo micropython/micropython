@@ -54,8 +54,11 @@
 #include "peripherals/rmt.h"
 #include "peripherals/pcnt.h"
 #include "peripherals/timer.h"
+#include "components/esp_rom/include/esp_rom_uart.h"
 #include "components/heap/include/esp_heap_caps.h"
+#include "components/xtensa/include/esp_debug_helpers.h"
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
+#include "components/soc/soc/esp32s2/include/soc/rtc_cntl_reg.h"
 
 #define HEAP_SIZE (48 * 1024)
 
@@ -77,6 +80,11 @@ safe_mode_t port_init(void) {
     args.dispatch_method = ESP_TIMER_TASK;
     args.name = "CircuitPython Tick";
     esp_timer_create(&args, &_tick_timer);
+
+    #ifdef DEBUG
+    // Send the ROM output out of the UART. This includes early logs.
+    esp_rom_install_channel_putc(1, esp_rom_uart_putc);
+    #endif
 
     heap = NULL;
     never_reset_module_internal_pins();
@@ -165,6 +173,7 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
+    esp_backtrace_print(100);
     esp_restart();
 }
 
@@ -204,10 +213,11 @@ bool port_has_fixed_stack(void) {
 
 // Place the word to save just after our BSS section that gets blanked.
 void port_set_saved_word(uint32_t value) {
+    REG_WRITE(RTC_CNTL_STORE0_REG, value);
 }
 
 uint32_t port_get_saved_word(void) {
-    return 0;
+    return REG_READ(RTC_CNTL_STORE0_REG);
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
