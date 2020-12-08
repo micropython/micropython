@@ -106,6 +106,8 @@ INC += -isystem esp-idf/components/heap/include
 INC += -isystem esp-idf/components/esp_system/include
 INC += -isystem esp-idf/components/spi_flash/include
 INC += -isystem esp-idf/components/nvs_flash/include
+INC += -isystem esp-idf/components/app_update/include
+INC += -isystem esp-idf/components/bootloader_support/include
 INC += -I$(BUILD)/esp-idf/config
 
 CFLAGS += -DHAVE_CONFIG_H \
