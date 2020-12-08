@@ -81,7 +81,7 @@
 //| """
 
 
-//| def pack(obj: object, buffer: WriteableBuffer, *, default: Callable[[object], None]]=None) -> None:
+//| def pack(obj: object, buffer: WriteableBuffer, *, default: Callable[[object], None]=None) -> None:
 //|     """Ouput object to buffer in msgpack format.
 //|     :param object obj: Object to convert to msgpack format.
 //|     :param ~_typing.WriteableBuffer buffer: buffer to write into
@@ -110,7 +110,7 @@ STATIC mp_obj_t mod_msgpack_pack(size_t n_args, const mp_obj_t *pos_args, mp_map
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mod_msgpack_pack_obj, 1, mod_msgpack_pack);
 
-//| def unpack(buffer: ReadableBuffer, *, ext_hook: Callable[[int, bytes], object]]=None, use_list: bool=True) -> object:
+//| def unpack(buffer: ReadableBuffer, *, ext_hook: Callable[[int, bytes], object]=None, use_list: bool=True) -> object:
 //|     """Unpack and return one object from buffer.
 //|     :param ~_typing.ReadableBuffer buffer: buffer to read from
 //|     :param Optional[~_typing.Callable[[int, bytes], object]] ext_hook: function called for objects in
