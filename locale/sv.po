@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-27 23:57-0500\n"
-"PO-Revision-Date: 2020-11-30 18:06+0000\n"
+"PO-Revision-Date: 2020-12-07 20:26+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -859,7 +859,7 @@ msgstr "Förväntade en adress"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
-msgstr ""
+msgstr "Förväntade ett larm"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -1008,7 +1008,7 @@ msgstr "I2SOut är inte tillgängligt"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr ""
+msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1314,7 +1314,7 @@ msgstr "Ingen DMA-kanal hittades"
 #: shared-module/busdevice/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
-msgstr ""
+msgstr "Ingen I2C-enhet på adress: %x"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
@@ -1476,7 +1476,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/__init__.c
 msgid "Only one alarm.time alarm can be set."
-msgstr ""
+msgstr "Endast ett alarm.time kan ställas in."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1539,7 +1539,7 @@ msgstr "PInn-nummer redan reserverat av EXTI"
 
 #: ports/esp32s2/common-hal/alarm/__init__.c
 msgid "PinAlarm not yet implemented"
-msgstr ""
+msgstr "PinAlarm är inte implementerat ännu"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1758,7 +1758,7 @@ msgstr "Ange minst en UART-pinne"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
-msgstr ""
+msgstr "Ange en av monotonic_time eller epoch_time"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
@@ -1833,7 +1833,7 @@ msgstr "Tile-bredd måste vara jämnt delbar med bredd på bitmap"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Time is in the past."
-msgstr ""
+msgstr "Tid har passerats."
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -2566,7 +2566,7 @@ msgstr "color ska vara en int"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
-msgstr ""
+msgstr "epoch_time stöds inte av detta kort"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -2939,7 +2939,7 @@ msgstr "ogiltig syntax för tal"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "io must be rtc io"
-msgstr ""
+msgstr "io måste vara rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3636,7 +3636,7 @@ msgstr "trapz är definierad för 1D-matriser med samma längd"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
-msgstr ""
+msgstr "triggernivå måste vara 0 eller 1"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
@@ -3782,7 +3782,7 @@ msgstr "vektorer måste ha samma längd"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
-msgstr ""
+msgstr "wakeup-konflikt"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"

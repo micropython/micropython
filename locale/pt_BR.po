@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-27 23:57-0500\n"
-"PO-Revision-Date: 2020-11-30 18:06+0000\n"
+"PO-Revision-Date: 2020-12-04 06:29+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -868,7 +868,7 @@ msgstr "Um endereço esperado"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
-msgstr ""
+msgstr "Um alarme era esperado"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -1019,7 +1019,7 @@ msgstr "O I2SOut não está disponível"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr ""
+msgstr "IOs 0, 2 e 4 não suportam pullup interno em repouso (sleep)"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1324,7 +1324,7 @@ msgstr "Nenhum canal DMA encontrado"
 #: shared-module/busdevice/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
-msgstr ""
+msgstr "Nenhum dispositivo I2C no endereço: %x"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
@@ -1486,7 +1486,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/__init__.c
 msgid "Only one alarm.time alarm can be set."
-msgstr ""
+msgstr "Apenas um alarme alarm.time pode ser definido."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1551,7 +1551,7 @@ msgstr "Número do PIN já está reservado através da EXTI"
 
 #: ports/esp32s2/common-hal/alarm/__init__.c
 msgid "PinAlarm not yet implemented"
-msgstr ""
+msgstr "PinAlarm ainda não foi implementado"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1772,7 +1772,7 @@ msgstr "Forneça pelo menos um pino UART"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
-msgstr ""
+msgstr "Forneça um de monotonic_time ou de epoch_time"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
@@ -1848,7 +1848,7 @@ msgstr "A largura do bloco deve dividir exatamente com a largura do bitmap"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Time is in the past."
-msgstr ""
+msgstr "O tempo está no passado."
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -2592,7 +2592,7 @@ msgstr "end_x deve ser um int"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
-msgstr ""
+msgstr "O epoch_time não é compatível com esta placa"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -2965,7 +2965,7 @@ msgstr "sintaxe inválida para o número"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "io must be rtc io"
-msgstr ""
+msgstr "O io deve ser rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3668,7 +3668,7 @@ msgstr "o trapz está definido para 1D arrays de igual tamanho"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
-msgstr ""
+msgstr "nível do gatilho deve ser 0 ou 1"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
@@ -3814,7 +3814,7 @@ msgstr "os vetores devem ter os mesmos comprimentos"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
-msgstr ""
+msgstr "conflito de wakeup"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
