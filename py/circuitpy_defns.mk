@@ -205,6 +205,9 @@ endif
 ifeq ($(CIRCUITPY_OS),1)
 SRC_PATTERNS += os/%
 endif
+ifeq ($(CIRCUITPY_OTA),1)
+SRC_PATTERNS += ota/%
+endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
 endif
@@ -347,6 +350,7 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
+	ota/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \

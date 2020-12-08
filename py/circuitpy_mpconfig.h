@@ -539,6 +539,13 @@ extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE_ALT_NAME
 #endif
 
+#if CIRCUITPY_OTA
+extern const struct _mp_obj_module_t ota_module;
+#define OTA_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_ota), (mp_obj_t)&ota_module },
+#else
+#define OTA_MODULE
+#endif
+
 #if CIRCUITPY_PEW
 extern const struct _mp_obj_module_t pew_module;
 #define PEW_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR__pew),(mp_obj_t)&pew_module },
@@ -827,6 +834,7 @@ extern const struct _mp_obj_module_t wifi_module;
     NETWORK_MODULE \
       SOCKET_MODULE \
       WIZNET_MODULE \
+    OTA_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
