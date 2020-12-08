@@ -32,10 +32,9 @@
 //| class ExtType:
 //|     """ExtType represents ext type in msgpack."""
 //|     def __init__(self, code: int, data: bytes) -> None:
-//|         """Constructor"""
-//|
-//|         :param int code: type code in range 0 .. 127.
-//|         :param bytes data: representation.
+//|         """Constructor
+//|         :param int code: type code in range 0~127.
+//|         :param bytes data: representation."""
 
 STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mod_msgpack_extype_obj_t *self = m_new_obj(mod_msgpack_extype_obj_t);
