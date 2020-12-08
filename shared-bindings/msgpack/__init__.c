@@ -48,7 +48,7 @@
 //|    b = BytesIO()
 //|    msgpack.pack({'list': [True, False, None, 1, 'abc'], 'str': 'blah'}, b)
 //|    b.seek(0)
-//|    print(msgpack.unpack(b))"""
+//|    print(msgpack.unpack(b))
 //|
 //| Example 2: handling objects
 //|
