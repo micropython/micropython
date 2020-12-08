@@ -407,6 +407,7 @@ $(filter $(SRC_PATTERNS), \
 	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
 	msgpack/__init__.c \
+	msgpack/ExtType.c \
 	supervisor/RunReason.c \
 )
 
