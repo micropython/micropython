@@ -54,8 +54,6 @@
 // Disables onboard peripherals and neopixels to save power.
 #define POWER_SWITCH_PIN            (&pin_P0_06)
 
-#define USER_NEOPIXELS_PIN          (&pin_P0_13)
-
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_04)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_05)
 

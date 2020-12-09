@@ -26,20 +26,21 @@
 
 // This file defines board specific functions.
 
-#ifndef MICROPY_INCLUDED_STM32F4_BOARDS_BOARD_H
-#define MICROPY_INCLUDED_STM32F4_BOARDS_BOARD_H
+#ifndef MICROPY_INCLUDED_MIMXRT10XX_BOARDS_FLASH_CONFIG_H
+#define MICROPY_INCLUDED_MIMXRT10XX_BOARDS_FLASH_CONFIG_H
 
 #include <stdbool.h>
 
-// Initializes board related state once on start up.
-void board_init(void);
+#include "mpconfigboard.h"  // For flash size settings
 
-// Returns true if the user initiates safe mode in a board specific way.
-// Also add BOARD_USER_SAFE_MODE in mpconfigboard.h to explain the board specific
-// way.
-bool board_requests_safe_mode(void);
+#include "fsl_common.h"
+#include "fsl_flexspi_nor_config.h"
 
-// Reset the state of off MCU components such as neopixels.
-void reset_board(void);
+#define SEQUENCE(first, second, third, fourth) first, second, third, fourth
+#define TWO_EMPTY_STEPS 0x00000000
+#define EMPTY_SEQUENCE SEQUENCE(TWO_EMPTY_STEPS, TWO_EMPTY_STEPS, TWO_EMPTY_STEPS, TWO_EMPTY_STEPS)
 
-#endif  // MICROPY_INCLUDED_STM32F4_BOARDS_BOARD_H
+// FlexSPI configuration that stores command info.
+extern const flexspi_nor_config_t qspiflash_config;
+
+#endif  // MICROPY_INCLUDED_MIMXRT10XX_BOARDS_FLASH_CONFIG_H
