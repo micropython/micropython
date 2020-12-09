@@ -150,6 +150,10 @@ mp_uint_t mp_hal_ticks_ms(void) {
 
 #endif
 
+uint64_t mp_hal_time_ns(void) {
+    return 0;
+}
+
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
     [HAL_OK] = 0,
