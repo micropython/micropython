@@ -46,7 +46,7 @@
 //|    from io import BytesIO
 //|
 //|    b = BytesIO()
-//|    msgpack.pack({'list': [True, False, None, 1, 'abc'], 'str': 'blah'}, b)
+//|    msgpack.pack({'list': [True, False, None, 1, 3.14], 'str': 'blah'}, b)
 //|    b.seek(0)
 //|    print(msgpack.unpack(b))
 //|
