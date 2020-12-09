@@ -139,6 +139,7 @@ function ci_nrf_setup {
 
 function ci_nrf_build {
     ports/nrf/drivers/bluetooth/download_ble_stack.sh s140_nrf52_6_1_1
+    make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/nrf submodules
     make ${MAKEOPTS} -C ports/nrf BOARD=pca10040
     make ${MAKEOPTS} -C ports/nrf BOARD=microbit
