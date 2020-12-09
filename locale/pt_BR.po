@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"POT-Creation-Date: 2020-12-08 09:56-0800\n"
 "PO-Revision-Date: 2020-12-04 06:29+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
@@ -512,8 +512,8 @@ msgstr "O comprimento do Buffer deve ser um múltiplo de 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "O buffer deve ser um múltiplo de 512 bytes"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
-#: shared-bindings/busio/I2C.c
+#: shared-bindings/adafruit_bus_device/I2CDevice.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "O comprimento do buffer deve ter pelo menos 1"
 
@@ -1321,7 +1321,7 @@ msgstr "Nenhum DAC no chip"
 msgid "No DMA channel found"
 msgstr "Nenhum canal DMA encontrado"
 
-#: shared-module/busdevice/I2CDevice.c
+#: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "Nenhum dispositivo I2C no endereço: %x"
@@ -1537,6 +1537,7 @@ msgstr "Permissão negada"
 msgid "Pin does not have ADC capabilities"
 msgstr "O pino não tem recursos de ADC"
 
+#: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Apenas o pino de entrada"
@@ -1598,9 +1599,12 @@ msgstr ""
 "(heap)"
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
-"Pressione qualquer tecla para entrar no REPL. Use CTRL-D para recarregar."
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -2095,6 +2099,10 @@ msgstr ""
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
 msgstr "A senha do Wi-Fi deve ter entre 8 e 63 caracteres"
+
+#: main.c
+msgid "Woken up by alarm.\n"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -3887,6 +3895,10 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr ""
+#~ "Pressione qualquer tecla para entrar no REPL. Use CTRL-D para recarregar."
 
 #~ msgid "Only IPv4 SOCK_STREAM sockets supported"
 #~ msgstr "São suportados apenas soquetes IPv4 SOCK_STREAM"

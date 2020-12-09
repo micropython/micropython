@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"POT-Creation-Date: 2020-12-08 09:56-0800\n"
 "PO-Revision-Date: 2020-12-04 18:33+0000\n"
 "Last-Translator: vkuthan <vit.kuthan@seznam.cz>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -502,8 +502,8 @@ msgstr ""
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
-#: shared-bindings/busio/I2C.c
+#: shared-bindings/adafruit_bus_device/I2CDevice.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr ""
 
@@ -1300,7 +1300,7 @@ msgstr ""
 msgid "No DMA channel found"
 msgstr ""
 
-#: shared-module/busdevice/I2CDevice.c
+#: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr ""
@@ -1507,6 +1507,7 @@ msgstr ""
 msgid "Pin does not have ADC capabilities"
 msgstr ""
 
+#: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr ""
@@ -1559,7 +1560,11 @@ msgid "Prefix buffer must be on the heap"
 msgstr ""
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
+msgstr ""
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2028,6 +2033,10 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
+
+#: main.c
+msgid "Woken up by alarm.\n"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
