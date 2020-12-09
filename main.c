@@ -215,7 +215,7 @@ STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec
 STATIC void cleanup_after_vm(supervisor_allocation* heap) {
     // Reset port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
-    // Turn off the display and flush the fileystem before the heap disappears.
+    // Turn off the display and flush the filesystem before the heap disappears.
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
     #endif
