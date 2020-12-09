@@ -63,9 +63,7 @@ STATIC bool woke_up = false;
 void timer_callback(void *arg) {
     (void) arg;
     woke_up = true;
-    if (sleeping_circuitpython_task) {
-        xTaskNotifyGive(sleeping_circuitpython_task);
-    }
+    xTaskNotifyGive(circuitpython_task);
 }
 
 bool alarm_time_timealarm_woke_us_up(void) {
@@ -79,7 +77,24 @@ void alarm_time_timealarm_reset(void) {
     woke_up = false;
 }
 
-void alarm_time_timealarm_set_alarm(alarm_time_time_alarm_obj_t *self) {
+void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
+    bool time_alarm_set = false;
+    alarm_time_time_alarm_obj_t *time_alarm = MP_OBJ_NULL;
+
+    for (size_t i = 0; i < n_alarms; i++) {
+        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_time_time_alarm_type)) {
+            continue;
+        }
+        if (time_alarm_set) {
+            mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
+        }
+        time_alarm  = MP_OBJ_TO_PTR(alarms[i]);
+        time_alarm_set = true;
+    }
+    if (!time_alarm_set) {
+        return;
+    }
+
     if (pretend_sleep_timer != NULL) {
         esp_timer_stop(pretend_sleep_timer);
     } else {
@@ -94,7 +109,7 @@ void alarm_time_timealarm_set_alarm(alarm_time_time_alarm_obj_t *self) {
 
     // Compute how long to actually sleep, considering the time now.
     mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
-    mp_float_t wakeup_in_secs = MAX(0.0f, self->monotonic_time - now_secs);
+    mp_float_t wakeup_in_secs = MAX(0.0f, time_alarm->monotonic_time - now_secs);
     const uint64_t sleep_for_us = (uint64_t) (wakeup_in_secs * 1000000);
     esp_sleep_enable_timer_wakeup(sleep_for_us);
 

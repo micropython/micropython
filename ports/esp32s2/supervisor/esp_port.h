@@ -30,6 +30,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-extern TaskHandle_t sleeping_circuitpython_task;
+extern TaskHandle_t circuitpython_task;
 
 #endif // MICROPY_INCLUDED_ESP32S2_SUPERVISOR_PORT_H

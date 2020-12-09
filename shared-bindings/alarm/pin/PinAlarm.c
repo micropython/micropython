@@ -89,7 +89,11 @@ STATIC mp_obj_t alarm_pin_pin_alarm_make_new(const mp_obj_type_t *type, mp_uint_
 //|
 STATIC mp_obj_t alarm_pin_pin_alarm_obj_get_pin(mp_obj_t self_in) {
     alarm_pin_pin_alarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return common_hal_alarm_pin_pin_alarm_get_pin(self);
+    mcu_pin_obj_t* pin = common_hal_alarm_pin_pin_alarm_get_pin(self);
+    if (pin == NULL) {
+        return mp_const_none;
+    }
+    return MP_OBJ_FROM_PTR(pin);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pin_alarm_get_pin_obj, alarm_pin_pin_alarm_obj_get_pin);
 

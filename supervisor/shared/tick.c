@@ -145,10 +145,11 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     delay = delay * 1024 / 1000;
     uint64_t end_tick = start_tick + delay;
     int64_t remaining = delay;
-    while (remaining > 0) {
+
+    // Loop until we've waited long enough or we've been CTRL-Ced by autoreload
+    // or the user.
+    while (remaining > 0 && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
-        // Check to see if we've been CTRL-Ced by autoreload or the user.
-        mp_handle_pending();
         remaining = end_tick - port_get_raw_ticks(NULL);
         // We break a bit early so we don't risk setting the alarm before the time when we call
         // sleep.

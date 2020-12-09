@@ -260,10 +260,10 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
 STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
-    if (serial_connected_at_start) {
-        serial_write("\n");
-        print_code_py_status_message(safe_mode);
-    }
+    serial_write("\n");
+    print_code_py_status_message(safe_mode);
+    print_safe_mode_message(safe_mode);
+    serial_write("\n");
     #endif
 
     pyexec_result_t result;
@@ -307,16 +307,14 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             return reload_requested;
         }
+
+        // Display a different completion message if the user has no USB attached (cannot save files)
+        serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
     }
 
     // Program has finished running.
 
-    // Display a different completion message if the user has no USB attached (cannot save files)
-    if (!serial_connected_at_start) {
-        serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
-    }
-
-    bool serial_connected_before_animation = false;
+    bool serial_connected_before_animation = serial_connected();
     #if CIRCUITPY_DISPLAYIO
     bool refreshed_epaper_display = false;
     #endif

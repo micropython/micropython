@@ -31,7 +31,11 @@ typedef struct {
     mp_obj_base_t base;
     mcu_pin_obj_t *pin;
     bool value;
-    bool all_same_value;
-    bool edge;
     bool pull;
 } alarm_pin_pin_alarm_obj_t;
+
+void alarm_pin_pin_alarm_reset(void);
+void alarm_pin_pin_alarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
+void alarm_pin_pin_alarm_prepare_for_deep_sleep(void);
+mp_obj_t alarm_pin_pin_alarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms);
+bool alarm_pin_pin_alarm_woke_us_up(void);
