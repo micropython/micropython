@@ -102,6 +102,14 @@ safe_mode_t port_init(void) {
         return NO_HEAP;
     }
 
+    esp_reset_reason_t reason = esp_reset_reason();
+    if (reason == ESP_RST_BROWNOUT) {
+        return BROWNOUT;
+    }
+    if (reason == ESP_RST_PANIC) {
+        return HARD_CRASH;
+    }
+
     return NO_SAFE_MODE;
 }
 
