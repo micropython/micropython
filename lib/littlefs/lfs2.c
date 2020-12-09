@@ -425,6 +425,7 @@ static inline void lfs2_superblock_tole32(lfs2_superblock_t *superblock) {
     superblock->attr_max    = lfs2_tole32(superblock->attr_max);
 }
 
+#ifndef LFS2_NO_ASSERT
 static inline bool lfs2_mlist_isopen(struct lfs2_mlist *head,
         struct lfs2_mlist *node) {
     for (struct lfs2_mlist **p = &head; *p; p = &(*p)->next) {
@@ -435,6 +436,7 @@ static inline bool lfs2_mlist_isopen(struct lfs2_mlist *head,
 
     return false;
 }
+#endif
 
 static inline void lfs2_mlist_remove(lfs2_t *lfs2, struct lfs2_mlist *mlist) {
     for (struct lfs2_mlist **p = &lfs2->mlist; *p; p = &(*p)->next) {
