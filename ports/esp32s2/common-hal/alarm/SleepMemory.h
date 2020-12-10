@@ -29,8 +29,6 @@
 
 #include "py/obj.h"
 
-#define SLEEP_MEMORY_LENGTH (8192)
-
 // There are several places we could store persistent data for SleepMemory:
 //
 // RTC registers: There are a few 32-bit registers maintained during deep sleep.
