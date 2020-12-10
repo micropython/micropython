@@ -83,7 +83,8 @@ bool displayio_palette_get_color(displayio_palette_t *self, const _displayio_col
         uint8_t pixel_hue = self->colors[palette_index].hue;
         displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, luma, color);
     } else if (colorspace->grayscale) {
-        *color = self->colors[palette_index].luma >> (8 - colorspace->depth);
+        size_t bitmask = (1 << colorspace->depth) - 1;
+        *color = (self->colors[palette_index].luma >> colorspace->grayscale_bit) & bitmask;
     } else {
         uint16_t packed = self->colors[palette_index].rgb565;
         if (colorspace->reverse_bytes_in_word) {

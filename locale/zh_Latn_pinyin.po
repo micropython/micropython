@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-04 21:18+0530\n"
-"PO-Revision-Date: 2020-11-11 19:13+0000\n"
+"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"PO-Revision-Date: 2020-11-19 01:28+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -302,7 +302,9 @@ msgstr "suǒ yǒu CAN wài shè dōu zài shǐ yòng zhōng"
 msgid "All I2C peripherals are in use"
 msgstr "Suǒyǒu I2C wàiwéi qì zhèngzài shǐyòng"
 
-#: ports/esp32s2/peripherals/pcnt_handler.c
+#: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr "suǒ yǒu zhèng zài shǐ yòng zhōng de PCNT dān yuán"
 
@@ -338,6 +340,7 @@ msgstr "Cǐ yǐn jiǎo de suǒyǒu jìshí qì zhèngzài shǐyòng"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
@@ -440,7 +443,7 @@ msgstr "Bǐtè shízhōng hé dānzì xuǎnzé bìxū gòngxiǎng shízhōng dā
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr ""
+msgstr "wèi shēn dù bì xū bāo hán 1 dào 6， ér bù shì %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -503,7 +506,8 @@ msgstr "Huǎn chōng qū cháng dù bì xū wéi 512 de bèi shù"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Huǎn chōng qū bì xū shì 512 zì jié de bèi shù"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
+#: shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 
@@ -851,6 +855,10 @@ msgstr "Yùqí UUID"
 msgid "Expected an Address"
 msgstr "Qídài yīgè dìzhǐ"
 
+#: shared-bindings/alarm/__init__.c
+msgid "Expected an alarm"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -863,6 +871,10 @@ msgstr "Bù zhīchí dài yǒu sǎomiáo xiǎngyìng de kuòzhǎn guǎngbò."
 #: extmod/ulab/code/fft/fft.c
 msgid "FFT is defined for ndarrays only"
 msgstr "FFT jǐn wéi ndarrays dìng yì"
+
+#: extmod/ulab/code/fft/fft.c
+msgid "FFT is implemented for linear arrays only"
+msgstr ""
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
@@ -992,6 +1004,10 @@ msgstr "I2C chūshǐhuà cuòwù"
 msgid "I2SOut not available"
 msgstr "I2SOut bù kě yòng"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -1008,6 +1024,10 @@ msgstr ""
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
 msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè"
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "Initialization failed due to lack of memory"
+msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1089,6 +1109,7 @@ msgid "Invalid byteorder string"
 msgstr "Wúxiào de zì jié shùnxù zìfú chuàn"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Wúxiào de bǔhuò zhōuqí. Yǒuxiào fànwéi: 1-500"
 
@@ -1265,6 +1286,10 @@ msgstr "Bìxū tígōng MISO huò MOSI yǐn jiǎo"
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "bì xū shǐ yòng 6 RGB yǐn jiǎo de bèi shù, ér bù shì %d"
 
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
+msgstr ""
+
 #: py/parse.c
 msgid "Name too long"
 msgstr "Míngchēng tài zhǎng"
@@ -1282,6 +1307,11 @@ msgstr "Méiyǒu DAC zài xīnpiàn shàng de"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "No DMA channel found"
 msgstr "Wèi zhǎodào DMA píndào"
+
+#: shared-module/busdevice/I2CDevice.c
+#, c-format
+msgid "No I2C device at address: %x"
+msgstr ""
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
@@ -1416,13 +1446,13 @@ msgstr "Bù zhīchí jīshù"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Zhǐyǒu 8 huò 16 wèi dānwèi "
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
-msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr "Jǐn zhīchí IPv4 SOCK_STREAM tào jiē zì"
-
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Jǐn zhīchí IPv4 dìzhǐ"
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 sockets supported"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1440,6 +1470,10 @@ msgid ""
 msgstr ""
 "Jǐn zhīchí dān sè, suǒyǐn wéi 4bpp huò 8bpp yǐjí 16bpp huò gèng gāo de BMP: "
 "Gěi chū %d bpp"
+
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "Only one alarm.time alarm can be set."
+msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1498,6 +1532,10 @@ msgstr "Yǐn jiǎo bìxū zhīchí yìngjiàn zhōngduàn"
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
 msgstr "Zhēn hào yǐ bèi EXTI bǎoliú"
+
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "PinAlarm not yet implemented"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1564,7 +1602,7 @@ msgstr "Wèi chǔyú RS485 móshì shí zhǐdìngle RS485 fǎn zhuǎn"
 msgid "RTC calibration is not supported on this board"
 msgstr "Cǐ bǎn bù zhīchí RTC jiàozhǔn"
 
-#: shared-bindings/time/__init__.c
+#: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "Cǐ bǎn bù zhīchí RTC"
 
@@ -1710,6 +1748,10 @@ msgstr "Liú quēshǎo readinto() huò write() fāngfǎ."
 msgid "Supply at least one UART pin"
 msgstr "Dìngyì zhìshǎo yīgè UART yǐn jiǎo"
 
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Supply one of monotonic_time or epoch_time"
+msgstr ""
+
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
 msgstr "Xìtǒng tiáomù bìxū shì gnss.SatelliteSystem"
@@ -1779,6 +1821,10 @@ msgstr "Píng pū zhí chāochū fànwéi"
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "Píng pū kuāndù bìxū huàfēn wèi tú kuāndù"
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Time is in the past."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -1979,7 +2025,7 @@ msgstr "Diànyā dòu qǔ chāoshí"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "Jǐnggào: Nǐ de dàimǎ wénjiàn míng yǒu liǎng gè kuòzhǎn míng\n"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr "Yīdàn jiāng móshì shèzhì wèi RESET, jiù wúfǎ chūshǐhuà WatchDog Timer"
 
@@ -2065,10 +2111,6 @@ msgstr "dìzhǐ chāochū biānjiè"
 msgid "addresses is empty"
 msgstr "dìzhǐ wèi kōng"
 
-#: extmod/ulab/code/vector/vectorise.c
-msgid "arctan2 is implemented for scalars and ndarrays only"
-msgstr "arctan2 jǐn zhēnduì biāoliàng hé ndarray shíxiàn"
-
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "cānshù shì yīgè kōng de xùliè"
@@ -2076,6 +2118,10 @@ msgstr "cānshù shì yīgè kōng de xùliè"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr "argsort cānshù bìxū shì ndarray"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "argsort is not implemented for flattened arrays"
+msgstr ""
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -2094,13 +2140,21 @@ msgstr "cānshù biānhào/lèixíng bù pǐpèi"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "cānshù yīnggāi shì '%q', 'bùshì '%q'"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/linalg/linalg.c extmod/ulab/code/numerical/numerical.c
 msgid "arguments must be ndarrays"
 msgstr "cānshù bìxū shì ndarrays"
+
+#: extmod/ulab/code/ndarray.c
+msgid "array and index length must be equal"
+msgstr ""
 
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "yòu cè xūyào shùzǔ/zì jié"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "attempt to get (arg)min/(arg)max of empty sequence"
+msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
@@ -2111,16 +2165,16 @@ msgid "attributes not supported yet"
 msgstr "shǔxìng shàngwèi zhīchí"
 
 #: extmod/ulab/code/numerical/numerical.c
-msgid "axis must be -1, 0, None, or 1"
-msgstr "zhóu bìxū wèi-1,0, wú huò 1"
+msgid "axis is out of bounds"
+msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
-msgid "axis must be -1, 0, or 1"
-msgstr "zhóu bìxū wèi-1,0 huò 1"
+msgid "axis must be None, or an integer"
+msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
-msgid "axis must be None, 0, or 1"
-msgstr "zhóu bìxū wèi None,0 huò 1"
+msgid "axis too long"
+msgstr ""
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2323,6 +2377,10 @@ msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr "wúfǎ cóng shǒudòng zìduàn guīgé qiēhuàn dào zìdòng zìduàn biānhào"
 
+#: extmod/ulab/code/ndarray_operators.c
+msgid "cannot cast output with casting rule"
+msgstr ""
+
 #: py/objtype.c
 msgid "cannot create '%q' instances"
 msgstr "wúfǎ chuàngjiàn '%q' ' shílì"
@@ -2338,10 +2396,6 @@ msgstr "wúfǎ dǎorù míngchēng %q"
 #: py/builtinimport.c
 msgid "cannot perform relative import"
 msgstr "wúfǎ zhíxíng xiāngguān dǎorù"
-
-#: extmod/ulab/code/ndarray.c
-msgid "cannot reshape array (incompatible input/output shape)"
-msgstr "wúfǎ zhěngxíng shùzǔ (bù jiānróng de shūrù/shūchū xíngzhuàng)"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2418,10 +2472,6 @@ msgstr "juàn jī cānshù bìxū shì ndarrays"
 msgid "convolve arguments must not be empty"
 msgstr "juàn jī cān shǔ bùnéng wéi kōng"
 
-#: extmod/ulab/code/ndarray.c
-msgid "could not broadast input array from shape"
-msgstr "wúfǎ guǎngbò xíngzhuàng de shūrù shùzǔ"
-
 #: extmod/ulab/code/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr "wúfǎ fǎn zhuǎn fàndéméng dé jǔzhèn"
@@ -2430,6 +2480,10 @@ msgstr "wúfǎ fǎn zhuǎn fàndéméng dé jǔzhèn"
 msgid "couldn't determine SD card version"
 msgstr "wúfǎ quèdìng SD kǎ bǎnběn"
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "cross is defined for 1D arrays of length 3"
+msgstr ""
+
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
 msgstr "shùjù bìxū shì kě diédài de"
@@ -2437,10 +2491,6 @@ msgstr "shùjù bìxū shì kě diédài de"
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be of equal length"
 msgstr "shùjù chángdù bìxū xiāngděng"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "ddof must be smaller than length of data set"
-msgstr "ddof bìxū xiǎoyú shùjù jí de chángdù"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
@@ -2473,6 +2523,10 @@ msgstr "yǔfǎ gēngxīn xùliè de chángdù cuòwù"
 msgid "diff argument must be an ndarray"
 msgstr "bùtóng de cānshù bìxū shì ndarray"
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "differentiation order out of range"
+msgstr ""
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -2501,6 +2555,10 @@ msgstr "xúnzhǎo zhuǎnhuàn biāozhù géshì de jiéshù"
 #: shared-bindings/displayio/Shape.c
 msgid "end_x should be an int"
 msgstr "jiéwěi_x yīnggāi shì yīgè zhěngshù"
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "epoch_time not supported on this board"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -2588,6 +2646,10 @@ msgstr "dì yī gè cānshù bìxū shì kě tiáo yòng de"
 msgid "first argument must be a function"
 msgstr "dì yīgè cānshù bìxū shì yī gè hánshù"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "first argument must be a tuple of ndarrays"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
 msgstr "dì yī gè cānshù bìxū shì kě diédài de"
@@ -2641,9 +2703,9 @@ msgstr "hánshù huòdé cānshù '%q' de duōchóng zhí"
 msgid "function has the same sign at the ends of interval"
 msgstr "hánshù zài jiàngé mòwěi jùyǒu xiāngtóng de fúhào"
 
-#: extmod/ulab/code/compare/compare.c
-msgid "function is implemented for scalars and ndarrays only"
-msgstr "gāi hánshù jǐn zhēnduì biāoliàng hé ndarray shíxiàn"
+#: extmod/ulab/code/ndarray.c
+msgid "function is defined for ndarrays only"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -2712,6 +2774,7 @@ msgstr "bù zhèngquè de tiánchōng"
 msgid "index is out of bounds"
 msgstr "suǒyǐn chāochū fànwéi"
 
+#: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "suǒyǐn chāochū fànwéi"
@@ -2736,6 +2799,10 @@ msgstr "Initial_value chángdù cuòwù"
 msgid "inline assembler must be a function"
 msgstr "nèi lián jíhé bìxū shì yīgè hánshù"
 
+#: extmod/ulab/code/ndarray.c
+msgid "input and output shapes are not compatible"
+msgstr ""
+
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
 msgstr "shūrù cānshù bìxū shì zhěngshù huò 2 yuán zǔ"
@@ -2743,6 +2810,10 @@ msgstr "shūrù cānshù bìxū shì zhěngshù huò 2 yuán zǔ"
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
 msgstr "shūrù shùzǔ de chángdù bìxū shì 2 de mì"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "input arrays are not compatible"
+msgstr ""
 
 #: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
@@ -2756,6 +2827,22 @@ msgstr "shūrù jǔzhèn bù duìchèn"
 msgid "input matrix is singular"
 msgstr "shūrù jǔzhèn shì qíyì de"
 
+#: extmod/ulab/code/user/user.c
+msgid "input must be a dense ndarray"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "input must be a tensor of rank 2"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
+msgid "input must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "input must be one-dimensional"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
 msgstr "shūrù bìxū wèi fāng jǔzhèn"
@@ -2767,6 +2854,10 @@ msgstr "shūrù bìxū shì yuán zǔ, lièbiǎo, fànwéi huò ndarray"
 #: extmod/ulab/code/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr "shūrù xiàngliàng de chángdù bìxū xiāngděng"
+
+#: extmod/ulab/code/poly/poly.c
+msgid "inputs are not iterable"
+msgstr ""
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -2837,6 +2928,10 @@ msgstr "jīshù wèi %d de zhěng shǔ de yǔfǎ wúxiào"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "wúxiào de hàomǎ yǔfǎ"
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "io must be rtc io"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -2937,6 +3032,10 @@ msgstr "Dāng gùdìng chángdù wèi %s shí, zuìdà chángdù bìxū wèi 0-%
 msgid "max_length must be > 0"
 msgstr "Max_length bìxū > 0"
 
+#: extmod/ulab/code/ndarray.c
+msgid "maximum number of dimensions is 4"
+msgstr ""
+
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "chāochū zuìdà dìguī shēndù"
@@ -2985,10 +3084,6 @@ msgstr "bìxū tíchū duìxiàng"
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
 msgstr "bìxū shǐyòng guānjiàn cí cānshù"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "n must be between 0, and 9"
-msgstr "n bìxū jiè yú 0 dào 9 zhī jiān"
 
 #: py/runtime.c
 msgid "name '%q' is not defined"
@@ -3072,6 +3167,10 @@ msgstr "zài */** zhīhòu fēi guānjiàn cí cānshù"
 msgid "non-keyword arg after keyword arg"
 msgstr "guānjiàn zì cānshù zhīhòu de fēi guānjiàn zì cānshù"
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "norm is defined for 1D and 2D arrays"
+msgstr ""
+
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "bùshì 128 wèi UUID"
@@ -3083,10 +3182,6 @@ msgstr "bùshì zì chuàn géshì huà guòchéng zhōng zhuǎnhuàn de suǒyǒ
 #: py/objstr.c
 msgid "not enough arguments for format string"
 msgstr "géshì zìfú chuàn cān shǔ bùzú"
-
-#: extmod/ulab/code/poly/poly.c
-msgid "number of arguments must be 2, or 3"
-msgstr "cānshù shùliàng bìxū wèi 2 huò 3"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
@@ -3140,6 +3235,10 @@ msgstr "xūyào huǎnchōng qū xiéyì de duìxiàng"
 msgid "odd-length string"
 msgstr "jīshù zìfú chuàn"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "offset is too large"
+msgstr ""
+
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "piānlí biānjiè"
@@ -3161,6 +3260,14 @@ msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
 #: extmod/ulab/code/vector/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr "cāozuò shǔ bùnéng yīqǐ guǎngbò"
+
+#: extmod/ulab/code/ndarray.c
+msgid "operation is implemented for 1D Boolean arrays only"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "operation is not implemented for flattened array"
+msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3252,6 +3359,7 @@ msgstr "pow() 3 cān shǔ bùnéng wéi 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
+#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
@@ -3295,6 +3403,10 @@ msgstr "xiāngduì dǎorù"
 msgid "requested length %d but object has length %d"
 msgstr "qǐngqiú chángdù %d dàn duìxiàng chángdù %d"
 
+#: extmod/ulab/code/ndarray_operators.c
+msgid "results cannot be cast to specified type"
+msgstr ""
+
 #: py/compile.c
 msgid "return annotation must be an identifier"
 msgstr "fǎnhuí zhùshì bìxū shì biāozhì fú"
@@ -3313,9 +3425,9 @@ msgstr "rgb_pins[%d] fùzhì lìng yīgè yǐn jiǎo fēnpèi"
 msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr "rgb_pins[%d] yǔ shízhōng bùzài tóng yīgè duānkǒu shàng"
 
-#: extmod/ulab/code/ndarray.c
-msgid "right hand side must be an ndarray, or a scalar"
-msgstr "yòubiān bìxū shì ndarray huò biāoliàng"
+#: extmod/ulab/code/numerical/numerical.c
+msgid "roll argument must be an ndarray"
+msgstr ""
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -3342,8 +3454,8 @@ msgid "script compilation not supported"
 msgstr "bù zhīchí jiǎoběn biānyì"
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a 2-tuple"
-msgstr "xíngzhuàng bìxū shì 2 yuán zǔ"
+msgid "shape must be a tuple"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3384,10 +3496,6 @@ msgstr "ruǎn chóngqǐ\n"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "páixù cānshù bìxū shì ndarray"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "sorted axis can't be longer than 65535"
-msgstr "pái xù zhóu bù néng chāo guò 65535"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
@@ -3469,6 +3577,7 @@ msgstr "yùzhí bìxū zài fànwéi 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() xūyào 9 xùliè"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "chāoshí shíjiān chāoguò zuìdà zhīchí zhí"
@@ -3493,6 +3602,10 @@ msgstr "děngdài v2 kǎ chāoshí"
 msgid "timestamp out of range for platform time_t"
 msgstr "time_t shíjiān chuō chāochū píngtái fànwéi"
 
+#: extmod/ulab/code/ndarray.c
+msgid "tobytes can be invoked for dense arrays only"
+msgstr ""
+
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
 msgstr "tígōng jǐ dìng géshì de cānshù tài duō"
@@ -3509,6 +3622,10 @@ msgstr "dǎkāi tài duō zhí (yùqí %d)"
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "Trapz shì wèi děng zhǎng de 1D shùzǔ dìngyì de"
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "trigger level must be 0 or 1"
+msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
@@ -3652,6 +3769,14 @@ msgstr "zhí jìshù bìxū wèi > 0"
 msgid "vectors must have same lengths"
 msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "wakeup conflict"
+msgstr ""
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "watchdog not initialized"
+msgstr "wèi chū shǐ huà jiān shì qì"
+
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
 msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
@@ -3664,13 +3789,13 @@ msgstr "kuāndù bìxū dàyú líng"
 msgid "window must be <= interval"
 msgstr "Chuāngkǒu bìxū shì <= jiàngé"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "wrong argument type"
-msgstr "cuòwù de cānshù lèixíng"
+#: extmod/ulab/code/numerical/numerical.c
+msgid "wrong axis index"
+msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "wrong index type"
-msgstr "cuòwù de suǒyǐn lèixíng"
+#: extmod/ulab/code/ulab_create.c
+msgid "wrong axis specified"
+msgstr ""
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
@@ -3719,6 +3844,54 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Jǐn zhīchí IPv4 SOCK_STREAM tào jiē zì"
+
+#~ msgid "arctan2 is implemented for scalars and ndarrays only"
+#~ msgstr "arctan2 jǐn zhēnduì biāoliàng hé ndarray shíxiàn"
+
+#~ msgid "axis must be -1, 0, None, or 1"
+#~ msgstr "zhóu bìxū wèi-1,0, wú huò 1"
+
+#~ msgid "axis must be -1, 0, or 1"
+#~ msgstr "zhóu bìxū wèi-1,0 huò 1"
+
+#~ msgid "axis must be None, 0, or 1"
+#~ msgstr "zhóu bìxū wèi None,0 huò 1"
+
+#~ msgid "cannot reshape array (incompatible input/output shape)"
+#~ msgstr "wúfǎ zhěngxíng shùzǔ (bù jiānróng de shūrù/shūchū xíngzhuàng)"
+
+#~ msgid "could not broadast input array from shape"
+#~ msgstr "wúfǎ guǎngbò xíngzhuàng de shūrù shùzǔ"
+
+#~ msgid "ddof must be smaller than length of data set"
+#~ msgstr "ddof bìxū xiǎoyú shùjù jí de chángdù"
+
+#~ msgid "function is implemented for scalars and ndarrays only"
+#~ msgstr "gāi hánshù jǐn zhēnduì biāoliàng hé ndarray shíxiàn"
+
+#~ msgid "n must be between 0, and 9"
+#~ msgstr "n bìxū jiè yú 0 dào 9 zhī jiān"
+
+#~ msgid "number of arguments must be 2, or 3"
+#~ msgstr "cānshù shùliàng bìxū wèi 2 huò 3"
+
+#~ msgid "right hand side must be an ndarray, or a scalar"
+#~ msgstr "yòubiān bìxū shì ndarray huò biāoliàng"
+
+#~ msgid "shape must be a 2-tuple"
+#~ msgstr "xíngzhuàng bìxū shì 2 yuán zǔ"
+
+#~ msgid "sorted axis can't be longer than 65535"
+#~ msgstr "pái xù zhóu bù néng chāo guò 65535"
+
+#~ msgid "wrong argument type"
+#~ msgstr "cuòwù de cānshù lèixíng"
+
+#~ msgid "wrong index type"
+#~ msgstr "cuòwù de suǒyǐn lèixíng"
 
 #~ msgid "Must provide SCK pin"
 #~ msgstr "bì xū tí gòng SCK yǐn jiǎo"

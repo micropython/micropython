@@ -26,8 +26,10 @@
  */
 
 #include <math.h>
-#include "common-hal/microcontroller/Processor.h"
 #include "py/runtime.h"
+
+#include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 #include "supervisor/shared/translate.h"
 
 #include "csr.h"
@@ -61,4 +63,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     raw_id[12] = csr_readl(CSR_VERSION_SEED_ADDR + 4);
     raw_id[13] = csr_readl(CSR_VERSION_SEED_ADDR + 8);
     raw_id[14] = csr_readl(CSR_VERSION_SEED_ADDR + 12);
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    return RESET_REASON_UNKNOWN;
 }

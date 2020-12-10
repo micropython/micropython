@@ -31,6 +31,7 @@
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
+#include "supervisor/shared/workflow.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 

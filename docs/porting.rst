@@ -106,7 +106,7 @@ request a safe mode state which prevents the supervisor from running user code
 while still allowing access to the REPL and other resources.
 
 The core port initialization and reset methods are defined in
-``supervisor/port.c`` and should be the first to be implemented. Its required
+``supervisor/port.c`` and should be the first to be implemented. It's required
 that they be implemented in the ``supervisor`` directory within the port
 directory. That way, they are always in the expected place.
 

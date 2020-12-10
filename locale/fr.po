@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-04 21:18+0530\n"
-"PO-Revision-Date: 2020-10-22 20:48+0000\n"
+"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"PO-Revision-Date: 2020-11-24 22:45+0000\n"
 "Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.3.1\n"
+"X-Generator: Weblate 4.4-dev\n"
 
 #: main.c
 msgid ""
@@ -298,15 +298,17 @@ msgstr "Type d'adresse hors plage"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "Tous les périphériques CAN sont utilisés"
 
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Tous les périphériques I2C sont utilisés"
 
-#: ports/esp32s2/peripherals/pcnt_handler.c
+#: ports/esp32s2/common-hal/countio/Counter.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
-msgstr ""
+msgstr "Toutes les unités PCNT sont utilisées"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/esp32s2/common-hal/canio/Listener.c
@@ -340,6 +342,7 @@ msgstr "Tous les timers pour cette broche sont utilisés"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c
 #: ports/esp32s2/common-hal/pulseio/PulseOut.c
@@ -431,7 +434,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
-msgstr ""
+msgstr "Baudrate non prise en charge par le périphérique"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -445,7 +448,7 @@ msgstr "'bit clock' et 'word select' doivent partager une horloge"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr ""
+msgstr "Bit depth doit être compris entre 1 et 6 inclus, et non %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -508,7 +511,8 @@ msgstr "La longueur de la mémoire tampon doit être un multiple de 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "La mémoire tampon doit être un multiple de 512"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
+#: shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Le tampon doit être de longueur au moins 1"
 
@@ -864,6 +868,10 @@ msgstr "Un UUID est attendu"
 msgid "Expected an Address"
 msgstr "Attendu une adresse"
 
+#: shared-bindings/alarm/__init__.c
+msgid "Expected an alarm"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -877,6 +885,10 @@ msgstr ""
 #: extmod/ulab/code/fft/fft.c
 msgid "FFT is defined for ndarrays only"
 msgstr "La FFT est définie pour les ndarrays uniquement"
+
+#: extmod/ulab/code/fft/fft.c
+msgid "FFT is implemented for linear arrays only"
+msgstr "FFT n'est implémenté que pour les tableaux linéaires"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
@@ -1007,6 +1019,10 @@ msgstr "Erreur d'initialisation I2C"
 msgid "I2SOut not available"
 msgstr "I2SOut n'est pas disponible"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+msgstr ""
+
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -1023,6 +1039,10 @@ msgstr ""
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
 msgstr "Taille de tampon incorrecte"
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "Initialization failed due to lack of memory"
+msgstr "L'initialisation a échoué par manque de mémoire"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1104,6 +1124,7 @@ msgid "Invalid byteorder string"
 msgstr "Chaîne d'octets non valide"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Période de capture invalide. Gamme valide : 1 à 500"
 
@@ -1280,6 +1301,10 @@ msgstr "Doit fournir une broche MISO ou MOSI"
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
 
+#: ports/esp32s2/common-hal/nvm/ByteArray.c
+msgid "NVS Error"
+msgstr ""
+
 #: py/parse.c
 msgid "Name too long"
 msgstr "Nom trop long"
@@ -1297,6 +1322,11 @@ msgstr "Pas de DAC sur la puce"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "No DMA channel found"
 msgstr "Aucun canal DMA trouvé"
+
+#: shared-module/busdevice/I2CDevice.c
+#, c-format
+msgid "No I2C device at address: %x"
+msgstr ""
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
@@ -1432,13 +1462,13 @@ msgstr "Parité impaire non supportée"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Uniquement 8 ou 16 bit mono avec "
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
-msgid "Only IPv4 SOCK_STREAM sockets supported"
-msgstr "Seules les sockets IPv4 SOCK_STREAM sont prises en charge"
-
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Seules les adresses IPv4 sont prises en charge"
+
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+msgid "Only IPv4 sockets supported"
+msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1456,6 +1486,10 @@ msgid ""
 msgstr ""
 "Prise en charge uniquement des monochromes, 4 bpp ou 8 bpp indexés et 16 bpp "
 "ou plus : %d bpp fournis"
+
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "Only one alarm.time alarm can be set."
+msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1517,6 +1551,10 @@ msgstr "La broche doit prendre en charge les interruptions matérielles"
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
 msgstr "Numéro de broche déjà réservé par EXTI"
+
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "PinAlarm not yet implemented"
+msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1586,7 +1624,7 @@ msgstr "Inversion RS485 spécifiée lorsqu'elle n'est pas en mode RS485"
 msgid "RTC calibration is not supported on this board"
 msgstr "étalonnage de la RTC non supportée sur cette carte"
 
-#: shared-bindings/time/__init__.c
+#: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "RTC non supportée sur cette carte"
 
@@ -1732,6 +1770,10 @@ msgstr "Il manque une méthode readinto() ou write() au flux."
 msgid "Supply at least one UART pin"
 msgstr "Fournissez au moins une broche UART"
 
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Supply one of monotonic_time or epoch_time"
+msgstr ""
+
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
 msgstr "L'entrée du système doit être gnss.SatelliteSystem"
@@ -1803,6 +1845,10 @@ msgstr "Valeur de tuile hors limites"
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "La largeur de la tuile doit diviser exactement la largeur de l'image"
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Time is in the past."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -2009,7 +2055,7 @@ msgstr "La lecture de la tension a expiré"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENTION : le nom de fichier de votre code a deux extensions\n"
 
-#: shared-bindings/watchdog/WatchDogTimer.c
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
 "WatchDogTimer ne peut pas être désinitialisé une fois que le mode est réglé "
@@ -2097,10 +2143,6 @@ msgstr "adresse hors limites"
 msgid "addresses is empty"
 msgstr "adresses vides"
 
-#: extmod/ulab/code/vector/vectorise.c
-msgid "arctan2 is implemented for scalars and ndarrays only"
-msgstr "arctan2 est implémenté uniquement pour les scalaires et les ndarrays"
-
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
 msgstr "l'argument est une séquence vide"
@@ -2108,6 +2150,10 @@ msgstr "l'argument est une séquence vide"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
 msgstr "L'argument argsort doit être un ndarray"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "argsort is not implemented for flattened arrays"
+msgstr "argsort n'est pas mis en œuvre pour les tableaux aplatis"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -2126,13 +2172,21 @@ msgstr "argument num/types ne correspond pas"
 msgid "argument should be a '%q' not a '%q'"
 msgstr "l'argument devrait être un(e) '%q', pas '%q'"
 
-#: extmod/ulab/code/linalg/linalg.c
+#: extmod/ulab/code/linalg/linalg.c extmod/ulab/code/numerical/numerical.c
 msgid "arguments must be ndarrays"
 msgstr "les arguments doivent être des ndarrays"
+
+#: extmod/ulab/code/ndarray.c
+msgid "array and index length must be equal"
+msgstr "la longueur du tableau et de l'index doit être égale"
 
 #: py/objarray.c shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "tableau/octets requis à droite"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "attempt to get (arg)min/(arg)max of empty sequence"
+msgstr "tentative d’obtenir (arg)min/(arg)max d'une séquence vide"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
@@ -2143,16 +2197,16 @@ msgid "attributes not supported yet"
 msgstr "attribut pas encore supporté"
 
 #: extmod/ulab/code/numerical/numerical.c
-msgid "axis must be -1, 0, None, or 1"
-msgstr "l'axe doit être -1, 0, None ou 1"
+msgid "axis is out of bounds"
+msgstr "axis est hors limites"
 
 #: extmod/ulab/code/numerical/numerical.c
-msgid "axis must be -1, 0, or 1"
-msgstr "l'axe doit être -1, 0 ou 1"
+msgid "axis must be None, or an integer"
+msgstr "axis doit être None ou un entier"
 
 #: extmod/ulab/code/numerical/numerical.c
-msgid "axis must be None, 0, or 1"
-msgstr "l'axe doit être None, 0 ou 1"
+msgid "axis too long"
+msgstr "axis trop long"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2364,6 +2418,10 @@ msgstr ""
 "impossible de passer d'une spécification manuelle des champs à une "
 "énumération auto"
 
+#: extmod/ulab/code/ndarray_operators.c
+msgid "cannot cast output with casting rule"
+msgstr ""
+
 #: py/objtype.c
 msgid "cannot create '%q' instances"
 msgstr "ne peut pas créer une instance de '%q'"
@@ -2379,11 +2437,6 @@ msgstr "ne peut pas importer le nom %q"
 #: py/builtinimport.c
 msgid "cannot perform relative import"
 msgstr "ne peut pas réaliser un import relatif"
-
-#: extmod/ulab/code/ndarray.c
-msgid "cannot reshape array (incompatible input/output shape)"
-msgstr ""
-"ne peut pas remodeler le tableau (forme d'entrée / sortie incompatible)"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2459,10 +2512,6 @@ msgstr "les arguments convolve doivent être des ndarrays"
 msgid "convolve arguments must not be empty"
 msgstr "les arguments convolve ne doivent pas être vides"
 
-#: extmod/ulab/code/ndarray.c
-msgid "could not broadast input array from shape"
-msgstr "n'a pas pu diffuser le tableau d'entrée à partir de la forme"
-
 #: extmod/ulab/code/poly/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr "n'a pas pu inverser la matrice Vandermonde"
@@ -2471,6 +2520,10 @@ msgstr "n'a pas pu inverser la matrice Vandermonde"
 msgid "couldn't determine SD card version"
 msgstr "impossible de déterminer la version de la carte SD"
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "cross is defined for 1D arrays of length 3"
+msgstr "cross est défini pour les tableaux 1D de longueur 3"
+
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
 msgstr "les données doivent être les objets iterables"
@@ -2478,10 +2531,6 @@ msgstr "les données doivent être les objets iterables"
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be of equal length"
 msgstr "les données doivent être de longueur égale"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "ddof must be smaller than length of data set"
-msgstr "ddof doit être inférieur à la longueur de l'ensemble de données"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
@@ -2514,6 +2563,10 @@ msgstr "la séquence de mise à jour de dict a une mauvaise longueur"
 msgid "diff argument must be an ndarray"
 msgstr "l'argument diff doit être un ndarray"
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "differentiation order out of range"
+msgstr "differentiation order hors plage"
+
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
 msgid "division by zero"
@@ -2542,6 +2595,10 @@ msgstr "fin de format en cherchant une spécification de conversion"
 #: shared-bindings/displayio/Shape.c
 msgid "end_x should be an int"
 msgstr "end_x doit être un entier 'int'"
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "epoch_time not supported on this board"
+msgstr ""
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -2631,6 +2688,10 @@ msgstr "le premier argument doit être un appelable"
 msgid "first argument must be a function"
 msgstr "le premier argument doit être une fonction"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "first argument must be a tuple of ndarrays"
+msgstr "le premier argument doit être un tuple de ndarrays"
+
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
 msgstr "le premier argument doit être un itérable"
@@ -2684,10 +2745,9 @@ msgstr "la fonction a reçu plusieurs valeurs pour l'argument '%q'"
 msgid "function has the same sign at the ends of interval"
 msgstr "la fonction a le même signe aux extrémités de l’intervalle"
 
-#: extmod/ulab/code/compare/compare.c
-msgid "function is implemented for scalars and ndarrays only"
-msgstr ""
-"la fonction est implémentée pour les scalaires et les ndarrays uniquement"
+#: extmod/ulab/code/ndarray.c
+msgid "function is defined for ndarrays only"
+msgstr "La fonction n'est définie que pour les ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -2756,6 +2816,7 @@ msgstr "espacement incorrect"
 msgid "index is out of bounds"
 msgstr "l'index est hors limites"
 
+#: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr "index hors gamme"
@@ -2781,6 +2842,10 @@ msgstr "la longueur de initial_value est incorrecte"
 msgid "inline assembler must be a function"
 msgstr "l'assembleur doit être une fonction"
 
+#: extmod/ulab/code/ndarray.c
+msgid "input and output shapes are not compatible"
+msgstr "les formes d'entrée et de sortie ne sont pas compatibles"
+
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
 msgstr "l'argument d'entrée doit être un entier ou un tuple 2"
@@ -2788,6 +2853,10 @@ msgstr "l'argument d'entrée doit être un entier ou un tuple 2"
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
 msgstr "la longueur du tableau d'entrée doit être une puissance de 2"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "input arrays are not compatible"
+msgstr "les tableaux d'entrée ne sont pas compatibles"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
@@ -2801,6 +2870,22 @@ msgstr "la matrice d'entrée est asymétrique"
 msgid "input matrix is singular"
 msgstr "la matrice d'entrée est singulière"
 
+#: extmod/ulab/code/user/user.c
+msgid "input must be a dense ndarray"
+msgstr "l'entrée doit être un tableau dense"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "input must be a tensor of rank 2"
+msgstr "l'entrée doit être un tenseur de rang 2"
+
+#: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
+msgid "input must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/filter/filter.c
+msgid "input must be one-dimensional"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
 msgstr "l'entrée doit être une matrice carrée"
@@ -2812,6 +2897,10 @@ msgstr "l'entrée doit être tuple, list, range ou ndarray"
 #: extmod/ulab/code/poly/poly.c
 msgid "input vectors must be of equal length"
 msgstr "les vecteurs d'entrée doivent être de longueur égale"
+
+#: extmod/ulab/code/poly/poly.c
+msgid "inputs are not iterable"
+msgstr ""
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -2883,6 +2972,10 @@ msgstr "syntaxe invalide pour un entier de base %d"
 msgid "invalid syntax for number"
 msgstr "syntaxe invalide pour un nombre"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "io must be rtc io"
+msgstr ""
+
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "l'argument 1 de issubclass() doit être une classe"
@@ -2953,7 +3046,7 @@ msgstr "entiers longs non supportés dans cette build"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
-msgstr ""
+msgstr "loopback + silent mode non pris en charge par le périphérique"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -2985,17 +3078,21 @@ msgstr "max_length doit être 0-%d lorsque fixed_length est %s"
 msgid "max_length must be > 0"
 msgstr "max_length doit être > 0"
 
+#: extmod/ulab/code/ndarray.c
+msgid "maximum number of dimensions is 4"
+msgstr ""
+
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
 msgstr "profondeur maximale de récursivité dépassée"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "maxiter must be > 0"
-msgstr ""
+msgstr "maxiter doit être > 0"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "maxiter should be > 0"
-msgstr ""
+msgstr "maxiter devrait être > 0"
 
 #: py/runtime.c
 #, c-format
@@ -3033,10 +3130,6 @@ msgstr "doit lever un objet"
 #: py/modbuiltins.c
 msgid "must use keyword argument for key function"
 msgstr "doit utiliser un argument nommé pour une fonction key"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "n must be between 0, and 9"
-msgstr "n doit être compris entre 0 et 9"
 
 #: py/runtime.c
 msgid "name '%q' is not defined"
@@ -3121,6 +3214,10 @@ msgstr "argument non-nommé après */**"
 msgid "non-keyword arg after keyword arg"
 msgstr "argument non-nommé après argument nommé"
 
+#: extmod/ulab/code/linalg/linalg.c
+msgid "norm is defined for 1D and 2D arrays"
+msgstr ""
+
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "n'est pas un UUID 128 bits"
@@ -3133,10 +3230,6 @@ msgstr ""
 #: py/objstr.c
 msgid "not enough arguments for format string"
 msgstr "pas assez d'arguments pour la chaîne de format"
-
-#: extmod/ulab/code/poly/poly.c
-msgid "number of arguments must be 2, or 3"
-msgstr "le nombre d'arguments doit être 2 ou 3"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
@@ -3190,6 +3283,10 @@ msgstr "un objet avec un protocole de tampon est nécessaire"
 msgid "odd-length string"
 msgstr "chaîne de longueur impaire"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "offset is too large"
+msgstr ""
+
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "décalage hors limites"
@@ -3211,6 +3308,14 @@ msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
 #: extmod/ulab/code/vector/vectorise.c
 msgid "operands could not be broadcast together"
 msgstr "les opérandes ne pouvaient pas être diffusés ensemble"
+
+#: extmod/ulab/code/ndarray.c
+msgid "operation is implemented for 1D Boolean arrays only"
+msgstr ""
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "operation is not implemented for flattened array"
+msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3305,6 +3410,7 @@ msgstr "le 3e argument de pow() ne peut être 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() avec 3 arguments nécessite des entiers"
 
+#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
@@ -3348,6 +3454,10 @@ msgstr "import relatif"
 msgid "requested length %d but object has length %d"
 msgstr "la longueur requise est %d mais l'objet est long de %d"
 
+#: extmod/ulab/code/ndarray_operators.c
+msgid "results cannot be cast to specified type"
+msgstr ""
+
 #: py/compile.c
 msgid "return annotation must be an identifier"
 msgstr "l'annotation de return doit être un identifiant"
@@ -3366,9 +3476,9 @@ msgstr "rgb_pins[%d] duplique une autre affectation de broches"
 msgid "rgb_pins[%d] is not on the same port as clock"
 msgstr "rgb_pins[%d] n'est pas sur le même port que l'horloge"
 
-#: extmod/ulab/code/ndarray.c
-msgid "right hand side must be an ndarray, or a scalar"
-msgstr "le côté droit doit être un ndarray ou un scalaire"
+#: extmod/ulab/code/numerical/numerical.c
+msgid "roll argument must be an ndarray"
+msgstr ""
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -3395,8 +3505,8 @@ msgid "script compilation not supported"
 msgstr "compilation de script non supportée"
 
 #: extmod/ulab/code/ndarray.c
-msgid "shape must be a 2-tuple"
-msgstr "la forme doit être un tuple 2"
+msgid "shape must be a tuple"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3437,10 +3547,6 @@ msgstr "redémarrage logiciel\n"
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
 msgstr "l'argument de «sort» doit être un ndarray"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "sorted axis can't be longer than 65535"
-msgstr ""
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
@@ -3523,6 +3629,7 @@ msgstr "le seuil doit être dans la gamme 0-65536"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
 
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "le délai d'expiration a dépassé la valeur maximale prise en charge"
@@ -3547,6 +3654,10 @@ msgstr "Délai d’expiration dépassé en attendant une carte v2"
 msgid "timestamp out of range for platform time_t"
 msgstr "'timestamp' hors bornes pour 'time_t' de la plateforme"
 
+#: extmod/ulab/code/ndarray.c
+msgid "tobytes can be invoked for dense arrays only"
+msgstr ""
+
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
@@ -3564,6 +3675,10 @@ msgstr "trop de valeur à dégrouper (%d attendues)"
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz n'est défini que pour des tableaux 1D de longueur égale"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "trigger level must be 0 or 1"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
 msgstr "index du tuple hors gamme"
@@ -3575,12 +3690,12 @@ msgstr "tuple/liste a une mauvaise longueur"
 #: ports/esp32s2/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
-msgstr ""
+msgstr "twai_driver_install a renvoyé l'erreur esp-idf #%d"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_start returned esp-idf error #%d"
-msgstr ""
+msgstr "twai_start a renvoyé l'erreur esp-idf #%d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
@@ -3706,6 +3821,14 @@ msgstr "'value_count' doit être > 0"
 msgid "vectors must have same lengths"
 msgstr "les vecteurs doivent avoir la même longueur"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "wakeup conflict"
+msgstr ""
+
+#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+msgid "watchdog not initialized"
+msgstr "chien de garde non initialisé"
+
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
 msgstr "watchdog timeout doit être supérieur à 0"
@@ -3718,13 +3841,13 @@ msgstr "width doit être plus grand que zero"
 msgid "window must be <= interval"
 msgstr "la fenêtre doit être <= intervalle"
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "wrong argument type"
-msgstr "type d'argument incorrect"
+#: extmod/ulab/code/numerical/numerical.c
+msgid "wrong axis index"
+msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "wrong index type"
-msgstr "type d'index incorrect"
+#: extmod/ulab/code/ulab_create.c
+msgid "wrong axis specified"
+msgstr ""
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
@@ -3773,6 +3896,57 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Seules les sockets IPv4 SOCK_STREAM sont prises en charge"
+
+#~ msgid "arctan2 is implemented for scalars and ndarrays only"
+#~ msgstr ""
+#~ "arctan2 est implémenté uniquement pour les scalaires et les ndarrays"
+
+#~ msgid "axis must be -1, 0, None, or 1"
+#~ msgstr "l'axe doit être -1, 0, None ou 1"
+
+#~ msgid "axis must be -1, 0, or 1"
+#~ msgstr "l'axe doit être -1, 0 ou 1"
+
+#~ msgid "axis must be None, 0, or 1"
+#~ msgstr "l'axe doit être None, 0 ou 1"
+
+#~ msgid "cannot reshape array (incompatible input/output shape)"
+#~ msgstr ""
+#~ "ne peut pas remodeler le tableau (forme d'entrée / sortie incompatible)"
+
+#~ msgid "could not broadast input array from shape"
+#~ msgstr "n'a pas pu diffuser le tableau d'entrée à partir de la forme"
+
+#~ msgid "ddof must be smaller than length of data set"
+#~ msgstr "ddof doit être inférieur à la longueur de l'ensemble de données"
+
+#~ msgid "function is implemented for scalars and ndarrays only"
+#~ msgstr ""
+#~ "la fonction est implémentée pour les scalaires et les ndarrays uniquement"
+
+#~ msgid "n must be between 0, and 9"
+#~ msgstr "n doit être compris entre 0 et 9"
+
+#~ msgid "number of arguments must be 2, or 3"
+#~ msgstr "le nombre d'arguments doit être 2 ou 3"
+
+#~ msgid "right hand side must be an ndarray, or a scalar"
+#~ msgstr "le côté droit doit être un ndarray ou un scalaire"
+
+#~ msgid "shape must be a 2-tuple"
+#~ msgstr "la forme doit être un tuple 2"
+
+#~ msgid "sorted axis can't be longer than 65535"
+#~ msgstr "sorted axis ne peut pas dépasser 65535"
+
+#~ msgid "wrong argument type"
+#~ msgstr "type d'argument incorrect"
+
+#~ msgid "wrong index type"
+#~ msgstr "type d'index incorrect"
 
 #~ msgid "Must provide SCK pin"
 #~ msgstr "Vous devez fournir un code PIN SCK"

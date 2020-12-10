@@ -24,7 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
+
 #include "mpconfigboard.h"
 #include "csr.h"
 

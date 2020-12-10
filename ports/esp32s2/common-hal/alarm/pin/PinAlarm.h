@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,14 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "py/obj.h"
+#include "py/objtuple.h"
 
-void board_init(void) {
-}
-
-bool board_requests_safe_mode(void) {
-  return false;
-}
-
-void reset_board(void) {
-
-}
+typedef struct {
+    mp_obj_base_t base;
+    mcu_pin_obj_t *pin;
+    bool value;
+    bool all_same_value;
+    bool edge;
+    bool pull;
+} alarm_pin_pin_alarm_obj_t;

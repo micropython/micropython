@@ -28,7 +28,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-uint64_t common_hal_time_monotonic(void) {
+uint64_t common_hal_time_monotonic_ms(void) {
     return supervisor_ticks_ms64();
 }
 

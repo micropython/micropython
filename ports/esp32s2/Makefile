@@ -104,6 +104,8 @@ INC += -isystem esp-idf/components/soc/soc/include
 INC += -isystem esp-idf/components/soc/soc/esp32s2/include
 INC += -isystem esp-idf/components/heap/include
 INC += -isystem esp-idf/components/esp_system/include
+INC += -isystem esp-idf/components/spi_flash/include
+INC += -isystem esp-idf/components/nvs_flash/include
 INC += -I$(BUILD)/esp-idf/config
 
 CFLAGS += -DHAVE_CONFIG_H \
@@ -188,6 +190,8 @@ SRC_C += \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c \
+	lib/netutils/netutils.c \
+	peripherals/timer.c \
 	peripherals/pcnt.c \
 	peripherals/pins.c \
 	peripherals/rmt.c \
@@ -332,10 +336,10 @@ $(BUILD)/firmware.uf2: $(BUILD)/circuitpython-firmware.bin
 	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xbfdd4eee -b 0x0000 -c -o $@ $^
 
 flash: $(BUILD)/firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=no_reset write_flash $(FLASH_FLAGS) 0x0000 $^
 
 flash-circuitpython-only: $(BUILD)/circuitpython-firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=hard_reset write_flash $(FLASH_FLAGS) 0x10000 $^
+	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=no_reset write_flash $(FLASH_FLAGS) 0x10000 $^
 
 include $(TOP)/py/mkrules.mk
 

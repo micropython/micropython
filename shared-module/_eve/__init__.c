@@ -70,8 +70,8 @@ void common_hal__eve_Vertex2f(common_hal__eve_t *eve, mp_float_t x, mp_float_t y
 
 void common_hal__eve_VertexFormat(common_hal__eve_t *eve, uint32_t frac)
 {
-    C4(eve, ((27 << 24) | ((frac & 7))));
-    eve->vscale = 1 << eve->vscale;
+    C4(eve, ((39 << 24) | ((frac & 7))));
+    eve->vscale = 1 << frac;
 }
 
 

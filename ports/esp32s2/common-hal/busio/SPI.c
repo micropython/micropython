@@ -28,7 +28,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "boards/board.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/rgb_led_status.h"
 
@@ -203,6 +202,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // hal->addr_bits = 0;
     // hal->dummy_bits = 0;
     // hal->addr = 0;
+
+    claim_pin(self->clock_pin);
+    if (self->MOSI_pin != NULL) {
+        claim_pin(self->MOSI_pin);
+    }
+    if (self->MISO_pin != NULL) {
+        claim_pin(self->MISO_pin);
+    }
 
     hal->io_mode = SPI_LL_IO_MODE_NORMAL;
 

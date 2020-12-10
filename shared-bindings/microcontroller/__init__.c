@@ -39,7 +39,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
-#include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
 //| """Pin references and cpu functionality
@@ -148,16 +147,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mcu_reset_obj, mcu_reset);
 //| This object is the sole instance of `watchdog.WatchDogTimer` when available or ``None`` otherwise."""
 //|
 
-
-//| """:mod:`microcontroller.pin` --- Microcontroller pin names
-//| --------------------------------------------------------
-//|
-//| .. module:: microcontroller.pin
-//|   :synopsis: Microcontroller pin names
-//|   :platform: SAMD21
-//|
-//| References to pins as named by the microcontroller"""
-//|
 const mp_obj_module_t mcu_pin_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mcu_pin_globals,
@@ -181,6 +170,7 @@ STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     #else
     { MP_ROM_QSTR(MP_QSTR_watchdog),  MP_ROM_PTR(&mp_const_none_obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_ResetReason),  MP_ROM_PTR(&mcu_reset_reason_type) },
     { MP_ROM_QSTR(MP_QSTR_RunMode),  MP_ROM_PTR(&mcu_runmode_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin),  MP_ROM_PTR(&mcu_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_pin),  MP_ROM_PTR(&mcu_pin_module) },

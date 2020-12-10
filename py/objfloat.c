@@ -333,6 +333,13 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
     return mp_obj_new_float(lhs_val);
 }
 
+// Convert a uint64_t to a 32-bit float without invoking the double-precision math routines,
+// which are large.
+mp_float_t uint64_to_float(uint64_t ui64) {
+    // 4294967296 = 2^32
+    return (mp_float_t) ((uint32_t) (ui64 >> 32) * 4294967296.0f + (uint32_t) (ui64 & 0xffffffff));
+}
+
 #pragma GCC diagnostic pop
 
 #endif // MICROPY_PY_BUILTINS_FLOAT
