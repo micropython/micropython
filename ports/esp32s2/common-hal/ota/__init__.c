@@ -31,6 +31,9 @@
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 
+esp_ota_handle_t update_handle = 0 ;
+const esp_partition_t *update_partition = NULL;
+
 static const char *TAG = "OTA";
 
 static void __attribute__((noreturn)) task_fatal_error(void) {
@@ -41,8 +44,6 @@ static void __attribute__((noreturn)) task_fatal_error(void) {
 void common_hal_ota_flash(const void *buf, const size_t len) {
     esp_err_t err;
 
-    esp_ota_handle_t update_handle = 0 ;
-    const esp_partition_t *update_partition = NULL;
     update_partition = esp_ota_get_next_update_partition(NULL);
 
     const esp_partition_t *running = esp_ota_get_running_partition();
@@ -100,6 +101,10 @@ void common_hal_ota_flash(const void *buf, const size_t len) {
         ESP_LOGE(TAG, "esp_ota_write failed (%s)", esp_err_to_name(err));
         task_fatal_error();
     }
+}
+
+void common_hal_ota_finish(void) {
+    esp_err_t err;
 
     err = esp_ota_end(update_handle);
     if (err != ESP_OK) {

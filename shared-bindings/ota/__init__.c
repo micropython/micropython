@@ -30,6 +30,12 @@
 //|
 //| The `ota` module implements over-the-air update."""
 
+STATIC mp_obj_t ota_finish(void) {
+    common_hal_ota_finish();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(ota_finish_obj, ota_finish);
+
 STATIC mp_obj_t ota_flash(mp_obj_t program_binary_in) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(program_binary_in, &bufinfo, MP_BUFFER_READ);
@@ -41,6 +47,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ota_flash_obj, ota_flash);
 
 STATIC const mp_rom_map_elem_t ota_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ota) },
+    { MP_ROM_QSTR(MP_QSTR_finish), MP_ROM_PTR(&ota_finish_obj) },
     { MP_ROM_QSTR(MP_QSTR_flash), MP_ROM_PTR(&ota_flash_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(ota_module_globals, ota_module_globals_table);
