@@ -48,7 +48,7 @@ static void __attribute__((noreturn)) task_fatal_error(void) {
     mp_raise_RuntimeError(translate("OTA Update Failed"));
 }
 
-void common_hal_ota_flash(const void *buf, const size_t len) {
+void common_hal_ota_flash(const void *buf, const size_t len, const int32_t offset) {
     esp_err_t err;
 
     const esp_partition_t *running = esp_ota_get_running_partition();
@@ -108,7 +108,11 @@ void common_hal_ota_flash(const void *buf, const size_t len) {
         }
     }
 
-    err = esp_ota_write( update_handle, buf, len);
+    if (offset == -1) {
+        err = esp_ota_write(update_handle, buf, len);
+    } else {
+        err = esp_ota_write_with_offset(update_handle, buf, len, offset);
+    }
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_write failed (%s)", esp_err_to_name(err));
         task_fatal_error();

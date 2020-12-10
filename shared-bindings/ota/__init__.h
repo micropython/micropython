@@ -30,6 +30,6 @@
 #include "py/runtime.h"
 
 extern void common_hal_ota_finish(void);
-extern void common_hal_ota_flash(const void *buf, const size_t len);
+extern void common_hal_ota_flash(const void *buf, const size_t len, const int32_t offset);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_OTA___INIT___H
