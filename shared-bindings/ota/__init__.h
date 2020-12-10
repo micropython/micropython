@@ -29,6 +29,7 @@
 
 #include "py/runtime.h"
 
+extern void common_hal_ota_switch(void);
 extern void common_hal_ota_finish(void);
 extern void common_hal_ota_flash(const void *buf, const size_t len, const int32_t offset);
 
