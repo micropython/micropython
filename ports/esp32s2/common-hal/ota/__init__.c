@@ -31,10 +31,17 @@
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 
-esp_ota_handle_t update_handle = 0 ;
-const esp_partition_t *update_partition = NULL;
+static const esp_partition_t *update_partition = NULL;
+static esp_ota_handle_t update_handle = 0;
 
+static bool ota_inited = false;
 static const char *TAG = "OTA";
+
+static void ota_reset(void) {
+    update_handle = 0;
+    update_partition = NULL;
+    ota_inited = false;
+}
 
 static void __attribute__((noreturn)) task_fatal_error(void) {
     ESP_LOGE(TAG, "Exiting task due to fatal error...");
@@ -44,56 +51,61 @@ static void __attribute__((noreturn)) task_fatal_error(void) {
 void common_hal_ota_flash(const void *buf, const size_t len) {
     esp_err_t err;
 
-    update_partition = esp_ota_get_next_update_partition(NULL);
-
     const esp_partition_t *running = esp_ota_get_running_partition();
     const esp_partition_t *last_invalid = esp_ota_get_last_invalid_partition();
 
-    ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
-             running->type, running->subtype, running->address);
+    if (update_partition == NULL) {
+        update_partition = esp_ota_get_next_update_partition(NULL);
 
-    ESP_LOGI(TAG, "Writing partition type %d subtype %d (offset 0x%08x)\n",
-             update_partition->type, update_partition->subtype, update_partition->address);
+        ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
+                running->type, running->subtype, running->address);
 
-    assert(update_partition != NULL);
+        ESP_LOGI(TAG, "Writing partition type %d subtype %d (offset 0x%08x)\n",
+                update_partition->type, update_partition->subtype, update_partition->address);
 
-    if (len > sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t)) {
-        esp_app_desc_t new_app_info;
-        memcpy(&new_app_info, &((char *)buf)[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)], sizeof(esp_app_desc_t));
-        ESP_LOGI(TAG, "New firmware version: %s", new_app_info.version);
+        assert(update_partition != NULL);
+    }
 
-        esp_app_desc_t running_app_info;
-        if (esp_ota_get_partition_description(running, &running_app_info) == ESP_OK) {
-            ESP_LOGI(TAG, "Running firmware version: %s", running_app_info.version);
-        }
+    if (!ota_inited) {
+        if (len > sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t)) {
+            esp_app_desc_t new_app_info;
+            memcpy(&new_app_info, &((char *)buf)[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)], sizeof(esp_app_desc_t));
+            ESP_LOGI(TAG, "New firmware version: %s", new_app_info.version);
 
-        esp_app_desc_t invalid_app_info;
-        if (esp_ota_get_partition_description(last_invalid, &invalid_app_info) == ESP_OK) {
-            ESP_LOGI(TAG, "Last invalid firmware version: %s", invalid_app_info.version);
-        }
+            esp_app_desc_t running_app_info;
+            if (esp_ota_get_partition_description(running, &running_app_info) == ESP_OK) {
+                ESP_LOGI(TAG, "Running firmware version: %s", running_app_info.version);
+            }
 
-        // check new version with running version
-        if (memcmp(new_app_info.version, running_app_info.version, sizeof(new_app_info.version)) == 0) {
-            ESP_LOGW(TAG, "New version is the same as running version.");
-            task_fatal_error();
-        }
+            esp_app_desc_t invalid_app_info;
+            if (esp_ota_get_partition_description(last_invalid, &invalid_app_info) == ESP_OK) {
+                ESP_LOGI(TAG, "Last invalid firmware version: %s", invalid_app_info.version);
+            }
 
-        // check new version with last invalid partition
-        if (last_invalid != NULL) {
-            if (memcmp(new_app_info.version, invalid_app_info.version, sizeof(new_app_info.version)) == 0) {
-                ESP_LOGW(TAG, "New version is the same as invalid version.");
+            // check new version with running version
+            if (memcmp(new_app_info.version, running_app_info.version, sizeof(new_app_info.version)) == 0) {
+                ESP_LOGW(TAG, "New version is the same as running version.");
                 task_fatal_error();
             }
-        }
 
-        err = esp_ota_begin(update_partition, OTA_WITH_SEQUENTIAL_WRITES, &update_handle);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
+            // check new version with last invalid partition
+            if (last_invalid != NULL) {
+                if (memcmp(new_app_info.version, invalid_app_info.version, sizeof(new_app_info.version)) == 0) {
+                    ESP_LOGW(TAG, "New version is the same as invalid version.");
+                    task_fatal_error();
+                }
+            }
+
+            err = esp_ota_begin(update_partition, OTA_WITH_SEQUENTIAL_WRITES, &update_handle);
+            if (err != ESP_OK) {
+                ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
+                task_fatal_error();
+            }
+            ota_inited = true;
+        } else {
+            ESP_LOGE(TAG, "received package is not fit len");
             task_fatal_error();
         }
-    } else {
-        ESP_LOGE(TAG, "received package is not fit len");
-        task_fatal_error();
     }
 
     err = esp_ota_write( update_handle, buf, len);
@@ -104,20 +116,24 @@ void common_hal_ota_flash(const void *buf, const size_t len) {
 }
 
 void common_hal_ota_finish(void) {
-    esp_err_t err;
+    if (ota_inited) {
+        esp_err_t err;
 
-    err = esp_ota_end(update_handle);
-    if (err != ESP_OK) {
-        if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
-            ESP_LOGE(TAG, "Image validation failed, image is corrupted");
+        err = esp_ota_end(update_handle);
+        if (err != ESP_OK) {
+            if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
+                ESP_LOGE(TAG, "Image validation failed, image is corrupted");
+            }
+            ESP_LOGE(TAG, "esp_ota_end failed (%s)!", esp_err_to_name(err));
+            task_fatal_error();
         }
-        ESP_LOGE(TAG, "esp_ota_end failed (%s)!", esp_err_to_name(err));
-        task_fatal_error();
-    }
 
-    err = esp_ota_set_boot_partition(update_partition);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
-        task_fatal_error();
+        err = esp_ota_set_boot_partition(update_partition);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
+            task_fatal_error();
+        }
+
+        ota_reset();
     }
 }
