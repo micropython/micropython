@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "common-hal/ota/__init__.h"
 #include "shared-bindings/ota/__init__.h"
 
 #include <string.h>
@@ -37,7 +38,7 @@ static esp_ota_handle_t update_handle = 0;
 static bool ota_inited = false;
 static const char *TAG = "OTA";
 
-static void ota_reset(void) {
+void ota_reset(void) {
     update_handle = 0;
     update_partition = NULL;
     ota_inited = false;
