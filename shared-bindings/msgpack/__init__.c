@@ -79,6 +79,8 @@
 //|    decoded = unpack(buffer, ext_hook=decoder)
 //|    print(f"{data} -> {buffer.getvalue()} -> {decoded}")
 //| """
+//|     ...
+//|
 
 //| def pack(obj: object, buffer: WriteableBuffer, *, default: Union[Callable[[object], None], None] = None) -> None:
 //|     """Ouput object to buffer in msgpack format.
@@ -88,7 +90,8 @@
 //|           function called for python objects that do not have
 //|           a representation in msgpack format.
 //|     """
-
+//|     ...
+//|
 STATIC mp_obj_t mod_msgpack_pack(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_obj, ARG_buffer, ARG_default };
     STATIC const mp_arg_t allowed_args[] = {
@@ -118,7 +121,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mod_msgpack_pack_obj, 1, mod_msgpack_pack);
 //|     :param Optional[bool] use_list: return array as list or tuple (use_list=False).
 //|     :return object: object read from buffer.
 //|     """
-
+//|     ...
+//|
 STATIC mp_obj_t mod_msgpack_unpack(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_ext_hook, ARG_use_list };
     STATIC const mp_arg_t allowed_args[] = {
