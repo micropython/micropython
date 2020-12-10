@@ -145,6 +145,6 @@ void common_hal_ota_finish(void) {
 
 void common_hal_ota_switch(void) {
     if (esp_ota_set_boot_partition(esp_ota_get_next_update_partition(NULL)) != ESP_OK) {
-        mp_raise_RuntimeError(translate("Unable to switch partition"));
+        mp_raise_RuntimeError(translate("Unable to switch boot partition"));
     }
 }

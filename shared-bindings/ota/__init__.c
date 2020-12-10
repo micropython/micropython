@@ -30,39 +30,52 @@
 //|
 //| The `ota` module implements over-the-air update."""
 
+//| def switch() -> None:
+//|     """Switches the boot partition.
+//|     ...
+//|
 STATIC mp_obj_t ota_switch(void) {
     common_hal_ota_switch();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ota_switch_obj, ota_switch);
 
+//| def finish() -> None:
+//|     """Validates flashed firmware, sets next boot partition.
+//|         **Must be called after** `ota.flash()`
+//|     ...
+//|
 STATIC mp_obj_t ota_finish(void) {
     common_hal_ota_finish();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ota_finish_obj, ota_finish);
 
+//| def flash(*buffer: WriteableBuffer, offset: int=0) -> None:
+//|     """Writes one of two OTA partition at the given offset.
+//|     ...
+//|
 STATIC mp_obj_t ota_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_binary, ARG_offset };
+    enum { ARG_buffer, ARG_offset };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_binary, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_offset, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_offset].u_int < -1) {
         mp_raise_ValueError(translate("offset must be >= 0"));
     }
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_binary].u_obj, &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
     common_hal_ota_flash(bufinfo.buf, bufinfo.len, args[ARG_offset].u_int);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ota_flash_obj, 1, ota_flash);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ota_flash_obj, 0, ota_flash);
 
 STATIC const mp_rom_map_elem_t ota_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ota) },
