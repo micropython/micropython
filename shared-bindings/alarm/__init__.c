@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/alarm/__init__.h"
+#include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/supervisor/Runtime.h"
@@ -177,6 +178,7 @@ STATIC const mp_obj_module_t alarm_time_module = {
     .globals = (mp_obj_dict_t*)&alarm_time_globals,
 };
 
+// The module table is mutable because .wake_alarm is a mutable attribute.
 STATIC mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_alarm) },
 
@@ -188,8 +190,10 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
                                                MP_OBJ_FROM_PTR(&alarm_exit_and_deep_sleep_until_alarms_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_pin), MP_OBJ_FROM_PTR(&alarm_pin_module) },
-    { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) }
+    { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) },
 
+    { MP_ROM_QSTR(MP_QSTR_SleepMemory),   MP_OBJ_FROM_PTR(&alarm_sleep_memory_type) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_memory),  MP_OBJ_FROM_PTR(&alarm_sleep_memory_obj) },
 };
 STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
 

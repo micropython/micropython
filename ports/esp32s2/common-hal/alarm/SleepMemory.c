@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries.
+ * Copyright (c) 2020 microDev
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +25,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+#include <string.h>
 
+#include "py/runtime.h"
 #include "common-hal/alarm/SleepMemory.h"
 
-const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
+#include "esp_sleep.h"
 
-extern void alarm_reset(void);
+void alarm_sleep_memory_reset(void) {
+    // Power RTC slow memory during deep sleep
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
+}
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self) {
+    return SLEEP_MEMORY_LENGTH;
+}
+
+bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self,
+        uint32_t start_index, uint8_t* values, uint32_t len) {
+
+    if (start_index + len > SLEEP_MEMORY_LENGTH) {
+        return false;
+    }
+
+    memcpy((uint8_t *) (SLEEP_MEMORY_BASE + start_index), values, len);
+    return true;
+}
+
+void common_hal_alarm_sleep_memory_get_bytes(alarm_sleep_memory_obj_t *self,
+        uint32_t start_index, uint32_t len, uint8_t* values) {
+
+    if (start_index + len > SLEEP_MEMORY_LENGTH) {
+        return;
+    }
+    memcpy(values, (uint8_t *) (SLEEP_MEMORY_BASE + start_index), len);
+}
