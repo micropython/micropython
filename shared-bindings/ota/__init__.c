@@ -26,12 +26,26 @@
 
 #include "shared-bindings/ota/__init__.h"
 
-//| """ota module
+//| """OTA Module
 //|
-//| The `ota` module implements over-the-air update."""
+//| The `ota` module implements over-the-air update.
+//|
+//| There are two identical ota partitions ota_0/1, these
+//| contain different firmware versions.
+//| Having two partitions enables rollback functionality.
+//|
+//| The two partitions are defined as boot partition and
+//| next-update partition. Calling `ota.flash()` writes the
+//| next-update partition.
+//|
+//| After the next-update partition is written a validation
+//| check is performed and on a successful validation this
+//| partition is set as the boot partition. On next reset,
+//| firmware will be loaded from this partition"""
+//|
 
 //| def switch() -> None:
-//|     """Switches the boot partition.
+//|     """Switches the boot partition."""
 //|     ...
 //|
 STATIC mp_obj_t ota_switch(void) {
@@ -42,7 +56,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(ota_switch_obj, ota_switch);
 
 //| def finish() -> None:
 //|     """Validates flashed firmware, sets next boot partition.
-//|         **Must be called after** `ota.flash()`
+//|         **Must be called after** `ota.flash()`"""
 //|     ...
 //|
 STATIC mp_obj_t ota_finish(void) {
@@ -52,7 +66,10 @@ STATIC mp_obj_t ota_finish(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ota_finish_obj, ota_finish);
 
 //| def flash(*buffer: WriteableBuffer, offset: int=0) -> None:
-//|     """Writes one of two OTA partition at the given offset.
+//|     """Writes one of two OTA partitions at the given offset.
+//|
+//|     The default offset is 0. It is necessary to provide the
+//|     offset when writing in discontinous chunks."""
 //|     ...
 //|
 STATIC mp_obj_t ota_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
