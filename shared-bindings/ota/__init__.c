@@ -41,11 +41,24 @@
 //| After the next-update partition is written a validation
 //| check is performed and on a successful validation this
 //| partition is set as the boot partition. On next reset,
-//| firmware will be loaded from this partition"""
+//| firmware will be loaded from this partition.
+//|
+//| Here is the sequence of commands to follow:
+//|
+//| .. code-block:: python
+//|
+//|     import ota
+//|
+//|     ota.flash(buffer, offset)
+//|     ota.finish()
+//| """
+//| ...
 //|
 
 //| def switch() -> None:
-//|     """Switches the boot partition."""
+//|     """Switches the boot partition. On next reset,
+//|        firmware will be loaded from the partition
+//|        just switched over to."""
 //|     ...
 //|
 STATIC mp_obj_t ota_switch(void) {
@@ -56,7 +69,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(ota_switch_obj, ota_switch);
 
 //| def finish() -> None:
 //|     """Validates flashed firmware, sets next boot partition.
-//|         **Must be called after** `ota.flash()`"""
+//|         **Must be called** after the firmware has been
+//|         completely written into the flash using `ota.flash()`.
+//|
+//|         This is to be called only once per update."""
 //|     ...
 //|
 STATIC mp_obj_t ota_finish(void) {
@@ -65,11 +81,14 @@ STATIC mp_obj_t ota_finish(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(ota_finish_obj, ota_finish);
 
-//| def flash(*buffer: WriteableBuffer, offset: int=0) -> None:
+//| def flash(*buffer: ReadableBuffer, offset: int=0) -> None:
 //|     """Writes one of two OTA partitions at the given offset.
 //|
 //|     The default offset is 0. It is necessary to provide the
-//|     offset when writing in discontinous chunks."""
+//|     offset when writing in discontinous chunks.
+//|
+//|     This can be called multiple times when flashing the firmware
+//|     in small chunks."""
 //|     ...
 //|
 STATIC mp_obj_t ota_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
