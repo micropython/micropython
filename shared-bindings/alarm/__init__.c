@@ -58,7 +58,11 @@
 //| maintaining the connection takes priority and power consumption may not be reduced.
 //| """
 
+//| sleep_memory: SleepMemory
+//| """Memory that persists during deep sleep.
+//| This object is the sole instance of `alarm.SleepMemory`."""
 //|
+
 //| wake_alarm: Alarm
 //| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm the woke it from sleep."""
 //|

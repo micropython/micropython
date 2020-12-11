@@ -47,10 +47,10 @@
 //|        import alarm
 //|        alarm.sleep_memory[0] = True
 //|        alarm.sleep_memory[1] = 12
-//|
+//|     """
 
 //|     def __init__(self) -> None:
-//|         """Not currently dynamically supported. Access the sole instance through `microcontroller.nvm`."""
+//|         """Not used. Access the sole instance through `alarm.sleep_memory`."""
 //|         ...
 //|
 
