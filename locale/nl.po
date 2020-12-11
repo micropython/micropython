@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"POT-Creation-Date: 2020-12-08 09:56-0800\n"
 "PO-Revision-Date: 2020-10-27 16:47+0000\n"
 "Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
 "Language-Team: none\n"
@@ -504,8 +504,8 @@ msgstr "Buffer lengte moet een veelvoud van 512 zijn"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Buffer moet een veelvoud van 512 bytes zijn"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
-#: shared-bindings/busio/I2C.c
+#: shared-bindings/adafruit_bus_device/I2CDevice.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Buffer moet op zijn minst lengte 1 zijn"
 
@@ -1312,7 +1312,7 @@ msgstr "Geen DAC op de chip"
 msgid "No DMA channel found"
 msgstr "Geen DMA kanaal gevonden"
 
-#: shared-module/busdevice/I2CDevice.c
+#: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr ""
@@ -1528,6 +1528,7 @@ msgstr "Toegang geweigerd"
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin heeft geen ADC mogelijkheden"
 
+#: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Pin kan alleen voor invoer gebruikt worden"
@@ -1587,10 +1588,12 @@ msgid "Prefix buffer must be on the heap"
 msgstr "Prefix buffer moet op de heap zijn"
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
-"Druk een willekeurige toets om de REPL te starten. Gebruik CTRL+D om te "
-"herstarten."
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -2080,6 +2083,10 @@ msgstr ""
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
 msgstr "WiFi wachtwoord moet tussen 8 en 63 karakters bevatten"
+
+#: main.c
+msgid "Woken up by alarm.\n"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -3862,6 +3869,11 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr ""
+#~ "Druk een willekeurige toets om de REPL te starten. Gebruik CTRL+D om te "
+#~ "herstarten."
 
 #~ msgid "Only IPv4 SOCK_STREAM sockets supported"
 #~ msgstr "Alleen IPv4 SOCK_STREAM sockets worden ondersteund"
