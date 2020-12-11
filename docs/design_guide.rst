@@ -421,7 +421,7 @@ SPI Example
           """Widget's one register."""
           with self.spi_device as spi:
               spi.write(b'0x00')
-              i2c.readinto(self.buf)
+              spi.readinto(self.buf)
           return self.buf[0]
 
 Use composition
@@ -462,7 +462,7 @@ like properties for state even if it sacrifices a bit of speed.
 Avoid allocations in drivers
 --------------------------------------------------------------------------------
 
-Although Python doesn't require managing memory, its still a good practice for
+Although Python doesn't require managing memory, it's still a good practice for
 library writers to think about memory allocations. Avoid them in drivers if
 you can because you never know how much something will be called. Fewer
 allocations means less time spent cleaning up. So, where you can, prefer
@@ -471,7 +471,7 @@ object with methods that read or write into the buffer instead of creating new
 objects. Unified hardware API classes such as `busio.SPI` are design to read and
 write to subsections of buffers.
 
-Its ok to allocate an object to return to the user. Just beware of causing more
+It's ok to allocate an object to return to the user. Just beware of causing more
 than one allocation per call due to internal logic.
 
 **However**, this is a memory tradeoff so do not do it for large or rarely used
@@ -580,4 +580,4 @@ MicroPython compatibility
 --------------------------------------------------------------------------------
 
 Keeping compatibility with MicroPython isn't a high priority. It should be done
-when its not in conflict with any of the above goals.
+when it's not in conflict with any of the above goals.

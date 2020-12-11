@@ -36,9 +36,6 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/workflow.h"
 
-// Wait this long imediately after startup to see if we are connected to USB.
-#define CIRCUITPY_USB_CONNECTED_SLEEP_DELAY 5
-
 //| """Alarms and sleep
 //|
 //| Provides alarms that trigger based on time intervals or on external events, such as pin
@@ -93,21 +90,13 @@ void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
 //|     ...
 //|
 STATIC mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return mp_const_none;
+    }
+
     validate_objs_are_alarms(n_args, args);
 
-    // See if we are connected to a host.
-    // Make sure we have been awake long enough for USB to connect (enumeration delay).
-    int64_t connecting_delay_msec = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - supervisor_ticks_ms64();
-    if (connecting_delay_msec > 0) {
-        common_hal_time_delay_ms(connecting_delay_msec * 1000 / 1024);
-    }
-
-    if (supervisor_workflow_active()) {
-        common_hal_alarm_wait_until_alarms(n_args, args);
-    } else {
-        common_hal_alarm_light_sleep_until_alarms(n_args, args);
-    }
-    return mp_const_none;
+    return common_hal_alarm_light_sleep_until_alarms(n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_light_sleep_until_alarms);
 
@@ -125,8 +114,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|
 //|     If no alarms are specified, the microcontroller will deep sleep until reset.
 //|
-//|     **If CircuitPython is connected to a host computer, `alarm.exit_and_deep_sleep_until_alarms()`
-//|     then the connection will be maintained, and the system will not go into deep sleep.**
+//|     **If CircuitPython is connected to a host computer, the connection will be maintained,
+//|     and the system will not go into deep sleep.**
 //|     This allows the user to interrupt an existing program with ctrl-C,
 //|     and to edit the files in CIRCUITPY, which would not be possible in true deep sleep.
 //|     Thus, to use deep sleep and save significant power, you will need to disconnect from the host.
@@ -151,26 +140,13 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 STATIC mp_obj_t alarm_exit_and_deep_sleep_until_alarms(size_t n_args, const mp_obj_t *args) {
     validate_objs_are_alarms(n_args, args);
 
-    // Shut down WiFi, etc.
-    common_hal_alarm_prepare_for_deep_sleep();
+    // Validate the alarms and set them.
+    common_hal_alarm_set_deep_sleep_alarms(n_args, args);
 
-    // See if we are connected to a host.
-    // Make sure we have been awake long enough for USB to connect (enumeration delay).
-    int64_t connecting_delay_msec = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - supervisor_ticks_ms64();
-    if (connecting_delay_msec > 0) {
-        common_hal_time_delay_ms(connecting_delay_msec * 1000 / 1024);
-    }
+    // Raise an exception, which will be processed in main.c.
+    mp_raise_arg1(&mp_type_DeepSleepRequest, NULL);
 
-    if (supervisor_workflow_active()) {
-        // Simulate deep sleep by waiting for an alarm and then restarting when done.
-        common_hal_alarm_wait_until_alarms(n_args, args);
-        reload_requested = true;
-        supervisor_set_run_reason(RUN_REASON_STARTUP);
-        mp_raise_reload_exception();
-    } else {
-        common_hal_alarm_exit_and_deep_sleep_until_alarms(n_args, args);
-        // Does not return.
-    }
+    // Doesn't get here.
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_exit_and_deep_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_exit_and_deep_sleep_until_alarms);

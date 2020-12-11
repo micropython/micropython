@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-24 15:40-0500\n"
+"POT-Creation-Date: 2020-11-27 23:57-0500\n"
 "PO-Revision-Date: 2020-10-05 12:12+0000\n"
 "Last-Translator: Michal Čihař <michal@cihar.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -502,7 +502,8 @@ msgstr ""
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
+#: shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "잘못된 크기의 버퍼. >1 여야합니다"
 
@@ -848,6 +849,10 @@ msgstr "UUID이 예상되었습니다."
 msgid "Expected an Address"
 msgstr ""
 
+#: shared-bindings/alarm/__init__.c
+msgid "Expected an alarm"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -991,6 +996,10 @@ msgstr ""
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
 msgstr ""
 
 #: shared-bindings/aesio/aes.c
@@ -1291,6 +1300,11 @@ msgstr ""
 msgid "No DMA channel found"
 msgstr ""
 
+#: shared-module/busdevice/I2CDevice.c
+#, c-format
+msgid "No I2C device at address: %x"
+msgstr ""
+
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
@@ -1444,6 +1458,10 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "Only one alarm.time alarm can be set."
+msgstr ""
+
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr ""
@@ -1499,6 +1517,10 @@ msgstr ""
 
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "PinAlarm not yet implemented"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -1562,7 +1584,7 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
+#: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr ""
 
@@ -1708,6 +1730,10 @@ msgstr ""
 msgid "Supply at least one UART pin"
 msgstr ""
 
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Supply one of monotonic_time or epoch_time"
+msgstr ""
+
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
 msgstr ""
@@ -1769,6 +1795,10 @@ msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
+msgstr ""
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Time is in the past."
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -2486,6 +2516,10 @@ msgstr ""
 msgid "end_x should be an int"
 msgstr ""
 
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "epoch_time not supported on this board"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
@@ -2854,6 +2888,10 @@ msgstr "구문(syntax)가 정수가 유효하지 않습니다"
 #: py/parsenum.c
 msgid "invalid syntax for number"
 msgstr "숫자에 대한 구문(syntax)가 유효하지 않습니다"
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "io must be rtc io"
+msgstr ""
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3542,6 +3580,10 @@ msgstr ""
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "trigger level must be 0 or 1"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
 msgstr ""
@@ -3682,6 +3724,10 @@ msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "vectors must have same lengths"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "wakeup conflict"
 msgstr ""
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c

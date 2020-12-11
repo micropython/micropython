@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "py/obj.h"
 #include "peripherals/nrf/pins.h"
@@ -49,5 +49,5 @@ void reset_board(void) {
                  NRF_GPIO_PIN_NOSENSE);
     nrf_gpio_pin_write(POWER_SWITCH_PIN->number, false);
 
-    board_reset_user_neopixels();
+    board_reset_user_neopixels(&pin_P0_13, 10);
 }

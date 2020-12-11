@@ -25,7 +25,8 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
+#include "boards/flash_config.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
 

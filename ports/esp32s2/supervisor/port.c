@@ -27,8 +27,8 @@
 
 #include <stdint.h>
 #include <sys/time.h>
+#include "supervisor/board.h"
 #include "supervisor/port.h"
-#include "boards/board.h"
 #include "modules/module.h"
 #include "py/runtime.h"
 #include "supervisor/esp_port.h"
@@ -54,8 +54,11 @@
 #include "peripherals/rmt.h"
 #include "peripherals/pcnt.h"
 #include "peripherals/timer.h"
+#include "components/esp_rom/include/esp_rom_uart.h"
 #include "components/heap/include/esp_heap_caps.h"
+#include "components/xtensa/include/esp_debug_helpers.h"
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
+#include "components/soc/soc/esp32s2/include/soc/rtc_cntl_reg.h"
 
 #define HEAP_SIZE (48 * 1024)
 
@@ -78,6 +81,11 @@ safe_mode_t port_init(void) {
     args.name = "CircuitPython Tick";
     esp_timer_create(&args, &_tick_timer);
 
+    #ifdef DEBUG
+    // Send the ROM output out of the UART. This includes early logs.
+    esp_rom_install_channel_putc(1, esp_rom_uart_putc);
+    #endif
+
     heap = NULL;
     never_reset_module_internal_pins();
 
@@ -92,6 +100,14 @@ safe_mode_t port_init(void) {
     }
     if (heap == NULL) {
         return NO_HEAP;
+    }
+
+    esp_reset_reason_t reason = esp_reset_reason();
+    if (reason == ESP_RST_BROWNOUT) {
+        return BROWNOUT;
+    }
+    if (reason == ESP_RST_PANIC) {
+        return HARD_CRASH;
     }
 
     return NO_SAFE_MODE;
@@ -165,6 +181,7 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
+    esp_backtrace_print(100);
     esp_restart();
 }
 
@@ -204,10 +221,11 @@ bool port_has_fixed_stack(void) {
 
 // Place the word to save just after our BSS section that gets blanked.
 void port_set_saved_word(uint32_t value) {
+    REG_WRITE(RTC_CNTL_STORE0_REG, value);
 }
 
 uint32_t port_get_saved_word(void) {
-    return 0;
+    return REG_READ(RTC_CNTL_STORE0_REG);
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
@@ -229,27 +247,31 @@ void port_enable_tick(void) {
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
+
+    // CircuitPython's VM is run in a separate FreeRTOS task from TinyUSB.
+    // Tick disable can happen via auto-reload so poke the main task here.
+    if (sleeping_circuitpython_task != NULL) {
+        xTaskNotifyGive(sleeping_circuitpython_task);
+    }
 }
 
 TickType_t sleep_time_duration;
 
 void port_interrupt_after_ticks(uint32_t ticks) {
     sleep_time_duration = (ticks * 100)/1024;
-    sleeping_circuitpython_task = xTaskGetCurrentTaskHandle();
 }
 
-void port_sleep_until_interrupt(void) {
-
-    uint32_t NotifyValue = 0;
+void port_idle_until_interrupt(void) {
+    uint32_t notify_value = 0;
 
     if (sleep_time_duration == 0) {
         return;
     }
-    xTaskNotifyWait(0x01,0x01,&NotifyValue,
-                             sleep_time_duration );
-    if (NotifyValue == 1) {
-      sleeping_circuitpython_task = NULL;
-      mp_handle_pending();
+    sleeping_circuitpython_task = xTaskGetCurrentTaskHandle();
+    xTaskNotifyWait(0x01, 0x01, &notify_value, sleep_time_duration );
+    sleeping_circuitpython_task = NULL;
+    if (notify_value == 1) {
+        mp_handle_pending();
     }
 }
 

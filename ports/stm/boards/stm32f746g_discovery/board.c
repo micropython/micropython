@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "stm32f7xx_hal.h"
 #include "common-hal/microcontroller/Pin.h"
 

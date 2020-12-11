@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 #include "shared-bindings/busio/SPI.h"
@@ -123,5 +123,5 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-    board_reset_user_neopixels();
+    board_reset_user_neopixels(&pin_PA15, 5);
 }

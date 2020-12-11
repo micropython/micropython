@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-24 15:40-0500\n"
-"PO-Revision-Date: 2020-11-11 19:13+0000\n"
+"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"PO-Revision-Date: 2020-12-02 20:29+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -128,11 +128,11 @@ msgstr "Obiekt '%q' nie wspiera '%q'"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
-msgstr ""
+msgstr "'%q' obiekt nie wspiera dopisywania elementów"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
-msgstr ""
+msgstr "obiekt '%q' nie wspiera usuwania elementów"
 
 #: py/runtime.c
 msgid "'%q' object has no attribute '%q'"
@@ -152,7 +152,7 @@ msgstr "Obiekt '%q' nie jest iterowalny"
 
 #: py/obj.c
 msgid "'%q' object is not subscriptable"
-msgstr ""
+msgstr "obiekt '%q' nie jest indeksowany"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -292,7 +292,7 @@ msgstr "Adres musi mieć %d bajtów"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
-msgstr ""
+msgstr "Typ adresu poza zakresem"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -409,7 +409,7 @@ msgstr "Próba przydzielenia %d bloków"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when MicroPython VM not running."
-msgstr ""
+msgstr "Próba przydziału sterty, gdy MicroPython VM nie działa."
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -506,7 +506,8 @@ msgstr "Długość bufora musi być wielokrotnością 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Bufor musi być wielokrotnością 512 bajtów"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
+#: shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Bufor musi mieć długość 1 lub więcej"
 
@@ -856,6 +857,10 @@ msgstr "Oczekiwano UUID"
 msgid "Expected an Address"
 msgstr "Oczekiwano adresu"
 
+#: shared-bindings/alarm/__init__.c
+msgid "Expected an alarm"
+msgstr ""
+
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Expected tuple of length %d, got %d"
@@ -1000,6 +1005,10 @@ msgstr "Błąd inicjalizacji I2C"
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr "I2SOut niedostępne"
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1191,7 +1200,7 @@ msgstr "Zły tryb uruchomienia."
 
 #: shared-module/_bleio/Attribute.c
 msgid "Invalid security_mode"
-msgstr ""
+msgstr "Nieprawidłowy security_mode"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1302,6 +1311,11 @@ msgstr "Brak DAC"
 msgid "No DMA channel found"
 msgstr "Nie znaleziono kanału DMA"
 
+#: shared-module/busdevice/I2CDevice.c
+#, c-format
+msgid "No I2C device at address: %x"
+msgstr ""
+
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
@@ -1393,7 +1407,7 @@ msgstr "Brak pliku/katalogu"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
-msgstr ""
+msgstr "Brak dostępnego timera"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic Soft Device failure assertion."
@@ -1455,6 +1469,10 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "Only one alarm.time alarm can be set."
+msgstr ""
+
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "W danym momencie przezroczysty może być tylko jeden kolor"
@@ -1510,6 +1528,10 @@ msgstr "Pin musi obsługiwać przerwania sprzętowe"
 
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/__init__.c
+msgid "PinAlarm not yet implemented"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
@@ -1573,7 +1595,7 @@ msgstr ""
 msgid "RTC calibration is not supported on this board"
 msgstr "Brak obsługi kalibracji RTC"
 
-#: shared-bindings/time/__init__.c
+#: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
 msgstr "Brak obsługi RTC"
 
@@ -1584,7 +1606,7 @@ msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
-msgstr ""
+msgstr "Błąd generowania liczb losowych"
 
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
@@ -1665,11 +1687,11 @@ msgstr "Skanuj już w toku. Zatrzymaj za pomocą stop_scan."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected CTS pin not valid"
-msgstr ""
+msgstr "Wybrany pin CTS jest nieprawidłowy"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Selected RTS pin not valid"
-msgstr ""
+msgstr "Wybrany pin RTS jest nieprawidłowy"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1717,6 +1739,10 @@ msgstr "Strumień nie ma metod readinto() lub write()."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
+msgstr "Podaj co najmniej jeden pin UART"
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Supply one of monotonic_time or epoch_time"
 msgstr ""
 
 #: shared-bindings/gnss/GNSS.c
@@ -1781,6 +1807,10 @@ msgstr ""
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr "Szerokość bitmapy musi być wielokrotnością szerokości kafelka"
+
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "Time is in the past."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -2503,6 +2533,10 @@ msgstr "koniec formatu przy szukaniu specyfikacji konwersji"
 msgid "end_x should be an int"
 msgstr "end_x powinien być całkowity"
 
+#: shared-bindings/alarm/time/TimeAlarm.c
+msgid "epoch_time not supported on this board"
+msgstr ""
+
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
@@ -2872,6 +2906,10 @@ msgstr "zła składnia dla liczby całkowitej w bazie %d"
 msgid "invalid syntax for number"
 msgstr "zła składnia dla liczby"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "io must be rtc io"
+msgstr ""
+
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
 msgstr "argument 1 dla issubclass() musi być klasą"
@@ -3197,7 +3235,7 @@ msgstr "tylko fragmenty ze step=1 (lub None) są wspierane"
 #: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
 #: extmod/ulab/code/vector/vectorise.c
 msgid "operands could not be broadcast together"
-msgstr ""
+msgstr "operandy nie mogły być rozgłaszane razem"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
@@ -3433,7 +3471,7 @@ msgstr "programowy reset\n"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr ""
+msgstr "argument sort musi być ndarray"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "sos array must be of shape (n_section, 6)"
@@ -3559,6 +3597,10 @@ msgstr "zbyt wiele wartości do rozpakowania (oczekiwano %d)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "trigger level must be 0 or 1"
 msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c
@@ -3703,6 +3745,10 @@ msgstr "value_count musi być > 0"
 msgid "vectors must have same lengths"
 msgstr "wektory muszą mieć identyczną długość"
 
+#: ports/esp32s2/common-hal/alarm/pin/__init__.c
+msgid "wakeup conflict"
+msgstr ""
+
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr ""
@@ -3741,7 +3787,7 @@ msgstr "zła liczba wartości do rozpakowania"
 
 #: extmod/ulab/code/ndarray.c
 msgid "wrong operand type"
-msgstr ""
+msgstr "zły typ operandu"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong output type"

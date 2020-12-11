@@ -28,7 +28,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "boards/board.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/sdioio/SDCard.h"
 #include "shared-bindings/microcontroller/Pin.h"

@@ -28,7 +28,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "boards/board.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/rgb_led_status.h"
 
