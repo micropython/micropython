@@ -401,17 +401,19 @@ static mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map
     mp_print_t print = {MP_OBJ_TO_PTR(u.args[ARG_file].u_obj), mp_stream_write_adaptor};
     #endif
 
+    #if !defined(SYSTEMVIEW_DEST_SYSTEMVIEW)
     // extract the objects first because we are going to use the other part of the union
     mp_obj_t sep = u.args[ARG_sep].u_obj;
     mp_obj_t end = u.args[ARG_end].u_obj;
     const char *sep_data = mp_obj_str_get_data(sep, &u.len[0]);
     const char *end_data = mp_obj_str_get_data(end, &u.len[1]);
+    #endif
 
     for (size_t i = 0; i < n_args; i++) {
         if (i > 0) {
             #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
             mp_stream_write_adaptor(print.data, sep_data, u.len[0]);
-            #else
+            #elif !defined(SYSTEMVIEW_DEST_SYSTEMVIEW)
             mp_print_strn(&mp_plat_print, sep_data, u.len[0], 0, 0, 0);
             #endif
         }
@@ -423,7 +425,7 @@ static mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map
     }
     #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
     mp_stream_write_adaptor(print.data, end_data, u.len[1]);
-    #else
+    #elif !defined(SYSTEMVIEW_DEST_SYSTEMVIEW)
     mp_print_strn(&mp_plat_print, end_data, u.len[1], 0, 0, 0);
     #endif
     return mp_const_none;

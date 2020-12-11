@@ -55,6 +55,10 @@ static const char pad_common[23] = {'0', '0', '0', '0', '0', '0', '0', '0', '0',
 #define pad_zeroes_comma (pad_common + 17)
 #define pad_zeroes_comma_size  (4)
 
+#ifdef SYSTEM_VIEW
+size_t segger_print(const char *str, size_t len);
+#endif
+
 static void plat_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     MP_PLAT_PRINT_STRN(str, len);
