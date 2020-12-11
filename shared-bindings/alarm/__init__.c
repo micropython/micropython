@@ -197,7 +197,7 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
 };
 STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
 
-void common_hal_alarm_set_wake_alarm(mp_obj_t alarm) {
+STATIC void alarm_set_wake_alarm(mp_obj_t alarm) {
     // Equivalent of:
     // alarm.wake_alarm = alarm
     mp_map_elem_t *elem =
@@ -205,6 +205,11 @@ void common_hal_alarm_set_wake_alarm(mp_obj_t alarm) {
     if (elem) {
         elem->value = alarm;
     }
+}
+
+// Initialize .wake_alarm value.
+void alarm_save_wakeup_alarm(void) {
+    alarm_set_wake_alarm(common_hal_alarm_get_wake_alarm());
 }
 
 const mp_obj_module_t alarm_module = {

@@ -112,9 +112,6 @@ STATIC void start_mp(supervisor_allocation* heap) {
     reset_status_led();
     autoreload_stop();
     supervisor_workflow_reset();
-#if CIRCUITPY_ALARM
-    alarm_reset();
-#endif
 
     // Stack limit should be less than real stack size, so we have a chance
     // to recover from limit hit.  (Limit is measured in bytes.)
@@ -157,6 +154,13 @@ STATIC void start_mp(supervisor_allocation* heap) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
 
     mp_obj_list_init(mp_sys_argv, 0);
+
+    #if CIRCUITPY_ALARM
+    // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
+    alarm_save_wakeup_alarm();
+    // Reset alarm module only after we retrieved the wakeup alarm.
+    alarm_reset();
+    #endif
 
     #if CIRCUITPY_NETWORK
     network_module_init();
@@ -285,6 +289,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         filesystem_flush();
         supervisor_allocation* heap = allocate_remaining_memory();
         start_mp(heap);
+
         found_main = maybe_run_list(supported_filenames, &result);
         #if CIRCUITPY_FULL_BUILD
         if (!found_main){
@@ -354,7 +359,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             serial_write_compressed(translate("Woken up by alarm.\n"));
             board_init();
             supervisor_set_run_reason(RUN_REASON_STARTUP);
-            // TODO: Reset any volatile memory the user may have access to.
             return true;
         }
         #endif
