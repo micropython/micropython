@@ -1,4 +1,4 @@
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 void board_init(void) {
 }

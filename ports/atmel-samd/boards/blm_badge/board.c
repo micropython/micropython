@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "supervisor/shared/board.h"
 
 void board_init(void) {
@@ -35,5 +35,5 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-    board_reset_user_neopixels();
+    board_reset_user_neopixels(&pin_PA05, 10);
 }

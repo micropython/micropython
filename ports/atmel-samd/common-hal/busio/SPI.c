@@ -31,7 +31,7 @@
 #include "hpl_sercom_config.h"
 #include "peripheral_clk_config.h"
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_spi_m_sync.h"

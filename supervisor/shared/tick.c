@@ -156,8 +156,8 @@ void mp_hal_delay_ms(mp_uint_t delay) {
             break;
         }
         port_interrupt_after_ticks(remaining);
-        // Sleep until an interrupt happens.
-        port_sleep_until_interrupt();
+        // Idle until an interrupt happens.
+        port_idle_until_interrupt();
         remaining = end_tick - port_get_raw_ticks(NULL);
     }
 }

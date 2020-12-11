@@ -31,3 +31,10 @@ typedef struct {
     mp_obj_base_t base;
     mp_float_t monotonic_time;      // values compatible with time.monotonic_time()
 } alarm_time_time_alarm_obj_t;
+
+// Find the alarm object that caused us to wake up or create an equivalent one.
+mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms);
+// Check for the wake up alarm from pretend deep sleep.
+bool alarm_time_timealarm_woke_us_up(void);
+void alarm_time_timealarm_set_alarm(alarm_time_time_alarm_obj_t *self);
+void alarm_time_timealarm_reset(void);

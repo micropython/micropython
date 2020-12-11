@@ -31,13 +31,22 @@
 
 #include "common-hal/alarm/__init__.h"
 
-extern mp_obj_t common_hal_alarm_wait_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
 extern mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
-extern void common_hal_alarm_exit_and_deep_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
-extern void common_hal_alarm_prepare_for_deep_sleep(void);
-extern NORETURN void common_hal_alarm_enter_deep_sleep(void);
+
+// Deep sleep is a two step process. Alarms are set when the VM is valid but
+// everything is reset before entering deep sleep. Furthermore, deep sleep may
+// not actually happen if the user is connected to the device. In this case, the
+// supervisor will idle using `port_wait_for_interrupt`. After each call, it will
+// call alarm_woken_from_sleep to see if we've been woken by an alarm and if so,
+// it will exit idle as if deep sleep was exited.
+extern void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms);
+// Deep sleep is entered outside of the VM so we omit the `common_hal_` prefix.
+extern NORETURN void alarm_enter_deep_sleep(void);
 
 // Used by wake-up code.
 extern void common_hal_alarm_set_wake_alarm(mp_obj_t alarm);
+
+// True if an alarm is alerting. This is most useful for pretend deep sleep.
+extern bool alarm_woken_from_sleep(void);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H

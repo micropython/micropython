@@ -27,7 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "supervisor/port.h"
 
 // ASF 4
@@ -543,7 +543,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     _port_interrupt_after_ticks(ticks);
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
     #ifdef SAM_D5X_E5X
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (__get_FPSCR()  & ~(0x9f)) {

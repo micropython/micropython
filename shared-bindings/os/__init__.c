@@ -160,7 +160,7 @@ mp_obj_t os_stat(mp_obj_t path_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 
 //| def statvfs(path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
-//|     """Get the status of a fileystem.
+//|     """Get the status of a filesystem.
 //|
 //|     Returns a tuple with the filesystem information in the following order:
 //|
@@ -168,10 +168,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 //|          * ``f_frsize`` -- fragment size
 //|          * ``f_blocks`` -- size of fs in f_frsize units
 //|          * ``f_bfree`` -- number of free blocks
-//|          * ``f_bavail`` -- number of free blocks for unpriviliged users
+//|          * ``f_bavail`` -- number of free blocks for unprivileged users
 //|          * ``f_files`` -- number of inodes
 //|          * ``f_ffree`` -- number of free inodes
-//|          * ``f_favail`` -- number of free inodes for unpriviliged users
+//|          * ``f_favail`` -- number of free inodes for unprivileged users
 //|          * ``f_flag`` -- mount flags
 //|          * ``f_namemax`` -- maximum filename length
 //|

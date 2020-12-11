@@ -1560,7 +1560,11 @@ msgid "Prefix buffer must be on the heap"
 msgstr ""
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
+msgstr ""
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2033,6 +2037,10 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
+msgstr ""
+
+#: main.c
+msgid "Woken up by alarm.\n"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c

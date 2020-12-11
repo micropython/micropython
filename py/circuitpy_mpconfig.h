@@ -920,6 +920,12 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_PYSTACK_SIZE 1536
 #endif
 
+
+// Wait this long imediately after startup to see if we are connected to USB.
+#ifndef CIRCUITPY_USB_CONNECTED_SLEEP_DELAY
+#define CIRCUITPY_USB_CONNECTED_SLEEP_DELAY 5
+#endif
+
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
 #define CIRCUITPY_VERBOSE_BLE 0
