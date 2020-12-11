@@ -105,6 +105,10 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
+    // Return early if self->current_scan is NULL to avoid hang
+    if (self->current_scan == NULL) {
+        return;
+    }
     // Free the memory used to store the found aps.
     wifi_scannednetworks_deinit(self->current_scan);
     self->current_scan = NULL;
