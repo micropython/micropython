@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-08 09:56-0800\n"
-"PO-Revision-Date: 2020-12-04 06:29+0000\n"
+"PO-Revision-Date: 2020-12-11 19:08+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1601,10 +1601,13 @@ msgstr ""
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
+"Pressione qualquer tecla para entrar no REPL. Use CTRL-D para recarregar.\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, any key or file write.\n"
 msgstr ""
+"Simular o deep sleep até o alarme, até qualquer chave ou até a escrita do "
+"arquivo.\n"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -2102,7 +2105,7 @@ msgstr "A senha do Wi-Fi deve ter entre 8 e 63 caracteres"
 
 #: main.c
 msgid "Woken up by alarm.\n"
-msgstr ""
+msgstr "Foi despertado através do alarme.\n"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
