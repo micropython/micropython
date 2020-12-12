@@ -33,9 +33,9 @@
 #include "supervisor/esp_port.h"
 
 #include "components/driver/include/driver/rtc_io.h"
-#include "components/esp_system/include/esp_sleep.h"
+#include "components/esp32s2/include/esp_sleep.h"
 #include "components/freertos/include/freertos/FreeRTOS.h"
-#include "components/hal/esp32s2/include/hal/gpio_ll.h"
+#include "components/soc/src/esp32s2/include/hal/gpio_ll.h"
 #include "components/xtensa/include/esp_debug_helpers.h"
 
 void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {

@@ -54,7 +54,7 @@
 #include "peripherals/rmt.h"
 #include "peripherals/pcnt.h"
 #include "peripherals/timer.h"
-#include "components/esp_rom/include/esp_rom_uart.h"
+#include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
 #include "components/heap/include/esp_heap_caps.h"
 #include "components/xtensa/include/esp_debug_helpers.h"
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
@@ -93,7 +93,9 @@ safe_mode_t port_init(void) {
     esp_timer_create(&args, &_sleep_timer);
 
     // Send the ROM output out of the UART. This includes early logs.
-    esp_rom_install_channel_putc(1, esp_rom_uart_putc);
+    #ifdef DEBUG
+    ets_install_uart_printf();
+    #endif
 
     heap = NULL;
     never_reset_module_internal_pins();

@@ -34,8 +34,7 @@
 #include "components/driver/include/driver/periph_ctrl.h"
 #include "components/driver/include/driver/gpio.h"
 #include "components/esp_rom/include/esp32s2/rom/gpio.h"
-#include "components/esp_rom/include/esp_rom_gpio.h"
-#include "components/hal/esp32s2/include/hal/gpio_ll.h"
+#include "components/soc/src/esp32s2/include/hal/gpio_ll.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -77,23 +76,20 @@ static void configure_pins (usb_hal_context_t *usb)
      * Introduce additional parameters in usb_hal_context_t when adding support
      * for USB Host.
      */
-    for ( const usb_iopin_dsc_t *iopin = usb_periph_iopins; iopin->pin != -1; ++iopin ) {
-        if ( (usb->use_external_phy) || (iopin->ext_phy_only == 0) ) {
-            esp_rom_gpio_pad_select_gpio(iopin->pin);
-            if ( iopin->is_output ) {
-                esp_rom_gpio_connect_out_signal(iopin->pin, iopin->func, false, false);
+    for (const usb_iopin_dsc_t* iopin = usb_periph_iopins; iopin->pin != -1; ++iopin) {
+        if ((usb->use_external_phy) || (iopin->ext_phy_only == 0)) {
+            gpio_pad_select_gpio(iopin->pin);
+            if (iopin->is_output) {
+                gpio_matrix_out(iopin->pin, iopin->func, false, false);
+            } else {
+                gpio_matrix_in(iopin->pin, iopin->func, false);
+                gpio_pad_input_enable(iopin->pin);
             }
-            else {
-                esp_rom_gpio_connect_in_signal(iopin->pin, iopin->func, false);
-                if ( (iopin->pin != GPIO_FUNC_IN_LOW) && (iopin->pin != GPIO_FUNC_IN_HIGH) ) {
-                    gpio_ll_input_enable(&GPIO, iopin->pin);
-                }
-            }
-            esp_rom_gpio_pad_unhold(iopin->pin);
+            gpio_pad_unhold(iopin->pin);
         }
     }
-    if ( !usb->use_external_phy ) {
-        gpio_set_drive_capability(USBPHY_DM_NUM, GPIO_DRIVE_CAP_3);
+    if (!usb->use_external_phy) {
+        gpio_set_drive_capability(USBPHY_DP_NUM, GPIO_DRIVE_CAP_3);
         gpio_set_drive_capability(USBPHY_DP_NUM, GPIO_DRIVE_CAP_3);
     }
 }
