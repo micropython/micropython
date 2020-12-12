@@ -573,7 +573,11 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                 goto unknown_op;
             }
             int label_num = get_arg_label(emit, op_str, pn_args[0]);
-            if (!asm_thumb_bcc_nw_label(&emit->as, cc, label_num, op_len == 5 && op_str[4] == 'w')) {
+            bool wide = op_len == 5 && op_str[4] == 'w';
+            if (wide && !ARMV7M) {
+                goto unknown_op;
+            }
+            if (!asm_thumb_bcc_nw_label(&emit->as, cc, label_num, wide)) {
                 goto branch_not_in_range;
             }
         } else if (ARMV7M && op_str[0] == 'i' && op_str[1] == 't') {

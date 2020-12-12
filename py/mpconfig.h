@@ -304,6 +304,11 @@
 #define MICROPY_EMIT_THUMB (0)
 #endif
 
+// Whether to emit ARMv7-M instruction support in thumb native code
+#ifndef MICROPY_EMIT_THUMB_ARMV7M
+#define MICROPY_EMIT_THUMB_ARMV7M (1)
+#endif
+
 // Whether to enable the thumb inline assembler
 #ifndef MICROPY_EMIT_INLINE_THUMB
 #define MICROPY_EMIT_INLINE_THUMB (0)
