@@ -48,3 +48,9 @@ mp_obj_t common_hal_wifi_network_get_rssi(wifi_network_obj_t *self) {
 mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self) {
     return mp_obj_new_int(self->record.primary);
 }
+
+mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self) {
+    const char* cstr = (const char*) self->record.country.cc;
+        return mp_obj_new_str(cstr, strlen(cstr));
+}
+
