@@ -81,3 +81,5 @@ SECTIONS
 /* Define heap and stack areas */
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _estack = ORIGIN(RAM) + LENGTH(RAM);
+_unused_flash_start = (_sidata + (_edata - _sdata));
+_unused_flash_len = (ORIGIN(FLASH_TEXT) + LENGTH(FLASH_TEXT)) - _unused_flash_start;
