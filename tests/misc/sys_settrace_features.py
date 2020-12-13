@@ -60,7 +60,8 @@ def trace_tick_handler_bob(frame, event, arg):
 
 def trace_tick_handler(frame, event, arg):
     # Ignore CPython specific helpers.
-    if frame.f_globals["__name__"].find("importlib") != -1:
+    frame_name = frame.f_globals["__name__"]
+    if frame_name.find("importlib") != -1 or frame_name.find("zipimport") != -1:
         return
 
     print("### trace_handler::main event:", event)
