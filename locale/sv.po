@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 23:57-0500\n"
-"PO-Revision-Date: 2020-11-30 18:06+0000\n"
+"POT-Creation-Date: 2020-12-08 09:56-0800\n"
+"PO-Revision-Date: 2020-12-07 20:26+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -504,8 +504,8 @@ msgstr "Buffertlängd måste vara en multipel av 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Bufferten måste vara en multipel av 512 byte"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
-#: shared-bindings/busio/I2C.c
+#: shared-bindings/adafruit_bus_device/I2CDevice.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Bufferten måste ha minst längd 1"
 
@@ -859,7 +859,7 @@ msgstr "Förväntade en adress"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
-msgstr ""
+msgstr "Förväntade ett larm"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -1008,7 +1008,7 @@ msgstr "I2SOut är inte tillgängligt"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr ""
+msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1311,10 +1311,10 @@ msgstr "Ingen DAC på chipet"
 msgid "No DMA channel found"
 msgstr "Ingen DMA-kanal hittades"
 
-#: shared-module/busdevice/I2CDevice.c
+#: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
-msgstr ""
+msgstr "Ingen I2C-enhet på adress: %x"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
@@ -1476,7 +1476,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/__init__.c
 msgid "Only one alarm.time alarm can be set."
-msgstr ""
+msgstr "Endast ett alarm.time kan ställas in."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1525,6 +1525,7 @@ msgstr "Åtkomst nekad"
 msgid "Pin does not have ADC capabilities"
 msgstr "Pinnen har inte ADC-funktionalitet"
 
+#: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Pinnen är enbart ingång"
@@ -1539,7 +1540,7 @@ msgstr "PInn-nummer redan reserverat av EXTI"
 
 #: ports/esp32s2/common-hal/alarm/__init__.c
 msgid "PinAlarm not yet implemented"
-msgstr ""
+msgstr "PinAlarm är inte implementerat ännu"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1584,9 +1585,12 @@ msgid "Prefix buffer must be on the heap"
 msgstr "Prefixbufferten måste finnas på heap"
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
-"Tryck på valfri knapp för att gå in i REPL. Använd CTRL-D för att ladda om."
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1758,7 +1762,7 @@ msgstr "Ange minst en UART-pinne"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
-msgstr ""
+msgstr "Ange en av monotonic_time eller epoch_time"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
@@ -1833,7 +1837,7 @@ msgstr "Tile-bredd måste vara jämnt delbar med bredd på bitmap"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Time is in the past."
-msgstr ""
+msgstr "Tid har passerats."
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -2073,6 +2077,10 @@ msgstr ""
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
 msgstr "WiFi-lösenord måste vara mellan 8 och 63 tecken"
+
+#: main.c
+msgid "Woken up by alarm.\n"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -2566,7 +2574,7 @@ msgstr "color ska vara en int"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
-msgstr ""
+msgstr "epoch_time stöds inte av detta kort"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -2939,7 +2947,7 @@ msgstr "ogiltig syntax för tal"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "io must be rtc io"
-msgstr ""
+msgstr "io måste vara rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3636,7 +3644,7 @@ msgstr "trapz är definierad för 1D-matriser med samma längd"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
-msgstr ""
+msgstr "triggernivå måste vara 0 eller 1"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
@@ -3782,7 +3790,7 @@ msgstr "vektorer måste ha samma längd"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
-msgstr ""
+msgstr "wakeup-konflikt"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
@@ -3855,6 +3863,11 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr ""
+#~ "Tryck på valfri knapp för att gå in i REPL. Använd CTRL-D för att ladda "
+#~ "om."
 
 #~ msgid "Only IPv4 SOCK_STREAM sockets supported"
 #~ msgstr "Endast IPv4 SOCK_STREAM sockets stöds"
