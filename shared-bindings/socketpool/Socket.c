@@ -64,94 +64,72 @@ STATIC mp_obj_t socketpool_socket___exit__(size_t n_args, const mp_obj_t *args) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket___exit___obj, 4, 4, socketpool_socket___exit__);
 
-// //|     def bind(self, address: tuple) -> None:
-// //|         """Bind a socket to an address
-// //|
-// //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
-// //|         ...
-// //|
+//|     def bind(self, address: Tuple[str, int]) -> None:
+//|         """Bind a socket to an address
+//|
+//|         :param ~tuple address: tuple of (remote_address, remote_port)"""
+//|         ...
+//|
+STATIC mp_obj_t socketpool_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-// STATIC mp_obj_t socketpool_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
-//     // mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_t *addr_items;
+    mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
-//     // // get address
-//     // uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
-//     // mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_BIG);
+    size_t hostlen;
+    const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
+    mp_int_t port = mp_obj_get_int(addr_items[1]);
 
-//     // // check if we need to select a NIC
-//     // socket_select_nic(self, ip);
+    bool ok = common_hal_socketpool_socket_bind(self, host, hostlen, port);
+    if (!ok) {
+        mp_raise_ValueError(translate("Error: Failure to bind"));
+    }
 
-//     // // call the NIC to bind the socket
-//     // int _errno;
-//     // if (self->nic_type->bind(self, ip, port, &_errno) != 0) {
-//     //     mp_raise_OSError(_errno);
-//     // }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_bind_obj, socketpool_socket_bind);
 
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_bind_obj, socketpool_socket_bind);
+//|     def listen(self, backlog: int) -> None:
+//|         """Set socket to listen for incoming connections
+//|
+//|         :param ~int backlog: length of backlog queue for waiting connetions"""
+//|         ...
+//|
+STATIC mp_obj_t socketpool_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-// //|     def listen(self, backlog: int) -> None:
-// //|         """Set socket to listen for incoming connections
-// //|
-// //|         :param ~int backlog: length of backlog queue for waiting connetions"""
-// //|         ...
-// //|
+    int backlog = mp_obj_get_int(backlog_in);
 
-// STATIC mp_obj_t socketpool_socket_listen(mp_obj_t self_in, mp_obj_t backlog) {
-//     // mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_socketpool_socket_listen(self, backlog);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_listen_obj, socketpool_socket_listen);
 
-//     // if (self->nic == MP_OBJ_NULL) {
-//     //     // not connected
-//     //     // TODO I think we can listen even if not bound...
-//     //     mp_raise_OSError(MP_ENOTCONN);
-//     // }
+//|     def accept(self) -> tuple:
+//|         """Accept a connection on a listening socket of type SOCK_STREAM,
+//|         creating a new socket of type SOCK_STREAM.
+//|         Returns a tuple of (new_socket, remote_address)"""
+//|
+STATIC mp_obj_t socketpool_socket_accept(mp_obj_t self_in) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint8_t ip[4];
+    uint port;
 
-//     // int _errno;
-//     // if (self->nic_type->listen(self, mp_obj_get_int(backlog), &_errno) != 0) {
-//     //     mp_raise_OSError(_errno);
-//     // }
+    int socknum = common_hal_socketpool_socket_accept(self, ip, &port);
 
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_listen_obj, socketpool_socket_listen);
+    socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
+    sock->base.type = &socketpool_socket_type;
+    sock->num = socknum;
+    sock->tls = NULL;
+    sock->ssl_context = NULL;
+    sock->pool = self->pool;
 
-// //|     def accept(self) -> tuple:
-// //|         """Accept a connection on a listening socket of type SOCK_STREAM,
-// //|         creating a new socket of type SOCK_STREAM.
-// //|         Returns a tuple of (new_socket, remote_address)"""
-// //|
-
-// STATIC mp_obj_t socketpool_socket_accept(mp_obj_t self_in) {
-//     // mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-//     // // create new socket object
-//     // // starts with empty NIC so that finaliser doesn't run close() method if accept() fails
-//     // mod_network_socket_obj_t *socket2 = m_new_obj_with_finaliser(mod_network_socket_obj_t);
-//     // socket2->base.type = &socket_type;
-//     // socket2->nic = MP_OBJ_NULL;
-//     // socket2->nic_type = NULL;
-
-//     // // accept incoming connection
-//     // uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
-//     // mp_uint_t port;
-//     // int _errno;
-//     // if (self->nic_type->accept(self, socket2, ip, &port, &_errno) != 0) {
-//     //     mp_raise_OSError(_errno);
-//     // }
-
-//     // // new socket has valid state, so set the NIC to the same as parent
-//     // socket2->nic = self->nic;
-//     // socket2->nic_type = self->nic_type;
-
-//     // // make the return value
-//     // mp_obj_tuple_t *client = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
-//     // client->items[0] = MP_OBJ_FROM_PTR(socket2);
-//     // client->items[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
-
-//     return mp_const_none;
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_accept_obj, socketpool_socket_accept);
+    mp_obj_t tuple_contents[2];
+    tuple_contents[0] = MP_OBJ_FROM_PTR(sock);
+    tuple_contents[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
+    return mp_obj_new_tuple(2, tuple_contents);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_accept_obj, socketpool_socket_accept);
 
 //|     def close(self) -> None:
 //|         """Closes this Socket and makes its resources available to its SocketPool."""
@@ -169,7 +147,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_close_obj, socketpool_socket_
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
 //|         ...
 //|
-
 STATIC mp_obj_t socketpool_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -196,7 +173,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_connect_obj, socketpool_socke
 //|         :param ~bytes bytes: some bytes to send"""
 //|         ...
 //|
-
 STATIC mp_obj_t socketpool_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (common_hal_socketpool_socket_get_closed(self)) {
@@ -215,19 +191,6 @@ STATIC mp_obj_t socketpool_socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
     return mp_obj_new_int_from_uint(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_send_obj, socketpool_socket_send);
-
-
-// helper function for socket_recv and socket_recv_into to handle common operations of both
-// STATIC mp_int_t _socket_recv_into(mod_network_socket_obj_t *sock, byte *buf, mp_int_t len) {
-//     mp_int_t ret = 0;
-//     // int _errno;
-//     // mp_int_t ret = sock->nic_type->recv(sock, buf, len, &_errno);
-//     // if (ret == -1) {
-//     //     mp_raise_OSError(_errno);
-//     // }
-//     return ret;
-// }
-
 
 //|     def recv_into(self, buffer: WriteableBuffer, bufsize: int) -> int:
 //|         """Reads some bytes from the connected remote address, writing
@@ -430,9 +393,9 @@ STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&socketpool_socket_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socketpool_socket_close_obj) },
 
-    // { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socketpool_socket_bind_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socketpool_socket_listen_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socketpool_socket_accept_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socketpool_socket_bind_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socketpool_socket_listen_obj) },
+    { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socketpool_socket_accept_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&socketpool_socket_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socketpool_socket_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socketpool_socket_sendto_obj) },
