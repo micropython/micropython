@@ -55,6 +55,7 @@ STATIC void floating_gpio_reset(gpio_num_t pin_number) {
         .intr_type = GPIO_INTR_DISABLE,
     };
     gpio_config(&cfg);
+    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin_number], 0);
 }
 
 void never_reset_pin_number(gpio_num_t pin_number) {
