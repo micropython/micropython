@@ -37,7 +37,7 @@
 #include <string.h>
 
 #define DEFAULT_VREF        1100
-#define NO_OF_SAMPLES       64
+#define NO_OF_SAMPLES       2
 #define ATTENUATION         ADC_ATTEN_DB_11
 #define DATA_WIDTH          ADC_WIDTH_BIT_13
 
