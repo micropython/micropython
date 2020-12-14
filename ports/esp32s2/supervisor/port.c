@@ -27,8 +27,8 @@
 
 #include <stdint.h>
 #include <sys/time.h>
+#include "supervisor/board.h"
 #include "supervisor/port.h"
-#include "boards/board.h"
 #include "modules/module.h"
 #include "py/runtime.h"
 #include "supervisor/esp_port.h"
@@ -100,6 +100,14 @@ safe_mode_t port_init(void) {
     }
     if (heap == NULL) {
         return NO_HEAP;
+    }
+
+    esp_reset_reason_t reason = esp_reset_reason();
+    if (reason == ESP_RST_BROWNOUT) {
+        return BROWNOUT;
+    }
+    if (reason == ESP_RST_PANIC) {
+        return HARD_CRASH;
     }
 
     return NO_SAFE_MODE;
@@ -239,27 +247,31 @@ void port_enable_tick(void) {
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
+
+    // CircuitPython's VM is run in a separate FreeRTOS task from TinyUSB.
+    // Tick disable can happen via auto-reload so poke the main task here.
+    if (sleeping_circuitpython_task != NULL) {
+        xTaskNotifyGive(sleeping_circuitpython_task);
+    }
 }
 
 TickType_t sleep_time_duration;
 
 void port_interrupt_after_ticks(uint32_t ticks) {
     sleep_time_duration = (ticks * 100)/1024;
-    sleeping_circuitpython_task = xTaskGetCurrentTaskHandle();
 }
 
-void port_sleep_until_interrupt(void) {
-
-    uint32_t NotifyValue = 0;
+void port_idle_until_interrupt(void) {
+    uint32_t notify_value = 0;
 
     if (sleep_time_duration == 0) {
         return;
     }
-    xTaskNotifyWait(0x01,0x01,&NotifyValue,
-                             sleep_time_duration );
-    if (NotifyValue == 1) {
-      sleeping_circuitpython_task = NULL;
-      mp_handle_pending();
+    sleeping_circuitpython_task = xTaskGetCurrentTaskHandle();
+    xTaskNotifyWait(0x01, 0x01, &notify_value, sleep_time_duration );
+    sleeping_circuitpython_task = NULL;
+    if (notify_value == 1) {
+        mp_handle_pending();
     }
 }
 
