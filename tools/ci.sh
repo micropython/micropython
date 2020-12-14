@@ -111,9 +111,11 @@ function ci_esp32_idf4_build {
 # ports/esp8266
 
 function ci_esp8266_setup {
-    sudo pip install pyserial
+    sudo pip install pyserial esptool
     wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
     zcat xtensa-lx106-elf-standalone.tar.gz | tar x
+    # Remove this esptool.py so pip version is used instead
+    rm xtensa-lx106-elf/bin/esptool.py
 }
 
 function ci_esp8266_path {
