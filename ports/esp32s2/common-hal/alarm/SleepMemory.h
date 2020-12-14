@@ -34,23 +34,15 @@
 // RTC registers: There are a few 32-bit registers maintained during deep sleep.
 // We are already using one for saving sleep information during deep sleep.
 //
-// RTC Fast Memory: 8kB, also used for deep-sleep power on stub, and for heap
-// during normal operation if CONFIG_ESP32S2_ALLOW_RTC_FAST_MEM_AS_HEAP is set.
-// Power-on during deep sleep must be enabled.
-// I experimented with using RTC Fast Memory. It seemed to work, but occasionally,
-// got smashed for unknown reasons.
-// Base of RTC Fast memory on the data bus is 0x3FF9E000. The address is different on the instruction bus.
-//
+// RTC Fast Memory: 8kB, also used for deep-sleep power-on stub.
 // RTC Slow Memory: 8kB, also used for the ULP (tiny co-processor available during sleep).
-// Less likely to be used by ESP-IDF.
-// Since we may want to use the ULP in the future, we will use the upper half
-// of Slow Memory and reserve the lower half for ULP.
-// From ulp.h:
-// #define RTC_SLOW_MEM ((uint32_t*) 0x50000000)       /*!< RTC slow memory, 8k size */
+//
+// The ESP-IDF build system takes care of the power management of these regions.
+// RTC_DATA_ATTR will allocate storage in RTC_SLOW_MEM unless CONFIG_ESP32S2_RTCDATA_IN_FAST_MEM
+// is set. Any memory not allocated by us can be used by the ESP-IDF for heap or other purposes.
 
-// Upper half of RTC_SLOW_MEM.
+// Use half of RTC_SLOW_MEM or RTC_FAST_MEM.
 #define SLEEP_MEMORY_LENGTH (4096)
-#define SLEEP_MEMORY_BASE (0x50000000 + 4096)
 
 typedef struct {
     mp_obj_base_t base;

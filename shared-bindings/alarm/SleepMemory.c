@@ -54,26 +54,6 @@
 //|         ...
 //|
 
-//|     def __bool__(self) -> bool:
-//|         """``sleep_memory`` is ``True`` if its length is greater than zero.
-//|         This is an easy way to check for its existence.
-//|         """
-//|         ...
-//|
-//|     def __len__(self) -> int:
-//|         """Return the length. This is used by (`len`)"""
-//|         ...
-//|
-STATIC mp_obj_t alarm_sleep_memory_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    alarm_sleep_memory_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint16_t len = common_hal_alarm_sleep_memory_get_length(self);
-    switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(len != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(len);
-        default: return MP_OBJ_NULL; // op not supported
-    }
-}
-
 STATIC const mp_rom_map_elem_t alarm_sleep_memory_locals_dict_table[] = {
 };
 
@@ -131,7 +111,7 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
                 }
 
                 if (!common_hal_alarm_sleep_memory_set_bytes(self, slice.start, src_items, src_len)) {
-                    mp_raise_RuntimeError(translate("Unable to write to nvm."));
+                    mp_raise_RuntimeError(translate("Unable to write to sleep_memory."));
                 }
                 return mp_const_none;
                 #else
@@ -141,7 +121,7 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
                 // Read slice.
                 size_t len = slice.stop - slice.start;
                 uint8_t *items = m_new(uint8_t, len);
-                common_hal_alarm_sleep_memory_get_bytes(self, slice.start, len, items);
+                common_hal_alarm_sleep_memory_get_bytes(self, slice.start, items, len);
                 return mp_obj_new_bytearray_by_ref(len, items);
             }
 #endif
@@ -152,7 +132,7 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 uint8_t value_out;
-                common_hal_alarm_sleep_memory_get_bytes(self, index, 1, &value_out);
+                common_hal_alarm_sleep_memory_get_bytes(self, index, &value_out, 1);
                 return MP_OBJ_NEW_SMALL_INT(value_out);
             } else {
                 // store
@@ -162,7 +142,7 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
                 }
                 uint8_t short_value = byte_value;
                 if (!common_hal_alarm_sleep_memory_set_bytes(self, index, &short_value, 1)) {
-                    mp_raise_RuntimeError(translate("Unable to write to nvm."));
+                    mp_raise_RuntimeError(translate("Unable to write to sleep_memory."));
                 }
                 return mp_const_none;
             }
@@ -174,7 +154,6 @@ const mp_obj_type_t alarm_sleep_memory_type = {
     { &mp_type_type },
     .name = MP_QSTR_SleepMemory,
     .subscr = alarm_sleep_memory_subscr,
-    .unary_op = alarm_sleep_memory_unary_op,
     .print = NULL,
     .locals_dict = (mp_obj_t)&alarm_sleep_memory_locals_dict,
 };
