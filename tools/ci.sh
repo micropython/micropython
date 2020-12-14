@@ -75,6 +75,9 @@ function ci_esp32_idf3_setup {
     sudo pip3 install pyserial 'pyparsing<2.4'
     curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz | tar zxf -
     git clone https://github.com/espressif/esp-idf.git
+}
+
+function ci_esp32_idf3_path {
     echo $(pwd)/xtensa-esp32-elf/bin
 }
 
@@ -90,6 +93,9 @@ function ci_esp32_idf4_setup {
     sudo pip3 install pyserial 'pyparsing<2.4'
     curl -L https://dl.espressif.com/dl/xtensa-esp32-elf-gcc8_2_0-esp-2019r2-linux-amd64.tar.gz | tar zxf -
     git clone https://github.com/espressif/esp-idf.git
+}
+
+function ci_esp32_idf4_path {
     echo $(pwd)/xtensa-esp32-elf/bin
 }
 
@@ -108,6 +114,9 @@ function ci_esp8266_setup {
     sudo pip install pyserial
     wget https://github.com/jepler/esp-open-sdk/releases/download/2018-06-10/xtensa-lx106-elf-standalone.tar.gz
     zcat xtensa-lx106-elf-standalone.tar.gz | tar x
+}
+
+function ci_esp8266_path {
     echo $(pwd)/xtensa-lx106-elf/bin
 }
 
