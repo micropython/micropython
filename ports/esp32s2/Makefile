@@ -118,7 +118,7 @@ CFLAGS += -DSTACK_CANARY_VALUE=0xa5a5a5a5
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  CFLAGS += -ggdb
+  CFLAGS += -DDEBUG -ggdb
   OPTIMIZATION_FLAGS ?= -Og
   # You may want to enable these flags to make setting breakpoints easier.
   # CFLAGS += -fno-inline -fno-ipa-sra

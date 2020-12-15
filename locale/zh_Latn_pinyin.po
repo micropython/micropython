@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"POT-Creation-Date: 2020-12-14 11:48-0500\n"
 "PO-Revision-Date: 2020-11-19 01:28+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -394,7 +394,7 @@ msgstr "Lìng yīgè fāsòng yǐjīng jīhuó"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "Shùzǔ bìxū bāohán bàn zìshù (type 'H')"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Shùzǔ zhí yīnggāi shì dāngè zì jié."
 
@@ -506,8 +506,8 @@ msgstr "Huǎn chōng qū cháng dù bì xū wéi 512 de bèi shù"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Huǎn chōng qū bì xū shì 512 zì jié de bèi shù"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
-#: shared-bindings/busio/I2C.c
+#: shared-bindings/adafruit_bus_device/I2CDevice.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 
@@ -530,7 +530,7 @@ msgstr "Zǒngxiàn yǐn jiǎo %d yǐ zài shǐyòng zhōng"
 msgid "Byte buffer must be 16 bytes."
 msgstr "Zì jié huǎnchōng qū bìxū shì 16 zì jié."
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Zì jié bìxū jiè yú 0 dào 255 zhī jiān."
 
@@ -1308,7 +1308,7 @@ msgstr "Méiyǒu DAC zài xīnpiàn shàng de"
 msgid "No DMA channel found"
 msgstr "Wèi zhǎodào DMA píndào"
 
-#: shared-module/busdevice/I2CDevice.c
+#: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr ""
@@ -1521,6 +1521,7 @@ msgstr "Quánxiàn bèi jùjué"
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin méiyǒu ADC nénglì"
 
+#: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Yǐn jiǎo jǐn shūrù"
@@ -1577,8 +1578,12 @@ msgid "Prefix buffer must be on the heap"
 msgstr "Qiánzhuì huǎnchōng qū bìxū zài duī shàng"
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzài."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
+msgstr ""
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1713,7 +1718,7 @@ msgstr "Fúwùqì duān shàngxiàwén bùnéng jùyǒu zhǔjī míng"
 msgid "Size not supported"
 msgstr "bù zhī chí dà xiǎo"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Qiēpiàn hé zhí bùtóng chángdù."
 
@@ -1937,6 +1942,10 @@ msgstr "Wúfǎ dòu qǔ sè tiáo shùjù"
 msgid "Unable to write to nvm."
 msgstr "Wúfǎ xiě rù nvm."
 
+#: shared-bindings/alarm/SleepMemory.c
+msgid "Unable to write to sleep_memory."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Yìwài de nrfx uuid lèixíng"
@@ -2066,6 +2075,10 @@ msgstr ""
 msgid "WiFi password must be between 8 and 63 characters"
 msgstr "WiFi mìmǎ bìxū jiè yú 8 dào 63 gè zìfú zhī jiān"
 
+#: main.c
+msgid "Woken up by alarm.\n"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Tèzhēng bù zhīchí xiě rù"
@@ -2148,7 +2161,8 @@ msgstr "cānshù bìxū shì ndarrays"
 msgid "array and index length must be equal"
 msgstr ""
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: py/objarray.c shared-bindings/alarm/SleepMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "yòu cè xūyào shùzǔ/zì jié"
 
@@ -3252,7 +3266,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr "Jǐn zhīchí cǎiyàng lǜ = 16000"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
 
@@ -3844,6 +3858,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzài."
 
 #~ msgid "Only IPv4 SOCK_STREAM sockets supported"
 #~ msgstr "Jǐn zhīchí IPv4 SOCK_STREAM tào jiē zì"

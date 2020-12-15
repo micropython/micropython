@@ -125,7 +125,6 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
                     mp_printf(print, decompressed_block, block);
                 }
             }
-            mp_obj_exception_clear_traceback(exc);
         }
     }
     mp_obj_print_helper(print, exc, PRINT_EXC);

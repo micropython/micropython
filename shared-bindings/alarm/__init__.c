@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/alarm/__init__.h"
+#include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/supervisor/Runtime.h"
@@ -57,7 +58,11 @@
 //| maintaining the connection takes priority and power consumption may not be reduced.
 //| """
 
+//| sleep_memory: SleepMemory
+//| """Memory that persists during deep sleep.
+//| This object is the sole instance of `alarm.SleepMemory`."""
 //|
+
 //| wake_alarm: Alarm
 //| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm the woke it from sleep."""
 //|
@@ -177,6 +182,7 @@ STATIC const mp_obj_module_t alarm_time_module = {
     .globals = (mp_obj_dict_t*)&alarm_time_globals,
 };
 
+// The module table is mutable because .wake_alarm is a mutable attribute.
 STATIC mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_alarm) },
 
@@ -188,12 +194,14 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
                                                MP_OBJ_FROM_PTR(&alarm_exit_and_deep_sleep_until_alarms_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_pin), MP_OBJ_FROM_PTR(&alarm_pin_module) },
-    { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) }
+    { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) },
 
+    { MP_ROM_QSTR(MP_QSTR_SleepMemory),   MP_OBJ_FROM_PTR(&alarm_sleep_memory_type) },
+    { MP_ROM_QSTR(MP_QSTR_sleep_memory),  MP_OBJ_FROM_PTR(&alarm_sleep_memory_obj) },
 };
 STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
 
-void common_hal_alarm_set_wake_alarm(mp_obj_t alarm) {
+STATIC void alarm_set_wake_alarm(mp_obj_t alarm) {
     // Equivalent of:
     // alarm.wake_alarm = alarm
     mp_map_elem_t *elem =
@@ -201,6 +209,11 @@ void common_hal_alarm_set_wake_alarm(mp_obj_t alarm) {
     if (elem) {
         elem->value = alarm;
     }
+}
+
+// Initialize .wake_alarm value.
+void alarm_save_wakeup_alarm(void) {
+    alarm_set_wake_alarm(common_hal_alarm_get_wake_alarm());
 }
 
 const mp_obj_module_t alarm_module = {

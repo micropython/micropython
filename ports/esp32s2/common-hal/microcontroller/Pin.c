@@ -44,6 +44,20 @@ STATIC uint32_t in_use[2];
 bool apa102_mosi_in_use;
 bool apa102_sck_in_use;
 
+STATIC void floating_gpio_reset(gpio_num_t pin_number) {
+    // This is the same as gpio_reset_pin(), but without the pullup.
+    // Note that gpio_config resets the iomatrix to GPIO_FUNC as well.
+    gpio_config_t cfg = {
+        .pin_bit_mask = BIT64(pin_number),
+        .mode = GPIO_MODE_DISABLE,
+        .pull_up_en = false,
+        .pull_down_en = false,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&cfg);
+    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin_number], 0);
+}
+
 void never_reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == -1 ) {
          return;
@@ -62,6 +76,8 @@ void reset_pin_number(gpio_num_t pin_number) {
     }
     never_reset_pins[pin_number / 32] &= ~(1 << pin_number % 32);
     in_use[pin_number / 32] &= ~(1 << pin_number % 32);
+
+    floating_gpio_reset(pin_number);
 
     #ifdef MICROPY_HW_NEOPIXEL
     if (pin_number == MICROPY_HW_NEOPIXEL->number) {
@@ -83,9 +99,7 @@ void reset_all_pins(void) {
             (never_reset_pins[i / 32] & (1 << i % 32)) != 0) {
             continue;
         }
-        gpio_set_direction(i, GPIO_MODE_DEF_INPUT);
-        gpio_pullup_dis(i);
-        gpio_pulldown_dis(i);
+        floating_gpio_reset(i);
     }
     in_use[0] = 0;
     in_use[1] = 0;
