@@ -33,7 +33,7 @@
 
 #include "sched/sched.h"
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 #include "supervisor/port.h"
 #include "supervisor/background_callback.h"
@@ -98,8 +98,8 @@ void reset_to_bootloader(void) {
     }
 }
 
-supervisor_allocation* port_fixed_stack(void) {
-    return NULL;
+bool port_has_fixed_stack(void) {
+    return true;
 }
 
 uint32_t *port_stack_get_limit(void) {
@@ -169,6 +169,6 @@ void port_disable_tick(void) {
 void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
     // TODO: Implement sleep.
 }

@@ -24,7 +24,7 @@ CIRCUITPY_TOUCHIO=0
 CIRCUITPY_USB_MIDI=0
 CIRCUITPY_RTC=0
 CIRCUITPY_COUNTIO=0
+CIRCUITPY_BUSDEVICE=1
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_SD

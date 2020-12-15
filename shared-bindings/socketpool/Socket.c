@@ -36,6 +36,8 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 
+#include "lib/netutils/netutils.h"
+
 //| class Socket:
 //|     """TCP, UDP and RAW socket. Cannot be created directly. Instead, call
 //|        `SocketPool.socket()`.
@@ -161,7 +163,7 @@ STATIC mp_obj_t socketpool_socket_close(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(socketpool_socket_close_obj, socketpool_socket_close);
 
-//|     def connect(self, address: tuple) -> None:
+//|     def connect(self, address: Tuple[str, int]) -> None:
 //|         """Connect a socket to a remote address
 //|
 //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
@@ -274,79 +276,63 @@ STATIC mp_obj_t socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socketpool_socket_recv_into_obj, 2, 3, socketpool_socket_recv_into);
 
-// //|     def sendto(self, bytes: ReadableBuffer, address: tuple) -> int:
-// //|         """Send some bytes to a specific address.
-// //|         Suits sockets of type SOCK_DGRAM
-// //|
-// //|         :param ~bytes bytes: some bytes to send
-// //|         :param ~tuple address: tuple of (remote_address, remote_port)"""
-// //|         ...
-// //|
+//|     def sendto(self, bytes: ReadableBuffer, address: Tuple[str, int]) -> int:
+//|         """Send some bytes to a specific address.
+//|         Suits sockets of type SOCK_DGRAM
+//|
+//|         :param ~bytes bytes: some bytes to send
+//|         :param ~tuple address: tuple of (remote_address, remote_port)"""
+//|         ...
+//|
 
-// STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_in) {
-//     // mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_in) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-//     // // get the data
-//     // mp_buffer_info_t bufinfo;
-//     // mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
+    // get the data
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
 
-//     // // get address
-//     // uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
-//     // mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_BIG);
+    mp_obj_t *addr_items;
+    mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
-//     // // check if we need to select a NIC
-//     // socket_select_nic(self, ip);
+    size_t hostlen;
+    const char* host = mp_obj_str_get_data(addr_items[0], &hostlen);
+    mp_int_t port = mp_obj_get_int(addr_items[1]);
 
-//     // // call the NIC to sendto
-//     // int _errno;
-//     // mp_int_t ret = self->nic_type->sendto(self, bufinfo.buf, bufinfo.len, ip, port, &_errno);
-//     // if (ret == -1) {
-//     //     mp_raise_OSError(_errno);
-//     // }
-//     mp_int_t ret = 0;
+    mp_int_t ret = common_hal_socketpool_socket_sendto(self, host, hostlen, port, bufinfo.buf, bufinfo.len);
+    if (!ret) {
+        mp_raise_OSError(0);
+    }
 
-//     return mp_obj_new_int(ret);
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_3(socketpool_socket_sendto_obj, socketpool_socket_sendto);
+    return mp_obj_new_int_from_uint(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(socketpool_socket_sendto_obj, socketpool_socket_sendto);
 
-// //|     def recvfrom(self, bufsize: int) -> Tuple[bytes, tuple]:
-// //|         """Reads some bytes from the connected remote address.
-// //|         Suits sockets of type SOCK_STREAM
-// //|
-// //|         Returns a tuple containing
-// //|         * a bytes() of length <= bufsize
-// //|         * a remote_address, which is a tuple of ip address and port number
-// //|
-// //|         :param ~int bufsize: maximum number of bytes to receive"""
-// //|         ...
-// //|
+//|     def recvfrom_into(self, buffer: WriteableBuffer) -> Tuple[int, Tuple[str, int]]:
+//|         """Reads some bytes from a remote address.
+//|
+//|         Returns a tuple containing
+//|         * the number of bytes received into the given buffer
+//|         * a remote_address, which is a tuple of ip address and port number
+//|
+//|         :param object buffer: buffer to read into"""
+//|         ...
+//|
+STATIC mp_obj_t socketpool_socket_recvfrom_into(mp_obj_t self_in, mp_obj_t data_in) {
+    socketpool_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_WRITE);
 
-// STATIC mp_obj_t socketpool_socket_recvfrom_into(mp_obj_t self_in, mp_obj_t len_in) {
-//     // mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-//     // if (self->nic == MP_OBJ_NULL) {
-//     //     // not connected
-//     //     mp_raise_OSError(MP_ENOTCONN);
-//     // }
-//     // vstr_t vstr;
-//     // vstr_init_len(&vstr, mp_obj_get_int(len_in));
-//     // byte ip[4];
-//     // mp_uint_t port;
-//     // int _errno;
-//     // mp_int_t ret = self->nic_type->recvfrom(self, (byte*)vstr.buf, vstr.len, ip, &port, &_errno);
-//     // if (ret == -1) {
-//     //     mp_raise_OSError(_errno);
-//     // }
-//     mp_obj_t tuple[2];
-//     // if (ret == 0) {
-//     //     tuple[0] = mp_const_empty_bytes;
-//     // } else {
-//     //     vstr.len = ret;
-//     //     tuple[0] = mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
-//     // }
-//     // tuple[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
-//     return mp_obj_new_tuple(2, tuple);
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_recvfrom_into_obj, socketpool_socket_recvfrom_into);
+    byte ip[4];
+    mp_uint_t port;
+    mp_int_t ret = common_hal_socketpool_socket_recvfrom_into(self,
+        (byte*)bufinfo.buf, bufinfo.len, ip, &port);
+    mp_obj_t tuple_contents[2];
+    tuple_contents[0] = mp_obj_new_int_from_uint(ret);
+    tuple_contents[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
+    return mp_obj_new_tuple(2, tuple_contents);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_recvfrom_into_obj, socketpool_socket_recvfrom_into);
 
 // //|     def setsockopt(self, level: int, optname: int, value: int) -> None:
 // //|         """Sets socket options"""
@@ -449,8 +435,8 @@ STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socketpool_socket_accept_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&socketpool_socket_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socketpool_socket_send_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socketpool_socket_sendto_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_recvfrom_into), MP_ROM_PTR(&socketpool_socket_recvfrom_into_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socketpool_socket_sendto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_recvfrom_into), MP_ROM_PTR(&socketpool_socket_recvfrom_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv_into), MP_ROM_PTR(&socketpool_socket_recv_into_obj) },
     // { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socketpool_socket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socketpool_socket_settimeout_obj) },

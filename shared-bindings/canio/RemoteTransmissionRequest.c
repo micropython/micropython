@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 
 //| class RemoteTransmissionRequest:
-//|     def __init__(self, id: int, length: int, *, extended: bool = False):
+//|     def __init__(self, id: int, length: int, *, extended: bool = False) -> None:
 //|         """Construct a RemoteTransmissionRequest to send on a CAN bus.
 //|
 //|         :param int id: The numeric ID of the requested message

@@ -172,7 +172,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
     return mp_const_none;
 }
 
-//|     def blit(self, x: int, y: int, source_bitmap: bitmap, *, x1: int, y1: int, x2: int, y2: int, skip_index: int) -> None:
+//|     def blit(self, x: int, y: int, source_bitmap: Bitmap, *, x1: int, y1: int, x2: int, y2: int, skip_index: int) -> None:
 //|         """Inserts the source_bitmap region defined by rectangular boundaries
 //|                     (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
 //|
@@ -274,7 +274,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_blit_obj, 4, displayio_bitmap_obj_blit);
 // `displayio_bitmap_obj_blit` requires at least 4 arguments
 
-//|     def fill(self, value: Any) -> None:
+//|     def fill(self, value: int) -> None:
 //|         """Fills the bitmap with the supplied palette index value."""
 //|         ...
 //|

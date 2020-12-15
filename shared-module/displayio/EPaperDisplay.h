@@ -38,9 +38,9 @@ typedef struct {
     displayio_display_core_t core;
     digitalio_digitalinout_obj_t busy;
     uint32_t milliseconds_per_frame;
-    uint8_t* start_sequence;
+    const uint8_t* start_sequence;
     uint32_t start_sequence_len;
-    uint8_t* stop_sequence;
+    const uint8_t* stop_sequence;
     uint32_t stop_sequence_len;
     uint16_t refresh_time;
     uint16_t set_column_window_command;
@@ -55,6 +55,7 @@ typedef struct {
     bool black_bits_inverted;
     bool color_bits_inverted;
     bool refreshing;
+    bool grayscale;
     display_chip_select_behavior_t chip_select;
 } displayio_epaperdisplay_obj_t;
 

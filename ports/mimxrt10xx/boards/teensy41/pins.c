@@ -1,6 +1,6 @@
 #include "shared-bindings/board/__init__.h"
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     // With USB on left. Bottom edge.

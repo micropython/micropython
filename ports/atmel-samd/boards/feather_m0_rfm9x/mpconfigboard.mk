@@ -13,7 +13,7 @@ CIRCUITPY_FULL_BUILD = 0
 
 # A number of modules are removed for RFM9x to make room for frozen libraries.
 # Many I/O functions are not available.
-CIRCUITPY_ANALOGIO = 0
+CIRCUITPY_ANALOGIO = 1
 CIRCUITPY_PULSEIO = 0
 CIRCUITPY_NEOPIXEL_WRITE = 1
 CIRCUITPY_ROTARYIO = 0
@@ -22,11 +22,11 @@ CIRCUITPY_SAMD = 0
 CIRCUITPY_USB_MIDI = 0
 CIRCUITPY_USB_HID = 0
 CIRCUITPY_TOUCHIO = 0
+CIRCUITPY_BUSDEVICE = 1
 
 CFLAGS_INLINE_LIMIT = 35
 # Make more room.
 SUPEROPT_GC = 0
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_RFM9x

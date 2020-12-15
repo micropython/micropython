@@ -28,7 +28,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "boards/board.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/rgb_led_status.h"
 
@@ -204,6 +203,14 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // hal->dummy_bits = 0;
     // hal->addr = 0;
 
+    claim_pin(self->clock_pin);
+    if (self->MOSI_pin != NULL) {
+        claim_pin(self->MOSI_pin);
+    }
+    if (self->MISO_pin != NULL) {
+        claim_pin(self->MISO_pin);
+    }
+
     hal->io_mode = SPI_LL_IO_MODE_NORMAL;
 
     common_hal_busio_spi_configure(self, 250000, 0, 0, 8);
@@ -357,6 +364,9 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     } else {
         hal->dma_enabled = 0;
         burst_length = sizeof(hal->hw->data_buf);
+        // When switching to non-DMA, we need to make sure DMA is off. Otherwise,
+        // the S2 will transmit zeroes instead of our data.
+        spi_ll_txdma_disable(hal->hw);
     }
 
     // This rounds up.
