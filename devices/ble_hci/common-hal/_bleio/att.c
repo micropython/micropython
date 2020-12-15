@@ -61,7 +61,7 @@ STATIC struct {
 typedef struct __packed {
     uint8_t properties;
     uint16_t value_handle;
-    uint8_t uuid[0];  // 2 or 16 bytes
+    uint8_t uuid[];  // 2 or 16 bytes
 } characteristic_declaration_t;
 
 STATIC uint8_t bleio_properties_to_ble_spec_properties(uint8_t bleio_properties) {
