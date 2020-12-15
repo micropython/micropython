@@ -41,10 +41,10 @@ def test_lambda():
 
 # import
 def test_import():
-    from sys_settrace_subdir import trace_importme
+    from sys_settrace_subdir import sys_settrace_importme
 
-    trace_importme.dummy()
-    trace_importme.saysomething()
+    sys_settrace_importme.dummy()
+    sys_settrace_importme.saysomething()
 
 
 # class
