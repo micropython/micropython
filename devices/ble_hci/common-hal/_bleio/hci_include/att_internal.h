@@ -89,6 +89,7 @@ struct bt_att_handle_group {
 /* Find By Type Value Response */
 #define BT_ATT_OP_FIND_TYPE_RSP			0x07
 struct bt_att_find_type_rsp {
+        uint8_t _dummy[0];
 	struct bt_att_handle_group list[];
 } __packed;
 
@@ -121,6 +122,7 @@ struct bt_att_read_req {
 /* Read Response */
 #define BT_ATT_OP_READ_RSP			0x0b
 struct bt_att_read_rsp {
+        uint8_t _dummy[0];
 	uint8_t  value[];
 } __packed;
 
@@ -134,6 +136,7 @@ struct bt_att_read_blob_req {
 /* Read Blob Response */
 #define BT_ATT_OP_READ_BLOB_RSP			0x0d
 struct bt_att_read_blob_rsp {
+        uint8_t _dummy[0];
 	uint8_t  value[];
 } __packed;
 
@@ -142,12 +145,14 @@ struct bt_att_read_blob_rsp {
 
 #define BT_ATT_OP_READ_MULT_REQ			0x0e
 struct bt_att_read_mult_req {
+        uint8_t _dummy[0];
 	uint16_t handles[];
 } __packed;
 
 /* Read Multiple Respose */
 #define BT_ATT_OP_READ_MULT_RSP			0x0f
 struct bt_att_read_mult_rsp {
+        uint8_t _dummy[0];
 	uint8_t  value[];
 } __packed;
 
@@ -233,6 +238,7 @@ struct bt_att_signature {
 
 #define BT_ATT_OP_READ_MULT_VL_REQ		0x20
 struct bt_att_read_mult_vl_req {
+        uint8_t _dummy[0];
 	uint16_t handles[];
 } __packed;
 
