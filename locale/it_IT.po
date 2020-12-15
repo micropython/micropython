@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"POT-Creation-Date: 2020-12-14 11:48-0500\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -389,7 +389,7 @@ msgstr "Another send è gia activato"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "Array deve avere mezzoparole (typo 'H')"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Valori di Array dovrebbero essere bytes singulari"
 
@@ -502,8 +502,8 @@ msgstr ""
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
-#: shared-bindings/busio/I2C.c
+#: shared-bindings/adafruit_bus_device/I2CDevice.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Il buffer deve essere lungo almeno 1"
 
@@ -527,7 +527,7 @@ msgstr "DAC già in uso"
 msgid "Byte buffer must be 16 bytes."
 msgstr "i buffer devono essere della stessa lunghezza"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "I byte devono essere compresi tra 0 e 255"
 
@@ -1314,7 +1314,7 @@ msgstr "Nessun DAC sul chip"
 msgid "No DMA channel found"
 msgstr "Nessun canale DMA trovato"
 
-#: shared-module/busdevice/I2CDevice.c
+#: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr ""
@@ -1530,6 +1530,7 @@ msgstr "Permesso negato"
 msgid "Pin does not have ADC capabilities"
 msgstr "Il pin non ha capacità di ADC"
 
+#: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr ""
@@ -1583,9 +1584,12 @@ msgid "Prefix buffer must be on the heap"
 msgstr ""
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
-"Premi un qualunque tasto per entrare nel REPL. Usa CTRL-D per ricaricare."
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1723,7 +1727,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr ""
 
@@ -1938,6 +1942,10 @@ msgstr ""
 msgid "Unable to write to nvm."
 msgstr "Imposibile scrivere su nvm."
 
+#: shared-bindings/alarm/SleepMemory.c
+msgid "Unable to write to sleep_memory."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/UUID.c
 #, fuzzy
 msgid "Unexpected nrfx uuid type"
@@ -2060,6 +2068,10 @@ msgstr ""
 msgid "WiFi password must be between 8 and 63 characters"
 msgstr ""
 
+#: main.c
+msgid "Woken up by alarm.\n"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr ""
@@ -2142,7 +2154,8 @@ msgstr ""
 msgid "array and index length must be equal"
 msgstr ""
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: py/objarray.c shared-bindings/alarm/SleepMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr ""
 
@@ -3260,7 +3273,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "solo slice con step=1 (aka None) sono supportate"
 
@@ -3859,6 +3872,10 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr ""
+#~ "Premi un qualunque tasto per entrare nel REPL. Usa CTRL-D per ricaricare."
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "gli indici %q devono essere interi, non %s"

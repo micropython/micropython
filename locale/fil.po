@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"POT-Creation-Date: 2020-12-14 11:48-0500\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -390,7 +390,7 @@ msgstr "Isa pang send ay aktibo na"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "May halfwords (type 'H') dapat ang array"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Array values ay dapat single bytes."
 
@@ -502,8 +502,8 @@ msgstr ""
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
-#: shared-bindings/busio/I2C.c
+#: shared-bindings/adafruit_bus_device/I2CDevice.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Buffer dapat ay hindi baba sa 1 na haba"
 
@@ -527,7 +527,7 @@ msgstr "Ginagamit na ang DAC"
 msgid "Byte buffer must be 16 bytes."
 msgstr "buffer ay dapat bytes-like object"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 
@@ -1310,7 +1310,7 @@ msgstr "Walang DAC sa chip"
 msgid "No DMA channel found"
 msgstr "Walang DMA channel na mahanap"
 
-#: shared-module/busdevice/I2CDevice.c
+#: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr ""
@@ -1521,6 +1521,7 @@ msgstr "Walang pahintulot"
 msgid "Pin does not have ADC capabilities"
 msgstr "Ang pin ay walang kakayahan sa ADC"
 
+#: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr ""
@@ -1573,10 +1574,12 @@ msgid "Prefix buffer must be on the heap"
 msgstr ""
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
-"Pindutin ang anumang key upang pumasok sa REPL. Gamitin ang CTRL-D upang i-"
-"reload."
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1712,7 +1715,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice at value iba't ibang haba."
 
@@ -1927,6 +1930,10 @@ msgstr ""
 msgid "Unable to write to nvm."
 msgstr "Hindi ma i-sulat sa NVM."
 
+#: shared-bindings/alarm/SleepMemory.c
+msgid "Unable to write to sleep_memory."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/UUID.c
 #, fuzzy
 msgid "Unexpected nrfx uuid type"
@@ -2057,6 +2064,10 @@ msgstr ""
 msgid "WiFi password must be between 8 and 63 characters"
 msgstr ""
 
+#: main.c
+msgid "Woken up by alarm.\n"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr ""
@@ -2139,7 +2150,8 @@ msgstr ""
 msgid "array and index length must be equal"
 msgstr ""
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: py/objarray.c shared-bindings/alarm/SleepMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "array/bytes kinakailangan sa kanang bahagi"
 
@@ -3255,7 +3267,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr ""
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "ang mga slices lamang na may hakbang = 1 (aka None) ang sinusuportahan"
 
@@ -3852,6 +3864,11 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr ""
+#~ "Pindutin ang anumang key upang pumasok sa REPL. Gamitin ang CTRL-D upang "
+#~ "i-reload."
 
 #~ msgid "%q indices must be integers, not %s"
 #~ msgstr "%q indeks ay dapat integers, hindi %s"
