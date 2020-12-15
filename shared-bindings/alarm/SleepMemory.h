@@ -1,9 +1,10 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries.
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +25,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_SLEEPMEMORY_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_SLEEPMEMORY_H
 
 #include "common-hal/alarm/SleepMemory.h"
 
-const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
+extern const mp_obj_type_t alarm_sleep_memory_type;
 
-extern void alarm_reset(void);
+uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
+bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, const uint8_t* values, uint32_t len);
+void common_hal_alarm_sleep_memory_get_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, uint8_t* values, uint32_t len);
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_SLEEPMEMORY_H

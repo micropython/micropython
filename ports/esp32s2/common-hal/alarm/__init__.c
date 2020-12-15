@@ -1,10 +1,10 @@
- /*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/alarm/pin/PinAlarm.h"
+#include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/wifi/__init__.h"
@@ -41,8 +42,17 @@
 
 #include "esp_sleep.h"
 
+// Singleton instance of SleepMemory.
+const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
+    .base = {
+        .type = &alarm_sleep_memory_type,
+    },
+};
+
+
 void alarm_reset(void) {
     alarm_time_timealarm_reset();
+    alarm_sleep_memory_reset();
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
