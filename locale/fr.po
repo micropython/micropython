@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-08 09:56-0800\n"
+"POT-Creation-Date: 2020-12-14 11:48-0500\n"
 "PO-Revision-Date: 2020-12-08 19:21+0000\n"
 "Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
 "Language: fr\n"
@@ -397,7 +397,7 @@ msgstr "Un autre envoi est déjà actif"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "Le tableau doit contenir des demi-mots (type 'H')"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'."
 
@@ -535,7 +535,7 @@ msgstr "La broche %d du bus est déjà utilisée"
 msgid "Byte buffer must be 16 bytes."
 msgstr "Le tampon doit être de 16 octets."
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Les octets 'bytes' doivent être entre 0 et 255."
 
@@ -1740,7 +1740,7 @@ msgstr "Un contexte niveau serveur ne peut avoir de hostname"
 msgid "Size not supported"
 msgstr "Taille non prise en charge"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Tranche et valeur de tailles différentes."
 
@@ -1970,6 +1970,10 @@ msgstr "Impossible de lire les données de la palette de couleurs"
 msgid "Unable to write to nvm."
 msgstr "Impossible d'écrire sur la mémoire non-volatile."
 
+#: shared-bindings/alarm/SleepMemory.c
+msgid "Unable to write to sleep_memory."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Type inattendu pour l'uuid nrfx"
@@ -2189,7 +2193,8 @@ msgstr "les arguments doivent être des ndarrays"
 msgid "array and index length must be equal"
 msgstr "la longueur du tableau et de l'index doit être égale"
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: py/objarray.c shared-bindings/alarm/SleepMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "tableau/octets requis à droite"
 
@@ -3309,7 +3314,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr "seul sample_rate = 16000 est pris en charge"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
 

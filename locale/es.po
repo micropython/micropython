@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-08 09:56-0800\n"
+"POT-Creation-Date: 2020-12-14 11:48-0500\n"
 "PO-Revision-Date: 2020-11-27 18:34+0000\n"
 "Last-Translator: Iván Montiel Cardona <ivan_montiel2013@hotmail.com>\n"
 "Language-Team: \n"
@@ -397,7 +397,7 @@ msgstr "Otro envío ya está activo"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "El array debe contener medias palabras (escriba 'H')"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Valores del array deben ser bytes individuales."
 
@@ -535,7 +535,7 @@ msgstr "Bus pin %d ya está siendo utilizado"
 msgid "Byte buffer must be 16 bytes."
 msgstr "Búfer Byte debe de ser 16 bytes."
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Bytes debe estar entre 0 y 255."
 
@@ -1733,7 +1733,7 @@ msgstr "El contexto del lado del servidor no puede tener un hostname"
 msgid "Size not supported"
 msgstr "Sin capacidades para el tamaño"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice y value tienen tamaños diferentes."
 
@@ -1962,6 +1962,10 @@ msgstr "No se pudo leer los datos de la paleta de colores"
 msgid "Unable to write to nvm."
 msgstr "Imposible escribir en nvm."
 
+#: shared-bindings/alarm/SleepMemory.c
+msgid "Unable to write to sleep_memory."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Tipo de uuid nrfx inesperado"
@@ -2179,7 +2183,8 @@ msgstr "argumentos deben ser ndarrays"
 msgid "array and index length must be equal"
 msgstr "Longitud del array e índice tienen que ser iguales"
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: py/objarray.c shared-bindings/alarm/SleepMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "array/bytes requeridos en el lado derecho"
 
@@ -3290,7 +3295,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr "solo se admite sample_rate=16000"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "solo se admiten segmentos con step=1 (alias None)"
 
