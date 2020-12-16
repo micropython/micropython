@@ -1,2 +1,0 @@
-org string: bytearray(b'foobar')
-qsort'ed: bytearray(b'abfoor')
