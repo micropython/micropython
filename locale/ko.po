@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 11:48-0500\n"
+"POT-Creation-Date: 2020-12-14 12:59-0500\n"
 "PO-Revision-Date: 2020-10-05 12:12+0000\n"
 "Last-Translator: Michal Čihař <michal@cihar.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1082,6 +1082,10 @@ msgstr ""
 #: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
+msgstr ""
+
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "Invalid Pin"
 msgstr ""
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c

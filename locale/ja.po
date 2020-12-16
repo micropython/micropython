@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 11:48-0500\n"
+"POT-Creation-Date: 2020-12-14 12:59-0500\n"
 "PO-Revision-Date: 2020-11-27 18:34+0000\n"
 "Last-Translator: sporeball <sporeballdev@gmail.com>\n"
 "Language-Team: none\n"
@@ -1093,6 +1093,10 @@ msgstr "不正なDACピンが与えられました"
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "無効なPWM周波数"
+
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "Invalid Pin"
+msgstr ""
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
