@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 11:48-0500\n"
+"POT-Creation-Date: 2020-12-14 12:59-0500\n"
 "PO-Revision-Date: 2020-11-26 03:11+0000\n"
 "Last-Translator: Daniel Bravo Darriba <bravodarriba@gmail.com>\n"
 "Language: de_DE\n"
@@ -1100,6 +1100,10 @@ msgstr "Ungültiger DAC-Pin angegeben"
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Ungültige PWM Frequenz"
+
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "Invalid Pin"
+msgstr ""
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
