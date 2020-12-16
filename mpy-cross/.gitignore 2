@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
+/build-*
+/mpy-cross
+/mpy-cross.static
+/mpy-cross.static.exe
+/mpy-cross.static-raspbian
+/mpy-cross.fuzz
+/pitools

@@ -1,0 +1,18 @@
+This directory contains tests for various functionality areas of MicroPython.
+To run all stable tests, run "run-tests" script in this directory.
+
+Tests of capabilities not supported on all platforms should be written
+to check for the capability being present. If it is not, the test
+should merely output 'SKIP' followed by the line terminator, and call
+sys.exit() to raise SystemExit, instead of attempting to test the
+missing capability. The testing framework (run-tests in this
+directory, test_main.c in qemu_arm) recognizes this as a skipped test.
+
+There are a few features for which this mechanism cannot be used to
+condition a test. The run-tests script uses small scripts in the
+feature_check directory to check whether each such feature is present,
+and skips the relevant tests if not.
+
+When creating new tests, anything that relies on float support should go in the
+float/ subdirectory.  Anything that relies on import x, where x is not a built-in
+module, should go in the import/ subdirectory.

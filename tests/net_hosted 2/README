@@ -1,0 +1,11 @@
+This directory contains network tests which require just "peer to peer"
+network connection between test host and device under test, instead of
+full Internet connection.
+
+Note that setup for these tests and tests themselves are WIP, and may
+not yet fully correspond to the functional specification above.
+
+So far, these tests are not run as part of the main testsuite and need
+to be run seperately (from the main test/ directory):
+
+    ./run-tests net_hosted/*.py

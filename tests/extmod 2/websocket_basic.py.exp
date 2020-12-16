@@ -1,0 +1,14 @@
+b'ping'
+b'ping'
+b'\x81\x04pong'
+b'pingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingping'
+b'\x81~\x00\x80pongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpong'
+b'\x00\x00\x00\x00'
+b''
+b'\x81\x02\x88\x00'
+b'ping'
+b'pong'
+0
+1
+2
+ioctl: EINVAL: True

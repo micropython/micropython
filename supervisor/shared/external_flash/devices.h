@@ -589,22 +589,40 @@ typedef struct {
 
 // Settings for the Macronix MX25L51245G 64MiB SPI flash.
 // Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7437/MX25L51245G,%203V,%20512Mb,%20v1.6.pdf
-// Will finish this addition in a future PR. All the stuff is there, just need to test in the wild.
-//#define MX25L25645G  {\
-//    .total_size = (1 << 25), /* 32 MiB */ \
-//    .start_up_time_us = 5000, \
-//    .manufacturer_id = 0x9f, \
-//    .memory_type = 0xab, \
-//    .capacity = 0x90, \
-//    .max_clock_speed_mhz = 133, \
-//   .quad_enable_bit_mask = 0xaf, \
-//    .has_sector_protection = false, \
-//    .supports_fast_read = true, \
-//    .supports_qspi = true, \
-//    .supports_qspi_writes = true, \
-//    .write_status_register_split = false, \
-//    .single_status_byte = true, \
-//}
+#define MX25L25645G  {\
+    .total_size = (1 << 25), /* 32 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0x9f, \
+    .memory_type = 0xab, \
+    .capacity = 0x90, \
+    .max_clock_speed_mhz = 133, \
+   .quad_enable_bit_mask = 0xaf, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+}
+
+// Settings for the Macronix MX25L12833F 16MiB SPI flash
+// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7447/MX25L12833F,%203V,%20128Mb,%20v1.0.pdf
+
+#define MX25L12833F {\
+    .total_size = (1UL << 24), /* 16 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xc2, \
+    .memory_type = 0x20, \
+    .capacity = 0x18, \
+    .max_clock_speed_mhz = 133, \
+    .quad_enable_bit_mask = 0x40, \
+    .has_sector_protection = true, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+  }
 
 // Settings for the Winbond W25Q128JV-PM 16MiB SPI flash. Note that JV-IM has a different .memory_type (0x70)
 // Datasheet: https://www.winbond.com/resource-files/w25q128jv%20revf%2003272018%20plus.pdf
