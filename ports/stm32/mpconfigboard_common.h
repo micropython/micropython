@@ -286,6 +286,14 @@
 #define MICROPY_HW_BDEV_WRITEBLOCK flash_bdev_writeblock
 #endif
 
+// Whether to enable caching for external SPI flash, to allow block writes that are
+// smaller than the native page-erase size of the SPI flash, eg when FAT FS is used.
+// Enabling this enables spi_bdev_readblocks() and spi_bdev_writeblocks() functions,
+// and requires a valid mp_spiflash_config_t.cache pointer.
+#ifndef MICROPY_HW_SPIFLASH_ENABLE_CACHE
+#define MICROPY_HW_SPIFLASH_ENABLE_CACHE (0)
+#endif
+
 // Enable the storage sub-system if a block device is defined
 #if defined(MICROPY_HW_BDEV_IOCTL)
 #define MICROPY_HW_ENABLE_STORAGE (1)
