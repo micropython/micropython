@@ -537,7 +537,7 @@ typedef struct {
     .start_up_time_us = 800, \
     .manufacturer_id = 0xc2, \
     .memory_type = 0x28, \
-    .capacity = 0x18, \
+    .capacity = 0x15, \
     .max_clock_speed_mhz = 33, /* 8 mhz for dual/quad */ \
     .quad_enable_bit_mask = 0x80, \
     .has_sector_protection = false, \
