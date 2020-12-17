@@ -164,17 +164,18 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     // Default block device to entire flash storage
     mp_obj_t bdev = MP_OBJ_FROM_PTR(&pyb_flash_obj);
 
+    int ret;
+
     #if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
 
     // Try to detect the block device used for the main filesystem, based on the first block
 
-    uint8_t buf[FLASH_BLOCK_SIZE];
-    storage_read_blocks(buf, FLASH_PART1_START_BLOCK, 1);
-
+    uint8_t buf[64];
+    ret = storage_readblocks_ext(buf, 0, 0, sizeof(buf));
     mp_int_t len = -1;
 
     #if MICROPY_VFS_LFS1
-    if (memcmp(&buf[40], "littlefs", 8) == 0) {
+    if (ret == 0 && memcmp(&buf[40], "littlefs", 8) == 0) {
         // LFS1
         lfs1_superblock_t *superblock = (void *)&buf[12];
         uint32_t block_size = lfs1_fromle32(superblock->d.block_size);
@@ -184,7 +185,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
     #endif
 
     #if MICROPY_VFS_LFS2
-    if (memcmp(&buf[8], "littlefs", 8) == 0) {
+    if (ret == 0 && memcmp(&buf[8], "littlefs", 8) == 0) {
         // LFS2
         lfs2_superblock_t *superblock = (void *)&buf[20];
         uint32_t block_size = lfs2_fromle32(superblock->block_size);
@@ -203,7 +204,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 
     // Try to mount the flash on "/flash" and chdir to it for the boot-up directory.
     mp_obj_t mount_point = MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash);
-    int ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
+    ret = mp_vfs_mount_and_chdir_protected(bdev, mount_point);
 
     if (ret == -MP_ENODEV && bdev == MP_OBJ_FROM_PTR(&pyb_flash_obj) && reset_mode != 3) {
         // No filesystem, bdev is still the default (so didn't detect a possibly corrupt littlefs),
