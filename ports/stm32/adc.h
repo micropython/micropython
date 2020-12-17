@@ -29,4 +29,35 @@
 extern const mp_obj_type_t pyb_adc_type;
 extern const mp_obj_type_t pyb_adc_all_type;
 
+#if defined(ADC_CHANNEL_VBAT)
+
+static inline void adc_deselect_vbat(ADC_TypeDef *adc, uint32_t channel) {
+    (void)adc;
+
+    if (channel == ADC_CHANNEL_VBAT) {
+        ADC_Common_TypeDef *adc_common;
+
+        #if defined(STM32F0) || defined(STM32WB)
+        adc_common = ADC1_COMMON;
+        #elif defined(STM32F4) || defined(STM32L4)
+        adc_common = ADC_COMMON_REGISTER(0);
+        #elif defined(STM32F7)
+        adc_common = ADC123_COMMON;
+        #elif defined(STM32H7)
+        adc_common = adc == ADC3 ? ADC3_COMMON : ADC12_COMMON;
+        #endif
+
+        adc_common->CCR &= ~LL_ADC_PATH_INTERNAL_VBAT;
+    }
+}
+
+#else
+
+static inline void adc_deselect_vbat(ADC_TypeDef *adc, uint32_t channel) {
+    (void)adc;
+    (void)channel;
+}
+
+#endif
+
 #endif // MICROPY_INCLUDED_STM32_ADC_H
