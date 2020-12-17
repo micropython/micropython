@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/ota/__init__.h"
-#include "shared-bindings/ota/__init__.h"
+#include "common-hal/dualbank/__init__.h"
+#include "shared-bindings/dualbank/__init__.h"
 
 #include <string.h>
 
@@ -35,21 +35,24 @@
 static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
 
-static bool ota_inited = false;
-static const char *TAG = "OTA";
+static const char *TAG = "dualbank";
 
-void ota_reset(void) {
-    update_handle = 0;
-    update_partition = NULL;
-    ota_inited = false;
+void dualbank_reset(void) {
+    // should use `abort` instead of `end`
+    // but not in idf v4.2
+    // esp_ota_abort(update_handle);
+    if (esp_ota_end(update_handle) == ESP_OK) {
+        update_handle = 0;
+        update_partition = NULL;
+    }
 }
 
 static void __attribute__((noreturn)) task_fatal_error(void) {
     ESP_LOGE(TAG, "Exiting task due to fatal error...");
-    mp_raise_RuntimeError(translate("OTA Update Failed"));
+    mp_raise_RuntimeError(translate("Update Failed"));
 }
 
-void common_hal_ota_flash(const void *buf, const size_t len, const int32_t offset) {
+void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t offset) {
     esp_err_t err;
 
     const esp_partition_t *running = esp_ota_get_running_partition();
@@ -67,7 +70,7 @@ void common_hal_ota_flash(const void *buf, const size_t len, const int32_t offse
         assert(update_partition != NULL);
     }
 
-    if (!ota_inited) {
+    if (update_handle == 0) {
         if (len > sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t)) {
             esp_app_desc_t new_app_info;
             memcpy(&new_app_info, &((char *)buf)[sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t)], sizeof(esp_app_desc_t));
@@ -102,14 +105,13 @@ void common_hal_ota_flash(const void *buf, const size_t len, const int32_t offse
                 ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
                 task_fatal_error();
             }
-            ota_inited = true;
         } else {
             ESP_LOGE(TAG, "received package is not fit len");
             task_fatal_error();
         }
     }
 
-    if (offset == -1) {
+    if (offset == 0) {
         err = esp_ota_write(update_handle, buf, len);
     } else {
         err = esp_ota_write_with_offset(update_handle, buf, len, offset);
@@ -120,31 +122,18 @@ void common_hal_ota_flash(const void *buf, const size_t len, const int32_t offse
     }
 }
 
-void common_hal_ota_finish(void) {
-    if (ota_inited) {
-        esp_err_t err;
-
-        err = esp_ota_end(update_handle);
-        if (err != ESP_OK) {
-            if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
-                ESP_LOGE(TAG, "Image validation failed, image is corrupted");
-            }
-            ESP_LOGE(TAG, "esp_ota_end failed (%s)!", esp_err_to_name(err));
-            task_fatal_error();
-        }
-
-        err = esp_ota_set_boot_partition(update_partition);
-        if (err != ESP_OK) {
-            ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
-            task_fatal_error();
-        }
-
-        ota_reset();
+void common_hal_dualbank_switch(void) {
+    if (esp_ota_end(update_handle) == ESP_OK) {
+        update_handle = 0;
+        update_partition = NULL;
     }
-}
-
-void common_hal_ota_switch(void) {
-    if (esp_ota_set_boot_partition(esp_ota_get_next_update_partition(NULL)) != ESP_OK) {
-        mp_raise_RuntimeError(translate("Unable to switch boot partition"));
+    esp_err_t err = esp_ota_set_boot_partition(esp_ota_get_next_update_partition(NULL));
+    if (err != ESP_OK) {
+        if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
+            ESP_LOGE(TAG, "Image validation failed, image is corrupted");
+            mp_raise_RuntimeError(translate("Firmware image is invalid"));
+        }
+        ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
+        task_fatal_error();
     }
 }

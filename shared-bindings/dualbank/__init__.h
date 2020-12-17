@@ -24,13 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_OTA___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_OTA___INIT___H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DUALBANK___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DUALBANK___INIT___H
 
 #include "py/runtime.h"
 
-extern void common_hal_ota_switch(void);
-extern void common_hal_ota_finish(void);
-extern void common_hal_ota_flash(const void *buf, const size_t len, const int32_t offset);
+extern void common_hal_dualbank_switch(void);
+extern void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t offset);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_OTA___INIT___H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_DUALBANK___INIT___H

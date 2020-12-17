@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-10 16:56+0530\n"
+"POT-Creation-Date: 2020-12-17 19:42+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -936,6 +936,10 @@ msgstr ""
 msgid "Filters too complex"
 msgstr ""
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr ""
@@ -1418,10 +1422,6 @@ msgstr ""
 
 #: shared-bindings/_bleio/__init__.c
 msgid "Not settable"
-msgstr ""
-
-#: ports/esp32s2/common-hal/ota/__init__.c
-msgid "OTA Update Failed"
 msgstr ""
 
 #: shared-bindings/util.c
@@ -1911,10 +1911,6 @@ msgstr ""
 msgid "Unable to read color palette data"
 msgstr ""
 
-#: ports/esp32s2/common-hal/ota/__init__.c
-msgid "Unable to switch boot partition"
-msgstr ""
-
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr ""
@@ -1981,6 +1977,10 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
+msgstr ""
+
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -3210,7 +3210,7 @@ msgstr ""
 msgid "offset is too large"
 msgstr ""
 
-#: shared-bindings/ota/__init__.c
+#: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
 msgstr ""
 

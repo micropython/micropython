@@ -24,19 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/ota/__init__.h"
+#include "shared-bindings/dualbank/__init__.h"
 
-//| """OTA Module
+//| """DUALBANK Module
 //|
-//| The `ota` module implements over-the-air update.
+//| The `dualbank` module adds ability to update and switch
+//| between the two app partitions.
 //|
-//| There are two identical ota partitions ota_0/1, these
-//| contain different firmware versions.
+//| There are two identical partitions, these contain different
+//| firmware versions.
 //| Having two partitions enables rollback functionality.
 //|
 //| The two partitions are defined as boot partition and
-//| next-update partition. Calling `ota.flash()` writes the
-//| next-update partition.
+//| next-update partition. Calling `dualbank.flash()` writes
+//| the next-update partition.
 //|
 //| After the next-update partition is written a validation
 //| check is performed and on a successful validation this
@@ -47,81 +48,68 @@
 //|
 //| .. code-block:: python
 //|
-//|     import ota
+//|     import dualbank
 //|
-//|     ota.flash(buffer, offset)
-//|     ota.finish()
+//|     dualbank.flash(buffer, offset)
+//|     dualbank.switch()
 //| """
 //| ...
 //|
 
-//| def switch() -> None:
-//|     """Switches the boot partition. On next reset,
-//|        firmware will be loaded from the partition
-//|        just switched over to."""
-//|     ...
-//|
-STATIC mp_obj_t ota_switch(void) {
-    common_hal_ota_switch();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(ota_switch_obj, ota_switch);
-
-//| def finish() -> None:
-//|     """Validates flashed firmware, sets next boot partition.
-//|         **Must be called** after the firmware has been
-//|         completely written into the flash using `ota.flash()`.
-//|
-//|         This is to be called only once per update."""
-//|     ...
-//|
-STATIC mp_obj_t ota_finish(void) {
-    common_hal_ota_finish();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(ota_finish_obj, ota_finish);
-
 //| def flash(*buffer: ReadableBuffer, offset: int=0) -> None:
-//|     """Writes one of two OTA partitions at the given offset.
-//|
-//|     The default offset is 0. It is necessary to provide the
-//|     offset when writing in discontinous chunks.
+//|     """Writes one of two app partitions at the given offset.
 //|
 //|     This can be called multiple times when flashing the firmware
-//|     in small chunks."""
+//|     in small chunks.
+//|     """
 //|     ...
 //|
-STATIC mp_obj_t ota_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_offset };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_offset, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
+        { MP_QSTR_offset, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_offset].u_int < -1) {
+    if (args[ARG_offset].u_int < 0) {
         mp_raise_ValueError(translate("offset must be >= 0"));
     }
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    common_hal_ota_flash(bufinfo.buf, bufinfo.len, args[ARG_offset].u_int);
+    common_hal_dualbank_flash(bufinfo.buf, bufinfo.len, args[ARG_offset].u_int);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ota_flash_obj, 0, ota_flash);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dualbank_flash_obj, 0, dualbank_flash);
 
-STATIC const mp_rom_map_elem_t ota_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ota) },
-    { MP_ROM_QSTR(MP_QSTR_switch), MP_ROM_PTR(&ota_switch_obj) },
-    { MP_ROM_QSTR(MP_QSTR_finish), MP_ROM_PTR(&ota_finish_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash), MP_ROM_PTR(&ota_flash_obj) },
+//| def switch() -> None:
+//|     """Switches the boot partition.
+//|
+//|     On next reset, firmware will be loaded from the partition
+//|     just switched over to.
+//|     """
+//|     ...
+//|
+STATIC mp_obj_t dualbank_switch(void) {
+    common_hal_dualbank_switch();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(dualbank_switch_obj, dualbank_switch);
+
+STATIC const mp_rom_map_elem_t dualbank_module_globals_table[] = {
+    // module name
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_dualbank) },
+    // module functions
+    { MP_ROM_QSTR(MP_QSTR_flash), MP_ROM_PTR(&dualbank_flash_obj) },
+    { MP_ROM_QSTR(MP_QSTR_switch), MP_ROM_PTR(&dualbank_switch_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(ota_module_globals, ota_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(dualbank_module_globals, dualbank_module_globals_table);
 
-const mp_obj_module_t ota_module = {
+const mp_obj_module_t dualbank_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&ota_module_globals,
+    .globals = (mp_obj_dict_t*)&dualbank_module_globals,
 };
