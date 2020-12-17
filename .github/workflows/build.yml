@@ -343,8 +343,8 @@ jobs:
       run: |
         sudo apt-get install -y gettext
         pip install requests sh click setuptools awscli
-        wget https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
-        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |
         gcc --version
