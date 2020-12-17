@@ -1,4 +1,3 @@
-LD_FILE = boards/samd21x18-bootloader-external-flash.ld
 USB_VID = 0x1209
 USB_PID = 0xE3E3
 USB_PRODUCT = "StackRduino M0 PRO"
@@ -18,9 +17,9 @@ CIRCUITPY_FREQUENCYIO = 0
 CIRCUITPY_COUNTIO = 0
 CIRCUITPY_I2CPERIPHERAL = 0
 CIRCUITPY_VECTORIO = 0
+CIRCUITPY_BUSDEVICE = 0
 
 CFLAGS_INLINE_LIMIT = 60
 SUPEROPT_GC = 0
 
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
