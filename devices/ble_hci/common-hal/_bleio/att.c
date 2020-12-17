@@ -61,7 +61,7 @@ STATIC struct {
 typedef struct __packed {
     uint8_t properties;
     uint16_t value_handle;
-    uint8_t uuid[0];  // 2 or 16 bytes
+    uint8_t uuid[];  // 2 or 16 bytes
 } characteristic_declaration_t;
 
 STATIC uint8_t bleio_properties_to_ble_spec_properties(uint8_t bleio_properties) {
@@ -1010,21 +1010,22 @@ void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, ui
 }
 
 int att_read_group_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint16_t uuid, uint8_t response_buffer[]) {
-    struct __packed {
+
+    typedef struct __packed {
         struct bt_att_hdr h;
         struct bt_att_read_group_req r;
-    } req = { {
-            .code = BT_ATT_OP_READ_GROUP_REQ,
-        }, {
-            .start_handle = start_handle,
-            .end_handle = end_handle,
-        }
-    };
-    req.r.uuid[0] = uuid & 0xff;
-    req.r.uuid[1] = uuid >> 8;
+    } req_t;
 
+    uint8_t req_bytes[sizeof(req_t) + sizeof(uuid)];
+    req_t *req = (req_t *) req_bytes;
 
-    return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *) &req, response_buffer);
+    req->h.code = BT_ATT_OP_READ_GROUP_REQ;
+    req->r.start_handle = start_handle;
+    req->r.end_handle = end_handle;
+    req->r.uuid[0] = uuid & 0xff;
+    req->r.uuid[1] = uuid >> 8;
+
+    return send_req_wait_for_rsp(conn_handle, sizeof(req_bytes), req_bytes, response_buffer);
 }
 
 STATIC void process_read_group_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
@@ -1305,20 +1306,21 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
 }
 
 int att_read_type_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint16_t type, uint8_t response_buffer[]) {
-    struct __packed {
+    typedef struct __packed {
         struct bt_att_hdr h;
         struct bt_att_read_type_req r;
-    } req = { {
-            .code = BT_ATT_OP_READ_TYPE_REQ,
-        }, {
-            .start_handle = start_handle,
-            .end_handle = end_handle,
-        }
-    };
-    req.r.uuid[0] = type & 0xff;
-    req.r.uuid[1] = type >> 8;
+    } req_t;
 
-    return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *) &req, response_buffer);
+    uint8_t req_bytes[sizeof(req_t) + sizeof(type)];
+    req_t *req = (req_t *) req_bytes;
+
+    req->h.code = BT_ATT_OP_READ_TYPE_REQ;
+    req->r.start_handle = start_handle;
+    req->r.end_handle = end_handle;
+    req->r.uuid[0] = type & 0xff;
+    req->r.uuid[1] = type >> 8;
+
+    return send_req_wait_for_rsp(conn_handle, sizeof(req_bytes), req_bytes, response_buffer);
 }
 
 STATIC void process_read_type_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
