@@ -57,8 +57,8 @@ uint8_t common_hal_adafruit_bus_device_i2cdevice_readinto(adafruit_bus_device_i2
     return common_hal_busio_i2c_read(self->i2c, self->device_address, buffer, length);
 }
 
-uint8_t common_hal_adafruit_bus_device_i2cdevice_write(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length) {
-    return common_hal_busio_i2c_write(self->i2c, self->device_address, buffer, length, true);
+uint8_t common_hal_adafruit_bus_device_i2cdevice_write(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length, bool transmit_stop_bit) {
+    return common_hal_busio_i2c_write(self->i2c, self->device_address, buffer, length, transmit_stop_bit);
 }
 
 void common_hal_adafruit_bus_device_i2cdevice_probe_for_device(adafruit_bus_device_i2cdevice_obj_t *self) {
