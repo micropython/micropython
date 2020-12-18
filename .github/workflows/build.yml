@@ -311,6 +311,7 @@ jobs:
         - "sparkfun_samd21_mini"
         - "sparkfun_samd51_thing_plus"
         - "spresense"
+        - "stackrduino_m0_pro"
         - "stm32f411ce_blackpill"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
