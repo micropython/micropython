@@ -28,6 +28,7 @@
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "mpu.h"
 #include "qspi.h"
 #include "pin_static_af.h"
@@ -50,6 +51,10 @@
 
 #ifndef MICROPY_HW_QSPI_CS_HIGH_CYCLES
 #define MICROPY_HW_QSPI_CS_HIGH_CYCLES  2  // nCS stays high for 2 cycles
+#endif
+
+#ifndef MICROPY_HW_QSPI_SW_TIMEOUT_MS
+#define MICROPY_HW_QSPI_SW_TIMEOUT_MS   3000  // 3 seconds
 #endif
 
 #if (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) >= 24
@@ -80,6 +85,20 @@ static inline void qspi_mpu_enable_mapped(void) {
     mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0f, MPU_REGION_SIZE_32MB));
     mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_16MB));
     mpu_config_end(irq_state);
+}
+
+STATIC void qspi_wait_for_flag(uint32_t flag) {
+    #if MBOOT
+    while (!(QUADSPI->SR & flag)) {
+    }
+    #else
+    uint32_t timeout = mp_hal_ticks_ms() + MICROPY_HW_QSPI_SW_TIMEOUT_MS;
+    while (!(QUADSPI->SR & flag)) {
+        if (mp_hal_ticks_ms() >= timeout) {
+            mp_raise_OSError(MP_EIO);
+        }
+    }
+    #endif
 }
 
 void qspi_init(void) {
@@ -203,8 +222,7 @@ STATIC void qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t
     }
 
     // Wait for write to finish
-    while (!(QUADSPI->SR & QUADSPI_SR_TCF)) {
-    }
+    qspi_wait_for_flag(QUADSPI_SR_TCF);
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 }
@@ -251,16 +269,14 @@ STATIC void qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, 
 
         // Write out the data 1 byte at a time
         while (len) {
-            while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
-            }
+            qspi_wait_for_flag(QUADSPI_SR_FTF);
             *(volatile uint8_t *)&QUADSPI->DR = *src++;
             --len;
         }
     }
 
     // Wait for write to finish
-    while (!(QUADSPI->SR & QUADSPI_SR_TCF)) {
-    }
+    qspi_wait_for_flag(QUADSPI_SR_TCF);
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 }
@@ -285,8 +301,7 @@ STATIC uint32_t qspi_read_cmd(void *self_in, uint8_t cmd, size_t len) {
     ;
 
     // Wait for read to finish
-    while (!(QUADSPI->SR & QUADSPI_SR_TCF)) {
-    }
+    qspi_wait_for_flag(QUADSPI_SR_TCF);
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 
@@ -323,8 +338,7 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
     // Read in the data 4 bytes at a time if dest is aligned
     if (((uintptr_t)dest & 3) == 0) {
         while (len >= 4) {
-            while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
-            }
+            qspi_wait_for_flag(QUADSPI_SR_FTF);
             *(uint32_t *)dest = QUADSPI->DR;
             dest += 4;
             len -= 4;
