@@ -29,11 +29,13 @@
 #include "py/objtuple.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/SleepMemory.h"
+#include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
-#include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/alarm/touch/TouchAlarm.h"
+
 #include "shared-bindings/wifi/__init__.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
 #include "supervisor/port.h"
 #include "supervisor/shared/workflow.h"
@@ -49,16 +51,19 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
     },
 };
 
-
 void alarm_reset(void) {
-    alarm_time_timealarm_reset();
     alarm_sleep_memory_reset();
+    alarm_time_timealarm_reset();
+    alarm_touch_touchalarm_reset();
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
 STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(void) {
     if (alarm_time_timealarm_woke_us_up()) {
         return ESP_SLEEP_WAKEUP_TIMER;
+    }
+    if (alarm_touch_touchalarm_woke_us_up()) {
+        return ESP_SLEEP_WAKEUP_TOUCHPAD;
     }
 
     return esp_sleep_get_wakeup_cause();
@@ -80,8 +85,7 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
         }
 
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
-            // TODO: implement TouchIO
-            // Wake up from touch on pad, esp_sleep_get_touchpad_wakeup_status()
+            return alarm_touch_touchalarm_get_wakeup_alarm(n_alarms, alarms);
             break;
 
         case ESP_SLEEP_WAKEUP_UNDEFINED:
@@ -110,6 +114,8 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
             }
             time_alarm  = MP_OBJ_TO_PTR(alarms[i]);
             time_alarm_set = true;
+        } else if (MP_OBJ_IS_TYPE(alarms[i], &alarm_touch_touchalarm_type)) {
+            alarm_touch_touchalarm_set_alarm(MP_OBJ_TO_PTR(alarms[i]));
         }
     }
 
