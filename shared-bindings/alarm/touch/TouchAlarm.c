@@ -27,13 +27,18 @@
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
 #include "shared-bindings/board/__init__.h"
 
+#include "py/objproperty.h"
+
 //| class TouchAlarm:
 //|     """Trigger an alarm when touch is detected."""
 //|
 //|     def __init__(self, *pin: microcontroller.Pin) -> None:
-//|         """Create an alarm that will be triggered when the
-//|         given pin is touched.
+//|         """Create an alarm that will be triggered when the given pin is touched.
+//|         The alarm is not active until it is passed to an `alarm`-enabling function, such as
+//|         `alarm.light_sleep_until_alarms()` or `alarm.exit_and_deep_sleep_until_alarms()`.
 //|
+//|         :param microcontroller.Pin pin: The pin to monitor. On some ports, the choice of pin
+//|           may be limited due to hardware restrictions, particularly for deep-sleep alarms.
 //|         """
 //|         ...
 //|
@@ -57,8 +62,30 @@ STATIC mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
     return MP_OBJ_FROM_PTR(self);
 }
 
+//|     pin: microcontroller.Pin
+//|     """The trigger pin."""
+//|
+STATIC mp_obj_t alarm_touch_touchalarm_obj_get_pin(mp_obj_t self_in) {
+    alarm_touch_touchalarm_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_FROM_PTR(self->pin);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(alarm_touch_touchalarm_get_pin_obj, alarm_touch_touchalarm_obj_get_pin);
+
+const mp_obj_property_t alarm_touch_touchalarm_pin_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&alarm_touch_touchalarm_get_pin_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+STATIC const mp_rom_map_elem_t alarm_touch_touchalarm_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_pin), MP_ROM_PTR(&alarm_touch_touchalarm_pin_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(alarm_touch_touchalarm_locals_dict, alarm_touch_touchalarm_locals_dict_table);
+
 const mp_obj_type_t alarm_touch_touchalarm_type = {
     { &mp_type_type },
     .name = MP_QSTR_TouchAlarm,
     .make_new = alarm_touch_touchalarm_make_new,
+    .locals_dict = (mp_obj_t)&alarm_touch_touchalarm_locals_dict,
 };

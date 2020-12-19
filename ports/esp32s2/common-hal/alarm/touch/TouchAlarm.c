@@ -35,6 +35,7 @@ void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *s
     if (pin->touch_channel == TOUCH_PAD_MAX) {
         mp_raise_ValueError(translate("Invalid pin"));
     }
+    claim_pin(pin);
     self->pin = pin;
 }
 
@@ -64,15 +65,15 @@ mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t
     return alarm;
 }
 
-static uint16_t sleep_touch_pin;
+static touch_pad_t touch_channel = TOUCH_PAD_MAX;
 
 void alarm_touch_touchalarm_set_alarm(alarm_touch_touchalarm_obj_t *self) {
-    sleep_touch_pin |= 1 << self->pin->number;
+    touch_channel = (touch_pad_t)self->pin->number;
     esp_sleep_enable_touchpad_wakeup();
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
 }
 
-static void configure_sleep_touch_pin(touch_pad_t touch_channel) {
+void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
     // intialize touchpad
     peripherals_touch_init(touch_channel);
 
@@ -88,18 +89,10 @@ static void configure_sleep_touch_pin(touch_pad_t touch_channel) {
     touch_pad_sleep_set_threshold(touch_channel, touch_value * 0.1); //10%
 }
 
-void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
-    for (uint8_t i = 1; i <= 14; i++) {
-        if ((sleep_touch_pin & 1 << i) != 0) {
-            configure_sleep_touch_pin((touch_pad_t)i);
-        }
-    }
-}
-
 bool alarm_touch_touchalarm_woke_us_up(void) {
     return false;
 }
 
 void alarm_touch_touchalarm_reset(void) {
-    sleep_touch_pin = 0;
+    touch_channel = TOUCH_PAD_MAX;
 }
