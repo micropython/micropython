@@ -162,6 +162,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 }
 
 void NORETURN alarm_enter_deep_sleep(void) {
+    alarm_touch_touchalarm_prepare_for_deep_sleep();
     // The ESP-IDF caches the deep sleep settings and applies them before sleep.
     // We don't need to worry about resetting them in the interim.
     esp_deep_sleep_start();
