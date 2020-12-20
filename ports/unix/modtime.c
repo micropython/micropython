@@ -67,7 +67,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
 #endif
 
 STATIC mp_obj_t mod_time_time(void) {
-    #if ((MICROPY_PY_BUILTINS_FLOAT) && (MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE))
+    #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     struct timeval tv;
     gettimeofday(&tv, NULL);
     mp_float_t val = tv.tv_sec + (mp_float_t)tv.tv_usec / 1000000;
@@ -137,7 +137,7 @@ STATIC mp_obj_t mod_time_gm_local_time(size_t n_args, const mp_obj_t *args, stru
     if (n_args == 0) {
         t = time(NULL);
     } else {
-        #if ((MICROPY_PY_BUILTINS_FLOAT) && (MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE))
+        #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
         mp_float_t val = mp_obj_get_float(args[0]);
         t = (time_t)MICROPY_FLOAT_C_FUN(trunc)(val);
         #else
