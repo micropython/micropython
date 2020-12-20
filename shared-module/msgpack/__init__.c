@@ -67,6 +67,9 @@ STATIC void read(msgpack_stream_t *s, void *buf, mp_uint_t size) {
     if (ret == 0) {
         mp_raise_msg(&mp_type_EOFError, NULL);
     }
+    if (ret < size) {
+        mp_raise_ValueError(translate("short read"));
+    }
 }
 
 STATIC uint8_t read1(msgpack_stream_t *s) {
@@ -92,7 +95,7 @@ STATIC uint32_t read4(msgpack_stream_t *s) {
 }
 
 STATIC size_t read_size(msgpack_stream_t *s, uint8_t len_index) {
-    size_t res;
+    size_t res = 0;
     switch (len_index) {
         case 0:  res = (size_t)read1(s);  break;
         case 1:  res = (size_t)read2(s);  break;
@@ -181,9 +184,7 @@ STATIC void pack_int(msgpack_stream_t *s, int32_t x) {
 
 STATIC void pack_bin(msgpack_stream_t *s, const uint8_t* data, size_t len) {
     write_size(s, 0xc4, len);
-    for (size_t i=0;  i<len;  i++) {
-        write1(s, data[i]);
-    }
+    if (len > 0) write(s, data, len);
 }
 
 STATIC void  pack_ext(msgpack_stream_t *s, int8_t code, const uint8_t* data, size_t len) {
@@ -201,9 +202,7 @@ STATIC void  pack_ext(msgpack_stream_t *s, int8_t code, const uint8_t* data, siz
         write_size(s, 0xc7, len);
     }
     write1(s, code);    // type byte
-    for (size_t i=0;  i<len;  i++) {
-        write1(s, data[i]);
-    }
+    if (len > 0) write(s, data, len);
 }
 
 STATIC void pack_str(msgpack_stream_t *s, const char* str, size_t len) {
@@ -212,9 +211,7 @@ STATIC void pack_str(msgpack_stream_t *s, const char* str, size_t len) {
     } else {
         write_size(s, 0xd9, len);
     }
-    for (size_t l=0;  l<len;  l++) {
-        write1(s, str[l]);
-    }
+    if (len > 0) write(s, str, len);
 }
 
 STATIC void pack_array(msgpack_stream_t *s, size_t len) {
