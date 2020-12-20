@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "nrf.h"
 #include "nrf_rtc.h"
 
