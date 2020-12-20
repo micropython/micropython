@@ -42,6 +42,10 @@
 
 #define MAC_ADDRESS_LENGTH 6
 
+#include "components/log/include/esp_log.h"
+
+static const char* TAG = "wifi";
+
 static void start_station(wifi_radio_obj_t *self) {
     if (self->sta_mode) {
         return;
@@ -194,6 +198,19 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
     if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK){
         return mp_const_none;
     } else {
+        ESP_EARLY_LOGW(TAG, "ssid: %s", self->ap_info.record.ssid);
+        ESP_EARLY_LOGW(TAG, "channel: %d", self->ap_info.record.primary);
+        ESP_EARLY_LOGW(TAG, "secondary: %d", self->ap_info.record.second);
+        ESP_EARLY_LOGW(TAG, "rssi: %d", self->ap_info.record.rssi);
+        ESP_EARLY_LOGW(TAG, "authmode: %d", self->ap_info.record.authmode);
+        ESP_EARLY_LOGW(TAG, "pairwise_cipher: %d", self->ap_info.record.pairwise_cipher);
+        ESP_EARLY_LOGW(TAG, "group_cipher: %d", self->ap_info.record.group_cipher);
+        ESP_EARLY_LOGW(TAG, "11b: %d", self->ap_info.record.phy_11b);
+        ESP_EARLY_LOGW(TAG, "11g: %d", self->ap_info.record.phy_11g);
+        ESP_EARLY_LOGW(TAG, "11n: %d", self->ap_info.record.phy_11n);
+        ESP_EARLY_LOGW(TAG, "phy_lr: %d", self->ap_info.record.phy_lr);
+        ESP_EARLY_LOGW(TAG, "country: %s", self->ap_info.record.country);
+        ESP_EARLY_LOGW(TAG, "countryCC: %s", self->ap_info.record.country.cc);
         memcpy(&ap_info->record, &self->ap_info.record, sizeof(wifi_ap_record_t));
         return MP_OBJ_FROM_PTR(ap_info);
     }
