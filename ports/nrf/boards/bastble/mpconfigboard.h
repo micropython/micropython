@@ -5,6 +5,15 @@
 
 #define CIRCUITPY_AUTORELOAD_DELAY_MS 500
 
+#if QSPI_FLASH_FILESYSTEM
+#define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 30)
+#define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 29)
+#define MICROPY_QSPI_DATA2                NRF_GPIO_PIN_MAP(0, 28)
+#define MICROPY_QSPI_DATA3                NRF_GPIO_PIN_MAP(0, 2)
+#define MICROPY_QSPI_SCK                  NRF_GPIO_PIN_MAP(0, 3)
+#define MICROPY_QSPI_CS                   NRF_GPIO_PIN_MAP(0, 26)
+#endif
+
 #define DEFAULT_I2C_BUS_SCL         (&pin_P1_10)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P1_11)
 
