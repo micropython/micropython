@@ -75,6 +75,25 @@ Methods
       - ``wake`` specifies the sleep mode from where this interrupt can wake
         up the system.
 
+.. method:: RTC.memory([data])
+
+   Stores ``data`` (byte literal) into RTC memory, which is kept stored in deep sleep mode of the ESP8266 or ESP32.
+   The data is stored together with a magic word to detect that the RTC memory is valid.
+   An uninitialized or cleared RTC memory has no magic word and will deliver ``b''``.
+   Without ``data`` the method delivers the RTC memory content.
+   In the ESP8266 are max. 492 bytes and in the ESP32 are max. 2048 Bytes storeable by this method. 
+   
+   Example::
+
+      import machine
+      rtc = machine.RTC()
+      writedata = b'test'
+      rtc.memory(writedata) # this command writes writedata into the RTC memory
+      readdata = rtc.memory() # this command puts the RTC memory into readdata
+      print(readdata)
+
+   Availability: ESP8266, ESP32
+
 Constants
 ---------
 
