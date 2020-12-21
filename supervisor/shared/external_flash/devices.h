@@ -363,6 +363,24 @@ typedef struct {
     .write_status_register_split = false, \
 }
 
+// Settings for the Winbond W25Q64FV 8MiB SPI flash.
+// Datasheet: https://www.winbond.com/resource-files/w25q64fv%20revs%2007182017.pdf
+#define W25Q64FV {\
+    .total_size = (1 << 23), /* 8 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xef, \
+    .memory_type = 0x40, \
+    .capacity = 0x17, \
+    .max_clock_speed_mhz = 104, \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
 // Settings for the Winbond W25Q64JV-IM 8MiB SPI flash. Note that JV-IQ has a different .memory_type (0x40)
 // Datasheet: http://www.winbond.com/resource-files/w25q64jv%20revj%2003272018%20plus.pdf
 #define W25Q64JV_IM {\
