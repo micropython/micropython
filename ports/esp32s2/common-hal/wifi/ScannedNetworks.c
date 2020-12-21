@@ -39,6 +39,10 @@
 
 #include "components/esp_wifi/include/esp_wifi.h"
 
+#include "components/log/include/esp_log.h"
+
+static const char* TAG = "wifi";
+
 static void wifi_scannednetworks_done(wifi_scannednetworks_obj_t *self) {
     self->done = true;
     if (self->results != NULL) {
@@ -117,6 +121,8 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
 
     wifi_network_obj_t *entry = m_new_obj(wifi_network_obj_t);
     entry->base.type = &wifi_network_type;
+    // benny remove again
+    ESP_EARLY_LOGW(TAG, "scan country: %s", &self->results[self->current_result].country);
     memcpy(&entry->record, &self->results[self->current_result], sizeof(wifi_ap_record_t));
     self->current_result++;
 
