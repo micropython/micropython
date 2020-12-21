@@ -476,10 +476,26 @@ void mp_bluetooth_nimble_port_shutdown(void) {
 
 #endif // !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
 
+void nimble_reset_gatts_bss(void) {
+    // NimBLE assumes that service registration only ever happens once, so
+    // we need to reset service registration state from a previous stack startup.
+    // These variables are defined in ble_hs.c and are only ever incremented
+    // (during service registration) and never reset.
+    // See https://github.com/apache/mynewt-nimble/issues/896
+    extern uint16_t ble_hs_max_attrs;
+    extern uint16_t ble_hs_max_services;
+    extern uint16_t ble_hs_max_client_configs;
+    ble_hs_max_attrs = 0;
+    ble_hs_max_services = 0;
+    ble_hs_max_client_configs = 0;
+}
+
 int mp_bluetooth_init(void) {
     DEBUG_printf("mp_bluetooth_init\n");
     // Clean up if necessary.
     mp_bluetooth_deinit();
+
+    nimble_reset_gatts_bss();
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_STARTING;
 
@@ -775,6 +791,15 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
+
+    if (append) {
+        // Don't support append yet (modbluetooth.c doesn't support it yet anyway).
+        // TODO: This should be possible with NimBLE.
+        return MP_EOPNOTSUPP;
+    }
+
+    nimble_reset_gatts_bss();
+
     int ret = ble_gatts_reset();
     if (ret != 0) {
         return ble_hs_err_to_errno(ret);
@@ -787,13 +812,11 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
     ble_svc_gap_init();
     ble_svc_gatt_init();
 
-    if (!append) {
-        // Unref any previous service definitions.
-        for (size_t i = 0; i < MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services; ++i) {
-            MP_STATE_PORT(bluetooth_nimble_root_pointers)->services[i] = NULL;
-        }
-        MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services = 0;
+    // Unref any previous service definitions.
+    for (size_t i = 0; i < MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services; ++i) {
+        MP_STATE_PORT(bluetooth_nimble_root_pointers)->services[i] = NULL;
     }
+    MP_STATE_PORT(bluetooth_nimble_root_pointers)->n_services = 0;
 
     return 0;
 }
