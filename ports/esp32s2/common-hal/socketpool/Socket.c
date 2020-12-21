@@ -210,7 +210,7 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
 
     if (received == 0) {
         // socket closed
-        common_hal_socketpool_socket_close(self);
+        mp_raise_OSError(0);
     }
     return received;
 }
