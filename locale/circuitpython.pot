@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
+"POT-Creation-Date: 2020-12-21 14:14-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -812,6 +812,10 @@ msgstr ""
 msgid "Error in regex"
 msgstr ""
 
+#: shared-bindings/socketpool/Socket.c
+msgid "Error: Failure to bind"
+msgstr ""
+
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
@@ -1192,6 +1196,14 @@ msgstr ""
 msgid "Invalid security_mode"
 msgstr ""
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid socket for TLS"
+msgstr ""
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid use of TLS Socket"
+msgstr ""
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
 msgstr ""
@@ -1470,7 +1482,7 @@ msgstr ""
 msgid "Only raw int supported for ip"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr ""
 
