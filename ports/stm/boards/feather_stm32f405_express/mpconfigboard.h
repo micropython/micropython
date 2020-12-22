@@ -26,7 +26,7 @@
 
 //Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "Feather STM32F405 Express"
+#define MICROPY_HW_BOARD_NAME       "Adafruit Feather STM32F405 Express"
 #define MICROPY_HW_MCU_NAME         "STM32F405RG"
 
 #define FLASH_SIZE                  (0x100000)
