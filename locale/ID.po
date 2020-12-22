@@ -954,6 +954,10 @@ msgstr "File sudah ada"
 msgid "Filters too complex"
 msgstr ""
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr ""
@@ -2019,6 +2023,10 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
+msgstr ""
+
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -3254,6 +3262,10 @@ msgstr "panjang data string memiliki keganjilan (odd-length)"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
+msgstr ""
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
