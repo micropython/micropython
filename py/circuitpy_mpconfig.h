@@ -539,6 +539,13 @@ extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE_ALT_NAME
 #endif
 
+#if CIRCUITPY_DUALBANK
+extern const struct _mp_obj_module_t dualbank_module;
+#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
+#else
+#define DUALBANK_MODULE
+#endif
+
 #if CIRCUITPY_PEW
 extern const struct _mp_obj_module_t pew_module;
 #define PEW_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR__pew),(mp_obj_t)&pew_module },
@@ -827,6 +834,7 @@ extern const struct _mp_obj_module_t wifi_module;
     NETWORK_MODULE \
       SOCKET_MODULE \
       WIZNET_MODULE \
+    DUALBANK_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
