@@ -227,7 +227,9 @@ STATIC int load_irk(void) {
         }
         DEBUG_printf("load_irk: Saving new IRK.\n");
         if (!mp_bluetooth_gap_on_set_secret(SECRET_TYPE_OUR_IRK, key, sizeof(key), rand_irk, 16)) {
-            return BLE_HS_EINVAL;
+            // Code that doesn't implement pairing/bonding won't support set/get secret.
+            // So they'll just get the default fixed IRK.
+            return 0;
         }
         DEBUG_printf("load_irk: Applying new IRK.\n");
         rc = ble_hs_pvcy_set_our_irk(rand_irk);
