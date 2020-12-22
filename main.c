@@ -613,6 +613,10 @@ void gc_collect(void) {
 
     background_callback_gc_collect();
 
+    #if CIRCUITPY_ALARM
+    common_hal_alarm_gc_collect();
+    #endif
+
     #if CIRCUITPY_DISPLAYIO
     displayio_gc_collect();
     #endif

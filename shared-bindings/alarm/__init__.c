@@ -199,7 +199,18 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SleepMemory),   MP_OBJ_FROM_PTR(&alarm_sleep_memory_type) },
     { MP_ROM_QSTR(MP_QSTR_sleep_memory),  MP_OBJ_FROM_PTR(&alarm_sleep_memory_obj) },
 };
-STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
+MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
+
+// Fetch value from module dict.
+mp_obj_t alarm_get_wake_alarm(void) {
+    mp_map_elem_t *elem =
+        mp_map_lookup(&alarm_module_globals.map, MP_ROM_QSTR(MP_QSTR_wake_alarm), MP_MAP_LOOKUP);
+    if (elem) {
+        return elem->value;
+    } else {
+        return NULL;
+    }
+}
 
 STATIC void alarm_set_wake_alarm(mp_obj_t alarm) {
     // Equivalent of:

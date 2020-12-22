@@ -25,10 +25,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/gc.h"
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 
+#include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
@@ -37,8 +39,6 @@
 
 #include "supervisor/port.h"
 #include "supervisor/shared/workflow.h"
-
-#include "common-hal/alarm/__init__.h"
 
 #include "esp_sleep.h"
 
@@ -158,4 +158,8 @@ void NORETURN alarm_enter_deep_sleep(void) {
     // The ESP-IDF caches the deep sleep settings and applies them before sleep.
     // We don't need to worry about resetting them in the interim.
     esp_deep_sleep_start();
+}
+
+void common_hal_alarm_gc_collect(void) {
+    gc_collect_ptr(alarm_get_wake_alarm());
 }

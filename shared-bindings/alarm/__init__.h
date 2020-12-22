@@ -31,6 +31,9 @@
 
 #include "common-hal/alarm/__init__.h"
 
+// Make module dict available elsewhere, so we can fetch
+extern mp_obj_dict_t alarm_module_globals;
+
 extern mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
 
 // Deep sleep is a two step process. Alarms are set when the VM is valid but
@@ -43,6 +46,10 @@ extern void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj
 // Deep sleep is entered outside of the VM so we omit the `common_hal_` prefix.
 extern NORETURN void alarm_enter_deep_sleep(void);
 
+// Fetches value from module dict.
+extern mp_obj_t alarm_get_wake_alarm(void);
+
+extern void common_hal_alarm_gc_collect(void);
 extern mp_obj_t common_hal_alarm_get_wake_alarm(void);
 
 // Used by wake-up code.
@@ -51,5 +58,6 @@ void alarm_save_wakeup_alarm(void);
 
 // True if an alarm is alerting. This is most useful for pretend deep sleep.
 extern bool alarm_woken_from_sleep(void);
+
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM___INIT___H
