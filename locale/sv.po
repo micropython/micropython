@@ -948,6 +948,10 @@ msgstr "Filen finns redan"
 msgid "Filters too complex"
 msgstr "Filter för komplexa"
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr "Formatet stöds inte"
@@ -2023,6 +2027,10 @@ msgstr "Åtgärd som inte stöds"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
 msgstr "Ogiltigt Pull-värde."
+
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -3265,6 +3273,10 @@ msgstr "sträng har udda längd"
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
 msgstr "offset är för stor"
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
+msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
