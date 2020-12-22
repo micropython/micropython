@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-14 12:59-0500\n"
-"PO-Revision-Date: 2020-12-11 19:08+0000\n"
+"PO-Revision-Date: 2020-12-16 17:00+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1107,7 +1107,7 @@ msgstr "Frequência PWM inválida"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "Invalid Pin"
-msgstr ""
+msgstr "Pino inválido"
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
@@ -1977,7 +1977,7 @@ msgstr "Não é possível gravar no nvm."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr ""
+msgstr "Não foi possível escrever no sleep_memory."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"

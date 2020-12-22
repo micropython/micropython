@@ -163,7 +163,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_readinto_obj, 2,
 //|         """
 //|         ...
 //|
-STATIC void write(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, int32_t start, mp_int_t end) {
+STATIC void write(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, int32_t start, mp_int_t end, bool transmit_stop_bit) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
 
@@ -173,7 +173,7 @@ STATIC void write(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, in
         mp_raise_ValueError(translate("Buffer must be at least length 1"));
     }
 
-    uint8_t status = common_hal_adafruit_bus_device_i2cdevice_write(MP_OBJ_TO_PTR(self), ((uint8_t*)bufinfo.buf) + start, length);
+    uint8_t status = common_hal_adafruit_bus_device_i2cdevice_write(MP_OBJ_TO_PTR(self), ((uint8_t*)bufinfo.buf) + start, length, transmit_stop_bit);
     if (status != 0) {
         mp_raise_OSError(status);
     }
@@ -191,7 +191,7 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write(size_t n_args, const mp_obj_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    write(self, args[ARG_buffer].u_obj, args[ARG_start].u_int, args[ARG_end].u_int);
+    write(self, args[ARG_buffer].u_obj, args[ARG_start].u_int, args[ARG_end].u_int, true);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_write_obj, 2, adafruit_bus_device_i2cdevice_write);
@@ -233,7 +233,7 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write_then_readinto(size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    write(self, args[ARG_out_buffer].u_obj, args[ARG_out_start].u_int, args[ARG_out_end].u_int);
+    write(self, args[ARG_out_buffer].u_obj, args[ARG_out_start].u_int, args[ARG_out_end].u_int, false);
 
     readinto(self, args[ARG_in_buffer].u_obj, args[ARG_in_start].u_int, args[ARG_in_end].u_int);
 

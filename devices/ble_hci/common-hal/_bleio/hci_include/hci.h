@@ -454,7 +454,7 @@ struct bt_hci_handle_count {
 #define BT_HCI_OP_HOST_NUM_COMPLETED_PACKETS    BT_OP(BT_OGF_BASEBAND, 0x0035)
 struct bt_hci_cp_host_num_completed_packets {
 	uint8_t  num_handles;
-	struct bt_hci_handle_count h[0];
+	struct bt_hci_handle_count h[];
 } __packed;
 
 #define BT_HCI_OP_WRITE_INQUIRY_MODE            BT_OP(BT_OGF_BASEBAND, 0x0045)
@@ -1099,7 +1099,7 @@ struct bt_hci_ext_adv_set {
 struct bt_hci_cp_le_set_ext_adv_enable {
 	uint8_t  enable;
 	uint8_t  set_num;
-	struct bt_hci_ext_adv_set s[0];
+	struct bt_hci_ext_adv_set s[];
 } __packed;
 
 #define BT_HCI_OP_LE_READ_MAX_ADV_DATA_LEN      BT_OP(BT_OGF_LE, 0x003a)
@@ -1158,7 +1158,7 @@ struct bt_hci_cp_le_set_ext_scan_param {
 	uint8_t  own_addr_type;
 	uint8_t  filter_policy;
 	uint8_t  phys;
-	struct bt_hci_ext_scan_phy p[0];
+	struct bt_hci_ext_scan_phy p[];
 } __packed;
 
 /* Extends BT_HCI_LE_SCAN_FILTER_DUP */
@@ -1189,7 +1189,7 @@ struct bt_hci_cp_le_ext_create_conn {
 	uint8_t      own_addr_type;
 	bt_addr_le_t peer_addr;
 	uint8_t      phys;
-	struct bt_hci_ext_conn_phy p[0];
+	struct bt_hci_ext_conn_phy p[];
 } __packed;
 
 #define BT_HCI_OP_LE_PER_ADV_CREATE_SYNC        BT_OP(BT_OGF_LE, 0x0044)
@@ -1354,7 +1354,7 @@ struct bt_hci_evt_role_change {
 #define BT_HCI_EVT_NUM_COMPLETED_PACKETS        0x13
 struct bt_hci_evt_num_completed_packets {
 	uint8_t  num_handles;
-	struct bt_hci_handle_count h[0];
+	struct bt_hci_handle_count h[];
 } __packed;
 
 #define BT_HCI_EVT_PIN_CODE_REQ                 0x16
@@ -1510,11 +1510,11 @@ struct bt_hci_evt_le_advertising_info {
 	uint8_t      evt_type;
 	bt_addr_le_t addr;
 	uint8_t      length;
-	uint8_t      data[0];
+	uint8_t      data[];
 } __packed;
 struct bt_hci_evt_le_advertising_report {
 	uint8_t num_reports;
-	struct bt_hci_evt_le_advertising_info adv_info[0];
+	struct bt_hci_evt_le_advertising_info adv_info[];
 } __packed;
 
 #define BT_HCI_EVT_LE_CONN_UPDATE_COMPLETE      0x03
@@ -1593,7 +1593,7 @@ struct bt_hci_evt_le_direct_adv_info {
 } __packed;
 struct bt_hci_evt_le_direct_adv_report {
 	uint8_t num_reports;
-	struct bt_hci_evt_le_direct_adv_info direct_adv_info[0];
+	struct bt_hci_evt_le_direct_adv_info direct_adv_info[];
 } __packed;
 
 #define BT_HCI_EVT_LE_PHY_UPDATE_COMPLETE       0x0c
@@ -1628,11 +1628,11 @@ struct bt_hci_evt_le_ext_advertising_info {
 	uint16_t     interval;
 	bt_addr_le_t direct_addr;
 	uint8_t      length;
-	uint8_t      data[0];
+	uint8_t      data[];
 } __packed;
 struct bt_hci_evt_le_ext_advertising_report {
 	uint8_t num_reports;
-	struct bt_hci_evt_le_ext_advertising_info adv_info[0];
+	struct bt_hci_evt_le_ext_advertising_info adv_info[];
 } __packed;
 
 #define BT_HCI_EVT_LE_PER_ADV_SYNC_ESTABLISHED  0x0e
@@ -1654,7 +1654,7 @@ struct bt_hci_evt_le_per_advertising_report {
 	uint8_t  unused;
 	uint8_t  data_status;
 	uint8_t  length;
-	uint8_t  data[0];
+	uint8_t  data[];
 } __packed;
 
 #define BT_HCI_EVT_LE_PER_ADV_SYNC_LOST         0x10
