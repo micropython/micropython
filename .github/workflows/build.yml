@@ -185,6 +185,7 @@ jobs:
         - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
+        - "bastble"
         - "bdmicro_vina_d21"
         - "bdmicro_vina_d51"
         - "bless_dev_board_multi_sensor"
