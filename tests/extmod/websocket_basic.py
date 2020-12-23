@@ -1,10 +1,13 @@
 try:
     import uio
     import uerrno
+    import urandom
     import uwebsocket
 except ImportError:
     print("SKIP")
     raise SystemExit
+
+urandom.seed(0)
 
 # put raw data in the stream and do a websocket read
 def ws_read(msg, sz):
@@ -13,9 +16,9 @@ def ws_read(msg, sz):
 
 
 # do a websocket write and then return the raw data from the stream
-def ws_write(msg, sz):
+def ws_write(msg, sz, **kwargs):
     s = uio.BytesIO()
-    ws = uwebsocket.websocket(s)
+    ws = uwebsocket.websocket(s, **kwargs)
     ws.write(msg)
     s.seek(0)
     return s.read(sz)
@@ -33,8 +36,11 @@ print(ws_write(b"pong", 6))
 print(ws_read(b"\x81~\x00\x80" + b"ping" * 32, 128))
 print(ws_write(b"pong" * 32, 132))
 
-# mask (returned data will be 'mask' ^ 'mask')
+# masked read (returned data will be 'mask' ^ 'mask')
 print(ws_read(b"\x81\x84maskmask", 4))
+
+# masked write
+print(ws_write(b"data", 10, mask_writes=True))
 
 # close control frame
 s = uio.BytesIO(b"\x88\x00")  # FRAME_CLOSE

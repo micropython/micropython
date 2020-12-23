@@ -26,8 +26,10 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
+#include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "extmod/moduwebsocket.h"
@@ -49,6 +51,8 @@ typedef struct _mp_obj_websocket_t {
     byte buf_pos;
     byte buf[6];
     byte opts;
+    // Enable masking for write calls
+    bool mask_writes;
     // Copy of last data frame flags
     byte ws_flags;
     // Copy of current frame flags
@@ -57,20 +61,32 @@ typedef struct _mp_obj_websocket_t {
 
 STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode);
 
-STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 2, false);
-    mp_get_stream_raise(args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+STATIC mp_uint_t _write(mp_obj_websocket_t *self, byte frame_opcode, bool en_mask, const void *buf, mp_uint_t size, int *errcode);
+
+STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_sock, ARG_blocking_write, ARG_mask_writes };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_blocking_write, MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_mask_writes, MP_ARG_BOOL, {.u_bool = false} }
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_get_stream_raise(args[ARG_sock].u_obj, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
     mp_obj_websocket_t *o = m_new_obj(mp_obj_websocket_t);
     o->base.type = type;
-    o->sock = args[0];
+    o->sock = args[ARG_sock].u_obj;
     o->state = FRAME_HEADER;
     o->to_recv = 2;
     o->mask_pos = 0;
     o->buf_pos = 0;
     o->opts = FRAME_TXT;
-    if (n_args > 1 && args[1] == mp_const_true) {
+
+    if (args[ARG_blocking_write].u_bool) {
         o->opts |= BLOCKING_WRITE;
     }
+    o->mask_writes = args[ARG_mask_writes].u_bool;
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -218,9 +234,22 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
 
 STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
+    return _write(self, self->opts & FRAME_OPCODE_MASK, self->mask_writes, buf, size, errcode);
+}
+
+STATIC uint32_t _rand_mask(void) {
+    mp_obj_t dest[3];
+    mp_load_method(mp_module_get(MP_QSTR_urandom), MP_QSTR_getrandbits, dest);
+    dest[2] = mp_obj_new_int(32);
+    return MP_OBJ_SMALL_INT_VALUE(mp_call_method_n_kw(1, 0, dest));
+}
+
+STATIC mp_uint_t _write(mp_obj_websocket_t *self, byte frame_opcode, bool en_mask, const void *buf, mp_uint_t size, int *errcode) {
     assert(size < 0x10000);
-    byte header[4] = {0x80 | (self->opts & FRAME_OPCODE_MASK)};
+    byte header[4] = {0x80 | (frame_opcode & FRAME_OPCODE_MASK)};
     int hdr_sz;
+    byte mask[4] = {0};
+
     if (size < 126) {
         header[1] = size;
         hdr_sz = 2;
@@ -231,6 +260,16 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         hdr_sz = 4;
     }
 
+    if (self->mask_writes) {
+        // Enable the mask bit 0 (BE) in header
+        header[1] |= 0x80;
+        uint32_t mask_val = _rand_mask();
+        mask[0] = mask_val & 0xFF;
+        mask[1] = mask_val >> 8 & 0xFF;
+        mask[2] = mask_val >> 16 & 0xFF;
+        mask[3] = mask_val >> 24 & 0xFF;
+    }
+
     mp_obj_t dest[3];
     if (self->opts & BLOCKING_WRITE) {
         mp_load_method(self->sock, MP_QSTR_setblocking, dest);
@@ -238,11 +277,35 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
         mp_call_method_n_kw(1, 0, dest);
     }
 
-    mp_uint_t out_sz = mp_stream_write_exactly(self->sock, header, hdr_sz, errcode);
-    if (*errcode == 0) {
-        out_sz = mp_stream_write_exactly(self->sock, buf, size, errcode);
+    byte masked_buf[128];
+    mp_uint_t out_sz;
+    out_sz = mp_stream_write_exactly(self->sock, header, hdr_sz, errcode);
+    if (*errcode != 0) {
+        goto exit;
+    }
+    if (self->mask_writes) {
+        out_sz = mp_stream_write_exactly(self->sock, mask, sizeof(mask), errcode);
+        if (*errcode != 0) {
+            goto exit;
+        }
     }
 
+    size_t idx = 0;
+    out_sz = 0;
+    while (out_sz < size) {
+        size_t sz = MIN(sizeof(buf), size - out_sz);
+        for (; idx < sz; idx++) {
+            masked_buf[idx] = ((byte *)buf)[idx] ^ mask[idx % sizeof(mask)];
+        }
+        sz = mp_stream_write_exactly(self->sock, masked_buf, sz, errcode);
+        if (*errcode != 0) {
+            // An error has ocurred
+            goto exit;
+        }
+        out_sz += sz;
+    }
+
+exit:
     if (self->opts & BLOCKING_WRITE) {
         dest[2] = mp_const_false;
         mp_call_method_n_kw(1, 0, dest);
