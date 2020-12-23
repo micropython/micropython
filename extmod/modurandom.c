@@ -88,7 +88,7 @@ STATIC uint32_t yasmarang_randbelow(uint32_t n) {
 STATIC mp_obj_t mod_urandom_getrandbits(mp_obj_t num_in) {
     int n = mp_obj_get_int(num_in);
     if (n > 32 || n == 0) {
-        mp_raise_ValueError(NULL);
+        mp_raise_ValueError(MP_ERROR_TEXT("The number of bits must be between 1 and 32."));
     }
     uint32_t mask = ~0;
     // Beware of C undefined behavior when shifting by >= than bit size
