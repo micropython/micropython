@@ -6,4 +6,4 @@ workaround: Avoid using this method on micropython.
 """
 
 x = 255
-print("{} is {} bits long.".format(x,x.bit_length())
+print("{} is {} bits long.".format(x,x.bit_length()))
