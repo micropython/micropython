@@ -1,4 +1,4 @@
-import random
+from random import getrandbits
 
 
 def getmorebits(bits: int) -> int:
@@ -13,7 +13,7 @@ def getmorebits(bits: int) -> int:
         d |= getrandbits(32) << (i * 32)
 
     r = bits % 32
-    if bits:
-        d |= getrandbits(bits % 32) << (n * 32)
+    if r >= 1:
+        d |= getrandbits(r) << (n * 32)
 
     return d
