@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-14 12:59-0500\n"
-"PO-Revision-Date: 2020-12-16 17:00+0000\n"
+"PO-Revision-Date: 2020-12-22 18:07+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -956,6 +956,10 @@ msgstr "Arquivo já existe"
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr "Os filtros são muito complexos"
+
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr "A imagem do firmware é invalida"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -2044,6 +2048,10 @@ msgstr "Operação não suportada"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
 msgstr "O valor pull não é compatível."
+
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr "A atualização falou"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -3296,6 +3304,10 @@ msgstr "sequência com comprimento ímpar"
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
 msgstr "o offset é muito grande"
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
+msgstr "o offset deve ser >= 0"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
