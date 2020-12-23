@@ -54,7 +54,7 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
 
 void alarm_reset(void) {
     alarm_time_timealarm_reset();
-    alarm_pin_pin_alarm_reset();
+    alarm_pin_pinalarm_reset();
     alarm_sleep_memory_reset();
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
@@ -63,7 +63,7 @@ STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(void) {
     if (alarm_time_timealarm_woke_us_up()) {
         return ESP_SLEEP_WAKEUP_TIMER;
     }
-    if (alarm_pin_pin_alarm_woke_us_up()) {
+    if (alarm_pin_pinalarm_woke_us_up()) {
         return ESP_SLEEP_WAKEUP_GPIO;
     }
 
@@ -84,7 +84,7 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
         case ESP_SLEEP_WAKEUP_GPIO:
         case ESP_SLEEP_WAKEUP_EXT0:
         case ESP_SLEEP_WAKEUP_EXT1: {
-            return alarm_pin_pin_alarm_get_wakeup_alarm(n_alarms, alarms);
+            return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
         }
 
         case ESP_SLEEP_WAKEUP_TOUCHPAD:
@@ -106,7 +106,7 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
 
 // Set up light sleep or deep sleep alarms.
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
-    alarm_pin_pin_alarm_set_alarms(deep_sleep, n_alarms, alarms);
+    alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
 }
 
@@ -123,25 +123,14 @@ STATIC void _idle_until_alarm(void) {
     }
 }
 
-// Is it safe to do a light sleep? Check whether WiFi is on or there are
-// other ongoing tasks that should not be shut down.
-STATIC bool _light_sleep_ok(void) {
-    int64_t connecting_delay_ticks = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - port_get_raw_ticks(NULL);
-    return !common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj) &&
-           !supervisor_workflow_active() &&
-           connecting_delay_ticks <= 0;
-}
-
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
     _setup_sleep_alarms(false, n_alarms, alarms);
 
-    // Light sleep can break some functionality so only do it when possible. Otherwise we idle.
-    if (_light_sleep_ok()) {
-        // Flush the UART to complete the log line.
-        uart_wait_tx_idle_polling(CONFIG_ESP_CONSOLE_UART_NUM);
-        esp_light_sleep_start();
-    } else {
-        _idle_until_alarm();
+    // We cannot esp_light_sleep_start() here because it shuts down all non-RTC peripherals.
+    _idle_until_alarm();
+
+    if (mp_hal_is_interrupted()) {
+        return mp_const_none; // Shouldn't be given to python code because exception handling should kick in.
     }
 
     mp_obj_t wake_alarm = _get_wake_alarm(n_alarms, alarms);
@@ -154,7 +143,7 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 }
 
 void NORETURN alarm_enter_deep_sleep(void) {
-    alarm_pin_pin_alarm_prepare_for_deep_sleep();
+    alarm_pin_pinalarm_prepare_for_deep_sleep();
     // The ESP-IDF caches the deep sleep settings and applies them before sleep.
     // We don't need to worry about resetting them in the interim.
     esp_deep_sleep_start();

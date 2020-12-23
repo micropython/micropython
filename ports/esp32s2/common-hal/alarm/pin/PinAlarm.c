@@ -38,7 +38,7 @@
 #include "components/soc/src/esp32s2/include/hal/gpio_ll.h"
 #include "components/xtensa/include/esp_debug_helpers.h"
 
-void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
+void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {
         mp_raise_ValueError(translate("Cannot wake on pin edge. Only level."));
     }
@@ -51,41 +51,41 @@ void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, m
     self->pull = pull;
 }
 
-mcu_pin_obj_t *common_hal_alarm_pin_pin_alarm_get_pin(alarm_pin_pin_alarm_obj_t *self) {
+mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pinalarm_obj_t *self) {
     return self->pin;
 }
 
-bool common_hal_alarm_pin_pin_alarm_get_value(alarm_pin_pin_alarm_obj_t *self) {
+bool common_hal_alarm_pin_pinalarm_get_value(alarm_pin_pinalarm_obj_t *self) {
     return self->value;
 }
 
-bool common_hal_alarm_pin_pin_alarm_get_edge(alarm_pin_pin_alarm_obj_t *self) {
+bool common_hal_alarm_pin_pinalarm_get_edge(alarm_pin_pinalarm_obj_t *self) {
     return false;
 }
 
-bool common_hal_alarm_pin_pin_alarm_get_pull(alarm_pin_pin_alarm_obj_t *self) {
+bool common_hal_alarm_pin_pinalarm_get_pull(alarm_pin_pinalarm_obj_t *self) {
     return self->pull;
 }
 
 gpio_isr_handle_t gpio_interrupt_handle;
 // Low and high are relative to pin number. 32+ is high. <32 is low.
-static volatile uint32_t low_pin_status = 0;
-static volatile uint32_t high_pin_status = 0;
+static volatile uint32_t pin_31_0_status = 0;
+static volatile uint32_t pin_63_32_status = 0;
 void gpio_interrupt(void *arg) {
     (void) arg;
 
-    gpio_ll_get_intr_status(&GPIO, xPortGetCoreID(), (uint32_t*) &low_pin_status);
-    gpio_ll_clear_intr_status(&GPIO, low_pin_status);
-    gpio_ll_get_intr_status_high(&GPIO, xPortGetCoreID(), (uint32_t*) &high_pin_status);
-    gpio_ll_clear_intr_status_high(&GPIO, high_pin_status);
+    gpio_ll_get_intr_status(&GPIO, xPortGetCoreID(), (uint32_t*) &pin_31_0_status);
+    gpio_ll_clear_intr_status(&GPIO, pin_31_0_status);
+    gpio_ll_get_intr_status_high(&GPIO, xPortGetCoreID(), (uint32_t*) &pin_63_32_status);
+    gpio_ll_clear_intr_status_high(&GPIO, pin_63_32_status);
 
     // disable the interrupts that fired, maybe all of them
     for (size_t i = 0; i < 32; i++) {
         uint32_t mask = 1 << i;
-        if ((low_pin_status & mask) != 0) {
+        if ((pin_31_0_status & mask) != 0) {
             gpio_ll_intr_disable(&GPIO, i);
         }
-        if ((high_pin_status & mask) != 0) {
+        if ((pin_63_32_status & mask) != 0) {
             gpio_ll_intr_disable(&GPIO, 32 + i);
         }
     }
@@ -96,18 +96,18 @@ void gpio_interrupt(void *arg) {
     }
 }
 
-bool alarm_pin_pin_alarm_woke_us_up(void) {
-    return low_pin_status != 0 || high_pin_status != 0;
+bool alarm_pin_pinalarm_woke_us_up(void) {
+    return pin_31_0_status != 0 || pin_63_32_status != 0;
 }
 
-mp_obj_t alarm_pin_pin_alarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
+mp_obj_t alarm_pin_pinalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     // First, check to see if we match any given alarms.
-    uint64_t pin_status = ((uint64_t) high_pin_status) << 32 | low_pin_status;
+    uint64_t pin_status = ((uint64_t) pin_63_32_status) << 32 | pin_31_0_status;
     for (size_t i = 0; i < n_alarms; i++) {
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pin_alarm_type)) {
+        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
-        alarm_pin_pin_alarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
+        alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
         if ((pin_status & (1ull << alarm->pin->number)) != 0) {
             return alarms[i];
         }
@@ -131,8 +131,8 @@ mp_obj_t alarm_pin_pin_alarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *a
         }
     }
 
-    alarm_pin_pin_alarm_obj_t *alarm = m_new_obj(alarm_pin_pin_alarm_obj_t);
-    alarm->base.type = &alarm_pin_pin_alarm_type;
+    alarm_pin_pinalarm_obj_t *alarm = m_new_obj(alarm_pin_pinalarm_obj_t);
+    alarm->base.type = &alarm_pin_pinalarm_type;
     alarm->pin = NULL;
     // Map the pin number back to a pin object.
     for (size_t i = 0; i < mcu_pin_globals.map.used; i++) {
@@ -151,7 +151,7 @@ static uint64_t high_alarms = 0;
 static uint64_t low_alarms = 0;
 static uint64_t pull_pins = 0;
 
-void alarm_pin_pin_alarm_reset(void) {
+void alarm_pin_pinalarm_reset(void) {
     if (gpio_interrupt_handle != NULL) {
         esp_intr_free(gpio_interrupt_handle);
         gpio_interrupt_handle = NULL;
@@ -168,21 +168,21 @@ void alarm_pin_pin_alarm_reset(void) {
     high_alarms = 0;
     low_alarms = 0;
     pull_pins = 0;
-    high_pin_status = 0;
-    low_pin_status = 0;
+    pin_63_32_status = 0;
+    pin_31_0_status = 0;
 }
 
-void alarm_pin_pin_alarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
+void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     // Bitmask of wake up settings.
     size_t high_count = 0;
     size_t low_count = 0;
 
     for (size_t i = 0; i < n_alarms; i++) {
         // TODO: Check for ULP or touch alarms because they can't coexist with GPIO alarms.
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pin_alarm_type)) {
+        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
-        alarm_pin_pin_alarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
+        alarm_pin_pinalarm_obj_t *alarm  = MP_OBJ_TO_PTR(alarms[i]);
 
         gpio_num_t pin_number = alarm->pin->number;
         if (alarm->value) {
@@ -239,8 +239,8 @@ void alarm_pin_pin_alarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_o
     }
     // Set GPIO interrupts so they wake us from light sleep or from idle via the
     // interrupt handler above.
-    low_pin_status = 0;
-    high_pin_status = 0;
+    pin_31_0_status = 0;
+    pin_63_32_status = 0;
     if (gpio_isr_register(gpio_interrupt, NULL, 0, &gpio_interrupt_handle) != ESP_OK) {
         mp_raise_ValueError(translate("Can only alarm on RTC IO from deep sleep."));
     }
@@ -282,7 +282,7 @@ void alarm_pin_pin_alarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_o
 }
 
 
-void alarm_pin_pin_alarm_prepare_for_deep_sleep(void) {
+void alarm_pin_pinalarm_prepare_for_deep_sleep(void) {
     if (pull_pins == 0) {
         return;
     }

@@ -71,8 +71,8 @@
 
 void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
-        if (MP_OBJ_IS_TYPE(objs[i], &alarm_pin_pin_alarm_type) ||
-            MP_OBJ_IS_TYPE(objs[i], &alarm_time_time_alarm_type)) {
+        if (MP_OBJ_IS_TYPE(objs[i], &alarm_pin_pinalarm_type) ||
+            MP_OBJ_IS_TYPE(objs[i], &alarm_time_timealarm_type)) {
             continue;
         }
         mp_raise_TypeError_varg(translate("Expected an alarm"));
@@ -159,7 +159,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_exit_and_deep_sleep_until_alarms_obj, 
 STATIC const mp_map_elem_t alarm_pin_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pin) },
 
-    { MP_ROM_QSTR(MP_QSTR_PinAlarm), MP_OBJ_FROM_PTR(&alarm_pin_pin_alarm_type) },
+    { MP_ROM_QSTR(MP_QSTR_PinAlarm), MP_OBJ_FROM_PTR(&alarm_pin_pinalarm_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(alarm_pin_globals, alarm_pin_globals_table);
@@ -172,7 +172,7 @@ STATIC const mp_obj_module_t alarm_pin_module = {
 STATIC const mp_map_elem_t alarm_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
-    { MP_ROM_QSTR(MP_QSTR_TimeAlarm), MP_OBJ_FROM_PTR(&alarm_time_time_alarm_type) },
+    { MP_ROM_QSTR(MP_QSTR_TimeAlarm), MP_OBJ_FROM_PTR(&alarm_time_timealarm_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(alarm_time_globals, alarm_time_globals_table);
@@ -199,7 +199,7 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SleepMemory),   MP_OBJ_FROM_PTR(&alarm_sleep_memory_type) },
     { MP_ROM_QSTR(MP_QSTR_sleep_memory),  MP_OBJ_FROM_PTR(&alarm_sleep_memory_obj) },
 };
-MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
+STATIC MP_DEFINE_MUTABLE_DICT(alarm_module_globals, alarm_module_globals_table);
 
 // Fetch value from module dict.
 mp_obj_t alarm_get_wake_alarm(void) {

@@ -34,23 +34,23 @@
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
 
-void common_hal_alarm_time_time_alarm_construct(alarm_time_time_alarm_obj_t *self, mp_float_t monotonic_time) {
+void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {
     self->monotonic_time = monotonic_time;
 }
 
-mp_float_t common_hal_alarm_time_time_alarm_get_monotonic_time(alarm_time_time_alarm_obj_t *self) {
+mp_float_t common_hal_alarm_time_timealarm_get_monotonic_time(alarm_time_timealarm_obj_t *self) {
     return self->monotonic_time;
 }
 
 mp_obj_t alarm_time_timealarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms) {
     // First, check to see if we match
     for (size_t i = 0; i < n_alarms; i++) {
-        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_time_alarm_type)) {
+        if (MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
             return alarms[i];
         }
     }
-    alarm_time_time_alarm_obj_t *timer = m_new_obj(alarm_time_time_alarm_obj_t);
-    timer->base.type = &alarm_time_time_alarm_type;
+    alarm_time_timealarm_obj_t *timer = m_new_obj(alarm_time_timealarm_obj_t);
+    timer->base.type = &alarm_time_timealarm_type;
     // TODO: Set monotonic_time based on the RTC state.
     timer->monotonic_time = 0.0f;
     return timer;
@@ -78,20 +78,20 @@ void alarm_time_timealarm_reset(void) {
 }
 
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
-    bool time_alarm_set = false;
-    alarm_time_time_alarm_obj_t *time_alarm = MP_OBJ_NULL;
+    bool timealarm_set = false;
+    alarm_time_timealarm_obj_t *timealarm = MP_OBJ_NULL;
 
     for (size_t i = 0; i < n_alarms; i++) {
-        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_time_time_alarm_type)) {
+        if (!MP_OBJ_IS_TYPE(alarms[i], &alarm_time_timealarm_type)) {
             continue;
         }
-        if (time_alarm_set) {
+        if (timealarm_set) {
             mp_raise_ValueError(translate("Only one alarm.time alarm can be set."));
         }
-        time_alarm  = MP_OBJ_TO_PTR(alarms[i]);
-        time_alarm_set = true;
+        timealarm  = MP_OBJ_TO_PTR(alarms[i]);
+        timealarm_set = true;
     }
-    if (!time_alarm_set) {
+    if (!timealarm_set) {
         return;
     }
 
@@ -109,7 +109,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
 
     // Compute how long to actually sleep, considering the time now.
     mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
-    mp_float_t wakeup_in_secs = MAX(0.0f, time_alarm->monotonic_time - now_secs);
+    mp_float_t wakeup_in_secs = MAX(0.0f, timealarm->monotonic_time - now_secs);
     const uint64_t sleep_for_us = (uint64_t) (wakeup_in_secs * 1000000);
     esp_sleep_enable_timer_wakeup(sleep_for_us);
 

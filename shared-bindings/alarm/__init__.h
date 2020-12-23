@@ -31,9 +31,6 @@
 
 #include "common-hal/alarm/__init__.h"
 
-// Make module dict available elsewhere, so we can fetch
-extern mp_obj_dict_t alarm_module_globals;
-
 extern mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
 
 // Deep sleep is a two step process. Alarms are set when the VM is valid but

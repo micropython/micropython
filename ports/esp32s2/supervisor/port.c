@@ -74,6 +74,10 @@ extern void esp_restart(void) NORETURN;
 
 void tick_timer_cb(void* arg) {
     supervisor_tick();
+
+    // CircuitPython's VM is run in a separate FreeRTOS task from timer callbacks. So, we have to
+    // notify the main task every time in case it's waiting for us.
+    xTaskNotifyGive(circuitpython_task);
 }
 
 void sleep_timer_cb(void* arg);
@@ -91,6 +95,8 @@ safe_mode_t port_init(void) {
     args.dispatch_method = ESP_TIMER_TASK;
     args.name = "CircuitPython Sleep";
     esp_timer_create(&args, &_sleep_timer);
+
+    circuitpython_task = xTaskGetCurrentTaskHandle();
 
     // Send the ROM output out of the UART. This includes early logs.
     #ifdef DEBUG
@@ -114,16 +120,16 @@ safe_mode_t port_init(void) {
     }
 
     esp_reset_reason_t reason = esp_reset_reason();
-    if (reason == ESP_RST_BROWNOUT) {
-        return BROWNOUT;
+    switch (reason) {
+        case ESP_RST_BROWNOUT:
+            return BROWNOUT;
+        case ESP_RST_PANIC:
+        case ESP_RST_INT_WDT:
+        case ESP_RST_WDT:
+            return HARD_CRASH;
+        default:
+            break;
     }
-    if (reason == ESP_RST_PANIC ||
-        reason == ESP_RST_INT_WDT ||
-        reason == ESP_RST_WDT) {
-        return HARD_CRASH;
-    }
-
-    circuitpython_task = xTaskGetCurrentTaskHandle();
 
     return NO_SAFE_MODE;
 }
@@ -262,10 +268,6 @@ void port_enable_tick(void) {
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
-
-    // CircuitPython's VM is run in a separate FreeRTOS task from TinyUSB.
-    // Tick disable can happen via auto-reload so poke the main task here.
-    xTaskNotifyGive(circuitpython_task);
 }
 
 void sleep_timer_cb(void* arg) {

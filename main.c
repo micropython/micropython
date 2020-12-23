@@ -308,8 +308,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             return reload_requested;
         }
 
-        // Display a different completion message if the user has no USB attached (cannot save files)
-        serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
+        if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
+            serial_write_compressed(translate("\nCode stopped by auto-reload.\n"));
+        } else {
+            serial_write_compressed(translate("\nCode done running.\n"));
+        }
     }
 
     // Program has finished running.
@@ -407,7 +410,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                     alarm_enter_deep_sleep();
                     // Does not return.
                 } else {
-                    serial_write_compressed(translate("Pretending to deep sleep until alarm, any key or file write.\n"));
+                    serial_write_compressed(translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
                 }
             }
         }
