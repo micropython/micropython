@@ -26,6 +26,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "py/runtime.h"
 #include "py/mphal.h"
