@@ -42,10 +42,6 @@
 
 #define MAC_ADDRESS_LENGTH 6
 
-#include "components/log/include/esp_log.h"
-
-static const char* TAG = "wifi";
-
 static void start_station(wifi_radio_obj_t *self) {
     if (self->sta_mode) {
         return;
@@ -198,18 +194,15 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
     if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK){
         return mp_const_none;
     } else {
-        // The struct member appears to be <null> (not NULL!), I don't know how to properly test for it.
-        // When the ESP-IDF starts working fine (when their bugfix is available), this "if" wouldn't trigger.
-        // Note: It is possible that Wi-Fi APs don't have a CC set, then even after this workaround
-        //       the element would remain empty.
         if (strlen(self->ap_info.record.country.cc) == 0) {
             // Workaround to fill country related information in ap_info until ESP-IDF carries a fix
             // esp_wifi_sta_get_ap_info does not appear to fill wifi_country_t (e.g. country.cc) details
             // (IDFGH-4437) #6267
-            if (esp_wifi_get_country(&self->ap_info.record.country) == ESP_OK) {
-                ESP_EARLY_LOGW(TAG, "Country Code: %s", self->ap_info.record.country.cc);
-            } else {
-                ESP_EARLY_LOGW(TAG, "Country Code - Workaround failed!");
+            // Note: It is possible that Wi-Fi APs don't have a CC set, then even after this workaround
+            //       the element would remain empty.
+            memset(&self->ap_info.record.country, 0, sizeof(wifi_country_t));
+            if (esp_wifi_get_country(&self->ap_info.record.country) != ESP_OK) {
+                return mp_const_none;
             }
         }
         memcpy(&ap_info->record, &self->ap_info.record, sizeof(wifi_ap_record_t));

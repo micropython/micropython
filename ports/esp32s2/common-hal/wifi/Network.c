@@ -51,7 +51,8 @@ mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self) {
 
 mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self) {
     const char* cstr = (const char*) self->record.country.cc;
-        // We know that we only want the CC thus limiting to two chars
+        // To address esp_wifi_get_country() returned/set wifi_country_t structure
+        // doesn't follow the documented behaviour (IDFGH-4486) #6315
+        // 2 instead of strlen(cstr) which would be 6 and contain full element
         return mp_obj_new_str(cstr, 2);
 }
-
