@@ -214,9 +214,19 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
                             int err;
                             websocket_write(self_in, close_resp, sizeof(close_resp), &err);
                             return 0;
+                        } else if (frame_type == FRAME_PING) {
+                            // Send PONG in response to the PING frame.
+                            // PONG frames must include the application data from the PING message
+                            int err;
+                            _write(self, FRAME_PONG, false, buf, out_sz, &err);
+                            if (err != 0) {
+                                printf("Error sending PONG, %d\n", err);
+                                *errcode = err;
+                                return 0;
+                            }
+                        } else {
+                            // DEBUG_printf("Finished receiving ctrl message %x, ignoring\n", self->last_flags);
                         }
-
-                        // DEBUG_printf("Finished receiving ctrl message %x, ignoring\n", self->last_flags);
                         continue;
                     }
                 }

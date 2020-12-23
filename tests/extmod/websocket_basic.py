@@ -49,8 +49,19 @@ print(ws.read(1))
 s.seek(2)
 print(s.read(4))
 
+# PING with payload
+s = uio.BytesIO(b"\x89\x04ping")
+ws = uwebsocket.websocket(s)
+s.seek(0)
+print(s.read(6))
+
+# PING without payload
+s = uio.BytesIO(b"\x89\x00")
+ws = uwebsocket.websocket(s)
+s.seek(0)
+print(s.read(2))
+
 # misc control frames
-print(ws_read(b"\x89\x00\x81\x04ping", 4))  # FRAME_PING
 print(ws_read(b"\x8a\x00\x81\x04pong", 4))  # FRAME_PONG
 
 # close method
