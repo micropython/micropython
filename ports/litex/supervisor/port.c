@@ -32,6 +32,8 @@
 #include "irq.h"
 #include "csr.h"
 
+#include "shared-bindings/microcontroller/__init__.h"
+
 // Global millisecond tick count. 1024 per second because most RTCs are clocked with 32.768khz
 // crystals.
 volatile uint64_t raw_ticks = 0;
@@ -129,9 +131,9 @@ uint32_t port_get_saved_word(void) {
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
     // Reading 64 bits may take two loads, so turn of interrupts while we do it.
-    irq_setie(false);
+    common_hal_mcu_disable_interrupts();
     uint64_t raw_tick_snapshot = raw_ticks;
-    irq_setie(true);
+    common_hal_mcu_enable_interrupts();
     return raw_tick_snapshot;
 }
 
