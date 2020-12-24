@@ -153,6 +153,7 @@ void usocket_events_handler(void) {
 #endif // MICROPY_PY_USOCKET_EVENTS
 
 static inline void check_for_exceptions(void) {
+    // Give the scheduler a chance...
     mp_handle_pending(true);
 }
 
