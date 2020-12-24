@@ -66,7 +66,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/machine_wdt.c
     ${PROJECT_DIR}/mpthreadport.c
     ${PROJECT_DIR}/machine_rtc.c
-    ${PROJECT_DIR}/machine_sdcard.c
+    #${PROJECT_DIR}/machine_sdcard.c  # disabled to free a bit of IRAM
 )
 
 set(MICROPY_SOURCE_QSTR
@@ -100,7 +100,7 @@ set(IDF_COMPONENTS
     mdns
     newlib
     nvs_flash
-    sdmmc
+    #sdmmc  # disabled to free a bit of IRAM
     soc
     spi_flash
     tcpip_adapter
