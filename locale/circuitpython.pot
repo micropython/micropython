@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 21:58-0500\n"
+"POT-Creation-Date: 2020-12-23 22:50-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -884,14 +884,6 @@ msgstr ""
 msgid "Extended advertisements with scan response not supported."
 msgstr ""
 
-#: extmod/ulab/code/fft/fft.c
-msgid "FFT is defined for ndarrays only"
-msgstr ""
-
-#: extmod/ulab/code/fft/fft.c
-msgid "FFT is implemented for linear arrays only"
-msgstr ""
-
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
 msgstr ""
@@ -962,6 +954,10 @@ msgstr ""
 msgid "Filters too complex"
 msgstr ""
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr ""
@@ -969,10 +965,6 @@ msgstr ""
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
@@ -2005,6 +1997,10 @@ msgstr ""
 msgid "Unsupported pull value."
 msgstr ""
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
@@ -2114,20 +2110,8 @@ msgstr ""
 msgid "arg is an empty sequence"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
-msgid "argsort argument must be an ndarray"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "argsort is not implemented for flattened arrays"
-msgstr ""
-
 #: py/runtime.c
 msgid "argument has wrong type"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "argument must be ndarray"
 msgstr ""
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
@@ -2139,41 +2123,13 @@ msgstr ""
 msgid "argument should be a '%q' not a '%q'"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c extmod/ulab/code/numerical/numerical.c
-msgid "arguments must be ndarrays"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "array and index length must be equal"
-msgstr ""
-
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
-msgid "attempt to get (arg)min/(arg)max of empty sequence"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "attempt to get argmin/argmax of an empty sequence"
-msgstr ""
-
 #: py/objstr.c
 msgid "attributes not supported yet"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "axis is out of bounds"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "axis must be None, or an integer"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "axis too long"
 msgstr ""
 
 #: py/builtinevex.c
@@ -2377,10 +2333,6 @@ msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 
-#: extmod/ulab/code/ndarray_operators.c
-msgid "cannot cast output with casting rule"
-msgstr ""
-
 #: py/objtype.c
 msgid "cannot create '%q' instances"
 msgstr ""
@@ -2457,36 +2409,8 @@ msgstr ""
 msgid "conversion to object"
 msgstr ""
 
-#: extmod/ulab/code/filter/filter.c
-msgid "convolve arguments must be linear arrays"
-msgstr ""
-
-#: extmod/ulab/code/filter/filter.c
-msgid "convolve arguments must be ndarrays"
-msgstr ""
-
-#: extmod/ulab/code/filter/filter.c
-msgid "convolve arguments must not be empty"
-msgstr ""
-
-#: extmod/ulab/code/poly/poly.c
-msgid "could not invert Vandermonde matrix"
-msgstr ""
-
 #: shared-module/sdcardio/SDCard.c
 msgid "couldn't determine SD card version"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "cross is defined for 1D arrays of length 3"
-msgstr ""
-
-#: extmod/ulab/code/approx/approx.c
-msgid "data must be iterable"
-msgstr ""
-
-#: extmod/ulab/code/approx/approx.c
-msgid "data must be of equal length"
 msgstr ""
 
 #: py/parsenum.c
@@ -2512,14 +2436,6 @@ msgstr ""
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "diff argument must be an ndarray"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "differentiation order out of range"
 msgstr ""
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
@@ -2633,36 +2549,8 @@ msgstr ""
 msgid "filesystem must provide mount method"
 msgstr ""
 
-#: extmod/ulab/code/vector/vectorise.c
-msgid "first argument must be a callable"
-msgstr ""
-
-#: extmod/ulab/code/approx/approx.c
-msgid "first argument must be a function"
-msgstr ""
-
-#: extmod/ulab/code/ulab_create.c
-msgid "first argument must be a tuple of ndarrays"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "first argument must be an iterable"
-msgstr ""
-
-#: extmod/ulab/code/vector/vectorise.c
-msgid "first argument must be an ndarray"
-msgstr ""
-
 #: py/objtype.c
 msgid "first argument to super() must be type"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "flattening order must be either 'C', or 'F'"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "flip argument must be an ndarray"
 msgstr ""
 
 #: py/objint.c
@@ -2692,14 +2580,6 @@ msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "function got multiple values for argument '%q'"
-msgstr ""
-
-#: extmod/ulab/code/approx/approx.c
-msgid "function has the same sign at the ends of interval"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "function is defined for ndarrays only"
 msgstr ""
 
 #: py/argcheck.c
@@ -2765,25 +2645,12 @@ msgstr ""
 msgid "incorrect padding"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "index is out of bounds"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
 #: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
 msgid "index out of range"
 msgstr ""
 
 #: py/obj.c
 msgid "indices must be integers"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "indices must be integers, slices, or Boolean lists"
-msgstr ""
-
-#: extmod/ulab/code/approx/approx.c
-msgid "initial values must be iterable"
 msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
@@ -2794,76 +2661,12 @@ msgstr ""
 msgid "inline assembler must be a function"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "input and output shapes are not compatible"
-msgstr ""
-
-#: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
-msgstr ""
-
-#: extmod/ulab/code/fft/fft.c
-msgid "input array length must be power of 2"
-msgstr ""
-
-#: extmod/ulab/code/ulab_create.c
-msgid "input arrays are not compatible"
-msgstr ""
-
-#: extmod/ulab/code/poly/poly.c
-msgid "input data must be an iterable"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "input matrix is asymmetric"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "input matrix is singular"
-msgstr ""
-
-#: extmod/ulab/code/user/user.c
-msgid "input must be a dense ndarray"
-msgstr ""
-
-#: extmod/ulab/code/ulab_create.c
-msgid "input must be a tensor of rank 2"
-msgstr ""
-
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
-msgid "input must be an ndarray"
-msgstr ""
-
-#: extmod/ulab/code/filter/filter.c
-msgid "input must be one-dimensional"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "input must be square matrix"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "input must be tuple, list, range, or ndarray"
-msgstr ""
-
-#: extmod/ulab/code/poly/poly.c
-msgid "input vectors must be of equal length"
-msgstr ""
-
-#: extmod/ulab/code/poly/poly.c
-msgid "inputs are not iterable"
-msgstr ""
-
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr ""
 
 #: py/objstr.c
 msgid "integer required"
-msgstr ""
-
-#: extmod/ulab/code/approx/approx.c
-msgid "interp is defined for 1D arrays of equal length"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
@@ -2936,14 +2739,6 @@ msgstr ""
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "iterables are not of the same length"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "iterations did not converge"
-msgstr ""
-
 #: py/objstr.c
 msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
@@ -3008,14 +2803,6 @@ msgstr ""
 msgid "math domain error"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "matrix dimensions do not match"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "matrix is not positive definite"
-msgstr ""
-
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
@@ -3023,23 +2810,11 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "maximum number of dimensions is 4"
+msgid "max_length must be >= 0"
 msgstr ""
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
-msgstr ""
-
-#: extmod/ulab/code/approx/approx.c
-msgid "maxiter must be > 0"
-msgstr ""
-
-#: extmod/ulab/code/approx/approx.c
-msgid "maxiter should be > 0"
 msgstr ""
 
 #: py/runtime.c
@@ -3053,10 +2828,6 @@ msgstr ""
 
 #: py/builtinimport.c
 msgid "module not found"
-msgstr ""
-
-#: extmod/ulab/code/poly/poly.c
-msgid "more degrees of freedom than data points"
 msgstr ""
 
 #: py/compile.c
@@ -3161,8 +2932,12 @@ msgstr ""
 msgid "non-keyword arg after keyword arg"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "norm is defined for 1D and 2D arrays"
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
 msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
@@ -3175,10 +2950,6 @@ msgstr ""
 
 #: py/objstr.c
 msgid "not enough arguments for format string"
-msgstr ""
-
-#: extmod/ulab/code/ulab_create.c
-msgid "number of points must be at least 2"
 msgstr ""
 
 #: py/obj.c
@@ -3229,8 +3000,8 @@ msgstr ""
 msgid "odd-length string"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
-msgid "offset is too large"
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
@@ -3248,27 +3019,6 @@ msgstr ""
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
-msgstr ""
-
-#: extmod/ulab/code/compare/compare.c extmod/ulab/code/ndarray.c
-#: extmod/ulab/code/vector/vectorise.c
-msgid "operands could not be broadcast together"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented on ndarrays"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "operation is not supported for given type"
 msgstr ""
 
 #: py/modbuiltins.c
@@ -3384,10 +3134,6 @@ msgstr ""
 msgid "raw f-strings are not implemented"
 msgstr ""
 
-#: extmod/ulab/code/fft/fft.c
-msgid "real and imaginary parts must be of equal length"
-msgstr ""
-
 #: py/builtinimport.c
 msgid "relative import"
 msgstr ""
@@ -3395,10 +3141,6 @@ msgstr ""
 #: py/obj.c
 #, c-format
 msgid "requested length %d but object has length %d"
-msgstr ""
-
-#: extmod/ulab/code/ndarray_operators.c
-msgid "results cannot be cast to specified type"
 msgstr ""
 
 #: py/compile.c
@@ -3417,10 +3159,6 @@ msgstr ""
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] is not on the same port as clock"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "roll argument must be an ndarray"
 msgstr ""
 
 #: py/objstr.c
@@ -3445,10 +3183,6 @@ msgstr ""
 msgid "script compilation not supported"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "shape must be a tuple"
-msgstr ""
-
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
 msgstr ""
@@ -3461,16 +3195,8 @@ msgstr ""
 msgid "single '}' encountered in format string"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "size is defined for ndarrays only"
-msgstr ""
-
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "slice step can't be zero"
 msgstr ""
 
 #: py/objslice.c py/sequence.c
@@ -3483,22 +3209,6 @@ msgstr ""
 
 #: main.c
 msgid "soft reboot\n"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "sort argument must be an ndarray"
-msgstr ""
-
-#: extmod/ulab/code/filter/filter.c
-msgid "sos array must be of shape (n_section, 6)"
-msgstr ""
-
-#: extmod/ulab/code/filter/filter.c
-msgid "sos[:, 3] should be all ones"
-msgstr ""
-
-#: extmod/ulab/code/filter/filter.c
-msgid "sosfilt requires iterable arguments"
 msgstr ""
 
 #: shared-bindings/displayio/Bitmap.c
@@ -3578,6 +3288,10 @@ msgstr ""
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr ""
@@ -3594,16 +3308,8 @@ msgstr ""
 msgid "timestamp out of range for platform time_t"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "tobytes can be invoked for dense arrays only"
-msgstr ""
-
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "too many indices"
 msgstr ""
 
 #: py/runtime.c
@@ -3611,16 +3317,8 @@ msgstr ""
 msgid "too many values to unpack (expected %d)"
 msgstr ""
 
-#: extmod/ulab/code/approx/approx.c
-msgid "trapz is defined for 1D arrays of equal length"
-msgstr ""
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
 msgstr ""
 
 #: py/obj.c
@@ -3757,10 +3455,6 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
-#: extmod/ulab/code/linalg/linalg.c
-msgid "vectors must have same lengths"
-msgstr ""
-
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
 msgstr ""
@@ -3781,32 +3475,12 @@ msgstr ""
 msgid "window must be <= interval"
 msgstr ""
 
-#: extmod/ulab/code/numerical/numerical.c
-msgid "wrong axis index"
-msgstr ""
-
-#: extmod/ulab/code/ulab_create.c
-msgid "wrong axis specified"
-msgstr ""
-
-#: extmod/ulab/code/vector/vectorise.c
-msgid "wrong input type"
-msgstr ""
-
-#: extmod/ulab/code/ulab_create.c py/objstr.c
+#: py/objstr.c
 msgid "wrong number of arguments"
 msgstr ""
 
 #: py/runtime.c
 msgid "wrong number of values to unpack"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "wrong operand type"
-msgstr ""
-
-#: extmod/ulab/code/vector/vectorise.c
-msgid "wrong output type"
 msgstr ""
 
 #: shared-module/displayio/Shape.c
@@ -3823,16 +3497,4 @@ msgstr ""
 
 #: py/objrange.c
 msgid "zero step"
-msgstr ""
-
-#: extmod/ulab/code/filter/filter.c
-msgid "zi must be an ndarray"
-msgstr ""
-
-#: extmod/ulab/code/filter/filter.c
-msgid "zi must be of float type"
-msgstr ""
-
-#: extmod/ulab/code/filter/filter.c
-msgid "zi must be of shape (n_section, 2)"
 msgstr ""
