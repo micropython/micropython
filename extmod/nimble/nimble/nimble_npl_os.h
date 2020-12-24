@@ -33,6 +33,9 @@
 
 // --- Configuration of NimBLE data structures --------------------------------
 
+// This is used at runtime to align allocations correctly.
+#ifndef MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
+
 #define BLE_NPL_OS_ALIGNMENT (sizeof(uintptr_t))
 #define BLE_NPL_TIME_FOREVER (0xffffffff)
 
@@ -67,6 +70,8 @@ struct ble_npl_mutex {
 struct ble_npl_sem {
     volatile uint16_t count;
 };
+
+#endif // !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
 
 // --- Called by the MicroPython port -----------------------------------------
 

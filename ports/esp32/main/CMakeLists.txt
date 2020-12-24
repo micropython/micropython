@@ -80,6 +80,7 @@ set(MICROPY_SOURCE_QSTR
 set(IDF_COMPONENTS
     app_update
     bootloader_support
+    bt
     driver
     esp32
     esp_common
@@ -88,6 +89,8 @@ set(IDF_COMPONENTS
     esp_netif
     esp_ringbuf
     esp_rom
+    esp_system  # esp-idf v4.2
+    esp_timer   # esp-idf v4.2
     esp_wifi
     freertos
     heap
@@ -120,6 +123,9 @@ idf_component_register(
         ${MICROPY_PORT_DIR}
         ${MICROPY_BOARD_DIR}
         ${CMAKE_BINARY_DIR}
+        ${MICROPY_INCLUDE_EXTMOD}
+        ${IDF_PATH}/components/soc/soc/esp32/include # esp-idf v4.2
+        ${IDF_PATH}/components/soc/soc/include       # esp-idf v4.2
     REQUIRES
         ${IDF_COMPONENTS}
 )
@@ -136,6 +142,10 @@ target_compile_definitions(${MICROPY_TARGET} PUBLIC
     MICROPY_ESP_IDF_4=1
     MICROPY_VFS_FAT=1
     MICROPY_VFS_LFS2=1
+    MICROPY_PY_BLUETOOTH=1
+    MICROPY_BLUETOOTH_NIMBLE=1
+    MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=1
+    MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
     FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
     LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
     LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT

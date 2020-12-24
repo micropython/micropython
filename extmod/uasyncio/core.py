@@ -164,6 +164,8 @@ def run_until_complete(main_task=None):
                 # No tasks can be woken so finished running
                 return
             # print('(poll {})'.format(dt), len(_io_queue.map))
+            if dt > 5:
+                dt = 5
             _io_queue.wait_io_event(dt)
 
         # Get next task to run and continue it
