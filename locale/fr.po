@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
+"POT-Creation-Date: 2020-12-23 16:41-0500\n"
 "PO-Revision-Date: 2020-12-08 19:21+0000\n"
 "Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
 "Language: fr\n"
@@ -972,10 +972,6 @@ msgstr "Format non supporté"
 #, c-format
 msgid "Framebuffer requires %d bytes"
 msgstr "Le framebuffer nécessite %d octets"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
-msgstr "La fréquence capturée est au delà des capacités. Capture en pause."
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -3101,8 +3097,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length doit être 0-%d lorsque fixed_length est %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "max_length doit être > 0"
+msgid "max_length must be >= 0"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
@@ -3239,6 +3235,14 @@ msgstr "argument non-nommé après */**"
 #: py/compile.c
 msgid "non-keyword arg after keyword arg"
 msgstr "argument non-nommé après argument nommé"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
@@ -3668,6 +3672,10 @@ msgstr "le délai d'expiration a dépassé la valeur maximale prise en charge"
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "le délai doit être compris entre 0.0 et 100.0 secondes"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "'timeout' doit être >= 0.0"
@@ -3926,6 +3934,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "La fréquence capturée est au delà des capacités. Capture en pause."
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_length doit être > 0"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr ""
