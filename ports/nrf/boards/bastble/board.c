@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2020 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
+#include "supervisor/board.h"
+#include "nrf.h"
+#include "nrf_rtc.h"
 
-#include "py/obj.h"
+void board_init(void) {
 
-typedef enum {
-    IMAGEFORMAT_NONE,
-    IMAGEFORMAT_JPG,
-    IMAGEFORMAT_RGB565,
-} camera_imageformat_t;
+}
 
-extern const mp_obj_type_t camera_imageformat_type;
+bool board_requests_safe_mode(void) {
+  return false;
+}
 
-camera_imageformat_t camera_imageformat_obj_to_type(mp_obj_t obj);
-mp_obj_t camera_imageformat_type_to_obj(camera_imageformat_t mode);
+void reset_board(void) {
 
-typedef struct {
-    mp_obj_base_t base;
-} camera_imageformat_obj_t;
-extern const camera_imageformat_obj_t camera_imageformat_jpg_obj;
-extern const camera_imageformat_obj_t camera_imageformat_rgb565_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
+}

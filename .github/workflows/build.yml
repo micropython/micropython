@@ -185,6 +185,7 @@ jobs:
         - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
+        - "bastble"
         - "bdmicro_vina_d21"
         - "bdmicro_vina_d51"
         - "bless_dev_board_multi_sensor"
@@ -311,6 +312,7 @@ jobs:
         - "sparkfun_samd21_mini"
         - "sparkfun_samd51_thing_plus"
         - "spresense"
+        - "stackrduino_m0_pro"
         - "stm32f411ce_blackpill"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
@@ -343,8 +345,8 @@ jobs:
       run: |
         sudo apt-get install -y gettext
         pip install requests sh click setuptools awscli
-        wget https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
-        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |
         gcc --version

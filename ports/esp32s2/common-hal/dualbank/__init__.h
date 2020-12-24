@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright 2020 Sony Semiconductor Solutions Corporation
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DUALBANK___INIT___H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DUALBANK___INIT___H
 
-#include "py/obj.h"
+extern void dualbank_reset(void);
 
-typedef enum {
-    IMAGEFORMAT_NONE,
-    IMAGEFORMAT_JPG,
-    IMAGEFORMAT_RGB565,
-} camera_imageformat_t;
-
-extern const mp_obj_type_t camera_imageformat_type;
-
-camera_imageformat_t camera_imageformat_obj_to_type(mp_obj_t obj);
-mp_obj_t camera_imageformat_type_to_obj(camera_imageformat_t mode);
-
-typedef struct {
-    mp_obj_base_t base;
-} camera_imageformat_obj_t;
-extern const camera_imageformat_obj_t camera_imageformat_jpg_obj;
-extern const camera_imageformat_obj_t camera_imageformat_rgb565_obj;
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_CAMERA_IMAGEFORMAT_H
+#endif //MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DUALBANK___INIT___H

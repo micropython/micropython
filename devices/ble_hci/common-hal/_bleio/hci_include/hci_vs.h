@@ -104,7 +104,7 @@ struct bt_hci_cp_vs_set_trace_enable {
 #define BT_HCI_OP_VS_READ_BUILD_INFO            BT_OP(BT_OGF_VS, 0x0008)
 struct bt_hci_rp_vs_read_build_info {
 	uint8_t  status;
-	uint8_t  info[0];
+	uint8_t  info[];
 } __packed;
 
 struct bt_hci_vs_static_addr {
@@ -116,7 +116,7 @@ struct bt_hci_vs_static_addr {
 struct bt_hci_rp_vs_read_static_addrs {
 	uint8_t   status;
 	uint8_t   num_addrs;
-	struct bt_hci_vs_static_addr a[0];
+	struct bt_hci_vs_static_addr a[];
 } __packed;
 
 #define BT_HCI_OP_VS_READ_KEY_HIERARCHY_ROOTS   BT_OP(BT_OGF_VS, 0x000a)
@@ -143,7 +143,7 @@ struct bt_hci_vs_cmd {
 struct bt_hci_rp_vs_read_host_stack_cmds {
 	uint8_t   status;
 	uint8_t   num_cmds;
-	struct bt_hci_vs_cmd c[0];
+	struct bt_hci_vs_cmd c[];
 } __packed;
 
 #define BT_HCI_VS_SCAN_REQ_REPORTS_DISABLED     0x00
@@ -189,7 +189,7 @@ struct bt_hci_rp_vs_read_tx_power_level {
 struct bt_hci_rp_vs_read_usb_transport_mode {
 	uint8_t  status;
 	uint8_t  num_supported_modes;
-	uint8_t  supported_mode[0];
+	uint8_t  supported_mode[];
 } __packed;
 
 #define BT_HCI_VS_USB_H2_MODE                  0x00
@@ -210,7 +210,7 @@ struct bt_hci_evt_vs {
 #define BT_HCI_EVT_VS_FATAL_ERROR              0x02
 struct bt_hci_evt_vs_fatal_error {
 	uint64_t pc;
-	uint8_t  err_info[0];
+	uint8_t  err_info[];
 } __packed;
 
 #define BT_HCI_VS_TRACE_LMP_TX                 0x01
@@ -221,7 +221,7 @@ struct bt_hci_evt_vs_fatal_error {
 #define BT_HCI_EVT_VS_TRACE_INFO               0x03
 struct bt_hci_evt_vs_trace_info {
 	uint8_t  type;
-	uint8_t  data[0];
+	uint8_t  data[];
 } __packed;
 
 #define BT_HCI_EVT_VS_SCAN_REQ_RX              0x04
@@ -267,14 +267,14 @@ struct bt_hci_rp_mesh_get_opts {
 #define BT_HCI_OC_MESH_SET_SCAN_FILTER         0x01
 struct bt_hci_mesh_pattern {
 	uint8_t pattern_len;
-	uint8_t pattern[0];
+	uint8_t pattern[];
 } __packed;
 
 struct bt_hci_cp_mesh_set_scan_filter {
 	uint8_t      scan_filter;
 	uint8_t      filter_dup;
 	uint8_t      num_patterns;
-	struct    bt_hci_mesh_pattern patterns[0];
+	struct    bt_hci_mesh_pattern patterns[];
 } __packed;
 struct bt_hci_rp_mesh_set_scan_filter {
 	uint8_t      status;
@@ -365,11 +365,11 @@ struct bt_hci_evt_mesh_scan_report {
 	int8_t         rssi;
 	uint32_t        instant;
 	uint8_t         data_len;
-	uint8_t         data[0];
+	uint8_t         data[];
 } __packed;
 struct bt_hci_evt_mesh_scanning_report {
 	uint8_t num_reports;
-	struct bt_hci_evt_mesh_scan_report reports[0];
+	struct bt_hci_evt_mesh_scan_report reports[];
 } __packed;
 
 #ifdef __cplusplus
