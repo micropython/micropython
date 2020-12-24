@@ -1,0 +1,54 @@
+name: esp32 port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'drivers/**'
+      - 'ports/esp32/**'
+
+jobs:
+  cmake_idf42_build:
+    runs-on: ubuntu-20.04
+    env:
+      IDF_PATH: ${{ github.workspace }}/../esp-idf
+      IDF_TOOLS_PATH: ${{ github.workspace }}/../tools
+      IDF_TARGET: esp32
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache esp-idf tools
+      uses: actions/cache@v2
+      with:
+        path: /home/runner/work/micropython/tools # note: no .. in cache path
+        key: esp32_idf42_tools
+    - name: Install packages
+      run: source tools/ci.sh && ci_esp32_idf42_setup
+    - name: Build
+      run: source tools/ci.sh && ci_esp32_idf42_build
+
+#  idf3_build:
+#    runs-on: ubuntu-20.04
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: Install packages
+#      run: source tools/ci.sh && ci_esp32_idf3_setup && ci_esp32_idf3_path >> $GITHUB_PATH
+#    - name: Build
+#      env:
+#        IDF_PATH: ${{ github.workspace }}/esp-idf
+#      run: source tools/ci.sh && ci_esp32_idf3_build
+#
+#  idf4_build:
+#    runs-on: ubuntu-20.04
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: Install packages
+#      run: source tools/ci.sh && ci_esp32_idf4_setup && ci_esp32_idf4_path >> $GITHUB_PATH
+#    - name: Build
+#      env:
+#        IDF_PATH: ${{ github.workspace }}/esp-idf
+#      run: source tools/ci.sh && ci_esp32_idf4_build
