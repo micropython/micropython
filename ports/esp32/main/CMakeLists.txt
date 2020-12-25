@@ -54,7 +54,6 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/modnetwork.c
     ${PROJECT_DIR}/network_lan.c
     ${PROJECT_DIR}/network_ppp.c
-    ${PROJECT_DIR}/mpnimbleport.c
     ${PROJECT_DIR}/modsocket.c
     ${PROJECT_DIR}/modesp.c
     ${PROJECT_DIR}/esp32_partition.c
@@ -80,7 +79,6 @@ set(MICROPY_SOURCE_QSTR
 set(IDF_COMPONENTS
     app_update
     bootloader_support
-    bt
     driver
     esp32
     esp_common
@@ -109,6 +107,12 @@ set(IDF_COMPONENTS
     xtensa
 )
 
+# Make bluetooth optional (set TOOTHLESS in board.cmake).
+if(NOT TOOTHLESS)
+    set(MICROPY_SOURCE_PORT ${MICROPY_SOURCE_PORT} ${PROJECT_DIR}/mpnimbleport.c)
+    set(IDF_COMPONENTS ${IDF_COMPONENTS} bt) # is there an append???
+endif()
+
 # Register the main IDF component.
 idf_component_register(
     SRCS
@@ -133,23 +137,32 @@ idf_component_register(
 # Set the MicroPython target as the current (main) IDF component target.
 set(MICROPY_TARGET ${COMPONENT_TARGET})
 
-# Define mpy-cross flags and frozen manifest
+# Define mpy-cross flags
 set(MICROPY_CROSS_FLAGS -march=xtensawin)
-set(MICROPY_FROZEN_MANIFEST ${PROJECT_DIR}/boards/manifest.py)
 
-# Set compile options for this port.
+# Default frozen manifest, can be overridden in board.cmake.
+if(NOT MICROPY_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_MANIFEST ${PROJECT_DIR}/boards/manifest.py)
+endif()
+
+# Set compile options for this port
 target_compile_definitions(${MICROPY_TARGET} PUBLIC
     MICROPY_ESP_IDF_4=1
     MICROPY_VFS_FAT=1
     MICROPY_VFS_LFS2=1
-    MICROPY_PY_BLUETOOTH=1
-    MICROPY_BLUETOOTH_NIMBLE=1
-    MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=1
-    MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
     FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
     LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
     LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT
 )
+
+if(NOT TOOTHLESS)
+    target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        MICROPY_PY_BLUETOOTH=1
+        MICROPY_BLUETOOTH_NIMBLE=1
+        MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=1
+        MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+    )
+endif()
 
 # Disable some warnings to keep the build output clean.
 target_compile_options(${MICROPY_TARGET} PUBLIC

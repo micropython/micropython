@@ -1,0 +1,2 @@
+# Partition table for 2MiB flash.
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-2MiB.csv"

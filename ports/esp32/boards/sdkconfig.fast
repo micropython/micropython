@@ -1,0 +1,15 @@
+# Remove work-arounds for ancient silicon
+# Use esptool.py chip_id to get your chip's revision, ex: Chip is ESP32D0WDQ6 (revision 1)
+CONFIG_ESP32_REV_MIN_0=n
+CONFIG_ESP32_REV_MIN_1=y
+
+# Set flash to 80Mhz and QIO, all WROOM/WROVER modules should support that, some 3rd-party
+# modules/boards may not. Enabling CONFIG_LOG_DEFAULT_LEVEL_INFO in sdkconfig.base will
+# tell you what esp-idf actually configures.
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# Set SPIRAM to 80Mhz. This should works with all SPIRAM chips out there, but it does
+# tie up either the HSPI or VSPI controller, check the esp-idf docs.
+# This setting has no effect if SPIRAM is not enabled using sdkconfig.spiram.
+CONFIG_SPIRAM_SPEED_80M=y

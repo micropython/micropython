@@ -21,15 +21,25 @@ jobs:
       IDF_TARGET: esp32
     steps:
     - uses: actions/checkout@v2
-    - name: Cache esp-idf tools
+    - name: Pull esp-idf tools from cache
       uses: actions/cache@v2
       with:
         path: /home/runner/work/micropython/tools # note: no .. in cache path
         key: esp32_idf42_tools
-    - name: Install packages
+    - name: Install esp-idf and tools
       run: source tools/ci.sh && ci_esp32_idf42_setup
-    - name: Build
-      run: source tools/ci.sh && ci_esp32_idf42_build
+    - name: Prep submodules and mpy-cross
+      run: source tools/ci.sh && ci_esp32_idf42_prep
+    - name: Build GENERIC
+      run: source tools/ci.sh && MICROPY_BOARD=GENERIC ci_esp32_idf42_build
+    - name: Build GENERIC_OTA
+      run: source tools/ci.sh && MICROPY_BOARD=GENERIC_OTA ci_esp32_idf42_build
+    - name: Build GENERIC_D2WD
+      run: source tools/ci.sh && MICROPY_BOARD=GENERIC_D2WD ci_esp32_idf42_build
+    - name: Build TINYPICO
+      run: source tools/ci.sh && MICROPY_BOARD=TINYPICO ci_esp32_idf42_build
+    - name: Build TOOTHLESS_OTA
+      run: source tools/ci.sh && MICROPY_BOARD=TOOTHLESS_OTA ci_esp32_idf42_build
 
 #  idf3_build:
 #    runs-on: ubuntu-20.04

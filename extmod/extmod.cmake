@@ -39,22 +39,32 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/vfs_posix_file.c
     ${MICROPY_EXTMOD_DIR}/vfs_reader.c
     ${MICROPY_EXTMOD_DIR}/virtpin.c
-    ${MICROPY_EXTMOD_DIR}/modbluetooth.c
-    ${MICROPY_EXTMOD_DIR}/nimble/modbluetooth_nimble.c
-    ${MICROPY_EXTMOD_DIR}/nimble/hal/hal_uart.c
 )
 
-set (MICROPY_INCLUDE_EXTMOD
-    ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/include
-    ${IDF_PATH}/components/bt/host/nimble/esp-hci/include/
-    ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/include
-    ${IDF_PATH}/components/bt/host/nimble/nimble/porting/nimble/include
-    ${IDF_PATH}/components/bt/host/nimble/port/include
-    ${IDF_PATH}/components/bt/host/nimble/nimble/porting/npl/freertos/include
-    ${IDF_PATH}/components/bt/common/osi/include/osi
-    ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/util/include
-    ${IDF_PATH}/components/bt/host/nimble/nimble/porting/npl/freertos/include
-    ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/services/gap/include
-    ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/services/gatt/include
-    ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/transport/uart/include
-)
+set (MICROPY_INCLUDE_EXTMOD)
+
+if(NOT TOOTHLESS)
+    set(MICROPY_SOURCE_EXTMOD ${MICROPY_SOURCE_EXTMOD}
+        ${MICROPY_EXTMOD_DIR}/modbluetooth.c
+        ${MICROPY_EXTMOD_DIR}/nimble/modbluetooth_nimble.c
+        ${MICROPY_EXTMOD_DIR}/nimble/hal/hal_uart.c
+    )
+
+    set (MICROPY_INCLUDE_EXTMOD ${MICROPY_INCLUDE_EXTMOD}
+        ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/include
+        ${IDF_PATH}/components/bt/host/nimble/esp-hci/include/
+        ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/include
+        ${IDF_PATH}/components/bt/host/nimble/nimble/porting/nimble/include
+        ${IDF_PATH}/components/bt/host/nimble/port/include
+        ${IDF_PATH}/components/bt/host/nimble/nimble/porting/npl/freertos/include
+        ${IDF_PATH}/components/bt/common/osi/include/osi
+        ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/util/include
+        ${IDF_PATH}/components/bt/host/nimble/nimble/porting/npl/freertos/include
+        ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/services/gap/include
+        ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/host/services/gatt/include
+        ${IDF_PATH}/components/bt/host/nimble/nimble/nimble/transport/uart/include
+    )
+endif()
+
+#string(JOIN " " __MSE ${MICROPY_SOURCE_EXTMOD})
+#message(NOTICE ******************** MICROPY_SOURCE_EXTMOD ******* ${__MSE})

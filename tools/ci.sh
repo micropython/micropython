@@ -120,13 +120,16 @@ function ci_esp32_idf42_setup {
     ./install.sh
 }
 
-function ci_esp32_idf42_build {
+function ci_esp32_idf42_prep {
     make ${MAKEOPTS} -C mpy-cross
     git submodule update --init lib/berkeley-db-1.xx
+}
+
+function ci_esp32_idf42_build {
     source ${IDF_PATH}/export.sh
     cd ports/esp32
-    mkdir -p build-GENERIC
-    cd build-GENERIC
+    mkdir -p build-${MICROPY_BOARD}
+    cd build-${MICROPY_BOARD}
     echo "cmake in $(pwd)"
     cmake ..
     echo "make in $(pwd)"

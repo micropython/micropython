@@ -1,0 +1,6 @@
+# Enable the rollback of the app so a failing OTA can be reverted.
+# See esp-idf docs.
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
+
+# Partition table with two app partitions to enable OTA.
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-ota.csv"
