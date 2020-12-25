@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
+"POT-Creation-Date: 2020-12-23 16:41-0500\n"
 "PO-Revision-Date: 2020-10-05 12:12+0000\n"
 "Last-Translator: Michal Čihař <michal@cihar.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -940,6 +940,10 @@ msgstr ""
 msgid "Filters too complex"
 msgstr ""
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr ""
@@ -947,10 +951,6 @@ msgstr ""
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
 msgstr ""
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
@@ -1988,6 +1988,10 @@ msgstr ""
 msgid "Unsupported pull value."
 msgstr ""
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
@@ -3006,7 +3010,7 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
+msgid "max_length must be >= 0"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -3144,6 +3148,14 @@ msgstr ""
 msgid "non-keyword arg after keyword arg"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
 msgstr ""
@@ -3214,6 +3226,10 @@ msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
+msgstr ""
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
@@ -3559,6 +3575,10 @@ msgstr ""
 
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
+msgstr ""
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
 msgstr ""
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c

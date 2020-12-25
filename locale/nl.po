@@ -5,16 +5,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
-"PO-Revision-Date: 2020-10-27 16:47+0000\n"
-"Last-Translator: Jelle Jager <jell@jjc.id.au>\n"
+"POT-Creation-Date: 2020-12-23 16:41-0500\n"
+"PO-Revision-Date: 2020-12-23 20:14+0000\n"
+"Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.3.2-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: main.c
 msgid ""
@@ -294,7 +294,7 @@ msgstr "Adres type buiten bereik"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "Alle CAN-peripherals zijn in gebruik"
 
 #: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
@@ -304,7 +304,7 @@ msgstr "Alle I2C peripherals zijn in gebruik"
 #: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
-msgstr ""
+msgstr "Alle PCNT-eenheden zijn in gebruik"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/esp32s2/common-hal/canio/Listener.c
@@ -427,7 +427,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
-msgstr ""
+msgstr "Baudrate wordt niet ondersteund door randapparatuur"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -441,7 +441,7 @@ msgstr "Bit clock en word select moeten een clock eenheid delen"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr ""
+msgstr "Bitdiepte moet tussen 1 en 6 liggen, niet %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
@@ -859,7 +859,7 @@ msgstr "Verwachtte een adres"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
-msgstr ""
+msgstr "Verwachtte een alarm"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -876,7 +876,7 @@ msgstr "FFT alleen voor ndarrays gedefineerd"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "FFT is implemented for linear arrays only"
-msgstr ""
+msgstr "FFT is alleen geïmplementeerd voor lineaire arrays"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
@@ -948,6 +948,10 @@ msgstr "Bestand bestaat"
 msgid "Filters too complex"
 msgstr "Filters zijn te complex"
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr "Firmware image is ongeldig"
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr "Formaat wordt niet ondersteund"
@@ -956,11 +960,6 @@ msgstr "Formaat wordt niet ondersteund"
 #, c-format
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer benodigd %d bytes"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
-msgstr ""
-"De vastgelegde frequentie is boven de capaciteit. Vastleggen gepauzeerd."
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -1010,7 +1009,7 @@ msgstr "I2SOut is niet beschikbaar"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr ""
+msgstr "IO's 0, 2 en 4 ondersteunen geen interne pullup in slaapstand"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1031,7 +1030,7 @@ msgstr "Incorrecte buffer grootte"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
-msgstr ""
+msgstr "De initialisatie is mislukt vanwege een gebrek aan geheugen"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1098,7 +1097,7 @@ msgstr "Ongeldige PWM frequentie"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "Invalid Pin"
-msgstr ""
+msgstr "Ongeldige Pin"
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
@@ -1296,7 +1295,7 @@ msgstr "Een meervoud van 6 rgb pinnen moet worden gebruikt, niet %d"
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
-msgstr ""
+msgstr "NVS-fout"
 
 #: py/parse.c
 msgid "Name too long"
@@ -1319,7 +1318,7 @@ msgstr "Geen DMA kanaal gevonden"
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
-msgstr ""
+msgstr "Geen I2C-apparaat op adres: %x"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
@@ -1461,7 +1460,7 @@ msgstr "Alleen IPv4 adressen worden ondersteund"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Alleen IPv4-sockets ondersteund"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1482,7 +1481,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/__init__.c
 msgid "Only one alarm.time alarm can be set."
-msgstr ""
+msgstr "Slechts één alarm.time alarm kan worden ingesteld."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1547,7 +1546,7 @@ msgstr "Pin nummer al gereserveerd door EXTI"
 
 #: ports/esp32s2/common-hal/alarm/__init__.c
 msgid "PinAlarm not yet implemented"
-msgstr ""
+msgstr "PinAlarm nog niet geïmplementeerd"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1594,10 +1593,14 @@ msgstr "Prefix buffer moet op de heap zijn"
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
+"Druk een willekeurige toets om de REPL te starten. Gebruik CTRL+D om te "
+"herstarten.\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, any key or file write.\n"
 msgstr ""
+"Simuleert diepe slaapstand tot alarm, een willekeurige toets of schrijven "
+"naar bestand.\n"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1769,7 +1772,7 @@ msgstr "Geef op zijn minst 1 UART pin op"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
-msgstr ""
+msgstr "Geef monotonic_time of epoch_time"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
@@ -1844,7 +1847,7 @@ msgstr "Tile breedte moet exact de bitmap breedte verdelen"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Time is in the past."
-msgstr ""
+msgstr "Tijdstip ligt in het verleden."
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -1959,7 +1962,7 @@ msgstr "Niet in staat om naar nvm te schrijven."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr ""
+msgstr "Kan niet naar sleep_memory schrijven."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -2026,6 +2029,10 @@ msgstr "Niet-ondersteunde operatie"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
 msgstr "Niet-ondersteunde pull-waarde."
+
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr "Update Mislukt"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -2094,7 +2101,7 @@ msgstr "WiFi wachtwoord moet tussen 8 en 63 karakters bevatten"
 
 #: main.c
 msgid "Woken up by alarm.\n"
-msgstr ""
+msgstr "Gewekt door alarm.\n"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -2151,7 +2158,7 @@ msgstr "argsort argument moet een ndarray zijn"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr ""
+msgstr "argsort wordt niet geïmplementeerd voor vlakke arrays"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -2176,7 +2183,7 @@ msgstr "argumenten moeten ndarrays zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr ""
+msgstr "array en indexlengte moeten gelijk zijn"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2185,7 +2192,7 @@ msgstr "array/bytes vereist aan de rechterkant"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
-msgstr ""
+msgstr "verzoek om (arg)min.(arg)max te krijgen van lege reeks"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
@@ -2197,15 +2204,15 @@ msgstr "attributen nog niet ondersteund"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis is out of bounds"
-msgstr ""
+msgstr "as is buiten bereik"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be None, or an integer"
-msgstr ""
+msgstr "as moet None of een integer zijn"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis too long"
-msgstr ""
+msgstr "as te lang"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2411,7 +2418,7 @@ msgstr "kan niet schakelen tussen handmatige en automatische veld specificatie"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
-msgstr ""
+msgstr "kan uitvoer niet converteren zonder conversieregel"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -2512,7 +2519,7 @@ msgstr "kon SD kaart versie niet bepalen"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
-msgstr ""
+msgstr "kruis wordt gedefinieerd voor 1D-arrays van lengte 3"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
@@ -2555,7 +2562,7 @@ msgstr "diff argument moet een ndarray zijn"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "differentiation order out of range"
-msgstr ""
+msgstr "differentiatievolgorde buiten bereik"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -2588,7 +2595,7 @@ msgstr "end_x moet een int zijn"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
-msgstr ""
+msgstr "epoch_time niet ondersteund op dit bord"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -2678,7 +2685,7 @@ msgstr "eerste argument moet een functie zijn"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr ""
+msgstr "eerste argument moet een tupel van ndarrays zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
@@ -2735,7 +2742,7 @@ msgstr "functie heeft hetzelfde teken aan beide uiteinden van het interval"
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr ""
+msgstr "functie is alleen gedefinieerd voor ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -2832,7 +2839,7 @@ msgstr "inline assembler moet een functie zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "input and output shapes are not compatible"
-msgstr ""
+msgstr "in- en uitvoervormen zijn niet compatibel"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer or a 2-tuple"
@@ -2844,7 +2851,7 @@ msgstr "invoer array lengte moet een macht van 2 zijn"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input arrays are not compatible"
-msgstr ""
+msgstr "input arrays zijn niet compatibel"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
@@ -2860,19 +2867,19 @@ msgstr "invoermatrix is singulier"
 
 #: extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr ""
+msgstr "invoer moet een gesloten ndarray zijn"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input must be a tensor of rank 2"
-msgstr ""
+msgstr "invoer moet een tensor van rang 2 zijn"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
-msgstr ""
+msgstr "invoer moet een ndarray zijn"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "input must be one-dimensional"
-msgstr ""
+msgstr "invoer moet eendimensionaal zijn"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
@@ -2888,7 +2895,7 @@ msgstr "invoervectors moeten van gelijke lengte zijn"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "inputs are not iterable"
-msgstr ""
+msgstr "invoer is niet itereerbaar"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -2962,7 +2969,7 @@ msgstr "ongeldige syntax voor nummer"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "io must be rtc io"
-msgstr ""
+msgstr "io moet rtc io zijn"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3033,7 +3040,7 @@ msgstr "long int wordt niet ondersteund in deze build"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
-msgstr ""
+msgstr "loopback + silent mode wordt niet ondersteund door randapparaat"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -3062,12 +3069,12 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length moet 0-%d zijn als fixed_length %s is"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "max_length moet >0 zijn"
+msgid "max_length must be >= 0"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
-msgstr ""
+msgstr "maximaal aantal dimensies is 4"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3075,11 +3082,11 @@ msgstr "maximale recursiediepte overschreden"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "maxiter must be > 0"
-msgstr ""
+msgstr "maxiter moet groter dan 0 zijn"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "maxiter should be > 0"
-msgstr ""
+msgstr "maxiter moet groter dan 0 zijn"
 
 #: py/runtime.c
 #, c-format
@@ -3200,9 +3207,17 @@ msgstr "niet-trefwoord argument na */**"
 msgid "non-keyword arg after keyword arg"
 msgstr "niet-trefwoord argument na trefwoord argument"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
-msgstr ""
+msgstr "norm is gedefinieerd voor 1D en 2D arrays"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
@@ -3270,7 +3285,11 @@ msgstr "string met oneven lengte"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
-msgstr ""
+msgstr "compensatie is te groot"
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
+msgstr "compensatie moet groter of gelijk 0 zijn"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3296,11 +3315,11 @@ msgstr "operands konden niet samen verzonden worden"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
+msgstr "operatie is alleen geïmplementeerd voor 1D Booleaanse arrays"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented for flattened array"
-msgstr ""
+msgstr "operatie is niet geïmplementeerd voor vlakke array"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3439,7 +3458,7 @@ msgstr "gevraagde lengte is %d maar object heeft lengte %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
-msgstr ""
+msgstr "resultaat kan niet naar gespecificeerd type geconverteerd worden"
 
 #: py/compile.c
 msgid "return annotation must be an identifier"
@@ -3461,7 +3480,7 @@ msgstr "rgb_pins[%d] bevindt zich niet op dezelfde poort als klok"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "roll argument must be an ndarray"
-msgstr ""
+msgstr "roll argument moet een ndarray zijn"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -3489,7 +3508,7 @@ msgstr "scriptcompilatie wordt niet ondersteund"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
-msgstr ""
+msgstr "vorm moet een tupel zijn"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3620,6 +3639,10 @@ msgstr "time-outduur is groter dan de ondersteunde maximale waarde"
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "timeout moet tussen 0.0 en 100.0 seconden zijn"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "timeout moet groter dan 0.0 zijn"
@@ -3638,7 +3661,7 @@ msgstr "timestamp buiten bereik voor platform time_t"
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
-msgstr ""
+msgstr "tobytes kunnen alleen ingeroepen worden voor gesloten arrays"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
@@ -3659,7 +3682,7 @@ msgstr "trapz is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
-msgstr ""
+msgstr "triggerniveau moet 0 of 1 zijn"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
@@ -3672,12 +3695,12 @@ msgstr "tuple of lijst heeft onjuiste lengte"
 #: ports/esp32s2/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
-msgstr ""
+msgstr "twai_driver_install geeft esp-idf fout #%d"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_start returned esp-idf error #%d"
-msgstr ""
+msgstr "twai_start geeft esp-idf error #%d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
@@ -3805,11 +3828,11 @@ msgstr "vectoren moeten van gelijke lengte zijn"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
-msgstr ""
+msgstr "conflict bij ontwaken"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
-msgstr ""
+msgstr "watchdog niet geïnitialiseerd"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
@@ -3825,11 +3848,11 @@ msgstr "window moet <= interval zijn"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "wrong axis index"
-msgstr ""
+msgstr "foute index voor as"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "wrong axis specified"
-msgstr ""
+msgstr "onjuiste as gespecificeerd"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
@@ -3878,6 +3901,13 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr ""
+#~ "De vastgelegde frequentie is boven de capaciteit. Vastleggen gepauzeerd."
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_length moet >0 zijn"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr ""
