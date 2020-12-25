@@ -32,6 +32,50 @@ most efficient way to install the ESP32 toolchain and build the project. If
 you use WSL then follow the Linux instructions rather than the Windows
 instructions.
 
+Over time, you are likely to use multiple versions of esp-idf, for this reason the
+recommended set-up is to have top "project" directory under which you will end up with
+three subdirectories:
+- `esp-idf-vX.Y` for esp-idf and all its submodules/dependencies
+- `tools` for the xtensa toolchains and more stuff (this can be shared by multiple
+  esp-idf versions)
+- `micropython` for the micropython source and your builds (down in `ports/esp32/build-XXX`)
+
+The perhaps quickest way to get everything set-up on linux (or Mac?) is:
+- Create the project directory and the tools directory
+- Fetch a complete esp-idf archive by downloading
+  `https://github.com/espressif/esp-idf/releases/download/v4.2/esp-idf-v4.2.zip`
+  and unzip it in you "project" directory, the files will all end up in `./esp-idf-vX.Y`.
+  You can find zips for alternate esp-idf versions by looking for the "Assets" downloads
+  in the [release notes on github](https://github.com/espressif/esp-idf/releases).
+- Set two environment variables to point to your directories:
+  `IDF_PATH` -> `/path/to/project/esp-idf-vX.Y` and
+  `IDF_TOOLS_PATH` -> `/path/to/project/tools`
+- Run the esp-idf installer, e.g., `cd esp-idf-vX.Y; ./install.sh` (there are versions for
+  other shells too). This will download the necessary toolchains and put them into the
+  `IDF_TOOLS_PATH` directory.
+- Finally grab micropython: in your project dir,
+  `git clone https://github.com/micropython/micropython`
+- We now need to fetch a submodule and build `mpy-cross`:
+  `cd micropython; git submodule update --init lib/berkeley-db-1.xx` and
+  `make -J4 -C mpy-cross`
+- To build micropython prep a build directory:
+  `cd ports/esp32; mkdir -p build-GENERIC; cd build-GENERIC`
+- Let esp-idf add necessary paths to your shell's environment:
+  `source $IDF_PATH/export.sh` (there are variants for other shells)
+- Run cmake to build the makefiles:
+  `cmake -DMICROPY_BOARD=GENERIC ..`
+- And finally build the firmware and flash it to an esp32 attached to `/dev/ttyUSB0`:
+  `make -J4 flash`
+
+Some alternatives:
+- You can find the latest shell commands to build on linux in `tools/ci.sh`, look for the
+  `ci_esp32_idfXX_XX` functions, these are executed in a setup, prep, build order.
+- Instead of fetching the full esp-idf bundle you can follow the instructions
+  at the [Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/v4.0/get-started/index.html#step-3-set-up-the-tools).
+
+OLD STUF FOLLOWS
+================
+
 The ESP-IDF changes quickly and MicroPython only supports certain versions.
 The git hash of these versions (one for 3.x, one for 4.x) can be found by
 running `make` without a configured `ESPIDF`. Then you can fetch the
