@@ -54,11 +54,15 @@ add_custom_command(
 )
 
 # Generate moduledefs.h
-# This is currently hard-coded to support modarray.c only, because makemoduledefs.py doesn't support absolute paths
+# build a list of registered modules for py/objmodule.c.
+# FIXME: this is missing $(USER_C_MODULES) in the vpath!
+
+set(MICROPY_SOURCE_QSTR_FILES ${MICROPY_SOURCE_QSTR})
+list(TRANSFORM MICROPY_SOURCE_QSTR_FILES REPLACE ".*/micropython/" "")  # hacky!!
 
 add_custom_command(
     OUTPUT ${MICROPY_MODULEDEFS}
-    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makemoduledefs.py --vpath="." ../../../py/modarray.c > ${MICROPY_MODULEDEFS}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makemoduledefs.py --vpath="${MICROPY_DIR}" ${MICROPY_SOURCE_QSTR_FILES} > ${MICROPY_MODULEDEFS}
     DEPENDS ${MICROPY_MPVERSION}
         ${MICROPY_SOURCE_QSTR}
 )
