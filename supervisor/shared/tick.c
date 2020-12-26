@@ -26,6 +26,7 @@
 
 #include "supervisor/shared/tick.h"
 
+#include "lib/utils/interrupt_char.h"
 #include "py/mpstate.h"
 #include "py/runtime.h"
 #include "supervisor/linker.h"
