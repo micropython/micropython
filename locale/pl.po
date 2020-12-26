@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
+"POT-Creation-Date: 2020-12-23 16:41-0500\n"
 "PO-Revision-Date: 2020-12-02 20:29+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
@@ -948,6 +948,10 @@ msgstr "Plik istnieje"
 msgid "Filters too complex"
 msgstr ""
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr "Nie wspierany format"
@@ -956,10 +960,6 @@ msgstr "Nie wspierany format"
 #, c-format
 msgid "Framebuffer requires %d bytes"
 msgstr "Bufor ramki wymaga %d bajtów"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
-msgstr "Uzyskana częstotliwość jest niemożliwa. Spauzowano."
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -1998,6 +1998,10 @@ msgstr "Zła operacja"
 msgid "Unsupported pull value."
 msgstr "Zła wartość podciągnięcia."
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
@@ -3023,8 +3027,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "max_length musi być > 0"
+msgid "max_length must be >= 0"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
@@ -3161,6 +3165,14 @@ msgstr "argument nienazwany po */**"
 msgid "non-keyword arg after keyword arg"
 msgstr "argument nienazwany po nazwanym"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
 msgstr ""
@@ -3231,6 +3243,10 @@ msgstr "łańcuch o nieparzystej długości"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
+msgstr ""
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
@@ -3580,6 +3596,10 @@ msgstr ""
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "timeout musi być >= 0.0"
@@ -3838,6 +3858,12 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "Uzyskana częstotliwość jest niemożliwa. Spauzowano."
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_length musi być > 0"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr "Dowolny klawisz aby uruchomić konsolę. CTRL-D aby przeładować."
