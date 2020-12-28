@@ -55,7 +55,7 @@
 #include "peripherals/rmt.h"
 #include "peripherals/pcnt.h"
 #include "peripherals/timer.h"
-#include "components/esp_rom/include/esp_rom_uart.h"
+#include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
 #include "components/heap/include/esp_heap_caps.h"
 #include "components/xtensa/include/esp_debug_helpers.h"
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
@@ -67,12 +67,21 @@ uint32_t* heap;
 uint32_t heap_size;
 
 STATIC esp_timer_handle_t _tick_timer;
+STATIC esp_timer_handle_t _sleep_timer;
+
+TaskHandle_t circuitpython_task = NULL;
 
 extern void esp_restart(void) NORETURN;
 
 void tick_timer_cb(void* arg) {
     supervisor_tick();
+
+    // CircuitPython's VM is run in a separate FreeRTOS task from timer callbacks. So, we have to
+    // notify the main task every time in case it's waiting for us.
+    xTaskNotifyGive(circuitpython_task);
 }
+
+void sleep_timer_cb(void* arg);
 
 safe_mode_t port_init(void) {
     esp_timer_create_args_t args;
@@ -82,9 +91,17 @@ safe_mode_t port_init(void) {
     args.name = "CircuitPython Tick";
     esp_timer_create(&args, &_tick_timer);
 
-    #ifdef DEBUG
+    args.callback = &sleep_timer_cb;
+    args.arg = NULL;
+    args.dispatch_method = ESP_TIMER_TASK;
+    args.name = "CircuitPython Sleep";
+    esp_timer_create(&args, &_sleep_timer);
+
+    circuitpython_task = xTaskGetCurrentTaskHandle();
+
     // Send the ROM output out of the UART. This includes early logs.
-    esp_rom_install_channel_putc(1, esp_rom_uart_putc);
+    #ifdef DEBUG
+    ets_install_uart_printf();
     #endif
 
     heap = NULL;
@@ -104,11 +121,15 @@ safe_mode_t port_init(void) {
     }
 
     esp_reset_reason_t reason = esp_reset_reason();
-    if (reason == ESP_RST_BROWNOUT) {
-        return BROWNOUT;
-    }
-    if (reason == ESP_RST_PANIC) {
-        return HARD_CRASH;
+    switch (reason) {
+        case ESP_RST_BROWNOUT:
+            return BROWNOUT;
+        case ESP_RST_PANIC:
+        case ESP_RST_INT_WDT:
+        case ESP_RST_WDT:
+            return HARD_CRASH;
+        default:
+            break;
     }
 
     return NO_SAFE_MODE;
@@ -252,32 +273,24 @@ void port_enable_tick(void) {
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
-
-    // CircuitPython's VM is run in a separate FreeRTOS task from TinyUSB.
-    // Tick disable can happen via auto-reload so poke the main task here.
-    if (sleeping_circuitpython_task != NULL) {
-        xTaskNotifyGive(sleeping_circuitpython_task);
-    }
 }
 
-TickType_t sleep_time_duration;
+void sleep_timer_cb(void* arg) {
+    xTaskNotifyGive(circuitpython_task);
+}
 
 void port_interrupt_after_ticks(uint32_t ticks) {
-    sleep_time_duration = (ticks * 100)/1024;
+    uint64_t timeout_us = ticks * 1000000ull / 1024;
+    if (esp_timer_start_once(_sleep_timer, timeout_us) != ESP_OK) {
+        esp_timer_stop(_sleep_timer);
+        esp_timer_start_once(_sleep_timer, timeout_us);
+    }
 }
 
+// On the ESP we use FreeRTOS notifications instead of interrupts so this is a
+// bit of a misnomer.
 void port_idle_until_interrupt(void) {
-    uint32_t notify_value = 0;
-
-    if (sleep_time_duration == 0) {
-        return;
-    }
-    sleeping_circuitpython_task = xTaskGetCurrentTaskHandle();
-    xTaskNotifyWait(0x01, 0x01, &notify_value, sleep_time_duration );
-    sleeping_circuitpython_task = NULL;
-    if (notify_value == 1) {
-        mp_handle_pending();
-    }
+    xTaskNotifyWait(0x01, 0x01, NULL, portMAX_DELAY);
 }
 
 // Wrap main in app_main that the IDF expects.

@@ -24,16 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_MONOTONIC_TIME_ALARM_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_MONOTINIC_TIME_ALARM_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
 
 #include "py/obj.h"
 
 #include "common-hal/alarm/time/TimeAlarm.h"
 
-extern const mp_obj_type_t alarm_time_time_alarm_type;
+extern const mp_obj_type_t alarm_time_timealarm_type;
 
-extern void common_hal_alarm_time_time_alarm_construct(alarm_time_time_alarm_obj_t *self, mp_float_t monotonic_time);
-extern mp_float_t common_hal_alarm_time_time_alarm_get_monotonic_time(alarm_time_time_alarm_obj_t *self);
+extern void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time);
+extern mp_float_t common_hal_alarm_time_timealarm_get_monotonic_time(alarm_time_timealarm_obj_t *self);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_MONOTONIC_TIME_ALARM_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H

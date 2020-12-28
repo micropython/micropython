@@ -273,7 +273,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     self->bits = bits;
     self->target_frequency = baudrate;
     self->hal_context.timing_conf = &self->timing_conf;
-    esp_err_t result =  spi_hal_cal_clock_conf(&self->hal_context,
+    esp_err_t result =  spi_hal_get_clock_conf(&self->hal_context,
                                                self->target_frequency,
                                                128 /* duty_cycle */,
                                                self->connected_through_gpio,
@@ -366,7 +366,8 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
         burst_length = sizeof(hal->hw->data_buf);
         // When switching to non-DMA, we need to make sure DMA is off. Otherwise,
         // the S2 will transmit zeroes instead of our data.
-        spi_ll_txdma_disable(hal->hw);
+        hal->hw->dma_out_link.dma_tx_ena = 0;
+        hal->hw->dma_out_link.stop = 1;
     }
 
     // This rounds up.
