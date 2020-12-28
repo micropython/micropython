@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
+"POT-Creation-Date: 2020-12-23 16:41-0500\n"
 "PO-Revision-Date: 2020-11-19 01:28+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
@@ -946,6 +946,10 @@ msgstr "Wénjiàn cúnzài"
 msgid "Filters too complex"
 msgstr "guò lǜ qì tài fù zá"
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr "Bù zhīyuán géshì"
@@ -954,10 +958,6 @@ msgstr "Bù zhīyuán géshì"
 #, c-format
 msgid "Framebuffer requires %d bytes"
 msgstr "zhēn huǎn chōng qū xū yào %d zì jié"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
-msgstr "Pínlǜ bǔhuò gāo yú nénglì. Bǔhuò zàntíng."
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -2016,6 +2016,10 @@ msgstr "Bù zhīchí de cāozuò"
 msgid "Unsupported pull value."
 msgstr "Bù zhīchí de lādòng zhí."
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
@@ -3047,8 +3051,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "Dāng gùdìng chángdù wèi %s shí, zuìdà chángdù bìxū wèi 0-%d"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "Max_length bìxū > 0"
+msgid "max_length must be >= 0"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
@@ -3185,6 +3189,14 @@ msgstr "zài */** zhīhòu fēi guānjiàn cí cānshù"
 msgid "non-keyword arg after keyword arg"
 msgstr "guānjiàn zì cānshù zhīhòu de fēi guānjiàn zì cānshù"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
 msgstr ""
@@ -3255,6 +3267,10 @@ msgstr "jīshù zìfú chuàn"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
+msgstr ""
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
@@ -3604,6 +3620,10 @@ msgstr "chāoshí shíjiān chāoguò zuìdà zhīchí zhí"
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "chāoshí bìxū shì >= 0.0"
@@ -3862,6 +3882,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "Pínlǜ bǔhuò gāo yú nénglì. Bǔhuò zàntíng."
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "Max_length bìxū > 0"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzài."

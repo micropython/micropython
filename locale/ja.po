@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
+"POT-Creation-Date: 2020-12-23 16:41-0500\n"
 "PO-Revision-Date: 2020-11-27 18:34+0000\n"
 "Last-Translator: sporeball <sporeballdev@gmail.com>\n"
 "Language-Team: none\n"
@@ -948,6 +948,10 @@ msgstr "ファイルが存在します"
 msgid "Filters too complex"
 msgstr ""
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr "非対応の形式"
@@ -956,10 +960,6 @@ msgstr "非対応の形式"
 #, c-format
 msgid "Framebuffer requires %d bytes"
 msgstr ""
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
-msgstr "キャプチャした周波数は能力を超えています。キャプチャ停止"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -2007,6 +2007,10 @@ msgstr "非対応の操作"
 msgid "Unsupported pull value."
 msgstr "非対応のpull値"
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
@@ -3030,8 +3034,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr ""
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "max_lengthは0より大きくなければなりません"
+msgid "max_length must be >= 0"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
@@ -3168,6 +3172,14 @@ msgstr "*/** の後に非キーワード引数は置けません"
 msgid "non-keyword arg after keyword arg"
 msgstr "キーワード引数の後に非キーワード引数は置けません"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
 msgstr ""
@@ -3238,6 +3250,10 @@ msgstr "奇数長の文字列"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
+msgstr ""
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
@@ -3588,6 +3604,10 @@ msgstr "タイムアウト長は対応する最大値を超えています"
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "timeoutは0.0〜100.0秒でなければなりません"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "timeoutは0.0以上でなければなりません"
@@ -3846,6 +3866,12 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "キャプチャした周波数は能力を超えています。キャプチャ停止"
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_lengthは0より大きくなければなりません"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr "何らかのキーを押すとREPLに入ります。CTRL-Dでリロード。"
