@@ -59,12 +59,15 @@ void common_hal_mcu_delay_us(uint32_t delay) {
 
 volatile uint32_t nesting_count = 0;
 
+__attribute__((section(".ramtext")))
 void common_hal_mcu_disable_interrupts(void) {
-    irq_setie(0);
-    // __DMB();
+    if (nesting_count == 0) {
+        irq_setie(0);
+    }
     nesting_count++;
 }
 
+__attribute__((section(".ramtext")))
 void common_hal_mcu_enable_interrupts(void) {
     if (nesting_count == 0) {
         // This is very very bad because it means there was mismatched disable/enables so we
