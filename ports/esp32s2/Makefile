@@ -106,6 +106,8 @@ INC += -isystem esp-idf/components/heap/include
 INC += -isystem esp-idf/components/esp_system/include
 INC += -isystem esp-idf/components/spi_flash/include
 INC += -isystem esp-idf/components/nvs_flash/include
+INC += -isystem esp-idf/components/app_update/include
+INC += -isystem esp-idf/components/bootloader_support/include
 INC += -I$(BUILD)/esp-idf/config
 
 CFLAGS += -DHAVE_CONFIG_H \
@@ -118,7 +120,7 @@ CFLAGS += -DSTACK_CANARY_VALUE=0xa5a5a5a5
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  CFLAGS += -ggdb
+  CFLAGS += -DDEBUG -ggdb
   OPTIMIZATION_FLAGS ?= -Og
   # You may want to enable these flags to make setting breakpoints easier.
   # CFLAGS += -fno-inline -fno-ipa-sra
@@ -336,10 +338,10 @@ $(BUILD)/firmware.uf2: $(BUILD)/circuitpython-firmware.bin
 	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xbfdd4eee -b 0x0000 -c -o $@ $^
 
 flash: $(BUILD)/firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=no_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+	esptool.py --chip esp32s2 -p $(PORT) -b 460800 --before=default_reset --after=no_reset write_flash $(FLASH_FLAGS) 0x0000 $^
 
 flash-circuitpython-only: $(BUILD)/circuitpython-firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=no_reset write_flash $(FLASH_FLAGS) 0x10000 $^
+	esptool.py --chip esp32s2 -p $(PORT) -b 460800 --before=default_reset --after=no_reset write_flash $(FLASH_FLAGS) 0x10000 $^
 
 include $(TOP)/py/mkrules.mk
 

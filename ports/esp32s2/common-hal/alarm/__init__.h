@@ -27,6 +27,10 @@
 #ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
 #define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H
 
-void alarm_reset(void);
+#include "common-hal/alarm/SleepMemory.h"
+
+const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
+
+extern void alarm_reset(void);
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM__INIT__H

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 23:57-0500\n"
+"POT-Creation-Date: 2020-12-14 12:59-0500\n"
 "PO-Revision-Date: 2020-11-27 18:34+0000\n"
 "Last-Translator: Iván Montiel Cardona <ivan_montiel2013@hotmail.com>\n"
 "Language-Team: \n"
@@ -397,7 +397,7 @@ msgstr "Otro envío ya está activo"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "El array debe contener medias palabras (escriba 'H')"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Valores del array deben ser bytes individuales."
 
@@ -511,8 +511,8 @@ msgstr "El tamaño del búfer debe ser múltiplo de 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Búfer deber ser un múltiplo de 512 bytes"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
-#: shared-bindings/busio/I2C.c
+#: shared-bindings/adafruit_bus_device/I2CDevice.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Buffer debe ser de longitud 1 como minimo"
 
@@ -535,7 +535,7 @@ msgstr "Bus pin %d ya está siendo utilizado"
 msgid "Byte buffer must be 16 bytes."
 msgstr "Búfer Byte debe de ser 16 bytes."
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Bytes debe estar entre 0 y 255."
 
@@ -1102,6 +1102,10 @@ msgstr "Pin suministrado inválido para DAC"
 msgid "Invalid PWM frequency"
 msgstr "Frecuencia PWM inválida"
 
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "Invalid Pin"
+msgstr ""
+
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Argumento inválido"
@@ -1318,7 +1322,7 @@ msgstr "El chip no tiene DAC"
 msgid "No DMA channel found"
 msgstr "No se encontró el canal DMA"
 
-#: shared-module/busdevice/I2CDevice.c
+#: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr ""
@@ -1533,6 +1537,7 @@ msgstr "Permiso denegado"
 msgid "Pin does not have ADC capabilities"
 msgstr "Pin no tiene capacidad ADC"
 
+#: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "El pin es solo de entrada"
@@ -1592,9 +1597,12 @@ msgid "Prefix buffer must be on the heap"
 msgstr "El prefijo del buffer debe estar en el heap"
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
-"Presiona cualquier tecla para entrar al REPL. Usa CTRL-D para recargar."
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1729,7 +1737,7 @@ msgstr "El contexto del lado del servidor no puede tener un hostname"
 msgid "Size not supported"
 msgstr "Sin capacidades para el tamaño"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Slice y value tienen tamaños diferentes."
 
@@ -1958,6 +1966,10 @@ msgstr "No se pudo leer los datos de la paleta de colores"
 msgid "Unable to write to nvm."
 msgstr "Imposible escribir en nvm."
 
+#: shared-bindings/alarm/SleepMemory.c
+msgid "Unable to write to sleep_memory."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Tipo de uuid nrfx inesperado"
@@ -2089,6 +2101,10 @@ msgstr ""
 msgid "WiFi password must be between 8 and 63 characters"
 msgstr "La clave de WiFi debe ser entre 8 y 63 caracteres"
 
+#: main.c
+msgid "Woken up by alarm.\n"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Escrituras no admitidas en Characteristic"
@@ -2171,7 +2187,8 @@ msgstr "argumentos deben ser ndarrays"
 msgid "array and index length must be equal"
 msgstr "Longitud del array e índice tienen que ser iguales"
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: py/objarray.c shared-bindings/alarm/SleepMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "array/bytes requeridos en el lado derecho"
 
@@ -3282,7 +3299,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr "solo se admite sample_rate=16000"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "solo se admiten segmentos con step=1 (alias None)"
 
@@ -3875,6 +3892,10 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr ""
+#~ "Presiona cualquier tecla para entrar al REPL. Usa CTRL-D para recargar."
 
 #~ msgid "Only IPv4 SOCK_STREAM sockets supported"
 #~ msgstr "Solo hay capacidad para enchufes IPv4 SOCK_STREAM"

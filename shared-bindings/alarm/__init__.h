@@ -43,8 +43,11 @@ extern void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj
 // Deep sleep is entered outside of the VM so we omit the `common_hal_` prefix.
 extern NORETURN void alarm_enter_deep_sleep(void);
 
+extern mp_obj_t common_hal_alarm_get_wake_alarm(void);
+
 // Used by wake-up code.
-extern void common_hal_alarm_set_wake_alarm(mp_obj_t alarm);
+void alarm_save_wakeup_alarm(void);
+
 
 // True if an alarm is alerting. This is most useful for pretend deep sleep.
 extern bool alarm_woken_from_sleep(void);

@@ -205,6 +205,9 @@ endif
 ifeq ($(CIRCUITPY_OS),1)
 SRC_PATTERNS += os/%
 endif
+ifeq ($(CIRCUITPY_DUALBANK),1)
+SRC_PATTERNS += dualbank/%
+endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
 endif
@@ -304,6 +307,7 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/__init__.c \
 	_pew/PewPew.c \
 	_pew/__init__.c \
+	alarm/SleepMemory.c \
 	alarm/__init__.c \
 	alarm/pin/PinAlarm.c \
 	alarm/time/TimeAlarm.c \
@@ -347,6 +351,7 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
+	dualbank/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \

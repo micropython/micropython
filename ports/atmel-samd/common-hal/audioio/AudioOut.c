@@ -197,7 +197,7 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
         #endif
         #ifdef SAM_D5X_E5X
         DAC->EVCTRL.reg |= DAC_EVCTRL_STARTEI0;
-        DAC->DACCTRL[0].reg = DAC_DACCTRL_CCTRL_CC100K |
+        DAC->DACCTRL[0].reg = DAC_DACCTRL_CCTRL_CC12M |
                               DAC_DACCTRL_ENABLE |
                               DAC_DACCTRL_LEFTADJ;
         DAC->CTRLB.reg = DAC_CTRLB_REFSEL_VREFPU;
@@ -206,7 +206,7 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t* self,
     #ifdef SAM_D5X_E5X
     if (channel1_enabled) {
         DAC->EVCTRL.reg |= DAC_EVCTRL_STARTEI1;
-        DAC->DACCTRL[1].reg = DAC_DACCTRL_CCTRL_CC100K |
+        DAC->DACCTRL[1].reg = DAC_DACCTRL_CCTRL_CC12M |
                               DAC_DACCTRL_ENABLE |
                               DAC_DACCTRL_LEFTADJ;
         DAC->CTRLB.reg = DAC_CTRLB_REFSEL_VREFPU;

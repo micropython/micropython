@@ -29,6 +29,8 @@
 #include "py/misc.h"
 #include "py/runtime.h"
 
+#define NO_TRANSPARENT_COLOR (0x1000000)
+
 uint32_t displayio_colorconverter_dither_noise_1 (uint32_t n)
 {
   n = (n >> 13) ^ n;
@@ -42,6 +44,7 @@ uint32_t displayio_colorconverter_dither_noise_2(uint32_t x, uint32_t y) {
 
 void common_hal_displayio_colorconverter_construct(displayio_colorconverter_t* self, bool dither) {
     self->dither = dither;
+    self->transparent_color = NO_TRANSPARENT_COLOR;
 }
 
 uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
@@ -130,7 +133,7 @@ bool common_hal_displayio_colorconverter_get_dither(displayio_colorconverter_t* 
 }
 
 void common_hal_displayio_colorconverter_make_transparent(displayio_colorconverter_t* self, uint32_t transparent_color) {
-    if (self->transparent_color >= 0x1000000) {
+    if (self->transparent_color != NO_TRANSPARENT_COLOR) {
         mp_raise_RuntimeError(translate("Only one color can be transparent at a time"));
     }
     self->transparent_color = transparent_color;
@@ -138,8 +141,8 @@ void common_hal_displayio_colorconverter_make_transparent(displayio_colorconvert
 
 void common_hal_displayio_colorconverter_make_opaque(displayio_colorconverter_t* self, uint32_t transparent_color) {
     (void) transparent_color;
-    // 0x1000000 will never equal a valid color
-    self->transparent_color = 0x1000000;
+    // NO_TRANSPARENT_COLOR will never equal a valid color
+    self->transparent_color = NO_TRANSPARENT_COLOR;
 }
 
 void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t* colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {

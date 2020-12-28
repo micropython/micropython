@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 23:57-0500\n"
-"PO-Revision-Date: 2020-11-24 22:45+0000\n"
+"POT-Creation-Date: 2020-12-14 12:59-0500\n"
+"PO-Revision-Date: 2020-12-08 19:21+0000\n"
 "Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -397,7 +397,7 @@ msgstr "Un autre envoi est déjà actif"
 msgid "Array must contain halfwords (type 'H')"
 msgstr "Le tableau doit contenir des demi-mots (type 'H')"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
 msgstr "Les valeurs du tableau doivent être des octets simples 'bytes'."
 
@@ -511,8 +511,8 @@ msgstr "La longueur de la mémoire tampon doit être un multiple de 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "La mémoire tampon doit être un multiple de 512"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busdevice/I2CDevice.c
-#: shared-bindings/busio/I2C.c
+#: shared-bindings/adafruit_bus_device/I2CDevice.c
+#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Le tampon doit être de longueur au moins 1"
 
@@ -535,7 +535,7 @@ msgstr "La broche %d du bus est déjà utilisée"
 msgid "Byte buffer must be 16 bytes."
 msgstr "Le tampon doit être de 16 octets."
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
 msgstr "Les octets 'bytes' doivent être entre 0 et 255."
 
@@ -1107,6 +1107,10 @@ msgstr "Broche DAC non valide fournie"
 msgid "Invalid PWM frequency"
 msgstr "Fréquence de PWM invalide"
 
+#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+msgid "Invalid Pin"
+msgstr ""
+
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Argument invalide"
@@ -1303,7 +1307,7 @@ msgstr "Doit utiliser un multiple de 6 broches RVB, pas %d"
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
-msgstr ""
+msgstr "Erreur NVS"
 
 #: py/parse.c
 msgid "Name too long"
@@ -1323,10 +1327,10 @@ msgstr "Pas de DAC sur la puce"
 msgid "No DMA channel found"
 msgstr "Aucun canal DMA trouvé"
 
-#: shared-module/busdevice/I2CDevice.c
+#: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
-msgstr ""
+msgstr "Pas de dispositif I2C à l'adresse : %x"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
@@ -1468,7 +1472,7 @@ msgstr "Seules les adresses IPv4 sont prises en charge"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Seules les sockets IPv4 sont prises en charge"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1540,6 +1544,7 @@ msgstr "Permission refusée"
 msgid "Pin does not have ADC capabilities"
 msgstr "La broche ne peut être utilisée pour l'ADC"
 
+#: shared-bindings/adafruit_bus_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "La broche est entrée uniquement"
@@ -1554,7 +1559,7 @@ msgstr "Numéro de broche déjà réservé par EXTI"
 
 #: ports/esp32s2/common-hal/alarm/__init__.c
 msgid "PinAlarm not yet implemented"
-msgstr ""
+msgstr "PinAlarm pas encore implémenté"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1599,8 +1604,12 @@ msgid "Prefix buffer must be on the heap"
 msgstr "Le tampon de préfixe doit être sur le tas"
 
 #: main.c
-msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-msgstr "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
+msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
+msgstr ""
+
+#: main.c
+msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1735,7 +1744,7 @@ msgstr "Un contexte niveau serveur ne peut avoir de hostname"
 msgid "Size not supported"
 msgstr "Taille non prise en charge"
 
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Slice and value different lengths."
 msgstr "Tranche et valeur de tailles différentes."
 
@@ -1772,7 +1781,7 @@ msgstr "Fournissez au moins une broche UART"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
-msgstr ""
+msgstr "Fournissez l'un de monotonic_time ou epoch_time"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
@@ -1965,6 +1974,10 @@ msgstr "Impossible de lire les données de la palette de couleurs"
 msgid "Unable to write to nvm."
 msgstr "Impossible d'écrire sur la mémoire non-volatile."
 
+#: shared-bindings/alarm/SleepMemory.c
+msgid "Unable to write to sleep_memory."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Type inattendu pour l'uuid nrfx"
@@ -2098,6 +2111,10 @@ msgstr ""
 msgid "WiFi password must be between 8 and 63 characters"
 msgstr "Le mot de passe WiFi doit faire entre 8 et 63 caractères"
 
+#: main.c
+msgid "Woken up by alarm.\n"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Écritures non prises en charge sur la caractéristique"
@@ -2180,7 +2197,8 @@ msgstr "les arguments doivent être des ndarrays"
 msgid "array and index length must be equal"
 msgstr "la longueur du tableau et de l'index doit être égale"
 
-#: py/objarray.c shared-bindings/nvm/ByteArray.c
+#: py/objarray.c shared-bindings/alarm/SleepMemory.c
+#: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
 msgstr "tableau/octets requis à droite"
 
@@ -3300,7 +3318,7 @@ msgid "only sample_rate=16000 is supported"
 msgstr "seul sample_rate = 16000 est pris en charge"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
-#: shared-bindings/nvm/ByteArray.c
+#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "only slices with step=1 (aka None) are supported"
 msgstr "seules les tranches avec 'step=1' (cad None) sont supportées"
 
@@ -3896,6 +3914,10 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr ""
+#~ "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 
 #~ msgid "Only IPv4 SOCK_STREAM sockets supported"
 #~ msgstr "Seules les sockets IPv4 SOCK_STREAM sont prises en charge"
