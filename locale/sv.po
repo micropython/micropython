@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
-"PO-Revision-Date: 2020-12-07 20:26+0000\n"
+"POT-Creation-Date: 2020-12-23 23:04-0500\n"
+"PO-Revision-Date: 2020-12-28 17:59+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,15 +14,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: main.c
 msgid ""
 "\n"
-"Code done running. Waiting for reload.\n"
+"Code done running.\n"
 msgstr ""
+
+#: main.c
+msgid ""
 "\n"
-"Koden har kört klart. Väntar på omladdning.\n"
+"Code stopped by auto-reload.\n"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -540,6 +544,18 @@ msgstr "CBC-block måste vara multiplar om 16 byte"
 msgid "Call super().__init__() before accessing native object."
 msgstr "Anropa super().__init__() innan du använder det ursprungliga objektet."
 
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on RTC IO from deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on one low pin while others alarm high from deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on two low pins from deep sleep."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Kan inte ställa in CCCD på lokal karaktäristik"
@@ -572,6 +588,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
 msgstr "Det går inte att mata ut båda kanalerna på samma pinne"
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot pull on input-only pin."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
@@ -616,6 +636,10 @@ msgstr "Kan inte entydigt få sizeof scalar"
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Det går inte att ändra frekvensen på en timer som redan används"
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot wake on pin edge. Only level."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -948,6 +972,10 @@ msgstr "Filen finns redan"
 msgid "Filters too complex"
 msgstr "Filter för komplexa"
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr "Firmware-avbilden är ogiltig"
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr "Formatet stöds inte"
@@ -956,10 +984,6 @@ msgstr "Formatet stöds inte"
 #, c-format
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer kräver %d byte"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
-msgstr "Infångningsfrekvens är för hög. Infångning pausad."
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -1096,7 +1120,7 @@ msgstr "Ogiltig PWM-frekvens"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "Invalid Pin"
-msgstr ""
+msgstr "Ogiltig pinne"
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
@@ -1478,7 +1502,7 @@ msgstr ""
 "Endast monokrom, indexerad 4 bpp eller 8 bpp och 16 bpp eller högre BMP: er "
 "stöds: %d bpp angiven"
 
-#: ports/esp32s2/common-hal/alarm/__init__.c
+#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Endast ett alarm.time kan ställas in."
 
@@ -1542,10 +1566,6 @@ msgstr "Pinnen måste stödja hårdvaruavbrott"
 msgid "Pin number already reserved by EXTI"
 msgstr "PInn-nummer redan reserverat av EXTI"
 
-#: ports/esp32s2/common-hal/alarm/__init__.c
-msgid "PinAlarm not yet implemented"
-msgstr "PinAlarm är inte implementerat ännu"
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -1591,9 +1611,11 @@ msgstr "Prefixbufferten måste finnas på heap"
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
+"Tryck på valfri tangent för att gå in i REPL. Använd CTRL-D för att ladda "
+"om.\n"
 
 #: main.c
-msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -1956,7 +1978,7 @@ msgstr "Det gick inte att skriva till nvm."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr ""
+msgstr "Det gick inte att skriva till sleep_memory."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -2024,6 +2046,10 @@ msgstr "Åtgärd som inte stöds"
 msgid "Unsupported pull value."
 msgstr "Ogiltigt Pull-värde."
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr "Uppdateringen misslyckades"
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
@@ -2088,7 +2114,7 @@ msgstr "WiFi-lösenord måste vara mellan 8 och 63 tecken"
 
 #: main.c
 msgid "Woken up by alarm.\n"
-msgstr ""
+msgstr "Vaknade av larm.\n"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -3056,8 +3082,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length måste vara 0-%d när fixed_length är %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "max_length måste vara > 0"
+msgid "max_length must be >= 0"
+msgstr "max_length måste vara >= 0"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
@@ -3194,6 +3220,14 @@ msgstr "icke nyckelord arg efter * / **"
 msgid "non-keyword arg after keyword arg"
 msgstr "icke nyckelord arg efter nyckelord arg"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr "Icke-noll timeout måste vara > 0.01"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr "Icke-noll timeout måste vara >= intervall"
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
 msgstr "norm är definierad för 1D- och 2D-matriser"
@@ -3265,6 +3299,10 @@ msgstr "sträng har udda längd"
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
 msgstr "offset är för stor"
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
+msgstr "offset måste vara >= 0"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3614,6 +3652,10 @@ msgstr "timeout-längd överskred det maximala värde som stöds"
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "timeout måste vara 0.0-100.0 sekunder"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr "timeout måste vara < 655,35 sekunder"
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "timeout måste vara >= 0.0"
@@ -3872,6 +3914,25 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid ""
+#~ "\n"
+#~ "Code done running. Waiting for reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Koden har kört klart. Väntar på omladdning.\n"
+
+#~ msgid "PinAlarm not yet implemented"
+#~ msgstr "PinAlarm är inte implementerat ännu"
+
+#~ msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+#~ msgstr "Fingerar djup sömn tills larm, valfri tangent eller filskrivning.\n"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "Infångningsfrekvens är för hög. Infångning pausad."
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_length måste vara > 0"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr ""
