@@ -248,12 +248,8 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     spi_bus_free(self->host_id);
 
     common_hal_reset_pin(self->clock_pin);
-    if (self->MOSI_pin != NULL) {
-        common_hal_reset_pin(self->MOSI_pin);
-    }
-    if (self->MISO_pin != NULL) {
-        common_hal_reset_pin(self->MISO_pin);
-    }
+    common_hal_reset_pin(self->MOSI_pin);
+    common_hal_reset_pin(self->MISO_pin);
     self->clock_pin = NULL;
     self->MISO_pin = NULL;
     self->MOSI_pin = NULL;
