@@ -197,6 +197,7 @@ static_qstr_list = [
     "set",
     "setattr",
     "setdefault",
+    "signed",
     "sort",
     "sorted",
     "split",
