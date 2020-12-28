@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 16:41-0500\n"
+"POT-Creation-Date: 2020-12-23 23:04-0500\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -18,7 +18,13 @@ msgstr ""
 #: main.c
 msgid ""
 "\n"
-"Code done running. Waiting for reload.\n"
+"Code done running.\n"
+msgstr ""
+
+#: main.c
+msgid ""
+"\n"
+"Code stopped by auto-reload.\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -539,6 +545,18 @@ msgstr ""
 msgid "Call super().__init__() before accessing native object."
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on RTC IO from deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on one low pin while others alarm high from deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on two low pins from deep sleep."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
@@ -571,6 +589,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
 msgstr "Impossibile dare in output entrambi i canal sullo stesso pin"
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot pull on input-only pin."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
@@ -614,6 +636,10 @@ msgstr "Impossibile ricavare la grandezza scalare di sizeof inequivocabilmente"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot wake on pin edge. Only level."
 msgstr ""
 
 #: shared-module/bitbangio/SPI.c
@@ -1480,7 +1506,7 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/__init__.c
+#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -1547,10 +1573,6 @@ msgstr ""
 msgid "Pin number already reserved by EXTI"
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/__init__.c
-msgid "PinAlarm not yet implemented"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -1592,7 +1614,7 @@ msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
 
 #: main.c
-msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
