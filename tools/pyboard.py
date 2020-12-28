@@ -73,6 +73,12 @@ import os
 import ast
 
 try:
+    import pyftdi.serialext
+except ImportError:
+    pass
+
+# support the use of ftdi:// url scheme if it is installed
+try:
     stdout = sys.stdout.buffer
 except AttributeError:
     # Python2 doesn't have buffer attr
@@ -267,7 +273,9 @@ class Pyboard:
             delayed = False
             for attempt in range(wait + 1):
                 try:
-                    self.serial = serial.Serial(device, baudrate=baudrate, interCharTimeout=1)
+                    # invoking serial_for_url() instead of Serial() supports the use of url schemes like ftdi://
+                    # (provided pyftdi.serialext is imported first, which it is above)
+                    self.serial = serial.serial_for_url(device, baudrate=baudrate, interCharTimeout=1)
                     break
                 except (OSError, IOError):  # Py2 and Py3 have different errors
                     if wait == 0:
