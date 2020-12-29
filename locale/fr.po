@@ -8,26 +8,30 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-23 23:04-0500\n"
-"PO-Revision-Date: 2020-12-08 19:21+0000\n"
-"Last-Translator: Antonin ENFRUN <antonin.e@me.com>\n"
+"PO-Revision-Date: 2020-12-29 19:50+0000\n"
+"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running.\n"
 msgstr ""
+"\n"
+"Exécution du code complété.\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code stopped by auto-reload.\n"
 msgstr ""
+"\n"
+"Exécution du code arrêté par l'auto-rechargement.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -553,15 +557,19 @@ msgstr "Appelez super () .__ init __ () avant d'accéder à l'objet natif."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr ""
+msgstr "L'alarme peut seulement être depuis TRC IO depuis le someil profond."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
+"L'alarme peut seulement être sur une broche basse tandis que d'autres "
+"alarment sont sur des broches hautes depuis le someil profond."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
+"L'alarme peut seulement être sur deux broches basses depuis le someil "
+"profond."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -600,7 +608,7 @@ msgstr "Les 2 canaux de sortie ne peuvent être sur la même broche"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
-msgstr ""
+msgstr "Ne peut tirer sur une broche d'entrée seule."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
@@ -649,7 +657,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
-msgstr ""
+msgstr "Ne peut reveillé sur le board de broche. Seuleument à niveau."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -894,7 +902,7 @@ msgstr "Attendu une adresse"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
-msgstr ""
+msgstr "Une alarme était prévue"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -986,7 +994,7 @@ msgstr "Filtre trop complexe"
 
 #: ports/esp32s2/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
-msgstr ""
+msgstr "Image du microprogramme est invalide"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1045,7 +1053,7 @@ msgstr "I2SOut n'est pas disponible"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr ""
+msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1133,7 +1141,7 @@ msgstr "Fréquence de PWM invalide"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "Invalid Pin"
-msgstr ""
+msgstr "Broche invalide"
 
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
@@ -1517,7 +1525,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
-msgstr ""
+msgstr "Seulement une alarme alarm.time peut être réglée."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1626,10 +1634,13 @@ msgstr "Le tampon de préfixe doit être sur le tas"
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
+"Appuyez sur n'importe quelle touche pour utiliser le REPL. Utilisez CTRL-D "
+"pour relancer.\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
+"Feinte de someil profond jusqu'à l'alarme, Ctrl-C ou écriture au fichier.\n"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1877,7 +1888,7 @@ msgstr "La largeur de la tuile doit diviser exactement la largeur de l'image"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Time is in the past."
-msgstr ""
+msgstr "L'heure est dans le passé."
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -1996,7 +2007,7 @@ msgstr "Impossible d'écrire sur la mémoire non-volatile."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr ""
+msgstr "Impossibilitée d'écriture à sleep_memory."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -2067,7 +2078,7 @@ msgstr "Valeur de tirage 'pull' non supportée."
 
 #: ports/esp32s2/common-hal/dualbank/__init__.c
 msgid "Update Failed"
-msgstr ""
+msgstr "Mise-à-jour échouée"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -2137,7 +2148,7 @@ msgstr "Le mot de passe WiFi doit faire entre 8 et 63 caractères"
 
 #: main.c
 msgid "Woken up by alarm.\n"
-msgstr ""
+msgstr "Réveil par alarme.\n"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -2462,7 +2473,7 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
-msgstr ""
+msgstr "output ne peut être projeté sans règle de projection"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -2640,7 +2651,7 @@ msgstr "end_x doit être un entier 'int'"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
-msgstr ""
+msgstr "epoch_time n'est pas supporté sur ce panneau"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -2922,11 +2933,11 @@ msgstr "l'entrée doit être un tenseur de rang 2"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
-msgstr ""
+msgstr "l'entrée doit être un ndarray"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "input must be one-dimensional"
-msgstr ""
+msgstr "l'entrée doit être uni-dimensionelle"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
@@ -2942,7 +2953,7 @@ msgstr "les vecteurs d'entrée doivent être de longueur égale"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "inputs are not iterable"
-msgstr ""
+msgstr "les entrées ne sont pas itérables"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -3016,7 +3027,7 @@ msgstr "syntaxe invalide pour un nombre"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "io must be rtc io"
-msgstr ""
+msgstr "io doit être rtc io"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3118,11 +3129,11 @@ msgstr "max_length doit être 0-%d lorsque fixed_length est %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "max_length must be >= 0"
-msgstr ""
+msgstr "max_length doit être >= 0"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
-msgstr ""
+msgstr "nombre maximal de dimensions est 4"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3258,15 +3269,15 @@ msgstr "argument non-nommé après argument nommé"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
-msgstr ""
+msgstr "le délai non-zéro doit être > 0.01"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "non-zero timeout must be >= interval"
-msgstr ""
+msgstr "le délai non-zéro doit être >= interval"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
-msgstr ""
+msgstr "norm est défini pour des tableaux 1D et 2D"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
@@ -3335,11 +3346,11 @@ msgstr "chaîne de longueur impaire"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
-msgstr ""
+msgstr "offset est trop large"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
-msgstr ""
+msgstr "offset doit être >= 0"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3365,11 +3376,11 @@ msgstr "les opérandes ne pouvaient pas être diffusés ensemble"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
+msgstr "opération implémentée que pour des tableaux 1D booléennes"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented for flattened array"
-msgstr ""
+msgstr "l'opération n'est pas implémentée pour un tableau applatit"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3510,7 +3521,7 @@ msgstr "la longueur requise est %d mais l'objet est long de %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
-msgstr ""
+msgstr "résultats ne peuvent être transformé au type spécifié"
 
 #: py/compile.c
 msgid "return annotation must be an identifier"
@@ -3532,7 +3543,7 @@ msgstr "rgb_pins[%d] n'est pas sur le même port que l'horloge"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "roll argument must be an ndarray"
-msgstr ""
+msgstr "paramêtre roll doit être un ndarray"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -3560,7 +3571,7 @@ msgstr "compilation de script non supportée"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
-msgstr ""
+msgstr "forme doit être un tuple"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3694,7 +3705,7 @@ msgstr "le délai doit être compris entre 0.0 et 100.0 secondes"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
-msgstr ""
+msgstr "le délai (timeout) doit être < 655.35 secondes"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
@@ -3714,7 +3725,7 @@ msgstr "'timestamp' hors bornes pour 'time_t' de la plateforme"
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
-msgstr ""
+msgstr "tobytes ne peut être appelé que pour des tableaux dense"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
@@ -3735,7 +3746,7 @@ msgstr "trapz n'est défini que pour des tableaux 1D de longueur égale"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
-msgstr ""
+msgstr "niveau du déclencheur doit être 0 ou 1"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "tuple index out of range"
@@ -3881,7 +3892,7 @@ msgstr "les vecteurs doivent avoir la même longueur"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
-msgstr ""
+msgstr "conflit au réveil"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
@@ -3901,11 +3912,11 @@ msgstr "la fenêtre doit être <= intervalle"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "wrong axis index"
-msgstr ""
+msgstr "index d'axe incorrecte"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "wrong axis specified"
-msgstr ""
+msgstr "axe incorrecte spécifiée"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
