@@ -438,7 +438,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     bool arg_signed = parse_signed_kwarg(n_args, pos_args, kw_args);
     // TODO: use it to support arg_signed=True
     (void)arg_signed;
-    
+
     mp_int_t len = mp_obj_get_int(pos_args[1]);
     if (len < 0) {
         mp_raise_ValueError(NULL);
@@ -454,7 +454,12 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     if (!mp_obj_is_small_int(pos_args[0])) {
         assert(mp_obj_is_type(pos_args[0], &mp_type_int));
         mp_obj_int_t *val = MP_OBJ_TO_PTR(pos_args[0]);
-        if (val->mpz.neg) {
+        #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+        bool is_neg = *val < 0;
+        #elif MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+        bool is_neg = val->mpz.neg;
+        #endif
+        if (is_neg) {
             mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert negative int to unsigned (to_bytes)"));
         }
         mp_obj_int_to_bytes_impl(pos_args[0], big_endian, len, data);
@@ -462,7 +467,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     #endif
     {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(pos_args[0]);
-        if (val<0) {
+        if (val < 0) {
             mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert negative small int to unsigned (to_bytes)"));
         }
         size_t l = MIN((size_t)len, sizeof(val));
