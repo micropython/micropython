@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-23 23:04-0500\n"
-"PO-Revision-Date: 2020-12-29 19:50+0000\n"
+"PO-Revision-Date: 2020-12-29 20:38+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -59,7 +59,7 @@ msgstr " sortie :\n"
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr "%%c nécessite un entier 'int' ou un caractère 'char'"
+msgstr "%%c nécessite un chiffre entier 'int' ou un caractère 'char'"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -74,7 +74,7 @@ msgstr "Échec de %q : %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
-msgstr "%q utilisé"
+msgstr "%q en cours d'utilisation"
 
 #: extmod/moductypes.c ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -114,19 +114,19 @@ msgstr "%q est hors de porté"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
-msgstr "PIN %q invalide"
+msgstr "broche %q invalide"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
-msgstr "%q doit être un entier (int)"
+msgstr "%q doit être un chiffre entier (int)"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr "%q() prend %d arguments positionnels mais %d ont été donnés"
+msgstr "%q() prend %d paramêtres positionnels mais %d ont été donnés"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
-msgstr "'%q' argument requis"
+msgstr "paramêtre '%q' requis"
 
 #: py/runtime.c
 msgid "'%q' object cannot assign attribute '%q'"
@@ -197,7 +197,7 @@ msgstr "'%s' attend un entier"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr "'%s' s'attend au plus à r%d"
+msgstr "'%s' attend au plus à r%d"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -437,8 +437,8 @@ msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
-"Auto-chargement activé. Copiez simplement les fichiers en USB pour les "
-"lancer ou entrez sur REPL pour le désactiver.\n"
+"Auto-chargement activé. Copiez ou sauvegardez les fichiers via USB pour les "
+"lancer ou démarrez le REPL pour le désactiver.\n"
 
 #: ports/esp32s2/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
@@ -1602,7 +1602,7 @@ msgstr ""
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
-msgstr "Ainsi que tout autre module présent sur le système de fichiers\n"
+msgstr "Ainsi que tout autres modules présents sur le système de fichiers\n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
