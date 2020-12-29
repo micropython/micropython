@@ -387,17 +387,25 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
     return MP_OBJ_NULL; // op not supported
 }
 
-// this is a classmethod
-STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC bool parse_signed_kwarg(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_signed };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
-
-    // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 3, pos_args + 3, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    bool arg_signed = args[ARG_signed].u_bool;
+    if (arg_signed) {
+        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("signed=True not implemented"));
+    }
+    return arg_signed;
+}
 
+// this is a classmethod
+STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    bool arg_signed = parse_signed_kwarg(n_args, pos_args, kw_args);
+    // TODO: use it to support arg_signed=True
+    (void)arg_signed;
 
     // get the buffer info
     mp_buffer_info_t bufinfo;
@@ -408,9 +416,6 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     if (pos_args[2] == MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
         buf += bufinfo.len - 1;
         delta = -1;
-    }
-    if (args[ARG_signed].u_bool) {
-        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("signed=True not implemented (from_bytes)"));
     }
     mp_uint_t value = 0;
     size_t len = bufinfo.len;
@@ -430,24 +435,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(int_from_bytes_fun_obj, 3, int_from_bytes);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_bytes_fun_obj));
 
 STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_signed };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-    };
-
-    // parse args
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 3, pos_args + 3, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
+    bool arg_signed = parse_signed_kwarg(n_args, pos_args, kw_args);
+    // TODO: use it to support arg_signed=True
+    (void)arg_signed;
+    
     mp_int_t len = mp_obj_get_int(pos_args[1]);
     if (len < 0) {
         mp_raise_ValueError(NULL);
     }
     bool big_endian = pos_args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
 
-    if (args[ARG_signed].u_bool) {
-        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("signed=True not implemented (to_bytes)"));
-    }
     vstr_t vstr;
     vstr_init_len(&vstr, len);
     byte *data = (byte *)vstr.buf;
@@ -455,9 +452,9 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
     if (!mp_obj_is_small_int(pos_args[0])) {
-        assert(mp_obj_is_type(self_in, &mp_type_int));
+        assert(mp_obj_is_type(pos_args[0], &mp_type_int));
         mp_obj_int_t *val = MP_OBJ_TO_PTR(pos_args[0]);
-        if(val->mpz.neg){
+        if (val->mpz.neg) {
             mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert negative int to unsigned (to_bytes)"));
         }
         mp_obj_int_to_bytes_impl(pos_args[0], big_endian, len, data);
@@ -465,7 +462,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     #endif
     {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(pos_args[0]);
-        if(val<0){
+        if (val<0) {
             mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert negative small int to unsigned (to_bytes)"));
         }
         size_t l = MIN((size_t)len, sizeof(val));
