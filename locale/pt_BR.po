@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-23 23:04-0500\n"
-"PO-Revision-Date: 2020-12-22 18:07+0000\n"
+"PO-Revision-Date: 2020-12-29 16:08+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,19 +14,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running.\n"
 msgstr ""
+"\n"
+"O código concluiu a sua execução.\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code stopped by auto-reload.\n"
 msgstr ""
+"\n"
+"O código parou através do auto-reload.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -554,15 +558,18 @@ msgstr "Chame super().__init__() antes de acessar o objeto nativo."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr ""
+msgstr "O alarme só pode acontecer no RTC IO a partir do deep sleep."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
+"O alarme só pode acontecer em um pino com nível baixo enquanto os outros "
+"alarmes só com nível alto a partir do deep sleep."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
+"O alarme só é possível nos dois pinos com sinal baixo a partir do deep sleep."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -582,7 +589,7 @@ msgstr "Não é possível excluir valores"
 #: ports/mimxrt10xx/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
 msgid "Cannot get pull while in output mode"
-msgstr "Não é possível obter pull enquanto está modo de saída"
+msgstr "Não é possível obter (pull) enquanto estiver no modo saída"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c
 msgid "Cannot get temperature"
@@ -600,7 +607,7 @@ msgstr "Não é possível emitir os dois canais no mesmo pino"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
-msgstr ""
+msgstr "Não é possível obter (pull) nos pinos somente de entrada."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
@@ -648,7 +655,7 @@ msgstr "Não é possível variar a frequência em um timer que já esteja em uso
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
-msgstr ""
+msgstr "Não é possível acordar (wake) no pino edge. Nível apenas."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -1346,7 +1353,7 @@ msgstr "Nenhum DAC no chip"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "No DMA channel found"
-msgstr "Nenhum canal DMA encontrado"
+msgstr "Nenhum canal DMA foi encontrado"
 
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
@@ -1629,6 +1636,8 @@ msgstr ""
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
+"Tentando entrar no deep sleep até o alarme, pressione CTRL-C ou grave o "
+"arquivo.\n"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -3107,7 +3116,7 @@ msgstr "o max_length deve ser 0-%d quando Fixed_length for %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "max_length must be >= 0"
-msgstr ""
+msgstr "max_length deve ser >= 0"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
@@ -3248,11 +3257,11 @@ msgstr "um arg não-palavra-chave após a palavra-chave arg"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
-msgstr ""
+msgstr "o tempo limite não zero deve ser > 0.01"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "non-zero timeout must be >= interval"
-msgstr ""
+msgstr "o tempo limite não zero deve ser >= intervalo"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
@@ -3684,7 +3693,7 @@ msgstr "o tempo limite deve ser entre 0.0 a 100.0 segundos"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
-msgstr ""
+msgstr "o tempo limite deve ser < 655.35 seg"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
