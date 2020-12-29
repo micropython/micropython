@@ -455,7 +455,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         assert(mp_obj_is_type(pos_args[0], &mp_type_int));
         mp_obj_int_t *val = MP_OBJ_TO_PTR(pos_args[0]);
         #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
-        bool is_neg = *val < 0;
+        bool is_neg = val->val < 0;
         #elif MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
         bool is_neg = val->mpz.neg;
         #endif
