@@ -70,6 +70,10 @@
 #include "softpwm.h"
 #endif
 
+#if MICROPY_HW_USB_CDC
+#include "usb_cdc.h"
+#endif
+
 void do_str(const char *src, mp_parse_input_kind_t input_kind) {
     mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
     if (lex == NULL) {
@@ -95,7 +99,13 @@ extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
 
+
 soft_reset:
+
+    led_init();
+
+    led_state(1, 1); // MICROPY_HW_LED_1 aka MICROPY_HW_LED_RED
+
     mp_stack_set_top(&_ram_end);
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -114,6 +124,7 @@ soft_reset:
     pyb_set_repl_info(MP_OBJ_NEW_SMALL_INT(0));
 
     readline_init0();
+
 
 #if MICROPY_PY_MACHINE_HW_SPI
     spi_init0();
@@ -143,7 +154,7 @@ soft_reset:
     uart_init0();
 #endif
 
-#if (MICROPY_PY_BLE_NUS == 0)
+#if (MICROPY_PY_BLE_NUS == 0) && (MICROPY_HW_USB_CDC == 0)
     {
         mp_obj_t args[2] = {
             MP_OBJ_NEW_SMALL_INT(0),
@@ -169,7 +180,7 @@ pin_init0();
         }
         vfs->str = "/sd";
         vfs->len = 3;
-        vfs->flags = FSUSER_FREE_OBJ;
+        vfs->flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
         sdcard_init_vfs(vfs);
 
         // put the sd device in slot 1 (it will be unused at this point)
@@ -190,14 +201,6 @@ pin_init0();
         }
         no_mem_for_sd:;
     }
-#endif
-
-#if (MICROPY_HW_HAS_LED)
-    led_init();
-
-    do_str("import board\r\n" \
-           "board.LED(1).on()",
-           MP_PARSE_FILE_INPUT);
 #endif
 
     // Main script is finished, so now go into REPL mode.
@@ -225,10 +228,16 @@ pin_init0();
     pwm_start();
 #endif
 
-#if MICROPY_VFS || MICROPY_MBFS
+led_state(1, 0);
+
+#if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
     // run boot.py and main.py if they exist.
     pyexec_file_if_exists("boot.py");
     pyexec_file_if_exists("main.py");
+#endif
+
+#if MICROPY_HW_USB_CDC
+    usb_cdc_init();
 #endif
 
     for (;;) {
@@ -290,9 +299,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 #endif
 #endif
 
+
 void HardFault_Handler(void)
 {
-#if defined(NRF52_SERIES)
+#if defined(NRF52_SERIES) || defined(NRF91_SERIES)
     static volatile uint32_t reg;
     static volatile uint32_t reg2;
     static volatile uint32_t bfar;

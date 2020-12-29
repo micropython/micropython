@@ -32,24 +32,35 @@
 
 // bytecode layout:
 //
-//  n_state         : var uint
-//  n_exc_stack     : var uint
-//  scope_flags     : byte
-//  n_pos_args      : byte          number of arguments this function takes
-//  n_kwonly_args   : byte          number of keyword-only arguments this function takes
-//  n_def_pos_args  : byte          number of default positional arguments
+//  func signature  : var uint
+//      contains six values interleaved bit-wise as: xSSSSEAA [xFSSKAED repeated]
+//          x = extension           another byte follows
+//          S = n_state - 1         number of entries in Python value stack
+//          E = n_exc_stack         number of entries in exception stack
+//          F = scope_flags         four bits of flags, MP_SCOPE_FLAG_xxx
+//          A = n_pos_args          number of arguments this function takes
+//          K = n_kwonly_args       number of keyword-only arguments this function takes
+//          D = n_def_pos_args      number of default positional arguments
 //
-//  code_info_size  : var uint |    code_info_size counts bytes in this chunk
-//  simple_name     : var qstr |
-//  source_file     : var qstr |
-//  <line number info>         |
-//  <word alignment padding>   |    only needed if bytecode contains pointers
+//  prelude size    : var uint
+//      contains two values interleaved bit-wise as: xIIIIIIC repeated
+//          x = extension           another byte follows
+//          I = n_info              number of bytes in source info section
+//          C = n_cells             number of bytes/cells in closure section
 //
-//  local_num0      : byte     |
-//  ...             : byte     |
-//  local_numN      : byte     |    N = num_cells
-//  255             : byte     |    end of list sentinel
-//  <bytecode>                 |
+//  source info section:
+//      simple_name : var qstr
+//      source_file : var qstr
+//      <line number info>
+//
+//  closure section:
+//      local_num0  : byte
+//      ...         : byte
+//      local_numN  : byte          N = n_cells-1
+//
+//  <word alignment padding>        only needed if bytecode contains pointers
+//
+//  <bytecode>
 //
 //
 // constant table layout:
@@ -59,6 +70,107 @@
 //  argnameN        : obj (qstr)    N = num_pos_args + num_kwonly_args
 //  const0          : obj
 //  constN          : obj
+
+#define MP_BC_PRELUDE_SIG_ENCODE(S, E, scope, out_byte, out_env) \
+do {                                                            \
+    /*// Get values to store in prelude */                      \
+    size_t F = scope->scope_flags & MP_SCOPE_FLAG_ALL_SIG;      \
+    size_t A = scope->num_pos_args;                             \
+    size_t K = scope->num_kwonly_args;                          \
+    size_t D = scope->num_def_pos_args;                         \
+                                                                \
+    /* Adjust S to shrink range, to compress better */          \
+    S -= 1;                                                     \
+                                                                \
+    /* Encode prelude */                                        \
+    /* xSSSSEAA */                                              \
+    uint8_t z = (S & 0xf) << 3 | (E & 1) << 2 | (A & 3);        \
+    S >>= 4;                                                    \
+    E >>= 1;                                                    \
+    A >>= 2;                                                    \
+    while (S | E | F | A | K | D) {                             \
+        out_byte(out_env, 0x80 | z);                            \
+        /* xFSSKAED */                                          \
+        z = (F & 1) << 6 | (S & 3) << 4 | (K & 1) << 3          \
+            | (A & 1) << 2 | (E & 1) << 1 | (D & 1);            \
+        S >>= 2;                                                \
+        E >>= 1;                                                \
+        F >>= 1;                                                \
+        A >>= 1;                                                \
+        K >>= 1;                                                \
+        D >>= 1;                                                \
+    }                                                           \
+    out_byte(out_env, z);                                       \
+} while (0)
+
+#define MP_BC_PRELUDE_SIG_DECODE_INTO(ip, S, E, F, A, K, D)     \
+do {                                                            \
+    uint8_t z = *(ip)++;                                        \
+    /* xSSSSEAA */                                              \
+    S = (z >> 3) & 0xf;                                         \
+    E = (z >> 2) & 0x1;                                         \
+    F = 0;                                                      \
+    A = z & 0x3;                                                \
+    K = 0;                                                      \
+    D = 0;                                                      \
+    for (unsigned n = 0; z & 0x80; ++n) {                       \
+        z = *(ip)++;                                            \
+        /* xFSSKAED */                                          \
+        S |= (z & 0x30) << (2 * n);                             \
+        E |= (z & 0x02) << n;                                   \
+        F |= ((z & 0x40) >> 6) << n;                            \
+        A |= (z & 0x4) << n;                                    \
+        K |= ((z & 0x08) >> 3) << n;                            \
+        D |= (z & 0x1) << n;                                    \
+    }                                                           \
+    S += 1;                                                     \
+} while (0)
+
+#define MP_BC_PRELUDE_SIG_DECODE(ip) \
+    size_t n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args; \
+    MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args)
+
+#define MP_BC_PRELUDE_SIZE_ENCODE(I, C, out_byte, out_env)      \
+do {                                                            \
+    /* Encode bit-wise as: xIIIIIIC */                          \
+    uint8_t z = 0;                                              \
+    do {                                                        \
+        z = (I & 0x3f) << 1 | (C & 1);                          \
+        C >>= 1;                                                \
+        I >>= 6;                                                \
+        if (C | I) {                                            \
+            z |= 0x80;                                          \
+        }                                                       \
+        out_byte(out_env, z);                                   \
+    } while (C | I);                                            \
+} while (0)
+
+#define MP_BC_PRELUDE_SIZE_DECODE_INTO(ip, I, C)                \
+do {                                                            \
+    uint8_t z;                                                  \
+    C = 0;                                                      \
+    I = 0;                                                      \
+    for (unsigned n = 0;; ++n) {                                \
+        z = *(ip)++;                                            \
+        /* xIIIIIIC */                                          \
+        C |= (z & 1) << n;                                      \
+        I |= ((z & 0x7e) >> 1) << (6 * n);                      \
+        if (!(z & 0x80)) {                                      \
+            break;                                              \
+        }                                                       \
+    }                                                           \
+} while (0)
+
+#define MP_BC_PRELUDE_SIZE_DECODE(ip) \
+    size_t n_info, n_cell; \
+    MP_BC_PRELUDE_SIZE_DECODE_INTO(ip, n_info, n_cell)
+
+// Sentinel value for mp_code_state_t.exc_sp_idx
+#define MP_CODE_STATE_EXC_SP_IDX_SENTINEL ((uint16_t)-1)
+
+// To convert mp_code_state_t.exc_sp_idx to/from a pointer to mp_exc_stack_t
+#define MP_CODE_STATE_EXC_SP_IDX_FROM_PTR(exc_stack, exc_sp) ((exc_sp) + 1 - (exc_stack))
+#define MP_CODE_STATE_EXC_SP_IDX_TO_PTR(exc_stack, exc_sp_idx) ((exc_stack) + (exc_sp_idx) - 1)
 
 typedef struct _mp_bytecode_prelude_t {
     uint n_state;
@@ -70,17 +182,16 @@ typedef struct _mp_bytecode_prelude_t {
     qstr qstr_block_name;
     qstr qstr_source_file;
     const byte *line_info;
-    const byte *locals;
     const byte *opcodes;
 } mp_bytecode_prelude_t;
 
 // Exception stack entry
 typedef struct _mp_exc_stack_t {
     const byte *handler;
-    // bit 0 is saved currently_in_except_block value
+    // bit 0 is currently unused
     // bit 1 is whether the opcode was SETUP_WITH or SETUP_FINALLY
     mp_obj_t *val_sp;
-    // Saved exception, valid if currently_in_except_block bit is 1
+    // Saved exception
     mp_obj_base_t *prev_exc;
 } mp_exc_stack_t;
 
@@ -92,8 +203,8 @@ typedef struct _mp_code_state_t {
     mp_obj_fun_bc_t *fun_bc;
     const byte *ip;
     mp_obj_t *sp;
-    // bit 0 is saved currently_in_except_block value
-    mp_exc_stack_t *exc_sp;
+    uint16_t n_state;
+    uint16_t exc_sp_idx;
     mp_obj_dict_t *old_globals;
     #if MICROPY_STACKLESS
     struct _mp_code_state_t *prev;
@@ -127,11 +238,6 @@ const byte *mp_bytecode_print_str(const byte *ip);
 #define MP_TAGPTR_MAKE(ptr, tag) ((void*)((uintptr_t)(ptr) | (tag)))
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
-
-#define MP_OPCODE_BYTE (0)
-#define MP_OPCODE_QSTR (1)
-#define MP_OPCODE_VAR_UINT (2)
-#define MP_OPCODE_OFFSET (3)
 
 uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint);
 

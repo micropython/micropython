@@ -94,10 +94,10 @@ Filesystem access
         * ``f_frsize`` -- fragment size
         * ``f_blocks`` -- size of fs in f_frsize units
         * ``f_bfree`` -- number of free blocks
-        * ``f_bavail`` -- number of free blocks for unpriviliged users
+        * ``f_bavail`` -- number of free blocks for unprivileged users
         * ``f_files`` -- number of inodes
         * ``f_ffree`` -- number of free inodes
-        * ``f_favail`` -- number of free inodes for unpriviliged users
+        * ``f_favail`` -- number of free inodes for unprivileged users
         * ``f_flag`` -- mount flags
         * ``f_namemax`` -- maximum filename length
 
@@ -178,6 +178,43 @@ represented by VFS classes.
 
         Build a FAT filesystem on *block_dev*.
 
+.. class:: VfsLfs1(block_dev)
+
+    Create a filesystem object that uses the `littlefs v1 filesystem format`_.
+    Storage of the littlefs filesystem is provided by *block_dev*, which must
+    support the :ref:`extended interface <block-device-interface>`.
+    Objects created by this constructor can be mounted using :func:`mount`.
+
+    See :ref:`filesystem` for more information.
+
+    .. staticmethod:: mkfs(block_dev)
+
+        Build a Lfs1 filesystem on *block_dev*.
+
+    .. note:: There are reports of littlefs v1 failing in certain situations,
+              for details see `littlefs issue 347`_.
+
+.. class:: VfsLfs2(block_dev)
+
+    Create a filesystem object that uses the `littlefs v2 filesystem format`_.
+    Storage of the littlefs filesystem is provided by *block_dev*, which must
+    support the :ref:`extended interface <block-device-interface>`.
+    Objects created by this constructor can be mounted using :func:`mount`.
+
+    See :ref:`filesystem` for more information.
+
+    .. staticmethod:: mkfs(block_dev)
+
+        Build a Lfs2 filesystem on *block_dev*.
+
+    .. note:: There are reports of littlefs v2 failing in certain situations,
+              for details see `littlefs issue 295`_.
+
+.. _littlefs v1 filesystem format: https://github.com/ARMmbed/littlefs/tree/v1
+.. _littlefs v2 filesystem format: https://github.com/ARMmbed/littlefs
+.. _littlefs issue 295: https://github.com/ARMmbed/littlefs/issues/295
+.. _littlefs issue 347: https://github.com/ARMmbed/littlefs/issues/347
+
 Block devices
 -------------
 
@@ -187,24 +224,56 @@ implementation of this class will usually allow access to the memory-like
 functionality a piece of hardware (like flash memory).  A block device can be
 used by a particular filesystem driver to store the data for its filesystem.
 
+.. _block-device-interface:
+
+Simple and extended interface
+.............................
+
+There are two compatible signatures for the ``readblocks`` and ``writeblocks``
+methods (see below), in order to support a variety of use cases.  A given block
+device may implement one form or the other, or both at the same time. The second
+form (with the offset parameter) is referred to as the "extended interface".
+
 .. class:: AbstractBlockDev(...)
 
     Construct a block device object.  The parameters to the constructor are
     dependent on the specific block device.
 
     .. method:: readblocks(block_num, buf)
+    .. method:: readblocks(block_num, buf, offset)
 
+        The first form reads aligned, multiples of blocks.
         Starting at the block given by the index *block_num*, read blocks from
         the device into *buf* (an array of bytes).
         The number of blocks to read is given by the length of *buf*,
         which will be a multiple of the block size.
 
-    .. method:: writeblocks(block_num, buf)
+        The second form allows reading at arbitrary locations within a block,
+        and arbitrary lengths.
+        Starting at block index *block_num*, and byte offset within that block
+        of *offset*, read bytes from the device into *buf* (an array of bytes).
+        The number of bytes to read is given by the length of *buf*.
 
+    .. method:: writeblocks(block_num, buf)
+    .. method:: writeblocks(block_num, buf, offset)
+
+        The first form writes aligned, multiples of blocks, and requires that the
+        blocks that are written to be first erased (if necessary) by this method.
         Starting at the block given by the index *block_num*, write blocks from
         *buf* (an array of bytes) to the device.
         The number of blocks to write is given by the length of *buf*,
         which will be a multiple of the block size.
+
+        The second form allows writing at arbitrary locations within a block,
+        and arbitrary lengths.  Only the bytes being written should be changed,
+        and the caller of this method must ensure that the relevant blocks are
+        erased via a prior ``ioctl`` call.
+        Starting at block index *block_num*, and byte offset within that block
+        of *offset*, write bytes from *buf* (an array of bytes) to the device.
+        The number of bytes to write is given by the length of *buf*.
+
+        Note that implementations must never implicitly erase blocks if the offset
+        argument is specified, even if it is zero.
 
     .. method:: ioctl(op, arg)
 
@@ -219,34 +288,7 @@ used by a particular filesystem driver to store the data for its filesystem.
           - 5 -- get the number of bytes in a block, should return an integer,
             or ``None`` in which case the default value of 512 is used
             (*arg* is unused)
+          - 6 -- erase a block, *arg* is the block number to erase
 
-By way of example, the following class will implement a block device that stores
-its data in RAM using a ``bytearray``::
-
-    class RAMBlockDev:
-        def __init__(self, block_size, num_blocks):
-            self.block_size = block_size
-            self.data = bytearray(block_size * num_blocks)
-
-        def readblocks(self, block_num, buf):
-            for i in range(len(buf)):
-                buf[i] = self.data[block_num * self.block_size + i]
-
-        def writeblocks(self, block_num, buf):
-            for i in range(len(buf)):
-                self.data[block_num * self.block_size + i] = buf[i]
-
-        def ioctl(self, op, arg):
-            if op == 4: # get number of blocks
-                return len(self.data) // self.block_size
-            if op == 5: # get block size
-                return self.block_size
-
-It can be used as follows::
-
-    import uos
-
-    bdev = RAMBlockDev(512, 50)
-    uos.VfsFat.mkfs(bdev)
-    vfs = uos.VfsFat(bdev)
-    uos.mount(vfs, '/ramdisk')
+See :ref:`filesystem` for example implementations of block devices using both
+protocols.

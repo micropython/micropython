@@ -38,6 +38,8 @@
 #define MICROPY_PY_MACHINE_TEMP     (1)
 #define MICROPY_PY_RANDOM_HW_RNG    (1)
 
+#define MICROPY_HW_USB_CDC          (1)
+
 #define MICROPY_HW_HAS_LED          (1)
 #define MICROPY_HW_LED_TRICOLOR     (1)
 #define MICROPY_HW_LED_PULLUP       (1)

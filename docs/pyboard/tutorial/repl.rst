@@ -41,7 +41,7 @@ Mac OS X
 Open a terminal and run::
 
     screen /dev/tty.usbmodem*
-    
+
 When you are finished and want to exit screen, type CTRL-A CTRL-\\.
 
 Linux
@@ -50,7 +50,7 @@ Linux
 Open a terminal and run::
 
     screen /dev/ttyACM0
-    
+
 You can also try ``picocom`` or ``minicom`` instead of screen.  You may have to
 use ``/dev/ttyACM1`` or a higher number for ``ttyACM``.  And, you may need to give
 yourself the correct permissions to access this devices (eg group ``uucp`` or ``dialout``,

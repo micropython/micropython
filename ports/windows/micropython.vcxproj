@@ -25,29 +25,19 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -91,9 +81,27 @@
     <ClCompile />
     <Link />
   </ItemDefinitionGroup>
-  <ItemGroup>
-  </ItemGroup>
   <Import Project="msvc/sources.props" />
+  <ItemGroup>
+    <ClCompile Include="@(PyCoreSource)" />
+    <ClCompile Include="@(PyExtModSource)" />
+    <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
+    <ClCompile Include="$(PyBaseDir)ports\windows\*.c" />
+    <ClCompile Include="$(PyBaseDir)ports\windows\msvc\*.c" />
+    <ClCompile Include="$(PyBaseDir)ports\unix\file.c"/>
+    <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
+    <ClCompile Include="$(PyBaseDir)ports\unix\input.c"/>
+    <ClCompile Include="$(PyBaseDir)ports\unix\main.c"/>
+    <ClCompile Include="$(PyBaseDir)ports\unix\modos.c"/>
+    <ClCompile Include="$(PyBaseDir)ports\unix\modtime.c"/>
+    <ClCompile Include="$(PyBaseDir)ports\unix\modmachine.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="@(PyCoreInclude)" />
+    <ClInclude Include="@(PyExtModInclude)" />
+    <ClInclude Include="$(PyBaseDir)ports\windows\*.h" />
+    <ClInclude Include="$(PyBaseDir)ports\windows\msvc\*.h" />
+  </ItemGroup>
   <Import Project="msvc/genhdr.targets" />
   <Import Project="$(CustomPropsFile)" Condition="exists('$(CustomPropsFile)')" />
   <Target Name="GenHeaders" BeforeTargets="BuildGenerateSources" DependsOnTargets="GenerateHeaders">

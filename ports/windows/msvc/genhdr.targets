@@ -54,7 +54,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
   <Target Name="MakeQstrDefs" DependsOnTargets="MakeDestDir" Inputs="@(ClCompile);@(QstrDependencies)" Outputs="$(QstrDefsCollected)">
     <ItemGroup>
       <PyIncDirs Include="$(PyIncDirs)"/>
-      <PreProcDefs Include="%(ClCompile.PreProcessorDefinitions);NO_QSTR;N_X64;N_X86;N_THUMB;N_ARM"/>
+      <PreProcDefs Include="%(ClCompile.PreProcessorDefinitions);NO_QSTR"/>
       <PyQstrSourceFiles Include="@(ClCompile)">
         <OutFile>$([System.String]::new('%(FullPath)').Replace('$(PyBaseDir)', '$(DestDir)qstr\'))</OutFile>
       </PyQstrSourceFiles>

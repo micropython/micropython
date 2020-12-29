@@ -55,7 +55,7 @@ DEF_RULE_NC(eval_input_2, and(1), tok(NEWLINE))
 // varargslist: vfpdef ['=' test] (',' vfpdef ['=' test])* [',' ['*' [vfpdef] (',' vfpdef ['=' test])* [',' '**' vfpdef] | '**' vfpdef]] |  '*' [vfpdef] (',' vfpdef ['=' test])* [',' '**' vfpdef] | '**' vfpdef
 // vfpdef: NAME
 
-DEF_RULE_NC(decorator, and(4), tok(DEL_AT), rule(dotted_name), opt_rule(trailer_paren), tok(NEWLINE))
+DEF_RULE_NC(decorator, and(4), tok(OP_AT), rule(dotted_name), opt_rule(trailer_paren), tok(NEWLINE))
 DEF_RULE_NC(decorators, one_or_more, rule(decorator))
 DEF_RULE(decorated, c(decorated), and_ident(2), rule(decorators), rule(decorated_body))
 #if MICROPY_PY_ASYNC_AWAIT
@@ -96,7 +96,7 @@ DEF_RULE(simple_stmt_2, c(generic_all_nodes), list_with_end, rule(small_stmt), t
 // small_stmt: expr_stmt | del_stmt | pass_stmt | flow_stmt | import_stmt | global_stmt | nonlocal_stmt | assert_stmt
 // expr_stmt: testlist_star_expr (augassign (yield_expr|testlist) | ('=' (yield_expr|testlist_star_expr))*)
 // testlist_star_expr: (test|star_expr) (',' (test|star_expr))* [',']
-// augassign: '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>=' | '**=' | '//='
+// augassign: '+=' | '-=' | '*=' | '@=' | '/=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>=' | '**=' | '//='
 // # For normal assignments, additional restrictions enforced by the interpreter
 
 DEF_RULE_NC(small_stmt, or(8), rule(del_stmt), rule(pass_stmt), rule(flow_stmt), rule(import_stmt), rule(global_stmt), rule(nonlocal_stmt), rule(assert_stmt), rule(expr_stmt))
@@ -108,7 +108,7 @@ DEF_RULE_NC(expr_stmt_assign, and_ident(2), tok(DEL_EQUAL), rule(expr_stmt_6))
 DEF_RULE_NC(expr_stmt_6, or(2), rule(yield_expr), rule(testlist_star_expr))
 DEF_RULE(testlist_star_expr, c(generic_tuple), list_with_end, rule(testlist_star_expr_2), tok(DEL_COMMA))
 DEF_RULE_NC(testlist_star_expr_2, or(2), rule(star_expr), rule(test))
-DEF_RULE_NC(augassign, or(12), tok(DEL_PLUS_EQUAL), tok(DEL_MINUS_EQUAL), tok(DEL_STAR_EQUAL), tok(DEL_SLASH_EQUAL), tok(DEL_PERCENT_EQUAL), tok(DEL_AMPERSAND_EQUAL), tok(DEL_PIPE_EQUAL), tok(DEL_CARET_EQUAL), tok(DEL_DBL_LESS_EQUAL), tok(DEL_DBL_MORE_EQUAL), tok(DEL_DBL_STAR_EQUAL), tok(DEL_DBL_SLASH_EQUAL))
+DEF_RULE_NC(augassign, or(13), tok(DEL_PLUS_EQUAL), tok(DEL_MINUS_EQUAL), tok(DEL_STAR_EQUAL), tok(DEL_AT_EQUAL), tok(DEL_SLASH_EQUAL), tok(DEL_PERCENT_EQUAL), tok(DEL_AMPERSAND_EQUAL), tok(DEL_PIPE_EQUAL), tok(DEL_CARET_EQUAL), tok(DEL_DBL_LESS_EQUAL), tok(DEL_DBL_MORE_EQUAL), tok(DEL_DBL_STAR_EQUAL), tok(DEL_DBL_SLASH_EQUAL))
 
 // del_stmt: 'del' exprlist
 // pass_stmt: 'pass'
@@ -226,7 +226,7 @@ DEF_RULE(lambdef_nocond, c(lambdef), and_blank(4), tok(KW_LAMBDA), opt_rule(vara
 // and_expr: shift_expr ('&' shift_expr)*
 // shift_expr: arith_expr (('<<'|'>>') arith_expr)*
 // arith_expr: term (('+'|'-') term)*
-// term: factor (('*'|'/'|'%'|'//') factor)*
+// term: factor (('*'|'@'|'/'|'%'|'//') factor)*
 // factor: ('+'|'-'|'~') factor | power
 // power: atom_expr ['**' factor]
 // atom_expr: 'await' atom trailer* | atom trailer*
@@ -249,7 +249,7 @@ DEF_RULE_NC(shift_op, or(2), tok(OP_DBL_LESS), tok(OP_DBL_MORE))
 DEF_RULE(arith_expr, c(term), list, rule(term), rule(arith_op))
 DEF_RULE_NC(arith_op, or(2), tok(OP_PLUS), tok(OP_MINUS))
 DEF_RULE(term, c(term), list, rule(factor), rule(term_op))
-DEF_RULE_NC(term_op, or(4), tok(OP_STAR), tok(OP_SLASH), tok(OP_PERCENT), tok(OP_DBL_SLASH))
+DEF_RULE_NC(term_op, or(5), tok(OP_STAR), tok(OP_AT), tok(OP_SLASH), tok(OP_PERCENT), tok(OP_DBL_SLASH))
 DEF_RULE_NC(factor, or(2), rule(factor_2), rule(power))
 DEF_RULE(factor_2, c(factor_2), and_ident(2), rule(factor_op), rule(factor))
 DEF_RULE_NC(factor_op, or(3), tok(OP_PLUS), tok(OP_MINUS), tok(OP_TILDE))

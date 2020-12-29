@@ -56,10 +56,14 @@ This class gives access to the partitions in the device's flash memory.
     Returns a 6-tuple ``(type, subtype, addr, size, label, encrypted)``.
 
 .. method:: Partition.readblocks(block_num, buf)
+.. method:: Partition.readblocks(block_num, buf, offset)
 .. method:: Partition.writeblocks(block_num, buf)
+.. method:: Partition.writeblocks(block_num, buf, offset)
 .. method:: Partition.ioctl(cmd, arg)
 
-    These methods implement the block protocol defined by :class:`uos.AbstractBlockDev`.
+    These methods implement the simple and :ref:`extended
+    <block-device-interface>` block protocol defined by
+    :class:`uos.AbstractBlockDev`.
 
 .. method:: Partition.set_boot()
 

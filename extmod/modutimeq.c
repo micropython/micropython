@@ -142,7 +142,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_utimeq_heappush_obj, 4, 4, mod_ut
 STATIC mp_obj_t mod_utimeq_heappop(mp_obj_t heap_in, mp_obj_t list_ref) {
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "empty heap"));
+        mp_raise_msg(&mp_type_IndexError, "empty heap");
     }
     mp_obj_list_t *ret = MP_OBJ_TO_PTR(list_ref);
     if (!mp_obj_is_type(list_ref, &mp_type_list) || ret->len < 3) {
@@ -167,7 +167,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_utimeq_heappop_obj, mod_utimeq_heappop);
 STATIC mp_obj_t mod_utimeq_peektime(mp_obj_t heap_in) {
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "empty heap"));
+        mp_raise_msg(&mp_type_IndexError, "empty heap");
     }
 
     struct qentry *item = &heap->items[0];

@@ -19,7 +19,7 @@ Usage::
     val = adc.read_core_vref()          # read MCU VREF
     val = adc.read_vref()               # read MCU supply voltage
 
- 
+
 Constructors
 ------------
 

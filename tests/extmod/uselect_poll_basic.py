@@ -33,3 +33,9 @@ try:
     poller.modify(s, select.POLLIN)
 except OSError as e:
     assert e.args[0] == errno.ENOENT
+
+# poll after closing the socket, should return POLLNVAL
+poller.register(s)
+s.close()
+p = poller.poll(0)
+print(len(p), p[0][-1])

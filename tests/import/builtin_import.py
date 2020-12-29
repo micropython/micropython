@@ -9,6 +9,12 @@ try:
 except TypeError:
     print('TypeError')
 
+# module name should not be empty
+try:
+    __import__("")
+except ValueError:
+    print('ValueError')
+
 # level argument should be non-negative
 try:
     __import__('xyz', None, None, None, -1)

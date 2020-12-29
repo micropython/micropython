@@ -221,10 +221,13 @@ def run_tests(pyb, tests, args, base_path="."):
     skip_tests = set()
     skip_native = False
     skip_int_big = False
+    skip_bytearray = False
     skip_set_type = False
+    skip_slice = False
     skip_async = False
     skip_const = False
     skip_revops = False
+    skip_io_module = False
     skip_endian = False
     has_complex = True
     has_coverage = False
@@ -244,10 +247,20 @@ def run_tests(pyb, tests, args, base_path="."):
         if output != b'1000000000000000000000000000000000000000000000\n':
             skip_int_big = True
 
+        # Check if bytearray is supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'bytearray.py')
+        if output != b'bytearray\n':
+            skip_bytearray = True
+
         # Check if set type (and set literals) is supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, 'set_check.py')
         if output == b'CRASH':
             skip_set_type = True
+
+        # Check if slice is supported, and skip such tests if it's not
+        output = run_feature_check(pyb, args, base_path, 'slice.py')
+        if output != b'slice\n':
+            skip_slice = True
 
         # Check if async/await keywords are supported, and skip such tests if it's not
         output = run_feature_check(pyb, args, base_path, 'async_check.py')
@@ -264,6 +277,11 @@ def run_tests(pyb, tests, args, base_path="."):
         if output == b'TypeError\n':
             skip_revops = True
 
+        # Check if uio module exists, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, base_path, 'uio_module.py')
+        if output != b'uio\n':
+            skip_io_module = True
+
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, base_path, 'repl_emacs_check.py')
         if not 'True' in str(t, 'ascii'):
@@ -275,6 +293,22 @@ def run_tests(pyb, tests, args, base_path="."):
         has_coverage = run_feature_check(pyb, args, base_path, 'coverage.py') == b'coverage\n'
         cpy_byteorder = subprocess.check_output([CPYTHON3, base_path + '/feature_check/byteorder.py'])
         skip_endian = (upy_byteorder != cpy_byteorder)
+
+    # These tests don't test slice explicitly but rather use it to perform the test
+    misc_slice_tests = (
+        'builtin_range',
+        'class_super',
+        'containment',
+        'errno1',
+        'fun_str',
+        'generator1',
+        'globals_del',
+        'memoryview1',
+        'memoryview_gc',
+        'object1',
+        'python34',
+        'struct_endian',
+    )
 
     # Some tests shouldn't be run under Travis CI
     if os.getenv('TRAVIS') == 'true':
@@ -397,18 +431,24 @@ def run_tests(pyb, tests, args, base_path="."):
         is_native = test_name.startswith("native_") or test_name.startswith("viper_")
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
+        is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
+        is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
         is_async = test_name.startswith("async_")
         is_const = test_name.startswith("const")
+        is_io_module = test_name.startswith("io_")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
         skip_it |= skip_endian and is_endian
         skip_it |= skip_int_big and is_int_big
+        skip_it |= skip_bytearray and is_bytearray
         skip_it |= skip_set_type and is_set_type
+        skip_it |= skip_slice and is_slice
         skip_it |= skip_async and is_async
         skip_it |= skip_const and is_const
         skip_it |= skip_revops and test_name.startswith("class_reverse_op")
+        skip_it |= skip_io_module and is_io_module
 
         if args.list_tests:
             if not skip_it:

@@ -95,6 +95,7 @@ STATIC const emit_method_table_t *emit_native_table[] = {
     &emit_native_thumb_method_table,
     &emit_native_thumb_method_table,
     &emit_native_xtensa_method_table,
+    &emit_native_xtensawin_method_table,
 };
 
 #elif MICROPY_EMIT_NATIVE
@@ -109,6 +110,8 @@ STATIC const emit_method_table_t *emit_native_table[] = {
 #define NATIVE_EMITTER(f) emit_native_arm_##f
 #elif MICROPY_EMIT_XTENSA
 #define NATIVE_EMITTER(f) emit_native_xtensa_##f
+#elif MICROPY_EMIT_XTENSAWIN
+#define NATIVE_EMITTER(f) emit_native_xtensawin_##f
 #else
 #error "unknown native emitter"
 #endif
@@ -131,6 +134,7 @@ STATIC const emit_inline_asm_method_table_t *emit_asm_table[] = {
     &emit_inline_thumb_method_table,
     &emit_inline_thumb_method_table,
     &emit_inline_xtensa_method_table,
+    NULL,
 };
 
 #elif MICROPY_EMIT_INLINE_ASM
@@ -1024,16 +1028,13 @@ STATIC void compile_del_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 STATIC void compile_break_cont_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     uint16_t label;
-    const char *error_msg;
     if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_break_stmt) {
         label = comp->break_label;
-        error_msg = "'break' outside loop";
     } else {
         label = comp->continue_label;
-        error_msg = "'continue' outside loop";
     }
     if (label == INVALID_LABEL) {
-        compile_syntax_error(comp, (mp_parse_node_t)pns, error_msg);
+        compile_syntax_error(comp, (mp_parse_node_t)pns, "'break'/'continue' outside loop");
     }
     assert(comp->cur_except_level >= comp->break_continue_except_level);
     EMIT_ARG(unwind_jump, label, comp->cur_except_level - comp->break_continue_except_level);
@@ -1196,6 +1197,13 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
     } while (0);
 
     if (MP_PARSE_NODE_IS_TOKEN_KIND(pns->nodes[1], MP_TOKEN_OP_STAR)) {
+        #if MICROPY_CPYTHON_COMPAT
+        if (comp->scope_cur->kind != SCOPE_MODULE) {
+            compile_syntax_error(comp, (mp_parse_node_t)pns, "import * not at module level");
+            return;
+        }
+        #endif
+
         EMIT_ARG(load_const_small_int, import_level);
 
         // build the "fromlist" tuple
@@ -1205,7 +1213,7 @@ STATIC void compile_import_from(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // do the import
         qstr dummy_q;
         do_import_name(comp, pn_import_source, &dummy_q);
-        EMIT_ARG(import, MP_QSTR_NULL, MP_EMIT_IMPORT_STAR);
+        EMIT_ARG(import, MP_QSTRnull, MP_EMIT_IMPORT_STAR);
 
     } else {
         EMIT_ARG(load_const_small_int, import_level);
@@ -1996,21 +2004,8 @@ STATIC void compile_expr_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             c_assign(comp, pns->nodes[0], ASSIGN_AUG_LOAD); // lhs load for aug assign
             compile_node(comp, pns1->nodes[1]); // rhs
             assert(MP_PARSE_NODE_IS_TOKEN(pns1->nodes[0]));
-            mp_binary_op_t op;
-            switch (MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0])) {
-                case MP_TOKEN_DEL_PIPE_EQUAL: op = MP_BINARY_OP_INPLACE_OR; break;
-                case MP_TOKEN_DEL_CARET_EQUAL: op = MP_BINARY_OP_INPLACE_XOR; break;
-                case MP_TOKEN_DEL_AMPERSAND_EQUAL: op = MP_BINARY_OP_INPLACE_AND; break;
-                case MP_TOKEN_DEL_DBL_LESS_EQUAL: op = MP_BINARY_OP_INPLACE_LSHIFT; break;
-                case MP_TOKEN_DEL_DBL_MORE_EQUAL: op = MP_BINARY_OP_INPLACE_RSHIFT; break;
-                case MP_TOKEN_DEL_PLUS_EQUAL: op = MP_BINARY_OP_INPLACE_ADD; break;
-                case MP_TOKEN_DEL_MINUS_EQUAL: op = MP_BINARY_OP_INPLACE_SUBTRACT; break;
-                case MP_TOKEN_DEL_STAR_EQUAL: op = MP_BINARY_OP_INPLACE_MULTIPLY; break;
-                case MP_TOKEN_DEL_DBL_SLASH_EQUAL: op = MP_BINARY_OP_INPLACE_FLOOR_DIVIDE; break;
-                case MP_TOKEN_DEL_SLASH_EQUAL: op = MP_BINARY_OP_INPLACE_TRUE_DIVIDE; break;
-                case MP_TOKEN_DEL_PERCENT_EQUAL: op = MP_BINARY_OP_INPLACE_MODULO; break;
-                case MP_TOKEN_DEL_DBL_STAR_EQUAL: default: op = MP_BINARY_OP_INPLACE_POWER; break;
-            }
+            mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(pns1->nodes[0]);
+            mp_binary_op_t op = MP_BINARY_OP_INPLACE_OR + (tok - MP_TOKEN_DEL_PIPE_EQUAL);
             EMIT_ARG(binary_op, op);
             c_assign(comp, pns->nodes[0], ASSIGN_AUG_STORE); // lhs store for aug assign
         } else if (kind == PN_expr_stmt_assign_list) {
@@ -2144,15 +2139,12 @@ STATIC void compile_comparison(compiler_t *comp, mp_parse_node_struct_t *pns) {
             EMIT(rot_three);
         }
         if (MP_PARSE_NODE_IS_TOKEN(pns->nodes[i])) {
+            mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]);
             mp_binary_op_t op;
-            switch (MP_PARSE_NODE_LEAF_ARG(pns->nodes[i])) {
-                case MP_TOKEN_OP_LESS: op = MP_BINARY_OP_LESS; break;
-                case MP_TOKEN_OP_MORE: op = MP_BINARY_OP_MORE; break;
-                case MP_TOKEN_OP_DBL_EQUAL: op = MP_BINARY_OP_EQUAL; break;
-                case MP_TOKEN_OP_LESS_EQUAL: op = MP_BINARY_OP_LESS_EQUAL; break;
-                case MP_TOKEN_OP_MORE_EQUAL: op = MP_BINARY_OP_MORE_EQUAL; break;
-                case MP_TOKEN_OP_NOT_EQUAL: op = MP_BINARY_OP_NOT_EQUAL; break;
-                case MP_TOKEN_KW_IN: default: op = MP_BINARY_OP_IN; break;
+            if (tok == MP_TOKEN_KW_IN) {
+                op = MP_BINARY_OP_IN;
+            } else {
+                op = MP_BINARY_OP_LESS + (tok - MP_TOKEN_OP_LESS);
             }
             EMIT_ARG(binary_op, op);
         } else {
@@ -2206,36 +2198,21 @@ STATIC void compile_term(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[0]);
     for (int i = 1; i + 1 < num_nodes; i += 2) {
         compile_node(comp, pns->nodes[i + 1]);
-        mp_binary_op_t op;
         mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]);
-        switch (tok) {
-            case MP_TOKEN_OP_PLUS:      op = MP_BINARY_OP_ADD; break;
-            case MP_TOKEN_OP_MINUS:     op = MP_BINARY_OP_SUBTRACT; break;
-            case MP_TOKEN_OP_STAR:      op = MP_BINARY_OP_MULTIPLY; break;
-            case MP_TOKEN_OP_DBL_SLASH: op = MP_BINARY_OP_FLOOR_DIVIDE; break;
-            case MP_TOKEN_OP_SLASH:     op = MP_BINARY_OP_TRUE_DIVIDE; break;
-            case MP_TOKEN_OP_PERCENT:   op = MP_BINARY_OP_MODULO; break;
-            case MP_TOKEN_OP_DBL_LESS:  op = MP_BINARY_OP_LSHIFT; break;
-            default:
-                assert(tok == MP_TOKEN_OP_DBL_MORE);
-                op = MP_BINARY_OP_RSHIFT;
-                break;
-        }
+        mp_binary_op_t op = MP_BINARY_OP_LSHIFT + (tok - MP_TOKEN_OP_DBL_LESS);
         EMIT_ARG(binary_op, op);
     }
 }
 
 STATIC void compile_factor_2(compiler_t *comp, mp_parse_node_struct_t *pns) {
     compile_node(comp, pns->nodes[1]);
-    mp_unary_op_t op;
     mp_token_kind_t tok = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
-    switch (tok) {
-        case MP_TOKEN_OP_PLUS:  op = MP_UNARY_OP_POSITIVE; break;
-        case MP_TOKEN_OP_MINUS: op = MP_UNARY_OP_NEGATIVE; break;
-        default:
-            assert(tok == MP_TOKEN_OP_TILDE);
-            op = MP_UNARY_OP_INVERT;
-            break;
+    mp_unary_op_t op;
+    if (tok == MP_TOKEN_OP_TILDE) {
+        op = MP_UNARY_OP_INVERT;
+    } else {
+        assert(tok == MP_TOKEN_OP_PLUS || tok == MP_TOKEN_OP_MINUS);
+        op = MP_UNARY_OP_POSITIVE + (tok - MP_TOKEN_OP_PLUS);
     }
     EMIT_ARG(unary_op, op);
 }
@@ -2854,7 +2831,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
         return;
     }
 
-    qstr param_name = MP_QSTR_NULL;
+    qstr param_name = MP_QSTRnull;
     uint param_flag = ID_FLAG_IS_PARAM;
     mp_parse_node_struct_t *pns = NULL;
     if (MP_PARSE_NODE_IS_ID(pn)) {
@@ -2913,7 +2890,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
         }
     }
 
-    if (param_name != MP_QSTR_NULL) {
+    if (param_name != MP_QSTRnull) {
         id_info_t *id_info = scope_find_or_add_id(comp->scope_cur, param_name, ID_INFO_KIND_UNDECIDED);
         if (id_info->kind != ID_INFO_KIND_UNDECIDED) {
             compile_syntax_error(comp, pn, "argument name reused");

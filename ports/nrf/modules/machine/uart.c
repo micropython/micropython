@@ -44,7 +44,12 @@
 #include "mpconfigboard.h"
 #include "nrf.h"
 #include "mphalport.h"
+
+#if NRFX_UART_ENABLED
 #include "nrfx_uart.h"
+#else
+#include "nrfx_uarte.h"
+#endif
 
 
 #if MICROPY_PY_MACHINE_UART
@@ -55,6 +60,40 @@ typedef struct _machine_hard_uart_buf_t {
     uint8_t rx_ringbuf_array[64];
     volatile ringbuf_t rx_ringbuf;
 } machine_hard_uart_buf_t;
+
+#if NRFX_UARTE_ENABLED
+
+#define nrfx_uart_t               nrfx_uarte_t
+#define nrfx_uart_config_t        nrfx_uarte_config_t
+
+#define nrfx_uart_rx              nrfx_uarte_rx
+#define nrfx_uart_tx              nrfx_uarte_tx
+#define nrfx_uart_tx_in_progress  nrfx_uarte_tx_in_progress
+#define nrfx_uart_init            nrfx_uarte_init
+#define nrfx_uart_event_t         nrfx_uarte_event_t
+#define NRFX_UART_INSTANCE        NRFX_UARTE_INSTANCE
+
+#define NRF_UART_HWFC_ENABLED     NRF_UARTE_HWFC_ENABLED
+#define NRF_UART_HWFC_DISABLED    NRF_UARTE_HWFC_DISABLED
+#define NRF_UART_PARITY_EXCLUDED  NRF_UARTE_PARITY_EXCLUDED
+#define NRFX_UART_EVT_RX_DONE     NRFX_UARTE_EVT_RX_DONE
+
+#define NRF_UART_BAUDRATE_1200    NRF_UARTE_BAUDRATE_1200
+#define NRF_UART_BAUDRATE_2400    NRF_UARTE_BAUDRATE_2400
+#define NRF_UART_BAUDRATE_4800    NRF_UARTE_BAUDRATE_4800
+#define NRF_UART_BAUDRATE_9600    NRF_UARTE_BAUDRATE_9600
+#define NRF_UART_BAUDRATE_14400   NRF_UARTE_BAUDRATE_14400
+#define NRF_UART_BAUDRATE_19200   NRF_UARTE_BAUDRATE_19200
+#define NRF_UART_BAUDRATE_28800   NRF_UARTE_BAUDRATE_28800
+#define NRF_UART_BAUDRATE_38400   NRF_UARTE_BAUDRATE_38400
+#define NRF_UART_BAUDRATE_57600   NRF_UARTE_BAUDRATE_57600
+#define NRF_UART_BAUDRATE_76800   NRF_UARTE_BAUDRATE_76800
+#define NRF_UART_BAUDRATE_115200  NRF_UARTE_BAUDRATE_115200
+#define NRF_UART_BAUDRATE_230400  NRF_UARTE_BAUDRATE_230400
+#define NRF_UART_BAUDRATE_250000  NRF_UARTE_BAUDRATE_250000
+#define NRF_UART_BAUDRATE_1000000 NRF_UARTE_BAUDRATE_1000000
+
+#endif
 
 typedef struct _machine_hard_uart_obj_t {
     mp_obj_base_t       base;
@@ -210,7 +249,10 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
     // Enable event callback and start asynchronous receive
     nrfx_uart_init(self->p_uart, &config, uart_event_handler);
     nrfx_uart_rx(self->p_uart, &self->buf->rx_buf[0], 1);
+
+#if NRFX_UART_ENABLED
     nrfx_uart_rx_enable(self->p_uart);
+#endif
 
     return MP_OBJ_FROM_PTR(self);
 }

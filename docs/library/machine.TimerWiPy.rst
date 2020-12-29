@@ -47,9 +47,9 @@ Methods
        tim.init(Timer.ONE_SHOT, width=32)   # one shot 32-bit timer
 
    Keyword arguments:
-   
+
      - ``mode`` can be one of:
-     
+
        - ``TimerWiPy.ONE_SHOT`` - The timer runs once until the configured 
          period of the channel expires.
        - ``TimerWiPy.PERIODIC`` - The timer runs periodically at the configured 
@@ -70,7 +70,7 @@ Methods
    object is returned (or ``None`` if there is no previous channel).
 
    Otherwise, a TimerChannel object is initialized and returned.
-   
+
    The operating mode is is the one configured to the Timer object that was used to
    create the channel.
 

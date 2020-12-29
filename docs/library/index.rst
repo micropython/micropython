@@ -74,11 +74,11 @@ it will fallback to loading the built-in ``ujson`` module.
    :maxdepth: 1
 
    builtins.rst
-   array.rst
    cmath.rst
    gc.rst
    math.rst
    sys.rst
+   uarray.rst
    ubinascii.rst
    ucollections.rst
    uerrno.rst
@@ -111,8 +111,22 @@ the following libraries.
    machine.rst
    micropython.rst
    network.rst
+   ubluetooth.rst
    ucryptolib.rst
    uctypes.rst
+
+
+Port-specific libraries
+-----------------------
+
+In some cases the following port/board-specific libraries have functions or
+classes similar to those in the :mod:`machine` library.  Where this occurs, the
+entry in the port specific library exposes hardware functionality unique to
+that platform.
+
+To write portable code use functions and classes from the :mod:`machine` module.
+To access platform-specific hardware use the appropriate library, e.g.
+:mod:`pyb` in the case of the Pyboard.
 
 
 Libraries specific to the pyboard

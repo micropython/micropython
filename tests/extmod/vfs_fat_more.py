@@ -30,9 +30,9 @@ class RAMFS:
 
     def ioctl(self, op, arg):
         #print("ioctl(%d, %r)" % (op, arg))
-        if op == 4:  # BP_IOCTL_SEC_COUNT
+        if op == 4:  # MP_BLOCKDEV_IOCTL_BLOCK_COUNT
             return len(self.data) // self.SEC_SIZE
-        if op == 5:  # BP_IOCTL_SEC_SIZE
+        if op == 5:  # MP_BLOCKDEV_IOCTL_BLOCK_SIZE
             return self.SEC_SIZE
 
 

@@ -30,14 +30,13 @@
 #include "py/mpconfig.h"
 
 // wrapper around everything in this file
-#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+#if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_XTENSAWIN
 
 #include "py/asmxtensa.h"
 
 #define WORD_SIZE (4)
 #define SIGNED_FIT8(x) ((((x) & 0xffffff80) == 0) || (((x) & 0xffffff80) == 0xffffff80))
 #define SIGNED_FIT12(x) ((((x) & 0xfffff800) == 0) || (((x) & 0xfffff800) == 0xfffff800))
-#define NUM_REGS_SAVED (5)
 
 void asm_xtensa_end_pass(asm_xtensa_t *as) {
     as->num_const = as->cur_const;
@@ -69,7 +68,7 @@ void asm_xtensa_entry(asm_xtensa_t *as, int num_locals) {
     as->const_table = (uint32_t*)mp_asm_base_get_cur_to_write_bytes(&as->base, as->num_const * 4);
 
     // adjust the stack-pointer to store a0, a12, a13, a14, a15 and locals, 16-byte aligned
-    as->stack_adjust = (((NUM_REGS_SAVED + num_locals) * WORD_SIZE) + 15) & ~15;
+    as->stack_adjust = (((ASM_XTENSA_NUM_REGS_SAVED + num_locals) * WORD_SIZE) + 15) & ~15;
     if (SIGNED_FIT8(-as->stack_adjust)) {
         asm_xtensa_op_addi(as, ASM_XTENSA_REG_A1, ASM_XTENSA_REG_A1, -as->stack_adjust);
     } else {
@@ -79,14 +78,14 @@ void asm_xtensa_entry(asm_xtensa_t *as, int num_locals) {
 
     // save return value (a0) and callee-save registers (a12, a13, a14, a15)
     asm_xtensa_op_s32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A1, 0);
-    for (int i = 1; i < NUM_REGS_SAVED; ++i) {
+    for (int i = 1; i < ASM_XTENSA_NUM_REGS_SAVED; ++i) {
         asm_xtensa_op_s32i_n(as, ASM_XTENSA_REG_A11 + i, ASM_XTENSA_REG_A1, i);
     }
 }
 
 void asm_xtensa_exit(asm_xtensa_t *as) {
     // restore registers
-    for (int i = NUM_REGS_SAVED - 1; i >= 1; --i) {
+    for (int i = ASM_XTENSA_NUM_REGS_SAVED - 1; i >= 1; --i) {
         asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A11 + i, ASM_XTENSA_REG_A1, i);
     }
     asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A1, 0);
@@ -100,6 +99,22 @@ void asm_xtensa_exit(asm_xtensa_t *as) {
     }
 
     asm_xtensa_op_ret_n(as);
+}
+
+void asm_xtensa_entry_win(asm_xtensa_t *as, int num_locals) {
+    // jump over the constants
+    asm_xtensa_op_j(as, as->num_const * WORD_SIZE + 4 - 4);
+    mp_asm_base_get_cur_to_write_bytes(&as->base, 1); // padding/alignment byte
+    as->const_table = (uint32_t*)mp_asm_base_get_cur_to_write_bytes(&as->base, as->num_const * 4);
+
+    as->stack_adjust = 32 + ((((ASM_XTENSA_NUM_REGS_SAVED_WIN + num_locals) * WORD_SIZE) + 15) & ~15);
+    asm_xtensa_op_entry(as, ASM_XTENSA_REG_A1, as->stack_adjust);
+    asm_xtensa_op_s32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A1, 0);
+}
+
+void asm_xtensa_exit_win(asm_xtensa_t *as) {
+    asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_A1, 0);
+    asm_xtensa_op_retw_n(as);
 }
 
 STATIC uint32_t get_label_dest(asm_xtensa_t *as, uint label) {
@@ -178,15 +193,15 @@ void asm_xtensa_mov_reg_i32_optimised(asm_xtensa_t *as, uint reg_dest, uint32_t 
 }
 
 void asm_xtensa_mov_local_reg(asm_xtensa_t *as, int local_num, uint reg_src) {
-    asm_xtensa_op_s32i(as, reg_src, ASM_XTENSA_REG_A1, NUM_REGS_SAVED + local_num);
+    asm_xtensa_op_s32i(as, reg_src, ASM_XTENSA_REG_A1, local_num);
 }
 
 void asm_xtensa_mov_reg_local(asm_xtensa_t *as, uint reg_dest, int local_num) {
-    asm_xtensa_op_l32i(as, reg_dest, ASM_XTENSA_REG_A1, NUM_REGS_SAVED + local_num);
+    asm_xtensa_op_l32i(as, reg_dest, ASM_XTENSA_REG_A1, local_num);
 }
 
 void asm_xtensa_mov_reg_local_addr(asm_xtensa_t *as, uint reg_dest, int local_num) {
-    uint off = (NUM_REGS_SAVED + local_num) * WORD_SIZE;
+    uint off = local_num * WORD_SIZE;
     if (SIGNED_FIT8(off)) {
         asm_xtensa_op_addi(as, reg_dest, ASM_XTENSA_REG_A1, off);
     } else {
@@ -226,4 +241,13 @@ void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx) {
     asm_xtensa_op_callx0(as, ASM_XTENSA_REG_A0);
 }
 
-#endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
+void asm_xtensa_call_ind_win(asm_xtensa_t *as, uint idx) {
+    if (idx < 16) {
+        asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A8, ASM_XTENSA_REG_FUN_TABLE_WIN, idx);
+    } else {
+        asm_xtensa_op_l32i(as, ASM_XTENSA_REG_A8, ASM_XTENSA_REG_FUN_TABLE_WIN, idx);
+    }
+    asm_xtensa_op_callx8(as, ASM_XTENSA_REG_A8);
+}
+
+#endif // MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_XTENSAWIN

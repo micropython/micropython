@@ -148,36 +148,48 @@ STATIC mp_obj_t esp32_partition_info(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_info_obj, esp32_partition_info);
 
-STATIC mp_obj_t esp32_partition_readblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf_in) {
-    esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint32_t offset = mp_obj_get_int(block_num) * BLOCK_SIZE_BYTES;
+STATIC mp_obj_t esp32_partition_readblocks(size_t n_args, const mp_obj_t *args) {
+    esp32_partition_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
+    if (n_args == 4) {
+        offset += mp_obj_get_int(args[3]);
+    }
     check_esp_err(esp_partition_read(self->part, offset, bufinfo.buf, bufinfo.len));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_readblocks_obj, esp32_partition_readblocks);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_partition_readblocks_obj, 3, 4, esp32_partition_readblocks);
 
-STATIC mp_obj_t esp32_partition_writeblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf_in) {
-    esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint32_t offset = mp_obj_get_int(block_num) * BLOCK_SIZE_BYTES;
+STATIC mp_obj_t esp32_partition_writeblocks(size_t n_args, const mp_obj_t *args) {
+    esp32_partition_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-    check_esp_err(esp_partition_erase_range(self->part, offset, bufinfo.len));
+    mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+    if (n_args == 3) {
+        check_esp_err(esp_partition_erase_range(self->part, offset, bufinfo.len));
+    } else {
+        offset += mp_obj_get_int(args[3]);
+    }
     check_esp_err(esp_partition_write(self->part, offset, bufinfo.buf, bufinfo.len));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_partition_writeblocks_obj, esp32_partition_writeblocks);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_partition_writeblocks_obj, 3, 4, esp32_partition_writeblocks);
 
 STATIC mp_obj_t esp32_partition_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
-        case BP_IOCTL_INIT: return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_DEINIT: return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_SYNC: return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_SEC_COUNT: return MP_OBJ_NEW_SMALL_INT(self->part->size / BLOCK_SIZE_BYTES);
-        case BP_IOCTL_SEC_SIZE: return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
+        case MP_BLOCKDEV_IOCTL_INIT: return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_DEINIT: return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_SYNC: return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT: return MP_OBJ_NEW_SMALL_INT(self->part->size / BLOCK_SIZE_BYTES);
+        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE: return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
+        case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
+            uint32_t offset = mp_obj_get_int(arg_in) * BLOCK_SIZE_BYTES;
+            check_esp_err(esp_partition_erase_range(self->part, offset, BLOCK_SIZE_BYTES));
+            return MP_OBJ_NEW_SMALL_INT(0);
+        }
         default: return mp_const_none;
     }
 }

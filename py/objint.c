@@ -137,7 +137,7 @@ STATIC mp_fp_as_int_class_t mp_classify_fp_as_int(mp_float_t val) {
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     int cl = fpclassify(val);
     if (cl == FP_INFINITE) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OverflowError, "can't convert inf to int"));
+        mp_raise_msg(&mp_type_OverflowError, "can't convert inf to int");
     } else if (cl == FP_NAN) {
         mp_raise_ValueError("can't convert NaN to int");
     } else {

@@ -1,3 +1,9 @@
+try:
+    '' % ()
+except TypeError:
+    print("SKIP")
+    raise SystemExit
+
 print("%%" % ())
 print("=%s=" % 1)
 print("=%s=%s=" % (1, 2))

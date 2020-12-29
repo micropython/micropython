@@ -75,6 +75,28 @@ unlocked
 1
 2
 3
+# ringbuf
+99 0
+98 1
+22
+99 0
+97 2
+aa55
+99 0
+0 99
+-1
+1 98
+-1
+2 97
+0
+cc99
+99 0
+0
+11bb
+0
+22ff
+-1
+-1
 0123456789 b'0123456789'
 7300
 7300
@@ -107,3 +129,4 @@ frzmpy_pkg2.mod
 1
 ZeroDivisionError
 b'# test frozen package'
+NULL

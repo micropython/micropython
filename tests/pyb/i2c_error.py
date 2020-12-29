@@ -3,6 +3,10 @@
 import pyb
 from pyb import I2C
 
+if not hasattr(pyb, 'Accel'):
+    print('SKIP')
+    raise SystemExit
+
 # init accelerometer
 pyb.Accel()
 

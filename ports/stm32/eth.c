@@ -153,9 +153,9 @@ void eth_set_trace(eth_t *self, uint32_t value) {
 
 STATIC int eth_mac_init(eth_t *self) {
     // Configure MPU
-    mpu_config_start();
+    uint32_t irq_state = mpu_config_start();
     mpu_config_region(MPU_REGION_ETH, (uint32_t)&eth_dma, MPU_CONFIG_ETH(MPU_REGION_SIZE_16KB));
-    mpu_config_end();
+    mpu_config_end(irq_state);
 
     // Configure GPIO
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_MDC, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH_MDC);

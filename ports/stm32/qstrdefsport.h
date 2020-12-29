@@ -26,22 +26,18 @@
 
 // qstrs specific to this port
 
-Q(boot.py)
-Q(main.py)
 // Entries for sys.path
 Q(/flash)
 Q(/flash/lib)
 Q(/sd)
 Q(/sd/lib)
+
+// For uos.sep
+Q(/)
+
+#if MICROPY_HW_ENABLE_USB
 // for usb modes
 Q(MSC+HID)
 Q(VCP+MSC)
 Q(VCP+HID)
-Q(CDC+MSC)
-Q(CDC+HID)
-Q(/)
-
-
-// The following qstrings not referenced from anywhere in the sources
-Q(CDC)
-Q(flash)
+#endif

@@ -40,6 +40,8 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#if !MICROPY_PERSISTENT_CODE
+
 mp_uint_t mp_decode_uint(const byte **ptr) {
     mp_uint_t unum = 0;
     byte val;
@@ -69,6 +71,8 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
     }
     return ptr;
 }
+
+#endif
 
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
@@ -124,16 +128,17 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     code_state->frame = NULL;
     #endif
 
-    // get params
-    size_t n_state = mp_decode_uint(&code_state->ip);
-    code_state->ip = mp_decode_uint_skip(code_state->ip); // skip n_exc_stack
-    size_t scope_flags = *code_state->ip++;
-    size_t n_pos_args = *code_state->ip++;
-    size_t n_kwonly_args = *code_state->ip++;
-    size_t n_def_pos_args = *code_state->ip++;
+    // Get cached n_state (rather than decode it again)
+    size_t n_state = code_state->n_state;
+
+    // Decode prelude
+    size_t n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args;
+    MP_BC_PRELUDE_SIG_DECODE_INTO(code_state->ip, n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args);
+    (void)n_state_unused;
+    (void)n_exc_stack_unused;
 
     code_state->sp = &code_state->state[0] - 1;
-    code_state->exc_sp = (mp_exc_stack_t*)(code_state->state + n_state) - 1;
+    code_state->exc_sp_idx = 0;
 
     // zero out the local stack to begin with
     memset(code_state->state, 0, n_state * sizeof(*code_state->state));
@@ -268,18 +273,24 @@ continue2:;
         }
     }
 
-    // get the ip and skip argument names
+    // read the size part of the prelude
     const byte *ip = code_state->ip;
+    MP_BC_PRELUDE_SIZE_DECODE(ip);
 
     // jump over code info (source file and line-number mapping)
-    ip += mp_decode_uint_value(ip);
+    ip += n_info;
 
     // bytecode prelude: initialise closed over variables
-    size_t local_num;
-    while ((local_num = *ip++) != 255) {
+    for (; n_cell; --n_cell) {
+        size_t local_num = *ip++;
         code_state->state[n_state - 1 - local_num] =
             mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
+
+    #if !MICROPY_PERSISTENT_CODE
+    // so bytecode is aligned
+    ip = MP_ALIGN(ip, sizeof(mp_uint_t));
+    #endif
 
     // now that we skipped over the prelude, set the ip for the VM
     code_state->ip = ip;
@@ -292,106 +303,17 @@ continue2:;
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
 // The following table encodes the number of bytes that a specific opcode
-// takes up.  There are 4 special opcodes that always have an extra byte:
-//     MP_BC_UNWIND_JUMP
-//     MP_BC_MAKE_CLOSURE
-//     MP_BC_MAKE_CLOSURE_DEFARGS
-//     MP_BC_RAISE_VARARGS
+// takes up.  Some opcodes have an extra byte, defined by MP_BC_MASK_EXTRA_BYTE.
 // There are 4 special opcodes that have an extra byte only when
 // MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE is enabled (and they take a qstr):
 //     MP_BC_LOAD_NAME
 //     MP_BC_LOAD_GLOBAL
 //     MP_BC_LOAD_ATTR
 //     MP_BC_STORE_ATTR
-#define OC4(a, b, c, d) (a | (b << 2) | (c << 4) | (d << 6))
-#define U (0) // undefined opcode
-#define B (MP_OPCODE_BYTE) // single byte
-#define Q (MP_OPCODE_QSTR) // single byte plus 2-byte qstr
-#define V (MP_OPCODE_VAR_UINT) // single byte plus variable encoded unsigned int
-#define O (MP_OPCODE_OFFSET) // single byte plus 2-byte bytecode offset
-STATIC const byte opcode_format_table[64] = {
-    OC4(U, U, U, U), // 0x00-0x03
-    OC4(U, U, U, U), // 0x04-0x07
-    OC4(U, U, U, U), // 0x08-0x0b
-    OC4(U, U, U, U), // 0x0c-0x0f
-    OC4(B, B, B, U), // 0x10-0x13
-    OC4(V, U, Q, V), // 0x14-0x17
-    OC4(B, V, V, Q), // 0x18-0x1b
-    OC4(Q, Q, Q, Q), // 0x1c-0x1f
-    OC4(B, B, V, V), // 0x20-0x23
-    OC4(Q, Q, Q, B), // 0x24-0x27
-    OC4(V, V, Q, Q), // 0x28-0x2b
-    OC4(U, U, U, U), // 0x2c-0x2f
-    OC4(B, B, B, B), // 0x30-0x33
-    OC4(B, O, O, O), // 0x34-0x37
-    OC4(O, O, U, U), // 0x38-0x3b
-    OC4(U, O, B, O), // 0x3c-0x3f
-    OC4(O, B, B, O), // 0x40-0x43
-    OC4(O, U, O, B), // 0x44-0x47
-    OC4(U, U, U, U), // 0x48-0x4b
-    OC4(U, U, U, U), // 0x4c-0x4f
-    OC4(V, V, U, V), // 0x50-0x53
-    OC4(B, U, V, V), // 0x54-0x57
-    OC4(V, V, V, B), // 0x58-0x5b
-    OC4(B, B, B, U), // 0x5c-0x5f
-    OC4(V, V, V, V), // 0x60-0x63
-    OC4(V, V, V, V), // 0x64-0x67
-    OC4(Q, Q, B, U), // 0x68-0x6b
-    OC4(U, U, U, U), // 0x6c-0x6f
-
-    OC4(B, B, B, B), // 0x70-0x73
-    OC4(B, B, B, B), // 0x74-0x77
-    OC4(B, B, B, B), // 0x78-0x7b
-    OC4(B, B, B, B), // 0x7c-0x7f
-    OC4(B, B, B, B), // 0x80-0x83
-    OC4(B, B, B, B), // 0x84-0x87
-    OC4(B, B, B, B), // 0x88-0x8b
-    OC4(B, B, B, B), // 0x8c-0x8f
-    OC4(B, B, B, B), // 0x90-0x93
-    OC4(B, B, B, B), // 0x94-0x97
-    OC4(B, B, B, B), // 0x98-0x9b
-    OC4(B, B, B, B), // 0x9c-0x9f
-    OC4(B, B, B, B), // 0xa0-0xa3
-    OC4(B, B, B, B), // 0xa4-0xa7
-    OC4(B, B, B, B), // 0xa8-0xab
-    OC4(B, B, B, B), // 0xac-0xaf
-
-    OC4(B, B, B, B), // 0xb0-0xb3
-    OC4(B, B, B, B), // 0xb4-0xb7
-    OC4(B, B, B, B), // 0xb8-0xbb
-    OC4(B, B, B, B), // 0xbc-0xbf
-
-    OC4(B, B, B, B), // 0xc0-0xc3
-    OC4(B, B, B, B), // 0xc4-0xc7
-    OC4(B, B, B, B), // 0xc8-0xcb
-    OC4(B, B, B, B), // 0xcc-0xcf
-
-    OC4(B, B, B, B), // 0xd0-0xd3
-    OC4(U, U, U, B), // 0xd4-0xd7
-    OC4(B, B, B, B), // 0xd8-0xdb
-    OC4(B, B, B, B), // 0xdc-0xdf
-
-    OC4(B, B, B, B), // 0xe0-0xe3
-    OC4(B, B, B, B), // 0xe4-0xe7
-    OC4(B, B, B, B), // 0xe8-0xeb
-    OC4(B, B, B, B), // 0xec-0xef
-
-    OC4(B, B, B, B), // 0xf0-0xf3
-    OC4(B, B, B, B), // 0xf4-0xf7
-    OC4(U, U, U, U), // 0xf8-0xfb
-    OC4(U, U, U, U), // 0xfc-0xff
-};
-#undef OC4
-#undef U
-#undef B
-#undef Q
-#undef V
-#undef O
-
 uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) {
-    uint f = (opcode_format_table[*ip >> 2] >> (2 * (*ip & 3))) & 3;
+    uint f = MP_BC_FORMAT(*ip);
     const byte *ip_start = ip;
-    if (f == MP_OPCODE_QSTR) {
+    if (f == MP_BC_FORMAT_QSTR) {
         if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) {
             if (*ip == MP_BC_LOAD_NAME
                 || *ip == MP_BC_LOAD_GLOBAL
@@ -402,19 +324,14 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) 
         }
         ip += 3;
     } else {
-        int extra_byte = (
-            *ip == MP_BC_UNWIND_JUMP
-            || *ip == MP_BC_RAISE_VARARGS
-            || *ip == MP_BC_MAKE_CLOSURE
-            || *ip == MP_BC_MAKE_CLOSURE_DEFARGS
-        );
+        int extra_byte = (*ip & MP_BC_MASK_EXTRA_BYTE) == 0;
         ip += 1;
-        if (f == MP_OPCODE_VAR_UINT) {
+        if (f == MP_BC_FORMAT_VAR_UINT) {
             if (count_var_uint) {
                 while ((*ip++ & 0x80) != 0) {
                 }
             }
-        } else if (f == MP_OPCODE_OFFSET) {
+        } else if (f == MP_BC_FORMAT_OFFSET) {
             ip += 2;
         }
         ip += extra_byte;

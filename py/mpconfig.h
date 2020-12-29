@@ -323,8 +323,16 @@
 #define MICROPY_EMIT_INLINE_XTENSA (0)
 #endif
 
+// Whether to emit Xtensa-Windowed native code
+#ifndef MICROPY_EMIT_XTENSAWIN
+#define MICROPY_EMIT_XTENSAWIN (0)
+#endif
+
 // Convenience definition for whether any native emitter is enabled
-#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA)
+#define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN)
+
+// Select prelude-as-bytes-object for certain emitters
+#define MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ (MICROPY_EMIT_XTENSAWIN)
 
 // Convenience definition for whether any inline assembler emitter is enabled
 #define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA)
@@ -1382,11 +1390,6 @@ typedef double mp_float_t;
 // Additional builtin module definitions - see objmodule.c:mp_builtin_module_table for format.
 #ifndef MICROPY_PORT_BUILTIN_MODULES
 #define MICROPY_PORT_BUILTIN_MODULES
-#endif
-
-// Any module weak links - see objmodule.c:mp_builtin_module_weak_links_table.
-#ifndef MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 #endif
 
 // Additional constant definitions for the compiler - see compile.c:mp_constants_table.

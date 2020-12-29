@@ -5,8 +5,8 @@ class SDCard -- secure digital memory card
 ==========================================
 
 SD cards are one of the most common small form factor removable storage media.
-SD cards come in a variety of sizes and phsyical form factors. MMC cards are
-similar removable storage devices while eMMC devices are electically similar
+SD cards come in a variety of sizes and physical form factors. MMC cards are
+similar removable storage devices while eMMC devices are electrically similar
 storage devices designed to be embedded into other systems. All three form
 share a common protocol for communication with their host system and high-level
 support looks the same for them all. As such in MicroPython they are implemented
@@ -15,12 +15,12 @@ in a single class called :class:`machine.SDCard` .
 Both SD and MMC interfaces support being accessed with a variety of bus widths.
 When being accessed with a 1-bit wide interface they can be accessed using the
 SPI protocol. Different MicroPython hardware platforms support different widths
-and pin configurations but for most platforms there is a standard configuation
-for any given hardware. In general constructing an `SDCard`` object with without
+and pin configurations but for most platforms there is a standard configuration
+for any given hardware. In general constructing an ``SDCard`` object with without
 passing any parameters will initialise the interface to the default card slot
 for the current hardware. The arguments listed below represent the common
-arguments that might need to be set in order to use either a non-stanard slot
-or a non-standard pin assignment. The exact subset of arguments suported will
+arguments that might need to be set in order to use either a non-standard slot
+or a non-standard pin assignment. The exact subset of arguments supported will
 vary from platform to platform.
 
 .. class:: SDCard(slot=1, width=1, cd=None, wp=None, sck=None, miso=None, mosi=None, cs=None)
@@ -32,7 +32,7 @@ vary from platform to platform.
 
       uos.mount(machine.SDCard(), "/sd")
 
-    The constrcutor takes the following paramters:
+    The constructor takes the following parameters:
 
      - *slot* selects which of the available interfaces to use. Leaving this
        unset will select the default interface.

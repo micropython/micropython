@@ -63,6 +63,11 @@ STATIC void pyb_lwip_poll(void) {
 
     // Run the lwIP internal updates
     sys_check_timeouts();
+
+    #if MICROPY_BLUETOOTH_NIMBLE
+    extern void nimble_poll(void);
+    nimble_poll();
+    #endif
 }
 
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
@@ -114,7 +119,7 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
         return nic;
     }
 
-    nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "no available NIC"));
+    mp_raise_msg(&mp_type_OSError, "no available NIC");
 }
 
 STATIC mp_obj_t network_route(void) {

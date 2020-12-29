@@ -1,4 +1,4 @@
-import array
+import uarray as array
 @micropython.asm_thumb      # test vldr, vstr
 def arrayadd(r0):
     vldr(s0, [r0, 0])

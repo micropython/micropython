@@ -39,7 +39,10 @@ This is a port of MicroPython to the Nordic Semiconductor nRF series of chips.
   * [uBlox EVK-NINA-B1](https://www.u-blox.com/en/product/evk-nina-b1)
 * nRF52840
   * [PCA10056](http://www.nordicsemi.com/eng/Products/nRF52840-Preview-DK)
+  * [PCA10059](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-Dongle)
   * [Particle Xenon](https://docs.particle.io/xenon/)
+* nRF9160
+  * [PCA10090](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF9160-DK)
 
 ## Compile and Flash
 
@@ -47,11 +50,11 @@ Prerequisite steps for building the nrf port:
 
     git clone <URL>.git micropython
     cd micropython
-    git submodule update --init
     make -C mpy-cross
 
 By default, the PCA10040 (nrf52832) is used as compile target. To build and flash issue the following command inside the ports/nrf/ folder:
 
+    make submodules
     make
     make flash
 
@@ -104,12 +107,12 @@ To use frozen modules, put them in a directory (e.g. `freeze/`) and supply
 
      make BOARD=pca10040 FROZEN_MPY_DIR=freeze
 
-## Enable MICROPY_FATFS
-As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_FATFS is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` and `MICROPY_VFS_FAT` in mpconfigport.h.
+## Enable MICROPY_VFS_FAT
+As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_VFS_FAT is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` in mpconfigport.h.
 
 For example:
 
-     make BOARD=pca10040 MICROPY_FATFS=1
+     make BOARD=pca10040 MICROPY_VFS_FAT=1
 
 ## Target Boards and Make Flags
 
@@ -129,7 +132,9 @@ idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP]
 blueio_tag_evim      | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
 evk_nina_b1          | s132                    | Peripheral and Central | [Segger](#segger-targets)
 pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
+pca10059             | s140                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the sides.
 particle_xenon       | s140                    | Peripheral and Central | [Black Magic Probe](#black-magic-probe-targets)
+pca10090             | None (bsdlib.a)         | None (LTE/GNSS)        | [Segger](#segger-targets)
 
 ## IDAP-M/IDAP-Link Targets
 

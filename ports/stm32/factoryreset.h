@@ -29,5 +29,6 @@
 #include "lib/oofatfs/ff.h"
 
 void factory_reset_make_files(FATFS *fatfs);
+int factory_reset_create_filesystem(void);
 
 #endif // MICROPY_INCLUDED_STM32_FACTORYRESET_H

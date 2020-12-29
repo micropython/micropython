@@ -28,6 +28,7 @@
 
 #include "py/gc.h"
 #include "py/runtime.h"
+#include "py/persistentcode.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "drivers/dht/dht.h"
@@ -43,7 +44,7 @@
 
 void error_check(bool status, const char *msg) {
     if (!status) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, msg));
+        mp_raise_msg(&mp_type_OSError, msg);
     }
 }
 
@@ -282,7 +283,7 @@ void esp_native_code_init(void) {
     esp_native_code_erased = 0;
 }
 
-void *esp_native_code_commit(void *buf, size_t len) {
+void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     //printf("COMMIT(buf=%p, len=%u, start=%08x, cur=%08x, end=%08x, erased=%08x)\n", buf, len, esp_native_code_start, esp_native_code_cur, esp_native_code_end, esp_native_code_erased);
 
     len = (len + 3) & ~3;
@@ -294,6 +295,14 @@ void *esp_native_code_commit(void *buf, size_t len) {
     void *dest;
     if (esp_native_code_location == ESP_NATIVE_CODE_IRAM1) {
         dest = (void*)esp_native_code_cur;
+    } else {
+        dest = (void*)(FLASH_START + esp_native_code_cur);
+    }
+    if (reloc) {
+        mp_native_relocate(reloc, buf, (uintptr_t)dest);
+    }
+
+    if (esp_native_code_location == ESP_NATIVE_CODE_IRAM1) {
         memcpy(dest, buf, len);
     } else {
         SpiFlashOpResult res;
@@ -313,7 +322,6 @@ void *esp_native_code_commit(void *buf, size_t len) {
         if (res != SPI_FLASH_RESULT_OK) {
             mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
         }
-        dest = (void*)(FLASH_START + esp_native_code_cur);
     }
 
     esp_native_code_cur += len;

@@ -131,6 +131,10 @@ void mp_init(void) {
     MP_STATE_THREAD(current_code_state) = NULL;
     #endif
 
+    #if MICROPY_PY_BLUETOOTH
+    MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
+    #endif
+
     #if MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif
@@ -566,16 +570,17 @@ generic_binary_op:
     }
 
 #if MICROPY_PY_REVERSE_SPECIAL_METHODS
-    if (op >= MP_BINARY_OP_OR && op <= MP_BINARY_OP_REVERSE_POWER) {
+    if (op >= MP_BINARY_OP_OR && op <= MP_BINARY_OP_POWER) {
         mp_obj_t t = rhs;
         rhs = lhs;
         lhs = t;
-        if (op <= MP_BINARY_OP_POWER) {
-            op += MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
-            goto generic_binary_op;
-        }
-
+        op += MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
+        goto generic_binary_op;
+    } else if (op >= MP_BINARY_OP_REVERSE_OR) {
         // Convert __rop__ back to __op__ for error message
+        mp_obj_t t = rhs;
+        rhs = lhs;
+        lhs = t;
         op -= MP_BINARY_OP_REVERSE_OR - MP_BINARY_OP_OR;
     }
 #endif
@@ -1315,7 +1320,12 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
         // will be propagated up. This behavior is approved by test_pep380.py
         // test_delegation_of_close_to_non_generator(),
         //  test_delegating_throw_to_non_generator()
-        *ret_val = mp_make_raise_obj(throw_value);
+        if (mp_obj_exception_match(throw_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
+            // PEP479: if StopIteration is raised inside a generator it is replaced with RuntimeError
+            *ret_val = mp_obj_new_exception_msg(&mp_type_RuntimeError, "generator raised StopIteration");
+        } else {
+            *ret_val = mp_make_raise_obj(throw_value);
+        }
         return MP_VM_RETURN_EXCEPTION;
     }
 }

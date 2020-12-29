@@ -12,9 +12,8 @@ def test(peer_addr):
     poller.register(s)
 
     # test poll before connect
-    # note: CPython can return POLLHUP, so use the IN|OUT mask
     p = poller.poll(0)
-    print(len(p), p[0][-1] & (select.POLLIN | select.POLLOUT))
+    print(len(p), p[0][-1])
 
     s.connect(peer_addr)
 

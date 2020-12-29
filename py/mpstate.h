@@ -47,6 +47,7 @@ typedef struct mp_dynamic_compiler_t {
     bool opt_cache_map_lookup_in_bytecode;
     bool py_builtins_str_unicode;
     uint8_t native_arch;
+    uint8_t nlr_buf_num_regs;
 } mp_dynamic_compiler_t;
 extern mp_dynamic_compiler_t mp_dynamic_compiler;
 #endif
@@ -186,6 +187,10 @@ typedef struct _mp_state_vm_t {
     #if MICROPY_VFS
     struct _mp_vfs_mount_t *vfs_cur;
     struct _mp_vfs_mount_t *vfs_mount_table;
+    #endif
+
+    #if MICROPY_PY_BLUETOOTH
+    mp_obj_t bluetooth;
     #endif
 
     //

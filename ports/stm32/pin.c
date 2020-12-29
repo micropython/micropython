@@ -214,14 +214,14 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         mp_print_str(print, qstr_str(mode_qst));
 
         // pull mode
-        qstr pull_qst = MP_QSTR_NULL;
+        qstr pull_qst = MP_QSTRnull;
         uint32_t pull = pin_get_pull(self);
         if (pull == GPIO_PULLUP) {
             pull_qst = MP_QSTR_PULL_UP;
         } else if (pull == GPIO_PULLDOWN) {
             pull_qst = MP_QSTR_PULL_DOWN;
         }
-        if (pull_qst != MP_QSTR_NULL) {
+        if (pull_qst != MP_QSTRnull) {
             mp_printf(print, ", pull=Pin.%q", pull_qst);
         }
 

@@ -27,14 +27,15 @@ def module_name(f):
 
 modules = []
 
-root = sys.argv[1].rstrip("/")
-root_len = len(root)
+if len(sys.argv) > 1:
+    root = sys.argv[1].rstrip("/")
+    root_len = len(root)
 
-for dirpath, dirnames, filenames in os.walk(root):
-    for f in filenames:
-        fullpath = dirpath + "/" + f
-        st = os.stat(fullpath)
-        modules.append((fullpath[root_len + 1:], st))
+    for dirpath, dirnames, filenames in os.walk(root):
+        for f in filenames:
+            fullpath = dirpath + "/" + f
+            st = os.stat(fullpath)
+            modules.append((fullpath[root_len + 1:], st))
 
 print("#include <stdint.h>")
 print("const char mp_frozen_str_names[] = {")

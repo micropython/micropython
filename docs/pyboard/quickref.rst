@@ -66,7 +66,7 @@ See :ref:`pyb.LED <pyb.LED>`. ::
     led.toggle()
     led.on()
     led.off()
-    
+
     # LEDs 3 and 4 support PWM intensity (0-255)
     LED(4).intensity()    # get intensity
     LED(4).intensity(128) # set intensity to half

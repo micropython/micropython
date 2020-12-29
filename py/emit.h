@@ -76,15 +76,15 @@ typedef enum {
 
 // Kind for emit->setup_block()
 #define MP_EMIT_SETUP_BLOCK_WITH (0)
-#define MP_EMIT_SETUP_BLOCK_EXCEPT (2)
-#define MP_EMIT_SETUP_BLOCK_FINALLY (3)
+#define MP_EMIT_SETUP_BLOCK_EXCEPT (1)
+#define MP_EMIT_SETUP_BLOCK_FINALLY (2)
 
 // Kind for emit->build()
 #define MP_EMIT_BUILD_TUPLE (0)
 #define MP_EMIT_BUILD_LIST (1)
-#define MP_EMIT_BUILD_MAP (3)
-#define MP_EMIT_BUILD_SET (6)
-#define MP_EMIT_BUILD_SLICE (8)
+#define MP_EMIT_BUILD_MAP (2)
+#define MP_EMIT_BUILD_SET (3)
+#define MP_EMIT_BUILD_SLICE (4)
 
 // Kind for emit->yield()
 #define MP_EMIT_YIELD_VALUE (0)
@@ -174,6 +174,7 @@ extern const emit_method_table_t emit_native_x86_method_table;
 extern const emit_method_table_t emit_native_thumb_method_table;
 extern const emit_method_table_t emit_native_arm_method_table;
 extern const emit_method_table_t emit_native_xtensa_method_table;
+extern const emit_method_table_t emit_native_xtensawin_method_table;
 
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_load_id_ops;
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_store_id_ops;
@@ -185,6 +186,7 @@ emit_t *emit_native_x86_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t ma
 emit_t *emit_native_thumb_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_arm_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 emit_t *emit_native_xtensa_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_xtensawin_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 
 void emit_bc_set_max_num_labels(emit_t* emit, mp_uint_t max_num_labels);
 
@@ -194,6 +196,7 @@ void emit_native_x86_free(emit_t *emit);
 void emit_native_thumb_free(emit_t *emit);
 void emit_native_arm_free(emit_t *emit);
 void emit_native_xtensa_free(emit_t *emit);
+void emit_native_xtensawin_free(emit_t *emit);
 
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope);
 void mp_emit_bc_end_pass(emit_t *emit);

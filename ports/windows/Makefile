@@ -40,6 +40,7 @@ SRC_C = \
 	realpath.c \
 	init.c \
 	sleep.c \
+	fmode.c \
 	$(SRC_MOD)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))

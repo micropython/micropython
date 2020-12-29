@@ -121,17 +121,17 @@ STATIC int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
 
     if (lu == &pyb_flash_type) {
         switch (op) {
-            case BP_IOCTL_INIT:
+            case MP_BLOCKDEV_IOCTL_INIT:
                 storage_init();
                 *data = 0;
                 return 0;
-            case BP_IOCTL_SYNC:
+            case MP_BLOCKDEV_IOCTL_SYNC:
                 storage_flush();
                 return 0;
-            case BP_IOCTL_SEC_SIZE:
+            case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
                 *data = storage_get_block_size();
                 return 0;
-            case BP_IOCTL_SEC_COUNT:
+            case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
                 *data = storage_get_block_count();
                 return 0;
             default:
@@ -144,18 +144,18 @@ STATIC int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
         #endif
         ) {
         switch (op) {
-            case BP_IOCTL_INIT:
+            case MP_BLOCKDEV_IOCTL_INIT:
                 if (!sdcard_power_on()) {
                     return -1;
                 }
                 *data = 0;
                 return 0;
-            case BP_IOCTL_SYNC:
+            case MP_BLOCKDEV_IOCTL_SYNC:
                 return 0;
-            case BP_IOCTL_SEC_SIZE:
+            case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
                 *data = SDCARD_BLOCK_SIZE;
                 return 0;
-            case BP_IOCTL_SEC_COUNT:
+            case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
                 *data = sdcard_get_capacity_in_bytes() / (uint64_t)SDCARD_BLOCK_SIZE;
                 return 0;
             default:
@@ -174,7 +174,7 @@ STATIC int8_t usbd_msc_Init(uint8_t lun_in) {
     }
     for (int lun = 0; lun < usbd_msc_lu_num; ++lun) {
         uint32_t data = 0;
-        int res = lu_ioctl(lun, BP_IOCTL_INIT, &data);
+        int res = lu_ioctl(lun, MP_BLOCKDEV_IOCTL_INIT, &data);
         if (res != 0) {
             lu_flag_clr(lun, FLAGS_STARTED);
         } else {
@@ -234,12 +234,12 @@ STATIC int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_ou
 // Get storage capacity of a logical unit
 STATIC int8_t usbd_msc_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size) {
     uint32_t block_size_u32 = 0;
-    int res = lu_ioctl(lun, BP_IOCTL_SEC_SIZE, &block_size_u32);
+    int res = lu_ioctl(lun, MP_BLOCKDEV_IOCTL_BLOCK_SIZE, &block_size_u32);
     if (res != 0) {
         return -1;
     }
     *block_size = block_size_u32;
-    return lu_ioctl(lun, BP_IOCTL_SEC_COUNT, block_num);
+    return lu_ioctl(lun, MP_BLOCKDEV_IOCTL_BLOCK_COUNT, block_num);
 }
 
 // Check if a logical unit is ready
@@ -275,7 +275,7 @@ STATIC int8_t usbd_msc_StartStopUnit(uint8_t lun, uint8_t started) {
 STATIC int8_t usbd_msc_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
     uint32_t dummy;
     // Sync the logical unit so the device can be unplugged/turned off
-    return lu_ioctl(lun, BP_IOCTL_SYNC, &dummy);
+    return lu_ioctl(lun, MP_BLOCKDEV_IOCTL_SYNC, &dummy);
 }
 
 // Read data from a logical unit

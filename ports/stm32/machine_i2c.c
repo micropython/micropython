@@ -226,6 +226,10 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
         } else if (strcmp(port, MICROPY_HW_I2C3_NAME) == 0) {
             i2c_id = 3;
         #endif
+        #ifdef MICROPY_HW_I2C4_NAME
+        } else if (strcmp(port, MICROPY_HW_I2C4_NAME) == 0) {
+            i2c_id = 4;
+        #endif
         } else {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
                 "I2C(%s) doesn't exist", port));

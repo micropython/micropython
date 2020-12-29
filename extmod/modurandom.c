@@ -36,8 +36,10 @@
 // http://www.literatecode.com/yasmarang
 // Public Domain
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
 STATIC uint8_t yasmarang_dat = 0;
+#endif
 
 STATIC uint32_t yasmarang(void)
 {
@@ -208,6 +210,7 @@ STATIC mp_obj_t mod_urandom___init__() {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_urandom___init___obj, mod_urandom___init__);
 #endif
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_urandom_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_urandom) },
     #ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
@@ -232,5 +235,6 @@ const mp_obj_module_t mp_module_urandom = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_urandom_globals,
 };
+#endif
 
 #endif //MICROPY_PY_URANDOM

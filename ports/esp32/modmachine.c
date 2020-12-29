@@ -119,7 +119,7 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
 
     if (machine_rtc_config.wake_on_touch) {
         if (esp_sleep_enable_touchpad_wakeup() != ESP_OK) {
-            nlr_raise(mp_obj_new_exception_msg(&mp_type_RuntimeError, "esp_sleep_enable_touchpad_wakeup() failed"));
+            mp_raise_msg(&mp_type_RuntimeError, "esp_sleep_enable_touchpad_wakeup() failed");
         }
     }
 

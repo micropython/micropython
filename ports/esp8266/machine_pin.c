@@ -384,7 +384,7 @@ STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (self->phys_port >= 16) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "pin does not have IRQ capabilities"));
+        mp_raise_msg(&mp_type_OSError, "pin does not have IRQ capabilities");
     }
 
     if (n_args > 1 || kw_args->used != 0) {

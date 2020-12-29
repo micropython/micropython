@@ -33,7 +33,6 @@
 #ifndef MICROPY_VFS
 #define MICROPY_VFS                 (0)
 #endif
-#define MICROPY_VFS_FAT             (MICROPY_VFS)
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_EMIT_THUMB          (0)
@@ -280,10 +279,6 @@ extern const struct _mp_obj_module_t ble_module;
 
 
 #endif // BLUETOOTH_SD
-
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&mp_module_uos) }, \
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

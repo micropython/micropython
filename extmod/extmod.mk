@@ -1,7 +1,43 @@
 # This makefile fragment provides rules to build 3rd-party components for extmod modules
 
+################################################################################
+# VFS FAT FS
+
+OOFATFS_DIR = lib/oofatfs
+
 # this sets the config file for FatFs
-CFLAGS_MOD += -DFFCONF_H=\"lib/oofatfs/ffconf.h\"
+CFLAGS_MOD += -DFFCONF_H=\"$(OOFATFS_DIR)/ffconf.h\"
+
+ifeq ($(MICROPY_VFS_FAT),1)
+CFLAGS_MOD += -DMICROPY_VFS_FAT=1
+SRC_MOD += $(addprefix $(OOFATFS_DIR)/,\
+	ff.c \
+	ffunicode.c \
+	)
+endif
+
+################################################################################
+# VFS littlefs
+
+LITTLEFS_DIR = lib/littlefs
+
+ifeq ($(MICROPY_VFS_LFS1),1)
+CFLAGS_MOD += -DMICROPY_VFS_LFS1=1
+CFLAGS_MOD += -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
+SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
+	lfs1.c \
+	lfs1_util.c \
+	)
+endif
+
+ifeq ($(MICROPY_VFS_LFS2),1)
+CFLAGS_MOD += -DMICROPY_VFS_LFS2=1
+CFLAGS_MOD += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT
+SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
+	lfs2.c \
+	lfs2_util.c \
+	)
+endif
 
 ################################################################################
 # ussl

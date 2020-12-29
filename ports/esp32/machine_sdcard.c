@@ -337,26 +337,26 @@ STATIC mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t
     mp_int_t cmd = mp_obj_get_int(cmd_in);
 
     switch (cmd) {
-        case BP_IOCTL_INIT:
+        case MP_BLOCKDEV_IOCTL_INIT:
             err = sdcard_ensure_card_init(self, false);
             return MP_OBJ_NEW_SMALL_INT((err == ESP_OK) ? 0 : -1);
 
-        case BP_IOCTL_DEINIT:
+        case MP_BLOCKDEV_IOCTL_DEINIT:
             // Ensure that future attempts to look at info re-read the card
             self->flags &= ~SDCARD_CARD_FLAGS_CARD_INIT_DONE;
             return MP_OBJ_NEW_SMALL_INT(0); // success
 
-        case BP_IOCTL_SYNC:
+        case MP_BLOCKDEV_IOCTL_SYNC:
             // nothing to do
             return MP_OBJ_NEW_SMALL_INT(0); // success
 
-        case BP_IOCTL_SEC_COUNT:
+        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
             err = sdcard_ensure_card_init(self, false);
             if (err != ESP_OK)
                 return MP_OBJ_NEW_SMALL_INT(-1);
             return MP_OBJ_NEW_SMALL_INT(self->card.csd.capacity);
 
-        case BP_IOCTL_SEC_SIZE:
+        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
             err = sdcard_ensure_card_init(self, false);
             if (err != ESP_OK)
                 return MP_OBJ_NEW_SMALL_INT(-1);

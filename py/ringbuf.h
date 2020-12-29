@@ -26,6 +26,9 @@
 #ifndef MICROPY_INCLUDED_PY_RINGBUF_H
 #define MICROPY_INCLUDED_PY_RINGBUF_H
 
+#include <stddef.h>
+#include <stdint.h>
+
 typedef struct _ringbuf_t {
     uint8_t *buf;
     uint16_t size;
@@ -37,7 +40,7 @@ typedef struct _ringbuf_t {
 // byte buf_array[N];
 // ringbuf_t buf = {buf_array, sizeof(buf_array)};
 
-// Dynamic initialization. This creates root pointer!
+// Dynamic initialization. This needs to become findable as a root pointer!
 #define ringbuf_alloc(r, sz) \
 { \
     (r)->buf = m_new(uint8_t, sz); \
@@ -68,5 +71,18 @@ static inline int ringbuf_put(ringbuf_t *r, uint8_t v) {
     r->iput = iput_new;
     return 0;
 }
+
+static inline size_t ringbuf_free(ringbuf_t *r) {
+    return (r->size + r->iget - r->iput - 1) % r->size;
+}
+
+static inline size_t ringbuf_avail(ringbuf_t *r) {
+    return (r->size + r->iput - r->iget) % r->size;
+}
+
+// Note: big-endian. No-op if not enough room available for both bytes.
+int ringbuf_get16(ringbuf_t *r);
+int ringbuf_peek16(ringbuf_t *r);
+int ringbuf_put16(ringbuf_t *r, uint16_t v);
 
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H

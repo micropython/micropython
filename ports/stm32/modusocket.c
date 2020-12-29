@@ -369,6 +369,13 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
         }
         return 0;
     }
+    if (self->nic == MP_OBJ_NULL) {
+        if (request == MP_STREAM_POLL) {
+            return MP_STREAM_POLL_NVAL;
+        }
+        *errcode = MP_EINVAL;
+        return MP_STREAM_ERROR;
+    }
     return self->nic_type->ioctl(self, request, arg, errcode);
 }
 
@@ -425,7 +432,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     }
 
     if (!have_ip) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "no available NIC"));
+        mp_raise_msg(&mp_type_OSError, "no available NIC");
     }
 
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));

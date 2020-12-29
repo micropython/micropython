@@ -30,6 +30,9 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+
+#if MICROPY_PY_MACHINE_TEMP
+
 #include "temp.h"
 #include "nrf_temp.h"
 
@@ -39,8 +42,6 @@
 #include "nrf_soc.h"
 #define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
 #endif // BLUETOOTH_SD
-
-#if MICROPY_PY_MACHINE_TEMP
 
 typedef struct _machine_temp_obj_t {
     mp_obj_base_t base;

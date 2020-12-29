@@ -81,7 +81,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_uheapq_heappush_obj, mod_uheapq_heappush);
 STATIC mp_obj_t mod_uheapq_heappop(mp_obj_t heap_in) {
     mp_obj_list_t *heap = uheapq_get_heap(heap_in);
     if (heap->len == 0) {
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_IndexError, "empty heap"));
+        mp_raise_msg(&mp_type_IndexError, "empty heap");
     }
     mp_obj_t item = heap->items[0];
     heap->len -= 1;
@@ -103,6 +103,7 @@ STATIC mp_obj_t mod_uheapq_heapify(mp_obj_t heap_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_uheapq_heapify_obj, mod_uheapq_heapify);
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t mp_module_uheapq_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uheapq) },
     { MP_ROM_QSTR(MP_QSTR_heappush), MP_ROM_PTR(&mod_uheapq_heappush_obj) },
@@ -116,5 +117,6 @@ const mp_obj_module_t mp_module_uheapq = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_uheapq_globals,
 };
+#endif
 
 #endif //MICROPY_PY_UHEAPQ

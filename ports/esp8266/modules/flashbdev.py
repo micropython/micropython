@@ -10,22 +10,27 @@ class FlashBdev:
     def __init__(self, blocks=NUM_BLK):
         self.blocks = blocks
 
-    def readblocks(self, n, buf):
-        #print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
-        esp.flash_read((n + self.START_SEC) * self.SEC_SIZE, buf)
+    def readblocks(self, n, buf, off=0):
+        #print("readblocks(%s, %x(%d), %d)" % (n, id(buf), len(buf), off))
+        esp.flash_read((n + self.START_SEC) * self.SEC_SIZE + off, buf)
 
-    def writeblocks(self, n, buf):
-        #print("writeblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
+    def writeblocks(self, n, buf, off=None):
+        #print("writeblocks(%s, %x(%d), %d)" % (n, id(buf), len(buf), off))
         #assert len(buf) <= self.SEC_SIZE, len(buf)
-        esp.flash_erase(n + self.START_SEC)
-        esp.flash_write((n + self.START_SEC) * self.SEC_SIZE, buf)
+        if off is None:
+            esp.flash_erase(n + self.START_SEC)
+            off = 0
+        esp.flash_write((n + self.START_SEC) * self.SEC_SIZE + off, buf)
 
     def ioctl(self, op, arg):
         #print("ioctl(%d, %r)" % (op, arg))
-        if op == 4:  # BP_IOCTL_SEC_COUNT
+        if op == 4:  # MP_BLOCKDEV_IOCTL_BLOCK_COUNT
             return self.blocks
-        if op == 5:  # BP_IOCTL_SEC_SIZE
+        if op == 5:  # MP_BLOCKDEV_IOCTL_BLOCK_SIZE
             return self.SEC_SIZE
+        if op == 6:  # MP_BLOCKDEV_IOCTL_BLOCK_ERASE
+            esp.flash_erase(arg + self.START_SEC)
+            return 0
 
 size = esp.flash_size()
 if size < 1024*1024:

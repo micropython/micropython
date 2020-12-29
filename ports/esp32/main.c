@@ -47,6 +47,7 @@
 #include "py/nlr.h"
 #include "py/compile.h"
 #include "py/runtime.h"
+#include "py/persistentcode.h"
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mphal.h"
@@ -74,7 +75,8 @@ void mp_task(void *pvParameter) {
     #endif
     uart_init();
 
-    #if CONFIG_ESP32_SPIRAM_SUPPORT
+    // TODO: CONFIG_SPIRAM_SUPPORT is for 3.3 compatibility, remove after move to 4.0.
+    #if CONFIG_ESP32_SPIRAM_SUPPORT || CONFIG_SPIRAM_SUPPORT
     // Try to use the entire external SPIRAM directly for the heap
     size_t mp_task_heap_size;
     void *mp_task_heap = (void*)0x3f800000;
@@ -170,4 +172,17 @@ void nlr_jump_fail(void *val) {
 // modussl_mbedtls uses this function but it's not enabled in ESP IDF
 void mbedtls_debug_set_threshold(int threshold) {
     (void)threshold;
+}
+
+void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
+    len = (len + 3) & ~3;
+    uint32_t *p = heap_caps_malloc(len, MALLOC_CAP_EXEC);
+    if (p == NULL) {
+        m_malloc_fail(len);
+    }
+    if (reloc) {
+        mp_native_relocate(reloc, buf, (uintptr_t)p);
+    }
+    memcpy(p, buf, len);
+    return p;
 }

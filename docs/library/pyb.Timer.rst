@@ -112,7 +112,7 @@ Methods
 .. method:: Timer.deinit()
 
    Deinitialises the timer.
-   
+
    Disables the callback (and the associated irq).
 
    Disables any channel callbacks (and the associated irq).
@@ -191,7 +191,7 @@ Methods
      - Read the encoder value using the timer.counter() method.
      - Only works on CH1 and CH2 (and not on CH1N or CH2N)
      - The channel number is ignored when setting the encoder mode.
-       
+
    PWM Example::
 
        timer = pyb.Timer(2, freq=1000)

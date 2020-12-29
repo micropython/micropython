@@ -69,11 +69,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_flash_writeblocks_obj, pyb_flash_writeblock
 STATIC mp_obj_t pyb_flash_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     switch (cmd) {
-        case BP_IOCTL_INIT: return MP_OBJ_NEW_SMALL_INT(sflash_disk_init() != RES_OK);
-        case BP_IOCTL_DEINIT: sflash_disk_flush(); return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_SYNC: sflash_disk_flush(); return MP_OBJ_NEW_SMALL_INT(0);
-        case BP_IOCTL_SEC_COUNT: return MP_OBJ_NEW_SMALL_INT(SFLASH_SECTOR_COUNT);
-        case BP_IOCTL_SEC_SIZE: return MP_OBJ_NEW_SMALL_INT(SFLASH_SECTOR_SIZE);
+        case MP_BLOCKDEV_IOCTL_INIT: return MP_OBJ_NEW_SMALL_INT(sflash_disk_init() != RES_OK);
+        case MP_BLOCKDEV_IOCTL_DEINIT: sflash_disk_flush(); return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_SYNC: sflash_disk_flush(); return MP_OBJ_NEW_SMALL_INT(0);
+        case MP_BLOCKDEV_IOCTL_BLOCK_COUNT: return MP_OBJ_NEW_SMALL_INT(SFLASH_SECTOR_COUNT);
+        case MP_BLOCKDEV_IOCTL_BLOCK_SIZE: return MP_OBJ_NEW_SMALL_INT(SFLASH_SECTOR_SIZE);
         default: return mp_const_none;
     }
 }
@@ -96,14 +96,14 @@ const mp_obj_type_t pyb_flash_type = {
 
 void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;
-    vfs->flags |= FSUSER_NATIVE | FSUSER_HAVE_IOCTL;
+    vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_NATIVE | MP_BLOCKDEV_FLAG_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
-    vfs->readblocks[0] = (mp_obj_t)&pyb_flash_readblocks_obj;
-    vfs->readblocks[1] = (mp_obj_t)&pyb_flash_obj;
-    vfs->readblocks[2] = (mp_obj_t)sflash_disk_read; // native version
-    vfs->writeblocks[0] = (mp_obj_t)&pyb_flash_writeblocks_obj;
-    vfs->writeblocks[1] = (mp_obj_t)&pyb_flash_obj;
-    vfs->writeblocks[2] = (mp_obj_t)sflash_disk_write; // native version
-    vfs->u.ioctl[0] = (mp_obj_t)&pyb_flash_ioctl_obj;
-    vfs->u.ioctl[1] = (mp_obj_t)&pyb_flash_obj;
+    vfs->blockdev.readblocks[0] = (mp_obj_t)&pyb_flash_readblocks_obj;
+    vfs->blockdev.readblocks[1] = (mp_obj_t)&pyb_flash_obj;
+    vfs->blockdev.readblocks[2] = (mp_obj_t)sflash_disk_read; // native version
+    vfs->blockdev.writeblocks[0] = (mp_obj_t)&pyb_flash_writeblocks_obj;
+    vfs->blockdev.writeblocks[1] = (mp_obj_t)&pyb_flash_obj;
+    vfs->blockdev.writeblocks[2] = (mp_obj_t)sflash_disk_write; // native version
+    vfs->blockdev.u.ioctl[0] = (mp_obj_t)&pyb_flash_ioctl_obj;
+    vfs->blockdev.u.ioctl[1] = (mp_obj_t)&pyb_flash_obj;
 }

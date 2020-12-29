@@ -25,7 +25,6 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "py/runtime.h"
@@ -1270,15 +1269,21 @@ STATIC mp_obj_t pyb_timer_freq(size_t n_args, const mp_obj_t *args) {
         uint32_t prescaler = self->tim.Instance->PSC & 0xffff;
         uint32_t period = __HAL_TIM_GET_AUTORELOAD(&self->tim) & TIMER_CNT_MASK(self);
         uint32_t source_freq = timer_get_source_freq(self->tim_id);
-        uint32_t divide = ((prescaler + 1) * (period + 1));
+        uint32_t divide_a = prescaler + 1;
+        uint32_t divide_b = period + 1;
         #if MICROPY_PY_BUILTINS_FLOAT
-        if (source_freq % divide != 0) {
-            return mp_obj_new_float((float)source_freq / (float)divide);
-        } else
-        #endif
-        {
-            return mp_obj_new_int(source_freq / divide);
+        if (source_freq % divide_a != 0) {
+            return mp_obj_new_float((mp_float_t)source_freq / (mp_float_t)divide_a / (mp_float_t)divide_b);
         }
+        source_freq /= divide_a;
+        if (source_freq % divide_b != 0) {
+            return mp_obj_new_float((mp_float_t)source_freq / (mp_float_t)divide_b);
+        } else {
+            return mp_obj_new_int(source_freq / divide_b);
+        }
+        #else
+        return mp_obj_new_int(source_freq / divide_a / divide_b);
+        #endif
     } else {
         // set
         uint32_t period;
@@ -1548,9 +1553,9 @@ STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
                     tim->callback = mp_const_none;
                     __HAL_TIM_DISABLE_IT(&tim->tim, irq_mask);
                     if (channel == 0) {
-                        printf("uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
+                        mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) interrupt handler\n", tim->tim_id);
                     } else {
-                        printf("uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
+                        mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in Timer(%u) channel %u interrupt handler\n", tim->tim_id, channel);
                     }
                     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
                 }
@@ -1591,7 +1596,7 @@ void timer_irq_handler(uint tim_id) {
         if (unhandled != 0) {
             __HAL_TIM_DISABLE_IT(&tim->tim, unhandled);
             __HAL_TIM_CLEAR_IT(&tim->tim, unhandled);
-            printf("Unhandled interrupt SR=0x%02x (now disabled)\n", (unsigned int)unhandled);
+            mp_printf(MICROPY_ERROR_PRINTER, "unhandled interrupt SR=0x%02x (now disabled)\n", (unsigned int)unhandled);
         }
     }
 }

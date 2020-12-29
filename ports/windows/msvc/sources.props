@@ -2,37 +2,25 @@
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
   <ItemGroup>
-    <ClCompile Include="$(PyBaseDir)py\*.c" />
-    <ClCompile Include="$(PyBaseDir)ports\windows\*.c" />
-    <ClCompile Include="$(PyBaseDir)ports\windows\msvc\*.c" />
-    <ClCompile Include="$(PyBaseDir)lib\mp-readline\*.c" />
-    <ClCompile Include="$(PyBaseDir)lib\utils\printf.c" />
-    <ClCompile Include="$(PyBaseDir)ports\unix\file.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\input.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\main.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\modos.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\modtime.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\modmachine.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\machine_mem.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\machine_pinbase.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\machine_pulse.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\machine_signal.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\modubinascii.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\moductypes.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\moduhashlib.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\moduheapq.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\modujson.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\modurandom.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\modure.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\modutimeq.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\moduzlib.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\utime_mphal.c" />
-    <ClCompile Include="$(PyBaseDir)extmod\virtpin.c" />
+    <PyCoreSource Include="$(PyBaseDir)py\*.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\machine_mem.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\machine_pinbase.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\machine_pulse.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\machine_signal.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\modubinascii.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moductypes.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduhashlib.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduheapq.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\modujson.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\modurandom.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\modure.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\modutimeq.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduzlib.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\utime_mphal.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\virtpin.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(PyBaseDir)py\*.h" />
-    <ClInclude Include="$(PyBaseDir)ports\windows\*.h" />
-    <ClInclude Include="$(PyBaseDir)ports\windows\msvc\*.h" />
+    <PyCoreInclude Include="$(PyBaseDir)py\*.h" />
+    <PyExtModInclude Include="$(PyBaseDir)extmod\*.h" />
   </ItemGroup>
 </Project>

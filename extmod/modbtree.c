@@ -52,7 +52,9 @@ typedef struct _mp_obj_btree_t {
     byte next_flags;
 } mp_obj_btree_t;
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_obj_type_t btree_type;
+#endif
 
 #define CHECK_ERROR(res) \
         if (res == RET_ERROR) { \
@@ -60,7 +62,7 @@ STATIC const mp_obj_type_t btree_type;
         }
 
 void __dbpanic(DB *db) {
-    printf("__dbpanic(%p)\n", db);
+    mp_printf(&mp_plat_print, "__dbpanic(%p)\n", db);
 }
 
 STATIC mp_obj_btree_t *btree_new(DB *db) {
@@ -295,6 +297,7 @@ STATIC mp_obj_t btree_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
     }
 }
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t btree_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&btree_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&btree_flush_obj) },
@@ -319,14 +322,16 @@ STATIC const mp_obj_type_t btree_type = {
     .subscr = btree_subscr,
     .locals_dict = (void*)&btree_locals_dict,
 };
+#endif
 
-STATIC FILEVTABLE btree_stream_fvtable = {
+STATIC const FILEVTABLE btree_stream_fvtable = {
     mp_stream_posix_read,
     mp_stream_posix_write,
     mp_stream_posix_lseek,
     mp_stream_posix_fsync
 };
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC mp_obj_t mod_btree_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_flags, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -373,5 +378,6 @@ const mp_obj_module_t mp_module_btree = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&mp_module_btree_globals,
 };
+#endif
 
 #endif // MICROPY_PY_BTREE

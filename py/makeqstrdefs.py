@@ -12,10 +12,6 @@ import sys
 import io
 import os
 
-# Blacklist of qstrings that are specially handled in further
-# processing and should be ignored
-QSTRING_BLACK_LIST = set(['NULL', 'number_of'])
-
 
 def write_out(fname, output):
     if output:
@@ -46,8 +42,7 @@ def process_file(f):
             continue
         for match in re_qstr.findall(line):
             name = match.replace('MP_QSTR_', '')
-            if name not in QSTRING_BLACK_LIST:
-                output.append('Q(' + name + ')')
+            output.append('Q(' + name + ')')
 
     write_out(last_fname, output)
     return ""

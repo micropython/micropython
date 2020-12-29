@@ -1,17 +1,19 @@
-import pyb
-from pyb import LED
+import os, pyb
 
-l1 = pyb.LED(1)
-l2 = pyb.LED(2)
-l3 = pyb.LED(3)
-l4 = pyb.LED(4)
-
-leds = [LED(i) for i in range(1, 5)]
-pwm_leds = leds[2:]
+machine = os.uname().machine
+if 'PYBv1.' in machine or 'PYBLITEv1.' in machine:
+    leds = [pyb.LED(i) for i in range(1, 5)]
+    pwm_leds = leds[2:]
+elif 'PYBD' in machine:
+    leds = [pyb.LED(i) for i in range(1, 4)]
+    pwm_leds = []
+else:
+    print('SKIP')
+    raise SystemExit
 
 # test printing
-for l in leds:
-    print(l)
+for i in range(3):
+    print(leds[i])
 
 # test on and off
 for l in leds:

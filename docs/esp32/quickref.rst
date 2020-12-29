@@ -77,7 +77,7 @@ The :mod:`network` module::
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('essid', 'password') # connect to an AP
-    wlan.config('mac')      # get the interface's MAC adddress
+    wlan.config('mac')      # get the interface's MAC address
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
@@ -203,7 +203,7 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
     adc = ADC(Pin(32))          # create ADC object on ADC pin
     adc.read()                  # read value, 0-4095 across voltage range 0.0v - 1.0v
 
-    adc.atten(ADC.ATTN_11DB)    # set 11dB input attentuation (voltage range roughly 0.0v - 3.6v)
+    adc.atten(ADC.ATTN_11DB)    # set 11dB input attenuation (voltage range roughly 0.0v - 3.6v)
     adc.width(ADC.WIDTH_9BIT)   # set 9 bit return values (returned range 0-511)
     adc.read()                  # read value using the newly configured attenuation and width
 
@@ -257,7 +257,7 @@ class::
     spi.init(baudrate=200000) # set the baudrate
 
     spi.read(10)            # read 10 bytes on MISO
-    spi.read(10, 0xff)      # read 10 bytes while outputing 0xff on MOSI
+    spi.read(10, 0xff)      # read 10 bytes while outputting 0xff on MOSI
 
     buf = bytearray(50)     # create a buffer
     spi.readinto(buf)       # read into the given buffer (reads 50 bytes in this case)
@@ -359,10 +359,10 @@ Notes:
   To further reduce power consumption it is possible to disable the internal pullups::
 
     p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
-    
+
   After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if
   it is an output pin) via::
-    
+
     p1 = Pin(4, Pin.OUT, None)
 
 OneWire driver
@@ -441,6 +441,16 @@ the 1 and then stream the same bits, but send the opposite colors.::
     t1low_ticks = 50
     latch_ticks = 35000
     neopixel_write_timings(pin23, pixel_grb_data, t0high_ticks, t1high_ticks, t0low_ticks, t1low_ticks, latch_ticks)
+
+Alternatively, for nanosecond based timing::
+
+    from machine import Pin
+    from neopixel import pixelbitstream
+
+    p23 = Pin(23, Pin.OUT)
+    timing_ns = (350, 900, 900, 350)
+    buf = bytearray([0,0,0,51,1,1,2,52,52])
+    pixelbitstream(p23, timing_ns, buf)
 
 
 Capacitive Touch

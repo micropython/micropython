@@ -80,10 +80,6 @@ STATIC void mp_help_print_modules(void) {
 
     mp_help_add_from_map(list, &mp_builtin_module_map);
 
-    #if MICROPY_MODULE_WEAK_LINKS
-    mp_help_add_from_map(list, &mp_builtin_module_weak_links_map);
-    #endif
-
     #if MICROPY_MODULE_FROZEN_STR
     extern const char mp_frozen_str_names[];
     mp_help_add_from_names(list, mp_frozen_str_names);

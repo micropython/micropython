@@ -51,7 +51,7 @@ Open a terminal and run::
 or::
 
     $ screen /dev/tty.usbmodem* 115200
-    
+
 When you are finished and want to exit ``screen``, type CTRL-A CTRL-\\. If your keyboard does not have a \\-key (i.e. you need an obscure combination for \\ like ALT-SHIFT-7) you can remap the ``quit`` command:
 
 - create ``~/.screenrc``

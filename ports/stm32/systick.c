@@ -27,7 +27,9 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "irq.h"
+#include "pendsv.h"
 #include "systick.h"
+#include "softtimer.h"
 #include "pybthread.h"
 
 extern __IO uint32_t uwTick;
@@ -50,6 +52,10 @@ void SysTick_Handler(void) {
     systick_dispatch_t f = systick_dispatch_table[uw_tick & (SYSTICK_DISPATCH_NUM_SLOTS - 1)];
     if (f != NULL) {
         f(uw_tick);
+    }
+
+    if (soft_timer_next == uw_tick) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
     }
 
     #if MICROPY_PY_THREAD

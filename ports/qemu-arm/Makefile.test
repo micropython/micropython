@@ -1,6 +1,6 @@
 LIB_SRC_C = lib/upytesthelper/upytesthelper.c
 
-FROZEN_MPY_DIR ?= test-frzmpy
+FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
 
 include Makefile
 
@@ -16,8 +16,8 @@ $(BUILD)/genhdr/tests.h:
 $(BUILD)/tinytest.o:
 	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c $(TINYTEST)/tinytest.c
 
-$(BUILD)/firmware-test.elf: $(OBJ_COMMON) $(OBJ_TEST)
-	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
+$(BUILD)/firmware-test.elf: $(LDSCRIPT) $(ALL_OBJ_TEST)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(ALL_OBJ_TEST) $(LIBS)
 	$(Q)$(SIZE) $@
 
 # Note: Using timeout(1) to handle cases where qemu hangs (e.g. this can happen with alignment errors).

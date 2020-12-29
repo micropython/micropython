@@ -31,11 +31,33 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "extmod/machine_i2c.h"
-#include "i2c.h"
-#include "nrfx_twi.h"
 
 #if MICROPY_PY_MACHINE_I2C
+
+#include "extmod/machine_i2c.h"
+#include "i2c.h"
+#if NRFX_TWI_ENABLED
+#include "nrfx_twi.h"
+#else
+#include "nrfx_twim.h"
+#endif
+
+#if NRFX_TWIM_ENABLED
+
+#define nrfx_twi_t        nrfx_twim_t
+#define nrfx_twi_config_t nrfx_twim_config_t
+
+#define nrfx_twi_init     nrfx_twim_init
+#define nrfx_twi_enable   nrfx_twim_enable
+#define nrfx_twi_rx       nrfx_twim_rx
+#define nrfx_twi_tx       nrfx_twim_tx
+#define nrfx_twi_disable  nrfx_twim_disable
+
+#define NRFX_TWI_INSTANCE NRFX_TWIM_INSTANCE
+
+#define NRF_TWI_FREQ_400K NRF_TWIM_FREQ_400K
+
+#endif
 
 STATIC const mp_obj_type_t machine_hard_i2c_type;
 

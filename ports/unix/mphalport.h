@@ -31,6 +31,7 @@
 
 void mp_hal_set_interrupt_char(char c);
 
+#define mp_hal_stdio_poll unused // this is not implemented, nor needed
 void mp_hal_stdio_mode_raw(void);
 void mp_hal_stdio_mode_orig(void);
 
