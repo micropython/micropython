@@ -78,12 +78,15 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 
                 radio->last_disconnect_reason = reason;
                 xEventGroupSetBits(radio->event_group_handle, WIFI_DISCONNECTED_BIT);
+                break;
             }
 
             // Cases to handle later.
             // case WIFI_EVENT_STA_AUTHMODE_CHANGE:
-            default:
+            default: {
+                ESP_EARLY_LOGW(TAG, "event %d 0x%02x", event_id, event_id);
                 break;
+            }
         }
     }
 
