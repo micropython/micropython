@@ -84,12 +84,8 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
     for (size_t i = 0; i < n_alarms; i++) {
         if (MP_OBJ_IS_TYPE(alarms[i], &alarm_touch_touchalarm_type)) {
             if (!touch_alarm_set) {
-                if (deep_sleep) {
-                    touch_alarm = MP_OBJ_TO_PTR(alarms[i]);
-                    touch_alarm_set = true;
-                } else {
-                    mp_raise_NotImplementedError(translate("TouchAlarm not available in light sleep"));
-                }
+                touch_alarm = MP_OBJ_TO_PTR(alarms[i]);
+                touch_alarm_set = true;
             } else {
                 mp_raise_ValueError(translate("Only one alarm.touch alarm can be set."));
             }
