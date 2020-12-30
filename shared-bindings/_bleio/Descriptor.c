@@ -101,8 +101,8 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
     common_hal_bleio_attribute_security_mode_check_valid(write_perm);
 
     const mp_int_t max_length_int = args[ARG_max_length].u_int;
-    if (max_length_int <= 0) {
-        mp_raise_ValueError(translate("max_length must be > 0"));
+    if (max_length_int < 0) {
+        mp_raise_ValueError(translate("max_length must be >= 0"));
     }
     const size_t max_length = (size_t) max_length_int;
     const bool fixed_length =  args[ARG_fixed_length].u_bool;

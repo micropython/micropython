@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
+"POT-Creation-Date: 2020-12-23 23:04-0500\n"
 "PO-Revision-Date: 2020-11-27 18:34+0000\n"
 "Last-Translator: Iván Montiel Cardona <ivan_montiel2013@hotmail.com>\n"
 "Language-Team: \n"
@@ -21,10 +21,14 @@ msgstr ""
 #: main.c
 msgid ""
 "\n"
-"Code done running. Waiting for reload.\n"
+"Code done running.\n"
 msgstr ""
+
+#: main.c
+msgid ""
 "\n"
-"El código terminó su ejecución. Esperando para recargar.\n"
+"Code stopped by auto-reload.\n"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -547,6 +551,18 @@ msgstr "Los bloques CBC deben ser múltiplos de 16 bytes"
 msgid "Call super().__init__() before accessing native object."
 msgstr "Llame a super().__ init __() antes de acceder al objeto nativo."
 
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on RTC IO from deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on one low pin while others alarm high from deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on two low pins from deep sleep."
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr "No se puede configurar CCCD en la característica local"
@@ -580,6 +596,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
 msgstr "No se puede tener ambos canales en el mismo pin"
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot pull on input-only pin."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
@@ -623,6 +643,10 @@ msgstr "No se puede obtener inequívocamente sizeof escalar"
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "No puede variar la frecuencia en un temporizador que ya está en uso"
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot wake on pin edge. Only level."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -955,6 +979,10 @@ msgstr "El archivo ya existe"
 msgid "Filters too complex"
 msgstr "Filtros muy complejos"
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr "Sin capacidades para el formato"
@@ -963,10 +991,6 @@ msgstr "Sin capacidades para el formato"
 #, c-format
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer requiere %d bytes"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
-msgstr "Frecuencia capturada por encima de la capacidad. Captura en pausa."
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -1486,7 +1510,7 @@ msgstr ""
 "Solo se admiten BMP monocromáticos, indexados de 4 bpp u 8 bpp y 16 bpp o "
 "más: %d bpp proporcionados"
 
-#: ports/esp32s2/common-hal/alarm/__init__.c
+#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -1550,10 +1574,6 @@ msgstr "El pin debe admitir interrupciones de hardware"
 msgid "Pin number already reserved by EXTI"
 msgstr "Número de pin ya reservado por EXTI"
 
-#: ports/esp32s2/common-hal/alarm/__init__.c
-msgid "PinAlarm not yet implemented"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -1601,7 +1621,7 @@ msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
 
 #: main.c
-msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2035,6 +2055,10 @@ msgstr "Operación no soportada"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
 msgstr "valor pull no soportado."
+
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -3073,8 +3097,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length debe ser 0-%d cuando fixed_length es %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "max_lenght debe ser > 0"
+msgid "max_length must be >= 0"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
@@ -3213,6 +3237,14 @@ msgstr ""
 "no deberia estar/tener agumento por palabra clave despues de argumento por "
 "palabra clave"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr ""
+
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
 msgstr "norma está definida para arrays 1D y 2D"
@@ -3285,6 +3317,10 @@ msgstr "string de longitud impar"
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
 msgstr "offset es demasiado grande"
+
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
+msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3634,6 +3670,10 @@ msgstr ""
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "el tiempo de espera debe ser 0.0-100.0 segundos"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "tiempo muerto debe ser >= 0.0"
@@ -3892,6 +3932,19 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid ""
+#~ "\n"
+#~ "Code done running. Waiting for reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "El código terminó su ejecución. Esperando para recargar.\n"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "Frecuencia capturada por encima de la capacidad. Captura en pausa."
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_lenght debe ser > 0"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr ""

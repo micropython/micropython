@@ -30,8 +30,8 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "components/driver/include/driver/spi_common_internal.h"
-#include "components/hal/include/hal/spi_hal.h"
-#include "components/hal/include/hal/spi_types.h"
+#include "components/soc/include/hal/spi_hal.h"
+#include "components/soc/include/hal/spi_types.h"
 #include "py/obj.h"
 
 typedef struct {
