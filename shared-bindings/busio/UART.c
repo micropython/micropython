@@ -35,6 +35,7 @@
 
 #include "py/ioctl.h"
 #include "py/objproperty.h"
+#include "py/objtype.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "supervisor/shared/translate.h"
@@ -141,6 +142,18 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
                                     args[ARG_receiver_buffer_size].u_int, NULL, false);
     return (mp_obj_t)self;
 }
+
+
+// Helper to ensure we have the native super class instead of a subclass.
+busio_uart_obj_t* native_uart(mp_obj_t uart_obj) {
+    mp_obj_t native_uart = mp_instance_cast_to_native_base(uart_obj, &busio_uart_type);
+    if (native_uart == MP_OBJ_NULL) {
+        mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_UART);
+    }
+    mp_obj_assert_native_inited(native_uart);
+    return MP_OBJ_TO_PTR(native_uart);
+}
+
 
 //|     def deinit(self) -> None:
 //|         """Deinitialises the UART and releases any hardware resources for reuse."""
