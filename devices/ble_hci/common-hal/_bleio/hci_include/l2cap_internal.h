@@ -45,7 +45,7 @@ struct bt_l2cap_sig_hdr {
 #define BT_L2CAP_CMD_REJECT             0x01
 struct bt_l2cap_cmd_reject {
 	uint16_t reason;
-	uint8_t  data[0];
+	uint8_t  data[];
 } __packed;
 
 struct bt_l2cap_cmd_reject_cid_data {
@@ -88,7 +88,7 @@ struct bt_l2cap_conn_rsp {
 struct bt_l2cap_conf_req {
 	uint16_t dcid;
 	uint16_t flags;
-	uint8_t  data[0];
+	uint8_t  data[];
 } __packed;
 
 #define BT_L2CAP_CONF_RSP               0x05
@@ -96,7 +96,7 @@ struct bt_l2cap_conf_rsp {
 	uint16_t scid;
 	uint16_t flags;
 	uint16_t result;
-	uint8_t  data[0];
+	uint8_t  data[];
 } __packed;
 
 /* Option type used by MTU config request data */
@@ -108,7 +108,7 @@ struct bt_l2cap_conf_rsp {
 struct bt_l2cap_conf_opt {
 	uint8_t type;
 	uint8_t len;
-	uint8_t data[0];
+	uint8_t data[];
 } __packed;
 
 #define BT_L2CAP_DISCONN_REQ            0x06
@@ -139,7 +139,7 @@ struct bt_l2cap_info_req {
 struct bt_l2cap_info_rsp {
 	uint16_t type;
 	uint16_t result;
-	uint8_t  data[0];
+	uint8_t  data[];
 } __packed;
 
 #define BT_L2CAP_CONN_PARAM_REQ         0x12
@@ -201,7 +201,7 @@ struct bt_l2cap_ecred_conn_req {
 	uint16_t mtu;
 	uint16_t mps;
 	uint16_t credits;
-	uint16_t scid[0];
+	uint16_t scid[];
 } __packed;
 
 #define BT_L2CAP_ECRED_CONN_RSP         0x18
@@ -210,14 +210,14 @@ struct bt_l2cap_ecred_conn_rsp {
 	uint16_t mps;
 	uint16_t credits;
 	uint16_t result;
-	uint16_t dcid[0];
+	uint16_t dcid[];
 } __packed;
 
 #define BT_L2CAP_ECRED_RECONF_REQ       0x19
 struct bt_l2cap_ecred_reconf_req {
 	uint16_t mtu;
 	uint16_t mps;
-	uint16_t scid[0];
+	uint16_t scid[];
 } __packed;
 
 #define BT_L2CAP_RECONF_SUCCESS         0x0000

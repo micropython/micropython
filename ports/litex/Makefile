@@ -80,7 +80,7 @@ ifeq ($(DEBUG), 1)
   OPTIMIZATION_FLAGS ?= -Og
 else
   CFLAGS += -DNDEBUG -ggdb3
-  OPTIMIZATION_FLAGS ?= -O2
+  OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
   # TODO: Test with -flto
   ### CFLAGS += -flto
 endif

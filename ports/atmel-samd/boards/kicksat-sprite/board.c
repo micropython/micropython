@@ -27,7 +27,7 @@
 
 #include <string.h>
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "py/mpconfig.h"
 
 void board_init(void) {

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,30 @@
  * THE SOFTWARE.
  */
 
-// This file defines board specific functions.
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM_SLEEPMEMORY_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM_SLEEPMEMORY_H
 
-#ifndef MICROPY_INCLUDED_NRF_BOARDS_BOARD_H
-#define MICROPY_INCLUDED_NRF_BOARDS_BOARD_H
+#include "py/obj.h"
 
-#include <stdbool.h>
+// There are several places we could store persistent data for SleepMemory:
+//
+// RTC registers: There are a few 32-bit registers maintained during deep sleep.
+// We are already using one for saving sleep information during deep sleep.
+//
+// RTC Fast Memory: 8kB, also used for deep-sleep power-on stub.
+// RTC Slow Memory: 8kB, also used for the ULP (tiny co-processor available during sleep).
+//
+// The ESP-IDF build system takes care of the power management of these regions.
+// RTC_DATA_ATTR will allocate storage in RTC_SLOW_MEM unless CONFIG_ESP32S2_RTCDATA_IN_FAST_MEM
+// is set. Any memory not allocated by us can be used by the ESP-IDF for heap or other purposes.
 
-// Initializes board related state once on start up.
-void board_init(void);
+// Use half of RTC_SLOW_MEM or RTC_FAST_MEM.
+#define SLEEP_MEMORY_LENGTH (4096)
 
-// Returns true if the user initiates safe mode in a board specific way.
-// Also add BOARD_USER_SAFE_MODE in mpconfigboard.h to explain the board specific
-// way.
-bool board_requests_safe_mode(void);
+typedef struct {
+    mp_obj_base_t base;
+} alarm_sleep_memory_obj_t;
 
-// Reset the state of off MCU components such as neopixels.
-void reset_board(void);
+extern void alarm_sleep_memory_reset(void);
 
-#endif  // MICROPY_INCLUDED_NRF_BOARDS_BOARD_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_ALARM_SLEEPMEMORY_H

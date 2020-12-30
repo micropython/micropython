@@ -33,7 +33,7 @@
 
 #include "sched/sched.h"
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 #include "supervisor/port.h"
 #include "supervisor/background_callback.h"
@@ -169,6 +169,6 @@ void port_disable_tick(void) {
 void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
     // TODO: Implement sleep.
 }

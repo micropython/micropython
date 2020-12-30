@@ -48,17 +48,28 @@
 //|
 
 //|     enabled: bool
-//|     """True when the wifi radio is enabled."""
+//|     """``True`` when the wifi radio is enabled.
+//|     If you set the value to ``False``, any open sockets will be closed.
+//|     """
 //|
 STATIC mp_obj_t wifi_radio_get_enabled(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_wifi_radio_get_enabled(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_enabled_obj, wifi_radio_get_enabled);
 
+static mp_obj_t wifi_radio_set_enabled(mp_obj_t self, mp_obj_t value) {
+    const bool enabled = mp_obj_is_true(value);
+
+    common_hal_wifi_radio_set_enabled(self, enabled);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_enabled_obj, wifi_radio_set_enabled);
+
 const mp_obj_property_t wifi_radio_enabled_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_radio_get_enabled_obj,
-               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&wifi_radio_set_enabled_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
 
@@ -284,7 +295,7 @@ const mp_obj_property_t wifi_radio_ipv4_dns_obj = {
 };
 
 //|     ap_info: Optional[Network]
-//|     """Network object containing BSSID, SSID, channel, and RSSI when connected to an access point. None otherwise."""
+//|     """Network object containing BSSID, SSID, channel, country and RSSI when connected to an access point. None otherwise."""
 //|
 STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
     return common_hal_wifi_radio_get_ap_info(self);

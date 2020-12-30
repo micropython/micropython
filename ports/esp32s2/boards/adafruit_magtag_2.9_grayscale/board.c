@@ -24,13 +24,18 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
+
 #include "mpconfigboard.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/board.h"
+
+#include "components/log/include/esp_log.h"
+
+static const char* TAG = "board";
 
 #define DELAY 0x80
 
@@ -110,8 +115,10 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO20);
 
     // Debug UART
+#ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
+#endif /* DEBUG */
 
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL);
@@ -166,4 +173,19 @@ bool board_requests_safe_mode(void) {
 
 void reset_board(void) {
 
+}
+
+void board_deinit(void) {
+    displayio_epaperdisplay_obj_t* display = &displays[0].epaper_display;
+    if (display->base.type == &displayio_epaperdisplay_type) {
+        size_t i = 0;
+        while (common_hal_displayio_epaperdisplay_get_busy(display)) {
+            RUN_BACKGROUND_TASKS;
+            i++;
+        }
+        ESP_LOGI(TAG, "waited %d iterations for display", i);
+    } else {
+        ESP_LOGI(TAG, "didn't wait for display");
+    }
+    common_hal_displayio_release_displays();
 }

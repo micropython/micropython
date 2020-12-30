@@ -30,7 +30,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "boards/board.h"
+#include "boards/flash_config.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "py/mphal.h"

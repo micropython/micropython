@@ -24,24 +24,14 @@
  * THE SOFTWARE.
  */
 
-// This file defines board specific functions.
+#include "supervisor/board.h"
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+void board_init(void) {
+}
 
-#include <stdbool.h>
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#include "py/mpconfig.h"
-
-// Initializes board related state once on start up.
-void board_init(void);
-
-// Returns true if the user initiates safe mode in a board specific way.
-// Also add BOARD_USER_SAFE_MODE in mpconfigboard.h to explain the board specific
-// way.
-bool board_requests_safe_mode(void);
-
-// Reset the state of off MCU components such as neopixels.
-void reset_board(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+void reset_board(void) {
+}

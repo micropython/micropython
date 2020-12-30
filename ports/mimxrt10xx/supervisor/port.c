@@ -31,7 +31,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "supervisor/port.h"
 
 #include "fsl_device_registers.h"
@@ -403,7 +403,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     SNVS->HPCR |= SNVS_HPCR_HPTA_EN_MASK;
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
     // App note here: https://www.nxp.com/docs/en/application-note/AN12085.pdf
 
     // Clear the FPU interrupt because it can prevent us from sleeping.

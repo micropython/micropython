@@ -31,6 +31,7 @@
 
 #include "common-hal/wifi/__init__.h"
 #include "lib/utils/interrupt_char.h"
+#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
@@ -104,6 +105,10 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
+    // Return early if self->current_scan is NULL to avoid hang
+    if (self->current_scan == NULL) {
+        return;
+    }
     // Free the memory used to store the found aps.
     wifi_scannednetworks_deinit(self->current_scan);
     self->current_scan = NULL;
@@ -193,6 +198,17 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
     if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK){
         return mp_const_none;
     } else {
+        if (strlen(self->ap_info.record.country.cc) == 0) {
+            // Workaround to fill country related information in ap_info until ESP-IDF carries a fix
+            // esp_wifi_sta_get_ap_info does not appear to fill wifi_country_t (e.g. country.cc) details
+            // (IDFGH-4437) #6267
+            // Note: It is possible that Wi-Fi APs don't have a CC set, then even after this workaround
+            //       the element would remain empty.
+            memset(&self->ap_info.record.country, 0, sizeof(wifi_country_t));
+            if (esp_wifi_get_country(&self->ap_info.record.country) != ESP_OK) {
+                return mp_const_none;
+            }
+        }
         memcpy(&ap_info->record, &self->ap_info.record, sizeof(wifi_ap_record_t));
         return MP_OBJ_FROM_PTR(ap_info);
     }
@@ -261,4 +277,9 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
     esp_ping_delete_session(ping);
 
     return elapsed_time;
+}
+
+void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self) {
+    // Only bother to scan the actual object references.
+    gc_collect_ptr(self->current_scan);
 }
