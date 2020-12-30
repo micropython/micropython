@@ -121,9 +121,9 @@ STATIC void _idle_until_alarm(void) {
         RUN_BACKGROUND_TASKS;
         // Allow ctrl-C interrupt.
         if (alarm_woken_from_sleep()) {
+            alarm_save_wake_alarm();
             return;
         }
-
         port_idle_until_interrupt();
     }
 }
