@@ -44,7 +44,7 @@ typedef struct {
     gpio_num_t number;
     uint8_t adc_index:2;
     uint8_t adc_channel:6;
-    uint8_t touch_channel;
+    touch_pad_t touch_channel;
 } mcu_pin_obj_t;
 
 extern const mcu_pin_obj_t pin_GPIO0;

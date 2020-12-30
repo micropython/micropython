@@ -24,18 +24,25 @@
  * THE SOFTWARE.
  */
 
+#include "components/soc/include/hal/gpio_types.h"
+// above include fixes build error in idf@v4.2
 #include "peripherals/touch.h"
 
 static bool touch_inited = false;
+static bool touch_never_reset = false;
 
 void peripherals_touch_reset(void) {
-    if (touch_inited) {
+    if (touch_inited && !touch_never_reset) {
         touch_pad_deinit();
         touch_inited = false;
     }
 }
 
-void peripherals_touch_init(touch_pad_t touchpad) {
+void peripherals_touch_never_reset(const bool enable) {
+    touch_never_reset = enable;
+}
+
+void peripherals_touch_init(const touch_pad_t touchpad) {
     if (!touch_inited) {
         touch_pad_init();
         touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);

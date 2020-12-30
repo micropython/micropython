@@ -103,7 +103,6 @@ mp_obj_t common_hal_alarm_get_wake_alarm(void) {
 // Set up light sleep or deep sleep alarms.
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     bool time_alarm_set = false;
-    bool touch_alarm_set = false;
     alarm_time_time_alarm_obj_t *time_alarm = MP_OBJ_NULL;
 
     for (size_t i = 0; i < n_alarms; i++) {
@@ -115,23 +114,13 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
             }
             time_alarm  = MP_OBJ_TO_PTR(alarms[i]);
             time_alarm_set = true;
-        } else if (MP_OBJ_IS_TYPE(alarms[i], &alarm_touch_touchalarm_type)) {
-            if (!touch_alarm_set) {
-                if (deep_sleep) {
-                    alarm_touch_touchalarm_set_alarm(MP_OBJ_TO_PTR(alarms[i]));
-                    touch_alarm_set = true;
-                } else {
-                    mp_raise_NotImplementedError(translate("TouchAlarm not available in light sleep"));
-                }
-            } else {
-                mp_raise_ValueError(translate("Only one alarm.touch alarm can be set."));
-            }
         }
     }
 
     if (time_alarm_set) {
         alarm_time_timealarm_set_alarm(time_alarm);
     }
+    alarm_touch_touchalarm_set_alarm(deep_sleep, n_alarms, alarms);
 }
 
 STATIC void _idle_until_alarm(void) {

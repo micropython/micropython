@@ -30,6 +30,7 @@
 #include "driver/touch_pad.h"
 
 extern void peripherals_touch_reset(void);
-extern void peripherals_touch_init(touch_pad_t touchpad);
+extern void peripherals_touch_never_reset(const bool enable);
+extern void peripherals_touch_init(const touch_pad_t touchpad);
 
 #endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H

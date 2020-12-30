@@ -36,9 +36,9 @@ typedef struct {
 } alarm_touch_touchalarm_obj_t;
 
 // Find the alarm object that caused us to wake up or create an equivalent one.
-mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(size_t n_alarms, const mp_obj_t *alarms);
+mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp_obj_t *alarms);
 // Check for the wake up alarm from pretend deep sleep.
-void alarm_touch_touchalarm_set_alarm(alarm_touch_touchalarm_obj_t *self);
+void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, const mp_obj_t *alarms);
 void alarm_touch_touchalarm_prepare_for_deep_sleep(void);
 bool alarm_touch_touchalarm_woke_us_up(void);
 void alarm_touch_touchalarm_reset(void);
