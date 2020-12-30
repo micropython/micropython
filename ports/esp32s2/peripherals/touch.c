@@ -24,16 +24,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#include "components/soc/include/hal/gpio_types.h"
+// above include fixes build error in idf@v4.2
+#include "peripherals/touch.h"
 
-#include "py/obj.h"
-#include "common-hal/microcontroller/Pin.h"
+static bool touch_inited = false;
+static bool touch_never_reset = false;
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
-    uint16_t threshold;
-} touchio_touchin_obj_t;
+void peripherals_touch_reset(void) {
+    if (touch_inited && !touch_never_reset) {
+        touch_pad_deinit();
+        touch_inited = false;
+    }
+}
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+void peripherals_touch_never_reset(const bool enable) {
+    touch_never_reset = enable;
+}
+
+void peripherals_touch_init(const touch_pad_t touchpad) {
+    if (!touch_inited) {
+        touch_pad_init();
+        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+        touch_pad_fsm_start();
+        touch_inited = true;
+    }
+    touch_pad_config(touchpad);
+}

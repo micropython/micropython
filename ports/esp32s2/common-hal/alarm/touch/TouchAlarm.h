@@ -24,16 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#ifndef MICROPY_INCLUDED_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H
+#define MICROPY_INCLUDED_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H
 
 #include "py/obj.h"
 #include "common-hal/microcontroller/Pin.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
-    uint16_t threshold;
-} touchio_touchin_obj_t;
+    const mcu_pin_obj_t *pin;
+} alarm_touch_touchalarm_obj_t;
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+// Find the alarm object that caused us to wake up or create an equivalent one.
+mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp_obj_t *alarms);
+// Check for the wake up alarm from pretend deep sleep.
+void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, const mp_obj_t *alarms);
+void alarm_touch_touchalarm_prepare_for_deep_sleep(void);
+bool alarm_touch_touchalarm_woke_us_up(void);
+void alarm_touch_touchalarm_reset(void);
+
+#endif  // MICROPY_INCLUDED_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H
