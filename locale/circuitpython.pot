@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 23:04-0500\n"
+"POT-Creation-Date: 2020-12-30 17:42-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,6 +42,10 @@ msgstr ""
 
 #: py/obj.c
 msgid "  File \"%q\", line %d"
+msgstr ""
+
+#: py/builtinhelp.c
+msgid " is of type %q\n"
 msgstr ""
 
 #: main.c
@@ -3191,6 +3195,10 @@ msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
+msgstr ""
+
+#: py/builtinhelp.c
+msgid "object "
 msgstr ""
 
 #: py/obj.c
