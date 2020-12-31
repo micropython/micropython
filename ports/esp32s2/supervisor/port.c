@@ -45,7 +45,6 @@
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
-#include "common-hal/touchio/TouchIn.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
@@ -55,6 +54,7 @@
 #include "peripherals/rmt.h"
 #include "peripherals/pcnt.h"
 #include "peripherals/timer.h"
+#include "peripherals/touch.h"
 #include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
 #include "components/heap/include/esp_heap_caps.h"
 #include "components/xtensa/include/esp_debug_helpers.h"
@@ -190,7 +190,7 @@ void reset_port(void) {
 #endif
 
 #if CIRCUITPY_TOUCHIO_USE_NATIVE
-    touchin_reset();
+    peripherals_touch_reset();
 #endif
 
 #if CIRCUITPY_WATCHDOG

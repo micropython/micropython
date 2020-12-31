@@ -157,7 +157,7 @@ STATIC void start_mp(supervisor_allocation* heap) {
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
-    alarm_save_wakeup_alarm();
+    alarm_save_wake_alarm();
     // Reset alarm module only after we retrieved the wakeup alarm.
     alarm_reset();
     #endif

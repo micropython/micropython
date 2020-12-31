@@ -24,16 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TOUCH_TOUCHALARM_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TOUCH_TOUCHALARM_H
 
 #include "py/obj.h"
+#include "py/runtime.h"
+
 #include "common-hal/microcontroller/Pin.h"
+#include "common-hal/alarm/touch/TouchAlarm.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
-    uint16_t threshold;
-} touchio_touchin_obj_t;
+extern const mp_obj_type_t alarm_touch_touchalarm_type;
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+extern void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *self, const mcu_pin_obj_t *pin);
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TOUCH_TOUCHALARM_H
