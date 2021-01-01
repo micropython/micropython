@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#include "lib/utils/interrupt_char.h"
 #include "py/obj.h"
 #include "py/objtype.h"
 #include "py/objint.h"
@@ -67,7 +68,12 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     #ifdef RUN_BACKGROUND_TASKS
     RUN_BACKGROUND_TASKS;
     #endif
-    mp_handle_pending();
+    #if MICROPY_KBD_EXCEPTION
+    // Stop printing if we've been interrupted.
+    if (mp_hal_is_interrupted()) {
+        return;
+    }
+    #endif
 
 #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {

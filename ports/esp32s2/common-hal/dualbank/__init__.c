@@ -100,7 +100,7 @@ void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t o
                 }
             }
 
-            err = esp_ota_begin(update_partition, OTA_WITH_SEQUENTIAL_WRITES, &update_handle);
+            err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
             if (err != ESP_OK) {
                 ESP_LOGE(TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
                 task_fatal_error();

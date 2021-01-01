@@ -108,12 +108,29 @@ const mp_obj_property_t wifi_network_channel_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
+//|     country: str
+//|     """String id of the country code"""
+//|
+STATIC mp_obj_t wifi_network_get_country(mp_obj_t self) {
+    return common_hal_wifi_network_get_country(self);
+
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_network_get_country_obj, wifi_network_get_country);
+
+const mp_obj_property_t wifi_network_country_obj = {
+    .base.type = &mp_type_property,
+    .proxy = { (mp_obj_t)&wifi_network_get_country_obj,
+               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&mp_const_none_obj },
+};
+
 
 STATIC const mp_rom_map_elem_t wifi_network_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ssid), MP_ROM_PTR(&wifi_network_ssid_obj) },
     { MP_ROM_QSTR(MP_QSTR_bssid), MP_ROM_PTR(&wifi_network_bssid_obj) },
     { MP_ROM_QSTR(MP_QSTR_rssi), MP_ROM_PTR(&wifi_network_rssi_obj) },
     { MP_ROM_QSTR(MP_QSTR_channel), MP_ROM_PTR(&wifi_network_channel_obj) },
+    { MP_ROM_QSTR(MP_QSTR_country), MP_ROM_PTR(&wifi_network_country_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wifi_network_locals_dict, wifi_network_locals_dict_table);
