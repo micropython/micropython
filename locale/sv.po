@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 23:04-0500\n"
+"POT-Creation-Date: 2020-12-22 22:54+0530\n"
 "PO-Revision-Date: 2020-12-28 17:59+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1182,6 +1182,7 @@ msgstr "Ogiltig fas"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 #: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1505,6 +1506,10 @@ msgstr ""
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Endast ett alarm.time kan ställas in."
+
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one alarm.touch alarm can be set."
+msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1896,6 +1901,10 @@ msgstr "För många displayer"
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than outgoing_packet_length"
 msgstr "Total data som ska skrivas är större än outgoing_packet_length"
+
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "TouchAlarm not available in light sleep"
+msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
