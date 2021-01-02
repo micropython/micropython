@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-22 22:54+0530\n"
-"PO-Revision-Date: 2020-12-30 22:25+0000\n"
+"PO-Revision-Date: 2021-01-03 05:29+0000\n"
 "Last-Translator: oon arfiandwi <oon.arfiandwi@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ID\n"
@@ -1850,11 +1850,11 @@ msgstr "Tingkat sampel dari sampel tidak cocok dengan mixer"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
-msgstr ""
+msgstr "signedness dari sampel tidak cocok dengan mixer"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
-msgstr ""
+msgstr "Tinggi tile harus persis membagi tinggi bitmap"
 
 #: shared-bindings/displayio/TileGrid.c shared-module/displayio/TileGrid.c
 msgid "Tile index out of bounds"
@@ -1909,7 +1909,7 @@ msgstr ""
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
-msgstr ""
+msgstr "Traceback (bagian terakhir dari panggilan terkini):\n"
 
 #: shared-bindings/time/__init__.c
 msgid "Tuple or struct_time argument required"
@@ -1945,15 +1945,15 @@ msgstr "Kesalahan USB"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
-msgstr ""
+msgstr "Nilai integer UUID harus 0-0xffff"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr ""
+msgstr "String UUID bukan 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
-msgstr ""
+msgstr "Nilai UUID bukan str, int atau byte buffer"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -1967,7 +1967,7 @@ msgstr ""
 #: shared-module/displayio/I2CDisplay.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
-msgstr ""
+msgstr "Tidak dapat menemukan Tampilan I2C di %x"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1976,15 +1976,15 @@ msgstr "Tidak dapat menemukan GCLK yang kosong"
 
 #: py/parse.c
 msgid "Unable to init parser"
-msgstr ""
+msgstr "Tidak dapat memulai parser"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
-msgstr ""
+msgstr "Tidak dapat membaca data palet warna"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
-msgstr ""
+msgstr "Tidak dapat menulis ke nvm."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
@@ -1992,7 +1992,7 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
-msgstr ""
+msgstr "Tipe urf nrfx tak sesuai"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 #, c-format
