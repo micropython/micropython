@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-22 22:54+0530\n"
-"PO-Revision-Date: 2020-12-29 16:08+0000\n"
+"PO-Revision-Date: 2021-01-01 04:29+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1525,7 +1525,7 @@ msgstr "Apenas um alarme alarm.time pode ser definido."
 
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one alarm.touch alarm can be set."
-msgstr ""
+msgstr "Apenas um alarme alarm.touch pode ser definido."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1929,7 +1929,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 msgid "TouchAlarm not available in light sleep"
-msgstr ""
+msgstr "O TouchAlarm não está disponívle no modo light sleep"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
