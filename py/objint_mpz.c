@@ -107,15 +107,77 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
     return str;
 }
 
-mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool arg_signed, size_t len, const byte *buf) {
     mp_obj_int_t *o = mp_obj_int_new_mpz();
     mpz_set_from_bytes(&o->mpz, big_endian, len, buf);
+    if (arg_signed) {
+        size_t msb = big_endian ? 0 : len-1;
+        if (buf[msb] & 0x80) {
+            o->mpz.neg = 1;
+        }
+    }
     return MP_OBJ_FROM_PTR(o);
 }
 
-void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
+static bool mpz_digit_is_power_of_2(mpz_dig_t d) {
+    if ( 0 == d ) return false;
+    mpz_dig_t dm1 = d - 1;
+    mpz_dig_t tmp = d & ~dm1;
+    bool is_power_of_2 = tmp == d;
+    return is_power_of_2;
+}
+
+// Get most significant digit position and its value
+static mpz_dig_t mpz_get_msd(const mpz_t *const z, size_t *msd_pos) {
+    assert( z->len > 0 );
+    size_t pos = z->len - 1;
+    while ((pos > 0) && (0 == z->dig[pos])) pos--;
+    *msd_pos = pos;
+    mpz_dig_t msd = z->dig[pos];
+    return msd;
+}
+
+// tell if value abs(z) is a power of two
+static bool mpz_is_power_of_2(const mpz_t *const z) {
+    size_t msd_pos;
+    mpz_dig_t msd = mpz_get_msd(z, &msd_pos);
+    if ( mpz_digit_is_power_of_2(msd) ) {
+        if ( 0 == msd_pos ) return true;
+        size_t pos = msd_pos;
+        while ( pos-- ) {
+            if ( z->dig[pos] ) return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+static size_t mpz_bit_length(const mpz_t *const z, bool is_signed) {
+    size_t msb_pos;
+    mpz_dig_t msb = mpz_get_msd(z, &msb_pos);
+    unsigned int bits_cnt = 0;
+    while ( msb ) {
+        bits_cnt++;
+        msb = msb >> 1;
+    }
+    size_t out = msb_pos * MPZ_DIG_SIZE + bits_cnt;
+    if ( is_signed ) {
+        if ( z->neg ) {
+            out += mpz_is_power_of_2(z) ? 0 : 1;
+        } else {
+            out++;
+        }
+    }
+    return out;
+}
+
+void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, bool arg_signed, size_t len, byte *buf) {
     assert(mp_obj_is_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+    size_t bits_cnt = mpz_bit_length(&(self->mpz), arg_signed);
+    if ( (len * 8) < bits_cnt ){
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("value too large (to_bytes)"));
+    }
     mpz_as_bytes(&self->mpz, big_endian, len, buf);
 }
 

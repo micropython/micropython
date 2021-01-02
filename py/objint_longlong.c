@@ -43,7 +43,7 @@
 const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
-mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
+mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, bool arg_signed, size_t len, const byte *buf) {
     int delta = 1;
     if (!big_endian) {
         buf += len - 1;
@@ -57,10 +57,17 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
     return mp_obj_new_int_from_ll(value);
 }
 
-void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
+void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, bool arg_signed, size_t len, byte *buf) {
     assert(mp_obj_is_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
     long long val = self->val;
+    if (signed) {
+        long long unsigned int bound = (1LLU << (len * 8 - 1));
+        printf("val = %lld, bound = %llu\n",val,bound);
+        if (val >= bound ) {
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert negative int to unsigned (to_bytes)"));
+        }
+    }
     if (big_endian) {
         byte *b = buf + len;
         while (b > buf) {

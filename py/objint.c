@@ -395,17 +395,12 @@ STATIC bool parse_signed_kwarg(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 3, pos_args + 3, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     bool arg_signed = args[ARG_signed].u_bool;
-    if (arg_signed) {
-        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("signed=True not implemented"));
-    }
     return arg_signed;
 }
 
 // this is a classmethod
 STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bool arg_signed = parse_signed_kwarg(n_args, pos_args, kw_args);
-    // TODO: use it to support arg_signed=True
-    (void)arg_signed;
 
     // get the buffer info
     mp_buffer_info_t bufinfo;
@@ -413,9 +408,34 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     const byte *buf = (const byte *)bufinfo.buf;
     int delta = 1;
-    if (pos_args[2] == MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
+    bool big_endian = pos_args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little);
+    if ( ! big_endian) {
         buf += bufinfo.len - 1;
         delta = -1;
+    }
+
+    if (arg_signed) {
+        mp_int_t value = 0;
+        size_t len = bufinfo.len;
+        for (; len--; buf += delta) {
+            #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
+            bool too_high = value > ((MP_SMALL_INT_MAX >> 9)-1);
+            bool too_low = value < -(MP_SMALL_INT_MAX >> 9);
+            if (too_high || too_low) {
+                // Result will overflow a small-int so construct a big-int
+                return mp_obj_int_from_bytes_impl(big_endian, arg_signed, bufinfo.len, bufinfo.buf);
+            }
+            #endif
+            value = (value << 8) | *buf;
+        }
+        size_t msb = big_endian ? 0 : bufinfo.len-1;
+        buf = (const byte *)bufinfo.buf;
+        bool is_neg = buf[msb] & 0x80;
+        bool need_sign_extend = bufinfo.len < sizeof(mp_int_t);
+        if ( need_sign_extend && is_neg ) {
+            value = -value; // sign extend
+        }
+        return mp_obj_new_int(value);
     }
     mp_uint_t value = 0;
     size_t len = bufinfo.len;
@@ -423,7 +443,7 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         if (value > (MP_SMALL_INT_MAX >> 8)) {
             // Result will overflow a small-int so construct a big-int
-            return mp_obj_int_from_bytes_impl(pos_args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
+            return mp_obj_int_from_bytes_impl(big_endian, arg_signed, bufinfo.len, bufinfo.buf);
         }
         #endif
         value = (value << 8) | *buf;
@@ -436,8 +456,6 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(int_from_bytes_obj, MP_ROM_PTR(&int_from_
 
 STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     bool arg_signed = parse_signed_kwarg(n_args, pos_args, kw_args);
-    // TODO: use it to support arg_signed=True
-    (void)arg_signed;
 
     mp_int_t len = mp_obj_get_int(pos_args[1]);
     if (len < 0) {
@@ -459,16 +477,31 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         #elif MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
         bool is_neg = val->mpz.neg;
         #endif
-        if (is_neg) {
+        if (is_neg && !arg_signed) {
             mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert negative int to unsigned (to_bytes)"));
         }
-        mp_obj_int_to_bytes_impl(pos_args[0], big_endian, len, data);
+        mp_obj_int_to_bytes_impl(pos_args[0], big_endian, arg_signed, len, data);
     } else
     #endif
     {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(pos_args[0]);
-        if (val < 0) {
+        bool is_neg = val < 0;
+        if (is_neg && !arg_signed) {
             mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert negative small int to unsigned (to_bytes)"));
+        }
+        mp_uint_t ulen = (mp_uint_t) len;
+        if (ulen < sizeof(mp_int_t)) {
+            long long unsigned int bound;
+            if (arg_signed) {
+                bound = (1LLU << (ulen * 8 - 1)) + (is_neg ? 1 : 0);
+            }else{
+                bound = (1LLU << (len * 8));
+            }
+            long long unsigned int uval = (long long unsigned int) is_neg ? -val : val;
+            //printf("val = %ld, len = %ld, uval = %lu, bound = %lu\n",val,len,(long unsigned)uval,(long unsigned)bound);
+            if (uval >= bound ) {
+                mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("value to large (to_bytes)"));
+            }
         }
         size_t l = MIN((size_t)len, sizeof(val));
         mp_binary_set_int(l, big_endian, data + (big_endian ? (len - l) : 0), val);
