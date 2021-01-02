@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-22 22:54+0530\n"
-"PO-Revision-Date: 2020-12-30 22:25+0000\n"
+"PO-Revision-Date: 2021-01-01 04:29+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -1533,7 +1533,7 @@ msgstr "Seulement une alarme alarm.time peut être réglée."
 
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one alarm.touch alarm can be set."
-msgstr ""
+msgstr "Seulement une alarme alarm.touch peut être réglée."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1933,7 +1933,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 msgid "TouchAlarm not available in light sleep"
-msgstr ""
+msgstr "TouchAlarm n'est pas disponible en mode someil léger"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -3818,11 +3818,11 @@ msgstr "indentation inattendue"
 
 #: py/bc.c
 msgid "unexpected keyword argument"
-msgstr "argument nommé inattendu"
+msgstr "paramètre nommé inattendu"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "unexpected keyword argument '%q'"
-msgstr "argument nommé '%q' inattendu"
+msgstr "paramètre nommé '%q' inattendu"
 
 #: py/lexer.c
 msgid "unicode name escapes"
@@ -3865,12 +3865,12 @@ msgstr "type %q non pris on charge"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "unsupported Thumb instruction '%s' with %d arguments"
-msgstr "instruction Thumb '%s' non supportée avec %d arguments"
+msgstr "instruction Thumb '%s' non supportée avec %d paramètres"
 
 #: py/emitinlinextensa.c
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
-msgstr "instruction Xtensa '%s' non supportée avec %d arguments"
+msgstr "instruction Xtensa '%s' non supportée avec %d paramètres"
 
 #: py/objstr.c
 #, c-format
@@ -3908,7 +3908,7 @@ msgstr "conflit au réveil"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
-msgstr "chien de garde non initialisé"
+msgstr "chien de garde (watchdog) non initialisé"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
@@ -3920,7 +3920,7 @@ msgstr "width doit être plus grand que zero"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
-msgstr "la fenêtre doit être <= intervalle"
+msgstr "la fenêtre (window) doit être <= intervalle (interval)"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "wrong axis index"
