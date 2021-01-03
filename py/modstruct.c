@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -183,16 +183,21 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_from_obj, 2, 3, struct_unpack_
 
 // This function assumes there is enough room in p to store all the values
 STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, const mp_obj_t *args) {
+    size_t size;
+    size_t count = calc_size_items(mp_obj_str_get_str(fmt_in), &size);
+    if (count != n_args) {
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        mp_raise_ValueError(NULL);
+#else
+        mp_raise_ValueError_varg(translate("pack expected %d items for packing (got %d)"), count, n_args);
+#endif
+    }
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
 
     size_t i;
     for (i = 0; i < n_args;) {
         mp_uint_t cnt = 1;
-        if (*fmt == '\0') {
-            // more arguments given than used by format string; CPython raises struct.error here
-            break;
-        }
         if (unichar_isdigit(*fmt)) {
             cnt = get_fmt_num(&fmt);
         }
@@ -208,8 +213,7 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
             memset(p + to_copy, 0, cnt - to_copy);
             p += cnt;
         } else {
-            // If we run out of args then we just finish; CPython would raise struct.error
-            while (cnt-- && i < n_args) {
+            while (cnt--) {
                 mp_binary_set_val(fmt_type, *fmt, args[i], &p);
                 // Pad bytes don't have a corresponding argument.
                 if (*fmt != 'x') {
@@ -222,7 +226,6 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
 }
 
 STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
-    // TODO: "The arguments must match the values required by the format exactly."
     mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     vstr_t vstr;
     vstr_init_len(&vstr, size);

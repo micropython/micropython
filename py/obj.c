@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#include "lib/utils/interrupt_char.h"
 #include "py/obj.h"
 #include "py/objtype.h"
 #include "py/objint.h"
@@ -58,7 +59,7 @@ mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
 }
 
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
-    return qstr_str(mp_obj_get_type(o_in)->name);
+    return qstr_str(mp_obj_get_type_qstr(o_in));
 }
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
@@ -67,6 +68,13 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     #ifdef RUN_BACKGROUND_TASKS
     RUN_BACKGROUND_TASKS;
     #endif
+    #if MICROPY_KBD_EXCEPTION
+    // Stop printing if we've been interrupted.
+    if (mp_hal_is_interrupted()) {
+        return;
+    }
+    #endif
+
 #ifndef NDEBUG
     if (o_in == MP_OBJ_NULL) {
         mp_print_str(print, "(nil)");
@@ -259,12 +267,12 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_int)) {
         return mp_obj_int_get_checked(arg);
     } else {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError(translate("can't convert to int"));
-        } else {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_int);
+        #else
             mp_raise_TypeError_varg(
-                translate("can't convert %s to int"), mp_obj_get_type_str(arg));
-        }
+                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_int);
+        #endif
     }
 }
 
@@ -322,12 +330,12 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
     mp_float_t val;
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError(translate("can't convert to float"));
-        } else {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_float);
+        #else
             mp_raise_TypeError_varg(
-                translate("can't convert %s to float"), mp_obj_get_type_str(arg));
-        }
+                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_float);
+        #endif
     }
 
     return val;
@@ -355,12 +363,12 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     } else if (MP_OBJ_IS_TYPE(arg, &mp_type_complex)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
-            mp_raise_TypeError(translate("can't convert to complex"));
-        } else {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+            mp_raise_TypeError_varg(translate("can't convert to %q"), MP_QSTR_complex);
+        #else
             mp_raise_TypeError_varg(
-                translate("can't convert %s to complex"), mp_obj_get_type_str(arg));
-        }
+                translate("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_complex);
+        #endif
     }
 }
 #endif
@@ -373,12 +381,12 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
     } else if (MP_OBJ_IS_TYPE(o, &mp_type_list)) {
         mp_obj_list_get(o, len, items);
     } else {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(translate("expected tuple/list"));
-        } else {
+        #else
             mp_raise_TypeError_varg(
-                translate("object '%s' is not a tuple or list"), mp_obj_get_type_str(o));
-        }
+                translate("object '%q' is not a tuple or list"), mp_obj_get_type_qstr(o));
+        #endif
     }
 }
 
@@ -387,12 +395,12 @@ void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     size_t seq_len;
     mp_obj_get_array(o, &seq_len, items);
     if (seq_len != len) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_raise_ValueError(translate("tuple/list has wrong length"));
-        } else {
+        #else
             mp_raise_ValueError_varg(translate("requested length %d but object has length %d"),
                 (int)len, (int)seq_len);
-        }
+        #endif
     }
 }
 
@@ -402,13 +410,13 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
     if (MP_OBJ_IS_SMALL_INT(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(translate("indices must be integers"));
-        } else {
+        #else
             mp_raise_TypeError_varg(
-                translate("%q indices must be integers, not %s"),
-                type->name, mp_obj_get_type_str(index));
-        }
+                translate("%q indices must be integers, not %q"),
+                type->name, mp_obj_get_type_qstr(index));
+        #endif
     }
 
     if (i < 0) {
@@ -422,12 +430,12 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
         }
     } else {
         if (i < 0 || (mp_uint_t)i >= len) {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_raise_IndexError(translate("index out of range"));
-            } else {
+            #else
                 mp_raise_msg_varg(&mp_type_IndexError,
                     translate("%q index out of range"), type->name);
-            }
+            #endif
         }
     }
 
@@ -457,12 +465,12 @@ mp_obj_t mp_obj_id(mp_obj_t o_in) {
 mp_obj_t mp_obj_len(mp_obj_t o_in) {
     mp_obj_t len = mp_obj_len_maybe(o_in);
     if (len == MP_OBJ_NULL) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(translate("object has no len"));
-        } else {
+        #else
             mp_raise_TypeError_varg(
-                translate("object of type '%s' has no len()"), mp_obj_get_type_str(o_in));
-        }
+                translate("object of type '%q' has no len()"), mp_obj_get_type_qstr(o_in));
+        #endif
     } else {
         return len;
     }
@@ -500,26 +508,26 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
         }
     }
     if (value == MP_OBJ_NULL) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(translate("object does not support item deletion"));
-        } else {
+        #else
             mp_raise_TypeError_varg(
-                translate("'%s' object does not support item deletion"), mp_obj_get_type_str(base));
-        }
+                translate("'%q' object does not support item deletion"), mp_obj_get_type_qstr(base));
+        #endif
     } else if (value == MP_OBJ_SENTINEL) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(translate("object is not subscriptable"));
-        } else {
+        #else
             mp_raise_TypeError_varg(
-                translate("'%s' object is not subscriptable"), mp_obj_get_type_str(base));
-        }
+                translate("'%q' object is not subscriptable"), mp_obj_get_type_qstr(base));
+        #endif
     } else {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(translate("object does not support item assignment"));
-        } else {
+        #else
             mp_raise_TypeError_varg(
-                translate("'%s' object does not support item assignment"), mp_obj_get_type_str(base));
-        }
+                translate("'%q' object does not support item assignment"), mp_obj_get_type_qstr(base));
+        #endif
     }
 }
 

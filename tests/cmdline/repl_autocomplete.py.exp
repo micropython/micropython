@@ -12,7 +12,7 @@ Use \.\+
 'abc'
 >>> x = 5
 >>> x.
-from_bytes      to_bytes
+bit_length      from_bytes      to_bytes
 >>> x.[K[K
 >>> x.__class__
 <class 'int'>

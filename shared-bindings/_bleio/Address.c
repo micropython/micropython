@@ -38,11 +38,11 @@
 //|     """Encapsulates the address of a BLE device."""
 //|
 
-//|     def __init__(self, address: buf, address_type: Any):
+//|     def __init__(self, address: ReadableBuffer, address_type: int) -> None:
 //|         """Create a new Address object encapsulating the address value.
 //|         The value itself can be one of:
 //|
-//|         :param buf address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
+//|         :param ~_typing.ReadableBuffer address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
 //|         :param int address_type: one of the integer values: `PUBLIC`, `RANDOM_STATIC`,
 //|           `RANDOM_PRIVATE_RESOLVABLE`, or `RANDOM_PRIVATE_NON_RESOLVABLE`."""
 //|         ...
@@ -77,7 +77,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     address_bytes: Any = ...
+//|     address_bytes: bytes
 //|     """The bytes that make up the device address (read-only).
 //|
 //|     Note that the ``bytes`` object returned is in little-endian order:
@@ -86,7 +86,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
 //|     or use `str()` on the :py:class:`~_bleio.Attribute` object itself, the address will be printed
 //|     in the expected order. For example:
 //|
-//|     .. code-block:: pycon
+//|     .. code-block:: python
 //|
 //|       >>> import _bleio
 //|       >>> _bleio.adapter.address
@@ -108,7 +108,7 @@ const mp_obj_property_t bleio_address_address_bytes_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     type: Any = ...
+//|     type: int
 //|     """The address type (read-only).
 //|
 //|     One of the integer values: `PUBLIC`, `RANDOM_STATIC`, `RANDOM_PRIVATE_RESOLVABLE`,
@@ -128,7 +128,7 @@ const mp_obj_property_t bleio_address_type_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __eq__(self, other: Any) -> Any:
+//|     def __eq__(self, other: object) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""
 //|         ...
 //|
@@ -154,7 +154,7 @@ STATIC mp_obj_t bleio_address_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_o
     }
 }
 
-//|     def __hash__(self, ) -> Any:
+//|     def __hash__(self) -> int:
 //|         """Returns a hash for the Address data."""
 //|         ...
 //|
@@ -187,17 +187,17 @@ STATIC void bleio_address_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
               buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
 }
 
-//|     PUBLIC: Any = ...
+//|     PUBLIC: int
 //|     """A publicly known address, with a company ID (high 24 bits)and company-assigned part (low 24 bits)."""
 //|
-//|     RANDOM_STATIC: Any = ...
+//|     RANDOM_STATIC: int
 //|     """A randomly generated address that does not change often. It may never change or may change after
 //|      a power cycle."""
 //|
-//|     RANDOM_PRIVATE_RESOLVABLE: Any = ...
+//|     RANDOM_PRIVATE_RESOLVABLE: int
 //|     """An address that is usable when the peer knows the other device's secret Identity Resolving Key (IRK)."""
 //|
-//|     RANDOM_PRIVATE_NON_RESOLVABLE: Any = ...
+//|     RANDOM_PRIVATE_NON_RESOLVABLE: int
 //|     """A randomly generated address that changes on every connection."""
 //|
 STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {

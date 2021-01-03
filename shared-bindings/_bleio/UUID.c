@@ -36,7 +36,7 @@
 //| class UUID:
 //|     """A 16-bit or 128-bit UUID. Can be used for services, characteristics, descriptors and more."""
 //|
-//|     def __init__(self, value: Any):
+//|     def __init__(self, value: Union[int, ReadableBuffer, str]) -> None:
 //|         """Create a new UUID or UUID object encapsulating the uuid value.
 //|         The value can be one of:
 //|
@@ -48,7 +48,7 @@
 //|         temporary 16-bit UUID that can be used in place of the full 128-bit UUID.
 //|
 //|         :param value: The uuid value to encapsulate
-//|         :type value: int or typing.ByteString"""
+//|         :type value: int, ~_typing.ReadableBuffer or str"""
 //|         ...
 //|
 STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -120,7 +120,7 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, co
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     uuid16: Any = ...
+//|     uuid16: int
 //|     """The 16-bit part of the UUID. (read-only)
 //|
 //|     :type: int"""
@@ -139,7 +139,7 @@ const mp_obj_property_t bleio_uuid_uuid16_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     uuid128: Any = ...
+//|     uuid128: bytes
 //|     """The 128-bit value of the UUID
 //|     Raises AttributeError if this is a 16-bit UUID. (read-only)
 //|
@@ -165,7 +165,7 @@ const mp_obj_property_t bleio_uuid_uuid128_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     size: Any = ...
+//|     size: int
 //|     """128 if this UUID represents a 128-bit vendor-specific UUID. 16 if this UUID represents a
 //|     16-bit Bluetooth SIG assigned UUID. (read-only) 32-bit UUIDs are not currently supported.
 //|
@@ -186,7 +186,7 @@ const mp_obj_property_t bleio_uuid_size_obj = {
 };
 
 
-//|     def pack_into(self, buffer: Any, offset: Any = 0) -> Any:
+//|     def pack_into(self, buffer: WriteableBuffer, offset: int = 0) -> None:
 //|         """Packs the UUID into the given buffer at the given offset."""
 //|         ...
 //|
@@ -248,7 +248,7 @@ STATIC mp_obj_t bleio_uuid_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|     def __eq__(self, other: Any) -> Any:
+//|     def __eq__(self, other: object) -> bool:
 //|         """Two UUID objects are equal if their values match and they are both 128-bit or both 16-bit."""
 //|         ...
 //|
@@ -283,7 +283,7 @@ void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
         mp_printf(print, "UUID(0x%04x)", common_hal_bleio_uuid_get_uuid16(self));
     } else {
         uint8_t uuid128[16];
-        (void) common_hal_bleio_uuid_get_uuid128(self, uuid128);
+        common_hal_bleio_uuid_get_uuid128(self, uuid128);
         mp_printf(print, "UUID('"
                   "%02x%02x%02x%02x-"
                   "%02x%02x-"

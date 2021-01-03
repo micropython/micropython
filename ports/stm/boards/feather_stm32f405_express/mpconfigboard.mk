@@ -2,7 +2,6 @@ USB_VID = 0x239A
 USB_PID = 0x805A
 USB_PRODUCT = "Feather STM32F405 Express"
 USB_MANUFACTURER = "Adafruit Industries LLC"
-USB_DEVICES = "CDC,MSC"
 
 SPI_FLASH_FILESYSTEM = 1
 EXTERNAL_FLASH_DEVICE_COUNT = 1
@@ -14,5 +13,6 @@ MCU_PACKAGE = LQFP64
 
 LD_COMMON = boards/common_default.ld
 LD_DEFAULT = boards/STM32F405_default.ld
-LD_BOOT = boards/STM32F405_boot.ld # UF2 boot option
+# UF2 boot option
+LD_BOOT = boards/STM32F405_boot.ld
 UF2_OFFSET = 0x8010000

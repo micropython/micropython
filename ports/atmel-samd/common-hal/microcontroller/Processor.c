@@ -61,7 +61,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <math.h>
+
+#include "py/mphal.h"
 #include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "samd/adc.h"
 
@@ -162,7 +166,7 @@ STATIC float calculate_temperature(uint16_t raw_value) {
 }
 #endif // SAMD21
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 STATIC float calculate_temperature(uint16_t TP, uint16_t TC) {
     uint32_t TLI = (*(uint32_t *)FUSES_ROOM_TEMP_VAL_INT_ADDR & FUSES_ROOM_TEMP_VAL_INT_Msk) >> FUSES_ROOM_TEMP_VAL_INT_Pos;
     uint32_t TLD = (*(uint32_t *)FUSES_ROOM_TEMP_VAL_DEC_ADDR & FUSES_ROOM_TEMP_VAL_DEC_Msk) >> FUSES_ROOM_TEMP_VAL_DEC_Pos;
@@ -230,7 +234,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     return calculate_temperature(value);
 #endif // SAMD21
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
     adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
     // Using INTVCC0 as the reference voltage.
     // INTVCC1 seems to read a little high.
@@ -275,6 +279,9 @@ float common_hal_mcu_processor_get_temperature(void) {
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
+#if MICROCONTROLLER_VOLTAGE_DISABLE
+    return NAN;
+#else
     struct adc_sync_descriptor adc;
 
     static Adc* adc_insts[] = ADC_INSTS;
@@ -284,13 +291,17 @@ float common_hal_mcu_processor_get_voltage(void) {
     adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INT1V_Val);
 #endif
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
     hri_supc_set_VREF_SEL_bf(SUPC, SUPC_VREF_SEL_1V0_Val);
-    // ONDEMAND must be clear, and VREFOE must be set, or else the ADC conversion will not complete.
-    // See https://community.atmel.com/forum/samd51-using-intref-adc-voltage-reference
-    hri_supc_clear_VREF_ONDEMAND_bit(SUPC);
     hri_supc_set_VREF_VREFOE_bit(SUPC);
+
     adc_sync_set_reference(&adc, ADC_REFCTRL_REFSEL_INTREF_Val);
+
+    // On some processor samples, the ADC will hang trying to read the voltage. A simple
+    // delay after setting the SUPC bits seems to fix things. This appears to be due to VREFOE
+    // startup time. There is no synchronization bit to check.
+    // See https://community.atmel.com/forum/samd51-using-intref-adc-voltage-reference
+    mp_hal_delay_ms(1);
 #endif
 
     adc_sync_set_resolution(&adc, ADC_CTRLB_RESSEL_12BIT_Val);
@@ -315,6 +326,7 @@ float common_hal_mcu_processor_get_voltage(void) {
     adc_sync_deinit(&adc);
     // Multiply by 4 to compensate for SCALEDIOVCC division by 4.
     return (reading / 4095.0f) * 4.0f;
+#endif
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
@@ -327,7 +339,7 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     uint32_t* id_addresses[4] = {(uint32_t *) 0x0080A00C, (uint32_t *) 0x0080A040,
                                  (uint32_t *) 0x0080A044, (uint32_t *) 0x0080A048};
     #endif
-    #ifdef SAMD51
+    #ifdef SAM_D5X_E5X
     uint32_t* id_addresses[4] = {(uint32_t *) 0x008061FC, (uint32_t *) 0x00806010,
                                  (uint32_t *) 0x00806014, (uint32_t *) 0x00806018};
     #endif
@@ -337,4 +349,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
             raw_id[4 * i + k] = (*(id_addresses[i]) >> k * 8) & 0xff;
         }
     }
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    return RESET_REASON_UNKNOWN;
 }

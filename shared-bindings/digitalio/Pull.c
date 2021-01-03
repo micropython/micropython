@@ -29,16 +29,16 @@
 //| class Pull:
 //|     """Defines the pull of a digital input pin"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Enum-like class to define the pull value, if any, used while reading
 //|         digital values in."""
 //|         ...
 //|
-//|     UP: Any = ...
+//|     UP: Pull
 //|     """When the input line isn't being driven the pull up can pull the state
 //|     of the line high so it reads as true."""
 //|
-//|     DOWN: Any = ...
+//|     DOWN: Pull
 //|     """When the input line isn't being driven the pull down can pull the
 //|     state of the line low so it reads as false."""
 //|

@@ -66,9 +66,9 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
 }
 
 void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self, mp_obj_t framebuffer) {
+    common_hal_rgbmatrix_timer_disable(self->timer);
     if (framebuffer) {
         self->framebuffer = framebuffer;
-        framebuffer = mp_obj_new_bytearray_of_zeros(self->bufsize);
         mp_get_buffer_raise(self->framebuffer, &self->bufinfo, MP_BUFFER_READ);
         if (mp_get_buffer(self->framebuffer, &self->bufinfo, MP_BUFFER_RW)) {
             self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
@@ -78,18 +78,19 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         // verify that the matrix is big enough
         mp_get_index(mp_obj_get_type(self->framebuffer), self->bufinfo.len, MP_OBJ_NEW_SMALL_INT(self->bufsize-1), false);
     } else {
-        _PM_FREE(self->bufinfo.buf);
-        _PM_FREE(self->core.rgbPins);
-        _PM_FREE(self->core.addr);
-        _PM_FREE(self->core.screenData);
+        common_hal_rgbmatrix_free_impl(self->bufinfo.buf);
+        common_hal_rgbmatrix_free_impl(self->protomatter.rgbPins);
+        common_hal_rgbmatrix_free_impl(self->protomatter.addr);
+        common_hal_rgbmatrix_free_impl(self->protomatter.screenData);
 
         self->framebuffer = NULL;
-        self->bufinfo.buf = _PM_allocator_impl(self->bufsize);
+        self->bufinfo.buf = common_hal_rgbmatrix_allocator_impl(self->bufsize);
         self->bufinfo.len = self->bufsize;
         self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
     }
 
-    ProtomatterStatus stat = _PM_init(&self->core,
+    memset(&self->protomatter, 0, sizeof(self->protomatter));
+    ProtomatterStatus stat = _PM_init(&self->protomatter,
         self->width, self->bit_depth,
         self->rgb_count/6, self->rgb_pins,
         self->addr_count, self->addr_pins,
@@ -97,18 +98,21 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         self->doublebuffer, self->timer);
 
     if (stat == PROTOMATTER_OK) {
-        _PM_protoPtr = &self->core;
+        _PM_protoPtr = &self->protomatter;
         common_hal_mcu_disable_interrupts();
         common_hal_rgbmatrix_timer_enable(self->timer);
-        stat = _PM_begin(&self->core);
-        _PM_convert_565(&self->core, self->bufinfo.buf, self->width);
+        stat = _PM_begin(&self->protomatter);
+
+        if (stat == PROTOMATTER_OK) {
+            _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
+        }
         common_hal_mcu_enable_interrupts();
-        _PM_swapbuffer_maybe(&self->core);
+        if (stat == PROTOMATTER_OK) {
+            _PM_swapbuffer_maybe(&self->protomatter);
+        }
     }
 
     if (stat != PROTOMATTER_OK) {
-        // XXX this deinit() actually makes crashy-crashy
-        // can trigger it by sending inappropriate pins
         common_hal_rgbmatrix_rgbmatrix_deinit(self);
         switch (stat) {
         case PROTOMATTER_ERR_PINS:
@@ -117,7 +121,9 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         case PROTOMATTER_ERR_ARG:
             mp_raise_ValueError(translate("Invalid argument"));
             break;
-        case PROTOMATTER_ERR_MALLOC: /// should have already been signaled as NLR
+        case PROTOMATTER_ERR_MALLOC:
+            mp_raise_msg(&mp_type_MemoryError, NULL);
+            break;
         default:
             mp_raise_msg_varg(&mp_type_RuntimeError,
                 translate("Internal error #%d"), (int)stat);
@@ -126,7 +132,6 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
     }
 
     self->paused = 0;
-
 }
 
 STATIC void free_pin(uint8_t *pin) {
@@ -148,7 +153,7 @@ void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t* self) {
         self->timer = 0;
     }
 
-    if (_PM_protoPtr == &self->core) {
+    if (_PM_protoPtr == &self->protomatter) {
         _PM_protoPtr = NULL;
     }
 
@@ -158,14 +163,14 @@ void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t* self) {
     free_pin(&self->latch_pin);
     free_pin(&self->oe_pin);
 
-    if (self->core.rgbPins) {
-        _PM_free(&self->core);
+    if (self->protomatter.rgbPins) {
+        _PM_deallocate(&self->protomatter);
     }
-    memset(&self->core, 0, sizeof(self->core));
+    memset(&self->protomatter, 0, sizeof(self->protomatter));
 
     // If it was supervisor-allocated, it is supervisor-freed and the pointer
     // is zeroed, otherwise the pointer is just zeroed
-    _PM_FREE(self->bufinfo.buf);
+    _PM_free(self->bufinfo.buf);
     self->base.type = NULL;
 
     // If a framebuffer was passed in to the constructor, NULL the reference
@@ -175,16 +180,15 @@ void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t* self) {
 
 void rgbmatrix_rgbmatrix_collect_ptrs(rgbmatrix_rgbmatrix_obj_t* self) {
     gc_collect_ptr(self->framebuffer);
-    gc_collect_ptr(self->core.rgbPins);
-    gc_collect_ptr(self->core.addr);
-    gc_collect_ptr(self->core.screenData);
 }
 
 void common_hal_rgbmatrix_rgbmatrix_set_paused(rgbmatrix_rgbmatrix_obj_t* self, bool paused) {
     if (paused && !self->paused) {
-        _PM_stop(&self->core);
+        _PM_stop(&self->protomatter);
     } else if (!paused && self->paused) {
-        _PM_resume(&self->core);
+        _PM_resume(&self->protomatter);
+        _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
+        _PM_swapbuffer_maybe(&self->protomatter);
     }
     self->paused = paused;
 }
@@ -194,8 +198,10 @@ bool common_hal_rgbmatrix_rgbmatrix_get_paused(rgbmatrix_rgbmatrix_obj_t* self) 
 }
 
 void common_hal_rgbmatrix_rgbmatrix_refresh(rgbmatrix_rgbmatrix_obj_t* self) {
-    _PM_convert_565(&self->core, self->bufinfo.buf, self->width);
-    _PM_swapbuffer_maybe(&self->core);
+    if (!self->paused) {
+        _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
+        _PM_swapbuffer_maybe(&self->protomatter);
+    }
 }
 
 int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t* self) {
@@ -205,4 +211,13 @@ int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t* self) {
 int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t* self) {
     int computed_height = (self->rgb_count / 3) << (self->addr_count);
     return computed_height;
+}
+
+void *common_hal_rgbmatrix_allocator_impl(size_t sz) {
+    supervisor_allocation *allocation = allocate_memory(align32_size(sz), false, true);
+    return allocation ? allocation->ptr : NULL;
+}
+
+void common_hal_rgbmatrix_free_impl(void *ptr_in) {
+    free_memory(allocation_from_ptr(ptr_in));
 }

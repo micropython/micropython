@@ -42,13 +42,15 @@
 #define CIRCUITPY_MCU_FAMILY                        samd21
 #define MICROPY_PY_SYS_PLATFORM                     "Atmel SAMD21"
 #define SPI_FLASH_MAX_BAUDRATE 8000000
+#define MICROPY_PY_BUILTINS_COMPLEX                 (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (0)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_FUNCTION_ATTRS                   (0)
 // MICROPY_PY_UJSON depends on MICROPY_PY_IO
 #define MICROPY_PY_IO                               (0)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
+#define MICROPY_PY_UBINASCII                        (0)
 #define MICROPY_PY_UJSON                            (0)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
 #define MICROPY_PY_UERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
@@ -65,23 +67,29 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 
-// HSRAM_SIZE is defined in the ASF4 include files for each SAMD51 chip.
+// HSRAM_SIZE is defined in the ASF4 include files for each SAM_D5X_E5X chip.
 #define RAM_SIZE                                    HSRAM_SIZE
 #define BOOTLOADER_SIZE                             (16*1024)
 #define CIRCUITPY_MCU_FAMILY                        samd51
+#ifdef SAMD51
 #define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAMD51"
+#elif defined(SAME54)
+#define MICROPY_PY_SYS_PLATFORM                     "MicroChip SAME54"
+#ifndef MICROCONTROLLER_VOLTAGE_DISABLE
+#define MICROCONTROLLER_VOLTAGE_DISABLE (1)
+#endif
+#endif
 #define SPI_FLASH_MAX_BAUDRATE 24000000
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (1)
 #define MICROPY_PY_FUNCTION_ATTRS                   (1)
 // MICROPY_PY_UJSON depends on MICROPY_PY_IO
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_UJSON                            (1)
 //      MICROPY_PY_UERRNO_LIST - Use the default
 
-#endif // SAMD51
+#endif // SAM_D5X_E5X
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -105,7 +113,15 @@
 #endif
 
 #ifndef CIRCUITPY_DEFAULT_STACK_SIZE
-#define CIRCUITPY_DEFAULT_STACK_SIZE                4096
+#define CIRCUITPY_DEFAULT_STACK_SIZE                3584
+#endif
+
+#ifndef SAMD21_BOD33_LEVEL
+// Set brownout detection to ~2.7V. Default from factory is 1.7V,
+// which is too low for proper operation of external SPI flash chips
+// (they are 2.7-3.6V).
+#define SAMD21_BOD33_LEVEL (39)
+// 2.77V with hysteresis off. Table 37.20 in datasheet.
 #endif
 
 // Smallest unit of flash that can be erased.
@@ -115,7 +131,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
 #define CIRCUITPY_INTERNAL_NVM_SIZE (8192)
@@ -123,6 +139,14 @@
 
 #ifndef CIRCUITPY_DEFAULT_STACK_SIZE
 #define CIRCUITPY_DEFAULT_STACK_SIZE                (24*1024)
+#endif
+
+#ifndef SAMD5x_E5x_BOD33_LEVEL
+// Set brownout detection to ~2.7V. Default from factory is 1.7V,
+// which is too low for proper operation of external SPI flash chips
+// (they are 2.7-3.6V).
+#define SAMD5x_E5x_BOD33_LEVEL (200)
+// 2.7V: 1.5V + LEVEL * 6mV.
 #endif
 
 // Smallest unit of flash that can be erased.
@@ -137,7 +161,7 @@
   #define CIRCUITPY_INTERNAL_FLASH_FILESYSTEM_SIZE (0)
 #endif
 
-#endif // SAMD51
+#endif // SAM_D5X_E5X
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -225,5 +249,9 @@
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS \
     mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT];
+
+#ifndef MICROCONTROLLER_VOLTAGE_DISABLE
+#define MICROCONTROLLER_VOLTAGE_DISABLE (0)
+#endif
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

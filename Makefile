@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 # Top-level Makefile for documentation builds and miscellaneous tasks.
 #
 
@@ -36,7 +40,19 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(BASEOPTS)
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(BASEOPTS)
 
-TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/mimxrt10xx ports/nrf ports/stm py shared-bindings shared-module supervisor
+TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/esp32s2 ports/mimxrt10xx ports/nrf ports/stm py shared-bindings shared-module supervisor
+# Paths to exclude from TRANSLATE_SOURCES
+# Each must be preceded by "-path"; if any wildcards, enclose in quotes.
+# Separate by "-o" (Find's "or" operand)
+TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
+	-o -path "ports/*/build" \
+	-o -path ports/esp32s2/esp-idf \
+	-o -path ports/cxd56/spresense-exported-sdk \
+	-o -path ports/stm/st_driver \
+	-o -path ports/atmel-samd/asf4 \
+	-o -path ports/mimxrt10xx/sdk \
+	-o -path lib/tinyusb \
+	-o -path lib/lwip \
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext stubs
 
@@ -206,7 +222,7 @@ pseudoxml:
 all-source:
 
 locale/circuitpython.pot: all-source
-	find $(TRANSLATE_SOURCES) -iname "*.c" -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
+	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot -p locale
 
 # Historically, `make translate` updated the .pot file and ran msgmerge.
 # However, this was a frequent source of merge conflicts.  Weblate can perform
@@ -231,15 +247,66 @@ merge-translate:
 
 .PHONY: check-translate
 check-translate:
-	find $(TRANSLATE_SOURCES) -iname "*.c" -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot.tmp -p locale
+	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate -o circuitpython.pot.tmp -p locale
 	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
 
 stubs:
 	@mkdir -p circuitpython-stubs
 	@$(PYTHON) tools/extract_pyi.py shared-bindings/ $(STUBDIR)
+	@$(PYTHON) tools/extract_pyi.py extmod/ulab/code/ $(STUBDIR)/ulab
 	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
 	@$(PYTHON) setup.py -q sdist
+
+.PHONY: check-stubs
+check-stubs: stubs
+	MYPYPATH=$(STUBDIR) mypy --strict $(STUBDIR)
 
 update-frozen-libraries:
 	@echo "Updating all frozen libraries to latest tagged version."
 	cd frozen; for library in *; do cd $$library; ../../tools/git-checkout-latest-tag.sh; cd ..; done
+
+one-of-each: samd21 litex mimxrt10xx nrf stm
+
+samd21:
+	$(MAKE) -C ports/atmel-samd BOARD=trinket_m0
+
+samd51:
+	$(MAKE) -C ports/atmel-samd BOARD=feather_m4_express
+
+esp32s2:
+	$(MAKE) -C ports/esp32s2 BOARD=espressif_saola_1_wroom
+
+litex:
+	$(MAKE) -C ports/litex BOARD=fomu
+
+mimxrt10xx:
+	$(MAKE) -C ports/mimxrt10xx BOARD=feather_mimxrt1011
+
+nrf:
+	$(MAKE) -C ports/nrf BOARD=feather_nrf52840_express
+
+stm:
+	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express
+
+clean-one-of-each: clean-samd21 clean-samd51 clean-esp32s2 clean-litex clean-mimxrt10xx clean-nrf clean-stm
+
+clean-samd21:
+	$(MAKE) -C ports/atmel-samd BOARD=trinket_m0 clean
+
+clean-samd51:
+	$(MAKE) -C ports/atmel-samd BOARD=feather_m4_express clean
+
+clean-esp32s2:
+	$(MAKE) -C ports/esp32s2 BOARD=espressif_saola_1_wroom clean
+
+clean-litex:
+	$(MAKE) -C ports/litex BOARD=fomu clean
+
+clean-mimxrt10xx:
+	$(MAKE) -C ports/mimxrt10xx BOARD=feather_mimxrt1011 clean
+
+clean-nrf:
+	$(MAKE) -C ports/nrf BOARD=feather_nrf52840_express clean
+
+clean-stm:
+	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean

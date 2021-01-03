@@ -36,10 +36,10 @@
 //| class Pin:
 //|     """Identifies an IO pin on the microcontroller."""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Identifies an IO pin on the microcontroller. They are fixed by the
 //|         hardware so they cannot be constructed on demand. Instead, use
-//|         `board` or `microcontroller.pin` to reference the desired pin."""
+//|         :mod:`board` or :mod:`microcontroller.pin` to reference the desired pin."""
 //|         ...
 //|
 
@@ -71,7 +71,11 @@ STATIC void mcu_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     qstr name;
 
     get_pin_name(self, &package, &module, &name);
-    mp_printf(print, "%q.%q.%q", MP_QSTR_microcontroller, MP_QSTR_pin, name);
+    if (package){
+        mp_printf(print, "%q.%q.%q", package, module, name);
+    } else {
+        mp_printf(print, "%q.%q", module , name);
+    }
 }
 
 const mp_obj_type_t mcu_pin_type = {
@@ -99,6 +103,18 @@ mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj) {
     mcu_pin_obj_t *pin = validate_obj_is_pin(obj);
     assert_pin_free(pin);
     return pin;
+}
+
+// Validate every element in the list to be a free pin.
+void validate_list_is_free_pins(qstr what, mcu_pin_obj_t **pins_out, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out) {
+    mp_int_t len = MP_OBJ_SMALL_INT_VALUE(mp_obj_len(seq));
+    if (len > max_pins) {
+        mp_raise_ValueError_varg(translate("At most %d %q may be specified (not %d)"), max_pins, what, len);
+    }
+    *count_out = len;
+    for (mp_int_t i=0; i<len; i++) {
+        pins_out[i] = validate_obj_is_free_pin(mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+    }
 }
 
 // Validate that the obj is a free pin or None. Return an mcu_pin_obj_t* or NULL, correspondingly.

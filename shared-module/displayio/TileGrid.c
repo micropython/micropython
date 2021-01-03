@@ -83,10 +83,16 @@ bool common_hal_displayio_tilegrid_get_hidden(displayio_tilegrid_t* self) {
 
 void common_hal_displayio_tilegrid_set_hidden(displayio_tilegrid_t* self, bool hidden) {
     self->hidden = hidden;
+    if(!hidden){
+        self->full_change = true;
+    }
 }
 
 void displayio_tilegrid_set_hidden_by_parent(displayio_tilegrid_t *self, bool hidden) {
     self->hidden_by_parent = hidden;
+    if(!hidden){
+        self->full_change = true;
+    }
 }
 
 bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_area_t* area) {
@@ -499,7 +505,7 @@ void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self) {
     if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_finish_refresh(self->bitmap);
     } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
-        // TODO: Support shape changes.
+        displayio_shape_finish_refresh(self->bitmap);
     } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_ondiskbitmap_type)) {
         // OnDiskBitmap changes will trigger a complete reload so no need to
         // track changes.
@@ -542,6 +548,12 @@ displayio_area_t* displayio_tilegrid_get_refresh_areas(displayio_tilegrid_t *sel
             } else {
                 self->full_change = true;
             }
+        }
+    } else if (MP_OBJ_IS_TYPE(self->bitmap, &displayio_shape_type)) {
+        displayio_area_t* refresh_area = displayio_shape_get_refresh_areas(self->bitmap, tail);
+        if (refresh_area != tail) {
+            displayio_area_copy(refresh_area, &self->dirty_area);
+            self->partial_change = true;
         }
     }
 

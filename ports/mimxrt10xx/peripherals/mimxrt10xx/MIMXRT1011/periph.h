@@ -24,21 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_MIMXRT1011_PERIPH_H
-#define MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_MIMXRT1011_PERIPH_H
+#ifndef MICROPY_INCLUDED_MIMXRT10XX_MIMXRT1011_PERIPHERALS_MIMXRT1011_PERIPH_H
+#define MICROPY_INCLUDED_MIMXRT10XX_MIMXRT1011_PERIPHERALS_MIMXRT1011_PERIPH_H
 
-LPI2C_Type *mcu_i2c_banks[2];
+extern LPI2C_Type *mcu_i2c_banks[2];
 
 extern const mcu_periph_obj_t mcu_i2c_sda_list[8];
 extern const mcu_periph_obj_t mcu_i2c_scl_list[8];
 
-LPSPI_Type *mcu_spi_banks[2];
+extern LPSPI_Type *mcu_spi_banks[2];
 
 extern const mcu_periph_obj_t mcu_spi_sck_list[4];
 extern const mcu_periph_obj_t mcu_spi_mosi_list[4];
 extern const mcu_periph_obj_t mcu_spi_miso_list[4];
 
-LPUART_Type *mcu_uart_banks[4];
+extern LPUART_Type *mcu_uart_banks[4];
 
 extern const mcu_periph_obj_t mcu_uart_rx_list[9];
 extern const mcu_periph_obj_t mcu_uart_tx_list[9];
@@ -47,4 +47,4 @@ extern const mcu_periph_obj_t mcu_uart_cts_list[4];
 
 extern const mcu_pwm_obj_t mcu_pwm_list[20];
 
-#endif // MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_MIMXRT1011_PERIP_H
+#endif // MICROPY_INCLUDED_MIMXRT10XX_MIMXRT1011_PERIPHERALS_MIMXRT1011_PERIPH_H

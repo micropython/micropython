@@ -37,7 +37,7 @@
 //| class IncrementalEncoder:
 //|     """IncrementalEncoder determines the relative rotational position based on two series of pulses."""
 //|
-//|     def __init__(self, pin_a: microcontroller.Pin, pin_b: microcontroller.Pin):
+//|     def __init__(self, pin_a: microcontroller.Pin, pin_b: microcontroller.Pin) -> None:
 //|         """Create an IncrementalEncoder object associated with the given pins. It tracks the positional
 //|         state of an incremental rotary encoder (also known as a quadrature encoder.) Position is
 //|         relative to the position when the object is contructed.
@@ -80,7 +80,7 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitializes the IncrementalEncoder and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -97,13 +97,13 @@ STATIC void check_for_deinit(rotaryio_incrementalencoder_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> IncrementalEncoder:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -116,7 +116,7 @@ STATIC mp_obj_t rotaryio_incrementalencoder_obj___exit__(size_t n_args, const mp
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(rotaryio_incrementalencoder___exit___obj, 4, 4, rotaryio_incrementalencoder_obj___exit__);
 
 
-//|     position: Any = ...
+//|     position: int
 //|     """The current position in terms of pulses. The number of pulses per rotation is defined by the
 //|     specific hardware."""
 //|

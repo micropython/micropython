@@ -14,13 +14,13 @@ LONGINT_IMPL = MPZ
 # Make room for frozen libs.
 CIRCUITPY_DISPLAYIO = 0
 CIRCUITPY_FREQUENCYIO = 0
-CIRCUITPY_I2CSLAVE = 0
+CIRCUITPY_I2CPERIPHERAL = 0
+MICROPY_PY_ASYNC_AWAIT = 0
 
 SUPEROPT_GC = 0
 CFLAGS_INLINE_LIMIT = 55
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_CircuitPlayground
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH

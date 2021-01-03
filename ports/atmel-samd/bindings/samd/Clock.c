@@ -30,7 +30,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-//| import typing
 //| class Clock:
 //|     """Identifies a clock on the microcontroller.
 //|
@@ -44,7 +43,7 @@ STATIC void samd_clock_print(const mp_print_t *print, mp_obj_t self_in, mp_print
     mp_printf(print, "%q.%q.%q", MP_QSTR_samd, MP_QSTR_clock, self->name);
 }
 
-//|     enabled: bool = ...
+//|     enabled: bool
 //|     """Is the clock enabled? (read-only)"""
 //|
 STATIC mp_obj_t samd_clock_get_enabled(mp_obj_t self_in) {
@@ -62,7 +61,7 @@ const mp_obj_property_t samd_clock_enabled_obj = {
     },
 };
 
-//|     parent: typing.Union(Clock | None) = ...
+//|     parent: Union[Clock, None]
 //|     """Clock parent. (read-only)"""
 //|
 STATIC mp_obj_t samd_clock_get_parent(mp_obj_t self_in) {
@@ -90,7 +89,7 @@ const mp_obj_property_t samd_clock_parent_obj = {
     },
 };
 
-//|     frequency: int = ...
+//|     frequency: int
 //|     """Clock frequency in Herz. (read-only)"""
 //|
 STATIC mp_obj_t samd_clock_get_frequency(mp_obj_t self_in) {
@@ -108,7 +107,7 @@ const mp_obj_property_t samd_clock_frequency_obj = {
     },
 };
 
-//|     calibration: int = ...
+//|     calibration: int
 //|     """Clock calibration. Not all clocks can be calibrated."""
 //|
 STATIC mp_obj_t samd_clock_get_calibration(mp_obj_t self_in) {
@@ -272,7 +271,7 @@ MP_DEFINE_CONST_DICT(samd_clock_globals, samd_clock_global_dict_table);
 
 #endif // SAMD21
 
-#ifdef SAMD51
+#ifdef SAM_D5X_E5X
 
 
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -177,13 +177,13 @@ void port_internal_flash_flush(void) {
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
     // get the sector information
     uint32_t sector_size;
-    uint32_t sector_start_addr;
+    uint32_t sector_start_addr = 0xffffffff;
     #if defined(STM32H7)
     EraseInitStruct.Banks = get_bank(_cache_flash_addr);
     #endif
     EraseInitStruct.Sector = flash_get_sector_info(_cache_flash_addr, &sector_start_addr, &sector_size);
     EraseInitStruct.NbSectors = 1;
-    if (sector_size > sizeof(_flash_cache)) {
+    if (sector_size > sizeof(_flash_cache) || sector_start_addr == 0xffffffff) {
         reset_into_safe_mode(FLASH_WRITE_FAIL);
     }
 

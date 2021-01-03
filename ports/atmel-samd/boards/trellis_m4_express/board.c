@@ -26,7 +26,7 @@
 
 #include <string.h>
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "py/mpconfig.h"
 
 #include "common-hal/digitalio/DigitalInOut.h"

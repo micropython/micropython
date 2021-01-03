@@ -36,7 +36,7 @@
 //| The `usb_hid` module allows you to output data as a HID device."""
 //|
 
-//| usb_hid.devices: Any = ...
+//| devices: Tuple[Device, ...]
 //| """Tuple of all active HID device interfaces."""
 //|
 STATIC const mp_rom_map_elem_t usb_hid_module_globals_table[] = {

@@ -35,10 +35,12 @@ void common_hal_displayio_palette_construct(displayio_palette_t* self, uint16_t 
 
 void common_hal_displayio_palette_make_opaque(displayio_palette_t* self, uint32_t palette_index) {
     self->colors[palette_index].transparent = false;
+    self->needs_refresh = true;
 }
 
 void common_hal_displayio_palette_make_transparent(displayio_palette_t* self, uint32_t palette_index) {
     self->colors[palette_index].transparent = true;
+    self->needs_refresh = true;
 }
 
 uint32_t common_hal_displayio_palette_get_len(displayio_palette_t* self) {
@@ -81,7 +83,8 @@ bool displayio_palette_get_color(displayio_palette_t *self, const _displayio_col
         uint8_t pixel_hue = self->colors[palette_index].hue;
         displayio_colorconverter_compute_tricolor(colorspace, pixel_hue, luma, color);
     } else if (colorspace->grayscale) {
-        *color = self->colors[palette_index].luma >> (8 - colorspace->depth);
+        size_t bitmask = (1 << colorspace->depth) - 1;
+        *color = (self->colors[palette_index].luma >> colorspace->grayscale_bit) & bitmask;
     } else {
         uint16_t packed = self->colors[palette_index].rgb565;
         if (colorspace->reverse_bytes_in_word) {

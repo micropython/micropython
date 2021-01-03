@@ -39,15 +39,16 @@
 //| The `_stage` module contains native code to speed-up the ```stage`` Library
 //| <https://github.com/python-ugame/circuitpython-stage>`_."""
 //|
-//| def render(x0: int, y0: int, x1: int, y1: int, layers: list, buffer: bytearray, display: displayio.Display, scale: int, background: int) -> Any:
+//| def render(x0: int, y0: int, x1: int, y1: int, layers: List[Layer], buffer: WriteableBuffer, display: displayio.Display, scale: int, background: int) -> None:
 //|     """Render and send to the display a fragment of the screen.
 //|
 //|     :param int x0: Left edge of the fragment.
 //|     :param int y0: Top edge of the fragment.
 //|     :param int x1: Right edge of the fragment.
 //|     :param int y1: Bottom edge of the fragment.
-//|     :param list layers: A list of the :py:class:`~_stage.Layer` objects.
-//|     :param bytearray buffer: A buffer to use for rendering.
+//|     :param layers: A list of the :py:class:`~_stage.Layer` objects.
+//|     :type layers: list[Layer]
+//|     :param ~_typing.WriteableBuffer buffer: A buffer to use for rendering.
 //|     :param ~displayio.Display display: The display to use.
 //|     :param int scale: How many times should the image be scaled up.
 //|     :param int background: What color to display when nothing is there.

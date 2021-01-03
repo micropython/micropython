@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1015,7 +1015,7 @@ unwind_jump:;
                     }
                     #endif
                     SET_TOP(mp_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
                 }
 
                 ENTRY(MP_BC_CALL_METHOD_VAR_KW): {

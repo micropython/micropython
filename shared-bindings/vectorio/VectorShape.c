@@ -20,7 +20,7 @@
 
 
 //| class VectorShape:
-//|     def __init__(self, shape: vectorio.Polygon, pixel_shader: displayio.Palette, x: int=0, y: int=0):
+//|     def __init__(self, shape: Union[Polygon, Rectangle, Circle], pixel_shader: Union[displayio.ColorConverter, displayio.Palette], x: int=0, y: int=0) -> None:
 //|         """Binds a vector shape to a location and pixel color
 //|
 //|            :param shape: The shape to draw.
@@ -93,7 +93,7 @@ STATIC mp_obj_t vectorio_vector_shape_make_new(const mp_obj_type_t *type, size_t
 }
 
 
-//|     x: int = ...
+//|     x: int
 //|     """X position of the center point of the shape in the parent."""
 //|
 STATIC mp_obj_t vectorio_vector_shape_obj_get_x(mp_obj_t self_in) {
@@ -119,7 +119,7 @@ const mp_obj_property_t vectorio_vector_shape_x_obj = {
 };
 
 
-//|     y: int = ...
+//|     y: int
 //|     """Y position of the center point of the shape in the parent."""
 //|
 STATIC mp_obj_t vectorio_vector_shape_obj_get_y(mp_obj_t self_in) {
@@ -145,7 +145,7 @@ const mp_obj_property_t vectorio_vector_shape_y_obj = {
 };
 
 
-//|     pixel_shader: displayio.Palette = ...
+//|     pixel_shader: Union[displayio.ColorConverter, displayio.Palette]
 //|     """The pixel shader of the shape."""
 //|
 STATIC mp_obj_t vectorio_vector_shape_obj_get_pixel_shader(mp_obj_t self_in) {

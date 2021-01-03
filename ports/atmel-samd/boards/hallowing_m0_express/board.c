@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/displayio/FourWire.h"
@@ -110,7 +110,8 @@ void board_init(void) {
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
-        true); // backlight_on_high
+        true, // backlight_on_high
+        false); // not SH1107
 }
 
 bool board_requests_safe_mode(void) {

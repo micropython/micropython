@@ -36,11 +36,21 @@
  ****************************************************************************/
 
 #include "clefia.h"
-#include "elf.h"
+#include "elf32.h"
 
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
+
+#define EI_MAG0            0      /* File identification */
+#define EI_MAG1            1
+#define EI_MAG2            2
+#define EI_MAG3            3
+
+#define SHT_SYMTAB         2
+#define SHT_STRTAB         3
+
+#define PT_LOAD            1
 
 #define alignup(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
 #define swap(a, b) { (a) ^= (b); (b) ^= (a); (a) ^= (b); }

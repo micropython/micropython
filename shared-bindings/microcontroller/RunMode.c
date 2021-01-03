@@ -29,22 +29,22 @@
 //| class RunMode:
 //|     """run state of the microcontroller"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Enum-like class to define the run mode of the microcontroller and
 //|         CircuitPython."""
 //|
-//|     NORMAL: Any = ...
+//|     NORMAL: RunMode
 //|     """Run CircuitPython as normal.
 //|
 //|     :type microcontroller.RunMode:"""
 //|
-//|     SAFE_MODE: Any = ...
+//|     SAFE_MODE: RunMode
 //|     """Run CircuitPython in safe mode. User code will not be run and the
 //|     file system will be writeable over USB.
 //|
 //|     :type microcontroller.RunMode:"""
 //|
-//|     BOOTLOADER: Any = ...
+//|     BOOTLOADER: RunMode
 //|     """Run the bootloader.
 //|
 //|     :type microcontroller.RunMode:"""

@@ -223,8 +223,8 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                 pixel_to_get_x = (input_pixel.y - self->absolute_transform->dy * self->x - self->absolute_transform->y) / self->absolute_transform->dy;
                 pixel_to_get_y = (input_pixel.x - self->absolute_transform->dx * self->y - self->absolute_transform->x) / self->absolute_transform->dx;
             } else {
-                pixel_to_get_x = (input_pixel.x - self->absolute_transform->dx * self->x) / self->absolute_transform->dx;
-                pixel_to_get_y = (input_pixel.y - self->absolute_transform->dy * self->y) / self->absolute_transform->dy;
+                pixel_to_get_x = (input_pixel.x - self->absolute_transform->dx * self->x - self->absolute_transform->x) / self->absolute_transform->dx;
+                pixel_to_get_y = (input_pixel.y - self->absolute_transform->dy * self->y - self->absolute_transform->y) / self->absolute_transform->dy;
             }
             VECTORIO_SHAPE_PIXEL_DEBUG(" get_pixel %p (%3d, %3d) -> ( %3d, %3d )", self->ishape.shape, input_pixel.x, input_pixel.y, pixel_to_get_x, pixel_to_get_y);
 #ifdef VECTORIO_PERF

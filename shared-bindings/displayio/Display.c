@@ -39,6 +39,11 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
+//| _DisplayBus = Union['FourWire', 'ParallelBus', 'I2CDisplay']
+//| """:py:class:`FourWire`, :py:class:`ParallelBus` or :py:class:`I2CDisplay`"""
+//|
+
+//|
 //| class Display:
 //|     """Manage updating a display over a display bus
 //|
@@ -49,35 +54,37 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the initialization sequence at minimum."""
 //|
-//|     def __init__(self, display_bus: Any, init_sequence: buffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, set_vertical_scroll: int = 0, backlight_pin: microcontroller.Pin = None, brightness_command: int = None, brightness: bool = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False, auto_refresh: bool = True, native_frames_per_second: int = 60):
-//|         """Create a Display object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
+//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, set_vertical_scroll: int = 0, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False, auto_refresh: bool = True, native_frames_per_second: int = 60) -> None:
+//|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplay`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
-//|         command byte followed by a byte to determine the parameter count and if a delay is need after.
-//|         When the top bit of the second byte is 1, the next byte will be the delay time in milliseconds.
-//|         The remaining 7 bits are the parameter count excluding any delay byte. The third through final
-//|         bytes are the remaining command parameters. The next byte will begin a new command definition.
-//|         Here is a portion of ILI9341 init code:
+//|         command byte followed by a byte to determine the parameter count and delay. When the top bit
+//|         of the second byte is 1 (0x80), a delay will occur after the command parameters are sent.
+//|         The remaining 7 bits are the parameter count excluding any delay byte. The bytes following
+//|         are the parameters. When the delay bit is set, a single byte after the parameters specifies
+//|         the delay duration in milliseconds. The value 0xff will lead to an extra long 500 ms delay
+//|         instead of 255 ms. The next byte will begin a new command definition.
+//|         Here is an example:
 //|
 //|         .. code-block:: python
 //|
 //|           init_sequence = (b"\xe1\x0f\x00\x0E\x14\x03\x11\x07\x31\xC1\x48\x08\x0F\x0C\x31\x36\x0F" # Set Gamma
 //|                            b"\x11\x80\x78"# Exit Sleep then delay 0x78 (120ms)
-//|                            b"\x29\x80\x78"# Display on then delay 0x78 (120ms)
+//|                            b"\x29\x81\xaa\x78"# Display on then delay 0x78 (120ms)
 //|                           )
 //|            display = displayio.Display(display_bus, init_sequence, width=320, height=240)
 //|
-//|         The first command is 0xe1 with 15 (0xf) parameters following. The second and third are 0x11 and
-//|         0x29 respectively with delays (0x80) of 120ms (0x78) and no parameters. Multiple byte literals
-//|         (b"") are merged together on load. The parens are needed to allow byte literals on subsequent
-//|         lines.
+//|         The first command is 0xe1 with 15 (0xf) parameters following. The second is 0x11 with 0
+//|         parameters and a 120ms (0x78) delay. The third command is 0x29 with one parameter 0xaa and a
+//|         120ms delay (0x78). Multiple byte literals (b"") are merged together on load. The parens
+//|         are needed to allow byte literals on subsequent lines.
 //|
 //|         The initialization sequence should always leave the display memory access inline with the scan
 //|         of the display to minimize tearing artifacts.
 //|
 //|         :param display_bus: The bus that the display is connected to
-//|         :type display_bus: displayio.FourWire or displayio.ParallelBus
-//|         :param buffer init_sequence: Byte-packed initialization sequence.
+//|         :type _DisplayBus: FourWire, ParallelBus or I2CDisplay
+//|         :param ~_typing.ReadableBuffer init_sequence: Byte-packed initialization sequence.
 //|         :param int width: Width in pixels
 //|         :param int height: Height in pixels
 //|         :param int colstart: The index if the first visible column
@@ -96,17 +103,26 @@
 //|         :param int set_vertical_scroll: Command used to set the first row to show
 //|         :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
 //|         :param int brightness_command: Command to set display brightness. Usually available in OLED controllers.
-//|         :param bool brightness: Initial display brightness. This value is ignored if auto_brightness is True.
+//|         :param float brightness: Initial display brightness. This value is ignored if auto_brightness is True.
 //|         :param bool auto_brightness: If True, brightness is controlled via an ambient light sensor or other mechanism.
 //|         :param bool single_byte_bounds: Display column and row commands use single bytes
 //|         :param bool data_as_commands: Treat all init and boundary data as SPI commands. Certain displays require this.
+//|         :param bool SH1107_addressing: Special quirk for SH1107, use upper/lower column set and page set
 //|         :param bool auto_refresh: Automatically refresh the screen
 //|         :param int native_frames_per_second: Number of display refreshes per second that occur with the given init_sequence.
 //|         :param bool backlight_on_high: If True, pulling the backlight pin high turns the backlight on."""
 //|         ...
 //|
-STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart, ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row, ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word, ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command, ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command, ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands, ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high };
+STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args,
+                const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart,
+                ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row,
+                ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word,
+                ARG_set_column_command, ARG_set_row_command, ARG_write_ram_command,
+                ARG_set_vertical_scroll, ARG_backlight_pin, ARG_brightness_command,
+                ARG_brightness, ARG_auto_brightness, ARG_single_byte_bounds, ARG_data_as_commands,
+                ARG_auto_refresh, ARG_native_frames_per_second, ARG_backlight_on_high,
+                ARG_SH1107_addressing };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_display_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_init_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -134,6 +150,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_auto_refresh, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
         { MP_QSTR_native_frames_per_second, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 60} },
         { MP_QSTR_backlight_on_high, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = true} },
+        { MP_QSTR_SH1107_addressing, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} }
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -175,7 +192,8 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         args[ARG_data_as_commands].u_bool,
         args[ARG_auto_refresh].u_bool,
         args[ARG_native_frames_per_second].u_int,
-        args[ARG_backlight_on_high].u_bool
+        args[ARG_backlight_on_high].u_bool,
+        args[ARG_SH1107_addressing].u_bool
         );
 
     return self;
@@ -188,7 +206,7 @@ static displayio_display_obj_t* native_display(mp_obj_t display_obj) {
     return MP_OBJ_TO_PTR(native_display);
 }
 
-//|     def show(self, group: Group) -> Any:
+//|     def show(self, group: Group) -> None:
 //|         """Switches to displaying the given group of layers. When group is None, the default
 //|         CircuitPython terminal will be shown.
 //|
@@ -210,28 +228,33 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1) -> Any:
+//|     def refresh(self, *, target_frames_per_second: Optional[int] = None, minimum_frames_per_second: int = 1) -> bool:
 //|         """When auto refresh is off, waits for the target frame rate and then refreshes the display,
 //|         returning True. If the call has taken too long since the last refresh call for the given
 //|         target frame rate, then the refresh returns False immediately without updating the screen to
 //|         hopefully help getting caught up.
 //|
 //|         If the time since the last successful refresh is below the minimum frame rate, then an
-//|         exception will be raised. Set minimum_frames_per_second to 0 to disable.
+//|         exception will be raised. Set ``minimum_frames_per_second`` to 0 to disable.
+//|
+//|         When auto refresh is off, ``display.refresh()`` or ``display.refresh(target_frames_per_second=None)``
+//|         will update the display immediately.
 //|
 //|         When auto refresh is on, updates the display immediately. (The display will also update
 //|         without calls to this.)
 //|
 //|         :param int target_frames_per_second: How many times a second `refresh` should be called and the screen updated.
+//|             Set to `None` for immediate refresh.
 //|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
 //|         ...
 //|
 STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_target_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 60} },
+        { MP_QSTR_target_frames_per_second, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
         { MP_QSTR_minimum_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
+
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -241,11 +264,21 @@ STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos
     if (minimum_frames_per_second > 0) {
         maximum_ms_per_real_frame = 1000 / minimum_frames_per_second;
     }
-    return mp_obj_new_bool(common_hal_displayio_display_refresh(self, 1000 / args[ARG_target_frames_per_second].u_int, maximum_ms_per_real_frame));
+
+    uint32_t target_ms_per_frame;
+    if (args[ARG_target_frames_per_second].u_obj == mp_const_none) {
+        target_ms_per_frame = 0xffffffff;
+    }
+    else {
+        target_ms_per_frame = 1000 / mp_obj_get_int(args[ARG_target_frames_per_second].u_obj);
+    }
+
+    return mp_obj_new_bool(common_hal_displayio_display_refresh(self, target_ms_per_frame, maximum_ms_per_real_frame));
 }
+
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_refresh_obj, 1, displayio_display_obj_refresh);
 
-//|     auto_refresh: Any = ...
+//|     auto_refresh: bool
 //|     """True when the display is refreshed automatically."""
 //|
 STATIC mp_obj_t displayio_display_obj_get_auto_refresh(mp_obj_t self_in) {
@@ -270,7 +303,7 @@ const mp_obj_property_t displayio_display_auto_refresh_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     brightness: Any = ...
+//|     brightness: float
 //|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
 //|     `auto_brightness` is True, the value of `brightness` will change automatically.
 //|     If `brightness` is set, `auto_brightness` will be disabled and will be set to False."""
@@ -307,7 +340,7 @@ const mp_obj_property_t displayio_display_brightness_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     auto_brightness: Any = ...
+//|     auto_brightness: bool
 //|     """True when the display brightness is adjusted automatically, based on an ambient
 //|     light sensor or other method. Note that some displays may have this set to True by default,
 //|     but not actually implement automatic brightness adjustment. `auto_brightness` is set to False
@@ -338,9 +371,8 @@ const mp_obj_property_t displayio_display_auto_brightness_obj = {
 
 
 
-//|     width: Any = ...
-//|	    Gets the width of the board
-//|
+//|     width: int
+//|     """Gets the width of the board"""
 //|
 STATIC mp_obj_t displayio_display_obj_get_width(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
@@ -355,9 +387,8 @@ const mp_obj_property_t displayio_display_width_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     height: Any = ...
-//|	    """Gets the height of the board"""
-//|
+//|     height: int
+//|     """Gets the height of the board"""
 //|
 STATIC mp_obj_t displayio_display_obj_get_height(mp_obj_t self_in) {
     displayio_display_obj_t *self = native_display(self_in);
@@ -372,7 +403,7 @@ const mp_obj_property_t displayio_display_height_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     rotation: Any = ...
+//|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
 //|
 STATIC mp_obj_t displayio_display_obj_get_rotation(mp_obj_t self_in) {
@@ -395,8 +426,8 @@ const mp_obj_property_t displayio_display_rotation_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     bus: Any = ...
-//|	    """The bus being used by the display"""
+//|     bus: _DisplayBus
+//|     """The bus being used by the display"""
 //|
 //|
 STATIC mp_obj_t displayio_display_obj_get_bus(mp_obj_t self_in) {
@@ -413,11 +444,11 @@ const mp_obj_property_t displayio_display_bus_obj = {
 };
 
 
-//|     def fill_row(self, y: int, buffer: bytearray) -> Any:
+//|     def fill_row(self, y: int, buffer: WriteableBuffer) -> WriteableBuffer:
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area
-//|         :param bytearray buffer: The buffer in which to place the pixel data"""
+//|         :param ~_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
 //|         ...
 //|
 STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

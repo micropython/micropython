@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,7 +99,6 @@
 #define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_EXC_INFO     (1)
 #define MICROPY_PY_COLLECTIONS_DEQUE (1)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
 #ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #endif

@@ -1,19 +1,19 @@
-# test waiting within "async for" aiter/anext functions
+# test waiting within "async for" __anext__ function
 
-import sys
-if sys.implementation.name in ('micropython', 'circuitpython'):
-    # uPy allows normal generators to be awaitables
-    coroutine = lambda f: f
-else:
-    import types
-    coroutine = types.coroutine
+# uPy allows normal generators to be awaitables.
+# CircuitPython does not.
+# In CircuitPython you need to have an __await__ method on an awaitable like in CPython;
+#  and like in CPython, generators do not have __await__.
 
-@coroutine
-def f(x):
-    print('f start:', x)
-    yield x + 1
-    yield x + 2
-    return x + 3
+class Awaitable:
+    def __init__(self, x):
+        self.x = x
+
+    def __await__(self):
+        print('f start:', self.x)
+        yield self.x + 1
+        yield self.x + 2
+        return self.x + 3
 
 class ARange:
     def __init__(self, high):
@@ -21,14 +21,13 @@ class ARange:
         self.cur = 0
         self.high = high
 
-    async def __aiter__(self):
+    def __aiter__(self):
         print('aiter')
-        print('f returned:', await f(10))
         return self
 
     async def __anext__(self):
         print('anext')
-        print('f returned:', await f(20))
+        print('f returned:', await Awaitable(20))
         if self.cur < self.high:
             val = self.cur
             self.cur += 1

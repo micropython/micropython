@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -177,12 +177,12 @@ mp_obj_t mp_load_global(qstr qst) {
         #endif
         elem = mp_map_lookup((mp_map_t*)&mp_module_builtins_globals.map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
         if (elem == NULL) {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_raise_msg(&mp_type_NameError, translate("name not defined"));
-            } else {
+            #else
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_NameError,
                     translate("name '%q' is not defined"), qst));
-            }
+            #endif
         }
     }
     return elem->value;
@@ -275,13 +275,13 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
                 return result;
             }
         }
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(translate("unsupported type for operator"));
-        } else {
+        #else
             mp_raise_TypeError_varg(
-                translate("unsupported type for %q: '%s'"),
-                mp_unary_op_method_name[op], mp_obj_get_type_str(arg));
-        }
+                translate("unsupported type for %q: '%q'"),
+                mp_unary_op_method_name[op], mp_obj_get_type_qstr(arg));
+        #endif
     }
 }
 
@@ -582,13 +582,13 @@ generic_binary_op:
     }
 
 unsupported_op:
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(translate("unsupported type for operator"));
-    } else {
+    #else
         mp_raise_TypeError_varg(
-            translate("unsupported types for %q: '%s', '%s'"),
-            mp_binary_op_method_name[op], mp_obj_get_type_str(lhs), mp_obj_get_type_str(rhs));
-    }
+            translate("unsupported types for %q: '%q', '%q'"),
+            mp_binary_op_method_name[op], mp_obj_get_type_qstr(lhs), mp_obj_get_type_qstr(rhs));
+    #endif
 
 zero_division:
     mp_raise_msg(&mp_type_ZeroDivisionError, translate("division by zero"));
@@ -624,11 +624,11 @@ mp_obj_t mp_call_function_n_kw(mp_obj_t fun_in, size_t n_args, size_t n_kw, cons
         return type->call(fun_in, n_args, n_kw, args);
     }
 
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(translate("object not callable"));
-    } else {
-        mp_raise_TypeError_varg(translate("'%s' object is not callable"), mp_obj_get_type_str(fun_in));
-    }
+    #else
+        mp_raise_TypeError_varg(translate("'%q' object is not callable"), mp_obj_get_type_qstr(fun_in));
+    #endif
 }
 
 // args contains: fun  self/NULL  arg(0)  ...  arg(n_args-2)  arg(n_args-1)  kw_key(0)  kw_val(0)  ... kw_key(n_kw-1)  kw_val(n_kw-1)
@@ -852,19 +852,19 @@ void mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
     return;
 
 too_short:
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_ValueError(translate("wrong number of values to unpack"));
-    } else {
+    #else
         mp_raise_ValueError_varg(translate("need more than %d values to unpack"),
             (int)seq_len);
-    }
+    #endif
 too_long:
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_ValueError(translate("wrong number of values to unpack"));
-    } else {
+    #else
         mp_raise_ValueError_varg(translate("too many values to unpack (expected %d)"),
             (int)num);
-    }
+    #endif
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
@@ -916,12 +916,12 @@ void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
     return;
 
 too_short:
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_ValueError(translate("wrong number of values to unpack"));
-    } else {
+    #else
         mp_raise_ValueError_varg(translate("need more than %d values to unpack"),
             (int)seq_len);
-    }
+    #endif
 }
 
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
@@ -1094,9 +1094,9 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
 
     if (dest[0] == MP_OBJ_NULL) {
         // no attribute/method called attr
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_raise_AttributeError(translate("no such attribute"));
-        } else {
+        #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
             // following CPython, we give a more detailed error message for type objects
             if (MP_OBJ_IS_TYPE(base, &mp_type_type)) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
@@ -1104,10 +1104,14 @@ void mp_load_method(mp_obj_t base, qstr attr, mp_obj_t *dest) {
                     ((mp_obj_type_t*)MP_OBJ_TO_PTR(base))->name, attr));
             } else {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-                    translate("'%s' object has no attribute '%q'"),
-                    mp_obj_get_type_str(base), attr));
+                    translate("'%q' object has no attribute '%q'"),
+                    mp_obj_get_type_qstr(base), attr));
             }
-        }
+        #else
+            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+                translate("'%q' object has no attribute '%q'"),
+                mp_obj_get_type_qstr(base), attr));
+        #endif
     }
 }
 
@@ -1168,13 +1172,13 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
         }
     #endif
     }
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_AttributeError(translate("no such attribute"));
-    } else {
+    #else
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
-            translate("'%s' object cannot assign attribute '%q'"),
-            mp_obj_get_type_str(base), attr));
-    }
+            translate("'%q' object cannot assign attribute '%q'"),
+            mp_obj_get_type_qstr(base), attr));
+    #endif
 }
 
 mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
@@ -1209,12 +1213,12 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     }
 
     // object not iterable
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(translate("object not iterable"));
-    } else {
+    #else
         mp_raise_TypeError_varg(
-            translate("'%s' object is not iterable"), mp_obj_get_type_str(o_in));
-    }
+            translate("'%q' object is not iterable"), mp_obj_get_type_qstr(o_in));
+    #endif
 }
 
 // may return MP_OBJ_STOP_ITERATION as an optimisation instead of raise StopIteration()
@@ -1231,12 +1235,12 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
             // __next__ exists, call it and return its result
             return mp_call_method_n_kw(0, 0, dest);
         } else {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_raise_TypeError(translate("object not an iterator"));
-            } else {
-                mp_raise_TypeError_varg(translate("'%s' object is not an iterator"),
-                    mp_obj_get_type_str(o_in));
-            }
+            #else
+                mp_raise_TypeError_varg(translate("'%q' object is not an iterator"),
+                    mp_obj_get_type_qstr(o_in));
+            #endif
         }
     }
 }
@@ -1267,12 +1271,12 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 }
             }
         } else {
-            if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                 mp_raise_TypeError(translate("object not an iterator"));
-            } else {
-                mp_raise_TypeError_varg(translate("'%s' object is not an iterator"),
-                    mp_obj_get_type_str(o_in));
-            }
+            #else
+                mp_raise_TypeError_varg(translate("'%q' object is not an iterator"),
+                    mp_obj_get_type_qstr(o_in));
+            #endif
         }
     }
 }
@@ -1514,6 +1518,10 @@ NORETURN void m_malloc_fail(size_t num_bytes) {
         translate("memory allocation failed, allocating %u bytes"), (uint)num_bytes);
 }
 
+NORETURN void mp_raise_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
+}
+
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
@@ -1522,12 +1530,16 @@ NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_strin
     }
 }
 
+NORETURN void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list argptr) {
+    mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, argptr);
+    nlr_raise(exception);
+}
+
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, argptr);
+    mp_raise_msg_vlist(exc_type, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_AttributeError(const compressed_string_t *msg) {
@@ -1546,6 +1558,13 @@ NORETURN void mp_raise_IndexError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_IndexError, msg);
 }
 
+NORETURN void mp_raise_IndexError_varg(const compressed_string_t *fmt, ...) {
+    va_list argptr;
+    va_start(argptr,fmt);
+    mp_raise_msg_vlist(&mp_type_IndexError, fmt, argptr);
+    va_end(argptr);
+}
+
 NORETURN void mp_raise_ValueError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_ValueError, msg);
 }
@@ -1553,9 +1572,8 @@ NORETURN void mp_raise_ValueError(const compressed_string_t *msg) {
 NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_ValueError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_ValueError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_TypeError(const compressed_string_t *msg) {
@@ -1565,13 +1583,12 @@ NORETURN void mp_raise_TypeError(const compressed_string_t *msg) {
 NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_TypeError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_TypeError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_OSError(int errno_) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_)));
+    mp_raise_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
 }
 
 NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg) {
@@ -1589,9 +1606,16 @@ NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
 NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_OSError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_OSError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
+}
+
+NORETURN void mp_raise_ConnectionError(const compressed_string_t *msg) {
+    mp_raise_msg(&mp_type_ConnectionError, msg);
+}
+
+NORETURN void mp_raise_BrokenPipeError(void) {
+    mp_raise_arg1(&mp_type_BrokenPipeError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE));
 }
 
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {
@@ -1601,17 +1625,15 @@ NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {
 NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_NotImplementedError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_NotImplementedError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_OverflowError, fmt, argptr);
+    mp_raise_msg_vlist(&mp_type_OverflowError, fmt, argptr);
     va_end(argptr);
-    nlr_raise(exception);
 }
 
 NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {

@@ -32,7 +32,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "common-hal/audiopwmio/PWMAudioOut.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"

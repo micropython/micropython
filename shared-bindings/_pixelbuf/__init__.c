@@ -33,7 +33,7 @@
 #include "shared-bindings/_pixelbuf/PixelBuf.h"
 
 
-//| """A fast RGB(W) pixel buffer library for like NeoPixel and DotStar.
+//| """A fast RGB(W) pixel buffer library for like NeoPixel and DotStar
 //|
 //| The `_pixelbuf` module provides the :py:class:`PixelBuf` class to accelerate
 //| RGB(W) strip/matrix manipulation, such as DotStar and Neopixel.
@@ -41,12 +41,12 @@
 //| Byteorders are configured with strings, such as "RGB" or "RGBD"."""
 // TODO: Pull in docs from pypixelbuf.
 
-//| def colorwheel(n: int) -> Any:
+//| def colorwheel(n: float) -> int:
 //|     """C implementation of the common wheel() function found in many examples.
 //|     Returns the colorwheel RGB value as an integer value for n (usable in :py:class:`PixelBuf`, neopixel, and dotstar)."""
 //|     ...
 //|
-//| def wheel(n: Any) -> Any:
+//| def wheel(n: float) -> int:
 //|     """Use of wheel() is deprecated. Please use colorwheel()."""
 //|
 

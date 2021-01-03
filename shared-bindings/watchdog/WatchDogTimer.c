@@ -49,12 +49,12 @@
 //|     """
 //|
 
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Not currently dynamically supported. Access the sole instance through `microcontroller.watchdog`."""
 //|         ...
 //|
 
-//|     def feed(self):
+//|     def feed(self) -> None:
 //|         """Feed the watchdog timer. This must be called regularly, otherwise
 //|         the timer will expire."""
 //|         ...
@@ -66,30 +66,25 @@ STATIC mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
     if (current_mode == WATCHDOGMODE_NONE) {
         mp_raise_ValueError(translate("WatchDogTimer is not currently running"));
     }
+
     common_hal_watchdog_feed(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watchdogtimer_feed);
 
-//|     def deinit(self):
+//|     def deinit(self) -> None:
 //|         """Stop the watchdog timer. This may raise an error if the watchdog
 //|         timer cannot be disabled on this platform."""
 //|         ...
 //|
 STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    watchdog_watchdogmode_t current_mode = common_hal_watchdog_get_mode(self);
-
-    if (current_mode == WATCHDOGMODE_RESET) {
-        mp_raise_NotImplementedError(translate("WatchDogTimer cannot be deinitialized once mode is set to RESET"));
-    }
-
     common_hal_watchdog_deinit(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_deinit_obj, watchdog_watchdogtimer_deinit);
 
-//|     timeout: float = ...
+//|     timeout: float
 //|     """The maximum number of seconds that can elapse between calls
 //|     to feed()"""
 //|
@@ -119,7 +114,7 @@ const mp_obj_property_t watchdog_watchdogtimer_timeout_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     mode: watchdog.WatchDogMode = ...
+//|     mode: WatchDogMode
 //|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode`.
 //|
 //|     Setting a WatchDogMode activates the WatchDog::

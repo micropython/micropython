@@ -2,7 +2,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Dan Halbert for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ BASE_CFLAGS = \
 	-fsingle-precision-constant \
 	-fno-strict-aliasing \
 	-Wdouble-promotion \
+	-Wimplicit-fallthrough=2 \
 	-Wno-endif-labels \
 	-Wstrict-prototypes \
 	-Werror-implicit-function-declaration \
@@ -44,7 +45,6 @@ BASE_CFLAGS = \
 	-Wnested-externs \
 	-Wunreachable-code \
 	-Wcast-align \
-	-Wno-error=lto-type-mismatch \
 	-D__$(CHIP_VARIANT)__ \
 	-ffunction-sections \
 	-fdata-sections \
@@ -65,7 +65,6 @@ ifneq ($(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
 # and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
@@ -75,7 +74,6 @@ endif
 ifneq ($(FROZEN_MPY_DIRS),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -Wno-error=lto-type-mismatch
 endif
 
 
@@ -100,6 +98,9 @@ endif
 
 ifeq ($(CIRCUITPY_AESIO),1)
 SRC_PATTERNS += aesio/%
+endif
+ifeq ($(CIRCUITPY_ALARM),1)
+SRC_PATTERNS += alarm/%
 endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
@@ -135,8 +136,17 @@ endif
 ifeq ($(CIRCUITPY_BOARD),1)
 SRC_PATTERNS += board/%
 endif
+ifeq ($(CIRCUITPY_BUSDEVICE),1)
+SRC_PATTERNS += adafruit_bus_device/%
+endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/% bitbangio/OneWire.%
+endif
+ifeq ($(CIRCUITPY_CAMERA),1)
+SRC_PATTERNS += camera/%
+endif
+ifeq ($(CIRCUITPY_CANIO),1)
+SRC_PATTERNS += canio/%
 endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
@@ -145,7 +155,7 @@ ifeq ($(CIRCUITPY_DIGITALIO),1)
 SRC_PATTERNS += digitalio/%
 endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
-SRC_PATTERNS += displayio/% terminalio/% fontio/%
+SRC_PATTERNS += displayio/%
 endif
 ifeq ($(CIRCUITPY_VECTORIO),1)
 SRC_PATTERNS += vectorio/%
@@ -162,14 +172,23 @@ endif
 ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
 SRC_PATTERNS += gamepadshift/%
 endif
-ifeq ($(CIRCUITPY_I2CSLAVE),1)
-SRC_PATTERNS += i2cslave/%
+ifeq ($(CIRCUITPY_GNSS),1)
+SRC_PATTERNS += gnss/%
+endif
+ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
+SRC_PATTERNS += i2cperipheral/%
+endif
+ifeq ($(CIRCUITPY_IPADDRESS),1)
+SRC_PATTERNS += ipaddress/%
 endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
 endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
+endif
+ifeq ($(CIRCUITPY_MEMORYMONITOR),1)
+SRC_PATTERNS += memorymonitor/%
 endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
 SRC_PATTERNS += microcontroller/%
@@ -186,17 +205,23 @@ endif
 ifeq ($(CIRCUITPY_OS),1)
 SRC_PATTERNS += os/%
 endif
+ifeq ($(CIRCUITPY_DUALBANK),1)
+SRC_PATTERNS += dualbank/%
+endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
 endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_PATTERNS += rgbmatrix/%
 endif
+ifeq ($(CIRCUITPY_PS2IO),1)
+SRC_PATTERNS += ps2io/%
+endif
 ifeq ($(CIRCUITPY_PULSEIO),1)
 SRC_PATTERNS += pulseio/%
 endif
-ifeq ($(CIRCUITPY_PS2IO),1)
-SRC_PATTERNS += ps2io/%
+ifeq ($(CIRCUITPY_PWMIO),1)
+SRC_PATTERNS += pwmio/%
 endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
@@ -210,6 +235,21 @@ endif
 ifeq ($(CIRCUITPY_SAMD),1)
 SRC_PATTERNS += samd/%
 endif
+ifeq ($(CIRCUITPY_SDCARDIO),1)
+SRC_PATTERNS += sdcardio/%
+endif
+ifeq ($(CIRCUITPY_SDIOIO),1)
+SRC_PATTERNS += sdioio/%
+endif
+ifeq ($(CIRCUITPY_SHARPDISPLAY),1)
+SRC_PATTERNS += sharpdisplay/%
+endif
+ifeq ($(CIRCUITPY_SOCKETPOOL),1)
+SRC_PATTERNS += socketpool/%
+endif
+ifeq ($(CIRCUITPY_SSL),1)
+SRC_PATTERNS += ssl/%
+endif
 ifeq ($(CIRCUITPY_STAGE),1)
 SRC_PATTERNS += _stage/%
 endif
@@ -221,6 +261,9 @@ SRC_PATTERNS += struct/%
 endif
 ifeq ($(CIRCUITPY_SUPERVISOR),1)
 SRC_PATTERNS += supervisor/%
+endif
+ifeq ($(CIRCUITPY_TERMINALIO),1)
+SRC_PATTERNS += terminalio/% fontio/%
 endif
 ifeq ($(CIRCUITPY_TIME),1)
 SRC_PATTERNS += time/%
@@ -243,13 +286,15 @@ endif
 ifeq ($(CIRCUITPY_WATCHDOG),1)
 SRC_PATTERNS += watchdog/%
 endif
+ifeq ($(CIRCUITPY_WIFI),1)
+SRC_PATTERNS += wifi/%
+endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS in SRC_COMMON_HAL
 SRC_COMMON_HAL_ALL = \
-	_bleio/__init__.c \
 	_bleio/Adapter.c \
 	_bleio/Attribute.c \
 	_bleio/Characteristic.c \
@@ -259,30 +304,47 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/PacketBuffer.c \
 	_bleio/Service.c \
 	_bleio/UUID.c \
+	_bleio/__init__.c \
+	_pew/PewPew.c \
+	_pew/__init__.c \
+	alarm/SleepMemory.c \
+	alarm/__init__.c \
+	alarm/pin/PinAlarm.c \
+	alarm/time/TimeAlarm.c \
+	alarm/touch/TouchAlarm.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
-	audiobusio/__init__.c \
 	audiobusio/I2SOut.c \
 	audiobusio/PDMIn.c \
-	audiopwmio/__init__.c \
-	audiopwmio/PWMAudioOut.c \
-	audioio/__init__.c \
+	audiobusio/__init__.c \
 	audioio/AudioOut.c \
+	audioio/__init__.c \
+	audiopwmio/PWMAudioOut.c \
+	audiopwmio/__init__.c \
 	board/__init__.c \
 	busio/I2C.c \
 	busio/SPI.c \
 	busio/UART.c \
 	busio/__init__.c \
+	camera/__init__.c \
+	camera/Camera.c \
+	canio/CAN.c \
+	canio/Listener.c \
+	canio/__init__.c \
 	countio/Counter.c \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
 	displayio/ParallelBus.c \
-	frequencyio/__init__.c \
 	frequencyio/FrequencyIn.c \
-	i2cslave/I2CSlave.c \
-	i2cslave/__init__.c \
+	frequencyio/__init__.c \
+	gnss/__init__.c \
+	gnss/GNSS.c \
+	gnss/PositionFix.c \
+	gnss/SatelliteSystem.c \
+	i2cperipheral/I2CPeripheral.c \
+	i2cperipheral/__init__.c \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	microcontroller/__init__.c \
@@ -290,23 +352,45 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
-	rgbmatrix/RGBMatrix.c \
-	rgbmatrix/__init__.c \
-	pulseio/PWMOut.c \
+	dualbank/__init__.c \
+	ps2io/Ps2.c \
+	ps2io/__init__.c \
 	pulseio/PulseIn.c \
 	pulseio/PulseOut.c \
 	pulseio/__init__.c \
-	ps2io/Ps2.c \
-	ps2io/__init__.c \
+	pwmio/PWMOut.c \
+	pwmio/__init__.c \
+	rgbmatrix/RGBMatrix.c \
+	rgbmatrix/__init__.c \
 	rotaryio/IncrementalEncoder.c \
 	rotaryio/__init__.c \
 	rtc/RTC.c \
 	rtc/__init__.c \
+	sdioio/SDCard.c \
+	sdioio/__init__.c \
+	socketpool/__init__.c \
+	socketpool/SocketPool.c \
+	socketpool/Socket.c \
+	ssl/__init__.c \
+	ssl/SSLContext.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
-	watchdog/__init__.c \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
+	watchdog/__init__.c \
+	wifi/Network.c \
+	wifi/Radio.c \
+	wifi/ScannedNetworks.c \
+	wifi/__init__.c \
+
+ifeq ($(CIRCUITPY_BLEIO_HCI),1)
+# Helper code for _bleio HCI.
+SRC_C += \
+	common-hal/_bleio/att.c \
+	common-hal/_bleio/hci.c \
+
+endif
+
 
 SRC_COMMON_HAL = $(filter $(SRC_PATTERNS), $(SRC_COMMON_HAL_ALL))
 
@@ -318,13 +402,17 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Address.c \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
+	_eve/__init__.c \
+	camera/ImageFormat.c \
+	canio/Match.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
 	fontio/Glyph.c \
-	microcontroller/RunMode.c \
 	math/__init__.c \
-	_eve/__init__.c \
+	microcontroller/ResetReason.c \
+	microcontroller/RunMode.c \
+	supervisor/RunReason.c \
 )
 
 SRC_BINDINGS_ENUMS += \
@@ -335,29 +423,36 @@ SRC_SHARED_MODULE_ALL = \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_bleio/ScanResults.c \
+	_eve/__init__.c \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
 	_stage/Layer.c \
 	_stage/Text.c \
 	_stage/__init__.c \
-	audiopwmio/__init__.c \
-	audioio/__init__.c \
-	audiocore/__init__.c \
+	aesio/__init__.c \
+	aesio/aes.c \
 	audiocore/RawSample.c \
 	audiocore/WaveFile.c \
-	audiomixer/__init__.c \
+	audiocore/__init__.c \
+	audioio/__init__.c \
 	audiomixer/Mixer.c \
 	audiomixer/MixerVoice.c \
-	audiomp3/__init__.c \
+	audiomixer/__init__.c \
 	audiomp3/MP3Decoder.c \
+	audiomp3/__init__.c \
+	audiopwmio/__init__.c \
 	bitbangio/I2C.c \
 	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
 	board/__init__.c \
+	adafruit_bus_device/__init__.c \
+	adafruit_bus_device/I2CDevice.c \
+	adafruit_bus_device/SPIDevice.c \
 	busio/OneWire.c \
-	aesio/__init__.c \
-	aesio/aes.c \
+	canio/Match.c \
+	canio/Message.c \
+	canio/RemoteTransmissionRequest.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \
@@ -370,41 +465,47 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/Shape.c \
 	displayio/TileGrid.c \
 	displayio/__init__.c \
-    vectorio/Circle.c \
-    vectorio/Rectangle.c \
-    vectorio/Polygon.c \
-    vectorio/VectorShape.c \
-    vectorio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
+	ipaddress/IPv4Address.c \
+	ipaddress/__init__.c \
+	sdcardio/SDCard.c \
+	sdcardio/__init__.c \
 	gamepad/GamePad.c \
 	gamepad/__init__.c \
 	gamepadshift/GamePadShift.c \
 	gamepadshift/__init__.c \
+	memorymonitor/__init__.c \
+	memorymonitor/AllocationAlarm.c \
+	memorymonitor/AllocationSize.c \
+	network/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
-	socket/__init__.c \
-	network/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
+	sharpdisplay/SharpMemoryFramebuffer.c \
+	sharpdisplay/__init__.c \
+	socket/__init__.c \
 	storage/__init__.c \
 	struct/__init__.c \
-	time/__init__.c \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
+	time/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
-	_pew/__init__.c \
-	_pew/PewPew.c \
-	_eve/__init__.c
+	vectorio/Circle.c \
+	vectorio/Polygon.c \
+	vectorio/Rectangle.c \
+	vectorio/VectorShape.c \
+	vectorio/__init__.c \
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))
 
 # Use the native touchio if requested. This flag is set conditionally in, say, mpconfigport.h.
-# The presence of common-hal/touchio/* # does not imply it's available for all chips in a port,
+# The presence of common-hal/touchio/* does not imply it's available for all chips in a port,
 # so there is an explicit flag. For example, SAMD21 touchio is native, but SAMD51 is not.
 ifeq ($(CIRCUITPY_TOUCHIO_USE_NATIVE),1)
 SRC_COMMON_HAL_ALL += \
@@ -415,6 +516,14 @@ SRC_SHARED_MODULE_ALL += \
 	touchio/TouchIn.c \
 	touchio/__init__.c
 endif
+
+# If supporting _bleio via HCI, make devices/ble_hci/common-hal/_bleio be includable,
+# and use C source files in devices/ble_hci/common-hal.
+ifeq ($(CIRCUITPY_BLEIO_HCI),1)
+INC += -I$(TOP)/devices/ble_hci
+DEVICES_MODULES += $(TOP)/devices/ble_hci
+endif
+
 ifeq ($(CIRCUITPY_AUDIOMP3),1)
 SRC_MOD += $(addprefix lib/mp3/src/, \
 	bitstream.c \
@@ -436,16 +545,21 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 $(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
-SRC_MOD += $(addprefix lib/protomatter/, \
+SRC_MOD += $(addprefix lib/protomatter/src/, \
 	core.c \
 )
-$(BUILD)/lib/protomatter/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
+$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
 	displayio/display_core.c \
+)
+
+SRC_COMMON_HAL_INTERNAL = \
+$(filter $(SRC_PATTERNS), \
+	_bleio/ \
 )
 
 ifeq ($(INTERNAL_LIBM),1)

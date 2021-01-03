@@ -24,18 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 void board_init(void) {
     // USB
-    never_reset_pin(&pin_GPIO19);
-    never_reset_pin(&pin_GPIO20);
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
     // Debug UART
-    never_reset_pin(&pin_GPIO43);
-    never_reset_pin(&pin_GPIO44);
+#ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+#endif /* DEBUG */
 }
 
 bool board_requests_safe_mode(void) {
@@ -44,4 +46,7 @@ bool board_requests_safe_mode(void) {
 
 void reset_board(void) {
 
+}
+
+void board_deinit(void) {
 }

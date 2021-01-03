@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,12 +99,12 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             mp_map_elem_t *kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qst), MP_MAP_LOOKUP);
             if (kw == NULL) {
                 if (allowed[i].flags & MP_ARG_REQUIRED) {
-                    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                         mp_arg_error_terse_mismatch();
-                    } else {
+                        #else
                         mp_raise_TypeError_varg(
                             translate("'%q' argument required"), allowed[i].qst);
-                    }
+                        #endif
                 }
                 out_vals[i] = allowed[i].defval;
                 continue;
@@ -124,20 +124,20 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
     }
     if (pos_found < n_pos) {
         extra_positional:
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
-        } else {
+        #else
             // TODO better error message
             mp_raise_TypeError(translate("extra positional arguments given"));
-        }
+        #endif
     }
     if (kws_found < kws->used) {
-        if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
-        } else {
+        #else
             // TODO better error message
             mp_raise_TypeError(translate("extra keyword arguments given"));
-        }
+        #endif
     }
 }
 

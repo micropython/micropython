@@ -9,9 +9,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_AREF), MP_ROM_PTR(&pin_P0_04) },  // User must connect manually.
   { MP_ROM_QSTR(MP_QSTR_VDIV), MP_ROM_PTR(&pin_P0_05) },  // User must connect manually.
 
-// Not defining the NFC names until CircuitPython supports NFC.
-//  { MP_ROM_QSTR(MP_QSTR_NFC1), MP_ROM_PTR(&pin_P0_09) },
-//  { MP_ROM_QSTR(MP_QSTR_NFC2), MP_ROM_PTR(&pin_P0_10) },
+  { MP_ROM_QSTR(MP_QSTR_NFC1), MP_ROM_PTR(&pin_P0_09) },
+  { MP_ROM_QSTR(MP_QSTR_NFC2), MP_ROM_PTR(&pin_P0_10) },
 
   { MP_ROM_QSTR(MP_QSTR_P2), MP_ROM_PTR(&pin_P0_02) },
   { MP_ROM_QSTR(MP_QSTR_P3), MP_ROM_PTR(&pin_P0_03) },

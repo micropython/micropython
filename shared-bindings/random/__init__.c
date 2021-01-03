@@ -46,8 +46,11 @@
 //| .. warning:: Numbers from this module are not cryptographically strong! Use
 //|   bytes from `os.urandom` directly for true randomness."""
 //|
+//| from typing import TypeVar
+//| _T = TypeVar('_T')
+//|
 
-//| def seed(seed: Any) -> Any:
+//| def seed(seed: int) -> None:
 //|     """Sets the starting seed of the random  number generation. Further calls to
 //|     `random` will return deterministic results afterwards."""
 //|     ...
@@ -59,7 +62,7 @@ STATIC mp_obj_t random_seed(mp_obj_t seed_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_seed_obj, random_seed);
 
-//| def getrandbits(k: Any) -> Any:
+//| def getrandbits(k: int) -> int:
 //|     """Returns an integer with *k* random bits."""
 //|     ...
 //|
@@ -72,7 +75,7 @@ STATIC mp_obj_t random_getrandbits(mp_obj_t num_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_getrandbits_obj, random_getrandbits);
 
-//| def randrange(stop: Any) -> Any:
+//| def randrange(stop: Tuple[int, int, int]) -> int:
 //|     """Returns a randomly selected integer from ``range(start, stop, step)``."""
 //|     ...
 //|
@@ -114,7 +117,7 @@ STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(random_randrange_obj, 1, 3, random_randrange);
 
-//| def randint(a: Any, b: Any) -> Any:
+//| def randint(a: int, b: int) -> int:
 //|     """Returns a randomly selected integer between a and b inclusive. Equivalent
 //|     to ``randrange(a, b + 1, 1)``"""
 //|     ...
@@ -129,7 +132,7 @@ STATIC mp_obj_t random_randint(mp_obj_t a_in, mp_obj_t b_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(random_randint_obj, random_randint);
 
-//| def choice(seq: Any) -> Any:
+//| def choice(seq: Sequence[_T]) -> _T:
 //|     """Returns a randomly selected element from the given sequence. Raises
 //|     IndexError when the sequence is empty."""
 //|     ...
@@ -143,7 +146,7 @@ STATIC mp_obj_t random_choice(mp_obj_t seq) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_choice_obj, random_choice);
 
-//| def random() -> Any:
+//| def random() -> float:
 //|     """Returns a random float between 0 and 1.0."""
 //|     ...
 //|
@@ -152,7 +155,7 @@ STATIC mp_obj_t random_random(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(random_random_obj, random_random);
 
-//| def uniform(a: Any, b: Any) -> Any:
+//| def uniform(a: float, b: float) -> float:
 //|     """Returns a random float between a and b. It may or may not be inclusive
 //|     depending on float rounding."""
 //|     ...

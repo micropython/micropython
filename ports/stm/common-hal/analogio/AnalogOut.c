@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2019, Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -86,7 +86,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
 
     dac_on[self->dac_index] = true;
     self->pin = pin;
-    claim_pin(pin);
+    common_hal_mcu_pin_claim(pin);
     #endif
 }
 

@@ -2,8 +2,8 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Dan Halbert for Adafruit Industries
-# Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2019 Dan Halbert for Adafruit Industries
+# SPDX-FileCopyrightText: Copyright (c) 2019 Lucian Copeland for Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -81,15 +81,22 @@ INC += -I../../supervisor/shared/usb
 
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-	CFLAGS += -ggdb
+	CFLAGS += -ggdb3
 	# You may want to enable these flags to make setting breakpoints easier.
 	CFLAGS += -fno-inline -fno-ipa-sra
 else
-	CFLAGS += -Os -DNDEBUG
-	CFLAGS += -ggdb
+	CFLAGS += -DNDEBUG
+	OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
+	CFLAGS += -ggdb3
 	# TODO: Test with -flto
 	# CFLAGS += -flto
 endif
+
+# to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
+CFLAGS += $(OPTIMIZATION_FLAGS)
+
+# Add -ftree-vrp optimization and checking to all builds. It's not enabled for -Os by default.
+CFLAGS += -ftree-vrp
 
 # MCU Series is defined by the HAL package and doesn't need to be specified here
 C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)
@@ -98,7 +105,8 @@ CFLAGS += $(INC) -Werror -Wall -std=gnu11 -fshort-enums $(BASE_CFLAGS) $(C_DEFS)
 
 # Undo some warnings.
 # STM32 HAL uses undefined preprocessor variables, shadowed variables, casts that change alignment reqs
-CFLAGS += -Wno-undef -Wno-shadow -Wno-cast-align
+# You can add your own temporary suppression by setting ADD_CFLAGS in the make command
+CFLAGS += -Wno-undef -Wno-shadow -Wno-cast-align $(ADD_CFLAGS)
 
 CFLAGS += -mthumb -mabi=aapcs-linux
 
@@ -154,44 +162,48 @@ CFLAGS += \
 	-DCFG_TUD_MIDI_TX_BUFSIZE=128
 
 SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
+	hal.c \
 	hal_adc.c \
 	hal_adc_ex.c \
+	hal_cortex.c \
 	hal_dac.c \
 	hal_dac_ex.c \
+	hal_dma.c \
+	hal_dma_ex.c \
+	hal_exti.c \
+	hal_flash.c \
+	hal_flash_ex.c \
+	hal_gpio.c \
 	hal_i2c.c \
 	hal_i2c_ex.c \
+	hal_pwr.c \
+	hal_pwr_ex.c \
 	hal_qspi.c \
+	hal_rcc.c \
+	hal_rcc_ex.c \
 	hal_rng.c \
 	hal_rtc.c \
 	hal_rtc_ex.c \
+	hal_sd.c \
 	hal_spi.c \
 	hal_tim.c \
 	hal_tim_ex.c \
 	hal_uart.c \
 	hal_usart.c \
-	hal_rcc.c \
-	hal_rcc_ex.c \
-	hal_flash.c \
-	hal_flash_ex.c \
-	hal_gpio.c \
-	hal_dma_ex.c \
-	hal_dma.c \
-	hal_pwr.c \
-	hal_pwr_ex.c \
-	hal_cortex.c \
-	hal.c \
-	hal_exti.c \
-	hal_sd.c \
-	ll_gpio.c \
 	ll_adc.c \
-	ll_i2c.c \
 	ll_dma.c \
+	ll_exti.c \
+	ll_gpio.c \
+	ll_i2c.c \
+	ll_rcc.c \
 	ll_sdmmc.c \
 	ll_usart.c \
-	ll_rcc.c \
 	ll_utils.c \
-	ll_exti.c \
 )
+
+ifeq ($(CIRCUITPY_CANIO),1)
+SRC_STM32 += $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_hal_can.c
+endif
 
 # Need this to avoid UART linker problems. TODO: rewrite to use registered callbacks.
 # Does not exist for F4 and lower
@@ -207,6 +219,7 @@ SRC_C += \
 	mphalport.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
+	peripherals/timers.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/clocks.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/pins.c \
 	peripherals/stm32$(MCU_SERIES_LOWER)/$(MCU_VARIANT_LOWER)/gpio.c \

@@ -31,7 +31,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "ble_drv.h"
 #include "py/objarray.h"
 #include "py/objproperty.h"
 #include "py/objstr.h"
@@ -64,18 +63,18 @@
 
 void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
     if (!common_hal_bleio_connection_get_connected(self)) {
-        mp_raise_bleio_ConnectionError(translate("Connection has been disconnected and can no longer be used. Create a new connection."));
+        mp_raise_ConnectionError(translate("Connection has been disconnected and can no longer be used. Create a new connection."));
     }
 }
 
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """Connections cannot be made directly. Instead, to initiate a connection use `Adapter.connect`.
 //|         Connections may also be made when another device initiates a connection. To use a Connection
-//|         created by a peer, read the `Adapter.connections` property.
+//|         created by a peer, read the `Adapter.connections` property."""
 //|         ...
 //|
-//|     def disconnect(self, ) -> Any:
-//|         ""Disconnects from the remote peripheral. Does nothing if already disconnected."""
+//|     def disconnect(self) -> None:
+//|         """Disconnects from the remote peripheral. Does nothing if already disconnected."""
 //|         ...
 //|
 STATIC mp_obj_t bleio_connection_disconnect(mp_obj_t self_in) {
@@ -87,7 +86,7 @@ STATIC mp_obj_t bleio_connection_disconnect(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_disconnect_obj, bleio_connection_disconnect);
 
 
-//|     def pair(self, *, bond: Any = True) -> Any:
+//|     def pair(self, *, bond: bool = True) -> None:
 //|         """Pair to the peer to improve security."""
 //|         ...
 //|
@@ -109,14 +108,14 @@ STATIC mp_obj_t bleio_connection_pair(mp_uint_t n_args, const mp_obj_t *pos_args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_pair_obj, 1, bleio_connection_pair);
 
-//|     def discover_remote_services(self, service_uuids_whitelist: iterable = None) -> Any:
+//|     def discover_remote_services(self, service_uuids_whitelist: Optional[Iterable[UUID]] = None) -> Tuple[Service, ...]:
 //|         """Do BLE discovery for all services or for the given service UUIDS,
-//|          to find their handles and characteristics, and return the discovered services.
-//|          `Connection.connected` must be True.
+//|         to find their handles and characteristics, and return the discovered services.
+//|         `Connection.connected` must be True.
 //|
 //|         :param iterable service_uuids_whitelist:
 //|
-//|           an iterable of :py:class:~`UUID` objects for the services provided by the peripheral
+//|           an iterable of :py:class:`UUID` objects for the services provided by the peripheral
 //|           that you want to use.
 //|
 //|           The peripheral may provide more services, but services not listed are ignored
@@ -126,7 +125,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_pair_obj, 1, bleio_connection
 //|           slow.
 //|
 //|           If the service UUID is 128-bit, or its characteristic UUID's are 128-bit, you
-//|           you must have already created a :py:class:~`UUID` object for that UUID in order for the
+//|           you must have already created a :py:class:`UUID` object for that UUID in order for the
 //|           service or characteristic to be discovered. Creating the UUID causes the UUID to be
 //|           registered for use. (This restriction may be lifted in the future.)
 //|
@@ -152,7 +151,7 @@ STATIC mp_obj_t bleio_connection_discover_remote_services(mp_uint_t n_args, cons
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_connection_discover_remote_services_obj, 1, bleio_connection_discover_remote_services);
 
-//|     connected: Any = ...
+//|     connected: bool
 //|     """True if connected to the remote peer."""
 //|
 STATIC mp_obj_t bleio_connection_get_connected(mp_obj_t self_in) {
@@ -170,7 +169,7 @@ const mp_obj_property_t bleio_connection_connected_obj = {
 };
 
 
-//|     paired: Any = ...
+//|     paired: bool
 //|     """True if paired to the remote peer."""
 //|
 STATIC mp_obj_t bleio_connection_get_paired(mp_obj_t self_in) {
@@ -188,7 +187,7 @@ const mp_obj_property_t bleio_connection_paired_obj = {
 };
 
 
-//|     connection_interval: Any = ...
+//|     connection_interval: float
 //|     """Time between transmissions in milliseconds. Will be multiple of 1.25ms. Lower numbers
 //|     increase speed and decrease latency but increase power consumption.
 //|
@@ -206,7 +205,7 @@ STATIC mp_obj_t bleio_connection_get_connection_interval(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_connection_interval_obj, bleio_connection_get_connection_interval);
 
-//|     attribute: Any = ...
+//|     attribute: int
 //|     """The maximum number of data bytes that can be sent in a single transmission,
 //|     not including overhead bytes.
 //|

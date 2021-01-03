@@ -32,20 +32,22 @@
 #include "supervisor/shared/rgb_led_status.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate.h"
+#include "supervisor/shared/workflow.h"
 
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/supervisor/Runtime.h"
 
 //| """Supervisor settings"""
 //|
 
-//| runtime: Runtime = ...
+//| runtime: Runtime
 //| """Runtime information, such as ``runtime.serial_connected``
 //| (USB serial connection status).
 //| This object is the sole instance of `supervisor.Runtime`."""
 //|
 
-//| def enable_autoreload(self) -> None:
+//| def enable_autoreload() -> None:
 //|     """Enable autoreload based on USB file write activity."""
 //|     ...
 //|
@@ -55,7 +57,7 @@ STATIC mp_obj_t supervisor_enable_autoreload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_enable_autoreload_obj, supervisor_enable_autoreload);
 
-//| def disable_autoreload(self) -> None:
+//| def disable_autoreload() -> None:
 //|     """Disable autoreload based on USB file write activity until
 //|     `enable_autoreload` is called."""
 //|     ...
@@ -66,7 +68,7 @@ STATIC mp_obj_t supervisor_disable_autoreload(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_autoreload_obj, supervisor_disable_autoreload);
 
-//| def set_rgb_status_brightness(self, brightness: int) -> None:
+//| def set_rgb_status_brightness(brightness: int) -> None:
 //|     """Set brightness of status neopixel from 0-255
 //|     `set_rgb_status_brightness` is called."""
 //|     ...
@@ -82,18 +84,19 @@ STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl){
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_set_rgb_status_brightness);
 
-//| def reload(self) -> None:
+//| def reload() -> None:
 //|     """Reload the main Python code and run it (equivalent to hitting Ctrl-D at the REPL)."""
 //|     ...
 //|
 STATIC mp_obj_t supervisor_reload(void) {
     reload_requested = true;
+    supervisor_set_run_reason(RUN_REASON_SUPERVISOR_RELOAD);
     mp_raise_reload_exception();
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
 
-//| def set_next_stack_limit(self, size: int) -> None:
+//| def set_next_stack_limit(size: int) -> None:
 //|     """Set the size of the stack for the next vm run. If its too large, the default will be used."""
 //|     ...
 //|
@@ -111,11 +114,12 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_next_stack_limit_obj, supervisor_set_ne
 
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_disable_autoreload),  MP_ROM_PTR(&supervisor_disable_autoreload_obj) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_autoreload),  MP_ROM_PTR(&supervisor_disable_autoreload_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_runtime),  MP_ROM_PTR(&common_hal_supervisor_runtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_reload),  MP_ROM_PTR(&supervisor_reload_obj) },
+    { MP_ROM_QSTR(MP_QSTR_RunReason),  MP_ROM_PTR(&supervisor_run_reason_type) },
     { MP_ROM_QSTR(MP_QSTR_set_next_stack_limit),  MP_ROM_PTR(&supervisor_set_next_stack_limit_obj) },
 
 };

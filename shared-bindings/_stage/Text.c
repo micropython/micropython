@@ -33,16 +33,16 @@
 //| class Text:
 //|     """Keep information about a single grid of text"""
 //|
-//|     def __init__(self, width: int, height: int, font: bytearray, palette: bytearray, chars: bytearray):
+//|     def __init__(self, width: int, height: int, font: ReadableBuffer, palette: ReadableBuffer, chars: ReadableBuffer) -> None:
 //|         """Keep internal information about a grid of text
 //|         in a format suitable for fast rendering
 //|         with the ``render()`` function.
 //|
 //|         :param int width: The width of the grid in tiles, or 1 for sprites.
 //|         :param int height: The height of the grid in tiles, or 1 for sprites.
-//|         :param bytearray font: The font data of the characters.
-//|         :param bytearray palette: The color palette to be used.
-//|         :param bytearray chars: The contents of the character grid.
+//|         :param ~_typing.ReadableBuffer font: The font data of the characters.
+//|         :param ~_typing.ReadableBuffer palette: The color palette to be used.
+//|         :param ~_typing.ReadableBuffer chars: The contents of the character grid.
 //|
 //|         This class is intended for internal use in the ``stage`` library and
 //|         it shouldn't be used on its own."""
@@ -82,7 +82,7 @@ STATIC mp_obj_t text_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def move(self, x: Any, y: Any) -> Any:
+//|     def move(self, x: int, y: int) -> None:
 //|         """Set the offset of the text to the specified values."""
 //|         ...
 //|

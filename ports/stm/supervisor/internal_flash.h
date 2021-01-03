@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  * Copyright (c) 2020 Mark Olsson <mark@markolsson.se>
  *
@@ -41,12 +41,11 @@
 
 #ifdef STM32F411xE
 #define STM32_FLASH_SIZE 0x80000 //512KiB
-#if CIRCUITPY_NVM
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0x8000 //32KiB
-#define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08004000
-#else
-#define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
-#define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08004000
+#ifndef INTERNAL_FLASH_FILESYSTEM_SIZE
+  #define INTERNAL_FLASH_FILESYSTEM_SIZE 0xC000 //48KiB
+#endif
+#ifndef INTERNAL_FLASH_FILESYSTEM_START_ADDR
+  #define INTERNAL_FLASH_FILESYSTEM_START_ADDR 0x08004000
 #endif
 #endif
 

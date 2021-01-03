@@ -87,28 +87,32 @@ def run_micropython(pyb, args, test_file, is_special=False):
                     def get(required=False):
                         rv = b''
                         while True:
-                            ready = select.select([master], [], [], 0.02)
-                            if ready[0] == [master]:
-                                rv += os.read(master, 1024)
+                            ready = select.select([emulator], [], [], 0.02)
+                            if ready[0] == [emulator]:
+                                rv += os.read(emulator, 1024)
                             else:
                                 if not required or rv:
                                     return rv
 
                     def send_get(what):
-                        os.write(master, what)
+                        os.write(emulator, what)
                         return get()
 
                     with open(test_file, 'rb') as f:
                         # instead of: output_mupy = subprocess.check_output(args, stdin=f)
-                        master, slave = pty.openpty()
-                        p = subprocess.Popen(args, stdin=slave, stdout=slave,
+                        # openpty returns two read/write file descriptors.  The first one is
+                        # used by the program which provides the virtual
+                        # terminal service, and the second one is used by the
+                        # subprogram which requires a tty to work.
+                        emulator, subterminal = pty.openpty()
+                        p = subprocess.Popen(args, stdin=subterminal, stdout=subterminal,
                                              stderr=subprocess.STDOUT, bufsize=0)
                         banner = get(True)
                         output_mupy = banner + b''.join(send_get(line) for line in f)
                         send_get(b'\x04') # exit the REPL, so coverage info is saved
                         p.kill()
-                        os.close(master)
-                        os.close(slave)
+                        os.close(emulator)
+                        os.close(subterminal)
                 else:
                     output_mupy = subprocess.check_output(args + [test_file], stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError:
@@ -358,7 +362,7 @@ def run_tests(pyb, tests, args, base_path=".", num_threads=1):
     if args.emit == 'native':
         skip_tests.update({'basics/%s.py' % t for t in 'gen_yield_from gen_yield_from_close gen_yield_from_ducktype gen_yield_from_exc gen_yield_from_executing gen_yield_from_iter gen_yield_from_send gen_yield_from_stopped gen_yield_from_throw gen_yield_from_throw2 gen_yield_from_throw3 generator1 generator2 generator_args generator_close generator_closure generator_exc generator_pend_throw generator_return generator_send'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'bytes_gen class_store_class globals_del string_join gen_stack_overflow'.split()}) # require yield
-        skip_tests.update({'basics/async_%s.py' % t for t in 'def await await2 for for2 with with2'.split()}) # require yield
+        skip_tests.update({'basics/async_%s.py' % t for t in 'def await await2 for for2 with with2 coroutine'.split()}) # require yield
         skip_tests.update({'basics/%s.py' % t for t in 'try_reraise try_reraise2'.split()}) # require raise_varargs
         skip_tests.update({'basics/%s.py' % t for t in 'with_break with_continue with_return'.split()}) # require complete with support
         skip_tests.add('basics/array_construct2.py') # requires generators

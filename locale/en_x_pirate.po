@@ -1,17 +1,14 @@
-# Pirate (English) Translation
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
+# SPDX-License-Identifier: MIT
+
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-01 08:56-0500\n"
+"POT-Creation-Date: 2020-06-25 11:44-0500\n"
 "PO-Revision-Date: 2020-03-30 22:11+0000\n"
 "Last-Translator: Tannewt <devnull@unpythonic.net>\n"
-"Language-Team: English <https://later.unpythonic.net/projects/circuitpython/"
-"circuitpython-master/en_X@pirate/>\n"
 "Language: en_x_pirate\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -298,6 +295,7 @@ msgstr ""
 msgid "All timers for this pin are in use"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -305,7 +303,7 @@ msgstr ""
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
-#: shared-bindings/pulseio/PWMOut.c shared-module/_pew/PewPew.c
+#: shared-bindings/pulseio/PWMOut.c
 msgid "All timers in use"
 msgstr ""
 
@@ -581,6 +579,10 @@ msgstr ""
 msgid "Corrupt raw code"
 msgstr ""
 
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "Could not initialize GNSS"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr ""
@@ -826,10 +828,6 @@ msgstr ""
 msgid "I2C Init Error"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "I2C operation not supported"
-msgstr ""
-
 #: shared-bindings/aesio/aes.c
 #, c-format
 msgid "IV must be %d bytes long"
@@ -971,7 +969,7 @@ msgstr "Belay that! Invalid pin for starboard-side channel"
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cslave/I2CSlave.c
+#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1434,6 +1432,10 @@ msgstr ""
 msgid "Supply at least one UART pin"
 msgstr ""
 
+#: shared-bindings/gnss/GNSS.c
+msgid "System entry must be gnss.SatelliteSystem"
+msgstr ""
+
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
 msgstr ""
@@ -1620,6 +1622,7 @@ msgid ""
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr ""
 
@@ -1660,6 +1663,26 @@ msgstr ""
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "Blimey! Yer code filename has two extensions\n"
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer is not currently running"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+msgstr ""
+
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "WatchDogTimer.timeout must be greater than 0"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Watchdog timer expired."
+msgstr ""
 
 #: py/builtinhelp.c
 #, c-format
@@ -1709,11 +1732,11 @@ msgstr ""
 msgid "address %08x is not aligned to %d bytes"
 msgstr ""
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr ""
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
 msgstr ""
 
@@ -1794,10 +1817,6 @@ msgstr ""
 msgid "bits must be 7, 8 or 9"
 msgstr ""
 
-#: extmod/machine_spi.c
-msgid "bits must be 8"
-msgstr "pieces must be of 8"
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr ""
@@ -1822,10 +1841,6 @@ msgstr ""
 #: shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr ""
-
-#: extmod/machine_spi.c
-msgid "buffers must be the same length"
-msgstr "yer buffers must be of the same length"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "buttons must be digitalio.DigitalInOut"
@@ -1902,7 +1917,7 @@ msgstr ""
 msgid "can't convert NaN to int"
 msgstr ""
 
-#: shared-bindings/i2cslave/I2CSlave.c
+#: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "can't convert address to int"
 msgstr ""
 
@@ -2256,10 +2271,6 @@ msgstr ""
 msgid "first argument to super() must be type"
 msgstr ""
 
-#: extmod/machine_spi.c
-msgid "firstbit must be MSB"
-msgstr ""
-
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
 msgstr ""
@@ -2444,14 +2455,6 @@ msgstr ""
 msgid "interval must be in range %s-%s"
 msgstr ""
 
-#: extmod/machine_i2c.c
-msgid "invalid I2C peripheral"
-msgstr "Belay that! I2C peripheral be invalid"
-
-#: extmod/machine_spi.c
-msgid "invalid SPI peripheral"
-msgstr "Arr! SPI peripheral be invalid"
-
 #: lib/netutils/netutils.c
 msgid "invalid arguments"
 msgstr ""
@@ -2626,10 +2629,6 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "must raise an object"
-msgstr ""
-
-#: extmod/machine_spi.c
-msgid "must specify all of sck/mosi/miso"
 msgstr ""
 
 #: py/modbuiltins.c
@@ -3068,6 +3067,10 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "timeout duration exceeded the maximum supported value"
+msgstr ""
+
 #: shared-bindings/busio/UART.c
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr ""
@@ -3221,6 +3224,10 @@ msgstr ""
 msgid "value_count must be > 0"
 msgstr ""
 
+#: shared-bindings/watchdog/WatchDogTimer.c
+msgid "watchdog timeout must be greater than 0"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr ""
@@ -3283,3 +3290,15 @@ msgstr ""
 
 #~ msgid "Invalid clock pin"
 #~ msgstr "Avast! Clock pin be invalid"
+
+#~ msgid "bits must be 8"
+#~ msgstr "pieces must be of 8"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "yer buffers must be of the same length"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "Belay that! I2C peripheral be invalid"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "Arr! SPI peripheral be invalid"

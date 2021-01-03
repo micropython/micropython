@@ -40,7 +40,7 @@
 //|        and low cost temperature sensors (DHT). The pulsed signal consists of timed active and
 //|        idle periods. Unlike PWM, there is no set duration for active and idle pairs."""
 //|
-//|     def __init__(self, pin: microcontroller.Pin, maxlen: int = 2, *, idle_state: bool = False):
+//|     def __init__(self, pin: microcontroller.Pin, maxlen: int = 2, *, idle_state: bool = False) -> None:
 //|         """Create a PulseIn object associated with the given pin. The object acts as
 //|         a read-only sequence of pulse lengths with a given max length. When it is
 //|         active, new pulse lengths are added to the end of the list. When there is
@@ -96,7 +96,7 @@ STATIC mp_obj_t pulseio_pulsein_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the PulseIn and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -113,13 +113,13 @@ STATIC void check_for_deinit(pulseio_pulsein_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> PulseIn:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -131,7 +131,7 @@ STATIC mp_obj_t pulseio_pulsein_obj___exit__(size_t n_args, const mp_obj_t *args
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pulseio_pulsein___exit___obj, 4, 4, pulseio_pulsein_obj___exit__);
 
-//|     def pause(self, ) -> Any:
+//|     def pause(self) -> None:
 //|         """Pause pulse capture"""
 //|         ...
 //|
@@ -144,7 +144,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_pause(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_pause_obj, pulseio_pulsein_obj_pause);
 
-//|     def resume(self, trigger_duration: int = 0) -> Any:
+//|     def resume(self, trigger_duration: int = 0) -> None:
 //|         """Resumes pulse capture after an optional trigger pulse.
 //|
 //|         .. warning:: Using trigger pulse with a device that drives both high and
@@ -171,7 +171,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_resume(size_t n_args, const mp_obj_t *pos_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pulseio_pulsein_resume_obj, 1, pulseio_pulsein_obj_resume);
 
-//|     def clear(self, ) -> Any:
+//|     def clear(self) -> None:
 //|         """Clears all captured pulses"""
 //|         ...
 //|
@@ -184,7 +184,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_clear(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_clear_obj, pulseio_pulsein_obj_clear);
 
-//|     def popleft(self, ) -> Any:
+//|     def popleft(self) -> int:
 //|         """Removes and returns the oldest read pulse."""
 //|         ...
 //|
@@ -196,7 +196,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_popleft(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_popleft_obj, pulseio_pulsein_obj_popleft);
 
-//|     maxlen: Any = ...
+//|     maxlen: int
 //|     """The maximum length of the PulseIn. When len() is equal to maxlen,
 //|     it is unclear which pulses are active and which are idle."""
 //|
@@ -215,7 +215,7 @@ const mp_obj_property_t pulseio_pulsein_maxlen_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     paused: Any = ...
+//|     paused: bool
 //|     """True when pulse capture is paused as a result of :py:func:`pause` or an error during capture
 //|     such as a signal that is too fast."""
 //|
@@ -234,7 +234,9 @@ const mp_obj_property_t pulseio_pulsein_paused_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def __len__(self, ) -> Any:
+//|     def __bool__(self) -> bool: ...
+//|
+//|     def __len__(self) -> int:
 //|         """Returns the current pulse length
 //|
 //|         This allows you to::
@@ -254,7 +256,7 @@ STATIC mp_obj_t pulsein_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-//|     def __getitem__(self, index: Any) -> Any:
+//|     def __getitem__(self, index: int) -> Optional[int]:
 //|         """Returns the value at the given index or values in slice.
 //|
 //|         This allows you to::

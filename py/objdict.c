@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -169,7 +169,7 @@ mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
     mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
     if (elem == NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
+        mp_raise_arg1(&mp_type_KeyError, index);
     } else {
         return elem->value;
     }
@@ -185,7 +185,7 @@ STATIC mp_obj_t dict_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
         mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
         if (elem == NULL) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, index));
+            mp_raise_arg1(&mp_type_KeyError, index);
         } else {
             return elem->value;
         }
@@ -272,7 +272,7 @@ STATIC mp_obj_t dict_get_helper(size_t n_args, const mp_obj_t *args, mp_map_look
     if (elem == NULL || elem->value == MP_OBJ_NULL) {
         if (n_args == 2) {
             if (lookup_kind == MP_MAP_LOOKUP_REMOVE_IF_FOUND) {
-                nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, args[1]));
+                mp_raise_arg1(&mp_type_KeyError, args[1]);
             } else {
                 value = mp_const_none;
             }
@@ -313,7 +313,7 @@ STATIC mp_obj_t dict_popitem(mp_obj_t self_in) {
     size_t cur = 0;
     mp_map_elem_t *next = dict_iter_next(self, &cur);
     if (next == NULL) {
-        mp_raise_msg(&mp_type_KeyError, translate("popitem(): dictionary is empty"));
+        mp_raise_msg_varg(&mp_type_KeyError, translate("pop from empty %q"), MP_QSTR_dict);
     }
     self->map.used--;
     mp_obj_t items[] = {next->key, next->value};

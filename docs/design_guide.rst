@@ -1,9 +1,11 @@
+.. role:: strike
+
 Design Guide
 ============
 
 This guide covers a variety of development practices for CircuitPython core and library APIs. These
 APIs are both `built-into CircuitPython
-<https://github.com/adafruit/circuitpython/tree/master/shared-bindings>`_ and those that are
+<https://github.com/adafruit/circuitpython/tree/main/shared-bindings>`_ and those that are
 `distributed on GitHub <https://github.com/search?utf8=%E2%9C%93&q=topic%3Acircuitpython&type=>`_
 and in the `Adafruit <https://github.com/adafruit/Adafruit_CircuitPython_Bundle>`_ and `Community
 <https://github.com/adafruit/CircuitPython_Community_Bundle/>`_ bundles. Consistency with these
@@ -45,6 +47,41 @@ Community created libraries should have the repo format ``CircuitPython_<name>``
 not have the ``adafruit_`` module or package prefix.
 
 Both should have the CircuitPython repository topic on GitHub.
+
+Terminology
+-----------
+
+As our Code of Conduct states, we strive to use "welcoming and inclusive
+language." Whether it is in documentation or in code, the words we use matter.
+This means we disfavor language that due to historical and social context can
+make community members and potential community members feel unwelcome.
+
+There are specific terms to avoid except where technical limitations require it.
+While specific cases may call for other terms, consider using these suggested
+terms first:
+
++--------------------+---------------------+
+| Preferred          | Deprecated          |
++====================+=====================+
+| Main (device)      | :strike:`Master`    |
++--------------------+---------------------+
+| Peripheral         | :strike:`Slave`     |
++--------------------+                     +
+| Sensor             |                     |
++--------------------+                     +
+| Secondary (device) |                     |
++--------------------+---------------------+
+| Denylist           | :strike:`Blacklist` |
++--------------------+---------------------+
+| Allowlist          | :strike:`Whitelist` |
++--------------------+---------------------+
+
+Note that "technical limitations" refers e.g., to the situation where an
+upstream library or URL has to contain those substrings in order to work.
+However, when it comes to documentation and the names of parameters and
+properties in CircuitPython, we will use alternate terms even if this breaks
+tradition with past practice.
+
 
 .. _lifetime-and-contextmanagers:
 
@@ -384,7 +421,7 @@ SPI Example
           """Widget's one register."""
           with self.spi_device as spi:
               spi.write(b'0x00')
-              i2c.readinto(self.buf)
+              spi.readinto(self.buf)
           return self.buf[0]
 
 Use composition
@@ -425,7 +462,7 @@ like properties for state even if it sacrifices a bit of speed.
 Avoid allocations in drivers
 --------------------------------------------------------------------------------
 
-Although Python doesn't require managing memory, its still a good practice for
+Although Python doesn't require managing memory, it's still a good practice for
 library writers to think about memory allocations. Avoid them in drivers if
 you can because you never know how much something will be called. Fewer
 allocations means less time spent cleaning up. So, where you can, prefer
@@ -434,7 +471,7 @@ object with methods that read or write into the buffer instead of creating new
 objects. Unified hardware API classes such as `busio.SPI` are design to read and
 write to subsections of buffers.
 
-Its ok to allocate an object to return to the user. Just beware of causing more
+It's ok to allocate an object to return to the user. Just beware of causing more
 than one allocation per call due to internal logic.
 
 **However**, this is a memory tradeoff so do not do it for large or rarely used
@@ -447,6 +484,19 @@ struct.pack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Use `struct.pack_into` instead of `struct.pack`.
+
+Use of MicroPython ``const()``
+--------------------------------------------------------------------------------
+The MicroPython ``const()`` feature, as discussed in `this forum post
+<https://forum.micropython.org/viewtopic.php?t=450>`_, and in `this issue thread
+<https://github.com/micropython/micropython/issues/573>`_, provides some
+optimizations that can be useful on smaller, memory constrained devices. However,
+when using ``const()``, keep in mind these general guide lines:
+
+- Always use via an import, ex: ``from micropython import const``
+- Limit use to global (module level) variables only.
+- If user will not need access to variable, prefix name with a leading
+  underscore, ex: ``_SOME_CONST``.
 
 Sensor properties and units
 --------------------------------------------------------------------------------
@@ -530,4 +580,4 @@ MicroPython compatibility
 --------------------------------------------------------------------------------
 
 Keeping compatibility with MicroPython isn't a high priority. It should be done
-when its not in conflict with any of the above goals.
+when it's not in conflict with any of the above goals.

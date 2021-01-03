@@ -42,7 +42,7 @@
 //|
 //|     Used to access and control samples with `audiomixer.Mixer`."""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """MixerVoice instance object(s) created by `audiomixer.Mixer`."""
 //|         ...
 //|
@@ -56,11 +56,11 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def play(self, sample: Any, *, loop: Any = False) -> Any:
+//|     def play(self, sample: _typing.AudioSample, *, loop: bool = False) -> None:
 //|         """Plays the sample once when ``loop=False``, and continuously when ``loop=True``.
 //|         Does not block. Use `playing` to block.
 //|
-//|         Sample must be an `audiocore.WaveFile`, `audiomixer.Mixer` or `audiocore.RawSample`.
+//|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, `audiomixer.Mixer` or `audiomp3.MP3Decoder`.
 //|
 //|         The sample must match the `audiomixer.Mixer`'s encoding settings given in the constructor."""
 //|         ...
@@ -81,7 +81,7 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *po
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_play_obj, 1, audiomixer_mixervoice_obj_play);
 
-//|     def stop(self, ) -> Any:
+//|     def stop(self) -> None:
 //|         """Stops playback of the sample on this voice."""
 //|         ...
 //|
@@ -100,7 +100,7 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_stop(size_t n_args, const mp_obj_t *po
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_stop_obj, 1, audiomixer_mixervoice_obj_stop);
 
-//|     level: Any = ...
+//|     level: float
 //|     """The volume level of a voice, as a floating point number between 0 and 1."""
 //|
 STATIC mp_obj_t audiomixer_mixervoice_obj_get_level(mp_obj_t self_in) {
@@ -136,7 +136,7 @@ const mp_obj_property_t audiomixer_mixervoice_level_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     playing: Any = ...
+//|     playing: bool
 //|     """True when this voice is being output. (read-only)"""
 //|
 

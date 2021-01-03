@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +96,14 @@ void pulseout_reset() {
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                            const pulseio_pwmout_obj_t* carrier) {
+                                            const pwmio_pwmout_obj_t* carrier,
+                                            const mcu_pin_obj_t* pin,
+                                            uint32_t frequency,
+                                            uint16_t duty_cycle) {
+    if (!carrier || pin || frequency) {
+        mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. Construct and pass a PWMOut Carrier instead"));
+    }
+
     if (refcount == 0) {
         // Find a spare timer.
         Tc *tc = NULL;
@@ -119,7 +126,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
         #ifdef SAMD21
         turn_on_clocks(true, index, 0);
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         turn_on_clocks(true, index, 1);
         #endif
 
@@ -129,7 +136,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
                                 TC_CTRLA_PRESCALER_DIV64 |
                                 TC_CTRLA_WAVEGEN_NFRQ;
         #endif
-        #ifdef SAMD51
+        #ifdef SAM_D5X_E5X
         tc_reset(tc);
         tc_set_enable(tc, false);
         tc->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCALER_DIV64;

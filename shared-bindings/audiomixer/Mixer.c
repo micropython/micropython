@@ -41,7 +41,7 @@
 //| class Mixer:
 //|     """Mixes one or more audio samples together into one sample."""
 //|
-//|     def __init__(self, voice_count: int = 2, buffer_size: int = 1024, channel_count: int = 2, bits_per_sample: int = 16, samples_signed: bool = True, sample_rate: int = 8000):
+//|     def __init__(self, voice_count: int = 2, buffer_size: int = 1024, channel_count: int = 2, bits_per_sample: int = 16, samples_signed: bool = True, sample_rate: int = 8000) -> None:
 //|         """Create a Mixer object that can mix multiple channels with the same sample rate.
 //|         Samples are accessed and controlled with the mixer's `audiomixer.MixerVoice` objects.
 //|
@@ -121,7 +121,7 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the Mixer and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -138,13 +138,13 @@ STATIC void check_for_deinit(audiomixer_mixer_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> Mixer:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -156,7 +156,7 @@ STATIC mp_obj_t audiomixer_mixer_obj___exit__(size_t n_args, const mp_obj_t *arg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiomixer_mixer___exit___obj, 4, 4, audiomixer_mixer_obj___exit__);
 
-//|     playing: Any = ...
+//|     playing: bool
 //|     """True when any voice is being output. (read-only)"""
 //|
 STATIC mp_obj_t audiomixer_mixer_obj_get_playing(mp_obj_t self_in) {
@@ -173,7 +173,7 @@ const mp_obj_property_t audiomixer_mixer_playing_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     sample_rate: Any = ...
+//|     sample_rate: int
 //|     """32 bit value that dictates how quickly samples are played in Hertz (cycles per second)."""
 //|
 STATIC mp_obj_t audiomixer_mixer_obj_get_sample_rate(mp_obj_t self_in) {
@@ -190,7 +190,7 @@ const mp_obj_property_t audiomixer_mixer_sample_rate_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     voice: Any = ...
+//|     voice: Tuple[MixerVoice, ...]
 //|     """A tuple of the mixer's `audiomixer.MixerVoice` object(s).
 //|
 //|     .. code-block:: python
@@ -211,11 +211,11 @@ const mp_obj_property_t audiomixer_mixer_voice_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def play(self, sample: Any, *, voice: Any = 0, loop: Any = False) -> Any:
+//|     def play(self, sample: _typing.AudioSample, *, voice: int = 0, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|
-//|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, or `audiomixer.Mixer`.
+//|         Sample must be an `audiocore.WaveFile`, `audiocore.RawSample`, `audiomixer.Mixer` or `audiomp3.MP3Decoder`.
 //|
 //|         The sample must match the Mixer's encoding settings given in the constructor."""
 //|         ...
@@ -244,7 +244,7 @@ STATIC mp_obj_t audiomixer_mixer_obj_play(size_t n_args, const mp_obj_t *pos_arg
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixer_play_obj, 1, audiomixer_mixer_obj_play);
 
-//|     def stop_voice(self, voice: Any = 0) -> Any:
+//|     def stop_voice(self, voice: int = 0) -> None:
 //|         """Stops playback of the sample on the given voice."""
 //|         ...
 //|

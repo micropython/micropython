@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 name: Update CircuitPython.org
 
 on:
@@ -6,7 +10,7 @@ on:
 
 jobs:
   website:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - name: Dump GitHub context
       env:
@@ -23,12 +27,11 @@ jobs:
       run: |
         gcc --version
         python3 --version
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2.2.0
       with:
         submodules: true
         fetch-depth: 0
     - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
-    - run: git submodule foreach git fetch --recurse-submodules=no origin +refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: git describe --dirty --tags
     - name: Website

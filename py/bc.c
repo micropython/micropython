@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -214,8 +214,8 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
                 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                     mp_raise_TypeError(translate("unexpected keyword argument"));
                 #else
-                    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_TypeError,
-                        translate("unexpected keyword argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name)));
+                    mp_raise_TypeError_varg(
+                        translate("unexpected keyword argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
                 #endif
             }
             mp_obj_dict_store(dict, kwargs[2 * i], kwargs[2 * i + 1]);

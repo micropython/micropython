@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Noralf Trønnes
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 //| class RTC:
 //|     """Real Time Clock"""
 //|
-//|     def __init__(self, ):
+//|     def __init__(self) -> None:
 //|         """This class represents the onboard Real Time Clock. It is a singleton and will always return the same instance."""
 //|         ...
 //|
@@ -53,7 +53,7 @@ STATIC mp_obj_t rtc_rtc_make_new(const mp_obj_type_t *type, size_t n_args, const
     return (mp_obj_t)&rtc_rtc_obj;
 }
 
-//|     datetime: time.struct_time = ...
+//|     datetime: time.struct_time
 //|     """The current date and time of the RTC as a `time.struct_time`.
 //|
 //|     This must be set to the current date and time whenever the board loses power::
@@ -94,7 +94,7 @@ const mp_obj_property_t rtc_rtc_datetime_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     calibration: int = ...
+//|     calibration: int
 //|     """The RTC calibration value as an `int`.
 //|
 //|     A positive value speeds up the clock and a negative value slows it down.

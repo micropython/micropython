@@ -31,7 +31,7 @@
 
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
-#include "shared-module/_pew/PewPew.h"
+#include "common-hal/_pew/PewPew.h"
 #include "common-hal/frequencyio/FrequencyIn.h"
 
 extern void _PM_IRQ_HANDLER(void);

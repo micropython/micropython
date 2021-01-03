@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "py/mpstate.h"
+#include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/TileGrid.h"
@@ -38,92 +39,118 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_SHARPDISPLAY
+#include "shared-module/displayio/__init__.h"
+#include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
+#include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
+#endif
+
 extern size_t blinka_bitmap_data[];
 extern displayio_bitmap_t blinka_bitmap;
 extern displayio_group_t circuitpython_splash;
 
+#if CIRCUITPY_TERMINALIO
 static supervisor_allocation* tilegrid_tiles = NULL;
+#endif
 
 void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
+    // Default the scale to 2 because we may show blinka without the terminal for
+    // languages that don't have font support.
+    uint8_t scale = 2;
+
+    #if CIRCUITPY_TERMINALIO
     displayio_tilegrid_t* grid = &supervisor_terminal_text_grid;
-    uint16_t width_in_tiles = (width_px - blinka_bitmap.width) / grid->tile_width;
+    bool tall = height_px > width_px;
+    uint16_t terminal_width_px = tall ? width_px : width_px - blinka_bitmap.width;
+    uint16_t terminal_height_px = tall ? height_px - blinka_bitmap.height : height_px ;
+    uint16_t width_in_tiles = terminal_width_px / grid->tile_width;
     // determine scale based on h
-    uint8_t scale = 1;
-    if (width_in_tiles > 80) {
-        scale = 2;
+    if (width_in_tiles < 80) {
+        scale = 1;
     }
-    width_in_tiles = (width_px - blinka_bitmap.width * scale) / (grid->tile_width * scale);
-    uint16_t height_in_tiles = height_px / (grid->tile_height * scale);
-    uint16_t remaining_pixels = height_px % (grid->tile_height * scale);
-    if (remaining_pixels > 0) {
+
+    width_in_tiles = terminal_width_px / (grid->tile_width * scale);
+    if (width_in_tiles < 1) {
+        width_in_tiles = 1;
+    }
+    uint16_t height_in_tiles = terminal_height_px / (grid->tile_height * scale);
+    uint16_t remaining_pixels = tall ? 0 : terminal_height_px % (grid->tile_height * scale);
+    if (height_in_tiles < 1 || remaining_pixels > 0) {
         height_in_tiles += 1;
     }
-    circuitpython_splash.scale = scale;
 
     uint16_t total_tiles = width_in_tiles * height_in_tiles;
 
-    // First try to allocate outside the heap. This will fail when the VM is running.
-    tilegrid_tiles = allocate_memory(align32_size(total_tiles), false);
-    uint8_t* tiles;
-    if (tilegrid_tiles == NULL) {
-        tiles = m_malloc(total_tiles, true);
-        MP_STATE_VM(terminal_tilegrid_tiles) = tiles;
-    } else {
-        tiles = (uint8_t*) tilegrid_tiles->ptr;
+    // Reuse the previous allocation if possible
+    if (tilegrid_tiles) {
+        if (get_allocation_length(tilegrid_tiles) != align32_size(total_tiles)) {
+            free_memory(tilegrid_tiles);
+            tilegrid_tiles = NULL;
+        }
     }
+    if (!tilegrid_tiles) {
+        tilegrid_tiles = allocate_memory(align32_size(total_tiles), false, true);
+        if (!tilegrid_tiles) {
+            return;
+        }
+    }
+    uint8_t* tiles = (uint8_t*) tilegrid_tiles->ptr;
 
-    if (tiles == NULL) {
-        return;
-    }
-    grid->y = 0;
+    grid->y = tall ? blinka_bitmap.height : 0;
+    grid->x = tall ? 0 : blinka_bitmap.width;
     grid->top_left_y = 0;
     if (remaining_pixels > 0) {
         grid->y -= (grid->tile_height - remaining_pixels);
     }
     grid->width_in_tiles = width_in_tiles;
     grid->height_in_tiles = height_in_tiles;
+    assert(width_in_tiles > 0);
+    assert(height_in_tiles > 0);
     grid->pixel_width = width_in_tiles * grid->tile_width;
     grid->pixel_height = height_in_tiles * grid->tile_height;
     grid->tiles = tiles;
     grid->full_change = true;
 
     common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font);
+    #endif
+
+    circuitpython_splash.scale = scale;
 }
 
 void supervisor_stop_terminal(void) {
+    #if CIRCUITPY_TERMINALIO
     if (tilegrid_tiles != NULL) {
         free_memory(tilegrid_tiles);
         tilegrid_tiles = NULL;
-        supervisor_terminal_text_grid.inline_tiles = false;
         supervisor_terminal_text_grid.tiles = NULL;
     }
+    #endif
 }
 
 void supervisor_display_move_memory(void) {
-    #if CIRCUITPY_DISPLAYIO
-    displayio_tilegrid_t* grid = &supervisor_terminal_text_grid;
-    if (MP_STATE_VM(terminal_tilegrid_tiles) == NULL || grid->tiles != MP_STATE_VM(terminal_tilegrid_tiles)) {
-        return;
-    }
-    uint16_t total_tiles = grid->width_in_tiles * grid->height_in_tiles;
-
-    tilegrid_tiles = allocate_memory(align32_size(total_tiles), false);
+    #if CIRCUITPY_TERMINALIO
     if (tilegrid_tiles != NULL) {
-        memcpy(tilegrid_tiles->ptr, grid->tiles, total_tiles);
-        grid->tiles = (uint8_t*) tilegrid_tiles->ptr;
+        supervisor_terminal_text_grid.tiles = (uint8_t*) tilegrid_tiles->ptr;
     } else {
-        grid->tiles = NULL;
-        grid->inline_tiles = false;
-    }
-    MP_STATE_VM(terminal_tilegrid_tiles) = NULL;
-    #if CIRCUITPY_RGBMATRIX
-    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
-            rgbmatrix_rgbmatrix_obj_t * pm = &displays[i].rgbmatrix;
-                common_hal_rgbmatrix_rgbmatrix_reconstruct(pm, NULL);
-        }
+        supervisor_terminal_text_grid.tiles = NULL;
     }
     #endif
+
+    #if CIRCUITPY_DISPLAYIO
+    for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        #if CIRCUITPY_RGBMATRIX
+            if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
+                rgbmatrix_rgbmatrix_obj_t * pm = &displays[i].rgbmatrix;
+                common_hal_rgbmatrix_rgbmatrix_reconstruct(pm, NULL);
+            }
+        #endif
+        #if CIRCUITPY_SHARPDISPLAY
+            if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
+                sharpdisplay_framebuffer_obj_t * sharp = &displays[i].sharpdisplay;
+                common_hal_sharpdisplay_framebuffer_reconstruct(sharp);
+            }
+        #endif
+    }
     #endif
 }
 
@@ -242,18 +269,26 @@ displayio_tilegrid_t blinka_sprite = {
     .in_group = true
 };
 
+#if CIRCUITPY_TERMINALIO
+#define CHILD_COUNT 2
 displayio_group_child_t splash_children[2] = {
     {&blinka_sprite, &blinka_sprite},
     {&supervisor_terminal_text_grid, &supervisor_terminal_text_grid}
 };
+#else
+#define CHILD_COUNT 1
+displayio_group_child_t splash_children[1] = {
+    {&blinka_sprite, &blinka_sprite},
+};
+#endif
 
 displayio_group_t circuitpython_splash = {
     .base = {.type = &displayio_group_type },
     .x = 0,
     .y = 0,
     .scale = 2,
-    .size = 2,
-    .max_size = 2,
+    .size = CHILD_COUNT,
+    .max_size = CHILD_COUNT,
     .children = splash_children,
     .item_removed = false,
     .in_group = false,

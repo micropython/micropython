@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 # Written by Antonio Galea - 2010/11/18
 # Updated for DFU 1.1 by Sean Cross - 2020/03/31
 # Distributed under Gnu LGPL 3.0

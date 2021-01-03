@@ -35,7 +35,7 @@ typedef enum {
     RUNMODE_BOOTLOADER
 } mcu_runmode_t;
 
-const mp_obj_type_t mcu_runmode_type;
+extern const mp_obj_type_t mcu_runmode_type;
 
 typedef struct {
     mp_obj_base_t base;

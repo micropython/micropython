@@ -32,23 +32,23 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "supervisor/shared/translate.h"
 
 #include STM32_HAL_H
-#include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "timers.h"
 
 // A single timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.
 STATIC uint8_t refcount = 0;
-
 STATIC uint16_t *pulse_array = NULL;
 STATIC volatile uint16_t pulse_array_index = 0;
 STATIC uint16_t pulse_array_length;
-
 //Timer is shared, must be accessible by interrupt
-STATIC TIM_HandleTypeDef t7_handle;
+STATIC TIM_HandleTypeDef tim_handle;
 pulseio_pulseout_obj_t *curr_pulseout = NULL;
+
 
 STATIC void turn_on(pulseio_pulseout_obj_t *pulseout) {
     // Turn on PWM
@@ -65,91 +65,85 @@ STATIC void turn_off(pulseio_pulseout_obj_t *pulseout) {
 
 STATIC void start_timer(void) {
     // Set the new period
-    t7_handle.Init.Period = pulse_array[pulse_array_index] - 1;
-    HAL_TIM_Base_Init(&t7_handle);
+    tim_handle.Init.Period = pulse_array[pulse_array_index] - 1;
+    HAL_TIM_Base_Init(&tim_handle);
 
     // TIM7 has limited HAL support, set registers manually
-    t7_handle.Instance->SR = 0; // Prevent the SR from triggering an interrupt
-    t7_handle.Instance->CR1 |= TIM_CR1_CEN; // Resume timer
-    t7_handle.Instance->CR1 |= TIM_CR1_URS; // Disable non-overflow interrupts
-    __HAL_TIM_ENABLE_IT(&t7_handle, TIM_IT_UPDATE);
-
+    tim_handle.Instance->SR = 0; // Prevent the SR from triggering an interrupt
+    tim_handle.Instance->CR1 |= TIM_CR1_CEN; // Resume timer
+    tim_handle.Instance->CR1 |= TIM_CR1_URS; // Disable non-overflow interrupts
+    __HAL_TIM_ENABLE_IT(&tim_handle, TIM_IT_UPDATE);
 }
 
 STATIC void pulseout_event_handler(void) {
-    if (curr_pulseout->pwmout == NULL) {
-        return; //invalid interrupt
+    // Detect TIM Update event
+    if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET)
+    {
+        if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET)
+        {
+            __HAL_TIM_CLEAR_IT(&tim_handle, TIM_IT_UPDATE);
+            if (curr_pulseout->pwmout == NULL) {
+                return; //invalid interrupt
+            }
+
+            pulse_array_index++;
+
+            // No more pulses. Turn off output and don't restart.
+            if (pulse_array_index >= pulse_array_length) {
+                turn_off(curr_pulseout);
+                return;
+            }
+
+            // Alternate on and off, starting with on.
+            if (pulse_array_index % 2 == 0) {
+                turn_on(curr_pulseout);
+            } else {
+                turn_off(curr_pulseout);
+            }
+
+            // Count up to the next given value.
+            start_timer();
+        }
     }
-
-    HAL_GPIO_WritePin(pin_port(2),pin_mask(6), 1);
-    HAL_GPIO_WritePin(pin_port(2),pin_mask(6), 0);
-
-    pulse_array_index++;
-
-    // No more pulses. Turn off output and don't restart.
-    if (pulse_array_index >= pulse_array_length) {
-        turn_off(curr_pulseout);
-        return;
-    }
-
-    // Alternate on and off, starting with on.
-    if (pulse_array_index % 2 == 0) {
-        turn_on(curr_pulseout);
-    } else {
-        turn_off(curr_pulseout);
-    }
-
-    // Count up to the next given value.
-    start_timer();
 }
 
 void pulseout_reset() {
-    #if HAS_BASIC_TIM
-    __HAL_RCC_TIM7_CLK_DISABLE();
+    stm_peripherals_timer_free(tim_handle.Instance);
     refcount = 0;
-    #endif
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t* self,
-                                           const pulseio_pwmout_obj_t* carrier) {
-#if !(HAS_BASIC_TIM)
-    mp_raise_NotImplementedError(translate("PulseOut not supported on this chip"));
-#else
-    // Add to active PulseOuts
-    refcount++;
-
-    // Calculate a 1 ms period
-    uint32_t source, clk_div;
-    source = HAL_RCC_GetPCLK1Freq(); // TIM7 is on APB1
-    clk_div = RCC->CFGR & RCC_CFGR_PPRE1;
-    // APB quirk, see See DM00031020 Rev 4, page 115.
-    if (clk_div != 0) {
-        // APB prescaler for this timer is > 1
-        source *= 2;
+                                            const pwmio_pwmout_obj_t* carrier,
+                                            const mcu_pin_obj_t* pin,
+                                            uint32_t frequency,
+                                            uint16_t duty_cycle) {
+    if (!carrier || pin || frequency) {
+        mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. Construct and pass a PWMOut Carrier instead"));
     }
 
+    // Add to active PulseOuts
+    refcount++;
+    TIM_TypeDef * tim_instance = stm_peripherals_find_timer();
+    stm_peripherals_timer_reserve(tim_instance);
+
+    //calculate a 1ms period
+    uint32_t source = stm_peripherals_timer_get_source_freq(tim_instance);
     uint32_t prescaler = source/1000000; //1us intervals
 
-    __HAL_RCC_TIM7_CLK_ENABLE();
-    HAL_NVIC_SetPriority(TIM7_IRQn, 4, 0);
-    HAL_NVIC_EnableIRQ(TIM7_IRQn);
+    stm_peripherals_timer_preinit(tim_instance, 4, pulseout_event_handler);
+    tim_handle.Instance = tim_instance;
+    tim_handle.Init.Period = 100; //immediately replaced.
+    tim_handle.Init.Prescaler = prescaler - 1;
+    tim_handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    tim_handle.Init.CounterMode = TIM_COUNTERMODE_UP;
+    tim_handle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 
-    // Timers 6 and 7 have no pins, so using them doesn't affect PWM availability
-    t7_handle.Instance = TIM7;
-    t7_handle.Init.Period = 100; //immediately replaced.
-    t7_handle.Init.Prescaler = prescaler - 1;
-    t7_handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    t7_handle.Init.CounterMode = TIM_COUNTERMODE_UP;
-    t7_handle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-
-    HAL_TIM_Base_Init(&t7_handle);
-    t7_handle.Instance->SR = 0;
+    HAL_TIM_Base_Init(&tim_handle);
+    tim_handle.Instance->SR = 0;
 
     // The HAL can't work with const, recast required.
-    self->pwmout = (pulseio_pwmout_obj_t*)carrier;
-
+    self->pwmout = (pwmio_pwmout_obj_t*)carrier;
     turn_off(self);
-#endif
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t* self) {
@@ -165,9 +159,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t* self) {
 
     refcount--;
     if (refcount == 0) {
-        #if HAS_BASIC_TIM
-        __HAL_RCC_TIM7_CLK_DISABLE();
-        #endif
+        stm_peripherals_timer_free(tim_handle.Instance);
     }
 }
 
@@ -190,24 +182,11 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t* self, uint16_t* pu
         // signal.
         RUN_BACKGROUND_TASKS;
 
-        // Use when debugging, or issues are irrecoverable
+        // // Use when debugging, or issues are irrecoverable
         // if ((supervisor_ticks_ms64() - starttime ) > timeout ) {
         //    mp_raise_RuntimeError(translate("Error: Send Timeout"));
         // }
     }
     //turn off timer counter.
-    t7_handle.Instance->CR1 &= ~TIM_CR1_CEN;
-}
-
-void TIM7_IRQHandler(void)
-{
-    // Detect TIM Update event
-    if (__HAL_TIM_GET_FLAG(&t7_handle, TIM_FLAG_UPDATE) != RESET)
-    {
-        if (__HAL_TIM_GET_IT_SOURCE(&t7_handle, TIM_IT_UPDATE) != RESET)
-        {
-            __HAL_TIM_CLEAR_IT(&t7_handle, TIM_IT_UPDATE);
-            pulseout_event_handler();
-        }
-    }
+    tim_handle.Instance->CR1 &= ~TIM_CR1_CEN;
 }

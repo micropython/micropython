@@ -1,6 +1,11 @@
 #! /usr/bin/env python3
 
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 import os
+import multiprocessing
 import sys
 import subprocess
 import shutil
@@ -23,6 +28,8 @@ sha, version = build_info.get_version_info()
 
 languages = build_info.get_languages()
 exit_status = 0
+cores = multiprocessing.cpu_count()
+print('building boards with parallelism {}'.format(cores))
 for board in build_boards:
     bin_directory = "../bin/{}/".format(board)
     os.makedirs(bin_directory, exist_ok=True)
@@ -37,8 +44,8 @@ for board in build_boards:
         # But sometimes a particular language needs to be built from scratch, if, for instance,
         # CFLAGS_INLINE_LIMIT is set for a particular language to make it fit.
         clean_build_check_result = subprocess.run(
-            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} check-release-needs-clean-build | fgrep 'RELEASE_NEEDS_CLEAN_BUILD = 1'".format(
-                port = board_info["port"], language=language, board=board),
+            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} check-release-needs-clean-build -j {cores} | fgrep 'RELEASE_NEEDS_CLEAN_BUILD = 1'".format(
+                port = board_info["port"], language=language, board=board, cores=cores),
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         clean_build = clean_build_check_result.returncode == 0
 
@@ -47,8 +54,8 @@ for board in build_boards:
             build_dir += "-{language}".format(language=language)
 
         make_result = subprocess.run(
-            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} BUILD={build}".format(
-                port = board_info["port"], language=language, board=board, build=build_dir),
+            "make -C ../ports/{port} TRANSLATION={language} BOARD={board} BUILD={build} -j {cores}".format(
+                port = board_info["port"], language=language, board=board, build=build_dir, cores=cores),
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         build_duration = time.monotonic() - start_time

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,6 +44,17 @@
 // Export value for sys.maxsize
 const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
+
+mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in) {
+    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    mp_obj_int_t *self = self_in;
+    long long val = self->val;
+    return MP_OBJ_NEW_SMALL_INT(
+        (val == 0) ? 0 :
+        (val == MP_SMALL_INT_MIN) ? 8 * sizeof(long long) :
+        (val < 0) ? 8 * sizeof(long long) - __builtin_clzll(-val) :
+             8 * sizeof(long long) - __builtin_clzll(val));
+}
 
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
     int delta = 1;

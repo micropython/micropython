@@ -34,17 +34,17 @@
 extern const mp_obj_type_t busio_uart_type;
 
 typedef enum {
-    PARITY_NONE,
-    PARITY_EVEN,
-    PARITY_ODD
-} uart_parity_t;
+    BUSIO_UART_PARITY_NONE,
+    BUSIO_UART_PARITY_EVEN,
+    BUSIO_UART_PARITY_ODD
+} busio_uart_parity_t;
 
 // Construct an underlying UART object.
 extern void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
     const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
     const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
-    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
     bool sigint_enabled);
 

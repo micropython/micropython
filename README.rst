@@ -55,12 +55,12 @@ Contributing
 ------------
 
 See
-`CONTRIBUTING.md <https://github.com/adafruit/circuitpython/blob/master/CONTRIBUTING.md>`__
+`CONTRIBUTING.md <https://github.com/adafruit/circuitpython/blob/main/CONTRIBUTING.md>`__
 for full guidelines but please be aware that by contributing to this
 project you are agreeing to the `Code of
-Conduct <https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md>`__.
+Conduct <https://github.com/adafruit/circuitpython/blob/main/CODE_OF_CONDUCT.md>`__.
 Contributors who follow the `Code of
-Conduct <https://github.com/adafruit/circuitpython/blob/master/CODE_OF_CONDUCT.md>`__
+Conduct <https://github.com/adafruit/circuitpython/blob/main/CODE_OF_CONDUCT.md>`__
 are welcome to submit pull requests and they will be promptly reviewed
 by project admins. Please join the
 `Discord <https://adafru.it/discord>`__ too.
@@ -95,8 +95,6 @@ Differences from `MicroPython <https://github.com/micropython/micropython>`__
 CircuitPython:
 
 -  Supports native USB on all boards, allowing file editing without special tools.
--  Supports only SAMD21, SAMD51, nRF52840, CXD56, STM32F4 and i.MX RT ports.
--  Tracks MicroPython's releases (not master).
 -  Floats (aka decimals) are enabled for all builds.
 -  Error messages are translated into 10+ languages.
 -  Does not support concurrency within Python (including interrupts and threading). Some concurrency
@@ -116,14 +114,14 @@ Behavior
    finishes or is interrupted. After it is done running, the vm and
    hardware is reinitialized. **This means you cannot read state from**
    ``code.py`` **in the REPL anymore.** CircuitPython's goal for this
-   change includes reduce confusion about pins and memory being used.
+   change includes reducing confusion about pins and memory being used.
 -  After ``code.py`` the REPL can be entered by pressing any key. It no
    longer shares state with ``code.py`` so it is a fresh vm.
 -  Autoreload state will be maintained across reload.
 -  Adds a safe mode that does not run user code after a hard crash or
    brown out. The hope is that this will make it easier to fix code that
    causes nasty crashes by making it available through mass storage
-   after the crash. A reset (the button) is needed after its fixed to
+   after the crash. A reset (the button) is needed after it's fixed to
    get back into normal mode.
 -  RGB status LED indicating CircuitPython state, and errors through a sequence of colored flashes.
 -  Re-runs ``code.py`` or other main file after file system writes over USB mass storage. (Disable with
@@ -138,8 +136,8 @@ Behavior
 API
 ~~~
 
--  Unified hardware APIs. Documented
-   `on ReadTheDocs <https://circuitpython.readthedocs.io/en/latest/shared-bindings/index.html>`_.
+-  Unified hardware APIs. Documented on
+   `ReadTheDocs <https://circuitpython.readthedocs.io/en/latest/shared-bindings/index.html>`_.
 -  API docs are rST within the C files in ``shared-bindings``.
 -  No ``machine`` API.
 
@@ -202,17 +200,30 @@ Ports
 Ports include the code unique to a microcontroller line and also
 variations based on the board.
 
--  ``atmel-samd`` Support for SAMD21 and SAMD51 based boards.
--  ``nrf`` Support for the nRF52840 based boards.
--  ``unix`` Support for UNIX. Only used for automated testing.
+================  ============================================================
+Supported         Support status
+================  ============================================================
+atmel-samd        ``SAMD21`` stable | ``SAMD51`` stable
+cxd56             stable
+esp32s2           beta
+litex             alpha
+mimxrt10xx        alpha
+nrf               stable
+stm               ``F4`` stable | ``others`` beta
+unix              alpha
+================  ============================================================
+
+-  ``stable`` Highly unlikely to have bugs or missing functionality.
+-  ``beta``   Being actively improved but may be missing functionality and have bugs.
+-  ``alpha``  Will have bugs and missing functionality.
 
 The remaining port directories not listed above are in the repo to maintain compatibility with the
 `MicroPython <https://github.com/micropython/micropython>`__ parent project.
 
-`back to top <#circuitpython>`__
+`Back to Top <#circuitpython>`__
 
-.. |Build Status| image:: https://travis-ci.com/adafruit/circuitpython.svg?branch=master
-   :target: https://travis-ci.org/adafruit/circuitpython
+.. |Build Status| image:: https://github.com/adafruit/circuitpython/workflows/Build%20CI/badge.svg
+   :target: https://github.com/adafruit/circuitpython/actions?query=branch%3Amain
 .. |Doc Status| image:: https://readthedocs.org/projects/circuitpython/badge/?version=latest
    :target: http://circuitpython.readthedocs.io/
 .. |Discord| image:: https://img.shields.io/discord/327254708534116352.svg

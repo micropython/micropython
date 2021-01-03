@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,7 @@ extern int pyexec_system_exit;
 #define PYEXEC_FORCED_EXIT (0x100)
 #define PYEXEC_SWITCH_MODE (0x200)
 #define PYEXEC_EXCEPTION   (0x400)
+#define PYEXEC_DEEP_SLEEP  (0x800)
 
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);

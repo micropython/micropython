@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             #endif
         }
 
-        // If the code was loaded from a file its likely to be running for a while so we'll long
+        // If the code was loaded from a file it's likely to be running for a while so we'll long
         // live it and collect any garbage before running.
         if (input_kind == MP_PARSE_FILE_INPUT) {
             module_fun = make_obj_long_lived(module_fun, 6);
@@ -113,6 +113,8 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         start = mp_hal_ticks_ms();
         mp_call_function_0(module_fun);
         mp_hal_set_interrupt_char(-1); // disable interrupt
+        // Handle any ctrl-c interrupt that arrived just in time
+        mp_handle_pending();
         nlr_pop();
         ret = 0;
         if (exec_flags & EXEC_FLAG_PRINT_EOF) {
@@ -130,6 +132,10 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
+#if CIRCUITPY_ALARM
+        } else if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_DeepSleepRequest)) {
+            ret = PYEXEC_DEEP_SLEEP;
+#endif
         } else {
             if ((mp_obj_t) nlr.ret_val != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
                 mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);

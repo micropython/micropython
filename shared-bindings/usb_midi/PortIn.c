@@ -38,7 +38,7 @@
 //| class PortIn:
 //|     """Receives midi commands over USB"""
 //|
-//|     def __init__(self):
+//|     def __init__(self) -> None:
 //|         """You cannot create an instance of `usb_midi.PortIn`.
 //|
 //|         PortIn objects are constructed for every corresponding entry in the USB
@@ -48,7 +48,7 @@
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|     def read(self, nbytes: Any = None) -> Any:
+//|     def read(self, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read characters.  If ``nbytes`` is specified then read at most that many
 //|         bytes. Otherwise, read everything that arrives until the connection
 //|         times out. Providing the number of bytes expected is highly recommended
@@ -58,7 +58,7 @@
 //|         :rtype: bytes or None"""
 //|         ...
 //|
-//|     def readinto(self, buf: Any, nbytes: Any = None) -> Any:
+//|     def readinto(self, buf: WriteableBuffer, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
 //|         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.
 //|

@@ -133,7 +133,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const mcu_pin_obj_t * tx, const mcu_pin_obj_t * rx,
     const mcu_pin_obj_t * rts, const mcu_pin_obj_t * cts,
     const mcu_pin_obj_t * rs485_dir, bool rs485_invert,
-    uint32_t baudrate, uint8_t bits, uart_parity_t parity, uint8_t stop,
+    uint32_t baudrate, uint8_t bits, busio_uart_parity_t parity, uint8_t stop,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
     bool sigint_enabled) {
 
@@ -162,7 +162,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Invalid buffer size"));
     }
 
-    if ( parity == PARITY_ODD ) {
+    if ( parity == BUSIO_UART_PARITY_ODD ) {
         mp_raise_ValueError(translate("Odd parity is not supported"));
     }
 
@@ -176,7 +176,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         .interrupt_priority = 7,
         .hal_cfg = {
             .hwfc = NRF_UARTE_HWFC_DISABLED,
-            .parity = (parity == PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED
+            .parity = (parity == BUSIO_UART_PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED
         }
     };
 

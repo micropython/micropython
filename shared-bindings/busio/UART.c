@@ -44,7 +44,7 @@
 
 //| class UART:
 //|     """A bidirectional serial protocol"""
-//|     def __init__(self, tx: microcontroller.Pin, rx: microcontroller.Pin, *, baudrate: int = 9600, bits: int = 8, parity: Parity = None, stop: int = 1, timeout: float = 1, receiver_buffer_size: int = 64):
+//|     def __init__(self, tx: microcontroller.Pin, rx: microcontroller.Pin, *, baudrate: int = 9600, bits: int = 8, parity: Optional[Parity] = None, stop: int = 1, timeout: float = 1, receiver_buffer_size: int = 64) -> None:
 //|         """A common bidirectional serial protocol that uses an an agreed upon speed
 //|         rather than a shared clock line.
 //|
@@ -52,8 +52,8 @@
 //|         :param ~microcontroller.Pin rx: the pin to receive on, or ``None`` if this ``UART`` is transmit-only.
 //|         :param ~microcontroller.Pin rts: the pin for rts, or ``None`` if rts not in use.
 //|         :param ~microcontroller.Pin cts: the pin for cts, or ``None`` if cts not in use.
-//|         :param ~microcontroller.Pin rs485_dir: the pin for rs485 direction setting, or ``None`` if rs485 not in use.
-//|         :param bool rs485_invert: set to invert the sense of the rs485_dir pin.
+//|         :param ~microcontroller.Pin rs485_dir: the output pin for rs485 direction setting, or ``None`` if rs485 not in use.
+//|         :param bool rs485_invert: rs485_dir pin active high when set. Active low otherwise.
 //|         :param int baudrate: the transmit and receive speed.
 //|         :param int bits:  the number of bits per byte, 7, 8 or 9.
 //|         :param Parity parity:  the parity used for error checking.
@@ -87,8 +87,8 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size,
            ARG_rts, ARG_cts, ARG_rs485_dir,ARG_rs485_invert};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_tx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_rx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 9600} },
         { MP_QSTR_bits, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
         { MP_QSTR_parity, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -115,11 +115,11 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
         mp_raise_ValueError(translate("bits must be 7, 8 or 9"));
     }
 
-    uart_parity_t parity = PARITY_NONE;
+    busio_uart_parity_t parity = BUSIO_UART_PARITY_NONE;
     if (args[ARG_parity].u_obj == &busio_uart_parity_even_obj) {
-        parity = PARITY_EVEN;
+        parity = BUSIO_UART_PARITY_EVEN;
     } else if (args[ARG_parity].u_obj == &busio_uart_parity_odd_obj) {
-        parity = PARITY_ODD;
+        parity = BUSIO_UART_PARITY_ODD;
     }
 
     uint8_t stop = args[ARG_stop].u_int;
@@ -142,7 +142,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
     return (mp_obj_t)self;
 }
 
-//|     def deinit(self, ) -> Any:
+//|     def deinit(self) -> None:
 //|         """Deinitialises the UART and releases any hardware resources for reuse."""
 //|         ...
 //|
@@ -159,13 +159,13 @@ STATIC void check_for_deinit(busio_uart_obj_t *self) {
     }
 }
 
-//|     def __enter__(self, ) -> Any:
+//|     def __enter__(self) -> UART:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
 //  Provided by context manager helper.
 
-//|     def __exit__(self, ) -> Any:
+//|     def __exit__(self) -> None:
 //|         """Automatically deinitializes the hardware when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
@@ -179,7 +179,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 
 // These are standard stream methods. Code is in py/stream.c.
 //
-//|     def read(self, nbytes: Any = None) -> Any:
+//|     def read(self, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read characters.  If ``nbytes`` is specified then read at most that many
 //|         bytes. Otherwise, read everything that arrives until the connection
 //|         times out. Providing the number of bytes expected is highly recommended
@@ -190,7 +190,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         ...
 //|
 
-//|     def readinto(self, buf: Any) -> Any:
+//|     def readinto(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``
@@ -200,15 +200,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 //|         ...
 //|
 
-//|     def readline(self, ) -> Any:
-//|         """Read a line, ending in a newline character.
+//|     def readline(self) -> bytes:
+//|         """Read a line, ending in a newline character, or
+//|            return None if a timeout occurs sooner, or
+//|            return everything readable if no newline is found and timeout=0
 //|
 //|         :return: the line read
-//|         :rtype: int or None"""
+//|         :rtype: bytes or None"""
 //|         ...
 //|
 
-//|     def write(self, buf: Any) -> Any:
+//|     def write(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Write the buffer of bytes to the bus.
 //|
 //|       *New in CircuitPython 4.0:* ``buf`` must be bytes, not a string.
@@ -261,7 +263,7 @@ STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t
     return ret;
 }
 
-//|     baudrate: Any = ...
+//|     baudrate: int
 //|     """The current baudrate."""
 //|
 STATIC mp_obj_t busio_uart_obj_get_baudrate(mp_obj_t self_in) {
@@ -287,7 +289,7 @@ const mp_obj_property_t busio_uart_baudrate_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     in_waiting: Any = ...
+//|     in_waiting: int
 //|     """The number of bytes in the input buffer, available to be read"""
 //|
 STATIC mp_obj_t busio_uart_obj_get_in_waiting(mp_obj_t self_in) {
@@ -304,7 +306,7 @@ const mp_obj_property_t busio_uart_in_waiting_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     timeout: Any = ...
+//|     timeout: float
 //|     """The current timeout, in seconds (float)."""
 //|
 STATIC mp_obj_t busio_uart_obj_get_timeout(mp_obj_t self_in) {
@@ -332,8 +334,9 @@ const mp_obj_property_t busio_uart_timeout_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def reset_input_buffer(self, ) -> Any: ...
-//|     """Discard any unread characters in the input buffer."""
+//|     def reset_input_buffer(self) -> None:
+//|         """Discard any unread characters in the input buffer."""
+//|         ...
 //|
 STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
     busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -346,10 +349,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_reset_input_buffer_obj, busio_uart_o
 //| class Parity:
 //|     """Enum-like class to define the parity used to verify correct data transfer."""
 //|
-//|     ODD: Any = ...
+//|     ODD: int
 //|     """Total number of ones should be odd."""
 //|
-//|     EVEN: Any = ...
+//|     EVEN: int
 //|     """Total number of ones should be even."""
 //|
 const mp_obj_type_t busio_uart_parity_type;

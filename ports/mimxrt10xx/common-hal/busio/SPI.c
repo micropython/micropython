@@ -220,12 +220,9 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     never_reset_spi[self->clock->bank_idx - 1] = false;
 
     common_hal_reset_pin(self->clock->pin);
-    if (self->mosi != NULL) {
-        common_hal_reset_pin(self->mosi->pin);
-    }
-    if (self->miso != NULL) {
-        common_hal_reset_pin(self->miso->pin);
-    }
+    common_hal_reset_pin(self->mosi->pin);
+    common_hal_reset_pin(self->miso->pin);
+
     self->clock = NULL;
     self->mosi = NULL;
     self->miso = NULL;
@@ -321,7 +318,7 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     return (status == kStatus_Success);
 }
 
-bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uint8_t *data_in, size_t len) {
+bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_out, uint8_t *data_in, size_t len) {
     if (len == 0) {
         return true;
     }
@@ -332,7 +329,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, uint8_t *data_out, uin
     LPSPI_SetDummyData(self->spi, 0xFF);
 
     lpspi_transfer_t xfer = { 0 };
-    xfer.txData = data_out;
+    xfer.txData = (uint8_t *)data_out;
     xfer.rxData = data_in;
     xfer.dataSize = len;
 

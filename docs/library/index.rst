@@ -21,7 +21,7 @@ standard Python library.
    You may need to change your code later if you rely
    on any non-standard functionality they currently provide.
 
-CircuitPython's goal long-term goalis that code written in CircuitPython
+CircuitPython's long-term goal is that code written in CircuitPython
 using Python standard libraries will be runnable on CPython without changes.
 
 Some libraries below are not enabled on CircuitPython builds with
@@ -69,8 +69,8 @@ CircuitPython/MicroPython-specific libraries
 --------------------------------------------
 
 Functionality specific to the CircuitPython/MicroPython implementation is available in
-the following libraries. These libraries may change signficantly or be removed in future
-versions of CircuitPtyon.
+the following libraries. These libraries may change significantly or be removed in future
+versions of CircuitPython.
 
 .. toctree::
    :maxdepth: 1

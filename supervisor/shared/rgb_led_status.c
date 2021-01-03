@@ -28,6 +28,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "rgb_led_status.h"
 #include "supervisor/shared/tick.h"
+#include "py/obj.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
 uint8_t rgb_status_brightness = 63;
@@ -65,22 +66,22 @@ busio_spi_obj_t status_apa102 = {
 #if defined(CP_RGB_STATUS_R) || defined(CP_RGB_STATUS_G) || defined(CP_RGB_STATUS_B)
 #define CP_RGB_STATUS_LED
 
-#include "shared-bindings/pulseio/PWMOut.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-pulseio_pwmout_obj_t rgb_status_r = {
+pwmio_pwmout_obj_t rgb_status_r = {
     .base = {
-        .type = &pulseio_pwmout_type,
+        .type = &pwmio_pwmout_type,
     },
 };
-pulseio_pwmout_obj_t rgb_status_g = {
+pwmio_pwmout_obj_t rgb_status_g = {
     .base = {
-        .type = &pulseio_pwmout_type,
+        .type = &pwmio_pwmout_type,
     },
 };
-pulseio_pwmout_obj_t rgb_status_b = {
+pwmio_pwmout_obj_t rgb_status_b = {
     .base = {
-        .type = &pulseio_pwmout_type,
+        .type = &pwmio_pwmout_type,
     },
 };
 
@@ -146,26 +147,26 @@ void rgb_led_status_init() {
 
     #if defined(CP_RGB_STATUS_LED)
     if (common_hal_mcu_pin_is_free(CP_RGB_STATUS_R)) {
-        pwmout_result_t red_result = common_hal_pulseio_pwmout_construct(&rgb_status_r, CP_RGB_STATUS_R, 0, 50000, false);
+        pwmout_result_t red_result = common_hal_pwmio_pwmout_construct(&rgb_status_r, CP_RGB_STATUS_R, 0, 50000, false);
 
         if (PWMOUT_OK == red_result) {
-            common_hal_pulseio_pwmout_never_reset(&rgb_status_r);
+            common_hal_pwmio_pwmout_never_reset(&rgb_status_r);
         }
     }
 
     if (common_hal_mcu_pin_is_free(CP_RGB_STATUS_G)) {
-        pwmout_result_t green_result = common_hal_pulseio_pwmout_construct(&rgb_status_g, CP_RGB_STATUS_G, 0, 50000, false);
+        pwmout_result_t green_result = common_hal_pwmio_pwmout_construct(&rgb_status_g, CP_RGB_STATUS_G, 0, 50000, false);
 
         if (PWMOUT_OK == green_result) {
-            common_hal_pulseio_pwmout_never_reset(&rgb_status_g);
+            common_hal_pwmio_pwmout_never_reset(&rgb_status_g);
         }
     }
 
     if (common_hal_mcu_pin_is_free(CP_RGB_STATUS_B)) {
-        pwmout_result_t blue_result = common_hal_pulseio_pwmout_construct(&rgb_status_b, CP_RGB_STATUS_B, 0, 50000, false);
+        pwmout_result_t blue_result = common_hal_pwmio_pwmout_construct(&rgb_status_b, CP_RGB_STATUS_B, 0, 50000, false);
 
         if (PWMOUT_OK == blue_result) {
-            common_hal_pulseio_pwmout_never_reset(&rgb_status_b);
+            common_hal_pwmio_pwmout_never_reset(&rgb_status_b);
         }
     }
     #endif
@@ -241,9 +242,9 @@ void new_status_color(uint32_t rgb) {
         status_rgb_color[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
 	#endif
 
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, status_rgb_color[0]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
     #endif
 }
 
@@ -287,9 +288,9 @@ void temp_status_color(uint32_t rgb) {
         temp_status_color_rgb[2] = (uint16_t) (blue_u8 << 8) + blue_u8;
     #endif
 
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, temp_status_color_rgb[0]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, temp_status_color_rgb[1]);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, temp_status_color_rgb[2]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, temp_status_color_rgb[0]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, temp_status_color_rgb[1]);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, temp_status_color_rgb[2]);
     #endif
 }
 
@@ -326,9 +327,9 @@ void clear_temp_status() {
 		blue = status_rgb_color[2];
 	#endif
 
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_r, red);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_g, green);
-        common_hal_pulseio_pwmout_set_duty_cycle(&rgb_status_b, blue);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_r, red);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, green);
+        common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, blue);
     #endif
 }
 
@@ -365,6 +366,11 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
     status->safe_mode = safe_mode;
     status->found_main = found_main;
     status->total_exception_cycle = 0;
+    status->ok = result->return_code != PYEXEC_EXCEPTION;
+    if (status->ok) {
+        // If this isn't an exception, skip exception sorting and handling
+        return;
+    }
     status->ones = result->exception_line % 10;
     status->ones += status->ones > 0 ? 1 : 0;
     status->tens = (result->exception_line / 10) % 10;
@@ -382,11 +388,12 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
         }
         line /= 10;
     }
-    status->ok = result->return_code != PYEXEC_EXCEPTION;
     if (!status->ok) {
         status->total_exception_cycle = EXCEPTION_TYPE_LENGTH_MS * 3 + LINE_NUMBER_TOGGLE_LENGTH * status->digit_sum + LINE_NUMBER_TOGGLE_LENGTH * num_places;
     }
-    if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_IndentationError)) {
+    if (!result->exception_type) {
+        status->exception_color = OTHER_ERROR;
+    } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_IndentationError)) {
         status->exception_color = INDENTATION_ERROR;
     } else if (mp_obj_is_subclass_fast(result->exception_type, &mp_type_SyntaxError)) {
         status->exception_color = SYNTAX_ERROR;
@@ -404,14 +411,15 @@ void prep_rgb_status_animation(const pyexec_result_t* result,
     #endif
 }
 
-void tick_rgb_status_animation(rgb_status_animation_t* status) {
+bool tick_rgb_status_animation(rgb_status_animation_t* status) {
     #if defined(MICROPY_HW_NEOPIXEL) || (defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)) || (defined(CP_RGB_STATUS_LED))
     uint32_t tick_diff = supervisor_ticks_ms32() - status->pattern_start;
     if (status->ok) {
         // All is good. Ramp ALL_DONE up and down.
         if (tick_diff > ALL_GOOD_CYCLE_MS) {
             status->pattern_start = supervisor_ticks_ms32();
-            tick_diff = 0;
+            new_status_color(BLACK);
+            return true;
         }
 
         uint16_t brightness = tick_diff * 255 / (ALL_GOOD_CYCLE_MS / 2);
@@ -426,7 +434,7 @@ void tick_rgb_status_animation(rgb_status_animation_t* status) {
     } else {
         if (tick_diff > status->total_exception_cycle) {
             status->pattern_start = supervisor_ticks_ms32();
-            tick_diff = 0;
+            return true;
         }
         // First flash the file color.
         if (tick_diff < EXCEPTION_TYPE_LENGTH_MS) {
@@ -475,4 +483,5 @@ void tick_rgb_status_animation(rgb_status_animation_t* status) {
         }
     }
     #endif
+    return false;  // Animation is not finished.
 }

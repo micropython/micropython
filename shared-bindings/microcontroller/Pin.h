@@ -37,6 +37,7 @@ mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj);
 mcu_pin_obj_t *validate_obj_is_pin_or_none(mp_obj_t obj);
 mcu_pin_obj_t *validate_obj_is_free_pin(mp_obj_t obj);
 mcu_pin_obj_t *validate_obj_is_free_pin_or_none(mp_obj_t obj);
+void validate_list_is_free_pins(qstr what, mcu_pin_obj_t **pins_out, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out);
 
 void assert_pin_free(const mcu_pin_obj_t* pin);
 
