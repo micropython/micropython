@@ -36,7 +36,7 @@
 void board_reset_user_neopixels(const mcu_pin_obj_t* pin, size_t count) {
     // Turn off on-board NeoPixel string
     uint8_t empty[count * 3];
-    memset(empty, 0, count);
+    memset(empty, 0, count * 3);
     digitalio_digitalinout_obj_t neopixel_pin;
     common_hal_digitalio_digitalinout_construct(&neopixel_pin, pin);
     common_hal_digitalio_digitalinout_switch_to_output(&neopixel_pin, false,
