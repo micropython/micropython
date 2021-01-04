@@ -376,7 +376,7 @@ STATIC const char *strprev(const char *s, char c) {
 
 STATIC bool py2jvalue(const char **jtypesig, mp_obj_t arg, jvalue *out) {
     const char *arg_type = *jtypesig;
-    mp_obj_type_t *type = mp_obj_get_type(arg);
+    const mp_obj_type_t *type = mp_obj_get_type(arg);
 
     if (type == &mp_type_str) {
         if (IMATCH(arg_type, "java.lang.String") || IMATCH(arg_type, "java.lang.Object")) {
