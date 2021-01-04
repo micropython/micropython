@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
+#ifndef MICROPY_INCLUDED_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H
+#define MICROPY_INCLUDED_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H
 
 #include "py/obj.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "common-hal/alarm/time/TimeAlarm.h"
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t *pin;
+} alarm_touch_touchalarm_obj_t;
 
-extern const mp_obj_type_t alarm_time_timealarm_type;
+// Find the alarm object that caused us to wake up or create an equivalent one.
+mp_obj_t alarm_touch_touchalarm_get_wakeup_alarm(const size_t n_alarms, const mp_obj_t *alarms);
+// Check for the wake up alarm from pretend deep sleep.
+void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, const mp_obj_t *alarms);
+void alarm_touch_touchalarm_prepare_for_deep_sleep(void);
+bool alarm_touch_touchalarm_woke_us_up(void);
+void alarm_touch_touchalarm_reset(void);
 
-extern void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time);
-extern mp_float_t common_hal_alarm_time_timealarm_get_monotonic_time(alarm_time_timealarm_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
+#endif  // MICROPY_INCLUDED_COMMON_HAL_ALARM_TOUCH_TOUCHALARM_H

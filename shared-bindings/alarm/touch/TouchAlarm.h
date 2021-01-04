@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TOUCH_TOUCHALARM_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TOUCH_TOUCHALARM_H
 
 #include "py/obj.h"
+#include "py/runtime.h"
 
-#include "common-hal/alarm/time/TimeAlarm.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "common-hal/alarm/touch/TouchAlarm.h"
 
-extern const mp_obj_type_t alarm_time_timealarm_type;
+extern const mp_obj_type_t alarm_touch_touchalarm_type;
 
-extern void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time);
-extern mp_float_t common_hal_alarm_time_timealarm_get_monotonic_time(alarm_time_timealarm_obj_t *self);
+extern void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *self, const mcu_pin_obj_t *pin);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TOUCH_TOUCHALARM_H

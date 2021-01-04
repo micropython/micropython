@@ -67,6 +67,9 @@ void reset_all_pins(void) {
 // Since i.MX pins need extra register and reset information to reset properly,
 // resetting pins by number alone has been removed.
 void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    if (pin == NULL) {
+        return;
+    }
     never_reset_pins[pin->mux_idx] = false;
     claimed_pins[pin->mux_idx] = false;
     *(uint32_t*)pin->mux_reg = pin->mux_reset;

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
+#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H
+#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H
 
-#include "py/obj.h"
+#include "driver/touch_pad.h"
 
-#include "common-hal/alarm/time/TimeAlarm.h"
+extern void peripherals_touch_reset(void);
+extern void peripherals_touch_never_reset(const bool enable);
+extern void peripherals_touch_init(const touch_pad_t touchpad);
 
-extern const mp_obj_type_t alarm_time_timealarm_type;
-
-extern void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time);
-extern mp_float_t common_hal_alarm_time_timealarm_get_monotonic_time(alarm_time_timealarm_obj_t *self);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_TIME_TIMEALARM_H
+#endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H

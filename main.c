@@ -157,7 +157,7 @@ STATIC void start_mp(supervisor_allocation* heap) {
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
-    alarm_save_wakeup_alarm();
+    alarm_save_wake_alarm();
     // Reset alarm module only after we retrieved the wakeup alarm.
     alarm_reset();
     #endif
@@ -260,10 +260,10 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
 STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
-    if (serial_connected_at_start) {
-        serial_write("\n");
-        print_code_py_status_message(safe_mode);
-    }
+    serial_write("\n");
+    print_code_py_status_message(safe_mode);
+    print_safe_mode_message(safe_mode);
+    serial_write("\n");
     #endif
 
     pyexec_result_t result;
@@ -307,16 +307,17 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         if (result.return_code & PYEXEC_FORCED_EXIT) {
             return reload_requested;
         }
+
+        if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
+            serial_write_compressed(translate("\nCode stopped by auto-reload.\n"));
+        } else {
+            serial_write_compressed(translate("\nCode done running.\n"));
+        }
     }
 
     // Program has finished running.
 
-    // Display a different completion message if the user has no USB attached (cannot save files)
-    if (!serial_connected_at_start) {
-        serial_write_compressed(translate("\nCode done running. Waiting for reload.\n"));
-    }
-
-    bool serial_connected_before_animation = false;
+    bool serial_connected_before_animation = serial_connected();
     #if CIRCUITPY_DISPLAYIO
     bool refreshed_epaper_display = false;
     #endif
@@ -409,7 +410,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                     alarm_enter_deep_sleep();
                     // Does not return.
                 } else {
-                    serial_write_compressed(translate("Pretending to deep sleep until alarm, any key or file write.\n"));
+                    serial_write_compressed(translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
                 }
             }
         }
@@ -614,6 +615,10 @@ void gc_collect(void) {
     gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
 
     background_callback_gc_collect();
+
+    #if CIRCUITPY_ALARM
+    common_hal_alarm_gc_collect();
+    #endif
 
     #if CIRCUITPY_DISPLAYIO
     displayio_gc_collect();
