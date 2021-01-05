@@ -31,7 +31,6 @@
 #include "shared-bindings/adafruit_bus_device/I2CDevice.h"
 #include "shared-bindings/util.h"
 #include "shared-module/adafruit_bus_device/I2CDevice.h"
-#include "shared-bindings/busio/I2C.h"
 
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
