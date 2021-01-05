@@ -26,9 +26,9 @@
  */
 
 #include <stdint.h>
+#include "supervisor/board.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
-#include "boards/board.h"
 #include "irq.h"
 #include "csr.h"
 
@@ -147,5 +147,5 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 }
 
 // TODO: Add sleep support if the SoC supports sleep.
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
 }

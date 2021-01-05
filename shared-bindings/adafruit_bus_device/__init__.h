@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Mark Komus
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,9 @@
  * THE SOFTWARE.
  */
 
-// This file defines board specific functions.
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE___INIT___H
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+// Nothing now.
 
-#include <stdbool.h>
-
-#include "py/mpconfig.h"
-
-// Initializes board related state once on start up.
-void board_init(void);
-
-// Returns true if the user initiates safe mode in a board specific way.
-// Also add BOARD_USER_SAFE_MODE in mpconfigboard.h to explain the board specific
-// way.
-bool board_requests_safe_mode(void);
-
-// Reset the state of off MCU components such as neopixels.
-void reset_board(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_BOARDS_BOARD_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_BUSDEVICE___INIT___H

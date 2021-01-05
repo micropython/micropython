@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "fsl_flexspi_nor_boot.h"
-#include "boards/board.h"
+#include "boards/flash_config.h"
 
+#include "fsl_flexspi_nor_boot.h"
 
 __attribute__((section(".boot_hdr.ivt")))
 /*************************************

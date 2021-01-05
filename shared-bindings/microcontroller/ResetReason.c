@@ -72,6 +72,6 @@ MAKE_ENUM_MAP(mcu_reset_reason) {
 };
 STATIC MP_DEFINE_CONST_DICT(mcu_reset_reason_locals_dict, mcu_reset_reason_locals_table);
 
-MAKE_PRINTER(alarm, mcu_reset_reason);
+MAKE_PRINTER(microcontroller, mcu_reset_reason);
 
-MAKE_ENUM_TYPE(alarm, ResetReason, mcu_reset_reason);
+MAKE_ENUM_TYPE(microcontroller, ResetReason, mcu_reset_reason);

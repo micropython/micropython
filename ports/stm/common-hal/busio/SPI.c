@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "supervisor/shared/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 

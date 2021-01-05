@@ -24,8 +24,6 @@
 
 #define CALIBRATE_CRYSTALLESS 1
 
-#define USER_NEOPIXELS_PIN      (&pin_PB23)
-
 // Explanation of how a user got into safe mode.
 #define BOARD_USER_SAFE_MODE_ACTION translate("pressing both buttons at start up.\n")
 

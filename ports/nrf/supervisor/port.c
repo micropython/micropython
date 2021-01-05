@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 #include "supervisor/port.h"
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 #include "nrfx/hal/nrf_clock.h"
 #include "nrfx/hal/nrf_power.h"
@@ -307,7 +307,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     nrfx_rtc_cc_set(&rtc_instance, 0, current_ticks + diff, true);
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
 #if defined(MICROPY_QSPI_CS)
     qspi_disable();
 #endif

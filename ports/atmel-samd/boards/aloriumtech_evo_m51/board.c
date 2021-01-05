@@ -28,7 +28,7 @@
 // Author: Bryan Craker
 // Date: 2020-05-20
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "mpconfigboard.h"
 
 void board_init(void) {

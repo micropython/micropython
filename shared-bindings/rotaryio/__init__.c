@@ -39,8 +39,6 @@
 //| `Wikipedia's Rotary Encoder page <https://en.wikipedia.org/wiki/Rotary_encoder>`_ for more
 //| background.
 //|
-//| .. warning:: This module is not available in some SAMD21 (aka M0) builds. See the :ref:`module-support-matrix` for more info.
-//|
 //| All classes change hardware state and should be deinitialized when they
 //| are no longer needed if the program continues after use. To do so, either
 //| call :py:meth:`!deinit` or use a context manager. See
