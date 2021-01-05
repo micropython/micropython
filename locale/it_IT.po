@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-22 22:54+0530\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2018-10-02 16:27+0200\n"
 "Last-Translator: Enrico Paganin <enrico.paganin@mail.com>\n"
 "Language-Team: \n"
@@ -1894,10 +1894,6 @@ msgstr "Troppi schermi"
 msgid "Total data to write is larger than outgoing_packet_length"
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-msgid "TouchAlarm not available in light sleep"
-msgstr ""
-
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (chiamata più recente per ultima):\n"
@@ -2541,6 +2537,10 @@ msgstr ""
 msgid "data must be of equal length"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr ""
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "numeri decimali non supportati"
@@ -2856,7 +2856,7 @@ msgid "input and output shapes are not compatible"
 msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
+msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
 
 #: extmod/ulab/code/fft/fft.c
@@ -3104,6 +3104,10 @@ msgstr ""
 msgid "maxiter should be > 0"
 msgstr ""
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3335,10 +3339,6 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
 msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
@@ -3691,6 +3691,10 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr "troppi argomenti forniti con il formato specificato"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr ""
@@ -3701,16 +3705,16 @@ msgid "too many values to unpack (expected %d)"
 msgstr "troppi valori da scompattare (%d attesi)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "indice della tupla fuori intervallo"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3927,6 +3931,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "tuple index out of range"
+#~ msgstr "indice della tupla fuori intervallo"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr ""
