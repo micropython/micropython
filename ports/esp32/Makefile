@@ -395,6 +395,9 @@ $(ESPIDFMOD_MODULE): $(ALL_ESPIDFMOD_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py
 	$(Q)$(CPP) $(ESPIDFMOD_CFLAGS) -DPYCPARSER -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(INC) $(INC_ESPCOMP) $(ESPIDFMOD_SOURCE) > $(ESPIDFMOD_PP)
 	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -M espidf -E $(ESPIDFMOD_PP) $(ESPIDFMOD_SOURCE) > $@
 
+.PHONY: ESPIDF_MPY
+ESPIDF_MPY: $(ESPIDFMOD_MODULE)
+
 LIB_SRC_C += \
 	lib/lv_bindings/driver/esp32/modlvesp32.c \
 	lib/lv_bindings/driver/esp32/modrtch.c \
