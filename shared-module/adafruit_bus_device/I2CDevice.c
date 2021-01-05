@@ -31,48 +31,75 @@
 #include "py/runtime.h"
 #include "lib/utils/interrupt_char.h"
 
-void common_hal_adafruit_bus_device_i2cdevice_construct(adafruit_bus_device_i2cdevice_obj_t *self, busio_i2c_obj_t *i2c, uint8_t device_address) {
+void common_hal_adafruit_bus_device_i2cdevice_construct(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t *i2c, uint8_t device_address) {
     self->i2c = i2c;
     self->device_address = device_address;
 }
 
 void common_hal_adafruit_bus_device_i2cdevice_lock(adafruit_bus_device_i2cdevice_obj_t *self) {
-    bool success = common_hal_busio_i2c_try_lock(self->i2c);
+    mp_obj_t dest[2];
+    mp_load_method(self->i2c, MP_QSTR_try_lock, dest);
 
-    while (!success) {
+    mp_obj_t success = mp_call_method_n_kw(0, 0, dest);
+
+    while (!mp_obj_is_true(success)) {
         RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             break;
         }
 
-        success = common_hal_busio_i2c_try_lock(self->i2c);
+        success = mp_call_method_n_kw(0, 0, dest);
     }
 }
 
 void common_hal_adafruit_bus_device_i2cdevice_unlock(adafruit_bus_device_i2cdevice_obj_t *self) {
-    common_hal_busio_i2c_unlock(self->i2c);
-}
-
-uint8_t common_hal_adafruit_bus_device_i2cdevice_readinto(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length) {
-    return common_hal_busio_i2c_read(self->i2c, self->device_address, buffer, length);
-}
-
-uint8_t common_hal_adafruit_bus_device_i2cdevice_write(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, size_t length, bool transmit_stop_bit) {
-    return common_hal_busio_i2c_write(self->i2c, self->device_address, buffer, length, transmit_stop_bit);
+    mp_obj_t dest[2];
+    mp_load_method(self->i2c, MP_QSTR_unlock, dest);
+    mp_call_method_n_kw(0, 0, dest);
 }
 
 void common_hal_adafruit_bus_device_i2cdevice_probe_for_device(adafruit_bus_device_i2cdevice_obj_t *self) {
     common_hal_adafruit_bus_device_i2cdevice_lock(self);
 
-    mp_buffer_info_t bufinfo;
-    mp_obj_t buffer = mp_obj_new_bytearray_of_zeros(1);
+    mp_buffer_info_t write_bufinfo;
+    mp_obj_t write_buffer = mp_obj_new_bytearray_of_zeros(0);
+    mp_get_buffer_raise(write_buffer, &write_bufinfo, MP_BUFFER_READ);
 
-    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_WRITE);
+    mp_obj_t dest[4];
 
-    uint8_t status = common_hal_adafruit_bus_device_i2cdevice_readinto(self, (uint8_t*)bufinfo.buf, 1);
-    if (status != 0) {
-        common_hal_adafruit_bus_device_i2cdevice_unlock(self);
-        mp_raise_ValueError_varg(translate("No I2C device at address: %x"), self->device_address);
+    /* catch exceptions that may be thrown while probing for the device */
+    nlr_buf_t write_nlr;
+    if (nlr_push(&write_nlr) == 0) {
+        mp_load_method(self->i2c, MP_QSTR_writeto, dest);
+        dest[2] = mp_obj_new_int_from_ull(self->device_address);
+        dest[3] = write_buffer;
+        mp_call_method_n_kw(2, 0, dest);
+        nlr_pop();
+    } else {
+        /* some OS's don't like writing an empty bytestring... retry by reading a byte */
+        mp_buffer_info_t read_bufinfo;
+        mp_obj_t read_buffer = mp_obj_new_bytearray_of_zeros(1);
+        mp_get_buffer_raise(read_buffer, &read_bufinfo, MP_BUFFER_WRITE);
+
+        mp_load_method(self->i2c, MP_QSTR_readfrom_into, dest);
+        dest[2] = mp_obj_new_int_from_ull(self->device_address);
+        dest[3] = read_buffer;
+
+        nlr_buf_t read_nlr;
+        if (nlr_push(&read_nlr) == 0) {
+            mp_call_method_n_kw(2, 0, dest);
+            nlr_pop();
+        } else {
+            /* At this point we tried two methods and only got exceptions */
+            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)read_nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
+                common_hal_adafruit_bus_device_i2cdevice_unlock(self);
+                mp_raise_ValueError_varg(translate("No I2C device at address: %x"), self->device_address);
+            }
+            else {
+                /* In case we receive an unrelated exception pass it up */
+                nlr_raise(MP_OBJ_FROM_PTR(read_nlr.ret_val));
+            }
+        }
     }
 
     common_hal_adafruit_bus_device_i2cdevice_unlock(self);
