@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-22 22:54+0530\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2020-11-26 03:11+0000\n"
 "Last-Translator: Daniel Bravo Darriba <bravodarriba@gmail.com>\n"
 "Language: de_DE\n"
@@ -1905,10 +1905,6 @@ msgstr ""
 "Die Gesamtzahl der zu schreibenden Daten ist größer als "
 "outgoing_packet_length"
 
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-msgid "TouchAlarm not available in light sleep"
-msgstr ""
-
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Zurückverfolgung (jüngste Aufforderung zuletzt):\n"
@@ -2569,6 +2565,10 @@ msgstr ""
 msgid "data must be of equal length"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr ""
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "Dezimalzahlen nicht unterstützt"
@@ -2882,8 +2882,8 @@ msgid "input and output shapes are not compatible"
 msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
-msgstr "Das Eingabeargument muss eine Ganzzahl oder ein 2-Tupel sein"
+msgid "input argument must be an integer, a tuple, or a list"
+msgstr ""
 
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
@@ -3131,6 +3131,10 @@ msgstr ""
 msgid "maxiter should be > 0"
 msgstr ""
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3360,10 +3364,6 @@ msgstr "Operanden konnten nicht zusammen gesendet werden"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
 msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
@@ -3714,6 +3714,10 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr "zu viele Argumente mit dem angegebenen Format"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "zu viele Indizes"
@@ -3724,16 +3728,16 @@ msgid "too many values to unpack (expected %d)"
 msgstr "zu viele Werte zum Auspacken (erwartet %d)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "Tupelindex außerhalb des Bereichs"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3952,6 +3956,12 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "Das Eingabeargument muss eine Ganzzahl oder ein 2-Tupel sein"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "Tupelindex außerhalb des Bereichs"
 
 #~ msgid ""
 #~ "\n"
