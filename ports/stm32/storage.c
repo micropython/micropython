@@ -250,6 +250,13 @@ int storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_bl
 #define PYB_FLASH_NATIVE_BLOCK_SIZE (FLASH_BLOCK_SIZE)
 #endif
 
+#if defined(MICROPY_HW_BDEV_READBLOCKS_EXT)
+// Size of blocks is PYB_FLASH_NATIVE_BLOCK_SIZE
+int storage_readblocks_ext(uint8_t *dest, uint32_t block, uint32_t offset, uint32_t len) {
+    return MICROPY_HW_BDEV_READBLOCKS_EXT(dest, block, offset, len);
+}
+#endif
+
 typedef struct _pyb_flash_obj_t {
     mp_obj_base_t base;
     uint32_t start; // in bytes

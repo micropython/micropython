@@ -345,6 +345,11 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
         }
     }
 
+    // check if the UART is reserved for system use or not
+    if (MICROPY_HW_UART_IS_RESERVED(uart_id)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) is reserved"), uart_id);
+    }
+
     pyb_uart_obj_t *self;
     if (MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] == NULL) {
         // create new UART object

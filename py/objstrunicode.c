@@ -92,7 +92,7 @@ STATIC void uni_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
     #endif
     if (kind == PRINT_STR) {
-        mp_printf(print, "%.*s", str_len, str_data);
+        print->print_strn(print->data, (const char *)str_data, str_len);
     } else {
         uni_print_quoted(print, str_data, str_len);
     }

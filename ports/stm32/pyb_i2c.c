@@ -668,39 +668,8 @@ STATIC mp_obj_t pyb_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // work out i2c bus
-    int i2c_id = 0;
-    if (mp_obj_is_str(args[0])) {
-        const char *port = mp_obj_str_get_str(args[0]);
-        if (0) {
-        #ifdef MICROPY_HW_I2C1_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C1_NAME) == 0) {
-            i2c_id = 1;
-        #endif
-        #ifdef MICROPY_HW_I2C2_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C2_NAME) == 0) {
-            i2c_id = 2;
-        #endif
-        #ifdef MICROPY_HW_I2C3_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C3_NAME) == 0) {
-            i2c_id = 3;
-        #endif
-        #ifdef MICROPY_HW_I2C4_NAME
-        } else if (strcmp(port, MICROPY_HW_I2C4_NAME) == 0) {
-            i2c_id = 4;
-        #endif
-        } else {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%s) doesn't exist"), port);
-        }
-    } else {
-        i2c_id = mp_obj_get_int(args[0]);
-        if (i2c_id < 1 || i2c_id > MP_ARRAY_SIZE(pyb_i2c_obj)
-            || pyb_i2c_obj[i2c_id - 1].i2c == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
-        }
-    }
-
     // get I2C object
+    int i2c_id = i2c_find_peripheral(args[0]);
     const pyb_i2c_obj_t *i2c_obj = &pyb_i2c_obj[i2c_id - 1];
 
     if (n_args > 1 || n_kw > 0) {

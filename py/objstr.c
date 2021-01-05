@@ -123,10 +123,10 @@ STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     bool is_bytes = true;
     #endif
     if (kind == PRINT_RAW || (!MICROPY_PY_BUILTINS_STR_UNICODE && kind == PRINT_STR && !is_bytes)) {
-        mp_printf(print, "%.*s", str_len, str_data);
+        print->print_strn(print->data, (const char *)str_data, str_len);
     } else {
         if (is_bytes) {
-            mp_print_str(print, "b");
+            print->print_strn(print->data, "b", 1);
         }
         mp_str_print_quoted(print, str_data, str_len, is_bytes);
     }

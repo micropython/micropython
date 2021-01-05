@@ -39,11 +39,10 @@ Follow the standard [nRF Port build instructions](../../README.md); but use
     make BOARD=nrf52840-mdk-usb-dongle
 
 The build artifacts will be created in `build-nrf52840-mdk-usb-dongle`. Once
-built, the easiest way to deploy to the device is to open `firmware.hex` using
+built, the target can be deployed to the device as described in
+[nRFUtil targets](../../README.md#nrfutil-targets).
+
+An alternative way to deploy to the device, is to open `firmware.hex` using
 *nRF Connect* and select *Write*. Detailed instructions can be found on the
 [developer
 wiki](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle/programming/). 
-
-**Note** that the regular method of deployment for the MicroPython nRF port
-(using `make deploy`) will *not* operate correctly and will overwrite the
-bootloader.

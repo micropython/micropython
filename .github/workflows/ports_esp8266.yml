@@ -18,6 +18,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install packages
-      run: source tools/ci.sh && ci_esp8266_setup >> $GITHUB_PATH
+      run: source tools/ci.sh && ci_esp8266_setup && ci_esp8266_path >> $GITHUB_PATH
     - name: Build
       run: source tools/ci.sh && ci_esp8266_build

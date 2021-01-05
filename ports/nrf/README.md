@@ -58,12 +58,12 @@ By default, the PCA10040 (nrf52832) is used as compile target. To build and flas
 
     make submodules
     make
-    make flash
+    make deploy
 
 Alternatively the target board could be defined:
 
      make BOARD=pca10040
-     make BOARD=pca10040 flash
+     make BOARD=pca10040 deploy
 
 ## Compile without LTO enabled
 
@@ -118,26 +118,27 @@ For example:
 
 ## Target Boards and Make Flags
 
-Target Board (BOARD) | Bluetooth Stack (SD)    | Bluetooth Support      | Flash Util
----------------------|-------------------------|------------------------|-------------------------------
-microbit             | s110                    | Peripheral             | [PyOCD](#pyocdopenocd-targets)
-pca10000             | s110                    | Peripheral             | [Segger](#segger-targets)
-pca10001             | s110                    | Peripheral             | [Segger](#segger-targets)
-pca10028             | s110                    | Peripheral             | [Segger](#segger-targets)
-pca10031             | s110                    | Peripheral             | [Segger](#segger-targets)
-wt51822_s4at         | s110                    | Peripheral             | Manual, see [datasheet](https://4tronix.co.uk/picobot2/WT51822-S4AT.pdf) for pinout
-pca10040             | s132                    | Peripheral and Central | [Segger](#segger-targets)
-feather52            | s132                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the bottom side of the board
-arduino_primo        | s132                    | Peripheral and Central | [PyOCD](#pyocdopenocd-targets)
-ibk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
-idk_blyst_nano       | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
-blueio_tag_evim      | s132                    | Peripheral and Central | [IDAP](#idap-midap-link-targets)
-evk_nina_b1          | s132                    | Peripheral and Central | [Segger](#segger-targets)
-pca10056             | s140                    | Peripheral and Central | [Segger](#segger-targets)
-pca10059             | s140                    | Peripheral and Central | Manual, SWDIO and SWCLK solder points on the sides.
-particle_xenon       | s140                    | Peripheral and Central | [Black Magic Probe](#black-magic-probe-targets)
-pca10090             | None (bsdlib.a)         | None (LTE/GNSS)        | [Segger](#segger-targets)
-actinius_icarus      | None (bsdlib.a)         | None (LTE/GNSS)        | [Segger](#segger-targets)
+Target Board (BOARD) | Bluetooth Stack (SD)    | Bluetooth Support      | Bootloader     | Default Flash Util
+---------------------|-------------------------|------------------------|----------------|-------------------
+microbit             | s110                    | Peripheral             |                | [PyOCD](#pyocdopenocd-targets)
+pca10000             | s110                    | Peripheral             |                | [Segger](#segger-targets)
+pca10001             | s110                    | Peripheral             |                | [Segger](#segger-targets)
+pca10028             | s110                    | Peripheral             |                | [Segger](#segger-targets)
+pca10031             | s110                    | Peripheral             |                | [Segger](#segger-targets)
+wt51822_s4at         | s110                    | Peripheral             |                | Manual, see [datasheet](https://4tronix.co.uk/picobot2/WT51822-S4AT.pdf) for pinout
+pca10040             | s132                    | Peripheral and Central |                | [Segger](#segger-targets)
+feather52            | s132                    | Peripheral and Central |                | Manual, SWDIO and SWCLK solder points on the bottom side of the board
+arduino_primo        | s132                    | Peripheral and Central |                | [PyOCD](#pyocdopenocd-targets)
+ibk_blyst_nano       | s132                    | Peripheral and Central |                | [IDAP](#idap-midap-link-targets)
+idk_blyst_nano       | s132                    | Peripheral and Central |                | [IDAP](#idap-midap-link-targets)
+blueio_tag_evim      | s132                    | Peripheral and Central |                | [IDAP](#idap-midap-link-targets)
+evk_nina_b1          | s132                    | Peripheral and Central |                | [Segger](#segger-targets)
+pca10056             | s140                    | Peripheral and Central |                | [Segger](#segger-targets)
+pca10059             | s140                    | Peripheral and Central | OpenBootloader | [nrfutil](#nrfutil-targets)
+particle_xenon       | s140                    | Peripheral and Central |                | [Black Magic Probe](#black-magic-probe-targets)
+nrf52840-mdk-usb-dongle | s140                 | Peripheral and Central | OpenBootloader | [nrfutil](#nrfutil-targets)
+pca10090             | None (bsdlib.a)         | None (LTE/GNSS)        |                | [Segger](#segger-targets)
+actinius_icarus      | None (bsdlib.a)         | None (LTE/GNSS)        |                | [Segger](#segger-targets)
 
 ## IDAP-M/IDAP-Link Targets
 
@@ -172,6 +173,31 @@ This requires no further dependencies other than `arm-none-eabi-gdb`.
 `make deploy` will use gdb to load and run new firmware. See
 [this guide](https://github.com/blacksphere/blackmagic/wiki/Useful-GDB-commands)
 for more tips about using the BMP with GDB.
+
+## nRFUtil Targets
+
+Install the necessary Python packages that will be used for flashing using the bootloader:
+
+    sudo pip install nrfutil
+    sudo pip install intelhex
+
+The `intelhex` provides the `hexmerge.py` utility which is used by the Makefile
+to trim of the MBR in case SoftDevice flashing is requested.
+
+`nrfutil` as flashing backend also requires a serial port paramter to be defined
+in addition to the `deploy` target of make. For example:
+
+    make BOARD=nrf52840-mdk-usb-dongle NRFUTIL_PORT=/dev/ttyACM0 deploy
+
+If the target device is connected to `/dev/ttyACM0` serial port, the
+`NRFUTIL_PORT` parameter to make can be elided as it is the default serial
+port set by the Makefile.
+
+When enabling Bluetooth LE, as with the other flash utils, the SoftDevice
+needs to be flashed in the first firmware update. This can be done by issuing
+the `sd` target instead of `deploy`. For example:
+
+    make BOARD=nrf52840-mdk-usb-dongle SD=s140 NRFUTIL_PORT=/dev/ttyACM0 sd
 
 ## Bluetooth LE REPL
 

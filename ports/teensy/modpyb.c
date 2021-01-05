@@ -44,7 +44,6 @@
 #include "usrsw.h"
 #include "rng.h"
 #include "uart.h"
-#include "adc.h"
 #include "storage.h"
 #include "sdcard.h"
 #include "accel.h"
