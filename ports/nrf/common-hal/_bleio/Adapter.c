@@ -470,7 +470,16 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
     ble_drv_add_event_handler(scan_on_ble_evt, self->scan_results);
 
     uint32_t nrf_timeout = SEC_TO_UNITS(timeout, UNIT_10_MS);
-    if (timeout <= 0.0001) {
+    if (nrf_timeout > UINT16_MAX) {
+        // 0xffff / 100
+        mp_raise_ValueError(translate("timeout must be < 655.35 secs"));
+    }
+    if (nrf_timeout == 0 && timeout > 0.0f) {
+        // Make sure converted timeout is > 0 if original timeout is > 0.
+        mp_raise_ValueError(translate("non-zero timeout must be > 0.01"));
+    }
+
+    if (nrf_timeout) {
         nrf_timeout = BLE_GAP_SCAN_TIMEOUT_UNLIMITED;
     }
 

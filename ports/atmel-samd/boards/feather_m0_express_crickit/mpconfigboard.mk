@@ -21,6 +21,7 @@ CFLAGS_INLINE_LIMIT = 50
 CIRCUITPY_MSGPACK = 0
 
 # Include these Python libraries in firmware.
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Crickit
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Motor
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel

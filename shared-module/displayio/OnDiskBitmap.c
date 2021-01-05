@@ -57,7 +57,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     uint32_t compression = read_word(bmp_header, 15);
     uint32_t number_of_colors = read_word(bmp_header, 23);
 
-    bool indexed = ((bits_per_pixel <= 8) && (number_of_colors != 0));
+    bool indexed = bits_per_pixel <= 8;
     self->bitfield_compressed  = (compression == 3);
     self->bits_per_pixel = bits_per_pixel;
     self->width = read_word(bmp_header, 9);
@@ -75,6 +75,9 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
             self->b_bitmask = 0x1f;
         }
     } else if (indexed && self->bits_per_pixel != 1) {
+        if (number_of_colors == 0) {
+            number_of_colors = 1 << bits_per_pixel;
+        }
         uint16_t palette_size = number_of_colors * sizeof(uint32_t);
         uint16_t palette_offset = 0xe + header_size;
 

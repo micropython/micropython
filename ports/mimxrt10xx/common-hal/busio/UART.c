@@ -295,12 +295,10 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     LPUART_Deinit(self->uart);
     gc_free(self->ringbuf);
 
-    if (self->rx) {
-        common_hal_reset_pin(self->rx->pin);
-    }
-    if (self->tx) {
-        common_hal_reset_pin(self->tx->pin);
-    }
+
+    common_hal_reset_pin(self->rx->pin);
+    common_hal_reset_pin(self->tx->pin);
+
 
     self->rx = NULL;
     self->tx = NULL;

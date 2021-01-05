@@ -24,12 +24,14 @@
  * THE SOFTWARE.
  */
 #include <unistd.h>
+#include <stdbool.h>
 
 #ifndef CHAR_CTRL_C
 #define CHAR_CTRL_C (3)
 #endif
 
 void mp_hal_set_interrupt_char(char c);
+bool mp_hal_is_interrupted(void);
 
 void mp_hal_stdio_mode_raw(void);
 void mp_hal_stdio_mode_orig(void);

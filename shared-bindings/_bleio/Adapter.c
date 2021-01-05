@@ -33,8 +33,8 @@
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/_bleio/Adapter.h"
 
-#define ADV_INTERVAL_MIN (0.0020f)
-#define ADV_INTERVAL_MIN_STRING "0.0020"
+#define ADV_INTERVAL_MIN (0.02001f)
+#define ADV_INTERVAL_MIN_STRING "0.02001"
 #define ADV_INTERVAL_MAX (10.24f)
 #define ADV_INTERVAL_MAX_STRING "10.24"
 // 20ms is recommended by Apple
@@ -307,7 +307,7 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_float_t timeout = 0;
+    mp_float_t timeout = 0.0f;
     if (args[ARG_timeout].u_obj != mp_const_none) {
         timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     }
@@ -324,6 +324,13 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
     if (interval < INTERVAL_MIN || interval > INTERVAL_MAX) {
         mp_raise_ValueError_varg(translate("interval must be in range %s-%s"), INTERVAL_MIN_STRING, INTERVAL_MAX_STRING);
     }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+    if (timeout != 0.0f && timeout < interval) {
+        mp_raise_ValueError(translate("non-zero timeout must be >= interval"));
+    }
+#pragma GCC diagnostic pop
 
     const mp_float_t window = mp_obj_float_get(args[ARG_window].u_obj);
     if (window > interval) {

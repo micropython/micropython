@@ -24,20 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PIN_ALARM_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PIN_ALARM_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PINALARM_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PINALARM_H
 
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/alarm/pin/PinAlarm.h"
 
-extern const mp_obj_type_t alarm_pin_pin_alarm_type;
+extern const mp_obj_type_t alarm_pin_pinalarm_type;
 
-void common_hal_alarm_pin_pin_alarm_construct(alarm_pin_pin_alarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull);
-extern mcu_pin_obj_t *common_hal_alarm_pin_pin_alarm_get_pin(alarm_pin_pin_alarm_obj_t *self);
-extern bool common_hal_alarm_pin_pin_alarm_get_value(alarm_pin_pin_alarm_obj_t *self);
-extern bool common_hal_alarm_pin_pin_alarm_get_edge(alarm_pin_pin_alarm_obj_t *self);
-extern bool common_hal_alarm_pin_pin_alarm_get_pull(alarm_pin_pin_alarm_obj_t *self);
+void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, mcu_pin_obj_t *pin, bool value, bool edge, bool pull);
+extern mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pinalarm_obj_t *self);
+extern bool common_hal_alarm_pin_pinalarm_get_value(alarm_pin_pinalarm_obj_t *self);
+extern bool common_hal_alarm_pin_pinalarm_get_edge(alarm_pin_pinalarm_obj_t *self);
+extern bool common_hal_alarm_pin_pinalarm_get_pull(alarm_pin_pinalarm_obj_t *self);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PIN_ALARM_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ALARM_PIN_PINALARM_H
