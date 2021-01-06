@@ -107,9 +107,13 @@ extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
 int main(int argc, char **argv) {
+    // Hook for a board to run code at start up, for example check if a
+    // bootloader should be entered instead of the main application.
+    MICROPY_BOARD_STARTUP();
 
-
+    MICROPY_BOARD_EARLY_INIT();
 soft_reset:
+
     #if MICROPY_PY_TIME_TICKS
     rtc1_init_time_ticks();
     #endif
