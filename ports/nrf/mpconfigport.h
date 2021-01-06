@@ -366,3 +366,11 @@ extern const struct _mp_obj_module_t music_module;
 #ifndef MP_NEED_LOG2
 #define MP_NEED_LOG2                (1)
 #endif
+
+#ifndef MICROPY_BOARD_STARTUP
+#define MICROPY_BOARD_STARTUP()
+#endif
+
+#ifndef MICROPY_BOARD_EARLY_INIT
+#define MICROPY_BOARD_EARLY_INIT()
+#endif
