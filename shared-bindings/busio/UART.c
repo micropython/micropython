@@ -160,7 +160,7 @@ busio_uart_obj_t* native_uart(mp_obj_t uart_obj) {
 //|         ...
 //|
 STATIC mp_obj_t busio_uart_obj_deinit(mp_obj_t self_in) {
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     common_hal_busio_uart_deinit(self);
     return mp_const_none;
 }
@@ -236,7 +236,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_
 // These three methods are used by the shared stream methods.
 STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     STREAM_DEBUG("busio_uart_read stream %d\n", size);
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     byte *buf = buf_in;
 
@@ -249,7 +249,7 @@ STATIC mp_uint_t busio_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size,
 }
 
 STATIC mp_uint_t busio_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     const byte *buf = buf_in;
 
@@ -257,7 +257,7 @@ STATIC mp_uint_t busio_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_
 }
 
 STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     mp_uint_t ret;
     if (request == MP_IOCTL_POLL) {
@@ -280,14 +280,14 @@ STATIC mp_uint_t busio_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t
 //|     """The current baudrate."""
 //|
 STATIC mp_obj_t busio_uart_obj_get_baudrate(mp_obj_t self_in) {
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_busio_uart_get_baudrate(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_get_baudrate_obj, busio_uart_obj_get_baudrate);
 
 STATIC mp_obj_t busio_uart_obj_set_baudrate(mp_obj_t self_in, mp_obj_t baudrate) {
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     common_hal_busio_uart_set_baudrate(self, mp_obj_get_int(baudrate));
     return mp_const_none;
@@ -306,7 +306,7 @@ const mp_obj_property_t busio_uart_baudrate_obj = {
 //|     """The number of bytes in the input buffer, available to be read"""
 //|
 STATIC mp_obj_t busio_uart_obj_get_in_waiting(mp_obj_t self_in) {
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     return MP_OBJ_NEW_SMALL_INT(common_hal_busio_uart_rx_characters_available(self));
 }
@@ -323,14 +323,14 @@ const mp_obj_property_t busio_uart_in_waiting_obj = {
 //|     """The current timeout, in seconds (float)."""
 //|
 STATIC mp_obj_t busio_uart_obj_get_timeout(mp_obj_t self_in) {
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     return mp_obj_new_float(common_hal_busio_uart_get_timeout(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_uart_get_timeout_obj, busio_uart_obj_get_timeout);
 
 STATIC mp_obj_t busio_uart_obj_set_timeout(mp_obj_t self_in, mp_obj_t timeout) {
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     mp_float_t timeout_float = mp_obj_get_float(timeout);
     validate_timeout(timeout_float);
@@ -352,7 +352,7 @@ const mp_obj_property_t busio_uart_timeout_obj = {
 //|         ...
 //|
 STATIC mp_obj_t busio_uart_obj_reset_input_buffer(mp_obj_t self_in) {
-    busio_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    busio_uart_obj_t *self = native_uart(self_in);
     check_for_deinit(self);
     common_hal_busio_uart_clear_rx_buffer(self);
     return mp_const_none;
