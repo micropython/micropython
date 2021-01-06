@@ -105,7 +105,7 @@ bytecode is stored in flash, not in RAM like when importing from a filesystem.
 Also, frozen modules are available even when no filesystem is present to import
 from.
 
-To use frozen modules, put them in a directory (e.g. `freeze/`) and supply
+To use frozen modules, add them to `boards/manifest.py` or put them in a directory (e.g. `freeze/`) and supply
 `make` with the given directory. For example:
 
      make BOARD=pca10040 FROZEN_MPY_DIR=freeze

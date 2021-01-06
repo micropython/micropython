@@ -50,6 +50,11 @@ ifeq ($(DEBUG), 0)
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 endif
 
+# File containing description of content to be frozen into firmware.
+ifeq ($(FROZEN_MPY_DIR),)
+FROZEN_MANIFEST ?= boards/manifest.py
+endif
+
 # include py core make definitions
 include ../../py/py.mk
 
@@ -329,11 +334,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 SRC_C += \
 	device/startup_$(MCU_SUB_VARIANT).c \
 
-ifneq ($(FROZEN_MPY_DIR),)
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
-FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
-endif
-
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
@@ -530,13 +530,13 @@ GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
-ifneq ($(FROZEN_DIR),)
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
 # To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
 # and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
-ifneq ($(FROZEN_MPY_DIR),)
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
 # then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
