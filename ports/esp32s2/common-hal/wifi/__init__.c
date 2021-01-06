@@ -47,23 +47,23 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     if (event_base == WIFI_EVENT) {
         switch (event_id) {
             case WIFI_EVENT_SCAN_DONE:
-                ESP_EARLY_LOGW(TAG, "scan");
+                ESP_LOGW(TAG, "scan");
                 xEventGroupSetBits(radio->event_group_handle, WIFI_SCAN_DONE_BIT);
                 break;
             case WIFI_EVENT_STA_START:
-                ESP_EARLY_LOGW(TAG, "start");
+                ESP_LOGW(TAG, "start");
                 break;
             case WIFI_EVENT_STA_STOP:
-                ESP_EARLY_LOGW(TAG, "stop");
+                ESP_LOGW(TAG, "stop");
                 break;
             case WIFI_EVENT_STA_CONNECTED:
-                ESP_EARLY_LOGW(TAG, "connected");
+                ESP_LOGW(TAG, "connected");
                 break;
             case WIFI_EVENT_STA_DISCONNECTED: {
-                ESP_EARLY_LOGW(TAG, "disconnected");
+                ESP_LOGW(TAG, "disconnected");
                 wifi_event_sta_disconnected_t* d = (wifi_event_sta_disconnected_t*) event_data;
                 uint8_t reason = d->reason;
-                ESP_EARLY_LOGW(TAG, "reason %d 0x%02x", reason, reason);
+                ESP_LOGW(TAG, "reason %d 0x%02x", reason, reason);
                 if (radio->retries_left > 0 &&
                         (reason == WIFI_REASON_AUTH_EXPIRE ||
                          reason == WIFI_REASON_NOT_AUTHED ||
@@ -71,7 +71,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                          reason == WIFI_REASON_CONNECTION_FAIL ||
                          reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)) {
                     radio->retries_left--;
-                    ESP_EARLY_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
+                    ESP_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
                     esp_wifi_connect();
                     return;
                 }
@@ -84,14 +84,14 @@ static void event_handler(void* arg, esp_event_base_t event_base,
             // Cases to handle later.
             // case WIFI_EVENT_STA_AUTHMODE_CHANGE:
             default: {
-                ESP_EARLY_LOGW(TAG, "event %d 0x%02x", event_id, event_id);
+                ESP_LOGW(TAG, "event %d 0x%02x", event_id, event_id);
                 break;
             }
         }
     }
 
     if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ESP_EARLY_LOGW(TAG, "got ip");
+        ESP_LOGW(TAG, "got ip");
         radio->retries_left = radio->starting_retries;
         xEventGroupSetBits(radio->event_group_handle, WIFI_CONNECTED_BIT);
     }
