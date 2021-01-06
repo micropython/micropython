@@ -190,11 +190,11 @@ STATIC mp_obj_t machine_disable_irq(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 
 STATIC mp_obj_t machine_unique_id(void) {
-    uint8_t chipid[8];
+    uint32_t chipid[2];
     for (int i=0; i<2; i++) {
-        ((uint32_t*) chipid)[i] = NRF_FICR->DEVICEID[i];
+        chipid[i] = NRF_FICR->DEVICEID[i];
     }
-    return mp_obj_new_bytes(chipid, 8);
+    return mp_obj_new_bytes((uint8_t*)chipid, 8);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
