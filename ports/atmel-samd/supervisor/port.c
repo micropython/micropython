@@ -431,7 +431,7 @@ uint32_t port_get_saved_word(void) {
 static volatile uint64_t overflowed_ticks = 0;
 static volatile bool _ticks_enabled = false;
 
-static uint32_t _get_count(uint32_t* overflow_count) {
+static uint32_t _get_count(uint64_t* overflow_count) {
     #ifdef SAM_D5X_E5X
     while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
     #endif
@@ -500,7 +500,7 @@ void RTC_Handler(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    uint32_t overflow_count;
+    uint64_t overflow_count;
     uint32_t current_ticks = _get_count(&overflow_count);
     if (subticks != NULL) {
         *subticks = (current_ticks % 16) * 2;
