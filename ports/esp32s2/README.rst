@@ -76,7 +76,7 @@ Once this is complete, your final OpenOCD command may look something like this:
 
     openocd -f interface/jlink.cfg -f SOMEPATH/copied-esp32s2-saola-1.cfg
 
-Where `SOMEPATH` is the location of your copied configuration file (this can be placed in the port/boards directory with a prefix to ignore it with `.gitignore`, for instance). Interface, target and board config files sourced from espressif only need their paths from the $OPENOCD_SCRIPTS location, you don't need to include their full path. Once OpenOCD is running, connect to GDB with:
+Where ``SOMEPATH`` is the location of your copied configuration file (this can be placed in the port/boards directory with a prefix to ignore it with ``.gitignore``, for instance). Interface, target and board config files sourced from espressif only need their paths from the $OPENOCD_SCRIPTS location, you don't need to include their full path. Once OpenOCD is running, connect to GDB with:
 
 .. code-block::
 
