@@ -243,6 +243,14 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     }
     self->invert = args[ARG_invert].u_int;
     uart_set_line_inverse(self->uart_num, self->invert);
+
+    // hardware flow control: enable if either RTS or CTS pin is specified
+    // Note: 122 is the fill threshold of the 128 byte hardware buffer.
+    // The correct value is independent of the rx buffer size.
+    uint8_t flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
+    if (self->rts != UART_PIN_NO_CHANGE) flow_ctrl |= UART_HW_FLOWCTRL_RTS;
+    if (self->cts != UART_PIN_NO_CHANGE) flow_ctrl |= UART_HW_FLOWCTRL_CTS;
+    uart_set_hw_flow_ctrl(self->uart_num, flow_ctrl, 122);
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
