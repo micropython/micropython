@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/runtime.h"
 
 #include "i2s_common.h"
@@ -69,8 +71,17 @@ static void i2s_fill_buffer(i2s_t *self) {
     if (self->instance < 0 || self->instance >= I2S_NUM_MAX) {
         return;
     }
-    if (self->paused || !self->sample) {
-        i2s_zero_dma_buffer(self->instance);
+#define STACK_BUFFER_SIZE (512)
+    int16_t signed_samples[STACK_BUFFER_SIZE / sizeof(int16_t)];
+mp_printf(&mp_plat_print, "playing=%d paused=%d stopping=%d sample@%p sample_data=%p..%p\n", self->playing, self->paused, self->stopping, self->sample, self->sample_data, self->sample_end);
+
+    if (!self->playing || self->paused || !self->sample) {
+        memset(signed_samples, 0, sizeof(signed_samples));
+
+        size_t bytes_written = 0;
+        do {
+            ESP_CALL_RAISE(i2s_write(self->instance, signed_samples, sizeof(signed_samples), &bytes_written, 0));
+        } while (bytes_written != 0);
         return;
     }
     while (!self->stopping) {
@@ -102,7 +113,6 @@ static void i2s_fill_buffer(i2s_t *self) {
                 ESP_CALL_RAISE(i2s_write_expand(self->instance, self->sample_data, bytecount, 8, 16, &bytes_written, 0));
             }
         } else {
-#define STACK_BUFFER_SIZE (64)
             const size_t bytes_per_output_frame = 4;
             size_t bytes_per_input_frame = self->channel_count * self->bytes_per_sample;
             size_t framecount = MIN(STACK_BUFFER_SIZE / bytes_per_output_frame, bytecount / bytes_per_input_frame);
