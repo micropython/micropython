@@ -111,6 +111,14 @@ safe_mode_t port_init(void) {
     heap = NULL;
     never_reset_module_internal_pins();
 
+    #if defined(DEBUG) || defined(ENABLE_JTAG)
+    // JTAG
+    common_hal_never_reset_pin(&pin_GPIO39);
+    common_hal_never_reset_pin(&pin_GPIO40);
+    common_hal_never_reset_pin(&pin_GPIO41);
+    common_hal_never_reset_pin(&pin_GPIO42);
+    #endif
+
     #ifdef CONFIG_SPIRAM
         heap = (uint32_t*) (DRAM0_CACHE_ADDRESS_HIGH - CONFIG_SPIRAM_SIZE);
         heap_size = CONFIG_SPIRAM_SIZE / sizeof(uint32_t);
