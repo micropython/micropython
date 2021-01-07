@@ -186,6 +186,7 @@ void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
     }
 
     self->sample = sample;
+    self->loop = loop;
     self->bytes_per_sample = audiosample_bits_per_sample(sample) / 8;
     self->channel_count = audiosample_channel_count(sample);
     bool single_buffer;
@@ -195,12 +196,15 @@ void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
     audiosample_get_buffer_structure(sample, false, &single_buffer, &samples_signed,
                                      &max_buffer_length, &spacing);
     self->samples_signed = samples_signed;
-    self->loop = loop;
     self->playing = true;
     self->paused = false;
     self->stopping = false;
+    self->sample_data = self->sample_end = NULL;
     // We always output stereo so output twice as many bits.
     // uint16_t bits_per_sample_output = bits_per_sample * 2;
+
+    audiosample_reset_buffer(self->sample, false, 0);
+
     ESP_CALL_RAISE(i2s_set_sample_rates(self->instance, audiosample_sample_rate(sample)));
     i2s_fill_buffer(self);
 }
