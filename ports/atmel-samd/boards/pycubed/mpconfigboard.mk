@@ -21,6 +21,7 @@ CIRCUITPY_GAMEPAD = 0
 CIRCUITPY_RGBMATRIX = 0
 CIRCUITPY_PS2IO = 0
 
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_SD

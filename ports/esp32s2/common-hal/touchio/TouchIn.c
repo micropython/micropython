@@ -27,20 +27,11 @@
 #include "shared-bindings/touchio/TouchIn.h"
 
 #include "py/runtime.h"
-#include "driver/touch_pad.h"
-
-bool touch_inited = false;
-
-void touchin_reset(void) {
-    if (touch_inited) {
-        touch_pad_deinit();
-        touch_inited = false;
-    }
-}
+#include "peripherals/touch.h"
 
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     uint32_t touch_value;
-    touch_pad_read_raw_data((touch_pad_t)self->pin->touch_channel, &touch_value);
+    touch_pad_read_raw_data(self->pin->touch_channel, &touch_value);
     if (touch_value > UINT16_MAX) {
         return UINT16_MAX;
     }
@@ -54,20 +45,11 @@ void common_hal_touchio_touchin_construct(touchio_touchin_obj_t* self,
     }
     claim_pin(pin);
 
-    if (!touch_inited) {
-        touch_pad_init();
-        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
-        touch_pad_fsm_start();
-        touch_inited = true;
-    }
+    // initialize touchpad
+    peripherals_touch_init(pin->touch_channel);
 
-    touch_pad_config((touch_pad_t)pin->touch_channel);
-
-    // wait for "raw data" to reset
+    // wait for touch data to reset
     mp_hal_delay_ms(10);
-
-    // Initial values for pins will vary, depending on what peripherals the pins
-    // share on-chip.
 
     // Set a "touched" threshold not too far above the initial value.
     // For simple finger touch, the values may vary as much as a factor of two,

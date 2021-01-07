@@ -24,16 +24,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H
+#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H
 
-#include "py/obj.h"
-#include "common-hal/microcontroller/Pin.h"
+#include "driver/touch_pad.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t * pin;
-    uint16_t threshold;
-} touchio_touchin_obj_t;
+extern void peripherals_touch_reset(void);
+extern void peripherals_touch_never_reset(const bool enable);
+extern void peripherals_touch_init(const touch_pad_t touchpad);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
+#endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H
