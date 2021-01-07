@@ -56,34 +56,34 @@ mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self) {
 }
 
 mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self) {
-    char authmode[16];
+    const char* authmode = "";
     switch (self->record.authmode) {
         case WIFI_AUTH_OPEN:
-            strcpy(authmode, "OPEN");
+            authmode = "OPEN";
             break;
         case WIFI_AUTH_WEP:
-            strcpy(authmode, "WEP");
+            authmode = "WEP";
             break;
         case WIFI_AUTH_WPA_PSK:
-            strcpy(authmode, "WPA_PSK");
+            authmode = "WPA_PSK";
             break;
         case WIFI_AUTH_WPA2_PSK:
-            strcpy(authmode, "WPA2_PSK");
+            authmode = "WPA2_PSK";
             break;
         case WIFI_AUTH_WPA_WPA2_PSK:
-            strcpy(authmode, "WPA_WPA2_PSK");
+            authmode = "WPA_WPA2_PSK";
             break;
         case WIFI_AUTH_WPA2_ENTERPRISE:
-            strcpy(authmode, "WPA2_ENTERPRISE");
+            authmode = "WPA2_ENTERPRISE";
             break;
         case WIFI_AUTH_WPA3_PSK:
-            strcpy(authmode, "WPA3_PSK");
+            authmode = "WPA3_PSK";
             break;
         case WIFI_AUTH_WPA2_WPA3_PSK:
-            strcpy(authmode, "WPA2_WPA3_PSK");
+            authmode = "WPA2_WPA3_PSK";
             break;
         default:
-            strcpy(authmode, "UNKNOWN");
+            authmode = "UNKNOWN";
             break;
     }
         const char* cstr = (const char*) authmode;
