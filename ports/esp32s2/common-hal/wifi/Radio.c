@@ -55,8 +55,6 @@ static void start_station(wifi_radio_obj_t *self) {
     esp_wifi_set_mode(next_mode);
 
     self->sta_mode = 1;
-
-    esp_wifi_set_config(WIFI_MODE_STA, &self->sta_config);
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
