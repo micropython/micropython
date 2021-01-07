@@ -42,6 +42,7 @@
 #include "spi.h"
 #include "i2c.h"
 #include "timer.h"
+#include "nrf_ficr.h"
 #if MICROPY_PY_MACHINE_HW_PWM
 #include "pwm.h"
 #endif
@@ -192,7 +193,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 STATIC mp_obj_t machine_unique_id(void) {
     uint32_t chipid[2];
     for (int i=0; i<2; i++) {
-        chipid[i] = NRF_FICR->DEVICEID[i];
+        chipid[i] = nrf_ficr_deviceid_get(NRF_FICR, i);
     }
     return mp_obj_new_bytes((uint8_t*)chipid, 8);
 }
