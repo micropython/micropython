@@ -103,9 +103,9 @@ static void i2s_fill_buffer(i2s_t *self) {
             }
         } else {
 #define STACK_BUFFER_SIZE (64)
-            size_t bytes_per_frame = self->channel_count * self->bytes_per_sample;
-            size_t framecount = MIN(STACK_BUFFER_SIZE / bytes_per_frame, bytecount);
-            int16_t signed_samples[STACK_BUFFER_SIZE / sizeof(int16_t)];
+            const size_t bytes_per_output_frame = 4;
+            size_t bytes_per_input_frame = self->channel_count * self->bytes_per_sample;
+            size_t framecount = MIN(STACK_BUFFER_SIZE / bytes_per_output_frame, bytecount / bytes_per_input_frame);
             if (self->samples_signed) {
                 assert(self->channel_count == 1);
                 if (self->bytes_per_sample == 1) {
@@ -129,9 +129,9 @@ static void i2s_fill_buffer(i2s_t *self) {
                 }
             }
             size_t expanded_bytes_written = 0;
-            ESP_CALL_RAISE(i2s_write(self->instance, signed_samples, 4*framecount, &expanded_bytes_written, 0));
+            ESP_CALL_RAISE(i2s_write(self->instance, signed_samples, bytes_per_output_frame*framecount, &expanded_bytes_written, 0));
             assert(expanded_bytes_written % 4 == 0);
-            bytes_written = expanded_bytes_written / 4 * bytes_per_frame;
+            bytes_written = expanded_bytes_written / bytes_per_output_frame * bytes_per_input_frame;
         }
         self->sample_data += bytes_written;
         // We have filled the DMA buffer
@@ -181,6 +181,10 @@ void port_i2s_allocate_init(i2s_t *self, bool left_justified) {
 
 
 void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
+    if (common_hal_audiobusio_i2sout_get_playing(self)) {
+        common_hal_audiobusio_i2sout_stop(self);
+    }
+
     self->sample = sample;
     self->bytes_per_sample = audiosample_bits_per_sample(sample) / 8;
     self->channel_count = audiosample_channel_count(sample);
