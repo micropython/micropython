@@ -211,7 +211,8 @@ void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
     audiosample_reset_buffer(self->sample, false, 0);
 
     ESP_CALL_RAISE(i2s_set_sample_rates(self->instance, audiosample_sample_rate(sample)));
-    i2s_fill_buffer(self);
+
+    background_callback_add(&self->callback, i2s_callback_fun, self);
 }
 
 bool port_i2s_playing(i2s_t *self) {
