@@ -73,7 +73,6 @@ static void i2s_fill_buffer(i2s_t *self) {
     }
 #define STACK_BUFFER_SIZE (512)
     int16_t signed_samples[STACK_BUFFER_SIZE / sizeof(int16_t)];
-mp_printf(&mp_plat_print, "playing=%d paused=%d stopping=%d sample@%p sample_data=%p..%p\n", self->playing, self->paused, self->stopping, self->sample, self->sample_data, self->sample_end);
 
     if (!self->playing || self->paused || !self->sample || self->stopping) {
         memset(signed_samples, 0, sizeof(signed_samples));
