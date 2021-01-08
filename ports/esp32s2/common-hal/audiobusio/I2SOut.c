@@ -63,6 +63,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
     self->bit_clock = bit_clock;
     self->word_select = word_select;
     self->data = data;
+
+    supervisor_enable_tick();
 }
 
 bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t* self) {
@@ -93,6 +95,8 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t* self) {
         port_i2s_reset_instance(self->peripheral.instance);
     }
     self->peripheral.instance = -1;
+
+    supervisor_disable_tick();
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t* self,
