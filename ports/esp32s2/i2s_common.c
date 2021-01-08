@@ -190,10 +190,6 @@ void port_i2s_allocate_init(i2s_t *self, bool left_justified) {
 
 
 void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
-    if (common_hal_audiobusio_i2sout_get_playing(self)) {
-        common_hal_audiobusio_i2sout_stop(self);
-    }
-
     self->sample = sample;
     self->loop = loop;
     self->bytes_per_sample = audiosample_bits_per_sample(sample) / 8;
