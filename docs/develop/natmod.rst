@@ -202,7 +202,7 @@ Module usage in MicroPython
 
 Once the module is built there should be a file called ``factorial.mpy``.  Copy
 this so it is accessible on the filesystem of your MicroPython system and can be
-found in the import path.  The module con now be accessed in Python just like any
+found in the import path.  The module can now be accessed in Python just like any
 other module, for example::
 
     import factorial
