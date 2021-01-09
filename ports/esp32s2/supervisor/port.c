@@ -111,6 +111,12 @@ safe_mode_t port_init(void) {
     heap = NULL;
     never_reset_module_internal_pins();
 
+    #if defined(DEBUG)
+    // debug UART
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif
+
     #if defined(DEBUG) || defined(ENABLE_JTAG)
     // JTAG
     common_hal_never_reset_pin(&pin_GPIO39);
@@ -291,8 +297,12 @@ void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
 }
 
-void sleep_timer_cb(void* arg) {
+void port_wake_main_task() {
     xTaskNotifyGive(circuitpython_task);
+}
+
+void sleep_timer_cb(void* arg) {
+    port_wake_main_task();
 }
 
 void port_interrupt_after_ticks(uint32_t ticks) {
