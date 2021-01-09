@@ -422,6 +422,7 @@ jobs:
       matrix:
         board:
         - "adafruit_esp32s2_eink_portal"
+        - "adafruit_feather_esp32s2_nopsram"
         - "adafruit_metro_esp32s2"
         - "electroniccats_bastwifi"
         - "espressif_kaluga_1"
