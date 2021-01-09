@@ -79,7 +79,7 @@ static void i2s_fill_buffer(i2s_t *self) {
 
         size_t bytes_written = 0;
         do {
-            ESP_CALL_RAISE(i2s_write(self->instance, signed_samples, sizeof(signed_samples), &bytes_written, 0));
+            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, sizeof(signed_samples), &bytes_written, 0));
         } while (bytes_written != 0);
         return;
     }
@@ -107,9 +107,9 @@ static void i2s_fill_buffer(i2s_t *self) {
         size_t bytecount = self->sample_end - self->sample_data;
         if (self->samples_signed && self->channel_count == 2) {
             if (self->bytes_per_sample == 2) {
-                ESP_CALL_RAISE(i2s_write(self->instance, self->sample_data, bytecount, &bytes_written, 0));
+                CHECK_ESP_RESULT(i2s_write(self->instance, self->sample_data, bytecount, &bytes_written, 0));
             } else {
-                ESP_CALL_RAISE(i2s_write_expand(self->instance, self->sample_data, bytecount, 8, 16, &bytes_written, 0));
+                CHECK_ESP_RESULT(i2s_write_expand(self->instance, self->sample_data, bytecount, 8, 16, &bytes_written, 0));
             }
         } else {
             const size_t bytes_per_output_frame = 4;
@@ -138,7 +138,7 @@ static void i2s_fill_buffer(i2s_t *self) {
                 }
             }
             size_t expanded_bytes_written = 0;
-            ESP_CALL_RAISE(i2s_write(self->instance, signed_samples, bytes_per_output_frame*framecount, &expanded_bytes_written, 0));
+            CHECK_ESP_RESULT(i2s_write(self->instance, signed_samples, bytes_per_output_frame*framecount, &expanded_bytes_written, 0));
             assert(expanded_bytes_written % 4 == 0);
             bytes_written = expanded_bytes_written / bytes_per_output_frame * bytes_per_input_frame;
         }
@@ -179,7 +179,7 @@ void port_i2s_allocate_init(i2s_t *self, bool left_justified) {
         .dma_buf_len = 128, // in _frames_, so 128 is 512 bytes per dma buf
         .use_apll = false,
     };
-    ESP_CALL_RAISE(i2s_driver_install(self->instance, &i2s_config, I2S_QUEUE_SIZE, &i2s_queues[self->instance]));
+    CHECK_ESP_RESULT(i2s_driver_install(self->instance, &i2s_config, I2S_QUEUE_SIZE, &i2s_queues[self->instance]));
 
     if (!xTaskCreate(i2s_event_task, "I2S_task", 3 * configMINIMAL_STACK_SIZE, self, CONFIG_PTHREAD_TASK_PRIO_DEFAULT, &i2s_tasks[self->instance])) {
         mp_raise_OSError_msg(translate("xTaskCreate failed"));
@@ -210,7 +210,7 @@ void port_i2s_play(i2s_t *self, mp_obj_t sample, bool loop) {
 
     audiosample_reset_buffer(self->sample, false, 0);
 
-    ESP_CALL_RAISE(i2s_set_sample_rates(self->instance, audiosample_sample_rate(sample)));
+    CHECK_ESP_RESULT(i2s_set_sample_rates(self->instance, audiosample_sample_rate(sample)));
 
     background_callback_add(&self->callback, i2s_callback_fun, self);
 }
@@ -233,13 +233,13 @@ void port_i2s_stop(i2s_t *self) {
 void port_i2s_pause(i2s_t *self) {
     if (!self->paused) {
         self->paused = true;
-        ESP_CALL_RAISE(i2s_stop(self->instance));
+        CHECK_ESP_RESULT(i2s_stop(self->instance));
     }
 }
 
 void port_i2s_resume(i2s_t *self) {
     if (self->paused) {
         self->paused = false;
-        ESP_CALL_RAISE(i2s_start(self->instance));
+        CHECK_ESP_RESULT(i2s_start(self->instance));
     }
 }

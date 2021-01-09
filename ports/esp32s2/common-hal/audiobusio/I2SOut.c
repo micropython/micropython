@@ -59,7 +59,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t* self,
         .data_out_num = data->number,
         .data_in_num = I2S_PIN_NO_CHANGE,
     };
-    ESP_CALL_RAISE(i2s_set_pin(self->peripheral.instance, &i2s_pin_config));
+    CHECK_ESP_RESULT(i2s_set_pin(self->peripheral.instance, &i2s_pin_config));
     self->bit_clock = bit_clock;
     self->word_select = word_select;
     self->data = data;
