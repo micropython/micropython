@@ -62,7 +62,7 @@
 #include "components/soc/soc/esp32s2/include/soc/rtc_cntl_reg.h"
 
 #if CIRCUITPY_AUDIOBUSIO
-#include "i2s_common.h"
+#include "common-hal/audiobusio/__init__.h"
 #endif
 
 #define HEAP_SIZE (48 * 1024)

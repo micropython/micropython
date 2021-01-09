@@ -175,7 +175,6 @@ CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_ESP32S2 -DCFG_TUSB_OS=OPT_OS_FREERTOS -DCFG_TUD
 SRC_C += \
 	background.c \
 	fatfs_port.c \
-	i2s_common.c \
 	mphalport.c \
 	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
