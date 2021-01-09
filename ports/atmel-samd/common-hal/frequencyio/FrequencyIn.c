@@ -82,7 +82,8 @@ void frequencyin_emergency_cancel_capture(uint8_t index) {
     #ifdef SAM_D5X_E5X
     NVIC_EnableIRQ(EIC_0_IRQn + self->channel);
     #endif
-    mp_raise_RuntimeError(translate("Frequency captured is above capability. Capture Paused."));
+    // Frequency captured is above capability. Capture paused.
+    // We can't raise an error here; we're in an interrupt handler.
 }
 
 void frequencyin_interrupt_handler(uint8_t index) {

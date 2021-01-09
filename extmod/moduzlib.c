@@ -179,7 +179,7 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     return res;
 
 error:
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st)));
+    mp_raise_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
 

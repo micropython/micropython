@@ -99,6 +99,9 @@ endif
 ifeq ($(CIRCUITPY_AESIO),1)
 SRC_PATTERNS += aesio/%
 endif
+ifeq ($(CIRCUITPY_ALARM),1)
+SRC_PATTERNS += alarm/%
+endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
 endif
@@ -132,6 +135,9 @@ SRC_PATTERNS += _bleio/%
 endif
 ifeq ($(CIRCUITPY_BOARD),1)
 SRC_PATTERNS += board/%
+endif
+ifeq ($(CIRCUITPY_BUSDEVICE),1)
+SRC_PATTERNS += adafruit_bus_device/%
 endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/% bitbangio/OneWire.%
@@ -198,6 +204,9 @@ SRC_PATTERNS += nvm/%
 endif
 ifeq ($(CIRCUITPY_OS),1)
 SRC_PATTERNS += os/%
+endif
+ifeq ($(CIRCUITPY_DUALBANK),1)
+SRC_PATTERNS += dualbank/%
 endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
@@ -298,6 +307,11 @@ SRC_COMMON_HAL_ALL = \
 	_bleio/__init__.c \
 	_pew/PewPew.c \
 	_pew/__init__.c \
+	alarm/SleepMemory.c \
+	alarm/__init__.c \
+	alarm/pin/PinAlarm.c \
+	alarm/time/TimeAlarm.c \
+	alarm/touch/TouchAlarm.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -338,6 +352,7 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
+	dualbank/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
@@ -387,15 +402,17 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Address.c \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
-	canio/Match.c \
 	_eve/__init__.c \
 	camera/ImageFormat.c \
+	canio/Match.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
 	fontio/Glyph.c \
 	math/__init__.c \
+	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
+	supervisor/RunReason.c \
 )
 
 SRC_BINDINGS_ENUMS += \
@@ -406,9 +423,6 @@ SRC_SHARED_MODULE_ALL = \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_bleio/ScanResults.c \
-	canio/Match.c \
-	canio/Message.c \
-	canio/RemoteTransmissionRequest.c \
 	_eve/__init__.c \
 	_pixelbuf/PixelBuf.c \
 	_pixelbuf/__init__.c \
@@ -432,7 +446,13 @@ SRC_SHARED_MODULE_ALL = \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
 	board/__init__.c \
+	adafruit_bus_device/__init__.c \
+	adafruit_bus_device/I2CDevice.c \
+	adafruit_bus_device/SPIDevice.c \
 	busio/OneWire.c \
+	canio/Match.c \
+	canio/Message.c \
+	canio/RemoteTransmissionRequest.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
 	displayio/Display.c \

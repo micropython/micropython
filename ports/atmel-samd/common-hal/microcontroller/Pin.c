@@ -169,6 +169,9 @@ void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
 }
 
 void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    if (pin == NULL) {
+        return;
+    }
     reset_pin_number(pin->number);
 }
 

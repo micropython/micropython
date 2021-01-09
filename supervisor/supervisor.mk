@@ -75,6 +75,7 @@ else
 		lib/tinyusb/src/class/cdc/cdc_device.c \
 		lib/tinyusb/src/tusb.c \
 		supervisor/shared/serial.c \
+		supervisor/shared/workflow.c \
 		supervisor/usb.c \
 		supervisor/shared/usb/usb_desc.c \
 		supervisor/shared/usb/usb.c \

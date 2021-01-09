@@ -31,6 +31,7 @@
 
 #include "common-hal/wifi/__init__.h"
 #include "lib/utils/interrupt_char.h"
+#include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
@@ -54,8 +55,6 @@ static void start_station(wifi_radio_obj_t *self) {
     esp_wifi_set_mode(next_mode);
 
     self->sta_mode = 1;
-
-    esp_wifi_set_config(WIFI_MODE_STA, &self->sta_config);
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
@@ -72,6 +71,8 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         return;
     }
     if (!self->started && enabled) {
+	// esp_wifi_start() would default to soft-AP, thus setting it to station
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
         ESP_ERROR_CHECK(esp_wifi_start());
         self->started = true;
         return;
@@ -102,6 +103,10 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
+    // Return early if self->current_scan is NULL to avoid hang
+    if (self->current_scan == NULL) {
+        return;
+    }
     // Free the memory used to store the found aps.
     wifi_scannednetworks_deinit(self->current_scan);
     self->current_scan = NULL;
@@ -136,9 +141,16 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     if (bssid_len > 0){
         memcpy(&config->sta.bssid, bssid, bssid_len);
         config->sta.bssid[bssid_len] = 0;
-        config->sta.bssid_set = 1;
+        config->sta.bssid_set = true;
     } else {
-        config->sta.bssid_set = 0;
+        config->sta.bssid_set = false;
+    }
+    // If channel is 0 (default/unset) and BSSID is not given, do a full scan instead of fast scan
+    // This will ensure that the best AP in range is chosen automatically
+    if ((config->sta.bssid_set == 0) && (config->sta.channel == 0)) {
+        config->sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+    } else {
+        config->sta.scan_method = WIFI_FAST_SCAN;
     }
     esp_wifi_set_config(ESP_IF_WIFI_STA, config);
     self->starting_retries = 5;
@@ -184,6 +196,17 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
     if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK){
         return mp_const_none;
     } else {
+        if (strlen(self->ap_info.record.country.cc) == 0) {
+            // Workaround to fill country related information in ap_info until ESP-IDF carries a fix
+            // esp_wifi_sta_get_ap_info does not appear to fill wifi_country_t (e.g. country.cc) details
+            // (IDFGH-4437) #6267
+            // Note: It is possible that Wi-Fi APs don't have a CC set, then even after this workaround
+            //       the element would remain empty.
+            memset(&self->ap_info.record.country, 0, sizeof(wifi_country_t));
+            if (esp_wifi_get_country(&self->ap_info.record.country) != ESP_OK) {
+                return mp_const_none;
+            }
+        }
         memcpy(&ap_info->record, &self->ap_info.record, sizeof(wifi_ap_record_t));
         return MP_OBJ_FROM_PTR(ap_info);
     }
@@ -252,4 +275,9 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
     esp_ping_delete_session(ping);
 
     return elapsed_time;
+}
+
+void common_hal_wifi_radio_gc_collect(wifi_radio_obj_t *self) {
+    // Only bother to scan the actual object references.
+    gc_collect_ptr(self->current_scan);
 }

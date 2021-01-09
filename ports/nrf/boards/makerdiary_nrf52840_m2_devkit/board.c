@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "mpconfigboard.h"
 
 #include "shared-bindings/busio/SPI.h"

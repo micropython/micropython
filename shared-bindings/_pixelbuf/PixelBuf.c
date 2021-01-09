@@ -185,7 +185,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pixelbuf_pixelbuf_get_brightness_obj, pixelbuf_pixelbu
 
 
 STATIC mp_obj_t pixelbuf_pixelbuf_obj_set_brightness(mp_obj_t self_in, mp_obj_t value) {
-    mp_float_t brightness = mp_obj_float_get(value);
+    mp_float_t brightness = mp_obj_get_float(value);
     if (brightness > 1) {
         brightness = 1;
     } else if (brightness < 0) {

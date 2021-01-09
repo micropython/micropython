@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 #include "common-hal/microcontroller/Pin.h"

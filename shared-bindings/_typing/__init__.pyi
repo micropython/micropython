@@ -2,6 +2,9 @@
 
 from typing import Union
 
+import alarm
+import alarm.pin
+import alarm.time
 import array
 import audiocore
 import audiomixer
@@ -51,4 +54,15 @@ FrameBuffer = Union[rgbmatrix.RGBMatrix]
 """Classes that implement the framebuffer protocol
 
   - `rgbmatrix.RGBMatrix`
+"""
+
+Alarm = Union[
+    alarm.pin.PinAlarm, alarm.time.TimeAlarm
+]
+"""Classes that implement alarms for sleeping and asynchronous notification.
+
+  - `alarm.pin.PinAlarm`
+  - `alarm.time.TimeAlarm`
+
+  You can use these alarms to wake up from light or deep sleep.
 """

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +27,13 @@
 #ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
 #define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H
 
-#include "common-hal/microcontroller/Pin.h"
-
 #include "py/obj.h"
+#include "common-hal/microcontroller/Pin.h"
 
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t * pin;
     uint16_t threshold;
 } touchio_touchin_obj_t;
-
-void touchin_reset(void);
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_TOUCHIO_TOUCHIN_H

@@ -47,7 +47,9 @@ def preprocess(command, output_dir, fn):
         print(e, file=sys.stderr)
 
 def maybe_preprocess(command, output_dir, fn):
-    if subprocess.call(["grep", "-lqE", "(MP_QSTR|translate)", fn]) == 0:
+    # Preprocess the source file if it contains "MP_QSTR", "translate",
+    # or if it uses enum.h (which generates "MP_QSTR" strings.
+    if subprocess.call(["grep", "-lqE", r"(MP_QSTR|translate|enum\.h)", fn]) == 0:
         preprocess(command, output_dir, fn)
 
 if __name__ == '__main__':
