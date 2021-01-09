@@ -68,37 +68,22 @@ void common_hal_adafruit_bus_device_i2cdevice_probe_for_device(adafruit_bus_devi
     mp_obj_t dest[4];
 
     /* catch exceptions that may be thrown while probing for the device */
-    nlr_buf_t write_nlr;
-    if (nlr_push(&write_nlr) == 0) {
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
         mp_load_method(self->i2c, MP_QSTR_writeto, dest);
         dest[2] = mp_obj_new_int_from_ull(self->device_address);
         dest[3] = write_buffer;
         mp_call_method_n_kw(2, 0, dest);
         nlr_pop();
     } else {
-        /* some OS's don't like writing an empty bytestring... retry by reading a byte */
-        mp_buffer_info_t read_bufinfo;
-        mp_obj_t read_buffer = mp_obj_new_bytearray_of_zeros(1);
-        mp_get_buffer_raise(read_buffer, &read_bufinfo, MP_BUFFER_WRITE);
+        common_hal_adafruit_bus_device_i2cdevice_unlock(self);
 
-        mp_load_method(self->i2c, MP_QSTR_readfrom_into, dest);
-        dest[2] = mp_obj_new_int_from_ull(self->device_address);
-        dest[3] = read_buffer;
-
-        nlr_buf_t read_nlr;
-        if (nlr_push(&read_nlr) == 0) {
-            mp_call_method_n_kw(2, 0, dest);
-            nlr_pop();
-        } else {
-            /* At this point we tried two methods and only got exceptions */
-            if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)read_nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
-                common_hal_adafruit_bus_device_i2cdevice_unlock(self);
-                mp_raise_ValueError_varg(translate("No I2C device at address: %x"), self->device_address);
-            }
-            else {
-                /* In case we receive an unrelated exception pass it up */
-                nlr_raise(MP_OBJ_FROM_PTR(read_nlr.ret_val));
-            }
+        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t*)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
+            mp_raise_ValueError_varg(translate("No I2C device at address: %x"), self->device_address);
+        }
+        else {
+            /* In case we receive an unrelated exception pass it up */
+            nlr_raise(MP_OBJ_FROM_PTR(nlr.ret_val));
         }
     }
 

@@ -135,9 +135,10 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_readinto(size_t n_args, const mp_o
     mp_load_method(self->i2c, MP_QSTR_readfrom_into, dest);
     dest[2] = mp_obj_new_int_from_ull(self->device_address);
     dest[3] = args[ARG_buffer].u_obj;
-    dest[4] = mp_obj_new_str("start", 5);
+    //dest[4] = mp_obj_new_str("start", 5);
+    dest[4] = MP_OBJ_NEW_QSTR(MP_QSTR_start);
     dest[5] = mp_obj_new_int(args[ARG_start].u_int);
-    dest[6] = mp_obj_new_str("end", 3);
+    dest[6] = MP_OBJ_NEW_QSTR(MP_QSTR_end);
     dest[7] = mp_obj_new_int(args[ARG_end].u_int);
     mp_call_method_n_kw(2, 2, dest);
 
@@ -172,9 +173,9 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write(size_t n_args, const mp_obj_
     mp_load_method(self->i2c, MP_QSTR_writeto, dest);
     dest[2] = mp_obj_new_int_from_ull(self->device_address);
     dest[3] = args[ARG_buffer].u_obj;
-    dest[4] = mp_obj_new_str("start", 5);
+    dest[4] = MP_OBJ_NEW_QSTR(MP_QSTR_start);
     dest[5] = mp_obj_new_int(args[ARG_start].u_int);
-    dest[6] = mp_obj_new_str("end", 3);
+    dest[6] = MP_OBJ_NEW_QSTR(MP_QSTR_end);
     dest[7] = mp_obj_new_int(args[ARG_end].u_int);
     mp_call_method_n_kw(2, 2, dest);
 
@@ -224,13 +225,13 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write_then_readinto(size_t n_args,
     dest[2] = mp_obj_new_int_from_ull(self->device_address);
     dest[3] = args[ARG_out_buffer].u_obj;
     dest[4] = args[ARG_in_buffer].u_obj;
-    dest[5] = mp_obj_new_str("out_start", 9);
+    dest[5] = MP_OBJ_NEW_QSTR(MP_QSTR_out_start);
     dest[6] = mp_obj_new_int(args[ARG_out_start].u_int);
-    dest[7] = mp_obj_new_str("out_end", 7);
+    dest[7] = MP_OBJ_NEW_QSTR(MP_QSTR_out_end);
     dest[8] = mp_obj_new_int(args[ARG_out_end].u_int);
-    dest[9] = mp_obj_new_str("in_start", 8);
+    dest[9] = MP_OBJ_NEW_QSTR(MP_QSTR_in_start);
     dest[10] = mp_obj_new_int(args[ARG_in_start].u_int);
-    dest[11] = mp_obj_new_str("in_end", 6);
+    dest[11] = MP_OBJ_NEW_QSTR(MP_QSTR_in_end);
     dest[12] = mp_obj_new_int(args[ARG_in_end].u_int);
 
     mp_call_method_n_kw(3, 4, dest);
