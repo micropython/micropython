@@ -86,6 +86,5 @@ mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self) {
             authmode = "UNKNOWN";
             break;
     }
-        const char* cstr = (const char*) authmode;
-        return mp_obj_new_str(cstr, strlen(cstr));
+        return mp_obj_new_str(authmode, strlen(authmode));
 }
