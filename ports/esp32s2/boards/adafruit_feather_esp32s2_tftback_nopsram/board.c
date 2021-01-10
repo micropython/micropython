@@ -32,6 +32,7 @@
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 
+/*
 displayio_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
@@ -46,6 +47,8 @@ uint8_t display_init_sequence[] = {
     0x29, 0 | DELAY, 255,                // _DISPON
 };
 
+*/
+
 void board_init(void) {
     // USB
     common_hal_never_reset_pin(&pin_GPIO19);
@@ -57,6 +60,7 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO44);
 #endif /* DEBUG */
 
+    /*
     busio_spi_obj_t* spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL);
     common_hal_busio_spi_never_reset(spi);
@@ -68,7 +72,7 @@ void board_init(void) {
         &pin_GPIO40, // TFT_DC Command or data
         &pin_GPIO42, // TFT_CS Chip select
         &pin_GPIO41, // TFT_RST Reset
-        20000000, // Baudrate
+        4000000, // Baudrate
         0, // Polarity
         0); // Phase
 
@@ -103,6 +107,7 @@ void board_init(void) {
         60, // native_frames_per_second
         true, // backlight_on_high
         false); // not SH1107
+        */
 }
 
 bool board_requests_safe_mode(void) {
