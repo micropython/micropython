@@ -13,8 +13,6 @@
 #define DEFAULT_UART_BUS_RX (&pin_PA01)
 #define DEFAULT_UART_BUS_TX (&pin_PA00)
 
-#define USER_NEOPIXELS_PIN  (&pin_PA05)
-
 #define IGNORE_PIN_PA09     1
 #define IGNORE_PIN_PA12     1
 #define IGNORE_PIN_PA13     1

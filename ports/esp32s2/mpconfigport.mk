@@ -13,20 +13,29 @@ USB_SERIAL_NUMBER_LENGTH = 12
 LONGINT_IMPL = MPZ
 
 # These modules are implemented in ports/<port>/common-hal:
-CIRCUITPY_ANALOGIO = 0
-CIRCUITPY_NVM = 0
+CIRCUITPY_FULL_BUILD = 1
+CIRCUITPY_ALARM = 1
 CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_AUDIOIO = 0
-CIRCUITPY_ROTARYIO = 0
-CIRCUITPY_RTC = 0
-CIRCUITPY_FREQUENCYIO = 0
+CIRCUITPY_CANIO = 1
+CIRCUITPY_COUNTIO = 1
+CIRCUITPY_DUALBANK = 1
+CIRCUITPY_FREQUENCYIO = 1
 CIRCUITPY_I2CPERIPHERAL = 0
-CIRCUITPY_COUNTIO = 0
+CIRCUITPY_ROTARYIO = 1
+CIRCUITPY_NVM = 1
+# We don't have enough endpoints to include MIDI.
+CIRCUITPY_USB_MIDI = 0
+CIRCUITPY_WIFI = 1
+CIRCUITPY_WATCHDOG ?= 1
+CIRCUITPY_ESPIDF = 1
 
-# These modules are implemented in shared-module/ - they can be included in
-# any port once their prerequisites in common-hal are complete.
-CIRCUITPY_RANDOM = 0          # Requires OS
-CIRCUITPY_USB_MIDI = 0        # Requires USB
-CIRCUITPY_ULAB = 0            # No requirements, but takes extra flash
+ifndef CIRCUITPY_PS2IO
+CIRCUITPY_PS2IO = 1
+endif
+
+ifndef CIRCUITPY_TOUCHIO_USE_NATIVE
+CIRCUITPY_TOUCHIO_USE_NATIVE = 1
+endif
 
 CIRCUITPY_MODULE ?= none

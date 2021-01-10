@@ -17,8 +17,9 @@ import black
 
 
 IMPORTS_IGNORE = frozenset({'int', 'float', 'bool', 'str', 'bytes', 'tuple', 'list', 'set', 'dict', 'bytearray', 'slice', 'file', 'buffer', 'range', 'array', 'struct_time'})
-IMPORTS_TYPING = frozenset({'Any', 'Optional', 'Union', 'Tuple', 'List', 'Sequence', 'NamedTuple', 'Iterable', 'Iterator', 'Callable', 'AnyStr', 'overload'})
-CPY_TYPING = frozenset({'ReadableBuffer', 'WriteableBuffer', 'AudioSample', 'FrameBuffer'})
+IMPORTS_TYPING = frozenset({'Any', 'Optional', 'Union', 'Tuple', 'List', 'Sequence', 'NamedTuple', 'Iterable', 'Iterator', 'Callable', 'AnyStr', 'overload', 'Type'})
+IMPORTS_TYPES = frozenset({'TracebackType'})
+CPY_TYPING = frozenset({'ReadableBuffer', 'WriteableBuffer', 'AudioSample', 'FrameBuffer', 'Alarm'})
 
 
 def is_typed(node, allow_any=False):
@@ -63,6 +64,7 @@ def find_stub_issues(tree):
 def extract_imports(tree):
     modules = set()
     typing = set()
+    types = set()
     cpy_typing = set()
 
     def collect_annotations(anno_tree):
@@ -74,6 +76,8 @@ def extract_imports(tree):
                     continue
                 elif node.id in IMPORTS_TYPING:
                     typing.add(node.id)
+                elif node.id in IMPORTS_TYPES:
+                    types.add(node.id)
                 elif node.id in CPY_TYPING:
                     cpy_typing.add(node.id)
             elif isinstance(node, ast.Attribute):
@@ -94,6 +98,7 @@ def extract_imports(tree):
     return {
         "modules": sorted(modules),
         "typing": sorted(typing),
+        "types": sorted(types),
         "cpy_typing": sorted(cpy_typing),
     }
 
@@ -181,6 +186,8 @@ def convert_folder(top_level, stub_directory):
     # Add import statements
     imports = extract_imports(tree)
     import_lines = ["from __future__ import annotations"]
+    if imports["types"]:
+        import_lines.append("from types import " + ", ".join(imports["types"]))
     if imports["typing"]:
         import_lines.append("from typing import " + ", ".join(imports["typing"]))
     if imports["cpy_typing"]:

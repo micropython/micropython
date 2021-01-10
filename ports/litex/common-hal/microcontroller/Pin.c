@@ -42,6 +42,9 @@ void reset_pin_number(uint8_t pin_port, uint8_t pin_number) {
 }
 
 void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    if (pin == NULL) {
+        return;
+    }
     reset_pin_number(0, pin->number);
 }
 

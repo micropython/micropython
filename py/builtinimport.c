@@ -426,12 +426,12 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                     mp_module_call_init(mod_name, module_obj);
                 } else {
                     // couldn't find the file, so fail
-                    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+                    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
                         mp_raise_ImportError(translate("module not found"));
-                    } else {
+                    #else
                         mp_raise_msg_varg(&mp_type_ImportError,
                             translate("no module named '%q'"), mod_name);
-                    }
+                    #endif
                 }
             } else {
                 // found the file, so get the module
@@ -488,7 +488,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
                 // afterwards.
                 gc_collect();
             }
-            if (outer_module_obj != MP_OBJ_NULL) {
+            if (outer_module_obj != MP_OBJ_NULL && VERIFY_PTR(outer_module_obj) ) {
                 qstr s = qstr_from_strn(mod_str + last, i - last);
                 mp_store_attr(outer_module_obj, s, module_obj);
                 // The above store can cause a dictionary rehash and new allocation. So,
@@ -538,12 +538,12 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     #endif
 
     // Couldn't find the module, so fail
-    if (MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE) {
+    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
         mp_raise_msg(&mp_type_ImportError, translate("module not found"));
-    } else {
+    #else
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ImportError,
             translate("no module named '%q'"), module_name_qstr));
-    }
+    #endif
 }
 
 #endif // MICROPY_ENABLE_EXTERNAL_IMPORT

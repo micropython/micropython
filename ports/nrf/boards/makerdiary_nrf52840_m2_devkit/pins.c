@@ -1,6 +1,6 @@
 #include "shared-bindings/board/__init__.h"
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "shared-module/displayio/__init__.h"
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
@@ -59,7 +59,11 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_P1_9), MP_ROM_PTR(&pin_P1_09) },
 
   { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_P0_15) },
+  { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_P0_15) },
+
   { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_P0_16) },
+  { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_P0_16) },
+
   { MP_ROM_QSTR(MP_QSTR_D2), MP_ROM_PTR(&pin_P0_19) },
   { MP_ROM_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_P0_20) },
   { MP_ROM_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_P0_21) },
@@ -72,8 +76,12 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_D11), MP_ROM_PTR(&pin_P1_03) },
   { MP_ROM_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_P1_04) },
   { MP_ROM_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_P1_07) },
+
   { MP_ROM_QSTR(MP_QSTR_D14), MP_ROM_PTR(&pin_P1_05) },
+  { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_P1_05) },
+
   { MP_ROM_QSTR(MP_QSTR_D15), MP_ROM_PTR(&pin_P1_06) },
+  { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_P1_06) },
 
   { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_P0_02) },
   { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_P0_03) },
@@ -91,14 +99,11 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
   { MP_ROM_QSTR(MP_QSTR_LCD_BL), MP_ROM_PTR(&pin_P0_20) },
   { MP_ROM_QSTR(MP_QSTR_LCD_RST), MP_ROM_PTR(&pin_P1_09) },
 
-  { MP_ROM_QSTR(MP_QSTR_TXD), MP_ROM_PTR(&pin_P0_16) },
-  { MP_ROM_QSTR(MP_QSTR_RXD), MP_ROM_PTR(&pin_P0_15) },
-
   { MP_ROM_QSTR(MP_QSTR_LED_R), MP_ROM_PTR(&pin_P0_30) },
   { MP_ROM_QSTR(MP_QSTR_LED_G), MP_ROM_PTR(&pin_P0_29) },
   { MP_ROM_QSTR(MP_QSTR_LED_B), MP_ROM_PTR(&pin_P0_31) },
 
-  { MP_ROM_QSTR(MP_QSTR_USR_BTN), MP_ROM_PTR(&pin_P0_19) },
+  { MP_ROM_QSTR(MP_QSTR_BUTTON_USR), MP_ROM_PTR(&pin_P0_19) },
 
   { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
   { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },

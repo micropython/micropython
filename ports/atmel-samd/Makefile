@@ -94,25 +94,35 @@ endif
 
 ifeq ($(CHIP_FAMILY), samd51)
 PERIPHERALS_CHIP_FAMILY=sam_d5x_e5x
-OPTIMIZATION_FLAGS ?= -O2
+OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD51 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
+endif
+
+ifeq ($(CHIP_FAMILY), same51)
+PERIPHERALS_CHIP_FAMILY=sam_d5x_e5x
+OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
+# TinyUSB defines
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAME5X -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
 
 ifeq ($(CHIP_FAMILY), same54)
 PERIPHERALS_CHIP_FAMILY=sam_d5x_e5x
-OPTIMIZATION_FLAGS ?= -O2
+OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD51 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAME5X -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
 
 # option to override default optimization level, set in boards/$(BOARD)/mpconfigboard.mk
-CFLAGS += $(OPTIMIZATION_FLAGS) -DNDEBUG
+CFLAGS += $(OPTIMIZATION_FLAGS)
+
+# Add -ftree-vrp optimization and checking to all builds. It's not enabled for -Os by default.
+CFLAGS += -ftree-vrp
 
 $(echo PERIPHERALS_CHIP_FAMILY=$(PERIPHERALS_CHIP_FAMILY))
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
-  CFLAGS += -ggdb
+  CFLAGS += -ggdb3 -Og
   # You may want to disable -flto if it interferes with debugging.
   CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
@@ -121,6 +131,7 @@ ifeq ($(DEBUG), 1)
     CFLAGS += -DENABLE_MICRO_TRACE_BUFFER
   endif
 else
+  CFLAGS += -DNDEBUG
   # -finline-limit can shrink the image size.
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
@@ -176,10 +187,20 @@ CFLAGS += \
 	-mfpu=fpv4-sp-d16 \
 	-DSAM_D5X_E5X -DSAME54
 endif
+ifeq ($(CHIP_FAMILY), same51)
+CFLAGS += \
+	-mthumb \
+	-mabi=aapcs-linux \
+	-mcpu=cortex-m4 \
+	-mfloat-abi=hard \
+	-mfpu=fpv4-sp-d16 \
+	-DSAM_D5X_E5X -DSAME51
+endif
 
 
 
 LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS += -flto=$(shell $(NPROC))
 LIBS := -lgcc -lc
 
 # Use toolchain libm if we're not using our own.
@@ -194,6 +215,9 @@ else ifeq ($(CHIP_FAMILY), samd51)
 LDFLAGS += -mthumb -mcpu=cortex-m4
 BOOTLOADER_SIZE := 0x4000
 else ifeq ($(CHIP_FAMILY), same54)
+LDFLAGS += -mthumb -mcpu=cortex-m4
+BOOTLOADER_SIZE := 0x4000
+else ifeq ($(CHIP_FAMILY), same51)
 LDFLAGS += -mthumb -mcpu=cortex-m4
 BOOTLOADER_SIZE := 0x4000
 endif
@@ -240,7 +264,16 @@ SRC_ASF += \
 
 else ifeq ($(CHIP_FAMILY), same54)
 SRC_ASF += \
-    hal/src/hal_rand_sync.c \
+	hal/src/hal_rand_sync.c \
+	hpl/core/hpl_core_m4.c \
+	hpl/mclk/hpl_mclk.c \
+	hpl/osc32kctrl/hpl_osc32kctrl.c \
+	hpl/oscctrl/hpl_oscctrl.c \
+	hpl/trng/hpl_trng.c \
+
+else ifeq ($(CHIP_FAMILY), same51)
+SRC_ASF += \
+	hal/src/hal_rand_sync.c \
 	hpl/core/hpl_core_m4.c \
 	hpl/mclk/hpl_mclk.c \
 	hpl/osc32kctrl/hpl_osc32kctrl.c \
@@ -254,12 +287,12 @@ SRC_ASF += \
 	hal/src/hal_mci_sync.c \
 	hpl/sdhc/hpl_sdhc.c \
 
-$(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align
+$(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align -Wno-implicit-fallthrough
 endif
 
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
 
-SRC_C = \
+SRC_C += \
 	audio_dma.c \
 	background.c \
 	bindings/samd/Clock.c \
@@ -362,6 +395,10 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 SRC_QSTR += $(HEADER_BUILD)/sdiodata.h
 $(HEADER_BUILD)/sdiodata.h: tools/mksdiodata.py | $(HEADER_BUILD)
+	$(Q)$(PYTHON3) $< > $@
+
+SRC_QSTR += $(HEADER_BUILD)/candata.h
+$(HEADER_BUILD)/candata.h: tools/mkcandata.py | $(HEADER_BUILD)
 	$(Q)$(PYTHON3) $< > $@
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)

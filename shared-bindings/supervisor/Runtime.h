@@ -30,8 +30,11 @@
 #include <stdbool.h>
 #include "py/obj.h"
 
+#include "shared-bindings/supervisor/RunReason.h"
 
 extern const mp_obj_type_t supervisor_runtime_type;
+
+void supervisor_set_run_reason(supervisor_run_reason_t run_reason);
 
 bool common_hal_get_serial_connected(void);
 

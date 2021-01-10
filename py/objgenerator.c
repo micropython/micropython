@@ -225,6 +225,21 @@ STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
+#if MICROPY_PY_ASYNC_AWAIT
+STATIC mp_obj_t gen_instance_await(mp_obj_t self_in) {
+    mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
+    if ( !self->coroutine_generator ) {
+        // Pretend like a generator does not have this coroutine behavior.
+        // Pay no attention to the dir() behind the curtain
+        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_AttributeError,
+            translate("type object 'generator' has no attribute '__await__'")));
+    }
+    // You can directly call send on a coroutine generator or you can __await__ then send on the return of that.
+    return self;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_await_obj, gen_instance_await);
+#endif
+
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
 STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
     mp_obj_t exc = (n_args == 2) ? args[1] : args[2];
@@ -279,6 +294,9 @@ STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&gen_instance_throw_obj) },
     #if MICROPY_PY_GENERATOR_PEND_THROW
     { MP_ROM_QSTR(MP_QSTR_pend_throw), MP_ROM_PTR(&gen_instance_pend_throw_obj) },
+    #endif
+    #if MICROPY_PY_ASYNC_AWAIT
+    { MP_ROM_QSTR(MP_QSTR___await__), MP_ROM_PTR(&gen_instance_await_obj) },
     #endif
 };
 

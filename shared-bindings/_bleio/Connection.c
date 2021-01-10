@@ -31,7 +31,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "ble_drv.h"
 #include "py/objarray.h"
 #include "py/objproperty.h"
 #include "py/objstr.h"
@@ -64,7 +63,7 @@
 
 void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
     if (!common_hal_bleio_connection_get_connected(self)) {
-        mp_raise_bleio_ConnectionError(translate("Connection has been disconnected and can no longer be used. Create a new connection."));
+        mp_raise_ConnectionError(translate("Connection has been disconnected and can no longer be used. Create a new connection."));
     }
 }
 

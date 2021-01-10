@@ -42,6 +42,9 @@ master_doc = 'docs/index'
 # Grab the JSON values to use while building the module support matrix
 # in 'shared-bindings/index.rst'
 
+# The stubs must be built before we calculate the shared bindings matrix
+subprocess.check_output(["make", "stubs"])
+
 #modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
 modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
 
@@ -77,7 +80,6 @@ source_suffix = {
     '.md': 'markdown',
 }
 
-subprocess.check_output(["make", "stubs"])
 extensions.append('autoapi.extension')
 
 autoapi_type = 'python'
@@ -144,6 +146,7 @@ version = release = final_version
 # directories to ignore when looking for source files.
 exclude_patterns = ["**/build*",
                     ".git",
+                    ".env",
                     ".venv",
                     ".direnv",
                     "docs/autoapi",
@@ -169,6 +172,7 @@ exclude_patterns = ["**/build*",
                     "ports/atmel-samd/tools",
                     "ports/cxd56/mkspk",
                     "ports/cxd56/spresense-exported-sdk",
+                    "ports/esp32s2/certificates",
                     "ports/esp32s2/esp-idf",
                     "ports/esp32s2/peripherals",
                     "ports/litex/hw",

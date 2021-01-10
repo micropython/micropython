@@ -195,9 +195,7 @@ TIM_TypeDef * stm_peripherals_find_timer(void) {
         // If no results are found, no unclaimed pins with this timer are in this package,
         // and it is safe to pick
         if (timer_in_package == false && mcu_tim_banks[i] != NULL) {
-            // DEBUG: print the timer
             return mcu_tim_banks[i];
-            mp_printf(&mp_plat_print, "Timer: %d\n",i);
         }
     }
     //TODO: secondary search for timers outside the pins in the board profile
@@ -205,8 +203,6 @@ TIM_TypeDef * stm_peripherals_find_timer(void) {
     // Work backwards - higher index timers have fewer pin allocations
     for (size_t i = (MP_ARRAY_SIZE(mcu_tim_banks) - 1); i >= 0; i--) {
         if ((!stm_timer_reserved[i]) && (mcu_tim_banks[i] != NULL)) {
-            // DEBUG: print the timer
-            mp_printf(&mp_plat_print, "Timer: %d\n",i);
             return mcu_tim_banks[i];
         }
     }

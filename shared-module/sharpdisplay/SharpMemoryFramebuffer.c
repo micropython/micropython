@@ -38,27 +38,6 @@
 #define SHARPMEM_BIT_WRITECMD_LSB (0x80)
 #define SHARPMEM_BIT_VCOM_LSB (0x40)
 
-static inline void *hybrid_alloc(size_t sz) {
-    if (gc_alloc_possible()) {
-        return m_malloc(sz + sizeof(void*), true);
-    } else {
-        supervisor_allocation *allocation = allocate_memory(align32_size(sz), false);
-        if (!allocation) {
-            return NULL;
-        }
-        memset(allocation->ptr, 0, sz);
-        return allocation->ptr;
-    }
-}
-
-static inline void hybrid_free(void *ptr_in) {
-    supervisor_allocation *allocation = allocation_from_ptr(ptr_in);
-
-    if (allocation) {
-        free_memory(allocation);
-    }
-}
-
 STATIC uint8_t bitrev(uint8_t n) {
     uint8_t r = 0;
     for(int i=0;i<8;i++) r |= ((n>>i) & 1)<<(7-i);
@@ -90,10 +69,6 @@ bool common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(sharpdispl
 }
 
 void common_hal_sharpdisplay_framebuffer_reset(sharpdisplay_framebuffer_obj_t *self) {
-    if (!allocation_from_ptr(self->bufinfo.buf)) {
-        self->bufinfo.buf = NULL;
-    }
-
     if (self->bus != &self->inline_bus
 #if BOARD_SPI
         && self->bus != common_hal_board_get_spi()
@@ -105,7 +80,9 @@ void common_hal_sharpdisplay_framebuffer_reset(sharpdisplay_framebuffer_obj_t *s
 }
 
 void common_hal_sharpdisplay_framebuffer_reconstruct(sharpdisplay_framebuffer_obj_t *self) {
-
+    // Look up the allocation by the old pointer and get the new pointer from it.
+    supervisor_allocation* alloc = allocation_from_ptr(self->bufinfo.buf);
+    self->bufinfo.buf = alloc ? alloc->ptr : NULL;
 }
 
 void common_hal_sharpdisplay_framebuffer_get_bufinfo(sharpdisplay_framebuffer_obj_t *self, mp_buffer_info_t *bufinfo) {
@@ -113,7 +90,12 @@ void common_hal_sharpdisplay_framebuffer_get_bufinfo(sharpdisplay_framebuffer_ob
         int row_stride = common_hal_sharpdisplay_framebuffer_get_row_stride(self);
         int height = common_hal_sharpdisplay_framebuffer_get_height(self);
         self->bufinfo.len = row_stride * height + 2;
-        self->bufinfo.buf = hybrid_alloc(self->bufinfo.len);
+        supervisor_allocation* alloc = allocate_memory(align32_size(self->bufinfo.len), false, true);
+        if (alloc == NULL) {
+            m_malloc_fail(self->bufinfo.len);
+        }
+        self->bufinfo.buf = alloc->ptr;
+        memset(alloc->ptr, 0, self->bufinfo.len);
 
         uint8_t *data = self->bufinfo.buf;
         *data++ = SHARPMEM_BIT_WRITECMD_LSB;
@@ -124,7 +106,9 @@ void common_hal_sharpdisplay_framebuffer_get_bufinfo(sharpdisplay_framebuffer_ob
         }
         self->full_refresh = true;
     }
-    *bufinfo = self->bufinfo;
+    if (bufinfo) {
+        *bufinfo = self->bufinfo;
+    }
 }
 
 void common_hal_sharpdisplay_framebuffer_deinit(sharpdisplay_framebuffer_obj_t *self) {
@@ -138,7 +122,7 @@ void common_hal_sharpdisplay_framebuffer_deinit(sharpdisplay_framebuffer_obj_t *
 
     common_hal_reset_pin(self->chip_select.pin);
 
-    hybrid_free(self->bufinfo.buf);
+    free_memory(allocation_from_ptr(self->bufinfo.buf));
 
     memset(self, 0, sizeof(*self));
 }
@@ -155,18 +139,7 @@ void common_hal_sharpdisplay_framebuffer_construct(sharpdisplay_framebuffer_obj_
     self->height = height;
     self->baudrate = baudrate;
 
-    int row_stride = common_hal_sharpdisplay_framebuffer_get_row_stride(self);
-    self->bufinfo.len = row_stride * height + 2;
-    self->bufinfo.buf = gc_alloc(self->bufinfo.len, false, true);
-
-    uint8_t *data = self->bufinfo.buf;
-    *data++ = SHARPMEM_BIT_WRITECMD_LSB;
-
-    for(int y=0; y<self->height; y++) {
-        *data = bitrev(y+1);
-        data += row_stride;
-    }
-    self->full_refresh = true;
+    common_hal_sharpdisplay_framebuffer_get_bufinfo(self, NULL);
 }
 
 void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebuffer_obj_t *self, uint8_t *dirty_row_bitmask) {
@@ -271,7 +244,5 @@ const framebuffer_p_t sharpdisplay_framebuffer_proto = {
 };
 
 void common_hal_sharpdisplay_framebuffer_collect_ptrs(sharpdisplay_framebuffer_obj_t *self) {
-    gc_collect_ptr(self->framebuffer);
     gc_collect_ptr(self->bus);
-    gc_collect_ptr(self->bufinfo.buf);
 }

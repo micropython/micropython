@@ -66,7 +66,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
         ram_height,
         0,
         0,
-        rotation,
+        0, // rotation
         depth,
         fb_getter_default(get_grayscale, (depth < 8)),
         fb_getter_default(get_pixels_in_byte_share_row, false),
@@ -92,7 +92,9 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     self->native_frames_per_second = fb_getter_default(get_native_frames_per_second, 60);
     self->native_ms_per_frame = 1000 / self->native_frames_per_second;
 
-    supervisor_start_terminal(self->core.width, self->core.height);
+    if (rotation != 0) {
+        common_hal_framebufferio_framebufferdisplay_set_rotation(self, rotation);
+    }
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
@@ -278,8 +280,10 @@ void common_hal_framebufferio_framebufferdisplay_set_rotation(framebufferio_fram
         self->core.height = tmp;
     }
     displayio_display_core_set_rotation(&self->core, rotation);
-    supervisor_stop_terminal();
-    supervisor_start_terminal(self->core.width, self->core.height);
+    if (self == &displays[0].framebuffer_display) {
+        supervisor_stop_terminal();
+        supervisor_start_terminal(self->core.width, self->core.height);
+    }
     if (self->core.current_group != NULL) {
         displayio_group_update_transform(self->core.current_group, &self->core.transform);
     }

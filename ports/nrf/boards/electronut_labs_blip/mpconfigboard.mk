@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x803C
+USB_PID = 0x80D7
 USB_PRODUCT = "Blip"
 USB_MANUFACTURER = "Electronut Labs"
 

@@ -61,8 +61,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <math.h>
+
 #include "py/mphal.h"
 #include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "samd/adc.h"
 
@@ -276,6 +279,9 @@ float common_hal_mcu_processor_get_temperature(void) {
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
+#if MICROCONTROLLER_VOLTAGE_DISABLE
+    return NAN;
+#else
     struct adc_sync_descriptor adc;
 
     static Adc* adc_insts[] = ADC_INSTS;
@@ -320,6 +326,7 @@ float common_hal_mcu_processor_get_voltage(void) {
     adc_sync_deinit(&adc);
     // Multiply by 4 to compensate for SCALEDIOVCC division by 4.
     return (reading / 4095.0f) * 4.0f;
+#endif
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
@@ -342,4 +349,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
             raw_id[4 * i + k] = (*(id_addresses[i]) >> k * 8) & 0xff;
         }
     }
+}
+
+mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
+    return RESET_REASON_UNKNOWN;
 }

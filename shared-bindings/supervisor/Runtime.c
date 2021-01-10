@@ -25,8 +25,15 @@
  */
 
 #include <stdbool.h>
+#include "py/obj.h"
+#include "py/enum.h"
+#include "py/runtime.h"
 #include "py/objproperty.h"
+
+#include "shared-bindings/supervisor/RunReason.h"
 #include "shared-bindings/supervisor/Runtime.h"
+
+STATIC supervisor_run_reason_t _run_reason;
 
 //TODO: add USB, REPL to description once they're operational
 //| class Runtime:
@@ -46,13 +53,7 @@
 //|
 
 //|     serial_connected: bool
-//|     """Returns the USB serial communication status (read-only).
-//|
-//|     .. note::
-//|
-//|         SAMD: Will return ``True`` if the USB serial connection
-//|         has been established at any point.  Will not reset if
-//|         USB is disconnected but power remains (e.g. battery connected)"""
+//|     """Returns the USB serial communication status (read-only)."""
 //|
 
 STATIC mp_obj_t supervisor_get_serial_connected(mp_obj_t self){
@@ -96,9 +97,29 @@ const mp_obj_property_t supervisor_serial_bytes_available_obj = {
 };
 
 
+//|     run_reason: RunReason
+//|     """Returns why CircuitPython started running this particular time."""
+//|
+STATIC mp_obj_t supervisor_get_run_reason(mp_obj_t self) {
+    return cp_enum_find(&supervisor_run_reason_type, _run_reason);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(supervisor_get_run_reason_obj, supervisor_get_run_reason);
+
+const mp_obj_property_t supervisor_run_reason_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&supervisor_get_run_reason_obj,
+              (mp_obj_t)&mp_const_none_obj,
+              (mp_obj_t)&mp_const_none_obj},
+};
+
+void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
+    _run_reason = run_reason;
+}
+
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_serial_connected), MP_ROM_PTR(&supervisor_serial_connected_obj) },
     { MP_ROM_QSTR(MP_QSTR_serial_bytes_available), MP_ROM_PTR(&supervisor_serial_bytes_available_obj) },
+    { MP_ROM_QSTR(MP_QSTR_run_reason), MP_ROM_PTR(&supervisor_run_reason_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_runtime_locals_dict, supervisor_runtime_locals_dict_table);

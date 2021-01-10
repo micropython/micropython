@@ -51,9 +51,8 @@
 //|     ...
 //|
 STATIC mp_obj_t time_monotonic(void) {
-    uint64_t time64 = common_hal_time_monotonic();
-    // 4294967296 = 2^32
-    return mp_obj_new_float(((uint32_t) (time64 >> 32) * 4294967296.0f + (uint32_t) (time64 & 0xffffffff)) / 1000.0f);
+    uint64_t ticks_ms = common_hal_time_monotonic_ms();
+    return mp_obj_new_float(uint64_to_float(ticks_ms) / 1000.0f);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 
@@ -215,7 +214,7 @@ STATIC mp_obj_t time_time(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
 //| def monotonic_ns() -> int:
-//|     """Return the time of the specified clock clk_id in nanoseconds.
+//|     """Return the time of the monotonic clock, cannot go backward, in nanoseconds.
 //|
 //|     :return: the current time
 //|     :rtype: int"""

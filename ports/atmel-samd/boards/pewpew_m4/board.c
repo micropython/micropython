@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 #include "shared-bindings/busio/SPI.h"
@@ -143,7 +143,8 @@ void board_init(void) {
         false, // data_as_commands
         false, // auto_refresh
         20, // native_frames_per_second
-        true); // backlight_on_high
+        true, // backlight_on_high
+        false); // SH1107_addressing
 }
 
 bool board_requests_safe_mode(void) {

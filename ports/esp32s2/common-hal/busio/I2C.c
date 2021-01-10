@@ -28,7 +28,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "driver/i2c.h"
+#include "components/driver/include/driver/i2c.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -49,11 +49,11 @@ void never_reset_i2c(i2c_port_t num) {
 void i2c_reset(void) {
     for (i2c_port_t num = 0; num < I2C_NUM_MAX; num++) {
         if (i2c_status[num] == STATUS_IN_USE) {
-            i2c_driver_delete(num);
             i2c_status[num] = STATUS_FREE;
         }
     }
 }
+static bool i2c_inited[I2C_NUM_MAX];
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         const mcu_pin_obj_t* scl, const mcu_pin_obj_t* sda, uint32_t frequency, uint32_t timeout) {
@@ -121,13 +121,19 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (result != ESP_OK) {
         mp_raise_ValueError(translate("Invalid pins"));
     }
-    result = i2c_driver_install(self->i2c_num,
-                                I2C_MODE_MASTER,
-                                0,
-                                0,
-                                0);
-    if (result != ESP_OK) {
-        mp_raise_OSError(MP_EIO);
+
+
+    if (!i2c_inited[self->i2c_num]) {
+        result = i2c_driver_install(self->i2c_num,
+                                    I2C_MODE_MASTER,
+                                    0,
+                                    0,
+                                    0);
+        if (result != ESP_OK) {
+            mp_raise_OSError(MP_EIO);
+        }
+        i2c_inited[self->i2c_num] = true;
+
     }
 
     claim_pin(sda);
@@ -143,7 +149,6 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
         return;
     }
 
-    i2c_driver_delete(self->i2c_num);
     i2c_status[self->i2c_num] = STATUS_FREE;
 
     common_hal_reset_pin(self->sda_pin);

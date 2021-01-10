@@ -27,7 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "supervisor/port.h"
 
 // ASF 4
@@ -44,6 +44,9 @@
 #include "hri/hri_pm_d21.h"
 #elif defined(SAME54)
 #include "hri/hri_rstc_e54.h"
+#elif defined(SAME51)
+#include "sam.h"
+#include "hri/hri_rstc_e51.h"
 #elif defined(SAMD51)
 #include "hri/hri_rstc_d51.h"
 #else
@@ -59,7 +62,7 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PWMOut.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rtc/RTC.h"
 
@@ -93,19 +96,20 @@
 #endif
 volatile bool hold_interrupt = false;
 #ifdef SAMD21
+static void rtc_set_continuous(bool continuous) {
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+    RTC->MODE0.READREQ.reg = (continuous ? RTC_READREQ_RCONT : 0) | 0x0010;
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+}
+
 void rtc_start_pulsein(void) {
-    rtc_set_continuous();
+    rtc_set_continuous(true);
     hold_interrupt = true;
 }
 
 void rtc_end_pulsein(void) {
     hold_interrupt = false;
-}
-
-void rtc_set_continuous(void) {
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
-    RTC->MODE0.READREQ.reg = RTC_READREQ_RREQ | RTC_READREQ_RCONT | 0x0010;
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY);
+    rtc_set_continuous(false);
 }
 #endif
 
@@ -335,6 +339,8 @@ void reset_port(void) {
 #if CIRCUITPY_PULSEIO
     pulsein_reset();
     pulseout_reset();
+#endif
+#if CIRCUITPY_PWMIO
     pwmout_reset();
 #endif
 
@@ -384,8 +390,8 @@ void reset_cpu(void) {
     reset();
 }
 
-supervisor_allocation* port_fixed_stack(void) {
-    return NULL;
+bool port_has_fixed_stack(void) {
+    return false;
 }
 
 uint32_t *port_stack_get_limit(void) {
@@ -425,6 +431,42 @@ uint32_t port_get_saved_word(void) {
 static volatile uint64_t overflowed_ticks = 0;
 static volatile bool _ticks_enabled = false;
 
+static uint32_t _get_count(uint64_t* overflow_count) {
+    #ifdef SAM_D5X_E5X
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
+    #endif
+    #ifdef SAMD21
+    // Request a read so we don't stall the bus later. See section 14.3.1.5 Read Request
+    RTC->MODE0.READREQ.reg = RTC_READREQ_RREQ | 0x0010;
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {}
+    #endif
+    // Disable interrupts so we can grab the count and the overflow.
+    common_hal_mcu_disable_interrupts();
+    uint32_t count = RTC->MODE0.COUNT.reg;
+    if (overflow_count != NULL) {
+        *overflow_count = overflowed_ticks;
+    }
+    common_hal_mcu_enable_interrupts();
+
+    return count;
+}
+
+static void _port_interrupt_after_ticks(uint32_t ticks) {
+    uint32_t current_ticks = _get_count(NULL);
+    if (ticks > 1 << 28) {
+        // We'll interrupt sooner with an overflow.
+        return;
+    }
+#ifdef SAMD21
+    if (hold_interrupt) {
+        return;
+    }
+#endif
+    RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
+    RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
+    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
+}
+
 void RTC_Handler(void) {
     uint32_t intflag = RTC->MODE0.INTFLAG.reg;
     if (intflag & RTC_MODE0_INTFLAG_OVF) {
@@ -447,7 +489,7 @@ void RTC_Handler(void) {
             supervisor_tick();
             // Check _ticks_enabled again because a tick handler may have turned it off.
             if (_ticks_enabled) {
-                port_interrupt_after_ticks(1);
+                _port_interrupt_after_ticks(1);
             }
         }
         #endif
@@ -457,24 +499,14 @@ void RTC_Handler(void) {
     }
 }
 
-static uint32_t _get_count(void) {
-    #ifdef SAM_D5X_E5X
-    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
-    #endif
-    #ifdef SAMD21
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {}
-    #endif
-
-    return RTC->MODE0.COUNT.reg;
-}
-
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    uint32_t current_ticks = _get_count();
+    uint64_t overflow_count;
+    uint32_t current_ticks = _get_count(&overflow_count);
     if (subticks != NULL) {
         *subticks = (current_ticks % 16) * 2;
     }
 
-    return overflowed_ticks + current_ticks / 16;
+    return overflow_count + current_ticks / 16;
 }
 
 // Enable 1/1024 second tick.
@@ -484,8 +516,9 @@ void port_enable_tick(void) {
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_PER2;
     #endif
     #ifdef SAMD21
+    // TODO: Switch to using the PER *event* from the RTC to generate an interrupt via EVSYS.
     _ticks_enabled = true;
-    port_interrupt_after_ticks(1);
+    _port_interrupt_after_ticks(1);
     #endif
 }
 
@@ -500,23 +533,17 @@ void port_disable_tick(void) {
     #endif
 }
 
+// This is called by sleep, we ignore it when our ticks are enabled because
+// they'll wake us up earlier. If we don't, we'll mess up ticks by overwriting
+// the next RTC wake up time.
 void port_interrupt_after_ticks(uint32_t ticks) {
-    uint32_t current_ticks = _get_count();
-    if (ticks > 1 << 28) {
-        // We'll interrupt sooner with an overflow.
+    if (_ticks_enabled) {
         return;
     }
-#ifdef SAMD21
-    if (hold_interrupt) {
-        return;
-    }
-#endif
-    RTC->MODE0.COMP[0].reg = current_ticks + (ticks << 4);
-    RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
-    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
+    _port_interrupt_after_ticks(ticks);
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
     #ifdef SAM_D5X_E5X
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (__get_FPSCR()  & ~(0x9f)) {

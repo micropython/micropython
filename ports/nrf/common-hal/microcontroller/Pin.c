@@ -123,6 +123,9 @@ void reset_pin_number(uint8_t pin_number) {
 
 
 void never_reset_pin_number(uint8_t pin_number) {
+    if (pin_number == NO_PIN) {
+        return;
+    }
     never_reset_pins[nrf_pin_port(pin_number)] |= 1 << nrf_relative_pin_number(pin_number);
 }
 
@@ -131,6 +134,9 @@ void common_hal_never_reset_pin(const mcu_pin_obj_t* pin) {
 }
 
 void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    if (pin == NULL) {
+        return;
+    }
     reset_pin_number(pin->number);
 }
 

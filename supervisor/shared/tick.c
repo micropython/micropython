@@ -26,7 +26,9 @@
 
 #include "supervisor/shared/tick.h"
 
+#include "lib/utils/interrupt_char.h"
 #include "py/mpstate.h"
+#include "py/runtime.h"
 #include "supervisor/linker.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/background_callback.h"
@@ -36,7 +38,7 @@
 
 #if CIRCUITPY_BLEIO
 #include "supervisor/shared/bluetooth.h"
-#include "common-hal/_bleio/bonding.h"
+#include "common-hal/_bleio/__init__.h"
 #endif
 
 #if CIRCUITPY_DISPLAYIO
@@ -86,7 +88,7 @@ void supervisor_background_tasks(void *unused) {
 
     #if CIRCUITPY_BLEIO
     supervisor_bluetooth_background();
-    bonding_background();
+    bleio_background();
     #endif
 
     port_background_task();
@@ -124,9 +126,7 @@ void supervisor_tick(void) {
 
 uint64_t supervisor_ticks_ms64() {
     uint64_t result;
-    common_hal_mcu_disable_interrupts();
     result = port_get_raw_ticks(NULL);
-    common_hal_mcu_enable_interrupts();
     result = result * 1000 / 1024;
     return result;
 }
@@ -146,20 +146,11 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     delay = delay * 1024 / 1000;
     uint64_t end_tick = start_tick + delay;
     int64_t remaining = delay;
-    while (remaining > 0) {
+
+    // Loop until we've waited long enough or we've been CTRL-Ced by autoreload
+    // or the user.
+    while (remaining > 0 && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
-        // Check to see if we've been CTRL-Ced by autoreload or the user.
-        if(MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)))
-           {
-            // clear exception and generate stacktrace
-            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-            nlr_raise(&MP_STATE_VM(mp_kbd_exception));
-          }
-        if( MP_STATE_VM(mp_pending_exception) == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception)) ||
-           WATCHDOG_EXCEPTION_CHECK()) {
-            // stop sleeping immediately
-            break;
-        }
         remaining = end_tick - port_get_raw_ticks(NULL);
         // We break a bit early so we don't risk setting the alarm before the time when we call
         // sleep.
@@ -167,8 +158,8 @@ void mp_hal_delay_ms(mp_uint_t delay) {
             break;
         }
         port_interrupt_after_ticks(remaining);
-        // Sleep until an interrupt happens.
-        port_sleep_until_interrupt();
+        // Idle until an interrupt happens.
+        port_idle_until_interrupt();
         remaining = end_tick - port_get_raw_ticks(NULL);
     }
 }

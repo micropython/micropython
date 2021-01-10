@@ -14,7 +14,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - name: Dump GitHub context
       env:
@@ -28,20 +28,47 @@ jobs:
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
-        echo "::set-env name=CP_VERSION::$(git describe --dirty --tags)"
+        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
     - name: Install deps
       run: |
+        sudo apt-get update
         sudo apt-get install -y eatmydata
-        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64
-        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort black awscli
+        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
+        pip install requests sh click setuptools cpp-coveralls "Sphinx<4" sphinx-rtd-theme recommonmark sphinx-autoapi sphinxcontrib-svg2pdfconverter polib pyyaml astroid isort black awscli mypy
     - name: Versions
       run: |
         gcc --version
         python3 --version
+    - name: Translations
+      run: make check-translate
+    - name: New boards check
+      run: python3 -u ci_new_boards_check.py
+      working-directory: tools
+    - name: Duplicate USB VID/PID Check
+      run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
+    - name: Build and Validate Stubs
+      run: make check-stubs -j2
+    - uses: actions/upload-artifact@v2
+      with:
+        name: stubs
+        path: circuitpython-stubs*
+    - name: Test Documentation Build (HTML)
+      run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
+    - uses: actions/upload-artifact@v2
+      with:
+        name: docs
+        path: _build/html
+    - name: Test Documentation Build (LaTeX/PDF)
+      run: |
+        make latexpdf
+    - uses: actions/upload-artifact@v2
+      with:
+        name: docs
+        path: _build/latex
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - name: Build unix port
@@ -67,23 +94,6 @@ jobs:
     - name: mpy Tests
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
       working-directory: tests
-    - name: Stubs
-      run: make stubs -j2
-    - uses: actions/upload-artifact@v2
-      with:
-        name: stubs
-        path: circuitpython-stubs*
-    - name: Docs
-      run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
-    - uses: actions/upload-artifact@v2
-      with:
-        name: docs
-        path: _build/html
-    - name: Translations
-      run: make check-translate
-    - name: New boards check
-      run: python3 -u ci_new_boards_check.py
-      working-directory: tools
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
     - uses: actions/upload-artifact@v2
@@ -102,12 +112,15 @@ jobs:
       with:
         name: mpy-cross.static-x64-windows
         path: mpy-cross/mpy-cross.static.exe
-    - name: Upload mpy-cross builds to S3
+    - name: Upload stubs and mpy-cross builds to S3
       run: |
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static-raspbian s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-raspbian-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-amd64-linux-${{ env.CP_VERSION }} --no-progress --region us-east-1
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
+        zip -9r circuitpython-stubs.zip circuitpython-stubs
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp circuitpython-stubs.zip s3://adafruit-circuit-python/bin/stubs/circuitpython-stubs-${{ env.CP_VERSION }}.zip --no-progress --region us-east-1
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
@@ -122,8 +135,8 @@ jobs:
       run: echo "$GITHUB_CONTEXT"
     - name: Install dependencies
       run: |
-        brew install gettext awscli
-        echo "::set-env name=PATH::/usr/local/opt/gettext/bin:$PATH"
+        brew install gettext
+        echo >>$GITHUB_PATH /usr/local/opt/gettext/bin
     - name: Versions
       run: |
         gcc --version
@@ -137,7 +150,7 @@ jobs:
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
-        echo "::set-env name=CP_VERSION::$(git describe --dirty --tags)"
+        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - uses: actions/upload-artifact@v2
@@ -148,19 +161,21 @@ jobs:
       run: |
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross-macos-catalina-${{ env.CP_VERSION }} --no-progress --region us-east-1
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
 
   build-arm:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
       matrix:
         board:
         - "8086_commander"
+        - "ADM_B_NRF52840_1"
         - "TG-Watch02A"
         - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
@@ -170,7 +185,9 @@ jobs:
         - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
-        - "bdmicro_vina_m0"
+        - "bastble"
+        - "bdmicro_vina_d21"
+        - "bdmicro_vina_d51"
         - "bless_dev_board_multi_sensor"
         - "blm_badge"
         - "capablerobot_usbhub"
@@ -183,11 +200,15 @@ jobs:
         - "circuitplayground_express_displayio"
         - "clue_nrf52840_express"
         - "cp32-m4"
+        - "cp_sapling_m0"
+        - "cp_sapling_m0_spiflash"
         - "datalore_ip_m4"
         - "datum_distance"
         - "datum_imu"
         - "datum_light"
         - "datum_weather"
+        - "dynossat_edu_eps"
+        - "dynossat_edu_obc"
         - "electronut_labs_blip"
         - "electronut_labs_papyr"
         - "escornabot_makech"
@@ -201,6 +222,7 @@ jobs:
         - "feather_m0_rfm69"
         - "feather_m0_rfm9x"
         - "feather_m0_supersized"
+        - "feather_m4_can"
         - "feather_m4_express"
         - "feather_m7_1011"
         - "feather_mimxrt1011"
@@ -227,11 +249,13 @@ jobs:
         - "makerdiary_nrf52840_m2_devkit"
         - "makerdiary_nrf52840_mdk"
         - "makerdiary_nrf52840_mdk_usb_dongle"
+        - "matrixportal_m4"
         - "meowbit_v121"
         - "meowmeow"
         - "metro_m0_express"
         - "metro_m4_airlift_lite"
         - "metro_m4_express"
+        - "metro_m7_1011"
         - "metro_nrf52840_express"
         - "mini_sam_m4"
         - "monster_m4sk"
@@ -267,6 +291,8 @@ jobs:
         - "pyportal"
         - "pyportal_titano"
         - "pyruler"
+        - "qtpy_m0"
+        - "qtpy_m0_haxpress"
         - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
         - "sam32"
@@ -286,6 +312,7 @@ jobs:
         - "sparkfun_samd21_mini"
         - "sparkfun_samd51_thing_plus"
         - "spresense"
+        - "stackrduino_m0_pro"
         - "stm32f411ce_blackpill"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
@@ -295,7 +322,8 @@ jobs:
         - "teensy40"
         - "teensy41"
         - "teknikio_bluebird"
-        - "thunderpack"
+        - "thunderpack_v11"
+        - "thunderpack_v12"
         - "tinkeringtech_scoutmakes_azul"
         - "trellis_m4_express"
         - "trinket_m0"
@@ -317,8 +345,8 @@ jobs:
       run: |
         sudo apt-get install -y gettext
         pip install requests sh click setuptools awscli
-        wget https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
-        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |
         gcc --version
@@ -343,12 +371,13 @@ jobs:
     - name: Upload to S3
       run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
   build-riscv:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
@@ -391,19 +420,29 @@ jobs:
     - name: Upload to S3
       run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
   build-xtensa:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
       matrix:
         board:
+        - "adafruit_magtag_2.9_grayscale"
+        - "adafruit_metro_esp32s2"
+        - "electroniccats_bastwifi"
+        - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
+        - "microdev_micro_s2"
+        - "muselab_nanoesp32_s2"
+        - "targett_module_clip_wroom"
+        - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
+        - "unexpectedmaker_feathers2_prerelease"
 
     steps:
     - name: Set up Python 3.8
@@ -423,6 +462,11 @@ jobs:
       with:
         path: ${{ github.workspace }}/.idf_tools
         key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20200801
+    - name: Clone IDF submodules
+      run: |
+        (cd $IDF_PATH && git submodule update --init)
+      env:
+        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
     - name: Install IDF tools
       run: |
         $IDF_PATH/tools/idf_tools.py --non-interactive install required
@@ -471,6 +515,7 @@ jobs:
     - name: Upload to S3
       run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
       env:
+        AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: github.event_name == 'push' || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))

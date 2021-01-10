@@ -28,9 +28,9 @@
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
-#include "driver/gpio.h"
+#include "components/driver/include/driver/gpio.h"
 
-#include "esp-idf/components/soc/include/hal/gpio_hal.h"
+#include "components/soc/include/hal/gpio_hal.h"
 
 void common_hal_digitalio_digitalinout_never_reset(
         digitalio_digitalinout_obj_t *self) {
@@ -41,6 +41,16 @@ digitalinout_result_t common_hal_digitalio_digitalinout_construct(
         digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
     claim_pin(pin);
     self->pin = pin;
+
+    gpio_config_t config;
+    config.pin_bit_mask = 1ull << pin->number;
+    config.mode = GPIO_MODE_INPUT;
+    config.pull_up_en = GPIO_PULLUP_DISABLE;
+    config.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    config.intr_type = GPIO_INTR_DISABLE;
+    if (gpio_config(&config) != ESP_OK) {
+        return DIGITALINOUT_PIN_BUSY;
+    }
 
     return DIGITALINOUT_OK;
 }
@@ -67,7 +77,7 @@ void common_hal_digitalio_digitalinout_switch_to_input(
 digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
         digitalio_digitalinout_obj_t *self, bool value,
         digitalio_drive_mode_t drive_mode) {
-    gpio_set_level(self->pin->number, value);
+    common_hal_digitalio_digitalinout_set_value(self, value);
     return common_hal_digitalio_digitalinout_set_drive_mode(self, drive_mode);
 }
 
@@ -82,12 +92,16 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 
 void common_hal_digitalio_digitalinout_set_value(
         digitalio_digitalinout_obj_t *self, bool value) {
+    self->output_value = value;
     gpio_set_level(self->pin->number, value);
 }
 
 bool common_hal_digitalio_digitalinout_get_value(
         digitalio_digitalinout_obj_t *self) {
-    return gpio_get_level(self->pin->number) == 1;
+    if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
+        return gpio_get_level(self->pin->number) == 1;
+    }
+    return self->output_value;
 }
 
 digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(

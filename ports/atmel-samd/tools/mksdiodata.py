@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 def defines(name, function):
-    print(f'pin_function_t {name} [] = {{')
+    print(f'mcu_pin_function_t {name} [] = {{')
     for instance in (0, 1):
         for port in 'ABCD':
             for idx in range(32):
@@ -23,13 +23,8 @@ print('''\
 #include "mpconfigport.h"
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
+#include "common-hal/microcontroller/Pin.h"
 
-typedef struct {
-    const mcu_pin_obj_t *obj;
-    uint8_t instance;
-    uint8_t pin;
-    uint16_t function;
-} pin_function_t;
 ''')
 
 defines('sdio_ck', 'SDCK')

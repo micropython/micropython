@@ -86,7 +86,7 @@ ifeq ($(DEBUG), 1)
 	CFLAGS += -fno-inline -fno-ipa-sra
 else
 	CFLAGS += -DNDEBUG
-	OPTIMIZATION_FLAGS ?= -O2
+	OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
 	CFLAGS += -ggdb3
 	# TODO: Test with -flto
 	# CFLAGS += -flto
@@ -95,6 +95,9 @@ endif
 # to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
 
+# Add -ftree-vrp optimization and checking to all builds. It's not enabled for -Os by default.
+CFLAGS += -ftree-vrp
+
 # MCU Series is defined by the HAL package and doesn't need to be specified here
 C_DEFS = -D$(MCU_PACKAGE) -DUSE_HAL_DRIVER -DUSE_FULL_LL_DRIVER -D$(MCU_VARIANT)
 
@@ -102,7 +105,8 @@ CFLAGS += $(INC) -Werror -Wall -std=gnu11 -fshort-enums $(BASE_CFLAGS) $(C_DEFS)
 
 # Undo some warnings.
 # STM32 HAL uses undefined preprocessor variables, shadowed variables, casts that change alignment reqs
-CFLAGS += -Wno-undef -Wno-shadow -Wno-cast-align
+# You can add your own temporary suppression by setting ADD_CFLAGS in the make command
+CFLAGS += -Wno-undef -Wno-shadow -Wno-cast-align $(ADD_CFLAGS)
 
 CFLAGS += -mthumb -mabi=aapcs-linux
 
@@ -196,6 +200,10 @@ SRC_STM32 = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_,\
 	ll_usart.c \
 	ll_utils.c \
 )
+
+ifeq ($(CIRCUITPY_CANIO),1)
+SRC_STM32 += $(HAL_DIR)/Src/stm32$(MCU_SERIES_LOWER)xx_hal_can.c
+endif
 
 # Need this to avoid UART linker problems. TODO: rewrite to use registered callbacks.
 # Does not exist for F4 and lower

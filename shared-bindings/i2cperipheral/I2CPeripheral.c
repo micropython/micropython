@@ -166,7 +166,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request(size_t n_args, const mp_obj
     if (timeout_ms == 0) {
         forever = true;
     } else if (timeout_ms > 0) {
-        timeout_end = common_hal_time_monotonic() + timeout_ms;
+        timeout_end = common_hal_time_monotonic_ms() + timeout_ms;
     }
 
     int last_error = 0;
@@ -200,7 +200,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request(size_t n_args, const mp_obj
         }
 
         return mp_obj_new_i2cperipheral_i2c_peripheral_request(self, address, is_read, is_restart);
-    } while (forever || common_hal_time_monotonic() < timeout_end);
+    } while (forever || common_hal_time_monotonic_ms() < timeout_end);
 
     if (timeout_ms > 0) {
         mp_raise_OSError(MP_ETIMEDOUT);
@@ -322,8 +322,8 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_read(size_t n_args, const m
 
     int i = 0;
     uint8_t *buffer = NULL;
-    uint64_t timeout_end = common_hal_time_monotonic() + 10 * 1000;
-    while (common_hal_time_monotonic() < timeout_end) {
+    uint64_t timeout_end = common_hal_time_monotonic_ms() + 10 * 1000;
+    while (common_hal_time_monotonic_ms() < timeout_end) {
         RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             break;

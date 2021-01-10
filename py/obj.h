@@ -303,7 +303,7 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
                   (mp_obj_t)&mp_const_none_obj, \
                   (mp_obj_t)&mp_const_none_obj}, }
 
-// These macros are used to define constant map/dict objects
+// These macros are used to define constant or mutable map/dict objects
 // You can put "static" in front of the definition to make it local
 
 #define MP_DEFINE_CONST_MAP(map_name, table_name) \
@@ -326,6 +326,29 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
             .used = MP_ARRAY_SIZE(table_name), \
             .alloc = MP_ARRAY_SIZE(table_name), \
             .table = (mp_map_elem_t*)(mp_rom_map_elem_t*)table_name, \
+        }, \
+    }
+
+#define MP_DEFINE_MUTABLE_MAP(map_name, table_name) \
+    mp_map_t map_name = { \
+        .all_keys_are_qstrs = 1, \
+        .is_fixed = 1, \
+        .is_ordered = 1, \
+        .used = MP_ARRAY_SIZE(table_name), \
+        .alloc = MP_ARRAY_SIZE(table_name), \
+        .table = table_name, \
+    }
+
+#define MP_DEFINE_MUTABLE_DICT(dict_name, table_name) \
+    mp_obj_dict_t dict_name = {                 \
+        .base = {&mp_type_dict}, \
+        .map = { \
+            .all_keys_are_qstrs = 1, \
+            .is_fixed = 1, \
+            .is_ordered = 1, \
+            .used = MP_ARRAY_SIZE(table_name), \
+            .alloc = MP_ARRAY_SIZE(table_name), \
+            .table = table_name, \
         }, \
     }
 
@@ -604,6 +627,8 @@ extern const mp_obj_type_t mp_type_NameError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_OSError;
 extern const mp_obj_type_t mp_type_TimeoutError;
+extern const mp_obj_type_t mp_type_ConnectionError;
+extern const mp_obj_type_t mp_type_BrokenPipeError;
 extern const mp_obj_type_t mp_type_OverflowError;
 extern const mp_obj_type_t mp_type_RuntimeError;
 extern const mp_obj_type_t mp_type_StopAsyncIteration;
@@ -615,6 +640,10 @@ extern const mp_obj_type_t mp_type_UnicodeError;
 extern const mp_obj_type_t mp_type_ValueError;
 extern const mp_obj_type_t mp_type_ViperTypeError;
 extern const mp_obj_type_t mp_type_ZeroDivisionError;
+#if CIRCUITPY_ALARM
+extern const mp_obj_type_t mp_type_DeepSleepRequest;
+#endif
+
 
 // Constant objects, globally accessible
 // The macros are for convenience only
@@ -654,6 +683,7 @@ mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
+extern mp_float_t uint64_to_float(uint64_t ui64);
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);

@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x802A
+USB_PID = 0x80D8
 USB_PRODUCT = "PCA10100"
 USB_MANUFACTURER = "Nordic Semiconductor"
 
@@ -24,12 +24,9 @@ CIRCUITPY_RTC = 1
 CIRCUITPY_SDCARDIO = 0
 CIRCUITPY_TOUCHIO = 0
 CIRCUITPY_ULAB = 0
+MICROPY_PY_ASYNC_AWAIT = 0
 
 SUPEROPT_GC = 0
-
-# These defines must be overridden before mpconfigboard.h is included, which is
-# why they are passed on the command line.
-CFLAGS += -DSPIM3_BUFFER_SIZE=0 -DSOFTDEVICE_RAM_SIZE='(32*1024)'
 
 # Override optimization to keep binary small
 OPTIMIZATION_FLAGS = -Os

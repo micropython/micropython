@@ -26,7 +26,7 @@
 
 #include <string.h>
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "hal/include/hal_gpio.h"
 #include "supervisor/shared/board.h"
@@ -53,5 +53,5 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-    board_reset_user_neopixels();
+    board_reset_user_neopixels(&pin_PB23, 10);
 }

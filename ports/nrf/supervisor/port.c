@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 #include "supervisor/port.h"
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 #include "nrfx/hal/nrf_clock.h"
 #include "nrfx/hal/nrf_power.h"
@@ -45,9 +45,9 @@
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
-#include "common-hal/pulseio/PWMOut.h"
 #include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pulseio/PulseIn.h"
+#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/neopixel_write/__init__.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
@@ -196,9 +196,12 @@ void reset_port(void) {
 
 
 #if CIRCUITPY_PULSEIO
-    pwmout_reset();
     pulseout_reset();
     pulsein_reset();
+#endif
+
+#if CIRCUITPY_PWMIO
+    pwmout_reset();
 #endif
 
 #if CIRCUITPY_RTC
@@ -231,6 +234,8 @@ void reset_cpu(void) {
     uint32_t ticks = nrfx_rtc_counter_get(&rtc_instance);
     overflow_tracker.overflowed_ticks += ticks / 32;
     NVIC_SystemReset();
+    for (;;) {
+    }
 }
 
 // The uninitialized data section is placed directly after BSS, under the theory
@@ -246,8 +251,8 @@ uint32_t *port_heap_get_top(void) {
     return port_stack_get_top();
 }
 
-supervisor_allocation* port_fixed_stack(void) {
-    return NULL;
+bool port_has_fixed_stack(void) {
+    return false;
 }
 
 uint32_t *port_stack_get_limit(void) {
@@ -269,11 +274,15 @@ uint32_t port_get_saved_word(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
+    common_hal_mcu_disable_interrupts();
     uint32_t rtc = nrfx_rtc_counter_get(&rtc_instance);
+    uint64_t overflow_count = overflow_tracker.overflowed_ticks;
+    common_hal_mcu_enable_interrupts();
+
     if (subticks != NULL) {
         *subticks = (rtc % 32);
     }
-    return overflow_tracker.overflowed_ticks + rtc / 32;
+    return overflow_count + rtc / 32;
 }
 
 // Enable 1/1024 second tick.
@@ -298,7 +307,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     nrfx_rtc_cc_set(&rtc_instance, 0, current_ticks + diff, true);
 }
 
-void port_sleep_until_interrupt(void) {
+void port_idle_until_interrupt(void) {
 #if defined(MICROPY_QSPI_CS)
     qspi_disable();
 #endif

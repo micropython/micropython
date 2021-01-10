@@ -29,9 +29,9 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "esp-idf/components/driver/include/driver/spi_common_internal.h"
-#include "esp-idf/components/soc/include/hal/spi_hal.h"
-#include "esp-idf/components/soc/include/hal/spi_types.h"
+#include "components/driver/include/driver/spi_common_internal.h"
+#include "components/soc/include/hal/spi_hal.h"
+#include "components/soc/include/hal/spi_types.h"
 #include "py/obj.h"
 
 typedef struct {
@@ -44,10 +44,6 @@ typedef struct {
     spi_hal_context_t hal_context;
     spi_hal_timing_conf_t timing_conf;
     intr_handle_t interrupt;
-    // IDF allocates these in DMA accessible memory so they may need to move when
-    // we use external RAM for CircuitPython.
-    lldesc_t tx_dma;
-    lldesc_t rx_dma;
     uint32_t target_frequency;
     int32_t real_frequency;
     uint8_t polarity;

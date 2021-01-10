@@ -37,7 +37,7 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
 
-#include "esp-idf/components/spi_flash/include/esp_partition.h"
+#include "components/spi_flash/include/esp_partition.h"
 
 #include "supervisor/usb.h"
 

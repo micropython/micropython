@@ -81,6 +81,10 @@ void mp_hal_set_interrupt_char(char c) {
     }
 }
 
+bool mp_hal_is_interrupted(void) {
+    return false;
+}
+
 #if MICROPY_USE_READLINE == 1
 
 #include <termios.h>

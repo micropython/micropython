@@ -16,7 +16,7 @@ typedef enum {
     SATELLITESYSTEM_QZSS_L1S   = (1U << 4),
 } gnss_satellitesystem_t;
 
-const mp_obj_type_t gnss_satellitesystem_type;
+extern const mp_obj_type_t gnss_satellitesystem_type;
 
 gnss_satellitesystem_t gnss_satellitesystem_obj_to_type(mp_obj_t obj);
 mp_obj_t gnss_satellitesystem_type_to_obj(gnss_satellitesystem_t mode);

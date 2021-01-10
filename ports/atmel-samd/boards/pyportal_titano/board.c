@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 
@@ -117,7 +117,8 @@ void board_init(void) {
         false, // data_as_commands
         true, // auto_refresh
         60, // native_frames_per_second
-        true); // backlight_on_high
+        true, // backlight_on_high
+        false); // SH1107_addressing
 }
 
 bool board_requests_safe_mode(void) {

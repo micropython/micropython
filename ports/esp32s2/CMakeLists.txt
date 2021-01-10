@@ -3,7 +3,10 @@
 cmake_minimum_required(VERSION 3.13)
 
 set(ENV{IDF_PATH} ${CMAKE_SOURCE_DIR}/esp-idf)
-set(COMPONENTS esptool_py soc driver log main)
+
+# The component list here determines what options we get in menuconfig and what the ninja file
+# can build.
+set(COMPONENTS esptool_py soc driver log main esp-tls mbedtls esp_event esp_adc_cal esp_netif esp_wifi lwip wpa_supplicant freertos)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(circuitpython)

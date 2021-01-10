@@ -28,7 +28,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "boards/board.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/sdioio/SDCard.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -58,24 +57,6 @@
 
 static Sdhc *sdhc_insts[] = SDHC_INSTS;
 
-STATIC pin_function_t *find_pin_function(pin_function_t *table, const mcu_pin_obj_t *pin, int instance, uint16_t name) {
-    DEBUG_PRINT("\n\n[inst=% 2d] %q: ", instance, name);
-    DEBUG_PRINT_OBJ_NL(pin);
-
-    for(; table->obj; table++) {
-        DEBUG_PRINT("[inst=% 2d] considering table @%p: ");
-        DEBUG_PRINT_OBJ(table->obj);
-        DEBUG_PRINT(" %d %d\n", table->instance, table->pin);
-        if (instance != -1 && instance != table->instance) {
-            continue;
-        }
-        if (pin == table->obj) {
-            return table;
-        }
-    }
-    mp_raise_ValueError_varg(translate("%q pin invalid"), name);
-}
-
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
         const mcu_pin_obj_t * clock, const mcu_pin_obj_t * command,
         uint8_t num_data, mcu_pin_obj_t ** data, uint32_t frequency) {
@@ -98,15 +79,15 @@ CLK PA21 PCC_D? (D32)  BROWN
 
 */
 
-    pin_function_t *functions[6] = {};
-    functions[0] = find_pin_function(sdio_cmd, command, -1, MP_QSTR_command);
+    mcu_pin_function_t *functions[6] = {};
+    functions[0] = mcu_find_pin_function(sdio_cmd, command, -1, MP_QSTR_command);
     int instance = functions[0]->instance;
-    functions[1] = find_pin_function(sdio_ck, clock, instance, MP_QSTR_clock);
-    functions[2] = find_pin_function(sdio_dat0, data[0], instance, MP_QSTR_data0);
+    functions[1] = mcu_find_pin_function(sdio_ck, clock, instance, MP_QSTR_clock);
+    functions[2] = mcu_find_pin_function(sdio_dat0, data[0], instance, MP_QSTR_data0);
     if(num_data == 4) {
-        functions[3] = find_pin_function(sdio_dat1, data[1], instance, MP_QSTR_data1);
-        functions[4] = find_pin_function(sdio_dat2, data[2], instance, MP_QSTR_data2);
-        functions[5] = find_pin_function(sdio_dat3, data[3], instance, MP_QSTR_data3);
+        functions[3] = mcu_find_pin_function(sdio_dat1, data[1], instance, MP_QSTR_data1);
+        functions[4] = mcu_find_pin_function(sdio_dat2, data[2], instance, MP_QSTR_data2);
+        functions[5] = mcu_find_pin_function(sdio_dat3, data[3], instance, MP_QSTR_data3);
     }
 
     // We've verified all pins, now set their special functions
@@ -114,7 +95,7 @@ CLK PA21 PCC_D? (D32)  BROWN
     self->clock_pin = common_hal_mcu_pin_number(functions[1]->obj);
 
     for(int i=0; i<num_data; i++) {
-        pin_function_t *function = functions[2+i];
+        mcu_pin_function_t *function = functions[2+i];
         if (function) {
             self->data_pins[i] = common_hal_mcu_pin_number(function->obj);
         } else {
@@ -144,8 +125,8 @@ CLK PA21 PCC_D? (D32)  BROWN
         hri_mclk_set_AHBMASK_SDHC0_bit(MCLK);
         hri_gclk_write_PCHCTRL_reg(GCLK, SDHC0_GCLK_ID, CONF_GCLK_SDHC0_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
         hri_gclk_write_PCHCTRL_reg(GCLK, SDHC0_GCLK_ID_SLOW, CONF_GCLK_SDHC0_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-    } else {
 #ifdef SDHC1_GCLK_ID
+    } else {
         hri_mclk_set_AHBMASK_SDHC1_bit(MCLK);
         hri_gclk_write_PCHCTRL_reg(GCLK, SDHC1_GCLK_ID, CONF_GCLK_SDHC1_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
         hri_gclk_write_PCHCTRL_reg(GCLK, SDHC1_GCLK_ID_SLOW, CONF_GCLK_SDHC1_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));

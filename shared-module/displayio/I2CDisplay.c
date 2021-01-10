@@ -53,6 +53,7 @@ void common_hal_displayio_i2cdisplay_construct(displayio_i2cdisplay_obj_t* self,
 
     // Probe the bus to see if a device acknowledges the given address.
     if (!common_hal_busio_i2c_probe(i2c, device_address)) {
+        self->base.type = &mp_type_NoneType;
         mp_raise_ValueError_varg(translate("Unable to find I2C Display at %x"), device_address);
     }
 
@@ -71,7 +72,9 @@ void common_hal_displayio_i2cdisplay_deinit(displayio_i2cdisplay_obj_t* self) {
         common_hal_busio_i2c_deinit(self->bus);
     }
 
-    common_hal_reset_pin(self->reset.pin);
+    if (self->reset.base.type == &digitalio_digitalinout_type) {
+        common_hal_digitalio_digitalinout_deinit(&self->reset);
+    }
 }
 
 bool common_hal_displayio_i2cdisplay_reset(mp_obj_t obj) {
@@ -100,7 +103,8 @@ bool common_hal_displayio_i2cdisplay_begin_transaction(mp_obj_t obj) {
     return common_hal_busio_i2c_try_lock(self->bus);
 }
 
-void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, display_byte_type_t data_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length) {
+void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, display_byte_type_t data_type,
+        display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
     displayio_i2cdisplay_obj_t* self = MP_OBJ_TO_PTR(obj);
     if (data_type == DISPLAY_COMMAND) {
         uint8_t command_bytes[2 * data_length];

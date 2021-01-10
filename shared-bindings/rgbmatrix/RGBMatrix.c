@@ -73,6 +73,10 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     uint32_t port = clock_pin / 32;
     uint32_t bit_mask = 1 << (clock_pin % 32);
 
+    if (rgb_pin_count <= 0 || rgb_pin_count % 6 != 0 || rgb_pin_count > 30) {
+        mp_raise_ValueError_varg(translate("The length of rgb_pins must be 6, 12, 18, 24, or 30"));
+    }
+
     for (uint8_t i = 0; i < rgb_pin_count; i++) {
         uint32_t pin_port = rgb_pins[i] / 32;
 
@@ -193,6 +197,11 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     uint8_t clock_pin = validate_pin(args[ARG_clock_pin].u_obj);
     uint8_t latch_pin = validate_pin(args[ARG_latch_pin].u_obj);
     uint8_t output_enable_pin = validate_pin(args[ARG_output_enable_pin].u_obj);
+    int bit_depth = args[ARG_bit_depth].u_int;
+
+    if (bit_depth <= 0 || bit_depth > 6) {
+        mp_raise_ValueError_varg(translate("Bit depth must be from 1 to 6 inclusive, not %d"), bit_depth);
+    }
 
     validate_pins(MP_QSTR_rgb_pins, rgb_pins, MP_ARRAY_SIZE(self->rgb_pins), args[ARG_rgb_list].u_obj, &rgb_count);
     validate_pins(MP_QSTR_addr_pins, addr_pins, MP_ARRAY_SIZE(self->addr_pins), args[ARG_addr_list].u_obj, &addr_count);
@@ -210,6 +219,10 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         }
     }
 
+    if (args[ARG_width].u_int <= 0) {
+        mp_raise_ValueError(translate("width must be greater than zero"));
+    }
+
     preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);
 
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
@@ -221,7 +234,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
 
     common_hal_rgbmatrix_rgbmatrix_construct(self,
         args[ARG_width].u_int,
-        args[ARG_bit_depth].u_int,
+        bit_depth,
         rgb_count, rgb_pins,
         addr_count, addr_pins,
         clock_pin, latch_pin, output_enable_pin,
@@ -252,7 +265,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_deinit_obj, rgbmatrix_rgbmatrix_deinit);
 
 static void check_for_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
-    if (!self->core.rgbPins) {
+    if (!self->protomatter.rgbPins) {
         raise_deinited_error();
     }
 }
