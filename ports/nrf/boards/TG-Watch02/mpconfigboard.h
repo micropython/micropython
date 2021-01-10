@@ -27,10 +27,15 @@
 
 #include "nrfx/hal/nrf_gpio.h"
 
-#define MICROPY_HW_BOARD_NAME       "TG-Techie's TG-Watch02A"
+#define MICROPY_HW_BOARD_NAME       "TG-Watch02"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
-#define MICROPY_HW_LED_STATUS       (&pin_P0_07)
+#define MICROPY_HW_NEOPIXEL         (&pin_P0_16)
+#define MICROPY_HW_LED_STATUS       (&pin_P1_15)
+
+// TG-Gui requires a deeper call stack than normal CircuitPython
+#define CIRCUITPY_PYSTACK_SIZE 8192 // 1536 is the normal size, (32 bytes/frame * 48 frames)
+#define BOARD_HAS_CRYSTAL 0
 
 #if QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 17)
@@ -47,8 +52,6 @@
 #define SPI_FLASH_SCK_PIN &pin_P0_19
 #define SPI_FLASH_CS_PIN &pin_P0_20
 #endif
-
-#define BOARD_HAS_CRYSTAL 0
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_11)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_12)

@@ -156,3 +156,15 @@
 [submodule "ports/esp32s2/certificates/nina-fw"]
 	path = ports/esp32s2/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
+[submodule "frozen/Adafruit_CircuitPython_ST7789"]
+	path = frozen/Adafruit_CircuitPython_ST7789
+	url = https://github.com/adafruit/Adafruit_CircuitPython_ST7789
+[submodule "frozen/Adafruit_CircuitPython_Display_Shapes"]
+	path = frozen/Adafruit_CircuitPython_Display_Shapes
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Display_Shapes
+[submodule "frozen/Adafruit_CircuitPython_Display_Text"]
+	path = frozen/Adafruit_CircuitPython_Display_Text
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Display_Text
+[submodule "frozen/Adafruit_CircuitPython_ProgressBar"]
+	path = frozen/Adafruit_CircuitPython_ProgressBar
+	url = https://github.com/adafruit/Adafruit_CircuitPython_ProgressBar

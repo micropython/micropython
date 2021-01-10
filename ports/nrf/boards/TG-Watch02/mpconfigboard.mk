@@ -1,7 +1,7 @@
 USB_VID = 0x239A
-USB_PID = 0x80DB
-USB_PRODUCT = "TG-Watch02A"
-USB_MANUFACTURER = "TG-Tech"
+USB_PID = 0x802A
+USB_PRODUCT = "TG_Watch02"
+USB_MANUFACTURER = "TG-Techie"
 
 MCU_CHIP = nrf52840
 
@@ -11,6 +11,10 @@ EXTERNAL_FLASH_DEVICES = "GD25Q16C, W25Q128JV_SQ"
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_ST7789
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Display_Shapes
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Display_Text
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_ProgressBar
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LSM6DS
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_FocalTouch
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DS3231
