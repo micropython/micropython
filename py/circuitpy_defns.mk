@@ -58,6 +58,14 @@ BASE_CFLAGS = \
 #        -H
 
 
+# Set a global CIRCUITPY_DEBUG flag.
+# Don't just call it "DEBUG": too many libraries use plain DEBUG.
+ifneq ($(DEBUG),)
+CFLAGS += -DCIRCUITPY_DEBUG=$(DEBUG)
+else
+CFLAGS += -DCIRCUITPY_DEBUG=0
+endif
+
 ###
 # Handle frozen modules.
 
