@@ -26,10 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_GC_H
 #define MICROPY_INCLUDED_PY_GC_H
 
+#include <stdbool.h>
 #include <stdint.h>
-
-#include "py/mpconfig.h"
-#include "py/misc.h"
 
 void gc_init(void *start, void *end);
 
