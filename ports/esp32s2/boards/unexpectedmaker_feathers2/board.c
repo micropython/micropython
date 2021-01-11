@@ -27,6 +27,8 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "components/driver/include/driver/gpio.h"
+#include "components/soc/include/hal/gpio_hal.h"
 
 void board_init(void) {
     // USB
@@ -47,6 +49,12 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO30);
     common_hal_never_reset_pin(&pin_GPIO31);
     common_hal_never_reset_pin(&pin_GPIO32);
+
+
+    // Add LDO2 to never reset list, set to output and enable
+    common_hal_never_reset_pin(&pin_GPIO21);
+    gpio_set_direction(pin_GPIO21.number, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(pin_GPIO21.number, true);
 }
 
 bool board_requests_safe_mode(void) {
