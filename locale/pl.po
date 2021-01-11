@@ -280,6 +280,10 @@ msgstr "0.0 do potęgi zespolonej"
 msgid "3-arg pow() not supported"
 msgstr "3-argumentowy pow() jest niewspierany"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -2445,6 +2449,10 @@ msgstr "argument chr() poza zakresem range(256)"
 msgid "circle can only be registered in one parent"
 msgstr ""
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "bufor kolorów musi nieć 3 bajty (RGB) lub 4 bajty (RGB + wypełnienie)"
@@ -2528,6 +2536,10 @@ msgstr "liczby dziesiętne nieobsługiwane"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "domyślny 'except' musi być ostatni"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2628,6 +2640,10 @@ msgstr "oczekiwano tylko wartości dla zbioru"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "oczekiwano klucz:wartość dla słownika"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3161,6 +3177,10 @@ msgstr "brak wolnego NIC"
 msgid "no binding for nonlocal found"
 msgstr "brak wiązania dla zmiennej nielokalnej"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "brak modułu o nazwie '%q'"
@@ -3494,6 +3514,10 @@ msgstr "kompilowanie skryptów nieobsługiwane"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
 msgstr ""
 
 #: py/objstr.c
