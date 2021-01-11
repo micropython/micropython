@@ -286,6 +286,10 @@ msgstr "0.0 à une puissance complexe"
 msgid "3-arg pow() not supported"
 msgstr "pow() non supporté avec 3 paramètres"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -2519,6 +2523,10 @@ msgstr "paramètre de chr() hors les bornes de range(256)"
 msgid "circle can only be registered in one parent"
 msgstr "le cercle ne peut être enregistré que dans un seul parent"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "le tampon de couleur doit faire 3 octets (RVB) ou 4 (RVB + pad byte)"
@@ -2604,6 +2612,10 @@ msgstr "nombres décimaux non supportés"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "l''except' par défaut doit être en dernier"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2705,6 +2717,10 @@ msgstr "une simple valeur est attendue pour l'ensemble 'set'"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "couple clef:valeur attendu pour un dictionnaire 'dict'"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3245,6 +3261,10 @@ msgstr "adapteur réseau non disponible"
 msgid "no binding for nonlocal found"
 msgstr "pas de lien trouvé pour nonlocal"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "pas de module '%q'"
@@ -3584,6 +3604,10 @@ msgstr "compilation de script non supportée"
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "forme doit être un tuple"
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
