@@ -278,6 +278,10 @@ msgstr "0.0 tot een complexe macht"
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() niet ondersteund"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -2480,6 +2484,10 @@ msgid "circle can only be registered in one parent"
 msgstr ""
 "cirkel kan slechts bij één object van een hoger niveau worden geregistreerd"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "kleurbuffer moet 3 bytes (RGB) of 4 bytes (RGB + pad byte) zijn"
@@ -2563,6 +2571,10 @@ msgstr "decimale getallen zijn niet ondersteund"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "standaard 'expect' moet laatste zijn"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2664,6 +2676,10 @@ msgstr "verwacht alleen een waarde voor set"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "verwacht key:waarde for dict"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3201,6 +3217,10 @@ msgstr "geen netwerkadapter (NIC) beschikbaar"
 msgid "no binding for nonlocal found"
 msgstr "geen binding voor nonlocal gevonden"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "geen module met naam '%q'"
@@ -3536,6 +3556,10 @@ msgstr "scriptcompilatie wordt niet ondersteund"
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "vorm moet een tupel zijn"
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"

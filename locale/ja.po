@@ -280,6 +280,10 @@ msgstr "0.0を複素数でべき乗"
 msgid "3-arg pow() not supported"
 msgstr "引数3つのpow()は非対応"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -2448,6 +2452,10 @@ msgstr ""
 msgid "circle can only be registered in one parent"
 msgstr ""
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
@@ -2533,6 +2541,10 @@ msgstr ""
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "デフォルトのexceptは最後に置く必要があります"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2634,6 +2646,10 @@ msgstr "setには値のみが必要"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "dictには key:value が必要"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3168,6 +3184,10 @@ msgstr "利用可能なNICがありません"
 msgid "no binding for nonlocal found"
 msgstr "nonlocalの対象が見つかりません"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "'%q' という名前のモジュールはありません"
@@ -3502,6 +3522,10 @@ msgstr "スクリプトのコンパイルは非対応"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
 msgstr ""
 
 #: py/objstr.c
