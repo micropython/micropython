@@ -429,7 +429,9 @@ uint32_t port_get_saved_word(void) {
 // TODO: Move this to an RTC backup register so we can preserve it when only the BACKUP power domain
 // is enabled.
 static volatile uint64_t overflowed_ticks = 0;
+#ifdef SAMD21
 static volatile bool _ticks_enabled = false;
+#endif
 
 static uint32_t _get_count(uint64_t* overflow_count) {
     #ifdef SAM_D5X_E5X
@@ -537,9 +539,11 @@ void port_disable_tick(void) {
 // they'll wake us up earlier. If we don't, we'll mess up ticks by overwriting
 // the next RTC wake up time.
 void port_interrupt_after_ticks(uint32_t ticks) {
+    #ifdef SAMD21
     if (_ticks_enabled) {
         return;
     }
+    #endif
     _port_interrupt_after_ticks(ticks);
 }
 
