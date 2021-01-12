@@ -213,10 +213,10 @@ STATIC mp_obj_t socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args)
         // Bad file number.
         mp_raise_OSError(MP_EBADF);
     }
-    if (!common_hal_socketpool_socket_get_connected(self)) {
-        // not connected
-        mp_raise_OSError(MP_ENOTCONN);
-    }
+    // if (!common_hal_socketpool_socket_get_connected(self)) {
+    //     // not connected
+    //     mp_raise_OSError(MP_ENOTCONN);
+    // }
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
     mp_int_t len = bufinfo.len;

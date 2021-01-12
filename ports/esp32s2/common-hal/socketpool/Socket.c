@@ -51,6 +51,7 @@ STATIC void _lazy_init_LWIP(socketpool_socket_obj_t* self) {
         mp_raise_RuntimeError(translate("Out of sockets"));
     }
     self->num = socknum;
+    lwip_fcntl(socknum, F_SETFL, O_NONBLOCK);
 }
 
 STATIC void _lazy_init_TLS(socketpool_socket_obj_t* self) {
@@ -88,12 +89,20 @@ int common_hal_socketpool_socket_accept(socketpool_socket_obj_t* self,
                                         uint8_t* ip, uint *port) {
     struct sockaddr_in accept_addr;
     socklen_t socklen = sizeof(accept_addr);
-    int newsoc = lwip_accept(self->num, (struct sockaddr *)&accept_addr, &socklen);
+
+    int newsoc = -1;
+    //(self->timeout_ms == 0 || supervisor_ticks_ms64() - start_ticks <= self->timeout_ms)
+    while ((newsoc == -1) && !mp_hal_is_interrupted() ) {
+        RUN_BACKGROUND_TASKS;
+        newsoc = lwip_accept(self->num, (struct sockaddr *)&accept_addr, &socklen);
+    }
+    mp_printf(&mp_plat_print, "oldsoc:%d newsoc:%d\n",self->num, newsoc);
 
     memcpy((void *)ip, (void*)&accept_addr.sin_addr.s_addr, sizeof(accept_addr.sin_addr.s_addr));
     *port = accept_addr.sin_port;
 
     if (newsoc > 0) {
+        lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
         return newsoc;
     } else {
         return 0;
@@ -169,7 +178,11 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
 
     if (self->num != -1) {
         // LWIP Socket
+        mp_printf(&mp_plat_print, "lwip_recv:\n");
+
         received = lwip_recv(self->num, (void*) buf, len - 1, 0);
+        mp_printf(&mp_plat_print, "received:%d\n",received);
+
     } else if (self->tls != NULL) {
         // TLS Socket
         int status = 0;
@@ -257,7 +270,9 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
 
     struct sockaddr_in source_addr;
     socklen_t socklen = sizeof(source_addr);
+    mp_printf(&mp_plat_print, "recvfrom_into\n");
     int bytes_received = lwip_recvfrom(self->num, buf, len - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+    mp_printf(&mp_plat_print, "received:%d\n",bytes_received);
 
     memcpy((void *)ip, (void*)&source_addr.sin_addr.s_addr, sizeof(source_addr.sin_addr.s_addr));
     *port = source_addr.sin_port;
