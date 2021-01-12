@@ -95,13 +95,13 @@ Using esptool.py you can deploy the new firmware using::
 
     esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash -e --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
 
-Notes:
+Notes::
 
 * Use the `port <https://github.com/espressif/esptool#serial-port>`_
-  setting for your operating system (Windows example: COM1)
+  setting for your operating system (eg Windows:: ``COM1``)
 * You may need to reduce the baudrate if you get errors when flashing
   (eg down to 115200 by adding ``--baud 115200`` into the command)
-* The `write_flash` optional argument `-e` can be added to
+* The `write_flash` optional argument ``-e`` can be added to
   erase all regions of flash (not just write areas) before programming
 * For some boards with a particular FlashROM configuration you may need to
   change the flash mode (eg by adding ``-fm dio`` into the command)
