@@ -295,7 +295,7 @@ const mp_obj_property_t wifi_radio_ipv4_dns_obj = {
 };
 
 //|     ap_info: Optional[Network]
-//|     """Network object containing BSSID, SSID, channel, country and RSSI when connected to an access point. None otherwise."""
+//|     """Network object containing BSSID, SSID, authmode, channel, country and RSSI when connected to an access point. None otherwise."""
 //|
 STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
     return common_hal_wifi_radio_get_ap_info(self);
