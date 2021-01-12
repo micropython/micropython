@@ -63,7 +63,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
             break;
         #endif
 
-       #if defined(SAM_D5X_E5X) && defined(PIN_PA05) && defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)
+       #if defined(SAM_D5X_E5X) && defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)
         case PIN_PA05:
             channel = 1;
             break;
