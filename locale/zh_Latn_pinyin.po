@@ -280,6 +280,10 @@ msgstr "0.0 dào fùzá diànyuán"
 msgid "3-arg pow() not supported"
 msgstr "bù zhīchí 3-arg pow ()"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -2464,6 +2468,10 @@ msgstr "chr() cān shǔ bùzài fànwéi (256)"
 msgid "circle can only be registered in one parent"
 msgstr "quānzi zhǐ néng zài yī wèi jiāzhǎng zhōng zhùcè"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
@@ -2550,6 +2558,10 @@ msgstr "bù zhīchí xiǎoshù shù"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "mòrèn 'except' bìxū shì zuìhòu yīgè"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2651,6 +2663,10 @@ msgstr "jǐn qídài shèzhì de zhí"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "qídài guānjiàn: Zìdiǎn de jiàzhí"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3185,6 +3201,10 @@ msgstr "méiyǒu kěyòng de NIC"
 msgid "no binding for nonlocal found"
 msgstr "zhǎo bù dào fēi běndì de bǎng dìng"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "méiyǒu mókuài '%q'"
@@ -3518,6 +3538,10 @@ msgstr "bù zhīchí jiǎoběn biānyì"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
 msgstr ""
 
 #: py/objstr.c
