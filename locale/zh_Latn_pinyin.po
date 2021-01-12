@@ -1504,12 +1504,12 @@ msgstr ""
 "Jǐn zhīchí dān sè, suǒyǐn wéi 4bpp huò 8bpp yǐjí 16bpp huò gèng gāo de BMP: "
 "Gěi chū %d bpp"
 
-#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
-msgid "Only one alarm.time alarm can be set."
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-msgid "Only one alarm.touch alarm can be set."
+#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
 #: shared-module/displayio/ColorConverter.c

@@ -1512,13 +1512,13 @@ msgstr ""
 "Endast monokrom, indexerad 4 bpp eller 8 bpp och 16 bpp eller högre BMP: er "
 "stöds: %d bpp angiven"
 
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one TouchAlarm can be set in deep sleep."
+msgstr ""
+
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Endast ett alarm.time kan ställas in."
-
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-msgid "Only one alarm.touch alarm can be set."
-msgstr "Endast ett larm av typ alarm.touch kan ställas in."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -3956,6 +3956,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Only one alarm.touch alarm can be set."
+#~ msgstr "Endast ett larm av typ alarm.touch kan ställas in."
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "indataargumentet måste vara ett heltal eller en 2-tupel"

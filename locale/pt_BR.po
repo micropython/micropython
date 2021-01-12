@@ -1523,13 +1523,13 @@ msgstr ""
 "São compatíveis apenas os BMPs monocromáticos, indexados em 4bpp ou 8bpp e "
 "16bpp ou superior: determinado %d bpp"
 
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one TouchAlarm can be set in deep sleep."
+msgstr ""
+
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Apenas um alarme alarm.time pode ser definido."
-
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-msgid "Only one alarm.touch alarm can be set."
-msgstr "Apenas um alarme alarm.touch pode ser definido."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -3991,6 +3991,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Only one alarm.touch alarm can be set."
+#~ msgstr "Apenas um alarme alarm.touch pode ser definido."
 
 #~ msgid "TouchAlarm not available in light sleep"
 #~ msgstr "O TouchAlarm não está disponívle no modo light sleep"
