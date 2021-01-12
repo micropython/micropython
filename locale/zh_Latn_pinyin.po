@@ -118,6 +118,11 @@ msgstr "%q yīnggāi shì yīgè int"
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#, c-format
+msgid "%s error 0x%x"
+msgstr ""
+
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "xūyào '%q' cānshù"
@@ -545,6 +550,10 @@ msgstr "Zì jié bìxū jiè yú 0 dào 255 zhī jiān."
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBC kuài bì xū shì 16 zì jié de bèi shù"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "CRC or checksum was invalid"
+msgstr ""
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -996,6 +1005,10 @@ msgstr "Pínlǜ bìxū yǔ shǐyòng cǐ jìshí qì de xiàn yǒu PWMOut xiāng
 msgid "Function requires lock"
 msgstr "Hánshù xūyào suǒdìng"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Generic Failure"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -1124,6 +1137,7 @@ msgstr "Wúxiào de PWM pínlǜ"
 msgid "Invalid Pin"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
@@ -1233,6 +1247,14 @@ msgstr "Wúxiào de yùnxíng móshì."
 msgid "Invalid security_mode"
 msgstr "Ānquán móshì wúxiào"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid size"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid state"
+msgstr ""
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
 msgstr "Yǔyīn wúxiào"
@@ -1272,6 +1294,10 @@ msgstr "Chángdù bìxū shì yīgè zhěngshù"
 #: py/objslice.c
 msgid "Length must be non-negative"
 msgstr "Chángdù bìxū shìfēi fùshù"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "MAC address was invalid"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1520,6 +1546,18 @@ msgstr "Yīcì zhǐ néng yǒuyī zhǒng yánsè shì tòumíng de"
 msgid "Only raw int supported for ip"
 msgstr "Ip jǐn zhīchí raw int"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation or feature not supported"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation timed out"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Out of memory"
+msgstr ""
+
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "tào jiē zì wài"
@@ -1527,6 +1565,10 @@ msgstr "tào jiē zì wài"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Guò cǎiyàng bìxū shì 8 de bèishù."
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "PDMIn not available"
+msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1544,6 +1586,10 @@ msgstr "Dāng biànliàng_pínlǜ shì False zài jiànzhú shí PWM pínlǜ bù
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "Shàng bù zhīchí ParallelBus"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "Peripheral in use"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1666,6 +1712,10 @@ msgstr "Zhǐ dú wénjiàn xìtǒng"
 msgid "Read-only object"
 msgstr "Zhǐ dú duìxiàng"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Received response was invalid"
+msgstr ""
+
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "Shuāxīn tài kuàile"
@@ -1677,6 +1727,10 @@ msgstr "RemoteTransmissionRequests xiànzhì wèi 8 gè zì jié"
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "Qǐngqiú de AES móshì bù shòu zhīchí"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Requested resource not found"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -2058,6 +2112,10 @@ msgstr "Zhí chángdù != Suǒ xū de gùdìng chángdù"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
 msgstr "Zhí chángdù > zuìdà chángdù"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Version was invalid"
+msgstr ""
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -3915,6 +3973,10 @@ msgstr "cuòwù de shūchū lèixíng"
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
 msgstr "x zhí chāochū biānjiè"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "xTaskCreate failed"
+msgstr ""
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"

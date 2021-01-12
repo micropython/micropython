@@ -120,6 +120,11 @@ msgstr "%q deve ser um int"
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() recebe %d argumentos posicionais, porém %d foram informados"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#, c-format
+msgid "%s error 0x%x"
+msgstr ""
+
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' argumento(s) requerido(s)"
@@ -555,6 +560,10 @@ msgstr "Os bytes devem estar entre 0 e 255."
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "Os blocos CBC devem ter múltiplos de 16 bytes"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "CRC or checksum was invalid"
+msgstr ""
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -1015,6 +1024,10 @@ msgstr ""
 msgid "Function requires lock"
 msgstr "A função requer bloqueio"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Generic Failure"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -1143,6 +1156,7 @@ msgstr "Frequência PWM inválida"
 msgid "Invalid Pin"
 msgstr "Pino inválido"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Argumento inválido"
@@ -1252,6 +1266,14 @@ msgstr "O modo de execução é inválido."
 msgid "Invalid security_mode"
 msgstr "O Security_mode é inválido"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid size"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid state"
+msgstr ""
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
 msgstr "A voz é inválida"
@@ -1291,6 +1313,10 @@ msgstr "Tamanho deve ser um int"
 #: py/objslice.c
 msgid "Length must be non-negative"
 msgstr "O comprimento deve ser positivo"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "MAC address was invalid"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1539,6 +1565,18 @@ msgstr "Apenas uma cor pode ser transparente de cada vez"
 msgid "Only raw int supported for ip"
 msgstr "Apenas o int bruto é compatível para o ip"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation or feature not supported"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation timed out"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Out of memory"
+msgstr ""
+
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Sem soquetes"
@@ -1546,6 +1584,10 @@ msgstr "Sem soquetes"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "A superamostragem deve ser um múltiplo de 8."
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "PDMIn not available"
+msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1566,6 +1608,10 @@ msgstr ""
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "O ParallelBus ainda não é compatível"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "Peripheral in use"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1696,6 +1742,10 @@ msgstr "Sistema de arquivos somente leitura"
 msgid "Read-only object"
 msgstr "Objeto de leitura apenas"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Received response was invalid"
+msgstr ""
+
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "A recarga foi cedo demais"
@@ -1707,6 +1757,10 @@ msgstr "As requisições de transmissões remotas é limitada a 8 bytes"
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "O modo AES solicitado não é compatível"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Requested resource not found"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -2093,6 +2147,10 @@ msgstr "Comprimento do valor != comprimento fixo necessário"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
 msgstr "O comprimento do valor é > max_length"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Version was invalid"
+msgstr ""
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -3967,6 +4025,10 @@ msgstr "tipo da saída incorreta"
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
 msgstr "o valor x está fora dos limites"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "xTaskCreate failed"
+msgstr ""
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"

@@ -113,6 +113,11 @@ msgstr ""
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#, c-format
+msgid "%s error 0x%x"
+msgstr ""
+
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr ""
@@ -537,6 +542,10 @@ msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "CRC or checksum was invalid"
 msgstr ""
 
 #: py/objtype.c
@@ -987,6 +996,10 @@ msgstr ""
 msgid "Function requires lock"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Generic Failure"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -1113,6 +1126,7 @@ msgstr ""
 msgid "Invalid Pin"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr ""
@@ -1222,6 +1236,14 @@ msgstr ""
 msgid "Invalid security_mode"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid size"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid state"
+msgstr ""
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
 msgstr ""
@@ -1260,6 +1282,10 @@ msgstr ""
 
 #: py/objslice.c
 msgid "Length must be non-negative"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "MAC address was invalid"
 msgstr ""
 
 #: shared-module/bitbangio/SPI.c
@@ -1504,12 +1530,28 @@ msgstr ""
 msgid "Only raw int supported for ip"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation or feature not supported"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation timed out"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Out of memory"
+msgstr ""
+
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
+msgstr ""
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "PDMIn not available"
 msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
@@ -1526,6 +1568,10 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
+msgstr ""
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "Peripheral in use"
 msgstr ""
 
 #: py/moduerrno.c
@@ -1645,6 +1691,10 @@ msgstr ""
 msgid "Read-only object"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Received response was invalid"
+msgstr ""
+
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr ""
@@ -1655,6 +1705,10 @@ msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Requested resource not found"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -2025,6 +2079,10 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Version was invalid"
 msgstr ""
 
 #: py/emitnative.c
@@ -3867,6 +3925,10 @@ msgstr ""
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
+msgstr ""
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "xTaskCreate failed"
 msgstr ""
 
 #: shared-bindings/displayio/Shape.c
