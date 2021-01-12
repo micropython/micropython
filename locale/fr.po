@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-22 22:54+0530\n"
-"PO-Revision-Date: 2021-01-01 04:29+0000\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
+"PO-Revision-Date: 2021-01-07 01:29+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -1931,10 +1931,6 @@ msgid "Total data to write is larger than outgoing_packet_length"
 msgstr ""
 "Le nombre total de données à écrire est supérieur à outgoing_packet_length"
 
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-msgid "TouchAlarm not available in light sleep"
-msgstr "TouchAlarm n'est pas disponible en mode someil léger"
-
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (appels les plus récents en dernier) :\n"
@@ -2597,6 +2593,10 @@ msgstr "les données doivent être les objets iterables"
 msgid "data must be of equal length"
 msgstr "les données doivent être de longueur égale"
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr "le type de donnée n'est pas reconnu"
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "nombres décimaux non supportés"
@@ -2912,8 +2912,8 @@ msgid "input and output shapes are not compatible"
 msgstr "les formes d'entrée et de sortie ne sont pas compatibles"
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
-msgstr "l'argument d'entrée doit être un entier ou un tuple 2"
+msgid "input argument must be an integer, a tuple, or a list"
+msgstr "Paramètre entrant doit être un chiffre entier, un tuple, ou une liste"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
@@ -3159,6 +3159,10 @@ msgstr "maxiter doit être > 0"
 msgid "maxiter should be > 0"
 msgstr "maxiter devrait être > 0"
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr "Paramètre pour median doit être un ndarray"
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3389,10 +3393,6 @@ msgstr "les opérandes ne pouvaient pas être diffusés ensemble"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr "opération implémentée que pour des tableaux 1D booléennes"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
-msgstr "l'opération n'est pas implémentée pour un tableau applatit"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3743,6 +3743,10 @@ msgstr "tobytes ne peut être appelé que pour des tableaux dense"
 msgid "too many arguments provided with the given format"
 msgstr "trop d'arguments fournis avec ce format"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr "Trop de dimensions"
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "trop d'indices"
@@ -3753,16 +3757,16 @@ msgid "too many values to unpack (expected %d)"
 msgstr "trop de valeur à dégrouper (%d attendues)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr "trapz est défini pour tableaux à une dimension"
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz n'est défini que pour des tableaux 1D de longueur égale"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr "niveau du déclencheur doit être 0 ou 1"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "index du tuple hors de portée"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3977,6 +3981,18 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "TouchAlarm not available in light sleep"
+#~ msgstr "TouchAlarm n'est pas disponible en mode someil léger"
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "l'argument d'entrée doit être un entier ou un tuple 2"
+
+#~ msgid "operation is not implemented for flattened array"
+#~ msgstr "l'opération n'est pas implémentée pour un tableau applatit"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "index du tuple hors de portée"
 
 #~ msgid ""
 #~ "\n"
