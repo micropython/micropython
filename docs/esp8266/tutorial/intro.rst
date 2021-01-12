@@ -91,24 +91,21 @@ An older version (at least 1.2.1 is needed) works fine but will require Python
 Any other flashing program should work, so feel free to try them out or refer
 to the documentation for your board to see its recommendations.
 
-Using esptool.py you can erase the flash with the command::
+Using esptool.py you can deploy the new firmware using::
 
-    esptool.py --port /dev/ttyUSB0 erase_flash
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash -e --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
 
-And then deploy the new firmware using::
+Notes:
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
-
-You must use the `port <https://github.com/espressif/esptool#serial-port>`_
-setting for your operating system. You may also need to reduce the baudrate if
-you get errors when flashing (eg down to 115200).  The filename of the firmware
-should also match the file that you have.
-
-For some boards with a particular FlashROM configuration (e.g. some variants of
-a NodeMCU board) you may need to use the following command to deploy
-the firmware (note the ``-fm dio`` option)::
-
-    esptool.py --port COM1 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-20170108-v1.8.7.bin
+* Use the `port <https://github.com/espressif/esptool#serial-port>`_
+  setting for your operating system (Windows example: COM1)
+* You may need to reduce the baudrate if you get errors when flashing
+  (eg down to 115200 by adding ``--baud 115200`` into the command)
+* The `write_flash` optional argument `-e` can be added to
+  erase all regions of flash (not just write areas) before programming
+* For some boards with a particular FlashROM configuration you may need to
+  change the flash mode (eg by adding ``-fm dio`` into the command)
+* The filename of the firmware should match the file that you have
 
 If the above commands run without error then MicroPython should be installed on
 your board!
