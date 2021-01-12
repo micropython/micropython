@@ -8,7 +8,6 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-11 14:24+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -274,6 +273,10 @@ msgstr ""
 
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -2426,6 +2429,10 @@ msgstr ""
 msgid "circle can only be registered in one parent"
 msgstr ""
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
@@ -2508,6 +2515,10 @@ msgstr ""
 
 #: py/compile.c
 msgid "default 'except' must be last"
+msgstr ""
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -2607,6 +2618,10 @@ msgstr ""
 
 #: py/compile.c
 msgid "expecting key:value for dict"
+msgstr ""
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
 msgstr ""
 
 #: py/argcheck.c
@@ -3141,6 +3156,10 @@ msgstr ""
 msgid "no binding for nonlocal found"
 msgstr ""
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr ""
@@ -3472,6 +3491,10 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
 msgstr ""
 
 #: py/objstr.c

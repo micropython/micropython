@@ -33,8 +33,8 @@
 #include "shared-bindings/_bleio/Address.h"
 #include "shared-bindings/_bleio/Adapter.h"
 
-#define ADV_INTERVAL_MIN (0.02001f)
-#define ADV_INTERVAL_MIN_STRING "0.02001"
+#define ADV_INTERVAL_MIN (0.02f)
+#define ADV_INTERVAL_MIN_STRING "0.02"
 #define ADV_INTERVAL_MAX (10.24f)
 #define ADV_INTERVAL_MAX_STRING "10.24"
 // 20ms is recommended by Apple
@@ -204,7 +204,7 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|         :param ~_typing.ReadableBuffer scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
 //|         :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
 //|         :param bool anonymous:  If `True` then this device's MAC address is randomized before advertising.
-//|         :param int timeout:  If set, we will only advertise for this many seconds.
+//|         :param int timeout:  If set, we will only advertise for this many seconds. Zero means no timeout.
 //|         :param float interval:  advertising interval, in seconds"""
 //|         ...
 //|
@@ -237,7 +237,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
         args[ARG_interval].u_obj = mp_obj_new_float(ADV_INTERVAL_DEFAULT);
     }
 
-    const mp_float_t interval = mp_obj_float_get(args[ARG_interval].u_obj);
+    const mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
     if (interval < ADV_INTERVAL_MIN || interval > ADV_INTERVAL_MAX) {
         mp_raise_ValueError_varg(translate("interval must be in range %s-%s"),
                                  ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
@@ -279,7 +279,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_advertising_obj, bleio_adapt
 //|             ignored. Format is one byte for length (n) and n bytes of prefix and can be repeated.
 //|         :param int buffer_size: the maximum number of advertising bytes to buffer.
 //|         :param bool extended: When True, support extended advertising packets. Increasing buffer_size is recommended when this is set.
-//|         :param float timeout: the scan timeout in seconds. If None, will scan until `stop_scan` is called.
+//|         :param float timeout: the scan timeout in seconds. If None or zero, will scan until `stop_scan` is called.
 //|         :param float interval: the interval (in seconds) between the start of two consecutive scan windows
 //|            Must be in the range 0.0025 - 40.959375 seconds.
 //|         :param float window: the duration (in seconds) to scan a single BLE channel.
@@ -320,7 +320,7 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
         args[ARG_window].u_obj = mp_obj_new_float(WINDOW_DEFAULT);
     }
 
-    const mp_float_t interval = mp_obj_float_get(args[ARG_interval].u_obj);
+    const mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
     if (interval < INTERVAL_MIN || interval > INTERVAL_MAX) {
         mp_raise_ValueError_varg(translate("interval must be in range %s-%s"), INTERVAL_MIN_STRING, INTERVAL_MAX_STRING);
     }
@@ -332,7 +332,7 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
     }
 #pragma GCC diagnostic pop
 
-    const mp_float_t window = mp_obj_float_get(args[ARG_window].u_obj);
+    const mp_float_t window = mp_obj_get_float(args[ARG_window].u_obj);
     if (window > interval) {
         mp_raise_ValueError(translate("window must be <= interval"));
     }

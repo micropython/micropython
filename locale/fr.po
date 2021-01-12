@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-01 04:29+0000\n"
+"PO-Revision-Date: 2021-01-07 01:29+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -2595,7 +2595,7 @@ msgstr "les données doivent être de longueur égale"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
-msgstr ""
+msgstr "le type de donnée n'est pas reconnu"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
@@ -2913,7 +2913,7 @@ msgstr "les formes d'entrée et de sortie ne sont pas compatibles"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer, a tuple, or a list"
-msgstr ""
+msgstr "Paramètre entrant doit être un chiffre entier, un tuple, ou une liste"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
@@ -3161,7 +3161,7 @@ msgstr "maxiter devrait être > 0"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "median argument must be an ndarray"
-msgstr ""
+msgstr "Paramètre pour median doit être un ndarray"
 
 #: py/runtime.c
 #, c-format
@@ -3745,7 +3745,7 @@ msgstr "trop d'arguments fournis avec ce format"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "too many dimensions"
-msgstr ""
+msgstr "Trop de dimensions"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
@@ -3758,7 +3758,7 @@ msgstr "trop de valeur à dégrouper (%d attendues)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays"
-msgstr ""
+msgstr "trapz est défini pour tableaux à une dimension"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"

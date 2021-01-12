@@ -34,8 +34,8 @@
 
 #define AUTORESET_DELAY_MS 500
 
-// #define MICROPY_HW_APA102_MOSI   (&pin_GPIO40)
-// #define MICROPY_HW_APA102_SCK    (&pin_GPIO45)
+#define MICROPY_HW_APA102_MOSI   (&pin_GPIO40)
+#define MICROPY_HW_APA102_SCK    (&pin_GPIO45)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_MSGPACK___INIT___H
+#define MICROPY_INCLUDED_SHARED_MODULE_MSGPACK___INIT___H
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H
+#include "py/stream.h"
 
-#include <stdint.h>
+void common_hal_msgpack_pack(mp_obj_t obj, mp_obj_t stream_obj, mp_obj_t default_handler);
+mp_obj_t common_hal_msgpack_unpack(mp_obj_t stream_obj, mp_obj_t ext_hook, bool use_list);
 
-#include "common-hal/wifi/Network.h"
-
-#include "py/objstr.h"
-
-const mp_obj_type_t wifi_network_type;
-
-extern mp_obj_t common_hal_wifi_network_get_ssid(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_bssid(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_rssi(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_channel(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self);
-extern mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_NETWORK_H
+#endif

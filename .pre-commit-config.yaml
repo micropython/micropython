@@ -11,3 +11,10 @@ repos:
         exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|ports/esp32s2/esp-idf-config/.*|ports/esp32s2/boards/.*/sdkconfig)'
     -   id: trailing-whitespace
         exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*)'
+-   repo: local
+    hooks:
+    -   id: translations
+        name: Check Translations
+        entry: sh -c "make translate"
+        language: system
+        always_run: true
