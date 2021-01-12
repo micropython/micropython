@@ -99,16 +99,16 @@ And then deploy the new firmware using::
 
     esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0 esp8266-20170108-v1.8.7.bin
 
-You might need to change the "port" setting to something else relevant for your
-PC.  You may also need to reduce the baudrate if you get errors when flashing
-(eg down to 115200).  The filename of the firmware should also match the file
-that you have.
+You must use the `port <https://github.com/espressif/esptool#serial-port>`_
+setting for your operating system. You may also need to reduce the baudrate if
+you get errors when flashing (eg down to 115200).  The filename of the firmware
+should also match the file that you have.
 
 For some boards with a particular FlashROM configuration (e.g. some variants of
 a NodeMCU board) you may need to use the following command to deploy
 the firmware (note the ``-fm dio`` option)::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-20170108-v1.8.7.bin
+    esptool.py --port COM1 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-20170108-v1.8.7.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
