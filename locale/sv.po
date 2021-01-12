@@ -282,6 +282,10 @@ msgstr "0,0 till ett komplext nummer"
 msgid "3-arg pow() not supported"
 msgstr "3-arguments pow() stöds inte"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -2480,6 +2484,10 @@ msgstr "chr() arg är inte i intervallet(256)"
 msgid "circle can only be registered in one parent"
 msgstr "circle kan endast registreras i en förälder"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "färgbuffert måste vara 3 byte (RGB) eller 4 byte (RGB + pad byte)"
@@ -2563,6 +2571,10 @@ msgstr "decimaltal stöds inte"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "standard \"except\" måste ligga sist"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2665,6 +2677,10 @@ msgstr "förväntar bara ett värde för set"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "förväntar nyckel:värde för dict"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3201,6 +3217,10 @@ msgstr "ingen tillgänglig NIC"
 msgid "no binding for nonlocal found"
 msgstr "ingen bindning för ickelokal hittad"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "ingen modul med namnet '%q'"
@@ -3536,6 +3556,10 @@ msgstr "skriptkompilering stöds inte"
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "shape måste vara en tuple"
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
