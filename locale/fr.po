@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-07 01:29+0000\n"
+"PO-Revision-Date: 2021-01-12 15:40+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -288,7 +288,7 @@ msgstr "pow() non supporté avec 3 paramètres"
 
 #: shared-module/msgpack/__init__.c
 msgid "64 bit types"
-msgstr ""
+msgstr "types à 64 bit"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -2525,7 +2525,7 @@ msgstr "le cercle ne peut être enregistré que dans un seul parent"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
-msgstr ""
+msgstr "code hors bornes 0~127"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -2615,7 +2615,7 @@ msgstr "l''except' par défaut doit être en dernier"
 
 #: shared-bindings/msgpack/__init__.c
 msgid "default is not a function"
-msgstr ""
+msgstr "default n'est pas une fonction"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2720,7 +2720,7 @@ msgstr "couple clef:valeur attendu pour un dictionnaire 'dict'"
 
 #: shared-bindings/msgpack/__init__.c
 msgid "ext_hook is not a function"
-msgstr ""
+msgstr "ext_hook n'est pas une fonction"
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3263,7 +3263,7 @@ msgstr "pas de lien trouvé pour nonlocal"
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
-msgstr ""
+msgstr "aucun emballeur par défault"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -3607,7 +3607,7 @@ msgstr "forme doit être un tuple"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
-msgstr ""
+msgstr "donnée trop petite"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
