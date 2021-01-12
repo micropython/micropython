@@ -277,6 +277,10 @@ msgstr "0.0 para sa complex power"
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() hindi suportado"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -2462,6 +2466,10 @@ msgstr "chr() arg wala sa sakop ng range(256)"
 msgid "circle can only be registered in one parent"
 msgstr ""
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "color buffer ay dapat na 3 bytes (RGB) o 4 bytes (RGB + pad byte)"
@@ -2545,6 +2553,10 @@ msgstr "decimal numbers hindi sinusuportahan"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "default 'except' ay dapat sa huli"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2649,6 +2661,10 @@ msgstr "umaasa sa value para sa set"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "umaasang key: halaga para sa dict"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3187,6 +3203,10 @@ msgstr "walang magagamit na NIC"
 msgid "no binding for nonlocal found"
 msgstr "no binding para sa nonlocal, nahanap"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "walang module na '%q'"
@@ -3522,6 +3542,10 @@ msgstr "script kompilasyon hindi supportado"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
 msgstr ""
 
 #: py/objstr.c

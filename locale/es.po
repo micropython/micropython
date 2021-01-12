@@ -281,6 +281,10 @@ msgstr "0.0 a una potencia compleja"
 msgid "3-arg pow() not supported"
 msgstr "pow() con 3 argumentos no soportado"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -2491,6 +2495,10 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 msgid "circle can only be registered in one parent"
 msgstr "circulo solo puede ser registrado con un pariente"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "color buffer debe ser 3 bytes (RGB) ó 4 bytes (RGB + pad byte)"
@@ -2574,6 +2582,10 @@ msgstr "números decimales no soportados"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "'except' por defecto deberia estar de último"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2675,6 +2687,10 @@ msgstr "esperando solo un valor para set"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "esperando la clave:valor para dict"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3211,6 +3227,10 @@ msgstr "NIC no disponible"
 msgid "no binding for nonlocal found"
 msgstr "no se ha encontrado ningún enlace para nonlocal"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "ningún módulo se llama '%q'"
@@ -3548,6 +3568,10 @@ msgstr "script de compilación no soportado"
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "forma tiene que ser una tupla"
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
