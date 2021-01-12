@@ -286,6 +286,10 @@ msgstr "0,0 para uma potência complexa"
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() não compatível"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -2506,6 +2510,10 @@ msgstr "o arg chr() está fora do intervalo(256)"
 msgid "circle can only be registered in one parent"
 msgstr "o círculo só pode ser registrado em um pai"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "o buffer das cores deve ter 3 bytes (RGB) ou 4 bytes (RGB + pad byte)"
@@ -2591,6 +2599,10 @@ msgstr "os números decimais não são compatíveis"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "a predefinição 'exceto' deve ser o último"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2693,6 +2705,10 @@ msgstr "esperando apenas um valor para o conjunto"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "chave esperada: valor para dict"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3232,6 +3248,10 @@ msgstr "não há uma Placa de Rede disponível"
 msgid "no binding for nonlocal found"
 msgstr "nenhuma ligação para nonlocal foi encontrada"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "nenhum módulo chamado '%q'"
@@ -3571,6 +3591,10 @@ msgstr "compilação de script não suportada"
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "a forma deve ser uma tupla"
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
