@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
-#define MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
+#pragma once
 
-#include "esp_err.h"
-#include "py/mpconfig.h"
-#include "py/obj.h"
+#include "supervisor/background_callback.h"
+#include "common-hal/microcontroller/Pin.h"
 
-extern const mp_obj_type_t mp_type_espidf_IDFError;
-extern const mp_obj_type_t mp_type_espidf_MemoryError;
+#include "common-hal/audiobusio/__init__.h"
 
-NORETURN void mp_raise_espidf_MemoryError(void);
+// Some boards don't implement I2SOut, so suppress any routines from here.
+#if CIRCUITPY_AUDIOBUSIO_I2SOUT
 
-void raise_esp_error(esp_err_t err) NORETURN;
-#define CHECK_ESP_RESULT(x) do { int res = (x); if(res != ESP_OK) raise_esp_error(res); } while(0)
+typedef struct {
+    mp_obj_base_t base;
+    i2s_t peripheral;
+    const mcu_pin_obj_t *bit_clock;
+    const mcu_pin_obj_t *word_select;
+    const mcu_pin_obj_t *data;
+} audiobusio_i2sout_obj_t;
 
-#endif  // MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
+#endif
