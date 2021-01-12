@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 23:04-0500\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2020-12-23 20:14+0000\n"
 "Last-Translator: _fonzlate <vooralfred@gmail.com>\n"
 "Language-Team: none\n"
@@ -1183,6 +1183,7 @@ msgstr "Ongeldige fase"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 #: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1506,6 +1507,10 @@ msgstr ""
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Slechts één alarm.time alarm kan worden ingesteld."
+
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one alarm.touch alarm can be set."
+msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -2547,6 +2552,10 @@ msgstr "data moet itereerbaar zijn"
 msgid "data must be of equal length"
 msgstr "data moet van gelijke lengte zijn"
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr ""
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "decimale getallen zijn niet ondersteund"
@@ -2860,8 +2869,8 @@ msgid "input and output shapes are not compatible"
 msgstr "in- en uitvoervormen zijn niet compatibel"
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
-msgstr "invoerargument moet een integer of 2-tuple zijn"
+msgid "input argument must be an integer, a tuple, or a list"
+msgstr ""
 
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
@@ -3106,6 +3115,10 @@ msgstr "maxiter moet groter dan 0 zijn"
 msgid "maxiter should be > 0"
 msgstr "maxiter moet groter dan 0 zijn"
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3334,10 +3347,6 @@ msgstr "operands konden niet samen verzonden worden"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr "operatie is alleen geïmplementeerd voor 1D Booleaanse arrays"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
-msgstr "operatie is niet geïmplementeerd voor vlakke array"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3685,6 +3694,10 @@ msgstr "tobytes kunnen alleen ingeroepen worden voor gesloten arrays"
 msgid "too many arguments provided with the given format"
 msgstr "te veel argumenten opgegeven bij dit formaat"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "te veel indices"
@@ -3695,16 +3708,16 @@ msgid "too many values to unpack (expected %d)"
 msgstr "te veel waarden om uit te pakken (%d verwacht)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr "triggerniveau moet 0 of 1 zijn"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "tuple index buiten bereik"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3919,6 +3932,15 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "invoerargument moet een integer of 2-tuple zijn"
+
+#~ msgid "operation is not implemented for flattened array"
+#~ msgstr "operatie is niet geïmplementeerd voor vlakke array"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "tuple index buiten bereik"
 
 #~ msgid ""
 #~ "\n"

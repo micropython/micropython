@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-30 17:42-0600\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2021-01-11 19:30-0600\n
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -278,6 +278,10 @@ msgstr ""
 
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -1867,10 +1871,6 @@ msgstr ""
 msgid "Total data to write is larger than outgoing_packet_length"
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-msgid "TouchAlarm not available in light sleep"
-msgstr ""
-
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr ""
@@ -2434,6 +2434,10 @@ msgstr ""
 msgid "circle can only be registered in one parent"
 msgstr ""
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
@@ -2506,12 +2510,20 @@ msgstr ""
 msgid "data must be of equal length"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr ""
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr ""
 
 #: py/compile.c
 msgid "default 'except' must be last"
+msgstr ""
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -2611,6 +2623,10 @@ msgstr ""
 
 #: py/compile.c
 msgid "expecting key:value for dict"
+msgstr ""
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
 msgstr ""
 
 #: py/argcheck.c
@@ -2816,7 +2832,7 @@ msgid "input and output shapes are not compatible"
 msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
+msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
 
 #: extmod/ulab/code/fft/fft.c
@@ -3059,6 +3075,10 @@ msgstr ""
 msgid "maxiter should be > 0"
 msgstr ""
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3139,6 +3159,10 @@ msgstr ""
 
 #: py/compile.c
 msgid "no binding for nonlocal found"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
 msgstr ""
 
 #: py/builtinimport.c
@@ -3290,10 +3314,6 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
 msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
@@ -3482,6 +3502,10 @@ msgstr ""
 msgid "shape must be a tuple"
 msgstr ""
 
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr ""
+
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
 msgstr ""
@@ -3639,6 +3663,10 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr ""
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr ""
@@ -3649,15 +3677,15 @@ msgid "too many values to unpack (expected %d)"
 msgstr ""
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
 msgstr ""
 
 #: py/obj.c

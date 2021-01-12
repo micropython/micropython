@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 23:04-0500\n"
-"PO-Revision-Date: 2020-12-29 16:08+0000\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
+"PO-Revision-Date: 2021-01-05 21:03+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1199,6 +1199,7 @@ msgstr "Fase Inválida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 #: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1521,6 +1522,10 @@ msgstr ""
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Apenas um alarme alarm.time pode ser definido."
+
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one alarm.touch alarm can be set."
+msgstr "Apenas um alarme alarm.touch pode ser definido."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -2575,6 +2580,10 @@ msgstr "os dados devem ser iteráveis"
 msgid "data must be of equal length"
 msgstr "os dados devem ser de igual comprimento"
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr "o tipo do dado não foi compreendido"
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "os números decimais não são compatíveis"
@@ -2888,8 +2897,9 @@ msgid "input and output shapes are not compatible"
 msgstr "as formas de entrada e saída não são compatíveis"
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
-msgstr "o argumento da entrada deve ser um número inteiro ou uma tupla de 2"
+msgid "input argument must be an integer, a tuple, or a list"
+msgstr ""
+"argumento da entrada deve ser um número inteiro, uma tupla ou uma lista"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
@@ -3134,6 +3144,10 @@ msgstr "maxiter deve ser > 0"
 msgid "maxiter should be > 0"
 msgstr "maxiter pode ser > 0"
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr "o argumento mediano deve ser um ndarray"
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3365,10 +3379,6 @@ msgstr "os operandos não puderam ser transmitidos juntos"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr "A operação é implementada apenas para matrizes booleanas 1D"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
-msgstr "a operação não é implementada para a matriz achatada"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3719,6 +3729,10 @@ msgstr "os tobytes podem ser invocados apenas nas matrizes densas"
 msgid "too many arguments provided with the given format"
 msgstr "Muitos argumentos fornecidos com o formato dado"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr "dimensões demais"
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "índices demais"
@@ -3729,16 +3743,16 @@ msgid "too many values to unpack (expected %d)"
 msgstr "valores demais para descompactar (esperado %d)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr "Trapz está definido para arrays 1D"
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "o trapz está definido para 1D arrays de igual tamanho"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr "nível do gatilho deve ser 0 ou 1"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "o índice da tupla está fora do intervalo"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3953,6 +3967,18 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "TouchAlarm not available in light sleep"
+#~ msgstr "O TouchAlarm não está disponívle no modo light sleep"
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "o argumento da entrada deve ser um número inteiro ou uma tupla de 2"
+
+#~ msgid "operation is not implemented for flattened array"
+#~ msgstr "a operação não é implementada para a matriz achatada"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "o índice da tupla está fora do intervalo"
 
 #~ msgid ""
 #~ "\n"

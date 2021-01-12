@@ -178,7 +178,7 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
 
     struct sockaddr_in source_addr;
     socklen_t socklen = sizeof(source_addr);
-    int bytes_received = lwip_recvfrom(self->num, buf, len - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+    int bytes_received = lwip_recvfrom(self->num, buf, len, 0, (struct sockaddr *)&source_addr, &socklen);
 
     memcpy((void *)ip, (void*)&source_addr.sin_addr.s_addr, sizeof source_addr.sin_addr.s_addr);
     *port = source_addr.sin_port;
@@ -186,10 +186,9 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
     if (bytes_received < 0) {
         mp_raise_BrokenPipeError();
         return 0;
-    } else {
-        buf[bytes_received] = 0; // Null-terminate whatever we received
-        return bytes_received;
     }
+
+    return bytes_received;
 }
 
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {

@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 23:04-0500\n"
-"PO-Revision-Date: 2020-11-27 18:34+0000\n"
-"Last-Translator: Iván Montiel Cardona <ivan_montiel2013@hotmail.com>\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
+"PO-Revision-Date: 2020-12-30 22:25+0000\n"
+"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: main.c
 msgid ""
@@ -1190,6 +1190,7 @@ msgstr "Fase inválida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 #: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1236,7 +1237,7 @@ msgstr "Modo de ejecución inválido."
 
 #: shared-module/_bleio/Attribute.c
 msgid "Invalid security_mode"
-msgstr "Modo de seguridad no válido"
+msgstr "'security_mode' no válido"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1276,7 +1277,7 @@ msgstr "Length debe ser un int"
 
 #: py/objslice.c
 msgid "Length must be non-negative"
-msgstr "Longitud no deberia ser negativa"
+msgstr "Length no deberia ser negativa"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1512,6 +1513,10 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one alarm.touch alarm can be set."
 msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
@@ -2558,6 +2563,10 @@ msgstr "los datos deben permitir iteración"
 msgid "data must be of equal length"
 msgstr "los datos deben ser de igual tamaño"
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr ""
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "números decimales no soportados"
@@ -2870,8 +2879,8 @@ msgid "input and output shapes are not compatible"
 msgstr "Formas de entrada y salida no son compactibles"
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
-msgstr "el argumento de entrada debe ser un entero o una tupla de par"
+msgid "input argument must be an integer, a tuple, or a list"
+msgstr ""
 
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
@@ -3116,6 +3125,10 @@ msgstr "maxiter tiene que ser > 0"
 msgid "maxiter should be > 0"
 msgstr "maxiter debe ser > 0"
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3347,10 +3360,6 @@ msgstr "los operandos no se pueden transmitir juntos"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr "operación solo está implementada para arrays booleanos de 1D"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
-msgstr "operación no está implementada para arrays aplanados"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3698,6 +3707,10 @@ msgstr "tobytes solo pueden ser invocados por arrays densos"
 msgid "too many arguments provided with the given format"
 msgstr "demasiados argumentos provistos con el formato dado"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "demasiados índices"
@@ -3708,16 +3721,16 @@ msgid "too many values to unpack (expected %d)"
 msgstr "demasiados valores para descomprimir (%d esperado)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz está definido para arreglos 1D de igual tamaño"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "tuple index fuera de rango"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3932,6 +3945,15 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "el argumento de entrada debe ser un entero o una tupla de par"
+
+#~ msgid "operation is not implemented for flattened array"
+#~ msgstr "operación no está implementada para arrays aplanados"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "tuple index fuera de rango"
 
 #~ msgid ""
 #~ "\n"

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 23:04-0500\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2018-12-20 22:15-0800\n"
 "Last-Translator: Timothy <me@timothygarcia.ca>\n"
 "Language-Team: fil\n"
@@ -1184,6 +1184,7 @@ msgstr "Mali ang phase"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 #: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1503,6 +1504,10 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one alarm.touch alarm can be set."
 msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
@@ -2529,6 +2534,10 @@ msgstr ""
 msgid "data must be of equal length"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr ""
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "decimal numbers hindi sinusuportahan"
@@ -2845,7 +2854,7 @@ msgid "input and output shapes are not compatible"
 msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
+msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
 
 #: extmod/ulab/code/fft/fft.c
@@ -3092,6 +3101,10 @@ msgstr ""
 msgid "maxiter should be > 0"
 msgstr ""
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3320,10 +3333,6 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
 msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
@@ -3674,6 +3683,10 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr "masyadong maraming mga argumento na ibinigay sa ibinigay na format"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr ""
@@ -3684,16 +3697,16 @@ msgid "too many values to unpack (expected %d)"
 msgstr "masyadong maraming values para i-unpact (umaasa ng %d)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "indeks ng tuple wala sa sakop"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3910,6 +3923,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "tuple index out of range"
+#~ msgstr "indeks ng tuple wala sa sakop"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr ""
