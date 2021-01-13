@@ -67,7 +67,7 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6
-//|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
+//|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW"""
 //|         ...
 //|
 
