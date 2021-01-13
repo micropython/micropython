@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-12 15:40+0000\n"
+"PO-Revision-Date: 2021-01-13 16:07+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -127,7 +127,7 @@ msgstr "%q() prend %d paramètres positionnels mais %d ont été donnés"
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
-msgstr ""
+msgstr "%s erreur 0x%x"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
@@ -563,7 +563,7 @@ msgstr "Les blocs CBC doivent être des multiples de 16 octets"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "CRC or checksum was invalid"
-msgstr ""
+msgstr "CRC ou somme de contrôle invalide"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -1033,7 +1033,7 @@ msgstr "La fonction nécessite un verrou ('lock')"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Generic Failure"
-msgstr ""
+msgstr "Échec génerique"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1275,11 +1275,11 @@ msgstr "'security_mode' invalide"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid size"
-msgstr ""
+msgstr "Taille invalide"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
-msgstr ""
+msgstr "État invalide"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1323,7 +1323,7 @@ msgstr "Length ne doit pas être négatif"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "MAC address was invalid"
-msgstr ""
+msgstr "Adresse physique (MAC) invalide"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1559,7 +1559,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
-msgstr ""
+msgstr "Seulement une TouchAlarm peu être réglée en someil profond."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
@@ -1575,15 +1575,15 @@ msgstr "IP n'accepte que les chiffres entiers bruts"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
-msgstr ""
+msgstr "Opération ou fonction non supportée"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation timed out"
-msgstr ""
+msgstr "Timeout de l'opération"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
-msgstr ""
+msgstr "Hors de mémoire"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
@@ -1595,7 +1595,7 @@ msgstr "Le sur-échantillonage doit être un multiple de 8."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "PDMIn not available"
-msgstr ""
+msgstr "PDMIn non disponible"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1619,7 +1619,7 @@ msgstr "ParallelBus pas encore supporté"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
-msgstr ""
+msgstr "Périphérique en utilisation"
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1750,7 +1750,7 @@ msgstr "Objet en lecture seule"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Received response was invalid"
-msgstr ""
+msgstr "Réponse reçue invalide"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1766,7 +1766,7 @@ msgstr "Le mode AES demandé n'est pas supporté"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Requested resource not found"
-msgstr ""
+msgstr "Resource demandée non trouvée"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -2158,7 +2158,7 @@ msgstr "Longueur de la valeur > max_length"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Version was invalid"
-msgstr ""
+msgstr "Version est invalide"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -4044,7 +4044,7 @@ msgstr "valeur x hors limites"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
-msgstr ""
+msgstr "Échec de xTaskCreate"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
