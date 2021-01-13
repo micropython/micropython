@@ -116,6 +116,11 @@ msgstr "%q moet een int zijn"
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() verwacht %d positionele argumenten maar kreeg %d"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#, c-format
+msgid "%s error 0x%x"
+msgstr ""
+
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' argument vereist"
@@ -277,6 +282,10 @@ msgstr "0.0 tot een complexe macht"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() niet ondersteund"
+
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -539,6 +548,10 @@ msgstr "Bytes moeten tussen 0 en 255 liggen."
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBC blocks moeten meervouden van 16 bytes zijn"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "CRC or checksum was invalid"
+msgstr ""
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -995,6 +1008,10 @@ msgstr ""
 msgid "Function requires lock"
 msgstr "Functie vereist lock"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Generic Failure"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -1123,6 +1140,7 @@ msgstr "Ongeldige PWM frequentie"
 msgid "Invalid Pin"
 msgstr "Ongeldige Pin"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Ongeldig argument"
@@ -1232,6 +1250,14 @@ msgstr "Ongeldige run modus."
 msgid "Invalid security_mode"
 msgstr "Ongeldige security_mode"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid size"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid state"
+msgstr ""
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
 msgstr "Ongeldige stem"
@@ -1271,6 +1297,10 @@ msgstr "Lengte moet een int zijn"
 #: py/objslice.c
 msgid "Length must be non-negative"
 msgstr "Lengte moet niet negatief zijn"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "MAC address was invalid"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1504,13 +1534,13 @@ msgstr ""
 "Alleen monochrome en 4bpp of 8bpp, en 16bpp of grotere geïndiceerde BMP's "
 "zijn ondersteund: %d bpp is gegeven"
 
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one TouchAlarm can be set in deep sleep."
+msgstr ""
+
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Slechts één alarm.time alarm kan worden ingesteld."
-
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-msgid "Only one alarm.touch alarm can be set."
-msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1520,6 +1550,18 @@ msgstr "Er kan maar één kleur per keer transparant zijn"
 msgid "Only raw int supported for ip"
 msgstr "Alleen raw int ondersteund voor IP"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation or feature not supported"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation timed out"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Out of memory"
+msgstr ""
+
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Geen sockets meer beschikbaar"
@@ -1527,6 +1569,10 @@ msgstr "Geen sockets meer beschikbaar"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Oversample moet een meervoud van 8 zijn."
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "PDMIn not available"
+msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1546,6 +1592,10 @@ msgstr ""
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus nog niet ondersteund"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "Peripheral in use"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1673,6 +1723,10 @@ msgstr "Alleen-lezen bestandssysteem"
 msgid "Read-only object"
 msgstr "Alleen-lezen object"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Received response was invalid"
+msgstr ""
+
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "Verversing te snel"
@@ -1684,6 +1738,10 @@ msgstr "RemoteTransmissionRequests is beperkt tot 8 bytes"
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "Gevraagde AES modus is niet ondersteund"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Requested resource not found"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -2066,6 +2124,10 @@ msgstr "Waarde lengte != vereist vaste lengte"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
 msgstr "Waarde length > max_length"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Version was invalid"
+msgstr ""
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -2480,6 +2542,10 @@ msgid "circle can only be registered in one parent"
 msgstr ""
 "cirkel kan slechts bij één object van een hoger niveau worden geregistreerd"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "kleurbuffer moet 3 bytes (RGB) of 4 bytes (RGB + pad byte) zijn"
@@ -2563,6 +2629,10 @@ msgstr "decimale getallen zijn niet ondersteund"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "standaard 'expect' moet laatste zijn"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2664,6 +2734,10 @@ msgstr "verwacht alleen een waarde voor set"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "verwacht key:waarde for dict"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3201,6 +3275,10 @@ msgstr "geen netwerkadapter (NIC) beschikbaar"
 msgid "no binding for nonlocal found"
 msgstr "geen binding voor nonlocal gevonden"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "geen module met naam '%q'"
@@ -3439,6 +3517,8 @@ msgstr "derde argument van pow() mag geen 0 zijn"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() met 3 argumenten vereist integers"
 
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -3536,6 +3616,10 @@ msgstr "scriptcompilatie wordt niet ondersteund"
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "vorm moet een tupel zijn"
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3908,6 +3992,10 @@ msgstr "onjuist uitvoer type"
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
 msgstr "x-waarde buiten bereik"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "xTaskCreate failed"
+msgstr ""
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
