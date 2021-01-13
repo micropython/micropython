@@ -261,6 +261,7 @@ jobs:
         - "monster_m4sk"
         - "ndgarage_ndbit6"
         - "ndgarage_ndbit6_v2"
+        - "neopixel_trinkey_m0"
         - "nfc_copy_cat"
         - "nice_nano"
         - "nucleo_f746zg"
