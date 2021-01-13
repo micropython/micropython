@@ -299,7 +299,7 @@ ESP_AUTOGEN_LD = $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld $(BUILD)/esp-id
 
 FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
 
-ESPTOOL_FLAGS ?= -b 460800 --before=default_reset --after=no_reset write_flash
+ESPTOOL_FLAGS ?= -b 460800 --before=default_reset --after=no_reset
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
