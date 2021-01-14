@@ -27,7 +27,7 @@
 
 #include "nrfx/hal/nrf_gpio.h"
 
-#define MICROPY_HW_BOARD_NAME       "TG-Watch02"
+#define MICROPY_HW_BOARD_NAME       "TG-Watch"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
 #define MICROPY_HW_NEOPIXEL         (&pin_P0_16)

@@ -168,3 +168,6 @@
 [submodule "frozen/Adafruit_CircuitPython_ProgressBar"]
 	path = frozen/Adafruit_CircuitPython_ProgressBar
 	url = https://github.com/adafruit/Adafruit_CircuitPython_ProgressBar
+[submodule "frozen/Adafruit_CircuitPython_LC709203F"]
+	path = frozen/Adafruit_CircuitPython_LC709203F
+	url = https://github.com/adafruit/Adafruit_CircuitPython_LC709203F
