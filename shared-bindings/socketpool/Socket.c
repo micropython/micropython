@@ -115,14 +115,7 @@ STATIC mp_obj_t socketpool_socket_accept(mp_obj_t self_in) {
     uint8_t ip[4];
     uint port;
 
-    int socknum = common_hal_socketpool_socket_accept(self, ip, &port);
-
-    socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
-    sock->base.type = &socketpool_socket_type;
-    sock->num = socknum;
-    sock->tls = NULL;
-    sock->ssl_context = NULL;
-    sock->pool = self->pool;
+    socketpool_socket_obj_t * sock = common_hal_socketpool_socket_accept(self, ip, &port);
 
     mp_obj_t tuple_contents[2];
     tuple_contents[0] = MP_OBJ_FROM_PTR(sock);
