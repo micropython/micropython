@@ -157,14 +157,15 @@ def update_mboot(filename):
 
 
 def update_mpy(filename, fs_base, fs_len, fs_type=VFS_FAT):
-    # Check firmware is of .dfu.gz type
+    # Check firmware is of .dfu or .dfu.gz type
     try:
         with open(filename, "rb") as f:
             hdr = uzlib.DecompIO(f, 16 + 15).read(6)
     except Exception:
-        hdr = None
+        with open(filename, "rb") as f:
+            hdr = f.read(6)
     if hdr != b"DfuSe\x01":
-        print("Firmware must be a .dfu.gz file.")
+        print("Firmware must be a .dfu(.gz) file.")
         return
 
     ELEM_TYPE_END = 1

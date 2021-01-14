@@ -28,6 +28,7 @@
 
 #include "py/mphal.h"
 #include "mboot.h"
+#include "pack.h"
 #include "vfs.h"
 
 #if MBOOT_FSLOAD
@@ -36,13 +37,43 @@
 #error Must enable at least one VFS component
 #endif
 
+#if MBOOT_ENABLE_PACKING
+// Packed DFU files are gzip'd internally, not on the outside, so reads of the file
+// just read the file directly.
+
+static void *input_stream_data;
+static stream_read_t input_stream_read_meth;
+
+static inline int input_stream_init(void *stream_data, stream_read_t stream_read) {
+    input_stream_data = stream_data;
+    input_stream_read_meth = stream_read;
+    return 0;
+}
+
+static inline int input_stream_read(size_t len, uint8_t *buf) {
+    return input_stream_read_meth(input_stream_data, buf, len);
+}
+
+#else
+// Standard (non-packed) DFU files must be gzip'd externally / on the outside, so
+// reads of the file go through gz_stream.
+
+static inline int input_stream_init(void *stream_data, stream_read_t stream_read) {
+    return gz_stream_init_from_stream(stream_data, stream_read);
+}
+
+static inline int input_stream_read(size_t len, uint8_t *buf) {
+    return gz_stream_read(len, buf);
+}
+#endif
+
 static int fsload_program_file(bool write_to_flash) {
     // Parse DFU
     uint8_t buf[512];
     size_t file_offset;
 
     // Read file header, <5sBIB
-    int res = gz_stream_read(11, buf);
+    int res = input_stream_read(11, buf);
     if (res != 11) {
         return -1;
     }
@@ -62,7 +93,7 @@ static int fsload_program_file(bool write_to_flash) {
     uint32_t total_size = get_le32(buf + 6);
 
     // Read target header, <6sBi255sII
-    res = gz_stream_read(274, buf);
+    res = input_stream_read(274, buf);
     if (res != 274) {
         return -1;
     }
@@ -82,7 +113,7 @@ static int fsload_program_file(bool write_to_flash) {
     // Parse each element
     for (size_t elem = 0; elem < num_elems; ++elem) {
         // Read element header, <II
-        res = gz_stream_read(8, buf);
+        res = input_stream_read(8, buf);
         if (res != 8) {
             return -1;
         }
@@ -92,6 +123,7 @@ static int fsload_program_file(bool write_to_flash) {
         uint32_t elem_addr = get_le32(buf);
         uint32_t elem_size = get_le32(buf + 4);
 
+        #if !MBOOT_ENABLE_PACKING
         // Erase flash before writing
         if (write_to_flash) {
             uint32_t addr = elem_addr;
@@ -102,6 +134,7 @@ static int fsload_program_file(bool write_to_flash) {
                 }
             }
         }
+        #endif
 
         // Read element data and possibly write to flash
         for (uint32_t s = elem_size; s;) {
@@ -109,7 +142,7 @@ static int fsload_program_file(bool write_to_flash) {
             if (l > sizeof(buf)) {
                 l = sizeof(buf);
             }
-            res = gz_stream_read(l, buf);
+            res = input_stream_read(l, buf);
             if (res != l) {
                 return -1;
             }
@@ -135,7 +168,7 @@ static int fsload_program_file(bool write_to_flash) {
     }
 
     // Read trailing info
-    res = gz_stream_read(16, buf);
+    res = input_stream_read(16, buf);
     if (res != 16) {
         return -1;
     }
@@ -151,7 +184,7 @@ static int fsload_validate_and_program_file(void *stream, const stream_methods_t
         led_state_all(pass == 0 ? 2 : 4);
         int res = meth->open(stream, fname);
         if (res == 0) {
-            res = gz_stream_init(stream, meth->read);
+            res = input_stream_init(stream, meth->read);
             if (res == 0) {
                 res = fsload_program_file(pass == 0 ? false : true);
             }

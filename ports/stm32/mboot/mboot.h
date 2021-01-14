@@ -36,6 +36,9 @@
 #define ELEM_DATA_START (&_estack[0])
 #define ELEM_DATA_MAX (&_estack[ELEM_DATA_SIZE])
 
+#define NORETURN __attribute__((noreturn))
+#define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
 enum {
     ELEM_TYPE_END = 1,
     ELEM_TYPE_MOUNT,
@@ -52,6 +55,10 @@ extern uint8_t _estack[ELEM_DATA_SIZE];
 
 uint32_t get_le32(const uint8_t *b);
 void led_state_all(unsigned int mask);
+
+int hw_page_erase(uint32_t addr, uint32_t *next_addr);
+void hw_read(uint32_t addr, int len, uint8_t *buf);
+int hw_write(uint32_t addr, const uint8_t *src8, size_t len);
 
 int do_page_erase(uint32_t addr, uint32_t *next_addr);
 void do_read(uint32_t addr, int len, uint8_t *buf);

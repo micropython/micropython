@@ -31,7 +31,7 @@
 #include "gzstream.h"
 #include "mboot.h"
 
-#if MBOOT_FSLOAD
+#if MBOOT_FSLOAD || MBOOT_ENABLE_PACKING
 
 #define DICT_SIZE (1 << 15)
 
@@ -61,7 +61,17 @@ static int gz_stream_read_src(TINF_DATA *tinf) {
     return gz_stream.buf[0];
 }
 
-int gz_stream_init(void *stream_data, stream_read_t stream_read) {
+int gz_stream_init_from_raw_data(const uint8_t *data, size_t len) {
+    memset(&gz_stream.tinf, 0, sizeof(gz_stream.tinf));
+    gz_stream.tinf.source = data;
+    gz_stream.tinf.source_limit = data + len;
+
+    uzlib_uncompress_init(&gz_stream.tinf, gz_stream.dict, DICT_SIZE);
+
+    return 0;
+}
+
+int gz_stream_init_from_stream(void *stream_data, stream_read_t stream_read) {
     gz_stream.stream_data = stream_data;
     gz_stream.stream_read = stream_read;
 
@@ -97,4 +107,4 @@ int gz_stream_read(size_t len, uint8_t *buf) {
     return gz_stream.tinf.dest - buf;
 }
 
-#endif // MBOOT_FSLOAD
+#endif // MBOOT_FSLOAD || MBOOT_ENABLE_PACKING

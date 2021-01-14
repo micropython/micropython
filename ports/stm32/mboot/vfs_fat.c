@@ -42,7 +42,7 @@ DRESULT disk_read(void *pdrv, BYTE *buf, DWORD sector, UINT count) {
     vfs_fat_context_t *ctx = pdrv;
 
     if (0 <= sector && sector < ctx->bdev_byte_len / 512) {
-        do_read(ctx->bdev_base_addr + sector * SECSIZE, count * SECSIZE, buf);
+        hw_read(ctx->bdev_base_addr + sector * SECSIZE, count * SECSIZE, buf);
         return RES_OK;
     }
 

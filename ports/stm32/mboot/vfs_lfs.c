@@ -72,7 +72,7 @@ static uint8_t lfs_lookahead_buffer[LFS_LOOKAHEAD_SIZE];
 static int dev_read(const struct LFSx_API (config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, void *buffer, LFSx_API(size_t) size) {
     VFS_LFSx_CONTEXT_T *ctx = c->context;
     if (0 <= block && block < ctx->config.block_count) {
-        do_read(ctx->bdev_base_addr + block * ctx->config.block_size + off, size, buffer);
+        hw_read(ctx->bdev_base_addr + block * ctx->config.block_size + off, size, buffer);
         return LFSx_MACRO(_ERR_OK);
     }
     return LFSx_MACRO(_ERR_IO);
@@ -93,7 +93,7 @@ static int dev_sync(const struct LFSx_API (config) * c) {
 int VFS_LFSx_MOUNT(VFS_LFSx_CONTEXT_T *ctx, uint32_t base_addr, uint32_t byte_len) {
     // Read start of superblock.
     uint8_t buf[48];
-    do_read(base_addr, sizeof(buf), buf);
+    hw_read(base_addr, sizeof(buf), buf);
 
     // Verify littlefs and detect block size.
     if (memcmp(&buf[SUPERBLOCK_MAGIC_OFFSET], "littlefs", 8) != 0) {

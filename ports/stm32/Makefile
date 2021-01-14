@@ -30,7 +30,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES = lib/lwip lib/mbedtls lib/mynewt-nimble lib/stm32lib
+GIT_SUBMODULES = lib/libhydrogen lib/lwip lib/mbedtls lib/mynewt-nimble lib/stm32lib
 
 MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
@@ -41,6 +41,7 @@ HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 DFU=$(TOP)/tools/dfu.py
+MBOOT_PACK_DFU = mboot/mboot_pack_dfu.py
 # may need to prefix dfu-util with sudo
 USE_PYDFU ?= 1
 PYDFU ?= $(TOP)/tools/pydfu.py
@@ -546,7 +547,13 @@ $(PY_BUILD)/formatfloat.o: COPT += -Os
 $(PY_BUILD)/parsenum.o: COPT += -Os
 $(PY_BUILD)/mpprint.o: COPT += -Os
 
-all: $(TOP)/lib/stm32lib/README.md $(BUILD)/firmware.dfu $(BUILD)/firmware.hex
+all: $(TOP)/lib/stm32lib/README.md all_main $(BUILD)/firmware.hex
+
+ifeq ($(MBOOT_ENABLE_PACKING),1)
+all_main: $(BUILD)/firmware.pack.dfu
+else
+all_main: $(BUILD)/firmware.dfu
+endif
 
 # For convenience, automatically fetch required submodules if they don't exist
 $(TOP)/lib/stm32lib/README.md:
@@ -607,6 +614,11 @@ define GENERATE_DFU
 	$(1)
 endef
 
+define GENERATE_PACK_DFU
+	$(ECHO) "GEN $(1)"
+	$(Q)$(PYTHON) $(MBOOT_PACK_DFU) --keys $(MBOOT_PACK_KEYS_FILE) pack-dfu --gzip $(MBOOT_PACK_CHUNKSIZE) $(2) $(1)
+endef
+
 define GENERATE_HEX
 	$(ECHO) "GEN $(1)"
 	$(Q)$(OBJCOPY) -O ihex $(2) $(1)
@@ -614,8 +626,13 @@ endef
 
 .PHONY: deploy deploy-stlink deploy-openocd
 
+ifeq ($(MBOOT_ENABLE_PACKING),1)
+deploy: $(BUILD)/firmware.pack.dfu
+	$(call RUN_DFU,$^)
+else
 deploy: $(BUILD)/firmware.dfu
 	$(call RUN_DFU,$^)
+endif
 
 # A board should specify TEXT0_ADDR if to use a different location than the
 # default for the firmware memory location.  A board can also optionally define
@@ -661,6 +678,9 @@ $(BUILD)/firmware1.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.dfu: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
 	$(call GENERATE_DFU,$@,$(word 1,$^),$(TEXT0_ADDR),$(word 2,$^),$(TEXT1_ADDR))
 endif
+
+$(BUILD)/firmware.pack.dfu: $(BUILD)/firmware.dfu $(BOARD_DIR)/mboot_keys.h
+	$(call GENERATE_PACK_DFU,$@,$<)
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(call GENERATE_HEX,$@,$^)
