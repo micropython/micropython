@@ -92,9 +92,9 @@ STATIC mp_obj_t _get_wake_alarm(size_t n_alarms, const mp_obj_t *alarms) {
             return alarm_pin_pinalarm_get_wakeup_alarm(n_alarms, alarms);
         }
 
-        case ESP_SLEEP_WAKEUP_TOUCHPAD:
+        case ESP_SLEEP_WAKEUP_TOUCHPAD: {
             return alarm_touch_touchalarm_get_wakeup_alarm(n_alarms, alarms);
-            break;
+        }
 
         case ESP_SLEEP_WAKEUP_UNDEFINED:
         default:
