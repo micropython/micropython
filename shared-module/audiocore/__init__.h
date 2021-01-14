@@ -74,4 +74,12 @@ void audiosample_get_buffer_structure(mp_obj_t sample_obj, bool single_channel,
                                       bool* single_buffer, bool* samples_signed,
                                       uint32_t* max_buffer_length, uint8_t* spacing);
 
+void audiosample_convert_u8m_s16s(int16_t *buffer_out, const uint8_t *buffer_in, size_t nframes);
+void audiosample_convert_u8s_s16s(int16_t *buffer_out, const uint8_t *buffer_in, size_t nframes);
+void audiosample_convert_s8m_s16s(int16_t *buffer_out, const int8_t *buffer_in, size_t nframes);
+void audiosample_convert_s8s_s16s(int16_t *buffer_out, const int8_t *buffer_in, size_t nframes);
+void audiosample_convert_u16m_s16s(int16_t *buffer_out, const uint16_t *buffer_in, size_t nframes);
+void audiosample_convert_u16s_s16s(int16_t *buffer_out, const uint16_t *buffer_in, size_t nframes);
+void audiosample_convert_s16m_s16s(int16_t *buffer_out, const int16_t *buffer_in, size_t nframes);
+
 #endif  // MICROPY_INCLUDED_SHARED_MODULE_AUDIOCORE__INIT__H

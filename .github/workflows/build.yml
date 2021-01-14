@@ -43,6 +43,32 @@ jobs:
       run: |
         gcc --version
         python3 --version
+    - name: Translations
+      run: make check-translate
+    - name: New boards check
+      run: python3 -u ci_new_boards_check.py
+      working-directory: tools
+    - name: Duplicate USB VID/PID Check
+      run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
+    - name: Build and Validate Stubs
+      run: make check-stubs -j2
+    - uses: actions/upload-artifact@v2
+      with:
+        name: stubs
+        path: circuitpython-stubs*
+    - name: Test Documentation Build (HTML)
+      run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
+    - uses: actions/upload-artifact@v2
+      with:
+        name: docs
+        path: _build/html
+    - name: Test Documentation Build (LaTeX/PDF)
+      run: |
+        make latexpdf
+    - uses: actions/upload-artifact@v2
+      with:
+        name: docs
+        path: _build/latex
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - name: Build unix port
@@ -68,32 +94,6 @@ jobs:
     - name: mpy Tests
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython_coverage ./run-tests -j1 --via-mpy -d basics float
       working-directory: tests
-    - name: Build and Validate Stubs
-      run: make check-stubs -j2
-    - uses: actions/upload-artifact@v2
-      with:
-        name: stubs
-        path: circuitpython-stubs*
-    - name: Test Documentation Build (HTML)
-      run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
-    - uses: actions/upload-artifact@v2
-      with:
-        name: docs
-        path: _build/html
-    - name: Test Documentation Build (LaTeX/PDF)
-      run: |
-        make latexpdf
-    - uses: actions/upload-artifact@v2
-      with:
-        name: docs
-        path: _build/latex
-    - name: Translations
-      run: make check-translate
-    - name: New boards check
-      run: python3 -u ci_new_boards_check.py
-      working-directory: tools
-    - name: Duplicate USB VID/PID Check
-      run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
     - name: Build mpy-cross.static-raspbian
       run: make -C mpy-cross -j2 -f Makefile.static-raspbian
     - uses: actions/upload-artifact@v2
@@ -185,6 +185,7 @@ jobs:
         - "arduino_nano_33_iot"
         - "arduino_zero"
         - "bast_pro_mini_m0"
+        - "bastble"
         - "bdmicro_vina_d21"
         - "bdmicro_vina_d51"
         - "bless_dev_board_multi_sensor"
@@ -260,6 +261,7 @@ jobs:
         - "monster_m4sk"
         - "ndgarage_ndbit6"
         - "ndgarage_ndbit6_v2"
+        - "neopixel_trinkey_m0"
         - "nfc_copy_cat"
         - "nice_nano"
         - "nucleo_f746zg"
@@ -430,6 +432,8 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "adafruit_feather_esp32s2_nopsram"
+        - "adafruit_feather_esp32s2_tftback_nopsram"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
         - "electroniccats_bastwifi"

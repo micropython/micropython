@@ -55,8 +55,6 @@ static void start_station(wifi_radio_obj_t *self) {
     esp_wifi_set_mode(next_mode);
 
     self->sta_mode = 1;
-
-    esp_wifi_set_config(WIFI_MODE_STA, &self->sta_config);
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
@@ -198,6 +196,17 @@ mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self) {
     if (esp_wifi_sta_get_ap_info(&self->ap_info.record) != ESP_OK){
         return mp_const_none;
     } else {
+        if (strlen(self->ap_info.record.country.cc) == 0) {
+            // Workaround to fill country related information in ap_info until ESP-IDF carries a fix
+            // esp_wifi_sta_get_ap_info does not appear to fill wifi_country_t (e.g. country.cc) details
+            // (IDFGH-4437) #6267
+            // Note: It is possible that Wi-Fi APs don't have a CC set, then even after this workaround
+            //       the element would remain empty.
+            memset(&self->ap_info.record.country, 0, sizeof(wifi_country_t));
+            if (esp_wifi_get_country(&self->ap_info.record.country) != ESP_OK) {
+                return mp_const_none;
+            }
+        }
         memcpy(&ap_info->record, &self->ap_info.record, sizeof(wifi_ap_record_t));
         return MP_OBJ_FROM_PTR(ap_info);
     }

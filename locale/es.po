@@ -7,24 +7,28 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
-"PO-Revision-Date: 2020-11-27 18:34+0000\n"
-"Last-Translator: Iván Montiel Cardona <ivan_montiel2013@hotmail.com>\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
+"PO-Revision-Date: 2020-12-30 22:25+0000\n"
+"Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: main.c
 msgid ""
 "\n"
-"Code done running. Waiting for reload.\n"
+"Code done running.\n"
 msgstr ""
+
+#: main.c
+msgid ""
 "\n"
-"El código terminó su ejecución. Esperando para recargar.\n"
+"Code stopped by auto-reload.\n"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -114,6 +118,11 @@ msgstr "%q debe ser un int"
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() toma %d argumentos posicionales pero %d fueron dados"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#, c-format
+msgid "%s error 0x%x"
+msgstr ""
 
 #: py/argcheck.c
 msgid "'%q' argument required"
@@ -276,6 +285,10 @@ msgstr "0.0 a una potencia compleja"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "pow() con 3 argumentos no soportado"
+
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -543,9 +556,25 @@ msgstr "Bytes debe estar entre 0 y 255."
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "Los bloques CBC deben ser múltiplos de 16 bytes"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "CRC or checksum was invalid"
+msgstr ""
+
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr "Llame a super().__ init __() antes de acceder al objeto nativo."
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on RTC IO from deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on one low pin while others alarm high from deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on two low pins from deep sleep."
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -580,6 +609,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
 msgstr "No se puede tener ambos canales en el mismo pin"
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot pull on input-only pin."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
@@ -623,6 +656,10 @@ msgstr "No se puede obtener inequívocamente sizeof escalar"
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "No puede variar la frecuencia en un temporizador que ya está en uso"
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot wake on pin edge. Only level."
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -955,6 +992,10 @@ msgstr "El archivo ya existe"
 msgid "Filters too complex"
 msgstr "Filtros muy complejos"
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr ""
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr "Sin capacidades para el formato"
@@ -963,10 +1004,6 @@ msgstr "Sin capacidades para el formato"
 #, c-format
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer requiere %d bytes"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
-msgstr "Frecuencia capturada por encima de la capacidad. Captura en pausa."
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -977,6 +1014,10 @@ msgstr ""
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "La función requiere lock"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Generic Failure"
+msgstr ""
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1106,6 +1147,7 @@ msgstr "Frecuencia PWM inválida"
 msgid "Invalid Pin"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Argumento inválido"
@@ -1166,6 +1208,7 @@ msgstr "Fase inválida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 #: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1212,7 +1255,15 @@ msgstr "Modo de ejecución inválido."
 
 #: shared-module/_bleio/Attribute.c
 msgid "Invalid security_mode"
-msgstr "Modo de seguridad no válido"
+msgstr "'security_mode' no válido"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid size"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid state"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1252,7 +1303,11 @@ msgstr "Length debe ser un int"
 
 #: py/objslice.c
 msgid "Length must be non-negative"
-msgstr "Longitud no deberia ser negativa"
+msgstr "Length no deberia ser negativa"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "MAC address was invalid"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1486,7 +1541,11 @@ msgstr ""
 "Solo se admiten BMP monocromáticos, indexados de 4 bpp u 8 bpp y 16 bpp o "
 "más: %d bpp proporcionados"
 
-#: ports/esp32s2/common-hal/alarm/__init__.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one TouchAlarm can be set in deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -1498,6 +1557,18 @@ msgstr "Solo un color puede ser transparente a la vez"
 msgid "Only raw int supported for ip"
 msgstr "Solo se aceptan enteros crudos para ip"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation or feature not supported"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation timed out"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Out of memory"
+msgstr ""
+
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Se acabaron los enchufes"
@@ -1505,6 +1576,10 @@ msgstr "Se acabaron los enchufes"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "El sobremuestreo debe ser un múltiplo de 8."
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "PDMIn not available"
+msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1523,6 +1598,10 @@ msgstr ""
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus todavía no soportado"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "Peripheral in use"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1549,10 +1628,6 @@ msgstr "El pin debe admitir interrupciones de hardware"
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
 msgstr "Número de pin ya reservado por EXTI"
-
-#: ports/esp32s2/common-hal/alarm/__init__.c
-msgid "PinAlarm not yet implemented"
-msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1601,7 +1676,7 @@ msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
 
 #: main.c
-msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -1652,6 +1727,10 @@ msgstr "Sistema de archivos de solo-Lectura"
 msgid "Read-only object"
 msgstr "Objeto de solo-lectura"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Received response was invalid"
+msgstr ""
+
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "Refresco demasiado pronto"
@@ -1663,6 +1742,10 @@ msgstr "RemoteTransmissionRequests limitado a 8 bytes"
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "El modo AES solicitado no es compatible"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Requested resource not found"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -2036,6 +2119,10 @@ msgstr "Operación no soportada"
 msgid "Unsupported pull value."
 msgstr "valor pull no soportado."
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
@@ -2045,6 +2132,10 @@ msgstr "Tamaño del valor != del tamaño fijo requerido"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
 msgstr "Tamaño de valor > max_length"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Version was invalid"
+msgstr ""
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -2462,6 +2553,10 @@ msgstr "El argumento de chr() no esta en el rango(256)"
 msgid "circle can only be registered in one parent"
 msgstr "circulo solo puede ser registrado con un pariente"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "color buffer debe ser 3 bytes (RGB) ó 4 bytes (RGB + pad byte)"
@@ -2534,6 +2629,10 @@ msgstr "los datos deben permitir iteración"
 msgid "data must be of equal length"
 msgstr "los datos deben ser de igual tamaño"
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr ""
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "números decimales no soportados"
@@ -2541,6 +2640,10 @@ msgstr "números decimales no soportados"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "'except' por defecto deberia estar de último"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2642,6 +2745,10 @@ msgstr "esperando solo un valor para set"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "esperando la clave:valor para dict"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -2846,8 +2953,8 @@ msgid "input and output shapes are not compatible"
 msgstr "Formas de entrada y salida no son compactibles"
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
-msgstr "el argumento de entrada debe ser un entero o una tupla de par"
+msgid "input argument must be an integer, a tuple, or a list"
+msgstr ""
 
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
@@ -3073,8 +3180,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length debe ser 0-%d cuando fixed_length es %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "max_lenght debe ser > 0"
+msgid "max_length must be >= 0"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
@@ -3091,6 +3198,10 @@ msgstr "maxiter tiene que ser > 0"
 #: extmod/ulab/code/approx/approx.c
 msgid "maxiter should be > 0"
 msgstr "maxiter debe ser > 0"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr ""
 
 #: py/runtime.c
 #, c-format
@@ -3174,6 +3285,10 @@ msgstr "NIC no disponible"
 msgid "no binding for nonlocal found"
 msgstr "no se ha encontrado ningún enlace para nonlocal"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "ningún módulo se llama '%q'"
@@ -3212,6 +3327,14 @@ msgid "non-keyword arg after keyword arg"
 msgstr ""
 "no deberia estar/tener agumento por palabra clave despues de argumento por "
 "palabra clave"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr ""
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr ""
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
@@ -3286,6 +3409,10 @@ msgstr "string de longitud impar"
 msgid "offset is too large"
 msgstr "offset es demasiado grande"
 
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
+msgstr ""
+
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "offset fuera de límites"
@@ -3311,10 +3438,6 @@ msgstr "los operandos no se pueden transmitir juntos"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr "operación solo está implementada para arrays booleanos de 1D"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
-msgstr "operación no está implementada para arrays aplanados"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3406,6 +3529,8 @@ msgstr "el 3er argumento de pow() no puede ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() con 3 argumentos requiere enteros"
 
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -3503,6 +3628,10 @@ msgstr "script de compilación no soportado"
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "forma tiene que ser una tupla"
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3634,6 +3763,10 @@ msgstr ""
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "el tiempo de espera debe ser 0.0-100.0 segundos"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr ""
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "tiempo muerto debe ser >= 0.0"
@@ -3658,6 +3791,10 @@ msgstr "tobytes solo pueden ser invocados por arrays densos"
 msgid "too many arguments provided with the given format"
 msgstr "demasiados argumentos provistos con el formato dado"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "demasiados índices"
@@ -3668,16 +3805,16 @@ msgid "too many values to unpack (expected %d)"
 msgstr "demasiados valores para descomprimir (%d esperado)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz está definido para arreglos 1D de igual tamaño"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "tuple index fuera de rango"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3869,6 +4006,10 @@ msgstr "tipo de salida incorrecta"
 msgid "x value out of bounds"
 msgstr "valor x fuera de límites"
 
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "xTaskCreate failed"
+msgstr ""
+
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
 msgstr "y deberia ser un int"
@@ -3892,6 +4033,28 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "el argumento de entrada debe ser un entero o una tupla de par"
+
+#~ msgid "operation is not implemented for flattened array"
+#~ msgstr "operación no está implementada para arrays aplanados"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "tuple index fuera de rango"
+
+#~ msgid ""
+#~ "\n"
+#~ "Code done running. Waiting for reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "El código terminó su ejecución. Esperando para recargar.\n"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "Frecuencia capturada por encima de la capacidad. Captura en pausa."
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_lenght debe ser > 0"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr ""

@@ -366,7 +366,7 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
         RUN_BACKGROUND_TASKS;
-        received = lwip_recvfrom(self->num, buf, len - 1, 0, (struct sockaddr *)&source_addr, &socklen);
+        received = lwip_recvfrom(self->num, buf, len, 0, (struct sockaddr *)&source_addr, &socklen);
 
         // In non-blocking mode, fail instead of looping
         if (received == -1 && self->timeout_ms == 0) {
@@ -384,10 +384,9 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
     if (received < 0) {
         mp_raise_BrokenPipeError();
         return 0;
-    } else {
-        buf[received] = 0; // Null-terminate whatever we received
-        return received;
     }
+
+    return received;
 }
 
 void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {

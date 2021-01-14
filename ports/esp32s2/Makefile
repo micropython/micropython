@@ -106,6 +106,8 @@ INC += -isystem esp-idf/components/heap/include
 INC += -isystem esp-idf/components/esp_system/include
 INC += -isystem esp-idf/components/spi_flash/include
 INC += -isystem esp-idf/components/nvs_flash/include
+INC += -isystem esp-idf/components/app_update/include
+INC += -isystem esp-idf/components/bootloader_support/include
 INC += -I$(BUILD)/esp-idf/config
 
 CFLAGS += -DHAVE_CONFIG_H \
@@ -143,7 +145,6 @@ LDFLAGS += -L$(BUILD)/esp-idf/esp-idf/esp32s2 \
            -Tesp32s2.peripherals.ld \
            -Lesp-idf/components/esp_rom/esp32s2/ld \
            -Tesp32s2.rom.ld \
-           -Tesp32s2.rom.api.ld \
            -Tesp32s2.rom.libgcc.ld \
            -Tesp32s2.rom.newlib-data.ld \
            -Tesp32s2.rom.newlib-funcs.ld \
@@ -192,6 +193,7 @@ SRC_C += \
 	lib/utils/sys_stdio_mphal.c \
 	lib/netutils/netutils.c \
 	peripherals/timer.c \
+	peripherals/touch.c \
 	peripherals/pcnt.c \
 	peripherals/pins.c \
 	peripherals/rmt.c \
@@ -276,7 +278,7 @@ menuconfig: $(BUILD)/esp-idf/config
 # qstr builds include headers so we need to make sure they are up to date
 $(HEADER_BUILD)/qstr.split: | $(BUILD)/esp-idf/config/sdkconfig.h
 
-ESP_IDF_COMPONENTS_LINK = freertos log hal esp_system esp_adc_cal esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp_rom esp-tls
+ESP_IDF_COMPONENTS_LINK = freertos log esp_system esp_adc_cal esp32s2 bootloader_support pthread esp_timer vfs spi_flash app_update esp_common esp32s2 heap newlib driver xtensa soc esp_ringbuf esp_wifi esp_event wpa_supplicant mbedtls efuse nvs_flash esp_netif lwip esp-tls
 
 ESP_IDF_COMPONENTS_INCLUDE = driver freertos log soc
 
@@ -288,14 +290,16 @@ ESP_IDF_WIFI_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_WIFI_COMPONENT
 MBEDTLS_COMPONENTS_LINK = crypto tls x509
 MBEDTLS_COMPONENTS_LINK_EXPANDED = $(foreach component, $(MBEDTLS_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/mbedtls/mbedtls/library/libmbed$(component).a)
 
-BINARY_BLOBS = esp-idf/components/xtensa/esp32s2/libxt_hal.a
+BINARY_BLOBS = esp-idf/components/xtensa/esp32s2/libhal.a
 BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a librtc.a libsmartconfig.a libphy.a
 BINARY_BLOBS += $(addprefix esp-idf/components/esp_wifi/lib/esp32s2/, $(BINARY_WIFI_BLOBS))
 
-ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/soc/soc/esp32s2/libsoc_esp32s2.a esp-idf/components/xtensa/esp32s2/libxt_hal.a
+ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/soc/soc/esp32s2/libsoc_esp32s2.a
 ESP_AUTOGEN_LD = $(BUILD)/esp-idf/esp-idf/esp32s2/esp32s2_out.ld $(BUILD)/esp-idf/esp-idf/esp32s2/ld/esp32s2.project.ld
 
 FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
+
+ESPTOOL_FLAGS ?= -b 460800 --before=default_reset --after=no_reset
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
@@ -308,7 +312,6 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 		esp-idf/esp32s2/ld/esp32s2.project.ld \
 		esp-idf/esp_event/libesp_event.a \
 		esp-idf/esp_netif/libesp_netif.a \
-		esp-idf/esp_rom/libesp_rom.a \
 		esp-idf/esp_system/libesp_system.a \
 		esp-idf/esp_wifi/libesp_wifi.a \
 		esp-idf/lwip/liblwip.a \
@@ -336,10 +339,10 @@ $(BUILD)/firmware.uf2: $(BUILD)/circuitpython-firmware.bin
 	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xbfdd4eee -b 0x0000 -c -o $@ $^
 
 flash: $(BUILD)/firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=no_reset write_flash $(FLASH_FLAGS) 0x0000 $^
+	esptool.py --chip esp32s2 -p $(PORT) $(ESPTOOL_FLAGS) write_flash $(FLASH_FLAGS) 0x0000 $^
 
 flash-circuitpython-only: $(BUILD)/circuitpython-firmware.bin
-	esptool.py --chip esp32s2 -p $(PORT) --no-stub -b 460800 --before=default_reset --after=no_reset write_flash $(FLASH_FLAGS) 0x10000 $^
+	esptool.py --chip esp32s2 -p $(PORT) $(ESPTOOL_FLAGS) write_flash $(FLASH_FLAGS) 0x10000 $^
 
 include $(TOP)/py/mkrules.mk
 

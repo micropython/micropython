@@ -58,6 +58,14 @@ BASE_CFLAGS = \
 #        -H
 
 
+# Set a global CIRCUITPY_DEBUG flag.
+# Don't just call it "DEBUG": too many libraries use plain DEBUG.
+ifneq ($(DEBUG),)
+CFLAGS += -DCIRCUITPY_DEBUG=$(DEBUG)
+else
+CFLAGS += -DCIRCUITPY_DEBUG=0
+endif
+
 ###
 # Handle frozen modules.
 
@@ -205,6 +213,9 @@ endif
 ifeq ($(CIRCUITPY_OS),1)
 SRC_PATTERNS += os/%
 endif
+ifeq ($(CIRCUITPY_DUALBANK),1)
+SRC_PATTERNS += dualbank/%
+endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += _pixelbuf/%
 endif
@@ -289,6 +300,9 @@ endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
 endif
+ifeq ($(CIRCUITPY_MSGPACK),1)
+SRC_PATTERNS += msgpack/%
+endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS in SRC_COMMON_HAL
 SRC_COMMON_HAL_ALL = \
@@ -308,6 +322,7 @@ SRC_COMMON_HAL_ALL = \
 	alarm/__init__.c \
 	alarm/pin/PinAlarm.c \
 	alarm/time/TimeAlarm.c \
+	alarm/touch/TouchAlarm.c \
 	analogio/AnalogIn.c \
 	analogio/AnalogOut.c \
 	analogio/__init__.c \
@@ -348,6 +363,7 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
+	dualbank/__init__.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
@@ -407,6 +423,8 @@ $(filter $(SRC_PATTERNS), \
 	math/__init__.c \
 	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
+	msgpack/__init__.c \
+	msgpack/ExtType.c \
 	supervisor/RunReason.c \
 )
 
@@ -476,6 +494,7 @@ SRC_SHARED_MODULE_ALL = \
 	memorymonitor/AllocationAlarm.c \
 	memorymonitor/AllocationSize.c \
 	network/__init__.c \
+	msgpack/__init__.c \
 	os/__init__.c \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \

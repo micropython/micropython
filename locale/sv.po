@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-14 12:59-0500\n"
-"PO-Revision-Date: 2020-12-07 20:26+0000\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
+"PO-Revision-Date: 2021-01-05 21:03+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,15 +14,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: main.c
 msgid ""
 "\n"
-"Code done running. Waiting for reload.\n"
+"Code done running.\n"
 msgstr ""
 "\n"
-"Koden har kört klart. Väntar på omladdning.\n"
+"Koden har kört klart.\n"
+
+#: main.c
+msgid ""
+"\n"
+"Code stopped by auto-reload.\n"
+msgstr ""
+"\n"
+"Koden stoppades av auto-omladdning.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -111,6 +119,11 @@ msgstr "%q ska vara en int"
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() kräver %d positionsargument men %d gavs"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#, c-format
+msgid "%s error 0x%x"
+msgstr ""
 
 #: py/argcheck.c
 msgid "'%q' argument required"
@@ -273,6 +286,10 @@ msgstr "0,0 till ett komplext nummer"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "3-arguments pow() stöds inte"
+
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -536,9 +553,26 @@ msgstr "Bytes måste vara mellan 0 och 255."
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBC-block måste vara multiplar om 16 byte"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "CRC or checksum was invalid"
+msgstr ""
+
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr "Anropa super().__init__() innan du använder det ursprungliga objektet."
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on RTC IO from deep sleep."
+msgstr "Kan bara larma på RTC-IO från djupsömn."
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on one low pin while others alarm high from deep sleep."
+msgstr ""
+"Kan bara larma från djup sömn på låg för en pinne medan andra larmar på hög."
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Can only alarm on two low pins from deep sleep."
+msgstr "Kan bara larma från djup sömn på två låga pinnar."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -572,6 +606,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
 msgstr "Det går inte att mata ut båda kanalerna på samma pinne"
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot pull on input-only pin."
+msgstr "Kan bara använda pull på pinne för input."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
@@ -616,6 +654,10 @@ msgstr "Kan inte entydigt få sizeof scalar"
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Det går inte att ändra frekvensen på en timer som redan används"
+
+#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot wake on pin edge. Only level."
+msgstr "Kan inte vakna på nivåskift, enbart nivå."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -948,6 +990,10 @@ msgstr "Filen finns redan"
 msgid "Filters too complex"
 msgstr "Filter för komplexa"
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Firmware image is invalid"
+msgstr "Firmware-avbilden är ogiltig"
+
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
 msgstr "Formatet stöds inte"
@@ -957,10 +1003,6 @@ msgstr "Formatet stöds inte"
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer kräver %d byte"
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "Frequency captured is above capability. Capture Paused."
-msgstr "Infångningsfrekvens är för hög. Infångning pausad."
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "Frekvensen måste matcha befintlig PWMOut med denna timer"
@@ -969,6 +1011,10 @@ msgstr "Frekvensen måste matcha befintlig PWMOut med denna timer"
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "Funktion kräver lås"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Generic Failure"
+msgstr ""
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1096,8 +1142,9 @@ msgstr "Ogiltig PWM-frekvens"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "Invalid Pin"
-msgstr ""
+msgstr "Ogiltig pinne"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Ogiltigt argument"
@@ -1158,6 +1205,7 @@ msgstr "Ogiltig fas"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 #: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1206,6 +1254,14 @@ msgstr "Ogiltigt körläge."
 msgid "Invalid security_mode"
 msgstr "Ogiltigt säkerhetsläge"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid size"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid state"
+msgstr ""
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
 msgstr "Ogiltig kanal"
@@ -1245,6 +1301,10 @@ msgstr "Length måste vara en int"
 #: py/objslice.c
 msgid "Length must be non-negative"
 msgstr "Length måste vara positiv"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "MAC address was invalid"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1478,7 +1538,11 @@ msgstr ""
 "Endast monokrom, indexerad 4 bpp eller 8 bpp och 16 bpp eller högre BMP: er "
 "stöds: %d bpp angiven"
 
-#: ports/esp32s2/common-hal/alarm/__init__.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one TouchAlarm can be set in deep sleep."
+msgstr ""
+
+#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr "Endast ett alarm.time kan ställas in."
 
@@ -1490,6 +1554,18 @@ msgstr "Bara en färg kan vara genomskinlig i taget"
 msgid "Only raw int supported for ip"
 msgstr "Endast raw int stöds för ip"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation or feature not supported"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation timed out"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Out of memory"
+msgstr ""
+
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Slut på sockets"
@@ -1497,6 +1573,10 @@ msgstr "Slut på sockets"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Översampling måste vara multipel av 8."
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "PDMIn not available"
+msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1515,6 +1595,10 @@ msgstr ""
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus stöds ännu inte"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "Peripheral in use"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1541,10 +1625,6 @@ msgstr "Pinnen måste stödja hårdvaruavbrott"
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin number already reserved by EXTI"
 msgstr "PInn-nummer redan reserverat av EXTI"
-
-#: ports/esp32s2/common-hal/alarm/__init__.c
-msgid "PinAlarm not yet implemented"
-msgstr "PinAlarm är inte implementerat ännu"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1591,10 +1671,12 @@ msgstr "Prefixbufferten måste finnas på heap"
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
+"Tryck på valfri tangent för att gå in i REPL. Använd CTRL-D för att ladda "
+"om.\n"
 
 #: main.c
-msgid "Pretending to deep sleep until alarm, any key or file write.\n"
-msgstr ""
+msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
+msgstr "Fingerar djup sömn tills larm, Ctrl-C eller filskrivning.\n"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1644,6 +1726,10 @@ msgstr "Skrivskyddat filsystem"
 msgid "Read-only object"
 msgstr "Skrivskyddat objekt"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Received response was invalid"
+msgstr ""
+
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "Uppdaterad för tidigt"
@@ -1655,6 +1741,10 @@ msgstr "RemoteTransmissionRequests begränsad till 8 byte"
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "Det begärda AES-läget stöds inte"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Requested resource not found"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1956,7 +2046,7 @@ msgstr "Det gick inte att skriva till nvm."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr ""
+msgstr "Det gick inte att skriva till sleep_memory."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -2024,6 +2114,10 @@ msgstr "Åtgärd som inte stöds"
 msgid "Unsupported pull value."
 msgstr "Ogiltigt Pull-värde."
 
+#: ports/esp32s2/common-hal/dualbank/__init__.c
+msgid "Update Failed"
+msgstr "Uppdateringen misslyckades"
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
@@ -2033,6 +2127,10 @@ msgstr "Värdets längde ! = krävd fast längd"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
 msgstr "Värdets längd > max_length"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Version was invalid"
+msgstr ""
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -2088,7 +2186,7 @@ msgstr "WiFi-lösenord måste vara mellan 8 och 63 tecken"
 
 #: main.c
 msgid "Woken up by alarm.\n"
-msgstr ""
+msgstr "Vaknade av larm.\n"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -2444,6 +2542,10 @@ msgstr "chr() arg är inte i intervallet(256)"
 msgid "circle can only be registered in one parent"
 msgstr "circle kan endast registreras i en förälder"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "färgbuffert måste vara 3 byte (RGB) eller 4 byte (RGB + pad byte)"
@@ -2516,6 +2618,10 @@ msgstr "data måste vara itererbar"
 msgid "data must be of equal length"
 msgstr "data måste vara av samma längd"
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr "datatyp inte förstådd"
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr "decimaltal stöds inte"
@@ -2523,6 +2629,10 @@ msgstr "decimaltal stöds inte"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "standard \"except\" måste ligga sist"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2625,6 +2735,10 @@ msgstr "förväntar bara ett värde för set"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "förväntar nyckel:värde för dict"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -2829,8 +2943,8 @@ msgid "input and output shapes are not compatible"
 msgstr "indata- och utdataformer är inte kompatibla"
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
-msgstr "indataargumentet måste vara ett heltal eller en 2-tupel"
+msgid "input argument must be an integer, a tuple, or a list"
+msgstr "indataargument måste vara integer, en tuple eller list"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
@@ -3056,8 +3170,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length måste vara 0-%d när fixed_length är %s"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be > 0"
-msgstr "max_length måste vara > 0"
+msgid "max_length must be >= 0"
+msgstr "max_length måste vara >= 0"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
@@ -3074,6 +3188,10 @@ msgstr "maxiter måste vara > 0"
 #: extmod/ulab/code/approx/approx.c
 msgid "maxiter should be > 0"
 msgstr "maxiter bör vara > 0"
+
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr "argumentet median måste vara en ndarray"
 
 #: py/runtime.c
 #, c-format
@@ -3157,6 +3275,10 @@ msgstr "ingen tillgänglig NIC"
 msgid "no binding for nonlocal found"
 msgstr "ingen bindning för ickelokal hittad"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "ingen modul med namnet '%q'"
@@ -3193,6 +3315,14 @@ msgstr "icke nyckelord arg efter * / **"
 #: py/compile.c
 msgid "non-keyword arg after keyword arg"
 msgstr "icke nyckelord arg efter nyckelord arg"
+
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "non-zero timeout must be > 0.01"
+msgstr "Icke-noll timeout måste vara > 0.01"
+
+#: shared-bindings/_bleio/Adapter.c
+msgid "non-zero timeout must be >= interval"
+msgstr "Icke-noll timeout måste vara >= intervall"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
@@ -3266,6 +3396,10 @@ msgstr "sträng har udda längd"
 msgid "offset is too large"
 msgstr "offset är för stor"
 
+#: shared-bindings/dualbank/__init__.c
+msgid "offset must be >= 0"
+msgstr "offset måste vara >= 0"
+
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "offset utanför gränserna"
@@ -3291,10 +3425,6 @@ msgstr "operander kan inte sändas tillsammans"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
 msgstr "operationen är enbart implementerad för 1D Boolean-matriser"
-
-#: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
-msgstr "operationen inte implementeras för tillplattad matris"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3387,6 +3517,8 @@ msgstr "pow() 3: e argument kan inte vara 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() med 3 argument kräver heltal"
 
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -3484,6 +3616,10 @@ msgstr "skriptkompilering stöds inte"
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
 msgstr "shape måste vara en tuple"
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
+msgstr ""
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3614,6 +3750,10 @@ msgstr "timeout-längd överskred det maximala värde som stöds"
 msgid "timeout must be 0.0-100.0 seconds"
 msgstr "timeout måste vara 0.0-100.0 sekunder"
 
+#: ports/nrf/common-hal/_bleio/Adapter.c
+msgid "timeout must be < 655.35 secs"
+msgstr "timeout måste vara < 655,35 sekunder"
+
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
 msgstr "timeout måste vara >= 0.0"
@@ -3638,6 +3778,10 @@ msgstr "tobyte kan enbart anropas för täta matriser"
 msgid "too many arguments provided with the given format"
 msgstr "för många argument för det givna formatet"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr "för många dimensioner"
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "för många index"
@@ -3648,16 +3792,16 @@ msgid "too many values to unpack (expected %d)"
 msgstr "för många värden att packa upp (förväntat %d)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr "trapz är definierat för 1D-matriser"
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz är definierad för 1D-matriser med samma längd"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
 msgstr "triggernivå måste vara 0 eller 1"
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
-msgstr "tupelindex utanför intervallet"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3849,6 +3993,10 @@ msgstr "fel utdatatyp"
 msgid "x value out of bounds"
 msgstr "x-värde utanför intervall"
 
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "xTaskCreate failed"
+msgstr ""
+
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
 msgstr "y ska vara en int"
@@ -3872,6 +4020,37 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Only one alarm.touch alarm can be set."
+#~ msgstr "Endast ett larm av typ alarm.touch kan ställas in."
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "indataargumentet måste vara ett heltal eller en 2-tupel"
+
+#~ msgid "operation is not implemented for flattened array"
+#~ msgstr "operationen inte implementeras för tillplattad matris"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "tupelindex utanför intervallet"
+
+#~ msgid ""
+#~ "\n"
+#~ "Code done running. Waiting for reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Koden har kört klart. Väntar på omladdning.\n"
+
+#~ msgid "PinAlarm not yet implemented"
+#~ msgstr "PinAlarm är inte implementerat ännu"
+
+#~ msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+#~ msgstr "Fingerar djup sömn tills larm, valfri tangent eller filskrivning.\n"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "Infångningsfrekvens är för hög. Infångning pausad."
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_length måste vara > 0"
 
 #~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr ""

@@ -32,17 +32,18 @@
 #include "py/mphal.h"
 
 #include "components/driver/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
+#include "components/soc/include/hal/gpio_hal.h"
 
 #ifdef MICROPY_HW_NEOPIXEL
 bool neopixel_in_use;
 #endif
+#ifdef MICROPY_HW_APA102_MOSI
+bool apa102_sck_in_use;
+bool apa102_mosi_in_use;
+#endif
 
 STATIC uint32_t never_reset_pins[2];
 STATIC uint32_t in_use[2];
-
-bool apa102_mosi_in_use;
-bool apa102_sck_in_use;
 
 STATIC void floating_gpio_reset(gpio_num_t pin_number) {
     // This is the same as gpio_reset_pin(), but without the pullup.
@@ -86,9 +87,26 @@ void reset_pin_number(gpio_num_t pin_number) {
         return;
     }
     #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    if (pin_number == MICROPY_HW_APA102_MOSI->number ||
+        pin_number == MICROPY_HW_APA102_SCK->number) {
+        apa102_mosi_in_use = apa102_mosi_in_use && pin_number != MICROPY_HW_APA102_MOSI->number;
+        apa102_sck_in_use = apa102_sck_in_use && pin_number != MICROPY_HW_APA102_SCK->number;
+        if (!apa102_sck_in_use && !apa102_mosi_in_use) {
+            rgb_led_status_init();
+        }
+        return;
+    }
+    #endif
+
+
+
 }
 
 void common_hal_reset_pin(const mcu_pin_obj_t* pin) {
+    if (pin == NULL) {
+        return;
+    }
     reset_pin_number(pin->number);
 }
 
@@ -107,6 +125,11 @@ void reset_all_pins(void) {
     #ifdef MICROPY_HW_NEOPIXEL
     neopixel_in_use = false;
     #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    apa102_sck_in_use = false;
+    apa102_mosi_in_use = false;
+    #endif
+
 }
 
 void claim_pin(const mcu_pin_obj_t* pin) {
@@ -116,6 +139,15 @@ void claim_pin(const mcu_pin_obj_t* pin) {
         neopixel_in_use = true;
     }
     #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    if (pin == MICROPY_HW_APA102_MOSI) {
+        apa102_mosi_in_use = true;
+    }
+    if (pin == MICROPY_HW_APA102_SCK) {
+        apa102_sck_in_use = true;
+    }
+    #endif
+
 }
 
 void common_hal_mcu_pin_claim(const mcu_pin_obj_t* pin) {
@@ -128,10 +160,18 @@ bool pin_number_is_free(gpio_num_t pin_number) {
         return !neopixel_in_use;
     }
     #endif
+    #ifdef MICROPY_HW_APA102_MOSI
+    if (pin_number == MICROPY_HW_APA102_MOSI->number) {
+        return !apa102_mosi_in_use;
+    }
+    if (pin_number == MICROPY_HW_APA102_SCK->number) {
+        return !apa102_sck_in_use;
+    }
+    #endif
 
     uint8_t offset = pin_number / 32;
     uint32_t mask = 1 << (pin_number % 32);
-    return (never_reset_pins[offset] & mask) == 0 && (in_use[offset] & mask) == 0;
+    return (in_use[offset] & mask) == 0;
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {

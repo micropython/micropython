@@ -539,6 +539,13 @@ extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE_ALT_NAME
 #endif
 
+#if CIRCUITPY_DUALBANK
+extern const struct _mp_obj_module_t dualbank_module;
+#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
+#else
+#define DUALBANK_MODULE
+#endif
+
 #if CIRCUITPY_PEW
 extern const struct _mp_obj_module_t pew_module;
 #define PEW_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR__pew),(mp_obj_t)&pew_module },
@@ -767,6 +774,13 @@ extern const struct _mp_obj_module_t wifi_module;
 #define WIFI_MODULE
 #endif
 
+#if CIRCUITPY_MSGPACK
+extern const struct _mp_obj_module_t msgpack_module;
+#define MSGPACK_MODULE { MP_ROM_QSTR(MP_QSTR_msgpack), MP_ROM_PTR(&msgpack_module) },
+#else
+#define MSGPACK_MODULE
+#endif
+
 // Define certain native modules with weak links so they can be replaced with Python
 // implementations. This list may grow over time.
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
@@ -823,10 +837,12 @@ extern const struct _mp_obj_module_t wifi_module;
     _EVE_MODULE \
     MEMORYMONITOR_MODULE \
     MICROCONTROLLER_MODULE \
+    MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
       SOCKET_MODULE \
       WIZNET_MODULE \
+    DUALBANK_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \

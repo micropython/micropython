@@ -319,8 +319,9 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
+#if CIRCUITPY_BUSIO
     reset_sercoms();
-
+#endif
 #if CIRCUITPY_AUDIOIO
     audio_dma_reset();
     audioout_reset();
@@ -429,9 +430,11 @@ uint32_t port_get_saved_word(void) {
 // TODO: Move this to an RTC backup register so we can preserve it when only the BACKUP power domain
 // is enabled.
 static volatile uint64_t overflowed_ticks = 0;
+#ifdef SAMD21
 static volatile bool _ticks_enabled = false;
+#endif
 
-static uint32_t _get_count(uint32_t* overflow_count) {
+static uint32_t _get_count(uint64_t* overflow_count) {
     #ifdef SAM_D5X_E5X
     while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {}
     #endif
@@ -500,7 +503,7 @@ void RTC_Handler(void) {
 }
 
 uint64_t port_get_raw_ticks(uint8_t* subticks) {
-    uint32_t overflow_count;
+    uint64_t overflow_count;
     uint32_t current_ticks = _get_count(&overflow_count);
     if (subticks != NULL) {
         *subticks = (current_ticks % 16) * 2;
@@ -537,9 +540,11 @@ void port_disable_tick(void) {
 // they'll wake us up earlier. If we don't, we'll mess up ticks by overwriting
 // the next RTC wake up time.
 void port_interrupt_after_ticks(uint32_t ticks) {
+    #ifdef SAMD21
     if (_ticks_enabled) {
         return;
     }
+    #endif
     _port_interrupt_after_ticks(ticks);
 }
 

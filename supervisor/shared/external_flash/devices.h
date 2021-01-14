@@ -94,6 +94,26 @@ typedef struct {
     .single_status_byte = false, \
 }
 
+// Settings for the Adesto Tech AT25DF641-SSHD-T 8MiB SPI flash
+// for the Oak Dev Tech Icy Tree M0 (SAMD21) feather board.
+// Source: https://www.digikey.com/product-detail/en/adesto-technologies/AT25SF641-SDHD-T/1265-1180-1-ND/
+// Datasheet: https://www.adestotech.com/wp-content/uploads/doc8693.pdf
+#define AT25DF641A {\
+    .total_size = (1 << 23), /* 8 MiB */ \
+    .start_up_time_us = 10000, \
+    .manufacturer_id = 0x1f, \
+    .memory_type = 0x48, \
+    .capacity = 0x00, \
+    .max_clock_speed_mhz = 85, \
+    .quad_enable_bit_mask = 0x00, \
+    .has_sector_protection = true, \
+    .supports_fast_read = true, \
+    .supports_qspi = false, \
+    .supports_qspi_writes = false, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
 // Settings for the Adesto Tech AT25SF161-SSHD-T 2MiB SPI flash
 // for the StringCar M0 (SAMD21) Express board.
 // Source: https://www.digikey.com/product-detail/en/adesto-technologies/AT25SF161-SDHD-T/1265-1230-1-ND/
@@ -113,6 +133,7 @@ typedef struct {
     .write_status_register_split = false, \
     .single_status_byte = false, \
 }
+
 
 // Settings for the Adesto Tech AT25SF041 1MiB SPI flash. It's on the SparkFun
 // SAMD51 Thing Plus board
@@ -363,6 +384,24 @@ typedef struct {
     .write_status_register_split = false, \
 }
 
+// Settings for the Winbond W25Q64FV 8MiB SPI flash.
+// Datasheet: https://www.winbond.com/resource-files/w25q64fv%20revs%2007182017.pdf
+#define W25Q64FV {\
+    .total_size = (1 << 23), /* 8 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xef, \
+    .memory_type = 0x40, \
+    .capacity = 0x17, \
+    .max_clock_speed_mhz = 104, \
+    .quad_enable_bit_mask = 0x02, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = false, \
+}
+
 // Settings for the Winbond W25Q64JV-IM 8MiB SPI flash. Note that JV-IQ has a different .memory_type (0x40)
 // Datasheet: http://www.winbond.com/resource-files/w25q64jv%20revj%2003272018%20plus.pdf
 #define W25Q64JV_IM {\
@@ -565,6 +604,43 @@ typedef struct {
     .write_status_register_split = false, \
     .single_status_byte = true, \
 }
+
+// Settings for the Macronix MX25L51245G 64MiB SPI flash.
+// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7437/MX25L51245G,%203V,%20512Mb,%20v1.6.pdf
+#define MX25L25645G  {\
+    .total_size = (1 << 25), /* 32 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0x9f, \
+    .memory_type = 0xab, \
+    .capacity = 0x90, \
+    .max_clock_speed_mhz = 133, \
+   .quad_enable_bit_mask = 0xaf, \
+    .has_sector_protection = false, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+}
+
+// Settings for the Macronix MX25L12833F 16MiB SPI flash
+// Datasheet: https://www.macronix.com/Lists/Datasheet/Attachments/7447/MX25L12833F,%203V,%20128Mb,%20v1.0.pdf
+
+#define MX25L12833F {\
+    .total_size = (1UL << 24), /* 16 MiB */ \
+    .start_up_time_us = 5000, \
+    .manufacturer_id = 0xc2, \
+    .memory_type = 0x20, \
+    .capacity = 0x18, \
+    .max_clock_speed_mhz = 133, \
+    .quad_enable_bit_mask = 0x40, \
+    .has_sector_protection = true, \
+    .supports_fast_read = true, \
+    .supports_qspi = true, \
+    .supports_qspi_writes = true, \
+    .write_status_register_split = false, \
+    .single_status_byte = true, \
+  }
 
 // Settings for the Winbond W25Q128JV-PM 16MiB SPI flash. Note that JV-IM has a different .memory_type (0x70)
 // Datasheet: https://www.winbond.com/resource-files/w25q128jv%20revf%2003272018%20plus.pdf
