@@ -36,3 +36,6 @@
 [submodule "lib/nxp_driver"]
 	path = lib/nxp_driver
 	url = https://github.com/hathach/nxp_driver.git
+[submodule "lib/libhydrogen"]
+	path = lib/libhydrogen
+	url = https://github.com/jedisct1/libhydrogen.git
