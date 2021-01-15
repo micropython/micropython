@@ -23,6 +23,7 @@ import re
 import subprocess
 import sys
 import urllib.parse
+import time
 
 import recommonmark
 from sphinx.transforms import SphinxTransform
@@ -101,9 +102,12 @@ redirects_file = 'docs/redirects.txt'
 # The master toctree document.
 #master_doc = 'index'
 
+# Get current date (execution) for copyright year
+current_date = time.localtime()
+
 # General information about the project.
 project = 'Adafruit CircuitPython'
-copyright = '2014-2021, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
+copyright = f'2014-{current_date.tm_year}, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
 
 # These are overwritten on ReadTheDocs.
 # The version info for the project you're documenting, acts as replacement for
