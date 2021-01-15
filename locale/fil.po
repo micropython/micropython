@@ -2308,9 +2308,17 @@ msgstr "bits_per_sample ay dapat 8 o 16"
 msgid "branch not in range"
 msgstr "branch wala sa range"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "buffer ay dapat bytes-like object"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 #, fuzzy
@@ -3384,6 +3392,10 @@ msgstr ""
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c

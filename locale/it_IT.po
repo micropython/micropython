@@ -2314,8 +2314,16 @@ msgstr "i bit devono essere 7, 8 o 9"
 msgid "branch not in range"
 msgstr "argomento di chr() non è in range(256)"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
 msgstr ""
 
 #: shared-module/struct/__init__.c
@@ -3390,6 +3398,10 @@ msgstr ""
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c

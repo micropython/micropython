@@ -2331,9 +2331,17 @@ msgstr "bits_per_sample moet 8 of 16 zijn"
 msgid "branch not in range"
 msgstr "pad (branch) niet binnen bereik"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "buffer moet een byte-achtig object zijn"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3399,6 +3407,10 @@ msgstr "compensatie is te groot"
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
 msgstr "compensatie moet groter of gelijk 0 zijn"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
+msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
