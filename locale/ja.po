@@ -2301,9 +2301,17 @@ msgstr "bits_per_sampleは8または16でなければなりません"
 msgid "branch not in range"
 msgstr ""
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "バッファはbytes-likeオブジェクトでなければなりません"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3365,6 +3373,10 @@ msgstr ""
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
