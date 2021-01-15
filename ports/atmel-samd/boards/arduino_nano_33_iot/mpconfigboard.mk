@@ -11,3 +11,5 @@ LONGINT_IMPL = NONE
 CIRCUITPY_FULL_BUILD = 0
 
 SUPEROPT_GC = 0
+
+CFLAGS_BOARD = --param max-inline-insns-auto=15

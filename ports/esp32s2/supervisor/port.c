@@ -61,6 +61,10 @@
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
 #include "components/soc/soc/esp32s2/include/soc/rtc_cntl_reg.h"
 
+#if CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/__init__.h"
+#endif
+
 #define HEAP_SIZE (48 * 1024)
 
 uint32_t* heap;
@@ -107,6 +111,20 @@ safe_mode_t port_init(void) {
     heap = NULL;
     never_reset_module_internal_pins();
 
+    #if defined(DEBUG)
+    // debug UART
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif
+
+    #if defined(DEBUG) || defined(ENABLE_JTAG)
+    // JTAG
+    common_hal_never_reset_pin(&pin_GPIO39);
+    common_hal_never_reset_pin(&pin_GPIO40);
+    common_hal_never_reset_pin(&pin_GPIO41);
+    common_hal_never_reset_pin(&pin_GPIO42);
+    #endif
+
     #ifdef CONFIG_SPIRAM
         heap = (uint32_t*) (DRAM0_CACHE_ADDRESS_HIGH - CONFIG_SPIRAM_SIZE);
         heap_size = CONFIG_SPIRAM_SIZE / sizeof(uint32_t);
@@ -151,6 +169,10 @@ void reset_port(void) {
 
 #if CIRCUITPY_PS2IO
     ps2_reset();
+#endif
+
+#if CIRCUITPY_AUDIOBUSIO
+    i2s_reset();
 #endif
 
 #if CIRCUITPY_PULSEIO
@@ -275,8 +297,12 @@ void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
 }
 
-void sleep_timer_cb(void* arg) {
+void port_wake_main_task() {
     xTaskNotifyGive(circuitpython_task);
+}
+
+void sleep_timer_cb(void* arg) {
+    port_wake_main_task();
 }
 
 void port_interrupt_after_ticks(uint32_t ticks) {

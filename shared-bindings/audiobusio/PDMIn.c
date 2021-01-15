@@ -84,6 +84,9 @@
 //|         ...
 //|
 STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+#if !CIRCUITPY_AUDIOBUSIO_PDMIN
+    mp_raise_NotImplementedError(translate("PDMIn not available"));
+#else
     enum { ARG_clock_pin, ARG_data_pin, ARG_sample_rate, ARG_bit_depth, ARG_mono, ARG_oversample, ARG_startup_delay };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock_pin,     MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -132,8 +135,10 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_hal_delay_ms(startup_delay * 1000);
 
     return MP_OBJ_FROM_PTR(self);
+#endif
 }
 
+#if CIRCUITPY_AUDIOBUSIO_PDMIN
 //|     def deinit(self) -> None:
 //|         """Deinitialises the PDMIn and releases any hardware resources for reuse."""
 //|         ...
@@ -237,10 +242,13 @@ STATIC const mp_rom_map_elem_t audiobusio_pdmin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&audiobusio_pdmin_sample_rate_obj) }
 };
 STATIC MP_DEFINE_CONST_DICT(audiobusio_pdmin_locals_dict, audiobusio_pdmin_locals_dict_table);
+#endif
 
 const mp_obj_type_t audiobusio_pdmin_type = {
     { &mp_type_type },
     .name = MP_QSTR_PDMIn,
     .make_new = audiobusio_pdmin_make_new,
+#if CIRCUITPY_AUDIOBUSIO_PDMIN
     .locals_dict = (mp_obj_dict_t*)&audiobusio_pdmin_locals_dict,
+#endif
 };

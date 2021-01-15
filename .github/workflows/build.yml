@@ -176,7 +176,7 @@ jobs:
         board:
         - "8086_commander"
         - "ADM_B_NRF52840_1"
-        - "TG-Watch02A"
+        - "TG-Watch"
         - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
@@ -261,6 +261,7 @@ jobs:
         - "monster_m4sk"
         - "ndgarage_ndbit6"
         - "ndgarage_ndbit6_v2"
+        - "neopixel_trinkey_m0"
         - "nfc_copy_cat"
         - "nice_nano"
         - "nucleo_f746zg"
@@ -431,6 +432,8 @@ jobs:
       fail-fast: false
       matrix:
         board:
+        - "adafruit_feather_esp32s2_nopsram"
+        - "adafruit_feather_esp32s2_tftback_nopsram"
         - "adafruit_magtag_2.9_grayscale"
         - "adafruit_metro_esp32s2"
         - "electroniccats_bastwifi"
@@ -461,7 +464,7 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20200801
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210114
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)
