@@ -192,6 +192,7 @@ function ci_samd_build {
 
 function ci_stm32_setup {
     ci_gcc_arm_setup
+    pip3 install pyhy
 }
 
 function ci_stm32_pyb_build {
