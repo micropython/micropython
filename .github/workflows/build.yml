@@ -176,7 +176,7 @@ jobs:
         board:
         - "8086_commander"
         - "ADM_B_NRF52840_1"
-        - "TG-Watch02A"
+        - "TG-Watch"
         - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
@@ -464,7 +464,7 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20200801
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210114
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)

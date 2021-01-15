@@ -318,3 +318,5 @@ $(BUILD)/libaxtls.a: $(TOP)/lib/axtls/README | $(OBJ_DIRS)
 $(TOP)/lib/axtls/README:
 	@echo "You cloned without --recursive, fetching submodules for you."
 	(cd $(TOP); git submodule update --init --recursive)
+
+$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
