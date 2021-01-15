@@ -2043,8 +2043,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Wèizhī gùzhàng"
+#, c-format
+msgid "Unknown failure %d"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -4015,6 +4016,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Wèizhī gùzhàng"
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "shūrù cānshù bìxū shì zhěngshù huò 2 yuán zǔ"

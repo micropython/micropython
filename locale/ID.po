@@ -2054,7 +2054,8 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
+#, c-format
+msgid "Unknown failure %d"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c

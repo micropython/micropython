@@ -2058,8 +2058,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Ej hanterat ESP TLS-fel %d-%d-%x-%d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Okänt fel"
+#, c-format
+msgid "Unknown failure %d"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -4032,6 +4033,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Okänt fel"
 
 #~ msgid "Only one alarm.touch alarm can be set."
 #~ msgstr "Endast ett larm av typ alarm.touch kan ställas in."

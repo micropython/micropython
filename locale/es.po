@@ -2063,8 +2063,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Error no manejado de ESP TLS %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Fallo desconocido"
+#, c-format
+msgid "Unknown failure %d"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -4045,6 +4046,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Fallo desconocido"
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "el argumento de entrada debe ser un entero o una tupla de par"

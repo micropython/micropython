@@ -2055,8 +2055,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Niet behandelde ESP TLS fout %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Onbekende fout"
+#, c-format
+msgid "Unknown failure %d"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -4032,6 +4033,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Onbekende fout"
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "invoerargument moet een integer of 2-tuple zijn"
