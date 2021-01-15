@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-13 02:19+0000\n"
+"PO-Revision-Date: 2021-01-17 12:55+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: main.c
 msgid ""
@@ -2080,7 +2080,7 @@ msgstr "Erro não tratado do ESP TLS %d %d %x %d"
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
-msgstr ""
+msgstr "Falha desconhecida %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2358,7 +2358,7 @@ msgstr "ramo fora do alcance"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "buffer is smaller than requested size"
-msgstr ""
+msgstr "o tamanho do buffer é menor do que o tamanho que foi solicitado"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
@@ -2366,7 +2366,7 @@ msgstr "o buffer deve ser um objeto como bytes"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "buffer size must be a multiple of element size"
-msgstr ""
+msgstr "o tamanho do buffer deve ser um múltiplo do tamanho do elemento"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3442,7 +3442,7 @@ msgstr "o offset deve ser >= 0"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset must be non-negative and no greater than buffer length"
-msgstr ""
+msgstr "o offset deve ser positivo e não maior do que o comprimento do buffer"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
