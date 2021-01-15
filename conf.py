@@ -103,7 +103,7 @@ redirects_file = 'docs/redirects.txt'
 
 # General information about the project.
 project = 'Adafruit CircuitPython'
-copyright = '2014-2020, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
+copyright = '2014-2021, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
 
 # These are overwritten on ReadTheDocs.
 # The version info for the project you're documenting, acts as replacement for
