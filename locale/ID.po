@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-03 05:29+0000\n"
+"PO-Revision-Date: 2021-01-15 19:49+0000\n"
 "Last-Translator: oon arfiandwi <oon.arfiandwi@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ID\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: main.c
 msgid ""
@@ -2060,32 +2060,34 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown gatt error: 0x%04x"
-msgstr ""
+msgstr "Kesalahan gatt tidak dikenal: 0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Unknown reason."
-msgstr ""
+msgstr "Alasan yang tidak diketahui."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown security error: 0x%04x"
-msgstr ""
+msgstr "Kesalahan keamanan tidak dikenal: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown soft device error: %04x"
-msgstr ""
+msgstr "Kesalahan perangkat lunak tidak dikenal: %04x"
 
 #: shared-bindings/_pixelbuf/PixelBuf.c
 #, c-format
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
-msgstr ""
+msgstr "Jumlah item pada RHS  tidak cocok (diharapkan %d, didapatkan %d)."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid ""
 "Unspecified issue. Can be that the pairing prompt on the other device was "
 "declined or ignored."
 msgstr ""
+"Masalah yang tidak ditentukan. Bisa jadi permintaan pemasangan pada "
+"perangkat lain ditolak atau diabaikan."
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
 #: ports/esp32s2/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
@@ -2099,15 +2101,15 @@ msgstr "Baudrate tidak didukung"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
-msgstr ""
+msgstr "Format tidak didukung"
 
 #: py/moduerrno.c
 msgid "Unsupported operation"
-msgstr ""
+msgstr "Operasi yang tidak didukung"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Unsupported pull value."
-msgstr ""
+msgstr "Nilai tarikan yang tidak didukung."
 
 #: ports/esp32s2/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -2116,12 +2118,12 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
-msgstr ""
+msgstr "Panjang nilai != Panjang tetap yang dibutuhkan"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
-msgstr ""
+msgstr "Panjang nilai > max_length"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Version was invalid"
@@ -2129,11 +2131,11 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
-msgstr ""
+msgstr "Fungsi Viper saat ini tidak mendukung lebih dari 4 argumen"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
-msgstr ""
+msgstr "Tegangan baca habis waktu"
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
@@ -2185,11 +2187,11 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
-msgstr ""
+msgstr "Menulis tidak didukung pada Karakteristik"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode: something unanticipated happened.\n"
-msgstr ""
+msgstr "Anda berada dalam mode aman: sesuatu yang tidak terduga terjadi.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -2197,7 +2199,7 @@ msgstr "Anda mengajukan untuk memulai mode aman pada (safe mode) pada "
 
 #: py/objtype.c
 msgid "__init__() should return None"
-msgstr ""
+msgstr "__init __() harus mengembalikan None"
 
 #: py/objtype.c
 msgid "__init__() should return None, not '%q'"
@@ -2205,7 +2207,7 @@ msgstr ""
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
-msgstr ""
+msgstr "__new__ arg harus berupa user-type"
 
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
@@ -2222,19 +2224,19 @@ msgstr "alamat %08x tidak selaras dengan %d bytes"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
-msgstr ""
+msgstr "alamat di luar batas"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
-msgstr ""
+msgstr "alamatnya kosong"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
-msgstr ""
+msgstr "arg berisi urutan kosong"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "argsort argument must be an ndarray"
-msgstr ""
+msgstr "Argumen argsort harus berupa ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
@@ -2242,7 +2244,7 @@ msgstr ""
 
 #: py/runtime.c
 msgid "argument has wrong type"
-msgstr ""
+msgstr "argumen memiliki tipe yang salah"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "argument must be ndarray"
@@ -2255,11 +2257,11 @@ msgstr "argumen num/types tidak cocok"
 
 #: py/runtime.c
 msgid "argument should be a '%q' not a '%q'"
-msgstr ""
+msgstr "argumen harus berupa '%q' bukan '%q'"
 
 #: extmod/ulab/code/linalg/linalg.c extmod/ulab/code/numerical/numerical.c
 msgid "arguments must be ndarrays"
-msgstr ""
+msgstr "argumen harus berupa ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
@@ -2268,7 +2270,7 @@ msgstr ""
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
-msgstr ""
+msgstr "diperlukan array/byte di sisi kanan"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2276,11 +2278,11 @@ msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
-msgstr ""
+msgstr "berusaha mendapatkan argmin/argmax dari urutan kosong"
 
 #: py/objstr.c
 msgid "attributes not supported yet"
-msgstr ""
+msgstr "atribut belum didukung"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis is out of bounds"
@@ -2300,7 +2302,7 @@ msgstr "mode compile buruk"
 
 #: py/objstr.c
 msgid "bad conversion specifier"
-msgstr ""
+msgstr "specifier salah konversi"
 
 #: py/objstr.c
 msgid "bad format string"
@@ -2326,8 +2328,16 @@ msgstr ""
 msgid "branch not in range"
 msgstr ""
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
 msgstr ""
 
 #: shared-module/struct/__init__.c
@@ -3386,6 +3396,10 @@ msgstr ""
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
