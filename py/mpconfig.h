@@ -283,6 +283,11 @@
 #define MICROPY_PERSISTENT_CODE_SAVE (0)
 #endif
 
+// Whether to support saving persistent code to a file via mp_raw_code_save_file
+#ifndef MICROPY_PERSISTENT_CODE_SAVE_FILE
+#define MICROPY_PERSISTENT_CODE_SAVE_FILE (0)
+#endif
+
 // Whether generated code can persist independently of the VM/runtime instance
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PERSISTENT_CODE
