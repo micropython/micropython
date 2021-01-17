@@ -705,23 +705,24 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             } else if (op == MP_QSTR_sub) {
                 op_code = ASM_THUMB_FORMAT_3_SUB;
                 goto op_format_3;
-            } else if (ARMV7M && op == MP_QSTR_movw) {
+            #if ARMV7M
+            } else if (op == MP_QSTR_movw) {
                 op_code = ASM_THUMB_OP_MOVW;
                 mp_uint_t reg_dest;
             op_movw_movt:
                 reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
                 asm_thumb_mov_reg_i16(&emit->as, op_code, reg_dest, i_src);
-            } else if (ARMV7M && op == MP_QSTR_movt) {
+            } else if (op == MP_QSTR_movt) {
                 op_code = ASM_THUMB_OP_MOVT;
                 goto op_movw_movt;
-            } else if (ARMV7M && op == MP_QSTR_movwt) {
+            } else if (op == MP_QSTR_movwt) {
                 // this is a convenience instruction
                 mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 uint32_t i_src = get_arg_i(emit, op_str, pn_args[1], 0xffffffff);
                 asm_thumb_mov_reg_i16(&emit->as, ASM_THUMB_OP_MOVW, reg_dest, i_src & 0xffff);
                 asm_thumb_mov_reg_i16(&emit->as, ASM_THUMB_OP_MOVT, reg_dest, (i_src >> 16) & 0xffff);
-            } else if (ARMV7M && op == MP_QSTR_ldrex) {
+            } else if (op == MP_QSTR_ldrex) {
                 mp_uint_t r_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 mp_parse_node_t pn_base, pn_offset;
                 if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
@@ -729,6 +730,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
                     asm_thumb_op32(&emit->as, 0xe850 | r_base, 0x0f00 | (r_dest << 12) | i8);
                 }
+            #endif
             } else {
                 // search table for ldr/str instructions
                 for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_9_10_op_table); i++) {
