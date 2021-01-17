@@ -30,6 +30,12 @@
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_PERSISTENT_CODE_SAVE (1)
 
+#if defined(__i386__) || defined(__x86_64__) || defined(_WIN32) || defined(__unix__) || defined(__APPLE__)
+#define MICROPY_PERSISTENT_CODE_SAVE_FILE (1)
+#else
+#define MICROPY_PERSISTENT_CODE_SAVE_FILE (0)
+#endif
+
 #define MICROPY_EMIT_X64            (1)
 #define MICROPY_EMIT_X86            (1)
 #define MICROPY_EMIT_THUMB          (1)
