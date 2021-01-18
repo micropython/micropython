@@ -55,21 +55,22 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t* self,
     mp_raise_NotImplementedError(translate("No DAC on chip"));
     #else
 
-    int channel = -1;
+    uint8_t channel;
+    switch (pin->number) {
+        #if defined(PIN_PA02) && !defined(IGNORE_PIN_PA02)
+        case PIN_PA02:
+            channel = 0;
+            break;
+        #endif
 
-    #if defined(PIN_PA02) && !defined(IGNORE_PIN_PA02)
-    if (pin->number != PIN_PA02) {
-        channel = 0;
-    }
-    #endif
-    #if defined(PIN_PA05) && defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)
-    if (pin->number != PIN_PA05) {
-        channel = 1;
-    }
-    #endif
+       #if defined(SAM_D5X_E5X) && defined(PIN_PA05) && !defined(IGNORE_PIN_PA05)
+        case PIN_PA05:
+            channel = 1;
+            break;
+       #endif
 
-    if(channel == -1) {
-        mp_raise_ValueError(translate("AnalogOut not supported on given pin"));
+        default:
+            mp_raise_ValueError(translate("AnalogOut not supported on given pin"));
         return;
     }
 

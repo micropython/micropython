@@ -6,20 +6,22 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2020-11-26 03:11+0000\n"
-"Last-Translator: Daniel Bravo Darriba <bravodarriba@gmail.com>\n"
+"PO-Revision-Date: 2021-01-07 18:01+0000\n"
+"Last-Translator: Dennis Schweer <dennis.schweer@ruhr-uni-bochum.de>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.4.1-dev\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running.\n"
 msgstr ""
+"\n"
+"Programm wird ausgeführt.\n"
 
 #: main.c
 msgid ""
@@ -115,6 +117,11 @@ msgstr "%q sollte ein integer sein"
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() nimmt %d Argumente ohne Keyword an, aber es wurden %d angegeben"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#, c-format
+msgid "%s error 0x%x"
+msgstr ""
+
 #: py/argcheck.c
 msgid "'%q' argument required"
 msgstr "'%q' Argument erforderlich"
@@ -129,7 +136,7 @@ msgstr "'%q' Objekt unterstützt '%q' nicht"
 
 #: py/obj.c
 msgid "'%q' object does not support item assignment"
-msgstr ""
+msgstr "'%q' Objekt unterschützt keine Elementzuweisung"
 
 #: py/obj.c
 msgid "'%q' object does not support item deletion"
@@ -141,7 +148,7 @@ msgstr "'%q' Objekt hat kein Attribut '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "'%q' Objekt ist kein Iterator"
 
 #: py/objtype.c py/runtime.c
 msgid "'%q' object is not callable"
@@ -235,7 +242,7 @@ msgstr "'continue' außerhalb einer Schleife"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "'coroutine' Objekt ist kein Iterator"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -277,6 +284,10 @@ msgstr "0.0 zu einer komplexen Potenz"
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() wird nicht unterstützt"
 
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -307,7 +318,7 @@ msgstr "Alle I2C-Peripheriegeräte sind in Benutzung"
 #: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
 #: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
-msgstr ""
+msgstr "Alle PCNT Einheiten sind in Benutzung"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/esp32s2/common-hal/canio/Listener.c
@@ -541,6 +552,10 @@ msgstr "Ein Bytes kann nur Werte zwischen 0 und 255 annehmen."
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBC-Blöcke müssen ein Vielfaches von 16 Bytes sein"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "CRC or checksum was invalid"
+msgstr ""
+
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr "Rufe super().__init__() vor dem Zugriff auf ein natives Objekt auf."
@@ -710,7 +725,7 @@ msgstr "Konnte Kamera nicht initialisieren"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "Could not initialize GNSS"
-msgstr ""
+msgstr "GNSS konnte nicht initialisiert werden"
 
 #: ports/cxd56/common-hal/sdioio/SDCard.c
 msgid "Could not initialize SDCard"
@@ -837,7 +852,7 @@ msgstr "Die EZB arbeitet jeweils nur mit 16 Bytes"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
-msgstr ""
+msgstr "ESP-IDF Speicherallozierung fehlgeschlagen"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
@@ -903,7 +918,7 @@ msgstr "FFT ist nur für ndarrays definiert"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "FFT is implemented for linear arrays only"
-msgstr ""
+msgstr "FFT ist nur für lineare Arrays implementiert"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
@@ -934,7 +949,7 @@ msgstr "Konnte keine RX Buffer mit %d allozieren"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
-msgstr ""
+msgstr "Zuweisung des Wifi Speichers ist fehlgeschlagen"
 
 #: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
@@ -950,7 +965,7 @@ msgstr "Verbindung nicht erfolgreich: timeout"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Failed to init wifi"
-msgstr ""
+msgstr "Wifi Initialisierung ist fehlgeschlagen"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
@@ -999,6 +1014,10 @@ msgstr ""
 msgid "Function requires lock"
 msgstr "Die Funktion erwartet, dass der 'lock'-Befehl zuvor ausgeführt wurde"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Generic Failure"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -1037,7 +1056,7 @@ msgstr "I2SOut nicht verfügbar"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr ""
+msgstr "IOs 0, 2 & 4 unterstützen keinen internen Pull up im sleep-Modus"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1058,7 +1077,7 @@ msgstr "Inkorrekte Puffergröße"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
-msgstr ""
+msgstr "Initialisierung aufgrund von Speichermangel fehlgeschlagen"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1127,6 +1146,7 @@ msgstr "Ungültige PWM Frequenz"
 msgid "Invalid Pin"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Ungültiges Argument"
@@ -1236,6 +1256,14 @@ msgstr "Ungültiger Ausführungsmodus."
 msgid "Invalid security_mode"
 msgstr "Ungültiger security_mode"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid size"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid state"
+msgstr ""
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
 msgstr "Ungültige Stimme"
@@ -1275,6 +1303,10 @@ msgstr "Länge muss ein int sein"
 #: py/objslice.c
 msgid "Length must be non-negative"
 msgstr "Länge darf nicht negativ sein"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "MAC address was invalid"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1510,12 +1542,12 @@ msgstr ""
 "Nur monochrome, indizierte 4bpp oder 8bpp, und 16bpp oder größere BMPs "
 "unterstützt: %d bpp wurden gegeben"
 
-#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
-msgid "Only one alarm.time alarm can be set."
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-msgid "Only one alarm.touch alarm can be set."
+#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
@@ -1526,6 +1558,18 @@ msgstr ""
 msgid "Only raw int supported for ip"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation or feature not supported"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation timed out"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Out of memory"
+msgstr ""
+
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr ""
@@ -1533,6 +1577,10 @@ msgstr ""
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "Oversample muss ein Vielfaches von 8 sein."
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "PDMIn not available"
+msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1549,6 +1597,10 @@ msgstr "Die PWM-Frequenz ist nicht schreibbar wenn variable_Frequenz = False."
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBus wird noch nicht unterstützt"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "Peripheral in use"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1670,6 +1722,10 @@ msgstr "Schreibgeschützte Dateisystem"
 msgid "Read-only object"
 msgstr "Schreibgeschützte Objekt"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Received response was invalid"
+msgstr ""
+
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "Zu früh neu geladen"
@@ -1681,6 +1737,10 @@ msgstr ""
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "Der angeforderte AES-Modus wird nicht unterstützt"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Requested resource not found"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -2069,6 +2129,10 @@ msgstr "Wert Länge != Erforderliche feste Länge"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
 msgstr "Länge des Wertes > max_length"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Version was invalid"
+msgstr ""
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -2491,6 +2555,10 @@ msgstr "chr() arg ist nicht in range(256)"
 msgid "circle can only be registered in one parent"
 msgstr "Kreis kann nur in einem Elternteil registriert werden"
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr "Farbpuffer muss 3 Bytes (RGB) oder 4 Bytes (RGB + pad byte) sein"
@@ -2576,6 +2644,10 @@ msgstr "Dezimalzahlen nicht unterstützt"
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "Die Standart-Ausnahmebehandlung muss als letztes sein"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2677,6 +2749,10 @@ msgstr "Erwarte nur einen Wert für set"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "Erwarte key:value für dict"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3217,6 +3293,10 @@ msgstr "kein verfügbares Netzwerkadapter (NIC)"
 msgid "no binding for nonlocal found"
 msgstr "Kein Binding für nonlocal gefunden"
 
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
+
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "Kein Modul mit dem Namen '%q'"
@@ -3458,6 +3538,8 @@ msgstr "pow() drittes Argument darf nicht 0 sein"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow () mit 3 Argumenten erfordert Integer"
 
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -3554,6 +3636,10 @@ msgstr "kompilieren von Skripten nicht unterstützt"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
 msgstr ""
 
 #: py/objstr.c
@@ -3858,7 +3944,7 @@ msgstr "nicht unterstütztes Formatzeichen '%c' (0x%x) bei Index %d"
 
 #: py/runtime.c
 msgid "unsupported type for %q: '%q'"
-msgstr ""
+msgstr "nicht unterstützer Typ für %q: '%q'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -3866,7 +3952,7 @@ msgstr "nicht unterstützter Typ für Operator"
 
 #: py/runtime.c
 msgid "unsupported types for %q: '%q', '%q'"
-msgstr ""
+msgstr "nicht unterstützte Typen für %q: '%q', '%q'"
 
 #: py/objint.c
 #, c-format
@@ -3911,7 +3997,7 @@ msgstr ""
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
-msgstr ""
+msgstr "falscher Eingabetyp"
 
 #: extmod/ulab/code/ulab_create.c py/objstr.c
 msgid "wrong number of arguments"
@@ -3927,11 +4013,15 @@ msgstr "falscher Operandentyp"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong output type"
-msgstr ""
+msgstr "Falscher Ausgabetyp"
 
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
 msgstr "x Wert außerhalb der Grenzen"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "xTaskCreate failed"
+msgstr ""
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"

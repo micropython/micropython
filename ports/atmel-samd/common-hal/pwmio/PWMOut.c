@@ -44,6 +44,7 @@
 
 #  define _TCC_SIZE(unused, n) TCC ## n ## _SIZE,
 #  define TCC_SIZES         { REPEAT_MACRO(_TCC_SIZE, 0, TCC_INST_NUM) }
+static const uint8_t tcc_sizes[TCC_INST_NUM] = TCC_SIZES;
 
 static uint32_t tcc_periods[TCC_INST_NUM];
 static uint32_t tc_periods[TC_INST_NUM];
@@ -233,8 +234,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t* self,
             resolution = 16;
         } else {
             // TCC resolution varies so look it up.
-            const uint8_t _tcc_sizes[TCC_INST_NUM] = TCC_SIZES;
-            resolution = _tcc_sizes[timer->index];
+            resolution = tcc_sizes[timer->index];
         }
         // First determine the divisor that gets us the highest resolution.
         uint32_t system_clock = common_hal_mcu_processor_get_frequency();
@@ -421,7 +421,8 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t* self,
     if (t->is_tc) {
         resolution = 16;
     } else {
-        resolution = 24;
+        // TCC resolution varies so look it up.
+        resolution = tcc_sizes[t->index];
     }
     uint32_t system_clock = common_hal_mcu_processor_get_frequency();
     uint32_t new_top;

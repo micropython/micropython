@@ -218,12 +218,12 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     }
 
     wifi_radio_error_t error = common_hal_wifi_radio_connect(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, timeout, bssid.buf, bssid.len);
-    if (error == WIFI_RADIO_ERROR_AUTH) {
+    if (error == WIFI_RADIO_ERROR_AUTH_FAIL) {
         mp_raise_ConnectionError(translate("Authentication failure"));
     } else if (error == WIFI_RADIO_ERROR_NO_AP_FOUND) {
         mp_raise_ConnectionError(translate("No network with that ssid"));
     } else if (error != WIFI_RADIO_ERROR_NONE) {
-        mp_raise_ConnectionError(translate("Unknown failure"));
+        mp_raise_msg_varg(&mp_type_ConnectionError, translate("Unknown failure %d"), error);
     }
 
     return mp_const_none;
@@ -295,7 +295,7 @@ const mp_obj_property_t wifi_radio_ipv4_dns_obj = {
 };
 
 //|     ap_info: Optional[Network]
-//|     """Network object containing BSSID, SSID, channel, country and RSSI when connected to an access point. None otherwise."""
+//|     """Network object containing BSSID, SSID, authmode, channel, country and RSSI when connected to an access point. None otherwise."""
 //|
 STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
     return common_hal_wifi_radio_get_ap_info(self);

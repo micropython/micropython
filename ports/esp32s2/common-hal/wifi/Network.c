@@ -54,3 +54,37 @@ mp_obj_t common_hal_wifi_network_get_country(wifi_network_obj_t *self) {
         // 2 instead of strlen(cstr) as this gives us only the country-code
         return mp_obj_new_str(cstr, 2);
 }
+
+mp_obj_t common_hal_wifi_network_get_authmode(wifi_network_obj_t *self) {
+    const char* authmode = "";
+    switch (self->record.authmode) {
+        case WIFI_AUTH_OPEN:
+            authmode = "OPEN";
+            break;
+        case WIFI_AUTH_WEP:
+            authmode = "WEP";
+            break;
+        case WIFI_AUTH_WPA_PSK:
+            authmode = "WPA_PSK";
+            break;
+        case WIFI_AUTH_WPA2_PSK:
+            authmode = "WPA2_PSK";
+            break;
+        case WIFI_AUTH_WPA_WPA2_PSK:
+            authmode = "WPA_WPA2_PSK";
+            break;
+        case WIFI_AUTH_WPA2_ENTERPRISE:
+            authmode = "WPA2_ENTERPRISE";
+            break;
+        case WIFI_AUTH_WPA3_PSK:
+            authmode = "WPA3_PSK";
+            break;
+        case WIFI_AUTH_WPA2_WPA3_PSK:
+            authmode = "WPA2_WPA3_PSK";
+            break;
+        default:
+            authmode = "UNKNOWN";
+            break;
+    }
+        return mp_obj_new_str(authmode, strlen(authmode));
+}
