@@ -126,7 +126,15 @@ void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *host
 }
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t* bssid, size_t bssid_len) {
-    // check enabled
+    EventBits_t bits;
+    bits = xEventGroupWaitBits(self->event_group_handle,
+        WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT,
+        pdTRUE,
+        pdTRUE,
+        0);
+        if ((bits & WIFI_CONNECTED_BIT) != 0) {
+            return WIFI_RADIO_ERROR_NONE;
+        }
     start_station(self);
 
     wifi_config_t* config = &self->sta_config;
@@ -157,7 +165,6 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     self->retries_left = 5;
     esp_wifi_connect();
 
-    EventBits_t bits;
     do {
         RUN_BACKGROUND_TASKS;
         bits = xEventGroupWaitBits(self->event_group_handle,
