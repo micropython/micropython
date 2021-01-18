@@ -537,3 +537,59 @@ the corresponding functions, or you can use the command-line client
 
 See the MicroPython forum for other community-supported alternatives
 to transfer files to an ESP32 board.
+
+Controlling the Python heap size
+--------------------------------
+
+By default MicroPython allocates the largest contiguous chunk of memory to the python heap.
+On a "simple" esp32 this comes out to around 100KB and on an esp32 with external SPIRAM this
+ends up being the full SPIRAM, typically 4MB. This default allocation may not be desirable
+and can be reduced for two use-cases by setting one of two variables in the ``micropython`` NVS
+namespace, see :ref:`esp32.NVS <esp32.NVS>` for details about accessing NVS (Non-Volatile
+Storage).
+
+Because MicroPython allocates the heap as one of the very first actions it is not possible to run
+python code to set the heap size. This is the reason that NVS variables are used and it also means
+that a hard reset is necessary after setting the variables before they take effect.
+A typical use is for ``main.py`` to check heap sizes and, if they're not appropriate,
+to set an NVS variable and perform a hard reset.
+
+The first use-case for this feature is to guarantee that ESP-IDF has some minimum amount of memory
+to work with. For example, by default without SPIRAM there is around 90KB left for ESP-IDF
+right at boot time. This is not enough for two TLS connections and not enough for one
+TLS connection and BLE either. (While 90KB might seem like a lot, it disappears quickly once
+Wifi is started and sockets are connected.)
+
+To give esp-idf a bit more memory, use something like::
+
+    import machine
+    from esp32 import NVS, idf_heap_info, HEAP_DATA
+
+    idf_free = sum([h[2] for h in idf_heap_info(HEAP_DATA)])
+    print("IDF heap free:", idf_free)
+
+    nvs = NVS("micropython")
+    nvs.set_i32("min_idf_heap", 120000)
+    nvs.commit()
+    machine.reset()
+
+Setting the ``min_idf_heap`` NVS variable to 120000 tells MicroPython to reduce its heap allocation
+from the default such that at least 120000 bytes are left for esp-idf.
+
+A second use case is to reduce GC times when using SPIRAM. A GC collection has to read sequentially
+though all of RAM during its sweep phase. When using a SPIRAM with the default 4MB allocation this
+takes about 90ms (assuming 240Mhz cpu and 80Mhz QIO SPIRAM), which is very impactful in a not so
+good way. Often applications only need a few hundred KB and this can be accomplished by setting the
+``max_mp_heap`` NVS variable to the desired size in bytes.
+
+A similar use-case is with an SPIRAM where it is desired to leave memory to a native module, for
+example to allocate a camera framebuffer. The size of the MP heap can be limited to at most 300KB
+using something like::
+
+    import machine
+    from esp32 import NVS
+
+    nvs = NVS("micropython")
+    nvs.set_i32("max_mp_heap", 300*1024)
+    nvs.commit()
+    machine.reset()

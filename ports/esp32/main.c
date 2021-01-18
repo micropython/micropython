@@ -75,30 +75,43 @@ void mp_task(void *pvParameter) {
     uart_init();
     machine_init();
 
-    // TODO: CONFIG_SPIRAM_SUPPORT is for 3.3 compatibility, remove after move to 4.0.
-    #if CONFIG_ESP32_SPIRAM_SUPPORT || CONFIG_SPIRAM_SUPPORT
-    // Try to use the entire external SPIRAM directly for the heap
-    size_t mp_task_heap_size;
-    void *mp_task_heap = (void *)0x3f800000;
-    switch (esp_spiram_get_chip_size()) {
-        case ESP_SPIRAM_SIZE_16MBITS:
-            mp_task_heap_size = 2 * 1024 * 1024;
-            break;
-        case ESP_SPIRAM_SIZE_32MBITS:
-        case ESP_SPIRAM_SIZE_64MBITS:
-            mp_task_heap_size = 4 * 1024 * 1024;
-            break;
-        default:
-            // No SPIRAM, fallback to normal allocation
-            mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
-            mp_task_heap = malloc(mp_task_heap_size);
-            break;
+    // Allocate MicroPython heap. By default we grab the largest contiguous chunk (GC requires
+    // having a contiguous heap). But this can be customized by setting two NVS variables.
+    // There's nothing special here about SPIRAM because the SDK config should set
+    // CONFIG_SPIRAM_USE_CAPS_ALLOC=y which makes any external SPIRAM automatically
+    // show up here under MALLOC_CAP_8BIT memory.
+#define MIN_HEAP_SIZE (20 * 1024)  // simple safety to avoid ending up with a non-functional heap
+    size_t avail_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT); // in bytes
+    size_t total_free = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+    size_t mp_task_heap_size = avail_heap_size; // proposed MP heap size
+    nvs_handle_t mp_nvs;
+    if (nvs_open("micropython", NVS_READONLY, &mp_nvs) == ESP_OK) {
+        // implement minimum heap left for esp-idf
+        int32_t min_idf_heap_size = 0; // minimum we leave to esp-idf, in bytes
+        if (nvs_get_i32(mp_nvs, "min_idf_heap", &min_idf_heap_size) == ESP_OK) {
+            if (total_free - mp_task_heap_size < min_idf_heap_size) {
+                // we can't take the largest contig chunk, need to leave more to esp-idf
+                mp_task_heap_size = total_free - min_idf_heap_size;
+                if (mp_task_heap_size < MIN_HEAP_SIZE) {
+                    mp_task_heap_size = MIN_HEAP_SIZE;
+                }
+            }
+        }
+        // implement maximum MP heap size
+        int32_t max_mp_heap_size = mp_task_heap_size; // max we alllocate to MicroPython, in bytes
+        if (nvs_get_i32(mp_nvs, "max_mp_heap", &max_mp_heap_size) == ESP_OK) {
+            if (max_mp_heap_size > MIN_HEAP_SIZE && mp_task_heap_size > max_mp_heap_size) {
+                // we're about to create too large a heap, be more modest
+                mp_task_heap_size = max_mp_heap_size;
+            }
+        }
+        nvs_close(mp_nvs);
     }
-    #else
-    // Allocate the uPy heap using malloc and get the largest available region
-    size_t mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
-    void *mp_task_heap = malloc(mp_task_heap_size);
-    #endif
+    void *mp_task_heap = heap_caps_malloc(mp_task_heap_size, MALLOC_CAP_8BIT);
+    if (avail_heap_size != mp_task_heap_size) {
+        printf("Heap limited: avail=%d, actual=%d, left to idf=%d\n",
+            avail_heap_size, mp_task_heap_size, total_free - mp_task_heap_size);
+    }
 
 soft_reset:
     // initialise the stack pointer for the main thread

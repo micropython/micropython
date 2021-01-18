@@ -33,6 +33,7 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 
+
 // This file implements the NVS (Non-Volatile Storage) class in the esp32 module.
 // It provides simple access to the NVS feature provided by ESP-IDF.
 

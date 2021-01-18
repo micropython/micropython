@@ -270,6 +270,8 @@ Constants
 
    Selects the wake level for pins.
 
+.. _esp32.NVS:
+
 Non-Volatile Storage
 --------------------
 
