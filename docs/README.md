@@ -47,7 +47,7 @@ This can be achieved with:
 
     make latexpdf
 
-but require rather complete install of LaTeX with various extensions. On
-Debian/Ubuntu, try (500MB+ download):
+but requires a rather complete install of LaTeX with various extensions. On
+Debian/Ubuntu, try (1GB+ download):
 
-    apt-get install texlive-latex-recommended texlive-latex-extra
+    apt install texlive-latex-recommended texlive-latex-extra texlive-xetex texlive-fonts-extra cm-super xindy
