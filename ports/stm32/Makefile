@@ -679,7 +679,7 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware0.bin $(BUILD)/firmware1.bin
 	$(call GENERATE_DFU,$@,$(word 1,$^),$(TEXT0_ADDR),$(word 2,$^),$(TEXT1_ADDR))
 endif
 
-$(BUILD)/firmware.pack.dfu: $(BUILD)/firmware.dfu $(BOARD_DIR)/mboot_keys.h
+$(BUILD)/firmware.pack.dfu: $(BUILD)/firmware.dfu $(MBOOT_PACK_KEYS_FILE)
 	$(call GENERATE_PACK_DFU,$@,$<)
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
