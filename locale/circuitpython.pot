@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-04 12:55-0600\n"
+"POT-Creation-Date: 2021-01-17 19:26-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1606,6 +1606,10 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
+#: ports/nrf/common-hal/busio/UART.c
+msgid "RS485 Not yet supported on this device"
+msgstr ""
+
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1621,7 +1625,7 @@ msgid "RTC is not supported on this board"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr ""
 
@@ -1640,6 +1644,10 @@ msgstr ""
 
 #: shared-module/displayio/Bitmap.c
 msgid "Read-only object"
+msgstr ""
+
+#: ports/nrf/common-hal/busio/UART.c
+msgid "Reading >receiver_buffer_size bytes is not supported"
 msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -2217,8 +2225,16 @@ msgstr ""
 msgid "branch not in range"
 msgstr ""
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
 msgstr ""
 
 #: shared-module/struct/__init__.c
@@ -3260,6 +3276,10 @@ msgstr ""
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
