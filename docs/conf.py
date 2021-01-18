@@ -259,6 +259,9 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_domain_indices = True
 
+# Enable better Unicode support so that `make latexpdf` doesn't fail
+latex_engine = "xelatex"
+
 
 # -- Options for manual page output ---------------------------------------
 
