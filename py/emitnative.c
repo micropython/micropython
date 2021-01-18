@@ -2454,6 +2454,7 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_x86_setcc_r8(emit->as, ops[op_idx], REG_RET);
             #elif N_THUMB
             asm_thumb_cmp_rlo_rlo(emit->as, REG_ARG_2, reg_rhs);
+            #if MICROPY_EMIT_THUMB_ARMV7M
             static uint16_t ops[6 + 6] = {
                 // unsigned
                 ASM_THUMB_OP_ITE_CC,
@@ -2473,6 +2474,28 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
             asm_thumb_op16(emit->as, ops[op_idx]);
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1);
             asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0);
+            #else
+            static uint16_t ops[6 + 6] = {
+                // unsigned
+                ASM_THUMB_CC_CC,
+                ASM_THUMB_CC_HI,
+                ASM_THUMB_CC_EQ,
+                ASM_THUMB_CC_LS,
+                ASM_THUMB_CC_CS,
+                ASM_THUMB_CC_NE,
+                // signed
+                ASM_THUMB_CC_LT,
+                ASM_THUMB_CC_GT,
+                ASM_THUMB_CC_EQ,
+                ASM_THUMB_CC_LE,
+                ASM_THUMB_CC_GE,
+                ASM_THUMB_CC_NE,
+            };
+            asm_thumb_bcc_rel9(emit->as, ops[op_idx], 6);
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 0);
+            asm_thumb_b_rel12(emit->as, 4);
+            asm_thumb_mov_rlo_i8(emit->as, REG_RET, 1);
+            #endif
             #elif N_ARM
             asm_arm_cmp_reg_reg(emit->as, REG_ARG_2, reg_rhs);
             static uint ccs[6 + 6] = {

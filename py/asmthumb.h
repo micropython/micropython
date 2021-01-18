@@ -330,6 +330,8 @@ void asm_thumb_ldr_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint re
 void asm_thumb_b_label(asm_thumb_t *as, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bcc_label(asm_thumb_t *as, int cc, uint label); // convenience: picks narrow or wide branch
 void asm_thumb_bl_ind(asm_thumb_t *as, uint fun_id, uint reg_temp); // convenience
+void asm_thumb_bcc_rel9(asm_thumb_t *as, int cc, int rel);
+void asm_thumb_b_rel12(asm_thumb_t *as, int rel);
 
 // Holds a pointer to mp_fun_table
 #define ASM_THUMB_REG_FUN_TABLE ASM_THUMB_REG_R7

@@ -564,6 +564,18 @@ void asm_thumb_bcc_label(asm_thumb_t *as, int cond, uint label) {
     }
 }
 
+void asm_thumb_bcc_rel9(asm_thumb_t *as, int cond, int rel) {
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    assert(SIGNED_FIT9(rel));
+    asm_thumb_op16(as, OP_BCC_N(cond, rel));
+}
+
+void asm_thumb_b_rel12(asm_thumb_t *as, int rel) {
+    rel -= 4; // account for instruction prefetch, PC is 4 bytes ahead of this instruction
+    assert(SIGNED_FIT12(rel));
+    asm_thumb_op16(as, OP_B_N(rel));
+}
+
 #define OP_BLX(reg) (0x4780 | ((reg) << 3))
 #define OP_SVC(arg) (0xdf00 | (arg))
 
