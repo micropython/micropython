@@ -33,6 +33,8 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 
+
+#if MICROPY_ESP_IDF_4
 // This file implements the NVS (Non-Volatile Storage) class in the esp32 module.
 // It provides simple access to the NVS feature provided by ESP-IDF.
 
@@ -149,3 +151,22 @@ const mp_obj_type_t esp32_nvs_type = {
     .make_new = esp32_nvs_make_new,
     .locals_dict = (mp_obj_dict_t *)&esp32_nvs_locals_dict,
 };
+
+#else // esp-idf v3
+
+STATIC mp_obj_t esp32_nvs_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    mp_raise_ValueError(MP_ERROR_TEXT("NVS not supported with esp-idf v3"));
+    return mp_const_none;
+}
+STATIC const mp_rom_map_elem_t esp32_nvs_locals_dict_table[] = { };
+STATIC MP_DEFINE_CONST_DICT(esp32_nvs_locals_dict, esp32_nvs_locals_dict_table);
+
+
+const mp_obj_type_t esp32_nvs_type = {
+    { &mp_type_type },
+    .name = MP_QSTR_NVS,
+    .make_new = esp32_nvs_make_new,
+    .locals_dict = (mp_obj_dict_t *)&esp32_nvs_locals_dict,
+};
+
+#endif
