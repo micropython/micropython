@@ -2063,8 +2063,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Error no manejado de ESP TLS %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Fallo desconocido"
+#, c-format
+msgid "Unknown failure %d"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2339,9 +2340,17 @@ msgstr "bits_per_sample debe ser 8 ó 16"
 msgid "branch not in range"
 msgstr "la rama no está dentro del rango"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "buffer debe de ser un objeto bytes-like"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3413,6 +3422,10 @@ msgstr "offset es demasiado grande"
 msgid "offset must be >= 0"
 msgstr ""
 
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
+msgstr ""
+
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "offset fuera de límites"
@@ -4033,6 +4046,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Fallo desconocido"
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "el argumento de entrada debe ser un entero o una tupla de par"
