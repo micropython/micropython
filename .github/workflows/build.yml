@@ -315,6 +315,7 @@ jobs:
         - "spresense"
         - "stackrduino_m0_pro"
         - "stm32f411ce_blackpill"
+        - "stm32f411ce_blackpill_with_flash"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stm32f4_discovery"

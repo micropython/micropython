@@ -1,0 +1,19 @@
+USB_VID = 0x239A
+USB_PID = 0x006A
+USB_PRODUCT = "stm32f411ce blackpill with flash"
+USB_MANUFACTURER = "Unknown"
+
+SPI_FLASH_FILESYSTEM = 1
+EXTERNAL_FLASH_DEVICE_COUNT = 2
+#See supervisor/shared/external_flash/devices.h for options
+EXTERNAL_FLASH_DEVICES = W25Q64FV,W25Q64JV_IQ
+LONGINT_IMPL = MPZ
+
+INTERNAL_FLASH_FILESYSTEM = 0
+
+MCU_SERIES = F4
+MCU_VARIANT = STM32F411xE
+MCU_PACKAGE = UFQFPN48
+
+LD_COMMON = boards/common_default.ld
+LD_FILE = boards/STM32F411_nvm_nofs.ld
