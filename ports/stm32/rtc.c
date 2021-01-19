@@ -43,7 +43,7 @@
 /// \moduleref pyb
 /// \class RTC - real time clock
 ///
-/// The RTC is and independent clock that keeps track of the date
+/// The RTC is an independent clock that keeps track of the date
 /// and time.
 ///
 /// Example usage:
