@@ -1,5 +1,5 @@
 USB_VID = 0x239A
-USB_PID = 0x806A
+USB_PID = 0x006A
 USB_PRODUCT = "stm32f411ce blackpill with flash"
 USB_MANUFACTURER = "Unknown"
 
