@@ -133,3 +133,15 @@ Methods
    dhcp_hostname  The DHCP hostname to use
    reconnects     Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
    =============  ===========
+
+.. method:: WLAN.wifi_ps(mode)
+            WLAN.wifi_ps()
+
+   Sets (when called with a parameter) or gets the ESP32 WLAN power save mode.
+   For details, please see the ESP-IDF WIFI documentation at https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/wifi.html
+
+   The parameter mode may be one of the constants
+
+      * ``network.WIFI_PS_NONE``
+      * ``network.WIFI_PS_MIN_MODEM``
+      * ``network.WIFI_PS_MAX_MODEM``
