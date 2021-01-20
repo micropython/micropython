@@ -143,9 +143,9 @@ safe_mode_t port_init(void) {
         case ESP_RST_BROWNOUT:
             return BROWNOUT;
         case ESP_RST_PANIC:
+            return HARD_CRASH;
         case ESP_RST_INT_WDT:
         case ESP_RST_WDT:
-            return HARD_CRASH;
         default:
             break;
     }
