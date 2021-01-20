@@ -172,6 +172,8 @@ def mkdir(filename):
 
 def freeze_internal(kind, path, script, opt):
     path = convert_path(path)
+    if not os.path.isdir(path):
+        raise FreezeError("freeze path must be a directory")
     if script is None and kind == KIND_AS_STR:
         if any(f[0] == KIND_AS_STR for f in manifest_list):
             raise FreezeError("can only freeze one str directory")
