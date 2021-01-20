@@ -26,6 +26,20 @@ jobs:
       if: failure()
       run: tests/run-tests --print-failures
 
+  reproducible:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: source tools/ci.sh && ci_unix_minimal_build
+      env:
+        SOURCE_DATE_EPOCH: 1234567890
+    - name: Run main test suite
+      run: source tools/ci.sh && ci_unix_minimal_run_tests
+    - name: Print failures
+      if: failure()
+      run: tests/run-tests --print-failures
+
   standard:
     runs-on: ubuntu-latest
     steps:
