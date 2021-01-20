@@ -2043,8 +2043,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Wèizhī gùzhàng"
+#, c-format
+msgid "Unknown failure %d"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2317,9 +2318,17 @@ msgstr "měi jiàn yàngběn bìxū wèi 8 huò 16"
 msgid "branch not in range"
 msgstr "fēnzhī bùzài fànwéi nèi"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3384,6 +3393,10 @@ msgstr ""
 msgid "offset must be >= 0"
 msgstr ""
 
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
+msgstr ""
+
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "piānlí biānjiè"
@@ -4003,6 +4016,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Wèizhī gùzhàng"
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "shūrù cānshù bìxū shì zhěngshù huò 2 yuán zǔ"

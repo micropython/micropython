@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-13 02:19+0000\n"
+"PO-Revision-Date: 2021-01-17 12:55+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: main.c
 msgid ""
@@ -2078,8 +2078,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Erro não tratado do ESP TLS %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Falha desconhecida"
+#, c-format
+msgid "Unknown failure %d"
+msgstr "Falha desconhecida %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2355,9 +2356,17 @@ msgstr "bits_per_sample deve ser 8 ou 16"
 msgid "branch not in range"
 msgstr "ramo fora do alcance"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr "o tamanho do buffer é menor do que o tamanho que foi solicitado"
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "o buffer deve ser um objeto como bytes"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr "o tamanho do buffer deve ser um múltiplo do tamanho do elemento"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3431,6 +3440,10 @@ msgstr "o offset é muito grande"
 msgid "offset must be >= 0"
 msgstr "o offset deve ser >= 0"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
+msgstr "o offset deve ser positivo e não maior do que o comprimento do buffer"
+
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "desvio fora dos limites"
@@ -4055,6 +4068,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Falha desconhecida"
 
 #~ msgid "Only one alarm.touch alarm can be set."
 #~ msgstr "Apenas um alarme alarm.touch pode ser definido."
