@@ -26,6 +26,17 @@ jobs:
       if: failure()
       run: tests/run-tests --print-failures
 
+  reproducible:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build with reproducible date
+      run: source tools/ci.sh && ci_unix_minimal_build
+      env:
+        SOURCE_DATE_EPOCH: 1234567890
+    - name: Check reproducible build date
+      run: echo | ports/unix/micropython-minimal -i | grep 'on 2009-02-13;'
+
   standard:
     runs-on: ubuntu-latest
     steps:
