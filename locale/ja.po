@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-23 23:04-0500\n"
+"POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2020-11-27 18:34+0000\n"
 "Last-Translator: sporeball <sporeballdev@gmail.com>\n"
 "Language-Team: none\n"
@@ -117,6 +117,11 @@ msgstr "%qはint型でなければなりません"
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() は %d 個の位置引数を取りますが、%d 個与えられました"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#, c-format
+msgid "%s error 0x%x"
+msgstr ""
 
 #: py/argcheck.c
 msgid "'%q' argument required"
@@ -279,6 +284,10 @@ msgstr "0.0を複素数でべき乗"
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "引数3つのpow()は非対応"
+
+#: shared-module/msgpack/__init__.c
+msgid "64 bit types"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -541,6 +550,10 @@ msgstr "バイト値は0から255の間でなければなりません"
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBCブロックは16バイトの整数倍でなければなりません"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "CRC or checksum was invalid"
+msgstr ""
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -994,6 +1007,10 @@ msgstr "このタイマーを使う既存のPWMOutと周波数を一致させる
 msgid "Function requires lock"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Generic Failure"
+msgstr ""
+
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -1122,6 +1139,7 @@ msgstr "無効なPWM周波数"
 msgid "Invalid Pin"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "不正な引数"
@@ -1182,6 +1200,7 @@ msgstr "不正なphase"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 #: ports/esp32s2/common-hal/touchio/TouchIn.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1230,6 +1249,14 @@ msgstr "不正なrun mode"
 msgid "Invalid security_mode"
 msgstr "不正なsecurity_mode"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid size"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Invalid state"
+msgstr ""
+
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
 msgstr "不正なボイス"
@@ -1269,6 +1296,10 @@ msgstr "長さには整数が必要"
 #: py/objslice.c
 msgid "Length must be non-negative"
 msgstr "Lengthは非負数でなければなりません"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "MAC address was invalid"
+msgstr ""
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1498,6 +1529,10 @@ msgid ""
 "%d bpp given"
 msgstr ""
 
+#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+msgid "Only one TouchAlarm can be set in deep sleep."
+msgstr ""
+
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
@@ -1510,6 +1545,18 @@ msgstr ""
 msgid "Only raw int supported for ip"
 msgstr ""
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation or feature not supported"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Operation timed out"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Out of memory"
+msgstr ""
+
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr ""
@@ -1517,6 +1564,10 @@ msgstr ""
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr "オーバーサンプルは8の倍数でなければなりません"
+
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "PDMIn not available"
+msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1534,6 +1585,10 @@ msgstr "PWM周波数は生成時のvariable_frequencyがFalseのとき書き換�
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr "ParallelBusにはまだ対応していません"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "Peripheral in use"
+msgstr ""
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1652,6 +1707,10 @@ msgstr "読み込み専用のファイルシステム"
 msgid "Read-only object"
 msgstr "読み込み専用のオブジェクト"
 
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Received response was invalid"
+msgstr ""
+
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "リフレッシュが早すぎます"
@@ -1663,6 +1722,10 @@ msgstr ""
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
 msgstr "要求のAESモードは非対応"
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Requested resource not found"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -2039,6 +2102,10 @@ msgstr ""
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
+msgstr ""
+
+#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+msgid "Version was invalid"
 msgstr ""
 
 #: py/emitnative.c
@@ -2443,6 +2510,10 @@ msgstr ""
 msgid "circle can only be registered in one parent"
 msgstr ""
 
+#: shared-bindings/msgpack/ExtType.c
+msgid "code outside range 0~127"
+msgstr ""
+
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
 msgstr ""
@@ -2517,6 +2588,10 @@ msgstr "dataはイテレート可能でなければなりません"
 msgid "data must be of equal length"
 msgstr "dataは同じ長さでなければなりません"
 
+#: extmod/ulab/code/ndarray.c
+msgid "data type not understood"
+msgstr ""
+
 #: py/parsenum.c
 msgid "decimal numbers not supported"
 msgstr ""
@@ -2524,6 +2599,10 @@ msgstr ""
 #: py/compile.c
 msgid "default 'except' must be last"
 msgstr "デフォルトのexceptは最後に置く必要があります"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "default is not a function"
+msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2625,6 +2704,10 @@ msgstr "setには値のみが必要"
 #: py/compile.c
 msgid "expecting key:value for dict"
 msgstr "dictには key:value が必要"
+
+#: shared-bindings/msgpack/__init__.c
+msgid "ext_hook is not a function"
+msgstr ""
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -2830,7 +2913,7 @@ msgid "input and output shapes are not compatible"
 msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
-msgid "input argument must be an integer or a 2-tuple"
+msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
 
 #: extmod/ulab/code/fft/fft.c
@@ -3073,6 +3156,10 @@ msgstr ""
 msgid "maxiter should be > 0"
 msgstr ""
 
+#: extmod/ulab/code/numerical/numerical.c
+msgid "median argument must be an ndarray"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "memory allocation failed, allocating %u bytes"
@@ -3154,6 +3241,10 @@ msgstr "利用可能なNICがありません"
 #: py/compile.c
 msgid "no binding for nonlocal found"
 msgstr "nonlocalの対象が見つかりません"
+
+#: shared-module/msgpack/__init__.c
+msgid "no default packer"
+msgstr ""
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -3303,10 +3394,6 @@ msgid "operation is implemented for 1D Boolean arrays only"
 msgstr ""
 
 #: extmod/ulab/code/numerical/numerical.c
-msgid "operation is not implemented for flattened array"
-msgstr ""
-
-#: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
 msgstr "この演算はndarray上で実装されていません"
 
@@ -3398,6 +3485,8 @@ msgstr "pow()の3つ目の引数は0にできません"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow()の第3引数には整数が必要"
 
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
@@ -3493,6 +3582,10 @@ msgstr "スクリプトのコンパイルは非対応"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
+msgstr ""
+
+#: shared-module/msgpack/__init__.c
+msgid "short read"
 msgstr ""
 
 #: py/objstr.c
@@ -3652,6 +3745,10 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr "指定された書式に対して引数が多すぎます"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "too many dimensions"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
 msgstr "インデクスが多すぎます"
@@ -3662,15 +3759,15 @@ msgid "too many values to unpack (expected %d)"
 msgstr "アンパックする値が多すぎます (%d個を期待)"
 
 #: extmod/ulab/code/approx/approx.c
+msgid "trapz is defined for 1D arrays"
+msgstr ""
+
+#: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapzは同じ長さの1次元arrayに対して定義されています"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
-msgstr ""
-
-#: extmod/ulab/code/linalg/linalg.c
-msgid "tuple index out of range"
 msgstr ""
 
 #: py/obj.c
@@ -3862,6 +3959,10 @@ msgstr ""
 #: shared-module/displayio/Shape.c
 msgid "x value out of bounds"
 msgstr "xが範囲外"
+
+#: ports/esp32s2/common-hal/audiobusio/__init__.c
+msgid "xTaskCreate failed"
+msgstr ""
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"

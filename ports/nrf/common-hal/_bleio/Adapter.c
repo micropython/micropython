@@ -469,7 +469,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
 
     ble_drv_add_event_handler(scan_on_ble_evt, self->scan_results);
 
-    uint32_t nrf_timeout = SEC_TO_UNITS(timeout, UNIT_10_MS);
+    uint32_t nrf_timeout = SEC_TO_UNITS(timeout, UNIT_10_MS) + 0.5f;
     if (nrf_timeout > UINT16_MAX) {
         // 0xffff / 100
         mp_raise_ValueError(translate("timeout must be < 655.35 secs"));
@@ -479,15 +479,15 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t*
         mp_raise_ValueError(translate("non-zero timeout must be > 0.01"));
     }
 
-    if (nrf_timeout) {
+    if (nrf_timeout == 0) {
         nrf_timeout = BLE_GAP_SCAN_TIMEOUT_UNLIMITED;
     }
 
     ble_gap_scan_params_t scan_params = {
         .extended = extended,
-        .interval = SEC_TO_UNITS(interval, UNIT_0_625_MS),
+        .interval = SEC_TO_UNITS(interval, UNIT_0_625_MS) + 0.5f,
         .timeout = nrf_timeout,
-        .window = SEC_TO_UNITS(window, UNIT_0_625_MS),
+        .window = SEC_TO_UNITS(window, UNIT_0_625_MS) + 0.5f,
         .scan_phys = BLE_GAP_PHY_1MBPS,
         .active = active
     };
@@ -553,7 +553,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
         .window = MSEC_TO_UNITS(100, UNIT_0_625_MS),
         .scan_phys = BLE_GAP_PHY_1MBPS,
         // timeout of 0 means no timeout
-        .timeout = SEC_TO_UNITS(timeout, UNIT_10_MS),
+        .timeout = SEC_TO_UNITS(timeout, UNIT_10_MS) + 0.5f,
     };
 
     ble_gap_conn_params_t conn_params = {
@@ -696,7 +696,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, 
     }
 
     ble_gap_adv_params_t adv_params = {
-        .interval = SEC_TO_UNITS(interval, UNIT_0_625_MS),
+        .interval = SEC_TO_UNITS(interval, UNIT_0_625_MS) + 0.5f,
         .properties.type = adv_type,
         .duration = SEC_TO_UNITS(timeout, UNIT_10_MS),
         .filter_policy = BLE_GAP_ADV_FP_ANY,

@@ -32,6 +32,7 @@
 #include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
+#include "shared-bindings/alarm/touch/TouchAlarm.h"
 #include "shared-bindings/supervisor/Runtime.h"
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/autoreload.h"
@@ -72,7 +73,8 @@
 void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
         if (MP_OBJ_IS_TYPE(objs[i], &alarm_pin_pinalarm_type) ||
-            MP_OBJ_IS_TYPE(objs[i], &alarm_time_timealarm_type)) {
+            MP_OBJ_IS_TYPE(objs[i], &alarm_time_timealarm_type) ||
+            MP_OBJ_IS_TYPE(objs[i], &alarm_touch_touchalarm_type)) {
             continue;
         }
         mp_raise_TypeError_varg(translate("Expected an alarm"));
@@ -182,6 +184,18 @@ STATIC const mp_obj_module_t alarm_time_module = {
     .globals = (mp_obj_dict_t*)&alarm_time_globals,
 };
 
+STATIC const mp_map_elem_t alarm_touch_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_touch) },
+    { MP_ROM_QSTR(MP_QSTR_TouchAlarm), MP_OBJ_FROM_PTR(&alarm_touch_touchalarm_type) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(alarm_touch_globals, alarm_touch_globals_table);
+
+STATIC const mp_obj_module_t alarm_touch_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t*)&alarm_touch_globals,
+};
+
 // The module table is mutable because .wake_alarm is a mutable attribute.
 STATIC mp_map_elem_t alarm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_alarm) },
@@ -195,6 +209,7 @@ STATIC mp_map_elem_t alarm_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_pin), MP_OBJ_FROM_PTR(&alarm_pin_module) },
     { MP_ROM_QSTR(MP_QSTR_time), MP_OBJ_FROM_PTR(&alarm_time_module) },
+    { MP_ROM_QSTR(MP_QSTR_touch), MP_OBJ_FROM_PTR(&alarm_touch_module) },
 
     { MP_ROM_QSTR(MP_QSTR_SleepMemory),   MP_OBJ_FROM_PTR(&alarm_sleep_memory_type) },
     { MP_ROM_QSTR(MP_QSTR_sleep_memory),  MP_OBJ_FROM_PTR(&alarm_sleep_memory_obj) },
@@ -212,19 +227,15 @@ mp_obj_t alarm_get_wake_alarm(void) {
     }
 }
 
-STATIC void alarm_set_wake_alarm(mp_obj_t alarm) {
+// Initialize .wake_alarm value.
+void alarm_save_wake_alarm(void) {
     // Equivalent of:
     // alarm.wake_alarm = alarm
     mp_map_elem_t *elem =
         mp_map_lookup(&alarm_module_globals.map, MP_ROM_QSTR(MP_QSTR_wake_alarm), MP_MAP_LOOKUP);
     if (elem) {
-        elem->value = alarm;
+        elem->value = common_hal_alarm_get_wake_alarm();
     }
-}
-
-// Initialize .wake_alarm value.
-void alarm_save_wakeup_alarm(void) {
-    alarm_set_wake_alarm(common_hal_alarm_get_wake_alarm());
 }
 
 const mp_obj_module_t alarm_module = {

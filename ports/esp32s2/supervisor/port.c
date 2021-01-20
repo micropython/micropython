@@ -45,7 +45,6 @@
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
-#include "common-hal/touchio/TouchIn.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
@@ -55,11 +54,16 @@
 #include "peripherals/rmt.h"
 #include "peripherals/pcnt.h"
 #include "peripherals/timer.h"
+#include "peripherals/touch.h"
 #include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
 #include "components/heap/include/esp_heap_caps.h"
 #include "components/xtensa/include/esp_debug_helpers.h"
 #include "components/soc/soc/esp32s2/include/soc/cache_memory.h"
 #include "components/soc/soc/esp32s2/include/soc/rtc_cntl_reg.h"
+
+#if CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/__init__.h"
+#endif
 
 #define HEAP_SIZE (48 * 1024)
 
@@ -107,6 +111,20 @@ safe_mode_t port_init(void) {
     heap = NULL;
     never_reset_module_internal_pins();
 
+    #if defined(DEBUG)
+    // debug UART
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif
+
+    #if defined(DEBUG) || defined(ENABLE_JTAG)
+    // JTAG
+    common_hal_never_reset_pin(&pin_GPIO39);
+    common_hal_never_reset_pin(&pin_GPIO40);
+    common_hal_never_reset_pin(&pin_GPIO41);
+    common_hal_never_reset_pin(&pin_GPIO42);
+    #endif
+
     #ifdef CONFIG_SPIRAM
         heap = (uint32_t*) (DRAM0_CACHE_ADDRESS_HIGH - CONFIG_SPIRAM_SIZE);
         heap_size = CONFIG_SPIRAM_SIZE / sizeof(uint32_t);
@@ -153,6 +171,10 @@ void reset_port(void) {
     ps2_reset();
 #endif
 
+#if CIRCUITPY_AUDIOBUSIO
+    i2s_reset();
+#endif
+
 #if CIRCUITPY_PULSEIO
     esp32s2_peripherals_rmt_reset();
     pulsein_reset();
@@ -190,7 +212,7 @@ void reset_port(void) {
 #endif
 
 #if CIRCUITPY_TOUCHIO_USE_NATIVE
-    touchin_reset();
+    peripherals_touch_reset();
 #endif
 
 #if CIRCUITPY_WATCHDOG
@@ -275,8 +297,12 @@ void port_disable_tick(void) {
     esp_timer_stop(_tick_timer);
 }
 
-void sleep_timer_cb(void* arg) {
+void port_wake_main_task() {
     xTaskNotifyGive(circuitpython_task);
+}
+
+void sleep_timer_cb(void* arg) {
+    port_wake_main_task();
 }
 
 void port_interrupt_after_ticks(uint32_t ticks) {

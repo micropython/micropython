@@ -22,6 +22,7 @@ CIRCUITPY_GAMEPAD = 1
 CIRCUITPY_BUSDEVICE = 1
 
 # Include these Python libraries in firmware.
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_HID
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_SD
 #FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_ADXL34x

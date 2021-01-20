@@ -55,8 +55,6 @@ static void start_station(wifi_radio_obj_t *self) {
     esp_wifi_set_mode(next_mode);
 
     self->sta_mode = 1;
-
-    esp_wifi_set_config(WIFI_MODE_STA, &self->sta_config);
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
@@ -170,11 +168,11 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     } while ((bits & (WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT)) == 0 && !mp_hal_is_interrupted());
     if ((bits & WIFI_DISCONNECTED_BIT) != 0) {
         if (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) {
-            return WIFI_RADIO_ERROR_AUTH;
+            return WIFI_RADIO_ERROR_AUTH_FAIL;
         } else if (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND) {
             return WIFI_RADIO_ERROR_NO_AP_FOUND;
         }
-        return WIFI_RADIO_ERROR_UNKNOWN;
+        return self->last_disconnect_reason;
     }
     return WIFI_RADIO_ERROR_NONE;
 }
