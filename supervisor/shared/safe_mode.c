@@ -28,7 +28,9 @@
 
 #include "mphalport.h"
 
+#if defined(MICROPY_HW_LED_STATUS)
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#endif
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 

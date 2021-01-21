@@ -198,11 +198,17 @@ CFLAGS += -DCIRCUITPY_PULSEIO=$(CIRCUITPY_PULSEIO)
 
 # For now we tie PWMIO to PULSEIO so they always both exist. In CircuitPython 7
 # we can enable and disable them separately once PWMOut is removed from `pulseio`.
-CIRCUITPY_PWMIO = $(CIRCUITPY_PULSEIO)
+CIRCUITPY_PWMIO ?= $(CIRCUITPY_PULSEIO)
 CFLAGS += -DCIRCUITPY_PWMIO=$(CIRCUITPY_PWMIO)
 
 CIRCUITPY_RANDOM ?= 1
 CFLAGS += -DCIRCUITPY_RANDOM=$(CIRCUITPY_RANDOM)
+
+# CIRCUITPY_RP2PIO is handled in the raspberrypi tree.
+# Only for rp2 chips.
+# Assume not a rp2 build.
+CIRCUITPY_RP2PIO ?= 0
+CFLAGS += -DCIRCUITPY_RP2PIO=$(CIRCUITPY_RP2PIO)
 
 CIRCUITPY_RGBMATRIX ?= 0
 CFLAGS += -DCIRCUITPY_RGBMATRIX=$(CIRCUITPY_RGBMATRIX)

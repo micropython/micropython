@@ -26,6 +26,7 @@ SUPPORTED_PORTS = [
     "litex",
     "mimxrt10xx",
     "nrf",
+    "raspberrypi",
     "stm",
 ]
 
@@ -47,6 +48,7 @@ extension_by_port = {
     "mimxrt10xx": HEX_UF2,
     "litex": DFU,
     "esp32s2": BIN_UF2,
+    "raspberrypi": UF2,
 }
 
 # Per board overrides
