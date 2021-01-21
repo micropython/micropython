@@ -171,3 +171,6 @@
 [submodule "frozen/Adafruit_CircuitPython_LC709203F"]
 	path = frozen/Adafruit_CircuitPython_LC709203F
 	url = https://github.com/adafruit/Adafruit_CircuitPython_LC709203F
+[submodule "ports/raspberrypi/sdk"]
+	path = ports/raspberrypi/sdk
+	url = https://github.com/raspberrypi/pico-sdk.git

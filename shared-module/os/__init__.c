@@ -42,6 +42,7 @@
 // Version of mp_vfs_lookup_path that takes and returns uPy string objects.
 STATIC mp_vfs_mount_t *lookup_path(const char* path, mp_obj_t *path_out) {
     const char *p_out;
+    *path_out = mp_const_none;
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(&mp_type_str,
@@ -53,6 +54,7 @@ STATIC mp_vfs_mount_t *lookup_path(const char* path, mp_obj_t *path_out) {
 // Strip off trailing slashes to please underlying libraries
 STATIC mp_vfs_mount_t *lookup_dir_path(const char* path, mp_obj_t *path_out) {
     const char *p_out;
+    *path_out = mp_const_none;
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         size_t len = strlen(p_out);

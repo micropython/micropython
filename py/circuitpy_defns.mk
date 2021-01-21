@@ -51,6 +51,7 @@ BASE_CFLAGS = \
 	-DCIRCUITPY_SOFTWARE_SAFE_MODE=0x0ADABEEF \
 	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
+	-DCIRCUITPY_BOARD_ID="\"$(BOARD)\"" \
 	--param max-inline-insns-single=500
 
 #        Use these flags to debug build times and header includes.
@@ -233,6 +234,9 @@ SRC_PATTERNS += pwmio/%
 endif
 ifeq ($(CIRCUITPY_RANDOM),1)
 SRC_PATTERNS += random/%
+endif
+ifeq ($(CIRCUITPY_RP2PIO),1)
+SRC_PATTERNS += rp2pio/%
 endif
 ifeq ($(CIRCUITPY_ROTARYIO),1)
 SRC_PATTERNS += rotaryio/%

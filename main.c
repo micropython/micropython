@@ -317,7 +317,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 
     // Program has finished running.
 
-    bool serial_connected_before_animation = serial_connected();
+    bool printed_press_any_key = false;
     #if CIRCUITPY_DISPLAYIO
     bool refreshed_epaper_display = false;
     #endif
@@ -364,7 +364,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         }
         #endif
 
-        if (!serial_connected_before_animation && serial_connected()) {
+        if (!printed_press_any_key && serial_connected()) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
             }
@@ -372,11 +372,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             print_safe_mode_message(safe_mode);
             serial_write("\n");
             serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload.\n"));
+            printed_press_any_key = true;
         }
-        if (serial_connected_before_animation && !serial_connected()) {
+        if (!serial_connected()) {
             serial_connected_at_start = false;
+            printed_press_any_key = false;
         }
-        serial_connected_before_animation = serial_connected();
 
         // Refresh the ePaper display if we have one. That way it'll show an error message.
         #if CIRCUITPY_DISPLAYIO
