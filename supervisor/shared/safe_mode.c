@@ -28,7 +28,7 @@
 
 #include "mphalport.h"
 
-#if defined(MICROPY_HW_LED_STATUS)
+#if defined(MICROPY_HW_LED_STATUS) || defined(CIRCUITPY_BOOT_BUTTON)
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #endif
 #include "shared-bindings/microcontroller/Processor.h"
