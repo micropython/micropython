@@ -588,13 +588,6 @@ extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE
 #endif
 
-#if CIRCUITPY_RP2PIO
-extern const struct _mp_obj_module_t rp2pio_module;
-#define RP2PIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_rp2pio),(mp_obj_t)&rp2pio_module },
-#else
-#define RP2PIO_MODULE
-#endif
-
 #if CIRCUITPY_RGBMATRIX
 extern const struct _mp_obj_module_t rgbmatrix_module;
 #define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
@@ -607,6 +600,13 @@ extern const struct _mp_obj_module_t rotaryio_module;
 #define ROTARYIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module },
 #else
 #define ROTARYIO_MODULE
+#endif
+
+#if CIRCUITPY_RP2PIO
+extern const struct _mp_obj_module_t rp2pio_module;
+#define RP2PIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_rp2pio),(mp_obj_t)&rp2pio_module },
+#else
+#define RP2PIO_MODULE
 #endif
 
 #if CIRCUITPY_RTC
@@ -856,10 +856,10 @@ extern const struct _mp_obj_module_t msgpack_module;
     PULSEIO_MODULE \
     PWMIO_MODULE \
     RANDOM_MODULE \
-    RP2PIO_MODULE \
     RE_MODULE \
     RGBMATRIX_MODULE \
     ROTARYIO_MODULE \
+    RP2PIO_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
     SDCARDIO_MODULE \
