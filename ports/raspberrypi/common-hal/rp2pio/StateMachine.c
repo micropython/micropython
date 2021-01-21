@@ -583,4 +583,3 @@ bool common_hal_rp2pio_statemachine_write(rp2pio_statemachine_obj_t *self,
     }
     return _transfer(self, data, len, NULL, 0);
 }
-

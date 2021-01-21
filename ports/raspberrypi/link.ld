@@ -248,4 +248,3 @@ SECTIONS
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed")
     /* todo assert on extra code */
 }
-
