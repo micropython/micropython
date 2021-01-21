@@ -71,6 +71,7 @@ mp_vfs_mount_t *mp_vfs_lookup_path(const char *path, const char **path_out) {
 STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     const char *path = mp_obj_str_get_str(path_in);
     const char *p_out;
+    *path_out = mp_const_none;
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
@@ -329,7 +330,7 @@ mp_obj_t mp_vfs_ilistdir(size_t n_args, const mp_obj_t *args) {
         path_in = MP_OBJ_NEW_QSTR(MP_QSTR_);
     }
 
-    mp_obj_t path_out;
+    mp_obj_t path_out = mp_const_none;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
 
     if (vfs == MP_VFS_ROOT) {
@@ -359,7 +360,7 @@ mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj, 0, 1, mp_vfs_listdir);
 
 mp_obj_t mp_vfs_mkdir(mp_obj_t path_in) {
-    mp_obj_t path_out;
+    mp_obj_t path_out = mp_const_none;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     if (vfs == MP_VFS_ROOT || (vfs != MP_VFS_NONE && !strcmp(mp_obj_str_get_str(path_out), "/"))) {
         mp_raise_OSError(MP_EEXIST);
