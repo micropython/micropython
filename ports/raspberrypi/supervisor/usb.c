@@ -27,12 +27,27 @@
 #include "lib/tinyusb/src/device/usbd.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/usb.h"
+#include "src/rp2_common/hardware_irq/include/hardware/irq.h"
 #include "src/rp2_common/pico_platform/include/pico/platform.h"
 #include "src/rp2040/hardware_regs/include/hardware/regs/intctrl.h"
+
+static background_callback_t usb_callback;
+static void usb_background_do(void* unused) {
+    usb_background();
+}
+
+static void queue_background(void) {
+    background_callback_add(&usb_callback, usb_background_do, NULL);
+}
 
 void init_usb_hardware(void) {
 }
 
-void __isr __used isr_usbctrl(void) {
-    usb_irq_handler();
+void post_usb_init(void) {
+    irq_handler_t usb_handler = irq_get_exclusive_handler(USBCTRL_IRQ);
+    if (usb_handler) {
+        irq_remove_handler(USBCTRL_IRQ, usb_handler);
+        irq_add_shared_handler(USBCTRL_IRQ, usb_handler, PICO_DEFAULT_IRQ_PRIORITY);
+    }
+    irq_add_shared_handler(USBCTRL_IRQ, queue_background, PICO_LOWEST_IRQ_PRIORITY);
 }
