@@ -2,6 +2,21 @@
 #
 # SPDX-License-Identifier: MIT
 
+def fix_note(note):
+    index = note.rfind(" object at")
+    if index >= 0:
+        note = note[:index] + ">"
+    return note
+
+def fix_notes(notes):
+    count = len(notes)
+    index = 0
+    while index < count:
+        notes[index] = fix_note(notes[index])
+        index += 1
+
+    return notes
+
 import argparse
 
 import os
@@ -13,7 +28,7 @@ from adafruit_usb_descriptor import audio, audio10, cdc, hid, midi, msc, standar
 import hid_report_descriptors
 
 DEFAULT_INTERFACE_NAME = 'CircuitPython'
-ALL_DEVICES='CDC,MSC,AUDIO,HID'
+ALL_DEVICES='CDC,MSC,AUDIO,HID,VENDOR'
 ALL_DEVICES_SET=frozenset(ALL_DEVICES.split(','))
 DEFAULT_DEVICES='CDC,MSC,AUDIO,HID'
 
@@ -62,6 +77,10 @@ parser.add_argument('--midi_ep_num_out', type=int, default=0,
                     help='endpoint number of MIDI OUT')
 parser.add_argument('--midi_ep_num_in', type=int, default=0,
                     help='endpoint number of MIDI IN')
+parser.add_argument('--vendor_ep_num_out', type=int, default=0,
+                    help='endpoint number of VENDOR OUT')
+parser.add_argument('--vendor_ep_num_in', type=int, default=0,
+                    help='endpoint number of VENDOR IN')
 parser.add_argument('--max_ep', type=int, default=0,
                     help='total number of endpoints available')
 parser.add_argument('--output_c_file', type=argparse.FileType('w', encoding='UTF-8'), required=True)
@@ -89,20 +108,26 @@ if not args.renumber_endpoints:
     if 'MSC' in args.devices:
         if args.msc_ep_num_out == 0:
             raise ValueError("MSC endpoint OUT number must not be 0")
-        elif  args.msc_ep_num_in == 0:
+        elif args.msc_ep_num_in == 0:
             raise ValueError("MSC endpoint IN number must not be 0")
 
     if 'HID' in args.devices:
         if args.args.hid_ep_num_out == 0:
             raise ValueError("HID endpoint OUT number must not be 0")
-        elif  args.hid_ep_num_in == 0:
+        elif args.hid_ep_num_in == 0:
             raise ValueError("HID endpoint IN number must not be 0")
 
     if 'AUDIO' in args.devices:
         if args.args.midi_ep_num_out == 0:
             raise ValueError("MIDI endpoint OUT number must not be 0")
-        elif  args.midi_ep_num_in == 0:
+        elif args.midi_ep_num_in == 0:
             raise ValueError("MIDI endpoint IN number must not be 0")
+
+    if 'VENDOR' in args.devices:
+        if args.vendor_ep_num_out == 0:
+            raise ValueError("VENDOR endpoint OUT number must not be 0")
+        elif args.vendor_ep_num_in == 0:
+            raise ValueError("VENDOR endpoint IN number must not be 0")
 
 class StringIndex:
     """Assign a monotonically increasing index to each unique string. Start with 0."""
@@ -359,6 +384,10 @@ audio_control_interface = standard.InterfaceDescriptor(
 # Audio streaming interfaces must occur before MIDI ones.
 audio_interfaces = [audio_control_interface] + cs_ac_interface.audio_streaming_interfaces + cs_ac_interface.midi_streaming_interfaces
 
+# TODO New code goes here to create vendor objects
+
+vendor_interfaces = [] # TODO Fix this!
+
 interfaces_to_join = []
 
 if 'CDC' in args.devices:
@@ -372,6 +401,9 @@ if 'HID' in args.devices:
 
 if 'AUDIO' in args.devices:
     interfaces_to_join.append(audio_interfaces)
+
+if 'VENDOR' in args.devices:
+    interfaces_to_join.append(vendor_interfaces)
 
 # util.join_interfaces() will renumber the endpoints to make them unique across descriptors,
 # and renumber the interfaces in order. But we still need to fix up certain
@@ -424,6 +456,9 @@ if 'AUDIO' in args.devices:
     # Only add the control interface because other audio interfaces are managed by it to ensure the
     # correct ordering.
     descriptor_list.append(audio_control_interface)
+
+if 'VENDOR' in args.devices:
+    descriptor_list.extend(vendor_interfaces)
 
 # Finally, build the composite descriptor.
 
@@ -479,6 +514,7 @@ for descriptor in descriptor_list:
 
     b = bytes(descriptor)
     notes = descriptor.notes()
+    notes = fix_notes(notes) # for comparision of files beteen runs
     i = 0
 
     # This prints each subdescriptor on a separate line.
@@ -507,6 +543,7 @@ for idx, descriptor in enumerate(string_descriptors):
 
     b = bytes(descriptor)
     notes = descriptor.notes()
+    notes = fix_notes(notes) # for comparision of files beteen runs
     i = 0
 
     # This prints each subdescriptor on a separate line.
@@ -550,7 +587,7 @@ c_file.write("\n")
 
 hid_descriptor_length = len(bytes(combined_hid_report_descriptor))
 
-# Now we values we need for the .h file.
+# Now the values we need for the .h file.
 h_file.write("""\
 #ifndef MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
 #define MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
