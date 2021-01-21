@@ -65,11 +65,9 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 uint8_t reason = d->reason;
                 ESP_LOGW(TAG, "reason %d 0x%02x", reason, reason);
                 if (radio->retries_left > 0 &&
-                        (reason == WIFI_REASON_AUTH_EXPIRE ||
-                         reason == WIFI_REASON_NOT_AUTHED ||
-                         reason == WIFI_REASON_ASSOC_EXPIRE ||
-                         reason == WIFI_REASON_CONNECTION_FAIL ||
-                         reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)) {
+                        reason != WIFI_REASON_AUTH_FAIL &&
+                        reason != WIFI_REASON_NO_AP_FOUND &&
+                        reason != WIFI_REASON_ASSOC_LEAVE) {
                     radio->retries_left--;
                     ESP_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
                     esp_wifi_connect();

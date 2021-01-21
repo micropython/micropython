@@ -79,6 +79,8 @@ static void make_sample_code_file(FATFS *fatfs) {
     f_open(fatfs, &fs, "/code.py", FA_WRITE | FA_CREATE_ALWAYS);
     f_write(&fs, buffer, sizeof(buffer) - 1, &char_written);
     f_close(&fs);
+    #else
+    make_empty_file(fatfs, "/code.py");
     #endif
 }
 

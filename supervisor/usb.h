@@ -42,6 +42,9 @@ void usb_irq_handler(void);
 // TinyUSB.
 void init_usb_hardware(void);
 
+// Temporary hook for code after init. Only used for RP2040.
+void post_usb_init(void);
+
 // Shared implementation.
 bool usb_enabled(void);
 void usb_init(void);

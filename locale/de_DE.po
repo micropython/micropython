@@ -2058,7 +2058,8 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
+#, c-format
+msgid "Unknown failure %d"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -2338,9 +2339,17 @@ msgstr "Es müssen 8 oder 16 bits_per_sample sein"
 msgid "branch not in range"
 msgstr "Zweig ist außerhalb der Reichweite"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "Puffer muss ein bytes-artiges Objekt sein"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3417,6 +3426,10 @@ msgstr ""
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
