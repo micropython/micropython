@@ -222,7 +222,7 @@ STATIC mp_obj_t rp2pio_statemachine_obj_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_deinit_obj, rp2pio_statemachine_obj_deinit);
 
-//|     def __enter__(self) -> SPI:
+//|     def __enter__(self) -> StateMachine:
 //|         """No-op used by Context Managers.
 //|         Provided by context manager helper."""
 //|         ...
