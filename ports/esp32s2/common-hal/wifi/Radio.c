@@ -72,7 +72,7 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
     }
     if (!self->started && enabled) {
 	// esp_wifi_start() would default to soft-AP, thus setting it to station
-        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+        start_station(self);
         ESP_ERROR_CHECK(esp_wifi_start());
         self->started = true;
         return;
@@ -89,7 +89,9 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
     if (self->current_scan != NULL) {
         mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
     }
-    // check enabled
+    if (!common_hal_wifi_radio_get_enabled(self)) {
+        mp_raise_RuntimeError(translate("wifi is not enabled"));
+    }
     start_station(self);
 
     wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
@@ -127,7 +129,7 @@ void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *host
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t* ssid, size_t ssid_len, uint8_t* password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t* bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("Can't connect when wifi is not enabled"));
+        mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
 
     EventBits_t bits;

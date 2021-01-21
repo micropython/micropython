@@ -564,10 +564,6 @@ msgstr ""
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
 
-#: ports/esp32s2/common-hal/wifi/Radio.c
-msgid "Can't connect when wifi is not enabled"
-msgstr ""
-
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
@@ -3908,6 +3904,10 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
+msgstr ""
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "wifi is not enabled"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
