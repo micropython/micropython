@@ -177,6 +177,20 @@ function ci_qemu_arm_build {
 }
 
 ########################################################################################
+# ports/rp2
+
+function ci_rp2_setup {
+    ci_gcc_arm_setup
+}
+
+function ci_rp2_build {
+    make ${MAKEOPTS} -C mpy-cross
+    git submodule update --init lib/pico-sdk
+    git -C lib/pico-sdk submodule update --init lib/tinyusb
+    make ${MAKEOPTS} -C ports/rp2
+}
+
+########################################################################################
 # ports/samd
 
 function ci_samd_setup {
