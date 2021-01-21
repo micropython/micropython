@@ -52,7 +52,7 @@
 //|     in a particular PIO instance. They are independent otherwise.
 //|
 //|     This class is designed to facilitate sharing of PIO resources. By default,
-//|     it is assumed that the state machine is used on it's own and can be placed
+//|     it is assumed that the state machine is used on its own and can be placed
 //|     in either PIO. State machines with the same program will be placed in the
 //|     same PIO if possible. To ensure multiple state machines share a PIO use
 //|     the ``colocate`` kwarg during construction and create them one after another."""
@@ -212,7 +212,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
 }
 
 //|     def deinit(self) -> None:
-//|         """Turn off the state machine and release it's resources."""
+//|         """Turn off the state machine and release its resources."""
 //|         ...
 //|
 STATIC mp_obj_t rp2pio_statemachine_obj_deinit(mp_obj_t self_in) {
