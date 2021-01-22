@@ -60,6 +60,12 @@
 #define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (0)
 #endif
 
+// Optionally enable support for the `hci_cmd` function allowing
+// Python to directly low-level HCI commands.
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
+#define MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD (0)
+#endif
+
 // This is used to protect the ringbuffer.
 // A port may no-op this if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS is enabled.
 #ifndef MICROPY_PY_BLUETOOTH_ENTER
@@ -386,6 +392,10 @@ int mp_bluetooth_l2cap_disconnect(uint16_t conn_handle, uint16_t cid);
 int mp_bluetooth_l2cap_send(uint16_t conn_handle, uint16_t cid, const uint8_t *buf, size_t len, bool *stalled);
 int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf, size_t *len);
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
+int mp_bluetooth_hci_cmd(uint16_t ogf, uint16_t ocf, const uint8_t *req, size_t req_len, uint8_t *resp, size_t resp_len, uint8_t *status);
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
 
 /////////////////////////////////////////////////////////////////////////////
 // API implemented by modbluetooth (called by port-specific implementations):
