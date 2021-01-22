@@ -51,6 +51,10 @@ msgstr "  Wénjiàn \"%q\""
 msgid "  File \"%q\", line %d"
 msgstr "  Wénjiàn \"%q\", dì %d xíng"
 
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr ""
+
 #: main.c
 msgid " output:\n"
 msgstr " shūchū:\n"
@@ -3360,6 +3364,10 @@ msgstr "géshì zìfú chuàn cān shǔ bùzú"
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr "diǎnshù bìxū zhìshǎo wèi 2"
+
+#: py/builtinhelp.c
+msgid "object "
+msgstr ""
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"

@@ -50,6 +50,10 @@ msgstr "  Arquivo \"%q\""
 msgid "  File \"%q\", line %d"
 msgstr "  Arquivo \"%q\", linha %d"
 
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr ""
+
 #: main.c
 msgid " output:\n"
 msgstr " saída:\n"
@@ -3399,6 +3403,10 @@ msgstr "argumentos insuficientes para o formato da string"
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr "a quantidade dos pontos deve ser pelo menos 2"
+
+#: py/builtinhelp.c
+msgid "object "
+msgstr ""
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"

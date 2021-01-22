@@ -48,6 +48,10 @@ msgstr "  File \"%q\""
 msgid "  File \"%q\", line %d"
 msgstr "  File \"%q\", baris %d"
 
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr ""
+
 #: main.c
 msgid " output:\n"
 msgstr "output:\n"
@@ -3357,6 +3361,10 @@ msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
+msgstr ""
+
+#: py/builtinhelp.c
+msgid "object "
 msgstr ""
 
 #: py/obj.c

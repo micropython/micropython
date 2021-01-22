@@ -46,6 +46,10 @@ msgstr "  Bestand"
 msgid "  File \"%q\", line %d"
 msgstr "  Bestand \"%q\", regel %d"
 
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr ""
+
 #: main.c
 msgid " output:\n"
 msgstr " uitvoer:\n"
@@ -3368,6 +3372,10 @@ msgstr "niet genoeg argumenten om string te formatteren"
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr "aantal punten moet minimaal 2 zijn"
+
+#: py/builtinhelp.c
+msgid "object "
+msgstr ""
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"

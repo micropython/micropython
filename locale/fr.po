@@ -52,6 +52,10 @@ msgstr "  Fichier \"%q\""
 msgid "  File \"%q\", line %d"
 msgstr "  Fichier \"%q\", ligne %d"
 
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr ""
+
 #: main.c
 msgid " output:\n"
 msgstr " sortie :\n"
@@ -3414,6 +3418,10 @@ msgstr "pas assez d'arguments pour la chaîne de format"
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr "le nombre de points doit être d'au moins 2"
+
+#: py/builtinhelp.c
+msgid "object "
+msgstr ""
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"

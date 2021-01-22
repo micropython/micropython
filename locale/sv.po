@@ -50,6 +50,10 @@ msgstr "  Filen \"%q\""
 msgid "  File \"%q\", line %d"
 msgstr "  Fil \"%q\", rad %d"
 
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr ""
+
 #: main.c
 msgid " output:\n"
 msgstr " utdata:\n"
@@ -3368,6 +3372,10 @@ msgstr "inte tillräckligt med argument för formatsträng"
 #: extmod/ulab/code/ulab_create.c
 msgid "number of points must be at least 2"
 msgstr "antal punkter måste vara minst 2"
+
+#: py/builtinhelp.c
+msgid "object "
+msgstr ""
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
