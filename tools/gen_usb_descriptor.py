@@ -37,6 +37,8 @@ ALL_HID_DEVICES_SET=frozenset(ALL_HID_DEVICES.split(','))
 # Digitizer works on Linux but conflicts with mouse, so omit it.
 DEFAULT_HID_DEVICES='KEYBOARD,MOUSE,CONSUMER,GAMEPAD'
 
+DEFAULT_WEBUSB_URL = 'www.circuitpython.org' # In the future, this may become a specific landing page
+
 parser = argparse.ArgumentParser(description='Generate USB descriptors.')
 parser.add_argument('--highspeed', default=False, action='store_true',
                     help='descriptor for highspeed device')
@@ -77,6 +79,9 @@ parser.add_argument('--midi_ep_num_out', type=int, default=0,
                     help='endpoint number of MIDI OUT')
 parser.add_argument('--midi_ep_num_in', type=int, default=0,
                     help='endpoint number of MIDI IN')
+parser.add_argument('--webusb_url', type=str,
+                    help='The URL to include in the WebUSB URL Descriptor',
+                    default=DEFAULT_WEBUSB_URL)
 parser.add_argument('--vendor_ep_num_out', type=int, default=0,
                     help='endpoint number of VENDOR OUT')
 parser.add_argument('--vendor_ep_num_in', type=int, default=0,
@@ -623,7 +628,17 @@ extern const uint8_t hid_report_descriptor[{hid_report_descriptor_length}];
         msc_vendor=args.manufacturer[:8],
         msc_product=args.product[:16]))
 
+if 'VENDOR' in args.devices:
+    h_file.write("""\
+extern const tusb_desc_webusb_url_t desc_webusb_url;
+
+""")
+
+h_file.write("""\
+#endif // MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
+""")
 # Write out the report descriptor and info
+
 c_file.write("""\
 const uint8_t hid_report_descriptor[{HID_DESCRIPTOR_LENGTH}] = {{
 """.format(HID_DESCRIPTOR_LENGTH=hid_descriptor_length))
@@ -692,6 +707,16 @@ c_file.write("""\
 };
 """)
 
-h_file.write("""\
-#endif // MICROPY_INCLUDED_AUTOGEN_USB_DESCRIPTOR_H
-""")
+if 'VENDOR' in args.devices:
+    # Mimic what the tinyusb webusb demo does
+    c_file.write("""
+#define URL   "{webusb_url}"
+
+const tusb_desc_webusb_url_t desc_webusb_url =
+{{
+  .bLength         = 3 + sizeof(URL) - 1,
+  .bDescriptorType = 3, // WEBUSB URL type
+  .bScheme         = 1, // 0: http, 1: https, 255: ""
+  .url             = URL
+}};
+""".format(webusb_url=args.webusb_url))
