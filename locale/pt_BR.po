@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-22 08:49+0000\n"
+"PO-Revision-Date: 2021-01-22 15:30+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -52,7 +52,7 @@ msgstr "  Arquivo \"%q\", linha %d"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
-msgstr ""
+msgstr " é do tipo %q\n"
 
 #: main.c
 msgid " output:\n"
@@ -3406,7 +3406,7 @@ msgstr "a quantidade dos pontos deve ser pelo menos 2"
 
 #: py/builtinhelp.c
 msgid "object "
-msgstr ""
+msgstr "objeto "
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
@@ -4031,7 +4031,7 @@ msgstr "a largura deve ser maior que zero"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr ""
+msgstr "o wifi não está ativo"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
