@@ -255,6 +255,7 @@ stubs:
 	@$(PYTHON) tools/extract_pyi.py shared-bindings/ $(STUBDIR)
 	@$(PYTHON) tools/extract_pyi.py extmod/ulab/code/ $(STUBDIR)/ulab
 	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
+	@$(PYTHON) tools/extract_pyi.py ports/raspberrypi/bindings $(STUBDIR)
 	@$(PYTHON) setup.py -q sdist
 
 .PHONY: check-stubs

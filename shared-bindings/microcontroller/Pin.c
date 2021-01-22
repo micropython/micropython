@@ -66,12 +66,12 @@ static void get_pin_name(const mcu_pin_obj_t *self, qstr* package, qstr* module,
 
 STATIC void mcu_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mcu_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    qstr package;
+    qstr package = MP_QSTR_Pin;
     qstr module;
-    qstr name;
+    qstr name = MP_QSTR_Pin;
 
     get_pin_name(self, &package, &module, &name);
-    if (package){
+    if (package) {
         mp_printf(print, "%q.%q.%q", package, module, name);
     } else {
         mp_printf(print, "%q.%q", module , name);
@@ -131,7 +131,7 @@ void assert_pin_free(const mcu_pin_obj_t* pin) {
     if (pin != NULL && pin != MP_OBJ_TO_PTR(mp_const_none) && !common_hal_mcu_pin_is_free(pin)) {
         qstr package;
         qstr module;
-        qstr name;
+        qstr name = MP_QSTR_Pin;
 
         get_pin_name(pin, &package, &module, &name);
         mp_raise_ValueError_varg(translate("%q in use"), name);

@@ -32,6 +32,11 @@
 extern const mp_obj_type_t socketpool_socket_type;
 
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t* self, mp_uint_t timeout_ms);
+
+bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t* self, const char* host, size_t hostlen, uint8_t port);
+bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t* self, int backlog);
+socketpool_socket_obj_t * common_hal_socketpool_socket_accept(socketpool_socket_obj_t* self, uint8_t* ip, uint *port);
+
 bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const char* host, size_t hostlen, mp_int_t port);
 mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);
 mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, const uint8_t* buf, mp_uint_t len);

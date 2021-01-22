@@ -228,7 +228,7 @@ typedef long mp_off_t;
 #endif
 
 #ifndef MICROPY_PY_REVERSE_SPECIAL_METHODS
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS    (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS    (CIRCUITPY_ULAB || CIRCUITPY_FULL_BUILD)
 #endif
 
 #if INTERNAL_FLASH_FILESYSTEM == 0 && QSPI_FLASH_FILESYSTEM == 0 && SPI_FLASH_FILESYSTEM == 0 && !DISABLE_FILESYSTEM
@@ -581,13 +581,6 @@ extern const struct _mp_obj_module_t pwmio_module;
 #define PWMIO_MODULE
 #endif
 
-#if CIRCUITPY_RGBMATRIX
-extern const struct _mp_obj_module_t rgbmatrix_module;
-#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
-#else
-#define RGBMATRIX_MODULE
-#endif
-
 #if CIRCUITPY_RANDOM
 extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
@@ -595,11 +588,25 @@ extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE
 #endif
 
+#if CIRCUITPY_RGBMATRIX
+extern const struct _mp_obj_module_t rgbmatrix_module;
+#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
+#else
+#define RGBMATRIX_MODULE
+#endif
+
 #if CIRCUITPY_ROTARYIO
 extern const struct _mp_obj_module_t rotaryio_module;
 #define ROTARYIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module },
 #else
 #define ROTARYIO_MODULE
+#endif
+
+#if CIRCUITPY_RP2PIO
+extern const struct _mp_obj_module_t rp2pio_module;
+#define RP2PIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_rp2pio),(mp_obj_t)&rp2pio_module },
+#else
+#define RP2PIO_MODULE
 #endif
 
 #if CIRCUITPY_RTC
@@ -852,6 +859,7 @@ extern const struct _mp_obj_module_t msgpack_module;
     RE_MODULE \
     RGBMATRIX_MODULE \
     ROTARYIO_MODULE \
+    RP2PIO_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
     SDCARDIO_MODULE \
@@ -928,10 +936,13 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_PYSTACK_SIZE 1536
 #endif
 
-
 // Wait this long imediately after startup to see if we are connected to USB.
 #ifndef CIRCUITPY_USB_CONNECTED_SLEEP_DELAY
 #define CIRCUITPY_USB_CONNECTED_SLEEP_DELAY 5
+#endif
+
+#ifndef CIRCUITPY_PROCESSOR_COUNT
+#define CIRCUITPY_PROCESSOR_COUNT (1)
 #endif
 
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"

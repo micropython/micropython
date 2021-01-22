@@ -2055,8 +2055,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Niet behandelde ESP TLS fout %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Onbekende fout"
+#, c-format
+msgid "Unknown failure %d"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2331,9 +2332,17 @@ msgstr "bits_per_sample moet 8 of 16 zijn"
 msgid "branch not in range"
 msgstr "pad (branch) niet binnen bereik"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "buffer moet een byte-achtig object zijn"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3400,6 +3409,10 @@ msgstr "compensatie is te groot"
 msgid "offset must be >= 0"
 msgstr "compensatie moet groter of gelijk 0 zijn"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
+msgstr ""
+
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
 msgstr "offset buiten bereik"
@@ -4020,6 +4033,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Onbekende fout"
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "invoerargument moet een integer of 2-tuple zijn"
