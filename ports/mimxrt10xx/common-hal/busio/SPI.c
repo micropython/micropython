@@ -289,7 +289,11 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     xfer.dataSize = len;
     xfer.configFlags = kLPSPI_MasterPcs0;
 
-    const status_t status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
+    status_t status;
+    do {
+        status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
+    } while (status == kStatus_LPSPI_Busy);
+
     if (status != kStatus_Success)
         printf("%s: status %ld\r\n", __func__, status);
 
@@ -311,7 +315,11 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     xfer.rxData = data;
     xfer.dataSize = len;
 
-    const status_t status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
+    status_t status;
+    do {
+        status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
+    } while (status == kStatus_LPSPI_Busy);
+
     if (status != kStatus_Success)
         printf("%s: status %ld\r\n", __func__, status);
 
@@ -333,7 +341,11 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     xfer.rxData = data_in;
     xfer.dataSize = len;
 
-    const status_t status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
+    status_t status;
+    do {
+        status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
+    } while (status == kStatus_LPSPI_Busy);
+    
     if (status != kStatus_Success)
         printf("%s: status %ld\r\n", __func__, status);
 
