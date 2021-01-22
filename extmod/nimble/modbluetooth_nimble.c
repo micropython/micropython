@@ -81,9 +81,11 @@ STATIC int ble_hs_err_to_errno(int err) {
         return 0;
     }
     if (err >= 0 && (unsigned)err < MP_ARRAY_SIZE(ble_hs_err_to_errno_table) && ble_hs_err_to_errno_table[err]) {
+        // Return an MP_Exxx error code.
         return ble_hs_err_to_errno_table[err];
     } else {
-        return MP_EIO;
+        // Pass through the BLE error code.
+        return -err;
     }
 }
 
@@ -1659,6 +1661,25 @@ int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf
 }
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
+
+// For ble_hs_hci_cmd_tx
+#include "nimble/host/src/ble_hs_hci_priv.h"
+
+int mp_bluetooth_hci_cmd(uint16_t ogf, uint16_t ocf, const uint8_t *req, size_t req_len, uint8_t *resp, size_t resp_len, uint8_t *status) {
+    int rc = ble_hs_hci_cmd_tx(BLE_HCI_OP(ogf, ocf), req, req_len, resp, resp_len);
+    if (rc < BLE_HS_ERR_HCI_BASE || rc >= BLE_HS_ERR_HCI_BASE + 0x100) {
+        // The controller didn't handle the command (e.g. HCI timeout).
+        return ble_hs_err_to_errno(rc);
+    } else {
+        // The command executed, but had an error (i.e. invalid parameter).
+        *status = rc - BLE_HS_ERR_HCI_BASE;
+        return 0;
+    }
+}
+
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 

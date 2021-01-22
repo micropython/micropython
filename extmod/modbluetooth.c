@@ -884,6 +884,23 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_l2cap_recvinto_obj, 4, 
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
+
+STATIC mp_obj_t bluetooth_ble_hci_cmd(size_t n_args, const mp_obj_t *args) {
+    mp_int_t ogf = mp_obj_get_int(args[1]);
+    mp_int_t ocf = mp_obj_get_int(args[2]);
+    mp_buffer_info_t bufinfo_request = {0};
+    mp_buffer_info_t bufinfo_response = {0};
+    mp_get_buffer_raise(args[3], &bufinfo_request, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[4], &bufinfo_response, MP_BUFFER_WRITE);
+    uint8_t status = 0;
+    bluetooth_handle_errno(mp_bluetooth_hci_cmd(ogf, ocf, bufinfo_request.buf, bufinfo_request.len, bufinfo_response.buf, bufinfo_response.len, &status));
+    return MP_OBJ_NEW_SMALL_INT(status);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_hci_cmd_obj, 5, 5, bluetooth_ble_hci_cmd);
+
+#endif // MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
+
 // ----------------------------------------------------------------------------
 // Bluetooth object: Definition
 // ----------------------------------------------------------------------------
@@ -926,6 +943,9 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_l2cap_disconnect), MP_ROM_PTR(&bluetooth_ble_l2cap_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_l2cap_send), MP_ROM_PTR(&bluetooth_ble_l2cap_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_l2cap_recvinto), MP_ROM_PTR(&bluetooth_ble_l2cap_recvinto_obj) },
+    #endif
+    #if MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
+    { MP_ROM_QSTR(MP_QSTR_hci_cmd), MP_ROM_PTR(&bluetooth_ble_hci_cmd_obj) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(bluetooth_ble_locals_dict, bluetooth_ble_locals_dict_table);
