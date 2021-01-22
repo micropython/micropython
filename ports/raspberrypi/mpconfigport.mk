@@ -14,6 +14,9 @@ ifeq ($(LONGINT_IMPL),LONGLONG)
 MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
 endif
 
+# All raspberrypi ports have longints.
+LONGINT_IMPL = MPZ
+
 ifndef CIRCUITPY_RP2PIO
 CIRCUITPY_RP2PIO = 1
 else
