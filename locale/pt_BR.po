@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-17 12:55+0000\n"
+"PO-Revision-Date: 2021-01-22 08:49+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -879,7 +879,7 @@ msgstr "Erro no regex"
 
 #: shared-bindings/socketpool/Socket.c
 msgid "Error: Failure to bind"
-msgstr ""
+msgstr "Erro: Falha na vinculação"
 
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
@@ -1276,7 +1276,7 @@ msgstr "Tamanho inválido"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Invalid socket for TLS"
-msgstr ""
+msgstr "Soquete inválido para o TLS"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
@@ -1284,7 +1284,7 @@ msgstr "Estado inválido"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Invalid use of TLS Socket"
-msgstr ""
+msgstr "Uso inválido do soquete TLS"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1304,7 +1304,7 @@ msgstr "O comprimento do bit/palavra são inválidos"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Issue setting SO_REUSEADDR"
-msgstr ""
+msgstr "Problema na configuração do SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
