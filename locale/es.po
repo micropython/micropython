@@ -4007,6 +4007,10 @@ msgstr "el tiempo de espera del perro guardián debe ser mayor a 0"
 msgid "width must be greater than zero"
 msgstr "el ancho debe ser mayor que cero"
 
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "wifi is not enabled"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr "la ventana debe ser <= intervalo"

@@ -4029,6 +4029,10 @@ msgstr "o tempo limite do watchdog deve ser maior que 0"
 msgid "width must be greater than zero"
 msgstr "a largura deve ser maior que zero"
 
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "wifi is not enabled"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr "a janela deve ser <= intervalo"
