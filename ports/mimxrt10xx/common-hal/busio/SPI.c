@@ -345,7 +345,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self, const uint8_t *data_ou
     do {
         status = LPSPI_MasterTransferBlocking(self->spi, &xfer);
     } while (status == kStatus_LPSPI_Busy);
-    
+
     if (status != kStatus_Success)
         printf("%s: status %ld\r\n", __func__, status);
 
