@@ -866,6 +866,10 @@ msgstr "EXTINT-kanalen används redan"
 msgid "Error in regex"
 msgstr "Fel i regex"
 
+#: shared-bindings/socketpool/Socket.c
+msgid "Error: Failure to bind"
+msgstr ""
+
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
@@ -1258,9 +1262,17 @@ msgstr "Ogiltigt säkerhetsläge"
 msgid "Invalid size"
 msgstr "Ogiltig storlek"
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid socket for TLS"
+msgstr ""
+
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
 msgstr "Ogiltigt tillstånd"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid use of TLS Socket"
+msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1277,6 +1289,10 @@ msgstr "Ogiltig wave-fil"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Ogiltig word-/bitlängd"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Issue setting SO_REUSEADDR"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1566,7 +1582,7 @@ msgstr "Åtgärden orsakade timeout"
 msgid "Out of memory"
 msgstr "Slut på minne"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Slut på sockets"
 

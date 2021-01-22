@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2020-11-19 01:28+0000\n"
+"PO-Revision-Date: 2021-01-21 22:25+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,19 +15,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running.\n"
 msgstr ""
+"\n"
+"Dàimǎ yùnxíng wánbì.\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code stopped by auto-reload.\n"
 msgstr ""
+"\n"
+"zì dòng chóng xīn jiā zǎi tíng zhǐ de dài mǎ.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -121,7 +125,7 @@ msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
-msgstr ""
+msgstr "%s cuò wù 0x%x"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
@@ -287,7 +291,7 @@ msgstr "bù zhīchí 3-arg pow ()"
 
 #: shared-module/msgpack/__init__.c
 msgid "64 bit types"
-msgstr ""
+msgstr "64 wèi lèi xíng"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -553,7 +557,7 @@ msgstr "CBC kuài bì xū shì 16 zì jié de bèi shù"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "CRC or checksum was invalid"
-msgstr ""
+msgstr "CRC huò jiào yàn hé wú xiào"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -561,15 +565,17 @@ msgstr "Zài fǎngwèn běn jī wùjiàn zhīqián diàoyòng super().__init__()
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr ""
+msgstr "zhǐ néng zài RTC Io shàng cóng shēn dù shuì mián zhōng bào jǐng."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
+"Zhǐ néng zài yīgè dī diàn píng yǐn jiǎo shàng fāchū jǐngbào, ér qítā yǐn "
+"jiǎo cóng shēndù shuìmián zhōng fāchū gāo diàn píng jǐngbào."
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
-msgstr ""
+msgstr "zhǐ néng cóng shēn dù shuì mián zhōng bào jǐng liǎng gè dī yǐn jiǎo."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
@@ -605,7 +611,7 @@ msgstr "Wúfǎ shūchū tóng yīgè yǐn jiǎo shàng de liǎng gè píndào"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
-msgstr ""
+msgstr "wú fǎ lā dòng jǐn shū rù yǐn jiǎo."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
@@ -652,7 +658,7 @@ msgstr "Wúfǎ gēnggǎi yǐ zài shǐyòng de jìshí qì shàng de pínlǜ"
 
 #: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
-msgstr ""
+msgstr "wú fǎ zài yǐn jiǎo biān yuán huàn xǐng. jǐn jí bié."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
@@ -859,6 +865,10 @@ msgstr "EXTINT píndào yǐjīng shǐyòng"
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
 
+#: shared-bindings/socketpool/Socket.c
+msgid "Error: Failure to bind"
+msgstr ""
+
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
@@ -894,7 +904,7 @@ msgstr "Qídài yīgè dìzhǐ"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
-msgstr ""
+msgstr "yù qī yǒu jǐng bào"
 
 #: shared-module/_pixelbuf/PixelBuf.c
 #, c-format
@@ -911,7 +921,7 @@ msgstr "FFT jǐn wéi ndarrays dìng yì"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "FFT is implemented for linear arrays only"
-msgstr ""
+msgstr "FFT jǐn shì yòng yú xiàn xìng zhèn liè"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Failed SSL handshake"
@@ -985,7 +995,7 @@ msgstr "guò lǜ qì tài fù zá"
 
 #: ports/esp32s2/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
-msgstr ""
+msgstr "gù jiàn yìng xiàng wú xiào"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1007,7 +1017,7 @@ msgstr "Hánshù xūyào suǒdìng"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Generic Failure"
-msgstr ""
+msgstr "tōng yòng gù zhàng"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1047,7 +1057,7 @@ msgstr "I2SOut bù kě yòng"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-msgstr ""
+msgstr "IOS 0, 2 + 4 bù zhī chí shuì mián zhōng de nèi bù shàng lā"
 
 #: shared-bindings/aesio/aes.c
 #, c-format
@@ -1135,7 +1145,7 @@ msgstr "Wúxiào de PWM pínlǜ"
 
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 msgid "Invalid Pin"
-msgstr ""
+msgstr "wú xiào yǐn jiǎo"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
@@ -1249,10 +1259,18 @@ msgstr "Ānquán móshì wúxiào"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid size"
+msgstr "dà xiǎo wú xiào"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid socket for TLS"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
+msgstr "wú xiào zhuàng tài"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid use of TLS Socket"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
@@ -1270,6 +1288,10 @@ msgstr "Wúxiào de làng làngcháo wénjiàn"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Wúxiào de zì/wèi chángdù"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Issue setting SO_REUSEADDR"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1297,7 +1319,7 @@ msgstr "Chángdù bìxū shìfēi fùshù"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "MAC address was invalid"
-msgstr ""
+msgstr "MAC dì zhǐ wú xiào"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1347,7 +1369,7 @@ msgstr "bì xū shǐ yòng 6 RGB yǐn jiǎo de bèi shù, ér bù shì %d"
 
 #: ports/esp32s2/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
-msgstr ""
+msgstr "NVS cuò wù"
 
 #: py/parse.c
 msgid "Name too long"
@@ -1370,7 +1392,7 @@ msgstr "Wèi zhǎodào DMA píndào"
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
-msgstr ""
+msgstr "dì zhǐ wú I2C shè bèi: %x"
 
 #: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/SPI.c
@@ -1511,7 +1533,7 @@ msgstr "Jǐn zhīchí IPv4 dìzhǐ"
 
 #: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "jǐn zhī chí IPv4 tào jiē zì"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1532,11 +1554,11 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
-msgstr ""
+msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
-msgstr ""
+msgstr "zhǐ néng shè zhì yí gè bào jǐng."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
@@ -1548,17 +1570,17 @@ msgstr "Ip jǐn zhīchí raw int"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
-msgstr ""
+msgstr "bù zhī chí cāo zuò huò gōng néng"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation timed out"
-msgstr ""
+msgstr "cāo zuò yǐ fēn shí"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
-msgstr ""
+msgstr "nèi cún bù zú"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "tào jiē zì wài"
 
@@ -1568,7 +1590,7 @@ msgstr "Guò cǎiyàng bìxū shì 8 de bèishù."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "PDMIn not available"
-msgstr ""
+msgstr "PDMIn bù kě yòng"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1589,7 +1611,7 @@ msgstr "Shàng bù zhīchí ParallelBus"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
-msgstr ""
+msgstr "shǐ yòng zhōng de wài shè"
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1658,11 +1680,13 @@ msgstr "Qiánzhuì huǎnchōng qū bìxū zài duī shàng"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
-msgstr ""
+msgstr "àn rèn hé jiàn jìn rù REPL. shǐ yòng CTRL-D zhòng xīn jiā zǎi .\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
+"jiǎ zhuāng shēn dù shuì mián , zhí dào bào jǐng , CTRL-C huò wén jiàn xiě "
+"rù .\n"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1714,7 +1738,7 @@ msgstr "Zhǐ dú duìxiàng"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Received response was invalid"
-msgstr ""
+msgstr "shōu dào de xiǎng yìng wú xiào"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1730,7 +1754,7 @@ msgstr "Qǐngqiú de AES móshì bù shòu zhīchí"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Requested resource not found"
-msgstr ""
+msgstr "wèi zhǎo dào qǐng qiú de zī yuán"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -1842,7 +1866,7 @@ msgstr "Dìngyì zhìshǎo yīgè UART yǐn jiǎo"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
-msgstr ""
+msgstr "tí gòng qí zhōng yī monotonic_time huò epoch_time"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
@@ -1916,7 +1940,7 @@ msgstr "Píng pū kuāndù bìxū huàfēn wèi tú kuāndù"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Time is in the past."
-msgstr ""
+msgstr "shí jiān yǐ jīng guò qù."
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -2031,7 +2055,7 @@ msgstr "Wúfǎ xiě rù nvm."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr ""
+msgstr "wú fǎ xiě rù sleep_memory。"
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -2045,7 +2069,7 @@ msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
-msgstr ""
+msgstr "wèi zhī gù zhàng %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2102,7 +2126,7 @@ msgstr "Bù zhīchí de lādòng zhí."
 
 #: ports/esp32s2/common-hal/dualbank/__init__.c
 msgid "Update Failed"
-msgstr ""
+msgstr "gēng xīn shī bài"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -2116,7 +2140,7 @@ msgstr "Zhí chángdù > zuìdà chángdù"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Version was invalid"
-msgstr ""
+msgstr "bǎn běn wú xiào"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -2173,7 +2197,7 @@ msgstr "WiFi mìmǎ bìxū jiè yú 8 dào 63 gè zìfú zhī jiān"
 
 #: main.c
 msgid "Woken up by alarm.\n"
-msgstr ""
+msgstr "bèi jǐng bào chǎo xǐng.\n"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -2230,7 +2254,7 @@ msgstr "argsort cānshù bìxū shì ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr ""
+msgstr "wèi wéi pīn hé shù zǔ shí xiàn argsort"
 
 #: py/runtime.c
 msgid "argument has wrong type"
@@ -2255,7 +2279,7 @@ msgstr "cānshù bìxū shì ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr ""
+msgstr "shù zǔ hé suǒ yǐn cháng dù bì xū xiāng děng"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2264,7 +2288,7 @@ msgstr "yòu cè xūyào shùzǔ/zì jié"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
-msgstr ""
+msgstr "cháng shì huò qǔ (arg) zuì xiǎo zhí /(arg) zuì dà kōng xù liè"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
@@ -2276,15 +2300,15 @@ msgstr "shǔxìng shàngwèi zhīchí"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis is out of bounds"
-msgstr ""
+msgstr "zhóu chāo chū biān jiè"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis must be None, or an integer"
-msgstr ""
+msgstr "zhóu bì xū wéi \" wú \" huò zhěng shù"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "axis too long"
-msgstr ""
+msgstr "zhóu tài cháng"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2320,7 +2344,7 @@ msgstr "fēnzhī bùzài fànwéi nèi"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "buffer is smaller than requested size"
-msgstr ""
+msgstr "huǎn chōng qū xiǎo yú qǐng qiú de dà xiǎo"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
