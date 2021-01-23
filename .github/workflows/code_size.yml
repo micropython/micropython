@@ -14,9 +14,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 100
     - name: Install packages
       run: source tools/ci.sh && ci_code_size_setup
     - name: Build
