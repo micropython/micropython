@@ -22,7 +22,7 @@ CIRCUITPY_ROTARYIO = 0
 CIRCUITPY_RTC = 0
 
 SUPEROPT_GC = 0
-CFLAGS_INLINE_LIMIT = 50
+CFLAGS_INLINE_LIMIT = 40
 
 
 # Include these Python libraries in firmware.
