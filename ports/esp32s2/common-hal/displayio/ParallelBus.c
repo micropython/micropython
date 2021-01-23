@@ -177,18 +177,32 @@ void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byt
        Future: To accommodate write pin numbers >= 32, will need to update to choose a different register
        for set/reset (out1_w1tc and out1_w1ts) */
 
+    // **** Bit shifting trial
+    // uint32_t* output_register = self->bus;
+    // const uint8_t bit_shift=self->data0_pin;
+
     uint32_t* clear_write = (uint32_t*) &self->write_group->out_w1tc;
     uint32_t* set_write = (uint32_t*) &self->write_group->out_w1ts;
-    uint32_t mask = self->write_mask;
+
+    const uint32_t mask = self->write_mask;
+
 
     /* Setup structures for data writing.  The ESP32-S2 port differs from the SAMD and NRF ports
     because I have not found a way to write a single byte into the ESP32-S2 registers.
     For the ESP32-S2, I create a 32-bit data_buffer that is used to transfer the data bytes. */
 
     *clear_write = mask; // Clear the write pin to prepare the registers before storing register settings into data_buffer
-    uint32_t data_buffer = *self->bus; // store the initial output register values into the data output buffer
+
+    const uint32_t data_buffer = *self->bus; // store the initial output register values into the data output buffer
     uint8_t* data_address = ((uint8_t*) &data_buffer) + (self->data0_pin / 8); /* address inside data_buffer where
     							each data byte will be written (as offset by (data0_pin/8) number of bytes) */
+
+    // *** Bit shifting trial
+    // *data_address = 0; //clear the 8 data bits
+
+    //mp_printf(&mp_plat_print, "\n\ndata_buffer: %x\n", data_buffer);
+    //mp_printf(&mp_plat_print, "data[0]: %x\n", data[0]);
+	//mp_printf(&mp_plat_print, "data_buffer[0]: %x\n\n", (data_buffer | (((uint32_t) data[0]) << self->data0_pin)));
 
     for (uint32_t i = 0; i < data_length; i++) {
 
@@ -200,9 +214,17 @@ void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byt
     	latches the data on the rising or falling edge of the write pin.  Remember: This method
     	will require the write pin to be controlled by the same GPIO register as the data pins.  */
 
-        *clear_write = mask; // clear the write pin (See comment above, this may not be necessary).
+    	//   Can ignore this line if the write pin is in the same register as the data pins
+        //   *clear_write = mask; // clear the write pin (See comment above, this may not be necessary).
+
+    	// *** Original code
         *(data_address) = data[i]; // stuff the data byte into the data_buffer at the correct offset byte location
         *self->bus = data_buffer; // write the data to the output register
+
+    	// *** Bit shifting trial - didn't have much improvement in performance
+        // *output_register = (data_buffer | (((uint32_t) data[i]) << bit_shift));
+
+
         *set_write = mask; // set the write pin
     }
 

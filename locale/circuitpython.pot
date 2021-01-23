@@ -527,6 +527,7 @@ msgid "Buffer too short by %d bytes"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
@@ -794,6 +795,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
+msgstr ""
+
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+msgid "Data 0 pin must be byte aligned and < 32"
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
@@ -1564,7 +1569,6 @@ msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
@@ -2134,6 +2138,10 @@ msgstr ""
 
 #: main.c
 msgid "Woken up by alarm.\n"
+msgstr ""
+
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+msgid "Write pin must be < 32"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
