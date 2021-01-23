@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-21 22:25+0000\n"
+"PO-Revision-Date: 2021-01-25 19:32+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -53,7 +53,7 @@ msgstr "  Wénjiàn \"%q\", dì %d xíng"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
-msgstr ""
+msgstr " shì %q lèi xíng\n"
 
 #: main.c
 msgid " output:\n"
@@ -871,7 +871,7 @@ msgstr "Zhèngzé biǎodá shì cuòwù"
 
 #: shared-bindings/socketpool/Socket.c
 msgid "Error: Failure to bind"
-msgstr ""
+msgstr "cuò wù: bǎng dìng shī bài"
 
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
@@ -1267,7 +1267,7 @@ msgstr "dà xiǎo wú xiào"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Invalid socket for TLS"
-msgstr ""
+msgstr "TLS de chā zuò wú xiào"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
@@ -1275,7 +1275,7 @@ msgstr "wú xiào zhuàng tài"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Invalid use of TLS Socket"
-msgstr ""
+msgstr "TLS tào jiē zì de wú xiào shǐ yòng"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1295,7 +1295,7 @@ msgstr "Wúxiào de zì/wèi chángdù"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Issue setting SO_REUSEADDR"
-msgstr ""
+msgstr "wèn tí shè zhì SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -2356,7 +2356,7 @@ msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "buffer size must be a multiple of element size"
-msgstr ""
+msgstr "huǎn chōng qū dà xiǎo bì xū shì yuán sù dà xiǎo de bèi shù"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -2525,7 +2525,7 @@ msgstr "wúfǎ cóng shǒudòng zìduàn guīgé qiēhuàn dào zìdòng zìduà
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
-msgstr ""
+msgstr "wú fǎ shǐ yòng qiáng zhì zhuǎn huàn guī zé qiáng zhì zhuǎn huàn shū chū"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -2565,7 +2565,7 @@ msgstr "quānzi zhǐ néng zài yī wèi jiāzhǎng zhōng zhùcè"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
-msgstr ""
+msgstr "dài mǎ chāo chū fàn wéi 0~127"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -2632,7 +2632,7 @@ msgstr "wúfǎ quèdìng SD kǎ bǎnběn"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
-msgstr ""
+msgstr "duì yú cháng dù wéi 3 de 1D shù zǔ dìng yì cross"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "data must be iterable"
@@ -2644,7 +2644,7 @@ msgstr "shùjù chángdù bìxū xiāngděng"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
-msgstr ""
+msgstr "wèi lǐ jiě de shù jù lèi xíng"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
@@ -2656,7 +2656,7 @@ msgstr "mòrèn 'except' bìxū shì zuìhòu yīgè"
 
 #: shared-bindings/msgpack/__init__.c
 msgid "default is not a function"
-msgstr ""
+msgstr "mò rèn zhí bú shì hán shù"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2683,7 +2683,7 @@ msgstr "bùtóng de cānshù bìxū shì ndarray"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "differentiation order out of range"
-msgstr ""
+msgstr "chā yì shùn xù fàn wéi"
 
 #: py/modmath.c py/objfloat.c py/objint_longlong.c py/objint_mpz.c py/runtime.c
 #: shared-bindings/math/__init__.c
@@ -2716,7 +2716,7 @@ msgstr "jiéwěi_x yīnggāi shì yīgè zhěngshù"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
-msgstr ""
+msgstr "epoch_time bǎn bù zhī chí cǐ bǎn běn"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -2761,7 +2761,7 @@ msgstr "qídài guānjiàn: Zìdiǎn de jiàzhí"
 
 #: shared-bindings/msgpack/__init__.c
 msgid "ext_hook is not a function"
-msgstr ""
+msgstr "ext_hook bú shì hán shù"
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -2810,7 +2810,7 @@ msgstr "dì yīgè cānshù bìxū shì yī gè hánshù"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr ""
+msgstr "dì yī gè cān shù bì xū shì yí gè yuán zǔ ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "first argument must be an iterable"
@@ -2867,7 +2867,7 @@ msgstr "hánshù zài jiàngé mòwěi jùyǒu xiāngtóng de fúhào"
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr ""
+msgstr "hán shù jǐn wéi ndarrays dìng yì"
 
 #: py/argcheck.c
 #, c-format
@@ -2963,11 +2963,11 @@ msgstr "nèi lián jíhé bìxū shì yīgè hánshù"
 
 #: extmod/ulab/code/ndarray.c
 msgid "input and output shapes are not compatible"
-msgstr ""
+msgstr "shū rù hé shū chū xíng zhuàng bù jiān róng"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer, a tuple, or a list"
-msgstr ""
+msgstr "shū rù cān shù bì xū shì zhěng shù, yuán zǔ huò liè biǎo"
 
 #: extmod/ulab/code/fft/fft.c
 msgid "input array length must be power of 2"
@@ -2975,7 +2975,7 @@ msgstr "shūrù shùzǔ de chángdù bìxū shì 2 de mì"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input arrays are not compatible"
-msgstr ""
+msgstr "shū rù shù zǔ bù jiān róng"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "input data must be an iterable"
@@ -2991,19 +2991,19 @@ msgstr "shūrù jǔzhèn shì qíyì de"
 
 #: extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr ""
+msgstr "shū rù bì xū shì mì jí de ndarray"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input must be a tensor of rank 2"
-msgstr ""
+msgstr "shū rù bì xū shì děng jí 2 de zhāng liàng"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
-msgstr ""
+msgstr "shū rù bì xū shì ndarray"
 
 #: extmod/ulab/code/filter/filter.c
 msgid "input must be one-dimensional"
-msgstr ""
+msgstr "shū rù bì xū shì yì wéi de"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "input must be square matrix"
@@ -3019,7 +3019,7 @@ msgstr "shūrù xiàngliàng de chángdù bìxū xiāngděng"
 
 #: extmod/ulab/code/poly/poly.c
 msgid "inputs are not iterable"
-msgstr ""
+msgstr "shū rù bù kě yí dòng"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -3093,7 +3093,7 @@ msgstr "wúxiào de hàomǎ yǔfǎ"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "io must be rtc io"
-msgstr ""
+msgstr "IO bì xū shì RTC IO"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3192,11 +3192,11 @@ msgstr "Dāng gùdìng chángdù wèi %s shí, zuìdà chángdù bìxū wèi 0-%
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "max_length must be >= 0"
-msgstr ""
+msgstr "zuì dà cháng dù bì xū >= 0"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
-msgstr ""
+msgstr "zuì dà chǐ cùn shù wéi 4"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3212,7 +3212,7 @@ msgstr "maxiter yìng wéi > 0"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "median argument must be an ndarray"
-msgstr ""
+msgstr "zhōng wèi shù cān shù bì xū shì ndarray"
 
 #: py/runtime.c
 #, c-format
@@ -3298,7 +3298,7 @@ msgstr "zhǎo bù dào fēi běndì de bǎng dìng"
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
-msgstr ""
+msgstr "wú mò rèn bāo zhuāng jī"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -3339,15 +3339,15 @@ msgstr "guānjiàn zì cānshù zhīhòu de fēi guānjiàn zì cānshù"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
-msgstr ""
+msgstr "fēi líng chāo shí bì xū > 0.01"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "non-zero timeout must be >= interval"
-msgstr ""
+msgstr "fēi líng chāo shí bì xū wéi >= jiàn gé"
 
 #: extmod/ulab/code/linalg/linalg.c
 msgid "norm is defined for 1D and 2D arrays"
-msgstr ""
+msgstr "wéi 1D hé 2D shù zǔ dìng yì guī fàn"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
@@ -3367,7 +3367,7 @@ msgstr "diǎnshù bìxū zhìshǎo wèi 2"
 
 #: py/builtinhelp.c
 msgid "object "
-msgstr ""
+msgstr "duì xiàng "
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
@@ -3419,15 +3419,15 @@ msgstr "jīshù zìfú chuàn"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset is too large"
-msgstr ""
+msgstr "piān yí tài dà"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
-msgstr ""
+msgstr "piān yí liàng bì xū >= 0"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "offset must be non-negative and no greater than buffer length"
-msgstr ""
+msgstr "piān yí liàng bì xū wéi fēi fù shù qiě bù dà yú huǎn chōng qū cháng dù"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3453,7 +3453,7 @@ msgstr "cāozuò shǔ bùnéng yīqǐ guǎngbò"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
+msgstr "jǐn duì 1D bù ěr shù zǔ shí xiàn cāo zuò"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3593,7 +3593,7 @@ msgstr "qǐngqiú chángdù %d dàn duìxiàng chángdù %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
-msgstr ""
+msgstr "wú fǎ jiāng jié guǒ qiáng zhì zhuǎn huàn dào zhǐ dìng lèi xíng"
 
 #: py/compile.c
 msgid "return annotation must be an identifier"
@@ -3615,7 +3615,7 @@ msgstr "rgb_pins[%d] yǔ shízhōng bùzài tóng yīgè duānkǒu shàng"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "roll argument must be an ndarray"
-msgstr ""
+msgstr "gǔn dòng cān shù bì xū shì ndarray"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -3643,11 +3643,11 @@ msgstr "bù zhīchí jiǎoběn biānyì"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
-msgstr ""
+msgstr "xíng zhuàng bì xū shì yí gè yuán zǔ"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
-msgstr ""
+msgstr "duǎn dú"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3780,7 +3780,7 @@ msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
-msgstr ""
+msgstr "chāo shí bì xū < 655.35 miǎo"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
@@ -3800,7 +3800,7 @@ msgstr "time_t shíjiān chuō chāochū píngtái fànwéi"
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
-msgstr ""
+msgstr "tobytes zhǐ néng duì mì jí shù zǔ diào yòng"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
@@ -3808,7 +3808,7 @@ msgstr "tígōng jǐ dìng géshì de cānshù tài duō"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "too many dimensions"
-msgstr ""
+msgstr "chǐ cùn tài duō"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
@@ -3821,7 +3821,7 @@ msgstr "dǎkāi tài duō zhí (yùqí %d)"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays"
-msgstr ""
+msgstr "wéi 1D shù zǔ dìng yì xiàn jǐng"
 
 #: extmod/ulab/code/approx/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
@@ -3829,7 +3829,7 @@ msgstr "Trapz shì wèi děng zhǎng de 1D shùzǔ dìngyì de"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "trigger level must be 0 or 1"
-msgstr ""
+msgstr "chù fā jí bié bì xū wéi 0 huò 1"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -3971,7 +3971,7 @@ msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
 
 #: ports/esp32s2/common-hal/alarm/pin/__init__.c
 msgid "wakeup conflict"
-msgstr ""
+msgstr "huàn xǐng chōng tū"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
@@ -3987,7 +3987,7 @@ msgstr "kuāndù bìxū dàyú líng"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr ""
+msgstr "wèi qǐ yòng WIFI"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -3995,11 +3995,11 @@ msgstr "Chuāngkǒu bìxū shì <= jiàngé"
 
 #: extmod/ulab/code/numerical/numerical.c
 msgid "wrong axis index"
-msgstr ""
+msgstr "cuò wù de zhóu suǒ yǐn"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "wrong axis specified"
-msgstr ""
+msgstr "zhǐ dìng de zhóu cuò wù"
 
 #: extmod/ulab/code/vector/vectorise.c
 msgid "wrong input type"
@@ -4027,7 +4027,7 @@ msgstr "x zhí chāochū biānjiè"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
-msgstr ""
+msgstr "xTaskCreate shī bài"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
