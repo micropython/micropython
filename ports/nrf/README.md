@@ -62,6 +62,7 @@ By default, the PCA10040 (nrf52832) is used as compile target. To build and flas
 
 Alternatively the target board could be defined:
 
+     make submodules
      make BOARD=pca10040
      make BOARD=pca10040 deploy
 
