@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-17 12:55+0000\n"
+"PO-Revision-Date: 2021-01-25 19:32+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -52,7 +52,7 @@ msgstr "  Fil \"%q\", rad %d"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
-msgstr ""
+msgstr " är av typen %q\n"
 
 #: main.c
 msgid " output:\n"
@@ -872,7 +872,7 @@ msgstr "Fel i regex"
 
 #: shared-bindings/socketpool/Socket.c
 msgid "Error: Failure to bind"
-msgstr ""
+msgstr "Fel: Bind misslyckades"
 
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
@@ -1268,7 +1268,7 @@ msgstr "Ogiltig storlek"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Invalid socket for TLS"
-msgstr ""
+msgstr "Ogiltig socket för TLS"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
@@ -1276,7 +1276,7 @@ msgstr "Ogiltigt tillstånd"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Invalid use of TLS Socket"
-msgstr ""
+msgstr "Ogiltig användning av TLS Socket"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1296,7 +1296,7 @@ msgstr "Ogiltig word-/bitlängd"
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Issue setting SO_REUSEADDR"
-msgstr ""
+msgstr "Misslyckades att sätta SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -3375,7 +3375,7 @@ msgstr "antal punkter måste vara minst 2"
 
 #: py/builtinhelp.c
 msgid "object "
-msgstr ""
+msgstr "objekt "
 
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
@@ -3996,7 +3996,7 @@ msgstr "width måste vara större än noll"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr ""
+msgstr "wifi är inte aktiverat"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
