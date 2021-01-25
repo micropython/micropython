@@ -34,10 +34,8 @@
 #include "shared-bindings/microcontroller/__init__.h"
 
 /*
- *
  *  Current pin limitations for ESP32-S2 ParallelBus:
- *   - data0 pin must be byte aligned (data0 pin options: 0, 8, 16 or 24)
- *
+ *   - data0 pin must be byte aligned
  */
 
 void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* self,
@@ -45,7 +43,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     const mcu_pin_obj_t* write, const mcu_pin_obj_t* read, const mcu_pin_obj_t* reset) {
 
     uint8_t data_pin = data0->number;
-    if ( (data_pin % 8 != 0) && (data_pin >= 32) ) {
+    if (data_pin % 8 != 0) {
         mp_raise_ValueError(translate("Data 0 pin must be byte aligned."));
     }
 
@@ -113,20 +111,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
 	}
 
 
-    mp_printf(&mp_plat_print, "write_clear: %x, write_set: %x\n", self->write_clear_register, self->write_set_register);
-
     self->write_mask = 1 << (write->number % 32); /* the write pin triggers the LCD to latch the data */
-    mp_printf(&mp_plat_print, "write_mask: %x\n", self->write_mask);
-
-    mp_printf(&mp_plat_print, "out1 register: %x\n", g->out1.val);
-    mp_printf(&mp_plat_print, "clear a bit\n");
-   	*self->write_clear_register = self->write_mask;
-	mp_printf(&mp_plat_print, "out1 register: %x\n", g->out1.val);
-	mp_printf(&mp_plat_print, "write a bit\n");
-   	*self->write_set_register = self->write_mask;
-   	mp_printf(&mp_plat_print, "out1 register: %x\n", g->out1.val);
-
-	*self->write_clear_register = self->write_mask;
 
     /* SNIP - common setup of the reset pin, same as from SAMD and NRF ports */
     self->reset.base.type = &mp_type_NoneType;
