@@ -27,10 +27,6 @@
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
-#define CIRCUITPY_BINASCII                  (1)
-#define CIRCUITPY_ERRNO                     (1)
-#define CIRCUITPY_JSON                      (1)
-
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 
 #define CIRCUITPY_DEFAULT_STACK_SIZE                (24*1024)
