@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 
+#include "common-hal/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "supervisor/shared/rgb_led_status.h"
@@ -46,7 +47,7 @@ bool speaker_enable_in_use;
 STATIC uint32_t never_reset_pins;
 
 void reset_all_pins(void) {
-    for (size_t i = 0; i < 30; i++) {
+    for (size_t i = 0; i < TOTAL_GPIO_COUNT; i++) {
         if ((never_reset_pins & (1 << i)) != 0) {
             continue;
         }
@@ -55,7 +56,7 @@ void reset_all_pins(void) {
 }
 
 void never_reset_pin_number(uint8_t pin_number) {
-    if (pin_number >= 32) {
+    if (pin_number >= TOTAL_GPIO_COUNT) {
         return;
     }
 
@@ -63,7 +64,7 @@ void never_reset_pin_number(uint8_t pin_number) {
 }
 
 void reset_pin_number(uint8_t pin_number) {
-    if (pin_number >= 32) {
+    if (pin_number >= TOTAL_GPIO_COUNT) {
         return;
     }
 
@@ -134,7 +135,7 @@ void claim_pin(const mcu_pin_obj_t* pin) {
 }
 
 bool pin_number_is_free(uint8_t pin_number) {
-    if (pin_number >= 30) {
+    if (pin_number >= TOTAL_GPIO_COUNT) {
         return false;
     }
 
