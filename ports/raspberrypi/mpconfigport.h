@@ -27,7 +27,9 @@
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
-#define MICROPY_PY_UJSON                            (1)
+#define CIRCUITPY_BINASCII                  (1)
+#define CIRCUITPY_ERRNO                     (1)
+#define CIRCUITPY_JSON                      (1)
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 

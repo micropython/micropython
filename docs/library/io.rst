@@ -1,9 +1,7 @@
-:mod:`uio` -- input/output streams
+:mod:`io` -- input/output streams
 ==================================
 
-.. include:: ../templates/unsupported_in_circuitpython.inc
-
-.. module:: uio
+.. module:: io
    :synopsis: input/output streams
 
 |see_cpython_module| :mod:`cpython:io`.

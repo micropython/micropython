@@ -195,21 +195,14 @@ typedef long mp_off_t;
 #define MICROPY_PY_BUILTINS_STR_CENTER        (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_PARTITION     (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES    (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_UERRNO                     (CIRCUITPY_FULL_BUILD)
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT    (CIRCUITPY_FULL_BUILD)
 #endif
-#ifndef MICROPY_PY_UBINASCII
-#define MICROPY_PY_UBINASCII                  (CIRCUITPY_FULL_BUILD)
-#endif
 // Opposite setting is deliberate.
-#define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
-#ifndef MICROPY_PY_URE
-#define MICROPY_PY_URE                        (CIRCUITPY_FULL_BUILD)
-#endif
-#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_SUB                    (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_RE)
+#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
+#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
+#define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
@@ -299,6 +292,13 @@ extern const struct _mp_obj_module_t audiomp3_module;
 extern const struct _mp_obj_module_t audiopwmio_module;
 #else
 #define AUDIOPWMIO_MODULE
+#endif
+
+#if CIRCUITPY_BINASCII
+#define MICROPY_PY_UBINASCII CIRCUITPY_BINASCII
+#define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
+#else
+#define BINASCII_MODULE
 #endif
 
 #if CIRCUITPY_BITBANGIO
@@ -399,6 +399,13 @@ extern const struct _mp_obj_module_t terminalio_module;
 #define TERMINALIO_MODULE
 #endif
 
+#if CIRCUITPY_ERRNO
+#define MICROPY_PY_UERRNO (1)
+#define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+#else
+#define ERRNO_MODULE
+#endif
+
 #if CIRCUITPY_ESPIDF
 extern const struct _mp_obj_module_t espidf_module;
 #define ESPIDF_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_espidf),(mp_obj_t)&espidf_module },
@@ -468,6 +475,18 @@ extern const struct _mp_obj_module_t ipaddress_module;
 #define IPADDRESS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_ipaddress), (mp_obj_t)&ipaddress_module },
 #else
 #define IPADDRESS_MODULE
+#endif
+
+#if CIRCUITPY_JSON
+#define MICROPY_PY_UJSON (1)
+#define MICROPY_PY_IO (1)
+#define JSON_MODULE            { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
+#else
+#ifndef MICROPY_PY_IO
+// We don't need MICROPY_PY_IO unless someone else wants it.
+#define MICROPY_PY_IO (0)
+#endif
+#define JSON_MODULE
 #endif
 
 #if CIRCUITPY_MATH
@@ -586,6 +605,13 @@ extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
 #else
 #define RANDOM_MODULE
+#endif
+
+#if CIRCUITPY_RE
+#define MICROPY_PY_URE (1)
+#define RE_MODULE            { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
+#else
+#define RE_MODULE
 #endif
 
 #if CIRCUITPY_RGBMATRIX
@@ -730,25 +756,6 @@ extern const struct _mp_obj_module_t ustack_module;
 #define USTACK_MODULE
 #endif
 
-// These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
-#if MICROPY_PY_UBINASCII
-#define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
-#else
-#define BINASCII_MODULE
-#endif
-
-#if MICROPY_PY_UERRNO
-#define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
-#else
-#define ERRNO_MODULE
-#endif
-
-#if MICROPY_PY_UJSON
-#define JSON_MODULE            { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
-#else
-#define JSON_MODULE
-#endif
-
 #if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
 // ulab requires reverse special methods
 #if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
@@ -758,12 +765,6 @@ extern const struct _mp_obj_module_t ustack_module;
     { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
 #else
 #define ULAB_MODULE
-#endif
-
-#if MICROPY_PY_URE
-#define RE_MODULE { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
-#else
-#define RE_MODULE
 #endif
 
 // This is not a top-level module; it's microcontroller.watchdog.

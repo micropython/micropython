@@ -44,4 +44,5 @@
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
 
-#define MICROPY_PY_URE 0
+// Can't fit.
+#define CIRCUITPY_RE 0
