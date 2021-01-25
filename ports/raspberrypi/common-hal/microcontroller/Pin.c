@@ -63,12 +63,7 @@ void never_reset_pin_number(uint8_t pin_number) {
 }
 
 void reset_pin_number(uint8_t pin_number) {
-    if (pin_number >= 32
-#if TUD_OPT_RP2040_USB_DEVICE_ENUMERATION_FIX
-    // Pin 15 is used for Errata so we don't mess with it.
-        || pin_number == 15
-#endif
-        ) {
+    if (pin_number >= 32) {
         return;
     }
 
@@ -142,12 +137,7 @@ bool pin_number_is_free(uint8_t pin_number) {
     if (pin_number >= 30) {
         return false;
     }
-#if TUD_OPT_RP2040_USB_DEVICE_ENUMERATION_FIX
-    // Pin 15 is used for Errata so we don't mess with it.
-    if (pin_number == 15) {
-        return true;
-    }
-#endif
+
     uint32_t pad_state = padsbank0_hw->io[pin_number];
     return (pad_state & PADS_BANK0_GPIO0_IE_BITS) == 0 &&
            (pad_state & PADS_BANK0_GPIO0_OD_BITS) != 0;
