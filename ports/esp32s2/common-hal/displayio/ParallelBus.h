@@ -35,11 +35,13 @@ typedef struct {
     digitalio_digitalinout_obj_t command;
     digitalio_digitalinout_obj_t chip_select;
     digitalio_digitalinout_obj_t reset;
-    digitalio_digitalinout_obj_t write; // write pin, must be a pin number < 32 currently
+    digitalio_digitalinout_obj_t write;
     digitalio_digitalinout_obj_t read;
-    uint8_t data0_pin; // pin number for the lowest number pin.  Must be 0, 8, 16 or 24 with current
-    gpio_dev_t* write_group; // pointer to the write group for setting/clearing the write bit to latch the data on the LCD
-    uint32_t write_mask; // bit mask for the single bit for the write pin, currently write pin must be a pin number < 32
+    uint8_t data0_pin; // pin number for the lowest number data pin.  Must be 8-bit aligned
+    bool data_write_same_register; // if data and write pins are in the sare
+    uint32_t* write_set_register; // pointer to the write group for setting the write bit to latch the data on the LCD
+    uint32_t* write_clear_register; // pointer to the write group for clearing the write bit to latch the data on the LCD
+    uint32_t write_mask; // bit mask for the single bit for the write pin register
 } displayio_parallelbus_obj_t;
 
 #endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DISPLAYIO_PARALLELBUS_H

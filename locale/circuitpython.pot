@@ -798,7 +798,7 @@ msgid "Data 0 pin must be byte aligned"
 msgstr ""
 
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
-msgid "Data 0 pin must be byte aligned and < 32"
+msgid "Data 0 pin must be byte aligned."
 msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
@@ -2138,10 +2138,6 @@ msgstr ""
 
 #: main.c
 msgid "Woken up by alarm.\n"
-msgstr ""
-
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
-msgid "Write pin must be < 32"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c

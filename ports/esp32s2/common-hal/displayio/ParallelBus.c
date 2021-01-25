@@ -36,9 +36,7 @@
 /*
  *
  *  Current pin limitations for ESP32-S2 ParallelBus:
- *   1. data0 pin must be byte aligned (data0 pin options: 0, 8, 16 or 24)
- *   2. The 8 data lines must use pin numbers < 32
- *   3. The write pin must be pin number < 32.
+ *   - data0 pin must be byte aligned (data0 pin options: 0, 8, 16 or 24)
  *
  */
 
@@ -48,17 +46,13 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
 
     uint8_t data_pin = data0->number;
     if ( (data_pin % 8 != 0) && (data_pin >= 32) ) {
-        mp_raise_ValueError(translate("Data 0 pin must be byte aligned and < 32"));
+        mp_raise_ValueError(translate("Data 0 pin must be byte aligned."));
     }
 
     for (uint8_t i = 0; i < 8; i++) {
         if (!pin_number_is_free(data_pin + i)) {
             mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), i);
         }
-    }
-
-    if (write->number >= 32) {
-    	mp_raise_ValueError(translate("Write pin must be < 32"));
     }
 
     gpio_dev_t *g = &GPIO; // this is the GPIO registers, see "extern gpio_dev_t GPIO" from file:gpio_struct.h
@@ -74,11 +68,14 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
 
     /* From my understanding, there is a limitation of the ESP32-S2 that does not allow single-byte writes
      *  into the GPIO registers.  See section 10.3.3 regarding "non-aligned writes" into the registers.
-     *  If a method for writing single-byte writes is uncovered, this code can be modified to provide
-     *  single-byte access into the output register
      */
 
-	self->bus = (uint32_t*) &g->out; //pointer to GPIO output register (for pins 0-31)
+
+    if (data_pin < 31) {
+		self->bus = (uint32_t*) &g->out; //pointer to GPIO output register (for pins 0-31)
+	} else {
+		self->bus = (uint32_t*) &g->out1.val; //pointer to GPIO output register (for pins >= 32)
+	}
 
     /* SNIP - common setup of command, chip select, write and read pins, same as from SAMD and NRF ports */
     self->command.base.type = &digitalio_digitalinout_type;
@@ -98,17 +95,38 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t* sel
     common_hal_digitalio_digitalinout_switch_to_output(&self->read, true, DRIVE_MODE_PUSH_PULL);
 
     self->data0_pin = data_pin;
-    self->write_group = &GPIO;
-    /* If we want to allow a write pin >= 32, should consider putting separate "clear_write" and
-     *  "set_write" pointers into the .h in place of "write_group"
-     *  to select between out_w1tc/out1_w1tc (clear) and out_w1ts/out1_w1ts (set) registers.
-     */
+
+    if (write->number < 32) {
+    	self->write_clear_register = (uint32_t*) &g->out_w1tc;
+    	self->write_set_register = (uint32_t*) &g->out_w1ts;
+    } else {
+    	self->write_clear_register = (uint32_t*) &g->out1_w1tc.val;
+    	self->write_set_register = (uint32_t*) &g->out1_w1ts.val;
+    }
+
+    // Check to see if the data and write pins are on the same register:
+    if ( ( ((self->data0_pin < 32) && (write->number < 32)) ) ||
+    	 ( ((self->data0_pin > 31) && (write->number > 31)) )  ) {
+    		self->data_write_same_register = true; // data pins and write pin are on the same register
+    } else {
+    	self->data_write_same_register = false; // data pins and write pins are on different registers
+	}
+
+
+    mp_printf(&mp_plat_print, "write_clear: %x, write_set: %x\n", self->write_clear_register, self->write_set_register);
 
     self->write_mask = 1 << (write->number % 32); /* the write pin triggers the LCD to latch the data */
-    /* Note:  As currently written for the ESP32-S2 port, the write pin must be a pin number less than 32
-     *  This could be updated to accommodate 32 and higher by using the different construction of the
-     *  address for writing to output pins >= 32, see related note above for 'self->write_group'
-     */
+    mp_printf(&mp_plat_print, "write_mask: %x\n", self->write_mask);
+
+    mp_printf(&mp_plat_print, "out1 register: %x\n", g->out1.val);
+    mp_printf(&mp_plat_print, "clear a bit\n");
+   	*self->write_clear_register = self->write_mask;
+	mp_printf(&mp_plat_print, "out1 register: %x\n", g->out1.val);
+	mp_printf(&mp_plat_print, "write a bit\n");
+   	*self->write_set_register = self->write_mask;
+   	mp_printf(&mp_plat_print, "out1 register: %x\n", g->out1.val);
+
+	*self->write_clear_register = self->write_mask;
 
     /* SNIP - common setup of the reset pin, same as from SAMD and NRF ports */
     self->reset.base.type = &mp_type_NoneType;
@@ -174,13 +192,8 @@ void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byt
     displayio_parallelbus_obj_t* self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
 
-    /* Currently the write pin number must be < 32.
-     *   Future: To accommodate write pin numbers >= 32, will need to update to choose the correct register
-     *   for the write pin set/clear (out_w1ts/out1_w1ts and out_w1tc/out1_w1tc)
-     */
-
-    uint32_t* clear_write = (uint32_t*) &self->write_group->out_w1tc;
-    uint32_t* set_write = (uint32_t*) &self->write_group->out_w1ts;
+    uint32_t* clear_write = self->write_clear_register;
+    uint32_t* set_write = self->write_set_register;
 
     const uint32_t mask = self->write_mask;
 
@@ -197,24 +210,29 @@ void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byt
     							* each data byte will be written to the data pin registers
     							*/
 
-    for (uint32_t i = 0; i < data_length; i++) {
 
-    	/* Question: Is there a faster way of stuffing the data byte into the data_buffer, is bit arithmetic
-    	 * faster than writing to the byte address?
-    	 */
+    if ( self->data_write_same_register ) { // data and write pins are on the same register
+	    for (uint32_t i = 0; i < data_length; i++) {
 
-    	/* Note: If the write pin and data pins are controlled by the same GPIO register, we can eliminate
-    	 * the "clear_write" step below, since the write pin is cleared when the data_buffer is written
-    	 * to the bus.
-    	 * Remember: This method requires the write pin to be controlled by the same GPIO register as the data pins.
-    	 */
+	    	/* Note: If the write pin and data pins are controlled by the same GPIO register, we can eliminate
+	    	 * the "clear_write" step below, since the write pin is cleared when the data_buffer is written
+	    	 * to the bus.
+	    	 */
 
-        //   *clear_write = mask; // clear the write pin (See comment above, this may not be necessary).
+	        *(data_address) = data[i]; // stuff the data byte into the data_buffer at the correct offset byte location
+	        *self->bus = data_buffer; // write the data to the output register
+	        *set_write = mask; // set the write pin
+	    }
+	}
+	else { // data and write pins are on different registers
+		for (uint32_t i = 0; i < data_length; i++) {
+			*clear_write = mask; // clear the write pin (See comment above, this may not be necessary).
+	        *(data_address) = data[i]; // stuff the data byte into the data_buffer at the correct offset byte location
+	        *self->bus = data_buffer; // write the data to the output register
+	        *set_write = mask; // set the write pin
 
-        *(data_address) = data[i]; // stuff the data byte into the data_buffer at the correct offset byte location
-        *self->bus = data_buffer; // write the data to the output register
-        *set_write = mask; // set the write pin
-    }
+	    }
+	}
 
 }
 
