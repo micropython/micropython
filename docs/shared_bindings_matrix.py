@@ -30,7 +30,7 @@ import sys
 
 from concurrent.futures import ThreadPoolExecutor
 
-SUPPORTED_PORTS = ['atmel-samd', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'raspberrypi', 'stm']
+SUPPORTED_PORTS = ['atmel-samd', 'cxd56', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'raspberrypi', 'stm']
 
 def get_circuitpython_root_dir():
     """ The path to the root './circuitpython' directory
