@@ -102,6 +102,11 @@ else
 			shared-module/usb_midi/PortOut.c
 	endif
 
+	ifeq ($(CIRCUITPY_USB_VENDOR), 1)
+		SRC_SUPERVISOR += \
+			lib/tinyusb/src/class/vendor/vendor_device.c
+	endif
+
 	CFLAGS += -DUSB_AVAILABLE
 endif
 
@@ -119,12 +124,19 @@ ifndef USB_INTERFACE_NAME
 USB_INTERFACE_NAME = "CircuitPython"
 endif
 
+ifndef USB_WEBUSB_URL
+USB_WEBUSB_URL = "www.circuitpython.org"
+endif
+
 USB_DEVICES_COMPUTED := CDC,MSC
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 USB_DEVICES_COMPUTED := $(USB_DEVICES_COMPUTED),AUDIO
 endif
 ifeq ($(CIRCUITPY_USB_HID),1)
 USB_DEVICES_COMPUTED := $(USB_DEVICES_COMPUTED),HID
+endif
+ifeq ($(CIRCUITPY_USB_VENDOR),1)
+USB_DEVICES_COMPUTED := $(USB_DEVICES_COMPUTED),VENDOR
 endif
 USB_DEVICES ?= "$(USB_DEVICES_COMPUTED)"
 
@@ -197,6 +209,12 @@ USB_DESCRIPTOR_ARGS = \
 	--midi_ep_num_in $(USB_MIDI_EP_NUM_IN)\
 	--output_c_file $(BUILD)/autogen_usb_descriptor.c\
 	--output_h_file $(BUILD)/genhdr/autogen_usb_descriptor.h
+
+ifeq ($(CIRCUITPY_USB_VENDOR), 1)
+USB_DESCRIPTOR_ARGS += \
+        --vendor_ep_num_out 0 --vendor_ep_num_in 0 \
+        --webusb_url $(USB_WEBUSB_URL)
+endif
 
 ifeq ($(USB_RENUMBER_ENDPOINTS), 0)
 USB_DESCRIPTOR_ARGS += --no-renumber_endpoints

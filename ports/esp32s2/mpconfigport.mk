@@ -30,6 +30,8 @@ CIRCUITPY_ROTARYIO = 1
 CIRCUITPY_NVM = 1
 # We don't have enough endpoints to include MIDI.
 CIRCUITPY_USB_MIDI = 0
+# We have borrowed the VENDOR nomenclature from tinyusb. VENDOR AKA WEBUSB
+CIRCUITPY_USB_VENDOR = 1
 CIRCUITPY_WIFI = 1
 CIRCUITPY_WATCHDOG ?= 1
 CIRCUITPY_ESPIDF = 1

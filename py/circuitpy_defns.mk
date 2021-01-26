@@ -288,6 +288,9 @@ endif
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 SRC_PATTERNS += usb_midi/%
 endif
+ifeq ($(CIRCUITPY_USB_VENDOR),1)
+SRC_PATTERNS += usb_vendor/%
+endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
