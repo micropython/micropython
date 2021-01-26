@@ -170,7 +170,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
         // ADC isn't enabled so calibrate it now
         #if defined(STM32F0) || defined(STM32L0)
         LL_ADC_StartCalibration(adc);
-        #elif defined(STM32L4) || defined(STM32WB)
+        #elif defined(STM32L4) || defined(STM32WB) || defined(STM32G4)
         LL_ADC_StartCalibration(adc, LL_ADC_SINGLE_ENDED);
         #else
         LL_ADC_StartCalibration(adc, LL_ADC_CALIB_OFFSET_LINEARITY, LL_ADC_SINGLE_ENDED);

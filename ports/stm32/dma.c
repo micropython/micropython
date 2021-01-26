@@ -542,7 +542,7 @@ const dma_descr_t dma_MEM_2_MEM   = { DMA2_Channel6, DMA_REQUEST_MEM2MEM,    dma
      DMA2_Channel7_IRQn,
      DMA2_Channel8_IRQn,
 #endif
- };>
+ };
 
 #elif defined(STM32H7)
 
