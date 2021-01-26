@@ -6,7 +6,7 @@ MicroPython libraries
 Python standard libraries and micro-libraries
 ---------------------------------------------
 
-These libraries are inherited from MicroPython.
+The libraries below are inherited from MicroPython.
 They are similar to the standard Python libraries with the same name.
 They implement a subset of or a variant of the corresponding
 standard Python library.
@@ -20,7 +20,7 @@ limited flash memory, usually on non-Express builds:
 
 These libraries are not currently enabled in any CircuitPython build, but may be in the future,
 with the ``u`` prefix dropped:
-``uctypes`, ``uhashlib``, ``uio``, ``uzlib``.
+``uctypes``, ``uhashlib``, ``uzlib``.
 
 .. toctree::
    :maxdepth: 1
