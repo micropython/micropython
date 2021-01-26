@@ -311,6 +311,8 @@ The real value may vary depending on the variations in voltage and temperature.*
 #ifdef HAL_WWDG_MODULE_ENABLED
 #include "stm32g4xx_hal_wwdg.h"
 #endif /* HAL_WWDG_MODULE_ENABLED */
+#include "stm32g4xx_ll_adc.h"
+#include "stm32g4xx_ll_rtc.h"
 
 // HAL parameter assertions are disabled
 #define assert_param(expr) ((void)0)
