@@ -261,7 +261,6 @@ int can_receive(FDCAN_HandleTypeDef *can, int fifo, FDCAN_RxHeaderTypeDef *hdr, 
         address = (uint32_t *)(can->msgRam.RxFIFO1SA + (index * can->Init.RxFifo1ElmtSize * 4));
         #endif
     }
-    #endif
 
     // Parse header of message
     hdr->IdType = *address & FDCAN_ELEMENT_MASK_XTD;
