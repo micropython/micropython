@@ -27,8 +27,6 @@
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
-#define MICROPY_PY_UJSON                            (1)
-
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 
 #define CIRCUITPY_DEFAULT_STACK_SIZE                (24*1024)
