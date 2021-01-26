@@ -198,8 +198,6 @@ typedef long mp_off_t;
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT    (CIRCUITPY_FULL_BUILD)
 #endif
-// Opposite setting is deliberate.
-#define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
@@ -401,9 +399,12 @@ extern const struct _mp_obj_module_t terminalio_module;
 
 #if CIRCUITPY_ERRNO
 #define MICROPY_PY_UERRNO (1)
+// Uses about 80 bytes.
+#define MICROPY_PY_UERRNO_ERRORCODE (1)
 #define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
 #else
 #define ERRNO_MODULE
+#
 #endif
 
 #if CIRCUITPY_ESPIDF
