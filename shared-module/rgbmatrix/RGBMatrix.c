@@ -62,7 +62,7 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
     }
 
     self->width = width;
-    self->bufsize = 2 * width * rgb_count / 3 * (1 << addr_count) * tile;
+    self->bufsize = 2 * width * common_hal_rgbmatrix_rgbmatrix_get_height(self);
 
     common_hal_rgbmatrix_rgbmatrix_reconstruct(self, framebuffer);
 }

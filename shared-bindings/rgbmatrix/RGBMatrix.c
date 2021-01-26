@@ -219,8 +219,8 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
             translate("tile must be greater than or equal to zero"));
     }
 
+    int computed_height = (rgb_count / 3) * (1 << (addr_count)) * tile;
     if (args[ARG_height].u_int != 0) {
-        int computed_height = (rgb_count / 3) * (1 << (addr_count)) * tile;
         if (computed_height != args[ARG_height].u_int) {
             mp_raise_ValueError_varg(
                 translate("%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"), addr_count, rgb_count, tile, computed_height, args[ARG_height].u_int);
@@ -236,7 +236,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
     if (framebuffer == mp_const_none) {
         int width = args[ARG_width].u_int;
-        int bufsize = 2 * width * rgb_count / 3 * (1 << addr_count) * tile;
+        int bufsize = 2 * width * computed_height;
         framebuffer = mp_obj_new_bytearray_of_zeros(bufsize);
     }
 
