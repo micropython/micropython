@@ -7,12 +7,13 @@ from esp import neopixel_write
 class NeoPixel:
     ORDER = (1, 0, 2, 3)
 
-    def __init__(self, pin, n, bpp=3):
+    def __init__(self, pin, n, bpp=3, timing=1):
         self.pin = pin
         self.n = n
         self.bpp = bpp
         self.buf = bytearray(n * bpp)
         self.pin.init(pin.OUT)
+        self.timing = timing
 
     def __setitem__(self, index, val):
         offset = index * self.bpp
@@ -28,4 +29,4 @@ class NeoPixel:
             self[i] = color
 
     def write(self):
-        neopixel_write(self.pin, self.buf, True)
+        neopixel_write(self.pin, self.buf, self.timing)
