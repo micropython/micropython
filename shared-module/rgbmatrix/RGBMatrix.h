@@ -44,4 +44,5 @@ typedef struct {
     bool core_is_initialized;
     bool paused;
     bool doublebuffer;
+    int8_t tile;
 } rgbmatrix_rgbmatrix_obj_t;

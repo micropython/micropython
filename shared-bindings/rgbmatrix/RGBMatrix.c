@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdlib.h>
+
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -132,11 +134,11 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: Sequence[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0) -> None:
+//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: Sequence[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0, tile: int = 1, serpentine: bool = False) -> None:
 //|         """Create a RGBMatrix object with the given attributes.  The height of
-//|         the display is determined by the number of rgb and address pins:
-//|         len(rgb_pins) // 3 * 2 ** len(address_pins).  With 6 RGB pins and 4
-//|         address lines, the display will be 32 pixels tall.  If the optional height
+//|         the display is determined by the number of rgb and address pins and the number of tiles:
+//|         ``len(rgb_pins) // 3 * 2 ** len(address_pins) * abs(tile)``.  With 6 RGB pins, 4
+//|         address lines, and a single matrix, the display will be 32 pixels tall.  If the optional height
 //|         parameter is specified and is not 0, it is checked against the calculated
 //|         height.
 //|
@@ -172,7 +174,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 
 STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_width, ARG_bit_depth, ARG_rgb_list, ARG_addr_list,
-        ARG_clock_pin, ARG_latch_pin, ARG_output_enable_pin, ARG_doublebuffer, ARG_framebuffer, ARG_height };
+        ARG_clock_pin, ARG_latch_pin, ARG_output_enable_pin, ARG_doublebuffer, ARG_framebuffer, ARG_height, ARG_tile, ARG_serpentine };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
         { MP_QSTR_bit_depth, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
@@ -184,6 +186,8 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_doublebuffer, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = true } },
         { MP_QSTR_framebuffer, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
+        { MP_QSTR_tile, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 1 } },
+        { MP_QSTR_serpentine, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -210,13 +214,18 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         mp_raise_ValueError_varg(translate("Must use a multiple of 6 rgb pins, not %d"), rgb_count);
     }
 
-    // TODO(@jepler) Use fewer than all rows of pixels if height < computed_height
+    int tile = args[ARG_tile].u_int;
+
     if (args[ARG_height].u_int != 0) {
-        int computed_height = (rgb_count / 3) << (addr_count);
+        int computed_height = (rgb_count / 3) << (addr_count) * abs(tile);
         if (computed_height != args[ARG_height].u_int) {
             mp_raise_ValueError_varg(
-                translate("%d address pins and %d rgb pins indicate a height of %d, not %d"), addr_count, rgb_count, computed_height, args[ARG_height].u_int);
+                translate("%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"), addr_count, rgb_count, tile, computed_height, args[ARG_height].u_int);
         }
+    }
+
+    if (args[ARG_serpentine].u_bool) {
+        tile = -tile;
     }
 
     if (args[ARG_width].u_int <= 0) {
@@ -239,7 +248,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         addr_count, addr_pins,
         clock_pin, latch_pin, output_enable_pin,
         args[ARG_doublebuffer].u_bool,
-        framebuffer, NULL);
+        framebuffer, tile, NULL);
 
     claim_and_never_reset_pins(args[ARG_rgb_list].u_obj);
     claim_and_never_reset_pins(args[ARG_addr_list].u_obj);
