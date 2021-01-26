@@ -41,7 +41,14 @@
 //|
 //|        import microcontroller
 //|        print(microcontroller.cpu.frequency)
-//|        print(microcontroller.cpu.temperature)"""
+//|        print(microcontroller.cpu.temperature)
+//|
+//|        Note that on chips with more than one cpu (such as the RP2040)
+//|        you will need to index the cpu to select which one to get the
+//|        readings from. i.e.
+//|
+//|        print(microcontroller.cpu[0].temperature)
+//|        print(microcontroller.cpu[1].frequency)"""
 //|
 
 //|     def __init__(self) -> None:
