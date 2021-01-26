@@ -110,7 +110,6 @@ extern uint8_t _micropy_hw_internal_flash_storage_ram_cache_end[];
 #define FLASH_MEM_SEG2_NUM_BLOCKS \
     ((&_micropy_hw_internal_flash_storage2_end - &_micropy_hw_internal_flash_storage2_start) / 512)
 #endif
-
 #endif
 
 #if !defined(FLASH_MEM_SEG2_START_ADDR)

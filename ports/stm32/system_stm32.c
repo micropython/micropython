@@ -78,7 +78,7 @@
 #include "py/mphal.h"
 #include "powerctrl.h"
 
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32L4) || defined(STM32G4)
 
 void __fatal_error(const char *msg);
 
@@ -173,7 +173,7 @@ void SystemClock_Config(void) {
 
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
-    #if defined(STM32H7)
+    #if defined(STM32H7) || defined(STM32G4)
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
     #endif
 
@@ -195,6 +195,10 @@ void SystemClock_Config(void) {
     #elif defined(STM32L4)
     // Configure LSE Drive Capability
     __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
+	#elif defined(STM32G4)
+    /** Configure the main internal regulator output voltage
+    */
+    HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
     #endif
 
     #if defined(STM32H7)
@@ -204,7 +208,7 @@ void SystemClock_Config(void) {
     #endif
 
     /* Enable HSE Oscillator and activate PLL with HSE as source */
-    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+    #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7) || defined(STM32G4)
     RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
     RCC_OscInitStruct.HSEState = MICROPY_HW_RCC_HSE_STATE;
     RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
@@ -295,7 +299,7 @@ void SystemClock_Config(void) {
     RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
     RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
     RCC_OscInitStruct.PLL.PLLQ = MICROPY_HW_CLK_PLLQ;
-    #if defined(STM32L4) || defined(STM32H7)
+    #if defined(STM32L4) || defined(STM32H7) || defined(STM32G4)
     RCC_OscInitStruct.PLL.PLLR = MICROPY_HW_CLK_PLLR;
     #endif
 
@@ -310,6 +314,11 @@ void SystemClock_Config(void) {
     RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
     RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
     #elif defined(STM32L4)
+    RCC_ClkInitStruct.AHBCLKDivider = MICROPY_HW_CLK_AHB_DIV;
+    RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
+    RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
+	#elif defined(STM32G4)
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = MICROPY_HW_CLK_AHB_DIV;
     RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
     RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
@@ -351,12 +360,33 @@ void SystemClock_Config(void) {
     }
     #endif
 
+	#if defined(STM32G4)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8) != HAL_OK)
+    {
+    	__fatal_error("HAL_RCC_ClockConfig");
+    }
+
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_LPUART1
+                                  	  	  	  |RCC_PERIPHCLK_RNG|RCC_PERIPHCLK_ADC12
+											  |RCC_PERIPHCLK_FDCAN;
+    PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
+    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
+    PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
+    PeriphClkInitStruct.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
+    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
+	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+	{
+		__fatal_error("HAL_RCCEx_PeriphCLKConfig");
+	}
+	#else
     uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (MICROPY_HW_CLK_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
     uint32_t sysclk_mhz = vco_out / RCC_OscInitStruct.PLL.PLLP;
     bool need_pll48 = vco_out % 48 != 0;
     if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pll48) != 0) {
         __fatal_error("HAL_RCC_ClockConfig");
     }
+#endif
+
 
     #if defined(STM32H7)
     /* Activate CSI clock mandatory for I/O Compensation Cell*/
