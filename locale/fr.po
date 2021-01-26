@@ -548,6 +548,7 @@ msgid "Buffer too short by %d bytes"
 msgstr "Tampon trop court de %d octets"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
@@ -830,6 +831,10 @@ msgstr "DAC déjà utilisé"
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "La broche 'Data 0' doit être aligné sur l'octet"
+
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+msgid "Data 0 pin must be byte aligned."
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1631,7 +1636,6 @@ msgstr ""
 "La fréquence de PWM n'est pas modifiable quand variable_frequency est False "
 "à la construction."
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"

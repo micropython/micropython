@@ -542,6 +542,7 @@ msgid "Buffer too short by %d bytes"
 msgstr "Huǎn chōng qū tài duǎn ， àn %d zì jié"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
@@ -814,6 +815,10 @@ msgstr "Fā yuán huì yǐjīng shǐyòng"
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
+
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+msgid "Data 0 pin must be byte aligned."
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1607,7 +1612,6 @@ msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr "Dāng biànliàng_pínlǜ shì False zài jiànzhú shí PWM pínlǜ bùkě xiě."
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
@@ -2525,7 +2529,8 @@ msgstr "wúfǎ cóng shǒudòng zìduàn guīgé qiēhuàn dào zìdòng zìduà
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
-msgstr "wú fǎ shǐ yòng qiáng zhì zhuǎn huàn guī zé qiáng zhì zhuǎn huàn shū chū"
+msgstr ""
+"wú fǎ shǐ yòng qiáng zhì zhuǎn huàn guī zé qiáng zhì zhuǎn huàn shū chū"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
