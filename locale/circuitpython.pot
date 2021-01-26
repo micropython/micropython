@@ -3711,7 +3711,7 @@ msgid "threshold must be in the range 0-65536"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "tile must be greater than or equal to zero"
+msgid "tile must be greater than zero"
 msgstr ""
 
 #: shared-bindings/time/__init__.c

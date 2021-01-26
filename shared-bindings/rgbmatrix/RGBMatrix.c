@@ -214,9 +214,9 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
 
     int tile = args[ARG_tile].u_int;
 
-    if (tile < 0) {
+    if (tile <= 0) {
         mp_raise_ValueError_varg(
-            translate("tile must be greater than or equal to zero"));
+            translate("tile must be greater than zero"));
     }
 
     int computed_height = (rgb_count / 3) * (1 << (addr_count)) * tile;
