@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -216,16 +214,17 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
 
     int tile = args[ARG_tile].u_int;
 
+    if (tile < 0) {
+        mp_raise_ValueError_varg(
+            translate("tile must be greater than or equal to zero"));
+    }
+
     if (args[ARG_height].u_int != 0) {
-        int computed_height = (rgb_count / 3) << (addr_count) * abs(tile);
+        int computed_height = (rgb_count / 3) * (1 << (addr_count)) * tile;
         if (computed_height != args[ARG_height].u_int) {
             mp_raise_ValueError_varg(
                 translate("%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"), addr_count, rgb_count, tile, computed_height, args[ARG_height].u_int);
         }
-    }
-
-    if (args[ARG_serpentine].u_bool) {
-        tile = -tile;
     }
 
     if (args[ARG_width].u_int <= 0) {
@@ -237,7 +236,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
     if (framebuffer == mp_const_none) {
         int width = args[ARG_width].u_int;
-        int bufsize = 2 * width * rgb_count / 3 * (1 << addr_count);
+        int bufsize = 2 * width * rgb_count / 3 * (1 << addr_count) * tile;
         framebuffer = mp_obj_new_bytearray_of_zeros(bufsize);
     }
 
@@ -248,7 +247,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         addr_count, addr_pins,
         clock_pin, latch_pin, output_enable_pin,
         args[ARG_doublebuffer].u_bool,
-        framebuffer, tile, NULL);
+        framebuffer, tile, args[ARG_serpentine].u_bool, NULL);
 
     claim_and_never_reset_pins(args[ARG_rgb_list].u_obj);
     claim_and_never_reset_pins(args[ARG_addr_list].u_obj);
