@@ -477,7 +477,7 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk)
     deadTimeConfig.DeadTime = compute_dtg_from_ticks(ticks);
     deadTimeConfig.BreakState = brk == BRK_OFF ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
     deadTimeConfig.BreakPolarity = brk == BRK_LOW ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
-    #if defined(STM32F7) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32F7) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) || defined(STM32G4)
     deadTimeConfig.BreakFilter = 0;
     deadTimeConfig.Break2State = TIM_BREAK_DISABLE;
     deadTimeConfig.Break2Polarity = TIM_BREAKPOLARITY_LOW;
@@ -807,6 +807,8 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     TIM_ENTRY(1, TIM1_UP_IRQn),
     #elif defined(STM32L4) || defined(STM32WB)
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
+    #elif defined(STM32G4)
+    TIM_ENTRY(1, TIM1_CC_IRQn),
     #endif
     #endif
     TIM_ENTRY(2, TIM2_IRQn),
@@ -827,14 +829,19 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
     #endif
     #if defined(TIM7)
+    #if defined(STM32G4)
+    TIM_ENTRY(7, TIM7_DAC_IRQn),
+    #else
     TIM_ENTRY(7, TIM7_IRQn),
+    #endif
     #endif
     #if defined(TIM8)
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     TIM_ENTRY(8, TIM8_UP_TIM13_IRQn),
     #elif defined(STM32L4)
     TIM_ENTRY(8, TIM8_UP_IRQn),
-    #endif
+    #elif defined(STM32G4)
+    TIM_ENTRY(8, TIM8_UP_IRQn),#endif
     #endif
     #if defined(TIM9)
     TIM_ENTRY(9, TIM1_BRK_TIM9_IRQn),
@@ -876,6 +883,9 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
     #endif
+    #endif
+    #if defined(TIM20)
+    TIM_ENTRY(20, TIM20_UP_IRQn),
     #endif
 };
 #undef TIM_ENTRY

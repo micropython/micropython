@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "adc.h"
 
-#if defined(STM32F0) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+#if defined(STM32F0) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32G4)
 #define ADC_V2 (1)
 #else
 #define ADC_V2 (0)
@@ -47,6 +47,8 @@
 #define ADC_STAB_DELAY_US (10)
 #elif defined(STM32WB)
 #define ADC_STAB_DELAY_US (1)
+#elif defined(STM32G4)
+#define ADC_STAB_DELAY_US (1) // TODO: Check if this is enough
 #endif
 
 #if defined(STM32F0)
@@ -62,6 +64,9 @@
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_160CYCLES_5
 #elif defined(STM32L4) || defined(STM32WB)
+#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
+#define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
+#elif defined(STM32G4)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
 #endif
@@ -103,7 +108,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     __HAL_RCC_ADC_CLK_ENABLE();
     #else
     if (adc == ADC1) {
-        #if defined(STM32H7)
+        #if defined(STM32H7) || defined(STM32G4)
         __HAL_RCC_ADC12_CLK_ENABLE();
         #else
         __HAL_RCC_ADC1_CLK_ENABLE();
@@ -111,7 +116,7 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     }
     #if defined(ADC2)
     if (adc == ADC2) {
-        #if defined(STM32H7)
+        #if defined(STM32H7) || defined(STM32G4)
         __HAL_RCC_ADC12_CLK_ENABLE();
         #else
         __HAL_RCC_ADC2_CLK_ENABLE();
@@ -120,7 +125,11 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #endif
     #if defined(ADC3)
     if (adc == ADC3) {
+        #if defined(ADC345_COMMON)
+        __HAL_RCC_ADC345_CLK_ENABLE();
+        #else
         __HAL_RCC_ADC3_CLK_ENABLE();
+        #endif
     }
     #endif
     #endif
@@ -226,7 +235,7 @@ STATIC int adc_get_bits(ADC_TypeDef *adc) {
     uint32_t res = (adc->CFGR1 & ADC_CFGR1_RES) >> ADC_CFGR1_RES_Pos;
     #elif defined(STM32F4) || defined(STM32F7)
     uint32_t res = (adc->CR1 & ADC_CR1_RES) >> ADC_CR1_RES_Pos;
-    #elif defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32H7) || defined(STM32L4) || defined(STM32WB) || defined(STM32G4)
     uint32_t res = (adc->CFGR & ADC_CFGR_RES) >> ADC_CFGR_RES_Pos;
     #endif
     return adc_cr_to_bits_table[res];
@@ -396,7 +405,11 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         adc = ADC1;
         channel = mp_obj_get_int(source);
         if (channel == ADC_CHANNEL_VREFINT
+            #if defined(STM32G4)
+            || channel == ADC_CHANNEL_TEMPSENSOR_ADC1
+            #else
             || channel == ADC_CHANNEL_TEMPSENSOR
+            #endif
             #if defined(ADC_CHANNEL_VBAT)
             || channel == ADC_CHANNEL_VBAT
             #endif
@@ -411,7 +424,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         } else if (pin->adc_num & PIN_ADC2) {
             adc = ADC2;
         #endif
-        #if defined(ADC2)
+        #if defined(ADC3)
         } else if (pin->adc_num & PIN_ADC3) {
             adc = ADC3;
         #endif
@@ -448,7 +461,11 @@ STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_VREF), MP_ROM_INT(ADC_CHANNEL_VREF) },
     { MP_ROM_QSTR(MP_QSTR_CORE_VREF), MP_ROM_INT(ADC_CHANNEL_VREFINT) },
+    #if defined(STM32G4)
+    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR_ADC1) },
+    #else
     { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR) },
+    #endif
     #if defined(ADC_CHANNEL_VBAT)
     { MP_ROM_QSTR(MP_QSTR_CORE_VBAT), MP_ROM_INT(ADC_CHANNEL_VBAT) },
     #endif

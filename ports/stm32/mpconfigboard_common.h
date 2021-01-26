@@ -245,6 +245,14 @@
 #define MICROPY_HW_STM32WB_FLASH_SYNCRONISATION (1)
 #endif
 
+// Configuration for STM32G4 series
+#elif defined(STM32G4)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (42) // up to 42 event/interrupt requests: 28 configurable lines, 14 direct lines
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (20) // TIM 1-8, 20
+#define MICROPY_HW_MAX_UART (11) // uart 1 - 4 + lpuart1 (=11)
 #else
 #error Unsupported MCU series
 #endif
@@ -312,7 +320,7 @@
 // Enable CAN if there are any peripherals defined
 #if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
-#if defined(STM32H7)
+#if defined(STM32H7) || defined(STM32G4)
 #define MICROPY_HW_ENABLE_FDCAN (1) // define for MCUs with FDCAN
 #endif
 #else

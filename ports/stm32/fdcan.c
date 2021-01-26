@@ -60,6 +60,16 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     init->TransmitPause = DISABLE;
     init->ProtocolException = ENABLE;
 
+	#if defined(STM32G4)
+    init->ClockDivider = FDCAN_CLOCK_DIV1;
+    init->DataPrescaler = 1;
+    init->DataSyncJumpWidth = 1;
+    init->DataTimeSeg1 = 1;
+    init->DataTimeSeg2 = 1;
+	#endif
+
+	#if defined(STM32H7)
+	// variable used to specify RAM address in HAL, only for H7, G4 uses defined offset address in HAL
     // The Message RAM is shared between CAN1 and CAN2. Setting the offset to half
     // the Message RAM for the second CAN and using half the resources for each CAN.
     if (can_obj->can_id == PYB_CAN_1) {
@@ -67,6 +77,13 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     } else {
         init->MessageRAMOffset = 2560 / 2;
     }
+    #endif
+
+	#if defined(STM32G4)
+    init->StdFiltersNbr = 28; // /2  ? if FDCAN2 is used ?
+    init->ExtFiltersNbr = 0; // Not used
+
+    #elif defined(STM32H7)
 
     init->StdFiltersNbr = 64; // 128 / 2
     init->ExtFiltersNbr = 0; // Not used
@@ -83,6 +100,7 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
 
     init->TxFifoQueueElmtsNbr = 16; // Tx fifo elements
     init->TxElmtSize = FDCAN_DATA_BYTES_8;
+    #endif
     init->TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
 
     FDCAN_GlobalTypeDef *CANx = NULL;
@@ -148,12 +166,14 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
             NVIC_SetPriority(FDCAN1_IT1_IRQn, IRQ_PRI_CAN);
             HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
             break;
+#if defined(MICROPY_HW_CAN2_TX)
         case PYB_CAN_2:
             NVIC_SetPriority(FDCAN2_IT0_IRQn, IRQ_PRI_CAN);
             HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
             NVIC_SetPriority(FDCAN2_IT1_IRQn, IRQ_PRI_CAN);
             HAL_NVIC_EnableIRQ(FDCAN2_IT1_IRQn);
             break;
+#endif
         default:
             return false;
     }
@@ -227,11 +247,21 @@ int can_receive(FDCAN_HandleTypeDef *can, int fifo, FDCAN_RxHeaderTypeDef *hdr, 
     uint32_t index, *address;
     if (fifo == FDCAN_RX_FIFO0) {
         index = (*rxf & FDCAN_RXF0S_F0GI) >> FDCAN_RXF0S_F0GI_Pos;
+        #if defined(STM32G4)
+        address = (uint32_t *)(can->msgRam.RxFIFO0SA + (index * (18U * 4U) )); // SRAMCAN_RF0_SIZE bytes, size not configurable
+        #else
         address = (uint32_t *)(can->msgRam.RxFIFO0SA + (index * can->Init.RxFifo0ElmtSize * 4));
+        #endif
     } else {
         index = (*rxf & FDCAN_RXF1S_F1GI) >> FDCAN_RXF1S_F1GI_Pos;
+        #if defined(STM32G4)
+        // ToDo: test FIFO1, FIFO 0 is ok
+        address = (uint32_t *)(can->msgRam.RxFIFO1SA + (index * (18U * 4U) )); // SRAMCAN_RF1_SIZE bytes, size not configurable
+        #else
         address = (uint32_t *)(can->msgRam.RxFIFO1SA + (index * can->Init.RxFifo1ElmtSize * 4));
+        #endif
     }
+    #endif
 
     // Parse header of message
     hdr->IdType = *address & FDCAN_ELEMENT_MASK_XTD;

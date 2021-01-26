@@ -527,7 +527,11 @@ void TAMP_STAMP_IRQHandler(void) {
 
 void RTC_WKUP_IRQHandler(void) {
     IRQ_ENTER(RTC_WKUP_IRQn);
+    #if defined(STM32G4)
+    RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
+    #else
     RTC->ISR &= ~RTC_ISR_WUTF; // clear wakeup interrupt flag
+    #endif
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
@@ -595,6 +599,14 @@ void TIM1_BRK_TIM15_IRQHandler(void) {
 }
 #endif
 
+#if defined(STM32G4)
+void TIM1_BRK_TIM15_IRQHandler(void) {
+    IRQ_ENTER(TIM1_BRK_TIM15_IRQn);
+    timer_irq_handler(15);
+    IRQ_EXIT(TIM1_BRK_TIM15_IRQn);
+}
+#endif
+
 void TIM1_UP_TIM10_IRQHandler(void) {
     IRQ_ENTER(TIM1_UP_TIM10_IRQn);
     timer_irq_handler(1);
@@ -603,6 +615,15 @@ void TIM1_UP_TIM10_IRQHandler(void) {
 }
 
 #if defined(STM32L4) || defined(STM32WB)
+void TIM1_UP_TIM16_IRQHandler(void) {
+    IRQ_ENTER(TIM1_UP_TIM16_IRQn);
+    timer_irq_handler(1);
+    timer_irq_handler(16);
+    IRQ_EXIT(TIM1_UP_TIM16_IRQn);
+}
+#endif
+
+#if defined(STM32G4)
 void TIM1_UP_TIM16_IRQHandler(void) {
     IRQ_ENTER(TIM1_UP_TIM16_IRQn);
     timer_irq_handler(1);
@@ -626,6 +647,14 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void) {
 }
 
 #if defined(STM32L4)
+void TIM1_TRG_COM_TIM17_IRQHandler(void) {
+    IRQ_ENTER(TIM1_TRG_COM_TIM17_IRQn);
+    timer_irq_handler(17);
+    IRQ_EXIT(TIM1_TRG_COM_TIM17_IRQn);
+}
+#endif
+
+#if defined(STM32G4)
 void TIM1_TRG_COM_TIM17_IRQHandler(void) {
     IRQ_ENTER(TIM1_TRG_COM_TIM17_IRQn);
     timer_irq_handler(17);
@@ -673,11 +702,19 @@ void TIM6_DAC_IRQHandler(void) {
 #endif
 
 #if defined(TIM7) // STM32F401 doesn't have TIM7
+#if defined(STM32G4)
+void TIM7_DAC_IRQHandler(void) {
+	IRQ_ENTER(TIM7_DAC_IRQn);
+	timer_irq_handler(7);
+	IRQ_EXIT(TIM7_DAC_IRQn);
+}
+#else
 void TIM7_IRQHandler(void) {
     IRQ_ENTER(TIM7_IRQn);
     timer_irq_handler(7);
     IRQ_EXIT(TIM7_IRQn);
 }
+#endif
 #endif
 
 #if defined(TIM8) // STM32F401 doesn't have TIM8
@@ -695,6 +732,14 @@ void TIM8_UP_TIM13_IRQHandler(void) {
 }
 
 #if defined(STM32L4)
+void TIM8_UP_IRQHandler(void) {
+    IRQ_ENTER(TIM8_UP_IRQn);
+    timer_irq_handler(8);
+    IRQ_EXIT(TIM8_UP_IRQn);
+}
+#endif
+
+#if defined(STM32G4)
 void TIM8_UP_IRQHandler(void) {
     IRQ_ENTER(TIM8_UP_IRQn);
     timer_irq_handler(8);

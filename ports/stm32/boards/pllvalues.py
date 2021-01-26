@@ -210,7 +210,7 @@ def print_table(hse, valid_plls):
 
 def search_header_for_hsx_values(filename, vals):
     regex_inc = re.compile(r'#include "(boards/[A-Za-z0-9_./]+)"')
-    regex_def = re.compile(r"#define +(HSE_VALUE|HSI_VALUE) +\((\(uint32_t\))?([0-9]+)\)")
+    regex_def = re.compile(r"#define +(HSE_VALUE|HSI_VALUE) +\((\(uint32_t\))?([0-9]+)(UL)?\)")
     with open(filename) as f:
         for line in f:
             line = line.strip()

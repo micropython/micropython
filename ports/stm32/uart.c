@@ -89,6 +89,16 @@
 #else
 #define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
 #endif
+
+#elif defined(STM32G4)
+#define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
+#define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
+#if defined(USART_CR3_TCBGTIE)
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_TCBGTIE | USART_CR3_WUFIE)
+#else
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
+#endif
+
 #endif
 
 extern void NORETURN __fatal_error(const char *msg);
@@ -436,6 +446,9 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
     huart.Init.Mode = UART_MODE_TX_RX;
     huart.Init.HwFlowCtl = flow;
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
+    #if defined(STM32G4)  // H7 and WB also have fifo..
+    huart.FifoMode = UART_FIFOMODE_ENABLE;
+    #endif
     HAL_UART_Init(&huart);
 
     // Disable all individual UART IRQs, but enable the global handler
@@ -723,7 +736,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(STM32F0) || defined(STM32F7) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+        #if defined(STM32F0) || defined(STM32F7) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB) || defined(STM32G4)
         int data = self->uartx->RDR & self->char_mask;
         self->uartx->ICR = USART_ICR_ORECF; // clear ORE if it was set
         return data;
@@ -849,7 +862,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
                 // only read data if room in buf
-                #if defined(STM32F0) || defined(STM32F7) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+                #if defined(STM32F0) || defined(STM32F7) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB) || defined(STM32G4)
                 int data = self->uartx->RDR; // clears UART_FLAG_RXNE
                 self->uartx->ICR = USART_ICR_ORECF; // clear ORE if it was set
                 #else

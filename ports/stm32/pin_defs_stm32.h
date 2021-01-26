@@ -121,6 +121,14 @@ enum {
 #define GPIO_AF9_CAN1 GPIO_AF9_FDCAN1
 #define GPIO_AF9_CAN2 GPIO_AF9_FDCAN2
 #endif
+#if defined(STM32G4)
+// Make G4 FDCAN more like CAN
+#define CAN1 FDCAN1
+#define CAN2 FDCAN2
+#define GPIO_AF9_CAN1 GPIO_AF9_FDCAN1
+#define GPIO_AF9_CAN2 GPIO_AF9_FDCAN2
+#endif
+
 
 enum {
     PIN_ADC1  = (1 << 0),
