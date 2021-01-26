@@ -38,14 +38,15 @@ void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t* self) {
 ssl_sslsocket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,
     socketpool_socket_obj_t* socket, bool server_side, const char* server_hostname) {
 
+    if (socket->type != SOCK_STREAM || socket->num != -1) {
+        mp_raise_RuntimeError(translate("Invalid socket for TLS"));
+    }
+
     ssl_sslsocket_obj_t *sock = m_new_obj_with_finaliser(ssl_sslsocket_obj_t);
     sock->base.type = &ssl_sslsocket_type;
     sock->ssl_context = self;
     sock->sock = socket;
 
-    if (socket->type != SOCK_STREAM || socket->num != -1) {
-        mp_raise_RuntimeError(translate("Invalid socket for TLS"));
-    }
     esp_tls_t* tls_handle = esp_tls_init();
     if (tls_handle == NULL) {
         mp_raise_espidf_MemoryError();

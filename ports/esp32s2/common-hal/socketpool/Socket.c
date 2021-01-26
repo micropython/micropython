@@ -44,8 +44,8 @@ void socket_reset(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_handles); i++) {
         if (open_socket_handles[i]) {
             if (open_socket_handles[i]->num > 0) {
+                // Close automatically clears socket handle
                 common_hal_socketpool_socket_close(open_socket_handles[i]);
-                open_socket_handles[i] = NULL;
             } else {
                 open_socket_handles[i] = NULL;
             }
@@ -135,6 +135,12 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self) {
         lwip_shutdown(self->num, 0);
         lwip_close(self->num);
         self->num = -1;
+    }
+    // Remove socket record
+    for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_handles); i++) {
+        if (open_socket_handles[i] == self) {
+            open_socket_handles[i] = NULL;
+        }
     }
 }
 

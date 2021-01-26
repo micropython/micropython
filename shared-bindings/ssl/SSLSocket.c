@@ -45,7 +45,7 @@
 //|        recv that do not allocate bytes objects."""
 //|
 
-//|     def __enter__(self) -> Socket:
+//|     def __enter__(self) -> SSLSocket:
 //|         """No-op used by Context Managers."""
 //|         ...
 //|
@@ -63,7 +63,7 @@ STATIC mp_obj_t ssl_sslsocket___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket___exit___obj, 4, 4, ssl_sslsocket___exit__);
 
-//|     def accept(self) -> Tuple[Socket, Tuple[str, int]]:
+//|     def accept(self) -> Tuple[SSLSocket, Tuple[str, int]]:
 //|         """Accept a connection on a listening socket of type SOCK_STREAM,
 //|         creating a new socket of type SOCK_STREAM.
 //|         Returns a tuple of (new_socket, remote_address)"""
