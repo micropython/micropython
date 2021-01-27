@@ -43,13 +43,6 @@
 // The WebUSB support being conditionally added to this file is based on the
 // tinyusb demo examples/device/webusb_serial.
 
-enum
-{
-  VENDOR_REQUEST_WEBUSB = 1,
-  VENDOR_REQUEST_MICROSOFT = 2
-};
-
-extern uint8_t const desc_ms_os_20[];
 extern const tusb_desc_webusb_url_t desc_webusb_url;
 
 static bool web_serial_connected = false;
