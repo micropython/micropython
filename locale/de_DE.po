@@ -62,8 +62,9 @@ msgstr "%%c erwartet int oder char"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
-msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
-msgstr "%d Adress-Pins und %d rgb-Pins zeigen eine Höhe von %d, nicht von %d"
+msgid ""
+"%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -524,7 +525,6 @@ msgstr "Die Pufferlänge muss ein vielfaches von 512 sein"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Der Puffer muss ein vielfaches von 512 bytes sein"
 
-#: shared-bindings/adafruit_bus_device/I2CDevice.c
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Der Puffer muss eine Mindestenslänge von 1 haben"
@@ -3800,6 +3800,10 @@ msgstr "Syntaxfehler in uctypes Deskriptor"
 msgid "threshold must be in the range 0-65536"
 msgstr "threshold muss im Intervall 0-65536 liegen"
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "tile must be greater than zero"
+msgstr ""
+
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() nimmt eine 9-Sequenz an"
@@ -4091,6 +4095,10 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+#~ msgstr ""
+#~ "%d Adress-Pins und %d rgb-Pins zeigen eine Höhe von %d, nicht von %d"
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "Das Eingabeargument muss eine Ganzzahl oder ein 2-Tupel sein"

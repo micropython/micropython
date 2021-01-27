@@ -67,10 +67,9 @@ msgstr "%%c nécessite un chiffre entier 'int' ou un caractère 'char'"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
-msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+msgid ""
+"%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
-"Les broches d'adresse %d et les broches RVB %d indiquent une hauteur de %d, "
-"pas %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -533,7 +532,6 @@ msgstr "La longueur de la mémoire tampon doit être un multiple de 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "La mémoire tampon doit être un multiple de 512"
 
-#: shared-bindings/adafruit_bus_device/I2CDevice.c
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Le tampon doit être de longueur au moins 1"
@@ -3827,6 +3825,10 @@ msgstr "erreur de syntaxe dans le descripteur d'uctypes"
 msgid "threshold must be in the range 0-65536"
 msgstr "le seuil doit être dans la portée 0-65536"
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "tile must be greater than zero"
+msgstr ""
+
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() prend une séquence de longueur 9"
@@ -4114,6 +4116,11 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+#~ msgstr ""
+#~ "Les broches d'adresse %d et les broches RVB %d indiquent une hauteur de "
+#~ "%d, pas %d"
 
 #~ msgid "Unknown failure"
 #~ msgstr "Echec inconnu"

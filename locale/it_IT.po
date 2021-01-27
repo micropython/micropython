@@ -57,7 +57,8 @@ msgstr "%%c necessita di int o char"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
-msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+msgid ""
+"%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
@@ -521,7 +522,6 @@ msgstr ""
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 
-#: shared-bindings/adafruit_bus_device/I2CDevice.c
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Il buffer deve essere lungo almeno 1"
@@ -3773,6 +3773,10 @@ msgstr "errore di sintassi nel descrittore uctypes"
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
 msgstr "la soglia deve essere nell'intervallo 0-65536"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "tile must be greater than zero"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
