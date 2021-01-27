@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-22 15:30+0000\n"
+"PO-Revision-Date: 2021-01-30 02:32+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -68,6 +68,8 @@ msgstr "%%c requer int ou char"
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
+"%d pinos de endereço, %d pinos rgb e %d blocos indicam uma altura com %d, "
+"não %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -830,7 +832,7 @@ msgstr "O pino de dados 0 deve ser alinhado por bytes"
 
 #: ports/esp32s2/common-hal/displayio/ParallelBus.c
 msgid "Data 0 pin must be byte aligned."
-msgstr ""
+msgstr "O pino de dados 0 deve ser alinhado por bytes."
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -3815,7 +3817,7 @@ msgstr "Limite deve estar no alcance de 0-65536"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "tile must be greater than zero"
-msgstr ""
+msgstr "o bloco deve ser maior que zero"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
