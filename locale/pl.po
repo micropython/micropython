@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-20 02:40+0000\n"
+"PO-Revision-Date: 2021-01-27 01:31+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -63,7 +63,8 @@ msgstr "%%c wymaga int lub char"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
-msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+msgid ""
+"%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
@@ -523,7 +524,6 @@ msgstr "Długość bufora musi być wielokrotnością 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Bufor musi być wielokrotnością 512 bajtów"
 
-#: shared-bindings/adafruit_bus_device/I2CDevice.c
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Bufor musi mieć długość 1 lub więcej"
@@ -538,6 +538,7 @@ msgid "Buffer too short by %d bytes"
 msgstr "Bufor za krótki o %d bajtów"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
@@ -810,6 +811,10 @@ msgstr "DAC w użyciu"
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Nóżka data 0 musi być wyrównana do bajtu"
+
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+msgid "Data 0 pin must be byte aligned."
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1598,7 +1603,6 @@ msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr "Nie można zmienić częstotliwości PWM gdy variable_frequency=False."
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
@@ -3134,7 +3138,7 @@ msgstr ""
 
 #: py/parse.c
 msgid "malformed f-string"
-msgstr ""
+msgstr "źle sformatowany f-string"
 
 #: shared-bindings/_stage/Layer.c
 msgid "map buffer too small"
@@ -3403,11 +3407,11 @@ msgstr "offset poza zakresem"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
-msgstr ""
+msgstr "obsługiwane jest tylko bit_depth=16"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
-msgstr ""
+msgstr "obsługiwane jest tylko sample_rate=16000"
 
 #: py/objarray.c py/objstr.c py/objstrunicode.c py/objtuple.c
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
@@ -3732,6 +3736,10 @@ msgstr "błąd składni w deskryptorze uctypes"
 #: shared-bindings/touchio/TouchIn.c
 msgid "threshold must be in the range 0-65536"
 msgstr "threshold musi być w zakresie 0-65536"
+
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "tile must be greater than zero"
+msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
