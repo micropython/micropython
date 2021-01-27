@@ -266,9 +266,12 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     uint64_t start_ticks = supervisor_ticks_ms64();
 
+    // check removed to reduce code size
+    /*
     if (len > ringbuf_capacity(&self->ringbuf)) {
         mp_raise_ValueError(translate("Reading >receiver_buffer_size bytes is not supported"));
     }
+    */
 
     // Wait for all bytes received or timeout
     while ( (ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
