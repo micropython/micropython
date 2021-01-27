@@ -46,6 +46,10 @@ msgstr "  Bestand"
 msgid "  File \"%q\", line %d"
 msgstr "  Bestand \"%q\", regel %d"
 
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr ""
+
 #: main.c
 msgid " output:\n"
 msgstr " uitvoer:\n"
@@ -861,6 +865,10 @@ msgstr "EXTINT kanaal al in gebruik"
 msgid "Error in regex"
 msgstr "Fout in regex"
 
+#: shared-bindings/socketpool/Socket.c
+msgid "Error: Failure to bind"
+msgstr ""
+
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
@@ -1254,8 +1262,16 @@ msgstr "Ongeldige security_mode"
 msgid "Invalid size"
 msgstr ""
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid socket for TLS"
+msgstr ""
+
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
+msgstr ""
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid use of TLS Socket"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
@@ -1273,6 +1289,10 @@ msgstr "Ongeldig wave bestand"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Ongeldig woord/bit lengte"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Issue setting SO_REUSEADDR"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1562,7 +1582,7 @@ msgstr ""
 msgid "Out of memory"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Geen sockets meer beschikbaar"
 
@@ -2055,8 +2075,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Niet behandelde ESP TLS fout %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Onbekende fout"
+#, c-format
+msgid "Unknown failure %d"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2331,9 +2352,17 @@ msgstr "bits_per_sample moet 8 of 16 zijn"
 msgid "branch not in range"
 msgstr "pad (branch) niet binnen bereik"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "buffer moet een byte-achtig object zijn"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3344,6 +3373,10 @@ msgstr "niet genoeg argumenten om string te formatteren"
 msgid "number of points must be at least 2"
 msgstr "aantal punten moet minimaal 2 zijn"
 
+#: py/builtinhelp.c
+msgid "object "
+msgstr ""
+
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
 msgstr "object '%q' is geen tuple of lijst"
@@ -3399,6 +3432,10 @@ msgstr "compensatie is te groot"
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
 msgstr "compensatie moet groter of gelijk 0 zijn"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
+msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3957,6 +3994,10 @@ msgstr "watchdog time-out moet groter zijn dan 0"
 msgid "width must be greater than zero"
 msgstr "breedte moet groter dan nul zijn"
 
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "wifi is not enabled"
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr "window moet <= interval zijn"
@@ -4020,6 +4061,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Onbekende fout"
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "invoerargument moet een integer of 2-tuple zijn"

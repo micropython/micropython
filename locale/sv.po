@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-05 21:03+0000\n"
+"PO-Revision-Date: 2021-01-25 19:32+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: main.c
 msgid ""
@@ -49,6 +49,10 @@ msgstr "  Filen \"%q\""
 #: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Fil \"%q\", rad %d"
+
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr " är av typen %q\n"
 
 #: main.c
 msgid " output:\n"
@@ -123,7 +127,7 @@ msgstr "%q() kräver %d positionsargument men %d gavs"
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
-msgstr ""
+msgstr "%s fel 0x%x"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
@@ -289,7 +293,7 @@ msgstr "3-arguments pow() stöds inte"
 
 #: shared-module/msgpack/__init__.c
 msgid "64 bit types"
-msgstr ""
+msgstr "64-bitars typer"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -555,7 +559,7 @@ msgstr "CBC-block måste vara multiplar om 16 byte"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "CRC or checksum was invalid"
-msgstr ""
+msgstr "CRC eller checksumma var ogiltig"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -866,6 +870,10 @@ msgstr "EXTINT-kanalen används redan"
 msgid "Error in regex"
 msgstr "Fel i regex"
 
+#: shared-bindings/socketpool/Socket.c
+msgid "Error: Failure to bind"
+msgstr "Fel: Bind misslyckades"
+
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
@@ -1014,7 +1022,7 @@ msgstr "Funktion kräver lås"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Generic Failure"
-msgstr ""
+msgstr "Generiskt fel"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1256,11 +1264,19 @@ msgstr "Ogiltigt säkerhetsläge"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid size"
-msgstr ""
+msgstr "Ogiltig storlek"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid socket for TLS"
+msgstr "Ogiltig socket för TLS"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
-msgstr ""
+msgstr "Ogiltigt tillstånd"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid use of TLS Socket"
+msgstr "Ogiltig användning av TLS Socket"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1277,6 +1293,10 @@ msgstr "Ogiltig wave-fil"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Ogiltig word-/bitlängd"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Issue setting SO_REUSEADDR"
+msgstr "Misslyckades att sätta SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1304,7 +1324,7 @@ msgstr "Length måste vara positiv"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "MAC address was invalid"
-msgstr ""
+msgstr "MAC-adressen var ogiltig"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
@@ -1540,7 +1560,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
-msgstr ""
+msgstr "Endast ett TouchAlarm kan ställas in för djupsömn."
 
 #: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
@@ -1556,17 +1576,17 @@ msgstr "Endast raw int stöds för ip"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation or feature not supported"
-msgstr ""
+msgstr "Operation eller funktion stöds inte"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Operation timed out"
-msgstr ""
+msgstr "Åtgärden orsakade timeout"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
-msgstr ""
+msgstr "Slut på minne"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Slut på sockets"
 
@@ -1576,7 +1596,7 @@ msgstr "Översampling måste vara multipel av 8."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "PDMIn not available"
-msgstr ""
+msgstr "PDMIn inte tillgänglig"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
@@ -1598,7 +1618,7 @@ msgstr "ParallelBus stöds ännu inte"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
-msgstr ""
+msgstr "Periferi i bruk"
 
 #: py/moduerrno.c
 msgid "Permission denied"
@@ -1728,7 +1748,7 @@ msgstr "Skrivskyddat objekt"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Received response was invalid"
-msgstr ""
+msgstr "Mottaget svar var ogiltigt"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1744,7 +1764,7 @@ msgstr "Det begärda AES-läget stöds inte"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Requested resource not found"
-msgstr ""
+msgstr "Begärd resurs hittades inte"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -2058,8 +2078,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Ej hanterat ESP TLS-fel %d-%d-%x-%d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Okänt fel"
+#, c-format
+msgid "Unknown failure %d"
+msgstr "Okänt fel %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2130,7 +2151,7 @@ msgstr "Värdets längd > max_length"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Version was invalid"
-msgstr ""
+msgstr "Versionen var ogiltig"
 
 #: py/emitnative.c
 msgid "Viper functions don't currently support more than 4 arguments"
@@ -2331,9 +2352,17 @@ msgstr "bits_per_sample måste vara 8 eller 16"
 msgid "branch not in range"
 msgstr "branch utanför räckvidd"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr "bufferten är mindre än begärd storlek"
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "buffer måste vara en byte-liknande objekt"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr "buffertstorlek måste vara en multipel av elementstorlek"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -2544,7 +2573,7 @@ msgstr "circle kan endast registreras i en förälder"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
-msgstr ""
+msgstr "kod utanför intervallet 0~127"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -2632,7 +2661,7 @@ msgstr "standard \"except\" måste ligga sist"
 
 #: shared-bindings/msgpack/__init__.c
 msgid "default is not a function"
-msgstr ""
+msgstr "default är inte en funktion"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
@@ -2738,7 +2767,7 @@ msgstr "förväntar nyckel:värde för dict"
 
 #: shared-bindings/msgpack/__init__.c
 msgid "ext_hook is not a function"
-msgstr ""
+msgstr "ext_hook är inte en funktion"
 
 #: py/argcheck.c
 msgid "extra keyword arguments given"
@@ -3277,7 +3306,7 @@ msgstr "ingen bindning för ickelokal hittad"
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
-msgstr ""
+msgstr "ingen standardpackare"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -3344,6 +3373,10 @@ msgstr "inte tillräckligt med argument för formatsträng"
 msgid "number of points must be at least 2"
 msgstr "antal punkter måste vara minst 2"
 
+#: py/builtinhelp.c
+msgid "object "
+msgstr "objekt "
+
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
 msgstr "objektet '%q' är inte en tuple eller list"
@@ -3399,6 +3432,10 @@ msgstr "offset är för stor"
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
 msgstr "offset måste vara >= 0"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
+msgstr "offset måste vara icke-negativt och inte längre än buffertlängd"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3619,7 +3656,7 @@ msgstr "shape måste vara en tuple"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
-msgstr ""
+msgstr "kort läsning"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -3957,6 +3994,10 @@ msgstr "watchdog timeout måste vara större än 0"
 msgid "width must be greater than zero"
 msgstr "width måste vara större än noll"
 
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "wifi is not enabled"
+msgstr "wifi är inte aktiverat"
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr "window måste vara <= interval"
@@ -3995,7 +4036,7 @@ msgstr "x-värde utanför intervall"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
-msgstr ""
+msgstr "xTaskCreate misslyckades"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
@@ -4020,6 +4061,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Okänt fel"
 
 #~ msgid "Only one alarm.touch alarm can be set."
 #~ msgstr "Endast ett larm av typ alarm.touch kan ställas in."

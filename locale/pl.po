@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2020-12-02 20:29+0000\n"
+"PO-Revision-Date: 2021-01-20 02:40+0000\n"
 "Last-Translator: Maciej Stankiewicz <tawezik@gmail.com>\n"
 "Language-Team: pl\n"
 "Language: pl\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.4-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: main.c
 msgid ""
@@ -47,6 +47,10 @@ msgstr "  Plik \"%q\""
 #: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Plik \"%q\", linia %d"
+
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr ""
 
 #: main.c
 msgid " output:\n"
@@ -770,7 +774,7 @@ msgstr "Nie można rozpocząć przerwania, RX jest zajęty"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
-msgstr ""
+msgstr "Nie udało się przydzielić dekodera"
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 #: shared-module/audiomp3/MP3Decoder.c
@@ -860,6 +864,10 @@ msgstr "Kanał EXTINT w użyciu"
 #: extmod/modure.c
 msgid "Error in regex"
 msgstr "Błąd w regex"
+
+#: shared-bindings/socketpool/Socket.c
+msgid "Error: Failure to bind"
+msgstr ""
 
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
@@ -1070,7 +1078,7 @@ msgstr "Niewłaściwa wielkość bufora"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
-msgstr ""
+msgstr "Inicjalizacja nie powiodła się z powodu braku pamięci"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
@@ -1251,10 +1259,18 @@ msgstr "Nieprawidłowy security_mode"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid size"
+msgstr "Nieprawidłowy rozmiar"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid socket for TLS"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
+msgstr "Nieprawidłowy stan"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid use of TLS Socket"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
@@ -1272,6 +1288,10 @@ msgstr "Zły plik wave"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Niepoprawna długość słowa/bitu"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Issue setting SO_REUSEADDR"
+msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1554,9 +1574,9 @@ msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Out of memory"
-msgstr ""
+msgstr "Brak pamięci"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr ""
 
@@ -1707,7 +1727,7 @@ msgstr "Obiekt tylko do odczytu"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Received response was invalid"
-msgstr ""
+msgstr "Otrzymana odpowiedź była nieprawidłowa"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
@@ -1723,7 +1743,7 @@ msgstr "Żądany tryb AES nie jest obsługiwany"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Requested resource not found"
-msgstr ""
+msgstr "Nie znaleziono żądanego zasobu"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
@@ -2027,7 +2047,8 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
+#, c-format
+msgid "Unknown failure %d"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -2298,9 +2319,17 @@ msgstr "bits_per_sample musi być 8 lub 16"
 msgid "branch not in range"
 msgstr "skok poza zakres"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr ""
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "bufor mysi być typu bytes"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3304,6 +3333,10 @@ msgstr "nie dość argumentów przy formatowaniu"
 msgid "number of points must be at least 2"
 msgstr "liczba punktów musi wynosić co najmniej 2"
 
+#: py/builtinhelp.c
+msgid "object "
+msgstr ""
+
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
 msgstr ""
@@ -3358,6 +3391,10 @@ msgstr ""
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
+msgstr ""
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
 
 #: py/objstr.c py/objstrunicode.c
@@ -3914,6 +3951,10 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
+msgstr ""
+
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "wifi is not enabled"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c

@@ -177,6 +177,7 @@ jobs:
         - "8086_commander"
         - "ADM_B_NRF52840_1"
         - "TG-Watch"
+        - "adafruit_feather_rp2040"
         - "aloriumtech_evo_m51"
         - "aramcon_badge_2019"
         - "arduino_mkr1300"
@@ -294,6 +295,7 @@ jobs:
         - "pyruler"
         - "qtpy_m0"
         - "qtpy_m0_haxpress"
+        - "raspberry_pi_pico"
         - "raytac_mdbt50q-db-40"
         - "robohatmm1_m4"
         - "sam32"
@@ -315,6 +317,7 @@ jobs:
         - "spresense"
         - "stackrduino_m0_pro"
         - "stm32f411ce_blackpill"
+        - "stm32f411ce_blackpill_with_flash"
         - "stm32f411ve_discovery"
         - "stm32f412zg_discovery"
         - "stm32f4_discovery"
@@ -464,7 +467,7 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210114
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210122
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)

@@ -375,7 +375,7 @@ int common_hal_sdcardio_sdcard_readblocks(sdcardio_sdcard_obj_t *self, uint32_t 
     return r;
 }
 
-int _write(sdcardio_sdcard_obj_t *self, uint8_t token, void *buf, size_t size) {
+STATIC int _write(sdcardio_sdcard_obj_t *self, uint8_t token, void *buf, size_t size) {
     wait_for_ready(self);
 
     uint8_t cmd[2];
@@ -420,7 +420,7 @@ int _write(sdcardio_sdcard_obj_t *self, uint8_t token, void *buf, size_t size) {
     return 0;
 }
 
-int writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
+STATIC int writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
     common_hal_sdcardio_check_for_deinit(self);
     uint32_t nblocks = buf->len / 512;
     if (nblocks == 1) {

@@ -30,7 +30,6 @@
 
 #define MICROPY_NLR_THUMB                   (0)
 
-#define MICROPY_PY_UJSON                    (1)
 #define MICROPY_USE_INTERNAL_PRINTF         (0)
 #define MICROPY_PY_SYS_PLATFORM             "Espressif ESP32-S2"
 

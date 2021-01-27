@@ -29,5 +29,4 @@ CFLAGS_INLINE_LIMIT = 35
 SUPEROPT_GC = 0
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_RFM9x

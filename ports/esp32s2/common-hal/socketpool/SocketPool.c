@@ -65,25 +65,20 @@ socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_
         mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
     }
 
-    int socknum = -1;
-    esp_tls_t* tcp_handle = NULL;
-    if (socket_type == SOCK_DGRAM || socket_type == SOCK_RAW) {
-        socknum = lwip_socket(addr_family, socket_type, ipproto);
-    } else {
-        tcp_handle = esp_tls_init();
-
-        if (tcp_handle == NULL) {
-            mp_raise_espidf_MemoryError();
-        }
-    }
-    if (socknum < 0 && tcp_handle == NULL) {
-        mp_raise_RuntimeError(translate("Out of sockets"));
-    }
-
+    // Consider LWIP and MbedTLS "variant" sockets to be incompatible (for now)
+    // The variant of the socket is determined by whether the socket is wrapped
+    // by SSL. If no TLS handle is set in sslcontext_wrap_socket, the first call
+    // of bind() or connect() will create a LWIP socket with a corresponding
+    // socketnum.
+    // TODO: move MbedTLS to its own duplicate Socket or Server API, maybe?
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     sock->base.type = &socketpool_socket_type;
-    sock->num = socknum;
-    sock->tcp = tcp_handle;
+    sock->num = -1;
+    sock->type = socket_type;
+    sock->family = addr_family;
+    sock->ipproto = ipproto;
+
+    sock->tls = NULL;
     sock->ssl_context = NULL;
     sock->pool = self;
     return sock;

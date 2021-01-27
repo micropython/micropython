@@ -125,7 +125,7 @@ Behavior
    get back into normal mode.
 -  RGB status LED indicating CircuitPython state, and errors through a sequence of colored flashes.
 -  Re-runs ``code.py`` or other main file after file system writes over USB mass storage. (Disable with
-   ``samd.disable_autoreload()``)
+   ``supervisor.disable_autoreload()``)
 -  Entering the REPL after the main code is finished requires a key press which enters the REPL and
    disables autoreload.
 -  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,

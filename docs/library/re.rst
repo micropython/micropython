@@ -1,9 +1,7 @@
-:mod:`ure` -- simple regular expressions
+:mod:`re` -- simple regular expressions
 ========================================
 
-.. include:: ../templates/unsupported_in_circuitpython.inc
-
-.. module:: ure
+.. module:: re
    :synopsis: regular expressions
 
 |see_cpython_module| :mod:`cpython:re`.
@@ -77,7 +75,7 @@ Regex objects
 -------------
 
 Compiled regular expression. Instances of this class are created using
-`ure.compile()`.
+`re.compile()`.
 
 .. method:: regex.match(string)
             regex.search(string)

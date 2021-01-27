@@ -30,10 +30,10 @@
 
 /* Prototypes for Remote API */
 
-int FM_RawWrite(uint32_t offset, const void *buf, uint32_t size);
-int FM_RawVerifyWrite(uint32_t offset, const void *buf, uint32_t size);
-int FM_RawRead(uint32_t offset, void *buf, uint32_t size);
-int FM_RawEraseSector(uint32_t sector);
+int fw_fm_rawwrite(uint32_t offset, const void *buf, uint32_t size);
+int fw_fm_rawverifywrite(uint32_t offset, const void *buf, uint32_t size);
+int fw_fm_rawread(uint32_t offset, void *buf, uint32_t size);
+int fw_fm_rawerasesector(uint32_t sector);
 
 #define CXD56_SPIFLASHSIZE (16 * 1024 * 1024)
 
@@ -64,8 +64,8 @@ void port_internal_flash_flush(void) {
         return;
     }
 
-    FM_RawEraseSector(flash_sector);
-    FM_RawWrite(flash_sector << SECTOR_SHIFT, flash_cache, SECTOR_SIZE);
+    fw_fm_rawerasesector(flash_sector);
+    fw_fm_rawwrite(flash_sector << SECTOR_SHIFT, flash_cache, SECTOR_SIZE);
 
     flash_sector = NO_SECTOR;
 }
@@ -73,7 +73,7 @@ void port_internal_flash_flush(void) {
 mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t num_blocks) {
     supervisor_flash_flush();
 
-    if (FM_RawRead(block << PAGE_SHIFT, dest, num_blocks << PAGE_SHIFT) < 0) {
+    if (fw_fm_rawread(block << PAGE_SHIFT, dest, num_blocks << PAGE_SHIFT) < 0) {
         return 1;
     }
 
@@ -92,7 +92,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         if (sector != flash_sector) {
             supervisor_flash_flush();
 
-            if (FM_RawRead(sector << SECTOR_SHIFT, flash_cache, SECTOR_SIZE) < 0) {
+            if (fw_fm_rawread(sector << SECTOR_SHIFT, flash_cache, SECTOR_SIZE) < 0) {
                 return 1;
             }
 

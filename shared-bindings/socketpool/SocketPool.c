@@ -62,14 +62,12 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
 //|     SOCK_STREAM: int
 //|     SOCK_DGRAM: int
 //|     SOCK_RAW: int
-//|     IPPROTO_TCP: int
 //|
-//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = IPPROTO_TCP) -> socketpool.Socket:
+//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM) -> socketpool.Socket:
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6
-//|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
-//|         :param ~int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)"""
+//|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW"""
 //|         ...
 //|
 

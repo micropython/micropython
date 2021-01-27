@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-13 02:19+0000\n"
+"PO-Revision-Date: 2021-01-22 15:30+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.4.1-dev\n"
+"X-Generator: Weblate 4.5-dev\n"
 
 #: main.c
 msgid ""
@@ -49,6 +49,10 @@ msgstr "  Arquivo \"%q\""
 #: py/obj.c
 msgid "  File \"%q\", line %d"
 msgstr "  Arquivo \"%q\", linha %d"
+
+#: py/builtinhelp.c
+msgid " is of type %q\n"
+msgstr " é do tipo %q\n"
 
 #: main.c
 msgid " output:\n"
@@ -877,6 +881,10 @@ msgstr "Canal EXTINT em uso"
 msgid "Error in regex"
 msgstr "Erro no regex"
 
+#: shared-bindings/socketpool/Socket.c
+msgid "Error: Failure to bind"
+msgstr "Erro: Falha na vinculação"
+
 #: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
@@ -1270,9 +1278,17 @@ msgstr "O Security_mode é inválido"
 msgid "Invalid size"
 msgstr "Tamanho inválido"
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid socket for TLS"
+msgstr "Soquete inválido para o TLS"
+
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
 msgstr "Estado inválido"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Invalid use of TLS Socket"
+msgstr "Uso inválido do soquete TLS"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1289,6 +1305,10 @@ msgstr "Aqruivo de ondas inválido"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "O comprimento do bit/palavra são inválidos"
+
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Issue setting SO_REUSEADDR"
+msgstr "Problema na configuração do SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1577,7 +1597,7 @@ msgstr "A operação expirou"
 msgid "Out of memory"
 msgstr "Sem memória"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Sem soquetes"
 
@@ -2078,8 +2098,9 @@ msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Erro não tratado do ESP TLS %d %d %x %d"
 
 #: shared-bindings/wifi/Radio.c
-msgid "Unknown failure"
-msgstr "Falha desconhecida"
+#, c-format
+msgid "Unknown failure %d"
+msgstr "Falha desconhecida %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2355,9 +2376,17 @@ msgstr "bits_per_sample deve ser 8 ou 16"
 msgid "branch not in range"
 msgstr "ramo fora do alcance"
 
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer is smaller than requested size"
+msgstr "o tamanho do buffer é menor do que o tamanho que foi solicitado"
+
 #: shared-bindings/audiocore/RawSample.c
 msgid "buffer must be a bytes-like object"
 msgstr "o buffer deve ser um objeto como bytes"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "buffer size must be a multiple of element size"
+msgstr "o tamanho do buffer deve ser um múltiplo do tamanho do elemento"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -3375,6 +3404,10 @@ msgstr "argumentos insuficientes para o formato da string"
 msgid "number of points must be at least 2"
 msgstr "a quantidade dos pontos deve ser pelo menos 2"
 
+#: py/builtinhelp.c
+msgid "object "
+msgstr "objeto "
+
 #: py/obj.c
 msgid "object '%q' is not a tuple or list"
 msgstr "o objeto '%q' não é uma tupla ou uma lista"
@@ -3430,6 +3463,10 @@ msgstr "o offset é muito grande"
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
 msgstr "o offset deve ser >= 0"
+
+#: extmod/ulab/code/ulab_create.c
+msgid "offset must be non-negative and no greater than buffer length"
+msgstr "o offset deve ser positivo e não maior do que o comprimento do buffer"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3992,6 +4029,10 @@ msgstr "o tempo limite do watchdog deve ser maior que 0"
 msgid "width must be greater than zero"
 msgstr "a largura deve ser maior que zero"
 
+#: ports/esp32s2/common-hal/wifi/Radio.c
+msgid "wifi is not enabled"
+msgstr "o wifi não está ativo"
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
 msgstr "a janela deve ser <= intervalo"
@@ -4055,6 +4096,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Unknown failure"
+#~ msgstr "Falha desconhecida"
 
 #~ msgid "Only one alarm.touch alarm can be set."
 #~ msgstr "Apenas um alarme alarm.touch pode ser definido."
