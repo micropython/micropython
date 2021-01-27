@@ -1719,10 +1719,6 @@ msgstr ""
 msgid "Read-only object"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c
-msgid "Reading >receiver_buffer_size bytes is not supported"
-msgstr ""
-
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Received response was invalid"
 msgstr ""
