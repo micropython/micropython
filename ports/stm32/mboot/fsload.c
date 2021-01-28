@@ -31,6 +31,11 @@
 #include "pack.h"
 #include "vfs.h"
 
+// Default block size used for mount operations if none given.
+#ifndef MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE
+#define MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE (4096)
+#endif
+
 #if MBOOT_FSLOAD
 
 #if !(MBOOT_VFS_FAT || MBOOT_VFS_LFS1 || MBOOT_VFS_LFS2)
@@ -213,8 +218,19 @@ int fsload_process(void) {
     elem = ELEM_DATA_START;
     for (;;) {
         elem = elem_search(elem, ELEM_TYPE_MOUNT);
-        if (elem == NULL || elem[-1] != 10) {
-            // End of elements, or invalid MOUNT element
+        if (elem == NULL) {
+            // End of elements.
+            return -1;
+        }
+        uint32_t block_size;
+        if (elem[-1] == 10) {
+            // No block size given, use default.
+            block_size = MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE;
+        } else if (elem[-1] == 14) {
+            // Block size given, extract it.
+            block_size = get_le32(&elem[10]);
+        } else {
+            // Invalid MOUNT element.
             return -1;
         }
         if (elem[0] == mount_point) {
@@ -235,19 +251,20 @@ int fsload_process(void) {
             const stream_methods_t *methods;
             #if MBOOT_VFS_FAT
             if (elem[1] == ELEM_MOUNT_FAT) {
+                (void)block_size;
                 ret = vfs_fat_mount(&ctx.fat, base_addr, byte_len);
                 methods = &vfs_fat_stream_methods;
             } else
             #endif
             #if MBOOT_VFS_LFS1
             if (elem[1] == ELEM_MOUNT_LFS1) {
-                ret = vfs_lfs1_mount(&ctx.lfs1, base_addr, byte_len);
+                ret = vfs_lfs1_mount(&ctx.lfs1, base_addr, byte_len, block_size);
                 methods = &vfs_lfs1_stream_methods;
             } else
             #endif
             #if MBOOT_VFS_LFS2
             if (elem[1] == ELEM_MOUNT_LFS2) {
-                ret = vfs_lfs2_mount(&ctx.lfs2, base_addr, byte_len);
+                ret = vfs_lfs2_mount(&ctx.lfs2, base_addr, byte_len, block_size);
                 methods = &vfs_lfs2_stream_methods;
             } else
             #endif

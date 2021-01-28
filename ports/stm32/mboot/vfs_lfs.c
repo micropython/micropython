@@ -43,10 +43,6 @@
 #define VFS_LFSx_MOUNT vfs_lfs1_mount
 #define VFS_LFSx_STREAM_METHODS vfs_lfs1_stream_methods
 
-#define SUPERBLOCK_MAGIC_OFFSET (40)
-#define SUPERBLOCK_BLOCK_SIZE_OFFSET (28)
-#define SUPERBLOCK_BLOCK_COUNT_OFFSET (32)
-
 static uint8_t lfs_read_buffer[LFS_READ_SIZE];
 static uint8_t lfs_prog_buffer[LFS_PROG_SIZE];
 static uint8_t lfs_lookahead_buffer[LFS_LOOKAHEAD_SIZE / 8];
@@ -58,10 +54,6 @@ static uint8_t lfs_lookahead_buffer[LFS_LOOKAHEAD_SIZE / 8];
 #define VFS_LFSx_CONTEXT_T vfs_lfs2_context_t
 #define VFS_LFSx_MOUNT vfs_lfs2_mount
 #define VFS_LFSx_STREAM_METHODS vfs_lfs2_stream_methods
-
-#define SUPERBLOCK_MAGIC_OFFSET (8)
-#define SUPERBLOCK_BLOCK_SIZE_OFFSET (24)
-#define SUPERBLOCK_BLOCK_COUNT_OFFSET (28)
 
 static uint8_t lfs_read_buffer[LFS_CACHE_SIZE];
 static uint8_t lfs_prog_buffer[LFS_CACHE_SIZE];
@@ -90,23 +82,7 @@ static int dev_sync(const struct LFSx_API (config) * c) {
     return LFSx_MACRO(_ERR_OK);
 }
 
-int VFS_LFSx_MOUNT(VFS_LFSx_CONTEXT_T *ctx, uint32_t base_addr, uint32_t byte_len) {
-    // Read start of superblock.
-    uint8_t buf[48];
-    hw_read(base_addr, sizeof(buf), buf);
-
-    // Verify littlefs and detect block size.
-    if (memcmp(&buf[SUPERBLOCK_MAGIC_OFFSET], "littlefs", 8) != 0) {
-        return -1;
-    }
-    uint32_t block_size = get_le32(&buf[SUPERBLOCK_BLOCK_SIZE_OFFSET]);
-    uint32_t block_count = get_le32(&buf[SUPERBLOCK_BLOCK_COUNT_OFFSET]);
-
-    // Verify size of volume.
-    if (block_size * block_count != byte_len) {
-        return -1;
-    }
-
+int VFS_LFSx_MOUNT(VFS_LFSx_CONTEXT_T *ctx, uint32_t base_addr, uint32_t byte_len, uint32_t block_size) {
     ctx->bdev_base_addr = base_addr;
 
     struct LFSx_API (config) *config = &ctx->config;
