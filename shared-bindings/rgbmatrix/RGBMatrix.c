@@ -132,7 +132,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: Sequence[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0, tile: int = 1, serpentine: bool = False) -> None:
+//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: Sequence[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0, tile: int = 1, serpentine: bool = True) -> None:
 //|         """Create a RGBMatrix object with the given attributes.  The height of
 //|         the display is determined by the number of rgb and address pins and the number of tiles:
 //|         ``len(rgb_pins) // 3 * 2 ** len(address_pins) * abs(tile)``.  With 6 RGB pins, 4
@@ -185,7 +185,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_framebuffer, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
         { MP_QSTR_tile, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 1 } },
-        { MP_QSTR_serpentine, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
+        { MP_QSTR_serpentine, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = true } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
