@@ -43,6 +43,7 @@ enum {
     ELEM_TYPE_END = 1,
     ELEM_TYPE_MOUNT,
     ELEM_TYPE_FSLOAD,
+    ELEM_TYPE_STATUS,
 };
 
 enum {

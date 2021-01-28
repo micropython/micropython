@@ -1443,7 +1443,14 @@ enter_bootloader:
         // Application passed through elements, validate then process them
         const uint8_t *elem_end = elem_search(ELEM_DATA_START, ELEM_TYPE_END);
         if (elem_end != NULL && elem_end[-1] == 0) {
-            fsload_process();
+            int ret = fsload_process();
+            // If there is a valid ELEM_TYPE_STATUS element then store the status in the given location.
+            const uint8_t *elem_status = elem_search(ELEM_DATA_START, ELEM_TYPE_STATUS);
+            if (elem_status != NULL && elem_status[-1] == 4) {
+                uint32_t *status_ptr = (uint32_t *)get_le32(&elem_status[0]);
+                LL_PWR_EnableBkUpAccess(); // In case status_ptr points to backup registers
+                *status_ptr = ret;
+            }
         }
         // Always reset because the application is expecting to resume
         led_state_all(0);
