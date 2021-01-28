@@ -53,7 +53,13 @@
 //| cpu: Processor
 //| """CPU information and control, such as ``cpu.temperature`` and ``cpu.frequency``
 //| (clock frequency).
-//| This object is the sole instance of `microcontroller.Processor`."""
+//| This object is an instance of `microcontroller.Processor`."""
+//|
+
+//| cpus: Processor
+//| """CPU information and control, such as ``cpus[0].temperature`` and ``cpus[1].frequency``
+//| (clock frequency) on chips with more than 1 cpu.  the index selects which cpu.
+//| This object is an instance of `microcontroller.Processor`."""
 //|
 
 //| def delay_us(delay: int) -> None:
@@ -155,6 +161,9 @@ const mp_obj_module_t mcu_pin_module = {
 STATIC const mp_rom_map_elem_t mcu_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_microcontroller) },
     { MP_ROM_QSTR(MP_QSTR_cpu),  MP_ROM_PTR(&common_hal_mcu_processor_obj) },
+#if CIRCUITPY_PROCESSOR_COUNT > 1
+    { MP_ROM_QSTR(MP_QSTR_cpus),  MP_ROM_PTR(&common_hal_multi_processor_obj) },
+#endif
     { MP_ROM_QSTR(MP_QSTR_delay_us), MP_ROM_PTR(&mcu_delay_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_interrupts), MP_ROM_PTR(&mcu_disable_interrupts_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_interrupts), MP_ROM_PTR(&mcu_enable_interrupts_obj) },
