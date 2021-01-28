@@ -13,7 +13,7 @@
 	url = https://github.com/pfalcon/berkeley-db-1.xx
 [submodule "lib/stm32lib"]
 	path = lib/stm32lib
-	url = https://github.com/H-Grobben/stm32lib
+	url = https://github.com/AEMICS/stm32lib
 	branch = vendor
 [submodule "lib/nrfx"]
 	path = lib/nrfx
