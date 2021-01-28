@@ -80,18 +80,18 @@ static int fsload_program_file(bool write_to_flash) {
     // Read file header, <5sBIB
     int res = input_stream_read(11, buf);
     if (res != 11) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset = 11;
 
     // Validate header, version 1
     if (memcmp(buf, "DfuSe\x01", 6) != 0) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_INVALID_HEADER;
     }
 
     // Must have only 1 target
     if (buf[10] != 1) {
-        return -2;
+        return -MBOOT_ERRNO_DFU_TOO_MANY_TARGETS;
     }
 
     // Get total size
@@ -100,13 +100,13 @@ static int fsload_program_file(bool write_to_flash) {
     // Read target header, <6sBi255sII
     res = input_stream_read(274, buf);
     if (res != 274) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset += 274;
 
     // Validate target header, with alt being 0
     if (memcmp(buf, "Target\x00", 7) != 0) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_INVALID_TARGET;
     }
 
     // Get target size and number of elements
@@ -120,7 +120,7 @@ static int fsload_program_file(bool write_to_flash) {
         // Read element header, <II
         res = input_stream_read(8, buf);
         if (res != 8) {
-            return -1;
+            return -MBOOT_ERRNO_DFU_READ_ERROR;
         }
         file_offset += 8;
 
@@ -149,12 +149,12 @@ static int fsload_program_file(bool write_to_flash) {
             }
             res = input_stream_read(l, buf);
             if (res != l) {
-                return -1;
+                return -MBOOT_ERRNO_DFU_READ_ERROR;
             }
             if (write_to_flash) {
                 res = do_write(elem_addr, buf, l);
                 if (res != 0) {
-                    return -1;
+                    return res;
                 }
                 elem_addr += l;
             }
@@ -165,17 +165,17 @@ static int fsload_program_file(bool write_to_flash) {
     }
 
     if (target_size != file_offset - file_offset_target) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_INVALID_SIZE;
     }
 
     if (total_size != file_offset) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_INVALID_SIZE;
     }
 
     // Read trailing info
     res = input_stream_read(16, buf);
     if (res != 16) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
 
     // TODO validate CRC32
@@ -205,7 +205,7 @@ static int fsload_validate_and_program_file(void *stream, const stream_methods_t
 int fsload_process(void) {
     const uint8_t *elem = elem_search(ELEM_DATA_START, ELEM_TYPE_FSLOAD);
     if (elem == NULL || elem[-1] < 2) {
-        return -1;
+        return -MBOOT_ERRNO_FSLOAD_NO_FSLOAD;
     }
 
     // Get mount point id and create null-terminated filename
@@ -220,7 +220,7 @@ int fsload_process(void) {
         elem = elem_search(elem, ELEM_TYPE_MOUNT);
         if (elem == NULL) {
             // End of elements.
-            return -1;
+            return -MBOOT_ERRNO_FSLOAD_NO_MOUNT;
         }
         uint32_t block_size;
         if (elem[-1] == 10) {
@@ -231,7 +231,7 @@ int fsload_process(void) {
             block_size = get_le32(&elem[10]);
         } else {
             // Invalid MOUNT element.
-            return -1;
+            return -MBOOT_ERRNO_FSLOAD_INVALID_MOUNT;
         }
         if (elem[0] == mount_point) {
             uint32_t base_addr = get_le32(&elem[2]);
@@ -270,7 +270,7 @@ int fsload_process(void) {
             #endif
             {
                 // Unknown filesystem type
-                return -1;
+                return -MBOOT_ERRNO_FSLOAD_INVALID_MOUNT;
             }
 
             if (ret == 0) {

@@ -37,6 +37,9 @@
 #error Unsupported
 #endif
 
+#define MBOOT_ERRNO_VFS_LFS_MOUNT_FAILED MBOOT_ERRNO_VFS_LFS1_MOUNT_FAILED
+#define MBOOT_ERRNO_VFS_LFS_OPEN_FAILED MBOOT_ERRNO_VFS_LFS1_OPEN_FAILED
+
 #define LFSx_MACRO(s) LFS1##s
 #define LFSx_API(x) lfs1_ ## x
 #define VFS_LFSx_CONTEXT_T vfs_lfs1_context_t
@@ -48,6 +51,9 @@ static uint8_t lfs_prog_buffer[LFS_PROG_SIZE];
 static uint8_t lfs_lookahead_buffer[LFS_LOOKAHEAD_SIZE / 8];
 
 #else
+
+#define MBOOT_ERRNO_VFS_LFS_MOUNT_FAILED MBOOT_ERRNO_VFS_LFS2_MOUNT_FAILED
+#define MBOOT_ERRNO_VFS_LFS_OPEN_FAILED MBOOT_ERRNO_VFS_LFS2_OPEN_FAILED
 
 #define LFSx_MACRO(s) LFS2##s
 #define LFSx_API(x) lfs2_ ## x
@@ -116,7 +122,7 @@ int VFS_LFSx_MOUNT(VFS_LFSx_CONTEXT_T *ctx, uint32_t base_addr, uint32_t byte_le
 
     int ret = LFSx_API(mount)(&ctx->lfs, &ctx->config);
     if (ret < 0) {
-        return -1;
+        return -MBOOT_ERRNO_VFS_LFS_MOUNT_FAILED;
     }
     return 0;
 }
@@ -126,7 +132,10 @@ static int vfs_lfs_stream_open(void *stream_in, const char *fname) {
     memset(&ctx->file, 0, sizeof(ctx->file));
     memset(&ctx->filecfg, 0, sizeof(ctx->filecfg));
     ctx->filecfg.buffer = &ctx->filebuf[0];
-    LFSx_API(file_opencfg)(&ctx->lfs, &ctx->file, fname, LFSx_MACRO(_O_RDONLY), &ctx->filecfg);
+    int ret = LFSx_API(file_opencfg)(&ctx->lfs, &ctx->file, fname, LFSx_MACRO(_O_RDONLY), &ctx->filecfg);
+    if (ret < 0) {
+        return -MBOOT_ERRNO_VFS_LFS_OPEN_FAILED;
+    }
     return 0;
 }
 
