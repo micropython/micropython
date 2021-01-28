@@ -168,31 +168,35 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 
     #if MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2
 
-    // Try to detect the block device used for the main filesystem, based on the first block
-
-    uint8_t buf[64];
-    ret = storage_readblocks_ext(buf, 0, 0, sizeof(buf));
+    // Try to detect the block device used for the main filesystem based on the
+    // contents of the superblock, which can be the first or second block.
     mp_int_t len = -1;
+    uint8_t buf[64];
+    for (size_t block_num = 0; block_num <= 1; ++block_num) {
+        ret = storage_readblocks_ext(buf, block_num, 0, sizeof(buf));
 
-    #if MICROPY_VFS_LFS1
-    if (ret == 0 && memcmp(&buf[40], "littlefs", 8) == 0) {
-        // LFS1
-        lfs1_superblock_t *superblock = (void *)&buf[12];
-        uint32_t block_size = lfs1_fromle32(superblock->d.block_size);
-        uint32_t block_count = lfs1_fromle32(superblock->d.block_count);
-        len = block_count * block_size;
-    }
-    #endif
+        #if MICROPY_VFS_LFS1
+        if (ret == 0 && memcmp(&buf[40], "littlefs", 8) == 0) {
+            // LFS1
+            lfs1_superblock_t *superblock = (void *)&buf[12];
+            uint32_t block_size = lfs1_fromle32(superblock->d.block_size);
+            uint32_t block_count = lfs1_fromle32(superblock->d.block_count);
+            len = block_count * block_size;
+            break;
+        }
+        #endif
 
-    #if MICROPY_VFS_LFS2
-    if (ret == 0 && memcmp(&buf[8], "littlefs", 8) == 0) {
-        // LFS2
-        lfs2_superblock_t *superblock = (void *)&buf[20];
-        uint32_t block_size = lfs2_fromle32(superblock->block_size);
-        uint32_t block_count = lfs2_fromle32(superblock->block_count);
-        len = block_count * block_size;
+        #if MICROPY_VFS_LFS2
+        if (ret == 0 && memcmp(&buf[8], "littlefs", 8) == 0) {
+            // LFS2
+            lfs2_superblock_t *superblock = (void *)&buf[20];
+            uint32_t block_size = lfs2_fromle32(superblock->block_size);
+            uint32_t block_count = lfs2_fromle32(superblock->block_count);
+            len = block_count * block_size;
+            break;
+        }
+        #endif
     }
-    #endif
 
     if (len != -1) {
         // Detected a littlefs filesystem so create correct block device for it
