@@ -382,9 +382,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_can_state_obj, pyb_can_state);
 // Get info about error states and TX/RX buffers
 STATIC mp_obj_t pyb_can_info(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_FDCAN
-    // TODO check implementation for FDCAN
-	pyb_can_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-	mp_obj_list_t *list;
+    // Done: check implementation for FDCAN
+    pyb_can_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_list_t *list;
     if (n_args == 1) {
         list = MP_OBJ_TO_PTR(mp_obj_new_list(8, NULL));
     } else {

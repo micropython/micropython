@@ -353,7 +353,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
         #elif defined(STM32G4)
         hrtc->Instance->CR &= (uint32_t) ~RTC_CR_TAMPALRM_TYPE_Msk;
-        hrtc->Instance->CR |= (uint32_t) (hrtc->Init.OutPutType);
+        hrtc->Instance->CR |= (uint32_t)(hrtc->Init.OutPutType);
         #else
         hrtc->Instance->TAFCR &= (uint32_t) ~RTC_TAFCR_ALARMOUTTYPE;
         hrtc->Instance->TAFCR |= (uint32_t)(hrtc->Init.OutPutType);
@@ -704,7 +704,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     while (!(RTC->ICSR & RTC_ICSR_WUTWF)) {
     #else
     while (!(RTC->ISR & RTC_ISR_WUTWF)) {
-    #endif
+        #endif
     }
 
     if (enable) {

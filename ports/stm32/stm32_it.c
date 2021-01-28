@@ -704,9 +704,9 @@ void TIM6_DAC_IRQHandler(void) {
 #if defined(TIM7) // STM32F401 doesn't have TIM7
 #if defined(STM32G4)
 void TIM7_DAC_IRQHandler(void) {
-	IRQ_ENTER(TIM7_DAC_IRQn);
-	timer_irq_handler(7);
-	IRQ_EXIT(TIM7_DAC_IRQn);
+    IRQ_ENTER(TIM7_DAC_IRQn);
+    timer_irq_handler(7);
+    IRQ_EXIT(TIM7_DAC_IRQn);
 }
 #else
 void TIM7_IRQHandler(void) {

@@ -124,11 +124,11 @@
 
 #define ADC_FIRST_GPIO_CHANNEL  (0)
 #define ADC_LAST_GPIO_CHANNEL   (18)
-#define ADC_SCALE_V             (((float)VREFINT_CAL_VREF)/1000.0f) // stm32g4xx_ll_adc.h
-#define ADC_CAL_ADDRESS         VREFINT_CAL_ADDR					// stm32g4xx_ll_adc.h
-#define ADC_CAL1                TEMPSENSOR_CAL1_ADDR				// stm32g4xx_ll_adc.h
-#define ADC_CAL2                TEMPSENSOR_CAL2_ADDR				// stm32g4xx_ll_adc.h
-#define ADC_CAL_BITS            (12)   //UM2570, __HAL_ADC_CALC_TEMPERATURE: 'corresponds to a resolution of 12 bits,'
+#define ADC_SCALE_V             (((float)VREFINT_CAL_VREF) / 1000.0f) // stm32g4xx_ll_adc.h
+#define ADC_CAL_ADDRESS         VREFINT_CAL_ADDR                                        // stm32g4xx_ll_adc.h
+#define ADC_CAL1                TEMPSENSOR_CAL1_ADDR                            // stm32g4xx_ll_adc.h
+#define ADC_CAL2                TEMPSENSOR_CAL2_ADDR                            // stm32g4xx_ll_adc.h
+#define ADC_CAL_BITS            (12)   // UM2570, __HAL_ADC_CALC_TEMPERATURE: 'corresponds to a resolution of 12 bits,'
 
 #else
 
@@ -347,7 +347,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     #elif defined(STM32G4)
     sConfig.Rank = ADC_REGULAR_RANK_1;
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel) == 0) {
-    	channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);
+        channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);
     }
     #else
     sConfig.Rank = 1;
@@ -552,7 +552,7 @@ STATIC mp_obj_t adc_read_timed(mp_obj_t self_in, mp_obj_t buf_in, mp_obj_t freq_
             // for subsequent samples we can just set the "start sample" bit
             #if defined(STM32F4) || defined(STM32F7)
             ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-            #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) ||defined(STM32G4)
+            #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) || defined(STM32G4)
             SET_BIT(ADCx->CR, ADC_CR_ADSTART);
             #else
             #error Unsupported processor
@@ -662,7 +662,7 @@ STATIC mp_obj_t adc_read_timed_multi(mp_obj_t adc_array_in, mp_obj_t buf_array_i
             // ADC is started: set the "start sample" bit
             #if defined(STM32F4) || defined(STM32F7)
             ADCx->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-            #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) ||defined(STM32G4)
+            #elif defined(STM32F0) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB) || defined(STM32G4)
             SET_BIT(ADCx->CR, ADC_CR_ADSTART);
             #else
             #error Unsupported processor
@@ -784,10 +784,11 @@ STATIC uint32_t adc_config_and_read_ref(ADC_HandleTypeDef *adcHandle, uint32_t c
 int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
     #if defined(STM32G4)
     int32_t raw_value = 0;
-    if(adcHandle->Instance == ADC1)
+    if (adcHandle->Instance == ADC1) {
         raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR_ADC1);
-    else
+    } else {
         return 0;
+    }
     #else
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
     #endif
@@ -801,10 +802,11 @@ STATIC volatile float adc_refcor = 1.0f;
 float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
     #if defined(STM32G4)
     int32_t raw_value = 0;
-    if(adcHandle->Instance == ADC1)
+    if (adcHandle->Instance == ADC1) {
         raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR_ADC1);
-    else
+    } else {
         return 0;
+    }
     #else
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
     #endif

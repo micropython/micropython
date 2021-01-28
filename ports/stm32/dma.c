@@ -484,65 +484,65 @@ static const uint8_t dma_irqn[NSTREAM] = {
 // number. The duplicate streams are ok as long as they aren't used at the same time.
 
 // DMA1 streams
-const dma_descr_t dma_SPI_1_RX  = { DMA1_Channel1, DMA_REQUEST_SPI1_RX, dma_id_0,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_SPI_1_TX  = { DMA1_Channel2, DMA_REQUEST_SPI1_TX, dma_id_1,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_SPI_2_RX  = { DMA1_Channel1, DMA_REQUEST_SPI2_RX, dma_id_0,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_SPI_2_TX  = { DMA1_Channel2, DMA_REQUEST_SPI2_TX, dma_id_1,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_1_RX = { DMA1_Channel1, DMA_REQUEST_SPI1_RX, dma_id_0,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_1_TX = { DMA1_Channel2, DMA_REQUEST_SPI1_TX, dma_id_1,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_2_RX = { DMA1_Channel1, DMA_REQUEST_SPI2_RX, dma_id_0,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_2_TX = { DMA1_Channel2, DMA_REQUEST_SPI2_TX, dma_id_1,   &dma_init_struct_spi_i2c };
 
-const dma_descr_t dma_I2C_1_RX  = { DMA1_Channel3, DMA_REQUEST_I2C1_RX, dma_id_2,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_1_TX  = { DMA1_Channel4, DMA_REQUEST_I2C1_TX, dma_id_3,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_2_RX  = { DMA1_Channel3, DMA_REQUEST_I2C2_RX, dma_id_2,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_2_TX  = { DMA1_Channel4, DMA_REQUEST_I2C2_TX, dma_id_3,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_3_RX  = { DMA1_Channel3, DMA_REQUEST_I2C3_RX, dma_id_2,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_I2C_3_TX  = { DMA1_Channel4, DMA_REQUEST_I2C3_TX, dma_id_3,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_1_RX = { DMA1_Channel3, DMA_REQUEST_I2C1_RX, dma_id_2,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_1_TX = { DMA1_Channel4, DMA_REQUEST_I2C1_TX, dma_id_3,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_2_RX = { DMA1_Channel3, DMA_REQUEST_I2C2_RX, dma_id_2,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_2_TX = { DMA1_Channel4, DMA_REQUEST_I2C2_TX, dma_id_3,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_3_RX = { DMA1_Channel3, DMA_REQUEST_I2C3_RX, dma_id_2,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_3_TX = { DMA1_Channel4, DMA_REQUEST_I2C3_TX, dma_id_3,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_UART_3_RX = { DMA1_Channel3, DMA_REQUEST_USART3_RX, dma_id_2, &dma_init_struct_spi_i2c };// ToDo: bekijken of deze init struct kan voor UART
 const dma_descr_t dma_UART_3_TX = { DMA1_Channel4, DMA_REQUEST_USART3_TX, dma_id_3, &dma_init_struct_spi_i2c };
 // FDCAN?
 
 
 #if MICROPY_HW_ENABLE_DAC
-  const dma_descr_t dma_DAC_1_TX = { DMA1_Channel5, DMA_REQUEST_DAC1_CHANNEL1, dma_id_4,   &dma_init_struct_dac };
-  const dma_descr_t dma_DAC_2_TX = { DMA1_Channel6, DMA_REQUEST_DAC1_CHANNEL2, dma_id_5,   &dma_init_struct_dac };
+const dma_descr_t dma_DAC_1_TX = { DMA1_Channel5, DMA_REQUEST_DAC1_CHANNEL1, dma_id_4,   &dma_init_struct_dac };
+const dma_descr_t dma_DAC_2_TX = { DMA1_Channel6, DMA_REQUEST_DAC1_CHANNEL2, dma_id_5,   &dma_init_struct_dac };
 #endif
 #if !defined(STM32G431xx) && !defined(STM32G441xx)
 // channel 7 & 8
 #endif
 
 // DMA2 streams
-const dma_descr_t dma_UART_1_RX   = { DMA2_Channel1, DMA_REQUEST_USART1_RX,  dma_id_6,   &dma_init_struct_spi_i2c }; // ToDo: bekijken of deze init struct kan voor UART
-const dma_descr_t dma_UART_1_TX   = { DMA2_Channel2, DMA_REQUEST_USART1_TX,  dma_id_7,   &dma_init_struct_spi_i2c };
+const dma_descr_t dma_UART_1_RX = { DMA2_Channel1, DMA_REQUEST_USART1_RX,  dma_id_6,   &dma_init_struct_spi_i2c };   // ToDo: bekijken of deze init struct kan voor UART
+const dma_descr_t dma_UART_1_TX = { DMA2_Channel2, DMA_REQUEST_USART1_TX,  dma_id_7,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_LPUART_1_RX = { DMA2_Channel3, DMA_REQUEST_LPUART1_RX, dma_id_8,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_LPUART_1_TX = { DMA2_Channel4, DMA_REQUEST_LPUART1_TX, dma_id_9,   &dma_init_struct_spi_i2c };
-const dma_descr_t dma_ADC_1       = { DMA2_Channel5, DMA_REQUEST_ADC1,       dma_id_10,  NULL };
-const dma_descr_t dma_MEM_2_MEM   = { DMA2_Channel6, DMA_REQUEST_MEM2MEM,    dma_id_11,  NULL };
+const dma_descr_t dma_ADC_1 = { DMA2_Channel5, DMA_REQUEST_ADC1,       dma_id_10,  NULL };
+const dma_descr_t dma_MEM_2_MEM = { DMA2_Channel6, DMA_REQUEST_MEM2MEM,    dma_id_11,  NULL };
 #if !defined(STM32G431xx) && !defined(STM32G441xx)
 // channel 7 & 8
 #endif
 
 
 
- static const uint8_t dma_irqn[NSTREAM] = {
-     DMA1_Channel1_IRQn,
-     DMA1_Channel2_IRQn,
-     DMA1_Channel3_IRQn,
-     DMA1_Channel4_IRQn,
-     DMA1_Channel5_IRQn,
-     DMA1_Channel6_IRQn,
-#if !defined(STM32G431xx) && !defined(STM32G441xx)
-     DMA1_Channel7_IRQn,
-     DMA1_Channel8_IRQn,
-#endif
-     DMA2_Channel1_IRQn,
-     DMA2_Channel2_IRQn,
-     DMA2_Channel3_IRQn,
-     DMA2_Channel4_IRQn,
-     DMA2_Channel5_IRQn,
-     DMA2_Channel6_IRQn,
-#if !defined(STM32G431xx) && !defined(STM32G441xx)
-     DMA2_Channel7_IRQn,
-     DMA2_Channel8_IRQn,
-#endif
- };
+static const uint8_t dma_irqn[NSTREAM] = {
+    DMA1_Channel1_IRQn,
+    DMA1_Channel2_IRQn,
+    DMA1_Channel3_IRQn,
+    DMA1_Channel4_IRQn,
+    DMA1_Channel5_IRQn,
+    DMA1_Channel6_IRQn,
+    #if !defined(STM32G431xx) && !defined(STM32G441xx)
+    DMA1_Channel7_IRQn,
+    DMA1_Channel8_IRQn,
+    #endif
+    DMA2_Channel1_IRQn,
+    DMA2_Channel2_IRQn,
+    DMA2_Channel3_IRQn,
+    DMA2_Channel4_IRQn,
+    DMA2_Channel5_IRQn,
+    DMA2_Channel6_IRQn,
+    #if !defined(STM32G431xx) && !defined(STM32G441xx)
+    DMA2_Channel7_IRQn,
+    DMA2_Channel8_IRQn,
+    #endif
+};
 
 #elif defined(STM32H7)
 
@@ -1237,10 +1237,10 @@ static void dma_idle_handler(uint32_t tick) {
                     __HAL_RCC_DMA1_CLK_DISABLE();
                     #if defined(STM32G4)
                     #if defined(DMA2)
-                    if(__HAL_RCC_DMA2_IS_CLK_DISABLED())
+                    if (__HAL_RCC_DMA2_IS_CLK_DISABLED())
                     #endif
                     {
-                    	__HAL_RCC_DMAMUX1_CLK_DISABLE();
+                        __HAL_RCC_DMAMUX1_CLK_DISABLE();
                     }
                     #endif
                 }
@@ -1248,8 +1248,9 @@ static void dma_idle_handler(uint32_t tick) {
                 else {
                     __HAL_RCC_DMA2_CLK_DISABLE();
                     #if defined(STM32G4)
-                    if(__HAL_RCC_DMA1_IS_CLK_DISABLED())
-                    	__HAL_RCC_DMAMUX1_CLK_DISABLE();
+                    if (__HAL_RCC_DMA1_IS_CLK_DISABLED()) {
+                        __HAL_RCC_DMAMUX1_CLK_DISABLE();
+                    }
                     #endif
                 }
                 #endif
@@ -1287,9 +1288,9 @@ void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
     }
     #elif defined(STM32G4)
     // descr = { DMA1_Channel4, DMA_REQUEST_UART3_TX, dma_id_3,  &dma_init_struct_spi_i2c };
-    //#error Hier moet ik nog ff naar kijken hoe we dit aanpassen aan de G4 serie
+    // #error Hier moet ik nog ff naar kijken hoe we dit aanpassen aan de G4 serie
     // in L4 wordt hier channel geselecteerd, in G4 ws via DMAMUX (net als H7?)
-    uint32_t* dmamux_ctrl = (void *)(DMAMUX1_Channel0_BASE + 0x04 * descr->id );
+    uint32_t *dmamux_ctrl = (void *)(DMAMUX1_Channel0_BASE + 0x04 * descr->id);
     *dmamux_ctrl = (*dmamux_ctrl & ~(0x7f)) | descr->sub_instance;
     #else
     DMA_Request_TypeDef *dma_ctrl = (void *)(((uint32_t)dma & ~0xff) + (DMA1_CSELR_BASE - DMA1_BASE)); // DMA1_CSELR or DMA2_CSELR
