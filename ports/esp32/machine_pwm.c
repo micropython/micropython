@@ -267,7 +267,11 @@ STATIC mp_obj_t esp32_pwm_duty(size_t n_args, const mp_obj_t *args) {
 
     // set
     duty = mp_obj_get_int(args[1]);
-    duty &= ((1 << PWRES) - 1);
+    if (duty < 0) {
+        duty = 0;
+    } else if (duty > (1 << PWRES) - 1) {
+        duty = (1 << PWRES) - 1;
+    }
     duty >>= PWRES - timer_cfg.duty_resolution;
     ledc_set_duty(PWMODE, self->channel, duty);
     ledc_update_duty(PWMODE, self->channel);
