@@ -43,6 +43,9 @@ jobs:
       - name: Build frontend
         run: npm run bundle
         working-directory: ports/javascript
+      - name: Clean up unneeded files
+        run: rm -rf build .cache node_modules
+        working-directory: ports/javascript
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
@@ -51,4 +54,4 @@ jobs:
           BRANCH: gh-pages # The branch the action should deploy to.
           FOLDER: ports/javascript # The folder the action should deploy.
           CLEAN: true # Automatically remove deleted files from the deploy branch
-          PRESERVE: true # preserve workspace
+          PRESERVE: true
