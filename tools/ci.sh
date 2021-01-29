@@ -33,6 +33,7 @@ function ci_code_formatting_run {
 # code size
 
 function ci_code_size_setup {
+    sudo apt-get update
     sudo apt-get install gcc-multilib
     gcc --version
     ci_gcc_arm_setup
