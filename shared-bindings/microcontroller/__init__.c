@@ -58,7 +58,7 @@
 
 //| cpus: Processor
 //| """CPU information and control, such as ``cpus[0].temperature`` and ``cpus[1].frequency``
-//| (clock frequency) on chips with more than 1 cpu.  the index selects which cpu.
+//| (clock frequency) on chips with more than 1 cpu. The index selects which cpu.
 //| This object is an instance of `microcontroller.Processor`."""
 //|
 
