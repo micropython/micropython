@@ -122,6 +122,11 @@
 #define MICROPY_HW_HAS_LCD (0)
 #endif
 
+// Whether to automatically mount (and boot from) the flash filesystem
+#ifndef MICROPY_HW_FLASH_MOUNT_AT_BOOT
+#define MICROPY_HW_FLASH_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_STORAGE)
+#endif
+
 // The volume label used when creating the flash filesystem
 #ifndef MICROPY_HW_FLASH_FS_LABEL
 #define MICROPY_HW_FLASH_FS_LABEL "pybflash"
