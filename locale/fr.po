@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-17 12:55+0000\n"
+"PO-Revision-Date: 2021-01-30 02:32+0000\n"
 "Last-Translator: Hugo Dahl <hugo@code-jedi.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -70,6 +70,8 @@ msgstr "%%c nécessite un chiffre entier 'int' ou un caractère 'char'"
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
+"%d broches d'adresse, %d broches RGB et %d pour tile indique une hauteur de "
+"%d, et non %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -3827,7 +3829,7 @@ msgstr "le seuil doit être dans la portée 0-65536"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "tile must be greater than zero"
-msgstr ""
+msgstr "tile doit être plus que zéro"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -4047,7 +4049,7 @@ msgstr "watchdog timeout doit être supérieur à 0"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr "width doit être plus grand que zero"
+msgstr "width doit être plus que zero"
 
 #: ports/esp32s2/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
