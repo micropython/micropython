@@ -38,7 +38,7 @@ void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t* self) {
 ssl_sslsocket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,
     socketpool_socket_obj_t* socket, bool server_side, const char* server_hostname) {
 
-    if (socket->type != SOCK_STREAM || socket->num != -1) {
+    if (socket->type != SOCK_STREAM) {
         mp_raise_RuntimeError(translate("Invalid socket for TLS"));
     }
 

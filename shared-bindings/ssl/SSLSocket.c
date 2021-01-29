@@ -38,8 +38,8 @@
 #include "lib/netutils/netutils.h"
 
 //| class SSLSocket:
-//|     """Implements TLS security on a subset of `socketpool.socket` functions. Cannot be created
-//|        directly. Instead, call `context.wrap_socket` on an existing socket object.
+//|     """Implements TLS security on a subset of `socketpool.Socket` functions. Cannot be created
+//|        directly. Instead, call `wrap_socket` on an existing socket object.
 //|
 //|        Provides a subset of CPython's `ssl.SSLSocket` API. It only implements the versions of
 //|        recv that do not allocate bytes objects."""
