@@ -434,10 +434,16 @@ STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse
 // Only call this when IRQs are disabled on this channel.
 STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
     if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, ch)) {
+        // Process new data.
         tl_process_msg(head, ch, parse);
 
-        // Clear receive channel.
+        // Clear receive channel (allows RF core to send more data to us).
         LL_C1_IPCC_ClearFlag_CHx(IPCC, ch);
+
+        if (ch == IPCC_CH_BLE) {
+            // Renable IRQs for BLE now that we've cleared the flag.
+            LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
+        }
     }
 }
 
@@ -495,17 +501,17 @@ STATIC int tl_ble_wait_resp(void) {
         }
     }
 
-    // C2 set IPCC flag.
+    // C2 set IPCC flag -- process the data, clear the flag, and re-enable IRQs.
     tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, NULL);
     return 0;
 }
 
 // Synchronously send a BLE command.
 STATIC void tl_ble_hci_cmd_resp(uint16_t opcode, const uint8_t *buf, size_t len) {
+    // Poll for completion rather than wait for IRQ->scheduler.
     LL_C1_IPCC_DisableReceiveChannel(IPCC, IPCC_CH_BLE);
     tl_hci_cmd(ipcc_membuf_ble_cmd_buf, IPCC_CH_BLE, HCI_KIND_BT_CMD, opcode, buf, len);
     tl_ble_wait_resp();
-    LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
 }
 
 /******************************************************************************/
@@ -632,7 +638,7 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
 
 void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env) {
     parse_hci_info_t parse = { cb, env, false };
-    tl_process_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
+    tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
 
     // Intercept HCI_Reset events and reconfigure the controller following the reset
     if (parse.was_hci_reset_evt) {
@@ -679,7 +685,8 @@ void IPCC_C1_RX_IRQHandler(void) {
     DEBUG_printf("IPCC_C1_RX_IRQHandler\n");
 
     if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, IPCC_CH_BLE)) {
-        LL_C1_IPCC_ClearFlag_CHx(IPCC, IPCC_CH_BLE);
+        // Disable this IRQ until the incoming data is processed (in tl_check_msg).
+        LL_C1_IPCC_DisableReceiveChannel(IPCC, IPCC_CH_BLE);
 
         #if MICROPY_PY_BLUETOOTH
         // Queue up the scheduler to process UART data and run events.
