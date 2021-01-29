@@ -462,7 +462,7 @@ jobs:
     - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: git describe --dirty --tags
-    - uses: actions/cache@v1
+    - uses: actions/cache@v2
       name: Fetch IDF tool cache
       id: idf-cache
       with:
