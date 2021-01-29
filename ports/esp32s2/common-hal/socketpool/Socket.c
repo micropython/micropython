@@ -135,7 +135,7 @@ socketpool_socket_obj_t* common_hal_socketpool_socket_accept(socketpool_socket_o
     while (newsoc == -1 &&
            !timed_out &&
            !mp_hal_is_interrupted()) {
-        if (self->timeout_ms != (uint)-1) {
+        if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
         RUN_BACKGROUND_TASKS;
@@ -251,7 +251,7 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t* self, 
         while (received == -1 &&
                 !timed_out &&
                 !mp_hal_is_interrupted()) {
-            if (self->timeout_ms != (uint)-1) {
+            if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
                 timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
             }
             RUN_BACKGROUND_TASKS;
@@ -362,7 +362,7 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* se
     while (received == -1 &&
             !timed_out &&
             !mp_hal_is_interrupted()) {
-        if (self->timeout_ms != (uint)-1) {
+        if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
         RUN_BACKGROUND_TASKS;
