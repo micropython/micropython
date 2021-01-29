@@ -271,6 +271,7 @@ def generate_download_info():
         info = current_info[board]
         for version in info["versions"]:
             previous_releases.add(version["version"])
+            previous_languages.update(version["languages"])
             if version["stable"] == new_stable or (
                 new_stable and version["version"].startswith(this_version)
             ):
