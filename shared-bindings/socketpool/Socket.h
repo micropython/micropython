@@ -37,7 +37,6 @@ void common_hal_socketpool_socket_close(socketpool_socket_obj_t* self);
 bool common_hal_socketpool_socket_connect(socketpool_socket_obj_t* self, const char* host, size_t hostlen, mp_int_t port);
 bool common_hal_socketpool_socket_get_closed(socketpool_socket_obj_t* self);
 bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t* self);
-mp_uint_t common_hal_socketpool_socket_get_hash(socketpool_socket_obj_t* self);
 mp_uint_t common_hal_socketpool_socket_get_timeout(socketpool_socket_obj_t* self);
 bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t* self, int backlog);
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t* self,

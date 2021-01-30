@@ -3,7 +3,6 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -198,10 +197,6 @@ bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t* self) {
     return self->connected;
 }
 
-mp_uint_t common_hal_socketpool_socket_get_hash(socketpool_socket_obj_t* self) {
-    return self->num;
-}
-
 bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t* self, int backlog) {
     return lwip_listen(self->num, backlog) == 0;
 }
@@ -289,7 +284,7 @@ mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t* self, const
     }
 
     if (sent < 0) {
-        mp_raise_OSError(MP_ENOTCONN);
+        mp_raise_OSError(errno);
     }
     return sent;
 }

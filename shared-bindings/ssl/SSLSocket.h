@@ -37,7 +37,6 @@ void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t* self);
 bool common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t* self, const char* host, size_t hostlen, mp_int_t port);
 bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t* self);
 bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t* self);
-mp_uint_t common_hal_ssl_sslsocket_get_hash(ssl_sslsocket_obj_t* self);
 bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t* self, int backlog);
 mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t* self, const uint8_t* buf, mp_uint_t len);
 mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t* self, const uint8_t* buf, mp_uint_t len);

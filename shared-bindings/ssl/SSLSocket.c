@@ -286,7 +286,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_setblocking_obj, ssl_sslsocket_se
 STATIC mp_obj_t ssl_sslsocket_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     switch (op) {
         case MP_UNARY_OP_HASH: {
-            return MP_OBJ_NEW_SMALL_INT(common_hal_ssl_sslsocket_get_hash(MP_OBJ_TO_PTR(self_in)));
+            return mp_obj_id(self_in);
         }
         default:
             return MP_OBJ_NULL; // op not supported

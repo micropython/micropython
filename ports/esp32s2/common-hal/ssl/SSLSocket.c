@@ -3,6 +3,7 @@
  *
  * The MIT License (MIT)
  *
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -51,7 +52,7 @@ bool common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t* self,
 }
 
 void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t* self) {
-    self->sock->connected = false;
+    common_hal_socketpool_socket_close(self->sock);
     esp_tls_conn_destroy(self->tls);
     self->tls = NULL;
 }
@@ -97,10 +98,6 @@ bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t* self) {
 
 bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t* self) {
     return self->sock->connected;
-}
-
-mp_uint_t common_hal_ssl_sslsocket_get_hash(ssl_sslsocket_obj_t* self) {
-    return self->sock->num;
 }
 
 bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t* self, int backlog) {
@@ -163,7 +160,17 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t* self, const uint8_t
     sent = esp_tls_conn_write(self->tls, buf, len);
 
     if (sent < 0) {
-        mp_raise_OSError(MP_ENOTCONN);
+        int esp_tls_code;
+        int flags;
+        esp_err_t err = esp_tls_get_and_clear_last_error(self->tls->error_handle, &esp_tls_code, &flags);
+
+        if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
+            mp_raise_espidf_MemoryError();
+        } else if (ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
+            mp_raise_OSError_msg_varg(translate("Failed SSL handshake"));
+        } else {
+            mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, sent);
+        }
     }
     return sent;
 }
