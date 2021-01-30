@@ -1,10 +1,14 @@
 # DS12423x dual counter driver for MicroPython.
 # MIT license; Copyright (c) 2021 Christofer Buff Andersson""
 
+from micropython import const
+
+DS2423_READ_MEMORY_COMMAND = const(0xa5)
+DS2423_COUNTER_A = const(0xc0)
+DS2423_COUNTER_B = const(0xe0)
+
+
 class DS2423(object):
-    DS2423_READ_MEMORY_COMMAND = const(0xa5)
-    DS2423_COUNTER_A = const(0xc0)
-    DS2423_COUNTER_B = const(0xe0)
 
     def __init__(self, onewire):
         self.ow = onewire
