@@ -30,7 +30,7 @@
 #include "shared-bindings/watchdog/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-#include "hardware/watchdog.h"
+#include "src/rp2_common/hardware_watchdog/include/hardware/watchdog.h"
 
 void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
     watchdog_update();
