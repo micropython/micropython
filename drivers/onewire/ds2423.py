@@ -1,5 +1,5 @@
 # DS12423x dual counter driver for MicroPython.
-# MIT license; Copyright (c) 2021 Christofer Buff Andersson""
+# MIT license; Copyright (c) 2021 Christofer "Buff" Andersson
 
 from micropython import const
 
@@ -15,17 +15,9 @@ class DS2423(object):
 
     def scan(self):
         '''
-        - Prints devices on bus
-        - Returns list of rom's, all 1wire devices no bus
+        - Prints counters on bus
         '''
-        roms = []
-        i = 0
-        roms = self.ow.scan()
-        print("DS2423 Counters found on bus: {}".format(len(roms)))
-        for rom in roms:
-            print("Device id {} {}".format(i, rom))
-            i += 1
-        return roms
+        return [rom for rom in self.ow.scan() if rom[0] == 29]
 
     def begin(self, adress):
         '''
