@@ -422,13 +422,14 @@ STATIC void rp2_state_machine_print(const mp_print_t *print, mp_obj_t self_in, m
 }
 
 // StateMachine.init(prog, freq=-1, *,
-//     in_base=None, out_base=None, set_base=None, sideset_base=None,
-//     in_shiftdir=None, out_shiftdir=None, push_thresh=None, pull_thresh=None,
+//     in_base=None, out_base=None, set_base=None, jmp_pin=None,
+//     sideset_base=None, in_shiftdir=None, out_shiftdir=None,
+//     push_thresh=None, pull_thresh=None,
 // )
 STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
         ARG_prog, ARG_freq,
-        ARG_in_base, ARG_out_base, ARG_set_base, ARG_sideset_base,
+        ARG_in_base, ARG_out_base, ARG_set_base, ARG_jmp_pin, ARG_sideset_base,
         ARG_in_shiftdir, ARG_out_shiftdir, ARG_push_thresh, ARG_pull_thresh
     };
     static const mp_arg_t allowed_args[] = {
@@ -437,6 +438,7 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
         { MP_QSTR_in_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_out_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_set_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_jmp_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_sideset_base, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_in_shiftdir, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_out_shiftdir, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -485,6 +487,11 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     // Configure in pin base, if needed.
     if (args[ARG_in_base].u_obj != mp_const_none) {
         sm_config_set_in_pins(&config, mp_hal_get_pin_obj(args[ARG_in_base].u_obj));
+    }
+
+    // Configure jmp pin, if needed.
+    if (args[ARG_jmp_pin].u_obj != mp_const_none) {
+        sm_config_set_jmp_pin(&config, mp_hal_get_pin_obj(args[ARG_jmp_pin].u_obj));
     }
 
     // Configure out pins, if needed.
