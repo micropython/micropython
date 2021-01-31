@@ -57,8 +57,9 @@ def verify(sha):
     # Subject line.
     subject_line = raw_body[0]
     very_verbose("subject_line", subject_line)
-    if not re.match(r"^[^!]+: [A-Z]+.+ .+\.$", subject_line):
-        error("Subject line should contain ': ' and end in '.': " + subject_line)
+    subject_line_format = r"^[^!]+: [A-Z]+.+ .+\.$"
+    if not re.match(subject_line_format, subject_line):
+        error("Subject line should match " + repr(subject_line_format) + ": " + subject_line)
     if len(subject_line) >= 73:
         error("Subject line should be 72 or less characters: " + subject_line)
 
