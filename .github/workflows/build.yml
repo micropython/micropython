@@ -304,6 +304,7 @@ jobs:
         - "seeeduino_xiao"
         - "serpente"
         - "shirtty"
+        - "silicognition-m4-shim"
         - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
