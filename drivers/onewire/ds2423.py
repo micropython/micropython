@@ -3,9 +3,9 @@
 
 from micropython import const
 
-DS2423_READ_MEMORY_COMMAND = const(0xa5)
-DS2423_COUNTER_A = const(0xc0)
-DS2423_COUNTER_B = const(0xe0)
+_DS2423_READ_MEMORY_COMMAND = const(0xa5)
+_DS2423_COUNTER_A = const(0xc0)
+_DS2423_COUNTER_B = const(0xe0)
 
 
 class DS2423(object):
@@ -14,40 +14,31 @@ class DS2423(object):
         self.ow = onewire
 
     def scan(self):
-        '''
-        - Prints counters on bus
-        '''
         return [rom for rom in self.ow.scan() if rom[0] == 29]
 
     def begin(self, adress):
         '''
         - Takes device adress, use .scan()
         - ie.  'counter.begin(bytearray(b'\x1d\x6c\xec\x0c\x00\x00\x00\x94'))'
+        or counter.begin(rom[0]) from scan function
         '''
         self.rom = adress
 
     def isbusy(self):
-        """
-        - Checks wether one of the DS2423 devices on the bus is busy
-        performing a temperature conversion
-        """
         return not self.ow.readbit()
 
     def get_count(self, counter):
-        '''
-        - Read counter value from ROM and updates it
-        - Counter is called with literal "DS2423_COUNTER_A" or "DS2423_COUNTER_B"
-        '''
-        buffer = [None] * 42
+        buf = [None] * 42
         self.ow.select_rom(self.rom)
-        self.ow.writebyte(DS2423_READ_MEMORY_COMMAND)
-        self.ow.writebyte(DS2423_COUNTER_A if counter == "DS2423_COUNTER_A" else DS2423_COUNTER_B)
+        self.ow.writebyte(_DS2423_READ_MEMORY_COMMAND)
+        self.ow.writebyte(_DS2423_COUNTER_A if counter ==
+                          "DS2423_COUNTER_A" else _DS2423_COUNTER_B)
         self.ow.writebyte(0x01)
-        self.ow.readinto(buffer)
+        self.ow.readinto(buf)
         self.ow.reset()
-        count = int(buffer[35])
+        count = int(buf[35])
         for i in range(34, 31, -1):
-            count = (count << 8) + buffer[i]
+            count = (count << 8) + buf[i]
         # ################
         # TODO CRC16 Check
         # ################
