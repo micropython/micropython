@@ -66,7 +66,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'MicroPython'
-copyright = '2014-2020, Damien P. George, Paul Sokolovsky, and contributors'
+copyright = '2014-2021, Damien P. George, Paul Sokolovsky, and contributors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
