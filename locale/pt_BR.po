@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-01-30 02:32+0000\n"
+"PO-Revision-Date: 2021-02-01 17:50+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -354,7 +354,7 @@ msgstr "Todos os canais de eventos em uso"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
-msgstr ""
+msgstr "O estado de todas as máquinas em uso"
 
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
@@ -1084,7 +1084,7 @@ msgstr "Erro de inicialização do I2C"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "I2C peripheral in use"
-msgstr ""
+msgstr "Periférico I2C em uso"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
@@ -1113,7 +1113,7 @@ msgstr "O tamanho do buffer está incorreto"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Init program size invalid"
-msgstr ""
+msgstr "O tamanho do programa Init é inválido"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1130,27 +1130,27 @@ msgstr "Erro de entrada/saída"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d jumps on pin"
-msgstr ""
+msgstr "A instrução %d salta no pino"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts in more bits than pin count"
-msgstr ""
+msgstr "A instrução %d muda com mais bits do que a quantidade dos pinos"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts out more bits than pin count"
-msgstr ""
+msgstr "A instrução %d desloca mais bits do que a quantidade dos pinos"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d uses extra pin"
-msgstr ""
+msgstr "A instrução %d usa um pino extra"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d waits on input outside of count"
-msgstr ""
+msgstr "A instrução %d aguarda a entrada de fora da contagem"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1423,32 +1423,32 @@ msgstr "O pino MISO ou MOSI está ausente"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr ""
+msgstr "Faltando first_in_pin. A instrução %d lê pinos(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-msgstr ""
+msgstr "Faltando first_in_pin. A instrução %d muda a partir do(s) pino(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr ""
+msgstr "Faltando first_in_pin. A instrução %d aguarda com base no pino"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-msgstr ""
+msgstr "Faltando first_out_pin. A instrução %d muda para o(s) pinos(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr ""
+msgstr "Faltando first_out_pin. A instrução %d escreve nos pinos(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr ""
+msgstr "Faltando first_set_pin. A instrução %d define os pinos(s)"
 
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1569,7 +1569,7 @@ msgstr "Não há rede com este ssid"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No out in program"
-msgstr ""
+msgstr "Sem saída no programa"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1629,7 +1629,7 @@ msgstr "Apenas mono com 8 ou 16 bits com "
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Only IN/OUT of up to 8 supported"
-msgstr ""
+msgstr "Somente IN/OUT de até 8 suportados"
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1726,11 +1726,11 @@ msgstr "Permissão negada"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
-msgstr ""
+msgstr "A contagem dos pinos deve ser com pelo menos 1"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
-msgstr ""
+msgstr "A contagem dos pinos é muito grande"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -1812,23 +1812,23 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does IN without loading ISR"
-msgstr ""
+msgstr "O programa faz IN sem carregar o ISR"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does OUT without loading OSR"
-msgstr ""
+msgstr "O programa faz OUT sem carregar o OSR"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program must contain at least one 16-bit instruction."
-msgstr ""
+msgstr "O programa deve conter pelo menos uma instrução com 16 bits."
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
-msgstr ""
+msgstr "O tamanho do programa é inválido"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program too large"
-msgstr ""
+msgstr "O programa é muito grande"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1836,7 +1836,7 @@ msgstr "O Pull não foi usado quando a direção for gerada."
 
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
-msgstr ""
+msgstr "O modo RAISE não foi implementado"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1944,7 +1944,7 @@ msgstr "Houve um erro na reinicialização SPI"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
-msgstr ""
+msgstr "O periférico SPI está em uso"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Sample rate must be positive"
@@ -1978,11 +1978,12 @@ msgstr "O contexto do lado do servidor não pode ter nome de host"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Set pin count must be between 1 and 5"
-msgstr ""
+msgstr "A definição da contagem dos pinos deve estar entre 1 e 5"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Side set pin count must be between 1 and 5"
 msgstr ""
+"A definição da contagem dos pinos do conjunto lateral deve estar entre 1 e 5"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
@@ -2164,7 +2165,7 @@ msgstr "Houve um erro na reinicialização do UART"
 
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "UART not yet supported"
-msgstr ""
+msgstr "O UART ainda não é suportado"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
@@ -3756,11 +3757,11 @@ msgstr "pressionando ambos os botões durante a inicialização.\n"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
-msgstr ""
+msgstr "O pull_threshold deve ser entre 1 e 32"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "push_threshold must be between 1 and 32"
-msgstr ""
+msgstr "O pull_threshold deve ser entre 1 e 32"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
