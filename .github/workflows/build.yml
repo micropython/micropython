@@ -443,6 +443,7 @@ jobs:
         - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
+        - "lilygo_ttgo_t8_s2_st7789"
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
         - "targett_module_clip_wroom"
