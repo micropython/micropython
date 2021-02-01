@@ -77,6 +77,7 @@ socketpool_socket_obj_t* common_hal_socketpool_socket(socketpool_socketpool_obj_
     sock->type = socket_type;
     sock->family = addr_family;
     sock->ipproto = ipproto;
+    sock->timeout_ms = (uint)-1;
 
     sock->tls = NULL;
     sock->ssl_context = NULL;
