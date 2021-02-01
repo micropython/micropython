@@ -49,7 +49,6 @@
 #include "modwlan.h"
 #include "osi.h"
 #include "debug.h"
-#include "mpexception.h"
 #include "mperror.h"
 #include "sleeprestore.h"
 #include "serverstask.h"
@@ -477,7 +476,7 @@ void pyb_sleep_suspend_exit (void) {
     MAP_IntPendSet(INT_PRCM);
 
     // force an exception to go back to the point where suspend mode was entered
-    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
+    mp_raise_type(&mp_type_SystemExit);
 }
 
 STATIC void PRCMInterruptHandler (void) {
@@ -528,7 +527,7 @@ STATIC void pyb_sleep_obj_wakeup (void) {
 }
 
 STATIC void pyb_sleep_iopark (bool hibernate) {
-    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)&pin_board_pins_locals_dict);
+    const mp_map_t *named_map = &pin_board_pins_locals_dict.map;
     for (uint i = 0; i < named_map->used; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
         switch (pin->pin_num) {

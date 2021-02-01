@@ -1,14 +1,4 @@
-build
-build-fast
-build-minimal
-build-coverage
-build-nanbox
-build-freedos
 micropython
-micropython_fast
-micropython_minimal
-micropython_coverage
-micropython_nanbox
-micropython_freedos*
+micropython-*
 *.py
 *.gcov

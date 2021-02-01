@@ -8,6 +8,8 @@
  *  names of these defines are likely to change.
  */
 
+// *FORMAT-OFF*
+
 #ifndef SPI_REGISTER_H_INCLUDED
 #define SPI_REGISTER_H_INCLUDED
 

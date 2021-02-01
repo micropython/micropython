@@ -43,15 +43,15 @@ typedef struct _machine_signal_t {
 } machine_signal_t;
 
 STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_t pin = args[0];
+    mp_obj_t pin;
     bool invert = false;
 
     #if defined(MICROPY_PY_MACHINE_PIN_MAKE_NEW)
     mp_pin_p_t *pin_p = NULL;
 
-    if (MP_OBJ_IS_OBJ(pin)) {
-        mp_obj_base_t *pin_base = (mp_obj_base_t*)MP_OBJ_TO_PTR(args[0]);
-        pin_p = (mp_pin_p_t*)pin_base->type->protocol;
+    if (n_args > 0 && mp_obj_is_obj(args[0])) {
+        mp_obj_base_t *pin_base = (mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
+        pin_p = (mp_pin_p_t *)pin_base->type->protocol;
     }
 
     if (pin_p == NULL) {
@@ -90,12 +90,12 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         pin = MICROPY_PY_MACHINE_PIN_MAKE_NEW(NULL, n_args, n_kw, pin_args);
 
         mp_local_free(pin_args);
-    }
-    else
+    } else
     #endif
     // Otherwise there should be 1 or 2 args
     {
         if (n_args == 1) {
+            pin = args[0];
             if (n_kw == 0) {
             } else if (n_kw == 1 && args[1] == MP_OBJ_NEW_QSTR(MP_QSTR_invert)) {
                 invert = mp_obj_is_true(args[2]);
@@ -179,7 +179,7 @@ const mp_obj_type_t machine_signal_type = {
     .make_new = signal_make_new,
     .call = signal_call,
     .protocol = &signal_pin_p,
-    .locals_dict = (void*)&signal_locals_dict,
+    .locals_dict = (void *)&signal_locals_dict,
 };
 
 #endif // MICROPY_PY_MACHINE

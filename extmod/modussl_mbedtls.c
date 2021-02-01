@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Linaro Ltd.
+ * Copyright (c) 2019 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,16 +34,17 @@
 
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "py/objstr.h"
 
 // mbedtls_time_t
 #include "mbedtls/platform.h"
-#include "mbedtls/net.h"
 #include "mbedtls/ssl.h"
 #include "mbedtls/x509_crt.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/debug.h"
+#include "mbedtls/error.h"
 
 typedef struct _mp_obj_ssl_socket_t {
     mp_obj_base_t base;
@@ -61,6 +63,7 @@ struct ssl_args {
     mp_arg_val_t cert;
     mp_arg_val_t server_side;
     mp_arg_val_t server_hostname;
+    mp_arg_val_t do_handshake;
 };
 
 STATIC const mp_obj_type_t ussl_socket_type;
@@ -73,10 +76,50 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 }
 #endif
 
-STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
-    mp_obj_t sock = *(mp_obj_t*)ctx;
+STATIC NORETURN void mbedtls_raise_error(int err) {
+    // _mbedtls_ssl_send and _mbedtls_ssl_recv (below) turn positive error codes from the
+    // underlying socket into negative codes to pass them through mbedtls. Here we turn them
+    // positive again so they get interpreted as the OSError they really are. The
+    // cut-off of -256 is a bit hacky, sigh.
+    if (err < 0 && err > -256) {
+        mp_raise_OSError(-err);
+    }
 
-    const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_WRITE);
+    #if defined(MBEDTLS_ERROR_C)
+    // Including mbedtls_strerror takes about 1.5KB due to the error strings.
+    // MBEDTLS_ERROR_C is the define used by mbedtls to conditionally include mbedtls_strerror.
+    // It is set/unset in the MBEDTLS_CONFIG_FILE which is defined in the Makefile.
+
+    // Try to allocate memory for the message
+    #define ERR_STR_MAX 80  // mbedtls_strerror truncates if it doesn't fit
+    mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
+    byte *o_str_buf = m_new_maybe(byte, ERR_STR_MAX);
+    if (o_str == NULL || o_str_buf == NULL) {
+        mp_raise_OSError(err);
+    }
+
+    // print the error message into the allocated buffer
+    mbedtls_strerror(err, (char *)o_str_buf, ERR_STR_MAX);
+    size_t len = strlen((char *)o_str_buf);
+
+    // Put the exception object together
+    o_str->base.type = &mp_type_str;
+    o_str->data = o_str_buf;
+    o_str->len = len;
+    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
+    // raise
+    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};
+    nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
+    #else
+    // mbedtls is compiled without error strings so we simply return the err number
+    mp_raise_OSError(err); // err is typically a large negative number
+    #endif
+}
+
+STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
+    mp_obj_t sock = *(mp_obj_t *)ctx;
+
+    const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
 
     mp_uint_t out_sz = sock_stream->write(sock, buf, len, &err);
@@ -84,16 +127,16 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_WRITE;
         }
-        return -err;
+        return -err; // convert an MP_ERRNO to something mbedtls passes through as error
     } else {
         return out_sz;
     }
 }
 
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
-    mp_obj_t sock = *(mp_obj_t*)ctx;
+    mp_obj_t sock = *(mp_obj_t *)ctx;
 
-    const mp_stream_p_t *sock_stream = mp_get_stream_raise(sock, MP_STREAM_OP_READ);
+    const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
 
     mp_uint_t out_sz = sock_stream->read(sock, buf, len, &err);
@@ -109,11 +152,14 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 
 
 STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
-#if MICROPY_PY_USSL_FINALISER
+    // Verify the socket object has the full stream protocol
+    mp_get_stream_raise(sock, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
+
+    #if MICROPY_PY_USSL_FINALISER
     mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
-#else
+    #else
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
-#endif
+    #endif
     o->base.type = &ussl_socket_type;
     o->sock = sock;
 
@@ -137,9 +183,9 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     }
 
     ret = mbedtls_ssl_config_defaults(&o->conf,
-                    args->server_side.u_bool ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT,
-                    MBEDTLS_SSL_TRANSPORT_STREAM,
-                    MBEDTLS_SSL_PRESET_DEFAULT);
+        args->server_side.u_bool ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT,
+        MBEDTLS_SSL_TRANSPORT_STREAM,
+        MBEDTLS_SSL_PRESET_DEFAULT);
     if (ret != 0) {
         goto cleanup;
     }
@@ -165,27 +211,36 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
 
     mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
-    if (args->key.u_obj != MP_OBJ_NULL) {
+    if (args->key.u_obj != mp_const_none) {
         size_t key_len;
-        const byte *key = (const byte*)mp_obj_str_get_data(args->key.u_obj, &key_len);
+        const byte *key = (const byte *)mp_obj_str_get_data(args->key.u_obj, &key_len);
         // len should include terminating null
         ret = mbedtls_pk_parse_key(&o->pkey, key, key_len + 1, NULL, 0);
-        assert(ret == 0);
+        if (ret != 0) {
+            ret = MBEDTLS_ERR_PK_BAD_INPUT_DATA; // use general error for all key errors
+            goto cleanup;
+        }
 
         size_t cert_len;
-        const byte *cert = (const byte*)mp_obj_str_get_data(args->cert.u_obj, &cert_len);
+        const byte *cert = (const byte *)mp_obj_str_get_data(args->cert.u_obj, &cert_len);
         // len should include terminating null
         ret = mbedtls_x509_crt_parse(&o->cert, cert, cert_len + 1);
-        assert(ret == 0);
+        if (ret != 0) {
+            ret = MBEDTLS_ERR_X509_BAD_INPUT_DATA; // use general error for all cert errors
+            goto cleanup;
+        }
 
         ret = mbedtls_ssl_conf_own_cert(&o->conf, &o->cert, &o->pkey);
-        assert(ret == 0);
+        if (ret != 0) {
+            goto cleanup;
+        }
     }
 
-    while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
-        if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-            printf("mbedtls_ssl_handshake error: -%x\n", -ret);
-            goto cleanup;
+    if (args->do_handshake.u_bool) {
+        while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
+            if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+                goto cleanup;
+            }
         }
     }
 
@@ -202,8 +257,12 @@ cleanup:
 
     if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
         mp_raise_OSError(MP_ENOMEM);
+    } else if (ret == MBEDTLS_ERR_PK_BAD_INPUT_DATA) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid key"));
+    } else if (ret == MBEDTLS_ERR_X509_BAD_INPUT_DATA) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid cert"));
     } else {
-        mp_raise_OSError(MP_EIO);
+        mbedtls_raise_error(ret);
     }
 }
 
@@ -212,7 +271,10 @@ STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
     if (!mp_obj_is_true(binary_form)) {
         mp_raise_NotImplementedError(NULL);
     }
-    const mbedtls_x509_crt* peer_cert = mbedtls_ssl_get_peer_cert(&o->ssl);
+    const mbedtls_x509_crt *peer_cert = mbedtls_ssl_get_peer_cert(&o->ssl);
+    if (peer_cert == NULL) {
+        return mp_const_none;
+    }
     return mp_obj_new_bytes(peer_cert->raw.p, peer_cert->raw.len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ssl_getpeercert_obj, mod_ssl_getpeercert);
@@ -236,6 +298,11 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     }
     if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
         ret = MP_EWOULDBLOCK;
+    } else if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+        // If handshake is not finished, read attempt may end up in protocol
+        // wanting to write next handshake message. The same may happen with
+        // renegotation.
+        ret = MP_EWOULDBLOCK;
     }
     *errcode = ret;
     return MP_STREAM_ERROR;
@@ -249,6 +316,11 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
         return ret;
     }
     if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+        ret = MP_EWOULDBLOCK;
+    } else if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
+        // If handshake is not finished, write attempt may end up in protocol
+        // wanting to read next handshake message. The same may happen with
+        // renegotation.
         ret = MP_EWOULDBLOCK;
     }
     *errcode = ret;
@@ -267,23 +339,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(o_in);
-    (void)arg;
-    switch (request) {
-        case MP_STREAM_CLOSE:
-            mbedtls_pk_free(&self->pkey);
-            mbedtls_x509_crt_free(&self->cert);
-            mbedtls_x509_crt_free(&self->cacert);
-            mbedtls_ssl_free(&self->ssl);
-            mbedtls_ssl_config_free(&self->conf);
-            mbedtls_ctr_drbg_free(&self->ctr_drbg);
-            mbedtls_entropy_free(&self->entropy);
-            mp_stream_close(self->sock);
-            return 0;
-
-        default:
-            *errcode = MP_EINVAL;
-            return MP_STREAM_ERROR;
+    if (request == MP_STREAM_CLOSE) {
+        mbedtls_pk_free(&self->pkey);
+        mbedtls_x509_crt_free(&self->cert);
+        mbedtls_x509_crt_free(&self->cacert);
+        mbedtls_ssl_free(&self->ssl);
+        mbedtls_ssl_config_free(&self->conf);
+        mbedtls_ctr_drbg_free(&self->ctr_drbg);
+        mbedtls_entropy_free(&self->entropy);
     }
+    // Pass all requests down to the underlying socket
+    return mp_get_stream(self->sock)->ioctl(self->sock, request, arg, errcode);
 }
 
 STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
@@ -293,9 +359,9 @@ STATIC const mp_rom_map_elem_t ussl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
-#if MICROPY_PY_USSL_FINALISER
+    #if MICROPY_PY_USSL_FINALISER
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
-#endif
+    #endif
     { MP_ROM_QSTR(MP_QSTR_getpeercert), MP_ROM_PTR(&mod_ssl_getpeercert_obj) },
 };
 
@@ -315,16 +381,17 @@ STATIC const mp_obj_type_t ussl_socket_type = {
     .getiter = NULL,
     .iternext = NULL,
     .protocol = &ussl_socket_stream_p,
-    .locals_dict = (void*)&ussl_socket_locals_dict,
+    .locals_dict = (void *)&ussl_socket_locals_dict,
 };
 
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Implement more args
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
 
     // TODO: Check that sock implements stream protocol
@@ -332,7 +399,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
 
     struct ssl_args args;
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args,
-        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t*)&args);
+        MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
 
     return MP_OBJ_FROM_PTR(socket_new(sock, &args));
 }
@@ -347,7 +414,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
 
 const mp_obj_module_t mp_module_ussl = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_ssl_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_ssl_globals,
 };
 
 #endif // MICROPY_PY_USSL

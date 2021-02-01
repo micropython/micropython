@@ -1,3 +1,5 @@
+.. _wipy_general:
+
 General information about the WiPy
 ==================================
 
@@ -38,7 +40,7 @@ Telnet REPL
 
 Linux stock telnet works like a charm (also on OSX), but other tools like putty
 work quite well too. The default credentials are: **user:** ``micro``, **password:** ``python``.
-See :ref:`network.server <network.server>` for info on how to change the defaults.
+See :class:`network.Server` for info on how to change the defaults.
 For instance, on a linux shell (when connected to the WiPy in AP mode)::
 
    $ telnet 192.168.1.1
@@ -60,7 +62,7 @@ Open your FTP client of choice and connect to:
 
 **url:** ``ftp://192.168.1.1``, **user:** ``micro``, **password:** ``python``
 
-See :ref:`network.server <network.server>` for info on how to change the defaults.
+See :class:`network.Server` for info on how to change the defaults.
 The recommended clients are: Linux stock FTP (also in OSX), Filezilla and FireFTP.
 For example, on a linux shell::
 
@@ -176,7 +178,7 @@ Details on sleep modes
 * ``machine.idle()``: Power consumption: ~12mA (in WLAN STA mode). Wake sources:
   any hardware interrupt (including systick with period of 1ms), no special
   configuration required.
-* ``machine.sleep()``: 950uA (in WLAN STA mode). Wake sources are ``Pin``, ``RTC``
+* ``machine.lightsleep()``: 950uA (in WLAN STA mode). Wake sources are ``Pin``, ``RTC``
   and ``WLAN``
 * ``machine.deepsleep()``: ~350uA. Wake sources are ``Pin`` and ``RTC``.
 

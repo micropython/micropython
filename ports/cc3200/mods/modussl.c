@@ -33,7 +33,6 @@
 #include "py/runtime.h"
 #include "modnetwork.h"
 #include "modusocket.h"
-#include "mpexception.h"
 
 /******************************************************************************
  DEFINE CONSTANTS
@@ -85,8 +84,8 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // chech if ca validation is required
-    if (args[4].u_int != SSL_CERT_NONE && args[5].u_obj == mp_const_none) {
+    // check if ca validation is required
+    if (args[4].u_int != SSL_CERT_NONE && args[6].u_obj == mp_const_none) {
         goto arg_error;
     }
 
@@ -133,7 +132,7 @@ socket_error:
     mp_raise_OSError(_errno);
 
 arg_error:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 0, mod_ssl_wrap_socket);
 

@@ -86,7 +86,7 @@ STATIC mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
     // Optimized formula avoiding if conditions. We adjust difference "forward",
     // wrap it around and adjust back.
     mp_int_t diff = ((end - start + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
-                   - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
+        - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
     return MP_OBJ_NEW_SMALL_INT(diff);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_diff_obj, time_ticks_diff);
@@ -98,5 +98,11 @@ STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
     return MP_OBJ_NEW_SMALL_INT((ticks + delta) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_utime_ticks_add_obj, time_ticks_add);
+
+// Returns the number of nanoseconds since the Epoch, as an integer.
+STATIC mp_obj_t time_time_ns(void) {
+    return mp_obj_new_int_from_ull(mp_hal_time_ns());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(mp_utime_time_ns_obj, time_time_ns);
 
 #endif // MICROPY_PY_UTIME_MP_HAL

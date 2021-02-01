@@ -30,12 +30,12 @@
 #include "lib/timeutils/timeutils.h"
 #include "mods/pybrtc.h"
 
-#if _FS_REENTRANT
+#if FF_FS_REENTRANT
 // Create a Synchronization Object
 // This function is called in f_mount() function to create a new
 // synchronization object, such as semaphore and mutex.
 // A return of 0 indicates failure, and then f_mount() fails with FR_INT_ERR.
-int ff_cre_syncobj(FATFS *fatfs, _SYNC_t *sobj) {
+int ff_cre_syncobj(FATFS *fatfs, FF_SYNC_t *sobj) {
     vSemaphoreCreateBinary((*sobj));
     return (int)(*sobj != NULL);
 }
@@ -44,7 +44,7 @@ int ff_cre_syncobj(FATFS *fatfs, _SYNC_t *sobj) {
 // This function is called in f_mount() function to delete a synchronization
 // object that created with ff_cre_syncobj function.
 // A return of 0 indicates failure, and then f_mount() fails with FR_INT_ERR.
-int ff_del_syncobj(_SYNC_t sobj) {
+int ff_del_syncobj(FF_SYNC_t sobj) {
     vSemaphoreDelete(sobj);
     return 1;
 }
@@ -52,13 +52,13 @@ int ff_del_syncobj(_SYNC_t sobj) {
 // Request Grant to Access the Volume
 // This function is called on entering file functions to lock the volume.
 // When a 0 is returned, the file function fails with FR_TIMEOUT.
-int ff_req_grant(_SYNC_t sobj) {
-    return (int)(xSemaphoreTake(sobj, _FS_TIMEOUT) == pdTRUE);
+int ff_req_grant(FF_SYNC_t sobj) {
+    return (int)(xSemaphoreTake(sobj, FF_FS_TIMEOUT) == pdTRUE);
 }
 
 // Release Grant to Access the Volume
 // This function is called on leaving file functions to unlock the volume.
-void ff_rel_grant(_SYNC_t sobj) {
+void ff_rel_grant(FF_SYNC_t sobj) {
     xSemaphoreGive(sobj);
 }
 
@@ -68,7 +68,7 @@ DWORD get_fattime(void) {
     timeutils_struct_time_t tm;
     timeutils_seconds_since_2000_to_struct_time(pyb_rtc_get_seconds(), &tm);
 
-    return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21)  |
-            ((tm.tm_mday) << 16)       | ((tm.tm_hour) << 11) |
-            ((tm.tm_min) << 5)         | (tm.tm_sec >> 1);
+    return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21) |
+           ((tm.tm_mday) << 16) | ((tm.tm_hour) << 11) |
+           ((tm.tm_min) << 5) | (tm.tm_sec >> 1);
 }

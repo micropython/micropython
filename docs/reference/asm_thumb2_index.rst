@@ -1,6 +1,6 @@
 .. _asm_thumb2_index:
 
-Inline Assembler for Thumb2 architectures
+Inline assembler for Thumb2 architectures
 =========================================
 
 This document assumes some familiarity with assembly language programming and should be read after studying
@@ -25,7 +25,7 @@ This enables the effect of instructions to be demonstrated in Python. In certain
 because Python doesn't support concepts such as indirection. The pseudocode employed in such cases is
 described on the relevant page.
 
-Instruction Categories
+Instruction categories
 ----------------------
 
 The following sections details the subset of the ARM Thumb-2 instruction set supported by MicroPython.

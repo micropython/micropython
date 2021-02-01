@@ -49,5 +49,5 @@ STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t mp_module_uos = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&os_module_globals,
+    .globals = (mp_obj_dict_t *)&os_module_globals,
 };

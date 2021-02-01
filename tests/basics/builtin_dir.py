@@ -4,8 +4,11 @@
 print('__name__' in dir())
 
 # dir of module
-import sys
-print('exit' in dir(sys))
+try:
+    import usys as sys
+except ImportError:
+    import sys
+print('version' in dir(sys))
 
 # dir of type
 print('append' in dir(list))

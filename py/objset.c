@@ -45,18 +45,16 @@ typedef struct _mp_obj_set_it_t {
     size_t cur;
 } mp_obj_set_it_t;
 
-STATIC mp_obj_t set_it_iternext(mp_obj_t self_in);
-
 STATIC bool is_set_or_frozenset(mp_obj_t o) {
-    return MP_OBJ_IS_TYPE(o, &mp_type_set)
-#if MICROPY_PY_BUILTINS_FROZENSET
-        || MP_OBJ_IS_TYPE(o, &mp_type_frozenset)
-#endif
+    return mp_obj_is_type(o, &mp_type_set)
+           #if MICROPY_PY_BUILTINS_FROZENSET
+           || mp_obj_is_type(o, &mp_type_frozenset)
+           #endif
     ;
 }
 
 // This macro is shorthand for mp_check_self to verify the argument is a set.
-#define check_set(o) mp_check_self(MP_OBJ_IS_TYPE(o, &mp_type_set))
+#define check_set(o) mp_check_self(mp_obj_is_type(o, &mp_type_set))
 
 // This macro is shorthand for mp_check_self to verify the argument is a
 // set or frozenset for methods that operate on both of these types.
@@ -66,7 +64,7 @@ STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     (void)kind;
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     #if MICROPY_PY_BUILTINS_FROZENSET
-    bool is_frozen = MP_OBJ_IS_TYPE(self_in, &mp_type_frozenset);
+    bool is_frozen = mp_obj_is_type(self_in, &mp_type_frozenset);
     #endif
     if (self->set.used == 0) {
         #if MICROPY_PY_BUILTINS_FROZENSET
@@ -85,7 +83,7 @@ STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     #endif
     mp_print_str(print, "{");
     for (size_t i = 0; i < self->set.alloc; i++) {
-        if (MP_SET_SLOT_IS_FILLED(&self->set, i)) {
+        if (mp_set_slot_is_filled(&self->set, i)) {
             if (!first) {
                 mp_print_str(print, ", ");
             }
@@ -123,7 +121,7 @@ STATIC mp_obj_t set_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
                 mp_obj_set_store(set, item);
             }
             // Set actual set/frozenset type
-            ((mp_obj_set_t*)MP_OBJ_TO_PTR(set))->base.type = type;
+            ((mp_obj_set_t *)MP_OBJ_TO_PTR(set))->base.type = type;
             return set;
         }
     }
@@ -135,7 +133,7 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
     mp_set_t *set = &self->set->set;
 
     for (size_t i = self->cur; i < max; i++) {
-        if (MP_SET_SLOT_IS_FILLED(set, i)) {
+        if (mp_set_slot_is_filled(set, i)) {
             self->cur = i + 1;
             return set->table[i];
         }
@@ -146,14 +144,13 @@ STATIC mp_obj_t set_it_iternext(mp_obj_t self_in) {
 
 STATIC mp_obj_t set_getiter(mp_obj_t set_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_set_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_obj_set_it_t *o = (mp_obj_set_it_t*)iter_buf;
+    mp_obj_set_it_t *o = (mp_obj_set_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = set_it_iternext;
     o->set = (mp_obj_set_t *)MP_OBJ_TO_PTR(set_in);
     o->cur = 0;
     return MP_OBJ_FROM_PTR(o);
 }
-
 
 /******************************************************************************/
 /* set methods                                                                */
@@ -169,9 +166,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_add_obj, set_add);
 STATIC mp_obj_t set_clear(mp_obj_t self_in) {
     check_set(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
-
     mp_set_clear(&self->set);
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
@@ -210,7 +205,7 @@ STATIC mp_obj_t set_diff_int(size_t n_args, const mp_obj_t *args, bool update) {
         if (self == other) {
             set_clear(self);
         } else {
-            mp_set_t *self_set = &((mp_obj_set_t*)MP_OBJ_TO_PTR(self))->set;
+            mp_set_t *self_set = &((mp_obj_set_t *)MP_OBJ_TO_PTR(self))->set;
             mp_obj_t iter = mp_getiter(other, NULL);
             mp_obj_t next;
             while ((next = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
@@ -332,6 +327,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     }
     return out;
 }
+
 STATIC mp_obj_t set_issubset(mp_obj_t self_in, mp_obj_t other_in) {
     return set_issubset_internal(self_in, other_in, false);
 }
@@ -366,7 +362,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        mp_raise_msg(&mp_type_KeyError, "pop from an empty set");
+        mp_raise_msg(&mp_type_KeyError, MP_ERROR_TEXT("pop from an empty set"));
     }
     return obj;
 }
@@ -430,32 +426,36 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(set_union_obj, set_union);
 STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->set.used != 0);
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->set.used);
-#if MICROPY_PY_BUILTINS_FROZENSET
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->set.used != 0);
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(self->set.used);
+        #if MICROPY_PY_BUILTINS_FROZENSET
         case MP_UNARY_OP_HASH:
-            if (MP_OBJ_IS_TYPE(self_in, &mp_type_frozenset)) {
+            if (mp_obj_is_type(self_in, &mp_type_frozenset)) {
                 // start hash with unique value
                 mp_int_t hash = (mp_int_t)(uintptr_t)&mp_type_frozenset;
                 size_t max = self->set.alloc;
                 mp_set_t *set = &self->set;
 
                 for (size_t i = 0; i < max; i++) {
-                    if (MP_SET_SLOT_IS_FILLED(set, i)) {
+                    if (mp_set_slot_is_filled(set, i)) {
                         hash += MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, set->table[i]));
                     }
                 }
                 return MP_OBJ_NEW_SMALL_INT(hash);
             }
-#endif
-        default: return MP_OBJ_NULL; // op not supported
+            MP_FALLTHROUGH
+        #endif
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
 STATIC mp_obj_t set_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_t args[] = {lhs, rhs};
     #if MICROPY_PY_BUILTINS_FROZENSET
-    bool update = MP_OBJ_IS_TYPE(lhs, &mp_type_set);
+    bool update = mp_obj_is_type(lhs, &mp_type_set);
     #else
     bool update = true;
     #endif
@@ -518,7 +518,6 @@ STATIC mp_obj_t set_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
 /******************************************************************************/
 /* set constructors & public C API                                            */
 
-
 STATIC const mp_rom_map_elem_t set_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_add), MP_ROM_PTR(&set_add_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&set_clear_obj) },
@@ -539,7 +538,6 @@ STATIC const mp_rom_map_elem_t set_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&set_update_obj) },
     { MP_ROM_QSTR(MP_QSTR___contains__), MP_ROM_PTR(&mp_op_contains_obj) },
 };
-
 STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);
 
 const mp_obj_type_t mp_type_set = {
@@ -550,7 +548,7 @@ const mp_obj_type_t mp_type_set = {
     .unary_op = set_unary_op,
     .binary_op = set_binary_op,
     .getiter = set_getiter,
-    .locals_dict = (mp_obj_dict_t*)&set_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&set_locals_dict,
 };
 
 #if MICROPY_PY_BUILTINS_FROZENSET
@@ -569,13 +567,14 @@ STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
 
 const mp_obj_type_t mp_type_frozenset = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
     .name = MP_QSTR_frozenset,
     .print = set_print,
     .make_new = set_make_new,
     .unary_op = set_unary_op,
     .binary_op = set_binary_op,
     .getiter = set_getiter,
-    .locals_dict = (mp_obj_dict_t*)&frozenset_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&frozenset_locals_dict,
 };
 #endif
 
@@ -590,7 +589,7 @@ mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
 }
 
 void mp_obj_set_store(mp_obj_t self_in, mp_obj_t item) {
-    mp_check_self(MP_OBJ_IS_TYPE(self_in, &mp_type_set));
+    mp_check_self(mp_obj_is_type(self_in, &mp_type_set));
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
 }

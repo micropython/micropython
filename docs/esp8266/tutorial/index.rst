@@ -1,4 +1,4 @@
-.. _tutorial-index:
+.. _esp8266_tutorial:
 
 MicroPython tutorial for ESP8266
 ================================
@@ -29,5 +29,6 @@ to `<https://www.python.org>`__.
    powerctrl.rst
    onewire.rst
    neopixel.rst
+   apa102.rst
    dht.rst
    nextsteps.rst

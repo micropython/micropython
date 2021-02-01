@@ -31,6 +31,8 @@
 #include "usbd_cdc_msc_hid.h"
 #include "usbd_ioreq.h"
 
+#if MICROPY_HW_USB_MSC
+
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
   */
@@ -403,5 +405,7 @@ void  MSC_BOT_CplClrFeature (USBD_HandleTypeDef  *pdev, uint8_t epnum)
 /**
   * @}
   */
+
+#endif // MICROPY_HW_USB_MSC
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

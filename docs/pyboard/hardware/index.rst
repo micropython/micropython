@@ -1,13 +1,14 @@
-.. _hardware_index:
-
 The pyboard hardware
 --------------------
 
 For the pyboard:
 
-* `PYBv1.0 schematics and layout <http://micropython.org/resources/PYBv10b.pdf>`_ (2.4MiB PDF)
-* `PYBv1.0 metric dimensions <http://micropython.org/resources/PYBv10b-metric-dimensions.pdf>`_ (360KiB PDF)
-* `PYBv1.0 imperial dimensions <http://micropython.org/resources/PYBv10b-imperial-dimensions.pdf>`_ (360KiB PDF)
+* v1.1
+    * `PYBv1.1 schematics and layout <https://micropython.org/resources/PYBv11.pdf>`_ (2.9MiB PDF)
+* v1.0
+    * `PYBv1.0 schematics and layout <http://micropython.org/resources/PYBv10b.pdf>`_ (2.4MiB PDF)
+    * `PYBv1.0 metric dimensions <http://micropython.org/resources/PYBv10b-metric-dimensions.pdf>`_ (360KiB PDF)
+    * `PYBv1.0 imperial dimensions <http://micropython.org/resources/PYBv10b-imperial-dimensions.pdf>`_ (360KiB PDF)
 
 For the official skin modules:
 

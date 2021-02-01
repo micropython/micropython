@@ -1,7 +1,7 @@
 import pyb
 
-if not hasattr(pyb, 'DAC'):
-    print('SKIP')
+if not hasattr(pyb, "DAC"):
+    print("SKIP")
     raise SystemExit
 
 dac = pyb.DAC(1)

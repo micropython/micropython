@@ -1,0 +1,16 @@
+name: Check code formatting
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+    - name: Install packages
+      run: source tools/ci.sh && ci_code_formatting_setup
+    - name: Run code formatting
+      run: source tools/ci.sh && ci_code_formatting_run
+    - name: Check code formatting
+      run: git diff --exit-code

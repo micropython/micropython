@@ -40,7 +40,7 @@
 
 #if MICROPY_PY_SYS_MAXSIZE
 // Export value for sys.maxsize
-const mp_obj_int_t mp_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
+const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
@@ -58,7 +58,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
 }
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    assert(mp_obj_is_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
     long long val = self->val;
     if (big_endian) {
@@ -77,7 +77,7 @@ void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byt
 
 int mp_obj_int_sign(mp_obj_t self_in) {
     mp_longint_impl_t val;
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+    if (mp_obj_is_small_int(self_in)) {
         val = MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
         mp_obj_int_t *self = self_in;
@@ -95,15 +95,20 @@ int mp_obj_int_sign(mp_obj_t self_in) {
 mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
     mp_obj_int_t *o = o_in;
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(o->val != 0);
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(o->val != 0);
 
         // truncate value to fit in mp_int_t, which gives the same hash as
         // small int if the value fits without truncation
-        case MP_UNARY_OP_HASH: return MP_OBJ_NEW_SMALL_INT((mp_int_t)o->val);
+        case MP_UNARY_OP_HASH:
+            return MP_OBJ_NEW_SMALL_INT((mp_int_t)o->val);
 
-        case MP_UNARY_OP_POSITIVE: return o_in;
-        case MP_UNARY_OP_NEGATIVE: return mp_obj_new_int_from_ll(-o->val);
-        case MP_UNARY_OP_INVERT: return mp_obj_new_int_from_ll(~o->val);
+        case MP_UNARY_OP_POSITIVE:
+            return o_in;
+        case MP_UNARY_OP_NEGATIVE:
+            return mp_obj_new_int_from_ll(-o->val);
+        case MP_UNARY_OP_INVERT:
+            return mp_obj_new_int_from_ll(~o->val);
         case MP_UNARY_OP_ABS: {
             mp_obj_int_t *self = MP_OBJ_TO_PTR(o_in);
             if (self->val >= 0) {
@@ -114,7 +119,8 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
             self->val = -self->val;
             return MP_OBJ_FROM_PTR(self);
         }
-        default: return MP_OBJ_NULL; // op not supported
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -122,17 +128,17 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     long long lhs_val;
     long long rhs_val;
 
-    if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
+    if (mp_obj_is_small_int(lhs_in)) {
         lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
     } else {
-        assert(MP_OBJ_IS_TYPE(lhs_in, &mp_type_int));
-        lhs_val = ((mp_obj_int_t*)lhs_in)->val;
+        assert(mp_obj_is_type(lhs_in, &mp_type_int));
+        lhs_val = ((mp_obj_int_t *)lhs_in)->val;
     }
 
-    if (MP_OBJ_IS_SMALL_INT(rhs_in)) {
+    if (mp_obj_is_small_int(rhs_in)) {
         rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs_in);
-    } else if (MP_OBJ_IS_TYPE(rhs_in, &mp_type_int)) {
-        rhs_val = ((mp_obj_int_t*)rhs_in)->val;
+    } else if (mp_obj_is_type(rhs_in, &mp_type_int)) {
+        rhs_val = ((mp_obj_int_t *)rhs_in)->val;
     } else {
         // delegate to generic function to check for extra cases
         return mp_obj_int_binary_op_extra_cases(op, lhs_in, rhs_in);
@@ -184,7 +190,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 #if MICROPY_PY_BUILTINS_FLOAT
                 return mp_obj_float_binary_op(op, lhs_val, rhs_in);
                 #else
-                mp_raise_ValueError("negative power with no float support");
+                mp_raise_ValueError(MP_ERROR_TEXT("negative power with no float support"));
                 #endif
             }
             long long ans = 1;
@@ -217,7 +223,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 
 zero_division:
-    mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
+    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
 }
 
 mp_obj_t mp_obj_new_int(mp_int_t value) {
@@ -246,7 +252,7 @@ mp_obj_t mp_obj_new_int_from_ll(long long val) {
 mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     // TODO raise an exception if the unsigned long long won't fit
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
-        mp_raise_msg(&mp_type_OverflowError, "ulonglong too large");
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ulonglong too large"));
     }
     mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
     o->base.type = &mp_type_int;
@@ -266,7 +272,7 @@ mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, uns
 }
 
 mp_int_t mp_obj_int_get_truncated(mp_const_obj_t self_in) {
-    if (MP_OBJ_IS_SMALL_INT(self_in)) {
+    if (mp_obj_is_small_int(self_in)) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
         const mp_obj_int_t *self = self_in;
@@ -281,7 +287,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
-    assert(MP_OBJ_IS_TYPE(self_in, &mp_type_int));
+    assert(mp_obj_is_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
     return self->val;
 }

@@ -44,12 +44,7 @@ void gc_collect(void) {
     mp_uint_t sp = gc_helper_get_regs_and_sp(regs);
 
     // trace the stack, including the registers (since they live on the stack in this function)
-    gc_collect_root((void**)sp, (STACK_END - sp) / sizeof(uint32_t));
-
-    #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
-    // trace any native code because it can contain pointers to the heap
-    esp_native_code_gc_collect();
-    #endif
+    gc_collect_root((void **)sp, (STACK_END - sp) / sizeof(uint32_t));
 
     // end the GC
     gc_collect_end();

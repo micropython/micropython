@@ -52,10 +52,19 @@
 
 #include "w5200.h"
 
+#if WIZCHIP_USE_MAX_BUFFER
+// This option is intended to be used when MACRAW mode is enabled, to allow
+// the single raw socket to use all the available buffer space.
+#define SMASK (16 * 1024 - 1) /* tx buffer mask */
+#define RMASK (16 * 1024 - 1) /* rx buffer mask */
+#define SSIZE (16 * 1024) /* max tx buffer size */
+#define RSIZE (16 * 1024) /* max rx buffer size */
+#else
 #define SMASK (0x7ff) /* tx buffer mask */
 #define RMASK (0x7ff) /* rx buffer mask */
 #define SSIZE (2048) /* max tx buffer size */
 #define RSIZE (2048) /* max rx buffer size */
+#endif
 
 #define TXBUF_BASE (0x8000)
 #define RXBUF_BASE (0xc000)

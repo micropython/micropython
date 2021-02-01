@@ -97,7 +97,7 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
             size += cnt;
         } else {
             total_cnt += cnt;
-            mp_uint_t align;
+            size_t align;
             size_t sz = mp_binary_get_size(fmt_type, *fmt, &align);
             while (cnt--) {
                 // Apply alignment
@@ -141,15 +141,16 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             // negative offsets are relative to the end of the buffer
             offset = bufinfo.len + offset;
             if (offset < 0) {
-                mp_raise_ValueError("buffer too small");
+                mp_raise_ValueError(MP_ERROR_TEXT("buffer too small"));
             }
         }
         p += offset;
     }
+    byte *p_base = p;
 
     // Check that the input buffer is big enough to unpack all the values
     if (p + total_sz > end_p) {
-        mp_raise_ValueError("buffer too small");
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer too small"));
     }
 
     for (size_t i = 0; i < num_items;) {
@@ -164,7 +165,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
             res->items[i++] = item;
         } else {
             while (cnt--) {
-                item = mp_binary_get_val(fmt_type, *fmt, &p);
+                item = mp_binary_get_val(fmt_type, *fmt, p_base, &p);
                 res->items[i++] = item;
             }
         }
@@ -179,6 +180,7 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
 
+    byte *p_base = p;
     size_t i;
     for (i = 0; i < n_args;) {
         mp_uint_t cnt = 1;
@@ -203,7 +205,7 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
         } else {
             // If we run out of args then we just finish; CPython would raise struct.error
             while (cnt-- && i < n_args) {
-                mp_binary_set_val(fmt_type, *fmt, args[i++], &p);
+                mp_binary_set_val(fmt_type, *fmt, args[i++], p_base, &p);
             }
         }
         fmt++;
@@ -215,7 +217,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     vstr_t vstr;
     vstr_init_len(&vstr, size);
-    byte *p = (byte*)vstr.buf;
+    byte *p = (byte *)vstr.buf;
     memset(p, 0, size);
     struct_pack_into_internal(args[0], p, n_args - 1, &args[1]);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
@@ -230,7 +232,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
         // negative offsets are relative to the end of the buffer
         offset = (mp_int_t)bufinfo.len + offset;
         if (offset < 0) {
-            mp_raise_ValueError("buffer too small");
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer too small"));
         }
     }
     byte *p = (byte *)bufinfo.buf;
@@ -240,7 +242,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
     // Check that the output buffer is big enough to hold all the values
     mp_int_t sz = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     if (p + sz > end_p) {
-        mp_raise_ValueError("buffer too small");
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer too small"));
     }
 
     struct_pack_into_internal(args[0], p, n_args - 3, &args[3]);
@@ -261,7 +263,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_t
 
 const mp_obj_module_t mp_module_ustruct = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_struct_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_struct_globals,
 };
 
 #endif

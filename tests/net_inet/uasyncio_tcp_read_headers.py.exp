@@ -1,0 +1,10 @@
+write GET
+b'HTTP/1.1 200 OK'
+b'Content-Type: text/html'
+b'Content-Length: 54'
+b'Connection: close'
+b'Vary: Accept-Encoding'
+b'ETag: "54306c85-36"'
+b'Accept-Ranges: bytes'
+close
+done

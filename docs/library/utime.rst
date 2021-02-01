@@ -36,11 +36,17 @@ behave not as expected.
 Functions
 ---------
 
-.. function:: localtime([secs])
+.. function:: gmtime([secs])
+              localtime([secs])
 
-   Convert a time expressed in seconds since the Epoch (see above) into an 8-tuple which
-   contains: (year, month, mday, hour, minute, second, weekday, yearday)
-   If secs is not provided or None, then the current time from the RTC is used.
+   Convert the time *secs* expressed in seconds since the Epoch (see above) into an
+   8-tuple which contains: ``(year, month, mday, hour, minute, second, weekday, yearday)``
+   If *secs* is not provided or None, then the current time from the RTC is used.
+
+   The `gmtime()` function returns a date-time tuple in UTC, and `localtime()` returns a
+   date-time tuple in local time.
+
+   The format of the entries in the 8-tuple are:
 
    * year includes the century (for example 2014).
    * month   is 1-12
@@ -210,8 +216,9 @@ Functions
    function returns number of seconds since a port-specific reference point in time (for
    embedded boards without a battery-backed RTC, usually since power up or reset). If you
    want to develop portable MicroPython application, you should not rely on this function
-   to provide higher than second precision. If you need higher precision, use
-   `ticks_ms()` and `ticks_us()` functions, if you need calendar time,
+   to provide higher than second precision.  If you need higher precision, absolute
+   timestamps, use `time_ns()`.  If relative times are acceptable then use the
+   `ticks_ms()` and `ticks_us()` functions.  If you need calendar time, `gmtime()` or
    `localtime()` without an argument is a better choice.
 
    .. admonition:: Difference to CPython
@@ -227,3 +234,8 @@ Functions
       hardware also lacks battery-powered RTC, so returns number of seconds
       since last power-up or from other relative, hardware-specific point
       (e.g. reset).
+
+.. function:: time_ns()
+
+    Similar to `time()` but returns nanoseconds since the Epoch, as an integer (usually
+    a big integer, so will allocate on the heap).

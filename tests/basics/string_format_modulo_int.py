@@ -1,5 +1,11 @@
 # test string modulo formatting with int values
 
+try:
+    '' % ()
+except TypeError:
+    print("SKIP")
+    raise SystemExit
+
 # basic cases
 print("%d" % 10)
 print("%+d" % 10)

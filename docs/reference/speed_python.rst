@@ -1,4 +1,6 @@
-Maximising MicroPython Speed
+.. _speed_python:
+
+Maximising MicroPython speed
 ============================
 
 .. contents::
@@ -38,7 +40,7 @@ the best algorithm is employed. This is a topic for textbooks rather than for a
 MicroPython guide but spectacular performance gains can sometimes be achieved
 by adopting algorithms known for their efficiency.
 
-RAM Allocation
+RAM allocation
 ~~~~~~~~~~~~~~
 
 To design efficient MicroPython code it is necessary to have an understanding of the
@@ -67,7 +69,7 @@ example, objects which support stream interface (e.g., file or UART) provide ``r
 method which allocates new buffer for read data, but also a ``readinto()`` method
 to read data into an existing buffer.
 
-Floating Point
+Floating point
 ~~~~~~~~~~~~~~
 
 Some MicroPython ports allocate floating point numbers on heap. Some other ports
@@ -163,7 +165,7 @@ by caching the object in a local variable:
 
     class foo(object):
         def __init__(self):
-            ba = bytearray(100)
+            self.ba = bytearray(100)
         def bar(self, obj_display):
             ba_ref = self.ba
             fb = obj_display.framebuffer
@@ -212,7 +214,7 @@ There are certain limitations in the current implementation of the native code e
 * Generators are not supported.
 * If ``raise`` is used an argument must be supplied.
 
-The trade-off for the improved performance (roughly twices as fast as bytecode) is an
+The trade-off for the improved performance (roughly twice as fast as bytecode) is an
 increase in compiled code size.
 
 The Viper code emitter
@@ -291,10 +293,12 @@ microseconds. The rules for casting are as follows:
 * The argument to a bool cast must be integral type (boolean or integer); when used as a return
   type the viper function will return True or False objects.
 * If the argument is a Python object and the cast is ``ptr``, ``ptr``, ``ptr16`` or ``ptr32``,
-  then the Python object must either have the buffer protocol with read-write capabilities
-  (in which case a pointer to the start of the buffer is returned) or it must be of integral
-  type (in which case the value of that integral object is returned).
- 
+  then the Python object must either have the buffer protocol (in which case a pointer to the
+  start of the buffer is returned) or it must be of integral type (in which case the value of
+  that integral object is returned).
+
+Writing to a pointer which points to a read-only object will lead to undefined behaviour.
+
 The following example illustrates the use of a ``ptr16`` cast to toggle pin X1 ``n`` times:
 
 .. code:: python

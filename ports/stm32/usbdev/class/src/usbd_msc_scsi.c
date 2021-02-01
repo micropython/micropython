@@ -28,10 +28,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_msc_bot.h"
 #include "usbd_msc_scsi.h"
-#include "usbd_msc_data.h"
 #include "usbd_cdc_msc_hid.h"
 
-
+#if MICROPY_HW_USB_MSC
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
   * @{
@@ -225,33 +224,15 @@ static int8_t SCSI_TestUnitReady(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t
 */
 static int8_t  SCSI_Inquiry(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params)
 {
-  uint8_t* pPage;
-  uint16_t len;
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
 
-  if (params[1] & 0x01)/*Evpd is set*/
+  int res = hmsc->bdev_ops->Inquiry(lun, params, hmsc->bot_data);
+  if (res < 0)
   {
-    pPage = (uint8_t *)MSC_Page00_Inquiry_Data;
-    len = LENGTH_INQUIRY_PAGE00;
+    SCSI_SenseCode(pdev, lun, ILLEGAL_REQUEST, INVALID_CDB);
+    return -1;
   }
-  else
-  {
-
-    pPage = (uint8_t *)&hmsc->bdev_ops->pInquiry[lun * STANDARD_INQUIRY_DATA_LEN];
-    len = pPage[4] + 5;
-
-    if (params[4] <= len)
-    {
-      len = params[4];
-    }
-  }
-  hmsc->bot_data_length = len;
-
-  while (len)
-  {
-    len--;
-    hmsc->bot_data[len] = pPage[len];
-  }
+  hmsc->bot_data_length = res;
   return 0;
 }
 
@@ -266,7 +247,7 @@ static int8_t SCSI_ReadCapacity10(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
 
-  if(hmsc->bdev_ops->GetCapacity(lun, &hmsc->scsi_blk_nbr, &hmsc->scsi_blk_size) != 0)
+  if(hmsc->bdev_ops->GetCapacity(lun, &hmsc->scsi_blk_nbr[lun], &hmsc->scsi_blk_size[lun]) != 0)
   {
     SCSI_SenseCode(pdev,
                    lun,
@@ -277,15 +258,17 @@ static int8_t SCSI_ReadCapacity10(USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_
   else
   {
 
-    hmsc->bot_data[0] = (uint8_t)((hmsc->scsi_blk_nbr - 1) >> 24);
-    hmsc->bot_data[1] = (uint8_t)((hmsc->scsi_blk_nbr - 1) >> 16);
-    hmsc->bot_data[2] = (uint8_t)((hmsc->scsi_blk_nbr - 1) >>  8);
-    hmsc->bot_data[3] = (uint8_t)(hmsc->scsi_blk_nbr - 1);
+    uint32_t blk_nbr = hmsc->scsi_blk_nbr[lun];
+    hmsc->bot_data[0] = (uint8_t)((blk_nbr - 1) >> 24);
+    hmsc->bot_data[1] = (uint8_t)((blk_nbr - 1) >> 16);
+    hmsc->bot_data[2] = (uint8_t)((blk_nbr - 1) >>  8);
+    hmsc->bot_data[3] = (uint8_t)(blk_nbr - 1);
 
-    hmsc->bot_data[4] = (uint8_t)(hmsc->scsi_blk_size >>  24);
-    hmsc->bot_data[5] = (uint8_t)(hmsc->scsi_blk_size >>  16);
-    hmsc->bot_data[6] = (uint8_t)(hmsc->scsi_blk_size >>  8);
-    hmsc->bot_data[7] = (uint8_t)(hmsc->scsi_blk_size);
+    uint32_t blk_size = hmsc->scsi_blk_size[lun];
+    hmsc->bot_data[4] = (uint8_t)(blk_size >> 24);
+    hmsc->bot_data[5] = (uint8_t)(blk_size >> 16);
+    hmsc->bot_data[6] = (uint8_t)(blk_size >> 8);
+    hmsc->bot_data[7] = (uint8_t)(blk_size);
 
     hmsc->bot_data_length = 8;
     return 0;
@@ -346,13 +329,13 @@ static int8_t SCSI_ReadFormatCapacity(USBD_HandleTypeDef  *pdev, uint8_t lun, ui
 static int8_t SCSI_ModeSense6 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params)
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
-  uint16_t len = 8 ;
+  uint16_t len = sizeof(USBD_MSC_Mode_Sense6_Data);
   hmsc->bot_data_length = len;
 
   while (len)
   {
     len--;
-    hmsc->bot_data[len] = MSC_Mode_Sense6_data[len];
+    hmsc->bot_data[len] = USBD_MSC_Mode_Sense6_Data[len];
   }
   return 0;
 }
@@ -366,7 +349,7 @@ static int8_t SCSI_ModeSense6 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *
 */
 static int8_t SCSI_ModeSense10 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t *params)
 {
-  uint16_t len = 8;
+  uint16_t len = sizeof(USBD_MSC_Mode_Sense10_Data);
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
 
   hmsc->bot_data_length = len;
@@ -374,7 +357,7 @@ static int8_t SCSI_ModeSense10 (USBD_HandleTypeDef  *pdev, uint8_t lun, uint8_t 
   while (len)
   {
     len--;
-    hmsc->bot_data[len] = MSC_Mode_Sense10_data[len];
+    hmsc->bot_data[len] = USBD_MSC_Mode_Sense10_Data[len];
   }
   return 0;
 }
@@ -535,7 +518,7 @@ static int8_t SCSI_Read10(USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *para
     }
 
     hmsc->bot_state = USBD_BOT_DATA_IN;
-    hmsc->scsi_blk_len  *= hmsc->scsi_blk_size;
+    hmsc->scsi_blk_len *= hmsc->scsi_blk_size[lun];
 
     /* cases 4,5 : Hi <> Dn */
     if (hmsc->cbw.dDataLength != hmsc->scsi_blk_len)
@@ -615,7 +598,7 @@ static int8_t SCSI_Write10 (USBD_HandleTypeDef  *pdev, uint8_t lun , uint8_t *pa
       return -1; /* error */
     }
 
-    hmsc->scsi_blk_len  *= hmsc->scsi_blk_size;
+    hmsc->scsi_blk_len *= hmsc->scsi_blk_size[lun];
 
     /* cases 3,11,13 : Hn,Ho <> D0 */
     if (hmsc->cbw.dDataLength != hmsc->scsi_blk_len)
@@ -689,7 +672,7 @@ static int8_t SCSI_CheckAddressRange (USBD_HandleTypeDef  *pdev, uint8_t lun , u
 {
   USBD_MSC_BOT_HandleTypeDef *hmsc = &((usbd_cdc_msc_hid_state_t*)pdev->pClassData)->MSC_BOT_ClassData;
 
-  if ((blk_offset + blk_nbr) > hmsc->scsi_blk_nbr )
+  if ((blk_offset + blk_nbr) > hmsc->scsi_blk_nbr[lun])
   {
     SCSI_SenseCode(pdev,
                    lun,
@@ -716,7 +699,7 @@ static int8_t SCSI_ProcessRead (USBD_HandleTypeDef  *pdev, uint8_t lun)
   if( hmsc->bdev_ops->Read(lun ,
                               hmsc->bot_data,
                               hmsc->scsi_blk_addr_in_blks,
-                              len / hmsc->scsi_blk_size) < 0)
+                              len / hmsc->scsi_blk_size[lun]) < 0)
   {
 
     SCSI_SenseCode(pdev,
@@ -733,7 +716,7 @@ static int8_t SCSI_ProcessRead (USBD_HandleTypeDef  *pdev, uint8_t lun)
              len);
 
 
-  hmsc->scsi_blk_addr_in_blks += len / hmsc->scsi_blk_size;
+  hmsc->scsi_blk_addr_in_blks += len / hmsc->scsi_blk_size[lun];
   hmsc->scsi_blk_len    -= len;
 
   /* case 6 : Hi = Di */
@@ -763,7 +746,7 @@ static int8_t SCSI_ProcessWrite (USBD_HandleTypeDef  *pdev, uint8_t lun)
   if(hmsc->bdev_ops->Write(lun ,
                               hmsc->bot_data,
                               hmsc->scsi_blk_addr_in_blks,
-                              len / hmsc->scsi_blk_size) < 0)
+                              len / hmsc->scsi_blk_size[lun]) < 0)
   {
     SCSI_SenseCode(pdev,
                    lun,
@@ -773,7 +756,7 @@ static int8_t SCSI_ProcessWrite (USBD_HandleTypeDef  *pdev, uint8_t lun)
   }
 
 
-  hmsc->scsi_blk_addr_in_blks += len / hmsc->scsi_blk_size;
+  hmsc->scsi_blk_addr_in_blks += len / hmsc->scsi_blk_size[lun];
   hmsc->scsi_blk_len   -= len;
 
   /* case 12 : Ho = Do */
@@ -807,5 +790,7 @@ static int8_t SCSI_ProcessWrite (USBD_HandleTypeDef  *pdev, uint8_t lun)
 /**
   * @}
   */
+
+#endif // MICROPY_HW_USB_MSC
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

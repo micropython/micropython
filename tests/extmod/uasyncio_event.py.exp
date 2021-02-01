@@ -1,0 +1,33 @@
+False
+True
+False
+----
+yield
+start 1
+start 2
+set event
+yield
+True
+end 1
+True
+end 2
+----
+yield
+start 3
+True
+end 3
+----
+clear event
+start 4
+set event
+True
+end 4
+----
+start 5
+----
+start 6
+----
+set event
+----
+TimeoutError
+set event

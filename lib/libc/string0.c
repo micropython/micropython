@@ -169,6 +169,25 @@ char *strcpy(char *dest, const char *src) {
     return dest;
 }
 
+// Public Domain implementation of strncpy from:
+// http://en.wikibooks.org/wiki/C_Programming/Strings#The_strncpy_function
+char *strncpy(char *s1, const char *s2, size_t n) {
+     char *dst = s1;
+     const char *src = s2;
+     /* Copy bytes, one at a time.  */
+     while (n > 0) {
+         n--;
+         if ((*dst++ = *src++) == '\0') {
+             /* If we get here, we found a null character at the end
+                of s2, so use memset to put null bytes at the end of
+                s1.  */
+             memset(dst, '\0', n);
+             break;
+         }
+     }
+     return s1;
+ }
+
 // needed because gcc optimises strcpy + strcat to this
 char *stpcpy(char *dest, const char *src) {
     while (*src) {
@@ -216,4 +235,20 @@ char *strstr(const char *haystack, const char *needle)
         if (strncmp(haystack, needle, needlelen) == 0)
             return (char *) haystack;
     return 0;
+}
+
+size_t strspn(const char *s, const char *accept) {
+    const char *ss = s;
+    while (*s && strchr(accept, *s) != NULL) {
+        ++s;
+    }
+    return s - ss;
+}
+
+size_t strcspn(const char *s, const char *reject) {
+    const char *ss = s;
+    while (*s && strchr(reject, *s) == NULL) {
+        ++s;
+    }
+    return s - ss;
 }

@@ -37,7 +37,7 @@ For example::
 Constructors
 ------------
 
-.. class:: LCD160CR(connect=None, \*, pwr=None, i2c=None, spi=None, i2c_addr=98)
+.. class:: LCD160CR(connect=None, *, pwr=None, i2c=None, spi=None, i2c_addr=98)
 
     Construct an LCD160CR object.  The parameters are:
 
@@ -340,7 +340,7 @@ Advanced commands
 .. method:: LCD160CR.set_scroll_win_param(win, param, value)
 
     Set a single parameter of a scrolling window region:
-    
+
         - *win* is the window id, 0..8.
         - *param* is the parameter number to configure, 0..7, and corresponds
           to the parameters in the `set_scroll_win` method.

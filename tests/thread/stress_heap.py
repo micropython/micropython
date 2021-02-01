@@ -9,8 +9,10 @@ except ImportError:
     import time
 import _thread
 
+
 def last(l):
     return l[-1]
+
 
 def thread_entry(n):
     # allocate a bytearray and fill it
@@ -32,6 +34,7 @@ def thread_entry(n):
         print(sum, lst[-1])
         global n_finished
         n_finished += 1
+
 
 lock = _thread.allocate_lock()
 n_thread = 10

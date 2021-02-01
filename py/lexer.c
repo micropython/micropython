@@ -105,9 +105,9 @@ STATIC bool is_following_odigit(mp_lexer_t *lex) {
 
 STATIC bool is_string_or_bytes(mp_lexer_t *lex) {
     return is_char_or(lex, '\'', '\"')
-        || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
-        || ((is_char_and(lex, 'r', 'b') || is_char_and(lex, 'b', 'r'))
-            && is_char_following_following_or(lex, '\'', '\"'));
+           || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
+           || ((is_char_and(lex, 'r', 'b') || is_char_and(lex, 'b', 'r'))
+               && is_char_following_following_or(lex, '\'', '\"'));
 }
 
 // to easily parse utf-8 identifiers we allow any raw byte with high bit set
@@ -174,7 +174,8 @@ STATIC void indent_pop(mp_lexer_t *lex) {
 // this means if the start of two ops are the same then they are equal til the last char
 
 STATIC const char *const tok_enc =
-    "()[]{},:;@~" // singles
+    "()[]{},;~"   // singles
+    ":e="         // : :=
     "<e=c<e="     // < <= << <<=
     ">e=c>e="     // > >= >> >>=
     "*e=c*e="     // * *= ** **=
@@ -185,6 +186,7 @@ STATIC const char *const tok_enc =
     "/e=c/e="     // / /= // //=
     "%e="         // % %=
     "^e="         // ^ ^=
+    "@e="         // @ @=
     "=e="         // = ==
     "!.";         // start of special cases: != . ...
 
@@ -193,8 +195,9 @@ STATIC const uint8_t tok_enc_kind[] = {
     MP_TOKEN_DEL_PAREN_OPEN, MP_TOKEN_DEL_PAREN_CLOSE,
     MP_TOKEN_DEL_BRACKET_OPEN, MP_TOKEN_DEL_BRACKET_CLOSE,
     MP_TOKEN_DEL_BRACE_OPEN, MP_TOKEN_DEL_BRACE_CLOSE,
-    MP_TOKEN_DEL_COMMA, MP_TOKEN_DEL_COLON, MP_TOKEN_DEL_SEMICOLON, MP_TOKEN_DEL_AT, MP_TOKEN_OP_TILDE,
+    MP_TOKEN_DEL_COMMA, MP_TOKEN_DEL_SEMICOLON, MP_TOKEN_OP_TILDE,
 
+    MP_TOKEN_DEL_COLON, MP_TOKEN_OP_ASSIGN,
     MP_TOKEN_OP_LESS, MP_TOKEN_OP_LESS_EQUAL, MP_TOKEN_OP_DBL_LESS, MP_TOKEN_DEL_DBL_LESS_EQUAL,
     MP_TOKEN_OP_MORE, MP_TOKEN_OP_MORE_EQUAL, MP_TOKEN_OP_DBL_MORE, MP_TOKEN_DEL_DBL_MORE_EQUAL,
     MP_TOKEN_OP_STAR, MP_TOKEN_DEL_STAR_EQUAL, MP_TOKEN_OP_DBL_STAR, MP_TOKEN_DEL_DBL_STAR_EQUAL,
@@ -205,6 +208,7 @@ STATIC const uint8_t tok_enc_kind[] = {
     MP_TOKEN_OP_SLASH, MP_TOKEN_DEL_SLASH_EQUAL, MP_TOKEN_OP_DBL_SLASH, MP_TOKEN_DEL_DBL_SLASH_EQUAL,
     MP_TOKEN_OP_PERCENT, MP_TOKEN_DEL_PERCENT_EQUAL,
     MP_TOKEN_OP_CARET, MP_TOKEN_DEL_CARET_EQUAL,
+    MP_TOKEN_OP_AT, MP_TOKEN_DEL_AT_EQUAL,
     MP_TOKEN_DEL_EQUAL, MP_TOKEN_OP_DBL_EQUAL,
 };
 
@@ -305,17 +309,36 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                     switch (c) {
                         // note: "c" can never be MP_LEXER_EOF because next_char
                         // always inserts a newline at the end of the input stream
-                        case '\n': c = MP_LEXER_EOF; break; // backslash escape the newline, just ignore it
-                        case '\\': break;
-                        case '\'': break;
-                        case '"': break;
-                        case 'a': c = 0x07; break;
-                        case 'b': c = 0x08; break;
-                        case 't': c = 0x09; break;
-                        case 'n': c = 0x0a; break;
-                        case 'v': c = 0x0b; break;
-                        case 'f': c = 0x0c; break;
-                        case 'r': c = 0x0d; break;
+                        case '\n':
+                            c = MP_LEXER_EOF;
+                            break;                          // backslash escape the newline, just ignore it
+                        case '\\':
+                            break;
+                        case '\'':
+                            break;
+                        case '"':
+                            break;
+                        case 'a':
+                            c = 0x07;
+                            break;
+                        case 'b':
+                            c = 0x08;
+                            break;
+                        case 't':
+                            c = 0x09;
+                            break;
+                        case 'n':
+                            c = 0x0a;
+                            break;
+                        case 'v':
+                            c = 0x0b;
+                            break;
+                        case 'f':
+                            c = 0x0c;
+                            break;
+                        case 'r':
+                            c = 0x0d;
+                            break;
                         case 'u':
                         case 'U':
                             if (lex->tok_kind == MP_TOKEN_BYTES) {
@@ -324,8 +347,8 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                                 break;
                             }
                             // Otherwise fall through.
-                        case 'x':
-                        {
+                            MP_FALLTHROUGH
+                        case 'x': {
                             mp_uint_t num = 0;
                             if (!get_hex(lex, (c == 'x' ? 2 : c == 'u' ? 4 : 8), &num)) {
                                 // not enough hex chars for escape sequence
@@ -340,7 +363,7 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
                             // 3MB of text; even gzip-compressed and with minimal structure, it'll take
                             // roughly half a meg of storage. This form of Unicode escape may be added
                             // later on, but it's definitely not a priority right now. -- CJA 20140607
-                            mp_raise_NotImplementedError("unicode name escapes");
+                            mp_raise_NotImplementedError(MP_ERROR_TEXT("unicode name escapes"));
                             break;
                         default:
                             if (c >= '0' && c <= '7') {
@@ -705,7 +728,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
 
 mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len, size_t free_len) {
     mp_reader_t reader;
-    mp_reader_new_mem(&reader, (const byte*)str, len, free_len);
+    mp_reader_new_mem(&reader, (const byte *)str, len, free_len);
     return mp_lexer_new(src_name, reader);
 }
 

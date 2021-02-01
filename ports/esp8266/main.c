@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2015-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,16 +34,20 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/gc.h"
+
+// This needs to be defined before any ESP SDK headers are included
+#define USE_US_TIMER 1
+
 #include "extmod/misc.h"
 #include "lib/mp-readline/readline.h"
 #include "lib/utils/pyexec.h"
 #include "gccollect.h"
 #include "user_interface.h"
 
-STATIC char heap[36 * 1024];
+STATIC char heap[38 * 1024];
 
 STATIC void mp_reset(void) {
-    mp_stack_set_top((void*)0x40000000);
+    mp_stack_set_top((void *)0x40000000);
     mp_stack_set_limit(8192);
     mp_hal_init();
     gc_init(heap, heap + sizeof(heap));
@@ -59,23 +64,9 @@ STATIC void mp_reset(void) {
     pin_init0();
     readline_init0();
     dupterm_task_init();
-#if MICROPY_MODULE_FROZEN
-    pyexec_frozen_module("_boot.py");
-    pyexec_file("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-        pyexec_file("main.py");
-    }
-#endif
 
-    // Check if there are any dupterm objects registered and if not then
-    // activate UART(0), or else there will never be any chance to get a REPL
-    size_t idx;
-    for (idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
-        if (MP_STATE_VM(dupterm_objs[idx]) != MP_OBJ_NULL) {
-            break;
-        }
-    }
-    if (idx == MICROPY_PY_OS_DUPTERM) {
+    // Activate UART(0) on dupterm slot 1 for the REPL
+    {
         mp_obj_t args[2];
         args[0] = MP_OBJ_NEW_SMALL_INT(0);
         args[1] = MP_OBJ_NEW_SMALL_INT(115200);
@@ -83,13 +74,20 @@ STATIC void mp_reset(void) {
         args[1] = MP_OBJ_NEW_SMALL_INT(1);
         extern mp_obj_t os_dupterm(size_t n_args, const mp_obj_t *args);
         os_dupterm(2, args);
-        mp_hal_stdout_tx_str("Activated UART(0) for REPL\r\n");
     }
+
+    #if MICROPY_MODULE_FROZEN
+    pyexec_frozen_module("_boot.py");
+    pyexec_file_if_exists("boot.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        pyexec_file_if_exists("main.py");
+    }
+    #endif
 }
 
 void soft_reset(void) {
     gc_sweep_all();
-    mp_hal_stdout_tx_str("PYB: soft reboot\r\n");
+    mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
     mp_hal_delay_us(10000); // allow UART to flush output
     mp_reset();
     #if MICROPY_REPL_EVENT_DRIVEN
@@ -98,6 +96,13 @@ void soft_reset(void) {
 }
 
 void init_done(void) {
+    // Configure sleep, and put the radio to sleep if no interfaces are active
+    wifi_fpm_set_sleep_type(MODEM_SLEEP_T);
+    if (wifi_get_opmode() == NULL_MODE) {
+        wifi_fpm_open();
+        wifi_fpm_do_sleep(0xfffffff);
+    }
+
     #if MICROPY_REPL_EVENT_DRIVEN
     uart_task_init();
     #endif
@@ -126,6 +131,7 @@ soft_reset:
 }
 
 void user_init(void) {
+    system_timer_reinit();
     system_init_done_cb(init_done);
 }
 
@@ -152,7 +158,7 @@ void MP_FASTCODE(nlr_jump_fail)(void *val) {
     }
 }
 
-//void __assert(const char *file, int line, const char *func, const char *expr) {
+// void __assert(const char *file, int line, const char *func, const char *expr) {
 void __assert(const char *file, int line, const char *expr) {
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     for (;;) {
@@ -167,7 +173,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 int DEBUG_printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    int ret = mp_vprintf(&MICROPY_DEBUG_PRINTER_DEST, fmt, ap);
+    int ret = mp_vprintf(MICROPY_DEBUG_PRINTER, fmt, ap);
     va_end(ap);
     return ret;
 }

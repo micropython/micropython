@@ -40,17 +40,6 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-// Fixed empty map. Useful when need to call kw-receiving functions
-// without any keywords from C, etc.
-const mp_map_t mp_const_empty_map = {
-    .all_keys_are_qstrs = 0,
-    .is_fixed = 1,
-    .is_ordered = 1,
-    .used = 0,
-    .alloc = 0,
-    .table = NULL,
-};
-
 // This table of sizes is used to control the growth of hash tables.
 // The first set of sizes are chosen so the allocation fits exactly in a
 // 4-word GC block, and it's not so important for these small values to be
@@ -96,7 +85,7 @@ void mp_map_init_fixed_table(mp_map_t *map, size_t n, const mp_obj_t *table) {
     map->all_keys_are_qstrs = 1;
     map->is_fixed = 1;
     map->is_ordered = 1;
-    map->table = (mp_map_elem_t*)table;
+    map->table = (mp_map_elem_t *)table;
 }
 
 // Differentiate from mp_map_clear() - semantics is different
@@ -150,9 +139,9 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
     // Work out if we can compare just pointers
     bool compare_only_ptrs = map->all_keys_are_qstrs;
     if (compare_only_ptrs) {
-        if (MP_OBJ_IS_QSTR(index)) {
+        if (mp_obj_is_qstr(index)) {
             // Index is a qstr, so can just do ptr comparison.
-        } else if (MP_OBJ_IS_TYPE(index, &mp_type_str)) {
+        } else if (mp_obj_is_type(index, &mp_type_str)) {
             // Index is a non-interned string.
             // We can either intern the string, or force a full equality comparison.
             // We chose the latter, since interning costs time and potentially RAM,
@@ -177,6 +166,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                     --map->used;
                     memmove(elem, elem + 1, (top - elem - 1) * sizeof(*elem));
                     // put the found element after the end so the caller can access it if needed
+                    // note: caller must NULL the value so the GC can clean up (e.g. see dict_get_helper).
                     elem = &map->table[map->used];
                     elem->key = MP_OBJ_NULL;
                     elem->value = value;
@@ -197,7 +187,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
         }
         mp_map_elem_t *elem = map->table + map->used++;
         elem->key = index;
-        if (!MP_OBJ_IS_QSTR(index)) {
+        if (!mp_obj_is_qstr(index)) {
             map->all_keys_are_qstrs = 0;
         }
         return elem;
@@ -218,7 +208,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
 
     // get hash of index, with fast path for common case of qstr
     mp_uint_t hash;
-    if (MP_OBJ_IS_QSTR(index)) {
+    if (mp_obj_is_qstr(index)) {
         hash = qstr_hash(MP_OBJ_QSTR_VALUE(index));
     } else {
         hash = MP_OBJ_SMALL_INT_VALUE(mp_unary_op(MP_UNARY_OP_HASH, index));
@@ -238,7 +228,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                 }
                 avail_slot->key = index;
                 avail_slot->value = MP_OBJ_NULL;
-                if (!MP_OBJ_IS_QSTR(index)) {
+                if (!mp_obj_is_qstr(index)) {
                     map->all_keys_are_qstrs = 0;
                 }
                 return avail_slot;
@@ -278,7 +268,7 @@ mp_map_elem_t *mp_map_lookup(mp_map_t *map, mp_obj_t index, mp_map_lookup_kind_t
                     map->used++;
                     avail_slot->key = index;
                     avail_slot->value = MP_OBJ_NULL;
-                    if (!MP_OBJ_IS_QSTR(index)) {
+                    if (!mp_obj_is_qstr(index)) {
                         map->all_keys_are_qstrs = 0;
                     }
                     return avail_slot;
@@ -395,7 +385,7 @@ mp_obj_t mp_set_lookup(mp_set_t *set, mp_obj_t index, mp_map_lookup_kind_t looku
 
 mp_obj_t mp_set_remove_first(mp_set_t *set) {
     for (size_t pos = 0; pos < set->alloc; pos++) {
-        if (MP_SET_SLOT_IS_FILLED(set, pos)) {
+        if (mp_set_slot_is_filled(set, pos)) {
             mp_obj_t elem = set->table[pos];
             // delete element
             set->used--;
@@ -423,13 +413,13 @@ void mp_set_clear(mp_set_t *set) {
 #if defined(DEBUG_PRINT) && DEBUG_PRINT
 void mp_map_dump(mp_map_t *map) {
     for (size_t i = 0; i < map->alloc; i++) {
-        if (map->table[i].key != NULL) {
+        if (map->table[i].key != MP_OBJ_NULL) {
             mp_obj_print(map->table[i].key, PRINT_REPR);
         } else {
-            printf("(nil)");
+            DEBUG_printf("(nil)");
         }
-        printf(": %p\n", map->table[i].value);
+        DEBUG_printf(": %p\n", map->table[i].value);
     }
-    printf("---\n");
+    DEBUG_printf("---\n");
 }
 #endif

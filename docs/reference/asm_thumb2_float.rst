@@ -1,5 +1,5 @@
-Floating Point instructions
-==============================
+Floating point instructions
+===========================
 
 These instructions support the use of the ARM floating point coprocessor
 (on platforms such as the Pyboard which are equipped with one). The FPU
@@ -31,7 +31,7 @@ Arithmetic
 * vsqrt(Sd, Sm) ``Sd = sqrt(Sm)``
 
 Registers may be identical: ``vmul(S0, S0, S0)`` will execute ``S0 = S0*S0``
- 
+
 Move between ARM core and FPU registers
 ---------------------------------------
 
@@ -40,7 +40,7 @@ Move between ARM core and FPU registers
 
 The FPU has a register known as FPSCR, similar to the ARM core's APSR, which stores condition
 codes plus other data. The following instructions provide access to this.
- 
+
 * vmrs(APSR\_nzcv, FPSCR)
 
 Move the floating-point N, Z, C, and V flags to the APSR N, Z, C, and V flags.
@@ -61,7 +61,7 @@ Where ``[Rn + offset]`` denotes the memory address obtained by adding Rn to the 
 is specified in bytes. Since each float value occupies a 32 bit word, when accessing arrays of
 floats the offset must always be a multiple of four bytes.
 
-Data Comparison
+Data comparison
 ---------------
 
 * vcmp(Sd, Sm)

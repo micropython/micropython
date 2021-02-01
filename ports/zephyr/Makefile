@@ -8,7 +8,6 @@
 # To build a "minimal" configuration, use "make-minimal" wrapper.
 
 BOARD ?= qemu_x86
-CONF_FILE = prj_$(BOARD)_merged.conf
 OUTDIR_PREFIX = $(BOARD)
 
 # Default heap size is 16KB, which is on conservative side, to let
@@ -16,6 +15,10 @@ OUTDIR_PREFIX = $(BOARD)
 # applications, and will need to be increased.
 MICROPY_HEAP_SIZE = 16384
 FROZEN_DIR = scripts
+
+MICROPY_VFS_FAT ?= 1
+MICROPY_VFS_LFS1 ?= 0
+MICROPY_VFS_LFS2 ?= 1
 
 # Default target
 all:
@@ -38,13 +41,19 @@ INC += -I$(ZEPHYR_BASE)/net/ip/contiki/os
 
 SRC_C = main.c \
 	help.c \
+	moduos.c \
 	modusocket.c \
 	modutime.c \
 	modzephyr.c \
 	modzsensor.c \
 	modmachine.c \
+	machine_i2c.c \
 	machine_pin.c \
+	machine_uart.c \
 	uart_core.c \
+	zephyr_storage.c \
+	lib/timeutils/timeutils.c \
+	lib/utils/mpirq.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/printf.c \
 	lib/utils/pyexec.c \
@@ -58,11 +67,12 @@ SRC_QSTR += $(SRC_C)
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 CFLAGS = $(Z_CFLAGS) \
-	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_EXTRA) $(INC)
+	 -std=gnu99 -fomit-frame-pointer -DNDEBUG -DMICROPY_HEAP_SIZE=$(MICROPY_HEAP_SIZE) $(CFLAGS_MOD) $(CFLAGS_EXTRA) $(INC)
 
 include $(TOP)/py/mkrules.mk
 
-GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver
+GENERIC_TARGETS = all zephyr run qemu qemugdb flash debug debugserver \
+	ram_report rom_report
 KCONFIG_TARGETS = \
 	initconfig config nconfig menuconfig xconfig gconfig \
 	oldconfig silentoldconfig defconfig savedefconfig \
@@ -83,27 +93,24 @@ build/genhdr/qstr.i.last: | $(Z_EXPORTS)
 LIBMICROPYTHON_EXTRA_CMD = -$(RM) -f outdir/$(OUTDIR_PREFIX)/zephyr.lnk
 
 # MicroPython's global clean cleans everything, fast
-CLEAN_EXTRA = outdir libmicropython.a prj_*_merged.conf
+CLEAN_EXTRA = outdir libmicropython.a
 
 # Clean Zephyr things in Zephyr way
 z_clean:
 	$(MAKE) -f Makefile.zephyr BOARD=$(BOARD) clean
-
-# This rule is for prj_$(BOARD)_merged.conf, not $(CONF_FILE), which
-# can be overriden.
-# prj_$(BOARD).conf is optional, that's why it's resolved with $(wildcard)
-# function.
-prj_$(BOARD)_merged.conf: prj_base.conf $(wildcard prj_$(BOARD).conf)
-	$(PYTHON) makeprj.py prj_base.conf prj_$(BOARD).conf $@
 
 test:
 	cd $(TOP)/tests && ./run-tests --target minimal --device "execpty:make -C ../ports/zephyr run BOARD=$(BOARD) QEMU_PTY=1"
 
 cmake: outdir/$(BOARD)/Makefile
 
-outdir/$(BOARD)/Makefile: $(CONF_FILE)
-	mkdir -p outdir/$(BOARD) && cmake -DBOARD=$(BOARD) -DCONF_FILE=$(CONF_FILE) -Boutdir/$(BOARD) -H.
+ifneq ($(CONF_FILE),)
+CMAKE_MOD += -DCONF_FILE=$(CONF_FILE)
+endif
+
+outdir/$(BOARD)/Makefile:
+	mkdir -p outdir/$(BOARD) && cmake -DBOARD=$(BOARD) $(CMAKE_MOD) -Boutdir/$(BOARD) -H.
 
 $(Z_EXPORTS): outdir/$(BOARD)/Makefile
 	make --no-print-directory -C outdir/$(BOARD) outputexports CMAKE_COMMAND=: >$@
-	make -C outdir/$(BOARD) syscall_macros_h_target syscall_list_h_target kobj_types_h_target
+	make -C outdir/$(BOARD) syscall_list_h_target kobj_types_h_target

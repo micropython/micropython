@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
-//#include <stdio.h>
 #include <string.h>
 
 #include "py/runtime.h"
 #include "user_interface.h"
 #include "etshal.h"
+#include "ets_alt_task.h"
 
 const mp_obj_type_t esp_wdt_type;
 
@@ -48,10 +48,12 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
     }
 
     switch (id) {
-    case 0:
-        return &wdt_default;
-    default:
-        mp_raise_ValueError(NULL);
+        case 0:
+            ets_loop_dont_feed_sw_wdt = 1;
+            system_soft_wdt_feed();
+            return &wdt_default;
+        default:
+            mp_raise_ValueError(NULL);
     }
 }
 
@@ -79,5 +81,5 @@ const mp_obj_type_t esp_wdt_type = {
     { &mp_type_type },
     .name = MP_QSTR_WDT,
     .make_new = machine_wdt_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_wdt_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_wdt_locals_dict,
 };

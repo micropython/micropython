@@ -44,20 +44,36 @@ extern const dma_descr_t dma_DAC_2_TX;
 extern const dma_descr_t dma_SPI_3_TX;
 extern const dma_descr_t dma_I2C_1_TX;
 extern const dma_descr_t dma_I2C_2_TX;
-extern const dma_descr_t dma_SDMMC_2_RX;
+extern const dma_descr_t dma_SDMMC_2;
 extern const dma_descr_t dma_SPI_1_RX;
 extern const dma_descr_t dma_SPI_5_RX;
-extern const dma_descr_t dma_SDIO_0_RX;
+extern const dma_descr_t dma_SDIO_0;
 extern const dma_descr_t dma_SPI_4_RX;
 extern const dma_descr_t dma_SPI_5_TX;
 extern const dma_descr_t dma_SPI_4_TX;
 extern const dma_descr_t dma_SPI_6_TX;
 extern const dma_descr_t dma_SPI_1_TX;
-extern const dma_descr_t dma_SDMMC_2_TX;
+extern const dma_descr_t dma_SDMMC_2;
 extern const dma_descr_t dma_SPI_6_RX;
-extern const dma_descr_t dma_SDIO_0_TX;
+extern const dma_descr_t dma_SDIO_0;
+extern const dma_descr_t dma_DCMI_0;
 
-#elif defined(STM32L4)
+#elif defined(STM32L0)
+
+extern const dma_descr_t dma_SPI_1_RX;
+extern const dma_descr_t dma_I2C_3_TX;
+extern const dma_descr_t dma_SPI_1_TX;
+extern const dma_descr_t dma_I2C_3_RX;
+extern const dma_descr_t dma_DAC_1_TX;
+extern const dma_descr_t dma_SPI_2_RX;
+extern const dma_descr_t dma_I2C_2_TX;
+extern const dma_descr_t dma_DAC_2_TX;
+extern const dma_descr_t dma_SPI_2_TX;
+extern const dma_descr_t dma_I2C_2_RX;
+extern const dma_descr_t dma_I2C_1_TX;
+extern const dma_descr_t dma_I2C_1_RX;
+
+#elif defined(STM32L4) || defined(STM32WB)
 
 extern const dma_descr_t dma_ADC_1_RX;
 extern const dma_descr_t dma_ADC_2_RX;
@@ -76,28 +92,19 @@ extern const dma_descr_t dma_I2C_1_TX;
 extern const dma_descr_t dma_I2C_1_RX;
 extern const dma_descr_t dma_SPI_3_RX;
 extern const dma_descr_t dma_SPI_3_TX;
-extern const dma_descr_t dma_SDIO_0_TX;
-extern const dma_descr_t dma_SDIO_0_RX;
+extern const dma_descr_t dma_SDIO_0;
+extern const dma_descr_t dma_I2C_4_TX;
+extern const dma_descr_t dma_I2C_4_RX;
 
 #endif
 
-typedef union {
-    uint16_t    enabled;    // Used to test if both counters are == 0
-    uint8_t     counter[2];
-} dma_idle_count_t;
-extern volatile dma_idle_count_t dma_idle;
-#define DMA_IDLE_ENABLED()  (dma_idle.enabled != 0)
-
-#define DMA_SYSTICK_MASK            0x0e
-#define DMA_MSECS_PER_SYSTICK       (DMA_SYSTICK_MASK + 1)
-#define DMA_IDLE_TICK_MAX           (8)     // 128 msec
-#define DMA_IDLE_TICK(tick)         (((tick) & DMA_SYSTICK_MASK) == 0)
-
-
-void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data);
-void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, void *data);
+void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
+void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
 void dma_deinit(const dma_descr_t *dma_descr);
 void dma_invalidate_channel(const dma_descr_t *dma_descr);
-void dma_idle_handler(int controller);
+
+void dma_nohal_init(const dma_descr_t *descr, uint32_t config);
+void dma_nohal_deinit(const dma_descr_t *descr);
+void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_addr, uint16_t len);
 
 #endif // MICROPY_INCLUDED_STM32_DMA_H

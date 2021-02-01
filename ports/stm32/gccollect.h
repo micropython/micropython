@@ -37,6 +37,7 @@ extern uint32_t _sbss;
 extern uint32_t _ebss;
 extern uint32_t _heap_start;
 extern uint32_t _heap_end;
+extern uint32_t _sstack;
 extern uint32_t _estack;
 extern uint32_t _ram_end;
 

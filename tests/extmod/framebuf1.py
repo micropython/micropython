@@ -8,9 +8,11 @@ w = 5
 h = 16
 size = w * h // 8
 buf = bytearray(size)
-maps = {framebuf.MONO_VLSB : 'MONO_VLSB',
-        framebuf.MONO_HLSB : 'MONO_HLSB',
-        framebuf.MONO_HMSB : 'MONO_HMSB'}
+maps = {
+    framebuf.MONO_VLSB: "MONO_VLSB",
+    framebuf.MONO_HLSB: "MONO_HLSB",
+    framebuf.MONO_HMSB: "MONO_HMSB",
+}
 
 for mapping in maps.keys():
     for x in range(size):
@@ -43,33 +45,33 @@ for mapping in maps.keys():
     # hline
     fbuf.fill(0)
     fbuf.hline(0, 1, w, 1)
-    print('hline', buf)
+    print("hline", buf)
 
     # vline
     fbuf.fill(0)
     fbuf.vline(1, 0, h, 1)
-    print('vline', buf)
+    print("vline", buf)
 
     # rect
     fbuf.fill(0)
     fbuf.rect(1, 1, 3, 3, 1)
-    print('rect', buf)
+    print("rect", buf)
 
-    #fill rect
+    # fill rect
     fbuf.fill(0)
-    fbuf.fill_rect(0, 0, 0, 3, 1) # zero width, no-operation
+    fbuf.fill_rect(0, 0, 0, 3, 1)  # zero width, no-operation
     fbuf.fill_rect(1, 1, 3, 3, 1)
-    print('fill_rect', buf)
+    print("fill_rect", buf)
 
     # line
     fbuf.fill(0)
     fbuf.line(1, 1, 3, 3, 1)
-    print('line', buf)
+    print("line", buf)
 
     # line steep negative gradient
     fbuf.fill(0)
     fbuf.line(3, 3, 2, 1, 1)
-    print('line', buf)
+    print("line", buf)
 
     # scroll
     fbuf.fill(0)
@@ -89,7 +91,7 @@ for mapping in maps.keys():
     fbuf.fill(0)
     fbuf.text("hello", 0, 0, 1)
     print(buf)
-    fbuf.text("hello", 0, 0, 0) # clear
+    fbuf.text("hello", 0, 0, 0)  # clear
     print(buf)
 
     # char out of font range set to chr(127)

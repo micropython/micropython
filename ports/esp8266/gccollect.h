@@ -40,6 +40,5 @@ extern uint32_t _heap_start;
 extern uint32_t _heap_end;
 
 void gc_collect(void);
-void esp_native_code_gc_collect(void);
 
 #endif // MICROPY_INCLUDED_ESP8266_GCCOLLECT_H

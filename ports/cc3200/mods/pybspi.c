@@ -40,7 +40,6 @@
 #include "prcm.h"
 #include "spi.h"
 #include "pybspi.h"
-#include "mpexception.h"
 #include "pybsleep.h"
 #include "pybpin.h"
 #include "pins.h"
@@ -213,7 +212,7 @@ STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, const mp_arg_val_t *arg
     return mp_const_none;
 
 invalid_args:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 static const mp_arg_t pyb_spi_init_args[] = {
@@ -351,7 +350,7 @@ STATIC mp_obj_t pyb_spi_write_readinto (mp_obj_t self, mp_obj_t writebuf, mp_obj
         // get the read buffer
         mp_get_buffer_raise(readbuf, &bufinfo_read, MP_BUFFER_WRITE);
         if (bufinfo_read.len != bufinfo_write.len) {
-            mp_raise_ValueError(mpexception_value_invalid_arguments);
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
         }
     }
 

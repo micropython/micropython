@@ -1,40 +1,30 @@
 /**************************************************************************//**
  * @file     core_cm0.h
  * @brief    CMSIS Cortex-M0 Core Peripheral Access Layer Header File
- * @version  V4.30
- * @date     20. October 2015
+ * @version  V5.0.6
+ * @date     13. March 2019
  ******************************************************************************/
-/* Copyright (c) 2009 - 2015 ARM LIMITED
-
-   All rights reserved.
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are met:
-   - Redistributions of source code must retain the above copyright
-     notice, this list of conditions and the following disclaimer.
-   - Redistributions in binary form must reproduce the above copyright
-     notice, this list of conditions and the following disclaimer in the
-     documentation and/or other materials provided with the distribution.
-   - Neither the name of ARM nor the names of its contributors may be used
-     to endorse or promote products derived from this software without
-     specific prior written permission.
-   *
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-   ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS AND CONTRIBUTORS BE
-   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-   POSSIBILITY OF SUCH DAMAGE.
-   ---------------------------------------------------------------------------*/
-
+/*
+ * Copyright (c) 2009-2019 Arm Limited. All rights reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the License); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #if   defined ( __ICCARM__ )
- #pragma system_include         /* treat file as system include file for MISRA check */
-#elif defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+  #pragma system_include         /* treat file as system include file for MISRA check */
+#elif defined (__clang__)
   #pragma clang system_header   /* treat file as system include file */
 #endif
 
@@ -70,53 +60,15 @@
   @{
  */
 
+#include "cmsis_version.h"
+ 
 /*  CMSIS CM0 definitions */
-#define __CM0_CMSIS_VERSION_MAIN  (0x04U)                                      /*!< [31:16] CMSIS HAL main version */
-#define __CM0_CMSIS_VERSION_SUB   (0x1EU)                                      /*!< [15:0]  CMSIS HAL sub version */
+#define __CM0_CMSIS_VERSION_MAIN  (__CM_CMSIS_VERSION_MAIN)              /*!< \deprecated [31:16] CMSIS HAL main version */
+#define __CM0_CMSIS_VERSION_SUB   (__CM_CMSIS_VERSION_SUB)               /*!< \deprecated [15:0]  CMSIS HAL sub version */
 #define __CM0_CMSIS_VERSION       ((__CM0_CMSIS_VERSION_MAIN << 16U) | \
-                                    __CM0_CMSIS_VERSION_SUB           )        /*!< CMSIS HAL version number */
+                                    __CM0_CMSIS_VERSION_SUB           )  /*!< \deprecated CMSIS HAL version number */
 
-#define __CORTEX_M                (0x00U)                                      /*!< Cortex-M Core */
-
-
-#if   defined ( __CC_ARM )
-  #define __ASM            __asm                                      /*!< asm keyword for ARM Compiler */
-  #define __INLINE         __inline                                   /*!< inline keyword for ARM Compiler */
-  #define __STATIC_INLINE  static __inline
-
-#elif defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
-  #define __ASM            __asm                                      /*!< asm keyword for ARM Compiler */
-  #define __INLINE         __inline                                   /*!< inline keyword for ARM Compiler */
-  #define __STATIC_INLINE  static __inline
-
-#elif defined ( __GNUC__ )
-  #define __ASM            __asm                                      /*!< asm keyword for GNU Compiler */
-  #define __INLINE         inline                                     /*!< inline keyword for GNU Compiler */
-  #define __STATIC_INLINE  static inline
-
-#elif defined ( __ICCARM__ )
-  #define __ASM            __asm                                      /*!< asm keyword for IAR Compiler */
-  #define __INLINE         inline                                     /*!< inline keyword for IAR Compiler. Only available in High optimization mode! */
-  #define __STATIC_INLINE  static inline
-
-#elif defined ( __TMS470__ )
-  #define __ASM            __asm                                      /*!< asm keyword for TI CCS Compiler */
-  #define __STATIC_INLINE  static inline
-
-#elif defined ( __TASKING__ )
-  #define __ASM            __asm                                      /*!< asm keyword for TASKING Compiler */
-  #define __INLINE         inline                                     /*!< inline keyword for TASKING Compiler */
-  #define __STATIC_INLINE  static inline
-
-#elif defined ( __CSMC__ )
-  #define __packed
-  #define __ASM            _asm                                      /*!< asm keyword for COSMIC Compiler */
-  #define __INLINE         inline                                    /*!< inline keyword for COSMIC Compiler. Use -pc99 on compile line */
-  #define __STATIC_INLINE  static inline
-
-#else
-  #error Unknown compiler
-#endif
+#define __CORTEX_M                (0U)                                   /*!< Cortex-M Core */
 
 /** __FPU_USED indicates whether an FPU is used or not.
     This core does not support an FPU at all
@@ -128,8 +80,8 @@
     #error "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
   #endif
 
-#elif defined(__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
-  #if defined __ARM_PCS_VFP
+#elif defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
+  #if defined __ARM_FP
     #error "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
   #endif
 
@@ -143,7 +95,7 @@
     #error "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
   #endif
 
-#elif defined ( __TMS470__ )
+#elif defined ( __TI_ARM__ )
   #if defined __TI_VFP_SUPPORT__
     #error "Compiler generates FPU instructions for a device without an FPU (check __FPU_PRESENT)"
   #endif
@@ -160,8 +112,8 @@
 
 #endif
 
-#include "core_cmInstr.h"                /* Core Instruction Access */
-#include "core_cmFunc.h"                 /* Core Function Access */
+#include "cmsis_compiler.h"               /* CMSIS compiler specific defines */
+
 
 #ifdef __cplusplus
 }
@@ -364,7 +316,7 @@ typedef struct
   __IOM uint32_t ISER[1U];               /*!< Offset: 0x000 (R/W)  Interrupt Set Enable Register */
         uint32_t RESERVED0[31U];
   __IOM uint32_t ICER[1U];               /*!< Offset: 0x080 (R/W)  Interrupt Clear Enable Register */
-        uint32_t RSERVED1[31U];
+        uint32_t RESERVED1[31U];
   __IOM uint32_t ISPR[1U];               /*!< Offset: 0x100 (R/W)  Interrupt Set Pending Register */
         uint32_t RESERVED2[31U];
   __IOM uint32_t ICPR[1U];               /*!< Offset: 0x180 (R/W)  Interrupt Clear Pending Register */
@@ -555,18 +507,18 @@ typedef struct
 /**
   \brief   Mask and shift a bit field value for use in a register bit range.
   \param[in] field  Name of the register bit field.
-  \param[in] value  Value of the bit field.
+  \param[in] value  Value of the bit field. This parameter is interpreted as an uint32_t type.
   \return           Masked and shifted value.
 */
-#define _VAL2FLD(field, value)    ((value << field ## _Pos) & field ## _Msk)
+#define _VAL2FLD(field, value)    (((uint32_t)(value) << field ## _Pos) & field ## _Msk)
 
 /**
   \brief     Mask and shift a register value to extract a bit filed value.
   \param[in] field  Name of the register bit field.
-  \param[in] value  Value of register.
+  \param[in] value  Value of register. This parameter is interpreted as an uint32_t type.
   \return           Masked and shifted bit field value.
 */
-#define _FLD2VAL(field, value)    ((value & field ## _Msk) >> field ## _Pos)
+#define _FLD2VAL(field, value)    (((uint32_t)(value) & field ## _Msk) >> field ## _Pos)
 
 /*@} end of group CMSIS_core_bitfield */
 
@@ -578,7 +530,7 @@ typedef struct
   @{
  */
 
-/* Memory mapping of Cortex-M0 Hardware */
+/* Memory mapping of Core Hardware */
 #define SCS_BASE            (0xE000E000UL)                            /*!< System Control Space Base Address */
 #define SysTick_BASE        (SCS_BASE +  0x0010UL)                    /*!< SysTick Base Address */
 #define NVIC_BASE           (SCS_BASE +  0x0100UL)                    /*!< NVIC Base Address */
@@ -614,87 +566,177 @@ typedef struct
   @{
  */
 
-/* Interrupt Priorities are WORD accessible only under ARMv6M                   */
+#ifdef CMSIS_NVIC_VIRTUAL
+  #ifndef CMSIS_NVIC_VIRTUAL_HEADER_FILE
+    #define CMSIS_NVIC_VIRTUAL_HEADER_FILE "cmsis_nvic_virtual.h"
+  #endif
+  #include CMSIS_NVIC_VIRTUAL_HEADER_FILE
+#else
+  #define NVIC_SetPriorityGrouping    __NVIC_SetPriorityGrouping
+  #define NVIC_GetPriorityGrouping    __NVIC_GetPriorityGrouping
+  #define NVIC_EnableIRQ              __NVIC_EnableIRQ
+  #define NVIC_GetEnableIRQ           __NVIC_GetEnableIRQ
+  #define NVIC_DisableIRQ             __NVIC_DisableIRQ
+  #define NVIC_GetPendingIRQ          __NVIC_GetPendingIRQ
+  #define NVIC_SetPendingIRQ          __NVIC_SetPendingIRQ
+  #define NVIC_ClearPendingIRQ        __NVIC_ClearPendingIRQ
+/*#define NVIC_GetActive              __NVIC_GetActive             not available for Cortex-M0 */
+  #define NVIC_SetPriority            __NVIC_SetPriority
+  #define NVIC_GetPriority            __NVIC_GetPriority
+  #define NVIC_SystemReset            __NVIC_SystemReset
+#endif /* CMSIS_NVIC_VIRTUAL */
+
+#ifdef CMSIS_VECTAB_VIRTUAL
+  #ifndef CMSIS_VECTAB_VIRTUAL_HEADER_FILE
+    #define CMSIS_VECTAB_VIRTUAL_HEADER_FILE "cmsis_vectab_virtual.h"
+  #endif
+  #include CMSIS_VECTAB_VIRTUAL_HEADER_FILE
+#else
+  #define NVIC_SetVector              __NVIC_SetVector
+  #define NVIC_GetVector              __NVIC_GetVector
+#endif  /* (CMSIS_VECTAB_VIRTUAL) */
+
+#define NVIC_USER_IRQ_OFFSET          16
+
+
+/* The following EXC_RETURN values are saved the LR on exception entry */
+#define EXC_RETURN_HANDLER         (0xFFFFFFF1UL)     /* return to Handler mode, uses MSP after return                               */
+#define EXC_RETURN_THREAD_MSP      (0xFFFFFFF9UL)     /* return to Thread mode, uses MSP after return                                */
+#define EXC_RETURN_THREAD_PSP      (0xFFFFFFFDUL)     /* return to Thread mode, uses PSP after return                                */
+
+
+/* Interrupt Priorities are WORD accessible only under Armv6-M                  */
 /* The following MACROS handle generation of the register offset and byte masks */
 #define _BIT_SHIFT(IRQn)         (  ((((uint32_t)(int32_t)(IRQn))         )      &  0x03UL) * 8UL)
 #define _SHP_IDX(IRQn)           ( (((((uint32_t)(int32_t)(IRQn)) & 0x0FUL)-8UL) >>    2UL)      )
 #define _IP_IDX(IRQn)            (   (((uint32_t)(int32_t)(IRQn))                >>    2UL)      )
 
+#define __NVIC_SetPriorityGrouping(X) (void)(X)
+#define __NVIC_GetPriorityGrouping()  (0U)
 
 /**
-  \brief   Enable External Interrupt
-  \details Enables a device-specific interrupt in the NVIC interrupt controller.
-  \param [in]      IRQn  External interrupt number. Value cannot be negative.
+  \brief   Enable Interrupt
+  \details Enables a device specific interrupt in the NVIC interrupt controller.
+  \param [in]      IRQn  Device specific interrupt number.
+  \note    IRQn must not be negative.
  */
-__STATIC_INLINE void NVIC_EnableIRQ(IRQn_Type IRQn)
+__STATIC_INLINE void __NVIC_EnableIRQ(IRQn_Type IRQn)
 {
-  NVIC->ISER[0U] = (uint32_t)(1UL << (((uint32_t)(int32_t)IRQn) & 0x1FUL));
+  if ((int32_t)(IRQn) >= 0)
+  {
+    NVIC->ISER[0U] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
+  }
 }
 
 
 /**
-  \brief   Disable External Interrupt
-  \details Disables a device-specific interrupt in the NVIC interrupt controller.
-  \param [in]      IRQn  External interrupt number. Value cannot be negative.
+  \brief   Get Interrupt Enable status
+  \details Returns a device specific interrupt enable status from the NVIC interrupt controller.
+  \param [in]      IRQn  Device specific interrupt number.
+  \return             0  Interrupt is not enabled.
+  \return             1  Interrupt is enabled.
+  \note    IRQn must not be negative.
  */
-__STATIC_INLINE void NVIC_DisableIRQ(IRQn_Type IRQn)
+__STATIC_INLINE uint32_t __NVIC_GetEnableIRQ(IRQn_Type IRQn)
 {
-  NVIC->ICER[0U] = (uint32_t)(1UL << (((uint32_t)(int32_t)IRQn) & 0x1FUL));
+  if ((int32_t)(IRQn) >= 0)
+  {
+    return((uint32_t)(((NVIC->ISER[0U] & (1UL << (((uint32_t)IRQn) & 0x1FUL))) != 0UL) ? 1UL : 0UL));
+  }
+  else
+  {
+    return(0U);
+  }
+}
+
+
+/**
+  \brief   Disable Interrupt
+  \details Disables a device specific interrupt in the NVIC interrupt controller.
+  \param [in]      IRQn  Device specific interrupt number.
+  \note    IRQn must not be negative.
+ */
+__STATIC_INLINE void __NVIC_DisableIRQ(IRQn_Type IRQn)
+{
+  if ((int32_t)(IRQn) >= 0)
+  {
+    NVIC->ICER[0U] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
+    __DSB();
+    __ISB();
+  }
 }
 
 
 /**
   \brief   Get Pending Interrupt
-  \details Reads the pending register in the NVIC and returns the pending bit for the specified interrupt.
-  \param [in]      IRQn  Interrupt number.
+  \details Reads the NVIC pending register and returns the pending bit for the specified device specific interrupt.
+  \param [in]      IRQn  Device specific interrupt number.
   \return             0  Interrupt status is not pending.
   \return             1  Interrupt status is pending.
+  \note    IRQn must not be negative.
  */
-__STATIC_INLINE uint32_t NVIC_GetPendingIRQ(IRQn_Type IRQn)
+__STATIC_INLINE uint32_t __NVIC_GetPendingIRQ(IRQn_Type IRQn)
 {
-  return((uint32_t)(((NVIC->ISPR[0U] & (1UL << (((uint32_t)(int32_t)IRQn) & 0x1FUL))) != 0UL) ? 1UL : 0UL));
+  if ((int32_t)(IRQn) >= 0)
+  {
+    return((uint32_t)(((NVIC->ISPR[0U] & (1UL << (((uint32_t)IRQn) & 0x1FUL))) != 0UL) ? 1UL : 0UL));
+  }
+  else
+  {
+    return(0U);
+  }
 }
 
 
 /**
   \brief   Set Pending Interrupt
-  \details Sets the pending bit of an external interrupt.
-  \param [in]      IRQn  Interrupt number. Value cannot be negative.
+  \details Sets the pending bit of a device specific interrupt in the NVIC pending register.
+  \param [in]      IRQn  Device specific interrupt number.
+  \note    IRQn must not be negative.
  */
-__STATIC_INLINE void NVIC_SetPendingIRQ(IRQn_Type IRQn)
+__STATIC_INLINE void __NVIC_SetPendingIRQ(IRQn_Type IRQn)
 {
-  NVIC->ISPR[0U] = (uint32_t)(1UL << (((uint32_t)(int32_t)IRQn) & 0x1FUL));
+  if ((int32_t)(IRQn) >= 0)
+  {
+    NVIC->ISPR[0U] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
+  }
 }
 
 
 /**
   \brief   Clear Pending Interrupt
-  \details Clears the pending bit of an external interrupt.
-  \param [in]      IRQn  External interrupt number. Value cannot be negative.
+  \details Clears the pending bit of a device specific interrupt in the NVIC pending register.
+  \param [in]      IRQn  Device specific interrupt number.
+  \note    IRQn must not be negative.
  */
-__STATIC_INLINE void NVIC_ClearPendingIRQ(IRQn_Type IRQn)
+__STATIC_INLINE void __NVIC_ClearPendingIRQ(IRQn_Type IRQn)
 {
-  NVIC->ICPR[0U] = (uint32_t)(1UL << (((uint32_t)(int32_t)IRQn) & 0x1FUL));
+  if ((int32_t)(IRQn) >= 0)
+  {
+    NVIC->ICPR[0U] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
+  }
 }
 
 
 /**
   \brief   Set Interrupt Priority
-  \details Sets the priority of an interrupt.
-  \note    The priority cannot be set for every core interrupt.
+  \details Sets the priority of a device specific interrupt or a processor exception.
+           The interrupt number can be positive to specify a device specific interrupt,
+           or negative to specify a processor exception.
   \param [in]      IRQn  Interrupt number.
   \param [in]  priority  Priority to set.
+  \note    The priority cannot be set for every processor exception.
  */
-__STATIC_INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
+__STATIC_INLINE void __NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
-  if ((int32_t)(IRQn) < 0)
+  if ((int32_t)(IRQn) >= 0)
   {
-    SCB->SHP[_SHP_IDX(IRQn)] = ((uint32_t)(SCB->SHP[_SHP_IDX(IRQn)] & ~(0xFFUL << _BIT_SHIFT(IRQn))) |
+    NVIC->IP[_IP_IDX(IRQn)]  = ((uint32_t)(NVIC->IP[_IP_IDX(IRQn)]  & ~(0xFFUL << _BIT_SHIFT(IRQn))) |
        (((priority << (8U - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL) << _BIT_SHIFT(IRQn)));
   }
   else
   {
-    NVIC->IP[_IP_IDX(IRQn)]  = ((uint32_t)(NVIC->IP[_IP_IDX(IRQn)]  & ~(0xFFUL << _BIT_SHIFT(IRQn))) |
+    SCB->SHP[_SHP_IDX(IRQn)] = ((uint32_t)(SCB->SHP[_SHP_IDX(IRQn)] & ~(0xFFUL << _BIT_SHIFT(IRQn))) |
        (((priority << (8U - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL) << _BIT_SHIFT(IRQn)));
   }
 }
@@ -702,24 +744,108 @@ __STATIC_INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 
 /**
   \brief   Get Interrupt Priority
-  \details Reads the priority of an interrupt.
-           The interrupt number can be positive to specify an external (device specific) interrupt,
-           or negative to specify an internal (core) interrupt.
+  \details Reads the priority of a device specific interrupt or a processor exception.
+           The interrupt number can be positive to specify a device specific interrupt,
+           or negative to specify a processor exception.
   \param [in]   IRQn  Interrupt number.
   \return             Interrupt Priority.
                       Value is aligned automatically to the implemented priority bits of the microcontroller.
  */
-__STATIC_INLINE uint32_t NVIC_GetPriority(IRQn_Type IRQn)
+__STATIC_INLINE uint32_t __NVIC_GetPriority(IRQn_Type IRQn)
 {
 
-  if ((int32_t)(IRQn) < 0)
-  {
-    return((uint32_t)(((SCB->SHP[_SHP_IDX(IRQn)] >> _BIT_SHIFT(IRQn) ) & (uint32_t)0xFFUL) >> (8U - __NVIC_PRIO_BITS)));
-  }
-  else
+  if ((int32_t)(IRQn) >= 0)
   {
     return((uint32_t)(((NVIC->IP[ _IP_IDX(IRQn)] >> _BIT_SHIFT(IRQn) ) & (uint32_t)0xFFUL) >> (8U - __NVIC_PRIO_BITS)));
   }
+  else
+  {
+    return((uint32_t)(((SCB->SHP[_SHP_IDX(IRQn)] >> _BIT_SHIFT(IRQn) ) & (uint32_t)0xFFUL) >> (8U - __NVIC_PRIO_BITS)));
+  }
+}
+
+
+/**
+  \brief   Encode Priority
+  \details Encodes the priority for an interrupt with the given priority group,
+           preemptive priority value, and subpriority value.
+           In case of a conflict between priority grouping and available
+           priority bits (__NVIC_PRIO_BITS), the smallest possible priority group is set.
+  \param [in]     PriorityGroup  Used priority group.
+  \param [in]   PreemptPriority  Preemptive priority value (starting from 0).
+  \param [in]       SubPriority  Subpriority value (starting from 0).
+  \return                        Encoded priority. Value can be used in the function \ref NVIC_SetPriority().
+ */
+__STATIC_INLINE uint32_t NVIC_EncodePriority (uint32_t PriorityGroup, uint32_t PreemptPriority, uint32_t SubPriority)
+{
+  uint32_t PriorityGroupTmp = (PriorityGroup & (uint32_t)0x07UL);   /* only values 0..7 are used          */
+  uint32_t PreemptPriorityBits;
+  uint32_t SubPriorityBits;
+
+  PreemptPriorityBits = ((7UL - PriorityGroupTmp) > (uint32_t)(__NVIC_PRIO_BITS)) ? (uint32_t)(__NVIC_PRIO_BITS) : (uint32_t)(7UL - PriorityGroupTmp);
+  SubPriorityBits     = ((PriorityGroupTmp + (uint32_t)(__NVIC_PRIO_BITS)) < (uint32_t)7UL) ? (uint32_t)0UL : (uint32_t)((PriorityGroupTmp - 7UL) + (uint32_t)(__NVIC_PRIO_BITS));
+
+  return (
+           ((PreemptPriority & (uint32_t)((1UL << (PreemptPriorityBits)) - 1UL)) << SubPriorityBits) |
+           ((SubPriority     & (uint32_t)((1UL << (SubPriorityBits    )) - 1UL)))
+         );
+}
+
+
+/**
+  \brief   Decode Priority
+  \details Decodes an interrupt priority value with a given priority group to
+           preemptive priority value and subpriority value.
+           In case of a conflict between priority grouping and available
+           priority bits (__NVIC_PRIO_BITS) the smallest possible priority group is set.
+  \param [in]         Priority   Priority value, which can be retrieved with the function \ref NVIC_GetPriority().
+  \param [in]     PriorityGroup  Used priority group.
+  \param [out] pPreemptPriority  Preemptive priority value (starting from 0).
+  \param [out]     pSubPriority  Subpriority value (starting from 0).
+ */
+__STATIC_INLINE void NVIC_DecodePriority (uint32_t Priority, uint32_t PriorityGroup, uint32_t* const pPreemptPriority, uint32_t* const pSubPriority)
+{
+  uint32_t PriorityGroupTmp = (PriorityGroup & (uint32_t)0x07UL);   /* only values 0..7 are used          */
+  uint32_t PreemptPriorityBits;
+  uint32_t SubPriorityBits;
+
+  PreemptPriorityBits = ((7UL - PriorityGroupTmp) > (uint32_t)(__NVIC_PRIO_BITS)) ? (uint32_t)(__NVIC_PRIO_BITS) : (uint32_t)(7UL - PriorityGroupTmp);
+  SubPriorityBits     = ((PriorityGroupTmp + (uint32_t)(__NVIC_PRIO_BITS)) < (uint32_t)7UL) ? (uint32_t)0UL : (uint32_t)((PriorityGroupTmp - 7UL) + (uint32_t)(__NVIC_PRIO_BITS));
+
+  *pPreemptPriority = (Priority >> SubPriorityBits) & (uint32_t)((1UL << (PreemptPriorityBits)) - 1UL);
+  *pSubPriority     = (Priority                   ) & (uint32_t)((1UL << (SubPriorityBits    )) - 1UL);
+}
+
+
+
+/**
+  \brief   Set Interrupt Vector
+  \details Sets an interrupt vector in SRAM based interrupt vector table.
+           The interrupt number can be positive to specify a device specific interrupt,
+           or negative to specify a processor exception.
+           Address 0 must be mapped to SRAM.
+  \param [in]   IRQn      Interrupt number
+  \param [in]   vector    Address of interrupt handler function
+ */
+__STATIC_INLINE void __NVIC_SetVector(IRQn_Type IRQn, uint32_t vector)
+{
+  uint32_t vectors = 0x0U;
+  (* (int *) (vectors + ((int32_t)IRQn + NVIC_USER_IRQ_OFFSET) * 4)) = vector;
+}
+
+
+/**
+  \brief   Get Interrupt Vector
+  \details Reads an interrupt vector from interrupt vector table.
+           The interrupt number can be positive to specify a device specific interrupt,
+           or negative to specify a processor exception.
+  \param [in]   IRQn      Interrupt number.
+  \return                 Address of interrupt handler function
+ */
+__STATIC_INLINE uint32_t __NVIC_GetVector(IRQn_Type IRQn)
+{
+  uint32_t vectors = 0x0U;
+  return (uint32_t)(* (int *) (vectors + ((int32_t)IRQn + NVIC_USER_IRQ_OFFSET) * 4));
 }
 
 
@@ -727,7 +853,7 @@ __STATIC_INLINE uint32_t NVIC_GetPriority(IRQn_Type IRQn)
   \brief   System Reset
   \details Initiates a system reset request to reset the MCU.
  */
-__STATIC_INLINE void NVIC_SystemReset(void)
+__NO_RETURN __STATIC_INLINE void __NVIC_SystemReset(void)
 {
   __DSB();                                                          /* Ensure all outstanding memory accesses included
                                                                        buffered write are completed before reset */
@@ -744,6 +870,31 @@ __STATIC_INLINE void NVIC_SystemReset(void)
 /*@} end of CMSIS_Core_NVICFunctions */
 
 
+/* ##########################  FPU functions  #################################### */
+/**
+  \ingroup  CMSIS_Core_FunctionInterface
+  \defgroup CMSIS_Core_FpuFunctions FPU Functions
+  \brief    Function that provides FPU type.
+  @{
+ */
+
+/**
+  \brief   get FPU type
+  \details returns the FPU type
+  \returns
+   - \b  0: No FPU
+   - \b  1: Single precision FPU
+   - \b  2: Double + Single precision FPU
+ */
+__STATIC_INLINE uint32_t SCB_GetFPUType(void)
+{
+    return 0U;           /* No FPU */
+}
+
+
+/*@} end of CMSIS_Core_FpuFunctions */
+
+
 
 /* ##################################    SysTick function  ############################################ */
 /**
@@ -753,7 +904,7 @@ __STATIC_INLINE void NVIC_SystemReset(void)
   @{
  */
 
-#if (__Vendor_SysTickConfig == 0U)
+#if defined (__Vendor_SysTickConfig) && (__Vendor_SysTickConfig == 0U)
 
 /**
   \brief   System Tick Configuration

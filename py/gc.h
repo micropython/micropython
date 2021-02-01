@@ -48,7 +48,11 @@ void gc_collect_end(void);
 // Use this function to sweep the whole heap and run all finalisers
 void gc_sweep_all(void);
 
-void *gc_alloc(size_t n_bytes, bool has_finaliser);
+enum {
+    GC_ALLOC_FLAG_HAS_FINALISER = 1,
+};
+
+void *gc_alloc(size_t n_bytes, unsigned int alloc_flags);
 void gc_free(void *ptr); // does not call finaliser
 size_t gc_nbytes(const void *ptr);
 void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move);

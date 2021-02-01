@@ -17,10 +17,10 @@ accel_pwr.value(1)
 i2c = I2C(1, baudrate=100000)
 addrs = i2c.scan()
 print("Scanning devices:", [hex(x) for x in addrs])
-if 0x4c not in addrs:
+if 0x4C not in addrs:
     print("Accelerometer is not detected")
 
-ACCEL_ADDR = 0x4c
+ACCEL_ADDR = 0x4C
 ACCEL_AXIS_X_REG = 0
 ACCEL_MODE_REG = 7
 

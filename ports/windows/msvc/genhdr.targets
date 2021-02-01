@@ -4,7 +4,7 @@
   <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
 
   <!--Generate qstrdefs.generated.h and mpversion.h similar to what is done in py/mkrules.mk and py/py.mk-->
-  <Target Name="GenerateHeaders" DependsOnTargets="MakeVersionHdr;MakeQstrData">
+  <Target Name="GenerateHeaders" DependsOnTargets="MakeVersionHdr;MakeModuleDefs;MakeQstrData">
   </Target>
 
   <PropertyGroup>
@@ -15,6 +15,8 @@
     <QstrDefsCollected>$(DestDir)qstrdefscollected.h</QstrDefsCollected>
     <QstrGen>$(DestDir)qstrdefs.generated.h</QstrGen>
     <PyPython Condition="'$(PyPython)' == ''">python</PyPython>
+    <CLToolExe Condition="'$(CLToolExe)' == ''">cl.exe</CLToolExe>
+    <PyClTool>$([System.IO.Path]::Combine(`$(CLToolPath)`, `$(CLToolExe)`))</PyClTool>
   </PropertyGroup>
 
   <Target Name="MakeDestDir">
@@ -52,8 +54,8 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
   <Target Name="MakeQstrDefs" DependsOnTargets="MakeDestDir" Inputs="@(ClCompile);@(QstrDependencies)" Outputs="$(QstrDefsCollected)">
     <ItemGroup>
       <PyIncDirs Include="$(PyIncDirs)"/>
-      <PreProcDefs Include="%(ClCompile.PreProcessorDefinitions);NO_QSTR;N_X64;N_X86;N_THUMB;N_ARM"/>
-      <PyQstrSourceFiles Include="@(ClCompile)">
+      <PreProcDefs Include="%(ClCompile.PreProcessorDefinitions);NO_QSTR"/>
+      <PyQstrSourceFiles Include="@(ClCompile)" Exclude="$(PyBuildDir)\frozen_content.c">
         <OutFile>$([System.String]::new('%(FullPath)').Replace('$(PyBaseDir)', '$(DestDir)qstr\'))</OutFile>
       </PyQstrSourceFiles>
       <PyQstrSourceFiles>
@@ -73,20 +75,34 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     </PropertyGroup>
 
     <MakeDir Directories="@(PyQstrSourceFiles->'%(OutDir)')"/>
-    <Exec Command="cl /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /Fi%(PyQstrSourceFiles.OutFile) /P %(PyQstrSourceFiles.Identity)"
+    <Exec Command="$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /Fi%(PyQstrSourceFiles.OutFile) /P %(PyQstrSourceFiles.Identity)"
           Condition="'%(PyQstrSourceFiles.Changed)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
     <ConcatPreProcFiles InputFiles="@(PyQstrSourceFiles->'%(OutFile)')" OutputFile="$(DestDir)qstr.i.last"
                         Condition="'$(RunPreProcConcat)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
-    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
-    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat $(DestDir)qstr.i.last $(DestDir)qstr $(QstrDefsCollected)"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split qstr $(DestDir)qstr.i.last $(DestDir)qstr _"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat qstr _ $(DestDir)qstr $(QstrDefsCollected)"/>
+  </Target>
+
+  <Target Name="MakeModuleDefs" DependsOnTargets="MakeDestDir">
+    <PropertyGroup>
+      <DestFile>$(DestDir)moduledefs.h</DestFile>
+      <TmpFile>$(DestFile).tmp</TmpFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <PyUserModuleFiles Include="@(ClCompile)">
+        <Path>$([System.String]::new('%(FullPath)').Replace('$(PyBaseDir)', ''))</Path>
+      </PyUserModuleFiles>
+    </ItemGroup>
+    <Exec Command="$(PyPython) $(PySrcDir)makemoduledefs.py --vpath=&quot;., $(PyBaseDir), $(PyUserCModules)&quot; @(PyUserModuleFiles->'%(Path)', ' ') > $(TmpFile)"/>
+    <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 
   <Target Name="MakeQstrData" DependsOnTargets="MakeQstrDefs" Inputs="$(QstrDefsCollected);$(PyQstrDefs);$(QstrDefs)" Outputs="$(QstrGen)">
     <PropertyGroup>
       <TmpFile>$(QstrGen).tmp</TmpFile>
     </PropertyGroup>
-    <Exec Command="cl /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /E $(PyQstrDefs) $(QstrDefs) > $(DestDir)qstrdefspreprocessed.h"/>
-    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdata.py $(DestDir)qstrdefspreprocessed.h $(QstrDefsCollected) > $(TmpFile)"/>
+    <Exec Command="$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /E $(PyQstrDefs) $(QstrDefs) > $(DestDir)qstrdefs.preprocessed.h"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdata.py $(DestDir)qstrdefs.preprocessed.h $(QstrDefsCollected) > $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(QstrGen)"/>
   </Target>
 
@@ -97,6 +113,17 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     </PropertyGroup>
     <Exec Command="$(PyPython) $(PySrcDir)makeversionhdr.py $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
+  </Target>
+
+  <Target Name="FreezeModules" Condition="'$(FrozenManifest)' != ''" DependsOnTargets="MakeQstrData" Inputs="$(FrozenManifest)" Outputs="$(PyBuildDir)frozen_content.c">
+    <ItemGroup>
+      <ClCompile Include="$(PyBuildDir)frozen_content.c"/>
+      <ClCompile>
+        <PreprocessorDefinitions>MICROPY_MODULE_FROZEN_MPY=1;MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      </ClCompile>
+    </ItemGroup>
+    <Exec Command="$(PyPython) $(PyBaseDir)tools\makemanifest.py -v MPY_DIR=$(PyBaseDir) -v MPY_LIB_DIR=$(PyBaseDir)../micropython-lib -v PORT_DIR=$(PyWinDir) -f&quot;-mcache-lookup-bc&quot; -o $(PyBuildDir)frozen_content.c -b $(PyBuildDir) $(FrozenManifest)"/>
+    <WriteLinesToFile File="$(TLogLocation)frozen.read.1.tlog" Lines="$(FrozenManifest)" Overwrite="True"/>
   </Target>
 
   <Target Name="RemoveGeneratedFiles" AfterTargets="Clean">

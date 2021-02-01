@@ -28,15 +28,30 @@
 
 #include STM32_HAL_H
 
+#if !defined(I2C2_BASE)
+// This MCU doesn't have I2C2_BASE, define it so that the i2c_idx calculation works.
+#define I2C2_BASE (I2C1_BASE + ((I2C3_BASE - I2C1_BASE) / 2))
+#endif
+
 typedef I2C_TypeDef i2c_slave_t;
 
 void i2c_slave_init_helper(i2c_slave_t *i2c, int addr);
 
 static inline void i2c_slave_init(i2c_slave_t *i2c, int irqn, int irq_pri, int addr) {
-    int en_bit = RCC_APB1ENR_I2C1EN_Pos + ((uintptr_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
-    RCC->APB1ENR |= 1 << en_bit;
+    int i2c_idx = ((uintptr_t)i2c - I2C1_BASE) / (I2C2_BASE - I2C1_BASE);
+    #if defined(STM32F4) || defined(STM32F7)
+    RCC->APB1ENR |= 1 << (RCC_APB1ENR_I2C1EN_Pos + i2c_idx);
     volatile uint32_t tmp = RCC->APB1ENR; // Delay after enabling clock
     (void)tmp;
+    #elif defined(STM32H7)
+    RCC->APB1LENR |= 1 << (RCC_APB1LENR_I2C1EN_Pos + i2c_idx);
+    volatile uint32_t tmp = RCC->APB1LENR; // Delay after enabling clock
+    (void)tmp;
+    #elif defined(STM32WB)
+    RCC->APB1ENR1 |= 1 << (RCC_APB1ENR1_I2C1EN_Pos + i2c_idx);
+    volatile uint32_t tmp = RCC->APB1ENR1; // Delay after enabling clock
+    (void)tmp;
+    #endif
 
     i2c_slave_init_helper(i2c, addr);
 
@@ -52,9 +67,10 @@ static inline void i2c_slave_shutdown(i2c_slave_t *i2c, int irqn) {
 void i2c_slave_ev_irq_handler(i2c_slave_t *i2c);
 
 // These should be provided externally
-int i2c_slave_process_addr_match(int rw);
-int i2c_slave_process_rx_byte(uint8_t val);
-void i2c_slave_process_rx_end(void);
-uint8_t i2c_slave_process_tx_byte(void);
+int i2c_slave_process_addr_match(i2c_slave_t *i2c, int rw);
+int i2c_slave_process_rx_byte(i2c_slave_t *i2c, uint8_t val);
+void i2c_slave_process_rx_end(i2c_slave_t *i2c);
+uint8_t i2c_slave_process_tx_byte(i2c_slave_t *i2c);
+void i2c_slave_process_tx_end(i2c_slave_t *i2c);
 
 #endif // MICROPY_INCLUDED_STM32_I2CSLAVE_H

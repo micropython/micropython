@@ -1,28 +1,48 @@
 # Select the board to build for: if not given on the command line,
 # then default to PYBV10.
 BOARD ?= PYBV10
-ifeq ($(wildcard ../boards/$(BOARD)/.),)
-$(error Invalid BOARD specified)
-endif
 
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
+# Allow the directory containing the board configuration to be specified
+BOARD_DIR ?= $(abspath ../boards/$(BOARD))
+
+# Set USE_MBOOT to 1 so that TEXT0_ADDR gets set properly for those boards
+# that can be built with or without mboot.
+USE_MBOOT ?= 1
+
+# Set MBOOT_ENABLE_PACKING to 1 to enable DFU packing with encryption and signing.
+# Ensure the MBOOT_PACK_xxx values match stm32/Makefile, to build matching application firmware.
+MBOOT_ENABLE_PACKING ?= 0
+MBOOT_PACK_CHUNKSIZE ?= 16384
+MBOOT_PACK_KEYS_FILE ?= $(BOARD_DIR)/mboot_keys.h
+
+# Sanity check that the board configuration directory exists
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
 include ../../../py/mkenv.mk
-include ../boards/$(BOARD)/mpconfigboard.mk
+include $(BOARD_DIR)/mpconfigboard.mk
+
+MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
+CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
 
 CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Include
-MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
 HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 DFU=$(TOP)/tools/dfu.py
 PYDFU ?= $(TOP)/tools/pydfu.py
-DEVICE=0483:df11
+BOOTLOADER_DFU_USB_VID ?= 0x0483
+BOOTLOADER_DFU_USB_PID ?= 0xDF11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
+STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
+SYSTEM_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/system_stm32$(MCU_SERIES)xx.o
 
-CROSS_COMPILE = arm-none-eabi-
+CROSS_COMPILE ?= arm-none-eabi-
 
 INC += -I.
 INC += -I..
@@ -39,16 +59,28 @@ CFLAGS_CORTEX_M = -mthumb
 # Options for particular MCU series
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
+CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+# Standard C functions like memset need to be compiled with special flags so
+# the compiler does not optimise these functions in terms of themselves.
+CFLAGS_BUILTIN ?= -ffreestanding -fno-builtin -fno-lto
+
+CFLAGS = $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Wfloat-conversion -Werror -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU)
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
-CFLAGS += -I../boards/$(BOARD)
+CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DBOARD_$(BOARD)
 CFLAGS += -DAPPLICATION_ADDR=$(TEXT0_ADDR)
+CFLAGS += -DFFCONF_H=\"ports/stm32/mboot/ffconf.h\"
+CFLAGS += -DLFS1_NO_MALLOC -DLFS1_NO_DEBUG -DLFS1_NO_WARN -DLFS1_NO_ERROR -DLFS1_NO_ASSERT
+CFLAGS += -DLFS2_NO_MALLOC -DLFS2_NO_DEBUG -DLFS2_NO_WARN -DLFS2_NO_ERROR -DLFS2_NO_ASSERT -DLFS2_READONLY
+CFLAGS += -DBUILDING_MBOOT=1
+CFLAGS += -DMICROPY_HW_STM32WB_FLASH_SYNCRONISATION=0
+CFLAGS += -DBOOTLOADER_DFU_USB_VID=$(BOOTLOADER_DFU_USB_VID) -DBOOTLOADER_DFU_USB_PID=$(BOOTLOADER_DFU_USB_PID)
 
 LDFLAGS = -nostdlib -L . -T stm32_generic.ld -Map=$(@:.elf=.map) --cref
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
@@ -65,26 +97,55 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-SRC_LIB = $(addprefix lib/,\
-	libc/string0.c \
-	)
+$(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
+LIB_SRC_C = \
+	lib/libc/string0.c \
+	lib/littlefs/lfs1.c \
+	lib/littlefs/lfs1_util.c \
+	lib/littlefs/lfs2.c \
+	lib/littlefs/lfs2_util.c \
+	lib/oofatfs/ff.c \
+	lib/oofatfs/ffunicode.c \
+	extmod/uzlib/crc32.c \
+	extmod/uzlib/adler32.c \
+	extmod/uzlib/tinflate.c \
+	extmod/uzlib/tinfgzip.c
 
 SRC_C = \
 	main.c \
+	elem.c \
+	fsload.c \
+	gzstream.c \
+	pack.c \
+	vfs_fat.c \
+	vfs_lfs.c \
 	drivers/bus/softspi.c \
 	drivers/bus/softqspi.c \
 	drivers/memory/spiflash.c \
-	ports/stm32/i2cslave.c \
-	ports/stm32/qspi.c \
+	ports/stm32/flash.c \
 	ports/stm32/flashbdev.c \
+	ports/stm32/i2cslave.c \
+	ports/stm32/powerctrlboot.c \
+	ports/stm32/qspi.c \
 	ports/stm32/spibdev.c \
 	ports/stm32/usbd_conf.c \
-	$(patsubst $(TOP)/%,%,$(wildcard $(TOP)/ports/stm32/boards/$(BOARD)/*.c))
+	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O = \
-	ports/stm32/boards/startup_stm32$(MCU_SERIES).o \
+	$(STARTUP_FILE) \
+	$(SYSTEM_FILE) \
 	ports/stm32/resethandler.o \
 
+ifeq ($(MBOOT_ENABLE_PACKING), 1)
+
+SRC_C += lib/libhydrogen/hydrogen.c
+
+CFLAGS += -DMBOOT_ENABLE_PACKING=1 -DPARTICLE -DPLATFORM_ID=3
+CFLAGS += -DMBOOT_PACK_CHUNKSIZE=$(MBOOT_PACK_CHUNKSIZE)
+CFLAGS += -DMBOOT_PACK_KEYS_FILE=\"$(MBOOT_PACK_KEYS_FILE)\"
+endif
+
+$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL = $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_cortex.c \
 	hal_flash.c \
@@ -101,7 +162,7 @@ SRC_USBDEV = $(addprefix ports/stm32/$(USBDEV_DIR)/,\
 	)
 
 OBJ =
-OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(addprefix $(BUILD)/, $(SRC_HAL:.c=.o))
@@ -114,13 +175,17 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-.PHONY: deploy
+.PHONY: deploy deploy-stlink
+
+FLASH_ADDR = 0x08000000
 
 deploy: $(BUILD)/firmware.dfu
 	$(ECHO) "Writing $< to the board"
 	$(Q)$(PYTHON) $(PYDFU) -u $<
 
-FLASH_ADDR = 0x08000000
+deploy-stlink: $(BUILD)/firmware.dfu
+	$(ECHO) "Writing $< to the board via ST-LINK"
+	$(Q)$(STFLASH) write $(BUILD)/firmware.bin $(FLASH_ADDR)
 
 $(BUILD)/firmware.dfu: $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
@@ -135,6 +200,36 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
+
+#########################################
+# Rules to generate header files
+
+MAKE_PINS = ../boards/make-pins.py
+PREFIX_FILE = ../boards/stm32f4xx_prefix.c
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+HEADER_BUILD = $(BUILD)/genhdr
+GEN_QSTRDEFS_GENERATED = $(HEADER_BUILD)/qstrdefs.generated.h
+GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
+GEN_PINS_AF_PY = $(BUILD)/pins_af.py
+
+$(OBJ): $(GEN_QSTRDEFS_GENERATED) $(GEN_PINS_AF_DEFS)
+
+$(HEADER_BUILD):
+	$(MKDIR) -p $(BUILD)/genhdr
+
+$(GEN_QSTRDEFS_GENERATED): | $(HEADER_BUILD)
+	$(Q)echo "// empty" > $@
+
+$(GEN_PINS_AF_DEFS): $(BOARD_PINS) $(MAKE_PINS) ../$(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af ../$(AF_FILE) \
+		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) \
+		--af-const $(GEN_PINS_AF_CONST) --af-defs $(GEN_PINS_AF_DEFS) \
+		--af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
 #########################################
 
@@ -179,11 +274,5 @@ clean:
 .PHONY: clean
 
 ###########################################
-
-$(BUILD)/main.o: $(BUILD)/genhdr/qstrdefs.generated.h
-
-$(BUILD)/genhdr/qstrdefs.generated.h:
-	$(MKDIR) -p $(BUILD)/genhdr
-	$(Q)echo "// empty" > $@
 
 -include $(OBJ:.o=.P)

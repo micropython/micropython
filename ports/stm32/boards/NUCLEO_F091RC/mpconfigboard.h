@@ -7,7 +7,6 @@
 #define MICROPY_PY_NETWORK          (0)
 #define MICROPY_PY_STM              (0)
 #define MICROPY_PY_PYB_LEGACY       (0)
-#define MICROPY_VFS_FAT             (0)
 
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
@@ -16,7 +15,14 @@
 #define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_HAS_SWITCH       (1)
 
-// For system clock, board uses internal 48MHz, HSI48
+// For system clock, enable one source:
+//#define MICROPY_HW_CLK_USE_HSI      (1) // internal 8MHz -> PLL = 48MHz.
+#define MICROPY_HW_CLK_USE_HSI48    (1) // internal 48MHz.
+//#define MICROPY_HW_CLK_USE_HSE      (1) // external crystal -> PLL = 48MHz.
+// For HSE set the crystal / clock input frequency HSE_VALUE in stm32f0xx_hal_conf.h
+#if MICROPY_HW_CLK_USE_HSE
+#define MICROPY_HW_CLK_USE_BYPASS   (1) // HSE comes from STLINK 8MHz, not crystal.
+#endif
 
 // The board has an external 32kHz crystal
 #define MICROPY_HW_RTC_USE_LSE      (1)
@@ -26,6 +32,18 @@
 #define MICROPY_HW_UART1_RX     (pin_B7)
 #define MICROPY_HW_UART2_TX     (pin_A2)
 #define MICROPY_HW_UART2_RX     (pin_A3)
+#define MICROPY_HW_UART3_TX     (pin_C10)
+#define MICROPY_HW_UART3_RX     (pin_C11)
+#define MICROPY_HW_UART4_TX     (pin_A0)
+#define MICROPY_HW_UART4_RX     (pin_A1)
+#define MICROPY_HW_UART5_TX     (pin_B3)
+#define MICROPY_HW_UART5_RX     (pin_B4)
+#define MICROPY_HW_UART6_TX     (pin_C0)
+#define MICROPY_HW_UART6_RX     (pin_C1)
+#define MICROPY_HW_UART7_TX     (pin_C6)
+#define MICROPY_HW_UART7_RX     (pin_C7)
+#define MICROPY_HW_UART8_TX     (pin_C2)
+#define MICROPY_HW_UART8_RX     (pin_C3)
 
 // USART2 is connected to the ST-LINK USB VCP
 #define MICROPY_HW_UART_REPL PYB_UART_2

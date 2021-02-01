@@ -35,9 +35,9 @@
  * Table of constants for 2/pi, 396 Hex digits (476 decimal) of 2/pi 
  */
 #ifdef __STDC__
-static const __int32_t two_over_pi[] = {
+static const __uint8_t two_over_pi[] = {
 #else
-static __int32_t two_over_pi[] = {
+static __uint8_t two_over_pi[] = {
 #endif
 0xA2, 0xF9, 0x83, 0x6E, 0x4E, 0x44, 0x15, 0x29, 0xFC,
 0x27, 0x57, 0xD1, 0xF5, 0x34, 0xDD, 0xC0, 0xDB, 0x62, 
@@ -93,16 +93,16 @@ static const float
 #else
 static float 
 #endif
-zero =  0.0000000000e+00, /* 0x00000000 */
-half =  5.0000000000e-01, /* 0x3f000000 */
-two8 =  2.5600000000e+02, /* 0x43800000 */
-invpio2 =  6.3661980629e-01, /* 0x3f22f984 */
-pio2_1  =  1.5707855225e+00, /* 0x3fc90f80 */
-pio2_1t =  1.0804334124e-05, /* 0x37354443 */
-pio2_2  =  1.0804273188e-05, /* 0x37354400 */
-pio2_2t =  6.0770999344e-11, /* 0x2e85a308 */
-pio2_3  =  6.0770943833e-11, /* 0x2e85a300 */
-pio2_3t =  6.1232342629e-17; /* 0x248d3132 */
+zero =  0.0000000000e+00f, /* 0x00000000 */
+half =  5.0000000000e-01f, /* 0x3f000000 */
+two8 =  2.5600000000e+02f, /* 0x43800000 */
+invpio2 =  6.3661980629e-01f, /* 0x3f22f984 */
+pio2_1  =  1.5707855225e+00f, /* 0x3fc90f80 */
+pio2_1t =  1.0804334124e-05f, /* 0x37354443 */
+pio2_2  =  1.0804273188e-05f, /* 0x37354400 */
+pio2_2t =  6.0770999344e-11f, /* 0x2e85a308 */
+pio2_3  =  6.0770943833e-11f, /* 0x2e85a300 */
+pio2_3t =  6.1232342629e-17f; /* 0x248d3132 */
 
 #ifdef __STDC__
 	__int32_t __ieee754_rem_pio2f(float x, float *y)

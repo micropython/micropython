@@ -42,7 +42,7 @@ Usage Model::
 Constructors
 ------------
 
-.. class:: Pin(id, mode=-1, pull=-1, \*, value, drive, alt)
+.. class:: Pin(id, mode=-1, pull=-1, *, value, drive, alt)
 
    Access the pin peripheral (GPIO pin) associated with the given ``id``.  If
    additional arguments are given in the constructor then they are used to initialise
@@ -106,7 +106,7 @@ Constructors
 Methods
 -------
 
-.. method:: Pin.init(mode=-1, pull=-1, \*, value, drive, alt)
+.. method:: Pin.init(mode=-1, pull=-1, *, value, drive, alt)
 
    Re-initialise the pin using the given parameters.  Only those arguments that
    are specified will be set.  The rest of the pin peripheral state will remain
@@ -179,7 +179,7 @@ Methods
 
    Availability: WiPy.
 
-.. method:: Pin.irq(handler=None, trigger=(Pin.IRQ_FALLING | Pin.IRQ_RISING), \*, priority=1, wake=None)
+.. method:: Pin.irq(handler=None, trigger=(Pin.IRQ_FALLING | Pin.IRQ_RISING), *, priority=1, wake=None, hard=False)
 
    Configure an interrupt handler to be called when the trigger source of the
    pin is active.  If the pin mode is ``Pin.IN`` then the trigger source is
@@ -191,7 +191,8 @@ Methods
    The arguments are:
 
      - ``handler`` is an optional function to be called when the interrupt
-       triggers.
+       triggers. The handler must take exactly one argument which is the
+       ``Pin`` instance.
 
      - ``trigger`` configures the event which can generate an interrupt.
        Possible values are:
@@ -212,6 +213,11 @@ Methods
        These values can also be OR'ed together to make a pin generate interrupts in
        more than one power mode.
 
+     - ``hard`` if true a hardware interrupt is used. This reduces the delay
+       between the pin change and the handler being called. Hard interrupt
+       handlers may not allocate memory; see :ref:`isr_rules`.
+       Not all ports support this argument.
+
    This method returns a callback object.
 
 Constants
@@ -230,6 +236,7 @@ not all constants are available on all ports.
 
 .. data:: Pin.PULL_UP
           Pin.PULL_DOWN
+          Pin.PULL_HOLD
 
    Selects whether there is a pull up/down resistor.  Use the value
    ``None`` for no pull.

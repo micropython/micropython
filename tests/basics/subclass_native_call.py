@@ -4,13 +4,13 @@
 # and is callable (has call).  The only one available is machine.Signal, which
 # in turns needs PinBase.
 try:
-    import umachine as machine
-except ImportError:
-    import machine
-try:
+    try:
+        import umachine as machine
+    except ImportError:
+        import machine
     machine.PinBase
     machine.Signal
-except AttributeError:
+except:
     print("SKIP")
     raise SystemExit
 

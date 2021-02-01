@@ -11,7 +11,7 @@ It's also ok to drop file extensions.
 
 Besides prefix, first line of a commit message should describe a
 change clearly and to the point, and be a grammatical sentence with
-final full stop. First line should fit within 78 characters. Examples
+final full stop. First line should fit within 72 characters. Examples
 of good first line of commit messages:
 
     py/objstr: Add splitlines() method.
@@ -19,16 +19,20 @@ of good first line of commit messages:
     docs/machine: Fix typo in reset() description.
     ports: Switch to use lib/foo instead of duplicated code.
 
-After the first line, add an empty line and in following lines describe
-a change in a detail, if needed. Any change beyond 5 lines would likely
-require such detailed description.
+After the first line add an empty line and in the following lines describe
+the change in a detail, if needed, with lines fitting within 75 characters
+(with an exception for long items like URLs which cannot be broken). Any
+change beyond 5 lines would likely require such detailed description.
 
 To get good practical examples of good commits and their messages, browse
 the `git log` of the project.
 
-MicroPython doesn't require explicit sign-off for patches ("Signed-off-by"
-lines and similar). Instead, the commit message, and your name and email
-address on it construes your sign-off of the following:
+When committing you are encouraged to sign-off your commit by adding
+"Signed-off-by" lines and similar, eg using "git commit -s".  If you don't
+explicitly sign-off in this way then the commit message, which includes your
+name and email address in the "Author" line, implies your sign-off.  In either
+case, of explicit or implicit sign-off, you are certifying and signing off
+against the following:
 
 * That you wrote the change yourself, or took it from a project with
   a compatible license (in the latter case the commit message, and possibly
@@ -42,19 +46,35 @@ address on it construes your sign-off of the following:
   copyright for your changes (for smaller changes, the commit message
   conveys your copyright; if you make significant changes to a particular
   source module, you're welcome to add your name to the file header).
-* Your signature for all of the above, which is the 'Author' line in
-  the commit message, and which should include your full real name and
+* Your contribution including commit message will be publicly and
+  indefinitely available for anyone to access, including redistribution
+  under the terms of the project's license.
+* Your signature for all of the above, which is the "Signed-off-by" line
+  or the "Author" line in the commit message, includes your full real name and
   a valid and active email address by which you can be contacted in the
   foreseeable future.
+
+Code auto-formatting
+====================
+
+Both C and Python code are auto-formatted using the `tools/codeformat.py`
+script.  This uses [uncrustify](https://github.com/uncrustify/uncrustify) to
+format C code and [black](https://github.com/psf/black) to format Python code.
+After making changes, and before committing, run this tool to reformat your
+changes to the correct style.  Without arguments this tool will reformat all
+source code (and may take some time to run).  Otherwise pass as arguments to
+the tool the files that changed and it will only reformat those.
 
 Python code conventions
 =======================
 
-Python code follows [PEP 8](http://legacy.python.org/dev/peps/pep-0008/).
+Python code follows [PEP 8](https://legacy.python.org/dev/peps/pep-0008/) and
+is auto-formatted using [black](https://github.com/psf/black) with a line-length
+of 99 characters.
 
 Naming conventions:
 - Module names are short and all lowercase; eg pyb, stm.
-- Class names are CamelCase, with abreviations all uppercase; eg I2C, not
+- Class names are CamelCase, with abbreviations all uppercase; eg I2C, not
   I2c.
 - Function and method names are all lowercase with words separated by
   a single underscore as necessary to improve readability; eg mem_read.
@@ -64,7 +84,12 @@ Naming conventions:
 C code conventions
 ==================
 
-When writing new C code, please adhere to the following conventions.
+C code is auto-formatted using [uncrustify](https://github.com/uncrustify/uncrustify)
+and the corresponding configuration file `tools/uncrustify.cfg`, with a few
+minor fix-ups applied by `tools/codeformat.py`.  When writing new C code please
+adhere to the existing style and use `tools/codeformat.py` to check any changes.
+The main conventions, and things not enforceable via the auto-formatter, are
+described below.
 
 White space:
 - Expand tabs to 4 spaces.
@@ -125,7 +150,7 @@ Braces, spaces, names and comments:
             foo(x + TO_ADD, some_value - 1);
         }
 
-        for (int my_counter = 0; my_counter < x; my_counter++) {
+        for (int my_counter = 0; my_counter < x; ++my_counter) {
         }
     }
 

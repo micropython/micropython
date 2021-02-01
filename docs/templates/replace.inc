@@ -4,6 +4,6 @@
 
 .. |see_cpython_module| replace::
 
-    *This module implements a subset of the corresponding* `CPython` *module,
+    *This module implements a subset of the corresponding* :term:`CPython` *module,
     as described below. For more information, refer to the original
     CPython documentation:*

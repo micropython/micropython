@@ -4,6 +4,24 @@ THIS_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 include $(dir $(THIS_MAKEFILE))mkenv.mk
 endif
 
+# Extra deps that need to happen before object compilation.
+OBJ_EXTRA_ORDER_DEPS =
+
+ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)
+# If compression is enabled, trigger the build of compressed.data.h...
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/compressed.data.h
+# ...and enable the MP_COMPRESSED_ROM_TEXT macro (used by MP_ERROR_TEXT).
+CFLAGS += -DMICROPY_ROM_TEXT_COMPRESSION=1
+endif
+
+# QSTR generation uses the same CFLAGS, with these modifications.
+QSTR_GEN_FLAGS = -DNO_QSTR
+# Note: := to force evalulation immediately.
+QSTR_GEN_CFLAGS := $(CFLAGS)
+QSTR_GEN_CFLAGS += $(QSTR_GEN_FLAGS)
+QSTR_GEN_CXXFLAGS := $(CXXFLAGS)
+QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
+
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
 # and should not contain any ..'s but rather be relative to the top of the
@@ -20,12 +38,12 @@ endif
 # can be located. By following this scheme, it allows a single build rule
 # to be used to compile all .c files.
 
-vpath %.S . $(TOP)
+vpath %.S . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.S
 	$(ECHO) "CC $<"
 	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
-vpath %.s . $(TOP)
+vpath %.s . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.s
 	$(ECHO) "AS $<"
 	$(Q)$(AS) -o $@ $<
@@ -42,18 +60,29 @@ $(Q)$(CC) $(CFLAGS) -c -MD -o $@ $<
   $(RM) -f $(@:.o=.d)
 endef
 
-vpath %.c . $(TOP)
+define compile_cxx
+$(ECHO) "CXX $<"
+$(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $<
+@# The following fixes the dependency file.
+@# See http://make.paulandlesley.org/autodep.html for details.
+@# Regex adjusted from the above to play better with Windows paths, etc.
+@$(CP) $(@:.o=.d) $(@:.o=.P); \
+  $(SED) -e 's/#.*//' -e 's/^.*:  *//' -e 's/ *\\$$//' \
+      -e '/^$$/ d' -e 's/$$/ :/' < $(@:.o=.d) >> $(@:.o=.P); \
+  $(RM) -f $(@:.o=.d)
+endef
+
+vpath %.c . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
-QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR
-QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
-
-vpath %.c . $(TOP)
+vpath %.cpp . $(TOP) $(USER_C_MODULES)
+$(BUILD)/%.o: %.cpp
+	$(call compile_cxx)
 
 $(BUILD)/%.pp: %.c
 	$(ECHO) "PreProcess $<"
-	$(Q)$(CC) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
+	$(Q)$(CPP) $(CFLAGS) -Wp,-C,-dD,-dI -o $@ $<
 
 # The following rule uses | to create an order only prerequisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
@@ -64,24 +93,35 @@ $(BUILD)/%.pp: %.c
 # the right .o's to get recompiled if the generated.h file changes. Adding
 # an order-only dependency to all of the .o's will cause the generated .h
 # to get built before we try to compile any of them.
-$(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h
+$(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h $(OBJ_EXTRA_ORDER_DEPS)
 
-# The logic for qstr regeneration is:
+# The logic for qstr regeneration (applied by makeqstrdefs.py) is:
 # - if anything in QSTR_GLOBAL_DEPENDENCIES is newer, then process all source files ($^)
 # - else, if list of newer prerequisites ($?) is not empty, then process just these ($?)
 # - else, process all source files ($^) [this covers "make -B" which can set $? to empty]
-$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
+# See more information about this process in docs/develop/qstr.rst.
+$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(QSTR_GLOBAL_REQUIREMENTS)
 	$(ECHO) "GEN $@"
-	$(Q)$(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS) $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) >$(HEADER_BUILD)/qstr.i.last;
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py pp $(CPP) output $(HEADER_BUILD)/qstr.i.last cflags $(QSTR_GEN_CFLAGS) cxxflags $(QSTR_GEN_CXXFLAGS) sources $^ dependencies $(QSTR_GLOBAL_DEPENDENCIES) changed_sources $?
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
-	$(Q)touch $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split qstr $< $(HEADER_BUILD)/qstr _
+	$(Q)$(TOUCH) $@
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat $(HEADER_BUILD)/qstr.i.last $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat qstr _ $(HEADER_BUILD)/qstr $@
+
+# Compressed error strings.
+$(HEADER_BUILD)/compressed.split: $(HEADER_BUILD)/qstr.i.last
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split compress $< $(HEADER_BUILD)/compress _
+	$(Q)$(TOUCH) $@
+
+$(HEADER_BUILD)/compressed.collected: $(HEADER_BUILD)/compressed.split
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat compress _ $(HEADER_BUILD)/compress $@
 
 # $(sort $(var)) removes duplicates
 #
@@ -96,23 +136,35 @@ $(OBJ_DIRS):
 $(HEADER_BUILD):
 	$(MKDIR) -p $@
 
+ifneq ($(FROZEN_MANIFEST),)
+# to build frozen_content.c from a manifest
+$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h
+	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) $(FROZEN_MANIFEST)
+
 ifneq ($(FROZEN_DIR),)
+$(error FROZEN_DIR cannot be used in conjunction with FROZEN_MANIFEST)
+endif
+
+ifneq ($(FROZEN_MPY_DIR),)
+$(error FROZEN_MPY_DIR cannot be used in conjunction with FROZEN_MANIFEST)
+endif
+endif
+
+ifneq ($(FROZEN_DIR),)
+$(info Warning: FROZEN_DIR is deprecated in favour of FROZEN_MANIFEST)
 $(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
 	$(ECHO) "GEN $@"
 	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
 endif
 
 ifneq ($(FROZEN_MPY_DIR),)
-# to build the MicroPython cross compiler
-$(TOP)/mpy-cross/mpy-cross: $(TOP)/py/*.[ch] $(TOP)/mpy-cross/*.[ch] $(TOP)/ports/windows/fmode.c
-	$(Q)$(MAKE) -C $(TOP)/mpy-cross
-
+$(info Warning: FROZEN_MPY_DIR is deprecated in favour of FROZEN_MANIFEST)
 # make a list of all the .py files that need compiling and freezing
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | $(SED) -e 's=^$(FROZEN_MPY_DIR)/==')
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 # to build .mpy files from .py files
-$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py $(TOP)/mpy-cross/mpy-cross
+$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py
 	@$(ECHO) "MPY $<"
 	$(Q)$(MKDIR) -p $(dir $@)
 	$(Q)$(MPY_CROSS) -o $@ -s $(<:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $<
@@ -146,6 +198,13 @@ clean-prog:
 .PHONY: clean-prog
 endif
 
+submodules:
+	$(ECHO) "Updating submodules: $(GIT_SUBMODULES)"
+ifneq ($(GIT_SUBMODULES),)
+	$(Q)git submodule update --init $(addprefix $(TOP)/,$(GIT_SUBMODULES))
+endif
+.PHONY: submodules
+
 LIBMICROPYTHON = libmicropython.a
 
 # We can execute extra commands after library creation using
@@ -154,7 +213,7 @@ LIBMICROPYTHON = libmicropython.a
 # tracking. Then LIBMICROPYTHON_EXTRA_CMD can e.g. touch some
 # other file to cause needed effect, e.g. relinking with new lib.
 lib $(LIBMICROPYTHON): $(OBJ)
-	$(AR) rcs $(LIBMICROPYTHON) $^
+	$(Q)$(AR) rcs $(LIBMICROPYTHON) $^
 	$(LIBMICROPYTHON_EXTRA_CMD)
 
 clean:
@@ -190,7 +249,7 @@ print-cfg:
 
 print-def:
 	@$(ECHO) "The following defines are built into the $(CC) compiler"
-	touch __empty__.c
+	$(TOUCH) __empty__.c
 	@$(CC) -E -Wp,-dM __empty__.c
 	@$(RM) -f __empty__.c
 

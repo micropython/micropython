@@ -1,4 +1,4 @@
-.. _quickref_:
+.. _wipy_quickref:
 
 Quick reference for the WiPy
 ============================
@@ -6,6 +6,15 @@ Quick reference for the WiPy
 .. image:: https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png
     :alt: WiPy pinout and alternate functions table
     :width: 800px
+
+Below is a quick reference for CC3200/WiPy.  If it is your first time
+working with this board please consider reading the following sections first:
+
+.. toctree::
+   :maxdepth: 1
+
+   general.rst
+   tutorial/index.rst
 
 General board control (including sleep modes)
 ---------------------------------------------
@@ -19,7 +28,7 @@ See the :mod:`machine` module::
     machine.unique_id() # return the 6-byte unique id of the board (the WiPy's MAC address)
 
     machine.idle()        # average current decreases to (~12mA), any interrupts wake it up
-    machine.sleep()       # everything except for WLAN is powered down (~950uA avg. current)
+    machine.lightsleep()  # everything except for WLAN is powered down (~950uA avg. current)
                           # wakes from Pin, RTC or WLAN
     machine.deepsleep()   # deepest sleep mode, MCU starts from reset. Wakes from Pin and RTC.
 
@@ -44,7 +53,7 @@ See :ref:`machine.Pin <machine.Pin>`. ::
 Timers
 ------
 
-See :ref:`machine.Timer <machine.Timer>` and :ref:`machine.Pin <machine.Pin>`.
+See :ref:`machine.TimerWiPy <machine.TimerWiPy>` and :ref:`machine.Pin <machine.Pin>`.
 Timer ``id``'s take values from 0 to 3.::
 
     from machine import Timer
@@ -53,7 +62,7 @@ Timer ``id``'s take values from 0 to 3.::
     tim = Timer(0, mode=Timer.PERIODIC)
     tim_a = tim.channel(Timer.A, freq=1000)
     tim_a.freq(5) # 5 Hz
-    
+
     p_out = Pin('GP2', mode=Pin.OUT)
     tim_a.irq(trigger=Timer.TIMEOUT, handler=lambda t: p_out.toggle())
 
@@ -66,14 +75,14 @@ See :ref:`machine.Pin <machine.Pin>` and :ref:`machine.Timer <machine.Timer>`. :
 
     # timer 1 in PWM mode and width must be 16 buts
     tim = Timer(1, mode=Timer.PWM, width=16)
-    
+
     # enable channel A @1KHz with a 50.55% duty cycle
     tim_a = tim.channel(Timer.A, freq=1000, duty_cycle=5055)
 
 ADC (analog to digital conversion)
 ----------------------------------
 
-See :ref:`machine.ADC <machine.ADC>`. ::
+See :ref:`machine.ADCWiPy <machine.ADCWiPy>`. ::
 
     from machine import ADC
 
@@ -154,7 +163,7 @@ See :ref:`machine.RTC <machine.RTC>` ::
     rtc_i = rtc.irq(trigger=RTC.ALARM0, handler=alarm_handler, wake=machine.SLEEP)
 
     # go into suspended mode waiting for the RTC alarm to expire and wake us up
-    machine.sleep()
+    machine.lightsleep()
 
 SD card
 -------
@@ -190,13 +199,13 @@ See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::
     # enable wake on WLAN
     wlan.irq(trigger=WLAN.ANY_EVENT, wake=machine.SLEEP)
     # go to sleep
-    machine.sleep()
+    machine.lightsleep()
     # now, connect to the FTP or the Telnet server and the WiPy will wake-up
 
 Telnet and FTP server
 ---------------------
 
-See :ref:`network.Server <network.Server>` ::
+See :class:`network.Server` ::
 
     from network import Server
 

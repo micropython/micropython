@@ -43,7 +43,7 @@ void HAL_FTM_Base_Init(FTM_HandleTypeDef *hftm) {
     FTMx->MOD = hftm->Init.Period;
     uint32_t sc = FTM_SC_PS(hftm->Init.PrescalerShift);
     if (hftm->Init.CounterMode == FTM_COUNTERMODE_CENTER) {
-      sc |= FTM_SC_CPWMS;
+        sc |= FTM_SC_CPWMS;
     }
     FTMx->SC = sc;
 
@@ -89,7 +89,7 @@ void HAL_FTM_OC_Init(FTM_HandleTypeDef *hftm) {
     HAL_FTM_Base_Init(hftm);
 }
 
-void HAL_FTM_OC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef* sConfig, uint32_t channel) {
+void HAL_FTM_OC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef *sConfig, uint32_t channel) {
     FTM_TypeDef *FTMx = hftm->Instance;
     assert_param(IS_FTM_INSTANCE(FTMx));
     assert_param(IS_FTM_CHANNEL(channel));
@@ -100,11 +100,11 @@ void HAL_FTM_OC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef* sConf
     hftm->State = HAL_FTM_STATE_BUSY;
 
     FTMx->channel[channel].CSC = sConfig->OCMode;
-    FTMx->channel[channel].CV  = sConfig->Pulse;
+    FTMx->channel[channel].CV = sConfig->Pulse;
     if (sConfig->OCPolarity & 1) {
-      FTMx->POL |= (1 << channel); 
+        FTMx->POL |= (1 << channel);
     } else {
-      FTMx->POL &= ~(1 << channel); 
+        FTMx->POL &= ~(1 << channel);
     }
 
     hftm->State = HAL_FTM_STATE_READY;
@@ -129,7 +129,7 @@ void HAL_FTM_PWM_Init(FTM_HandleTypeDef *hftm) {
     HAL_FTM_Base_Init(hftm);
 }
 
-void HAL_FTM_PWM_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef* sConfig, uint32_t channel) {
+void HAL_FTM_PWM_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef *sConfig, uint32_t channel) {
     FTM_TypeDef *FTMx = hftm->Instance;
     assert_param(IS_FTM_INSTANCE(FTMx));
     assert_param(IS_FTM_CHANNEL(channel));
@@ -140,11 +140,11 @@ void HAL_FTM_PWM_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef* sCon
     hftm->State = HAL_FTM_STATE_BUSY;
 
     FTMx->channel[channel].CSC = sConfig->OCMode;
-    FTMx->channel[channel].CV  = sConfig->Pulse;
+    FTMx->channel[channel].CV = sConfig->Pulse;
     if (sConfig->OCPolarity & 1) {
-      FTMx->POL |= (1 << channel); 
+        FTMx->POL |= (1 << channel);
     } else {
-      FTMx->POL &= ~(1 << channel); 
+        FTMx->POL &= ~(1 << channel);
     }
 
     hftm->State = HAL_FTM_STATE_READY;
@@ -169,7 +169,7 @@ void HAL_FTM_IC_Init(FTM_HandleTypeDef *hftm) {
     HAL_FTM_Base_Init(hftm);
 }
 
-void HAL_FTM_IC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_IC_InitTypeDef* sConfig, uint32_t channel) {
+void HAL_FTM_IC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_IC_InitTypeDef *sConfig, uint32_t channel) {
     FTM_TypeDef *FTMx = hftm->Instance;
     assert_param(IS_FTM_INSTANCE(FTMx));
     assert_param(IS_FTM_CHANNEL(channel));
@@ -183,8 +183,8 @@ void HAL_FTM_IC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_IC_InitTypeDef* sConf
 }
 
 void HAL_FTM_IC_Start(FTM_HandleTypeDef *hftm, uint32_t channel) {
-    //FTM_TypeDef *FTMx = hftm->Instance;
-    //assert_param(IS_FTM_INSTANCE(FTMx));
+    // FTM_TypeDef *FTMx = hftm->Instance;
+    // assert_param(IS_FTM_INSTANCE(FTMx));
 
     // Nothing else to do
 }

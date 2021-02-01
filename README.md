@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/micropython/micropython.png?branch=master)](https://travis-ci.org/micropython/micropython) [![Coverage Status](https://coveralls.io/repos/micropython/micropython/badge.png?branch=master)](https://coveralls.io/r/micropython/micropython?branch=master)
+[![CI badge](https://github.com/micropython/micropython/workflows/unix%20port/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![Coverage badge](https://coveralls.io/repos/micropython/micropython/badge.png?branch=master)](https://coveralls.io/r/micropython/micropython?branch=master)
 
 The MicroPython project
 =======================
@@ -41,8 +41,7 @@ Major components in this repository:
   to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.
 - docs/ -- user documentation in Sphinx reStructuredText format. Rendered
-  HTML documentation is available at http://docs.micropython.org (be sure
-  to select needed board/port at the bottom left corner).
+  HTML documentation is available at http://docs.micropython.org.
 
 Additional components:
 - ports/bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
@@ -51,7 +50,9 @@ Additional components:
   (preliminary but functional).
 - ports/pic16bit/ -- a version of MicroPython for 16-bit PIC microcontrollers.
 - ports/cc3200/ -- a version of MicroPython that runs on the CC3200 from TI.
-- ports/esp8266/ -- an experimental port for ESP8266 WiFi modules.
+- ports/esp8266/ -- a version of MicroPython that runs on Espressif's ESP8266 SoC.
+- ports/esp32/ -- a version of MicroPython that runs on Espressif's ESP32 SoC.
+- ports/nrf/ -- a version of MicroPython that runs on Nordic's nRF51 and nRF52 MCUs.
 - extmod/ -- additional (non-core) modules implemented in C.
 - tools/ -- various tools, including the pyboard.py module.
 - examples/ -- a few example Python scripts.
@@ -59,7 +60,20 @@ Additional components:
 The subdirectories above may include READMEs with additional info.
 
 "make" is used to build the components, or "gmake" on BSD-based systems.
-You will also need bash, gcc, and Python (at least 2.7 or 3.3).
+You will also need bash, gcc, and Python 3.3+ available as the command `python3`
+(if your system only has Python 2.7 then invoke make with the additional option
+`PYTHON=python2`).
+
+The MicroPython cross-compiler, mpy-cross
+-----------------------------------------
+
+Most ports require the MicroPython cross-compiler to be built first.  This
+program, called mpy-cross, is used to pre-compile Python scripts to .mpy
+files which can then be included (frozen) into the firmware/executable for
+a port.  To build mpy-cross use:
+
+    $ cd mpy-cross
+    $ make
 
 The Unix version
 ----------------
@@ -72,9 +86,8 @@ Alternatively, fallback implementation based on setjmp/longjmp can be used.
 
 To build (see section below for required dependencies):
 
-    $ git submodule update --init
     $ cd ports/unix
-    $ make axtls
+    $ make submodules
     $ make
 
 Then to give it a try:
@@ -86,7 +99,7 @@ Use `CTRL-D` (i.e. EOF) to exit the shell.
 Learn about command-line options (in particular, how to increase heap size
 which may be needed for larger applications):
 
-    $ ./micropython --help
+    $ ./micropython -h
 
 Run complete testsuite:
 
@@ -114,13 +127,14 @@ Debian/Ubuntu/Mint derivative Linux distros, install `build-essential`
 Other dependencies can be built together with MicroPython. This may
 be required to enable extra features or capabilities, and in recent
 versions of MicroPython, these may be enabled by default. To build
-these additional dependencies, first fetch git submodules for them:
+these additional dependencies, in the port directory you're
+interested in (e.g. `ports/unix/`) first execute:
 
-    $ git submodule update --init
+    $ make submodules
 
-Use the same command to get the latest versions of dependencies, as
-they are updated from time to time. After that, in the port directory
-(e.g. `ports/unix/`), execute:
+This will fetch all the relevant git submodules (sub repositories) that
+the port needs.  Use the same command to get the latest versions of
+submodules as they are updated from time to time. After that execute:
 
     $ make deplibs
 
@@ -130,11 +144,11 @@ options (like cross-compiling), the same set of options should be passed
 to `make deplibs`. To actually enable/disable use of dependencies, edit
 `ports/unix/mpconfigport.mk` file, which has inline descriptions of the options.
 For example, to build SSL module (required for `upip` tool described above,
-and so enabled by dfeault), `MICROPY_PY_USSL` should be set to 1.
+and so enabled by default), `MICROPY_PY_USSL` should be set to 1.
 
 For some ports, building required dependences is transparent, and happens
-automatically. They still need to be fetched with the git submodule command
-above.
+automatically.  But they still need to be fetched with the `make submodules`
+command.
 
 The STM32 version
 -----------------
@@ -146,8 +160,8 @@ https://launchpad.net/gcc-arm-embedded
 
 To build:
 
-    $ git submodule update --init
     $ cd ports/stm32
+    $ make submodules
     $ make
 
 You then need to get your board into DFU mode.  On the pyboard, connect the

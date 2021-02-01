@@ -64,7 +64,7 @@ void netutils_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian
     }
     const char *s = addr_str;
     const char *s_top = addr_str + addr_len;
-    for (mp_uint_t i = 3 ; ; i--) {
+    for (mp_uint_t i = 3; ; i--) {
         mp_uint_t val = 0;
         for (; s < s_top && *s != '.'; s++) {
             val = val * 10 + *s - '0';
@@ -79,7 +79,7 @@ void netutils_parse_ipv4_addr(mp_obj_t addr_in, uint8_t *out_ip, netutils_endian
         } else if (i > 0 && s < s_top && *s == '.') {
             s++;
         } else {
-            mp_raise_ValueError("invalid arguments");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
         }
     }
 }

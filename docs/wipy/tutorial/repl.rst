@@ -18,7 +18,7 @@ do::
    >>> uart = UART(0, 115200)
    >>> os.dupterm(uart)
 
-Place this piece of code inside your `boot.py` so that it's done automatically after
+Place this piece of code inside your ``boot.py`` so that it's done automatically after
 reset.
 
 Windows
@@ -51,7 +51,7 @@ Open a terminal and run::
 or::
 
     $ screen /dev/tty.usbmodem* 115200
-    
+
 When you are finished and want to exit ``screen``, type CTRL-A CTRL-\\. If your keyboard does not have a \\-key (i.e. you need an obscure combination for \\ like ALT-SHIFT-7) you can remap the ``quit`` command:
 
 - create ``~/.screenrc``
@@ -120,7 +120,7 @@ If something goes wrong, you can reset the board in two ways. The first is to pr
 at the MicroPython prompt, which performs a soft reset.  You will see a message something like::
 
     >>> 
-    PYB: soft reboot
+    MPY: soft reboot
     MicroPython v1.4.6-146-g1d8b5e5 on 2015-10-21; WiPy with CC3200
     Type "help()" for more information.
     >>>

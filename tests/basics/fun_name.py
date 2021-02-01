@@ -15,3 +15,18 @@ try:
 except AttributeError:
     print('SKIP')
     raise SystemExit
+
+# __name__ of a bound native method is not implemented in uPy
+# the test here is to make sure it doesn't crash
+try:
+    str((1).to_bytes.__name__)
+except AttributeError:
+    pass
+
+# name of a function that has closed over variables
+def outer():
+    x = 1
+    def inner():
+        return x
+    return inner
+print(outer.__name__)

@@ -26,11 +26,26 @@
 #ifndef MICROPY_INCLUDED_STM32_PENDSV_H
 #define MICROPY_INCLUDED_STM32_PENDSV_H
 
+enum {
+    PENDSV_DISPATCH_SOFT_TIMER,
+    #if MICROPY_PY_NETWORK && MICROPY_PY_LWIP
+    PENDSV_DISPATCH_LWIP,
+    #if MICROPY_PY_NETWORK_CYW43
+    PENDSV_DISPATCH_CYW43,
+    #endif
+    #endif
+    #if MICROPY_PY_BLUETOOTH && !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+    PENDSV_DISPATCH_BLUETOOTH_HCI,
+    #endif
+    PENDSV_DISPATCH_MAX
+};
+
+#define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
+
+typedef void (*pendsv_dispatch_t)(void);
+
 void pendsv_init(void);
 void pendsv_kbd_intr(void);
-
-// since we play tricks with the stack, the compiler must not generate a
-// prelude for this function
-void pendsv_isr_handler(void) __attribute__((naked));
+void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
 
 #endif // MICROPY_INCLUDED_STM32_PENDSV_H

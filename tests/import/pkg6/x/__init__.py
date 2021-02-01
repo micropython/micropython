@@ -1,2 +1,3 @@
 from .y import *
-print('x')
+
+print("x")

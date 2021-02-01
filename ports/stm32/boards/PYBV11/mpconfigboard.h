@@ -3,7 +3,6 @@
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
-#define MICROPY_HW_HAS_SDCARD       (1)
 #define MICROPY_HW_HAS_MMA7660      (1)
 #define MICROPY_HW_HAS_LCD          (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
@@ -11,6 +10,7 @@
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_SDCARD    (1)
 
 // HSE is 12MHz
 #define MICROPY_HW_CLK_PLLM (12)
@@ -100,3 +100,9 @@
 
 // MMA accelerometer config
 #define MICROPY_HW_MMA_AVDD_PIN     (pin_B5)
+
+// Bootloader configuration (only needed if Mboot is used)
+#define MBOOT_I2C_PERIPH_ID 1
+#define MBOOT_I2C_SCL (pin_B8)
+#define MBOOT_I2C_SDA (pin_B9)
+#define MBOOT_I2C_ALTFUNC (4)

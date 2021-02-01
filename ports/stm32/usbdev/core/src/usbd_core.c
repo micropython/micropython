@@ -85,6 +85,7 @@
 * @{
 */
 
+#if 0
 /**
 * @brief  USBD_Init
 *         Initailizes the device stack and load the class driver
@@ -122,6 +123,7 @@ USBD_StatusTypeDef USBD_Init(USBD_HandleTypeDef *pdev, USBD_DescriptorsTypeDef *
 
   return USBD_OK;
 }
+#endif
 
 /**
 * @brief  USBD_DeInit

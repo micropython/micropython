@@ -36,11 +36,11 @@
 
 #define LEAPOCH ((31 + 29) * 86400)
 
-#define DAYS_PER_400Y (365*400 + 97)
-#define DAYS_PER_100Y (365*100 + 24)
-#define DAYS_PER_4Y   (365*4   + 1)
+#define DAYS_PER_400Y (365 * 400 + 97)
+#define DAYS_PER_100Y (365 * 100 + 24)
+#define DAYS_PER_4Y   (365 * 4 + 1)
 
-STATIC const uint16_t days_since_jan1[]= { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
+STATIC const uint16_t days_since_jan1[] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
 
 bool timeutils_is_leap_year(mp_uint_t year) {
     return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
@@ -158,7 +158,7 @@ mp_uint_t timeutils_seconds_since_2000(mp_uint_t year, mp_uint_t month,
         + (year - 2000) * 31536000;
 }
 
-mp_uint_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t mday,
+mp_uint_t timeutils_mktime_2000(mp_uint_t year, mp_int_t month, mp_int_t mday,
     mp_int_t hours, mp_int_t minutes, mp_int_t seconds) {
 
     // Normalize the tuple. This allows things like:

@@ -45,15 +45,20 @@ Methods
 
    *eventmask* defaults to ``uselect.POLLIN | uselect.POLLOUT``.
 
+   It is OK to call this function multiple times for the same *obj*.
+   Successive calls will update *obj*'s eventmask to the value of
+   *eventmask* (i.e. will behave as `modify()`).
+
 .. method:: poll.unregister(obj)
 
    Unregister *obj* from polling.
 
 .. method:: poll.modify(obj, eventmask)
 
-   Modify the *eventmask* for *obj*.
+   Modify the *eventmask* for *obj*. If *obj* is not registered, `OSError`
+   is raised with error of ENOENT.
 
-.. method:: poll.poll(timeout=-1)
+.. method:: poll.poll(timeout=-1, /)
 
    Wait for at least one of the registered objects to become ready or have an
    exceptional condition, with optional timeout in milliseconds (if *timeout*
@@ -76,7 +81,7 @@ Methods
 
       Tuples returned may contain more than 2 elements as described above.
 
-.. method:: poll.ipoll(timeout=-1, flags=0)
+.. method:: poll.ipoll(timeout=-1, flags=0, /)
 
    Like :meth:`poll.poll`, but instead returns an iterator which yields a
    `callee-owned tuple`. This function provides an efficient, allocation-free

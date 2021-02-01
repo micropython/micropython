@@ -27,6 +27,12 @@ Reset related functions
    Resets the device in a manner similar to pushing the external RESET
    button.
 
+.. function:: soft_reset()
+
+   Performs a soft reset of the interpreter, deleting all Python objects and
+   resetting the Python heap.  It tries to retain the method by which the user
+   is connected to the MicroPython REPL (eg serial, USB, Wifi).
+
 .. function:: reset_cause()
 
    Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
@@ -63,31 +69,40 @@ Power related functions
 
 .. function:: sleep()
 
-   Stops the CPU and disables all peripherals except for WLAN. Execution is resumed from
-   the point where the sleep was requested. For wake up to actually happen, wake sources
-   should be configured first.
+   .. note:: This function is deprecated, use `lightsleep()` instead with no arguments.
 
-.. function:: deepsleep()
+.. function:: lightsleep([time_ms])
+              deepsleep([time_ms])
 
-   Stops the CPU and all peripherals (including networking interfaces, if any). Execution
-   is resumed from the main script, just as with a reset. The reset cause can be checked
-   to know that we are coming from `machine.DEEPSLEEP`. For wake up to actually happen,
-   wake sources should be configured first, like `Pin` change or `RTC` timeout.
+   Stops execution in an attempt to enter a low power state.
 
-.. only:: port_wipy
+   If *time_ms* is specified then this will be the maximum time in milliseconds that
+   the sleep will last for.  Otherwise the sleep can last indefinitely.
 
-    .. function:: wake_reason()
+   With or without a timeout, execution may resume at any time if there are events
+   that require processing.  Such events, or wake sources, should be configured before
+   sleeping, like `Pin` change or `RTC` timeout.
 
-        Get the wake reason. See :ref:`constants <machine_constants>` for the possible return values.
+   The precise behaviour and power-saving capabilities of lightsleep and deepsleep is
+   highly dependent on the underlying hardware, but the general properties are:
+
+   * A lightsleep has full RAM and state retention.  Upon wake execution is resumed
+     from the point where the sleep was requested, with all subsystems operational.
+
+   * A deepsleep may not retain RAM or any other state of the system (for example
+     peripherals or network interfaces).  Upon wake execution is resumed from the main
+     script, similar to a hard or power-on reset. The `reset_cause()` function will
+     return `machine.DEEPSLEEP` and this can be used to distinguish a deepsleep wake
+     from other resets.
+
+.. function:: wake_reason()
+
+   Get the wake reason. See :ref:`constants <machine_constants>` for the possible return values.
+
+   Availability: ESP32, WiPy.
 
 Miscellaneous functions
 -----------------------
-
-.. only:: port_wipy
-
-    .. function:: rng()
-
-        Return a 24-bit software generated random number.
 
 .. function:: unique_id()
 
@@ -96,7 +111,7 @@ Miscellaneous functions
    varies by hardware (so use substring of a full value if you expect a short
    ID). In some MicroPython ports, ID corresponds to the network MAC address.
 
-.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000)
+.. function:: time_pulse_us(pin, pulse_level, timeout_us=1000000, /)
 
    Time a pulse on the given *pin*, and return the duration of the pulse in
    microseconds.  The *pulse_level* argument should be 0 to time a low pulse
@@ -111,6 +126,12 @@ Miscellaneous functions
    (*) above, and -1 if there was timeout during the main measurement, marked (**)
    above. The timeout is the same for both cases and given by *timeout_us* (which
    is in microseconds).
+
+.. function:: rng()
+
+   Return a 24-bit software generated random number.
+
+   Availability: WiPy.
 
 .. _machine_constants:
 
@@ -140,31 +161,17 @@ Constants
 Classes
 -------
 
-.. only:: not port_wipy
-
- .. toctree::
+.. toctree::
    :maxdepth: 1
 
    machine.Pin.rst
    machine.Signal.rst
-   machine.UART.rst
-   machine.SPI.rst
-   machine.I2C.rst
-   machine.RTC.rst
-   machine.Timer.rst
-   machine.WDT.rst
-
-.. only:: port_wipy
-
- .. toctree::
-   :maxdepth: 1
-
-   machine.Pin.rst
-   machine.UART.rst
-   machine.SPI.rst
-   machine.I2C.rst
-   machine.RTC.rst
-   machine.Timer.rst
-   machine.WDT.rst
    machine.ADC.rst
+   machine.UART.rst
+   machine.SPI.rst
+   machine.I2C.rst
+   machine.RTC.rst
+   machine.Timer.rst
+   machine.WDT.rst
    machine.SD.rst
+   machine.SDCard.rst

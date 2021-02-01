@@ -29,6 +29,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
                 prog->len++;
                 break;
             }
+            MP_FALLTHROUGH
         default:
             term = PC;
             EMIT(PC++, Char);
@@ -53,6 +54,9 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             PC++; // Skip # of pair byte
             prog->len++;
             for (cnt = 0; *re != ']'; re++, cnt++) {
+                if (*re == '\\') {
+                    ++re;
+                }
                 if (!*re) return NULL;
                 EMIT(PC++, *re);
                 if (re[1] == '-' && re[2] != ']') {

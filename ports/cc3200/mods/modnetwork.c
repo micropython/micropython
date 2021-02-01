@@ -29,7 +29,6 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "modnetwork.h"
-#include "mpexception.h"
 #include "serverstask.h"
 #include "simplelink.h"
 

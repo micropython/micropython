@@ -1,5 +1,7 @@
-The Switch, callbacks and interrupts
-====================================
+.. _pyboard_tutorial_switch:
+
+Switches, callbacks and interrupts
+==================================
 
 The pyboard has 2 small switches, labelled USR and RST.  The RST switch
 is a hard-reset switch, and if you press it then it restarts the pyboard

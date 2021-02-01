@@ -2,4 +2,14 @@
 1
 raised ValueError()
 ret was: None
-TypeError
+raised OSError()
+raised ValueError('generator already executing',)
+raised ValueError('generator already executing',)
+0
+ignore CancelledError
+1
+raised CancelledError()
+None
+CancelledError()
+CancelledError()
+1

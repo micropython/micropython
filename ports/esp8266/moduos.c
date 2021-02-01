@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2015 Josef Gajdusek
+ * Copyright (c) 2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +32,7 @@
 #include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "extmod/vfs_lfs.h"
 #include "genhdr/mpversion.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
@@ -104,8 +106,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&os_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&os_dupterm_notify_obj) },
     #endif
-    #if MICROPY_VFS_FAT
-    { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    #if MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mp_vfs_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mp_vfs_mkdir_obj) },
@@ -118,6 +119,15 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
+    #if MICROPY_VFS_FAT
+    { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    #endif
+    #if MICROPY_VFS_LFS1
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs1), MP_ROM_PTR(&mp_type_vfs_lfs1) },
+    #endif
+    #if MICROPY_VFS_LFS2
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
+    #endif
     #endif
 };
 
@@ -125,5 +135,5 @@ STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t uos_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&os_module_globals,
+    .globals = (mp_obj_dict_t *)&os_module_globals,
 };

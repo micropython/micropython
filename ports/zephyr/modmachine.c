@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <misc/reboot.h>
+#include <power/reboot.h>
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -60,6 +60,10 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
 
+    #if MICROPY_PY_MACHINE_I2C
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_hard_i2c_type) },
+    #endif
+    { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal), MP_ROM_PTR(&machine_signal_type) },
 
@@ -71,7 +75,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
 #endif // MICROPY_PY_MACHINE

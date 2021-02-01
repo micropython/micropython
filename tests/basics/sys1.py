@@ -1,6 +1,9 @@
 # test sys module
 
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 
 print(sys.__name__)
 print(type(sys.path))
@@ -19,12 +22,8 @@ except AttributeError:
     # Effectively skip subtests
     print(True)
 
-try:
-    raise SystemExit
-except SystemExit as e:
-    print("SystemExit", e.args)
-
-try:
-    sys.exit(42)
-except SystemExit as e:
-    print("SystemExit", e.args)
+if hasattr(sys.implementation, 'mpy'):
+    print(type(sys.implementation.mpy))
+else:
+    # Effectively skip subtests
+    print(int)

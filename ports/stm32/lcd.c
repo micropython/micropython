@@ -218,7 +218,7 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
         lcd->pin_a0 = pyb_pin_Y5;
         lcd->pin_bl = pyb_pin_Y12;
     } else {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "LCD(%s) doesn't exist", lcd_id));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("LCD(%s) doesn't exist"), lcd_id);
     }
 
     // init the SPI bus
@@ -236,14 +236,23 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
         spi_clock = HAL_RCC_GetPCLK1Freq();
     }
     uint br_prescale = spi_clock / 16000000; // datasheet says LCD can run at 20MHz, but we go for 16MHz
-    if (br_prescale <= 2) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2; }
-    else if (br_prescale <= 4) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4; }
-    else if (br_prescale <= 8) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; }
-    else if (br_prescale <= 16) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16; }
-    else if (br_prescale <= 32) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32; }
-    else if (br_prescale <= 64) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64; }
-    else if (br_prescale <= 128) { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128; }
-    else { init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256; }
+    if (br_prescale <= 2) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+    } else if (br_prescale <= 4) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+    } else if (br_prescale <= 8) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    } else if (br_prescale <= 16) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    } else if (br_prescale <= 32) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+    } else if (br_prescale <= 64) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+    } else if (br_prescale <= 128) {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+    } else {
+        init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+    }
 
     // data is sent bigendian, latches on rising clock
     init->CLKPolarity = SPI_POLARITY_HIGH;
@@ -307,7 +316,7 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
     memset(lcd->pix_buf, 0, LCD_PIX_BUF_BYTE_SIZE);
     memset(lcd->pix_buf2, 0, LCD_PIX_BUF_BYTE_SIZE);
 
-    return lcd;
+    return MP_OBJ_FROM_PTR(lcd);
 }
 
 /// \method command(instr_data, buf)
@@ -316,7 +325,7 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
 /// instruction, otherwise pass 1 to send data.  `buf` is a buffer with the
 /// instructions/data to send.
 STATIC mp_obj_t pyb_lcd_command(mp_obj_t self_in, mp_obj_t instr_data_in, mp_obj_t val) {
-    pyb_lcd_obj_t *self = self_in;
+    pyb_lcd_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // get whether instr or data
     int instr_data = mp_obj_get_int(instr_data_in);
@@ -328,7 +337,7 @@ STATIC mp_obj_t pyb_lcd_command(mp_obj_t self_in, mp_obj_t instr_data_in, mp_obj
 
     // send the data
     for (uint i = 0; i < bufinfo.len; i++) {
-        lcd_out(self, instr_data, ((byte*)bufinfo.buf)[i]);
+        lcd_out(self, instr_data, ((byte *)bufinfo.buf)[i]);
     }
 
     return mp_const_none;
@@ -339,7 +348,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_lcd_command_obj, pyb_lcd_command);
 ///
 /// Set the contrast of the LCD.  Valid values are between 0 and 47.
 STATIC mp_obj_t pyb_lcd_contrast(mp_obj_t self_in, mp_obj_t contrast_in) {
-    pyb_lcd_obj_t *self = self_in;
+    pyb_lcd_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int contrast = mp_obj_get_int(contrast_in);
     if (contrast < 0) {
         contrast = 0;
@@ -356,7 +365,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_contrast_obj, pyb_lcd_contrast);
 ///
 /// Turn the backlight on/off.  True or 1 turns it on, False or 0 turns it off.
 STATIC mp_obj_t pyb_lcd_light(mp_obj_t self_in, mp_obj_t value) {
-    pyb_lcd_obj_t *self = self_in;
+    pyb_lcd_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (mp_obj_is_true(value)) {
         mp_hal_pin_high(self->pin_bl); // set pin high to turn backlight on
     } else {
@@ -370,7 +379,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_light_obj, pyb_lcd_light);
 ///
 /// Write the string `str` to the screen.  It will appear immediately.
 STATIC mp_obj_t pyb_lcd_write(mp_obj_t self_in, mp_obj_t str) {
-    pyb_lcd_obj_t *self = self_in;
+    pyb_lcd_obj_t *self = MP_OBJ_TO_PTR(self_in);
     size_t len;
     const char *data = mp_obj_str_get_data(str, &len);
     lcd_write_strn(self, data, len);
@@ -384,7 +393,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_write_obj, pyb_lcd_write);
 ///
 /// This method writes to the hidden buffer.  Use `show()` to show the buffer.
 STATIC mp_obj_t pyb_lcd_fill(mp_obj_t self_in, mp_obj_t col_in) {
-    pyb_lcd_obj_t *self = self_in;
+    pyb_lcd_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int col = mp_obj_get_int(col_in);
     if (col) {
         col = 0xff;
@@ -401,7 +410,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_lcd_fill_obj, pyb_lcd_fill);
 ///
 /// This method reads from the visible buffer.
 STATIC mp_obj_t pyb_lcd_get(mp_obj_t self_in, mp_obj_t x_in, mp_obj_t y_in) {
-    pyb_lcd_obj_t *self = self_in;
+    pyb_lcd_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int x = mp_obj_get_int(x_in);
     int y = mp_obj_get_int(y_in);
     if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
@@ -420,7 +429,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_lcd_get_obj, pyb_lcd_get);
 ///
 /// This method writes to the hidden buffer.  Use `show()` to show the buffer.
 STATIC mp_obj_t pyb_lcd_pixel(size_t n_args, const mp_obj_t *args) {
-    pyb_lcd_obj_t *self = args[0];
+    pyb_lcd_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     int x = mp_obj_get_int(args[1]);
     int y = mp_obj_get_int(args[2]);
     if (0 <= x && x <= 127 && 0 <= y && y <= 31) {
@@ -442,7 +451,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_lcd_pixel_obj, 4, 4, pyb_lcd_pixe
 /// This method writes to the hidden buffer.  Use `show()` to show the buffer.
 STATIC mp_obj_t pyb_lcd_text(size_t n_args, const mp_obj_t *args) {
     // extract arguments
-    pyb_lcd_obj_t *self = args[0];
+    pyb_lcd_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     size_t len;
     const char *data = mp_obj_str_get_data(args[1], &len);
     int x0 = mp_obj_get_int(args[2]);
@@ -452,7 +461,7 @@ STATIC mp_obj_t pyb_lcd_text(size_t n_args, const mp_obj_t *args) {
     // loop over chars
     for (const char *top = data + len; data < top; data++) {
         // get char and make sure its in range of font
-        uint chr = *(byte*)data;
+        uint chr = *(byte *)data;
         if (chr < 32 || chr > 127) {
             chr = 127;
         }
@@ -488,7 +497,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_lcd_text_obj, 5, 5, pyb_lcd_text)
 ///
 /// Show the hidden buffer on the screen.
 STATIC mp_obj_t pyb_lcd_show(mp_obj_t self_in) {
-    pyb_lcd_obj_t *self = self_in;
+    pyb_lcd_obj_t *self = MP_OBJ_TO_PTR(self_in);
     memcpy(self->pix_buf, self->pix_buf2, LCD_PIX_BUF_BYTE_SIZE);
     for (uint page = 0; page < 4; page++) {
         lcd_out(self, LCD_INSTR, 0xb0 | page); // page address set
@@ -521,7 +530,7 @@ const mp_obj_type_t pyb_lcd_type = {
     { &mp_type_type },
     .name = MP_QSTR_LCD,
     .make_new = pyb_lcd_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_lcd_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_lcd_locals_dict,
 };
 
 #endif // MICROPY_HW_HAS_LCD

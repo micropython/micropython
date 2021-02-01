@@ -24,10 +24,16 @@
  * THE SOFTWARE.
  */
 
+// *FORMAT-OFF*
+
 #if __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winitializer-overrides"
 #endif // __clang__
+#if __GNUC__ >= 5
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverride-init"
+#endif // __GNUC__ >= 5
 
 static const void *const entry_table[256] = {
     [0 ... 255] = &&entry_default,
@@ -76,8 +82,7 @@ static const void *const entry_table[256] = {
     [MP_BC_GET_ITER] = &&entry_MP_BC_GET_ITER,
     [MP_BC_GET_ITER_STACK] = &&entry_MP_BC_GET_ITER_STACK,
     [MP_BC_FOR_ITER] = &&entry_MP_BC_FOR_ITER,
-    [MP_BC_POP_BLOCK] = &&entry_MP_BC_POP_BLOCK,
-    [MP_BC_POP_EXCEPT] = &&entry_MP_BC_POP_EXCEPT,
+    [MP_BC_POP_EXCEPT_JUMP] = &&entry_MP_BC_POP_EXCEPT_JUMP,
     [MP_BC_BUILD_TUPLE] = &&entry_MP_BC_BUILD_TUPLE,
     [MP_BC_BUILD_LIST] = &&entry_MP_BC_BUILD_LIST,
     [MP_BC_BUILD_MAP] = &&entry_MP_BC_BUILD_MAP,
@@ -100,19 +105,24 @@ static const void *const entry_table[256] = {
     [MP_BC_CALL_METHOD] = &&entry_MP_BC_CALL_METHOD,
     [MP_BC_CALL_METHOD_VAR_KW] = &&entry_MP_BC_CALL_METHOD_VAR_KW,
     [MP_BC_RETURN_VALUE] = &&entry_MP_BC_RETURN_VALUE,
-    [MP_BC_RAISE_VARARGS] = &&entry_MP_BC_RAISE_VARARGS,
+    [MP_BC_RAISE_LAST] = &&entry_MP_BC_RAISE_LAST,
+    [MP_BC_RAISE_OBJ] = &&entry_MP_BC_RAISE_OBJ,
+    [MP_BC_RAISE_FROM] = &&entry_MP_BC_RAISE_FROM,
     [MP_BC_YIELD_VALUE] = &&entry_MP_BC_YIELD_VALUE,
     [MP_BC_YIELD_FROM] = &&entry_MP_BC_YIELD_FROM,
     [MP_BC_IMPORT_NAME] = &&entry_MP_BC_IMPORT_NAME,
     [MP_BC_IMPORT_FROM] = &&entry_MP_BC_IMPORT_FROM,
     [MP_BC_IMPORT_STAR] = &&entry_MP_BC_IMPORT_STAR,
-    [MP_BC_LOAD_CONST_SMALL_INT_MULTI ... MP_BC_LOAD_CONST_SMALL_INT_MULTI + 63] = &&entry_MP_BC_LOAD_CONST_SMALL_INT_MULTI,
-    [MP_BC_LOAD_FAST_MULTI ... MP_BC_LOAD_FAST_MULTI + 15] = &&entry_MP_BC_LOAD_FAST_MULTI,
-    [MP_BC_STORE_FAST_MULTI ... MP_BC_STORE_FAST_MULTI + 15] = &&entry_MP_BC_STORE_FAST_MULTI,
-    [MP_BC_UNARY_OP_MULTI ... MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_NUM_BYTECODE - 1] = &&entry_MP_BC_UNARY_OP_MULTI,
-    [MP_BC_BINARY_OP_MULTI ... MP_BC_BINARY_OP_MULTI + MP_BINARY_OP_NUM_BYTECODE - 1] = &&entry_MP_BC_BINARY_OP_MULTI,
+    [MP_BC_LOAD_CONST_SMALL_INT_MULTI ... MP_BC_LOAD_CONST_SMALL_INT_MULTI + MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM - 1] = &&entry_MP_BC_LOAD_CONST_SMALL_INT_MULTI,
+    [MP_BC_LOAD_FAST_MULTI ... MP_BC_LOAD_FAST_MULTI + MP_BC_LOAD_FAST_MULTI_NUM - 1] = &&entry_MP_BC_LOAD_FAST_MULTI,
+    [MP_BC_STORE_FAST_MULTI ... MP_BC_STORE_FAST_MULTI + MP_BC_STORE_FAST_MULTI_NUM - 1] = &&entry_MP_BC_STORE_FAST_MULTI,
+    [MP_BC_UNARY_OP_MULTI ... MP_BC_UNARY_OP_MULTI + MP_BC_UNARY_OP_MULTI_NUM - 1] = &&entry_MP_BC_UNARY_OP_MULTI,
+    [MP_BC_BINARY_OP_MULTI ... MP_BC_BINARY_OP_MULTI + MP_BC_BINARY_OP_MULTI_NUM - 1] = &&entry_MP_BC_BINARY_OP_MULTI,
 };
 
 #if __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
+#if __GNUC__ >= 5
+#pragma GCC diagnostic pop
+#endif // __GNUC__ >= 5
