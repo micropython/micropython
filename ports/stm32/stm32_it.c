@@ -849,6 +849,7 @@ void USART6_IRQHandler(void) {
     uart_irq_handler(6);
     IRQ_EXIT(USART6_IRQn);
 }
+#endif
 
 #if defined(UART7)
 void UART7_IRQHandler(void) {
