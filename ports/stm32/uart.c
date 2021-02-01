@@ -212,7 +212,8 @@ bool uart_exists(int uart_id) {
         #endif
 
         #if defined(MICROPY_HW_LPUART1_TX) && defined(MICROPY_HW_LPUART1_RX)
-        case PYB_LPUART_1: return true;
+        case PYB_LPUART_1:
+            return true;
         #endif
 
         default:
@@ -720,14 +721,15 @@ uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
     // This formula assumes UART_OVERSAMPLING_16
     uint32_t baudrate;
     #if defined(LPUART1)
-    if(self->uart_id == PYB_LPUART_1) {
-        baudrate = uart_clk / (self->uartx->BRR >>8);
+    if (self->uart_id == PYB_LPUART_1)
+    #else
+    if (0)
+    #endif
+    {
+        baudrate = uart_clk / (self->uartx->BRR >> 8);
     } else {
-    #endif
         baudrate = uart_clk / self->uartx->BRR;
-    #if defined(LPUART1)
     }
-    #endif
     return baudrate;
 }
 

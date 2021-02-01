@@ -77,14 +77,15 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!self->is_enabled) {
         #ifdef LPUART1
-        if (self->uart_id == PYB_LPUART_1) {
+        if (self->uart_id == PYB_LPUART_1) 
+        #else
+        if (0)
+        #endif
+        {
             mp_printf(print, "UART('LP1')");
         } else {
-        #endif
             mp_printf(print, "UART(%u)", self->uart_id);
-        #ifdef LPUART1
         }
-        #endif
     } else {
         mp_int_t bits;
         uint32_t cr1 = self->uartx->CR1;
@@ -107,16 +108,17 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             bits -= 1;
         }
         #ifdef LPUART1
-        if (self->uart_id == PYB_LPUART_1) {
+        if (self->uart_id == PYB_LPUART_1) 
+        #else
+        if (0)
+        #endif
+        {
             mp_printf(print, "UART('LP1', baudrate=%u, bits=%u, parity=",
                 uart_get_baudrate(self), bits);
         } else {
-        #endif
             mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=",
                 self->uart_id, uart_get_baudrate(self), bits);
-        #ifdef LPUART1
         }
-        #endif
         if (!(cr1 & USART_CR1_PCE)) {
             mp_print_str(print, "None");
         } else if (!(cr1 & USART_CR1_PS)) {
