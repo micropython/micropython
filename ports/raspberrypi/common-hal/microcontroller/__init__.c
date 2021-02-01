@@ -80,6 +80,7 @@ void common_hal_mcu_reset(void) {
 
 // The singleton microcontroller.Processor object, bound to microcontroller.cpu
 // It currently only has properties, and no state.
+#if CIRCUITPY_PROCESSOR_COUNT > 1
 static const mcu_processor_obj_t processor0 = {
     .base = {
         .type = &mcu_processor_type,
@@ -92,13 +93,20 @@ static const mcu_processor_obj_t processor1 = {
     },
 };
 
-const mp_rom_obj_tuple_t common_hal_mcu_processor_obj = {
+const mp_rom_obj_tuple_t common_hal_multi_processor_obj = {
     {&mp_type_tuple},
     CIRCUITPY_PROCESSOR_COUNT,
     {
         MP_ROM_PTR(&processor0),
         MP_ROM_PTR(&processor1)
     }
+};
+#endif
+
+const mcu_processor_obj_t common_hal_mcu_processor_obj = {
+    .base = {
+        .type = &mcu_processor_type,
+    },
 };
 
 #if CIRCUITPY_NVM && CIRCUITPY_INTERNAL_NVM_SIZE > 0
