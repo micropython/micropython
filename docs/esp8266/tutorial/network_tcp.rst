@@ -44,7 +44,7 @@ Now that we are connected we can download and display the data::
     ...     data = s.recv(500)
     ...     print(str(data, 'utf8'), end='')
     ...
- 
+
 When this loop executes it should start showing the animation (use ctrl-C to
 interrupt it).
 
@@ -61,6 +61,7 @@ of the request you need to specify the page to retrieve.
 Let's define a function that can download and print a URL::
 
     def http_get(url):
+        import socket
         _, _, host, path = url.split('/', 3)
         addr = socket.getaddrinfo(host, 80)[0][-1]
         s = socket.socket()
@@ -74,8 +75,7 @@ Let's define a function that can download and print a URL::
                 break
         s.close()
 
-Make sure that you import the socket module before running this function.  Then
-you can try::
+Then you can try::
 
     >>> http_get('http://micropython.org/ks/test.html')
 
@@ -118,5 +118,6 @@ that contains a table with the state of all the GPIO pins::
                 break
         rows = ['<tr><td>%s</td><td>%d</td></tr>' % (str(p), p.value()) for p in pins]
         response = html % '\n'.join(rows)
+        cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
         cl.send(response)
         cl.close()

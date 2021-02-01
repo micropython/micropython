@@ -1,0 +1,24 @@
+name: zephyr port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/ports_zephyr.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'ports/zephyr/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: source tools/ci.sh && ci_zephyr_setup
+    - name: Install Zephyr
+      run: source tools/ci.sh && ci_zephyr_install
+    - name: Build
+      run: source tools/ci.sh && ci_zephyr_build

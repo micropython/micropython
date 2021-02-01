@@ -30,3 +30,10 @@ try:
     del c.x
 except AttributeError:
     print("AttributeError")
+
+# try to del an attribute of a built-in class
+try:
+    del int.to_bytes
+except (AttributeError, TypeError):
+    # uPy raises AttributeError, CPython raises TypeError
+    print('AttributeError/TypeError')

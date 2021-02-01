@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_GCCOLLECT_H
-#define MICROPY_INCLUDED_STMHAL_GCCOLLECT_H
+#ifndef MICROPY_INCLUDED_STM32_GCCOLLECT_H
+#define MICROPY_INCLUDED_STM32_GCCOLLECT_H
 
 // variables defining memory layout
 // (these probably belong somewhere else...)
@@ -37,7 +37,8 @@ extern uint32_t _sbss;
 extern uint32_t _ebss;
 extern uint32_t _heap_start;
 extern uint32_t _heap_end;
+extern uint32_t _sstack;
 extern uint32_t _estack;
 extern uint32_t _ram_end;
 
-#endif // MICROPY_INCLUDED_STMHAL_GCCOLLECT_H
+#endif // MICROPY_INCLUDED_STM32_GCCOLLECT_H

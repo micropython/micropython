@@ -4,13 +4,19 @@
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "py/gc.h"
 #include "py/repl.h"
 #include "py/mpz.h"
 #include "py/builtin.h"
 #include "py/emit.h"
 #include "py/formatfloat.h"
+#include "py/ringbuf.h"
+#include "py/pairheap.h"
 #include "py/stream.h"
 #include "py/binary.h"
+#include "py/bc.h"
+
+// expected output of this file is found in extra_coverage.py.exp
 
 #if defined(MICROPY_UNIX_COVERAGE)
 
@@ -102,7 +108,7 @@ STATIC const mp_stream_p_t fileio_stream_p = {
 STATIC const mp_obj_type_t mp_type_stest_fileio = {
     { &mp_type_type },
     .protocol = &fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
 };
 
 // stream read returns non-blocking error
@@ -116,7 +122,6 @@ STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
 
 STATIC const mp_rom_map_elem_t rawfile_locals_dict_table2[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict2, rawfile_locals_dict_table2);
@@ -130,12 +135,46 @@ STATIC const mp_stream_p_t textio_stream_p2 = {
 STATIC const mp_obj_type_t mp_type_stest_textio2 = {
     { &mp_type_type },
     .protocol = &textio_stream_p2,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict2,
+    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict2,
 };
 
 // str/bytes objects without a valid hash
-STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte*)"0123456789"};
-STATIC const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte*)"0123456789"};
+STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte *)"0123456789"};
+STATIC const mp_obj_str_t bytes_no_hash_obj = {{&mp_type_bytes}, 0, 10, (const byte *)"0123456789"};
+
+STATIC int pairheap_lt(mp_pairheap_t *a, mp_pairheap_t *b) {
+    return (uintptr_t)a < (uintptr_t)b;
+}
+
+// ops array contain operations: x>=0 means push(x), x<0 means delete(-x)
+STATIC void pairheap_test(size_t nops, int *ops) {
+    mp_pairheap_t node[8];
+    for (size_t i = 0; i < MP_ARRAY_SIZE(node); ++i) {
+        mp_pairheap_init_node(pairheap_lt, &node[i]);
+    }
+    mp_pairheap_t *heap = mp_pairheap_new(pairheap_lt);
+    printf("create:");
+    for (size_t i = 0; i < nops; ++i) {
+        if (ops[i] >= 0) {
+            heap = mp_pairheap_push(pairheap_lt, heap, &node[ops[i]]);
+        } else {
+            heap = mp_pairheap_delete(pairheap_lt, heap, &node[-ops[i]]);
+        }
+        if (mp_pairheap_is_empty(pairheap_lt, heap)) {
+            mp_printf(&mp_plat_print, " -");
+        } else {
+            mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);
+            ;
+        }
+    }
+    printf("\npop all:");
+    while (!mp_pairheap_is_empty(pairheap_lt, heap)) {
+        mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);
+        ;
+        heap = mp_pairheap_pop(pairheap_lt, heap);
+    }
+    printf("\n");
+}
 
 // function to run extra tests for things that can't be checked by scripts
 STATIC mp_obj_t extra_coverage(void) {
@@ -147,15 +186,37 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%ld\n", 123); // long
         mp_printf(&mp_plat_print, "%lx\n", 0x123); // long hex
         mp_printf(&mp_plat_print, "%X\n", 0x1abcdef); // capital hex
-        mp_printf(&mp_plat_print, "%.2s %.3s\n", "abc", "abc"); // fixed string precision
+        mp_printf(&mp_plat_print, "%.2s %.3s '%4.4s' '%5.5q' '%.3q'\n", "abc", "abc", "abc", MP_QSTR_True, MP_QSTR_True); // fixed string precision
         mp_printf(&mp_plat_print, "%.*s\n", -1, "abc"); // negative string precision
         mp_printf(&mp_plat_print, "%b %b\n", 0, 1); // bools
+        #ifndef NDEBUG
         mp_printf(&mp_plat_print, "%s\n", NULL); // null string
+        #else
+        mp_printf(&mp_plat_print, "(null)\n"); // without debugging mp_printf won't check for null
+        #endif
         mp_printf(&mp_plat_print, "%d\n", 0x80000000); // should print signed
         mp_printf(&mp_plat_print, "%u\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%x\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "%X\n", 0x80000000); // should print unsigned
         mp_printf(&mp_plat_print, "abc\n%"); // string ends in middle of format specifier
+        mp_printf(&mp_plat_print, "%%\n"); // literal % character
+    }
+
+    // GC
+    {
+        mp_printf(&mp_plat_print, "# GC\n");
+
+        // calling gc_free while GC is locked
+        gc_lock();
+        gc_free(NULL);
+        gc_unlock();
+
+        // using gc_realloc to resize to 0, which means free the memory
+        void *p = gc_alloc(4, false);
+        mp_printf(&mp_plat_print, "%p\n", gc_realloc(p, 0, false));
+
+        // calling gc_nbytes with a non-heap pointer
+        mp_printf(&mp_plat_print, "%p\n", gc_nbytes(NULL));
     }
 
     // vstr
@@ -228,7 +289,17 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# str\n");
 
         // intern string
-        mp_printf(&mp_plat_print, "%d\n", MP_OBJ_IS_QSTR(mp_obj_str_intern(mp_obj_new_str("intern me", 9))));
+        mp_printf(&mp_plat_print, "%d\n", mp_obj_is_qstr(mp_obj_str_intern(mp_obj_new_str("intern me", 9))));
+    }
+
+    // bytearray
+    {
+        mp_printf(&mp_plat_print, "# bytearray\n");
+
+        // create a bytearray via mp_obj_new_bytearray
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(mp_obj_new_bytearray(4, "data"), &bufinfo, MP_BUFFER_RW);
+        mp_printf(&mp_plat_print, "%.*s\n", bufinfo.len, bufinfo.buf);
     }
 
     // mpz
@@ -252,6 +323,39 @@ STATIC mp_obj_t extra_coverage(void) {
         mpz_set_from_int(&mpz, 1);
         mpz_shl_inpl(&mpz, &mpz, 70);
         mp_printf(&mp_plat_print, "%d\n", mpz_as_uint_checked(&mpz, &value));
+
+        // mpz_set_from_float with inf as argument
+        mpz_set_from_float(&mpz, 1.0 / 0.0);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 0 as argument
+        mpz_set_from_float(&mpz, 0);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 0<x<1 as argument
+        mpz_set_from_float(&mpz, 1e-10);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 1<=x<2 as argument
+        mpz_set_from_float(&mpz, 1.5);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_set_from_float with 2<x as argument
+        mpz_set_from_float(&mpz, 12345);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
+
+        // mpz_mul_inpl with dest==rhs, lhs!=rhs
+        mpz_t mpz2;
+        mpz_set_from_int(&mpz, 2);
+        mpz_init_from_int(&mpz2, 3);
+        mpz_mul_inpl(&mpz, &mpz2, &mpz);
+        mpz_as_uint_checked(&mpz, &value);
+        mp_printf(&mp_plat_print, "%d\n", (int)value);
     }
 
     // runtime utils
@@ -267,6 +371,32 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_NEW_SMALL_INT(1));
         // call mp_call_function_2_protected with invalid args
         mp_call_function_2_protected(MP_OBJ_FROM_PTR(&mp_builtin_divmod_obj), mp_obj_new_str("abc", 3), mp_obj_new_str("abc", 3));
+
+        // mp_obj_int_get_uint_checked with non-negative small-int
+        mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(1)));
+
+        // mp_obj_int_get_uint_checked with non-negative big-int
+        mp_printf(&mp_plat_print, "%d\n", (int)mp_obj_int_get_uint_checked(mp_obj_new_int_from_ll(2)));
+
+        // mp_obj_int_get_uint_checked with negative small-int (should raise exception)
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_int_get_uint_checked(MP_OBJ_NEW_SMALL_INT(-1));
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        // mp_obj_int_get_uint_checked with negative big-int (should raise exception)
+        if (nlr_push(&nlr) == 0) {
+            mp_obj_int_get_uint_checked(mp_obj_new_int_from_ll(-2));
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        // call mp_obj_new_exception_args (it's a part of the public C API and not used in the core)
+        mp_obj_print_exception(&mp_plat_print, mp_obj_new_exception_args(&mp_type_ValueError, 0, NULL));
     }
 
     // warning
@@ -307,6 +437,23 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%.0lf\n", dar[0]);
     }
 
+    // VM
+    {
+        mp_printf(&mp_plat_print, "# VM\n");
+
+        // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        mp_obj_fun_bc_t fun_bc;
+        fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
+        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
+        code_state->fun_bc = &fun_bc;
+        code_state->ip = (const byte *)"\x00"; // just needed for an invalid opcode
+        code_state->sp = &code_state->state[0];
+        code_state->exc_sp_idx = 0;
+        code_state->old_globals = NULL;
+        mp_vm_return_kind_t ret = mp_execute_bytecode(code_state, MP_OBJ_NULL);
+        mp_printf(&mp_plat_print, "%d %d\n", ret, mp_obj_get_type(code_state->state[0]) == &mp_type_NotImplementedError);
+    }
+
     // scheduler
     {
         mp_printf(&mp_plat_print, "# scheduler\n");
@@ -324,7 +471,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_sched_unlock();
 
         // shouldn't do anything while scheduler is locked
-        mp_handle_pending();
+        mp_handle_pending(true);
 
         // unlock scheduler
         mp_sched_unlock();
@@ -332,9 +479,154 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // drain pending callbacks
         while (mp_sched_num_pending()) {
-            mp_handle_pending();
+            mp_handle_pending(true);
         }
+
+        // setting the keyboard interrupt and raising it during mp_handle_pending
+        mp_keyboard_interrupt();
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_handle_pending(true);
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+
+        // setting the keyboard interrupt (twice) and cancelling it during mp_handle_pending
+        mp_keyboard_interrupt();
+        mp_keyboard_interrupt();
+        mp_handle_pending(false);
+
+        // setting keyboard interrupt and a pending event (intr should be handled first)
+        mp_sched_schedule(MP_OBJ_FROM_PTR(&mp_builtin_print_obj), MP_OBJ_NEW_SMALL_INT(10));
+        mp_keyboard_interrupt();
+        if (nlr_push(&nlr) == 0) {
+            mp_handle_pending(true);
+            nlr_pop();
+        } else {
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+        mp_handle_pending(true);
     }
+
+    // ringbuf
+    {
+        byte buf[100];
+        ringbuf_t ringbuf = {buf, sizeof(buf), 0, 0};
+
+        mp_printf(&mp_plat_print, "# ringbuf\n");
+
+        // Single-byte put/get with empty ringbuf.
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        ringbuf_put(&ringbuf, 22);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+
+        // Two-byte put/get with empty ringbuf.
+        ringbuf_put16(&ringbuf, 0xaa55);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+
+        // Two-byte put with full ringbuf.
+        for (int i = 0; i < 99; ++i) {
+            ringbuf_put(&ringbuf, i);
+        }
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x11bb));
+        // Two-byte put with one byte free.
+        ringbuf_get(&ringbuf);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x3377));
+        ringbuf_get(&ringbuf);
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0xcc99));
+        for (int i = 0; i < 97; ++i) {
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+
+        // Two-byte put with wrap around on first byte:
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        for (int i = 0; i < 99; ++i) {
+            ringbuf_put(&ringbuf, i);
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x11bb));
+        mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
+
+        // Two-byte put with wrap around on second byte:
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        for (int i = 0; i < 98; ++i) {
+            ringbuf_put(&ringbuf, i);
+            ringbuf_get(&ringbuf);
+        }
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x22ff));
+        mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
+
+        // Two-byte get from empty ringbuf.
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
+
+        // Two-byte get from ringbuf with one byte available.
+        ringbuf.iput = 0;
+        ringbuf.iget = 0;
+        ringbuf_put(&ringbuf, 0xaa);
+        mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
+    }
+
+    // pairheap
+    {
+        mp_printf(&mp_plat_print, "# pairheap\n");
+
+        // Basic case.
+        int t0[] = {0, 2, 1, 3};
+        pairheap_test(MP_ARRAY_SIZE(t0), t0);
+
+        // All pushed in reverse order.
+        int t1[] = {7, 6, 5, 4, 3, 2, 1, 0};
+        pairheap_test(MP_ARRAY_SIZE(t1), t1);
+
+        // Basic deletion.
+        int t2[] = {1, -1, -1, 1, 2, -2, 2, 3, -3};
+        pairheap_test(MP_ARRAY_SIZE(t2), t2);
+
+        // Deletion of first child that has next node (the -3).
+        int t3[] = {1, 2, 3, 4, -1, -3};
+        pairheap_test(MP_ARRAY_SIZE(t3), t3);
+
+        // Deletion of node that's not first child (the -2).
+        int t4[] = {1, 2, 3, 4, -2};
+        pairheap_test(MP_ARRAY_SIZE(t4), t4);
+
+        // Deletion of node that's not first child and has children (the -3).
+        int t5[] = {3, 4, 5, 1, 2, -3};
+        pairheap_test(MP_ARRAY_SIZE(t5), t5);
+    }
+
+    // mp_obj_is_type and derivatives
+    {
+        mp_printf(&mp_plat_print, "# mp_obj_is_type\n");
+
+        // mp_obj_is_bool accepts only booleans
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_bool(mp_const_true), mp_obj_is_bool(mp_const_false));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_bool(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_bool(mp_const_none));
+
+        // mp_obj_is_integer accepts ints and booleans
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_integer(mp_obj_new_int_from_ll(1)));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_const_true), mp_obj_is_integer(mp_const_false));
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_integer(mp_obj_new_str("1", 1)), mp_obj_is_integer(mp_const_none));
+
+        // mp_obj_is_int accepts small int and object ints
+        mp_printf(&mp_plat_print, "%d %d\n", mp_obj_is_int(MP_OBJ_NEW_SMALL_INT(1)), mp_obj_is_int(mp_obj_new_int_from_ll(1)));
+    }
+
+    mp_printf(&mp_plat_print, "# end coverage.c\n");
 
     mp_obj_streamtest_t *s = m_new_obj(mp_obj_streamtest_t);
     s->base.type = &mp_type_stest_fileio;

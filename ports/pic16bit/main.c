@@ -39,10 +39,13 @@
 #include "board.h"
 #include "modpyb.h"
 
-_FGS(GWRP_OFF & GCP_OFF);
-_FOSCSEL(FNOSC_FRC);
-_FOSC(FCKSM_CSECMD & OSCIOFNC_ON & POSCMD_NONE);
-_FWDT(FWDTEN_OFF);
+#pragma config GWRP = OFF
+#pragma config GSS = GCP_OFF
+#pragma config FNOSC = FRC
+#pragma config FCKSM = CSECMD
+#pragma config OSCIOFNC = ON
+#pragma config POSCMD = NONE
+#pragma config FWDTEN = OFF
 
 // maximum heap for device with 8k RAM
 static char heap[4600];
@@ -65,7 +68,7 @@ soft_reset:
 
     // init MicroPython runtime
     int stack_dummy;
-    MP_STATE_THREAD(stack_top) = (char*)&stack_dummy;
+    MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
     gc_init(heap, heap + sizeof(heap));
     mp_init();
     mp_hal_init();
@@ -84,7 +87,7 @@ soft_reset:
         }
     }
 
-    printf("PYB: soft reboot\n");
+    printf("MPY: soft reboot\n");
     mp_deinit();
     goto soft_reset;
 }
@@ -112,11 +115,15 @@ mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) 
 MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 void nlr_jump_fail(void *val) {
-    while (1);
+    while (1) {
+        ;
+    }
 }
 
 void NORETURN __fatal_error(const char *msg) {
-    while (1);
+    while (1) {
+        ;
+    }
 }
 
 #ifndef NDEBUG

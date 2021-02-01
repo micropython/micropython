@@ -67,11 +67,13 @@ STATIC const uint8_t attr[] = {
     AT_LO, AT_LO, AT_LO, AT_PR, AT_PR, AT_PR, AT_PR, 0
 };
 
-// TODO: Rename to str_get_char
-unichar utf8_get_char(const byte *s) {
 #if MICROPY_PY_BUILTINS_STR_UNICODE
+
+unichar utf8_get_char(const byte *s) {
     unichar ord = *s++;
-    if (!UTF8_IS_NONASCII(ord)) return ord;
+    if (!UTF8_IS_NONASCII(ord)) {
+        return ord;
+    }
     ord &= 0x7F;
     for (unichar mask = 0x40; ord & mask; mask >>= 1) {
         ord &= ~mask;
@@ -80,22 +82,14 @@ unichar utf8_get_char(const byte *s) {
         ord = (ord << 6) | (*s++ & 0x3F);
     }
     return ord;
-#else
-    return *s;
-#endif
 }
 
-// TODO: Rename to str_next_char
 const byte *utf8_next_char(const byte *s) {
-#if MICROPY_PY_BUILTINS_STR_UNICODE
     ++s;
     while (UTF8_IS_CONT(*s)) {
         ++s;
     }
     return s;
-#else
-    return s + 1;
-#endif
 }
 
 mp_uint_t utf8_ptr_to_index(const byte *s, const byte *ptr) {
@@ -109,20 +103,17 @@ mp_uint_t utf8_ptr_to_index(const byte *s, const byte *ptr) {
     return i;
 }
 
-// TODO: Rename to str_charlen
-mp_uint_t unichar_charlen(const char *str, mp_uint_t len) {
-#if MICROPY_PY_BUILTINS_STR_UNICODE
-    mp_uint_t charlen = 0;
-    for (const char *top = str + len; str < top; ++str) {
+size_t utf8_charlen(const byte *str, size_t len) {
+    size_t charlen = 0;
+    for (const byte *top = str + len; str < top; ++str) {
         if (!UTF8_IS_CONT(*str)) {
             ++charlen;
         }
     }
     return charlen;
-#else
-    return len;
-#endif
 }
+
+#endif
 
 // Be aware: These unichar_is* functions are actually ASCII-only!
 bool unichar_isspace(unichar c) {
@@ -149,6 +140,10 @@ bool unichar_isxdigit(unichar c) {
 
 bool unichar_isident(unichar c) {
     return c < 128 && ((attr[c] & (FL_ALPHA | FL_DIGIT)) != 0 || c == '_');
+}
+
+bool unichar_isalnum(unichar c) {
+    return c < 128 && ((attr[c] & (FL_ALPHA | FL_DIGIT)) != 0);
 }
 
 bool unichar_isupper(unichar c) {
@@ -183,13 +178,15 @@ mp_uint_t unichar_xdigit_value(unichar c) {
     return n;
 }
 
+#if MICROPY_PY_BUILTINS_STR_UNICODE
+
 bool utf8_check(const byte *p, size_t len) {
     uint8_t need = 0;
     const byte *end = p + len;
     for (; p < end; p++) {
         byte c = *p;
         if (need) {
-            if (c >= 0x80) {
+            if (UTF8_IS_CONT(c)) {
                 need--;
             } else {
                 // mismatch
@@ -210,3 +207,5 @@ bool utf8_check(const byte *p, size_t len) {
     }
     return need == 0; // no pending fragments allowed
 }
+
+#endif

@@ -1,5 +1,7 @@
 LIB_SRC_C = lib/upytesthelper/upytesthelper.c
 
+FROZEN_MANIFEST ?= "freeze('test-frzmpy')"
+
 include Makefile
 
 CFLAGS += -DTEST
@@ -8,17 +10,17 @@ CFLAGS += -DTEST
 
 $(BUILD)/test_main.o: $(BUILD)/genhdr/tests.h
 $(BUILD)/genhdr/tests.h:
-	(cd $(TOP)/tests; ./run-tests --write-exp)
+	(cd $(TOP)/tests; ./run-tests --target=qemu-arm --write-exp)
 	$(Q)echo "Generating $@";(cd $(TOP)/tests; ../tools/tinytest-codegen.py) > $@
 
-$(BUILD)/tinytest.o:
-	$(Q)$(CC) $(CFLAGS) -DNO_FORKING -o $@ -c $(TINYTEST)/tinytest.c
+$(BUILD)/lib/tinytest/tinytest.o: CFLAGS += -DNO_FORKING
 
-$(BUILD)/firmware-test.elf: $(OBJ_COMMON) $(OBJ_TEST)
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+$(BUILD)/firmware-test.elf: $(LDSCRIPT) $(ALL_OBJ_TEST)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(ALL_OBJ_TEST) $(LIBS)
 	$(Q)$(SIZE) $@
 
+# Note: Using timeout(1) to handle cases where qemu hangs (e.g. this can happen with alignment errors).
 test: $(BUILD)/firmware-test.elf
-	qemu-system-arm -machine integratorcp -cpu cortex-m3 -nographic -monitor null -serial null -semihosting -kernel $(BUILD)/firmware-test.elf > $(BUILD)/console.out
+	timeout --foreground -k 5s 30s qemu-system-arm -machine $(BOARD) $(QEMU_EXTRA) -nographic -monitor null -semihosting -kernel $< > $(BUILD)/console.out
 	$(Q)tail -n2 $(BUILD)/console.out
 	$(Q)tail -n1 $(BUILD)/console.out | grep -q "status: 0"

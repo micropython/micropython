@@ -4,6 +4,10 @@ functions.
 The files lgamma.c, log10.c and tanh.c are too small to have a meaningful
 copyright or license.
 
+The file copysign.c contains a double version of the float copysignf provided
+in libm/math.c for use in DEBUG builds where the standard library copy is 
+not available.
+
 The rest of the files in this directory are copied from the musl library,
 v1.1.16, and, unless otherwise stated in the individual file, have the
 following copyright and MIT license:

@@ -7,16 +7,10 @@
 // On the netuino, the sdcard appears to be wired up as a 1-bit
 // SPI, so the driver needs to be converted to support that before
 // we can turn this on.
-#define MICROPY_HW_HAS_SDCARD       (0)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
+#define MICROPY_HW_ENABLE_SDCARD    (0)
 #define MICROPY_HW_ENABLE_RNG       (1)
-#define MICROPY_HW_ENABLE_RTC       (0)
-#define MICROPY_HW_ENABLE_TIMER     (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_CAN       (0)
 
 void NETDUINO_PLUS_2_board_early_init(void);
 #define MICROPY_BOARD_EARLY_INIT    NETDUINO_PLUS_2_board_early_init
@@ -69,5 +63,6 @@ void NETDUINO_PLUS_2_board_early_init(void);
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
 
-// USB VBUS detect pin
+// USB config
+#define MICROPY_HW_USB_FS              (1)
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)

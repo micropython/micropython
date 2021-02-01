@@ -1,7 +1,8 @@
 # test that we can generate a traceback without allocating
 
 import micropython
-import sys
+import usys
+
 try:
     import uio
 except ImportError:
@@ -15,6 +16,7 @@ try:
 except:
     pass
 
+
 def test():
     micropython.heap_lock()
     global global_exc
@@ -22,15 +24,16 @@ def test():
     try:
         raise global_exc
     except StopIteration:
-        print('StopIteration')
+        print("StopIteration")
     micropython.heap_unlock()
+
 
 # call test() with heap allocation disabled
 test()
 
 # print the exception that was raised
 buf = uio.StringIO()
-sys.print_exception(global_exc, buf)
+usys.print_exception(global_exc, buf)
 for l in buf.getvalue().split("\n"):
     # uPy on pyboard prints <stdin> as file, so remove filename.
     if l.startswith("  File "):

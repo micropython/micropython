@@ -1,0 +1,10 @@
+--- instance0 ---
+server running
+read: b''
+close
+done
+--- instance1 ---
+read: b'x'
+close
+write
+OSError

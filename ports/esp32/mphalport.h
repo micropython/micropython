@@ -32,22 +32,39 @@
 #include "py/ringbuf.h"
 #include "lib/utils/interrupt_char.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+// The core that the MicroPython task(s) are pinned to.
+// Until we move to IDF 4.2+, we need NimBLE on core 0, and for synchronisation
+// with the ringbuffer and scheduler MP needs to be on the same core.
+// See https://github.com/micropython/micropython/issues/5489
+#define MP_TASK_COREID (0)
+
+extern TaskHandle_t mp_main_task_handle;
+
 extern ringbuf_t stdin_ringbuf;
+
+// Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
+void check_esp_err(esp_err_t code);
 
 uint32_t mp_hal_ticks_us(void);
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
-  uint32_t ccount;
-  __asm__ __volatile__("rsr %0,ccount":"=a" (ccount));
-  return ccount;
+    uint32_t ccount;
+    __asm__ __volatile__ ("rsr %0,ccount" : "=a" (ccount));
+    return ccount;
 }
 
 void mp_hal_delay_us(uint32_t);
-void mp_hal_delay_us_fast(uint32_t);
+#define mp_hal_delay_us_fast(us) ets_delay_us(us)
 void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_get_cpu_freq(void);
 
 #define mp_hal_quiet_timing_enter() MICROPY_BEGIN_ATOMIC_SECTION()
 #define mp_hal_quiet_timing_exit(irq_state) MICROPY_END_ATOMIC_SECTION(irq_state)
+
+// Wake up the main task if it is sleeping
+void mp_hal_wake_main_task_from_isr(void);
 
 // C-level pin HAL
 #include "py/obj.h"

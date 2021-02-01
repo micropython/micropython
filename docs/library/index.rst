@@ -23,7 +23,7 @@ into MicroPython. There are a few categories of such modules:
 * Modules which implement a subset of Python functionality, with a provision
   for extension by the user (via Python code).
 * Modules which implement MicroPython extensions to the Python standard libraries.
-* Modules specific to a particular `MicroPython port` and thus not portable.
+* Modules specific to a particular :term:`MicroPython port` and thus not portable.
 
 Note about the availability of the modules and their contents: This documentation
 in general aspires to describe all modules and functions/classes which are
@@ -38,7 +38,12 @@ in a module (or even the entire module) described in this documentation **may be
 unavailable** in a particular build of MicroPython on a particular system. The
 best place to find general information of the availability/non-availability
 of a particular feature is the "General Information" section which contains
-information pertaining to a specific `MicroPython port`.
+information pertaining to a specific :term:`MicroPython port`.
+
+On some ports you are able to discover the available, built-in libraries that
+can be imported by entering the following at the REPL::
+
+    help('modules')
 
 Beyond the built-in libraries described in this documentation, many more
 modules from the Python standard library, as well as further MicroPython
@@ -65,103 +70,32 @@ For example, ``import json`` will first search for a file ``json.py`` (or packag
 directory ``json``) and load that module if it is found.  If nothing is found,
 it will fallback to loading the built-in ``ujson`` module.
 
-.. only:: port_unix
+.. toctree::
+   :maxdepth: 1
 
-    .. toctree::
-       :maxdepth: 1
-
-       builtins.rst
-       array.rst
-       cmath.rst
-       gc.rst
-       math.rst
-       sys.rst
-       ubinascii.rst
-       ucollections.rst
-       uerrno.rst
-       uhashlib.rst
-       uheapq.rst
-       uio.rst
-       ujson.rst
-       uos.rst
-       ure.rst
-       uselect.rst
-       usocket.rst
-       ustruct.rst
-       utime.rst
-       uzlib.rst
-       _thread.rst
-
-.. only:: port_pyboard
-
-    .. toctree::
-       :maxdepth: 1
-
-       builtins.rst
-       array.rst
-       cmath.rst
-       gc.rst
-       math.rst
-       sys.rst
-       ubinascii.rst
-       ucollections.rst
-       uerrno.rst
-       uhashlib.rst
-       uheapq.rst
-       uio.rst
-       ujson.rst
-       uos.rst
-       ure.rst
-       uselect.rst
-       usocket.rst
-       ustruct.rst
-       utime.rst
-       uzlib.rst
-       _thread.rst
-
-.. only:: port_wipy
-
-    .. toctree::
-       :maxdepth: 1
-
-       builtins.rst
-       array.rst
-       gc.rst
-       sys.rst
-       ubinascii.rst
-       ujson.rst
-       uos.rst
-       ure.rst
-       uselect.rst
-       usocket.rst
-       ussl.rst
-       utime.rst
-
-.. only:: port_esp8266
-
-    .. toctree::
-       :maxdepth: 1
-
-       builtins.rst
-       array.rst
-       gc.rst
-       math.rst
-       sys.rst
-       ubinascii.rst
-       ucollections.rst
-       uerrno.rst
-       uhashlib.rst
-       uheapq.rst
-       uio.rst
-       ujson.rst
-       uos.rst
-       ure.rst
-       uselect.rst
-       usocket.rst
-       ussl.rst
-       ustruct.rst
-       utime.rst
-       uzlib.rst
+   builtins.rst
+   cmath.rst
+   gc.rst
+   math.rst
+   uarray.rst
+   uasyncio.rst
+   ubinascii.rst
+   ucollections.rst
+   uerrno.rst
+   uhashlib.rst
+   uheapq.rst
+   uio.rst
+   ujson.rst
+   uos.rst
+   ure.rst
+   uselect.rst
+   usocket.rst
+   ussl.rst
+   ustruct.rst
+   usys.rst
+   utime.rst
+   uzlib.rst
+   _thread.rst
 
 
 MicroPython-specific libraries
@@ -178,43 +112,56 @@ the following libraries.
    machine.rst
    micropython.rst
    network.rst
+   ubluetooth.rst
+   ucryptolib.rst
    uctypes.rst
 
 
-.. only:: port_pyboard
+Port-specific libraries
+-----------------------
 
-   Libraries specific to the pyboard
-   ---------------------------------
+In some cases the following port/board-specific libraries have functions or
+classes similar to those in the :mod:`machine` library.  Where this occurs, the
+entry in the port specific library exposes hardware functionality unique to
+that platform.
 
-   The following libraries are specific to the pyboard.
-
-   .. toctree::
-      :maxdepth: 2
-
-      pyb.rst
-      lcd160cr.rst
-
-.. only:: port_wipy
-
-   Libraries specific to the WiPy
-   ---------------------------------
-
-   The following libraries are specific to the WiPy.
-
-   .. toctree::
-      :maxdepth: 2
-
-      wipy.rst
+To write portable code use functions and classes from the :mod:`machine` module.
+To access platform-specific hardware use the appropriate library, e.g.
+:mod:`pyb` in the case of the Pyboard.
 
 
-.. only:: port_esp8266
+Libraries specific to the pyboard
+---------------------------------
 
-   Libraries specific to the ESP8266
-   ---------------------------------
+The following libraries are specific to the pyboard.
 
-   The following libraries are specific to the ESP8266.
+.. toctree::
+  :maxdepth: 2
 
-   .. toctree::
-      :maxdepth: 2
+  pyb.rst
+  lcd160cr.rst
 
-      esp.rst
+
+Libraries specific to the WiPy
+------------------------------
+
+The following libraries and classes are specific to the WiPy.
+
+.. toctree::
+  :maxdepth: 2
+
+  wipy.rst
+  machine.ADCWiPy.rst
+  machine.TimerWiPy.rst
+
+
+Libraries specific to the ESP8266 and ESP32
+-------------------------------------------
+
+The following libraries are specific to the ESP8266 and ESP32.
+
+.. toctree::
+  :maxdepth: 2
+
+  esp.rst
+  esp32.rst

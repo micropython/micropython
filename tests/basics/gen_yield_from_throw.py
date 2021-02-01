@@ -1,8 +1,8 @@
 def gen():
     try:
         yield 1
-    except ValueError:
-        print("got ValueError from upstream!")
+    except ValueError as e:
+        print("got ValueError from upstream!", repr(e.args))
     yield "str1"
     raise TypeError
 
@@ -17,14 +17,34 @@ try:
 except TypeError:
     print("got TypeError from downstream!")
 
-# case where generator doesn't intercept the thrown/injected exception
-def gen3():
-    yield 123
-    yield 456
-        
-g3 = gen3()
-print(next(g3))
+# passing None as second argument to throw
+g = gen2()
+print(next(g))
+print(g.throw(ValueError, None))
 try:
-    g3.throw(StopIteration)
-except StopIteration:
-    print('got StopIteration from downstream!')
+    print(next(g))
+except TypeError:
+    print("got TypeError from downstream!")
+
+# passing an exception instance as second argument to throw
+g = gen2()
+print(next(g))
+print(g.throw(ValueError, ValueError(123)))
+try:
+    print(next(g))
+except TypeError:
+    print("got TypeError from downstream!")
+
+# thrown value is caught and then generator returns normally
+def gen():
+    try:
+        yield 123
+    except ValueError:
+        print('ValueError')
+    # return normally after catching thrown exception
+def gen2():
+    yield from gen()
+    yield 789
+g = gen2()
+print(next(g))
+print(g.throw(ValueError))

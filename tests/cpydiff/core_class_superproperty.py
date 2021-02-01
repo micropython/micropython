@@ -4,15 +4,19 @@ description: Calling super() getter property in subclass will return a property 
 cause: Unknown
 workaround: Unknown
 """
+
+
 class A:
     @property
     def p(self):
-        return {"a":10}
+        return {"a": 10}
+
 
 class AA(A):
     @property
     def p(self):
         return super().p
+
 
 a = AA()
 print(a.p)

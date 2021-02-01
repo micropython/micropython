@@ -50,7 +50,7 @@
 #endif
 
 // these need to be set to valid values before anything in this file will work
-STATIC SPI_HandleTypeDef *SPI_HANDLE = NULL;
+STATIC const spi_t *SPI_HANDLE = NULL;
 STATIC const pin_obj_t *PIN_CS = NULL;
 STATIC const pin_obj_t *PIN_EN = NULL;
 STATIC const pin_obj_t *PIN_IRQ = NULL;
@@ -134,17 +134,18 @@ void SpiOpen(gcSpiHandleRx pfRxHandler)
     wlan_tx_buffer[CC3000_TX_BUFFER_SIZE - 1] = CC3000_BUFFER_MAGIC_NUMBER;
 
     /* SPI configuration */
-    SPI_HANDLE->Init.Mode              = SPI_MODE_MASTER;
-    SPI_HANDLE->Init.Direction         = SPI_DIRECTION_2LINES;
-    SPI_HANDLE->Init.DataSize          = SPI_DATASIZE_8BIT;
-    SPI_HANDLE->Init.CLKPolarity       = SPI_POLARITY_LOW;
-    SPI_HANDLE->Init.CLKPhase          = SPI_PHASE_2EDGE;
-    SPI_HANDLE->Init.NSS               = SPI_NSS_SOFT;
-    SPI_HANDLE->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
-    SPI_HANDLE->Init.FirstBit          = SPI_FIRSTBIT_MSB;
-    SPI_HANDLE->Init.TIMode            = SPI_TIMODE_DISABLED;
-    SPI_HANDLE->Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
-    SPI_HANDLE->Init.CRCPolynomial     = 7;
+    SPI_InitTypeDef *init = &SPI_HANDLE->spi->Init;
+    init->Mode              = SPI_MODE_MASTER;
+    init->Direction         = SPI_DIRECTION_2LINES;
+    init->DataSize          = SPI_DATASIZE_8BIT;
+    init->CLKPolarity       = SPI_POLARITY_LOW;
+    init->CLKPhase          = SPI_PHASE_2EDGE;
+    init->NSS               = SPI_NSS_SOFT;
+    init->BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    init->FirstBit          = SPI_FIRSTBIT_MSB;
+    init->TIMode            = SPI_TIMODE_DISABLED;
+    init->CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
+    init->CRCPolynomial     = 7;
     spi_init(SPI_HANDLE, false);
 
     // configure wlan CS and EN pins
@@ -167,7 +168,7 @@ void SpiOpen(gcSpiHandleRx pfRxHandler)
        actual communications start, it might be required */
     CS_LOW();
     uint8_t buf[1];
-    HAL_SPI_Receive(SPI_HANDLE, buf, sizeof(buf), SPI_TIMEOUT);
+    HAL_SPI_Receive(SPI_HANDLE->spi, buf, sizeof(buf), SPI_TIMEOUT);
     CS_HIGH();
 
     // register EXTI
@@ -192,7 +193,7 @@ STATIC void SpiWriteDataSynchronous(unsigned char *data, unsigned short size)
 {
     DEBUG_printf("SpiWriteDataSynchronous(data=%p [%x %x %x %x], size=%u)\n", data, data[0], data[1], data[2], data[3], size);
     __disable_irq();
-    if (HAL_SPI_TransmitReceive(SPI_HANDLE, data, data, size, SPI_TIMEOUT) != HAL_OK) {
+    if (HAL_SPI_TransmitReceive(SPI_HANDLE->spi, data, data, size, SPI_TIMEOUT) != HAL_OK) {
         //BREAK();
     }
     __enable_irq();
@@ -203,7 +204,7 @@ STATIC void SpiReadDataSynchronous(unsigned char *data, unsigned short size)
 {
     memset(data, READ, size);
     __disable_irq();
-    if (HAL_SPI_TransmitReceive(SPI_HANDLE, data, data, size, SPI_TIMEOUT) != HAL_OK) {
+    if (HAL_SPI_TransmitReceive(SPI_HANDLE->spi, data, data, size, SPI_TIMEOUT) != HAL_OK) {
        //BREAK();
     }
     __enable_irq();

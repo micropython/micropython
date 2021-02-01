@@ -41,32 +41,45 @@ typedef struct _machine_wdt_obj_t {
 
 STATIC machine_wdt_obj_t wdt_default = {{&machine_wdt_type}};
 
-STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_id, ARG_timeout };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 5000} }
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t id = 0;
-    if (n_args > 0) {
-        id = mp_obj_get_int(args[0]);
+    if (args[ARG_id].u_int != 0) {
+        mp_raise_ValueError(NULL);
     }
 
-    switch (id) {
-        case 0:
-            esp_task_wdt_feed();
-            return &wdt_default;
-        default:
-            mp_raise_ValueError(NULL);
+    // Convert milliseconds to seconds (esp_task_wdt_init needs seconds)
+    args[ARG_timeout].u_int /= 1000;
+
+    if (args[ARG_timeout].u_int <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("WDT timeout too short"));
     }
+
+    mp_int_t rs_code = esp_task_wdt_init(args[ARG_timeout].u_int, true);
+    if (rs_code != ESP_OK) {
+        mp_raise_OSError(rs_code);
+    }
+
+    esp_task_wdt_add(NULL);
+
+    return &wdt_default;
 }
 
 STATIC mp_obj_t machine_wdt_feed(mp_obj_t self_in) {
     (void)self_in;
-    esp_task_wdt_feed();
+    esp_task_wdt_reset();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_wdt_feed_obj, machine_wdt_feed);
 
-STATIC const mp_map_elem_t machine_wdt_locals_dict_table[] = {
-    { MP_OBJ_NEW_QSTR(MP_QSTR_feed), (mp_obj_t)&machine_wdt_feed_obj },
+STATIC const mp_rom_map_elem_t machine_wdt_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&machine_wdt_feed_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_wdt_locals_dict, machine_wdt_locals_dict_table);
 

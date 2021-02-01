@@ -51,21 +51,58 @@ typedef enum {
 
 #define MP_EMIT_BREAK_FROM_FOR (0x8000)
 
-#define MP_EMIT_NATIVE_TYPE_ENABLE (0)
-#define MP_EMIT_NATIVE_TYPE_RETURN (1)
-#define MP_EMIT_NATIVE_TYPE_ARG    (2)
+// Kind for emit_id_ops->local()
+#define MP_EMIT_IDOP_LOCAL_FAST (0)
+#define MP_EMIT_IDOP_LOCAL_DEREF (1)
+
+// Kind for emit_id_ops->global()
+#define MP_EMIT_IDOP_GLOBAL_NAME (0)
+#define MP_EMIT_IDOP_GLOBAL_GLOBAL (1)
+
+// Kind for emit->import()
+#define MP_EMIT_IMPORT_NAME (0)
+#define MP_EMIT_IMPORT_FROM (1)
+#define MP_EMIT_IMPORT_STAR (2)
+
+// Kind for emit->subscr()
+#define MP_EMIT_SUBSCR_LOAD (0)
+#define MP_EMIT_SUBSCR_STORE (1)
+#define MP_EMIT_SUBSCR_DELETE (2)
+
+// Kind for emit->attr()
+#define MP_EMIT_ATTR_LOAD (0)
+#define MP_EMIT_ATTR_STORE (1)
+#define MP_EMIT_ATTR_DELETE (2)
+
+// Kind for emit->setup_block()
+#define MP_EMIT_SETUP_BLOCK_WITH (0)
+#define MP_EMIT_SETUP_BLOCK_EXCEPT (1)
+#define MP_EMIT_SETUP_BLOCK_FINALLY (2)
+
+// Kind for emit->build()
+#define MP_EMIT_BUILD_TUPLE (0)
+#define MP_EMIT_BUILD_LIST (1)
+#define MP_EMIT_BUILD_MAP (2)
+#define MP_EMIT_BUILD_SET (3)
+#define MP_EMIT_BUILD_SLICE (4)
+
+// Kind for emit->yield()
+#define MP_EMIT_YIELD_VALUE (0)
+#define MP_EMIT_YIELD_FROM (1)
 
 typedef struct _emit_t emit_t;
 
 typedef struct _mp_emit_method_table_id_ops_t {
-    void (*fast)(emit_t *emit, qstr qst, mp_uint_t local_num);
-    void (*deref)(emit_t *emit, qstr qst, mp_uint_t local_num);
-    void (*name)(emit_t *emit, qstr qst);
-    void (*global)(emit_t *emit, qstr qst);
+    void (*local)(emit_t *emit, qstr qst, mp_uint_t local_num, int kind);
+    void (*global)(emit_t *emit, qstr qst, int kind);
 } mp_emit_method_table_id_ops_t;
 
 typedef struct _emit_method_table_t {
-    void (*set_native_type)(emit_t *emit, mp_uint_t op, mp_uint_t arg1, qstr arg2);
+    #if MICROPY_DYNAMIC_COMPILER
+    emit_t *(*emit_new)(mp_obj_t * error_slot, uint *label_slot, mp_uint_t max_num_labels);
+    void (*emit_free)(emit_t *emit);
+    #endif
+
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
     void (*end_pass)(emit_t *emit);
     bool (*last_emit_was_return_value)(emit_t *emit);
@@ -77,22 +114,16 @@ typedef struct _emit_method_table_t {
     mp_emit_method_table_id_ops_t delete_id;
 
     void (*label_assign)(emit_t *emit, mp_uint_t l);
-    void (*import_name)(emit_t *emit, qstr qst);
-    void (*import_from)(emit_t *emit, qstr qst);
-    void (*import_star)(emit_t *emit);
+    void (*import)(emit_t *emit, qstr qst, int kind);
     void (*load_const_tok)(emit_t *emit, mp_token_kind_t tok);
     void (*load_const_small_int)(emit_t *emit, mp_int_t arg);
     void (*load_const_str)(emit_t *emit, qstr qst);
     void (*load_const_obj)(emit_t *emit, mp_obj_t obj);
     void (*load_null)(emit_t *emit);
-    void (*load_attr)(emit_t *emit, qstr qst);
     void (*load_method)(emit_t *emit, qstr qst, bool is_super);
     void (*load_build_class)(emit_t *emit);
-    void (*load_subscr)(emit_t *emit);
-    void (*store_attr)(emit_t *emit, qstr qst);
-    void (*store_subscr)(emit_t *emit);
-    void (*delete_attr)(emit_t *emit, qstr qst);
-    void (*delete_subscr)(emit_t *emit);
+    void (*subscr)(emit_t *emit, int kind);
+    void (*attr)(emit_t *emit, qstr qst, int kind);
     void (*dup_top)(emit_t *emit);
     void (*dup_top_two)(emit_t *emit);
     void (*pop_top)(emit_t *emit);
@@ -101,30 +132,18 @@ typedef struct _emit_method_table_t {
     void (*jump)(emit_t *emit, mp_uint_t label);
     void (*pop_jump_if)(emit_t *emit, bool cond, mp_uint_t label);
     void (*jump_if_or_pop)(emit_t *emit, bool cond, mp_uint_t label);
-    void (*break_loop)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
-    void (*continue_loop)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
-    void (*setup_with)(emit_t *emit, mp_uint_t label);
+    void (*unwind_jump)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
+    void (*setup_block)(emit_t *emit, mp_uint_t label, int kind);
     void (*with_cleanup)(emit_t *emit, mp_uint_t label);
-    void (*setup_except)(emit_t *emit, mp_uint_t label);
-    void (*setup_finally)(emit_t *emit, mp_uint_t label);
     void (*end_finally)(emit_t *emit);
     void (*get_iter)(emit_t *emit, bool use_stack);
     void (*for_iter)(emit_t *emit, mp_uint_t label);
     void (*for_iter_end)(emit_t *emit);
-    void (*pop_block)(emit_t *emit);
-    void (*pop_except)(emit_t *emit);
+    void (*pop_except_jump)(emit_t *emit, mp_uint_t label, bool within_exc_handler);
     void (*unary_op)(emit_t *emit, mp_unary_op_t op);
     void (*binary_op)(emit_t *emit, mp_binary_op_t op);
-    void (*build_tuple)(emit_t *emit, mp_uint_t n_args);
-    void (*build_list)(emit_t *emit, mp_uint_t n_args);
-    void (*build_map)(emit_t *emit, mp_uint_t n_args);
+    void (*build)(emit_t *emit, mp_uint_t n_args, int kind);
     void (*store_map)(emit_t *emit);
-    #if MICROPY_PY_BUILTINS_SET
-    void (*build_set)(emit_t *emit, mp_uint_t n_args);
-    #endif
-    #if MICROPY_PY_BUILTINS_SLICE
-    void (*build_slice)(emit_t *emit, mp_uint_t n_args);
-    #endif
     void (*store_comp)(emit_t *emit, scope_kind_t kind, mp_uint_t set_stack_index);
     void (*unpack_sequence)(emit_t *emit, mp_uint_t n_args);
     void (*unpack_ex)(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right);
@@ -134,8 +153,7 @@ typedef struct _emit_method_table_t {
     void (*call_method)(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags);
     void (*return_value)(emit_t *emit);
     void (*raise_varargs)(emit_t *emit, mp_uint_t n_args);
-    void (*yield_value)(emit_t *emit);
-    void (*yield_from)(emit_t *emit);
+    void (*yield)(emit_t *emit, int kind);
 
     // these methods are used to control entry to/exit from an exception handler
     // they may or may not emit code
@@ -143,7 +161,10 @@ typedef struct _emit_method_table_t {
     void (*end_except_handler)(emit_t *emit);
 } emit_method_table_t;
 
-void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst);
+static inline void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst) {
+    scope_find_or_add_id(scope, qst, ID_INFO_KIND_GLOBAL_IMPLICIT);
+}
+
 void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst);
 void mp_emit_common_id_op(emit_t *emit, const mp_emit_method_table_id_ops_t *emit_method_table, scope_t *scope, qstr qst);
 
@@ -153,19 +174,21 @@ extern const emit_method_table_t emit_native_x86_method_table;
 extern const emit_method_table_t emit_native_thumb_method_table;
 extern const emit_method_table_t emit_native_arm_method_table;
 extern const emit_method_table_t emit_native_xtensa_method_table;
+extern const emit_method_table_t emit_native_xtensawin_method_table;
 
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_load_id_ops;
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_store_id_ops;
 extern const mp_emit_method_table_id_ops_t mp_emit_bc_method_table_delete_id_ops;
 
 emit_t *emit_bc_new(void);
-emit_t *emit_native_x64_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_x86_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_thumb_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_arm_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
-emit_t *emit_native_xtensa_new(mp_obj_t *error_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_x64_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_x86_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_thumb_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_arm_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_xtensa_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
+emit_t *emit_native_xtensawin_new(mp_obj_t *error_slot, uint *label_slot, mp_uint_t max_num_labels);
 
-void emit_bc_set_max_num_labels(emit_t* emit, mp_uint_t max_num_labels);
+void emit_bc_set_max_num_labels(emit_t *emit, mp_uint_t max_num_labels);
 
 void emit_bc_free(emit_t *emit);
 void emit_native_x64_free(emit_t *emit);
@@ -173,6 +196,7 @@ void emit_native_x86_free(emit_t *emit);
 void emit_native_thumb_free(emit_t *emit);
 void emit_native_arm_free(emit_t *emit);
 void emit_native_xtensa_free(emit_t *emit);
+void emit_native_xtensawin_free(emit_t *emit);
 
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope);
 void mp_emit_bc_end_pass(emit_t *emit);
@@ -180,36 +204,24 @@ bool mp_emit_bc_last_emit_was_return_value(emit_t *emit);
 void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta);
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t line);
 
-void mp_emit_bc_load_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
-void mp_emit_bc_load_deref(emit_t *emit, qstr qst, mp_uint_t local_num);
-void mp_emit_bc_load_name(emit_t *emit, qstr qst);
-void mp_emit_bc_load_global(emit_t *emit, qstr qst);
-void mp_emit_bc_store_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
-void mp_emit_bc_store_deref(emit_t *emit, qstr qst, mp_uint_t local_num);
-void mp_emit_bc_store_name(emit_t *emit, qstr qst);
-void mp_emit_bc_store_global(emit_t *emit, qstr qst);
-void mp_emit_bc_delete_fast(emit_t *emit, qstr qst, mp_uint_t local_num);
-void mp_emit_bc_delete_deref(emit_t *emit, qstr qst, mp_uint_t local_num);
-void mp_emit_bc_delete_name(emit_t *emit, qstr qst);
-void mp_emit_bc_delete_global(emit_t *emit, qstr qst);
+void mp_emit_bc_load_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind);
+void mp_emit_bc_load_global(emit_t *emit, qstr qst, int kind);
+void mp_emit_bc_store_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind);
+void mp_emit_bc_store_global(emit_t *emit, qstr qst, int kind);
+void mp_emit_bc_delete_local(emit_t *emit, qstr qst, mp_uint_t local_num, int kind);
+void mp_emit_bc_delete_global(emit_t *emit, qstr qst, int kind);
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l);
-void mp_emit_bc_import_name(emit_t *emit, qstr qst);
-void mp_emit_bc_import_from(emit_t *emit, qstr qst);
-void mp_emit_bc_import_star(emit_t *emit);
+void mp_emit_bc_import(emit_t *emit, qstr qst, int kind);
 void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok);
 void mp_emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg);
 void mp_emit_bc_load_const_str(emit_t *emit, qstr qst);
 void mp_emit_bc_load_const_obj(emit_t *emit, mp_obj_t obj);
 void mp_emit_bc_load_null(emit_t *emit);
-void mp_emit_bc_load_attr(emit_t *emit, qstr qst);
 void mp_emit_bc_load_method(emit_t *emit, qstr qst, bool is_super);
 void mp_emit_bc_load_build_class(emit_t *emit);
-void mp_emit_bc_load_subscr(emit_t *emit);
-void mp_emit_bc_store_attr(emit_t *emit, qstr qst);
-void mp_emit_bc_store_subscr(emit_t *emit);
-void mp_emit_bc_delete_attr(emit_t *emit, qstr qst);
-void mp_emit_bc_delete_subscr(emit_t *emit);
+void mp_emit_bc_subscr(emit_t *emit, int kind);
+void mp_emit_bc_attr(emit_t *emit, qstr qst, int kind);
 void mp_emit_bc_dup_top(emit_t *emit);
 void mp_emit_bc_dup_top_two(emit_t *emit);
 void mp_emit_bc_pop_top(emit_t *emit);
@@ -219,30 +231,17 @@ void mp_emit_bc_jump(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label);
 void mp_emit_bc_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label);
 void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
-#define mp_emit_bc_break_loop mp_emit_bc_unwind_jump
-#define mp_emit_bc_continue_loop mp_emit_bc_unwind_jump
-void mp_emit_bc_setup_with(emit_t *emit, mp_uint_t label);
+void mp_emit_bc_setup_block(emit_t *emit, mp_uint_t label, int kind);
 void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label);
-void mp_emit_bc_setup_except(emit_t *emit, mp_uint_t label);
-void mp_emit_bc_setup_finally(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_end_finally(emit_t *emit);
 void mp_emit_bc_get_iter(emit_t *emit, bool use_stack);
 void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label);
 void mp_emit_bc_for_iter_end(emit_t *emit);
-void mp_emit_bc_pop_block(emit_t *emit);
-void mp_emit_bc_pop_except(emit_t *emit);
+void mp_emit_bc_pop_except_jump(emit_t *emit, mp_uint_t label, bool within_exc_handler);
 void mp_emit_bc_unary_op(emit_t *emit, mp_unary_op_t op);
 void mp_emit_bc_binary_op(emit_t *emit, mp_binary_op_t op);
-void mp_emit_bc_build_tuple(emit_t *emit, mp_uint_t n_args);
-void mp_emit_bc_build_list(emit_t *emit, mp_uint_t n_args);
-void mp_emit_bc_build_map(emit_t *emit, mp_uint_t n_args);
+void mp_emit_bc_build(emit_t *emit, mp_uint_t n_args, int kind);
 void mp_emit_bc_store_map(emit_t *emit);
-#if MICROPY_PY_BUILTINS_SET
-void mp_emit_bc_build_set(emit_t *emit, mp_uint_t n_args);
-#endif
-#if MICROPY_PY_BUILTINS_SLICE
-void mp_emit_bc_build_slice(emit_t *emit, mp_uint_t n_args);
-#endif
 void mp_emit_bc_store_comp(emit_t *emit, scope_kind_t kind, mp_uint_t list_stack_index);
 void mp_emit_bc_unpack_sequence(emit_t *emit, mp_uint_t n_args);
 void mp_emit_bc_unpack_ex(emit_t *emit, mp_uint_t n_left, mp_uint_t n_right);
@@ -252,14 +251,18 @@ void mp_emit_bc_call_function(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_
 void mp_emit_bc_call_method(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags);
 void mp_emit_bc_return_value(emit_t *emit);
 void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args);
-void mp_emit_bc_yield_value(emit_t *emit);
-void mp_emit_bc_yield_from(emit_t *emit);
+void mp_emit_bc_yield(emit_t *emit, int kind);
 void mp_emit_bc_start_except_handler(emit_t *emit);
 void mp_emit_bc_end_except_handler(emit_t *emit);
 
 typedef struct _emit_inline_asm_t emit_inline_asm_t;
 
 typedef struct _emit_inline_asm_method_table_t {
+    #if MICROPY_DYNAMIC_COMPILER
+    emit_inline_asm_t *(*asm_new)(mp_uint_t max_num_labels);
+    void (*asm_free)(emit_inline_asm_t *emit);
+    #endif
+
     void (*start_pass)(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot);
     void (*end_pass)(emit_inline_asm_t *emit, mp_uint_t type_sig);
     mp_uint_t (*count_params)(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params);

@@ -27,13 +27,23 @@
 #include <stdio.h>
 
 #include "py/runtime.h"
+#include "lib/timeutils/timeutils.h"
+#include "extint.h"
 #include "rtc.h"
 #include "irq.h"
+
+#if defined(STM32WB)
+#define RCC_CSR_LSION RCC_CSR_LSI1ON
+#define RCC_FLAG_LSIRDY RCC_FLAG_LSI1RDY
+#define RCC_OSCILLATORTYPE_LSI RCC_OSCILLATORTYPE_LSI1
+#define __HAL_RCC_LSI_ENABLE __HAL_RCC_LSI1_ENABLE
+#define __HAL_RCC_LSI_DISABLE __HAL_RCC_LSI1_DISABLE
+#endif
 
 /// \moduleref pyb
 /// \class RTC - real time clock
 ///
-/// The RTC is and independent clock that keeps track of the date
+/// The RTC is an independent clock that keeps track of the date
 /// and time.
 ///
 /// Example usage:
@@ -51,7 +61,7 @@ static mp_uint_t rtc_info;
 // Note: LSI is around (32KHz), these dividers should work either way
 // ck_spre(1Hz) = RTCCLK(LSE) /(uwAsynchPrediv + 1)*(uwSynchPrediv + 1)
 // modify RTC_ASYNCH_PREDIV & RTC_SYNCH_PREDIV in board/<BN>/mpconfigport.h to change sub-second ticks
-// default is 3906.25 µs, min is ~30.52 µs (will increas Ivbat by ~500nA)
+// default is 3906.25 us, min is ~30.52 us (will increase Ivbat by ~500nA)
 #ifndef RTC_ASYNCH_PREDIV
 #define RTC_ASYNCH_PREDIV (0x7f)
 #endif
@@ -60,11 +70,11 @@ static mp_uint_t rtc_info;
 #endif
 
 STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc);
-STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse);
+STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool rtc_use_byp);
 STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc);
 STATIC void RTC_CalendarConfig(void);
 
-#if defined(MICROPY_HW_RTC_USE_LSE) && MICROPY_HW_RTC_USE_LSE
+#if MICROPY_HW_RTC_USE_LSE || MICROPY_HW_RTC_USE_BYPASS
 STATIC bool rtc_use_lse = true;
 #else
 STATIC bool rtc_use_lse = false;
@@ -72,35 +82,16 @@ STATIC bool rtc_use_lse = false;
 STATIC uint32_t rtc_startup_tick;
 STATIC bool rtc_need_init_finalise = false;
 
-// check if LSE exists
-// not well tested, should probably be removed
-STATIC bool lse_magic(void) {
-#if 0
-    uint32_t mode_in = GPIOC->MODER & 0x3fffffff;
-    uint32_t mode_out = mode_in | 0x40000000;
-    GPIOC->MODER = mode_out;
-    GPIOC->OTYPER &= 0x7fff;
-    GPIOC->BSRRH = 0x8000;
-    GPIOC->OSPEEDR &= 0x3fffffff;
-    GPIOC->PUPDR &= 0x3fffffff;
-    int i = 0xff0;
-    __IO int d = 0;
-    uint32_t tc = 0;
-    __IO uint32_t j;
-    while (i) {
-        GPIOC->MODER = mode_out;
-        GPIOC->MODER = mode_in;
-        for (j = 0; j < d; j++) ;
-        i--;
-        if ((GPIOC->IDR & 0x8000) == 0) {
-            tc++;
-        }
-    }
-    return (tc < 0xff0)?true:false;
-#else
-    return false;
+#if defined(STM32L0)
+#define BDCR CSR
+#define RCC_BDCR_RTCEN RCC_CSR_RTCEN
+#define RCC_BDCR_RTCSEL RCC_CSR_RTCSEL
+#define RCC_BDCR_RTCSEL_0 RCC_CSR_RTCSEL_0
+#define RCC_BDCR_RTCSEL_1 RCC_CSR_RTCSEL_1
+#define RCC_BDCR_LSEON RCC_CSR_LSEON
+#define RCC_BDCR_LSERDY RCC_CSR_LSERDY
+#define RCC_BDCR_LSEBYP RCC_CSR_LSEBYP
 #endif
-}
 
 void rtc_init_start(bool force_init) {
     RTCHandle.Instance = RTC;
@@ -123,38 +114,69 @@ void rtc_init_start(bool force_init) {
     rtc_need_init_finalise = false;
 
     if (!force_init) {
-        if ((RCC->BDCR & (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) == (RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
+        bool rtc_running = false;
+        uint32_t bdcr = RCC->BDCR;
+        if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL | RCC_BDCR_LSEON | RCC_BDCR_LSERDY))
+            == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_0 | RCC_BDCR_LSEON | RCC_BDCR_LSERDY)) {
             // LSE is enabled & ready --> no need to (re-)init RTC
+            rtc_running = true;
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
             // Clear source Reset Flag
             __HAL_RCC_CLEAR_RESET_FLAGS();
             // provide some status information
-            rtc_info |= 0x40000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
-            return;
-        } else if (((RCC->BDCR & RCC_BDCR_RTCSEL) == RCC_BDCR_RTCSEL_1) && ((RCC->CSR & 3) == 3)) {
-            // LSI configured & enabled & ready --> no need to (re-)init RTC
+            rtc_info |= 0x40000;
+        } else if ((bdcr & (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL))
+                   == (RCC_BDCR_RTCEN | RCC_BDCR_RTCSEL_1)) {
+            // LSI configured as the RTC clock source --> no need to (re-)init RTC
+            rtc_running = true;
             // remove Backup Domain write protection
             HAL_PWR_EnableBkUpAccess();
             // Clear source Reset Flag
             __HAL_RCC_CLEAR_RESET_FLAGS();
-            RCC->CSR |= 1;
+            // Turn the LSI on (it may need this even if the RTC is running)
+            RCC->CSR |= RCC_CSR_LSION;
             // provide some status information
-            rtc_info |= 0x80000 | (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+            rtc_info |= 0x80000;
+        }
+
+        if (rtc_running) {
+            // Provide information about the registers that indicated the RTC is running.
+            rtc_info |= (RCC->BDCR & 7) | (RCC->CSR & 3) << 8;
+
+            // Check that the sync and async prescaler values are correct.  If the RTC
+            // gets into a state where they are wrong then it will run slow or fast and
+            // never be corrected.  In such a situation, attempt to reconfigure the values
+            // without changing the data/time.
+            if (LL_RTC_GetSynchPrescaler(RTC) != RTC_SYNCH_PREDIV
+                || LL_RTC_GetAsynchPrescaler(RTC) != RTC_ASYNCH_PREDIV) {
+                // Values are wrong, attempt to enter RTC init mode and change them.
+                LL_RTC_DisableWriteProtection(RTC);
+                LL_RTC_EnableInitMode(RTC);
+                uint32_t ticks_ms = HAL_GetTick();
+                while (HAL_GetTick() - ticks_ms < RTC_TIMEOUT_VALUE) {
+                    if (LL_RTC_IsActiveFlag_INIT(RTC)) {
+                        // Reconfigure the RTC prescaler register PRER.
+                        LL_RTC_SetSynchPrescaler(RTC, RTC_SYNCH_PREDIV);
+                        LL_RTC_SetAsynchPrescaler(RTC, RTC_ASYNCH_PREDIV);
+                        LL_RTC_DisableInitMode(RTC);
+                        break;
+                    }
+                }
+                LL_RTC_EnableWriteProtection(RTC);
+
+                // Provide information that the prescaler was changed.
+                rtc_info |= 0x100000;
+            }
+
+            // The RTC is up and running, so return without any further configuration.
             return;
         }
     }
 
     rtc_startup_tick = HAL_GetTick();
     rtc_info = 0x3f000000 | (rtc_startup_tick & 0xffffff);
-    if (rtc_use_lse) {
-        if (lse_magic()) {
-            // don't even try LSE
-            rtc_use_lse = false;
-            rtc_info &= ~0x01000000;
-        }
-    }
-    PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse);
+    PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse, MICROPY_HW_RTC_USE_BYPASS);
 }
 
 void rtc_init_finalise() {
@@ -162,40 +184,51 @@ void rtc_init_finalise() {
         return;
     }
 
-    rtc_info = 0x20000000 | (rtc_use_lse << 28);
-    if (PYB_RTC_Init(&RTCHandle) != HAL_OK) {
+    rtc_info = 0;
+    while (PYB_RTC_Init(&RTCHandle) != HAL_OK) {
         if (rtc_use_lse) {
-            // fall back to LSI...
-            rtc_use_lse = false;
+            #if MICROPY_HW_RTC_USE_BYPASS
+            if (RCC->BDCR & RCC_BDCR_LSEBYP) {
+                // LSEBYP failed, fallback to LSE non-bypass
+                rtc_info |= 0x02000000;
+            } else
+            #endif
+            {
+                // LSE failed, fallback to LSI
+                rtc_use_lse = false;
+                rtc_info |= 0x01000000;
+            }
             rtc_startup_tick = HAL_GetTick();
-            PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse);
+            PYB_RTC_MspInit_Kick(&RTCHandle, rtc_use_lse, false);
             HAL_PWR_EnableBkUpAccess();
             RTCHandle.State = HAL_RTC_STATE_RESET;
-            if (PYB_RTC_Init(&RTCHandle) != HAL_OK) {
-                rtc_info = 0x0100ffff; // indicate error
-                return;
-            }
         } else {
             // init error
-            rtc_info = 0xffff; // indicate error
+            rtc_info |= 0xffff; // indicate error
             return;
         }
     }
+
+    // RTC started successfully
+    rtc_info = 0x20000000;
+
+    // record if LSE or LSI is used
+    rtc_info |= (rtc_use_lse << 28);
 
     // record how long it took for the RTC to start up
     rtc_info |= (HAL_GetTick() - rtc_startup_tick) & 0xffff;
 
     // fresh reset; configure RTC Calendar
     RTC_CalendarConfig();
-    #if defined(MCU_SERIES_L4)
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
+    #if defined(STM32L4) || defined(STM32WB)
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_BORRST) != RESET) {
     #else
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
-    #endif
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PORRST) != RESET) {
+        #endif
         // power on reset occurred
         rtc_info |= 0x10000;
     }
-    if(__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET) {
+    if (__HAL_RCC_GET_FLAG(RCC_FLAG_PINRST) != RESET) {
         // external reset occurred
         rtc_info |= 0x20000;
     }
@@ -204,7 +237,7 @@ void rtc_init_finalise() {
     rtc_need_init_finalise = false;
 }
 
-STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct) {
+STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef *RCC_OscInitStruct) {
     /*------------------------------ LSI Configuration -------------------------*/
     if ((RCC_OscInitStruct->OscillatorType & RCC_OSCILLATORTYPE_LSI) == RCC_OSCILLATORTYPE_LSI) {
         // Check the LSI State
@@ -219,15 +252,19 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
 
     /*------------------------------ LSE Configuration -------------------------*/
     if ((RCC_OscInitStruct->OscillatorType & RCC_OSCILLATORTYPE_LSE) == RCC_OSCILLATORTYPE_LSE) {
+        #if !defined(STM32H7) && !defined(STM32WB)
         // Enable Power Clock
-        __PWR_CLK_ENABLE();
+        __HAL_RCC_PWR_CLK_ENABLE();
+        #endif
+
+        // Enable access to the backup domain
         HAL_PWR_EnableBkUpAccess();
         uint32_t tickstart = HAL_GetTick();
 
-        #if defined(MCU_SERIES_F7) || defined(MCU_SERIES_L4)
-        //__HAL_RCC_PWR_CLK_ENABLE();
+        #if defined(STM32F7) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+        // __HAL_RCC_PWR_CLK_ENABLE();
         // Enable write access to Backup domain
-        //PWR->CR1 |= PWR_CR1_DBP;
+        // PWR->CR1 |= PWR_CR1_DBP;
         // Wait for Backup domain Write protection disable
         while ((PWR->CR1 & PWR_CR1_DBP) == RESET) {
             if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
@@ -236,12 +273,22 @@ STATIC HAL_StatusTypeDef PYB_RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruc
         }
         #else
         // Enable write access to Backup domain
-        //PWR->CR |= PWR_CR_DBP;
+        // PWR->CR |= PWR_CR_DBP;
         // Wait for Backup domain Write protection disable
         while ((PWR->CR & PWR_CR_DBP) == RESET) {
-            if (HAL_GetTick() - tickstart > DBP_TIMEOUT_VALUE) {
+            if (HAL_GetTick() - tickstart > RCC_DBP_TIMEOUT_VALUE) {
                 return HAL_TIMEOUT;
             }
+        }
+        #endif
+
+        #if MICROPY_HW_RTC_USE_BYPASS
+        // If LSEBYP is enabled and new state is non-bypass then disable LSEBYP
+        if (RCC_OscInitStruct->LSEState == RCC_LSE_ON && (RCC->BDCR & RCC_BDCR_LSEBYP)) {
+            CLEAR_BIT(RCC->BDCR, RCC_BDCR_LSEON);
+            while (RCC->BDCR & RCC_BDCR_LSERDY) {
+            }
+            CLEAR_BIT(RCC->BDCR, RCC_BDCR_LSEBYP);
         }
         #endif
 
@@ -283,7 +330,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         return HAL_ERROR;
     } else {
         // Clear RTC_CR FMT, OSEL and POL Bits
-        hrtc->Instance->CR &= ((uint32_t)~(RTC_CR_FMT | RTC_CR_OSEL | RTC_CR_POL));
+        hrtc->Instance->CR &= ((uint32_t) ~(RTC_CR_FMT | RTC_CR_OSEL | RTC_CR_POL));
         // Set RTC_CR register
         hrtc->Instance->CR |= (uint32_t)(hrtc->Init.HourFormat | hrtc->Init.OutPut | hrtc->Init.OutPutPolarity);
 
@@ -292,16 +339,16 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         hrtc->Instance->PRER |= (uint32_t)(hrtc->Init.AsynchPrediv << 16);
 
         // Exit Initialization mode
-        hrtc->Instance->ISR &= (uint32_t)~RTC_ISR_INIT;
+        hrtc->Instance->ISR &= (uint32_t) ~RTC_ISR_INIT;
 
-        #if defined(MCU_SERIES_L4)
-        hrtc->Instance->OR &= (uint32_t)~RTC_OR_ALARMOUTTYPE;
+        #if defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+        hrtc->Instance->OR &= (uint32_t) ~RTC_OR_ALARMOUTTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
-        #elif defined(MCU_SERIES_F7)
-        hrtc->Instance->OR &= (uint32_t)~RTC_OR_ALARMTYPE;
+        #elif defined(STM32F7)
+        hrtc->Instance->OR &= (uint32_t) ~RTC_OR_ALARMTYPE;
         hrtc->Instance->OR |= (uint32_t)(hrtc->Init.OutPutType);
         #else
-        hrtc->Instance->TAFCR &= (uint32_t)~RTC_TAFCR_ALARMOUTTYPE;
+        hrtc->Instance->TAFCR &= (uint32_t) ~RTC_TAFCR_ALARMOUTTYPE;
         hrtc->Instance->TAFCR |= (uint32_t)(hrtc->Init.OutPutType);
         #endif
 
@@ -315,7 +362,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
     }
 }
 
-STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse) {
+STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse, bool rtc_use_byp) {
     /* To change the source clock of the RTC feature (LSE, LSI), You have to:
        - Enable the power clock using __PWR_CLK_ENABLE()
        - Enable write access using HAL_PWR_EnableBkUpAccess() function before to
@@ -328,8 +375,14 @@ STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse) {
     // configuration variable is set.  Otherwise it uses LSI (internal osc).
 
     RCC_OscInitTypeDef RCC_OscInitStruct;
-    RCC_OscInitStruct.OscillatorType =  RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_LSE;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+    #if MICROPY_HW_RTC_USE_BYPASS
+    if (rtc_use_byp) {
+        RCC_OscInitStruct.LSEState = RCC_LSE_BYPASS;
+        RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
+    } else
+    #endif
     if (rtc_use_lse) {
         RCC_OscInitStruct.LSEState = RCC_LSE_ON;
         RCC_OscInitStruct.LSIState = RCC_LSI_OFF;
@@ -343,16 +396,29 @@ STATIC void PYB_RTC_MspInit_Kick(RTC_HandleTypeDef *hrtc, bool rtc_use_lse) {
     rtc_need_init_finalise = true;
 }
 
-#define PYB_LSE_TIMEOUT_VALUE 1000  // ST docs spec 2000 ms LSE startup, seems to be too pessimistic
-#define PYB_LSI_TIMEOUT_VALUE 500   // this is way too pessimistic, typ. < 1ms
+#ifndef MICROPY_HW_RTC_LSE_TIMEOUT_MS
+#define MICROPY_HW_RTC_LSE_TIMEOUT_MS 1000  // ST docs spec 2000 ms LSE startup, seems to be too pessimistic
+#endif
+#ifndef MICROPY_HW_RTC_LSI_TIMEOUT_MS
+#define MICROPY_HW_RTC_LSI_TIMEOUT_MS 500   // this is way too pessimistic, typ. < 1ms
+#endif
+#ifndef MICROPY_HW_RTC_BYP_TIMEOUT_MS
+#define MICROPY_HW_RTC_BYP_TIMEOUT_MS 150
+#endif
 
 STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc) {
     // we already had a kick so now wait for the corresponding ready state...
     if (rtc_use_lse) {
         // we now have to wait for LSE ready or timeout
+        uint32_t timeout = MICROPY_HW_RTC_LSE_TIMEOUT_MS;
+        #if MICROPY_HW_RTC_USE_BYPASS
+        if (RCC->BDCR & RCC_BDCR_LSEBYP) {
+            timeout = MICROPY_HW_RTC_BYP_TIMEOUT_MS;
+        }
+        #endif
         uint32_t tickstart = rtc_startup_tick;
         while (__HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) == RESET) {
-            if ((HAL_GetTick() - tickstart ) > PYB_LSE_TIMEOUT_VALUE) {
+            if ((HAL_GetTick() - tickstart) > timeout) {
                 return HAL_TIMEOUT;
             }
         }
@@ -360,7 +426,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc) {
         // we now have to wait for LSI ready or timeout
         uint32_t tickstart = rtc_startup_tick;
         while (__HAL_RCC_GET_FLAG(RCC_FLAG_LSIRDY) == RESET) {
-            if ((HAL_GetTick() - tickstart ) > PYB_LSI_TIMEOUT_VALUE) {
+            if ((HAL_GetTick() - tickstart) > MICROPY_HW_RTC_LSI_TIMEOUT_MS) {
                 return HAL_TIMEOUT;
             }
         }
@@ -374,7 +440,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_MspInit_Finalise(RTC_HandleTypeDef *hrtc) {
         PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
     }
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
-        //Error_Handler();
+        // Error_Handler();
         return HAL_ERROR;
     }
 
@@ -391,7 +457,7 @@ STATIC void RTC_CalendarConfig(void) {
     date.Date = 1;
     date.WeekDay = RTC_WEEKDAY_THURSDAY;
 
-    if(HAL_RTC_SetDate(&RTCHandle, &date, FORMAT_BIN) != HAL_OK) {
+    if (HAL_RTC_SetDate(&RTCHandle, &date, RTC_FORMAT_BIN) != HAL_OK) {
         // init error
         return;
     }
@@ -405,10 +471,27 @@ STATIC void RTC_CalendarConfig(void) {
     time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
     time.StoreOperation = RTC_STOREOPERATION_RESET;
 
-    if (HAL_RTC_SetTime(&RTCHandle, &time, FORMAT_BIN) != HAL_OK) {
+    if (HAL_RTC_SetTime(&RTCHandle, &time, RTC_FORMAT_BIN) != HAL_OK) {
         // init error
         return;
     }
+}
+
+uint64_t mp_hal_time_ns(void) {
+    uint64_t ns = 0;
+    #if MICROPY_HW_ENABLE_RTC
+    // Get current according to the RTC.
+    rtc_init_finalise();
+    RTC_TimeTypeDef time;
+    RTC_DateTypeDef date;
+    HAL_RTC_GetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
+    ns = timeutils_seconds_since_epoch(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds);
+    ns *= 1000000000ULL;
+    uint32_t usec = ((RTC_SYNCH_PREDIV - time.SubSeconds) * (1000000 / 64)) / ((RTC_SYNCH_PREDIV + 1) / 64);
+    ns += usec * 1000;
+    #endif
+    return ns;
 }
 
 /******************************************************************************/
@@ -427,7 +510,7 @@ STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // return constant object
-    return (mp_obj_t)&pyb_rtc_obj;
+    return MP_OBJ_FROM_PTR(&pyb_rtc_obj);
 }
 
 // force rtc to re-initialise
@@ -488,8 +571,8 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         // note: need to call get time then get date to correctly access the registers
         RTC_DateTypeDef date;
         RTC_TimeTypeDef time;
-        HAL_RTC_GetTime(&RTCHandle, &time, FORMAT_BIN);
-        HAL_RTC_GetDate(&RTCHandle, &date, FORMAT_BIN);
+        HAL_RTC_GetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
+        HAL_RTC_GetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
         mp_obj_t tuple[8] = {
             mp_obj_new_int(2000 + date.Year),
             mp_obj_new_int(date.Month),
@@ -511,22 +594,25 @@ mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         date.Month = mp_obj_get_int(items[1]);
         date.Date = mp_obj_get_int(items[2]);
         date.WeekDay = mp_obj_get_int(items[3]);
-        HAL_RTC_SetDate(&RTCHandle, &date, FORMAT_BIN);
+        HAL_RTC_SetDate(&RTCHandle, &date, RTC_FORMAT_BIN);
 
         RTC_TimeTypeDef time;
         time.Hours = mp_obj_get_int(items[4]);
         time.Minutes = mp_obj_get_int(items[5]);
         time.Seconds = mp_obj_get_int(items[6]);
-        time.SubSeconds = rtc_us_to_subsec(mp_obj_get_int(items[7]));
         time.TimeFormat = RTC_HOURFORMAT12_AM;
         time.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
         time.StoreOperation = RTC_STOREOPERATION_SET;
-        HAL_RTC_SetTime(&RTCHandle, &time, FORMAT_BIN);
+        HAL_RTC_SetTime(&RTCHandle, &time, RTC_FORMAT_BIN);
 
         return mp_const_none;
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
+
+#if defined(STM32F0) || defined(STM32L0)
+#define RTC_WKUP_IRQn RTC_IRQn
+#endif
 
 // wakeup(None)
 // wakeup(ms, callback=None)
@@ -575,7 +661,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
                     wut -= 0x10000;
                     if (wut > 0x10000) {
                         // wut still too large
-                        mp_raise_ValueError("wakeup value too large");
+                        mp_raise_ValueError(MP_ERROR_TEXT("wakeup value too large"));
                     }
                 }
             }
@@ -597,17 +683,17 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     }
 
     // set the callback
-    MP_STATE_PORT(pyb_extint_callback)[22] = callback;
+    MP_STATE_PORT(pyb_extint_callback)[EXTI_RTC_WAKEUP] = callback;
 
     // disable register write protection
     RTC->WPR = 0xca;
     RTC->WPR = 0x53;
 
     // clear WUTE
-    RTC->CR &= ~(1 << 10);
+    RTC->CR &= ~RTC_CR_WUTE;
 
     // wait until WUTWF is set
-    while (!(RTC->ISR & (1 << 2))) {
+    while (!(RTC->ISR & RTC_ISR_WUTWF)) {
     }
 
     if (enable) {
@@ -622,39 +708,46 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         // enable register write protection
         RTC->WPR = 0xff;
 
-        // enable external interrupts on line 22
-        #if defined(MCU_SERIES_L4)
-        EXTI->IMR1 |= 1 << 22;
-        EXTI->RTSR1 |= 1 << 22;
+        // enable external interrupts on line EXTI_RTC_WAKEUP
+        #if defined(STM32L4) || defined(STM32WB)
+        EXTI->IMR1 |= 1 << EXTI_RTC_WAKEUP;
+        EXTI->RTSR1 |= 1 << EXTI_RTC_WAKEUP;
+        #elif defined(STM32H7)
+        EXTI_D1->IMR1 |= 1 << EXTI_RTC_WAKEUP;
+        EXTI->RTSR1 |= 1 << EXTI_RTC_WAKEUP;
         #else
-        EXTI->IMR |= 1 << 22;
-        EXTI->RTSR |= 1 << 22;
+        EXTI->IMR |= 1 << EXTI_RTC_WAKEUP;
+        EXTI->RTSR |= 1 << EXTI_RTC_WAKEUP;
         #endif
 
         // clear interrupt flags
-        RTC->ISR &= ~(1 << 10);
-        #if defined(MCU_SERIES_L4)
-        EXTI->PR1 = 1 << 22;
+        RTC->ISR &= ~RTC_ISR_WUTF;
+        #if defined(STM32L4) || defined(STM32WB)
+        EXTI->PR1 = 1 << EXTI_RTC_WAKEUP;
+        #elif defined(STM32H7)
+        EXTI_D1->PR1 = 1 << EXTI_RTC_WAKEUP;
         #else
-        EXTI->PR = 1 << 22;
+        EXTI->PR = 1 << EXTI_RTC_WAKEUP;
         #endif
 
-        HAL_NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP, IRQ_SUBPRI_RTC_WKUP);
+        NVIC_SetPriority(RTC_WKUP_IRQn, IRQ_PRI_RTC_WKUP);
         HAL_NVIC_EnableIRQ(RTC_WKUP_IRQn);
 
-        //printf("wut=%d wucksel=%d\n", wut, wucksel);
+        // printf("wut=%d wucksel=%d\n", wut, wucksel);
     } else {
         // clear WUTIE to disable interrupts
-        RTC->CR &= ~(1 << 14);
+        RTC->CR &= ~RTC_CR_WUTIE;
 
         // enable register write protection
         RTC->WPR = 0xff;
 
-        // disable external interrupts on line 22
-        #if defined(MCU_SERIES_L4)
-        EXTI->IMR1 &= ~(1 << 22);
+        // disable external interrupts on line EXTI_RTC_WAKEUP
+        #if defined(STM32L4) || defined(STM32WB)
+        EXTI->IMR1 &= ~(1 << EXTI_RTC_WAKEUP);
+        #elif defined(STM32H7)
+        EXTI_D1->IMR1 |= 1 << EXTI_RTC_WAKEUP;
         #else
-        EXTI->IMR &= ~(1 << 22);
+        EXTI->IMR &= ~(1 << EXTI_RTC_WAKEUP);
         #endif
     }
 
@@ -673,7 +766,7 @@ mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
         cal = mp_obj_get_int(args[1]);
         mp_uint_t cal_p, cal_m;
         if (cal < -511 || cal > 512) {
-#if defined(MICROPY_HW_RTC_USE_CALOUT) && MICROPY_HW_RTC_USE_CALOUT
+            #if defined(MICROPY_HW_RTC_USE_CALOUT) && MICROPY_HW_RTC_USE_CALOUT
             if ((cal & 0xfffe) == 0x0ffe) {
                 // turn on/off X18 (PC13) 512Hz output
                 // Note:
@@ -685,11 +778,11 @@ mp_obj_t pyb_rtc_calibration(size_t n_args, const mp_obj_t *args) {
                 }
                 return mp_obj_new_int(cal & 1);
             } else {
-                mp_raise_ValueError("calibration value out of range");
+                mp_raise_ValueError(MP_ERROR_TEXT("calibration value out of range"));
             }
-#else
-            mp_raise_ValueError("calibration value out of range");
-#endif
+            #else
+            mp_raise_ValueError(MP_ERROR_TEXT("calibration value out of range"));
+            #endif
         }
         if (cal > 0) {
             cal_p = RTC_SMOOTHCALIB_PLUSPULSES_SET;
@@ -726,5 +819,5 @@ const mp_obj_type_t pyb_rtc_type = {
     { &mp_type_type },
     .name = MP_QSTR_RTC,
     .make_new = pyb_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_rtc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_rtc_locals_dict,
 };

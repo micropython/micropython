@@ -1,10 +1,10 @@
 enum {
-  PORT_A,
-  PORT_B,
-  PORT_C,
-  PORT_D,
-  PORT_E,
-  PORT_Z,
+    PORT_A,
+    PORT_B,
+    PORT_C,
+    PORT_D,
+    PORT_E,
+    PORT_Z,
 };
 
 enum {
@@ -39,11 +39,5 @@ enum {
     AF_PIN_TYPE_UART_CTS,
     AF_PIN_TYPE_UART_RTS,
 };
-
-#define PIN_DEFS_PORT_AF_UNION \
-    FTM_TypeDef   *FTM; \
-    I2C_TypeDef   *I2C; \
-    UART_TypeDef  *UART; \
-    SPI_TypeDef   *SPI;
 
 typedef GPIO_TypeDef pin_gpio_t;

@@ -72,20 +72,24 @@
 #include "stm32_it.h"
 #include "pendsv.h"
 #include "irq.h"
+#include "powerctrl.h"
 #include "pybthread.h"
 #include "gccollect.h"
 #include "extint.h"
 #include "timer.h"
 #include "uart.h"
 #include "storage.h"
-#include "can.h"
 #include "dma.h"
 #include "i2c.h"
 #include "usb.h"
 
-extern void __fatal_error(const char*);
+extern void __fatal_error(const char *);
+#if defined(MICROPY_HW_USB_FS)
 extern PCD_HandleTypeDef pcd_fs_handle;
+#endif
+#if defined(MICROPY_HW_USB_HS)
 extern PCD_HandleTypeDef pcd_hs_handle;
+#endif
 
 /******************************************************************************/
 /*            Cortex-M4 Processor Exceptions Handlers                         */
@@ -103,9 +107,9 @@ STATIC char *fmt_hex(uint32_t val, char *buf) {
     buf[2] = hexDig[(val >> 20) & 0x0f];
     buf[3] = hexDig[(val >> 16) & 0x0f];
     buf[4] = hexDig[(val >> 12) & 0x0f];
-    buf[5] = hexDig[(val >>  8) & 0x0f];
-    buf[6] = hexDig[(val >>  4) & 0x0f];
-    buf[7] = hexDig[(val >>  0) & 0x0f];
+    buf[5] = hexDig[(val >> 8) & 0x0f];
+    buf[6] = hexDig[(val >> 4) & 0x0f];
+    buf[7] = hexDig[(val >> 0) & 0x0f];
     buf[8] = '\0';
 
     return buf;
@@ -133,19 +137,21 @@ STATIC void print_hex_hex(const char *label, uint32_t val1, uint32_t val2) {
 // // stack: R0, R1, R2, R3, R12, LR, PC, XPSR
 
 typedef struct {
-    uint32_t    r0, r1, r2, r3, r12, lr, pc, xpsr;
+    uint32_t r0, r1, r2, r3, r12, lr, pc, xpsr;
 } ExceptionRegisters_t;
 
 int pyb_hard_fault_debug = 0;
 
 void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     if (!pyb_hard_fault_debug) {
-        NVIC_SystemReset();
+        powerctrl_mcu_reset();
     }
 
+    #if MICROPY_HW_ENABLE_USB
     // We need to disable the USB so it doesn't try to write data out on
     // the VCP and then block indefinitely waiting for the buffer to drain.
     pyb_usb_flags = 0;
+    #endif
 
     mp_hal_stdout_tx_str("HardFault\r\n");
 
@@ -159,6 +165,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     print_reg("PC    ", regs->pc);
     print_reg("XPSR  ", regs->xpsr);
 
+    #if __CORTEX_M >= 3
     uint32_t cfsr = SCB->CFSR;
 
     print_reg("HFSR  ", SCB->HFSR);
@@ -169,15 +176,16 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
     if (cfsr & 0x8000) {
         print_reg("BFAR  ", SCB->BFAR);
     }
+    #endif
 
-    if ((void*)&_ram_start <= (void*)regs && (void*)regs < (void*)&_ram_end) {
+    if ((void *)&_ram_start <= (void *)regs && (void *)regs < (void *)&_ram_end) {
         mp_hal_stdout_tx_str("Stack:\r\n");
         uint32_t *stack_top = &_estack;
-        if ((void*)regs < (void*)&_heap_end) {
+        if ((void *)regs < (void *)&_sstack) {
             // stack not in static stack area so limit the amount we print
-            stack_top = (uint32_t*)regs + 32;
+            stack_top = (uint32_t *)regs + 32;
         }
-        for (uint32_t *sp = (uint32_t*)regs; sp < stack_top; ++sp) {
+        for (uint32_t *sp = (uint32_t *)regs; sp < stack_top; ++sp) {
             print_hex_hex("  ", (uint32_t)sp, *sp);
         }
     }
@@ -201,13 +209,25 @@ void HardFault_Handler(void) {
     // main stack pointer (aka MSP). If CONTROL.SPSEL is 1, then the exception
     // was stacked up using the process stack pointer (aka PSP).
 
-    __asm volatile(
-    " tst lr, #4    \n"         // Test Bit 3 to see which stack pointer we should use.
-    " ite eq        \n"         // Tell the assembler that the nest 2 instructions are if-then-else
-    " mrseq r0, msp \n"         // Make R0 point to main stack pointer
-    " mrsne r0, psp \n"         // Make R0 point to process stack pointer
-    " b HardFault_C_Handler \n" // Off to C land
-    );
+    #if __CORTEX_M == 0
+    __asm volatile (
+        " mov r0, lr    \n"
+        " lsr r0, r0, #3 \n"    // Shift Bit 3 into carry to see which stack pointer we should use.
+        " mrs r0, msp   \n"     // Make R0 point to main stack pointer
+        " bcc .use_msp  \n"     // Keep MSP in R0 if SPSEL (carry) is 0
+        " mrs r0, psp   \n"     // Make R0 point to process stack pointer
+        " .use_msp:     \n"
+        " b HardFault_C_Handler \n" // Off to C land
+        );
+    #else
+    __asm volatile (
+        " tst lr, #4    \n"     // Test Bit 3 to see which stack pointer we should use.
+        " ite eq        \n"     // Tell the assembler that the nest 2 instructions are if-then-else
+        " mrseq r0, msp \n"     // Make R0 point to main stack pointer
+        " mrsne r0, psp \n"     // Make R0 point to process stack pointer
+        " b HardFault_C_Handler \n" // Off to C land
+        );
+    #endif
 }
 
 /**
@@ -270,61 +290,6 @@ void SVC_Handler(void) {
 void DebugMon_Handler(void) {
 }
 
-/**
-  * @brief  This function handles PendSVC exception.
-  * @param  None
-  * @retval None
-  */
-void PendSV_Handler(void) {
-    pendsv_isr_handler();
-}
-
-/**
-  * @brief  This function handles SysTick Handler.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Handler(void) {
-    // Instead of calling HAL_IncTick we do the increment here of the counter.
-    // This is purely for efficiency, since SysTick is called 1000 times per
-    // second at the highest interrupt priority.
-    // Note: we don't need uwTick to be declared volatile here because this is
-    // the only place where it can be modified, and the code is more efficient
-    // without the volatile specifier.
-    extern uint32_t uwTick;
-    uwTick += 1;
-
-    // Read the systick control regster. This has the side effect of clearing
-    // the COUNTFLAG bit, which makes the logic in mp_hal_ticks_us
-    // work properly.
-    SysTick->CTRL;
-
-    // Right now we have the storage and DMA controllers to process during
-    // this interrupt and we use custom dispatch handlers.  If this needs to
-    // be generalised in the future then a dispatch table can be used as
-    // follows: ((void(*)(void))(systick_dispatch[uwTick & 0xf]))();
-
-    if (STORAGE_IDLE_TICK(uwTick)) {
-        NVIC->STIR = FLASH_IRQn;
-    }
-
-    if (DMA_IDLE_ENABLED() && DMA_IDLE_TICK(uwTick)) {
-        dma_idle_handler(uwTick);
-    }
-
-    #if MICROPY_PY_THREAD
-    if (pyb_thread_enabled) {
-        if (pyb_thread_cur->timeslice == 0) {
-            if (pyb_thread_cur->run_next != pyb_thread_cur) {
-                SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-            }
-        } else {
-            --pyb_thread_cur->timeslice;
-        }
-    }
-    #endif
-}
-
 /******************************************************************************/
 /*                 STM32F4xx Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */
@@ -332,19 +297,37 @@ void SysTick_Handler(void) {
 /*  file (startup_stm32f4xx.s).                                               */
 /******************************************************************************/
 
+#if defined(STM32L0) || defined(STM32L432xx)
+
+#if MICROPY_HW_USB_FS
+void USB_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+#endif
+
+#elif defined(STM32WB)
+
+#if MICROPY_HW_USB_FS
+void USB_LP_IRQHandler(void) {
+    HAL_PCD_IRQHandler(&pcd_fs_handle);
+}
+#endif
+
+#else
+
 /**
   * @brief  This function handles USB-On-The-Go FS global interrupt request.
   * @param  None
   * @retval None
   */
-#if defined(USE_USB_FS)
+#if MICROPY_HW_USB_FS
 void OTG_FS_IRQHandler(void) {
     IRQ_ENTER(OTG_FS_IRQn);
     HAL_PCD_IRQHandler(&pcd_fs_handle);
     IRQ_EXIT(OTG_FS_IRQn);
 }
 #endif
-#if defined(USE_USB_HS)
+#if MICROPY_HW_USB_HS
 void OTG_HS_IRQHandler(void) {
     IRQ_ENTER(OTG_HS_IRQn);
     HAL_PCD_IRQHandler(&pcd_hs_handle);
@@ -352,7 +335,7 @@ void OTG_HS_IRQHandler(void) {
 }
 #endif
 
-#if defined(USE_USB_FS) || defined(USE_USB_HS)
+#if MICROPY_HW_USB_FS || MICROPY_HW_USB_HS
 /**
   * @brief  This function handles USB OTG Common FS/HS Wakeup functions.
   * @param  *pcd_handle for FS or HS
@@ -360,40 +343,48 @@ void OTG_HS_IRQHandler(void) {
   */
 STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
 
-  if (pcd_handle->Init.low_power_enable) {
-    /* Reset SLEEPDEEP bit of Cortex System Control Register */
-    SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
+    if (pcd_handle->Init.low_power_enable) {
+        /* Reset SLEEPDEEP bit of Cortex System Control Register */
+        SCB->SCR &= (uint32_t) ~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
 
-    /* Configures system clock after wake-up from STOP: enable HSE, PLL and select
-    PLL as system clock source (HSE and PLL are disabled in STOP mode) */
+        /* Configures system clock after wake-up from STOP: enable HSE/HSI, PLL and select
+        PLL as system clock source (HSE/HSI and PLL are disabled in STOP mode) */
 
-    __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
+        __HAL_RCC_HSE_CONFIG(MICROPY_HW_RCC_HSE_STATE);
+        #if MICROPY_HW_CLK_USE_HSI
+        __HAL_RCC_HSI_ENABLE();
+        #endif
 
-    /* Wait till HSE is ready */
-    while(__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET)
-    {}
+        /* Wait till HSE/HSI is ready */
+        while (__HAL_RCC_GET_FLAG(MICROPY_HW_RCC_FLAG_HSxRDY) == RESET) {
+        }
 
-    /* Enable the main PLL. */
-    __HAL_RCC_PLL_ENABLE();
+        /* Enable the main PLL. */
+        __HAL_RCC_PLL_ENABLE();
 
-    /* Wait till PLL is ready */
-    while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET)
-    {}
+        /* Wait till PLL is ready */
+        while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
+        }
 
-    /* Select PLL as SYSCLK */
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
+        /* Select PLL as SYSCLK */
+        MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_SYSCLKSOURCE_PLLCLK);
 
-    while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL)
-    {}
+        #if defined(STM32H7)
+        while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL1) {
+        }
+        #else
+        while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL) {
+        }
+        #endif
 
-    /* ungate PHY clock */
-     __HAL_PCD_UNGATE_PHYCLOCK(pcd_handle);
-  }
+        /* ungate PHY clock */
+        __HAL_PCD_UNGATE_PHYCLOCK(pcd_handle);
+    }
 
 }
 #endif
 
-#if defined(USE_USB_FS)
+#if MICROPY_HW_USB_FS
 /**
   * @brief  This function handles USB OTG FS Wakeup IRQ Handler.
   * @param  None
@@ -402,16 +393,18 @@ STATIC void OTG_CMD_WKUP_Handler(PCD_HandleTypeDef *pcd_handle) {
 void OTG_FS_WKUP_IRQHandler(void) {
     IRQ_ENTER(OTG_FS_WKUP_IRQn);
 
-  OTG_CMD_WKUP_Handler(&pcd_fs_handle);
+    OTG_CMD_WKUP_Handler(&pcd_fs_handle);
 
-  /* Clear EXTI pending Bit*/
-  __HAL_USB_FS_EXTI_CLEAR_FLAG();
+    #if !defined(STM32H7)
+    /* Clear EXTI pending Bit*/
+    __HAL_USB_FS_EXTI_CLEAR_FLAG();
+    #endif
 
     IRQ_EXIT(OTG_FS_WKUP_IRQn);
 }
 #endif
 
-#if defined(USE_USB_HS)
+#if MICROPY_HW_USB_HS
 /**
   * @brief  This function handles USB OTG HS Wakeup IRQ Handler.
   * @param  None
@@ -420,14 +413,18 @@ void OTG_FS_WKUP_IRQHandler(void) {
 void OTG_HS_WKUP_IRQHandler(void) {
     IRQ_ENTER(OTG_HS_WKUP_IRQn);
 
-  OTG_CMD_WKUP_Handler(&pcd_hs_handle);
+    OTG_CMD_WKUP_Handler(&pcd_hs_handle);
 
-  /* Clear EXTI pending Bit*/
-  __HAL_USB_HS_EXTI_CLEAR_FLAG();
+    #if !defined(STM32H7)
+    /* Clear EXTI pending Bit*/
+    __HAL_USB_HS_EXTI_CLEAR_FLAG();
+    #endif
 
     IRQ_EXIT(OTG_HS_WKUP_IRQn);
 }
 #endif
+
+#endif // !defined(STM32L0)
 
 /**
   * @brief  This function handles PPP interrupt request.
@@ -437,21 +434,6 @@ void OTG_HS_WKUP_IRQHandler(void) {
 /*void PPP_IRQHandler(void)
 {
 }*/
-
-// Handle a flash (erase/program) interrupt.
-void FLASH_IRQHandler(void) {
-    IRQ_ENTER(FLASH_IRQn);
-    // This calls the real flash IRQ handler, if needed
-    /*
-    uint32_t flash_cr = FLASH->CR;
-    if ((flash_cr & FLASH_IT_EOP) || (flash_cr & FLASH_IT_ERR)) {
-        HAL_FLASH_IRQHandler();
-    }
-    */
-    // This call the storage IRQ handler, to check if the flash cache needs flushing
-    storage_irq_handler();
-    IRQ_EXIT(FLASH_IRQn);
-}
 
 /**
   * @brief  These functions handle the EXTI interrupt requests.
@@ -515,7 +497,7 @@ void PVD_IRQHandler(void) {
     IRQ_EXIT(PVD_IRQn);
 }
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
 void PVD_PVM_IRQHandler(void) {
     IRQ_ENTER(PVD_PVM_IRQn);
     Handle_EXTI_Irq(EXTI_PVD_OUTPUT);
@@ -530,7 +512,7 @@ void RTC_Alarm_IRQHandler(void) {
 }
 
 #if defined(ETH)    // The 407 has ETH, the 405 doesn't
-void ETH_WKUP_IRQHandler(void)  {
+void ETH_WKUP_IRQHandler(void) {
     IRQ_ENTER(ETH_WKUP_IRQn);
     Handle_EXTI_Irq(EXTI_ETH_WAKEUP);
     IRQ_EXIT(ETH_WKUP_IRQn);
@@ -545,10 +527,59 @@ void TAMP_STAMP_IRQHandler(void) {
 
 void RTC_WKUP_IRQHandler(void) {
     IRQ_ENTER(RTC_WKUP_IRQn);
-    RTC->ISR &= ~(1 << 10); // clear wakeup interrupt flag
+    RTC->ISR &= ~RTC_ISR_WUTF; // clear wakeup interrupt flag
     Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
+
+#if defined(STM32F0) || defined(STM32L0)
+
+void RTC_IRQHandler(void) {
+    IRQ_ENTER(RTC_IRQn);
+    if (RTC->ISR & RTC_ISR_WUTF) {
+        RTC->ISR &= ~RTC_ISR_WUTF; // clear wakeup interrupt flag
+        Handle_EXTI_Irq(EXTI_RTC_WAKEUP); // clear EXTI flag and execute optional callback
+    }
+    if (RTC->ISR & RTC_ISR_ALRAF) {
+        RTC->ISR &= ~RTC_ISR_ALRAF; // clear Alarm A flag
+        Handle_EXTI_Irq(EXTI_RTC_ALARM); // clear EXTI flag and execute optional callback
+    }
+    if (RTC->ISR & RTC_ISR_TSF) {
+        RTC->ISR &= ~RTC_ISR_TSF; // clear timestamp flag
+        Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP); // clear EXTI flag and execute optional callback
+    }
+    IRQ_EXIT(RTC_IRQn);
+}
+
+void EXTI0_1_IRQHandler(void) {
+    IRQ_ENTER(EXTI0_1_IRQn);
+    Handle_EXTI_Irq(0);
+    Handle_EXTI_Irq(1);
+    IRQ_EXIT(EXTI0_1_IRQn);
+}
+
+void EXTI2_3_IRQHandler(void) {
+    IRQ_ENTER(EXTI2_3_IRQn);
+    Handle_EXTI_Irq(2);
+    Handle_EXTI_Irq(3);
+    IRQ_EXIT(EXTI2_3_IRQn);
+}
+
+void EXTI4_15_IRQHandler(void) {
+    IRQ_ENTER(EXTI4_15_IRQn);
+    for (int i = 4; i <= 15; ++i) {
+        Handle_EXTI_Irq(i);
+    }
+    IRQ_EXIT(EXTI4_15_IRQn);
+}
+
+void TIM1_BRK_UP_TRG_COM_IRQHandler(void) {
+    IRQ_ENTER(TIM1_BRK_UP_TRG_COM_IRQn);
+    timer_irq_handler(1);
+    IRQ_EXIT(TIM1_BRK_UP_TRG_COM_IRQn);
+}
+
+#endif
 
 void TIM1_BRK_TIM9_IRQHandler(void) {
     IRQ_ENTER(TIM1_BRK_TIM9_IRQn);
@@ -556,7 +587,7 @@ void TIM1_BRK_TIM9_IRQHandler(void) {
     IRQ_EXIT(TIM1_BRK_TIM9_IRQn);
 }
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
 void TIM1_BRK_TIM15_IRQHandler(void) {
     IRQ_ENTER(TIM1_BRK_TIM15_IRQn);
     timer_irq_handler(15);
@@ -571,12 +602,20 @@ void TIM1_UP_TIM10_IRQHandler(void) {
     IRQ_EXIT(TIM1_UP_TIM10_IRQn);
 }
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4) || defined(STM32WB)
 void TIM1_UP_TIM16_IRQHandler(void) {
     IRQ_ENTER(TIM1_UP_TIM16_IRQn);
     timer_irq_handler(1);
     timer_irq_handler(16);
     IRQ_EXIT(TIM1_UP_TIM16_IRQn);
+}
+#endif
+
+#if defined(STM32H7)
+void TIM1_UP_IRQHandler(void) {
+    IRQ_ENTER(TIM1_UP_IRQn);
+    timer_irq_handler(1);
+    IRQ_EXIT(TIM1_UP_IRQn);
 }
 #endif
 
@@ -586,7 +625,7 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void) {
     IRQ_EXIT(TIM1_TRG_COM_TIM11_IRQn);
 }
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
 void TIM1_TRG_COM_TIM17_IRQHandler(void) {
     IRQ_ENTER(TIM1_TRG_COM_TIM17_IRQn);
     timer_irq_handler(17);
@@ -655,7 +694,7 @@ void TIM8_UP_TIM13_IRQHandler(void) {
     IRQ_EXIT(TIM8_UP_TIM13_IRQn);
 }
 
-#if defined(MCU_SERIES_L4)
+#if defined(STM32L4)
 void TIM8_UP_IRQHandler(void) {
     IRQ_ENTER(TIM8_UP_IRQn);
     timer_irq_handler(8);
@@ -676,6 +715,26 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void) {
 }
 #endif
 
+#if defined(STM32H7)
+void TIM15_IRQHandler(void) {
+    IRQ_ENTER(TIM15_IRQn);
+    timer_irq_handler(15);
+    IRQ_EXIT(TIM15_IRQn);
+}
+
+void TIM16_IRQHandler(void) {
+    IRQ_ENTER(TIM16_IRQn);
+    timer_irq_handler(16);
+    IRQ_EXIT(TIM16_IRQn);
+}
+
+void TIM17_IRQHandler(void) {
+    IRQ_ENTER(TIM17_IRQn);
+    timer_irq_handler(17);
+    IRQ_EXIT(TIM17_IRQn);
+}
+#endif
+
 // UART/USART IRQ handlers
 void USART1_IRQHandler(void) {
     IRQ_ENTER(USART1_IRQn);
@@ -688,6 +747,30 @@ void USART2_IRQHandler(void) {
     uart_irq_handler(2);
     IRQ_EXIT(USART2_IRQn);
 }
+
+#if defined(STM32F0)
+
+void USART3_8_IRQHandler(void) {
+    IRQ_ENTER(USART3_8_IRQn);
+    uart_irq_handler(3);
+    uart_irq_handler(4);
+    uart_irq_handler(5);
+    uart_irq_handler(6);
+    uart_irq_handler(7);
+    uart_irq_handler(8);
+    IRQ_EXIT(USART3_8_IRQn);
+}
+
+#elif defined(STM32L0)
+
+void USART4_5_IRQHandler(void) {
+    IRQ_ENTER(USART4_5_IRQn);
+    uart_irq_handler(4);
+    uart_irq_handler(5);
+    IRQ_EXIT(USART4_5_IRQn);
+}
+
+#else
 
 void USART3_IRQHandler(void) {
     IRQ_ENTER(USART3_IRQn);
@@ -713,7 +796,7 @@ void USART6_IRQHandler(void) {
     IRQ_EXIT(USART6_IRQn);
 }
 
-#if defined(MICROPY_HW_UART7_TX)
+#if defined(UART7)
 void UART7_IRQHandler(void) {
     IRQ_ENTER(UART7_IRQn);
     uart_irq_handler(7);
@@ -721,7 +804,7 @@ void UART7_IRQHandler(void) {
 }
 #endif
 
-#if defined(MICROPY_HW_UART8_TX)
+#if defined(UART8)
 void UART8_IRQHandler(void) {
     IRQ_ENTER(UART8_IRQn);
     uart_irq_handler(8);
@@ -729,31 +812,25 @@ void UART8_IRQHandler(void) {
 }
 #endif
 
-#if MICROPY_HW_ENABLE_CAN
-void CAN1_RX0_IRQHandler(void) {
-    IRQ_ENTER(CAN1_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO0);
-    IRQ_EXIT(CAN1_RX0_IRQn);
+#if defined(UART9)
+void UART9_IRQHandler(void) {
+    IRQ_ENTER(UART9_IRQn);
+    uart_irq_handler(9);
+    IRQ_EXIT(UART9_IRQn);
 }
+#endif
 
-void CAN1_RX1_IRQHandler(void) {
-    IRQ_ENTER(CAN1_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_1, CAN_FIFO1);
-    IRQ_EXIT(CAN1_RX1_IRQn);
+#if defined(UART10)
+void UART10_IRQHandler(void) {
+    IRQ_ENTER(UART10_IRQn);
+    uart_irq_handler(10);
+    IRQ_EXIT(UART10_IRQn);
 }
+#endif
 
-void CAN2_RX0_IRQHandler(void) {
-    IRQ_ENTER(CAN2_RX0_IRQn);
-    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO0);
-    IRQ_EXIT(CAN2_RX0_IRQn);
-}
+#endif
 
-void CAN2_RX1_IRQHandler(void) {
-    IRQ_ENTER(CAN2_RX1_IRQn);
-    can_rx_irq_handler(PYB_CAN_2, CAN_FIFO1);
-    IRQ_EXIT(CAN2_RX1_IRQn);
-}
-#endif // MICROPY_HW_ENABLE_CAN
+#if MICROPY_PY_PYB_LEGACY
 
 #if defined(MICROPY_HW_I2C1_SCL)
 void I2C1_EV_IRQHandler(void) {
@@ -796,3 +873,19 @@ void I2C3_ER_IRQHandler(void) {
     IRQ_EXIT(I2C3_ER_IRQn);
 }
 #endif // defined(MICROPY_HW_I2C3_SCL)
+
+#if defined(MICROPY_HW_I2C4_SCL)
+void I2C4_EV_IRQHandler(void) {
+    IRQ_ENTER(I2C4_EV_IRQn);
+    i2c_ev_irq_handler(4);
+    IRQ_EXIT(I2C4_EV_IRQn);
+}
+
+void I2C4_ER_IRQHandler(void) {
+    IRQ_ENTER(I2C4_ER_IRQn);
+    i2c_er_irq_handler(4);
+    IRQ_EXIT(I2C4_ER_IRQn);
+}
+#endif // defined(MICROPY_HW_I2C4_SCL)
+
+#endif // MICROPY_PY_PYB_LEGACY

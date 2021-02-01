@@ -33,6 +33,18 @@ Functions
    compilation of scripts, and returns ``None``.  Otherwise it returns the current
    optimisation level.
 
+   The optimisation level controls the following compilation features:
+
+   - Assertions: at level 0 assertion statements are enabled and compiled into the
+     bytecode; at levels 1 and higher assertions are not compiled.
+   - Built-in ``__debug__`` variable: at level 0 this variable expands to ``True``;
+     at levels 1 and higher it expands to ``False``.
+   - Source-code line numbers: at levels 0, 1 and 2 source-code line number are
+     stored along with the bytecode so that exceptions can report the line number
+     they occurred at; at levels 3 and higher line numbers are not stored.
+
+   The default optimisation level is usually level 0.
+
 .. function:: alloc_emergency_exception_buf(size)
 
    Allocate *size* bytes of RAM for the emergency exception buffer (a good
@@ -70,13 +82,25 @@ Functions
 
 .. function:: heap_lock()
 .. function:: heap_unlock()
+.. function:: heap_locked()
 
    Lock or unlock the heap.  When locked no memory allocation can occur and a
    `MemoryError` will be raised if any heap allocation is attempted.
+   `heap_locked()` returns a true value if the heap is currently locked.
 
    These functions can be nested, ie `heap_lock()` can be called multiple times
    in a row and the lock-depth will increase, and then `heap_unlock()` must be
    called the same number of times to make the heap available again.
+
+   Both `heap_unlock()` and `heap_locked()` return the current lock depth
+   (after unlocking for the former) as a non-negative integer, with 0 meaning
+   the heap is not locked.
+
+   If the REPL becomes active with the heap locked then it will be forcefully
+   unlocked.
+
+   Note: `heap_locked()` is not enabled on most ports by default,
+   requires ``MICROPY_PY_MICROPYTHON_HEAP_LOCKED``.
 
 .. function:: kbd_intr(chr)
 
@@ -121,5 +145,5 @@ Functions
    :ref:`reference documentation <isr_rules>` under "Creation of Python
    objects".
 
-   There is a finite stack to hold the scheduled functions and `schedule()`
-   will raise a `RuntimeError` if the stack is full.
+   There is a finite queue to hold the scheduled functions and `schedule()`
+   will raise a `RuntimeError` if the queue is full.

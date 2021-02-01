@@ -4,6 +4,7 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
+#define MICROPY_HW_ENABLE_DAC       (1)
 
 // HSE is 8MHz, CPU freq set to 168MHz. Using PLLQ for USB this gives a nice
 // 48 MHz clock for USB. To goto 180 MHz, I think that USB would need to be

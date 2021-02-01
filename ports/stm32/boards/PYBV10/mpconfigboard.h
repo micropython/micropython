@@ -3,16 +3,14 @@
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
-#define MICROPY_HW_HAS_SDCARD       (1)
 #define MICROPY_HW_HAS_MMA7660      (1)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
 #define MICROPY_HW_HAS_LCD          (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
-#define MICROPY_HW_ENABLE_CAN       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_SDCARD    (1)
 
 // HSE is 8MHz
 #define MICROPY_HW_CLK_PLLM (8)
@@ -67,8 +65,12 @@
 #define MICROPY_HW_SPI2_MOSI (pin_B15) // Y8
 
 // CAN busses
-#define MICROPY_HW_CAN1_NAME "YA" // CAN1 on RX,TX = Y3,Y4 = PB8,PB9
-#define MICROPY_HW_CAN2_NAME "YB" // CAN2 on RX,TX = Y5,Y6 = PB12,PB13
+#define MICROPY_HW_CAN1_NAME "YA"
+#define MICROPY_HW_CAN1_TX   (pin_B9) // Y4
+#define MICROPY_HW_CAN1_RX   (pin_B8) // Y3
+#define MICROPY_HW_CAN2_NAME "YB"
+#define MICROPY_HW_CAN2_TX   (pin_B13) // Y6
+#define MICROPY_HW_CAN2_RX   (pin_B12) // Y5
 
 // USRSW has no pullup or pulldown, and pressing the switch makes the input go low
 #define MICROPY_HW_USRSW_PIN        (pin_B3)
@@ -92,8 +94,15 @@
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
 // USB config
+#define MICROPY_HW_USB_FS              (1)
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
 
 // MMA accelerometer config
 #define MICROPY_HW_MMA_AVDD_PIN     (pin_B5)
+
+// Bootloader configuration (only needed if Mboot is used)
+#define MBOOT_I2C_PERIPH_ID 1
+#define MBOOT_I2C_SCL (pin_B8)
+#define MBOOT_I2C_SDA (pin_B9)
+#define MBOOT_I2C_ALTFUNC (4)

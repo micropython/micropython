@@ -47,7 +47,6 @@
 #include "pins.h"
 #include "mpirq.h"
 #include "pybsleep.h"
-#include "mpexception.h"
 
 
 /// \moduleref pyb
@@ -221,7 +220,7 @@ STATIC uint32_t compute_prescaler_period_and_match_value(pyb_timer_channel_obj_t
     return prescaler;
 
 error:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 STATIC void timer_init (pyb_timer_obj_t *tim) {
@@ -317,7 +316,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *tim, size_t n_args, const
     return mp_const_none;
 
 error:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
 STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -438,7 +437,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
     return ch;
 
 error:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_obj, 2, pyb_timer_channel);
 
@@ -558,7 +557,7 @@ STATIC mp_obj_t pyb_timer_channel_freq(size_t n_args, const mp_obj_t *args) {
         // set
         int32_t _frequency = mp_obj_get_int(args[1]);
         if (_frequency <= 0) {
-            mp_raise_ValueError(mpexception_value_invalid_arguments);
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
         }
         ch->frequency = _frequency;
         ch->period = 1000000 / _frequency;
@@ -577,7 +576,7 @@ STATIC mp_obj_t pyb_timer_channel_period(size_t n_args, const mp_obj_t *args) {
         // set
         int32_t _period = mp_obj_get_int(args[1]);
         if (_period <= 0) {
-            mp_raise_ValueError(mpexception_value_invalid_arguments);
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
         }
         ch->period = _period;
         ch->frequency = 1000000 / _period;
@@ -710,7 +709,7 @@ STATIC mp_obj_t pyb_timer_channel_irq(size_t n_args, const mp_obj_t *pos_args, m
     return _irq;
 
 invalid_args:
-    mp_raise_ValueError(mpexception_value_invalid_arguments);
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_irq_obj, 1, pyb_timer_channel_irq);
 

@@ -20,14 +20,14 @@
 ######################
 *.swp
 
-# Build directory
+# Build directories
 ######################
 build/
+build-*/
 
 # Test failure outputs
 ######################
-tests/*.exp
-tests/*.out
+tests/results/*
 
 # Python cache files
 ######################

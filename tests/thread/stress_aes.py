@@ -17,6 +17,7 @@
 # discrete arithmetic routines, mostly from a precomputed table
 
 # non-linear, invertible, substitution box
+# fmt: off
 aes_s_box_table = bytes((
     0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
     0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
@@ -35,30 +36,35 @@ aes_s_box_table = bytes((
     0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,
     0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16,
 ))
+# fmt: on
 
 # multiplication of polynomials modulo x^8 + x^4 + x^3 + x + 1 = 0x11b
 def aes_gf8_mul_2(x):
     if x & 0x80:
-        return (x << 1) ^ 0x11b
+        return (x << 1) ^ 0x11B
     else:
         return x << 1
+
 
 def aes_gf8_mul_3(x):
     return x ^ aes_gf8_mul_2(x)
 
+
 # non-linear, invertible, substitution box
 def aes_s_box(a):
-    return aes_s_box_table[a & 0xff]
+    return aes_s_box_table[a & 0xFF]
+
 
 # return 0x02^(a-1) in GF(2^8)
 def aes_r_con(a):
     ans = 1
     while a > 1:
-        ans <<= 1;
+        ans <<= 1
         if ans & 0x100:
-            ans ^= 0x11b
+            ans ^= 0x11B
         a -= 1
     return ans
+
 
 ##################################################################
 # basic AES algorithm; see FIPS-197
@@ -79,6 +85,7 @@ def aes_add_round_key(state, w):
     for i in range(16):
         state[i] ^= w[i]
 
+
 # combined sub_bytes, shift_rows, mix_columns, add_round_key
 # all inputs must be size 16
 def aes_sb_sr_mc_ark(state, w, w_idx, temp):
@@ -88,7 +95,7 @@ def aes_sb_sr_mc_ark(state, w, w_idx, temp):
         x1 = aes_s_box_table[state[1 + ((i + 1) & 3) * 4]]
         x2 = aes_s_box_table[state[2 + ((i + 2) & 3) * 4]]
         x3 = aes_s_box_table[state[3 + ((i + 3) & 3) * 4]]
-        temp[temp_idx]     = aes_gf8_mul_2(x0) ^ aes_gf8_mul_3(x1) ^ x2 ^ x3 ^ w[w_idx]
+        temp[temp_idx] = aes_gf8_mul_2(x0) ^ aes_gf8_mul_3(x1) ^ x2 ^ x3 ^ w[w_idx]
         temp[temp_idx + 1] = x0 ^ aes_gf8_mul_2(x1) ^ aes_gf8_mul_3(x2) ^ x3 ^ w[w_idx + 1]
         temp[temp_idx + 2] = x0 ^ x1 ^ aes_gf8_mul_2(x2) ^ aes_gf8_mul_3(x3) ^ w[w_idx + 2]
         temp[temp_idx + 3] = aes_gf8_mul_3(x0) ^ x1 ^ x2 ^ aes_gf8_mul_2(x3) ^ w[w_idx + 3]
@@ -96,6 +103,7 @@ def aes_sb_sr_mc_ark(state, w, w_idx, temp):
         temp_idx += 4
     for i in range(16):
         state[i] = temp[i]
+
 
 # combined sub_bytes, shift_rows, add_round_key
 # all inputs must be size 16
@@ -106,7 +114,7 @@ def aes_sb_sr_ark(state, w, w_idx, temp):
         x1 = aes_s_box_table[state[1 + ((i + 1) & 3) * 4]]
         x2 = aes_s_box_table[state[2 + ((i + 2) & 3) * 4]]
         x3 = aes_s_box_table[state[3 + ((i + 3) & 3) * 4]]
-        temp[temp_idx]     = x0 ^ w[w_idx]
+        temp[temp_idx] = x0 ^ w[w_idx]
         temp[temp_idx + 1] = x1 ^ w[w_idx + 1]
         temp[temp_idx + 2] = x2 ^ w[w_idx + 2]
         temp[temp_idx + 3] = x3 ^ w[w_idx + 3]
@@ -114,6 +122,7 @@ def aes_sb_sr_ark(state, w, w_idx, temp):
         temp_idx += 4
     for i in range(16):
         state[i] = temp[i]
+
 
 # take state as input and change it to the next state in the sequence
 # state and temp have size 16, w has size 16 * (Nr + 1), Nr >= 1
@@ -124,6 +133,7 @@ def aes_state(state, w, temp, nr):
         aes_sb_sr_mc_ark(state, w, w_idx, temp)
         w_idx += 16
     aes_sb_sr_ark(state, w, w_idx, temp)
+
 
 # expand 'key' to 'w' for use with aes_state
 # key has size 4 * Nk, w has size 16 * (Nr + 1), temp has size 16
@@ -148,8 +158,10 @@ def aes_key_expansion(key, w, temp, nk, nr):
         for j in range(4):
             w[w_idx + j] = w[w_idx + j - 4 * nk] ^ t[t_idx + j]
 
+
 ##################################################################
 # simple use of AES algorithm, using output feedback (OFB) mode
+
 
 class AES:
     def __init__(self, keysize):
@@ -176,7 +188,7 @@ class AES:
     def set_iv(self, iv):
         for i in range(16):
             self.state[i] = iv[i]
-        self.state_pos = 16;
+        self.state_pos = 16
 
     def get_some_state(self, n_needed):
         if self.state_pos >= 16:
@@ -198,6 +210,7 @@ class AES:
             idx += ln
             self.state_pos += n
 
+
 ##################################################################
 # test code
 
@@ -206,6 +219,7 @@ try:
 except ImportError:
     import time
 import _thread
+
 
 class LockedCounter:
     def __init__(self):
@@ -217,7 +231,9 @@ class LockedCounter:
         self.value += val
         self.lock.release()
 
+
 count = LockedCounter()
+
 
 def thread_entry():
     global count
@@ -247,7 +263,8 @@ def thread_entry():
 
     count.add(1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     n_thread = 20
     for i in range(n_thread):
         _thread.start_new_thread(thread_entry, ())

@@ -36,8 +36,10 @@
 #include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "extmod/vfs_lfs.h"
 #include "genhdr/mpversion.h"
 #include "rng.h"
+#include "usb.h"
 #include "uart.h"
 #include "portmodules.h"
 
@@ -67,25 +69,27 @@ STATIC MP_DEFINE_ATTRTUPLE(
     os_uname_info_obj,
     os_uname_info_fields,
     5,
-    (mp_obj_t)&os_uname_info_sysname_obj,
-    (mp_obj_t)&os_uname_info_nodename_obj,
-    (mp_obj_t)&os_uname_info_release_obj,
-    (mp_obj_t)&os_uname_info_version_obj,
-    (mp_obj_t)&os_uname_info_machine_obj
-);
+    MP_ROM_PTR(&os_uname_info_sysname_obj),
+    MP_ROM_PTR(&os_uname_info_nodename_obj),
+    MP_ROM_PTR(&os_uname_info_release_obj),
+    MP_ROM_PTR(&os_uname_info_version_obj),
+    MP_ROM_PTR(&os_uname_info_machine_obj)
+    );
 
 STATIC mp_obj_t os_uname(void) {
-    return (mp_obj_t)&os_uname_info_obj;
+    return MP_OBJ_FROM_PTR(&os_uname_info_obj);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
 /// \function sync()
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
+    #if MICROPY_VFS_FAT
     for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
         // this assumes that vfs->obj is fs_user_mount_t with block device functions
         disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
     }
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mod_os_sync_obj, os_sync);
@@ -105,6 +109,38 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #endif
+
+bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
+    const mp_obj_type_t *type = mp_obj_get_type(stream);
+    return type == &pyb_uart_type
+           #if MICROPY_HW_ENABLE_USB
+           || type == &pyb_usb_vcp_type
+           #endif
+    ;
+}
+
+STATIC mp_obj_t uos_dupterm(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t prev_obj = mp_uos_dupterm_obj.fun.var(n_args, args);
+    if (mp_obj_get_type(prev_obj) == &pyb_uart_type) {
+        uart_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
+    }
+    #if MICROPY_HW_ENABLE_USB
+    if (mp_obj_get_type(prev_obj) == &pyb_usb_vcp_type) {
+        usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(prev_obj), false);
+    }
+    #endif
+
+    if (mp_obj_get_type(args[0]) == &pyb_uart_type) {
+        uart_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
+    }
+    #if MICROPY_HW_ENABLE_USB
+    if (mp_obj_get_type(args[0]) == &pyb_usb_vcp_type) {
+        usb_vcp_attach_to_repl(MP_OBJ_TO_PTR(args[0]), true);
+    }
+    #endif
+    return prev_obj;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(uos_dupterm_obj, 1, 2, uos_dupterm);
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
@@ -128,20 +164,28 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     /// \constant sep - separation character used in paths
     { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
 
-#if MICROPY_HW_ENABLE_RNG
+    #if MICROPY_HW_ENABLE_RNG
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&os_urandom_obj) },
-#endif
+    #endif
 
     // these are MicroPython extensions
-    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&uos_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
+    #if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    #endif
+    #if MICROPY_VFS_LFS1
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs1), MP_ROM_PTR(&mp_type_vfs_lfs1) },
+    #endif
+    #if MICROPY_VFS_LFS2
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t mp_module_uos = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&os_module_globals,
+    .globals = (mp_obj_dict_t *)&os_module_globals,
 };

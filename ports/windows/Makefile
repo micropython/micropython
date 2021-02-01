@@ -15,8 +15,8 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 
 # compiler settings
-CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(CFLAGS_MOD) $(COPT)
-LDFLAGS = $(LDFLAGS_MOD) -lm
+CFLAGS = $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+LDFLAGS = $(LDFLAGS_MOD) -lm $(LDFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -28,8 +28,9 @@ endif
 
 # source files
 SRC_C = \
+	lib/utils/gchelper_generic.c \
+	lib/utils/printf.c \
 	ports/unix/main.c \
-	ports/unix/file.c \
 	ports/unix/input.c \
 	ports/unix/modos.c \
 	ports/unix/modmachine.c \
@@ -39,15 +40,14 @@ SRC_C = \
 	realpath.c \
 	init.c \
 	sleep.c \
+	fmode.c \
+	$(SRC_MOD)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 ifeq ($(MICROPY_USE_READLINE),1)
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
 SRC_C += lib/mp-readline/readline.c
-else ifeq ($(MICROPY_USE_READLINE),2)
-CFLAGS_MOD += -DMICROPY_USE_READLINE=2
-LDFLAGS_MOD += -lreadline
 endif
 
 LIB += -lws2_32
@@ -57,5 +57,10 @@ SRC_QSTR += $(SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
+
+ifneq ($(FROZEN_MANIFEST),)
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool -DMICROPY_MODULE_FROZEN_MPY=1 -DMPZ_DIG_SIZE=16
+MPY_CROSS_FLAGS += -mcache-lookup-bc
+endif
 
 include $(TOP)/py/mkrules.mk

@@ -4,6 +4,7 @@ MicroPython differences from CPython
 ====================================
 
 The operations listed in this section produce conflicting results in MicroPython when compared to standard Python.
+MicroPython implements Python 3.4 and some select features of Python 3.5.
 
 .. toctree::
     :maxdepth: 2

@@ -34,6 +34,11 @@ static int uart_os = UART_OS;
 static os_event_t uart_evt_queue[16];
 #endif
 
+// A small, static ring buffer for incoming chars
+// This will only be populated if the UART is not attached to dupterm
+uint8 uart_ringbuf_array[UART0_STATIC_RXBUF_LEN];
+static ringbuf_t uart_ringbuf = {uart_ringbuf_array, sizeof(uart_ringbuf_array), 0, 0};
+
 static void uart0_rx_intr_handler(void *para);
 
 void soft_reset(void);
@@ -60,9 +65,9 @@ static void ICACHE_FLASH_ATTR uart_config(uint8 uart_no) {
     uart_div_modify(uart_no, UART_CLK_FREQ / (UartDev.baut_rate));
 
     WRITE_PERI_REG(UART_CONF0(uart_no), UartDev.exist_parity
-                 | UartDev.parity
-                 | (UartDev.stop_bits << UART_STOP_BIT_NUM_S)
-                 | (UartDev.data_bits << UART_BIT_NUM_S));
+        | UartDev.parity
+        | (UartDev.stop_bits << UART_STOP_BIT_NUM_S)
+        | (UartDev.data_bits << UART_BIT_NUM_S));
 
     // clear rx and tx fifo,not ready
     SET_PERI_REG_MASK(UART_CONF0(uart_no), UART_RXFIFO_RST | UART_TXFIFO_RST);
@@ -71,16 +76,16 @@ static void ICACHE_FLASH_ATTR uart_config(uint8 uart_no) {
     if (uart_no == UART0) {
         // set rx fifo trigger
         WRITE_PERI_REG(UART_CONF1(uart_no),
-                   ((0x10 & UART_RXFIFO_FULL_THRHD) << UART_RXFIFO_FULL_THRHD_S) |
-                   ((0x10 & UART_RX_FLOW_THRHD) << UART_RX_FLOW_THRHD_S) |
-                   UART_RX_FLOW_EN |
-                   (0x02 & UART_RX_TOUT_THRHD) << UART_RX_TOUT_THRHD_S |
-                   UART_RX_TOUT_EN);
+            ((0x10 & UART_RXFIFO_FULL_THRHD) << UART_RXFIFO_FULL_THRHD_S) |
+            ((0x10 & UART_RX_FLOW_THRHD) << UART_RX_FLOW_THRHD_S) |
+            UART_RX_FLOW_EN |
+            (0x02 & UART_RX_TOUT_THRHD) << UART_RX_TOUT_THRHD_S |
+                UART_RX_TOUT_EN);
         SET_PERI_REG_MASK(UART_INT_ENA(uart_no), UART_RXFIFO_TOUT_INT_ENA |
-                      UART_FRM_ERR_INT_ENA);
+            UART_FRM_ERR_INT_ENA);
     } else {
         WRITE_PERI_REG(UART_CONF1(uart_no),
-                   ((UartDev.rcv_buff.TrigLvl & UART_RXFIFO_FULL_THRHD) << UART_RXFIFO_FULL_THRHD_S));
+            ((UartDev.rcv_buff.TrigLvl & UART_RXFIFO_FULL_THRHD) << UART_RXFIFO_FULL_THRHD_S));
     }
 
     // clear all interrupt
@@ -98,7 +103,7 @@ static void ICACHE_FLASH_ATTR uart_config(uint8 uart_no) {
 *******************************************************************************/
 void uart_tx_one_char(uint8 uart, uint8 TxChar) {
     while (true) {
-        uint32 fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT<<UART_TXFIFO_CNT_S);
+        uint32 fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
         if ((fifo_cnt >> UART_TXFIFO_CNT_S & UART_TXFIFO_CNT) < 126) {
             break;
         }
@@ -108,7 +113,7 @@ void uart_tx_one_char(uint8 uart, uint8 TxChar) {
 
 void uart_flush(uint8 uart) {
     while (true) {
-        uint32 fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT<<UART_TXFIFO_CNT_S);
+        uint32 fifo_cnt = READ_PERI_REG(UART_STATUS(uart)) & (UART_TXFIFO_CNT << UART_TXFIFO_CNT_S);
         if ((fifo_cnt >> UART_TXFIFO_CNT_S & UART_TXFIFO_CNT) == 0) {
             break;
         }
@@ -150,9 +155,9 @@ uart_os_config(int uart) {
 *******************************************************************************/
 
 static void uart0_rx_intr_handler(void *para) {
-  /* uart0 and uart1 intr combine togther, when interrupt occur, see reg 0x3ff20020, bit2, bit0 represents
-    * uart1 and uart0 respectively
-    */
+    /* uart0 and uart1 intr combine togther, when interrupt occur, see reg 0x3ff20020, bit2, bit0 represents
+      * uart1 and uart0 respectively
+      */
 
     uint8 uart_no = UART_REPL;
 
@@ -165,32 +170,40 @@ static void uart0_rx_intr_handler(void *para) {
         // fifo full
         goto read_chars;
     } else if (UART_RXFIFO_TOUT_INT_ST == (READ_PERI_REG(UART_INT_ST(uart_no)) & UART_RXFIFO_TOUT_INT_ST)) {
-        read_chars:
+    read_chars:
         ETS_UART_INTR_DISABLE();
 
         while (READ_PERI_REG(UART_STATUS(uart_no)) & (UART_RXFIFO_CNT << UART_RXFIFO_CNT_S)) {
             uint8 RcvChar = READ_PERI_REG(UART_FIFO(uart_no)) & 0xff;
-            if (RcvChar == mp_interrupt_char) {
-                mp_keyboard_interrupt();
+            // For efficiency, when connected to dupterm we put incoming chars
+            // directly on stdin_ringbuf, rather than going via uart_ringbuf
+            if (uart_attached_to_dupterm) {
+                if (RcvChar == mp_interrupt_char) {
+                    mp_keyboard_interrupt();
+                } else {
+                    ringbuf_put(&stdin_ringbuf, RcvChar);
+                }
             } else {
-                ringbuf_put(&input_buf, RcvChar);
+                ringbuf_put(&uart_ringbuf, RcvChar);
             }
         }
-
-        mp_hal_signal_input();
 
         // Clear pending FIFO interrupts
         WRITE_PERI_REG(UART_INT_CLR(UART_REPL), UART_RXFIFO_TOUT_INT_CLR | UART_RXFIFO_FULL_INT_ST);
         ETS_UART_INTR_ENABLE();
+
+        if (uart_attached_to_dupterm) {
+            mp_hal_signal_input();
+        }
     }
 }
 
 // Waits at most timeout microseconds for at least 1 char to become ready for reading.
 // Returns true if something available, false if not.
-bool uart_rx_wait(uint32_t timeout_us) {
+bool ICACHE_FLASH_ATTR uart_rx_wait(uint32_t timeout_us) {
     uint32_t start = system_get_time();
     for (;;) {
-        if (input_buf.iget != input_buf.iput) {
+        if (uart_ringbuf.iget != uart_ringbuf.iput) {
             return true; // have at least 1 char ready for reading
         }
         if (system_get_time() - start >= timeout_us) {
@@ -201,7 +214,7 @@ bool uart_rx_wait(uint32_t timeout_us) {
 }
 
 int uart_rx_any(uint8 uart) {
-    if (input_buf.iget != input_buf.iput) {
+    if (uart_ringbuf.iget != uart_ringbuf.iput) {
         return true; // have at least 1 char ready for reading
     }
     return false;
@@ -217,7 +230,7 @@ int uart_tx_any_room(uint8 uart) {
 
 // Returns char from the input buffer, else -1 if buffer is empty.
 int uart_rx_char(void) {
-    return ringbuf_get(&input_buf);
+    return ringbuf_get(&uart_ringbuf);
 }
 
 int uart_rx_one_char(uint8 uart_no) {
@@ -256,13 +269,26 @@ void ICACHE_FLASH_ATTR uart_setup(uint8 uart) {
     ETS_UART_INTR_ENABLE();
 }
 
+int ICACHE_FLASH_ATTR uart0_get_rxbuf_len(void) {
+    return uart_ringbuf.size;
+}
+
+void ICACHE_FLASH_ATTR uart0_set_rxbuf(uint8 *buf, int len) {
+    ETS_UART_INTR_DISABLE();
+    uart_ringbuf.buf = buf;
+    uart_ringbuf.size = len;
+    uart_ringbuf.iget = 0;
+    uart_ringbuf.iput = 0;
+    ETS_UART_INTR_ENABLE();
+}
+
 // Task-based UART interface
 
 #include "py/obj.h"
 #include "lib/utils/pyexec.h"
 
 #if MICROPY_REPL_EVENT_DRIVEN
-void uart_task_handler(os_event_t *evt) {
+void ICACHE_FLASH_ATTR uart_task_handler(os_event_t *evt) {
     if (pyexec_repl_active) {
         // TODO: Just returning here isn't exactly right.
         // What really should be done is something like
@@ -275,8 +301,8 @@ void uart_task_handler(os_event_t *evt) {
     }
 
     int c, ret = 0;
-    while ((c = ringbuf_get(&input_buf)) >= 0) {
-        if (c == interrupt_char) {
+    while ((c = ringbuf_get(&stdin_ringbuf)) >= 0) {
+        if (c == mp_interrupt_char) {
             mp_keyboard_interrupt();
         }
         ret = pyexec_event_repl_process_char(c);

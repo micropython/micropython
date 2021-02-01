@@ -13,7 +13,7 @@ Constructors
 .. class:: pyb.LED(id)
 
    Create an LED object associated with the given LED:
-   
+
      - ``id`` is the LED number, 1-4.
 
 

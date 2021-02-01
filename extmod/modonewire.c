@@ -34,8 +34,8 @@
 // Low-level 1-Wire routines
 
 #define TIMING_RESET1 (480)
-#define TIMING_RESET2 (40)
-#define TIMING_RESET3 (420)
+#define TIMING_RESET2 (70)
+#define TIMING_RESET3 (410)
 #define TIMING_READ1 (5)
 #define TIMING_READ2 (5)
 #define TIMING_READ3 (40)
@@ -44,10 +44,10 @@
 #define TIMING_WRITE3 (10)
 
 STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
-    mp_hal_pin_write(pin, 0);
+    mp_hal_pin_od_low(pin);
     mp_hal_delay_us(TIMING_RESET1);
     uint32_t i = mp_hal_quiet_timing_enter();
-    mp_hal_pin_write(pin, 1);
+    mp_hal_pin_od_high(pin);
     mp_hal_delay_us_fast(TIMING_RESET2);
     int status = !mp_hal_pin_read(pin);
     mp_hal_quiet_timing_exit(i);
@@ -56,11 +56,11 @@ STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
 }
 
 STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
-    mp_hal_pin_write(pin, 1);
+    mp_hal_pin_od_high(pin);
     uint32_t i = mp_hal_quiet_timing_enter();
-    mp_hal_pin_write(pin, 0);
+    mp_hal_pin_od_low(pin);
     mp_hal_delay_us_fast(TIMING_READ1);
-    mp_hal_pin_write(pin, 1);
+    mp_hal_pin_od_high(pin);
     mp_hal_delay_us_fast(TIMING_READ2);
     int value = mp_hal_pin_read(pin);
     mp_hal_quiet_timing_exit(i);
@@ -70,13 +70,13 @@ STATIC int onewire_bus_readbit(mp_hal_pin_obj_t pin) {
 
 STATIC void onewire_bus_writebit(mp_hal_pin_obj_t pin, int value) {
     uint32_t i = mp_hal_quiet_timing_enter();
-    mp_hal_pin_write(pin, 0);
+    mp_hal_pin_od_low(pin);
     mp_hal_delay_us_fast(TIMING_WRITE1);
     if (value) {
-        mp_hal_pin_write(pin, 1);
+        mp_hal_pin_od_high(pin);
     }
     mp_hal_delay_us_fast(TIMING_WRITE2);
-    mp_hal_pin_write(pin, 1);
+    mp_hal_pin_od_high(pin);
     mp_hal_delay_us_fast(TIMING_WRITE3);
     mp_hal_quiet_timing_exit(i);
 }
@@ -126,7 +126,7 @@ STATIC mp_obj_t onewire_crc8(mp_obj_t data) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     uint8_t crc = 0;
     for (size_t i = 0; i < bufinfo.len; ++i) {
-        uint8_t byte = ((uint8_t*)bufinfo.buf)[i];
+        uint8_t byte = ((uint8_t *)bufinfo.buf)[i];
         for (int b = 0; b < 8; ++b) {
             uint8_t fb_bit = (crc ^ byte) & 0x01;
             if (fb_bit == 0x01) {
@@ -158,5 +158,5 @@ STATIC MP_DEFINE_CONST_DICT(onewire_module_globals, onewire_module_globals_table
 
 const mp_obj_module_t mp_module_onewire = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&onewire_module_globals,
+    .globals = (mp_obj_dict_t *)&onewire_module_globals,
 };

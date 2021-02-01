@@ -37,7 +37,7 @@ For example::
 Constructors
 ------------
 
-.. class:: LCD160CR(connect=None, \*, pwr=None, i2c=None, spi=None, i2c_addr=98)
+.. class:: LCD160CR(connect=None, *, pwr=None, i2c=None, spi=None, i2c_addr=98)
 
     Construct an LCD160CR object.  The parameters are:
 
@@ -172,7 +172,7 @@ Drawing text
 ------------
 
 To draw text one sets the position, color and font, and then uses
-`write` to draw the text.
+`LCD160CR.write` to draw the text.
 
 .. method:: LCD160CR.set_pos(x, y)
 
@@ -279,7 +279,7 @@ Touch screen methods
 .. method:: LCD160CR.is_touched()
 
     Returns a boolean: ``True`` if there is currently a touch force on the screen,
-    `False` otherwise.
+    ``False`` otherwise.
 
 .. method:: LCD160CR.get_touch()
 
@@ -340,7 +340,7 @@ Advanced commands
 .. method:: LCD160CR.set_scroll_win_param(win, param, value)
 
     Set a single parameter of a scrolling window region:
-    
+
         - *win* is the window id, 0..8.
         - *param* is the parameter number to configure, 0..7, and corresponds
           to the parameters in the `set_scroll_win` method.

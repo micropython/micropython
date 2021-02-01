@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+#include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
 #include "gccollect.h"
@@ -43,7 +44,7 @@ void mp_thread_init(void) {
 void mp_thread_gc_others(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (pyb_thread_t *th = pyb_thread_all; th != NULL; th = th->all_next) {
-        gc_collect_root((void**)&th, 1);
+        gc_collect_root((void **)&th, 1);
         gc_collect_root(&th->arg, 1);
         gc_collect_root(&th->stack, 1);
         if (th != pyb_thread_cur) {
@@ -53,7 +54,7 @@ void mp_thread_gc_others(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
+void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     if (*stack_size == 0) {
         *stack_size = 4096; // default stack size
     } else if (*stack_size < 2048) {
@@ -74,7 +75,7 @@ void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {
     uint32_t id = pyb_thread_new(th, stack, stack_len, entry, arg);
     if (id == 0) {
         mp_thread_mutex_unlock(&thread_mutex);
-        nlr_raise(mp_obj_new_exception_msg(&mp_type_OSError, "can't create thread"));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("can't create thread"));
     }
 
     mp_thread_mutex_unlock(&thread_mutex);

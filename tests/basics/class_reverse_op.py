@@ -12,7 +12,7 @@ class A:
         return A(self.v + o)
 
     def __repr__(self):
-        return "A(%s)" % self.v
+        return "A({})".format(self.v)
 
 print(A(3) + 1)
 print(2 + A(5))

@@ -6,6 +6,8 @@
 #define UART0 (0)
 #define UART1 (1)
 
+#define UART0_STATIC_RXBUF_LEN (16)
+
 typedef enum {
     UART_FIVE_BITS = 0x0,
     UART_SIX_BITS = 0x1,
@@ -56,17 +58,17 @@ typedef enum {
 } RcvMsgBuffState;
 
 typedef struct {
-    uint32     RcvBuffSize;
-    uint8     *pRcvMsgBuff;
-    uint8     *pWritePos;
-    uint8     *pReadPos;
-    uint8      TrigLvl; //JLU: may need to pad
-    RcvMsgBuffState  BuffState;
+    uint32 RcvBuffSize;
+    uint8 *pRcvMsgBuff;
+    uint8 *pWritePos;
+    uint8 *pReadPos;
+    uint8 TrigLvl;      // JLU: may need to pad
+    RcvMsgBuffState BuffState;
 } RcvMsgBuff;
 
 typedef struct {
-    uint32   TrxBuffSize;
-    uint8   *pTrxBuff;
+    uint32 TrxBuffSize;
+    uint8 *pTrxBuff;
 } TrxMsgBuff;
 
 typedef enum {
@@ -78,18 +80,20 @@ typedef enum {
 } RcvMsgState;
 
 typedef struct {
-    UartBautRate      baut_rate;
-    UartBitsNum4Char  data_bits;
-    UartExistParity   exist_parity;
-    UartParityMode    parity;    // chip size in byte
-    UartStopBitsNum   stop_bits;
-    UartFlowCtrl      flow_ctrl;
-    RcvMsgBuff        rcv_buff;
-    TrxMsgBuff        trx_buff;
-    RcvMsgState       rcv_state;
-    int               received;
-    int               buff_uart_no;  //indicate which uart use tx/rx buffer
+    UartBautRate baut_rate;
+    UartBitsNum4Char data_bits;
+    UartExistParity exist_parity;
+    UartParityMode parity;       // chip size in byte
+    UartStopBitsNum stop_bits;
+    UartFlowCtrl flow_ctrl;
+    RcvMsgBuff rcv_buff;
+    TrxMsgBuff trx_buff;
+    RcvMsgState rcv_state;
+    int received;
+    int buff_uart_no;                // indicate which uart use tx/rx buffer
 } UartDevice;
+
+extern uint8 uart_ringbuf_array[UART0_STATIC_RXBUF_LEN];
 
 void uart_init(UartBautRate uart0_br, UartBautRate uart1_br);
 int uart0_rx(void);
@@ -99,6 +103,8 @@ void uart_tx_one_char(uint8 uart, uint8 TxChar);
 void uart_flush(uint8 uart);
 void uart_os_config(int uart);
 void uart_setup(uint8 uart);
+int uart0_get_rxbuf_len(void);
+void uart0_set_rxbuf(uint8 *buf, int len);
 // check status of rx/tx
 int uart_rx_any(uint8 uart);
 int uart_tx_any_room(uint8 uart);

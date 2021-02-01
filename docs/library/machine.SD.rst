@@ -1,8 +1,13 @@
 .. currentmodule:: machine
 .. _machine.SD:
 
-class SD -- secure digital memory card
-======================================
+class SD -- secure digital memory card (cc3200 port only)
+=========================================================
+
+.. warning::
+
+   This is a non-standard class and is only available on the cc3200 port.
+
 
 The SD card class allows to configure and enable the memory card
 module of the WiPy and automatically mount it as ``/sd`` as part

@@ -30,74 +30,116 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "i2c.h"
 #include "accel.h"
 
-#if MICROPY_HW_HAS_MMA7660
+#if MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3
 
 /// \moduleref pyb
 /// \class Accel - accelerometer control
 ///
-/// Accel is an object that controls the accelerometer.  Example usage:
+/// Accel is an object that controls the MMA7660 or the KXTJ3 accelerometer
+/// depending on one/two constant in mpconfigboard.h file of board project :
+/// #define MICROPY_HW_HAS_MMA7660      (1)
+/// #define MICROPY_HW_HAS_KXTJ3        (0) // not mandatory if equal to 0
+///
+/// Example usage:
 ///
 ///     accel = pyb.Accel()
 ///     for i in range(10):
 ///         print(accel.x(), accel.y(), accel.z())
 ///
-/// Raw values are between -32 and 31.
+/// Raw values are between -32 and 31 for -/+ 1.5G acceleration for MMA7660.
+/// Raw values are between -128 and 127 for -/+ 8G acceleration for KXTJ3.
 
-#define MMA_ADDR (0x98)
-#define MMA_REG_X (0)
-#define MMA_REG_Y (1)
-#define MMA_REG_Z (2)
-#define MMA_REG_TILT (3)
-#define MMA_REG_MODE (7)
-#define MMA_AXIS_SIGNED_VALUE(i) (((i) & 0x3f) | ((i) & 0x20 ? (~0x1f) : 0))
+
+#define I2C_TIMEOUT_MS (50)
+
+#if MICROPY_HW_HAS_MMA7660
+
+#define ACCEL_ADDR                  (76)
+#define ACCEL_REG_X                 (0)
+#define ACCEL_REG_Y                 (1)
+#define ACCEL_REG_Z                 (2)
+#define ACCEL_REG_TILT              (3)
+#define ACCEL_REG_MODE              (7)
+#define ACCEL_AXIS_SIGNED_VALUE(i)  (((i) & 0x3f) | ((i) & 0x20 ? (~0x1f) : 0))
+
+#elif MICROPY_HW_HAS_KXTJ3
+
+#define ACCEL_ADDR                  (0x0f)
+#define ACCEL_REG_DCST_RESP         (0x0c)
+#define ACCEL_REG_WHO_AM_I          (0x0f)
+#define ACCEL_REG_X                 (0x07) // XOUT_H
+#define ACCEL_REG_Y                 (0x09) // YOUT_H
+#define ACCEL_REG_Z                 (0x0B) // ZOUT_H
+#define ACCEL_REG_CTRL_REG1         (0x1B)
+#define ACCEL_REG_CTRL_REG2         (0x1d)
+#define ACCEL_REG_CTRL_REG2         (0x1d)
+#define ACCEL_REG_DATA_CTRL_REG     (0x21)
+#define ACCEL_AXIS_SIGNED_VALUE(i)  (((i) & 0x7f) | ((i) & 0x80 ? (~0x7f) : 0))
+
+#endif
 
 void accel_init(void) {
+    #if MICROPY_HW_HAS_MMA7660
     // PB5 is connected to AVDD; pull high to enable MMA accel device
-    mp_hal_pin_low(&MICROPY_HW_MMA_AVDD_PIN); // turn off AVDD
-    mp_hal_pin_output(&MICROPY_HW_MMA_AVDD_PIN);
+    mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off AVDD
+    mp_hal_pin_output(MICROPY_HW_MMA_AVDD_PIN);
+    #endif
 }
 
 STATIC void accel_start(void) {
     // start the I2C bus in master mode
-    I2CHandle1.Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
-    I2CHandle1.Init.ClockSpeed      = 400000;
-    I2CHandle1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLED;
-    I2CHandle1.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
-    I2CHandle1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
-    I2CHandle1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
-    I2CHandle1.Init.OwnAddress1     = PYB_I2C_MASTER_ADDRESS;
-    I2CHandle1.Init.OwnAddress2     = 0xfe; // unused
-    i2c_init(&I2CHandle1);
+    i2c_init(I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 400000, I2C_TIMEOUT_MS);
+
+    #if MICROPY_HW_HAS_MMA7660
 
     // turn off AVDD, wait 30ms, turn on AVDD, wait 30ms again
-    mp_hal_pin_low(&MICROPY_HW_MMA_AVDD_PIN); // turn off
+    mp_hal_pin_low(MICROPY_HW_MMA_AVDD_PIN); // turn off
     mp_hal_delay_ms(30);
-    mp_hal_pin_high(&MICROPY_HW_MMA_AVDD_PIN); // turn on
+    mp_hal_pin_high(MICROPY_HW_MMA_AVDD_PIN); // turn on
     mp_hal_delay_ms(30);
 
-    HAL_StatusTypeDef status;
-
-    for (int i = 0; i < 10; i++) {
-        status = HAL_I2C_IsDeviceReady(&I2CHandle1, MMA_ADDR, 10, 200);
-        if (status == HAL_OK) {
+    int ret;
+    for (int i = 0; i < 4; i++) {
+        ret = i2c_writeto(I2C1, ACCEL_ADDR, NULL, 0, true);
+        if (ret == 0) {
             break;
         }
     }
 
-    if (status != HAL_OK) {
-        mp_raise_msg(&mp_type_OSError, "accelerometer not found");
+    if (ret != 0) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("accelerometer not found"));
     }
 
     // set MMA to active mode
-    uint8_t data[1] = {1}; // active mode
-    status = HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, MMA_REG_MODE, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    uint8_t data[2] = {ACCEL_REG_MODE, 1}; // active mode
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
 
     // wait for MMA to become active
     mp_hal_delay_ms(30);
+
+    #elif MICROPY_HW_HAS_KXTJ3
+
+    // readout WHO_AM_I register to check KXTJ3 device presence
+    uint8_t data[2] = { ACCEL_REG_WHO_AM_I };
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
+    if (data[0] != 0x35) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("accelerometer not found"));
+    }
+
+    // set operating mode (default: 8 bits, range +/-8G)
+    data[0] = ACCEL_REG_CTRL_REG1;
+    data[1] = 0x90;
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
+    // set dat output rates to 200Hz (LPF roll-over 10ms), idd=35uA
+    data[0] = ACCEL_REG_DATA_CTRL_REG;
+    data[1] = 0x04;
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
+
+    #endif
 }
 
 /******************************************************************************/
@@ -132,58 +174,74 @@ STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, siz
     pyb_accel_obj.base.type = &pyb_accel_type;
     accel_start();
 
-    return &pyb_accel_obj;
+    return MP_OBJ_FROM_PTR(&pyb_accel_obj);
 }
 
 STATIC mp_obj_t read_axis(int axis) {
-    uint8_t data[1];
-    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, axis, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
-    return mp_obj_new_int(MMA_AXIS_SIGNED_VALUE(data[0]));
+    uint8_t data[1] = { axis };
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
+    return mp_obj_new_int(ACCEL_AXIS_SIGNED_VALUE(data[0]));
 }
 
 /// \method x()
 /// Get the x-axis value.
 STATIC mp_obj_t pyb_accel_x(mp_obj_t self_in) {
-    return read_axis(MMA_REG_X);
+    return read_axis(ACCEL_REG_X);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_x_obj, pyb_accel_x);
 
 /// \method y()
 /// Get the y-axis value.
 STATIC mp_obj_t pyb_accel_y(mp_obj_t self_in) {
-    return read_axis(MMA_REG_Y);
+    return read_axis(ACCEL_REG_Y);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_y_obj, pyb_accel_y);
 
 /// \method z()
 /// Get the z-axis value.
 STATIC mp_obj_t pyb_accel_z(mp_obj_t self_in) {
-    return read_axis(MMA_REG_Z);
+    return read_axis(ACCEL_REG_Z);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
 
 /// \method tilt()
 /// Get the tilt register.
 STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
-    uint8_t data[1];
-    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, MMA_REG_TILT, I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    #if MICROPY_HW_HAS_MMA7660
+    uint8_t data[1] = { ACCEL_REG_TILT };
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
+    #elif MICROPY_HW_HAS_KXTJ3
+    /// No tilt like register with KXTJ3 accelerometer
+    return 0;
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
 
 /// \method filtered_xyz()
 /// Get a 3-tuple of filtered x, y and z values.
 STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
-    pyb_accel_obj_t *self = self_in;
+    pyb_accel_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
 
-    uint8_t data[NUM_AXIS];
-    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, MMA_REG_X, I2C_MEMADD_SIZE_8BIT, data, NUM_AXIS, 200);
+    #if MICROPY_HW_HAS_MMA7660
+    const size_t DATA_SIZE = NUM_AXIS;
+    const size_t DATA_STRIDE = 1;
+    #elif MICROPY_HW_HAS_KXTJ3
+    const size_t DATA_SIZE = 5;
+    const size_t DATA_STRIDE = 2;
+    #endif
+    uint8_t data[DATA_SIZE];
+    data[0] = ACCEL_REG_X;
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, DATA_SIZE, true);
 
     mp_obj_t tuple[NUM_AXIS];
     for (int i = 0; i < NUM_AXIS; i++) {
-        self->buf[NUM_AXIS * (FILT_DEPTH - 1) + i] = MMA_AXIS_SIGNED_VALUE(data[i]);
+        self->buf[NUM_AXIS * (FILT_DEPTH - 1) + i] = ACCEL_AXIS_SIGNED_VALUE(data[i * DATA_STRIDE]);
         int32_t val = 0;
         for (int j = 0; j < FILT_DEPTH; j++) {
             val += self->buf[i + NUM_AXIS * j];
@@ -196,16 +254,16 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
 
 STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
-    uint8_t data[1];
-    HAL_I2C_Mem_Read(&I2CHandle1, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    uint8_t data[1] = { mp_obj_get_int(reg) };
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
+    i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
     return mp_obj_new_int(data[0]);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
 
 STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
-    uint8_t data[1];
-    data[0] = mp_obj_get_int(val);
-    HAL_I2C_Mem_Write(&I2CHandle1, MMA_ADDR, mp_obj_get_int(reg), I2C_MEMADD_SIZE_8BIT, data, 1, 200);
+    uint8_t data[2] = { mp_obj_get_int(reg), mp_obj_get_int(val) };
+    i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
@@ -227,7 +285,7 @@ const mp_obj_type_t pyb_accel_type = {
     { &mp_type_type },
     .name = MP_QSTR_Accel,
     .make_new = pyb_accel_make_new,
-    .locals_dict = (mp_obj_dict_t*)&pyb_accel_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_accel_locals_dict,
 };
 
-#endif // MICROPY_HW_HAS_MMA7660
+#endif // MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3

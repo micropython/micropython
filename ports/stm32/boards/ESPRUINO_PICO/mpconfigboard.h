@@ -9,16 +9,9 @@
 
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
-#define MICROPY_HW_HAS_SDCARD       (0)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
-#define MICROPY_HW_ENABLE_RNG       (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_TIMER     (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_CAN       (0)
 
 // Pico has an 8 MHz HSE and the F401 does 84 MHz max
 #define MICROPY_HW_CLK_PLLM (5)
@@ -70,3 +63,6 @@
 #define MICROPY_HW_LED4             (pin_B12) // green
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
+
+// USB config
+#define MICROPY_HW_USB_FS (1)

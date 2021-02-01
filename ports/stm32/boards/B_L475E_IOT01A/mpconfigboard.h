@@ -2,17 +2,9 @@
 #define MICROPY_HW_MCU_NAME         "STM32L475"
 
 #define MICROPY_HW_HAS_SWITCH       (1)
-#define MICROPY_HW_HAS_FLASH        (0)
-#define MICROPY_HW_HAS_SDCARD       (0)
-#define MICROPY_HW_HAS_MMA7660      (0)
-#define MICROPY_HW_HAS_LIS3DSH      (0)
-#define MICROPY_HW_HAS_LCD          (0)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_TIMER     (1)
-#define MICROPY_HW_ENABLE_SERVO     (0)
-#define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_CAN       (0)
+#define MICROPY_HW_ENABLE_USB       (1)
 
 // MSI is used and is 4MHz
 #define MICROPY_HW_CLK_PLLM (1)
@@ -20,8 +12,10 @@
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV7)
 #define MICROPY_HW_CLK_PLLR (RCC_PLLR_DIV2)
 #define MICROPY_HW_CLK_PLLQ (RCC_PLLQ_DIV4)
-
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4
+
+// The board has an external 32kHz crystal
+#define MICROPY_HW_RTC_USE_LSE      (1)
 
 // USART1 config connected to ST-Link
 #define MICROPY_HW_UART1_TX     (pin_B6)
@@ -74,3 +68,6 @@
 #define MICROPY_HW_LED2             (pin_B14) // green
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
+
+// USB config
+#define MICROPY_HW_USB_FS (1)

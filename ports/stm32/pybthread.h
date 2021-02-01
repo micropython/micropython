@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_PYBTHREAD_H
-#define MICROPY_INCLUDED_STMHAL_PYBTHREAD_H
+#ifndef MICROPY_INCLUDED_STM32_PYBTHREAD_H
+#define MICROPY_INCLUDED_STM32_PYBTHREAD_H
 
 typedef struct _pyb_thread_t {
     void *sp;
@@ -59,7 +59,7 @@ static inline void pyb_thread_set_local(void *value) {
 }
 
 static inline void *pyb_thread_get_local(void) {
-    return (void*)pyb_thread_cur->local_state;
+    return (void *)pyb_thread_cur->local_state;
 }
 
 static inline void pyb_thread_yield(void) {
@@ -74,4 +74,4 @@ void pyb_mutex_init(pyb_mutex_t *m);
 int pyb_mutex_lock(pyb_mutex_t *m, int wait);
 void pyb_mutex_unlock(pyb_mutex_t *m);
 
-#endif // MICROPY_INCLUDED_STMHAL_PYBTHREAD_H
+#endif // MICROPY_INCLUDED_STM32_PYBTHREAD_H

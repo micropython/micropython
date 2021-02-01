@@ -25,8 +25,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_STM32_IT_H
-#define MICROPY_INCLUDED_STMHAL_STM32_IT_H
+#ifndef MICROPY_INCLUDED_STM32_STM32_IT_H
+#define MICROPY_INCLUDED_STM32_STM32_IT_H
 
 /**
   ******************************************************************************
@@ -76,11 +76,7 @@ void SVC_Handler(void);
 void DebugMon_Handler(void);
 void PendSV_Handler(void);
 void SysTick_Handler(void);
-#ifdef USE_USB_FS
 void OTG_FS_IRQHandler(void);
-#endif
-#ifdef USE_USB_HS
 void OTG_HS_IRQHandler(void);
-#endif
 
-#endif // MICROPY_INCLUDED_STMHAL_STM32_IT_H
+#endif // MICROPY_INCLUDED_STM32_STM32_IT_H

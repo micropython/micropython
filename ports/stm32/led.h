@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_LED_H
-#define MICROPY_INCLUDED_STMHAL_LED_H
+#ifndef MICROPY_INCLUDED_STM32_LED_H
+#define MICROPY_INCLUDED_STM32_LED_H
 
 typedef enum {
     PYB_LED_RED = 1,
@@ -40,4 +40,4 @@ void led_debug(int value, int delay);
 
 extern const mp_obj_type_t pyb_led_type;
 
-#endif // MICROPY_INCLUDED_STMHAL_LED_H
+#endif // MICROPY_INCLUDED_STM32_LED_H

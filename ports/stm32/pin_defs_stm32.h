@@ -28,71 +28,76 @@
 // This file should only ever be #included by pin.h and not directly.
 
 enum {
-  PORT_A,
-  PORT_B,
-  PORT_C,
-  PORT_D,
-  PORT_E,
-  PORT_F,
-  PORT_G,
-  PORT_H,
-  PORT_I,
-  PORT_J,
-  PORT_K,
+    PORT_A,
+    PORT_B,
+    PORT_C,
+    PORT_D,
+    PORT_E,
+    PORT_F,
+    PORT_G,
+    PORT_H,
+    PORT_I,
+    PORT_J,
+    PORT_K,
+};
+
+// Must have matching entries in SUPPORTED_FN in boards/make-pins.py
+enum {
+    AF_FN_TIM,
+    AF_FN_I2C,
+    AF_FN_USART,
+    AF_FN_UART = AF_FN_USART,
+    AF_FN_SPI,
+    AF_FN_I2S,
+    AF_FN_SDMMC,
+    AF_FN_CAN,
 };
 
 enum {
-  AF_FN_TIM,
-  AF_FN_I2C,
-  AF_FN_USART,
-  AF_FN_UART = AF_FN_USART,
-  AF_FN_SPI,
-  AF_FN_I2S,
-  AF_FN_SDMMC,
-};
+    AF_PIN_TYPE_TIM_CH1 = 0,
+    AF_PIN_TYPE_TIM_CH2,
+    AF_PIN_TYPE_TIM_CH3,
+    AF_PIN_TYPE_TIM_CH4,
+    AF_PIN_TYPE_TIM_CH1N,
+    AF_PIN_TYPE_TIM_CH2N,
+    AF_PIN_TYPE_TIM_CH3N,
+    AF_PIN_TYPE_TIM_CH1_ETR,
+    AF_PIN_TYPE_TIM_ETR,
+    AF_PIN_TYPE_TIM_BKIN,
 
-enum {
-  AF_PIN_TYPE_TIM_CH1 = 0,
-  AF_PIN_TYPE_TIM_CH2,
-  AF_PIN_TYPE_TIM_CH3,
-  AF_PIN_TYPE_TIM_CH4,
-  AF_PIN_TYPE_TIM_CH1N,
-  AF_PIN_TYPE_TIM_CH2N,
-  AF_PIN_TYPE_TIM_CH3N,
-  AF_PIN_TYPE_TIM_CH1_ETR,
-  AF_PIN_TYPE_TIM_ETR,
-  AF_PIN_TYPE_TIM_BKIN,
+    AF_PIN_TYPE_I2C_SDA = 0,
+    AF_PIN_TYPE_I2C_SCL,
 
-  AF_PIN_TYPE_I2C_SDA = 0,
-  AF_PIN_TYPE_I2C_SCL,
+    AF_PIN_TYPE_USART_TX = 0,
+    AF_PIN_TYPE_USART_RX,
+    AF_PIN_TYPE_USART_CTS,
+    AF_PIN_TYPE_USART_RTS,
+    AF_PIN_TYPE_USART_CK,
+    AF_PIN_TYPE_UART_TX  = AF_PIN_TYPE_USART_TX,
+    AF_PIN_TYPE_UART_RX  = AF_PIN_TYPE_USART_RX,
+    AF_PIN_TYPE_UART_CTS = AF_PIN_TYPE_USART_CTS,
+    AF_PIN_TYPE_UART_RTS = AF_PIN_TYPE_USART_RTS,
 
-  AF_PIN_TYPE_USART_TX = 0,
-  AF_PIN_TYPE_USART_RX,
-  AF_PIN_TYPE_USART_CTS,
-  AF_PIN_TYPE_USART_RTS,
-  AF_PIN_TYPE_USART_CK,
-  AF_PIN_TYPE_UART_TX  = AF_PIN_TYPE_USART_TX,
-  AF_PIN_TYPE_UART_RX  = AF_PIN_TYPE_USART_RX,
-  AF_PIN_TYPE_UART_CTS = AF_PIN_TYPE_USART_CTS,
-  AF_PIN_TYPE_UART_RTS = AF_PIN_TYPE_USART_RTS,
+    AF_PIN_TYPE_SPI_MOSI = 0,
+    AF_PIN_TYPE_SPI_MISO,
+    AF_PIN_TYPE_SPI_SCK,
+    AF_PIN_TYPE_SPI_NSS,
 
-  AF_PIN_TYPE_SPI_MOSI = 0,
-  AF_PIN_TYPE_SPI_MISO,
-  AF_PIN_TYPE_SPI_SCK,
-  AF_PIN_TYPE_SPI_NSS,
+    AF_PIN_TYPE_I2S_CK = 0,
+    AF_PIN_TYPE_I2S_MCK,
+    AF_PIN_TYPE_I2S_SD,
+    AF_PIN_TYPE_I2S_WS,
+    AF_PIN_TYPE_I2S_EXTSD,
 
-  AF_PIN_TYPE_I2S_CK = 0,
-  AF_PIN_TYPE_I2S_MCK,
-  AF_PIN_TYPE_I2S_SD,
-  AF_PIN_TYPE_I2S_WS,
-  AF_PIN_TYPE_I2S_EXTSD,
+    AF_PIN_TYPE_SDMMC_CK = 0,
+    AF_PIN_TYPE_SDMMC_CMD,
+    AF_PIN_TYPE_SDMMC_D0,
+    AF_PIN_TYPE_SDMMC_D1,
+    AF_PIN_TYPE_SDMMC_D2,
+    AF_PIN_TYPE_SDMMC_D3,
 
-  AF_PIN_TYPE_SDMMC_CK = 0,
-  AF_PIN_TYPE_SDMMC_CMD,
-  AF_PIN_TYPE_SDMMC_D0,
-  AF_PIN_TYPE_SDMMC_D1,
-  AF_PIN_TYPE_SDMMC_D2,
-  AF_PIN_TYPE_SDMMC_D3,
+    AF_PIN_TYPE_CAN_TX = 0,
+    AF_PIN_TYPE_CAN_RX,
 };
 
 // The HAL uses a slightly different naming than we chose, so we provide
@@ -109,23 +114,19 @@ enum {
 #define I2S2  SPI2
 #define I2S3  SPI3
 
-enum {
-  PIN_ADC1  = (1 << 0),
-  PIN_ADC2  = (1 << 1),
-  PIN_ADC3  = (1 << 2),
-};
+#if defined(STM32H7)
+// Make H7 FDCAN more like CAN
+#define CAN1 FDCAN1
+#define CAN2 FDCAN2
+#define GPIO_AF9_CAN1 GPIO_AF9_FDCAN1
+#define GPIO_AF9_CAN2 GPIO_AF9_FDCAN2
+#endif
 
-// Note that SPI and I2S are really the same peripheral as far as the HAL
-// is concerned, so there is no I2S_TypeDef.
-// We use void* for SDMMC because not all MCUs have the SDMMC_TypeDef type.
-#define PIN_DEFS_PORT_AF_UNION \
-    TIM_TypeDef   *TIM; \
-    I2C_TypeDef   *I2C; \
-    USART_TypeDef *USART; \
-    USART_TypeDef *UART; \
-    SPI_TypeDef   *SPI;\
-    SPI_TypeDef   *I2S; \
-    void          *SDMMC; \
+enum {
+    PIN_ADC1  = (1 << 0),
+    PIN_ADC2  = (1 << 1),
+    PIN_ADC3  = (1 << 2),
+};
 
 typedef GPIO_TypeDef pin_gpio_t;
 

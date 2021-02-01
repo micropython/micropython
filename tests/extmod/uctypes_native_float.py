@@ -14,7 +14,7 @@ data = bytearray(8)
 S = uctypes.struct(uctypes.addressof(data), desc, uctypes.NATIVE)
 
 S.f32 = 12.34
-print('%.4f' % S.f32)
+print("%.4f" % S.f32)
 
 S.f64 = 12.34
-print('%.4f' % S.f64)
+print("%.4f" % S.f64)

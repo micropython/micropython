@@ -60,7 +60,7 @@ on your pyboard (either on the flash or the SD card in the top-level directory).
 or to convert any file you have with the command::
 
     avconv -i original.wav -ar 22050 -codec pcm_u8 test.wav
-    
+
 Then you can do::
 
     >>> import wave

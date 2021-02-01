@@ -1,8 +1,8 @@
 # sets, see set_containment
 for i in 1, 2:
     for o in {1:2}, {1:2}.keys():
-        print("{} in {}: {}".format(i, o, i in o))
-        print("{} not in {}: {}".format(i, o, i not in o))
+        print("{} in {}: {}".format(i, str(o), i in o))
+        print("{} not in {}: {}".format(i, str(o), i not in o))
 
 haystack = "supercalifragilistc"
 for needle in [haystack[i:] for i in range(len(haystack))]:

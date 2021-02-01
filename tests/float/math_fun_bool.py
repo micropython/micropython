@@ -6,8 +6,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-test_values = [1, 0, -1, 1.0, 0.0, -1.0, float('NaN'), float('Inf'), 
-               -float('NaN'), -float('Inf')]
+test_values = [1, 0, -1, 1.0, 0.0, -1.0, float("NaN"), float("Inf"), -float("NaN"), -float("Inf")]
 
 functions = [isfinite, isnan, isinf]
 

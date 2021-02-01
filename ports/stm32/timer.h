@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_TIMER_H
-#define MICROPY_INCLUDED_STMHAL_TIMER_H
+#ifndef MICROPY_INCLUDED_STM32_TIMER_H
+#define MICROPY_INCLUDED_STM32_TIMER_H
 
 extern TIM_HandleTypeDef TIM5_Handle;
 
@@ -39,4 +39,4 @@ void timer_irq_handler(uint tim_id);
 
 TIM_HandleTypeDef *pyb_timer_get_handle(mp_obj_t timer);
 
-#endif // MICROPY_INCLUDED_STMHAL_TIMER_H
+#endif // MICROPY_INCLUDED_STM32_TIMER_H

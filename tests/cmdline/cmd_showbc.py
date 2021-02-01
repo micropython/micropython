@@ -1,5 +1,6 @@
 # cmdline: -v -v
 # test printing of all bytecodes
+# fmt: off
 
 def f():
     # constants
@@ -108,14 +109,14 @@ def f():
     # closed over variables
     x = 1
     def closure():
-        a = x + 1
+        nonlocal x; a = x + 1
         x = 1
         del x
 
     # import
     import a
     from a import b
-    from a import *
+    #from sys import * # tested at module scope
 
     # raise
     raise
@@ -154,3 +155,6 @@ del Class
 # load super method
 def f(self):
     super().f()
+
+# import * (needs to be in module scope)
+from sys import *

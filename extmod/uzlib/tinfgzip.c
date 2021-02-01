@@ -1,12 +1,12 @@
 /*
- * tinfgzip  -  tiny gzip decompressor
+ * uzlib  -  tiny deflate/inflate library (deflate, gzip, zlib)
  *
  * Copyright (c) 2003 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/
  *
- * Copyright (c) 2014-2016 by Paul Sokolovsky
+ * Copyright (c) 2014-2018 by Paul Sokolovsky
  *
  * This software is provided 'as-is', without any express
  * or implied warranty.  In no event will the authors be

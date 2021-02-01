@@ -1,4 +1,4 @@
-:mod:`framebuf` --- Frame buffer manipulation
+:mod:`framebuf` --- frame buffer manipulation
 =============================================
 
 .. module:: framebuf
@@ -19,7 +19,7 @@ For example::
     import framebuf
 
     # FrameBuffer needs 2 bytes for every RGB565 pixel
-    fbuf = FrameBuffer(bytearray(10 * 100 * 2), 10, 100, framebuf.RGB565)
+    fbuf = framebuf.FrameBuffer(bytearray(10 * 100 * 2), 10, 100, framebuf.RGB565)
 
     fbuf.fill(0)
     fbuf.text('MicroPython!', 0, 0, 0xffff)
@@ -28,7 +28,7 @@ For example::
 Constructors
 ------------
 
-.. class:: FrameBuffer(buffer, width, height, format, stride=width)
+.. class:: FrameBuffer(buffer, width, height, format, stride=width, /)
 
     Construct a FrameBuffer object.  The parameters are:
 
@@ -130,7 +130,7 @@ Constants
 
     Monochrome (1-bit) color format
     This defines a mapping where the bits in a byte are horizontally mapped.
-    Each byte occupies 8 horizontal pixels with bit 0 being the leftmost.
+    Each byte occupies 8 horizontal pixels with bit 7 being the leftmost.
     Subsequent bytes appear at successive horizontal locations until the
     rightmost edge is reached. Further bytes are rendered on the next row, one
     pixel lower.
@@ -139,7 +139,7 @@ Constants
 
     Monochrome (1-bit) color format
     This defines a mapping where the bits in a byte are horizontally mapped.
-    Each byte occupies 8 horizontal pixels with bit 7 being the leftmost.
+    Each byte occupies 8 horizontal pixels with bit 0 being the leftmost.
     Subsequent bytes appear at successive horizontal locations until the
     rightmost edge is reached. Further bytes are rendered on the next row, one
     pixel lower.

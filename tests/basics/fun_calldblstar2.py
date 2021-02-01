@@ -1,5 +1,11 @@
 # test passing a string object as the key for a keyword argument
 
+try:
+    exec
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
 # they key in this dict is a string object and is not interned
 args = {'thisisaverylongargumentname': 123}
 

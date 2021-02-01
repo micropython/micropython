@@ -30,7 +30,6 @@
 #include "py/mphal.h"
 #include "extint.h"
 #include "pin.h"
-#include "genhdr/pins.h"
 #include "usrsw.h"
 
 #if MICROPY_HW_HAS_SWITCH
@@ -54,11 +53,11 @@
 
 // this function inits the switch GPIO so that it can be used
 void switch_init0(void) {
-    mp_hal_pin_config(&MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
+    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
 }
 
 int switch_get(void) {
-    int val = ((MICROPY_HW_USRSW_PIN.gpio->IDR & MICROPY_HW_USRSW_PIN.pin_mask) != 0);
+    int val = ((MICROPY_HW_USRSW_PIN->gpio->IDR & MICROPY_HW_USRSW_PIN->pin_mask) != 0);
     return val == MICROPY_HW_USRSW_PRESSED;
 }
 
@@ -86,7 +85,7 @@ STATIC mp_obj_t pyb_switch_make_new(const mp_obj_type_t *type, size_t n_args, si
     // then no extint will be called until it is set via the callback method.
 
     // return static switch object
-    return (mp_obj_t)&pyb_switch_obj;
+    return MP_OBJ_FROM_PTR(&pyb_switch_obj);
 }
 
 /// \method \call()
@@ -119,11 +118,11 @@ mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
     // Init the EXTI each time this function is called, since the EXTI
     // may have been disabled by an exception in the interrupt, or the
     // user disabling the line explicitly.
-    extint_register((mp_obj_t)&MICROPY_HW_USRSW_PIN,
-                    MICROPY_HW_USRSW_EXTI_MODE,
-                    MICROPY_HW_USRSW_PULL,
-                    callback == mp_const_none ? mp_const_none : (mp_obj_t)&switch_callback_obj,
-                    true);
+    extint_register(MP_OBJ_FROM_PTR(MICROPY_HW_USRSW_PIN),
+        MICROPY_HW_USRSW_EXTI_MODE,
+        MICROPY_HW_USRSW_PULL,
+        callback == mp_const_none ? mp_const_none : MP_OBJ_FROM_PTR(&switch_callback_obj),
+        true);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_switch_callback_obj, pyb_switch_callback);
@@ -141,7 +140,7 @@ const mp_obj_type_t pyb_switch_type = {
     .print = pyb_switch_print,
     .make_new = pyb_switch_make_new,
     .call = pyb_switch_call,
-    .locals_dict = (mp_obj_dict_t*)&pyb_switch_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_switch_locals_dict,
 };
 
 #endif // MICROPY_HW_HAS_SWITCH

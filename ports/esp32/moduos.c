@@ -31,13 +31,14 @@
 
 #include "esp_system.h"
 
-#include "py/mpconfig.h"
-#include "py/obj.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
+#include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "extmod/vfs_lfs.h"
 #include "genhdr/mpversion.h"
 
 extern const mp_obj_type_t mp_fat_vfs_type;
@@ -61,7 +62,7 @@ STATIC MP_DEFINE_ATTRTUPLE(
     (mp_obj_t)&os_uname_info_release_obj,
     (mp_obj_t)&os_uname_info_version_obj,
     (mp_obj_t)&os_uname_info_machine_obj
-);
+    );
 
 STATIC mp_obj_t os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
@@ -87,7 +88,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 #if MICROPY_PY_OS_DUPTERM
 STATIC mp_obj_t os_dupterm_notify(mp_obj_t obj_in) {
     (void)obj_in;
-    mp_hal_signal_dupterm_input();
+    for (;;) {
+        int c = mp_uos_dupterm_rx_chr();
+        if (c < 0) {
+            break;
+        }
+        ringbuf_put(&stdin_ringbuf, c);
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_dupterm_notify_obj, os_dupterm_notify);
@@ -117,6 +124,12 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
     #endif
+    #if MICROPY_VFS_LFS1
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs1), MP_ROM_PTR(&mp_type_vfs_lfs1) },
+    #endif
+    #if MICROPY_VFS_LFS2
+    { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
+    #endif
     #endif
 };
 
@@ -124,5 +137,5 @@ STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t uos_module = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&os_module_globals,
+    .globals = (mp_obj_dict_t *)&os_module_globals,
 };

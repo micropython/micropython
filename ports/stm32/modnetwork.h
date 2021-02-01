@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STMHAL_MODNETWORK_H
-#define MICROPY_INCLUDED_STMHAL_MODNETWORK_H
+#ifndef MICROPY_INCLUDED_STM32_MODNETWORK_H
+#define MICROPY_INCLUDED_STM32_MODNETWORK_H
 
 #define MOD_NETWORK_IPADDR_BUF_SIZE (4)
 
@@ -34,6 +34,20 @@
 #define MOD_NETWORK_SOCK_STREAM (1)
 #define MOD_NETWORK_SOCK_DGRAM (2)
 #define MOD_NETWORK_SOCK_RAW (3)
+
+#if MICROPY_PY_LWIP
+
+struct netif;
+
+extern const mp_obj_type_t network_lan_type;
+extern const mp_obj_type_t mod_network_nic_type_wiznet5k;
+
+void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
+mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
+
+void wiznet5k_poll(void);
+
+#else
 
 struct _mod_network_socket_obj_t;
 
@@ -76,8 +90,11 @@ typedef struct _mod_network_socket_obj_t {
 extern const mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 extern const mod_network_nic_type_t mod_network_nic_type_cc3k;
 
+#endif
+
 void mod_network_init(void);
+void mod_network_deinit(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
 
-#endif // MICROPY_INCLUDED_STMHAL_MODNETWORK_H
+#endif // MICROPY_INCLUDED_STM32_MODNETWORK_H

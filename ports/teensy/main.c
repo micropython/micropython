@@ -93,7 +93,7 @@ mp_obj_t pyb_analog_write_frequency(mp_obj_t pin_obj, mp_obj_t freq_obj) {
 static mp_obj_t pyb_info(void) {
     // get and print unique id; 96 bits
     {
-        byte *id = (byte*)0x40048058;
+        byte *id = (byte *)0x40048058;
         printf("ID=%02x%02x%02x%02x:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id[0], id[1], id[2], id[3], id[4], id[5], id[6], id[7], id[8], id[9], id[10], id[11]);
     }
 
@@ -121,7 +121,7 @@ static mp_obj_t pyb_info(void) {
         printf("  1=%u 2=%u m=%u\n", info.num_1block, info.num_2block, info.max_block);
     }
 
-#if 0
+    #if 0
     // free space on flash
     {
         DWORD nclst;
@@ -129,7 +129,7 @@ static mp_obj_t pyb_info(void) {
         f_getfree("0:", &nclst, &fatfs);
         printf("LFS free: %u bytes\n", (uint)(nclst * fatfs->csize * 512));
     }
-#endif
+    #endif
 
     return mp_const_none;
 }
@@ -150,7 +150,7 @@ mp_obj_t pyb_gc(void) {
 }
 
 mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
-    //assert(1 <= n_args && n_args <= 2);
+    // assert(1 <= n_args && n_args <= 2);
 
     uint pin = mp_obj_get_int(args[0]);
     if (pin > CORE_NUM_DIGITAL) {
@@ -162,14 +162,14 @@ mp_obj_t pyb_gpio(int n_args, mp_obj_t *args) {
         pinMode(pin, INPUT);
         return MP_OBJ_NEW_SMALL_INT(digitalRead(pin));
     }
-    
+
     // set pin
     pinMode(pin, OUTPUT);
     digitalWrite(pin, mp_obj_is_true(args[1]));
     return mp_const_none;
 
 pin_error:
-    nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "pin %d does not exist", pin));
+    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("pin %d does not exist"), pin);
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_gpio_obj, 1, 2, pyb_gpio);
@@ -194,7 +194,7 @@ STATIC mp_obj_t pyb_config_main = MP_OBJ_NULL;
 STATIC mp_obj_t pyb_config_usb_mode = MP_OBJ_NULL;
 
 mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
-    if (MP_OBJ_IS_STR(source_dir)) {
+    if (mp_obj_is_str(source_dir)) {
         pyb_config_source_dir = source_dir;
     }
     return mp_const_none;
@@ -203,7 +203,7 @@ mp_obj_t pyb_source_dir(mp_obj_t source_dir) {
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_source_dir_obj, pyb_source_dir);
 
 mp_obj_t pyb_main(mp_obj_t main) {
-    if (MP_OBJ_IS_STR(main)) {
+    if (mp_obj_is_str(main)) {
         pyb_config_main = main;
     }
     return mp_const_none;
@@ -212,7 +212,7 @@ mp_obj_t pyb_main(mp_obj_t main) {
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_main_obj, pyb_main);
 
 STATIC mp_obj_t pyb_usb_mode(mp_obj_t usb_mode) {
-    if (MP_OBJ_IS_STR(usb_mode)) {
+    if (mp_obj_is_str(usb_mode)) {
         pyb_config_usb_mode = usb_mode;
     }
     return mp_const_none;
@@ -264,7 +264,7 @@ soft_reset:
     led_state(PYB_LED_BUILTIN, 1);
 
     // GC init
-    gc_init(&_heap_start, (void*)HEAP_END);
+    gc_init(&_heap_start, (void *)HEAP_END);
 
     // MicroPython init
     mp_init();
@@ -276,7 +276,7 @@ soft_reset:
 
     pin_init0();
 
-#if 0
+    #if 0
     // add some functions to the python namespace
     {
         mp_store_name(MP_QSTR_help, mp_make_function_n(0, pyb_help));
@@ -297,23 +297,23 @@ soft_reset:
         mp_store_attr(m, MP_QSTR_Servo, mp_make_function_n(0, pyb_Servo));
         mp_store_name(MP_QSTR_pyb, m);
     }
-#endif
+    #endif
 
-#if MICROPY_MODULE_FROZEN
+    #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("boot.py");
-#else
-    if (!pyexec_file("/boot.py")) {
+    #else
+    if (!pyexec_file_if_exists("/boot.py")) {
         flash_error(4);
     }
-#endif
+    #endif
 
     // Turn bootup LED off
     led_state(PYB_LED_BUILTIN, 0);
 
     // run main script
-#if MICROPY_MODULE_FROZEN
+    #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("main.py");
-#else
+    #else
     {
         vstr_t *vstr = vstr_new(16);
         vstr_add_str(vstr, "/");
@@ -322,12 +322,12 @@ soft_reset:
         } else {
             vstr_add_str(vstr, mp_obj_str_get_str(pyb_config_main));
         }
-        if (!pyexec_file(vstr_null_terminated_str(vstr))) {
+        if (!pyexec_file_if_exists(vstr_null_terminated_str(vstr))) {
             flash_error(3);
         }
         vstr_free(vstr);
     }
-#endif
+    #endif
 
     // enter REPL
     // REPL mode can change, or it can request a soft reset
@@ -343,7 +343,7 @@ soft_reset:
         }
     }
 
-    printf("PYB: soft reboot\n");
+    printf("MPY: soft reboot\n");
 
 //    first_soft_reset = false;
     goto soft_reset;
@@ -358,24 +358,25 @@ void __libc_init_array(void) {
 // ultoa is used by usb_init_serialnumber. Normally ultoa would be provided
 // by nonstd.c from the teensy core, but it conflicts with some of the
 // MicroPython functions in string0.c, so we provide ultoa here.
-char * ultoa(unsigned long val, char *buf, int radix) 	
-{
-	unsigned digit;
-	int i=0, j;
-	char t;
+char *ultoa(unsigned long val, char *buf, int radix) {
+    unsigned digit;
+    int i = 0, j;
+    char t;
 
-	while (1) {
-		digit = val % radix;
-		buf[i] = ((digit < 10) ? '0' + digit : 'A' + digit - 10);
-		val /= radix;
-		if (val == 0) break;
-		i++;
-	}
-	buf[i + 1] = 0;
-	for (j=0; j < i; j++, i--) {
-		t = buf[j];
-		buf[j] = buf[i];
-		buf[i] = t;
-	}
-	return buf;
+    while (1) {
+        digit = val % radix;
+        buf[i] = ((digit < 10) ? '0' + digit : 'A' + digit - 10);
+        val /= radix;
+        if (val == 0) {
+            break;
+        }
+        i++;
+    }
+    buf[i + 1] = 0;
+    for (j = 0; j < i; j++, i--) {
+        t = buf[j];
+        buf[j] = buf[i];
+        buf[i] = t;
+    }
+    return buf;
 }

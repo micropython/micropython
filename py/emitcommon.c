@@ -30,26 +30,10 @@
 
 #if MICROPY_ENABLE_COMPILER
 
-void mp_emit_common_get_id_for_load(scope_t *scope, qstr qst) {
-    // name adding/lookup
-    bool added;
-    id_info_t *id = scope_find_or_add_id(scope, qst, &added);
-    if (added) {
-        scope_find_local_and_close_over(scope, id, qst);
-    }
-}
-
 void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst) {
     // name adding/lookup
-    bool added;
-    id_info_t *id = scope_find_or_add_id(scope, qst, &added);
-    if (added) {
-        if (SCOPE_IS_FUNC_LIKE(scope->kind)) {
-            id->kind = ID_INFO_KIND_LOCAL;
-        } else {
-            id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT;
-        }
-    } else if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
+    id_info_t *id = scope_find_or_add_id(scope, qst, ID_INFO_KIND_GLOBAL_IMPLICIT);
+    if (SCOPE_IS_FUNC_LIKE(scope->kind) && id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
         // rebind as a local variable
         id->kind = ID_INFO_KIND_LOCAL;
     }
@@ -63,14 +47,14 @@ void mp_emit_common_id_op(emit_t *emit, const mp_emit_method_table_id_ops_t *emi
 
     // call the emit backend with the correct code
     if (id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
-        emit_method_table->name(emit, qst);
+        emit_method_table->global(emit, qst, MP_EMIT_IDOP_GLOBAL_NAME);
     } else if (id->kind == ID_INFO_KIND_GLOBAL_EXPLICIT) {
-        emit_method_table->global(emit, qst);
+        emit_method_table->global(emit, qst, MP_EMIT_IDOP_GLOBAL_GLOBAL);
     } else if (id->kind == ID_INFO_KIND_LOCAL) {
-        emit_method_table->fast(emit, qst, id->local_num);
+        emit_method_table->local(emit, qst, id->local_num, MP_EMIT_IDOP_LOCAL_FAST);
     } else {
         assert(id->kind == ID_INFO_KIND_CELL || id->kind == ID_INFO_KIND_FREE);
-        emit_method_table->deref(emit, qst, id->local_num);
+        emit_method_table->local(emit, qst, id->local_num, MP_EMIT_IDOP_LOCAL_DEREF);
     }
 }
 

@@ -2,11 +2,11 @@
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * Original file from:
- * FatFs - FAT file system module configuration file R0.12a (C)ChaN, 2016
+ * FatFs - FAT file system module configuration file R0.13c (C)ChaN, 2018
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2017 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,73 +30,72 @@
 #include "py/mpconfig.h"
 
 /*---------------------------------------------------------------------------/
-/  FatFs - FAT file system module configuration file
+/  FatFs Functional Configurations
 /---------------------------------------------------------------------------*/
 
-#define _FFCONF 68020   /* Revision ID */
+#define FFCONF_DEF  86604   /* Revision ID */
 
 /*---------------------------------------------------------------------------/
 / Function Configurations
 /---------------------------------------------------------------------------*/
 
-#define _FS_READONLY    0
+#define FF_FS_READONLY  0
 /* This option switches read-only configuration. (0:Read/Write or 1:Read-only)
 /  Read-only configuration removes writing API functions, f_write(), f_sync(),
 /  f_unlink(), f_mkdir(), f_chmod(), f_rename(), f_truncate(), f_getfree()
 /  and optional writing functions as well. */
 
 
-#define _FS_MINIMIZE    0
+#define FF_FS_MINIMIZE  0
 /* This option defines minimization level to remove some basic API functions.
 /
-/   0: All basic functions are enabled.
+/   0: Basic functions are fully enabled.
 /   1: f_stat(), f_getfree(), f_unlink(), f_mkdir(), f_truncate() and f_rename()
 /      are removed.
 /   2: f_opendir(), f_readdir() and f_closedir() are removed in addition to 1.
 /   3: f_lseek() function is removed in addition to 2. */
 
 
-#define _USE_STRFUNC    0
-/* This option switches string functions, f_gets(), f_putc(), f_puts() and
-/  f_printf().
+#define FF_USE_STRFUNC  0
+/* This option switches string functions, f_gets(), f_putc(), f_puts() and f_printf().
 /
 /  0: Disable string functions.
 /  1: Enable without LF-CRLF conversion.
 /  2: Enable with LF-CRLF conversion. */
 
 
-#define _USE_FIND       0
+#define FF_USE_FIND     0
 /* This option switches filtered directory read functions, f_findfirst() and
 /  f_findnext(). (0:Disable, 1:Enable 2:Enable with matching altname[] too) */
 
 
-#define _USE_MKFS       1
+#define FF_USE_MKFS     1
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
 
-#define _USE_FASTSEEK   0
+#define FF_USE_FASTSEEK 0
 /* This option switches fast seek function. (0:Disable or 1:Enable) */
 
 
-#define _USE_EXPAND     0
+#define FF_USE_EXPAND   0
 /* This option switches f_expand function. (0:Disable or 1:Enable) */
 
 
-#define _USE_CHMOD      1
+#define FF_USE_CHMOD    1
 /* This option switches attribute manipulation functions, f_chmod() and f_utime().
-/  (0:Disable or 1:Enable) Also _FS_READONLY needs to be 0 to enable this option. */
+/  (0:Disable or 1:Enable) Also FF_FS_READONLY needs to be 0 to enable this option. */
 
 
 #ifdef MICROPY_FATFS_USE_LABEL
-#define _USE_LABEL      (MICROPY_FATFS_USE_LABEL)
+#define FF_USE_LABEL    (MICROPY_FATFS_USE_LABEL)
 #else
-#define _USE_LABEL      0
+#define FF_USE_LABEL    0
 #endif
 /* This option switches volume label functions, f_getlabel() and f_setlabel().
 /  (0:Disable or 1:Enable) */
 
 
-#define _USE_FORWARD    0
+#define FF_USE_FORWARD  0
 /* This option switches f_forward() function. (0:Disable or 1:Enable) */
 
 
@@ -105,14 +104,13 @@
 /---------------------------------------------------------------------------*/
 
 #ifdef MICROPY_FATFS_LFN_CODE_PAGE
-#define _CODE_PAGE  (MICROPY_FATFS_LFN_CODE_PAGE)
+#define FF_CODE_PAGE MICROPY_FATFS_LFN_CODE_PAGE
 #else
-#define _CODE_PAGE  1
+#define FF_CODE_PAGE 437
 #endif
 /* This option specifies the OEM code page to be used on the target system.
-/  Incorrect setting of the code page can cause a file open failure.
+/  Incorrect code page setting can cause a file open failure.
 /
-/   1   - ASCII (No extended character. Non-LFN cfg. only)
 /   437 - U.S.
 /   720 - Arabic
 /   737 - Greek
@@ -134,59 +132,77 @@
 /   936 - Simplified Chinese (DBCS)
 /   949 - Korean (DBCS)
 /   950 - Traditional Chinese (DBCS)
+/     0 - Include all code pages above and configured by f_setcp()
 */
 
 
 #ifdef MICROPY_FATFS_ENABLE_LFN
-#define _USE_LFN    (MICROPY_FATFS_ENABLE_LFN)
+#define FF_USE_LFN  (MICROPY_FATFS_ENABLE_LFN)
 #else
-#define _USE_LFN    0
+#define FF_USE_LFN  0
 #endif
 #ifdef MICROPY_FATFS_MAX_LFN
-#define _MAX_LFN    (MICROPY_FATFS_MAX_LFN)
+#define FF_MAX_LFN  (MICROPY_FATFS_MAX_LFN)
 #else
-#define _MAX_LFN    255
+#define FF_MAX_LFN  255
 #endif
-/* The _USE_LFN switches the support of long file name (LFN).
+/* The FF_USE_LFN switches the support for LFN (long file name).
 /
-/   0: Disable support of LFN. _MAX_LFN has no effect.
+/   0: Disable LFN. FF_MAX_LFN has no effect.
 /   1: Enable LFN with static working buffer on the BSS. Always NOT thread-safe.
 /   2: Enable LFN with dynamic working buffer on the STACK.
 /   3: Enable LFN with dynamic working buffer on the HEAP.
 /
-/  To enable the LFN, Unicode handling functions (option/unicode.c) must be added
-/  to the project. The working buffer occupies (_MAX_LFN + 1) * 2 bytes and
-/  additional 608 bytes at exFAT enabled. _MAX_LFN can be in range from 12 to 255.
-/  It should be set 255 to support full featured LFN operations.
+/  To enable the LFN, ffunicode.c needs to be added to the project. The LFN function
+/  requiers certain internal working buffer occupies (FF_MAX_LFN + 1) * 2 bytes and
+/  additional (FF_MAX_LFN + 44) / 15 * 32 bytes when exFAT is enabled.
+/  The FF_MAX_LFN defines size of the working buffer in UTF-16 code unit and it can
+/  be in range of 12 to 255. It is recommended to be set 255 to fully support LFN
+/  specification.
 /  When use stack for the working buffer, take care on stack overflow. When use heap
 /  memory for the working buffer, memory management functions, ff_memalloc() and
-/  ff_memfree(), must be added to the project. */
+/  ff_memfree() in ffsystem.c, need to be added to the project. */
 
 
-#define _LFN_UNICODE    0
-/* This option switches character encoding on the API. (0:ANSI/OEM or 1:UTF-16)
-/  To use Unicode string for the path name, enable LFN and set _LFN_UNICODE = 1.
-/  This option also affects behavior of string I/O functions. */
-
-
-#define _STRF_ENCODE    3
-/* When _LFN_UNICODE == 1, this option selects the character encoding ON THE FILE to
-/  be read/written via string I/O functions, f_gets(), f_putc(), f_puts and f_printf().
+#define FF_LFN_UNICODE  0
+/* This option switches the character encoding on the API when LFN is enabled.
 /
-/  0: ANSI/OEM
-/  1: UTF-16LE
-/  2: UTF-16BE
-/  3: UTF-8
+/   0: ANSI/OEM in current CP (TCHAR = char)
+/   1: Unicode in UTF-16 (TCHAR = WCHAR)
+/   2: Unicode in UTF-8 (TCHAR = char)
+/   3: Unicode in UTF-32 (TCHAR = DWORD)
 /
-/  This option has no effect when _LFN_UNICODE == 0. */
+/  Also behavior of string I/O functions will be affected by this option.
+/  When LFN is not enabled, this option has no effect. */
+
+
+#define FF_LFN_BUF      255
+#define FF_SFN_BUF      12
+/* This set of options defines size of file name members in the FILINFO structure
+/  which is used to read out directory items. These values should be suffcient for
+/  the file names to read. The maximum possible length of the read file name depends
+/  on character encoding. When LFN is not enabled, these options have no effect. */
+
+
+#define FF_STRF_ENCODE  3
+/* When FF_LFN_UNICODE >= 1 with LFN enabled, string I/O functions, f_gets(),
+/  f_putc(), f_puts and f_printf() convert the character encoding in it.
+/  This option selects assumption of character encoding ON THE FILE to be
+/  read/written via those functions.
+/
+/   0: ANSI/OEM in current CP
+/   1: Unicode in UTF-16LE
+/   2: Unicode in UTF-16BE
+/   3: Unicode in UTF-8
+*/
 
 
 #ifdef MICROPY_FATFS_RPATH
-#define _FS_RPATH   (MICROPY_FATFS_RPATH)
+#define FF_FS_RPATH (MICROPY_FATFS_RPATH)
 #else
-#define _FS_RPATH   0
+#define FF_FS_RPATH 0
 #endif
-/* This option configures support of relative path.
+/* This option configures support for relative path.
 /
 /   0: Disable relative path and remove related functions.
 /   1: Enable relative path. f_chdir() and f_chdrive() are available.
@@ -198,53 +214,58 @@
 / Drive/Volume Configurations
 /---------------------------------------------------------------------------*/
 
-#define _VOLUMES    1
-/* Number of volumes (logical drives) to be used. */
+#define FF_VOLUMES      1
+/* Number of volumes (logical drives) to be used. (1-10) */
 
 
-#define _STR_VOLUME_ID  0
-#define _VOLUME_STRS    "RAM","NAND","CF","SD","SD2","USB","USB2","USB3"
-/* _STR_VOLUME_ID switches string support of volume ID.
-/  When _STR_VOLUME_ID is set to 1, also pre-defined strings can be used as drive
-/  number in the path name. _VOLUME_STRS defines the drive ID strings for each
-/  logical drives. Number of items must be equal to _VOLUMES. Valid characters for
-/  the drive ID strings are: A-Z and 0-9. */
+#define FF_STR_VOLUME_ID    0
+#define FF_VOLUME_STRS      "RAM","NAND","CF","SD","SD2","USB","USB2","USB3"
+/* FF_STR_VOLUME_ID switches support for volume ID in arbitrary strings.
+/  When FF_STR_VOLUME_ID is set to 1 or 2, arbitrary strings can be used as drive
+/  number in the path name. FF_VOLUME_STRS defines the volume ID strings for each
+/  logical drives. Number of items must not be less than FF_VOLUMES. Valid
+/  characters for the volume ID strings are A-Z, a-z and 0-9, however, they are
+/  compared in case-insensitive. If FF_STR_VOLUME_ID >= 1 and FF_VOLUME_STRS is
+/  not defined, a user defined volume string table needs to be defined as:
+/
+/  const char* VolumeStr[FF_VOLUMES] = {"ram","flash","sd","usb",...
+*/
 
 
 #ifdef MICROPY_FATFS_MULTI_PARTITION
-#define _MULTI_PARTITION    (MICROPY_FATFS_MULTI_PARTITION)
+#define FF_MULTI_PARTITION  (MICROPY_FATFS_MULTI_PARTITION)
 #else
-#define _MULTI_PARTITION    0
+#define FF_MULTI_PARTITION  0
 #endif
-/* This option switches support of multi-partition on a physical drive.
+/* This option switches support for multiple volumes on the physical drive.
 /  By default (0), each logical drive number is bound to the same physical drive
 /  number and only an FAT volume found on the physical drive will be mounted.
-/  When multi-partition is enabled (1), each logical drive number can be bound to
+/  When this function is enabled (1), each logical drive number can be bound to
 /  arbitrary physical drive and partition listed in the VolToPart[]. Also f_fdisk()
 /  funciton will be available. */
 
 
-#define _MIN_SS     512
+#define FF_MIN_SS   512
 #ifdef MICROPY_FATFS_MAX_SS
-#define _MAX_SS     (MICROPY_FATFS_MAX_SS)
+#define FF_MAX_SS   (MICROPY_FATFS_MAX_SS)
 #else
-#define _MAX_SS     512
+#define FF_MAX_SS   512
 #endif
-/* These options configure the range of sector size to be supported. (512, 1024,
-/  2048 or 4096) Always set both 512 for most systems, all type of memory cards and
+/* This set of options configures the range of sector size to be supported. (512,
+/  1024, 2048 or 4096) Always set both 512 for most systems, generic memory card and
 /  harddisk. But a larger value may be required for on-board flash memory and some
-/  type of optical media. When _MAX_SS is larger than _MIN_SS, FatFs is configured
-/  to variable sector size and GET_SECTOR_SIZE command must be implemented to the
-/  disk_ioctl() function. */
+/  type of optical media. When FF_MAX_SS is larger than FF_MIN_SS, FatFs is configured
+/  for variable sector size mode and disk_ioctl() function needs to implement
+/  GET_SECTOR_SIZE command. */
 
 
-#define _USE_TRIM   0
-/* This option switches support of ATA-TRIM. (0:Disable or 1:Enable)
+#define FF_USE_TRIM     0
+/* This option switches support for ATA-TRIM. (0:Disable or 1:Enable)
 /  To enable Trim function, also CTRL_TRIM command should be implemented to the
 /  disk_ioctl() function. */
 
 
-#define _FS_NOFSINFO    0
+#define FF_FS_NOFSINFO  0
 /* If you need to know correct free space on the FAT32 volume, set bit 0 of this
 /  option, and f_getfree() function at first time after volume mount will force
 /  a full FAT scan. Bit 1 controls the use of last allocated cluster number.
@@ -261,44 +282,44 @@
 / System Configurations
 /---------------------------------------------------------------------------*/
 
-#define _FS_TINY    1
+#define FF_FS_TINY      1
 /* This option switches tiny buffer configuration. (0:Normal or 1:Tiny)
-/  At the tiny configuration, size of file object (FIL) is reduced _MAX_SS bytes.
+/  At the tiny configuration, size of file object (FIL) is shrinked FF_MAX_SS bytes.
 /  Instead of private sector buffer eliminated from the file object, common sector
-/  buffer in the file system object (FATFS) is used for the file data transfer. */
+/  buffer in the filesystem object (FATFS) is used for the file data transfer. */
 
 
 #ifdef MICROPY_FATFS_EXFAT
-#define _FS_EXFAT   (MICROPY_FATFS_EXFAT)
+#define FF_FS_EXFAT (MICROPY_FATFS_EXFAT)
 #else
-#define _FS_EXFAT   0
+#define FF_FS_EXFAT 0
 #endif
-/* This option switches support of exFAT file system. (0:Disable or 1:Enable)
-/  When enable exFAT, also LFN needs to be enabled. (_USE_LFN >= 1)
-/  Note that enabling exFAT discards C89 compatibility. */
+/* This option switches support for exFAT filesystem. (0:Disable or 1:Enable)
+/  To enable exFAT, also LFN needs to be enabled. (FF_USE_LFN >= 1)
+/  Note that enabling exFAT discards ANSI C (C89) compatibility. */
 
 
 #ifdef MICROPY_FATFS_NORTC
-#define _FS_NORTC   (MICROPY_FATFS_NORTC)
+#define FF_FS_NORTC (MICROPY_FATFS_NORTC)
 #else
-#define _FS_NORTC   0
+#define FF_FS_NORTC 0
 #endif
-#define _NORTC_MON  1
-#define _NORTC_MDAY 1
-#define _NORTC_YEAR 2016
-/* The option _FS_NORTC switches timestamp functiton. If the system does not have
-/  any RTC function or valid timestamp is not needed, set _FS_NORTC = 1 to disable
-/  the timestamp function. All objects modified by FatFs will have a fixed timestamp
-/  defined by _NORTC_MON, _NORTC_MDAY and _NORTC_YEAR in local time.
-/  To enable timestamp function (_FS_NORTC = 0), get_fattime() function need to be
-/  added to the project to get current time form real-time clock. _NORTC_MON,
-/  _NORTC_MDAY and _NORTC_YEAR have no effect.
-/  These options have no effect at read-only configuration (_FS_READONLY = 1). */
+#define FF_NORTC_MON    1
+#define FF_NORTC_MDAY   1
+#define FF_NORTC_YEAR   2018
+/* The option FF_FS_NORTC switches timestamp functiton. If the system does not have
+/  any RTC function or valid timestamp is not needed, set FF_FS_NORTC = 1 to disable
+/  the timestamp function. Every object modified by FatFs will have a fixed timestamp
+/  defined by FF_NORTC_MON, FF_NORTC_MDAY and FF_NORTC_YEAR in local time.
+/  To enable timestamp function (FF_FS_NORTC = 0), get_fattime() function need to be
+/  added to the project to read current time form real-time clock. FF_NORTC_MON,
+/  FF_NORTC_MDAY and FF_NORTC_YEAR have no effect.
+/  These options have no effect at read-only configuration (FF_FS_READONLY = 1). */
 
 
-#define _FS_LOCK    0
-/* The option _FS_LOCK switches file lock function to control duplicated file open
-/  and illegal operation to open objects. This option must be 0 when _FS_READONLY
+#define FF_FS_LOCK      0
+/* The option FF_FS_LOCK switches file lock function to control duplicated file open
+/  and illegal operation to open objects. This option must be 0 when FF_FS_READONLY
 /  is 1.
 /
 /  0:  Disable file lock function. To avoid volume corruption, application program
@@ -309,41 +330,40 @@
 
 
 #ifdef MICROPY_FATFS_REENTRANT
-#define _FS_REENTRANT   (MICROPY_FATFS_REENTRANT)
+#define FF_FS_REENTRANT (MICROPY_FATFS_REENTRANT)
 #else
-#define _FS_REENTRANT   0
+#define FF_FS_REENTRANT 0
 #endif
 
 // milliseconds
 #ifdef MICROPY_FATFS_TIMEOUT
-#define _FS_TIMEOUT     (MICROPY_FATFS_TIMEOUT)
+#define FF_FS_TIMEOUT   (MICROPY_FATFS_TIMEOUT)
 #else
-#define _FS_TIMEOUT     1000
+#define FF_FS_TIMEOUT   1000
 #endif
 
 #ifdef MICROPY_FATFS_SYNC_T
-#define _SYNC_t         MICROPY_FATFS_SYNC_T
+#define FF_SYNC_t       MICROPY_FATFS_SYNC_T
 #else
-#define _SYNC_t         HANDLE
+#define FF_SYNC_t       HANDLE
 #endif
-/* The option _FS_REENTRANT switches the re-entrancy (thread safe) of the FatFs
+/* The option FF_FS_REENTRANT switches the re-entrancy (thread safe) of the FatFs
 /  module itself. Note that regardless of this option, file access to different
 /  volume is always re-entrant and volume control functions, f_mount(), f_mkfs()
 /  and f_fdisk() function, are always not re-entrant. Only file/directory access
 /  to the same volume is under control of this function.
 /
-/   0: Disable re-entrancy. _FS_TIMEOUT and _SYNC_t have no effect.
+/   0: Disable re-entrancy. FF_FS_TIMEOUT and FF_SYNC_t have no effect.
 /   1: Enable re-entrancy. Also user provided synchronization handlers,
 /      ff_req_grant(), ff_rel_grant(), ff_del_syncobj() and ff_cre_syncobj()
 /      function, must be added to the project. Samples are available in
 /      option/syscall.c.
 /
-/  The _FS_TIMEOUT defines timeout period in unit of time tick.
-/  The _SYNC_t defines O/S dependent sync object type. e.g. HANDLE, ID, OS_EVENT*,
-/  SemaphoreHandle_t and etc.. A header file for O/S definitions needs to be
+/  The FF_FS_TIMEOUT defines timeout period in unit of time tick.
+/  The FF_SYNC_t defines O/S dependent sync object type. e.g. HANDLE, ID, OS_EVENT*,
+/  SemaphoreHandle_t and etc. A header file for O/S definitions needs to be
 /  included somewhere in the scope of ff.h. */
 
-/* #include <windows.h> // O/S definitions  */
 
 
 /*--- End of configuration options ---*/

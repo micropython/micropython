@@ -68,11 +68,20 @@ union floatbits {
     float f;
     uint32_t u;
 };
-static inline int fp_signbit(float x) { union floatbits fb = {x}; return fb.u & FLT_SIGN_MASK; }
+static inline int fp_signbit(float x) {
+    union floatbits fb = {x};
+    return fb.u & FLT_SIGN_MASK;
+}
 #define fp_isnan(x) isnan(x)
 #define fp_isinf(x) isinf(x)
-static inline int fp_iszero(float x) { union floatbits fb = {x}; return fb.u == 0; }
-static inline int fp_isless1(float x) { union floatbits fb = {x}; return fb.u < 0x3f800000; }
+static inline int fp_iszero(float x) {
+    union floatbits fb = {x};
+    return fb.u == 0;
+}
+static inline int fp_isless1(float x) {
+    union floatbits fb = {x};
+    return fb.u < 0x3f800000;
+}
 
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 
@@ -91,15 +100,15 @@ static inline int fp_isless1(float x) { union floatbits fb = {x}; return fb.u < 
 
 static const FPTYPE g_pos_pow[] = {
     #if FPDECEXP > 32
-    1e256, 1e128, 1e64,
+    MICROPY_FLOAT_CONST(1e256), MICROPY_FLOAT_CONST(1e128), MICROPY_FLOAT_CONST(1e64),
     #endif
-    1e32, 1e16, 1e8, 1e4, 1e2, 1e1
+    MICROPY_FLOAT_CONST(1e32), MICROPY_FLOAT_CONST(1e16), MICROPY_FLOAT_CONST(1e8), MICROPY_FLOAT_CONST(1e4), MICROPY_FLOAT_CONST(1e2), MICROPY_FLOAT_CONST(1e1)
 };
 static const FPTYPE g_neg_pow[] = {
     #if FPDECEXP > 32
-    1e-256, 1e-128, 1e-64,
+    MICROPY_FLOAT_CONST(1e-256), MICROPY_FLOAT_CONST(1e-128), MICROPY_FLOAT_CONST(1e-64),
     #endif
-    1e-32, 1e-16, 1e-8, 1e-4, 1e-2, 1e-1
+    MICROPY_FLOAT_CONST(1e-32), MICROPY_FLOAT_CONST(1e-16), MICROPY_FLOAT_CONST(1e-8), MICROPY_FLOAT_CONST(1e-4), MICROPY_FLOAT_CONST(1e-2), MICROPY_FLOAT_CONST(1e-1)
 };
 
 int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
@@ -258,7 +267,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         }
 
         // It can be that f was right on the edge of an entry in pos_pow needs to be reduced
-        if (f >= FPCONST(10.0)) {
+        if ((int)f >= 10) {
             e += 1;
             f *= FPCONST(0.1);
         }
@@ -282,7 +291,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         if (fmt == 'e' && prec > (buf_remaining - FPMIN_BUF_SIZE)) {
             prec = buf_remaining - FPMIN_BUF_SIZE;
         }
-        if (fmt == 'g'){
+        if (fmt == 'g') {
             // Truncate precision to prevent buffer overflow
             if (prec + (FPMIN_BUF_SIZE - 1) > buf_remaining) {
                 prec = buf_remaining - (FPMIN_BUF_SIZE - 1);
@@ -330,7 +339,11 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     // Print the digits of the mantissa
     for (int i = 0; i < num_digits; ++i, --dec) {
         int32_t d = (int32_t)f;
-        *s++ = '0' + d;
+        if (d < 0) {
+            *s++ = '0';
+        } else {
+            *s++ = '0' + d;
+        }
         if (dec == 0 && prec > 0) {
             *s++ = '.';
         }
@@ -341,7 +354,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     // Round
     // If we print non-exponential format (i.e. 'f'), but a digit we're going
     // to round by (e) is too far away, then there's nothing to round.
-    if ((org_fmt != 'f' || e <= 1) && f >= FPCONST(5.0)) {
+    if ((org_fmt != 'f' || e <= num_digits) && f >= FPCONST(5.0)) {
         char *rs = s;
         rs--;
         while (1) {

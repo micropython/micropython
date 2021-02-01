@@ -8,3 +8,6 @@ class F:
     def __hash__(self):
         return 1 << 70 | 1
 print(hash(F()) != 0)
+
+# this had a particular error with internal integer arithmetic of hash function
+print(hash(6699999999999999999999999999999999999999999999999999999999999999999999) != 0)

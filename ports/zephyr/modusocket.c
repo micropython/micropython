@@ -75,18 +75,18 @@ STATIC void socket_check_closed(socket_obj_t *socket) {
 
 STATIC void parse_inet_addr(socket_obj_t *socket, mp_obj_t addr_in, struct sockaddr *sockaddr) {
     // We employ the fact that port and address offsets are the same for IPv4 & IPv6
-    struct sockaddr_in *sockaddr_in = (struct sockaddr_in*)sockaddr;
+    struct sockaddr_in *sockaddr_in = (struct sockaddr_in *)sockaddr;
 
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
-    sockaddr_in->sin_family = net_context_get_family((void*)socket->ctx);
+    sockaddr_in->sin_family = net_context_get_family((void *)socket->ctx);
     RAISE_ERRNO(net_addr_pton(sockaddr_in->sin_family, mp_obj_str_get_str(addr_items[0]), &sockaddr_in->sin_addr));
     sockaddr_in->sin_port = htons(mp_obj_get_int(addr_items[1]));
 }
 
 STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     // We employ the fact that port and address offsets are the same for IPv4 & IPv6
-    struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6*)addr;
+    struct sockaddr_in6 *sockaddr_in6 = (struct sockaddr_in6 *)addr;
     char buf[40];
     net_addr_ntop(addr->sa_family, &sockaddr_in6->sin6_addr, buf, sizeof(buf));
     mp_obj_tuple_t *tuple = mp_obj_new_tuple(addr->sa_family == AF_INET ? 2 : 4, NULL);
@@ -94,7 +94,7 @@ STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
     tuple->items[0] = mp_obj_new_str(buf, strlen(buf));
     // We employ the fact that port offset is the same for IPv4 & IPv6
     // not filled in
-    //tuple->items[1] = mp_obj_new_int(ntohs(((struct sockaddr_in*)addr)->sin_port));
+    // tuple->items[1] = mp_obj_new_int(ntohs(((struct sockaddr_in*)addr)->sin_port));
     tuple->items[1] = port;
 
     if (addr->sa_family == AF_INET6) {
@@ -119,7 +119,7 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     if (self->ctx == -1) {
         mp_printf(print, "<socket NULL>");
     } else {
-        struct net_context *ctx = (void*)self->ctx;
+        struct net_context *ctx = (void *)self->ctx;
         mp_printf(print, "<socket %p type=%d>", ctx, net_context_get_type(ctx));
     }
 }
@@ -288,7 +288,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recv_obj, socket_recv);
 
 STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
-    mp_warning("setsockopt() not implemented");
+    mp_warning(MP_WARN_CAT(RuntimeWarning), "setsockopt() not implemented");
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);
@@ -299,20 +299,31 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
-STATIC mp_obj_t socket_close(mp_obj_t self_in) {
-    socket_obj_t *socket = self_in;
-    if (socket->ctx != -1) {
-        int res = zsock_close(socket->ctx);
-        RAISE_SOCK_ERRNO(res);
-        socket->ctx = -1;
+STATIC mp_uint_t sock_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    socket_obj_t *socket = o_in;
+    (void)arg;
+    switch (request) {
+        case MP_STREAM_CLOSE:
+            if (socket->ctx != -1) {
+                int res = zsock_close(socket->ctx);
+                RAISE_SOCK_ERRNO(res);
+                if (res == -1) {
+                    *errcode = errno;
+                    return MP_STREAM_ERROR;
+                }
+                socket->ctx = -1;
+            }
+            return 0;
+
+        default:
+            *errcode = MP_EINVAL;
+            return MP_STREAM_ERROR;
     }
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(socket_close_obj, socket_close);
 
 STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&socket_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&socket_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_bind), MP_ROM_PTR(&socket_bind_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&socket_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_listen), MP_ROM_PTR(&socket_listen_obj) },
@@ -332,7 +343,7 @@ STATIC MP_DEFINE_CONST_DICT(socket_locals_dict, socket_locals_dict_table);
 STATIC const mp_stream_p_t socket_stream_p = {
     .read = sock_read,
     .write = sock_write,
-    //.ioctl = sock_ioctl,
+    .ioctl = sock_ioctl,
 };
 
 STATIC const mp_obj_type_t socket_type = {
@@ -451,7 +462,7 @@ STATIC MP_DEFINE_CONST_DICT(mp_module_usocket_globals, mp_module_usocket_globals
 
 const mp_obj_module_t mp_module_usocket = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&mp_module_usocket_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
 };
 
 #endif // MICROPY_PY_USOCKET

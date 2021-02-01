@@ -25,8 +25,9 @@
  */
 
 
-#include "py/mpstate.h"
+#include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/mpthread.h"
 
 #include <sys/time.h>
 #include <windows.h>
@@ -46,8 +47,8 @@ STATIC void assure_stdin_handle() {
 STATIC void assure_conout_handle() {
     if (!con_out) {
         con_out = CreateFile("CONOUT$", GENERIC_READ | GENERIC_WRITE,
-                      FILE_SHARE_READ | FILE_SHARE_WRITE,
-                      NULL, OPEN_EXISTING, 0, 0);
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+            NULL, OPEN_EXISTING, 0, 0);
         assert(con_out != INVALID_HANDLE_VALUE);
     }
 }
@@ -83,8 +84,7 @@ BOOL WINAPI console_sighandler(DWORD evt) {
             // this is the second time we are called, so die straight away
             exit(1);
         }
-        mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception));
+        mp_keyboard_interrupt();
         return TRUE;
     }
     return FALSE;
@@ -106,12 +106,23 @@ void mp_hal_set_interrupt_char(char c) {
 }
 
 void mp_hal_move_cursor_back(uint pos) {
+    if (!pos) {
+        return;
+    }
     assure_conout_handle();
     CONSOLE_SCREEN_BUFFER_INFO info;
     GetConsoleScreenBufferInfo(con_out, &info);
     info.dwCursorPosition.X -= (short)pos;
-    if (info.dwCursorPosition.X < 0) {
+    // Move up a line if needed.
+    while (info.dwCursorPosition.X < 0) {
+        info.dwCursorPosition.X = info.dwSize.X + info.dwCursorPosition.X;
+        info.dwCursorPosition.Y -= 1;
+    }
+    // Caller requested to move out of the screen. That's not possible so just clip,
+    // it's the caller's responsibility to not let this happen.
+    if (info.dwCursorPosition.Y < 0) {
         info.dwCursorPosition.X = 0;
+        info.dwCursorPosition.Y = 0;
     }
     SetConsoleCursorPosition(con_out, info.dwCursorPosition);
 }
@@ -130,7 +141,7 @@ typedef struct item_t {
     const char *seq;
 } item_t;
 
-// map virtual key codes to VT100 escape sequences
+// map virtual key codes to key sequences known by MicroPython's readline implementation
 STATIC item_t keyCodeMap[] = {
     {VK_UP, "[A"},
     {VK_DOWN, "[B"},
@@ -139,13 +150,22 @@ STATIC item_t keyCodeMap[] = {
     {VK_HOME, "[H"},
     {VK_END, "[F"},
     {VK_DELETE, "[3~"},
-    {0, ""} //sentinel
+    {0, ""} // sentinel
+};
+
+// likewise, but with Ctrl key down
+STATIC item_t ctrlKeyCodeMap[] = {
+    {VK_LEFT, "b"},
+    {VK_RIGHT, "f"},
+    {VK_DELETE, "d"},
+    {VK_BACK, "\x7F"},
+    {0, ""} // sentinel
 };
 
 STATIC const char *cur_esc_seq = NULL;
 
-STATIC int esc_seq_process_vk(int vk) {
-    for (item_t *p = keyCodeMap; p->vkey != 0; ++p) {
+STATIC int esc_seq_process_vk(WORD vk, bool ctrl_key_down) {
+    for (item_t *p = (ctrl_key_down ? ctrlKeyCodeMap : keyCodeMap); p->vkey != 0; ++p) {
         if (p->vkey == vk) {
             cur_esc_seq = p->seq;
             return 27; // ESC, start of escape sequence
@@ -174,28 +194,36 @@ int mp_hal_stdin_rx_chr(void) {
 
     // poll until key which we handle is pressed
     assure_stdin_handle();
+    BOOL status;
     DWORD num_read;
     INPUT_RECORD rec;
     for (;;) {
-      if (!ReadConsoleInput(std_in, &rec, 1, &num_read) || !num_read) {
-          return CHAR_CTRL_C; // EOF, ctrl-D
-      }
-      if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) { // only want key down events
-          continue;
-      }
-      const char c = rec.Event.KeyEvent.uChar.AsciiChar;
-      if (c) { // plain ascii char, return it
-          return c;
-      }
-      const int ret = esc_seq_process_vk(rec.Event.KeyEvent.wVirtualKeyCode);
-      if (ret) {
-          return ret;
-      }
+        MP_THREAD_GIL_EXIT();
+        status = ReadConsoleInput(std_in, &rec, 1, &num_read);
+        MP_THREAD_GIL_ENTER();
+        if (!status || !num_read) {
+            return CHAR_CTRL_C; // EOF, ctrl-D
+        }
+        if (rec.EventType != KEY_EVENT || !rec.Event.KeyEvent.bKeyDown) { // only want key down events
+            continue;
+        }
+        const bool ctrl_key_down = (rec.Event.KeyEvent.dwControlKeyState & LEFT_CTRL_PRESSED) ||
+            (rec.Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED);
+        const int ret = esc_seq_process_vk(rec.Event.KeyEvent.wVirtualKeyCode, ctrl_key_down);
+        if (ret) {
+            return ret;
+        }
+        const char c = rec.Event.KeyEvent.uChar.AsciiChar;
+        if (c) { // plain ascii char, return it
+            return c;
+        }
     }
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    write(1, str, len);
+    MP_THREAD_GIL_EXIT();
+    write(STDOUT_FILENO, str, len);
+    MP_THREAD_GIL_ENTER();
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
@@ -221,9 +249,21 @@ mp_uint_t mp_hal_ticks_us(void) {
 mp_uint_t mp_hal_ticks_cpu(void) {
     LARGE_INTEGER value;
     QueryPerformanceCounter(&value);
-#ifdef _WIN64
+    #ifdef _WIN64
     return value.QuadPart;
-#else
+    #else
     return value.LowPart;
-#endif
+    #endif
+}
+
+uint64_t mp_hal_time_ns(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
+}
+
+// TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
+// "The useconds argument shall be less than one million."
+void mp_hal_delay_ms(mp_uint_t ms) {
+    usleep((ms) * 1000);
 }

@@ -29,65 +29,36 @@
   ******************************************************************************
   */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_CONF_H
-#define __USBD_CONF_H
+#ifndef MICROPY_INCLUDED_STM32_USBD_CONF_H
+#define MICROPY_INCLUDED_STM32_USBD_CONF_H
 
-/* Includes ------------------------------------------------------------------*/
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "py/mpconfig.h"
 
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-/* Common Config */
-#define USBD_MAX_NUM_INTERFACES               1
+#define USBD_MAX_NUM_INTERFACES               8
 #define USBD_MAX_NUM_CONFIGURATION            1
 #define USBD_MAX_STR_DESC_SIZ                 0x100
-#define USBD_SUPPORT_USER_STRING              0
+#if MICROPY_HW_USB_SELF_POWERED
+#define USBD_SELF_POWERED                     1
+#else
 #define USBD_SELF_POWERED                     0
+#endif
 #define USBD_DEBUG_LEVEL                      0
 
-/* Exported macro ------------------------------------------------------------*/
-/* Memory management macros */
-/*
-these should not be used because the GC is reset on a soft reset but the usb is not
-#include "gc.h"
-#define USBD_malloc               gc_alloc
-#define USBD_free                 gc_free
-#define USBD_memset               memset
-#define USBD_memcpy               memcpy
-*/
+// For MCUs with a device-only USB peripheral
+#define USBD_PMA_RESERVE                      (64)
+#define USBD_PMA_NUM_FIFO                     (16) // Maximum 8 endpoints, 2 FIFOs each
 
-/* DEBUG macros */
-#if (USBD_DEBUG_LEVEL > 0)
-#define  USBD_UsrLog(...)   printf(__VA_ARGS__);\
-                            printf("\n");
-#else
-#define USBD_UsrLog(...)
-#endif
+// For MCUs with multiple OTG USB peripherals
+#define USBD_FS_NUM_TX_FIFO                   (6)
+#define USBD_FS_NUM_FIFO                      (1 + USBD_FS_NUM_TX_FIFO)
+#define USBD_HS_NUM_TX_FIFO                   (9)
+#define USBD_HS_NUM_FIFO                      (1 + USBD_HS_NUM_TX_FIFO)
 
-#if (USBD_DEBUG_LEVEL > 1)
-
-#define  USBD_ErrLog(...)   printf("ERROR: ") ;\
-                            printf(__VA_ARGS__);\
-                            printf("\n");
-#else
-#define USBD_ErrLog(...)
-#endif
-
-#if (USBD_DEBUG_LEVEL > 2)
-#define  USBD_DbgLog(...)   printf("DEBUG : ") ;\
-                            printf(__VA_ARGS__);\
-                            printf("\n");
-#else
-#define USBD_DbgLog(...)
-#endif
-
-/* Exported functions ------------------------------------------------------- */
-
-#endif /* __USBD_CONF_H */
+#endif // MICROPY_INCLUDED_STM32_USBD_CONF_H
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

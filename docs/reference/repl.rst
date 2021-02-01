@@ -19,7 +19,7 @@ If your cursor is all the way back at the beginning, pressing RETURN will then
 execute the code that you've entered. The following shows what you'd see
 after entering a for statement (the underscore shows where the cursor winds up):
 
-    >>> for i in range(3):
+    >>> for i in range(30):
     ...     _
 
 If you then enter an if statement, an additional level of indentation will be
@@ -58,9 +58,10 @@ Auto-completion
 
 While typing a command at the REPL, if the line typed so far corresponds to
 the beginning of the name of something, then pressing TAB will show
-possible things that could be entered. For example type ``m`` and press TAB
-and it should expand to ``machine``. Enter a dot ``.`` and press TAB again. You
-should see something like:
+possible things that could be entered. For example, first import the machine
+module by entering ``import machine`` and pressing RETURN.
+Then type ``m`` and press TAB and it should expand to ``machine``.
+Enter a dot ``.`` and press TAB again. You should see something like:
 
     >>> machine.
     __name__        info            unique_id       reset
@@ -102,7 +103,7 @@ For example:
     KeyboardInterrupt:
     >>>
 
-Paste Mode
+Paste mode
 ----------
 
 If you want to paste some code into your terminal window, the auto-indent feature
@@ -142,7 +143,7 @@ the auto-indent feature, and changes the prompt from ``>>>`` to ``===``. For exa
 Paste Mode allows blank lines to be pasted. The pasted text is compiled as if
 it were a file. Pressing Ctrl-D exits paste mode and initiates the compilation.
 
-Soft Reset
+Soft reset
 ----------
 
 A soft reset will reset the python interpreter, but tries not to reset the
@@ -151,7 +152,7 @@ method by which you're connected to the MicroPython board (USB-serial, or Wifi).
 You can perform a soft reset from the REPL by pressing Ctrl-D, or from your python
 code by executing: ::
 
-    raise SystemExit
+    machine.soft_reset()
 
 For example, if you reset your MicroPython board, and you execute a dir()
 command, you'd see something like this:
@@ -173,8 +174,8 @@ variables no longer exist:
 
 .. code-block:: python
 
-    PYB: sync filesystems
-    PYB: soft reboot
+    MPY: sync filesystems
+    MPY: soft reboot
     MicroPython v1.5-51-g6f70283-dirty on 2015-10-30; PYBv1.0 with STM32F405RG
     Type "help()" for more information.
     >>> dir()
@@ -195,17 +196,105 @@ So you can use the underscore to save the result in a variable. For example:
     15
     >>>
 
-Raw Mode
---------
+Raw mode and raw-paste mode
+---------------------------
 
-Raw mode is not something that a person would normally use. It is intended for
-programmatic use. It essentially behaves like paste mode with echo turned off.
+Raw mode (also called raw REPL) is not something that a person would normally use.
+It is intended for programmatic use and essentially behaves like paste mode with
+echo turned off, and with optional flow control.
 
 Raw mode is entered using Ctrl-A. You then send your python code, followed by
 a Ctrl-D. The Ctrl-D will be acknowledged by 'OK' and then the python code will
 be compiled and executed. Any output (or errors) will be sent back. Entering
 Ctrl-B will leave raw mode and return the the regular (aka friendly) REPL.
 
-The ``tools/pyboard.py`` program uses the raw REPL to execute python files on the
-MicroPython board.
+Raw-paste mode is an additional mode within the raw REPL that includes flow control,
+and which compiles code as it receives it. This makes it more robust for high-speed
+transfer of code into the device, and it also uses less RAM when receiving because
+it does not need to store a verbatim copy of the code before compiling (unlike
+standard raw mode).
 
+Raw-paste mode uses the following protocol:
+
+#. Enter raw REPL as usual via ctrl-A.
+
+#. Write 3 bytes: ``b"\x05A\x01"`` (ie ctrl-E then "A" then ctrl-A).
+
+#. Read 2 bytes to determine if the device entered raw-paste mode:
+
+   * If the result is ``b"R\x00"`` then the device understands the command but
+     doesn't support raw paste.
+
+   * If the result is ``b"R\x01"`` then the device does support raw paste and
+     has entered this mode.
+
+   * Otherwise the result should be ``b"ra"`` and the device doesn't support raw
+     paste and the string ``b"w REPL; CTRL-B to exit\r\n>"`` should be read and
+     discarded.
+
+#. If the device is in raw-paste mode then continue, otherwise fallback to
+   standard raw mode.
+
+#. Read 2 bytes, this is the flow control window-size-increment (in bytes)
+   stored as a 16-bit unsigned little endian integer.  The initial value for the
+   remaining-window-size variable should be set to this number.
+
+#. Write out the code to the device:
+
+   * While there are bytes to send, write up to the remaining-window-size worth
+     of bytes, and decrease the remaining-window-size by the number of bytes
+     written.
+
+   * If the remaining-window-size is 0, or there is a byte waiting to read, read
+     1 byte.  If this byte is ``b"\x01"`` then increase the remaining-window-size
+     by the window-size-increment from step 5.  If this byte is ``b"\x04"`` then
+     the device wants to end the data reception, and ``b"\x04"`` should be
+     written to the device and no more code sent after that.  (Note: if there is
+     a byte waiting to be read from the device then it does not need to be read
+     and acted upon immediately, the device will continue to consume incoming
+     bytes as long as reamining-window-size is greater than 0.)
+
+#. When all code has been written to the device, write ``b"\x04"`` to indicate
+   end-of-data.
+
+#. Read from the device until ``b"\x04"`` is received.  At this point the device
+   has received and compiled all of the code that was sent and is executing it.
+
+#. The device outputs any characters produced by the executing code.  When (if)
+   the code finishes ``b"\x04"`` will be output, followed by any exception that
+   was uncaught, followed again by ``b"\x04"``.  It then goes back to the
+   standard raw REPL and outputs ``b">"``.
+
+For example, starting at a new line at the normal (friendly) REPL, if you write::
+
+    b"\x01\x05A\x01print(123)\x04"
+
+Then the device will respond with something like::
+
+    b"\r\nraw REPL; CTRL-B to exit\r\n>R\x01\x80\x00\x01\x04123\r\n\x04\x04>"
+
+Broken down over time this looks like::
+
+    # Step 1: enter raw REPL
+    write: b"\x01"
+    read: b"\r\nraw REPL; CTRL-B to exit\r\n>"
+
+    # Step 2-5: enter raw-paste mode
+    write: b"\x05A\x01"
+    read: b"R\x01\x80\x00\x01"
+
+    # Step 6-8: write out code
+    write: b"print(123)\x04"
+    read: b"\x04"
+
+    # Step 9: code executes and result is read
+    read: b"123\r\n\x04\x04>"
+
+In this case the flow control window-size-increment is 128 and there are two
+windows worth of data immediately available at the start, one from the initial
+window-size-increment value and one from the explicit ``b"\x01"`` value that
+is sent.  So this means up to 256 bytes can be written to begin with before
+waiting or checking for more incoming flow-control characters.
+
+The ``tools/pyboard.py`` program uses the raw REPL, including raw-paste mode, to
+execute Python code on a MicroPython-enabled board.

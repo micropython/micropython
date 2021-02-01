@@ -1,10 +1,6 @@
 try:
     import uerrno
-    try:
-        import uos_vfs as uos
-        open = uos.vfs_open
-    except ImportError:
-        import uos
+    import uos
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -24,20 +20,20 @@ class RAMFS:
         self.data = bytearray(blocks * self.SEC_SIZE)
 
     def readblocks(self, n, buf):
-        #print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
+        # print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
         for i in range(len(buf)):
             buf[i] = self.data[n * self.SEC_SIZE + i]
 
     def writeblocks(self, n, buf):
-        #print("writeblocks(%s, %x)" % (n, id(buf)))
+        # print("writeblocks(%s, %x)" % (n, id(buf)))
         for i in range(len(buf)):
             self.data[n * self.SEC_SIZE + i] = buf[i]
 
     def ioctl(self, op, arg):
-        #print("ioctl(%d, %r)" % (op, arg))
-        if op == 4:  # BP_IOCTL_SEC_COUNT
+        # print("ioctl(%d, %r)" % (op, arg))
+        if op == 4:  # MP_BLOCKDEV_IOCTL_BLOCK_COUNT
             return len(self.data) // self.SEC_SIZE
-        if op == 5:  # BP_IOCTL_SEC_SIZE
+        if op == 5:  # MP_BLOCKDEV_IOCTL_BLOCK_SIZE
             return self.SEC_SIZE
 
 
@@ -49,8 +45,8 @@ except MemoryError:
 
 uos.VfsFat.mkfs(bdev)
 vfs = uos.VfsFat(bdev)
-uos.mount(vfs, '/ramdisk')
-uos.chdir('/ramdisk')
+uos.mount(vfs, "/ramdisk")
+uos.chdir("/ramdisk")
 
 try:
     vfs.mkdir("foo_dir")
@@ -115,4 +111,4 @@ try:
     f = open("large_file.txt", "wb")
     f.write(bytearray(bsize * free))
 except OSError as e:
-    print("ENOSPC:", e.args[0] == 28) # uerrno.ENOSPC
+    print("ENOSPC:", e.args[0] == 28)  # uerrno.ENOSPC

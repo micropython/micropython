@@ -1,6 +1,9 @@
 # test await expression
 
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 if sys.implementation.name == 'micropython':
     # uPy allows normal generators to be awaitables
     coroutine = lambda f: f
@@ -11,7 +14,7 @@ else:
 @coroutine
 def wait(value):
     print('wait value:', value)
-    msg = yield 'message from wait(%u)' % value
+    msg = yield 'message from wait({})'.format(value)
     print('wait got back:', msg)
     return 10
 

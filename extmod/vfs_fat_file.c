@@ -35,12 +35,6 @@
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
 
-#define mp_type_fileio fatfs_type_fileio
-#define mp_type_textio fatfs_type_textio
-
-extern const mp_obj_type_t mp_type_fileio;
-extern const mp_obj_type_t mp_type_textio;
-
 // this table converts from FRESULT to POSIX errno
 const byte fresult_to_errno_table[20] = {
     [FR_OK] = 0,
@@ -103,22 +97,9 @@ STATIC mp_uint_t file_obj_write(mp_obj_t self_in, const void *buf, mp_uint_t siz
 }
 
 
-STATIC mp_obj_t file_obj_close(mp_obj_t self_in) {
-    pyb_file_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    // if fs==NULL then the file is closed and in that case this method is a no-op
-    if (self->fp.obj.fs != NULL) {
-        FRESULT res = f_close(&self->fp);
-        if (res != FR_OK) {
-            mp_raise_OSError(fresult_to_errno_table[res]);
-        }
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(file_obj_close_obj, file_obj_close);
-
 STATIC mp_obj_t file_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    return file_obj_close(args[0]);
+    return mp_stream_close(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(file_obj___exit___obj, 4, 4, file_obj___exit__);
 
@@ -126,7 +107,7 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
     pyb_file_obj_t *self = MP_OBJ_TO_PTR(o_in);
 
     if (request == MP_STREAM_SEEK) {
-        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)(uintptr_t)arg;
+        struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)(uintptr_t)arg;
 
         switch (s->whence) {
             case 0: // SEEK_SET
@@ -134,11 +115,7 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
                 break;
 
             case 1: // SEEK_CUR
-                if (s->offset != 0) {
-                    *errcode = MP_EOPNOTSUPP;
-                    return MP_STREAM_ERROR;
-                }
-                // no-operation
+                f_lseek(&self->fp, f_tell(&self->fp) + s->offset);
                 break;
 
             case 2: // SEEK_END
@@ -157,6 +134,17 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
         }
         return 0;
 
+    } else if (request == MP_STREAM_CLOSE) {
+        // if fs==NULL then the file is closed and in that case this method is a no-op
+        if (self->fp.obj.fs != NULL) {
+            FRESULT res = f_close(&self->fp);
+            if (res != FR_OK) {
+                *errcode = fresult_to_errno_table[res];
+                return MP_STREAM_ERROR;
+            }
+        }
+        return 0;
+
     } else {
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
@@ -166,9 +154,9 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
 // Note: encoding is ignored for now; it's also not a valid kwarg for CPython's FileIO,
 // but by adding it here we can use one single mp_arg_t array for open() and FileIO's constructor
 STATIC const mp_arg_t file_open_args[] = {
-    { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+    { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
     { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_r)} },
-    { MP_QSTR_encoding, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = MP_ROM_PTR(&mp_const_none_obj)} },
+    { MP_QSTR_encoding, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = MP_ROM_NONE} },
 };
 #define FILE_OPEN_NUM_ARGS MP_ARRAY_SIZE(file_open_args)
 
@@ -195,11 +183,11 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
                 break;
             #if MICROPY_PY_IO_FILEIO
             case 'b':
-                type = &mp_type_fileio;
+                type = &mp_type_vfs_fat_fileio;
                 break;
             #endif
             case 't':
-                type = &mp_type_textio;
+                type = &mp_type_vfs_fat_textio;
                 break;
         }
     }
@@ -231,69 +219,70 @@ STATIC mp_obj_t file_obj_make_new(const mp_obj_type_t *type, size_t n_args, size
 
 // TODO gc hook to close the file if not already closed
 
-STATIC const mp_rom_map_elem_t rawfile_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t vfs_fat_rawfile_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&file_obj_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
     { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&file_obj_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&file_obj___exit___obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict, rawfile_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(vfs_fat_rawfile_locals_dict, vfs_fat_rawfile_locals_dict_table);
 
 #if MICROPY_PY_IO_FILEIO
-STATIC const mp_stream_p_t fileio_stream_p = {
+STATIC const mp_stream_p_t vfs_fat_fileio_stream_p = {
     .read = file_obj_read,
     .write = file_obj_write,
     .ioctl = file_obj_ioctl,
 };
 
-const mp_obj_type_t mp_type_fileio = {
+const mp_obj_type_t mp_type_vfs_fat_fileio = {
     { &mp_type_type },
     .name = MP_QSTR_FileIO,
     .print = file_obj_print,
     .make_new = file_obj_make_new,
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
-    .protocol = &fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
+    .protocol = &vfs_fat_fileio_stream_p,
+    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
 };
 #endif
 
-STATIC const mp_stream_p_t textio_stream_p = {
+STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
     .read = file_obj_read,
     .write = file_obj_write,
     .ioctl = file_obj_ioctl,
     .is_text = true,
 };
 
-const mp_obj_type_t mp_type_textio = {
+const mp_obj_type_t mp_type_vfs_fat_textio = {
     { &mp_type_type },
     .name = MP_QSTR_TextIOWrapper,
     .print = file_obj_print,
     .make_new = file_obj_make_new,
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
-    .protocol = &textio_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&rawfile_locals_dict,
+    .protocol = &vfs_fat_textio_stream_p,
+    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
 };
 
 // Factory function for I/O stream classes
-mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {
+STATIC mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {
     // TODO: analyze buffering args and instantiate appropriate type
     fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
     arg_vals[0].u_obj = path;
     arg_vals[1].u_obj = mode;
     arg_vals[2].u_obj = mp_const_none;
-    return file_open(self, &mp_type_textio, arg_vals);
+    return file_open(self, &mp_type_vfs_fat_textio, arg_vals);
 }
+MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_open_obj, fatfs_builtin_open_self);
 
 #endif // MICROPY_VFS && MICROPY_VFS_FAT

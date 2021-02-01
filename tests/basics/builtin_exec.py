@@ -1,3 +1,11 @@
+# test builtin exec
+
+try:
+    exec
+except NameError:
+    print("SKIP")
+    raise SystemExit
+
 print(exec("def foo(): return 42"))
 print(foo())
 

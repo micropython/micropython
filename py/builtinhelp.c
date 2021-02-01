@@ -33,18 +33,18 @@
 #if MICROPY_PY_BUILTINS_HELP
 
 const char mp_help_default_text[] =
-"Welcome to MicroPython!\n"
-"\n"
-"For online docs please visit http://docs.micropython.org/\n"
-"\n"
-"Control commands:\n"
-"  CTRL-A        -- on a blank line, enter raw REPL mode\n"
-"  CTRL-B        -- on a blank line, enter normal REPL mode\n"
-"  CTRL-C        -- interrupt a running program\n"
-"  CTRL-D        -- on a blank line, exit or do a soft reset\n"
-"  CTRL-E        -- on a blank line, enter paste mode\n"
-"\n"
-"For further help on a specific object, type help(obj)\n"
+    "Welcome to MicroPython!\n"
+    "\n"
+    "For online docs please visit http://docs.micropython.org/\n"
+    "\n"
+    "Control commands:\n"
+    "  CTRL-A        -- on a blank line, enter raw REPL mode\n"
+    "  CTRL-B        -- on a blank line, enter normal REPL mode\n"
+    "  CTRL-C        -- interrupt a running program\n"
+    "  CTRL-D        -- on a blank line, exit or do a soft reset\n"
+    "  CTRL-E        -- on a blank line, enter paste mode\n"
+    "\n"
+    "For further help on a specific object, type help(obj)\n"
 ;
 
 STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
@@ -58,7 +58,7 @@ STATIC void mp_help_print_info_about_object(mp_obj_t name_o, mp_obj_t value) {
 #if MICROPY_PY_BUILTINS_HELP_MODULES
 STATIC void mp_help_add_from_map(mp_obj_t list, const mp_map_t *map) {
     for (size_t i = 0; i < map->alloc; i++) {
-        if (MP_MAP_SLOT_IS_FILLED(map, i)) {
+        if (mp_map_slot_is_filled(map, i)) {
             mp_obj_list_append(list, map->table[i].key);
         }
     }
@@ -80,10 +80,6 @@ STATIC void mp_help_print_modules(void) {
 
     mp_help_add_from_map(list, &mp_builtin_module_map);
 
-    #if MICROPY_MODULE_WEAK_LINKS
-    mp_help_add_from_map(list, &mp_builtin_module_weak_links_map);
-    #endif
-
     #if MICROPY_MODULE_FROZEN_STR
     extern const char mp_frozen_str_names[];
     mp_help_add_from_names(list, mp_frozen_str_names);
@@ -95,12 +91,12 @@ STATIC void mp_help_print_modules(void) {
     #endif
 
     // sort the list so it's printed in alphabetical order
-    mp_obj_list_sort(1, &list, (mp_map_t*)&mp_const_empty_map);
+    mp_obj_list_sort(1, &list, (mp_map_t *)&mp_const_empty_map);
 
     // print the list of modules in a column-first order
     #define NUM_COLUMNS (4)
     #define COLUMN_WIDTH (18)
-    mp_uint_t len;
+    size_t len;
     mp_obj_t *items;
     mp_obj_list_get(list, &len, &items);
     unsigned int num_rows = (len + NUM_COLUMNS - 1) / NUM_COLUMNS;
@@ -123,8 +119,10 @@ STATIC void mp_help_print_modules(void) {
         mp_print_str(MP_PYTHON_PRINTER, "\n");
     }
 
+    #if MICROPY_ENABLE_EXTERNAL_IMPORT
     // let the user know there may be other modules available from the filesystem
     mp_print_str(MP_PYTHON_PRINTER, "Plus any modules on the filesystem\n");
+    #endif
 }
 #endif
 
@@ -136,7 +134,7 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     }
     #endif
 
-    mp_obj_type_t *type = mp_obj_get_type(obj);
+    const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // try to print something sensible about the given object
     mp_print_str(MP_PYTHON_PRINTER, "object ");
@@ -145,13 +143,13 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
 
     mp_map_t *map = NULL;
     if (type == &mp_type_module) {
-        map = mp_obj_dict_get_map(mp_obj_module_get_globals(obj));
+        map = &mp_obj_module_get_globals(obj)->map;
     } else {
         if (type == &mp_type_type) {
             type = MP_OBJ_TO_PTR(obj);
         }
-        if (type->locals_dict != MP_OBJ_NULL && MP_OBJ_IS_TYPE(type->locals_dict, &mp_type_dict)) {
-            map = mp_obj_dict_get_map(type->locals_dict);
+        if (type->locals_dict != NULL) {
+            map = &type->locals_dict->map;
         }
     }
     if (map != NULL) {

@@ -1,9 +1,6 @@
 try:
     import uerrno
-    try:
-        import uos_vfs as uos
-    except ImportError:
-        import uos
+    import uos
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -14,6 +11,7 @@ except AttributeError:
     print("SKIP")
     raise SystemExit
 
+
 class RAMFS_OLD:
 
     SEC_SIZE = 512
@@ -22,12 +20,12 @@ class RAMFS_OLD:
         self.data = bytearray(blocks * self.SEC_SIZE)
 
     def readblocks(self, n, buf):
-        #print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
+        # print("readblocks(%s, %x(%d))" % (n, id(buf), len(buf)))
         for i in range(len(buf)):
             buf[i] = self.data[n * self.SEC_SIZE + i]
 
     def writeblocks(self, n, buf):
-        #print("writeblocks(%s, %x)" % (n, id(buf)))
+        # print("writeblocks(%s, %x)" % (n, id(buf)))
         for i in range(len(buf)):
             self.data[n * self.SEC_SIZE + i] = buf[i]
 

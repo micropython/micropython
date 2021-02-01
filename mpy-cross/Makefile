@@ -1,16 +1,3 @@
-# The following is a temporary hack to forefully undefine vars that might have
-# be defined by a calling Makefile (from recursive make).
-# TODO: Find a better way to be able to call this Makefile recursively.
-ifneq ($(findstring undefine,$(.FEATURES)),)
-override undefine COPT
-override undefine CFLAGS_EXTRA
-override undefine LDFLAGS_EXTRA
-override undefine FROZEN_DIR
-override undefine FROZEN_MPY_DIR
-override undefine BUILD
-override undefine PROG
-endif
-
 include ../py/mkenv.mk
 
 # define main target
@@ -25,13 +12,13 @@ UNAME_S := $(shell uname -s)
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-INC +=  -I.
-INC +=  -I$(TOP)
+INC += -I.
 INC += -I$(BUILD)
+INC += -I$(TOP)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wpointer-arith -Wuninitialized
+CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith
 CFLAGS = $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
 
@@ -61,6 +48,7 @@ LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
 SRC_C = \
 	main.c \
 	gccollect.c \
+	lib/utils/gchelper_generic.c \
 
 # Add fmode when compiling with mingw gcc
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
@@ -68,7 +56,7 @@ ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
 	SRC_C += ports/windows/fmode.c
 endif
 
-OBJ = $(PY_O)
+OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 include $(TOP)/py/mkrules.mk

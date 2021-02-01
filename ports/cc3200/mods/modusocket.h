@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_CC3200_MODS_MODUSOCKET_H
 #define MICROPY_INCLUDED_CC3200_MODS_MODUSOCKET_H
 
+#include "py/stream.h"
+
 extern const mp_obj_dict_t socket_locals_dict;
 extern const mp_stream_p_t socket_stream_p;
 

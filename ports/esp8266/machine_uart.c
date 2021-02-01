@@ -29,11 +29,13 @@
 #include <string.h>
 
 #include "ets_sys.h"
+#include "user_interface.h"
 #include "uart.h"
 
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "modmachine.h"
 
 // UartDev is defined and initialized in rom code.
@@ -57,20 +59,21 @@ STATIC const char *_parity_name[] = {"None", "1", "0"};
 
 STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, timeout=%u, timeout_char=%u)",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, rxbuf=%u, timeout=%u, timeout_char=%u)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->timeout, self->timeout_char);
+        self->stop, uart0_get_rxbuf_len() - 1, self->timeout, self->timeout_char);
 }
 
 STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rxbuf, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
-        //{ MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        //{ MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
@@ -104,7 +107,7 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
             self->bits = 8;
             break;
         default:
-            mp_raise_ValueError("invalid data bits");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid data bits"));
             break;
     }
 
@@ -127,6 +130,22 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         }
     }
 
+    // set tx/rx pins
+    mp_hal_pin_obj_t tx = 1, rx = 3;
+    if (args[ARG_tx].u_obj != MP_OBJ_NULL) {
+        tx = mp_hal_get_pin_obj(args[ARG_tx].u_obj);
+    }
+    if (args[ARG_rx].u_obj != MP_OBJ_NULL) {
+        rx = mp_hal_get_pin_obj(args[ARG_rx].u_obj);
+    }
+    if (tx == 1 && rx == 3) {
+        system_uart_de_swap();
+    } else if (tx == 15 && rx == 13) {
+        system_uart_swap();
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid tx/rx"));
+    }
+
     // set stop bits
     switch (args[ARG_stop].u_int) {
         case 0:
@@ -140,8 +159,22 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
             self->stop = 2;
             break;
         default:
-            mp_raise_ValueError("invalid stop bits");
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid stop bits"));
             break;
+    }
+
+    // set rx ring buffer
+    if (args[ARG_rxbuf].u_int > 0) {
+        uint16_t len = args[ARG_rxbuf].u_int + 1; // account for usable items in ringbuf
+        byte *buf;
+        if (len <= UART0_STATIC_RXBUF_LEN) {
+            buf = uart_ringbuf_array;
+            MP_STATE_PORT(uart0_rxbuf) = NULL; // clear any old pointer
+        } else {
+            buf = m_new(byte, len);
+            MP_STATE_PORT(uart0_rxbuf) = buf; // retain root pointer
+        }
+        uart0_set_rxbuf(buf, len);
     }
 
     // set timeout
@@ -165,7 +198,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     // get uart id
     mp_int_t uart_id = mp_obj_get_int(args[0]);
     if (uart_id != 0 && uart_id != 1) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "UART(%d) does not exist", uart_id));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) does not exist"), uart_id);
     }
 
     // create instance
@@ -215,7 +248,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->uart_id == 1) {
-        mp_raise_msg(&mp_type_OSError, "UART(1) can't read");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("UART(1) can't read"));
     }
 
     // make sure we want at least 1 char
@@ -235,7 +268,7 @@ STATIC mp_uint_t pyb_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, i
         *buf++ = uart_rx_char();
         if (--size == 0 || !uart_rx_wait(self->timeout_char * 1000)) {
             // return number of bytes read
-            return buf - (uint8_t*)buf_in;
+            return buf - (uint8_t *)buf_in;
         }
     }
 }
@@ -295,5 +328,5 @@ const mp_obj_type_t pyb_uart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_uart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_uart_locals_dict,
 };

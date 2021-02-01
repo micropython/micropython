@@ -31,64 +31,64 @@
 #define FTM2    ((FTM_TypeDef *)&FTM2_SC)
 
 typedef struct {
-    volatile uint32_t CSC;	// Channel x Status And Control
-    volatile uint32_t CV;		// Channel x Value
+    volatile uint32_t CSC;      // Channel x Status And Control
+    volatile uint32_t CV;               // Channel x Value
 } FTM_ChannelTypeDef;
 
 typedef struct {
-    volatile uint32_t SC;		// Status And Control
-    volatile uint32_t CNT;		// Counter
-    volatile uint32_t MOD;		// Modulo
+    volatile uint32_t SC;               // Status And Control
+    volatile uint32_t CNT;              // Counter
+    volatile uint32_t MOD;              // Modulo
     FTM_ChannelTypeDef channel[8];
-    volatile uint32_t CNTIN;	// Counter Initial Value
-    volatile uint32_t STATUS;	// Capture And Compare Status
-    volatile uint32_t MODE;		// Features Mode Selection
-    volatile uint32_t SYNC;		// Synchronization
+    volatile uint32_t CNTIN;    // Counter Initial Value
+    volatile uint32_t STATUS;   // Capture And Compare Status
+    volatile uint32_t MODE;             // Features Mode Selection
+    volatile uint32_t SYNC;             // Synchronization
     volatile uint32_t OUTINIT;  // Initial State For Channels Output
-    volatile uint32_t OUTMASK;	// Output Mask
-    volatile uint32_t COMBINE;	// Function For Linked Channels
+    volatile uint32_t OUTMASK;  // Output Mask
+    volatile uint32_t COMBINE;  // Function For Linked Channels
     volatile uint32_t DEADTIME; // Deadtime Insertion Control
-    volatile uint32_t EXTTRIG;	// FTM External Trigger
-    volatile uint32_t POL;		// Channels Polarity
-    volatile uint32_t FMS;		// Fault Mode Status
-    volatile uint32_t FILTER;	// Input Capture Filter Control
-    volatile uint32_t FLTCTRL;	// Fault Control
-    volatile uint32_t QDCTRL;	// Quadrature Decoder Control And Status
-    volatile uint32_t CONF;		// Configuration
-    volatile uint32_t FLTPOL;	// FTM Fault Input Polarity
-    volatile uint32_t SYNCONF;	// Synchronization Configuration
-    volatile uint32_t INVCTRL;	// FTM Inverting Control
-    volatile uint32_t SWOCTRL;	// FTM Software Output Control
+    volatile uint32_t EXTTRIG;  // FTM External Trigger
+    volatile uint32_t POL;              // Channels Polarity
+    volatile uint32_t FMS;              // Fault Mode Status
+    volatile uint32_t FILTER;   // Input Capture Filter Control
+    volatile uint32_t FLTCTRL;  // Fault Control
+    volatile uint32_t QDCTRL;   // Quadrature Decoder Control And Status
+    volatile uint32_t CONF;             // Configuration
+    volatile uint32_t FLTPOL;   // FTM Fault Input Polarity
+    volatile uint32_t SYNCONF;  // Synchronization Configuration
+    volatile uint32_t INVCTRL;  // FTM Inverting Control
+    volatile uint32_t SWOCTRL;  // FTM Software Output Control
     volatile uint32_t PWMLOAD;  // FTM PWM Load
 } FTM_TypeDef;
 
 typedef struct {
-    uint32_t    PrescalerShift; // Sets the prescaler to 1 << PrescalerShift
-    uint32_t    CounterMode;    // One of FTM_COUNTERMODE_xxx
-    uint32_t    Period;         // Specifies the Period for determining timer overflow
+    uint32_t PrescalerShift;    // Sets the prescaler to 1 << PrescalerShift
+    uint32_t CounterMode;       // One of FTM_COUNTERMODE_xxx
+    uint32_t Period;            // Specifies the Period for determining timer overflow
 } FTM_Base_InitTypeDef;
 
 typedef struct {
-    uint32_t    OCMode;         // One of FTM_OCMODE_xxx
-    uint32_t    Pulse;          // Specifies initial pulse width (0-0xffff)
-    uint32_t    OCPolarity;     // One of FTM_OCPOLRITY_xxx
+    uint32_t OCMode;            // One of FTM_OCMODE_xxx
+    uint32_t Pulse;             // Specifies initial pulse width (0-0xffff)
+    uint32_t OCPolarity;        // One of FTM_OCPOLRITY_xxx
 } FTM_OC_InitTypeDef;
 
 typedef struct {
-    uint32_t    ICPolarity;     // Specifies Rising/Falling/Both
+    uint32_t ICPolarity;        // Specifies Rising/Falling/Both
 } FTM_IC_InitTypeDef;
 
-#define IS_FTM_INSTANCE(INSTANCE)   (((INSTANCE) == FTM0)   || \
-                                     ((INSTANCE) == FTM1)   || \
-                                     ((INSTANCE) == FTM2))
+#define IS_FTM_INSTANCE(INSTANCE)   (((INSTANCE) == FTM0) || \
+    ((INSTANCE) == FTM1) || \
+    ((INSTANCE) == FTM2))
 
-#define IS_FTM_PRESCALERSHIFT(PRESCALERSHIFT) (((PRESCALERSHIFT) & ~7) == 0)
+#define IS_FTM_PRESCALERSHIFT(PRESCALERSHIFT) (((PRESCALERSHIFT)&~7) == 0)
 
 #define FTM_COUNTERMODE_UP      (0)
 #define FTM_COUNTERMODE_CENTER  (FTM_SC_CPWMS)
 
-#define IS_FTM_COUNTERMODE(MODE) (((MODE) == FTM_COUNTERMODE_UP)        ||\
-                                  ((MODE) == FTM_COUNTERMODE_CENTER))
+#define IS_FTM_COUNTERMODE(MODE) (((MODE) == FTM_COUNTERMODE_UP) || \
+    ((MODE) == FTM_COUNTERMODE_CENTER))
 
 #define IS_FTM_PERIOD(PERIOD)   (((PERIOD) & 0xFFFF0000) == 0)
 
@@ -108,12 +108,12 @@ typedef struct {
 #define FTM_OCMODE_PWM2     (FTM_CSC_MSB | FTM_CSC_ELSA)
 
 #define IS_FTM_OC_MODE(mode)        ((mode) == FTM_OCMODE_TIMING || \
-                                     (mode) == FTM_OCMODE_ACTIVE || \
-                                     (mode) == FTM_OCMODE_INACTIVE || \
-                                     (mode) == FTM_OCMODE_TOGGLE )
+    (mode) == FTM_OCMODE_ACTIVE || \
+    (mode) == FTM_OCMODE_INACTIVE || \
+    (mode) == FTM_OCMODE_TOGGLE)
 
 #define IS_FTM_PWM_MODE(mode)       ((mode) == FTM_OCMODE_PWM1 || \
-                                     (mode) == FTM_OCMODE_PWM2)
+    (mode) == FTM_OCMODE_PWM2)
 
 #define IS_FTM_CHANNEL(channel)     (((channel) & ~7) == 0)
 
@@ -122,16 +122,16 @@ typedef struct {
 #define FTM_OCPOLARITY_HIGH     (0)
 #define FTM_OCPOLARITY_LOW      (1)
 
-#define IS_FTM_OC_POLARITY(polarity) ((polarity) == FTM_OCPOLARITY_HIGH    || \
-                                      (polarity) == FTM_OCPOLARITY_LOW)
+#define IS_FTM_OC_POLARITY(polarity) ((polarity) == FTM_OCPOLARITY_HIGH || \
+    (polarity) == FTM_OCPOLARITY_LOW)
 
 #define FTM_ICPOLARITY_RISING   (FTM_CSC_ELSA)
 #define FTM_ICPOLARITY_FALLING  (FTM_CSC_ELSB)
 #define FTM_ICPOLARITY_BOTH     (FTM_CSC_ELSA | FTM_CSC_ELSB)
 
-#define IS_FTM_IC_POLARITY(polarity) ((polarity) == FTM_ICPOLARITY_RISING    || \
-                                      (polarity) == FTM_ICPOLARITY_FALLING   || \
-                                      (polarity) == FTM_ICPOLARITY_BOTH)
+#define IS_FTM_IC_POLARITY(polarity) ((polarity) == FTM_ICPOLARITY_RISING || \
+    (polarity) == FTM_ICPOLARITY_FALLING || \
+    (polarity) == FTM_ICPOLARITY_BOTH)
 
 typedef enum {
     HAL_FTM_STATE_RESET     = 0x00,
@@ -140,9 +140,9 @@ typedef enum {
 } HAL_FTM_State;
 
 typedef struct {
-    FTM_TypeDef            *Instance;
-    FTM_Base_InitTypeDef    Init;
-    HAL_FTM_State           State;
+    FTM_TypeDef *Instance;
+    FTM_Base_InitTypeDef Init;
+    HAL_FTM_State State;
 
 } FTM_HandleTypeDef;
 
@@ -166,19 +166,19 @@ void HAL_FTM_Base_Start_IT(FTM_HandleTypeDef *hftm);
 void HAL_FTM_Base_DeInit(FTM_HandleTypeDef *hftm);
 
 void HAL_FTM_OC_Init(FTM_HandleTypeDef *hftm);
-void HAL_FTM_OC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef* sConfig, uint32_t channel);
+void HAL_FTM_OC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef *sConfig, uint32_t channel);
 void HAL_FTM_OC_Start(FTM_HandleTypeDef *hftm, uint32_t channel);
 void HAL_FTM_OC_Start_IT(FTM_HandleTypeDef *hftm, uint32_t channel);
 void HAL_FTM_OC_DeInit(FTM_HandleTypeDef *hftm);
 
 void HAL_FTM_PWM_Init(FTM_HandleTypeDef *hftm);
-void HAL_FTM_PWM_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef* sConfig, uint32_t channel);
+void HAL_FTM_PWM_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_OC_InitTypeDef *sConfig, uint32_t channel);
 void HAL_FTM_PWM_Start(FTM_HandleTypeDef *hftm, uint32_t channel);
 void HAL_FTM_PWM_Start_IT(FTM_HandleTypeDef *hftm, uint32_t channel);
 void HAL_FTM_PWM_DeInit(FTM_HandleTypeDef *hftm);
 
 void HAL_FTM_IC_Init(FTM_HandleTypeDef *hftm);
-void HAL_FTM_IC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_IC_InitTypeDef* sConfig, uint32_t channel);
+void HAL_FTM_IC_ConfigChannel(FTM_HandleTypeDef *hftm, FTM_IC_InitTypeDef *sConfig, uint32_t channel);
 void HAL_FTM_IC_Start(FTM_HandleTypeDef *hftm, uint32_t channel);
 void HAL_FTM_IC_Start_IT(FTM_HandleTypeDef *hftm, uint32_t channel);
 void HAL_FTM_IC_DeInit(FTM_HandleTypeDef *hftm);

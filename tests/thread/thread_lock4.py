@@ -8,11 +8,13 @@ except ImportError:
     import time
 import _thread
 
+
 def fac(n):
     x = 1
     for i in range(1, n + 1):
         x *= i
     return x
+
 
 def thread_entry():
     while True:
@@ -24,6 +26,7 @@ def thread_entry():
         ans = f(arg)
         with output_lock:
             output.append((arg, ans))
+
 
 # create a list of jobs
 jobs = [(fac, i) for i in range(20, 80)]
