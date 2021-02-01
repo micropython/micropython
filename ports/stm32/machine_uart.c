@@ -77,7 +77,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!self->is_enabled) {
         #ifdef LPUART1
-        if (self->uart_id == PYB_LPUART_1) 
+        if (self->uart_id == PYB_LPUART_1)
         #else
         if (0)
         #endif
@@ -108,7 +108,7 @@ STATIC void pyb_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
             bits -= 1;
         }
         #ifdef LPUART1
-        if (self->uart_id == PYB_LPUART_1) 
+        if (self->uart_id == PYB_LPUART_1)
         #else
         if (0)
         #endif
