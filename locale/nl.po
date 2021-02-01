@@ -61,8 +61,9 @@ msgstr "%%c vereist een int of char"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
-msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
-msgstr "%d adres pins en %d RGB pins geven een hoogte van %d aan, niet %d"
+msgid ""
+"%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -521,7 +522,6 @@ msgstr "Buffer lengte moet een veelvoud van 512 zijn"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Buffer moet een veelvoud van 512 bytes zijn"
 
-#: shared-bindings/adafruit_bus_device/I2CDevice.c
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Buffer moet op zijn minst lengte 1 zijn"
@@ -536,6 +536,7 @@ msgid "Buffer too short by %d bytes"
 msgstr "Buffer is %d bytes te klein"
 
 #: ports/atmel-samd/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
@@ -810,6 +811,10 @@ msgstr "DAC al in gebruik"
 #: ports/nrf/common-hal/displayio/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Data 0 pin moet byte uitgelijnd zijn"
+
+#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+msgid "Data 0 pin must be byte aligned."
+msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1607,7 +1612,6 @@ msgstr ""
 "PWM frequentie is niet schrijfbaar wanneer de variable_frequency False is "
 "tijdens constructie."
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
@@ -3774,6 +3778,10 @@ msgstr "syntaxisfout in uctypes aanduiding"
 msgid "threshold must be in the range 0-65536"
 msgstr "drempelwaarde moet in het bereik 0-65536 liggen"
 
+#: shared-bindings/rgbmatrix/RGBMatrix.c
+msgid "tile must be greater than zero"
+msgstr ""
+
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() accepteert een 9-rij"
@@ -4061,6 +4069,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+#~ msgstr "%d adres pins en %d RGB pins geven een hoogte van %d aan, niet %d"
 
 #~ msgid "Unknown failure"
 #~ msgstr "Onbekende fout"

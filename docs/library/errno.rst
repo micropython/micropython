@@ -1,9 +1,7 @@
-:mod:`uerrno` -- system error codes
+:mod:`errno` -- system error codes
 ===================================
 
-.. include:: ../templates/unsupported_in_circuitpython.inc
-
-.. module:: uerrno
+.. module:: errno
    :synopsis: system error codes
 
 |see_cpython_module| :mod:`cpython:errno`.
@@ -22,7 +20,7 @@ Constants
         try:
             os.mkdir("my_dir")
         except OSError as exc:
-            if exc.args[0] == uerrno.EEXIST:
+            if exc.args[0] == errno.EEXIST:
                 print("Directory already exists")
 
 .. data:: errorcode
@@ -30,5 +28,5 @@ Constants
     Dictionary mapping numeric error codes to strings with symbolic error
     code (see above)::
 
-        >>> print(uerrno.errorcode[uerrno.EEXIST])
+        >>> print(errno.errorcode[uerrno.EEXIST])
         EEXIST

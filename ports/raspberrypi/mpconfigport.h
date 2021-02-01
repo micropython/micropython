@@ -27,7 +27,7 @@
 #ifndef __INCLUDED_MPCONFIGPORT_H
 #define __INCLUDED_MPCONFIGPORT_H
 
-#define MICROPY_PY_UJSON                            (1)
+#define MICROPY_PY_SYS_PLATFORM                     "RP2040"
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
 

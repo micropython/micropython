@@ -1,9 +1,7 @@
-:mod:`ujson` -- JSON encoding and decoding
+:mod:`json` -- JSON encoding and decoding
 ==========================================
 
-.. include:: ../templates/unsupported_in_circuitpython.inc
-
-.. module:: ujson
+.. module:: json
    :synopsis: JSON encoding and decoding
 
 |see_cpython_module| :mod:`cpython:json`.

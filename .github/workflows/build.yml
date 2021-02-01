@@ -304,6 +304,7 @@ jobs:
         - "seeeduino_xiao"
         - "serpente"
         - "shirtty"
+        - "silicognition-m4-shim"
         - "simmel"
         - "snekboard"
         - "sparkfun_lumidrive"
@@ -443,6 +444,7 @@ jobs:
         - "espressif_kaluga_1"
         - "espressif_saola_1_wroom"
         - "espressif_saola_1_wrover"
+        - "lilygo_ttgo_t8_s2_st7789"
         - "microdev_micro_s2"
         - "muselab_nanoesp32_s2"
         - "targett_module_clip_wroom"
@@ -462,12 +464,12 @@ jobs:
     - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: git describe --dirty --tags
-    - uses: actions/cache@v1
+    - uses: actions/cache@v2
       name: Fetch IDF tool cache
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210122
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210128
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)
