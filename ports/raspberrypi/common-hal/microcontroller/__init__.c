@@ -112,6 +112,17 @@ const nvm_bytearray_obj_t common_hal_mcu_nvm_obj = {
 };
 #endif
 
+#if CIRCUITPY_WATCHDOG
+// The singleton watchdog.WatchDogTimer object.
+watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
+    .base = {
+        .type = &watchdog_watchdogtimer_type,
+    },
+    .timeout = 0.0f,
+    .mode = WATCHDOGMODE_NONE,
+};
+#endif
+
 // This maps MCU pin names to pin objects.
 const mp_rom_map_elem_t mcu_pin_global_dict_table[TOTAL_GPIO_COUNT] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO0), MP_ROM_PTR(&pin_GPIO0) },
