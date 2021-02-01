@@ -148,7 +148,7 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
         // poll the objects
         mp_uint_t n_ready = poll_map_poll(&poll_map, rwx_len);
 
-        if (n_ready > 0 || (timeout != -1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
+        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
             // one or more objects are ready, or we had a timeout
             mp_obj_t list_array[3];
             list_array[0] = mp_obj_new_list(rwx_len[0], NULL);
@@ -250,7 +250,7 @@ STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
     for (;;) {
         // poll the objects
         n_ready = poll_map_poll(&self->poll_map, NULL);
-        if (n_ready > 0 || (timeout != -1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
+        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
             break;
         }
         MICROPY_EVENT_POLL_HOOK
