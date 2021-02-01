@@ -28,19 +28,31 @@
 
 #include "lib/utils/mpirq.h"
 
-typedef enum {
-    PYB_UART_NONE = 0,
-    PYB_UART_1 = 1,
-    PYB_UART_2 = 2,
-    PYB_UART_3 = 3,
-    PYB_UART_4 = 4,
-    PYB_UART_5 = 5,
-    PYB_UART_6 = 6,
-    PYB_UART_7 = 7,
-    PYB_UART_8 = 8,
-    PYB_UART_9 = 9,
-    PYB_UART_10 = 10,
-} pyb_uart_t;
+ typedef enum {
+     PYB_UART_NONE = 0,
+     PYB_UART_1 = 1,
+     #if defined(STM32WB)
+     PYB_LPUART_1 = 2,
+     #else
+     PYB_UART_2 = 2,
+     #endif
+     PYB_UART_3 = 3,
+     PYB_UART_4 = 4,
+     PYB_UART_5 = 5,
+     #if defined(STM32L0) || defined(STM32L4) || defined(STM32G4)
+     PYB_LPUART_1 = 6,
+     #else
+     PYB_UART_6 = 6,
+     #endif
+     PYB_UART_7 = 7,
+     PYB_UART_8 = 8,
+     #if defined(STM32H7)
+     PYB_LPUART_1 = 9,
+     #else
+     PYB_UART_9 = 9,
+     #endif
+     PYB_UART_10 = 10,
+ } pyb_uart_t;
 
 #define CHAR_WIDTH_8BIT (0)
 #define CHAR_WIDTH_9BIT (1)

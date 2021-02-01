@@ -212,6 +212,8 @@
 #define PYB_EXTI_NUM_VECTORS (24)
 #define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
+// STM32H723: 5 U(S)ART + 1 LPUART
+// STM32H757: 4 USART + 1LPUART
 #define MICROPY_HW_MAX_UART (8)
 
 // Configuration for STM32L0 series
@@ -221,6 +223,8 @@
 #define PYB_EXTI_NUM_VECTORS (30) // TODO (22 configurable, 7 direct)
 #define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (22)
+// STM32L071xx: 4 UART + 1 LPUART
+// STM32L011xx: 1 UART
 #define MICROPY_HW_MAX_UART (5)
 
 // Configuration for STM32L4 series
@@ -230,6 +234,9 @@
 #define PYB_EXTI_NUM_VECTORS (23)
 #define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
+// huge difference between procs in family
+// STM32L496ZE: 5 U(S)ART + LPUART1, but..
+// STM32L432xx: 2 USART + LPUART1
 #define MICROPY_HW_MAX_UART (6)
 
 // Configuration for STM32WB series
@@ -239,7 +246,7 @@
 #define PYB_EXTI_NUM_VECTORS (20)
 #define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (17)
-#define MICROPY_HW_MAX_UART (1)
+#define MICROPY_HW_MAX_UART (2)  // Uart1 & lpuart1
 
 #ifndef MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
 #define MICROPY_HW_STM32WB_FLASH_SYNCRONISATION (1)
@@ -252,7 +259,7 @@
 #define PYB_EXTI_NUM_VECTORS (42) // up to 42 event/interrupt requests: 28 configurable lines, 14 direct lines
 #define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (20) // TIM 1-8, 20
-#define MICROPY_HW_MAX_UART (11) // uart 1 - 4 + lpuart1 (=11)
+#define MICROPY_HW_MAX_UART (6) // uart 1 - 5 + lpuart1
 #else
 #error Unsupported MCU series
 #endif
