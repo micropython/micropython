@@ -489,11 +489,6 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
         sm_config_set_in_pins(&config, mp_hal_get_pin_obj(args[ARG_in_base].u_obj));
     }
 
-    // Configure jmp pin, if needed.
-    if (args[ARG_jmp_pin].u_obj != mp_const_none) {
-        sm_config_set_jmp_pin(&config, mp_hal_get_pin_obj(args[ARG_jmp_pin].u_obj));
-    }
-
     // Configure out pins, if needed.
     asm_pio_config_t out_config = ASM_PIO_CONFIG_DEFAULT;
     asm_pio_get_pins("out", prog[PROG_OUT_PINS], args[ARG_out_base].u_obj, &out_config);
@@ -506,6 +501,11 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     asm_pio_get_pins("set", prog[PROG_SET_PINS], args[ARG_set_base].u_obj, &set_config);
     if (set_config.base >= 0) {
         sm_config_set_set_pins(&config, set_config.base, set_config.count);
+    }
+
+    // Configure jmp pin, if needed.
+    if (args[ARG_jmp_pin].u_obj != mp_const_none) {
+        sm_config_set_jmp_pin(&config, mp_hal_get_pin_obj(args[ARG_jmp_pin].u_obj));
     }
 
     // Configure sideset pin, if needed.
