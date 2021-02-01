@@ -71,7 +71,7 @@ typedef struct _machine_pin_irq_obj_t {
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
 
-STATIC const machine_pin_obj_t machine_pin_obj[N_GPIOS] = {
+STATIC const machine_pin_obj_t machine_pin_obj[NUM_BANK0_GPIOS] = {
     {{&machine_pin_type}, 0},
     {{&machine_pin_type}, 1},
     {{&machine_pin_type}, 2},
@@ -134,7 +134,7 @@ void machine_pin_init(void) {
 }
 
 void machine_pin_deinit(void) {
-    for (int i = 0; i < N_GPIOS; ++i) {
+    for (int i = 0; i < NUM_BANK0_GPIOS; ++i) {
         gpio_set_irq_enabled(i, GPIO_IRQ_ALL, false);
     }
     irq_set_enabled(IO_IRQ_BANK0, false);
