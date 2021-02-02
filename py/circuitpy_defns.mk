@@ -388,6 +388,7 @@ SRC_COMMON_HAL_ALL = \
 	socketpool/Socket.c \
 	ssl/__init__.c \
 	ssl/SSLContext.c \
+	ssl/SSLSocket.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	watchdog/WatchDogMode.c \

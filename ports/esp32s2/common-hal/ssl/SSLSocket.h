@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLSOCKET_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLSOCKET_H
+
+#include "py/obj.h"
 
 #include "common-hal/ssl/SSLContext.h"
+#include "common-hal/socketpool/Socket.h"
 
-#include "shared-bindings/socketpool/Socket.h"
-#include "shared-bindings/ssl/SSLSocket.h"
+#include "components/esp-tls/esp_tls.h"
 
-extern const mp_obj_type_t ssl_sslcontext_type;
+typedef struct {
+    mp_obj_base_t base;
+    socketpool_socket_obj_t * sock;
+    esp_tls_t* tls;
+    ssl_sslcontext_obj_t* ssl_context;
+} ssl_sslsocket_obj_t;
 
-void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t* self);
-
-ssl_sslsocket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,
-    socketpool_socket_obj_t* sock, bool server_side, const char* server_hostname);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_SSL_SSLSOCKET_H
