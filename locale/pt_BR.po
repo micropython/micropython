@@ -1857,6 +1857,7 @@ msgstr "A definição da inversão do RS485 quando não está no modo RS485"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "A calibração RTC não é suportada nesta placa"
 

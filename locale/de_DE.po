@@ -1835,6 +1835,7 @@ msgstr "RS485-Inversion angegeben, wenn nicht im RS485-Modus"
 
 #: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
 msgstr "Die RTC-Kalibrierung wird auf diesem Board nicht unterstützt"
 
