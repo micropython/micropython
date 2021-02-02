@@ -800,7 +800,7 @@ uint8_t const * tud_descriptor_bos_cb(void)
 }}
 
 
-#define ITF_NUM_VENOR   {webusb_interface} // used in this next descriptor
+#define ITF_NUM_VENDOR   {webusb_interface} // used in this next descriptor
 
 uint8_t const desc_ms_os_20[] =
 {{
