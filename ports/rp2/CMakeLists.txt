@@ -143,6 +143,7 @@ target_link_libraries(${MICROPYTHON_TARGET}
     pico_multicore
     pico_stdlib_headers
     pico_stdlib
+    pico_unique_id
     tinyusb_device
 )
 

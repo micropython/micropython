@@ -110,9 +110,15 @@ int main(int argc, char **argv) {
         pyexec_frozen_module("_boot.py");
 
         // Execute user scripts.
-        pyexec_file_if_exists("boot.py");
+        int ret = pyexec_file_if_exists("boot.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
         if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-            pyexec_file_if_exists("main.py");
+            ret = pyexec_file_if_exists("main.py");
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
         }
 
         for (;;) {
@@ -127,6 +133,7 @@ int main(int argc, char **argv) {
             }
         }
 
+    soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         rp2_pio_deinit();
         machine_pin_deinit();
