@@ -35,7 +35,6 @@ CIRCUITPY_I2CPERIPHERAL = 0
 CIRCUITPY_NVM = 0
 CIRCUITPY_PULSEIO = 0 # Use PIO interally
 CIRCUITPY_ROTARYIO = 0 # Use PIO interally
-CIRCUITPY_RTC = 0
 CIRCUITPY_WATCHDOG = 1
 
 # Things that are unsupported by the hardware.
