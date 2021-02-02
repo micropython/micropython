@@ -42,7 +42,7 @@
 
 extern Protomatter_core *_PM_protoPtr;
 
-void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, void *timer) {
+void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, int width, int bit_depth, uint8_t rgb_count, uint8_t *rgb_pins, uint8_t addr_count, uint8_t *addr_pins, uint8_t clock_pin, uint8_t latch_pin, uint8_t oe_pin, bool doublebuffer, mp_obj_t framebuffer, int8_t tile, bool serpentine, void *timer) {
     self->width = width;
     self->bit_depth = bit_depth;
     self->rgb_count = rgb_count;
@@ -53,6 +53,8 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
     self->oe_pin = oe_pin;
     self->latch_pin = latch_pin;
     self->doublebuffer = doublebuffer;
+    self->tile = tile;
+    self->serpentine = serpentine;
 
     self->timer = timer ? timer : common_hal_rgbmatrix_timer_allocate();
     if (self->timer == NULL) {
@@ -60,7 +62,7 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
     }
 
     self->width = width;
-    self->bufsize = 2 * width * rgb_count / 3 * (1 << addr_count);
+    self->bufsize = 2 * width * common_hal_rgbmatrix_rgbmatrix_get_height(self);
 
     common_hal_rgbmatrix_rgbmatrix_reconstruct(self, framebuffer);
 }
@@ -78,10 +80,10 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         // verify that the matrix is big enough
         mp_get_index(mp_obj_get_type(self->framebuffer), self->bufinfo.len, MP_OBJ_NEW_SMALL_INT(self->bufsize-1), false);
     } else {
-        _PM_free(self->bufinfo.buf);
-        _PM_free(self->protomatter.rgbPins);
-        _PM_free(self->protomatter.addr);
-        _PM_free(self->protomatter.screenData);
+        common_hal_rgbmatrix_free_impl(self->bufinfo.buf);
+        common_hal_rgbmatrix_free_impl(self->protomatter.rgbPins);
+        common_hal_rgbmatrix_free_impl(self->protomatter.addr);
+        common_hal_rgbmatrix_free_impl(self->protomatter.screenData);
 
         self->framebuffer = NULL;
         self->bufinfo.buf = common_hal_rgbmatrix_allocator_impl(self->bufsize);
@@ -95,7 +97,8 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t* self,
         self->rgb_count/6, self->rgb_pins,
         self->addr_count, self->addr_pins,
         self->clock_pin, self->latch_pin, self->oe_pin,
-        self->doublebuffer, self->timer);
+        self->doublebuffer, self->serpentine ? -self->tile : self->tile,
+        self->timer);
 
     if (stat == PROTOMATTER_OK) {
         _PM_protoPtr = &self->protomatter;
@@ -180,9 +183,6 @@ void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t* self) {
 
 void rgbmatrix_rgbmatrix_collect_ptrs(rgbmatrix_rgbmatrix_obj_t* self) {
     gc_collect_ptr(self->framebuffer);
-    gc_collect_ptr(self->protomatter.rgbPins);
-    gc_collect_ptr(self->protomatter.addr);
-    gc_collect_ptr(self->protomatter.screenData);
 }
 
 void common_hal_rgbmatrix_rgbmatrix_set_paused(rgbmatrix_rgbmatrix_obj_t* self, bool paused) {
@@ -212,23 +212,15 @@ int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t* self) {
 }
 
 int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t* self) {
-    int computed_height = (self->rgb_count / 3) << (self->addr_count);
+    int computed_height = (self->rgb_count / 3) * (1 << (self->addr_count)) * self->tile;
     return computed_height;
 }
 
 void *common_hal_rgbmatrix_allocator_impl(size_t sz) {
-    if (gc_alloc_possible()) {
-        return m_malloc_maybe(sz + sizeof(void*), true);
-    } else {
-        supervisor_allocation *allocation = allocate_memory(align32_size(sz), false);
-        return allocation ? allocation->ptr : NULL;
-    }
+    supervisor_allocation *allocation = allocate_memory(align32_size(sz), false, true);
+    return allocation ? allocation->ptr : NULL;
 }
 
 void common_hal_rgbmatrix_free_impl(void *ptr_in) {
-    supervisor_allocation *allocation = allocation_from_ptr(ptr_in);
-
-    if (allocation) {
-        free_memory(allocation);
-    }
+    free_memory(allocation_from_ptr(ptr_in));
 }

@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/displayio/FourWire.h"

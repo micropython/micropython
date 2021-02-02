@@ -70,8 +70,8 @@ void common_hal__eve_Vertex2f(common_hal__eve_t *eve, mp_float_t x, mp_float_t y
 
 void common_hal__eve_VertexFormat(common_hal__eve_t *eve, uint32_t frac)
 {
-    C4(eve, ((27 << 24) | ((frac & 7))));
-    eve->vscale = 1 << eve->vscale;
+    C4(eve, ((39 << 24) | ((frac & 7))));
+    eve->vscale = 1 << frac;
 }
 
 
@@ -226,8 +226,9 @@ void common_hal__eve_Jump(common_hal__eve_t *eve, uint32_t dest) {
 }
 
 
-void common_hal__eve_LineWidth(common_hal__eve_t *eve, uint32_t width) {
-    C4(eve, ((14 << 24) | ((width & 4095))));
+void common_hal__eve_LineWidth(common_hal__eve_t *eve, mp_float_t width) {
+    int16_t iw = (int)(8 * width);
+    C4(eve, ((14 << 24) | ((iw & 4095))));
 }
 
 
@@ -246,8 +247,9 @@ void common_hal__eve_PaletteSource(common_hal__eve_t *eve, uint32_t addr) {
 }
 
 
-void common_hal__eve_PointSize(common_hal__eve_t *eve, uint32_t size) {
-    C4(eve, ((13 << 24) | ((size & 8191))));
+void common_hal__eve_PointSize(common_hal__eve_t *eve, mp_float_t size) {
+    int16_t is = (int)(8 * size);
+    C4(eve, ((13 << 24) | ((is & 8191))));
 }
 
 
@@ -301,13 +303,15 @@ void common_hal__eve_Tag(common_hal__eve_t *eve, uint32_t s) {
 }
 
 
-void common_hal__eve_VertexTranslateX(common_hal__eve_t *eve, uint32_t x) {
-    C4(eve, ((43 << 24) | (((x) & 131071))));
+void common_hal__eve_VertexTranslateX(common_hal__eve_t *eve, mp_float_t x) {
+    int16_t ix = (int)(16 * x);
+    C4(eve, ((43 << 24) | (ix & 131071)));
 }
 
 
-void common_hal__eve_VertexTranslateY(common_hal__eve_t *eve, uint32_t y) {
-    C4(eve, ((44 << 24) | (((y) & 131071))));
+void common_hal__eve_VertexTranslateY(common_hal__eve_t *eve, mp_float_t y) {
+    int16_t iy = (int)(16 * y);
+    C4(eve, ((44 << 24) | (iy & 131071)));
 }
 
 

@@ -48,17 +48,28 @@
 //|
 
 //|     enabled: bool
-//|     """True when the wifi radio is enabled."""
+//|     """``True`` when the wifi radio is enabled.
+//|     If you set the value to ``False``, any open sockets will be closed.
+//|     """
 //|
 STATIC mp_obj_t wifi_radio_get_enabled(mp_obj_t self) {
     return mp_obj_new_bool(common_hal_wifi_radio_get_enabled(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_enabled_obj, wifi_radio_get_enabled);
 
+static mp_obj_t wifi_radio_set_enabled(mp_obj_t self, mp_obj_t value) {
+    const bool enabled = mp_obj_is_true(value);
+
+    common_hal_wifi_radio_set_enabled(self, enabled);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_enabled_obj, wifi_radio_set_enabled);
+
 const mp_obj_property_t wifi_radio_enabled_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_radio_get_enabled_obj,
-               (mp_obj_t)&mp_const_none_obj,
+               (mp_obj_t)&wifi_radio_set_enabled_obj,
                (mp_obj_t)&mp_const_none_obj },
 };
 
@@ -79,7 +90,7 @@ const mp_obj_property_t wifi_radio_mac_address_obj = {
 };
 
 
-//|     def start_scanning_networks(self, *, start_channel=1, stop_channel=11) -> Iterable[Network]:
+//|     def start_scanning_networks(self, *, start_channel: int = 1, stop_channel: int = 11) -> Iterable[Network]:
 //|         """Scans for available wifi networks over the given channel range. Make sure the channels are allowed in your country."""
 //|         ...
 //|
@@ -142,9 +153,25 @@ const mp_obj_property_t wifi_radio_hostname_obj = {
               (mp_obj_t)&mp_const_none_obj},
 };
 
-//|     def connect(self, ssid: ReadableBuffer, password: ReadableBuffer = b"", *, channel: Optional[int] = 0, timeout: Optional[float] = None) -> bool:
+//|     def connect(self,
+//|                 ssid: ReadableBuffer,
+//|                 password: ReadableBuffer = b"",
+//|                 *,
+//|                 channel: Optional[int] = 0,
+//|                 bssid: Optional[ReadableBuffer] = b"",
+//|                 timeout: Optional[float] = None) -> bool:
 //|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
-//|            automatically once one connection succeeds."""
+//|            automatically once one connection succeeds.
+//|
+//|            By default, this will scan all channels and connect to the access point (AP) with the
+//|            given ``ssid`` and greatest signal strength (rssi).
+//|
+//|            If ``channel`` is given, the scan will begin with the given channel and connect to
+//|            the first AP with the given ``ssid``. This can speed up the connection time
+//|            significantly because a full scan doesn't occur.
+//|
+//|            If ``bssid`` is given, the scan will start at the first channel or the one given and
+//|            connect to the AP with the given ``bssid`` and ``ssid``."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -191,12 +218,12 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     }
 
     wifi_radio_error_t error = common_hal_wifi_radio_connect(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, timeout, bssid.buf, bssid.len);
-    if (error == WIFI_RADIO_ERROR_AUTH) {
+    if (error == WIFI_RADIO_ERROR_AUTH_FAIL) {
         mp_raise_ConnectionError(translate("Authentication failure"));
     } else if (error == WIFI_RADIO_ERROR_NO_AP_FOUND) {
         mp_raise_ConnectionError(translate("No network with that ssid"));
     } else if (error != WIFI_RADIO_ERROR_NONE) {
-        mp_raise_ConnectionError(translate("Unknown failure"));
+        mp_raise_msg_varg(&mp_type_ConnectionError, translate("Unknown failure %d"), error);
     }
 
     return mp_const_none;
@@ -268,7 +295,7 @@ const mp_obj_property_t wifi_radio_ipv4_dns_obj = {
 };
 
 //|     ap_info: Optional[Network]
-//|     """Network object containing BSSID, SSID, channel, and RSSI when connected to an access point. None otherwise."""
+//|     """Network object containing BSSID, SSID, authmode, channel, country and RSSI when connected to an access point. None otherwise."""
 //|
 STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
     return common_hal_wifi_radio_get_ap_info(self);
@@ -283,7 +310,7 @@ const mp_obj_property_t wifi_radio_ap_info_obj = {
                (mp_obj_t)&mp_const_none_obj },
 };
 
-//|     def ping(self, ip, *, timeout: float = 0.5) -> float:
+//|     def ping(self, ip: ipaddress.IPv4Address, *, timeout: Optional[float] = 0.5) -> float:
 //|         """Ping an IP to test connectivity. Returns echo time in seconds.
 //|            Returns None when it times out."""
 //|         ...

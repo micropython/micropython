@@ -34,8 +34,10 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include <string.h>
+
 #define DEFAULT_VREF        1100
-#define NO_OF_SAMPLES       64
+#define NO_OF_SAMPLES       2
 #define ATTENUATION         ADC_ATTEN_DB_11
 #define DATA_WIDTH          ADC_WIDTH_BIT_13
 
@@ -66,11 +68,14 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         adc1_config_channel_atten((adc1_channel_t)self->pin->adc_channel, ATTENUATION);
     } else if (self->pin->adc_index == ADC_UNIT_2) {
         adc2_config_channel_atten((adc2_channel_t)self->pin->adc_channel, ATTENUATION);
+    } else {
+        mp_raise_ValueError(translate("Invalid Pin"));
     }
 
     // Automatically select calibration process depending on status of efuse
-    esp_adc_cal_characteristics_t *adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    esp_adc_cal_characterize(self->pin->adc_index, ATTENUATION, DATA_WIDTH, DEFAULT_VREF, adc_chars);
+    esp_adc_cal_characteristics_t adc_chars;
+    memset(&adc_chars, 0, sizeof(adc_chars));
+    esp_adc_cal_characterize(self->pin->adc_index, ATTENUATION, DATA_WIDTH, DEFAULT_VREF, &adc_chars);
 
     uint32_t adc_reading = 0;
     //Multisampling
@@ -89,7 +94,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     adc_reading /= NO_OF_SAMPLES;
 
     // This corrects non-linear regions of the ADC range with a LUT, so it's a better reading than raw
-    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, &adc_chars);
     return voltage * ((1 << 16) - 1)/3300;
 }
 

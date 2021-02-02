@@ -38,6 +38,8 @@ STATIC volatile background_callback_t *callback_head, *callback_tail;
 #define CALLBACK_CRITICAL_BEGIN (common_hal_mcu_disable_interrupts())
 #define CALLBACK_CRITICAL_END (common_hal_mcu_enable_interrupts())
 
+MP_WEAK void port_wake_main_task(void) {}
+
 void background_callback_add_core(background_callback_t *cb) {
     CALLBACK_CRITICAL_BEGIN;
     if (cb->prev || callback_head == cb) {
@@ -55,6 +57,8 @@ void background_callback_add_core(background_callback_t *cb) {
     }
     callback_tail = cb;
     CALLBACK_CRITICAL_END;
+
+    port_wake_main_task();
 }
 
 void background_callback_add(background_callback_t *cb, background_callback_fun fun, void *data) {

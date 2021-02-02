@@ -23,6 +23,7 @@ import re
 import subprocess
 import sys
 import urllib.parse
+import time
 
 import recommonmark
 from sphinx.transforms import SphinxTransform
@@ -101,9 +102,12 @@ redirects_file = 'docs/redirects.txt'
 # The master toctree document.
 #master_doc = 'index'
 
+# Get current date (execution) for copyright year
+current_date = time.localtime()
+
 # General information about the project.
 project = 'Adafruit CircuitPython'
-copyright = '2014-2020, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
+copyright = f'2014-{current_date.tm_year}, MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)'
 
 # These are overwritten on ReadTheDocs.
 # The version info for the project you're documenting, acts as replacement for
@@ -172,6 +176,7 @@ exclude_patterns = ["**/build*",
                     "ports/atmel-samd/tools",
                     "ports/cxd56/mkspk",
                     "ports/cxd56/spresense-exported-sdk",
+                    "ports/esp32s2/certificates",
                     "ports/esp32s2/esp-idf",
                     "ports/esp32s2/peripherals",
                     "ports/litex/hw",
@@ -184,6 +189,7 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/nrfx",
                     "ports/nrf/peripherals",
                     "ports/nrf/usb",
+                    "ports/raspberrypi/sdk",
                     "ports/stm/st_driver",
                     "ports/stm/packages",
                     "ports/stm/peripherals",
@@ -275,7 +281,7 @@ html_static_path = ['docs/static']
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
-#html_extra_path = []
+html_extra_path = ["docs/robots.txt"]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

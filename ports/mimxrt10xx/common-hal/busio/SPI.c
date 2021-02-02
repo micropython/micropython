@@ -220,12 +220,9 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     never_reset_spi[self->clock->bank_idx - 1] = false;
 
     common_hal_reset_pin(self->clock->pin);
-    if (self->mosi != NULL) {
-        common_hal_reset_pin(self->mosi->pin);
-    }
-    if (self->miso != NULL) {
-        common_hal_reset_pin(self->miso->pin);
-    }
+    common_hal_reset_pin(self->mosi->pin);
+    common_hal_reset_pin(self->miso->pin);
+
     self->clock = NULL;
     self->mosi = NULL;
     self->miso = NULL;

@@ -29,7 +29,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "components/hal/include/hal/uart_types.h"
+#include "components/soc/include/hal/uart_types.h"
 #include "py/obj.h"
 
 typedef struct {

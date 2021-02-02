@@ -20,3 +20,6 @@ LD_FILE = boards/STM32F401xd_fs.ld
 # lto for this port, and if other stuff hasn't been added in the
 # meantime
 CIRCUITPY_ULAB = 0
+CIRCUITPY_BUSDEVICE = 0
+
+SUPEROPT_GC = 0

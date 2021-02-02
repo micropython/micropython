@@ -30,7 +30,7 @@ import sys
 
 from concurrent.futures import ThreadPoolExecutor
 
-SUPPORTED_PORTS = ['atmel-samd', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'stm']
+SUPPORTED_PORTS = ['atmel-samd', 'cxd56', 'esp32s2', 'litex', 'mimxrt10xx', 'nrf', 'raspberrypi', 'stm']
 
 def get_circuitpython_root_dir():
     """ The path to the root './circuitpython' directory
@@ -44,7 +44,7 @@ def get_shared_bindings():
     """ Get a list of modules in shared-bindings based on folder names
     """
     shared_bindings_dir = get_circuitpython_root_dir() / "shared-bindings"
-    return [item.name for item in shared_bindings_dir.iterdir()] + ["ulab"]
+    return [item.name for item in shared_bindings_dir.iterdir()] + ["binascii", "errno", "json", "re", "ulab"]
 
 
 def read_mpconfig():

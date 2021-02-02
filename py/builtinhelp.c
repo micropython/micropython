@@ -152,9 +152,18 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // try to print something sensible about the given object
-    mp_print_str(MP_PYTHON_PRINTER, "object ");
+    const compressed_string_t* compressed = translate("object ");
+    char decompressed_object[decompress_length(compressed)];
+    decompress(compressed, decompressed_object);
+
+    mp_print_str(MP_PYTHON_PRINTER, decompressed_object);
     mp_obj_print(obj, PRINT_STR);
-    mp_printf(MP_PYTHON_PRINTER, " is of type %q\n", type->name);
+
+    compressed = translate(" is of type %q\n");
+    char decompressed_typestring[decompress_length(compressed)];
+    decompress(compressed, decompressed_typestring);
+
+    mp_printf(MP_PYTHON_PRINTER, decompressed_typestring, type->name);
 
     mp_map_t *map = NULL;
     if (type == &mp_type_module) {

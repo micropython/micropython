@@ -11,13 +11,17 @@ on:
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
+    - name: Install deps
+      run: sudo apt-get update && sudo apt-get install -y gettext
+    - name: Populate selected submodules
+      run: git submodule update --init extmod/ulab
     - name: set PY
       run: echo >>$GITHUB_ENV PY="$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')"
-    - uses: actions/cache@v1
+    - uses: actions/cache@v2
       with:
         path: ~/.cache/pre-commit
         key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}

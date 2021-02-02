@@ -57,15 +57,20 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
     return MP_OBJ_FROM_PTR(s);
 }
 
-
-//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = IPPROTO_TCP) -> None:
+//|     AF_INET: int
+//|     AF_INET6: int
+//|     SOCK_STREAM: int
+//|     SOCK_DGRAM: int
+//|     SOCK_RAW: int
+//|
+//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM) -> socketpool.Socket:
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6
-//|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
-//|         :param ~int proto: IPPROTO_TCP, IPPROTO_UDP or IPPROTO_RAW (ignored)"""
+//|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW"""
 //|         ...
 //|
+
 STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_check_num(n_args, kw_args, 0, 5, false);
 
@@ -82,7 +87,7 @@ STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socketpool_socket);
 
-//| def getaddrinfo(host: str, port: int, family: int = 0, type: int = 0, proto: int = 0, flags: int = 0) -> tuple:
+//| def getaddrinfo(host: str, port: int, family: int = 0, type: int = 0, proto: int = 0, flags: int = 0) -> Tuple[int, int, int, str, Tuple[str, int]]:
 //|     """Gets the address information for a hostname and port
 //|
 //|     Returns the appropriate family, socket type, socket protocol and

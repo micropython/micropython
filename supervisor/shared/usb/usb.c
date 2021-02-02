@@ -31,6 +31,7 @@
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
+#include "supervisor/shared/workflow.h"
 #include "lib/utils/interrupt_char.h"
 #include "lib/mp-readline/readline.h"
 
@@ -58,11 +59,15 @@ bool usb_enabled(void) {
     return tusb_inited();
 }
 
+MP_WEAK void post_usb_init(void) {}
+
 void usb_init(void) {
     init_usb_hardware();
     load_serial_number();
 
     tusb_init();
+
+    post_usb_init();
 
 #if MICROPY_KBD_EXCEPTION
     // Set Ctrl+C as wanted char, tud_cdc_rx_wanted_cb() usb_callback will be invoked when Ctrl+C is received
@@ -116,7 +121,6 @@ void tud_umount_cb(void) {
 // remote_wakeup_en : if host allows us to perform remote wakeup
 // USB Specs: Within 7ms, device must draw an average current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en) {
-    _serial_connected = false;
 }
 
 // Invoked when usb bus is resumed
@@ -127,8 +131,6 @@ void tud_resume_cb(void) {
 // Use to reset to DFU when disconnect with 1200 bps
 void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
     (void) itf; // interface ID, not used
-
-    _serial_connected = dtr;
 
     // DTR = false is counted as disconnected
     if ( !dtr )

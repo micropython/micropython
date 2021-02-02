@@ -76,9 +76,7 @@ void common_hal_displayio_fourwire_deinit(displayio_fourwire_obj_t* self) {
 
     common_hal_reset_pin(self->command.pin);
     common_hal_reset_pin(self->chip_select.pin);
-    if (self->reset.pin) {
-        common_hal_reset_pin(self->reset.pin);
-    }
+    common_hal_reset_pin(self->reset.pin);
 }
 
 bool common_hal_displayio_fourwire_reset(mp_obj_t obj) {
@@ -113,7 +111,8 @@ bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
     return true;
 }
 
-void common_hal_displayio_fourwire_send(mp_obj_t obj, display_byte_type_t data_type, display_chip_select_behavior_t chip_select, uint8_t *data, uint32_t data_length) {
+void common_hal_displayio_fourwire_send(mp_obj_t obj, display_byte_type_t data_type,
+        display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
     displayio_fourwire_obj_t* self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->command, data_type == DISPLAY_DATA);
     if (chip_select == CHIP_SELECT_TOGGLE_EVERY_BYTE) {

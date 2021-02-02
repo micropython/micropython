@@ -184,27 +184,23 @@ typedef long mp_off_t;
 // Turning off FULL_BUILD removes some functionality to reduce flash size on tiny SAMD21s
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_BUILTINS_POW3)
 #define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
-#define MICROPY_MODULE_WEAK_LINKS             (CIRCUITPY_FULL_BUILD)
+#define MICROPY_MODULE_WEAK_LINKS             (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_PY_BUILTINS_COMPLEX
 #define MICROPY_PY_BUILTINS_COMPLEX           (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_PY_BUILTINS_FROZENSET         (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_CENTER        (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_PARTITION     (CIRCUITPY_FULL_BUILD)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES    (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_UERRNO                     (CIRCUITPY_FULL_BUILD)
 #ifndef MICROPY_PY_COLLECTIONS_ORDEREDDICT
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT    (CIRCUITPY_FULL_BUILD)
 #endif
-// Opposite setting is deliberate.
-#define MICROPY_PY_UERRNO_ERRORCODE           (!CIRCUITPY_FULL_BUILD)
-#ifndef MICROPY_PY_URE
-#define MICROPY_PY_URE                        (CIRCUITPY_FULL_BUILD)
-#endif
-#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_FULL_BUILD)
-#define MICROPY_PY_URE_SUB                    (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
+#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
+#define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
@@ -223,7 +219,7 @@ typedef long mp_off_t;
 #endif
 
 #ifndef MICROPY_PY_REVERSE_SPECIAL_METHODS
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS    (CIRCUITPY_FULL_BUILD)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS    (CIRCUITPY_ULAB || CIRCUITPY_FULL_BUILD)
 #endif
 
 #if INTERNAL_FLASH_FILESYSTEM == 0 && QSPI_FLASH_FILESYSTEM == 0 && SPI_FLASH_FILESYSTEM == 0 && !DISABLE_FILESYSTEM
@@ -238,6 +234,13 @@ extern const struct _mp_obj_module_t aesio_module;
 #define AESIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_aesio), (mp_obj_t)&aesio_module },
 #else
 #define AESIO_MODULE
+#endif
+
+#if CIRCUITPY_ALARM
+extern const struct _mp_obj_module_t alarm_module;
+#define ALARM_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_alarm), (mp_obj_t)&alarm_module },
+#else
+#define ALARM_MODULE
 #endif
 
 #if CIRCUITPY_ANALOGIO
@@ -289,6 +292,13 @@ extern const struct _mp_obj_module_t audiopwmio_module;
 #define AUDIOPWMIO_MODULE
 #endif
 
+#if CIRCUITPY_BINASCII
+#define MICROPY_PY_UBINASCII CIRCUITPY_BINASCII
+#define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
+#else
+#define BINASCII_MODULE
+#endif
+
 #if CIRCUITPY_BITBANGIO
 #define BITBANGIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module },
 extern const struct _mp_obj_module_t bitbangio_module;
@@ -322,6 +332,13 @@ extern const struct _mp_obj_module_t board_module;
 #else
 #define BOARD_MODULE
 #define BOARD_UART_ROOT_POINTER
+#endif
+
+#if CIRCUITPY_BUSDEVICE
+extern const struct _mp_obj_module_t adafruit_bus_device_module;
+#define BUSDEVICE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_bus_device), (mp_obj_t)&adafruit_bus_device_module },
+#else
+#define BUSDEVICE_MODULE
 #endif
 
 #if CIRCUITPY_BUSIO
@@ -378,6 +395,16 @@ extern const struct _mp_obj_module_t terminalio_module;
 #else
 #define FONTIO_MODULE
 #define TERMINALIO_MODULE
+#endif
+
+#if CIRCUITPY_ERRNO
+#define MICROPY_PY_UERRNO (1)
+// Uses about 80 bytes.
+#define MICROPY_PY_UERRNO_ERRORCODE (1)
+#define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+#else
+#define ERRNO_MODULE
+#
 #endif
 
 #if CIRCUITPY_ESPIDF
@@ -451,6 +478,18 @@ extern const struct _mp_obj_module_t ipaddress_module;
 #define IPADDRESS_MODULE
 #endif
 
+#if CIRCUITPY_JSON
+#define MICROPY_PY_UJSON (1)
+#define MICROPY_PY_IO (1)
+#define JSON_MODULE            { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
+#else
+#ifndef MICROPY_PY_IO
+// We don't need MICROPY_PY_IO unless someone else wants it.
+#define MICROPY_PY_IO (0)
+#endif
+#define JSON_MODULE
+#endif
+
 #if CIRCUITPY_MATH
 extern const struct _mp_obj_module_t math_module;
 #define MATH_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module },
@@ -520,6 +559,13 @@ extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE_ALT_NAME
 #endif
 
+#if CIRCUITPY_DUALBANK
+extern const struct _mp_obj_module_t dualbank_module;
+#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
+#else
+#define DUALBANK_MODULE
+#endif
+
 #if CIRCUITPY_PEW
 extern const struct _mp_obj_module_t pew_module;
 #define PEW_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR__pew),(mp_obj_t)&pew_module },
@@ -555,13 +601,6 @@ extern const struct _mp_obj_module_t pwmio_module;
 #define PWMIO_MODULE
 #endif
 
-#if CIRCUITPY_RGBMATRIX
-extern const struct _mp_obj_module_t rgbmatrix_module;
-#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
-#else
-#define RGBMATRIX_MODULE
-#endif
-
 #if CIRCUITPY_RANDOM
 extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
@@ -569,11 +608,32 @@ extern const struct _mp_obj_module_t random_module;
 #define RANDOM_MODULE
 #endif
 
+#if CIRCUITPY_RE
+#define MICROPY_PY_URE (1)
+#define RE_MODULE            { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
+#else
+#define RE_MODULE
+#endif
+
+#if CIRCUITPY_RGBMATRIX
+extern const struct _mp_obj_module_t rgbmatrix_module;
+#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
+#else
+#define RGBMATRIX_MODULE
+#endif
+
 #if CIRCUITPY_ROTARYIO
 extern const struct _mp_obj_module_t rotaryio_module;
 #define ROTARYIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module },
 #else
 #define ROTARYIO_MODULE
+#endif
+
+#if CIRCUITPY_RP2PIO
+extern const struct _mp_obj_module_t rp2pio_module;
+#define RP2PIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_rp2pio),(mp_obj_t)&rp2pio_module },
+#else
+#define RP2PIO_MODULE
 #endif
 
 #if CIRCUITPY_RTC
@@ -603,7 +663,6 @@ extern const struct _mp_obj_module_t sdioio_module;
 #else
 #define SDIOIO_MODULE
 #endif
-
 
 #if CIRCUITPY_SHARPDISPLAY
 extern const struct _mp_obj_module_t sharpdisplay_module;
@@ -698,19 +757,6 @@ extern const struct _mp_obj_module_t ustack_module;
 #define USTACK_MODULE
 #endif
 
-// These modules are not yet in shared-bindings, but we prefer the non-uxxx names.
-#if MICROPY_PY_UERRNO
-#define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
-#else
-#define ERRNO_MODULE
-#endif
-
-#if MICROPY_PY_UJSON
-#define JSON_MODULE            { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
-#else
-#define JSON_MODULE
-#endif
-
 #if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
 // ulab requires reverse special methods
 #if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
@@ -720,12 +766,6 @@ extern const struct _mp_obj_module_t ustack_module;
     { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
 #else
 #define ULAB_MODULE
-#endif
-
-#if MICROPY_PY_URE
-#define RE_MODULE { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
-#else
-#define RE_MODULE
 #endif
 
 // This is not a top-level module; it's microcontroller.watchdog.
@@ -741,6 +781,13 @@ extern const struct _mp_obj_module_t wifi_module;
 #define WIFI_MODULE { MP_ROM_QSTR(MP_QSTR_wifi), MP_ROM_PTR(&wifi_module) },
 #else
 #define WIFI_MODULE
+#endif
+
+#if CIRCUITPY_MSGPACK
+extern const struct _mp_obj_module_t msgpack_module;
+#define MSGPACK_MODULE { MP_ROM_QSTR(MP_QSTR_msgpack), MP_ROM_PTR(&msgpack_module) },
+#else
+#define MSGPACK_MODULE
 #endif
 
 // Define certain native modules with weak links so they can be replaced with Python
@@ -763,6 +810,7 @@ extern const struct _mp_obj_module_t wifi_module;
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     AESIO_MODULE \
+    ALARM_MODULE \
     ANALOGIO_MODULE \
     AUDIOBUSIO_MODULE \
     AUDIOCORE_MODULE \
@@ -770,9 +818,11 @@ extern const struct _mp_obj_module_t wifi_module;
     AUDIOMIXER_MODULE \
     AUDIOMP3_MODULE \
     AUDIOPWMIO_MODULE \
+    BINASCII_MODULE \
     BITBANGIO_MODULE \
     BLEIO_MODULE \
     BOARD_MODULE \
+    BUSDEVICE_MODULE \
     BUSIO_MODULE \
     CAMERA_MODULE \
     CANIO_MODULE \
@@ -796,10 +846,12 @@ extern const struct _mp_obj_module_t wifi_module;
     _EVE_MODULE \
     MEMORYMONITOR_MODULE \
     MICROCONTROLLER_MODULE \
+    MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
     NETWORK_MODULE \
       SOCKET_MODULE \
       WIZNET_MODULE \
+    DUALBANK_MODULE \
     PEW_MODULE \
     PIXELBUF_MODULE \
     PS2IO_MODULE \
@@ -809,6 +861,7 @@ extern const struct _mp_obj_module_t wifi_module;
     RE_MODULE \
     RGBMATRIX_MODULE \
     ROTARYIO_MODULE \
+    RP2PIO_MODULE \
     RTC_MODULE \
     SAMD_MODULE \
     SDCARDIO_MODULE \
@@ -848,17 +901,20 @@ extern const struct _mp_obj_module_t wifi_module;
 
 #include "supervisor/flash_root_pointers.h"
 
+// From supervisor/memory.c
+struct _supervisor_allocation_node;
+
 #define CIRCUITPY_COMMON_ROOT_POINTERS \
     const char *readline_hist[8]; \
     vstr_t *repl_line; \
     mp_obj_t rtc_time_source; \
     GAMEPAD_ROOT_POINTERS \
     mp_obj_t pew_singleton; \
-    mp_obj_t terminal_tilegrid_tiles; \
     BOARD_UART_ROOT_POINTER \
     FLASH_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
     NETWORK_ROOT_POINTERS \
+    struct _supervisor_allocation_node* first_embedded_allocation; \
 
 void supervisor_run_background_tasks_if_tick(void);
 #define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
@@ -880,6 +936,15 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #ifndef CIRCUITPY_PYSTACK_SIZE
 #define CIRCUITPY_PYSTACK_SIZE 1536
+#endif
+
+// Wait this long imediately after startup to see if we are connected to USB.
+#ifndef CIRCUITPY_USB_CONNECTED_SLEEP_DELAY
+#define CIRCUITPY_USB_CONNECTED_SLEEP_DELAY 5
+#endif
+
+#ifndef CIRCUITPY_PROCESSOR_COUNT
+#define CIRCUITPY_PROCESSOR_COUNT (1)
 #endif
 
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
