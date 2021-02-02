@@ -36,6 +36,7 @@
 #include "supervisor/shared/translate.h"
 
 #include "nrfx_uarte.h"
+#include "nrf_gpio.h"
 #include <string.h>
 
 // expression to examine, and return value in case of failing
@@ -98,10 +99,16 @@ static void uart_callback_irq (const nrfx_uarte_event_t * event, void * context)
 
     switch ( event->type ) {
         case NRFX_UARTE_EVT_RX_DONE:
-            ringbuf_put_n(&self->ringbuf, event->data.rxtx.p_data, event->data.rxtx.bytes);
+            if (ringbuf_num_empty(&self->ringbuf) >= event->data.rxtx.bytes) {
+                ringbuf_put_n(&self->ringbuf, event->data.rxtx.p_data, event->data.rxtx.bytes);
+                // keep receiving
+                (void) nrfx_uarte_rx(self->uarte, &self->rx_char, 1);
+            } else {
+                // receive buffer full, suspend
+                self->rx_paused = true;
+                nrf_gpio_pin_write(self->rts_pin_number, true);
+            }
 
-            // keep receiving
-            (void) nrfx_uarte_rx(self->uarte, &self->rx_char, 1);
         break;
 
         case NRFX_UARTE_EVT_TX_DONE:
@@ -137,8 +144,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte* receiver_buffer,
     bool sigint_enabled) {
 
-    if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+    if ((rs485_dir != NULL) || (rs485_invert)) {
+        mp_raise_ValueError(translate("RS485 Not yet supported on this device"));
     }
 
     // Find a free UART peripheral.
@@ -166,16 +173,18 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Odd parity is not supported"));
     }
 
+    bool hwfc = rts != NULL || cts != NULL;
+
     nrfx_uarte_config_t config = {
         .pseltxd = (tx == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : tx->number,
         .pselrxd = (rx == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : rx->number,
-        .pselcts = NRF_UARTE_PSEL_DISCONNECTED,
-        .pselrts = NRF_UARTE_PSEL_DISCONNECTED,
+        .pselcts = (cts == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : cts->number,
+        .pselrts = (rts == NULL) ? NRF_UARTE_PSEL_DISCONNECTED : rts->number,
         .p_context = self,
         .baudrate = get_nrf_baud(baudrate),
         .interrupt_priority = 7,
         .hal_cfg = {
-            .hwfc = NRF_UARTE_HWFC_DISABLED,
+            .hwfc = hwfc ? NRF_UARTE_HWFC_ENABLED : NRF_UARTE_HWFC_DISABLED,
             .parity = (parity == BUSIO_UART_PARITY_NONE) ? NRF_UARTE_PARITY_EXCLUDED : NRF_UARTE_PARITY_INCLUDED
         }
     };
@@ -207,8 +216,24 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         self->tx_pin_number = NO_PIN;
     }
 
+    if ( rts != NULL ) {
+        self->rts_pin_number = rts->number;
+        claim_pin(rts);
+    } else {
+        self->rts_pin_number = NO_PIN;
+    }
+
+    if ( cts != NULL ) {
+        self->cts_pin_number = cts->number;
+        claim_pin(cts);
+    } else {
+        self->cts_pin_number = NO_PIN;
+    }
+
     self->baudrate = baudrate;
     self->timeout_ms = timeout * 1000;
+
+    self->rx_paused = false;
 
     // Initial wait for incoming byte
     _VERIFY_ERR(nrfx_uarte_rx(self->uarte, &self->rx_char, 1));
@@ -223,8 +248,12 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
         nrfx_uarte_uninit(self->uarte);
         reset_pin_number(self->tx_pin_number);
         reset_pin_number(self->rx_pin_number);
+        reset_pin_number(self->rts_pin_number);
+        reset_pin_number(self->cts_pin_number);
         self->tx_pin_number = NO_PIN;
         self->rx_pin_number = NO_PIN;
+        self->rts_pin_number = NO_PIN;
+        self->cts_pin_number = NO_PIN;
         ringbuf_free(&self->ringbuf);
     }
 }
@@ -236,6 +265,13 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     }
 
     uint64_t start_ticks = supervisor_ticks_ms64();
+
+    // check removed to reduce code size
+    /*
+    if (len > ringbuf_capacity(&self->ringbuf)) {
+        mp_raise_ValueError(translate("Reading >receiver_buffer_size bytes is not supported"));
+    }
+    */
 
     // Wait for all bytes received or timeout
     while ( (ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms) ) {
@@ -251,6 +287,16 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     // Copy as much received data as available, up to len bytes.
     size_t rx_bytes = ringbuf_get_n(&self->ringbuf, data, len);
+
+    // restart reader, if stopped
+    if (self->rx_paused) {
+        // the character that did not fit in ringbuf is in rx_char
+        ringbuf_put_n(&self->ringbuf, &self->rx_char, 1);
+        // keep receiving
+        (void) nrfx_uarte_rx(self->uarte, &self->rx_char, 1);
+        nrf_gpio_pin_write(self->rts_pin_number, false);
+        self->rx_paused = false;
+    }
 
     NVIC_EnableIRQ(nrfx_get_irq_number(self->uarte->p_reg));
 
