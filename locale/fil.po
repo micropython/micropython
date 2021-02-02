@@ -342,6 +342,10 @@ msgstr "Lahat ng I2C peripherals ginagamit"
 msgid "All event channels in use"
 msgstr "Lahat ng event channels ginagamit"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "All state machines in use"
+msgstr ""
+
 #: ports/atmel-samd/audio_dma.c ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "All sync event channels in use"
 msgstr "Lahat ng sync event channels ay ginagamit"
@@ -390,6 +394,7 @@ msgstr ""
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut functionality not supported"
 msgstr "Hindi supportado ang AnalogOut"
 
@@ -592,6 +597,7 @@ msgstr "Hindi mabura ang values"
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/mimxrt10xx/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
+#: ports/raspberrypi/common-hal/digitalio/DigitalInOut.c
 msgid "Cannot get pull while in output mode"
 msgstr "Hindi makakakuha ng pull habang nasa output mode"
 
@@ -874,7 +880,8 @@ msgstr "May pagkakamali sa REGEX"
 msgid "Error: Failure to bind"
 msgstr ""
 
-#: py/enum.c shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c py/enum.c
+#: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
 #: shared-bindings/terminalio/Terminal.c
@@ -1058,6 +1065,10 @@ msgstr "I/O operasyon sa saradong file"
 msgid "I2C Init Error"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "I2C peripheral in use"
+msgstr ""
+
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
 msgstr ""
@@ -1083,6 +1094,10 @@ msgstr ""
 msgid "Incorrect buffer size"
 msgstr ""
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Init program size invalid"
+msgstr ""
+
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
 msgstr ""
@@ -1094,6 +1109,31 @@ msgstr ""
 #: ports/esp32s2/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
 msgstr "May mali sa Input/Output"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d jumps on pin"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d shifts in more bits than pin count"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d shifts out more bits than pin count"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d uses extra pin"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Instruction %d waits on input outside of count"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1146,7 +1186,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c ports/nrf/common-hal/pwmio/PWMOut.c
-#: shared-bindings/pwmio/PWMOut.c
+#: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Mali ang PWM frequency"
 
@@ -1240,6 +1280,8 @@ msgstr "Mali ang pin para sa kanang channel"
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Invalid pins"
 msgstr "Mali ang pins"
 
@@ -1361,6 +1403,36 @@ msgstr "Ang delay ng startup ng mikropono ay dapat na nasa 0.0 hanggang 1.0"
 msgid "Missing MISO or MOSI Pin"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_in_pin. Instruction %d reads pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_in_pin. Instruction %d waits based on pin"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_out_pin. Instruction %d writes pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, c-format
+msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+msgstr ""
+
 #: shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr ""
@@ -1414,14 +1486,14 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Walang RX pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No TX pin"
 msgstr "Walang TX pin"
 
@@ -1476,6 +1548,10 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "No out in program"
 msgstr ""
 
 #: shared-module/touchio/TouchIn.c
@@ -1535,6 +1611,10 @@ msgstr "Odd na parity ay hindi supportado"
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
 msgstr "Tanging 8 o 16 na bit mono na may "
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Only IN/OUT of up to 8 supported"
+msgstr ""
 
 #: ports/esp32s2/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1609,6 +1689,7 @@ msgstr ""
 "PWM frequency hindi writable kapag variable_frequency ay False sa pag buo."
 
 #: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
+#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
 #: ports/stm/common-hal/displayio/ParallelBus.c
 msgid "ParallelBus not yet supported"
 msgstr ""
@@ -1621,11 +1702,20 @@ msgstr ""
 msgid "Permission denied"
 msgstr "Walang pahintulot"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Pin count must be at least 1"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Pin count too large"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 #: ports/esp32s2/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
+#: ports/raspberrypi/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
 msgstr "Ang pin ay walang kakayahan sa ADC"
@@ -1686,9 +1776,33 @@ msgstr ""
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Program does IN without loading ISR"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Program does OUT without loading OSR"
+msgstr ""
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Program must contain at least one 16-bit instruction."
+msgstr ""
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Program size invalid"
+msgstr ""
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Program too large"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Pull hindi ginagamit kapag ang direksyon ay output."
+
+#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
+msgid "RAISE mode is not implemented"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1773,6 +1887,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "SDA or SCL needs a pull up"
 msgstr "Kailangan ng pull up resistors ang SDA o SCL"
 
@@ -1792,6 +1907,10 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/busio/SPI.c
+msgid "SPI peripheral in use"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
@@ -1822,6 +1941,14 @@ msgstr "Serializer ginagamit"
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
+msgstr ""
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Set pin count must be between 1 and 5"
+msgstr ""
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "Side set pin count must be between 1 and 5"
 msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
@@ -1988,6 +2115,10 @@ msgstr ""
 msgid "UART Re-init error"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/busio/UART.c
+msgid "UART not yet supported"
+msgstr ""
+
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write error"
 msgstr ""
@@ -2093,7 +2224,8 @@ msgid ""
 msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
-#: ports/esp32s2/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
+#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Hindi supportadong baudrate"
 
@@ -2147,6 +2279,7 @@ msgid "WARNING: Your code filename has two extensions\n"
 msgstr "BABALA: Ang pangalan ng file ay may dalawang extension\n"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
 
@@ -3553,6 +3686,7 @@ msgstr "pow() na may 3 argumento kailangan ng integers"
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
@@ -3568,6 +3702,14 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
+msgstr ""
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "pull_threshold must be between 1 and 32"
+msgstr ""
+
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+msgid "push_threshold must be between 1 and 32"
 msgstr ""
 
 #: extmod/modutimeq.c
@@ -3776,6 +3918,7 @@ msgstr "time.struct_time() kumukuha ng 9-sequence"
 
 #: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr ""
 
