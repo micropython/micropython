@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-02-01 17:50+0000\n"
+"PO-Revision-Date: 2021-02-03 12:57+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -656,7 +656,7 @@ msgstr ""
 
 #: ports/esp32s2/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
-msgstr ""
+msgstr "Não foi possível definir as opções do socket"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -1844,7 +1844,7 @@ msgstr "Houve um erro na inicialização do RNG"
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
-msgstr ""
+msgstr "Ainda não há suporte para o RS485 neste dispositivo"
 
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
