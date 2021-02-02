@@ -1807,6 +1807,10 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
+#: ports/nrf/common-hal/busio/UART.c
+msgid "RS485 Not yet supported on this device"
+msgstr ""
+
 #: ports/esp32s2/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
@@ -1822,7 +1826,7 @@ msgid "RTC is not supported on this board"
 msgstr "Brak obsługi RTC"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/busio/UART.c
 msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr ""
 
