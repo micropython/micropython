@@ -654,6 +654,10 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Ne peut être redémarré vers le bootloader car il n'y a pas de bootloader."
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr ""
@@ -897,7 +901,7 @@ msgstr "Canal EXTINT déjà utilisé"
 msgid "Error in regex"
 msgstr "Erreur dans l'expression régulière"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "Erreur : Impossible de lier"
 
@@ -957,7 +961,7 @@ msgstr "La FFT est définie uniquement pour les ndarrays"
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT n'est implémenté que pour les tableaux linéaires"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "Échec du handshake SSL"
 
@@ -1332,17 +1336,13 @@ msgstr "'security_mode' invalide"
 msgid "Invalid size"
 msgstr "Taille invalide"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr "Socket non valide pour TLS"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
 msgstr "État invalide"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
-msgstr "Utilisation incorrecte de socket TLS"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1359,10 +1359,6 @@ msgstr "Fichier WAVE invalide"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Longueur de mot / bit invalide"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
-msgstr "Problème en activant SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1690,7 +1686,7 @@ msgstr "Timeout de l'opération"
 msgid "Out of memory"
 msgstr "Hors de mémoire"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Plus de sockets"
 
@@ -2239,7 +2235,7 @@ msgstr "Écriture impossible vers sleep_memory."
 msgid "Unexpected nrfx uuid type"
 msgstr "Type inattendu pour l'uuid nrfx"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Erreur ESP TLS non gérée %d %d %x %d"
@@ -2551,7 +2547,7 @@ msgstr "les tranches de tampon doivent être de longueurs égales"
 msgid "buffer too small"
 msgstr "tampon trop petit"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "tampon trop petit pour le nombre d'octets demandé"
 
@@ -4266,6 +4262,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Invalid use of TLS Socket"
+#~ msgstr "Utilisation incorrecte de socket TLS"
+
+#~ msgid "Issue setting SO_REUSEADDR"
+#~ msgstr "Problème en activant SO_REUSEADDR"
 
 #~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 #~ msgstr ""

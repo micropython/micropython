@@ -636,6 +636,10 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Kan niet resetten naar bootloader omdat er geen bootloader aanwezig is."
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "Kan de waarde niet toewijzen als de richting input is."
@@ -876,7 +880,7 @@ msgstr "EXTINT kanaal al in gebruik"
 msgid "Error in regex"
 msgstr "Fout in regex"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr ""
 
@@ -935,7 +939,7 @@ msgstr "FFT alleen voor ndarrays gedefineerd"
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT is alleen geïmplementeerd voor lineaire arrays"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "SSL handdruk mislukt"
 
@@ -1309,16 +1313,12 @@ msgstr "Ongeldige security_mode"
 msgid "Invalid size"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
-msgstr ""
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
@@ -1336,10 +1336,6 @@ msgstr "Ongeldig wave bestand"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Ongeldig woord/bit lengte"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
-msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1667,7 +1663,7 @@ msgstr ""
 msgid "Out of memory"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Geen sockets meer beschikbaar"
 
@@ -2209,7 +2205,7 @@ msgstr "Kan niet naar sleep_memory schrijven."
 msgid "Unexpected nrfx uuid type"
 msgstr "Onverwacht mrfx uuid type"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Niet behandelde ESP TLS fout %d %d %x %d"
@@ -2519,7 +2515,7 @@ msgstr "buffer slices moeten van gelijke grootte zijn"
 msgid "buffer too small"
 msgstr "buffer te klein"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "buffer te klein voor gevraagde bytes"
 

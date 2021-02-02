@@ -638,6 +638,10 @@ msgstr "Kann '/' nicht remounten when USB aktiv ist."
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr "Reset zum bootloader nicht möglich da bootloader nicht vorhanden."
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "Der Wert kann nicht gesetzt werden, wenn die Richtung input ist."
@@ -880,7 +884,7 @@ msgstr "EXTINT Kanal ist schon in Benutzung"
 msgid "Error in regex"
 msgstr "Fehler in regex"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr ""
 
@@ -940,7 +944,7 @@ msgstr "FFT ist nur für ndarrays definiert"
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT ist nur für lineare Arrays implementiert"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "SSL Handshake fehlgeschlagen"
 
@@ -1315,16 +1319,12 @@ msgstr "Ungültiger security_mode"
 msgid "Invalid size"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
-msgstr ""
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
@@ -1342,10 +1342,6 @@ msgstr "Ungültige wave Datei"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Ungültige Wort- / Bitlänge"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
-msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1675,7 +1671,7 @@ msgstr ""
 msgid "Out of memory"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr ""
 
@@ -2212,7 +2208,7 @@ msgstr ""
 msgid "Unexpected nrfx uuid type"
 msgstr "Unerwarteter nrfx uuid-Typ"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
@@ -2526,7 +2522,7 @@ msgstr "Puffersegmente müssen gleich lang sein"
 msgid "buffer too small"
 msgstr "Der Puffer ist zu klein"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr ""
 

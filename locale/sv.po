@@ -641,6 +641,10 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Det går inte att återställa till bootloader eftersom bootloader saknas."
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "Kan inte sätta värde när riktning är input."
@@ -881,7 +885,7 @@ msgstr "EXTINT-kanalen används redan"
 msgid "Error in regex"
 msgstr "Fel i regex"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "Fel: Bind misslyckades"
 
@@ -940,7 +944,7 @@ msgstr "FFT är enbart definierade för ndarrays"
 msgid "FFT is implemented for linear arrays only"
 msgstr "FTT är enbart implementerad för linjära matriser"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "Misslyckad SSL-handskakning"
 
@@ -1313,17 +1317,13 @@ msgstr "Ogiltigt säkerhetsläge"
 msgid "Invalid size"
 msgstr "Ogiltig storlek"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr "Ogiltig socket för TLS"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
 msgstr "Ogiltigt tillstånd"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
-msgstr "Ogiltig användning av TLS Socket"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "Invalid voice"
@@ -1340,10 +1340,6 @@ msgstr "Ogiltig wave-fil"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
 msgstr "Ogiltig word-/bitlängd"
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
-msgstr "Misslyckades att sätta SO_REUSEADDR"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1671,7 +1667,7 @@ msgstr "Åtgärden orsakade timeout"
 msgid "Out of memory"
 msgstr "Slut på minne"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Slut på sockets"
 
@@ -2212,7 +2208,7 @@ msgstr "Det gick inte att skriva till sleep_memory."
 msgid "Unexpected nrfx uuid type"
 msgstr "Oväntad nrfx uuid-typ"
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Ej hanterat ESP TLS-fel %d-%d-%x-%d"
@@ -2519,7 +2515,7 @@ msgstr "buffertsegmenten måste vara lika långa"
 msgid "buffer too small"
 msgstr "buffert för liten"
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "buffert för liten för begärd längd"
 
@@ -4217,6 +4213,12 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Invalid use of TLS Socket"
+#~ msgstr "Ogiltig användning av TLS Socket"
+
+#~ msgid "Issue setting SO_REUSEADDR"
+#~ msgstr "Misslyckades att sätta SO_REUSEADDR"
 
 #~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 #~ msgstr "%d adresspinnar och %d RGB-pinnar indikerar en höjd av %d, inte %d"

@@ -629,6 +629,10 @@ msgstr ""
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 
+#: ports/esp32s2/common-hal/socketpool/Socket.c
+msgid "Cannot set socket options"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr ""
@@ -865,7 +869,7 @@ msgstr ""
 msgid "Error in regex"
 msgstr ""
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr ""
 
@@ -924,7 +928,7 @@ msgstr ""
 msgid "FFT is implemented for linear arrays only"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr ""
 
@@ -1295,16 +1299,12 @@ msgstr ""
 msgid "Invalid size"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr ""
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 msgid "Invalid state"
-msgstr ""
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Invalid use of TLS Socket"
 msgstr ""
 
 #: shared-bindings/audiomixer/Mixer.c
@@ -1321,10 +1321,6 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Invalid word/bit length"
-msgstr ""
-
-#: ports/esp32s2/common-hal/socketpool/Socket.c
-msgid "Issue setting SO_REUSEADDR"
 msgstr ""
 
 #: shared-bindings/aesio/aes.c
@@ -1647,7 +1643,7 @@ msgstr ""
 msgid "Out of memory"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr ""
 
@@ -2167,7 +2163,7 @@ msgstr ""
 msgid "Unexpected nrfx uuid type"
 msgstr ""
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/esp32s2/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
@@ -2466,7 +2462,7 @@ msgstr ""
 msgid "buffer too small"
 msgstr ""
 
-#: shared-bindings/socketpool/Socket.c
+#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr ""
 
