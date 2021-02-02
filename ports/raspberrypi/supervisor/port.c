@@ -94,12 +94,16 @@ void reset_port(void) {
     reset_spi();
     #endif
 
+    #if CIRCUITPY_PWMIO
+    pwmout_reset();
+    #endif
+
     #if CIRCUITPY_RP2PIO
     reset_rp2pio_statemachine();
     #endif
 
-    #if CIRCUITPY_PWMIO
-    pwmout_reset();
+    #if CIRCUITPY_RTC
+    rtc_reset();
     #endif
 
     reset_all_pins();

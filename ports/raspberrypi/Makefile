@@ -84,6 +84,7 @@ INC += -I. \
        -isystem sdk/src/rp2_common/hardware_pio/include/ \
        -isystem sdk/src/rp2_common/hardware_pll/include/ \
        -isystem sdk/src/rp2_common/hardware_resets/include/ \
+       -isystem sdk/src/rp2_common/hardware_rtc/include/ \
        -isystem sdk/src/rp2_common/hardware_spi/include/ \
        -isystem sdk/src/rp2_common/hardware_sync/include/ \
        -isystem sdk/src/rp2_common/hardware_timer/include/ \
@@ -166,6 +167,7 @@ SRC_SDK := \
 	src/rp2_common/hardware_irq/irq.c \
 	src/rp2_common/hardware_pio/pio.c \
 	src/rp2_common/hardware_pll/pll.c \
+  src/rp2_common/hardware_rtc/rtc.c \
 	src/rp2_common/hardware_spi/spi.c \
 	src/rp2_common/hardware_sync/sync.c \
 	src/rp2_common/hardware_timer/timer.c \
