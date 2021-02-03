@@ -35,6 +35,7 @@
 #include "lib/utils/buffer_helper.h"
 #include "lib/utils/context_manager_helpers.h"
 #include "py/runtime.h"
+#include "py/smallint.h"
 #include "supervisor/shared/translate.h"
 
 
@@ -76,7 +77,7 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_make_new(const mp_obj_type_t *type
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    busio_i2c_obj_t* i2c = args[ARG_i2c].u_obj;
+    mp_obj_t* i2c = args[ARG_i2c].u_obj;
 
     common_hal_adafruit_bus_device_i2cdevice_construct(MP_OBJ_TO_PTR(self), i2c, args[ARG_device_address].u_int);
     if (args[ARG_probe].u_bool == true) {
@@ -107,7 +108,7 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_obj___exit__(size_t n_args, const 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adafruit_bus_device_i2cdevice___exit___obj, 4, 4, adafruit_bus_device_i2cdevice_obj___exit__);
 
-//|     def readinto(self, buf: WriteableBuffer, *, start: int = 0, end: int = 0) -> None:
+//|     def readinto(self, buf: WriteableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Read into ``buf`` from the device. The number of bytes read will be the
 //|         length of ``buf``.
 //|         If ``start`` or ``end`` is provided, then the buffer will be sliced
@@ -118,22 +119,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adafruit_bus_device_i2cdevice___exit_
 //|         :param int end: Index to write up to but not include; if None, use ``len(buf)``"""
 //|         ...
 //|
-STATIC void readinto(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, int32_t start, mp_int_t end) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_WRITE);
-
-    size_t length = bufinfo.len;
-    normalize_buffer_bounds(&start, end, &length);
-    if (length == 0) {
-        mp_raise_ValueError(translate("Buffer must be at least length 1"));
-    }
-
-    uint8_t status = common_hal_adafruit_bus_device_i2cdevice_readinto(MP_OBJ_TO_PTR(self), ((uint8_t*)bufinfo.buf) + start, length);
-    if (status != 0) {
-        mp_raise_OSError(status);
-    }
-}
-
 STATIC mp_obj_t adafruit_bus_device_i2cdevice_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
@@ -147,12 +132,27 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_readinto(size_t n_args, const mp_o
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    readinto(self, args[ARG_buffer].u_obj, args[ARG_start].u_int, args[ARG_end].u_int);
+    mp_obj_t dest[8];
+    uint8_t num_kws = 1;
+
+    mp_load_method(self->i2c, MP_QSTR_readfrom_into, dest);
+    dest[2] = MP_OBJ_NEW_SMALL_INT(self->device_address);
+    dest[3] = args[ARG_buffer].u_obj;
+    //dest[4] = mp_obj_new_str("start", 5);
+    dest[4] = MP_OBJ_NEW_QSTR(MP_QSTR_start);
+    dest[5] = MP_OBJ_NEW_SMALL_INT(args[ARG_start].u_int);
+    if (args[ARG_end].u_int != INT_MAX) {
+        dest[6] = MP_OBJ_NEW_QSTR(MP_QSTR_end);
+        dest[7] = MP_OBJ_NEW_SMALL_INT(args[ARG_end].u_int);
+        num_kws++;
+    }
+    mp_call_method_n_kw(2, num_kws, dest);
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_readinto_obj, 2, adafruit_bus_device_i2cdevice_readinto);
 
-//|     def write(self, buf: ReadableBuffer, *, start: int = 0, end: int = 0) -> None:
+//|     def write(self, buf: ReadableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Write the bytes from ``buffer`` to the device, then transmit a stop bit.
 //|         If ``start`` or ``end`` is provided, then the buffer will be sliced
 //|         as if ``buffer[start:end]``. This will not cause an allocation like
@@ -163,22 +163,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_readinto_obj, 2,
 //|         """
 //|         ...
 //|
-STATIC void write(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t buffer, int32_t start, mp_int_t end, bool transmit_stop_bit) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
-
-    size_t length = bufinfo.len;
-    normalize_buffer_bounds(&start, end, &length);
-    if (length == 0) {
-        mp_raise_ValueError(translate("Buffer must be at least length 1"));
-    }
-
-    uint8_t status = common_hal_adafruit_bus_device_i2cdevice_write(MP_OBJ_TO_PTR(self), ((uint8_t*)bufinfo.buf) + start, length, transmit_stop_bit);
-    if (status != 0) {
-        mp_raise_OSError(status);
-    }
-}
-
 STATIC mp_obj_t adafruit_bus_device_i2cdevice_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
@@ -191,13 +175,28 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write(size_t n_args, const mp_obj_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    write(self, args[ARG_buffer].u_obj, args[ARG_start].u_int, args[ARG_end].u_int, true);
+    mp_obj_t dest[8];
+    uint8_t num_kws = 1;
+
+    mp_load_method(self->i2c, MP_QSTR_writeto, dest);
+    dest[2] = MP_OBJ_NEW_SMALL_INT(self->device_address);
+    dest[3] = args[ARG_buffer].u_obj;
+    dest[4] = MP_OBJ_NEW_QSTR(MP_QSTR_start);
+    dest[5] = MP_OBJ_NEW_SMALL_INT(args[ARG_start].u_int);
+    if (args[ARG_end].u_int != INT_MAX) {
+        dest[6] = MP_OBJ_NEW_QSTR(MP_QSTR_end);
+        dest[7] = MP_OBJ_NEW_SMALL_INT(args[ARG_end].u_int);
+        num_kws++;
+    }
+
+    mp_call_method_n_kw(2, num_kws, dest);
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_write_obj, 2, adafruit_bus_device_i2cdevice_write);
 
 
-//|     def write_then_readinto(self, out_buffer: WriteableBuffer, in_buffer: ReadableBuffer, *, out_start: int = 0, out_end: int = 0, in_start: int = 0, in_end: int = 0) -> None:
+//|     def write_then_readinto(self, out_buffer: WriteableBuffer, in_buffer: ReadableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
 //|         """Write the bytes from ``out_buffer`` to the device, then immediately
 //|         reads into ``in_buffer`` from the device. The number of bytes read
 //|         will be the length of ``in_buffer``.
@@ -233,9 +232,29 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write_then_readinto(size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    write(self, args[ARG_out_buffer].u_obj, args[ARG_out_start].u_int, args[ARG_out_end].u_int, false);
+    mp_obj_t dest[13];
+    uint8_t num_kws = 2;
 
-    readinto(self, args[ARG_in_buffer].u_obj, args[ARG_in_start].u_int, args[ARG_in_end].u_int);
+    mp_load_method(self->i2c, MP_QSTR_writeto_then_readfrom, dest);
+    dest[2] = MP_OBJ_NEW_SMALL_INT(self->device_address);
+    dest[3] = args[ARG_out_buffer].u_obj;
+    dest[4] = args[ARG_in_buffer].u_obj;
+    dest[5] = MP_OBJ_NEW_QSTR(MP_QSTR_out_start);
+    dest[6] = MP_OBJ_NEW_SMALL_INT(args[ARG_out_start].u_int);
+    if (args[ARG_out_end].u_int != INT_MAX) {
+        dest[7] = MP_OBJ_NEW_QSTR(MP_QSTR_out_end);
+        dest[8] = MP_OBJ_NEW_SMALL_INT(args[ARG_out_end].u_int);
+        num_kws++;
+    }
+    dest[9] = MP_OBJ_NEW_QSTR(MP_QSTR_in_start);
+    dest[10] = MP_OBJ_NEW_SMALL_INT(args[ARG_in_start].u_int);
+    if (args[ARG_in_end].u_int != INT_MAX) {
+        dest[11] = MP_OBJ_NEW_QSTR(MP_QSTR_in_end);
+        dest[12] = MP_OBJ_NEW_SMALL_INT(args[ARG_in_end].u_int);
+        num_kws++;
+    }
+
+    mp_call_method_n_kw(3, num_kws, dest);
 
     return mp_const_none;
 }

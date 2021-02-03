@@ -31,9 +31,7 @@
 #include <stdint.h>
 
 #define MICROPY_PY_FUNCTION_ATTRS                (1)
-#define MICROPY_PY_IO                            (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS       (1)
-#define MICROPY_PY_UJSON                         (1)
 
 extern uint8_t _ld_default_stack_size;
 

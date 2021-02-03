@@ -30,12 +30,13 @@
 #include "common-hal/ssl/SSLContext.h"
 
 #include "shared-bindings/socketpool/Socket.h"
+#include "shared-bindings/ssl/SSLSocket.h"
 
 extern const mp_obj_type_t ssl_sslcontext_type;
 
 void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t* self);
 
-socketpool_socket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,
+ssl_sslsocket_obj_t* common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t* self,
     socketpool_socket_obj_t* sock, bool server_side, const char* server_hostname);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H

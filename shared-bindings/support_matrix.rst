@@ -1,7 +1,7 @@
 .. _module-support-matrix:
 
-Support Matrix
-===============
+Module Support Matrix - Which Modules Are Available on Which Boards
+===================================================================
 
 The following table lists the available built-in modules for each CircuitPython
 capable board.

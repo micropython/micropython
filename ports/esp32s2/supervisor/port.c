@@ -46,6 +46,7 @@
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
+#include "common-hal/socketpool/Socket.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
@@ -143,9 +144,9 @@ safe_mode_t port_init(void) {
         case ESP_RST_BROWNOUT:
             return BROWNOUT;
         case ESP_RST_PANIC:
+            return HARD_CRASH;
         case ESP_RST_INT_WDT:
         case ESP_RST_WDT:
-            return HARD_CRASH;
         default:
             break;
     }
@@ -221,6 +222,10 @@ void reset_port(void) {
 
 #if CIRCUITPY_WIFI
     wifi_reset();
+#endif
+
+#if CIRCUITPY_SOCKETPOOL
+    socket_reset();
 #endif
 }
 

@@ -97,7 +97,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (!gpio_get_pin_level(sda->number) || !gpio_get_pin_level(scl->number)) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
-        mp_raise_RuntimeError(translate("SDA or SCL needs a pull up"));
+        mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
     }
 #endif
 
