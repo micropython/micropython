@@ -403,19 +403,21 @@ vendor_endpoint_out_descriptor = standard.EndpointDescriptor(
     bmAttributes=standard.EndpointDescriptor.TYPE_BULK,
     bInterval=16)
 
-vendor_interface = standard.InterfaceDescriptor(
-    description="VENDOR",
-    bInterfaceClass=0xff, # vendor.VENDOR_CLASS,
-    bInterfaceSubClass=0x00, #vendor.VENDOR_SUBCLASS_???,,
-    bInterfaceProtocol=0x00, #vendor.VENDOR_PROTOCOL_NONE,
-    iInterface=StringIndex.index("{} VENDOR".format(args.interface_name)),
-    subdescriptors=[
-        vendor_endpoint_in_descriptor,
-        vendor_endpoint_out_descriptor,
-    ]
-)
+# We do the following conditionally to avoid adding unused entries to the StringIndex table
+if 'VENDOR' in args.devices:
+    vendor_interface = standard.InterfaceDescriptor(
+        description="VENDOR",
+        bInterfaceClass=0xff, # vendor.VENDOR_CLASS,
+        bInterfaceSubClass=0x00, #vendor.VENDOR_SUBCLASS_???,,
+        bInterfaceProtocol=0x00, #vendor.VENDOR_PROTOCOL_NONE,
+        iInterface=StringIndex.index("{} VENDOR".format(args.interface_name)),
+        subdescriptors=[
+            vendor_endpoint_in_descriptor,
+            vendor_endpoint_out_descriptor,
+        ]
+    )
 
-vendor_interfaces = [vendor_interface]
+    vendor_interfaces = [vendor_interface]
 
 interfaces_to_join = []
 
