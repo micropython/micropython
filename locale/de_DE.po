@@ -1557,6 +1557,12 @@ msgstr ""
 msgid "No out in program"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "Kein Pulldown Widerstand am Pin; 1Mohm wird vorgeschlagen"
@@ -1896,12 +1902,6 @@ msgstr ""
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
 msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDA oder SCL brauchen pull up"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
@@ -4239,6 +4239,9 @@ msgstr ""
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA oder SCL brauchen pull up"
 
 #~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
 #~ msgstr ""

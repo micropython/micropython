@@ -1548,6 +1548,12 @@ msgstr ""
 msgid "No out in program"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "ピンにプルダウンがありません。1Mオーム推奨"
@@ -1881,12 +1887,6 @@ msgstr "セーフモードで実行中！ "
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
 msgstr "SDカードのCSDフォーマットは非対応"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDAとSCLにプルアップが必要"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
@@ -4180,6 +4180,9 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDAとSCLにプルアップが必要"
 
 #~ msgid ""
 #~ "\n"

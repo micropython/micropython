@@ -1554,6 +1554,12 @@ msgstr "Inget nätverk med sådant ssid"
 msgid "No out in program"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/raspberrypi/common-hal/busio/I2C.c
+msgid "No pull up found on SDA or SCL; check your wiring"
+msgstr ""
+
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "Ingen pulldown på pinnen; 1Mohm rekommenderas"
@@ -1900,12 +1906,6 @@ msgstr "Kör i säkert läge! "
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
 msgstr "SD-kort CSD-format stöds inte"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-msgid "SDA or SCL needs a pull up"
-msgstr "SDA eller SCL behöver en pullup"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
@@ -4213,6 +4213,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/filter/filter.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA eller SCL behöver en pullup"
 
 #~ msgid "Invalid use of TLS Socket"
 #~ msgstr "Ogiltig användning av TLS Socket"
